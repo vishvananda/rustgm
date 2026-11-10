@@ -4818,6 +4818,13 @@ alone grants no conversion, Copy, imported-body or backend permission. Joining
 types alone does not create this source context.
 See [the shared call reborrow checkpoint](docs/pa16-shared-call-reborrow.md).
 
+The unsizing mismatch probe is an exclusion query, not an equality or conversion
+proof. A projected head awaiting normalization is unknown to that query; continue
+checking other pairs for a known mismatch without binding inference variables.
+Ordinary comparison retains its normalization fence, and the eventual body
+equality or selected conversion must still discharge every actual obligation.
+Invalid identities and exhausted traversal resources remain failures.
+
 Caller-bound trait goals participate in the same inference graph as call arguments.
 Import each probe with one shared mapping across Self and all type/const roots.
 Index assumptions by trait identity and the rigid outer subject shape; do not scan

@@ -1,6 +1,8 @@
 //! Actual source unsizing roles retain independent goal and native contracts.
 use crate::provider_traits::{TestResult, lower};
 use std::path::Path;
+#[path = "coercion_provider/envelopes.rs"]
+mod envelopes;
 
 const POSITIVE: &[&str] = &[
     "array-slice",

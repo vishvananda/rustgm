@@ -1,0 +1,196 @@
+{
+  "schema": 1,
+  "owner": "pa31 actual source CoerceUnsized discovery with pending aggregate arguments",
+  "contract": "All predicted complete source analysis/LowIR, object and native outcomes frozen before implementation. Presence of actual CoerceUnsized must not turn unresolved associated inputs into a forced mismatch or failed equality. The source protocol is essential: ordinary and source-without-role controls pass. Full ordinary equality, formation and actual unsizing/trait/lifetime/ownership proofs remain mandatory.",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false
+  },
+  "scaling": {
+    "widths": [
+      8,
+      32,
+      128
+    ],
+    "noise": [
+      0,
+      128
+    ],
+    "invariant": "Fourfold call growth at most4x+1024 inference/canonical/trait/projection/method work; unrelated types add none of those call counters."
+  },
+  "native_client": {
+    "path": "pa31/tests/spec/coercion-discovery/observer.c",
+    "sha256": "f8e20b16f78058c575636d9e55e964b53faed597c5beec57ab230a200e1e82b1",
+    "stdout": "7\n"
+  },
+  "inputs": [
+    {
+      "path": "pa31/tests/spec/coercion-discovery/inferred.rs",
+      "sha256": "e3454a32cd13f9ba6edf6b3739302d41bacc144db00532aef47815d7af138a79",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/coercion-discovery/qualified-control.rs",
+      "sha256": "36a397165ec170cb43f7f102968ecc85258332f86695dec744287532ec148a46",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/coercion-discovery/direct-control.rs",
+      "sha256": "b0753a8d55af69940c75f03e20a730f50db0b6072fd4fb1e7acffb2311526c05",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/coercion-discovery/annotated.rs",
+      "sha256": "64da35e6aa64f9e3942653bb495f0607592c1209d530447a684d86c8686339b2",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/coercion-discovery/conditional-const.rs",
+      "sha256": "dc2e5b8314eb6c8b304f60cda5c88a7eb7cea2451eac60a9aa71e79fb0f63dd6",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/coercion-discovery/no-role-control.rs",
+      "sha256": "99da0cfdb1d2c8a95fce1718e267347060e17cb6b702cf266d84f270af4c80a0",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/coercion-discovery/record-return.rs",
+      "sha256": "358df3279bca051e7fd28e5dff73cdfca50c8e679955a46675feea4932cf6ca5",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/coercion-discovery/generic-receiver.rs",
+      "sha256": "e1de09b1f5977ccab85d2009db735e76a957ddac3f9bb05ee5c9c7df7515aab7",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/coercion-discovery/forwarded.rs",
+      "sha256": "252dd4e22a99ee5f32788202af2e549cac229898487598626b6bccd3abb625b5",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/coercion-discovery/raw-projection-control.rs",
+      "sha256": "38eb95469e7479b5c88b5f66ed8dada7b97511ba2d73cf1962a020096293195c",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/coercion-discovery/wrong-target.rs",
+      "sha256": "48d43157270ce9267050d8013a35a6eab82c9738009b49721dc2d52288b18b6c",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/coercion-discovery/wrong-error.rs",
+      "sha256": "fcd71d496b8de2aff4d76fe2eef063004c8ad1047bf0e7071092ff574f467998",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/coercion-discovery/missing-bound.rs",
+      "sha256": "84cb7f9b5cb1a3fe1a025c7e994e806ba9a3f432fdb564ca54012054ff9f23ce",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/coercion-discovery/different-instantiation.rs",
+      "sha256": "cd46bb2f789aac3c1364f14644bddf3164d5596ac92d96d6576361773d785c8b",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/coercion-discovery/unrelated-result.rs",
+      "sha256": "aac07848429391145df2c4ef035d060ef8b6866dd0d6dcdee796494294740221",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/coercion-discovery/missing-coercion-proof.rs",
+      "sha256": "36845dc085b5ba7661b90126eda5943ce23c209e6b15bcd1e7936626c0b15ad0",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/coercion-discovery/width-8-noise-0.rs",
+      "sha256": "5b2dc8f12e43b95724dea85dea49b6b7c99e8409e960cff84d1da908461ae0dd",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/coercion-discovery/width-8-noise-128.rs",
+      "sha256": "3860660a1b6ca7921048ef86155659932279041aee6b5b4b3869661d0a17d383",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/coercion-discovery/width-32-noise-0.rs",
+      "sha256": "714fb5d7ae74211188a2b299e08d8c4003f7fbc07769b0b5bac3f6a3894e5eea",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/coercion-discovery/width-32-noise-128.rs",
+      "sha256": "0dac7d5241cf7be2bb69061ea5cc077accdc59f2b074c85468c3a7f53b94375a",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/coercion-discovery/width-128-noise-0.rs",
+      "sha256": "b5c6dd58c69b9ad7e5de23645eab97550b428113bdae2394906f754c942b296f",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/coercion-discovery/width-128-noise-128.rs",
+      "sha256": "7dbc8c74b0b7db531c776db16d6cdacb280ae45e20c6b22bd9dea6e70cf9f7cb",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    }
+  ],
+  "required": [
+    {
+      "path": "pa31/tests/spec/coercion-discovery/required/nested-result-equality.rs",
+      "sha256": "2fea1221e40f325e77f062e2dd83d4e76d17843897716003e123d20316be4b00",
+      "rustc_object_status": 1,
+      "expected_body_error": "body types require a provable associated-result equality",
+      "current_boundary": "associated type projection requires normalization",
+      "qualification": "required; not part of the22 completed discovery outcomes; explicit prefix qualification isolates the older nested opaque-result equality diagnostic"
+    }
+  ]
+}

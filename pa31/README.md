@@ -71,6 +71,13 @@ sizing work. Full inclusive-call syntax, derives/modules/iteration, wider unsize
 terminals, const and authenticated transport remain required. This is a finite
 checkpoint, not completion of this assignment or an original library artifact.
 
+The [source coercion discovery packet](tests/spec/coercion-discovery/README.md)
+retains22 active outcomes, including16 native programs, where genuine source
+CoerceUnsized discovery encounters pending associated aggregate arguments. Its
+shape probe treats an unnormalized head as unknown without granting equality or
+conversion; ordinary raw fences and complete source proofs remain mandatory.
+One older nested opaque-result equality diagnostic stays explicitly required.
+
 The [ResumeTy/get_context checkpoint](../docs/parallel/resume-context-main-join.md)
 uses actual ordinary nominal/function completions and preserves body/unsafe
 proof. Its native companion executes the exact pointer helper with authored

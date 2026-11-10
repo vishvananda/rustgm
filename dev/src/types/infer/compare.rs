@@ -14,7 +14,9 @@ impl Context {
     }
     /// Unsizing may specialize a quantified object's trait inputs even when
     /// ordinary inference sees no type-constructor mismatch. Full conversion
-    /// obligations still decide whether that change is permitted.
+    /// obligations still decide whether that change is permitted. A projected
+    /// head awaiting normalization cannot establish a forced mismatch; a false
+    /// result still supplies no equality or conversion proof.
     /// # Errors
     /// Reports invalid identities and exhausted graph traversal.
     pub fn unsizing_mismatch(
@@ -30,7 +32,7 @@ impl Context {
         store: &Store,
         a: TermId,
         b: TermId,
-        object_quantifiers: bool,
+        unsizing: bool,
     ) -> Result<bool, Error> {
         self.pairs.clear();
         self.seen.clear();
@@ -42,7 +44,10 @@ impl Context {
             if a == b || !self.seen.insert((a, b)) {
                 continue;
             }
-            let (Some(left), Some(right)) = (self.head(store, a)?, self.head(store, b)?) else {
+            let (Some(left), Some(right)) = (
+                self.mismatch_head(store, a, unsizing)?,
+                self.mismatch_head(store, b, unsizing)?,
+            ) else {
                 continue;
             };
             let compatible = match (left, right) {
@@ -90,7 +95,7 @@ impl Context {
                 ) => {
                     a == b
                         && !self.argument_mismatch(aa, ba)?
-                        && !(object_quantifiers
+                        && !(unsizing
                             && (self.object_lifetimes(al)?.bound_regions != 0
                                 || self.object_lifetimes(bl)?.bound_regions != 0))
                 }
@@ -129,6 +134,17 @@ impl Context {
             );
         }
         Ok(false)
+    }
+    fn mismatch_head(
+        &mut self,
+        store: &Store,
+        term: TermId,
+        unsizing: bool,
+    ) -> Result<Option<Constructor>, Error> {
+        match self.head(store, term) {
+            Err(Error::Normalization) if unsizing => Ok(None),
+            result => result,
+        }
     }
     fn const_mismatch(
         &mut self,
