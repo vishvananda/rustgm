@@ -19,12 +19,13 @@ fn report(name: &str, enabled: bool) -> Result<crate::resolve::expansion::Report
 fn target(
     report: &crate::resolve::expansion::Report,
     facts: &Declarations,
+    name: &str,
 ) -> Result<(DefId, Instance)> {
     let index = report
         .resolution
         .definitions
         .iter()
-        .position(|d| report.package.names.get(d.name) == "ub_checks")
+        .position(|d| report.package.names.get(d.name) == name)
         .ok_or("actual intrinsic")?;
     Ok((
         DefId(u32::try_from(index)?),
@@ -37,8 +38,17 @@ fn target(
 #[test]
 fn ub_selection_rechecks_actual_declaration_signature_source_and_full_arguments() -> Result {
     let report = report("local-fold", false)?;
-    let mut facts = crate::pipeline::analyze_source(&report)?.facts;
-    let (definition, instance) = target(&report, &facts)?;
+    selection_rechecks(&report, "ub_checks")
+}
+#[test]
+fn overflow_selection_rechecks_actual_declaration_signature_source_and_full_arguments() -> Result {
+    let source = crate::test_source::fixture("pa31/tests/spec/overflow-query/direct.rs")?;
+    let report = crate::test_source::source_provider(&source, "overflow_checks")?;
+    selection_rechecks(&report, "overflow_checks")
+}
+fn selection_rechecks(report: &crate::resolve::expansion::Report, name: &str) -> Result {
+    let mut facts = crate::pipeline::analyze_source(report)?.facts;
+    let (definition, instance) = target(report, &facts, name)?;
     let Some(Kind::FunctionItem {
         item, signature, ..
     }) = facts.types.kind(instance.ty())

@@ -17,7 +17,7 @@ struct Call<'body> {
 }
 
 impl Lower<'_, '_, '_> {
-    pub(super) fn runtime_ub_check(
+    pub(super) fn runtime_check(
         &mut self,
         id: ir::ValueId,
     ) -> Result<Option<Selected>, &'static str> {

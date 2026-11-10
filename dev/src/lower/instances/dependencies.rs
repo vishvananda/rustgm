@@ -124,8 +124,8 @@ fn source_call(
         Some(kind @ (SourceIntrinsic::PtrMetadata | SourceIntrinsic::AggregateRawPtr)) => {
             ptr_values::require_operation(report, facts, body, value, ty, kind).map(|()| Some(kind))
         }
-        Some(SourceIntrinsic::UbChecks) => {
-            runtime_check(facts, body, value, ty, signature, arguments)
+        Some(kind) if crate::sema::compiler_items::runtime_check_intrinsic(kind) => {
+            runtime_check(facts, body, value, ty, signature, arguments).map(|()| Some(kind))
         }
         Some(kind @ (SourceIntrinsic::Transmute | SourceIntrinsic::TransmuteUnchecked)) => {
             transmute_call(report, facts, body, value, ty, (signature, arguments))?;
@@ -240,8 +240,7 @@ fn runtime_check(
     ty: TypeId,
     signature: TypeId,
     arguments: crate::body::ir::ValueList,
-) -> Result<Option<crate::support::bindings::SourceIntrinsic>, &'static str> {
-    use crate::support::bindings::SourceIntrinsic;
+) -> Result<(), &'static str> {
     let instance = Instance::new(&facts.types, ty)?;
     let (selection, _, _) = Reader::new(facts)
         .source_runtime_check(instance, body.source)?
@@ -255,7 +254,7 @@ fn runtime_check(
     {
         return Err("source ub_checks dependency differs from its exact direct Call");
     }
-    Ok(Some(SourceIntrinsic::UbChecks))
+    Ok(())
 }
 
 impl Discovered {

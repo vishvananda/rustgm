@@ -75,8 +75,9 @@ impl Machine<'_, '_> {
         else {
             return Ok(None);
         };
-        if catalog.intrinsic_kind(crate::resolve::model::DefId(item.0))?
-            != Some(crate::support::bindings::SourceIntrinsic::UbChecks)
+        if !catalog
+            .intrinsic_kind(crate::resolve::model::DefId(item.0))?
+            .is_some_and(crate::sema::compiler_items::runtime_check_intrinsic)
         {
             return Ok(None);
         }

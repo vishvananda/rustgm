@@ -948,7 +948,7 @@ impl Lower<'_, '_, '_> {
                 if let Some(value) = self.runtime_transmute(id)? {
                     return Ok(value);
                 }
-                if let Some(value) = self.runtime_ub_check(id)? {
+                if let Some(value) = self.runtime_check(id)? {
                     return Ok(value);
                 }
                 if let Some(call) = self.runtime_select(id)? {

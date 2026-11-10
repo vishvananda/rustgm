@@ -102,7 +102,7 @@ pub(crate) use discriminant::authenticate as authenticate_discriminant;
 mod runtime_checks;
 pub(crate) use compose_pointer::RawPartsSelection;
 pub(crate) use ptr_metadata::PtrMetadataSelection;
-pub(crate) use runtime_checks::RuntimeCheckSelection;
+pub(crate) use runtime_checks::{RuntimeCheckSelection, is_operation as runtime_check_intrinsic};
 mod select_calls;
 mod select_contract;
 pub(crate) use copying::{

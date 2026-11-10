@@ -74,7 +74,7 @@ impl Reader<'_> {
             return Ok(None);
         };
         let (binding, config) = catalog.runtime_check_binding(origin)?;
-        Ok(Some((selection, binding, config)))
+        Ok(Some((selection, selection.binding(binding), config)))
     }
     pub(crate) fn source_select(
         self,

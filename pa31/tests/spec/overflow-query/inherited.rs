@@ -1,0 +1,9 @@
+#![feature(no_core,lang_items,rustc_attrs,intrinsics)]
+#![no_core]
+#![allow(internal_features,dead_code)]
+#[lang="pointee_sized"]pub trait PointeeSized{}
+#[lang="meta_sized"]pub trait MetaSized:PointeeSized{}
+#[lang="sized"]pub trait Sized:MetaSized{}
+#[inline(always)]#[rustc_intrinsic]pub const fn overflow_checks()->bool{false}
+#[rustc_inherit_overflow_checks]pub const fn inherited()->bool{overflow_checks()}
+pub fn force(){let _check:[u8;inherited() as usize]=[0;1];}

@@ -46,7 +46,8 @@ impl Machine<'_, '_> {
                     || crate::sema::compiler_items::bit_counts::operation(kind).is_some()
                     || crate::sema::compiler_items::assume_contract::is_assumption(kind)
                     || crate::sema::compiler_items::guaranteed_compare::is_operation(kind)
-                    || crate::sema::compiler_items::knowledge::is_operation(kind) =>
+                    || crate::sema::compiler_items::knowledge::is_operation(kind)
+                    || crate::sema::compiler_items::runtime_check_intrinsic(kind) =>
             {
                 // The reached direct-call arithmetic or `assume` owner
                 // authenticates and executes this operation; it is not a

@@ -14,6 +14,13 @@ use crate::{
 #[path = "../../../tests/invariants/ub_checks.rs"]
 mod tests;
 
+pub(crate) fn is_operation(kind: SourceIntrinsic) -> bool {
+    kind == SourceIntrinsic::UbChecks || is_overflow(kind)
+}
+fn is_overflow(kind: SourceIntrinsic) -> bool {
+    matches!(kind, SourceIntrinsic::Declaration(identity) if identity.name() == "overflow_checks")
+}
+
 pub(super) struct RuntimeCheckSession {
     config: RuntimeCheckConfig,
     binding: RuntimeCheckBinding,
@@ -40,6 +47,18 @@ pub(crate) struct RuntimeCheckSelection {
     pub definition: DefId,
     pub signature: TypeId,
     pub fallback: bool,
+    overflow: bool,
+}
+impl RuntimeCheckSelection {
+    pub(crate) const fn binding(self, ub: RuntimeCheckBinding) -> RuntimeCheckBinding {
+        if self.overflow {
+            // The driver currently emits checked arithmetic in every body.
+            // A future selectable profile must transport its own decision.
+            RuntimeCheckBinding::Frozen(true)
+        } else {
+            ub
+        }
+    }
 }
 
 pub(super) fn validate(facts: &Declarations, function: Function) -> Result<(), &'static str> {
@@ -97,7 +116,7 @@ impl Catalog {
         let Some((declaration, kind, expected)) = self.intrinsic_record(definition)? else {
             return Ok(None);
         };
-        if kind != SourceIntrinsic::UbChecks {
+        if !is_operation(kind) {
             return Ok(None);
         }
         if signature != expected
@@ -123,7 +142,8 @@ impl Catalog {
         Ok(Some(RuntimeCheckSelection {
             definition,
             signature,
-            fallback: function.body.is_some(),
+            fallback: !is_overflow(kind) && function.body.is_some(),
+            overflow: is_overflow(kind),
         }))
     }
 

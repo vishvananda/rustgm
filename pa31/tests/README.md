@@ -885,3 +885,8 @@ retain acceptance. The contract lists all input hashes and baseline outcomes.
 observer for is_val_statically_known. Copy rejection, one-time argument evaluation,
 ordinary-name opposition and the conservative CTFE choice are independently
 checked. Either runtime boolean must preserve the observer's result.
+
+`spec/overflow-query/outcomes.json` freezes five original-source intrinsic
+reductions and a native observer: CTFE true across both independent overflow
+profiles, fixed checked-profile runtime, inherited-word and ordinary-name controls,
+and a malformed-signature rejection without a reference compiler ICE.

@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "bootstrap": "1",
+  "baseline_sha256": "c52c555adae24b2b362977e0199123d42856a53fba6c929b17159592d49b3f7d",
+  "cases": [
+    {
+      "file": "direct.rs",
+      "source_sha256": "572116fff66cb12f6d3fa2bd1428df467e918eef44c339dcf8d44c08bb81b013",
+      "expected_status": 0,
+      "rustc_yes": 0,
+      "rustc_no": 0,
+      "baseline_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 361: source intrinsic constant execution is not implemented\n"
+    },
+    {
+      "file": "ordinary.rs",
+      "source_sha256": "916feaf2530d5af7742c0b1dd6f7f65a07f75c1ffb8fd4a1be27f93539539a66",
+      "expected_status": 0,
+      "rustc_yes": 0,
+      "rustc_no": 0,
+      "baseline_status": 0,
+      "baseline_diagnostic": ""
+    },
+    {
+      "file": "inherited.rs",
+      "source_sha256": "82e01203bdf7d289f4bdabbb7076baac103e24d457504d181e5fa0a35eb40659",
+      "expected_status": 0,
+      "rustc_yes": 0,
+      "rustc_no": 0,
+      "baseline_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 393: source intrinsic constant execution is not implemented\n"
+    },
+    {
+      "file": "native.rs",
+      "source_sha256": "77e05ff1dd0fbd4e7dca7596b14ac3267d5bc45b929f4720a7bbff44a2f2284e",
+      "expected_status": 0,
+      "rustc_yes": 0,
+      "rustc_no": 0,
+      "baseline_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 348: source intrinsic constant execution is not implemented\n"
+    },
+    {
+      "file": "wrong-result.rs",
+      "source_sha256": "3ab72e10ba9c7b1c7165610918772fe96b42227572938eacf529ae84d08b6b2d",
+      "expected_status": 1,
+      "rustc_yes": 1,
+      "rustc_no": 1,
+      "baseline_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 270: source intrinsic signature differs from its pinned declaration\n"
+    }
+  ],
+  "auxiliary": [
+    {
+      "path": "observer.c",
+      "sha256": "8c00e85b0e81a8e564a614f050bac6af2141f4da35ed57bc6dac3a590db553fe"
+    }
+  ],
+  "native_rustgm_profile": "fixed checked arithmetic",
+  "native_stdout": "1 1 1\n",
+  "native_status": 0,
+  "independent_native": [
+    {
+      "policy": "yes",
+      "stdout": "1 1 1\n",
+      "status": 0
+    },
+    {
+      "policy": "no",
+      "stdout": "1 0 0\n",
+      "status": 0
+    }
+  ]
+}
