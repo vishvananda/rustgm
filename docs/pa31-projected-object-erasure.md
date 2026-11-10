@@ -77,7 +77,8 @@ type outputs and74 frozen outcomes remain equal. Candidate/baseline ratios are
 Changed-path growth is covered by the eight-counter source invariant above.
 
 The predecessor source-coercion full CI42900791503 on8ac237506 passed every stage.
-This semantic successor still requires its own full CI. Original source hashes,
+Full42909829598 on3273d5032 is active for this semantic successor; its remaining
+stages are pending. Do not cancel it with a new full dispatch. Original source hashes,
 profile and observation window remain fixed; no original core/alloc/std artifact
 is claimed here. Earlier optimized nested-proof controls remain pending.
 
@@ -102,3 +103,8 @@ Prefixes end at different items. Their raw failure counts are not whole-core
 performance evidence. This remains an incomplete census and produces no original
 core/alloc/std artifact. Both temporary diagnostic binaries were retired by scoped
 prune1794347695205404555; their sources, hashes and raw traces remain retained.
+
+After publication, the superseded6549 comparison binary was retired by scoped
+prune1794347786790155449. Its metadata and observations remain; rerunning a new
+comparison requires restoring and verifying the recorded binary, not assuming
+the old executable still exists.

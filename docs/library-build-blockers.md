@@ -19,8 +19,8 @@ scalar-operation fence. All722 hashes/six bindings/profile/limits fixed; partial
 SHA b377219abcf86a5d6d31960dbc657f2dcf82c91923e612a9954504eeb445ed7b.
 Unequal prefixes are not speed evidence. No complete census or original artifact.
 
-Full42900791503 on8ac passed every stage; this semantic successor needs its own
-full qualification after publication. Forty immutable A/A+twoABBA controls preserve
+Full42900791503 on8ac passed every stage. Full42909829598 on3273d5032 is active
+for this semantic successor; do not cancel it with another full dispatch. Forty immutable A/A+twoABBA controls preserve
 complete ordinary LowIR, source outputs and74 frozen outcomes without a speed
 claim. The PA19 scope and prior coercion checkpoints remain qualified. Keep the
 three tuple-factory requirements and earlier optimized nested-proof checks open.

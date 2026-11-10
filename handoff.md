@@ -64,7 +64,8 @@ same-profile A/A+twoABBA observations preserve complete ordinary LowIR, two sour
 control outputs and74 frozen outcomes. Ratios0.981/1.000/0.999/0.991;
 A/A0.821/0.981/0.859/1.026, no speed claim. Diagnostic445c/3350 binaries retired by
 scoped prune1794347695205404555. Retain optimized21f for older pending optimized
-nested-proof controls. Baseline6549 can retire after publication/comparison use.
+nested-proof controls. Baseline6549 retired after publication/comparison by scoped prune1794347786790155449;
+its metadata and observations remain, and its binary is unavailable for new runs.
 
 The unchanged120s original observation FAILS at121.1915s:230 failure records/4354
 item attempts, through function8923,file232:10709,node466 in str/mod.rs. All722
@@ -79,8 +80,9 @@ kernel changes. Prefixes differ; raw counts are not speed evidence. No complete
 census, checked-body count or original core/alloc/std artifact exists.
 
 Full42900791503 on8ac237506 passed every stage (source-coercion predecessor).
-This new semantic checkpoint requires a successor after publication. Never cancel
-an active full dispatch by redispatching; push-fast is separate. The older
+Full42909829598 on3273d5032 is now active for this semantic checkpoint. Do not
+cancel it by redispatching; push-fast is separate. The later CI-status edit changes
+only documentation and retains exactly the same compiler and fixture hashes. The older
 42882896962 failure and local private link timeout remain retained failures;
 42890284924 executed and passed the repaired controls in its full successful run.
 
