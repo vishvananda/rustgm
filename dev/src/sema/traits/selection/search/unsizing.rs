@@ -4,6 +4,7 @@
 mod formation_tests;
 mod input_debts;
 mod plan;
+mod struct_inputs;
 #[cfg(test)]
 #[path = "../../../../../tests/invariants/coercion_frontier.rs"]
 mod tests;
@@ -152,13 +153,16 @@ impl Search<'_> {
         ) {
             Ok(plan::Outcome::Ready) => Completion::Proven,
             Ok(plan::Outcome::ConditionalObject) => Completion::ConditionalObject,
-            Ok(plan::Outcome::Absent) | Err(infer::Error::Mismatch | infer::Error::Occurs) => {
+            Ok(plan::Outcome::Absent)
+            | Err(plan::Failure::Inference(infer::Error::Mismatch | infer::Error::Occurs)) => {
                 Completion::Absent
             }
             Ok(plan::Outcome::Deferred)
-            | Err(infer::Error::Unresolved | infer::Error::Normalization) => Completion::Deferred,
+            | Err(plan::Failure::Inference(
+                infer::Error::Unresolved | infer::Error::Normalization,
+            )) => Completion::Deferred,
             Ok(plan::Outcome::Unsupported(message)) => return Err(message.into()),
-            Err(error) => return Err(inference(error)),
+            Err(error) => return Err(error.to_string()),
         };
         let completion = if frame.deferred {
             Completion::Deferred

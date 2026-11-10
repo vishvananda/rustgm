@@ -110,6 +110,7 @@ fn source_unsize_distinguishes_valid_mismatch_from_malformed_nominal_inputs() ->
     let invalid = nominal(&report, &mut facts, "Checked", &[Typed::Type(missing)])?;
     let scalar = TypeId::primitive(Primitive::U8);
     for (source, target, valid) in [
+        (plain, plain, true),
         (plain, scalar, true),
         (scalar, plain, true),
         (invalid, scalar, false),

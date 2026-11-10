@@ -139,7 +139,7 @@ fn unsizing_plan_errors_charge_work_and_plain_goals_allocate_no_language_state()
     context.steps = 1_000_000;
     assert!(matches!(
         plan::requirements(&mut facts, &mut context, source, target, &mut Vec::new()),
-        Err(infer::Error::Budget)
+        Err(plan::Failure::Inference(infer::Error::Budget))
     ));
     let assumptions = Assumptions::default();
     let plain = crate::types::parameters::predicates::Predicate {

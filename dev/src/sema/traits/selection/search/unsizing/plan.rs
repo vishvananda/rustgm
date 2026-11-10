@@ -12,6 +12,30 @@ pub(super) enum Outcome {
     Deferred,
     Unsupported(&'static str),
 }
+#[derive(Debug)]
+pub(super) enum Failure {
+    Inference(Error),
+    Declaration(&'static str),
+}
+impl From<Error> for Failure {
+    fn from(error: Error) -> Self {
+        Self::Inference(error)
+    }
+}
+impl From<&'static str> for Failure {
+    fn from(error: &'static str) -> Self {
+        Self::Declaration(error)
+    }
+}
+impl std::fmt::Display for Failure {
+    fn fmt(&self, out: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Inference(error) => error.fmt(out),
+            Self::Declaration(error) => out.write_str(error),
+        }
+    }
+}
+impl std::error::Error for Failure {}
 
 pub(super) fn requirements(
     facts: &mut Declarations,
@@ -19,7 +43,7 @@ pub(super) fn requirements(
     source: TermId,
     target: TermId,
     goals: &mut Vec<Predicate>,
-) -> Result<Outcome, Error> {
+) -> Result<Outcome, Failure> {
     context.account_work(1)?;
     let heads = [
         context.head(&facts.types, source),
@@ -29,7 +53,7 @@ pub(super) fn requirements(
         if let Err(error) = head
             && *error != Error::Normalization
         {
-            return Err(*error);
+            return Err((*error).into());
         }
     }
     let target_head = heads[1]?;
@@ -79,11 +103,9 @@ pub(super) fn requirements(
             })
         }
         (
-            Some(Constructor::Adt(..) | Constructor::AdtArgs(..)),
-            Some(Constructor::Adt(..) | Constructor::AdtArgs(..)),
-        ) => Ok(Outcome::Unsupported(
-            "source Unsize nominal-tail goals are not implemented",
-        )),
+            Some(Constructor::Adt(a, _) | Constructor::AdtArgs(a, _)),
+            Some(Constructor::Adt(b, _) | Constructor::AdtArgs(b, _)),
+        ) => super::struct_inputs::requirements(facts, context, (source, target), (a, b), goals),
         (None | Some(Constructor::Parameter(_)), _)
         | (_, None | Some(Constructor::Parameter(_))) => Ok(Outcome::Deferred),
         _ => Ok(Outcome::Absent),

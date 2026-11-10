@@ -7,6 +7,8 @@ mod discovery;
 mod envelopes;
 #[path = "coercion_provider/erasure.rs"]
 mod erasure;
+#[path = "coercion_provider/struct_goals.rs"]
+mod struct_goals;
 
 const POSITIVE: &[&str] = &[
     "array-slice",

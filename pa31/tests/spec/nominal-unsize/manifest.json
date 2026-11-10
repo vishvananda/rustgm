@@ -1,0 +1,345 @@
+{
+  "schema": 1,
+  "owner": "pa31 actual source Unsize nominal storage tails",
+  "contract": "Predicted object and complete LowIR outcomes precede implementation. Same-owner struct-tail eligibility reuses completed typed rules; every unchanged argument, actual last-field Unsize, both endpoint formations and lifetime debts must prove. No layout permission, synthetic equality or changed source roles. All executable positives observe original prefix and converted data/metadata/effects. Original source-shaped request and retained nominal-unsize-required remain required positives.",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": 2024,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false
+  },
+  "inputs": [
+    {
+      "path": "pa31/tests/spec/nominal-unsize/shared.rs",
+      "sha256": "4de79b913557d67ba11f71a6683e6682b70f1b989f4e06208e1f644cd99da640",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/implicit.rs",
+      "sha256": "c66abeefbd8ef74a00df70dc0d8621f6a887d16e7cccffce618c22fe55766302",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/mutable.rs",
+      "sha256": "1460b48be4aadcc664932324c911a16b5364421893552163a27376176f93faf8",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/mutable-shared.rs",
+      "sha256": "77df3a91c682f2046a8c94ba70f08780c2649b022c9a1cc123272d221ee457ec",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/generic.rs",
+      "sha256": "fbe109215db2fa29226bfe0cca1d02da30e5820e5a9bd258535b26f4ee86753b",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/nested.rs",
+      "sha256": "d05dda5a88a6ed1c26db16e7601dee0c6eaebf19a508693b0a68b4d1795cd03d",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/aliases.rs",
+      "sha256": "cf904e7ea5c84d0074a1f54c452603908da33121521dfd192226ba272af7ad4c",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/projected-marker.rs",
+      "sha256": "0b28f1c476c95bab312fb93df20684560282644cec56c8d7f4de625b1342981f",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/projected-two-inputs.rs",
+      "sha256": "abb5fd16f804bd2bc26f077ddd5bef950e58c8313f2814b10ec6cd5497d5dfb9",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/projected-const.rs",
+      "sha256": "15b0882a3ca7b0758c2d0bb27ae422d05307303fb323028ccec6918b6436b381",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/borrowed-prefix.rs",
+      "sha256": "33deeb2f48f724b451a2bdfac592609f639926934305ba879ed8077b336d691d",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/borrowed-elements.rs",
+      "sha256": "9ebc8a6b6a799f298882de704b0fdd375efc62fe443cc8fe53f245cb278f5310",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/evaluate-once.rs",
+      "sha256": "4202e72bb0c5454e301c535e570cd51cf8498e7745a3be4026a2fd19c1e8f93b",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/reborrow.rs",
+      "sha256": "60edeb5d5fe0c04cb1ca48399a42b4a9e6d0e7ec1d98603e8a2c93598d025ac0",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/empty.rs",
+      "sha256": "6bf470fcf457be70b48b1eed498dac137f68918cd394e4905a878a01e5b2a3d5",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/zst.rs",
+      "sha256": "1a5652864be340fe23816ab85295e1eaa09c5faef2a15105d51e59e0c29f4dad",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/noncopy.rs",
+      "sha256": "98e549f8f6bc23fbf74f89ba4c74b61db79f2400cd003ad66bc66d1ded9122ef",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/padded-prefix.rs",
+      "sha256": "5b0fc0633d8d49da5c986bf38c68de98b33372af1b3d4160c70bf3ef487ac1ac",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/object-shared.rs",
+      "sha256": "61d8253a1138ce5ade3e8795d30c60734e236c1147de08f5f40a9a3feae46b46",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/object-mutable.rs",
+      "sha256": "3a93ebc9e101dd47bd976b44d9f7c429b564d1838fb964613f24ef6e4bbe86be",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/object-borrowed.rs",
+      "sha256": "9c5c75d192c6682ca0138f9760bf03bfd6db68db3ac936a9febe2c502871980a",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/generic-object.rs",
+      "sha256": "fbf05280b32c38519799462792bff69b0450c31918aed67f13ee2db3bacc3247",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/formation-paid.rs",
+      "sha256": "4f1d0b11e809ac40cbd6d015b06b0e71e72caac17de27ed9b64bb1a979f040bd",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/source-faithful.rs",
+      "sha256": "2e01f4f5a51b910994eb1b50cd6f51f26cb5d43bdc6a4e5fffc6d40acb89472e",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/wrong-element.rs",
+      "sha256": "28e9ae35818d6d0b20b1b42c2e33d23519f3acf7b64653eb8304ae9f8e27e8aa",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/changed-prefix.rs",
+      "sha256": "d8d23166246cebc95e3a53408e426c68aed69cc0e71e2dd2615181baf773ce34",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/changed-owner.rs",
+      "sha256": "59ca3e4545ec842e493f32e5a3488e5230f855b536bf774f5627a8ec1fd11eb8",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/identity.rs",
+      "sha256": "0a26e576ab5a5a3103cf6c416da3daf9be8a3e17258a739b748d7f8b33d999cc",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/reverse.rs",
+      "sha256": "d6555efe2a6b28c52a9afc49fa417477385863767c3b09297d99d0b289580afa",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/nested-reference.rs",
+      "sha256": "0b839b1cb8b7016e29d09de7edeb75461e7accabb16195f0cfa81c26a1a16130",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/missing-principal.rs",
+      "sha256": "06bc78b68e1d060553872bdf9b4f3138f9a72a56aa0103bc71682023f6ec4cc4",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/object-escape.rs",
+      "sha256": "91087b9848fb9799aa98719a83fb200c7b9b8f36b0ec09322aa5bc6cc3454be2",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/formation-unpaid.rs",
+      "sha256": "9deb2abfe3d847bca7bced9503fb8ba1e171db7db96e74695f9be4b5b6042ef5",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/changed-unused-const.rs",
+      "sha256": "ebb0e26e03f5e5bc6d3417a46ee3971222852ecde6b066244ee28f36c9fbf66f",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/shared-to-mutable.rs",
+      "sha256": "696059376cb59518a46631c09f166a0a7f0d40c34c99655e7f19fd33528df083",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/active-loan.rs",
+      "sha256": "4138f4a09a942501e83fee47a744a61fa3c1b34efb2fd6ea24705e81e5c4c67f",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/width-8-noise-0.rs",
+      "sha256": "50514618f9190eaf134847c268ef008bc018e7f67ad7dc998dba9592bff2b38b",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/width-8-noise-128.rs",
+      "sha256": "f2a46fdd222addbee6f2014ded9b282b91be6d29cb69ef0a1ba4d56bfdf629d8",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/width-32-noise-0.rs",
+      "sha256": "a585b76b0ea3ed0157d6258388f1ee0ec09921563b8f6506ffbfd77f3af895d8",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/width-32-noise-128.rs",
+      "sha256": "717ef227a13ace62ba14c75859f111ddea252f4389e1851edbdc7a42ffdcc61e",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/width-128-noise-0.rs",
+      "sha256": "c38f8f2efcb37960822f433a0cc8ed3cc4c9600427c8c27450f846bea66f14f8",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/width-128-noise-128.rs",
+      "sha256": "6798e19d53c17258d05392563f7ef5f43f7c11d5e4ec0598d6a2c94a4afb609d",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/prefix-lifetime-shorten.rs",
+      "sha256": "8a9024e97f58e7e93802b1aed3bf93110320db36951d7cfa28337aebaaab091f",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/prefix-lifetime-equal.rs",
+      "sha256": "8d1bf2d8cbef1b5fdfb3261c2602071d8552805daa738b6b05479c48b65d2617",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": false
+    }
+  ],
+  "native_client": {
+    "path": "pa31/tests/spec/nominal-unsize/observer.c",
+    "sha256": "b99a8c19c9a4ea239c4119f6f56588f1fe587ec8612afe4b15507303cfc8dd59",
+    "stdout": "9 23\n"
+  },
+  "scaling": {
+    "widths": [
+      8,
+      32,
+      128
+    ],
+    "noise": [
+      0,
+      128
+    ],
+    "invariant": "Eight actual call work counters scale at most4x+1024 with fourfold sites; unrelated unused types do not add call work."
+  },
+  "retained_required": {
+    "path": "pa31/tests/spec/unsizing-roles/nominal-unsize-required.rs",
+    "sha256": "4420de381bb891101614e9676975183a74b6a03aac9210039f7eedce9caefe68",
+    "exit_status": 0
+  },
+  "source_refinement": "Original predictions, bytes and failed independent1 retained under obj/parallel/nominal-unsize/refinement1. Rust no_core requires actual Index/Add roles for indexing/arithmetic and mutable DispatchFromDyn for mutable virtual methods. Refined sources use real slice-pattern reads/writes and a saturating state transition for exact single evaluation, add actual mutable DispatchFromDyn implementation, and name the outer borrow in formation-paid. Expected conversion outcomes and native observations unchanged. Independent2 slice element-binding patterns exposed missing real shared-reference Clone/Copy implementations (Rust delayed ICEs), now supplied; original no-binding controls accepted. All ICE files relocated losslessly under owning obj/independent2. Source-faithful remains byte-identical. Two predeclared explicit-goal lifetime controls distinguish equality from one-way shortening. Fixed repr(C) attachment after the inserted Dispatch impl; the failed attribute-on-impl bytes remain padded-before-refinement.rs."
+}
