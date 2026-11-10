@@ -122,6 +122,12 @@ Parameter-bound trait methods precede lexical candidates. Consume resolved trait
 bindings, including aliases, anonymous imports, globs and macro call-site scopes.
 Use the pinned compiler's retained glob contribution for method eligibility;
 naming that ambiguous trait directly remains a separate resolution question.
+Within a trait impl, its implemented trait also supplies lexical method
+eligibility, including for nested functions and macro-generated members. Retain
+the resolved trait identity in that impl's scope. It supplies no named import,
+bound priority, fixed trait arguments or additional supertraits in scope. The
+[implemented-trait packet](tests/spec/impl-scope/README.md) preserves those
+boundaries and ordinary conformance, method requirements and ambiguity.
 Method-own requirements, later call arguments and expected results cannot choose
 between distinct method names. After selecting a name, ordinary inference may
 resolve multiple applications of that same trait.

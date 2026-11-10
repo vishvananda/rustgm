@@ -17,6 +17,8 @@ mod dispatch;
 mod dispatch_extra;
 #[path = "trait_bounds/dispatch_native.rs"]
 mod dispatch_native;
+#[path = "trait_bounds/enclosing_trait.rs"]
+mod enclosing_trait;
 #[path = "trait_bounds/equality.rs"]
 mod equality;
 #[path = "trait_bounds/implementations.rs"]

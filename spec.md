@@ -3750,7 +3750,12 @@ An implicit trait prefix infers trait arguments without applying type-path defau
 
 Build trait visibility from final resolver bindings, including anonymous imports
 and the retained candidate of an ambiguous glob import. Deduplicate aliases by
-trait identity. Lazily index direct methods by name in each queried scope and
+trait identity. A trait impl also makes its implemented trait eligible throughout
+its own lexical scope, including nested and generated methods/items. Consume the
+resolved trait declaration once in the existing scope index. This is lexical
+eligibility, not a named import, bound priority, fixed impl arguments or implicit
+supertrait visibility. Ordinary applicability and ambiguity still govern calls.
+Lazily index direct methods by name in each queried scope and
 share inherited candidate lists across scopes that introduce no matching methods.
 Index parameter-to-trait bounds only when a caller needs implicit lookup; preserve
 the complete goals for applicability. Unimported homonyms must not multiply work

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+mod m{pub trait Parent{fn parent(&self)->u8;}pub trait Show:Parent{fn show(&self)->u8;}impl Parent for u8{fn parent(&self)->u8{7}}}struct E;impl m::Parent for E{fn parent(&self)->u8{7}}struct G<T>(T);impl<T:m::Parent> m::Parent for G<T>{fn parent(&self)->u8{self.0.parent()}}impl<T:m::Parent> m::Show for G<T>{fn show(&self)->u8{self.0.parent()}}fn main(){check(<G<u8> as m::Show>::show(&G(3u8))==7);}

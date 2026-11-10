@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+mod m{pub trait Show{fn show(&self)->u8;}impl Show for u8{fn show(&self)->u8{7}}}trait Other{fn show(&self)->u8;}struct R;impl Other for R{fn show(&self)->u8{7}}impl m::Show for R{fn show(&self)->u8{9}}struct E;impl m::Show for E{fn show(&self)->u8{fn choose<T:Other>(x:T)->u8{x.show()}choose(R)}}fn main(){check(<E as m::Show>::show(&E)==7);}

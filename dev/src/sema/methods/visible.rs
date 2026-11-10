@@ -110,7 +110,45 @@ impl Index {
                     .insert(binding.target);
             }
         }
+        index.implementation_scopes(report, facts)?;
         Ok(index)
+    }
+    fn implementation_scopes(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+    ) -> Result<(), &'static str> {
+        use crate::{resolve::model::Target, sema::associated::OwnerKind, syntax::ast::Kind};
+        for owner in facts.associated.owners() {
+            self.account(1)?;
+            let OwnerKind::Impl {
+                trait_type: Some(mut source),
+                ..
+            } = owner.kind
+            else {
+                continue;
+            };
+            loop {
+                self.account(1)?;
+                if let Some(Target::Definition(trait_item)) =
+                    facts.node(source).and_then(|node| node.reference)
+                {
+                    // Eligibility uses the declaration, never this impl's Self
+                    // or arguments. Selection still proves the actual call.
+                    let scope =
+                        report.resolution.definitions[owner.self_definition.0 as usize].scope;
+                    self.scopes.entry(scope).or_default().insert(trait_item);
+                    break;
+                }
+                let ast = &report.package.unit(source.file).configured.ast;
+                let Kind::Group(node) = ast.node(source.node).kind else {
+                    // An invalid or isolated unfinished header supplies no trait.
+                    break;
+                };
+                source.node = node;
+            }
+        }
+        Ok(())
     }
     fn prelude_members(&mut self, definition: DefId) -> Result<(), &'static str> {
         if let Some(members) = self.members.get(&definition) {

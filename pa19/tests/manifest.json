@@ -17674,6 +17674,684 @@
       },
       "maintainer_origin": "dev/tests/invariants/subject_defaults.rs:WRITTEN_SELF",
       "source_sha256": "98d40b6b3e3059e129bfa9248df06107ebb0077707664e3faf6f84e82908c9d0"
+    },
+    {
+      "path": "tests/spec/impl-scope/primitive.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "a0e8822239e1df0b748220300023d2ab203be12cb42c6fe05c57e3f0c4781240",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/str.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "7d7aaf379a4ba56980047c344f7df66edeeee42abe0b6a0dcd5a023aa69857b4",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/import-control.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "9e45b2cfd0308c61e0ee3378c0c05c57f3d3e106d6b9b8d82f1707c6a774e16c",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/qualified-control.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "2661a946b86abb3e51c57e9bd54930503b9a9abde244e1abed1174d8da4a1276",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/module-alias.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "063c5f5c0f5056d85e17ac3fef2d7f86ff1c5bfafa989e4d03c2cb63c5ee0f59",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/reexport-header.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "bc0c9d77b493c8c6236eb7d14a04401c3e08108caa0a9196b1ecf822beb10360",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/nested-function.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "98489d783f08832cab4cde7557ddeacb7a0cba68780a883b2eb5d839fc35f608",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/nested-block.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "d2e823c534c1fc41c81b50db71dfdc801ce8e7938283bc92162e47ea4f332aff",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/macro-callsite.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "156e51a517a7c81e239bf78e8a0154ce080a52bc0c25f985211226341c2520f2",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/other-arguments.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "859d1cad360645de68c578b1698886291a94ed9aa20ed54ffaebec83ea3df380",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/inherent-priority.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "cccf3518276fa10710f00be49dfcdcd6b2ae66a86b61d6c930fd58e98273d0be",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/bound-priority.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "aa17342632386dc543dacb9712e28564c36ab8e101d6dfce9e9377679586eeb9",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/reference-receiver.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "fca847b3ee8cac7e1a643da28a3163b654fac927927e073105f97b133ad1a112",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/type-prefix.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "a846ee2d33ef6bf7304c805eeccfce0b1faf242abf7414878baebd2600bc0f64",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/different-method.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "16528076250e450255c1c8c4595440ea350df7ccf042f83c8a19cc957aa87cf7",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/supertrait-self.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "091078c6f6203379b9e4c725b3de18e3600c7aecb02f26f4b609159fba00ded7",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs"
+    },
+    {
+      "path": "tests/spec/impl-scope/outside-hidden.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "4e28d39ea99395bf9a87fc4c6c98cd0e1461c312a511e38c21cef92f3ab9af8d",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs"
+    },
+    {
+      "path": "tests/spec/impl-scope/different-impl.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "83a70731a1bea4627fc8f5ad113db36d6f4995a874f2d8004b7ad2f5d8a7d860",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs"
+    },
+    {
+      "path": "tests/spec/impl-scope/ambiguous.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "0c8d360f6152eb6d6aa10ef32fb5eaac9c41aa24261ebdff89a147ca7043c485",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs"
+    },
+    {
+      "path": "tests/spec/impl-scope/result-ambiguous.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "20bb7eb46eb1d4eb36a9ca8a4b3a796c9417f5a0ee56d4646bec4eceb797bd67",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs"
+    },
+    {
+      "path": "tests/spec/impl-scope/argument-ambiguous.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "a041b4339084037898019da29264267619d47a7e66767213f75de93785b765b2",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs"
+    },
+    {
+      "path": "tests/spec/impl-scope/missing-impl.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "3ea6e9bb995de4520d40164c28877f4c13d63a727847ebbcbefc021db68b8a68",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs"
+    },
+    {
+      "path": "tests/spec/impl-scope/missing-method-bound.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "233fe17c3a61f3013929218f6afd2ae93fefe0c14f9c1889747276c722caab7a",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs"
+    },
+    {
+      "path": "tests/spec/impl-scope/supertrait-concrete.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "c9b30aea37cab40eafe74f3cf185d2a872eadc4c19695a95475bf3e841a93c54",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs"
+    },
+    {
+      "path": "tests/spec/impl-scope/width-8-noise-0.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "ffbe008049832a6d31a8e8a3074ac7e356f1f1459ecace6e841db789170ae82a",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/width-8-noise-128.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "a8591a5eaae83147c4237bc381f3e4169d3512fe33528b8ff90f6003ffb802ed",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/width-32-noise-0.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "dc0cb67ee70a0518e1cf89a0546e91a5ab319fdee249b46bef9cf10816c5efb7",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/width-32-noise-128.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "475082b261a733733de49ec0c7c1e26efc23d7ac0f3cae62f2a31eb9d156d19d",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/width-128-noise-0.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "781e8ec38881756e2daa3e787833737df87249c6fa89a3fa14b8fcb98076609c",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/width-128-noise-128.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "64b18002182eae43460ba88e8da20e13d9efb0f569664443a1df02af9b3571b6",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/supertrait-generic.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "fcd1989fd887666c2e4ffb20431fcda1d5f62009e374d00af52e457116094f9f",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/generated-method.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "254529b3a89c34543c9cd032f316424fb6fb9123acbd6ee39d3673c8bf6e8cf7",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/generated-impl.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "13d61b6938ea381f3ff3a91ec734e5681f3313d2f6ebbcaf2d33f8170a8456ce",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-scope/generated-nested.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "ecb3887d835b1e76b6026fece24973e5b05c2083a9d3452bab6f44e696a2b684",
+      "input": "file",
+      "features": [
+        "pa19.trait-scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/enclosing_trait.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }
