@@ -1,4 +1,5 @@
 //! Filesystem transport stays outside the frontend's typed metadata consumers.
+use crate::census;
 use rustgm::support::crates::{self, CrateIdentity, Dependencies, Dependency};
 use rustgm::support::hash::HashMap;
 use std::{fs, io::Read, path::PathBuf, sync::Arc};
@@ -17,8 +18,56 @@ pub struct Options {
     pub source_profile: Option<rustgm::lower::instances::SourcePublication>,
     /// Analysis-only census records; never a build output.
     pub census: Option<String>,
+    pub census_progress: Option<String>,
 }
 impl Options {
+    /// Consume only arguments owned by this crate/environment boundary.
+    pub fn consume(
+        &mut self,
+        arg: &str,
+        args: &mut impl Iterator<Item = String>,
+    ) -> Result<bool, String> {
+        match arg {
+            "--source-core" | "--source-client" => {
+                self.source_mode(arg == "--source-client", args.next())?;
+            }
+            "--source-profile" => self.select_source_profile(args.next().as_deref())?,
+            "--crate-name" => {
+                self.name = Some(args.next().ok_or("--crate-name requires a name")?);
+            }
+            "--crate-disambiguator" => {
+                self.disambiguator =
+                    Some(args.next().ok_or("--crate-disambiguator requires an ID")?);
+            }
+            "--native-links-output" => self.select_native_output(args.next())?,
+            "--census-output" => census::select(&mut self.census, args.next())?,
+            "--census-progress" => {
+                census::select_progress(&mut self.census_progress, args.next())?;
+            }
+            "--metadata-output" => {
+                self.metadata = Some(args.next().ok_or("--metadata-output requires a path")?);
+            }
+            "--crate-type=lib" => self.library = true,
+            "--crate-type=bin" => self.library = false,
+            "--extern" | "--dependency-metadata" => {
+                if self.dependency_count() >= 1024 {
+                    return Err("external crate arguments exceed profile budget".into());
+                }
+                let value = args.next().ok_or(if arg == "--extern" {
+                    "--extern requires ALIAS=METADATA"
+                } else {
+                    "--dependency-metadata requires a path"
+                })?;
+                if arg == "--extern" {
+                    self.externs.push(value);
+                } else {
+                    self.dependency_metadata.push(value);
+                }
+            }
+            _ => return Ok(false),
+        }
+        Ok(true)
+    }
     pub fn select_native_output(&mut self, path: Option<String>) -> Result<(), String> {
         if self.native_links.is_some() {
             return Err("duplicate --native-links-output".into());
@@ -121,6 +170,9 @@ impl Options {
         }
         if self.source_core.is_some() && self.source_client.is_some() {
             return Err("--source-core and --source-client are mutually exclusive".into());
+        }
+        if self.census_progress.is_some() && self.census.is_none() {
+            return Err("--census-progress requires --census-output".into());
         }
         if self.census.is_some()
             && (self.source_core.is_none()

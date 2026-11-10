@@ -704,3 +704,76 @@ fn a_lookahead_selection_over_a_complete_matching_set_selects_as_ordinary_checki
     }
     Ok(())
 }
+
+#[test]
+fn incremental_progress_preserves_reached_records_and_the_unchanged_final_table() -> Result {
+    let input = input(
+        "progress",
+        "fn a()->bool{0}fn b()->u8{false}fn fine()->u8{7}",
+    )?;
+    let baseline = census("--emit-types", &input, "without-progress", &[])?;
+    let path = input.with_extension("partial.tsv");
+    let progress_path = path.to_str().ok_or("progress path")?;
+    let final_text = census(
+        "--emit-types",
+        &input,
+        "with-progress",
+        &["--census-progress", progress_path],
+    )?;
+    assert_eq!(final_text, baseline);
+    let progress = fs::read_to_string(path)?;
+    assert!(
+        progress
+            .starts_with("rustgm-census-progress\t1\tpartial-analysis-only\tnot-a-qualification\n")
+    );
+    assert_eq!(records(&progress), records(&baseline));
+    assert_eq!(
+        progress
+            .lines()
+            .filter(|line| line.starts_with("item\tfunction\t"))
+            .count(),
+        3
+    );
+    assert!(
+        !progress
+            .lines()
+            .any(|line| line.starts_with("summary\t") || line.starts_with("end\t"))
+    );
+    Ok(())
+}
+#[test]
+fn progress_requires_census_and_cannot_overwrite_the_final_or_existing_stream() -> Result {
+    let input = input("progress-paths", "fn f(){}")?;
+    let path = input.with_extension("progress.tsv");
+    let value = path.to_str().ok_or("path")?;
+    let output = rustgm("--emit-types", &input, &["--census-progress", value])?;
+    assert_eq!(output.status.code(), Some(2));
+    assert!(
+        String::from_utf8(output.stderr)?.contains("--census-progress requires --census-output")
+    );
+    assert!(!path.exists());
+    let output = rustgm(
+        "--emit-types",
+        &input,
+        &["--census-progress", value, "--census-output", value],
+    )?;
+    assert_eq!(output.status.code(), Some(1));
+    assert!(String::from_utf8(output.stderr)?.contains("distinct paths"));
+    assert!(!path.exists());
+    fs::write(&path, "existing progress")?;
+    let target = input.with_extension("final.tsv");
+    let output = rustgm(
+        "--emit-types",
+        &input,
+        &[
+            "--census-progress",
+            value,
+            "--census-output",
+            target.to_str().ok_or("target")?,
+        ],
+    )?;
+    assert_eq!(output.status.code(), Some(1));
+    assert_eq!(fs::read_to_string(path)?, "existing progress");
+    assert!(!target.exists());
+    Ok(())
+}

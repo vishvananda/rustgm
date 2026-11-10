@@ -125,6 +125,17 @@ impl Checker<'_> {
                 }
                 schedule.cursor
             };
+            if matches!(schedule.states[index], Status::Unseen)
+                && let Some(census) = census.as_deref_mut()
+            {
+                let function = self.facts.functions[index];
+                census.progress_item(
+                    self.report,
+                    crate::sema::census::ItemKind::Function,
+                    function.definition,
+                    function.body,
+                )?;
+            }
             let step = self.schedule(index, current, &mut schedule, close);
             current = match (step, census.as_deref_mut()) {
                 (Ok(Step::Next(next)), _) => next,
@@ -252,6 +263,14 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         for index in 0..self.facts.functions.len() {
             let function = self.facts.functions[index];
+            if let Some(census) = census.as_deref_mut() {
+                census.progress_item(
+                    self.report,
+                    crate::sema::census::ItemKind::Function,
+                    function.definition,
+                    function.body,
+                )?;
+            }
             let result = self.plain_function(function, close);
             let Some(census) = census.as_deref_mut() else {
                 result?;

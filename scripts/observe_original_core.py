@@ -26,6 +26,7 @@ SOURCE_CONTRACT_OPTIONS = {
     "retained_bytes": "--source-contract-retained-bytes",
 }
 CENSUS_HEADER = "rustgm-census\t1\tanalysis-only\tnot-a-qualification"
+PROGRESS_HEADER = "rustgm-census-progress\t1\tpartial-analysis-only\tnot-a-qualification"
 CENSUS_PHASES = ("frontend", "declarations", "bodies", "completion")
 
 
@@ -178,6 +179,20 @@ def census_summary(path):
     return {"records": len(records), "categories": categories, "phases": phases, "terminal": stop}
 
 
+def progress_summary(path):
+    """A flushed prefix locates work; it never supplies complete phase counts."""
+    text = path.read_text(errors="replace")
+    lines = text.splitlines()
+    if not text.endswith("\n"):
+        lines = lines[:-1]
+    if not lines or lines[0] != PROGRESS_HEADER:
+        raise ValueError("invalid partial census progress header")
+    items = [line for line in lines if line.startswith("item\t")]
+    return {"analysis_only": True, "complete_census": False,
+            "records": sum(line.startswith("record\t") for line in lines),
+            "last_item": items[-1] if items else None}
+
+
 def observer_seconds(value):
     seconds = int(value)
     if not 5 <= seconds <= 170:
@@ -249,6 +264,10 @@ def worker(args):
     result = {"infrastructure_failure": True, "classification": "infrastructure/setup failure",
               "observer_deadline_seconds": seconds}
     try:
+        progress = bool(getattr(args, "progress", False))
+        if progress and not args.census:
+            raise ValueError("--progress requires --census")
+        result["progress_requested"] = progress
         manifest_path = args.manifest.resolve(strict=True)
         manifest = json.loads(manifest_path.read_text())
         cli, producer = args.cli.resolve(strict=True), args.producer_binding.resolve(strict=True)
@@ -280,6 +299,8 @@ def worker(args):
         verify_sources(manifest, source)
         census = out / "census.tsv" if args.census else None
         census_args = ["--census-output", str(census)] if census else []
+        if progress:
+            census_args += ["--census-progress", str(out / "progress.tsv")]
         command = [strace, "-f", "-qq", "-yy", "-s", "4096", "-e", "trace=openat", "-o",
                    str(out / "whole-core.openat"), str(cli), *lint_args, *contract_args,
                    "--emit-types", *census_args, "--edition=2024",
@@ -289,7 +310,7 @@ def worker(args):
         write(out, "binding.json", {"command": command, "immutable": immutable, "archive": archive,
               "expected_cli_sha256": expected_cli, "expected_cli_source": expectation_source,
               "profile": manifest["profile"], "lint_cap": lint_cap, "source_files": len(manifest["files"]),
-              "source_contract_limits": contract_limits,
+              "source_contract_limits": contract_limits, "progress_requested": progress,
               **({"mode": "analysis-only census; not a qualification"} if census else {}),
               "core_files": sum(row["path"].startswith("library/core/") for row in manifest["files"]),
               "producer": binding, "path_adaptation": {"source_root": str(source),
@@ -325,9 +346,16 @@ def worker(args):
                           "types view only; no artifact/native claim")
     except (OSError, ValueError, KeyError, tarfile.TarError, TimeoutError) as error:
         result["error"] = str(error)
+    if (out / "progress.tsv").is_file():
+        try:
+            result["partial_progress"] = progress_summary(out / "progress.tsv")
+        except ValueError as error:
+            result["progress_error"] = str(error)
+            result["infrastructure_failure"] = True
+            result["classification"] = "infrastructure/progress failure"
     result["total_seconds"] = time.monotonic() - started
     result["raw_sha256"] = {name: sha(out / name) for name in
-                            ("stdout", "stderr", "whole-core.openat", "opened-sources.json", "census.tsv")
+                            ("stdout", "stderr", "whole-core.openat", "opened-sources.json", "census.tsv", "progress.tsv")
                             if (out / name).is_file()}
     write(out, "result.json", result)
     print(json.dumps(result, indent=2))
@@ -349,6 +377,8 @@ def main():
                         help="explicit bring-up cap; requires separate matching profile and producer binding")
     parser.add_argument("--census", action="store_true",
                         help="analysis-only keep-going census; never a qualification or passing observation")
+    parser.add_argument("--progress", action="store_true",
+                        help="retain flushed partial records and item locations; requires --census")
     parser.add_argument("--observer-seconds", type=observer_seconds, default=120,
                         help="compiler observation window, 5..170s; the hard190s worker limit remains")
     parser.add_argument("--max-output-gib", type=float,

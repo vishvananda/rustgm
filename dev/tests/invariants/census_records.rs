@@ -334,3 +334,21 @@ fn only_the_partial_epoch_text_moves_a_lookahead_count() {
     );
     assert_eq!(census.counts(Phase::Declarations), Counts::default());
 }
+
+#[test]
+fn diagnostic_observer_failure_is_sticky_without_changing_census_records() {
+    let calls = std::rc::Rc::new(std::cell::Cell::new(0));
+    let observed = calls.clone();
+    let mut census = Census::with_observer(Box::new(move |event| {
+        assert!(matches!(event, Progress::Record { index: 0, .. }));
+        observed.set(observed.get() + 1);
+        Err("diagnostic output failed".into())
+    }));
+    let error = Error::at(FileId(0), 0, "incompatible types");
+    census.failed(Phase::Bodies, "first".into(), &error);
+    census.failed(Phase::Bodies, "second".into(), &error);
+    assert_eq!(calls.get(), 1);
+    assert_eq!(census.progress_error(), Some("diagnostic output failed"));
+    assert_eq!(census.records().len(), 2);
+    assert_eq!(census.counts(Phase::Bodies).failed, 2);
+}

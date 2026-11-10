@@ -79,50 +79,15 @@ fn options() -> Result<Options, String> {
                 .set_lint_cap(rustgm::support::diagnostics::LintCap::parse(value)?);
             continue;
         }
+        if options.crates.consume(&arg, &mut args)? {
+            continue;
+        }
         match arg.as_str() {
             "--cap-lints" => {
                 let value = args.next().ok_or("--cap-lints requires a level")?;
                 options
                     .config
                     .set_lint_cap(rustgm::support::diagnostics::LintCap::parse(&value)?);
-            }
-            "--source-core" | "--source-client" => {
-                options
-                    .crates
-                    .source_mode(arg == "--source-client", args.next())?;
-            }
-            "--source-profile" => options
-                .crates
-                .select_source_profile(args.next().as_deref())?,
-            "--crate-name" => {
-                options.crates.name = Some(args.next().ok_or("--crate-name requires a name")?);
-            }
-            "--crate-disambiguator" => {
-                options.crates.disambiguator =
-                    Some(args.next().ok_or("--crate-disambiguator requires an ID")?);
-            }
-            "--native-links-output" => options.crates.select_native_output(args.next())?,
-            "--census-output" => census::select(&mut options.crates.census, args.next())?,
-            "--metadata-output" => {
-                options.crates.metadata =
-                    Some(args.next().ok_or("--metadata-output requires a path")?);
-            }
-            "--crate-type=lib" => options.crates.library = true,
-            "--crate-type=bin" => options.crates.library = false,
-            "--extern" | "--dependency-metadata" => {
-                if options.crates.dependency_count() >= 1024 {
-                    return Err("external crate arguments exceed profile budget".into());
-                }
-                let value = args.next().ok_or(if arg == "--extern" {
-                    "--extern requires ALIAS=METADATA"
-                } else {
-                    "--dependency-metadata requires a path"
-                })?;
-                if arg == "--extern" {
-                    options.crates.externs.push(value);
-                } else {
-                    options.crates.dependency_metadata.push(value);
-                }
             }
             "--cfg" => {
                 let setting = args.next().ok_or("--cfg requires an option")?;

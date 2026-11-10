@@ -47,8 +47,22 @@ impl Checker<'_> {
     pub(super) fn census_initializer(
         &mut self,
         index: usize,
-        census: Option<&mut Census>,
+        mut census: Option<&mut Census>,
     ) -> Result<(), Error> {
+        if let Some(census) = census.as_deref_mut() {
+            let initializer = self.facts.initializers[index];
+            if !matches!(
+                initializer.typing,
+                crate::sema::model::InitializerTyping::Complete
+            ) {
+                census.progress_item(
+                    self.report,
+                    census::ItemKind::Initializer,
+                    initializer.definition,
+                    Some(initializer.value),
+                )?;
+            }
+        }
         let result = self.initializer(index);
         let Some(census) = census else {
             return result;

@@ -12,12 +12,24 @@ from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from observe_original_core import (
-    CENSUS_HEADER, SOURCE_CONTRACT_DEFAULTS, lint_profile_arguments, observe, observer_seconds,
+    CENSUS_HEADER, PROGRESS_HEADER, SOURCE_CONTRACT_DEFAULTS, census_summary, progress_summary, lint_profile_arguments, observe, observer_seconds,
     source_contract_profile_arguments, verify_sources, worker,
 )
 
 
 class OriginalCoreInputs(unittest.TestCase):
+    def test_partial_progress_retains_only_complete_lines_and_is_never_a_census(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "progress.tsv"
+            item = "item\tfunction\t9\tfile 0:17\tnode 2"
+            path.write_text(PROGRESS_HEADER + "\n" + item + "\n"
+                            "record\t1\tbodies\tfailed\tfn\tfile 0:17\t-\tincompatible types\n"
+                            "record\t2\tbodies")
+            self.assertEqual(progress_summary(path), {"analysis_only": True,
+                "complete_census": False, "records": 1, "last_item": item})
+            with self.assertRaises(ValueError):
+                census_summary(path)
+
     def test_observer_window_is_bounded_by_the_worker_deadline(self):
         for value in ("0", "4", "171", "1000000"):
             with self.subTest(value=value), self.assertRaises(argparse.ArgumentTypeError):
@@ -127,7 +139,8 @@ class OriginalCoreInputs(unittest.TestCase):
             "terminal\t2\tdeclarations\tstopped", "end\t2", ""])
         for name, status, text, accepted in (
                 ("complete", 1, complete, True), ("passing-status", 0, complete, False),
-                ("truncated", 1, complete.rsplit("end", 1)[0], False), ("missing", 1, None, False)):
+                ("truncated", 1, complete.rsplit("end", 1)[0], False), ("missing", 1, None, False),
+                ("timeout", None, None, False), ("invalid-progress", 1, complete, False)):
             with self.subTest(name), tempfile.TemporaryDirectory() as temp:
                 root = Path(temp)
                 source = root / "source"
@@ -146,7 +159,7 @@ class OriginalCoreInputs(unittest.TestCase):
                                "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}]}))
                 args = argparse.Namespace(cli=cli, producer_binding=binding, out=root / "out",
                                           manifest=manifest, source_root=source, cap_lints=None,
-                                          expected_cli_sha256=None, census=True)
+                                          expected_cli_sha256=None, census=True, progress=True)
                 commands = []
 
                 def observed(command, out, _deadline, *, seconds=120, text=text, status=status):
@@ -159,6 +172,11 @@ class OriginalCoreInputs(unittest.TestCase):
                         "census declarations: checked 1 failed 1 blocked 1\n"
                         f"ERROR: analysis-only census written to {census}; a census is never a passing build\n")
                     (out / "whole-core.openat").write_bytes(b"immutable fake trace")
+                    header = CENSUS_HEADER if name == "invalid-progress" else PROGRESS_HEADER
+                    (out / "progress.tsv").write_text(header + "\n"
+                        "item\tfunction\t9\tfile 0:17\tnode 2\n")
+                    if status is None:
+                        raise TimeoutError("fixture observer deadline")
                     return status
 
                 with patch("observe_original_core.shutil.which", return_value=sys.executable), \
@@ -169,6 +187,12 @@ class OriginalCoreInputs(unittest.TestCase):
                 index = commands[0].index("--census-output")
                 self.assertEqual(commands[0][index + 1], str(args.out.resolve() / "census.tsv"))
                 result = json.loads((args.out / "result.json").read_text())
+                self.assertIn("--census-progress", commands[0])
+                if name == "invalid-progress":
+                    self.assertIn("progress_error", result)
+                    self.assertEqual(result["classification"], "infrastructure/progress failure")
+                else:
+                    self.assertFalse(result["partial_progress"]["complete_census"])
                 self.assertIs(result["infrastructure_failure"], not accepted)
                 if accepted:
                     self.assertEqual(result["classification"], "analysis-only census; not a qualification")

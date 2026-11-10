@@ -112,7 +112,12 @@ pub fn analyze_source(report: &Report) -> Result<Analysis, Error> {
 /// evidence for the caller's census and must never be lowered or published.
 #[must_use]
 pub fn census_source(report: &Report) -> (Census, Option<Analysis>) {
-    let mut census = Census::default();
+    census_source_observed(report, Census::default())
+}
+/// Continue analysis-only discovery with caller-owned diagnostic observation.
+/// Neither a complete nor partial census is a compilation/metadata result.
+#[must_use]
+pub fn census_source_observed(report: &Report, mut census: Census) -> (Census, Option<Analysis>) {
     let context = execution::Context::default();
     let Some(facts) =
         sema::declarations::census_with_executor(report, context.executor(), &mut census)

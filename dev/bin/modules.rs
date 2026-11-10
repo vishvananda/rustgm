@@ -123,8 +123,8 @@ pub fn run(
     ) {
         let report = resolve::expansion::analyze_with_context(root, &mut Files, config, &context)
             .and_then(resolve::analyze_expanded);
-        if let Some(path) = &crates.census {
-            return crate::census::run(report, path, matches!(mode, Mode::Semantics));
+        if crates.census.is_some() {
+            return crate::census::run(report, crates, matches!(mode, Mode::Semantics));
         }
         let report = report.map_err(|error| semantic_error(&error))?;
         if matches!(

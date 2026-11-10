@@ -2,6 +2,7 @@
 //!
 //! Records are appended in discovery order. Every isolated loop iterates ordered
 //! vectors, so that order is deterministic; hash tables here only answer lookups.
+mod progress;
 use crate::{
     resolve::{
         expansion::Report,
@@ -10,6 +11,7 @@ use crate::{
     },
     support::hash::HashMap,
 };
+pub use progress::{ItemKind, Observer, Progress};
 #[cfg(test)]
 #[path = "../../tests/invariants/census_records.rs"]
 mod tests;
@@ -124,6 +126,7 @@ pub struct Counts {
 
 #[derive(Default)]
 pub struct Census {
+    progress: progress::State,
     records: Vec<Record>,
     counts: [Counts; Phase::ALL.len()],
     terminal: Option<usize>,
@@ -282,7 +285,9 @@ impl Census {
     }
     fn push(&mut self, record: Record) -> usize {
         self.records.push(record);
-        self.records.len() - 1
+        let index = self.records.len() - 1;
+        self.progress.record(index, &self.records[index]);
+        index
     }
 }
 
