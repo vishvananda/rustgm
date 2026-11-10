@@ -6,7 +6,15 @@ and process only. Assignment requirements, the [unit graph](../assignment-plan.j
 `spec.md`, source pins and the frozen CPPGM backend boundary are unchanged.
 The [blocker tracker](library-build-blockers.md) still owns concrete failures.
 
-Single-worker continuation, 2026-11-09: record variants are integrated on
+Single-worker continuation, 2026-11-10: the projected-layout, whole-slice and
+numeric/query checkpoints clear the intervening records. Original core now stops
+at Split::new's nonempty quantified lookup condition. The
+[PA21 call consumer](pa21-universal-call-consumer.md) closes the retained f01
+generic-semantic regression first, with independently checked ordinary reductions
+and unchanged original inputs/profile/limits. Extend lookup using actual scoped
+goals next. No original library artifact exists; census is analysis-only.
+
+Earlier single-worker checkpoint, 2026-11-09: record variants are integrated on
 `84baefb8c`; their focused join reuses 2,022 source-identical passing selections
 and freshly passes 16 affected integration cases and five native groups.
 [Census batch 22](parallel/census-batch22.md) then clears Intersperse's

@@ -66,17 +66,26 @@ line2251, byte82861, split's Split::new: quantified clause requires a scoped
 consumer. TSV SHA
 `9a585c80afd2f737e5359956b85c9be14097442b91abd2bc667dbde5896645e2`.
 Inputs/profile/limits remain unchanged; this is discovery, not an original artifact.
-This now reaches the previously retained Split::new/f01 boundary: close f01
-before widening A+O or other bound-region lookup.
+This reaches the previously retained Split::new/f01 boundary. The
+[PA21 universal-call checkpoint](docs/pa21-universal-call-consumer.md), compiler
+ffa610c52, now closes f01 before widening lookup. Nine independent PA21 outcomes,
+ten private controls, the existing higher-ranked LowIR group and scoped course
+references pass. Actual caller inputs stay distinct from selected scoped debts;
+ordinary CallTypes remains728 bytes. Current immutable CLI77ddb733 binds the
+committed compiler and repeats the exact original/rooted f01 and valid twins.
+Its unchanged original722-input census retains the byte-identical9a585c80 Split
+table,375 opens/42310 declarations/0 bodies,70.49s. Fifty calibrated A/A+ABBA
+observations preserve complete changed-path and74 ordinary outcomes, with the
+additional closed-call proof cost recorded and no optimized throughput claim.
 
-Full predecessor42754442914 and slice53f full42760129302 both succeeded in every
-stage. Combined query full42765929708 on3cd56ee2b passes fast/lint/architecture/
-harness/host graph and is executing release/course checks. Wait for that run to
-terminate before dispatching a multiplication successor. Push-fast is separate.
+Full predecessor42754442914, slice42760129302, combined query42765929708 and
+multiplication42773069633 all succeeded in every stage. The f01 successor is due.
+Wait for an active full dispatch to terminate before dispatching another;
+push-fast is separate.
 
 ## Next work, one worker
 
-1. Confirm and repair the observed slice::split/Split::new scoped-clause requirement, using the
+1. Repair the observed slice::split/Split::new scoped-clause requirement, using the
    actual pinned declaration and semantics. Freeze independently checked reducers
    in their earliest owning PA, then rerun the unchanged census.
 2. Inspect the joined successor full CI when available and repair actual failures;
@@ -90,7 +99,8 @@ terminate before dispatching a multiplication successor. Push-fast is separate.
 
 - Durable decisions: /mnt/vizier/rustgm-scratch/integrator-20261109/pending_decisions.md.
 - Current compiler/test source hashes are bound in pa26-work's
-  obj/parallel/multiply-overflow/candidate-dev-fast/producer.json. Current receipts and
+  obj/parallel/scoped-inherent/candidate-dev-fast/producer.json. Current receipts and
+  f01 evidence are under obj/parallel/scoped-inherent. Multiplication receipts and
   census are under obj/parallel/multiply-overflow; prior query evidence is under
   obj/parallel/overflow-query, and static-knowledge evidence is
   under obj/parallel/static-knowledge, slice evidence is under
