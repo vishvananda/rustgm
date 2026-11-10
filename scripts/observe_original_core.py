@@ -178,12 +178,19 @@ def census_summary(path):
     return {"records": len(records), "categories": categories, "phases": phases, "terminal": stop}
 
 
-def observe(command, out, deadline):
+def observer_seconds(value):
+    seconds = int(value)
+    if not 5 <= seconds <= 170:
+        raise argparse.ArgumentTypeError("observer seconds must be between 5 and 170")
+    return seconds
+
+
+def observe(command, out, deadline, *, seconds=120):
     with (out / "stdout").open("xb") as stdout, (out / "stderr").open("xb") as stderr:
         process = subprocess.Popen(command, stdout=stdout, stderr=stderr,
                                    start_new_session=True, preexec_fn=file_limit)
         try:
-            return process.wait(timeout=min(120, max(0.1, deadline - time.monotonic() - 8)))
+            return process.wait(timeout=min(seconds, max(0.1, deadline - time.monotonic() - 8)))
         except subprocess.TimeoutExpired:
             os.killpg(process.pid, signal.SIGTERM)
             try:
@@ -238,7 +245,9 @@ def worker(args):
     deadline = started + 185  # Outer storage/launcher wrapper has a hard190s limit.
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=False)
-    result = {"infrastructure_failure": True, "classification": "infrastructure/setup failure"}
+    seconds = getattr(args, "observer_seconds", 120)
+    result = {"infrastructure_failure": True, "classification": "infrastructure/setup failure",
+              "observer_deadline_seconds": seconds}
     try:
         manifest_path = args.manifest.resolve(strict=True)
         manifest = json.loads(manifest_path.read_text())
@@ -285,9 +294,9 @@ def worker(args):
               "core_files": sum(row["path"].startswith("library/core/") for row in manifest["files"]),
               "producer": binding, "path_adaptation": {"source_root": str(source),
               "old_source_root": "/home/vishvananda/rustgm-sources/rust-1.98.0-" + manifest["revision"]},
-              "semantic_environment_overrides": [], "observer_deadline_seconds": 120,
+              "semantic_environment_overrides": [], "observer_deadline_seconds": seconds,
               "worker_hard_deadline_seconds": 190})
-        status = observe(command, out, deadline)
+        status = observe(command, out, deadline, seconds=seconds)
         opened = opened_sources(out / "whole-core.openat", source, manifest)
         write(out, "opened-sources.json", opened)
         text = (out / "stderr").read_text(errors="replace")
@@ -340,6 +349,8 @@ def main():
                         help="explicit bring-up cap; requires separate matching profile and producer binding")
     parser.add_argument("--census", action="store_true",
                         help="analysis-only keep-going census; never a qualification or passing observation")
+    parser.add_argument("--observer-seconds", type=observer_seconds, default=120,
+                        help="compiler observation window, 5..170s; the hard190s worker limit remains")
     parser.add_argument("--max-output-gib", type=float,
                         help="absolute local resource cap including retained output")
     parser.add_argument("--worker", action="store_true", help="caller already holds storage guard and hard190s timeout")

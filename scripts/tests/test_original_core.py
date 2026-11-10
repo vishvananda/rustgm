@@ -8,16 +8,31 @@ from contextlib import redirect_stdout
 import sys
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from observe_original_core import (
-    CENSUS_HEADER, SOURCE_CONTRACT_DEFAULTS, lint_profile_arguments,
+    CENSUS_HEADER, SOURCE_CONTRACT_DEFAULTS, lint_profile_arguments, observe, observer_seconds,
     source_contract_profile_arguments, verify_sources, worker,
 )
 
 
 class OriginalCoreInputs(unittest.TestCase):
+    def test_observer_window_is_bounded_by_the_worker_deadline(self):
+        for value in ("0", "4", "171", "1000000"):
+            with self.subTest(value=value), self.assertRaises(argparse.ArgumentTypeError):
+                observer_seconds(value)
+        for value in (5, 120, 170):
+            self.assertEqual(observer_seconds(str(value)), value)
+        for deadline, expected in ((190, 170), (150, 142)):
+            with self.subTest(deadline=deadline), tempfile.TemporaryDirectory() as temp:
+                process = Mock()
+                process.wait.return_value = 1
+                with patch("observe_original_core.subprocess.Popen", return_value=process), \
+                        patch("observe_original_core.time.monotonic", return_value=0):
+                    self.assertEqual(observe(["immutable-cli"], Path(temp), deadline, seconds=170), 1)
+                process.wait.assert_called_once_with(timeout=expected)
+
     def test_explicit_resources_keep_uncapped_defaults_and_real_zero(self):
         args, limits = source_contract_profile_arguments({"profile": {}}, {})
         self.assertEqual(args, [])
@@ -75,10 +90,11 @@ class OriginalCoreInputs(unittest.TestCase):
                            "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}]}))
             args = argparse.Namespace(cli=cli, producer_binding=binding, out=root / "out",
                                       manifest=manifest, source_root=source, cap_lints=None,
-                                      expected_cli_sha256=None, census=False)
+                                      expected_cli_sha256=None, census=False, observer_seconds=170)
             commands = []
 
-            def observed(command, out, _deadline):
+            def observed(command, out, _deadline, *, seconds=120):
+                self.assertEqual(seconds, 170)
                 commands.append(command)
                 (out / "stdout").write_bytes(b"")
                 (out / "stderr").write_text("ERROR: fixture compilation boundary\n")
@@ -90,6 +106,8 @@ class OriginalCoreInputs(unittest.TestCase):
                     patch("observe_original_core.opened_sources", return_value=[{"path": str(path)}]), \
                     redirect_stdout(io.StringIO()):
                 self.assertEqual(worker(args), 0)
+            self.assertEqual(json.loads((args.out / "binding.json").read_text())["observer_deadline_seconds"], 170)
+            self.assertEqual(json.loads((args.out / "result.json").read_text())["observer_deadline_seconds"], 170)
             self.assertEqual(len(commands), 1)
             for flag in ("--source-contract-work-limit=14500624",
                          "--source-contract-attempted-bytes=67108864",
@@ -131,7 +149,7 @@ class OriginalCoreInputs(unittest.TestCase):
                                           expected_cli_sha256=None, census=True)
                 commands = []
 
-                def observed(command, out, _deadline, text=text, status=status):
+                def observed(command, out, _deadline, *, seconds=120, text=text, status=status):
                     commands.append(command)
                     census = out / "census.tsv"
                     if text is not None:

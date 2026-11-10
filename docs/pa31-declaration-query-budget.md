@@ -59,3 +59,14 @@ obligations,12 inclusive ranges and11 projection-normalization errors. Inspect
 that actual method guard next; general layout consumers remain separately owed.
 Evidence is under obj/parallel/transmute-query-budget. No core artifact exists.
 Full scoped-lookup42793756438 succeeded across every stage.
+
+## Source method probes and body sessions
+
+Source method-probe ownerf5d0d07e8 keeps PA19's ordinary cap and each source
+probe's local bound, charging actual source work to the existing producer ledger.
+The [joined body-session checkpoint](pa26-body-place-session.md) records four
+private/three public checks, invariant actual selections at prior counters
+0/1000000/2000000, and sticky producer exhaustion. It also repairs a separately
+exposed PA26 stale place-offset panic. The latest core census now reaches its
+observer deadline; the last completed table is still the119-failure transmute
+checkpoint. No newer body counts or original artifact are claimed.

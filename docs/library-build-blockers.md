@@ -1,12 +1,14 @@
 # Library build blocker tracker
 
 
-Latest budget checkpoint: [PA31 query ownership](pa31-declaration-query-budget.md)
-clears cumulative unary and transmute allowances. Compiler1d88db5df/CLIaa421ca4
-keeps original722 inputs/375 opens/42310 passing declarations and all limits.
-Bodies report119 failures before method-selection budget record120 in flatten.rs
-byte3640. Inspect that guard's ownership next; no original artifact exists.
-Scoped-lookup full42793756438 succeeded; query-budget successor remains due.
+Latest checkpoint: [source probes/body sessions](pa26-body-place-session.md)
+clears the cumulative method guard and a newly exposed stale indexing offset
+panic. Focused private/public/native evidence passes. Full predecessor42800653535
+succeeded every stage. Original inputs and compiler limits stay fixed, but newer
+censuses time out at120/170s without a table. Complete bounded discovery and use
+the retained119-failure table to reduce shared causes. No original artifact.
+Observer windows are now explicit5..170s (default120), with a fixed190s worker;
+this changes observation time only and must remain separate from compiler quotas.
 
 Execution follows the [core census and transport plan](core-census-plan.md)
 from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of

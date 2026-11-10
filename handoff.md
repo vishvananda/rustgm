@@ -40,16 +40,22 @@ requirement retained. No original core/alloc/std artifact exists.
 
 ## Current original-core frontier
 
-The [PA31 query budget checkpoint](docs/pa31-declaration-query-budget.md)
-clears cumulative unary and transmute allowances without changing limits.
-Compiler1d88db5df, immutable CLIaa421ca4, retains actual producer payments and
-per-query caps. On unchanged722 inputs/375 opened sources,42310 declarations
-pass; bodies report checked0/failed119/blocked0 before method-selection budget
-record120 at iter/adapters/flatten.rs, file142 byte3640.82.96s, TSV
- e21ad8822d098081b987f654afc5fcfc122cb54f49b9c992029e01030f0b4d4e.
-Seven new private checks and the production MaybeUninit regression group pass,
-plus harness/upstream and30 complete-output-equal paired observations. Inspect
-method-selection budget ownership next; no original artifact exists.
+The [source-probe/body-session checkpoint](docs/pa26-body-place-session.md)
+clears the cumulative method-probe guard and a newly exposed stale indexing
+place-offset panic. Compiler6c4ae3d04/CLI61c983f6 has passing focused private,
+production and21 native program comparisons,314 harness tests and complete-output
+paired controls. Full predecessor42800653535 succeeded every stage.
+
+Original722 source hashes/profile/compiler limits stay fixed. New core census
+attempts time out at120.97/170.75s without a usable table; these are infrastructure
+failures. An interrupted115s immutable snapshot is in body projection
+normalization/trait candidate selection; it does not establish a bottleneck.
+The last completed table remains119 body failures then method-budget record120
+in flatten.rs, TSV e21ad8822d098081b987f654afc5fcfc122cb54f49b9c992029e01030f0b4d4e.
+Use its repeated Unsize/range/receiver/projection causes for owning reductions
+while completing bounded discovery. Observer --observer-seconds defaults120,
+allows5..170 and records the window; hard190 worker/300 local feedback limits
+remain. Do not raise the observation window again to hide a timeout. No artifact.
 
 Seven new PA21 scoped lookup outcomes and three PA24 width128 callable inputs
 are independently checked.12 focused checks and8 final affected checks pass,
@@ -107,14 +113,15 @@ multiplication42773069633 all succeeded in every stage. Full f01 42782379010
 failed one private captured-vtable and two public closure-context work guards;
 all three now pass locally after retaining computed duties with their owning
 consumers and limiting early checks to ordinary trait selections. Later full
-stages were skipped. Joined full42793756438 passed every stage; query-budget successor is due.
+stages were skipped. Joined full42793756438 and query-budget42800653535 passed every stage;
+source-probe/body-session successor is due.
 Wait for an active full dispatch to terminate before dispatching another;
 push-fast is separate.
 
 ## Next work, one worker
 
-1. Attribute and repair the body method-selection budget at flatten.rs byte3640 without
-   changing limits. Use the newly reached census to batch body failures by cause:
+1. Complete bounded original-body discovery and batch the retained body failures
+   by shared cause:
    Source Unsize, inclusive ranges, receiver lookup and projections lead the list.
    Freeze independently checked reductions in the earliest owning PA.
 2. Inspect the joined successor full CI when available and repair actual failures;
@@ -128,7 +135,8 @@ push-fast is separate.
 
 - Durable decisions: /mnt/vizier/rustgm-scratch/integrator-20261109/pending_decisions.md.
 - Current compiler/test source hashes are bound in pa26-work's
-  obj/parallel/scoped-lookup/candidate2-dev-fast/producer.json. Current receipts are
+  obj/parallel/place-session/candidate-dev-fast/producer.json. Current receipts are
+  under obj/parallel/place-session and obj/parallel/source-probe-budget; scoped lookup is
   under obj/parallel/scoped-lookup; f01 receipts and
   f01 evidence are under obj/parallel/scoped-inherent. Multiplication receipts and
   census are under obj/parallel/multiply-overflow; prior query evidence is under
