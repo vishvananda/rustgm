@@ -13,8 +13,9 @@ heterogeneous endpoints, multiple type parameters, actual lifetime/const inputs,
 privacy, formation bounds, moves and escaping references. Ordinary legacy and
 new_range record forms use their actual declaration identity and fields. Copy
 in a role spelling grants no Copy implementation. The actual legacy inclusive
-constructor-call syntax remains a named Rust-positive requirement; its expected
-outcome is preserved rather than converted into an intended rejection.
+constructor-call syntax now passes through the real ordinary source callable.
+Its original Rust-positive bytes and expected outcome remain unchanged; the
+inclusive-calls companion packet owns the new proof/opponent/native reductions.
 
 The source construction path must reuse ordinary inferred nominal arguments,
 actual field lookup/context/privacy and substituted field types. Evaluate start
@@ -31,8 +32,8 @@ compiler destruction; its documentary empty source body is not executed.
 Referencev1/v2 retain missing Destruct/drop_glue prerequisite failures; v3/v4
 supply their pinned declarations with unchanged acceptance predictions.
 Candidate qualification and the complete original library artifact are separate
-requirements. Whole PA26/31 completion, full inclusive calls, module/derive and
-iteration closure, and authenticated metadata remain required.
+requirements. Whole PA26/31 completion, early header-constant outlives preparation,
+module/derive and iteration closure, and authenticated metadata remain required.
 
 The constructor scaling inputs retain canonical depths8/16/32/64 and128 unrelated
 declarations. Original recursively nested-expression observations are preserved:

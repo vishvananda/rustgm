@@ -232,7 +232,7 @@ impl Checker<'_> {
         self.retain_language_method(node, method, callable, pending.subject);
         let target_function = self.selected_target_function(node, callable)?;
         self.retain_active_call(node, signature, target_function)?;
-        self.call(node, node, crate::syntax::ast::List { start: 0, end: 0 })
+        self.finish_call(node)
     }
     fn formatting_selector(&self, node: NodeId) -> Result<(LangItem, &'static str), Error> {
         match self.kind(node) {

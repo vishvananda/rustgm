@@ -899,3 +899,11 @@ cumulative work observation is not a local allowance.
 `spec/unsizing-upcasts/manifest.json` declares ten source Unsize object-upcast
 reductions, including an unrelated ordinary implementation opponent, associated
 equality, auto-marker and lifetime controls, and actual reference dispatch.
+
+`spec/inclusive-calls/manifest.json` owns22 active source outcomes and two retained
+Rust-positive early header constants for actual inclusive constructor calls.
+The original source-ranges/old-inclusive-form.rs now passes unchanged. Two native
+traces check the actual swapped/reordered private representation, const body,
+endpoint evaluation and Drop; ordinary generic/const/unsafe/lifetime/move proof
+and source header image identity remain required. Full original modules and
+metadata transport remain open.

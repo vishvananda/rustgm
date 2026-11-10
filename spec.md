@@ -1409,8 +1409,14 @@ moves and Drop remain ordinary. `new_range` is a captured crate feature selectin
 its genuine Copy-named declarations and `last` fields; those spellings supply no
 Copy evidence. No fake lexical application row, bootstrap source fallback,
 source reparse, retained range map or wider dense node is required. Legacy
-inclusive syntax still requires the real ordinary constructor-call plan, and
-full module/derive/iteration and metadata closure remain acceptance requirements.
+inclusive syntax authenticates both actual completed source header images and
+uses the ordinary selected-call table, callable instantiation, late-binder opening,
+argument refinement/coercion and call finalizer. Its real body initializes the
+private fields, including exhaustion state; const evaluation and native calls
+consume that same body. No protocol-plan variant or dense node field is added.
+Early array-length constants still require nominal outlives preparation; their
+explicit-call and syntax reductions remain Rust-positive requirements. Full
+module/derive/iteration and metadata closure remain acceptance requirements.
 
 C string literals use the completed actual `CStr` language declaration's item
 type and a static immutable reference. Unused alternate headers retain ordinary

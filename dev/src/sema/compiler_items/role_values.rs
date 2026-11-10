@@ -54,7 +54,7 @@ pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Re
     Ok(())
 }
 
-fn nominal(
+pub(super) fn nominal(
     facts: &Declarations,
     declaration: Declaration,
     role: LangItem,

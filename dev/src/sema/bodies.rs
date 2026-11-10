@@ -1617,6 +1617,9 @@ impl Checker<'_> {
                 }
                 self.term(value)
             }
+            Kind::Range { .. } if self.state.call_types.active.contains_key(&node) => {
+                self.finish_call(node)
+            }
             Kind::Closure { .. } | Kind::Range { .. } => self.term(node),
             Kind::InlineAssembly(args) => self.assembly_result(node, args),
             Kind::LibraryValue { kind, value } => self.library_value(node, kind, value),
@@ -1828,17 +1831,9 @@ impl Checker<'_> {
                 }
                 Ok(term)
             }
-            Kind::Call { callee, arguments } => self.call(node, callee, arguments),
-            Kind::MethodCall {
-                receiver,
-                arguments,
-                ..
+            Kind::Call { .. } | Kind::MethodCall { .. } | Kind::GenericMethodCall { .. } => {
+                self.finish_call(node)
             }
-            | Kind::GenericMethodCall {
-                receiver,
-                arguments,
-                ..
-            } => self.call(node, receiver, arguments),
             Kind::Loop { body } | Kind::For { body, .. } => self.finish_loop(node, body, None),
             Kind::While { condition, body } => self.finish_loop(node, body, Some(condition)),
             Kind::Break { label, value } => self.transfer(node, label.is_some(), value, false),
@@ -2245,7 +2240,7 @@ impl Checker<'_> {
             )),
         }
     }
-    fn call(&mut self, node: NodeId, _callee: NodeId, _arguments: List) -> Result<TermId, Error> {
+    fn finish_call(&mut self, node: NodeId) -> Result<TermId, Error> {
         let active = self
             .state
             .call_types

@@ -1,0 +1,156 @@
+{
+  "schema": 1,
+  "owner": "pa31 actual source range constructor roles",
+  "contract": "Declared before independent and candidate execution; syntax makes an ordinary call to the authenticated source function with contextual inference, real generic/const/unsafe/lifetime/move proof and actual body execution. No artificial field initialization.",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "inputs": [
+    {
+      "path": "pa31/tests/spec/inclusive-calls/renamed.rs",
+      "sha256": "cf006576fbdd8c0d015fccd59a286f075f76b6f91046a20dc7dd0381d0634ebc",
+      "exit_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/generic.rs",
+      "sha256": "6d2072af63855aa21e88fcc654b3e3a5b4909b514988c2df7a338493858e12f5",
+      "exit_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/mismatched.rs",
+      "sha256": "582ea74a8f16f8af5203a4ff6866468c7fcd3f2855f6fc67bbf1a3841ec48e9f",
+      "exit_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/move.rs",
+      "sha256": "ea28f556eb632373544baa1a0bc28c9815da0dc81740e79f95f9218ce1fe0117",
+      "exit_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/bound.rs",
+      "sha256": "057d357d0df7c44439135060d1b961b172473b59405cca7e7c81b1b8e77dc166",
+      "exit_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/missing-bound.rs",
+      "sha256": "7b286f51b56029ad4a0626a86b033584dc649a4cdf97321317546e4672a1b7e9",
+      "exit_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/lifetime.rs",
+      "sha256": "18570b9f1a1f669df968c56332f2d60aad40de752b8e1bcf9711564674d51a77",
+      "exit_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/escape.rs",
+      "sha256": "d0463ebb0948fe25098b089e81f1b7c0c20f6dfb0254eb44a879f94f7c6f7d1f",
+      "exit_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/const.rs",
+      "sha256": "f41a989fb749be0b26c3c92b6c38e7d8addf0033c838971d4c6046ee5a043a96",
+      "exit_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/nonconst.rs",
+      "sha256": "26bd25d65388ce4d06fc2732553f35c214a58e15acfd2b54b3f82acc26037de7",
+      "exit_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/nonconst-constant.rs",
+      "sha256": "f88932267921c4a7949388016433e6bdcb8a0b0bd82b751b67d588b5a48a9851",
+      "exit_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/unsafe.rs",
+      "sha256": "ea5bcdc703504920db46ab2c1c55145af9fb114ef4aace4a3c0047312fefdc3c",
+      "exit_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/unsafe-block.rs",
+      "sha256": "062c52b4cd5a29493967a23bf90c7637966de502c28cdb7e41023f25a8d95ee2",
+      "exit_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/missing-constructor.rs",
+      "sha256": "7065dfbb267726d17cc502c0596dab6f6d73e254350b3a2d793cbb23dc72052a",
+      "exit_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/native-order.rs",
+      "sha256": "25acb67c3ca2cd6f3f2945952fe546a6e4ab2cb90121fbeec93a80a5cd9c4479",
+      "exit_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/native-drop.rs",
+      "sha256": "7d3d84387e4941ce9cdca64452afd789f6e60d26f9b90ddbc1262baa547e5ec3",
+      "exit_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/width-8-noise-0.rs",
+      "sha256": "e1dd168b08b68fd1fe275b6afd47d34f328efc524b88e9ccaa34acaef979f343",
+      "exit_status": 0,
+      "scope": "changed-path scaling invariant"
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/width-8-noise-128.rs",
+      "sha256": "ec0e927c6320dfbdd7f616b4b7a823defb8f7888698e5186e7b015e3cc1eedad",
+      "exit_status": 0,
+      "scope": "changed-path scaling invariant"
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/width-32-noise-0.rs",
+      "sha256": "afdccfd319dee162766d6c68744cc68a749b5e87047101d7798430df6212f2a1",
+      "exit_status": 0,
+      "scope": "changed-path scaling invariant"
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/width-32-noise-128.rs",
+      "sha256": "12261670533cc8ffe9fe9be34fb8cd47f4325c4cdcb8f599ff086cfacae54bc8",
+      "exit_status": 0,
+      "scope": "changed-path scaling invariant"
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/width-128-noise-0.rs",
+      "sha256": "4be8fe080eaad1665a7dde0d04d55cb68fbc059298d1f54deef3a434d236f9c0",
+      "exit_status": 0,
+      "scope": "changed-path scaling invariant"
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/width-128-noise-128.rs",
+      "sha256": "5435df4c36317f68f2abc722de8fe49068bb7489b9a68d4d6116fa3d348ccb70",
+      "exit_status": 0,
+      "scope": "changed-path scaling invariant"
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/header-constant.rs",
+      "sha256": "316e6fe53b7c7b7251b6de9be66b701401feae31d834cb33669e5b05755b32b2",
+      "exit_status": 0,
+      "profile": "required followup: early header-constant nominal outlives preparation",
+      "rustc_metadata_status": 0,
+      "rustc_object_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/inclusive-calls/header-explicit-required.rs",
+      "sha256": "1524b569c8d059cb5b4c5e0db50a232d584b2d0e17369afe6e406239cb5e1001",
+      "exit_status": 0,
+      "scope": "explicit-call twin for the additional early array-length constant requirement",
+      "profile": "required followup: early header-constant nominal outlives preparation",
+      "rustc_metadata_status": 0,
+      "rustc_object_status": 0
+    }
+  ],
+  "existing_positive": "pa31/tests/spec/source-ranges/old-inclusive-form.rs",
+  "auxiliary": [
+    {
+      "path": "pa31/tests/spec/inclusive-calls/observer.c",
+      "sha256": "721c6b2a6c9f2c6f33ef3c736eaded119b06fcf82b4c1a95d3ce7614e947fbd3"
+    }
+  ],
+  "native": {
+    "native-order": "23 47 47 23 5 47 23 5\n",
+    "native-drop": "23 47 47 23 5\n"
+  },
+  "provenance": "Authored reductions using the existing source-ranges no_core support, which preserves upstream attribution and original constructor/field fragments. Original inputs and fragments stay unchanged.",
+  "status": "22 active outcomes; two independently Rust-positive early header constants remain required (explicit baseline twin fails missing nominal outlives facts)"
+}

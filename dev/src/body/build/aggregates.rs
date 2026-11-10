@@ -374,6 +374,11 @@ impl Builder<'_> {
         start: Option<NodeId>,
         end: Option<NodeId>,
     ) -> Result<ValueId, Error> {
+        if let Some((start, end)) = start.zip(end)
+            && let Some(value) = self.language_call(node, &[start, end])?
+        {
+            return Ok(value);
+        }
         let Some(Operation::Construct { variant }) = self.fact(node)?.operation else {
             return Err(self.error(node, "missing checked range construction"));
         };

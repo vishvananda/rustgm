@@ -9,10 +9,6 @@ fn source_range_fields_and_constructors_keep_real_generic_and_body_rules() -> Re
     let mut count = 0;
     for row in source::fixture(&format!("{PACKET}/cases.tsv"))?.lines() {
         let (path, expected) = row.split_once('\t').ok_or("case columns")?;
-        if path.ends_with("/old-inclusive-form.rs") {
-            assert_eq!(expected, "0");
-            continue;
-        }
         let text = source::fixture(path)?;
         let result = source::source_provider(&text, "source_ranges").and_then(|report| {
             let rustgm::pipeline::Analysis {
@@ -38,7 +34,7 @@ fn source_range_fields_and_constructors_keep_real_generic_and_body_rules() -> Re
         }
         count += 1;
     }
-    assert_eq!(count, 55);
+    assert_eq!(count, 56);
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())
 }
@@ -64,18 +60,32 @@ fn original_constructor_and_fields_remain_exact_source_fragments() -> Result {
 }
 
 #[test]
-fn old_inclusive_syntax_retains_its_required_actual_constructor_call_gap() -> Result {
-    let text = source::fixture(&format!("{PACKET}/old-inclusive-form.rs"))?;
-    let report = source::source_provider(&text, "inclusive_call")?;
-    let error = rustgm::pipeline::analyze_source(&report)
-        .err()
-        .ok_or("inclusive source calls still require their actual plan")?;
-    assert!(
-        error
-            .to_string()
-            .contains("source inclusive range constructor calls require their actual call plan"),
-        "{error}"
-    );
+fn inclusive_syntax_retains_actual_calls_and_declared_opponents() -> Result {
+    let mut failures = Vec::new();
+    let mut count = 0;
+    for row in source::fixture("pa31/tests/spec/inclusive-calls/cases.tsv")?.lines() {
+        let (path, expected) = row.split_once('\t').ok_or("inclusive case columns")?;
+        let text = source::fixture(path)?;
+        let result = source::source_provider(&text, "inclusive_call").and_then(|report| {
+            let rustgm::pipeline::Analysis {
+                mut facts,
+                prepared,
+            } = rustgm::pipeline::analyze_source(&report).map_err(|e| e.to_string())?;
+            rustgm::lower::instances::inspect_prepared(&report, &mut facts, prepared, |_, _| ())
+                .map_err(|e| e.to_string())
+        });
+        match (expected, result) {
+            ("0", Ok(())) => {}
+            ("1", Err(error))
+                if !["not implemented", "exhausted", "budget", "lost its"]
+                    .iter()
+                    .any(|fence| error.contains(fence)) => {}
+            (_, result) => failures.push(format!("{path}: {result:?}")),
+        }
+        count += 1;
+    }
+    assert_eq!(count, 22);
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())
 }
 
@@ -159,6 +169,74 @@ fn range_construction_executes_actual_fields_const_body_order_and_drop() -> Resu
             &source::fixture(&format!("{PACKET}/{observer}"))?,
             expected,
         )?;
+    }
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the pinned CPPGM object backend and a C compiler"]
+fn inclusive_syntax_executes_constructor_const_order_and_drop() -> Result {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let folder = root.join("obj/parallel/inclusive-calls/native");
+    std::fs::create_dir_all(&folder)?;
+    for (name, expected) in [
+        ("native-order", "23 47 47 23 5 47 23 5\n"),
+        ("native-drop", "23 47 47 23 5\n"),
+    ] {
+        let text = source::fixture(&format!("pa31/tests/spec/inclusive-calls/{name}.rs"))?;
+        let report = source::source_provider(&text, "inclusive_native")?;
+        let rustgm::pipeline::Analysis {
+            mut facts,
+            prepared,
+        } = rustgm::pipeline::analyze_source(&report)?;
+        let program = rustgm::lower::instances::build_roots_prepared(
+            &report,
+            &mut facts,
+            rustgm::lower::Roots {
+                entry: None,
+                exports: &[],
+            },
+            prepared,
+        )?;
+        crate::ffi_program::check(
+            &root,
+            &folder,
+            name,
+            &program,
+            &source::fixture("pa31/tests/spec/inclusive-calls/observer.c")?,
+            expected,
+        )?;
+    }
+    Ok(())
+}
+
+#[test]
+fn inclusive_call_work_scales_with_actual_sites_and_ignores_unrelated_types() -> Result {
+    let mut previous = None;
+    for width in [8, 32, 128] {
+        let mut ordinary = None;
+        for noise in [0, 128] {
+            let text = source::fixture(&format!(
+                "pa31/tests/spec/inclusive-calls/width-{width}-noise-{noise}.rs"
+            ))?;
+            let report = source::source_provider(&text, "inclusive_scaling")?;
+            let analysis = rustgm::pipeline::analyze_source(&report)?;
+            let work = (
+                analysis.facts.body_work.inference_steps,
+                analysis.facts.body_work.canonical_steps,
+            );
+            if noise == 0 {
+                if let Some((inference, canonical)) = previous {
+                    assert!(work.0 <= 4 * inference + 256, "inference {width}: {work:?}");
+                    assert!(work.1 <= 4 * canonical + 256, "canonical {width}: {work:?}");
+                }
+                previous = Some(work);
+                ordinary = Some(work);
+            } else {
+                assert_eq!(ordinary, Some(work), "width{width} scanned unrelated types");
+            }
+            eprintln!("inclusive width{width} noise{noise} work{work:?}");
+        }
     }
     Ok(())
 }

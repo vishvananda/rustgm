@@ -49,10 +49,10 @@ impl Checker<'_> {
         let role = match (start.is_some(), end.is_some(), inclusive, modern) {
             (_, false, true, _) => return Err(self.error(node, "inclusive range requires an end")),
             (true, true, true, false) => {
-                return Err(self.error(
-                    node,
-                    "source inclusive range constructor calls require their actual call plan",
-                ));
+                let (start, end) = start.zip(end).ok_or_else(|| {
+                    self.error(node, "inclusive constructor requires both actual operands")
+                })?;
+                return self.enter_inclusive_call(node, start, end, expected);
             }
             (false, false, false, _) => LangItem::RangeFull,
             (true, false, false, false) => LangItem::RangeFrom,
@@ -133,6 +133,51 @@ impl Checker<'_> {
                 self.state.work.push(Work::CoerceElement(operand, expected));
                 self.state.work.push(Work::Enter(operand, Some(expected)));
             }
+        }
+        Ok(())
+    }
+
+    fn enter_inclusive_call(
+        &mut self,
+        node: NodeId,
+        start: NodeId,
+        end: NodeId,
+        expected: Option<TermId>,
+    ) -> Result<(), Error> {
+        let method = crate::sema::compiler_items::interval_values::source_constructor(
+            self.report,
+            self.facts,
+            self.key(node),
+        )?;
+        let callable = self.implicit_source_function(node, method)?;
+        let signature = self.child(node, callable, 0)?;
+        let signature = self.call_signature_expected(node, signature, expected)?;
+        let Some(super::Constructor::Function { parameters: 2, .. }) =
+            self.head(node, signature)?
+        else {
+            return Err(self.error(node, "inclusive constructor requires two actual inputs"));
+        };
+        let target = self.selected_target_function(node, callable)?;
+        self.retain_active_call(node, signature, target)?;
+        let result = self.child(node, signature, 2)?;
+        if let Some(expected) = expected {
+            self.shape_equation(node, result, expected)?;
+        }
+        self.save(node, result);
+        self.retain_language_method(node, method, callable, callable);
+        // The ordinary call retains all generic obligations. Its input types
+        // guide both operands; the work stack evaluates start before end.
+        for (argument, parameter) in [(end, 1), (start, 0)] {
+            self.state.work.push(Work::CoerceCallArgument {
+                call: node,
+                argument,
+                parameter,
+            });
+            self.state.work.push(Work::PrepareCallArgument {
+                call: node,
+                argument,
+                parameter,
+            });
         }
         Ok(())
     }
