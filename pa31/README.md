@@ -85,6 +85,13 @@ marker, equality, lifetime and endpoint proofs; failure grants no negative fact
 about their unknown head. Three independently accepted generic tuple-factory
 inputs remain separate required cleanup-owner work. Whole PA31 remains planned.
 
+The [associated-result input packet](tests/spec/projection-argument-discovery/README.md)
+and [checkpoint](../docs/pa31-projection-argument-discovery.md) retain26 outcomes
+and19 native programs. Unsizing discovery reuses independently completed opaque
+input shapes without treating their lifetime IDs as different constructors.
+Equality, lifetime, parent and actual conversion proofs remain mandatory. The
+original as_request cast and whole-assignment requirements remain open.
+
 The [ResumeTy/get_context checkpoint](../docs/parallel/resume-context-main-join.md)
 uses actual ordinary nominal/function completions and preserves body/unsafe
 proof. Its native companion executes the exact pointer helper with authored

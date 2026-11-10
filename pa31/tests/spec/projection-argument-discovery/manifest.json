@@ -1,0 +1,214 @@
+{
+  "schema": 1,
+  "owner": "pa31 source CoerceUnsized discovery on independently normalized result occurrences",
+  "contract": "Predicted source/complete LowIR/object/native outcomes frozen before implementation. A region-only difference in the complete inputs of independently proved opaque results cannot establish a forced constructor mismatch for unsizing discovery. Existing normalized shape comparison is reused; no input equality, region relation, parent proof or conversion evidence is granted. Different complete type/const/member/parent inputs remain subject to their original proofs; raw unresolved projection head/equality fences remain unchanged.",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false
+  },
+  "scaling": {
+    "widths": [
+      8,
+      32,
+      128
+    ],
+    "noise": [
+      0,
+      128
+    ],
+    "invariant": "Fourfold growth at most4x+1024 in eight actual call work counters; unrelated types add no call work."
+  },
+  "native_client": {
+    "path": "pa31/tests/spec/projection-argument-discovery/observer.c",
+    "sha256": "b99a8c19c9a4ea239c4119f6f56588f1fe587ec8612afe4b15507303cfc8dd59",
+    "stdout": "9 23\n"
+  },
+  "inputs": [
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/payload.rs",
+      "sha256": "07f2c313afc2c78018b725e1a4af2ece62d4322064c35973f1e7204e8950ad48",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/forward.rs",
+      "sha256": "51838c540dd914ea0efa89444b8c76fc847301cf574b91e936f640dfa7889681",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/typed-payload.rs",
+      "sha256": "e81b18a412a589032f622ac6092a4092a295988bf3d779476600e6f9d9ed0111",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/result-annotation.rs",
+      "sha256": "d06f4c9e4797200b721afbe266670bd5eb4025ef3054a5d67d581ce4007c51ec",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/method-take.rs",
+      "sha256": "ae2658b5760335f0872723a523d35646745ad8670d74ba779e90ce41d3085cd5",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/named-field.rs",
+      "sha256": "27377d7ed39dc5a3bf22fd186a78bd3c0e5ac0374935446317f03aa8dd02caef",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/nested-field.rs",
+      "sha256": "29c155e3cc210a2e6281eecfecc1803447b7b1321217d17fb21d859ace6c5105",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/borrowed-repr.rs",
+      "sha256": "3d7bf178df70f07920c888a152cdb595c5caafeb149b85240e9ede9228ad118d",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/family-regions.rs",
+      "sha256": "dca2e9e427842b1e204302403a1ac0942617a8ecc37ccc1650cf610a11680597",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/mixed-arguments.rs",
+      "sha256": "8bb45849dcaa502a0ed6ecd7cc2e95387fc2b8263dd8bcc8544f65f445e95b63",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/known-repr-control.rs",
+      "sha256": "4269a7aad611531cd1faac5ba757a608cd587565e8b54f20eb867c8cc062a082",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/no-role-control.rs",
+      "sha256": "c88529bea64c852191dc442ea3895d7fa4938166a322fa31d07be1f5a53451c3",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/no-projection-control.rs",
+      "sha256": "d33f97c11f0b5dc367e04be2b17ce83073168b5a587b92b8212246abf0064445",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/missing-parent.rs",
+      "sha256": "4b045eff1202c8d19678e583f0288c8e9a7db49f4976b3acf662987737d10c08",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/wrong-result.rs",
+      "sha256": "60b763c115dd42dc3ced50e8151e1bcef52678f1223936533f933e8c0e84dd9a",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/wrong-member.rs",
+      "sha256": "6e3bd84207cc2029e133943cd0ef5807634658b956b6cdb2c4024aa4d40b9cf9",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/wrong-self.rs",
+      "sha256": "2cd80509405903b542414871867f4aa19c818cda333569d32b1b6149f17ab33f",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/static-escape.rs",
+      "sha256": "9c541c79f9d9fb059ad4e851f5764fcf63f5b871fdd781a60ee2abfb7c9e4824",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/wrong-type-argument.rs",
+      "sha256": "add1a65a3d2eac88c1c86b3ba2073d388692bbdc93d2320ec5bbb5da2557ef2c",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/wrong-const-argument.rs",
+      "sha256": "e8ef84f51dd10d0dd9279b09ff390060078e9239157015d0f27e068d89bdb0a4",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/width-8-noise-0.rs",
+      "sha256": "a24fb357ef74939ee1fc359049bd535edec8c368ceed6b67e226e9884c79f976",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/width-8-noise-128.rs",
+      "sha256": "a648c73411ce991a8520b446f92c34c922488608abbe5aba0281eda63dab472b",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/width-32-noise-0.rs",
+      "sha256": "b8940dc507c3ac60c2235cd290a625bcf8a3d8304a23475851304824e92d45ac",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/width-32-noise-128.rs",
+      "sha256": "00af189c589e7e8b59c2a22274115461bb42f18d974009c70c5e7cbe37ad1696",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/width-128-noise-0.rs",
+      "sha256": "fbf3809cdf30e7dd870dfe0179e8261d080ff2e692385f271e2675e3c62d15fb",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projection-argument-discovery/width-128-noise-128.rs",
+      "sha256": "62366ed9c207d046ec4ee9c5ce9491ca5f7c20f1a86a053ef67ca979a07f9301",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    }
+  ]
+}

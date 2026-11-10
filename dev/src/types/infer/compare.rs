@@ -50,74 +50,7 @@ impl Context {
             ) else {
                 continue;
             };
-            let compatible = match (left, right) {
-                (Constructor::Adt(x, known), Constructor::AdtArgs(y, inferred))
-                | (Constructor::AdtArgs(y, inferred), Constructor::Adt(x, known))
-                | (
-                    Constructor::FunctionItem(x, known),
-                    Constructor::FunctionItemArgs(y, inferred),
-                )
-                | (
-                    Constructor::FunctionItemArgs(y, inferred),
-                    Constructor::FunctionItem(x, known),
-                ) => {
-                    let known = self.materialize_arguments(store, known, &mut Vec::new())?;
-                    x == y && !self.argument_mismatch(known, inferred)?
-                }
-                (
-                    Constructor::Reference { mutable: a, .. },
-                    Constructor::Reference { mutable: b, .. },
-                ) => a == b,
-                (Constructor::Adt(x, a), Constructor::Adt(y, b))
-                | (Constructor::FunctionItem(x, a), Constructor::FunctionItem(y, b)) => {
-                    x == y
-                        && store.region_args(a).ok_or(Error::InvalidIdentity)?.len()
-                            == store.region_args(b).ok_or(Error::InvalidIdentity)?.len()
-                }
-                (Constructor::Closure(x, a), Constructor::Closure(y, b)) => {
-                    x == y && !self.argument_mismatch(a, b)?
-                }
-                (Constructor::Opaque(x, a), Constructor::Opaque(y, b))
-                | (Constructor::Future(x, a), Constructor::Future(y, b)) => {
-                    x == y && !self.argument_mismatch(a, b)?
-                }
-                (
-                    Constructor::Dynamic {
-                        shape: a,
-                        arguments: aa,
-                        lifetimes: al,
-                    },
-                    Constructor::Dynamic {
-                        shape: b,
-                        arguments: ba,
-                        lifetimes: bl,
-                    },
-                ) => {
-                    a == b
-                        && !self.argument_mismatch(aa, ba)?
-                        && !(unsizing
-                            && (self.object_lifetimes(al)?.bound_regions != 0
-                                || self.object_lifetimes(bl)?.bound_regions != 0))
-                }
-                (Constructor::AdtArgs(x, a), Constructor::AdtArgs(y, b))
-                | (Constructor::FunctionItemArgs(x, a), Constructor::FunctionItemArgs(y, b)) => {
-                    x == y && !self.argument_mismatch(a, b)?
-                }
-                (Constructor::ArrayInfer(a), Constructor::ArrayInfer(b)) => {
-                    !self.const_mismatch(a, b)?
-                }
-                (Constructor::ArrayInfer(a), Constructor::Array(length))
-                | (Constructor::Array(length), Constructor::ArrayInfer(a)) => {
-                    let b = self.const_length(length)?;
-                    !self.const_mismatch(a, b)?
-                }
-                (Constructor::ArrayInfer(a), Constructor::ArrayTerm(id))
-                | (Constructor::ArrayTerm(id), Constructor::ArrayInfer(a)) => {
-                    let b = self.known_const(store, id)?;
-                    !self.const_mismatch(a, b)?
-                }
-                (a, b) => a == b,
-            };
+            let compatible = self.compatible_heads(store, (a, b), (left, right), unsizing)?;
             if !compatible {
                 return Ok(true);
             }
@@ -134,6 +67,92 @@ impl Context {
             );
         }
         Ok(false)
+    }
+    fn compatible_heads(
+        &mut self,
+        store: &Store,
+        terms: (TermId, TermId),
+        heads: (Constructor, Constructor),
+        unsizing: bool,
+    ) -> Result<bool, Error> {
+        let (a, b) = terms;
+        let (left, right) = heads;
+        Ok(match (left, right) {
+            (Constructor::Adt(x, known), Constructor::AdtArgs(y, inferred))
+            | (Constructor::AdtArgs(y, inferred), Constructor::Adt(x, known))
+            | (Constructor::FunctionItem(x, known), Constructor::FunctionItemArgs(y, inferred))
+            | (Constructor::FunctionItemArgs(y, inferred), Constructor::FunctionItem(x, known)) => {
+                let known = self.materialize_arguments(store, known, &mut Vec::new())?;
+                x == y && !self.argument_mismatch(known, inferred)?
+            }
+            (
+                Constructor::Reference { mutable: a, .. },
+                Constructor::Reference { mutable: b, .. },
+            ) => a == b,
+            (Constructor::Adt(x, a), Constructor::Adt(y, b))
+            | (Constructor::FunctionItem(x, a), Constructor::FunctionItem(y, b)) => {
+                x == y
+                    && store.region_args(a).ok_or(Error::InvalidIdentity)?.len()
+                        == store.region_args(b).ok_or(Error::InvalidIdentity)?.len()
+            }
+            (Constructor::Closure(x, a), Constructor::Closure(y, b)) => {
+                x == y && !self.argument_mismatch(a, b)?
+            }
+            (Constructor::Opaque(x, a), Constructor::Opaque(y, b))
+            | (Constructor::Future(x, a), Constructor::Future(y, b)) => {
+                x == y && !self.argument_mismatch(a, b)?
+            }
+            (
+                Constructor::Dynamic {
+                    shape: a,
+                    arguments: aa,
+                    lifetimes: al,
+                },
+                Constructor::Dynamic {
+                    shape: b,
+                    arguments: ba,
+                    lifetimes: bl,
+                },
+            ) => {
+                a == b
+                    && !self.argument_mismatch(aa, ba)?
+                    && !(unsizing
+                        && (self.object_lifetimes(al)?.bound_regions != 0
+                            || self.object_lifetimes(bl)?.bound_regions != 0))
+            }
+            (Constructor::AdtArgs(x, a), Constructor::AdtArgs(y, b))
+            | (Constructor::FunctionItemArgs(x, a), Constructor::FunctionItemArgs(y, b)) => {
+                x == y && !self.argument_mismatch(a, b)?
+            }
+            (Constructor::ArrayInfer(a), Constructor::ArrayInfer(b)) => {
+                !self.const_mismatch(a, b)?
+            }
+            (Constructor::ArrayInfer(a), Constructor::Array(length))
+            | (Constructor::Array(length), Constructor::ArrayInfer(a)) => {
+                let b = self.const_length(length)?;
+                !self.const_mismatch(a, b)?
+            }
+            (Constructor::ArrayInfer(a), Constructor::ArrayTerm(id))
+            | (Constructor::ArrayTerm(id), Constructor::ArrayInfer(a)) => {
+                let b = self.known_const(store, id)?;
+                !self.const_mismatch(a, b)?
+            }
+            (Constructor::Projection(_), Constructor::Projection(_)) if unsizing => {
+                !self.opaque_mismatch(store, a, b)?
+            }
+            (a, b) => a == b,
+        })
+    }
+    /// Completed opaque results have independent canonical inputs. Their
+    /// existing shape relation ignores regions without proving their equality.
+    fn opaque_mismatch(&mut self, store: &Store, a: TermId, b: TermId) -> Result<bool, Error> {
+        let a = self.opaque_projection(a).ok_or(Error::InvalidIdentity)?;
+        let b = self.opaque_projection(b).ok_or(Error::InvalidIdentity)?;
+        match self.opaque_shape(store, a, b) {
+            Ok(()) => Ok(false),
+            Err(Error::Mismatch) => Ok(true),
+            Err(error) => Err(error),
+        }
     }
     fn mismatch_head(
         &mut self,
