@@ -4,7 +4,13 @@
  "declaration_sha256": "f73a56e7ae51733a45058a860c08fb60f0d01701e0cc517e8ce6afe12aa16cbd",
  "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
  "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
- "amendments": [],
+ "amendments": [
+  {
+   "date": "2026-11-10",
+   "implementation": "61efef104",
+   "change": "After f01 closed, scoped lookup accepts explicit-binder, sugar-lifetime, split-shape, trait-fallback-region, trait-fallback-leak and receiver-sugar-lifetime. Original source bytes and independently declared Rust outcomes are unchanged. See docs/pa21-scoped-method-lookup.md."
+  }
+ ],
  "cases": {
   "core-drain-shape.rs": {
    "sha256": "d63ca6890fa3dcdf1d2fb13814d4cba7466857cbf81e4d79e7d93686aef629cd",

@@ -6,7 +6,15 @@ and process only. Assignment requirements, the [unit graph](../assignment-plan.j
 `spec.md`, source pins and the frozen CPPGM backend boundary are unchanged.
 The [blocker tracker](library-build-blockers.md) still owns concrete failures.
 
-Single-worker continuation, 2026-11-10: the projected-layout, whole-slice and
+Latest single-worker checkpoint, 2026-11-10: [scoped method lookup](pa21-scoped-method-lookup.md)
+clears all original-core declaration analysis and enters bodies. On unchanged722
+inputs/profile/limits,42310 declarations pass with no failed/blocked item. The
+census reports67 body failures before its unary-declaration budget stop in
+cell.rs:1393; no body completion or original artifact is claimed. Attribute that
+budget without raising it, then batch the repeated Unsize, inclusive-range and
+receiver/projection causes. Keep the single existing worker and scratch tree.
+
+Earlier single-worker checkpoint, 2026-11-10: the projected-layout, whole-slice and
 numeric/query checkpoints clear the intervening records. Original core now stops
 at Split::new's nonempty quantified lookup condition. The
 [PA21 call consumer](pa21-universal-call-consumer.md) closes the retained f01

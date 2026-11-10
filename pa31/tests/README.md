@@ -781,9 +781,9 @@ controls from census batch 21. An inherent candidate under callable sugar
 that names no lifetime, such as core's `Drain::new` under `F: FnMut(T) -> U`
 beside `ZipImpl::new`, is accepted in the type-qualified and method-call
 forms, from const and non-const callers, beside a trait `new` it falls back
-to, and through a sugar supertrait. Six bound-region shapes that rustc
-accepts, including core's `Split::new`, stay rejected as known
-rejects-valid. Non-callable arguments are rejected (E0277, E0599). Each
+to, and through a sugar supertrait. The six bound-region shapes that rustc
+accepts, including core's `Split::new`, now pass after the PA21 scoped lookup
+checkpoint; their original bytes are unchanged. Non-callable arguments are rejected (E0277, E0599). Each
 outcome was declared before its rustc 1.98.0 oracle. A private invariant
 checks them; there is no graded manifest.
 

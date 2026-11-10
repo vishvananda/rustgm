@@ -5,6 +5,18 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+The [scoped lookup checkpoint](pa21-scoped-method-lookup.md) clears Split::new
+and enters original-core bodies. CLI f24650d0 preserves722 input hashes/profile/
+limits, opens375 and checks42310 declarations with none failed/blocked,83.96s.
+Bodies report checked0/failed67/blocked0 before budget record68 at cell.rs:1393,
+byte47857: source unary declaration query exceeds its work budget. The67 failures
+include19 source Unsize fences,12 inclusive-range call-plan fences and12 receiver
+lookups. Attribute the unary budget, then repair cause groups. Seven PA21 lookup
+reductions and three PA24 width128 callable regressions are independently checked;
+all867/493 course outcomes and three new native comparisons pass. Full f01 CI
+42782379010 failed three scaling guards, now passing locally; its successor and
+an actual original artifact remain required.
+
 The [PA21 universal-call checkpoint](pa21-universal-call-consumer.md) closes f01
 before widening bound-region lookup: the original static-only call rejects in
 generic semantics, while universal and genuine caller-premise twins accept.

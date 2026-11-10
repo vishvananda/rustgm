@@ -1,0 +1,4163 @@
+global @rg.vtable.0 : obj<48x8> [storage=readonly] = {
+  zero 8
+  i64 2
+  i64 2
+  ptr addr @rg.closure.0
+  ptr addr @rg.closure.adapter.FnMut.i2
+  zero 8
+}
+global @rg.data.1 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.2 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.3 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.4 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.5 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.6 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.7 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.8 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.9 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.10 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.11 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.12 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.13 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.14 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.15 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.16 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.17 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.18 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.19 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.20 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.21 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.22 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.23 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.24 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.25 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.26 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.27 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.28 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.29 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.30 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.31 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.32 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.33 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.34 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.35 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.36 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.37 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.38 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.39 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.40 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.41 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.42 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.43 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.44 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.45 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.46 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.47 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.48 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.49 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.50 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.51 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.52 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.53 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.54 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.55 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.56 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.57 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.58 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.59 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.60 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.61 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.62 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.63 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.64 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.65 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.66 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.67 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.68 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.69 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.70 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.71 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.72 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.73 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.74 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.75 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.76 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.77 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.78 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.79 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.80 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.81 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.82 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.83 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.84 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.85 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.86 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.87 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.88 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.89 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.90 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.91 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.92 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.93 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.94 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.95 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.96 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.97 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.98 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.99 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.100 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.101 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.102 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.103 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.104 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.105 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.106 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.107 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.108 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.109 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.110 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.111 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.112 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.113 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.114 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.115 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.116 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.117 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.118 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.119 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.120 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.121 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.122 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.123 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.124 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.125 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.126 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.127 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+global @rg.data.128 : obj<2x2> [storage=readonly] = {
+  zero 2
+}
+function @rg.13() -> void {
+  slot $s0 : u16
+  slot $s1 : obj<2x2>
+  slot $s2 : obj<16x8>
+  slot $s3 : obj<16x8>
+  slot $s4 : obj<16x8>
+  slot $s5 : obj<16x8>
+  slot $s6 : obj<16x8>
+  slot $s7 : obj<16x8>
+  slot $s8 : obj<16x8>
+  slot $s9 : obj<16x8>
+  slot $s10 : obj<16x8>
+  slot $s11 : obj<16x8>
+  slot $s12 : obj<16x8>
+  slot $s13 : obj<16x8>
+  slot $s14 : obj<16x8>
+  slot $s15 : obj<16x8>
+  slot $s16 : obj<16x8>
+  slot $s17 : obj<16x8>
+  slot $s18 : obj<16x8>
+  slot $s19 : obj<16x8>
+  slot $s20 : obj<16x8>
+  slot $s21 : obj<16x8>
+  slot $s22 : obj<16x8>
+  slot $s23 : obj<16x8>
+  slot $s24 : obj<16x8>
+  slot $s25 : obj<16x8>
+  slot $s26 : obj<16x8>
+  slot $s27 : obj<16x8>
+  slot $s28 : obj<16x8>
+  slot $s29 : obj<16x8>
+  slot $s30 : obj<16x8>
+  slot $s31 : obj<16x8>
+  slot $s32 : obj<16x8>
+  slot $s33 : obj<16x8>
+  slot $s34 : obj<16x8>
+  slot $s35 : obj<16x8>
+  slot $s36 : obj<16x8>
+  slot $s37 : obj<16x8>
+  slot $s38 : obj<16x8>
+  slot $s39 : obj<16x8>
+  slot $s40 : obj<16x8>
+  slot $s41 : obj<16x8>
+  slot $s42 : obj<16x8>
+  slot $s43 : obj<16x8>
+  slot $s44 : obj<16x8>
+  slot $s45 : obj<16x8>
+  slot $s46 : obj<16x8>
+  slot $s47 : obj<16x8>
+  slot $s48 : obj<16x8>
+  slot $s49 : obj<16x8>
+  slot $s50 : obj<16x8>
+  slot $s51 : obj<16x8>
+  slot $s52 : obj<16x8>
+  slot $s53 : obj<16x8>
+  slot $s54 : obj<16x8>
+  slot $s55 : obj<16x8>
+  slot $s56 : obj<16x8>
+  slot $s57 : obj<16x8>
+  slot $s58 : obj<16x8>
+  slot $s59 : obj<16x8>
+  slot $s60 : obj<16x8>
+  slot $s61 : obj<16x8>
+  slot $s62 : obj<16x8>
+  slot $s63 : obj<16x8>
+  slot $s64 : obj<16x8>
+  slot $s65 : obj<16x8>
+  slot $s66 : obj<16x8>
+  slot $s67 : obj<16x8>
+  slot $s68 : obj<16x8>
+  slot $s69 : obj<16x8>
+  slot $s70 : obj<16x8>
+  slot $s71 : obj<16x8>
+  slot $s72 : obj<16x8>
+  slot $s73 : obj<16x8>
+  slot $s74 : obj<16x8>
+  slot $s75 : obj<16x8>
+  slot $s76 : obj<16x8>
+  slot $s77 : obj<16x8>
+  slot $s78 : obj<16x8>
+  slot $s79 : obj<16x8>
+  slot $s80 : obj<16x8>
+  slot $s81 : obj<16x8>
+  slot $s82 : obj<16x8>
+  slot $s83 : obj<16x8>
+  slot $s84 : obj<16x8>
+  slot $s85 : obj<16x8>
+  slot $s86 : obj<16x8>
+  slot $s87 : obj<16x8>
+  slot $s88 : obj<16x8>
+  slot $s89 : obj<16x8>
+  slot $s90 : obj<16x8>
+  slot $s91 : obj<16x8>
+  slot $s92 : obj<16x8>
+  slot $s93 : obj<16x8>
+  slot $s94 : obj<16x8>
+  slot $s95 : obj<16x8>
+  slot $s96 : obj<16x8>
+  slot $s97 : obj<16x8>
+  slot $s98 : obj<16x8>
+  slot $s99 : obj<16x8>
+  slot $s100 : obj<16x8>
+  slot $s101 : obj<16x8>
+  slot $s102 : obj<16x8>
+  slot $s103 : obj<16x8>
+  slot $s104 : obj<16x8>
+  slot $s105 : obj<16x8>
+  slot $s106 : obj<16x8>
+  slot $s107 : obj<16x8>
+  slot $s108 : obj<16x8>
+  slot $s109 : obj<16x8>
+  slot $s110 : obj<16x8>
+  slot $s111 : obj<16x8>
+  slot $s112 : obj<16x8>
+  slot $s113 : obj<16x8>
+  slot $s114 : obj<16x8>
+  slot $s115 : obj<16x8>
+  slot $s116 : obj<16x8>
+  slot $s117 : obj<16x8>
+  slot $s118 : obj<16x8>
+  slot $s119 : obj<16x8>
+  slot $s120 : obj<16x8>
+  slot $s121 : obj<16x8>
+  slot $s122 : obj<16x8>
+  slot $s123 : obj<16x8>
+  slot $s124 : obj<16x8>
+  slot $s125 : obj<16x8>
+  slot $s126 : obj<16x8>
+  slot $s127 : obj<16x8>
+  slot $s128 : obj<16x8>
+  slot $s129 : obj<16x8>
+  slot $s130 : obj<2x2>
+  slot $s131 : ptr
+  slot $s132 : obj<16x8>
+  slot $s133 : obj<16x8>
+  slot $s134 : ptr
+  slot $s135 : ptr
+  slot $s136 : obj<16x8>
+  slot $s137 : obj<16x8>
+  slot $s138 : ptr
+  slot $s139 : ptr
+  slot $s140 : obj<16x8>
+  slot $s141 : obj<16x8>
+  slot $s142 : ptr
+  slot $s143 : ptr
+  slot $s144 : obj<16x8>
+  slot $s145 : obj<16x8>
+  slot $s146 : ptr
+  slot $s147 : ptr
+  slot $s148 : obj<16x8>
+  slot $s149 : obj<16x8>
+  slot $s150 : ptr
+  slot $s151 : ptr
+  slot $s152 : obj<16x8>
+  slot $s153 : obj<16x8>
+  slot $s154 : ptr
+  slot $s155 : ptr
+  slot $s156 : obj<16x8>
+  slot $s157 : obj<16x8>
+  slot $s158 : ptr
+  slot $s159 : ptr
+  slot $s160 : obj<16x8>
+  slot $s161 : obj<16x8>
+  slot $s162 : ptr
+  slot $s163 : ptr
+  slot $s164 : obj<16x8>
+  slot $s165 : obj<16x8>
+  slot $s166 : ptr
+  slot $s167 : ptr
+  slot $s168 : obj<16x8>
+  slot $s169 : obj<16x8>
+  slot $s170 : ptr
+  slot $s171 : ptr
+  slot $s172 : obj<16x8>
+  slot $s173 : obj<16x8>
+  slot $s174 : ptr
+  slot $s175 : ptr
+  slot $s176 : obj<16x8>
+  slot $s177 : obj<16x8>
+  slot $s178 : ptr
+  slot $s179 : ptr
+  slot $s180 : obj<16x8>
+  slot $s181 : obj<16x8>
+  slot $s182 : ptr
+  slot $s183 : ptr
+  slot $s184 : obj<16x8>
+  slot $s185 : obj<16x8>
+  slot $s186 : ptr
+  slot $s187 : ptr
+  slot $s188 : obj<16x8>
+  slot $s189 : obj<16x8>
+  slot $s190 : ptr
+  slot $s191 : ptr
+  slot $s192 : obj<16x8>
+  slot $s193 : obj<16x8>
+  slot $s194 : ptr
+  slot $s195 : ptr
+  slot $s196 : obj<16x8>
+  slot $s197 : obj<16x8>
+  slot $s198 : ptr
+  slot $s199 : ptr
+  slot $s200 : obj<16x8>
+  slot $s201 : obj<16x8>
+  slot $s202 : ptr
+  slot $s203 : ptr
+  slot $s204 : obj<16x8>
+  slot $s205 : obj<16x8>
+  slot $s206 : ptr
+  slot $s207 : ptr
+  slot $s208 : obj<16x8>
+  slot $s209 : obj<16x8>
+  slot $s210 : ptr
+  slot $s211 : ptr
+  slot $s212 : obj<16x8>
+  slot $s213 : obj<16x8>
+  slot $s214 : ptr
+  slot $s215 : ptr
+  slot $s216 : obj<16x8>
+  slot $s217 : obj<16x8>
+  slot $s218 : ptr
+  slot $s219 : ptr
+  slot $s220 : obj<16x8>
+  slot $s221 : obj<16x8>
+  slot $s222 : ptr
+  slot $s223 : ptr
+  slot $s224 : obj<16x8>
+  slot $s225 : obj<16x8>
+  slot $s226 : ptr
+  slot $s227 : ptr
+  slot $s228 : obj<16x8>
+  slot $s229 : obj<16x8>
+  slot $s230 : ptr
+  slot $s231 : ptr
+  slot $s232 : obj<16x8>
+  slot $s233 : obj<16x8>
+  slot $s234 : ptr
+  slot $s235 : ptr
+  slot $s236 : obj<16x8>
+  slot $s237 : obj<16x8>
+  slot $s238 : ptr
+  slot $s239 : ptr
+  slot $s240 : obj<16x8>
+  slot $s241 : obj<16x8>
+  slot $s242 : ptr
+  slot $s243 : ptr
+  slot $s244 : obj<16x8>
+  slot $s245 : obj<16x8>
+  slot $s246 : ptr
+  slot $s247 : ptr
+  slot $s248 : obj<16x8>
+  slot $s249 : obj<16x8>
+  slot $s250 : ptr
+  slot $s251 : ptr
+  slot $s252 : obj<16x8>
+  slot $s253 : obj<16x8>
+  slot $s254 : ptr
+  slot $s255 : ptr
+  slot $s256 : obj<16x8>
+  slot $s257 : obj<16x8>
+  slot $s258 : ptr
+  slot $s259 : ptr
+  slot $s260 : obj<16x8>
+  slot $s261 : obj<16x8>
+  slot $s262 : ptr
+  slot $s263 : ptr
+  slot $s264 : obj<16x8>
+  slot $s265 : obj<16x8>
+  slot $s266 : ptr
+  slot $s267 : ptr
+  slot $s268 : obj<16x8>
+  slot $s269 : obj<16x8>
+  slot $s270 : ptr
+  slot $s271 : ptr
+  slot $s272 : obj<16x8>
+  slot $s273 : obj<16x8>
+  slot $s274 : ptr
+  slot $s275 : ptr
+  slot $s276 : obj<16x8>
+  slot $s277 : obj<16x8>
+  slot $s278 : ptr
+  slot $s279 : ptr
+  slot $s280 : obj<16x8>
+  slot $s281 : obj<16x8>
+  slot $s282 : ptr
+  slot $s283 : ptr
+  slot $s284 : obj<16x8>
+  slot $s285 : obj<16x8>
+  slot $s286 : ptr
+  slot $s287 : ptr
+  slot $s288 : obj<16x8>
+  slot $s289 : obj<16x8>
+  slot $s290 : ptr
+  slot $s291 : ptr
+  slot $s292 : obj<16x8>
+  slot $s293 : obj<16x8>
+  slot $s294 : ptr
+  slot $s295 : ptr
+  slot $s296 : obj<16x8>
+  slot $s297 : obj<16x8>
+  slot $s298 : ptr
+  slot $s299 : ptr
+  slot $s300 : obj<16x8>
+  slot $s301 : obj<16x8>
+  slot $s302 : ptr
+  slot $s303 : ptr
+  slot $s304 : obj<16x8>
+  slot $s305 : obj<16x8>
+  slot $s306 : ptr
+  slot $s307 : ptr
+  slot $s308 : obj<16x8>
+  slot $s309 : obj<16x8>
+  slot $s310 : ptr
+  slot $s311 : ptr
+  slot $s312 : obj<16x8>
+  slot $s313 : obj<16x8>
+  slot $s314 : ptr
+  slot $s315 : ptr
+  slot $s316 : obj<16x8>
+  slot $s317 : obj<16x8>
+  slot $s318 : ptr
+  slot $s319 : ptr
+  slot $s320 : obj<16x8>
+  slot $s321 : obj<16x8>
+  slot $s322 : ptr
+  slot $s323 : ptr
+  slot $s324 : obj<16x8>
+  slot $s325 : obj<16x8>
+  slot $s326 : ptr
+  slot $s327 : ptr
+  slot $s328 : obj<16x8>
+  slot $s329 : obj<16x8>
+  slot $s330 : ptr
+  slot $s331 : ptr
+  slot $s332 : obj<16x8>
+  slot $s333 : obj<16x8>
+  slot $s334 : ptr
+  slot $s335 : ptr
+  slot $s336 : obj<16x8>
+  slot $s337 : obj<16x8>
+  slot $s338 : ptr
+  slot $s339 : ptr
+  slot $s340 : obj<16x8>
+  slot $s341 : obj<16x8>
+  slot $s342 : ptr
+  slot $s343 : ptr
+  slot $s344 : obj<16x8>
+  slot $s345 : obj<16x8>
+  slot $s346 : ptr
+  slot $s347 : ptr
+  slot $s348 : obj<16x8>
+  slot $s349 : obj<16x8>
+  slot $s350 : ptr
+  slot $s351 : ptr
+  slot $s352 : obj<16x8>
+  slot $s353 : obj<16x8>
+  slot $s354 : ptr
+  slot $s355 : ptr
+  slot $s356 : obj<16x8>
+  slot $s357 : obj<16x8>
+  slot $s358 : ptr
+  slot $s359 : ptr
+  slot $s360 : obj<16x8>
+  slot $s361 : obj<16x8>
+  slot $s362 : ptr
+  slot $s363 : ptr
+  slot $s364 : obj<16x8>
+  slot $s365 : obj<16x8>
+  slot $s366 : ptr
+  slot $s367 : ptr
+  slot $s368 : obj<16x8>
+  slot $s369 : obj<16x8>
+  slot $s370 : ptr
+  slot $s371 : ptr
+  slot $s372 : obj<16x8>
+  slot $s373 : obj<16x8>
+  slot $s374 : ptr
+  slot $s375 : ptr
+  slot $s376 : obj<16x8>
+  slot $s377 : obj<16x8>
+  slot $s378 : ptr
+  slot $s379 : ptr
+  slot $s380 : obj<16x8>
+  slot $s381 : obj<16x8>
+  slot $s382 : ptr
+  slot $s383 : ptr
+  slot $s384 : obj<16x8>
+  slot $s385 : obj<16x8>
+  slot $s386 : ptr
+  slot $s387 : ptr
+  slot $s388 : obj<16x8>
+  slot $s389 : obj<16x8>
+  slot $s390 : ptr
+  slot $s391 : ptr
+  slot $s392 : obj<16x8>
+  slot $s393 : obj<16x8>
+  slot $s394 : ptr
+  slot $s395 : ptr
+  slot $s396 : obj<16x8>
+  slot $s397 : obj<16x8>
+  slot $s398 : ptr
+  slot $s399 : ptr
+  slot $s400 : obj<16x8>
+  slot $s401 : obj<16x8>
+  slot $s402 : ptr
+  slot $s403 : ptr
+  slot $s404 : obj<16x8>
+  slot $s405 : obj<16x8>
+  slot $s406 : ptr
+  slot $s407 : ptr
+  slot $s408 : obj<16x8>
+  slot $s409 : obj<16x8>
+  slot $s410 : ptr
+  slot $s411 : ptr
+  slot $s412 : obj<16x8>
+  slot $s413 : obj<16x8>
+  slot $s414 : ptr
+  slot $s415 : ptr
+  slot $s416 : obj<16x8>
+  slot $s417 : obj<16x8>
+  slot $s418 : ptr
+  slot $s419 : ptr
+  slot $s420 : obj<16x8>
+  slot $s421 : obj<16x8>
+  slot $s422 : ptr
+  slot $s423 : ptr
+  slot $s424 : obj<16x8>
+  slot $s425 : obj<16x8>
+  slot $s426 : ptr
+  slot $s427 : ptr
+  slot $s428 : obj<16x8>
+  slot $s429 : obj<16x8>
+  slot $s430 : ptr
+  slot $s431 : ptr
+  slot $s432 : obj<16x8>
+  slot $s433 : obj<16x8>
+  slot $s434 : ptr
+  slot $s435 : ptr
+  slot $s436 : obj<16x8>
+  slot $s437 : obj<16x8>
+  slot $s438 : ptr
+  slot $s439 : ptr
+  slot $s440 : obj<16x8>
+  slot $s441 : obj<16x8>
+  slot $s442 : ptr
+  slot $s443 : ptr
+  slot $s444 : obj<16x8>
+  slot $s445 : obj<16x8>
+  slot $s446 : ptr
+  slot $s447 : ptr
+  slot $s448 : obj<16x8>
+  slot $s449 : obj<16x8>
+  slot $s450 : ptr
+  slot $s451 : ptr
+  slot $s452 : obj<16x8>
+  slot $s453 : obj<16x8>
+  slot $s454 : ptr
+  slot $s455 : ptr
+  slot $s456 : obj<16x8>
+  slot $s457 : obj<16x8>
+  slot $s458 : ptr
+  slot $s459 : ptr
+  slot $s460 : obj<16x8>
+  slot $s461 : obj<16x8>
+  slot $s462 : ptr
+  slot $s463 : ptr
+  slot $s464 : obj<16x8>
+  slot $s465 : obj<16x8>
+  slot $s466 : ptr
+  slot $s467 : ptr
+  slot $s468 : obj<16x8>
+  slot $s469 : obj<16x8>
+  slot $s470 : ptr
+  slot $s471 : ptr
+  slot $s472 : obj<16x8>
+  slot $s473 : obj<16x8>
+  slot $s474 : ptr
+  slot $s475 : ptr
+  slot $s476 : obj<16x8>
+  slot $s477 : obj<16x8>
+  slot $s478 : ptr
+  slot $s479 : ptr
+  slot $s480 : obj<16x8>
+  slot $s481 : obj<16x8>
+  slot $s482 : ptr
+  slot $s483 : ptr
+  slot $s484 : obj<16x8>
+  slot $s485 : obj<16x8>
+  slot $s486 : ptr
+  slot $s487 : ptr
+  slot $s488 : obj<16x8>
+  slot $s489 : obj<16x8>
+  slot $s490 : ptr
+  slot $s491 : ptr
+  slot $s492 : obj<16x8>
+  slot $s493 : obj<16x8>
+  slot $s494 : ptr
+  slot $s495 : ptr
+  slot $s496 : obj<16x8>
+  slot $s497 : obj<16x8>
+  slot $s498 : ptr
+  slot $s499 : ptr
+  slot $s500 : obj<16x8>
+  slot $s501 : obj<16x8>
+  slot $s502 : ptr
+  slot $s503 : ptr
+  slot $s504 : obj<16x8>
+  slot $s505 : obj<16x8>
+  slot $s506 : ptr
+  slot $s507 : ptr
+  slot $s508 : obj<16x8>
+  slot $s509 : obj<16x8>
+  slot $s510 : ptr
+  slot $s511 : ptr
+  slot $s512 : obj<16x8>
+  slot $s513 : obj<16x8>
+  slot $s514 : ptr
+  slot $s515 : ptr
+  slot $s516 : obj<16x8>
+  slot $s517 : obj<16x8>
+  slot $s518 : ptr
+  slot $s519 : ptr
+  slot $s520 : obj<16x8>
+  slot $s521 : obj<16x8>
+  slot $s522 : ptr
+  slot $s523 : ptr
+  slot $s524 : obj<16x8>
+  slot $s525 : obj<16x8>
+  slot $s526 : ptr
+  slot $s527 : ptr
+  slot $s528 : obj<16x8>
+  slot $s529 : obj<16x8>
+  slot $s530 : ptr
+  slot $s531 : ptr
+  slot $s532 : obj<16x8>
+  slot $s533 : obj<16x8>
+  slot $s534 : ptr
+  slot $s535 : ptr
+  slot $s536 : obj<16x8>
+  slot $s537 : obj<16x8>
+  slot $s538 : ptr
+  slot $s539 : ptr
+  slot $s540 : obj<16x8>
+  slot $s541 : obj<16x8>
+  slot $s542 : ptr
+  slot $s543 : ptr
+  slot $s544 : obj<16x8>
+  slot $s545 : obj<16x8>
+  slot $s546 : ptr
+  slot $s547 : ptr
+  slot $s548 : obj<16x8>
+  slot $s549 : obj<16x8>
+  slot $s550 : ptr
+  slot $s551 : ptr
+  slot $s552 : obj<16x8>
+  slot $s553 : obj<16x8>
+  slot $s554 : ptr
+  slot $s555 : ptr
+  slot $s556 : obj<16x8>
+  slot $s557 : obj<16x8>
+  slot $s558 : ptr
+  slot $s559 : ptr
+  slot $s560 : obj<16x8>
+  slot $s561 : obj<16x8>
+  slot $s562 : ptr
+  slot $s563 : ptr
+  slot $s564 : obj<16x8>
+  slot $s565 : obj<16x8>
+  slot $s566 : ptr
+  slot $s567 : ptr
+  slot $s568 : obj<16x8>
+  slot $s569 : obj<16x8>
+  slot $s570 : ptr
+  slot $s571 : ptr
+  slot $s572 : obj<16x8>
+  slot $s573 : obj<16x8>
+  slot $s574 : ptr
+  slot $s575 : ptr
+  slot $s576 : obj<16x8>
+  slot $s577 : obj<16x8>
+  slot $s578 : ptr
+  slot $s579 : ptr
+  slot $s580 : obj<16x8>
+  slot $s581 : obj<16x8>
+  slot $s582 : ptr
+  slot $s583 : ptr
+  slot $s584 : obj<16x8>
+  slot $s585 : obj<16x8>
+  slot $s586 : ptr
+  slot $s587 : ptr
+  slot $s588 : obj<16x8>
+  slot $s589 : obj<16x8>
+  slot $s590 : ptr
+  slot $s591 : ptr
+  slot $s592 : obj<16x8>
+  slot $s593 : obj<16x8>
+  slot $s594 : ptr
+  slot $s595 : ptr
+  slot $s596 : obj<16x8>
+  slot $s597 : obj<16x8>
+  slot $s598 : ptr
+  slot $s599 : ptr
+  slot $s600 : obj<16x8>
+  slot $s601 : obj<16x8>
+  slot $s602 : ptr
+  slot $s603 : ptr
+  slot $s604 : obj<16x8>
+  slot $s605 : obj<16x8>
+  slot $s606 : ptr
+  slot $s607 : ptr
+  slot $s608 : obj<16x8>
+  slot $s609 : obj<16x8>
+  slot $s610 : ptr
+  slot $s611 : ptr
+  slot $s612 : obj<16x8>
+  slot $s613 : obj<16x8>
+  slot $s614 : ptr
+  slot $s615 : ptr
+  slot $s616 : obj<16x8>
+  slot $s617 : obj<16x8>
+  slot $s618 : ptr
+  slot $s619 : ptr
+  slot $s620 : obj<16x8>
+  slot $s621 : obj<16x8>
+  slot $s622 : ptr
+  slot $s623 : ptr
+  slot $s624 : obj<16x8>
+  slot $s625 : obj<16x8>
+  slot $s626 : ptr
+  slot $s627 : ptr
+  slot $s628 : obj<16x8>
+  slot $s629 : obj<16x8>
+  slot $s630 : ptr
+  slot $s631 : ptr
+  slot $s632 : obj<16x8>
+  slot $s633 : obj<16x8>
+  slot $s634 : ptr
+  slot $s635 : ptr
+  slot $s636 : obj<16x8>
+  slot $s637 : obj<16x8>
+  slot $s638 : ptr
+  slot $s639 : ptr
+  slot $s640 : obj<16x8>
+  slot $s641 : obj<16x8>
+  slot $s642 : ptr
+  block ^b0:
+    store u16 7, $s0
+    %t0 = load u16 $s0
+    store u16 %t0, $s130
+    %t1 = addr $s130
+    %t2 = addr $s1
+    copyobj 2x2 %t1, %t2
+    %t3 = addr $s1
+    store ptr %t3, $s131
+    %t4 = load ptr $s131
+    %t5 = addr @rg.vtable.0
+    store ptr %t4, $s132
+    %t6 = addr $s132
+    %t7 = index u8 %t6, 8
+    store ptr %t5, %t7
+    %t8 = addr $s132
+    %t9 = addr $s2
+    copyobj 16x8 %t8, %t9
+    %t10 = load ptr $s2
+    %t11 = addr $s2
+    %t12 = index u8 %t11, 8
+    %t13 = load ptr %t12
+    store ptr %t10, $s133
+    %t14 = addr $s133
+    %t15 = index u8 %t14, 8
+    store ptr %t13, %t15
+    %t16 = addr @rg.data.1
+    store ptr %t16, $s134
+    %t17 = load ptr $s134
+    %t18 = addr $s133
+    %t19 = call u16 @rg.callable.virtual.0(%t18, %t17)
+    %t20 = addr $s1
+    store ptr %t20, $s135
+    %t21 = load ptr $s135
+    %t22 = addr @rg.vtable.0
+    store ptr %t21, $s136
+    %t23 = addr $s136
+    %t24 = index u8 %t23, 8
+    store ptr %t22, %t24
+    %t25 = addr $s136
+    %t26 = addr $s3
+    copyobj 16x8 %t25, %t26
+    %t27 = load ptr $s3
+    %t28 = addr $s3
+    %t29 = index u8 %t28, 8
+    %t30 = load ptr %t29
+    store ptr %t27, $s137
+    %t31 = addr $s137
+    %t32 = index u8 %t31, 8
+    store ptr %t30, %t32
+    %t33 = addr @rg.data.2
+    store ptr %t33, $s138
+    %t34 = load ptr $s138
+    %t35 = addr $s137
+    %t36 = call u16 @rg.callable.virtual.0(%t35, %t34)
+    %t37 = addr $s1
+    store ptr %t37, $s139
+    %t38 = load ptr $s139
+    %t39 = addr @rg.vtable.0
+    store ptr %t38, $s140
+    %t40 = addr $s140
+    %t41 = index u8 %t40, 8
+    store ptr %t39, %t41
+    %t42 = addr $s140
+    %t43 = addr $s4
+    copyobj 16x8 %t42, %t43
+    %t44 = load ptr $s4
+    %t45 = addr $s4
+    %t46 = index u8 %t45, 8
+    %t47 = load ptr %t46
+    store ptr %t44, $s141
+    %t48 = addr $s141
+    %t49 = index u8 %t48, 8
+    store ptr %t47, %t49
+    %t50 = addr @rg.data.3
+    store ptr %t50, $s142
+    %t51 = load ptr $s142
+    %t52 = addr $s141
+    %t53 = call u16 @rg.callable.virtual.0(%t52, %t51)
+    %t54 = addr $s1
+    store ptr %t54, $s143
+    %t55 = load ptr $s143
+    %t56 = addr @rg.vtable.0
+    store ptr %t55, $s144
+    %t57 = addr $s144
+    %t58 = index u8 %t57, 8
+    store ptr %t56, %t58
+    %t59 = addr $s144
+    %t60 = addr $s5
+    copyobj 16x8 %t59, %t60
+    %t61 = load ptr $s5
+    %t62 = addr $s5
+    %t63 = index u8 %t62, 8
+    %t64 = load ptr %t63
+    store ptr %t61, $s145
+    %t65 = addr $s145
+    %t66 = index u8 %t65, 8
+    store ptr %t64, %t66
+    %t67 = addr @rg.data.4
+    store ptr %t67, $s146
+    %t68 = load ptr $s146
+    %t69 = addr $s145
+    %t70 = call u16 @rg.callable.virtual.0(%t69, %t68)
+    %t71 = addr $s1
+    store ptr %t71, $s147
+    %t72 = load ptr $s147
+    %t73 = addr @rg.vtable.0
+    store ptr %t72, $s148
+    %t74 = addr $s148
+    %t75 = index u8 %t74, 8
+    store ptr %t73, %t75
+    %t76 = addr $s148
+    %t77 = addr $s6
+    copyobj 16x8 %t76, %t77
+    %t78 = load ptr $s6
+    %t79 = addr $s6
+    %t80 = index u8 %t79, 8
+    %t81 = load ptr %t80
+    store ptr %t78, $s149
+    %t82 = addr $s149
+    %t83 = index u8 %t82, 8
+    store ptr %t81, %t83
+    %t84 = addr @rg.data.5
+    store ptr %t84, $s150
+    %t85 = load ptr $s150
+    %t86 = addr $s149
+    %t87 = call u16 @rg.callable.virtual.0(%t86, %t85)
+    %t88 = addr $s1
+    store ptr %t88, $s151
+    %t89 = load ptr $s151
+    %t90 = addr @rg.vtable.0
+    store ptr %t89, $s152
+    %t91 = addr $s152
+    %t92 = index u8 %t91, 8
+    store ptr %t90, %t92
+    %t93 = addr $s152
+    %t94 = addr $s7
+    copyobj 16x8 %t93, %t94
+    %t95 = load ptr $s7
+    %t96 = addr $s7
+    %t97 = index u8 %t96, 8
+    %t98 = load ptr %t97
+    store ptr %t95, $s153
+    %t99 = addr $s153
+    %t100 = index u8 %t99, 8
+    store ptr %t98, %t100
+    %t101 = addr @rg.data.6
+    store ptr %t101, $s154
+    %t102 = load ptr $s154
+    %t103 = addr $s153
+    %t104 = call u16 @rg.callable.virtual.0(%t103, %t102)
+    %t105 = addr $s1
+    store ptr %t105, $s155
+    %t106 = load ptr $s155
+    %t107 = addr @rg.vtable.0
+    store ptr %t106, $s156
+    %t108 = addr $s156
+    %t109 = index u8 %t108, 8
+    store ptr %t107, %t109
+    %t110 = addr $s156
+    %t111 = addr $s8
+    copyobj 16x8 %t110, %t111
+    %t112 = load ptr $s8
+    %t113 = addr $s8
+    %t114 = index u8 %t113, 8
+    %t115 = load ptr %t114
+    store ptr %t112, $s157
+    %t116 = addr $s157
+    %t117 = index u8 %t116, 8
+    store ptr %t115, %t117
+    %t118 = addr @rg.data.7
+    store ptr %t118, $s158
+    %t119 = load ptr $s158
+    %t120 = addr $s157
+    %t121 = call u16 @rg.callable.virtual.0(%t120, %t119)
+    %t122 = addr $s1
+    store ptr %t122, $s159
+    %t123 = load ptr $s159
+    %t124 = addr @rg.vtable.0
+    store ptr %t123, $s160
+    %t125 = addr $s160
+    %t126 = index u8 %t125, 8
+    store ptr %t124, %t126
+    %t127 = addr $s160
+    %t128 = addr $s9
+    copyobj 16x8 %t127, %t128
+    %t129 = load ptr $s9
+    %t130 = addr $s9
+    %t131 = index u8 %t130, 8
+    %t132 = load ptr %t131
+    store ptr %t129, $s161
+    %t133 = addr $s161
+    %t134 = index u8 %t133, 8
+    store ptr %t132, %t134
+    %t135 = addr @rg.data.8
+    store ptr %t135, $s162
+    %t136 = load ptr $s162
+    %t137 = addr $s161
+    %t138 = call u16 @rg.callable.virtual.0(%t137, %t136)
+    %t139 = addr $s1
+    store ptr %t139, $s163
+    %t140 = load ptr $s163
+    %t141 = addr @rg.vtable.0
+    store ptr %t140, $s164
+    %t142 = addr $s164
+    %t143 = index u8 %t142, 8
+    store ptr %t141, %t143
+    %t144 = addr $s164
+    %t145 = addr $s10
+    copyobj 16x8 %t144, %t145
+    %t146 = load ptr $s10
+    %t147 = addr $s10
+    %t148 = index u8 %t147, 8
+    %t149 = load ptr %t148
+    store ptr %t146, $s165
+    %t150 = addr $s165
+    %t151 = index u8 %t150, 8
+    store ptr %t149, %t151
+    %t152 = addr @rg.data.9
+    store ptr %t152, $s166
+    %t153 = load ptr $s166
+    %t154 = addr $s165
+    %t155 = call u16 @rg.callable.virtual.0(%t154, %t153)
+    %t156 = addr $s1
+    store ptr %t156, $s167
+    %t157 = load ptr $s167
+    %t158 = addr @rg.vtable.0
+    store ptr %t157, $s168
+    %t159 = addr $s168
+    %t160 = index u8 %t159, 8
+    store ptr %t158, %t160
+    %t161 = addr $s168
+    %t162 = addr $s11
+    copyobj 16x8 %t161, %t162
+    %t163 = load ptr $s11
+    %t164 = addr $s11
+    %t165 = index u8 %t164, 8
+    %t166 = load ptr %t165
+    store ptr %t163, $s169
+    %t167 = addr $s169
+    %t168 = index u8 %t167, 8
+    store ptr %t166, %t168
+    %t169 = addr @rg.data.10
+    store ptr %t169, $s170
+    %t170 = load ptr $s170
+    %t171 = addr $s169
+    %t172 = call u16 @rg.callable.virtual.0(%t171, %t170)
+    %t173 = addr $s1
+    store ptr %t173, $s171
+    %t174 = load ptr $s171
+    %t175 = addr @rg.vtable.0
+    store ptr %t174, $s172
+    %t176 = addr $s172
+    %t177 = index u8 %t176, 8
+    store ptr %t175, %t177
+    %t178 = addr $s172
+    %t179 = addr $s12
+    copyobj 16x8 %t178, %t179
+    %t180 = load ptr $s12
+    %t181 = addr $s12
+    %t182 = index u8 %t181, 8
+    %t183 = load ptr %t182
+    store ptr %t180, $s173
+    %t184 = addr $s173
+    %t185 = index u8 %t184, 8
+    store ptr %t183, %t185
+    %t186 = addr @rg.data.11
+    store ptr %t186, $s174
+    %t187 = load ptr $s174
+    %t188 = addr $s173
+    %t189 = call u16 @rg.callable.virtual.0(%t188, %t187)
+    %t190 = addr $s1
+    store ptr %t190, $s175
+    %t191 = load ptr $s175
+    %t192 = addr @rg.vtable.0
+    store ptr %t191, $s176
+    %t193 = addr $s176
+    %t194 = index u8 %t193, 8
+    store ptr %t192, %t194
+    %t195 = addr $s176
+    %t196 = addr $s13
+    copyobj 16x8 %t195, %t196
+    %t197 = load ptr $s13
+    %t198 = addr $s13
+    %t199 = index u8 %t198, 8
+    %t200 = load ptr %t199
+    store ptr %t197, $s177
+    %t201 = addr $s177
+    %t202 = index u8 %t201, 8
+    store ptr %t200, %t202
+    %t203 = addr @rg.data.12
+    store ptr %t203, $s178
+    %t204 = load ptr $s178
+    %t205 = addr $s177
+    %t206 = call u16 @rg.callable.virtual.0(%t205, %t204)
+    %t207 = addr $s1
+    store ptr %t207, $s179
+    %t208 = load ptr $s179
+    %t209 = addr @rg.vtable.0
+    store ptr %t208, $s180
+    %t210 = addr $s180
+    %t211 = index u8 %t210, 8
+    store ptr %t209, %t211
+    %t212 = addr $s180
+    %t213 = addr $s14
+    copyobj 16x8 %t212, %t213
+    %t214 = load ptr $s14
+    %t215 = addr $s14
+    %t216 = index u8 %t215, 8
+    %t217 = load ptr %t216
+    store ptr %t214, $s181
+    %t218 = addr $s181
+    %t219 = index u8 %t218, 8
+    store ptr %t217, %t219
+    %t220 = addr @rg.data.13
+    store ptr %t220, $s182
+    %t221 = load ptr $s182
+    %t222 = addr $s181
+    %t223 = call u16 @rg.callable.virtual.0(%t222, %t221)
+    %t224 = addr $s1
+    store ptr %t224, $s183
+    %t225 = load ptr $s183
+    %t226 = addr @rg.vtable.0
+    store ptr %t225, $s184
+    %t227 = addr $s184
+    %t228 = index u8 %t227, 8
+    store ptr %t226, %t228
+    %t229 = addr $s184
+    %t230 = addr $s15
+    copyobj 16x8 %t229, %t230
+    %t231 = load ptr $s15
+    %t232 = addr $s15
+    %t233 = index u8 %t232, 8
+    %t234 = load ptr %t233
+    store ptr %t231, $s185
+    %t235 = addr $s185
+    %t236 = index u8 %t235, 8
+    store ptr %t234, %t236
+    %t237 = addr @rg.data.14
+    store ptr %t237, $s186
+    %t238 = load ptr $s186
+    %t239 = addr $s185
+    %t240 = call u16 @rg.callable.virtual.0(%t239, %t238)
+    %t241 = addr $s1
+    store ptr %t241, $s187
+    %t242 = load ptr $s187
+    %t243 = addr @rg.vtable.0
+    store ptr %t242, $s188
+    %t244 = addr $s188
+    %t245 = index u8 %t244, 8
+    store ptr %t243, %t245
+    %t246 = addr $s188
+    %t247 = addr $s16
+    copyobj 16x8 %t246, %t247
+    %t248 = load ptr $s16
+    %t249 = addr $s16
+    %t250 = index u8 %t249, 8
+    %t251 = load ptr %t250
+    store ptr %t248, $s189
+    %t252 = addr $s189
+    %t253 = index u8 %t252, 8
+    store ptr %t251, %t253
+    %t254 = addr @rg.data.15
+    store ptr %t254, $s190
+    %t255 = load ptr $s190
+    %t256 = addr $s189
+    %t257 = call u16 @rg.callable.virtual.0(%t256, %t255)
+    %t258 = addr $s1
+    store ptr %t258, $s191
+    %t259 = load ptr $s191
+    %t260 = addr @rg.vtable.0
+    store ptr %t259, $s192
+    %t261 = addr $s192
+    %t262 = index u8 %t261, 8
+    store ptr %t260, %t262
+    %t263 = addr $s192
+    %t264 = addr $s17
+    copyobj 16x8 %t263, %t264
+    %t265 = load ptr $s17
+    %t266 = addr $s17
+    %t267 = index u8 %t266, 8
+    %t268 = load ptr %t267
+    store ptr %t265, $s193
+    %t269 = addr $s193
+    %t270 = index u8 %t269, 8
+    store ptr %t268, %t270
+    %t271 = addr @rg.data.16
+    store ptr %t271, $s194
+    %t272 = load ptr $s194
+    %t273 = addr $s193
+    %t274 = call u16 @rg.callable.virtual.0(%t273, %t272)
+    %t275 = addr $s1
+    store ptr %t275, $s195
+    %t276 = load ptr $s195
+    %t277 = addr @rg.vtable.0
+    store ptr %t276, $s196
+    %t278 = addr $s196
+    %t279 = index u8 %t278, 8
+    store ptr %t277, %t279
+    %t280 = addr $s196
+    %t281 = addr $s18
+    copyobj 16x8 %t280, %t281
+    %t282 = load ptr $s18
+    %t283 = addr $s18
+    %t284 = index u8 %t283, 8
+    %t285 = load ptr %t284
+    store ptr %t282, $s197
+    %t286 = addr $s197
+    %t287 = index u8 %t286, 8
+    store ptr %t285, %t287
+    %t288 = addr @rg.data.17
+    store ptr %t288, $s198
+    %t289 = load ptr $s198
+    %t290 = addr $s197
+    %t291 = call u16 @rg.callable.virtual.0(%t290, %t289)
+    %t292 = addr $s1
+    store ptr %t292, $s199
+    %t293 = load ptr $s199
+    %t294 = addr @rg.vtable.0
+    store ptr %t293, $s200
+    %t295 = addr $s200
+    %t296 = index u8 %t295, 8
+    store ptr %t294, %t296
+    %t297 = addr $s200
+    %t298 = addr $s19
+    copyobj 16x8 %t297, %t298
+    %t299 = load ptr $s19
+    %t300 = addr $s19
+    %t301 = index u8 %t300, 8
+    %t302 = load ptr %t301
+    store ptr %t299, $s201
+    %t303 = addr $s201
+    %t304 = index u8 %t303, 8
+    store ptr %t302, %t304
+    %t305 = addr @rg.data.18
+    store ptr %t305, $s202
+    %t306 = load ptr $s202
+    %t307 = addr $s201
+    %t308 = call u16 @rg.callable.virtual.0(%t307, %t306)
+    %t309 = addr $s1
+    store ptr %t309, $s203
+    %t310 = load ptr $s203
+    %t311 = addr @rg.vtable.0
+    store ptr %t310, $s204
+    %t312 = addr $s204
+    %t313 = index u8 %t312, 8
+    store ptr %t311, %t313
+    %t314 = addr $s204
+    %t315 = addr $s20
+    copyobj 16x8 %t314, %t315
+    %t316 = load ptr $s20
+    %t317 = addr $s20
+    %t318 = index u8 %t317, 8
+    %t319 = load ptr %t318
+    store ptr %t316, $s205
+    %t320 = addr $s205
+    %t321 = index u8 %t320, 8
+    store ptr %t319, %t321
+    %t322 = addr @rg.data.19
+    store ptr %t322, $s206
+    %t323 = load ptr $s206
+    %t324 = addr $s205
+    %t325 = call u16 @rg.callable.virtual.0(%t324, %t323)
+    %t326 = addr $s1
+    store ptr %t326, $s207
+    %t327 = load ptr $s207
+    %t328 = addr @rg.vtable.0
+    store ptr %t327, $s208
+    %t329 = addr $s208
+    %t330 = index u8 %t329, 8
+    store ptr %t328, %t330
+    %t331 = addr $s208
+    %t332 = addr $s21
+    copyobj 16x8 %t331, %t332
+    %t333 = load ptr $s21
+    %t334 = addr $s21
+    %t335 = index u8 %t334, 8
+    %t336 = load ptr %t335
+    store ptr %t333, $s209
+    %t337 = addr $s209
+    %t338 = index u8 %t337, 8
+    store ptr %t336, %t338
+    %t339 = addr @rg.data.20
+    store ptr %t339, $s210
+    %t340 = load ptr $s210
+    %t341 = addr $s209
+    %t342 = call u16 @rg.callable.virtual.0(%t341, %t340)
+    %t343 = addr $s1
+    store ptr %t343, $s211
+    %t344 = load ptr $s211
+    %t345 = addr @rg.vtable.0
+    store ptr %t344, $s212
+    %t346 = addr $s212
+    %t347 = index u8 %t346, 8
+    store ptr %t345, %t347
+    %t348 = addr $s212
+    %t349 = addr $s22
+    copyobj 16x8 %t348, %t349
+    %t350 = load ptr $s22
+    %t351 = addr $s22
+    %t352 = index u8 %t351, 8
+    %t353 = load ptr %t352
+    store ptr %t350, $s213
+    %t354 = addr $s213
+    %t355 = index u8 %t354, 8
+    store ptr %t353, %t355
+    %t356 = addr @rg.data.21
+    store ptr %t356, $s214
+    %t357 = load ptr $s214
+    %t358 = addr $s213
+    %t359 = call u16 @rg.callable.virtual.0(%t358, %t357)
+    %t360 = addr $s1
+    store ptr %t360, $s215
+    %t361 = load ptr $s215
+    %t362 = addr @rg.vtable.0
+    store ptr %t361, $s216
+    %t363 = addr $s216
+    %t364 = index u8 %t363, 8
+    store ptr %t362, %t364
+    %t365 = addr $s216
+    %t366 = addr $s23
+    copyobj 16x8 %t365, %t366
+    %t367 = load ptr $s23
+    %t368 = addr $s23
+    %t369 = index u8 %t368, 8
+    %t370 = load ptr %t369
+    store ptr %t367, $s217
+    %t371 = addr $s217
+    %t372 = index u8 %t371, 8
+    store ptr %t370, %t372
+    %t373 = addr @rg.data.22
+    store ptr %t373, $s218
+    %t374 = load ptr $s218
+    %t375 = addr $s217
+    %t376 = call u16 @rg.callable.virtual.0(%t375, %t374)
+    %t377 = addr $s1
+    store ptr %t377, $s219
+    %t378 = load ptr $s219
+    %t379 = addr @rg.vtable.0
+    store ptr %t378, $s220
+    %t380 = addr $s220
+    %t381 = index u8 %t380, 8
+    store ptr %t379, %t381
+    %t382 = addr $s220
+    %t383 = addr $s24
+    copyobj 16x8 %t382, %t383
+    %t384 = load ptr $s24
+    %t385 = addr $s24
+    %t386 = index u8 %t385, 8
+    %t387 = load ptr %t386
+    store ptr %t384, $s221
+    %t388 = addr $s221
+    %t389 = index u8 %t388, 8
+    store ptr %t387, %t389
+    %t390 = addr @rg.data.23
+    store ptr %t390, $s222
+    %t391 = load ptr $s222
+    %t392 = addr $s221
+    %t393 = call u16 @rg.callable.virtual.0(%t392, %t391)
+    %t394 = addr $s1
+    store ptr %t394, $s223
+    %t395 = load ptr $s223
+    %t396 = addr @rg.vtable.0
+    store ptr %t395, $s224
+    %t397 = addr $s224
+    %t398 = index u8 %t397, 8
+    store ptr %t396, %t398
+    %t399 = addr $s224
+    %t400 = addr $s25
+    copyobj 16x8 %t399, %t400
+    %t401 = load ptr $s25
+    %t402 = addr $s25
+    %t403 = index u8 %t402, 8
+    %t404 = load ptr %t403
+    store ptr %t401, $s225
+    %t405 = addr $s225
+    %t406 = index u8 %t405, 8
+    store ptr %t404, %t406
+    %t407 = addr @rg.data.24
+    store ptr %t407, $s226
+    %t408 = load ptr $s226
+    %t409 = addr $s225
+    %t410 = call u16 @rg.callable.virtual.0(%t409, %t408)
+    %t411 = addr $s1
+    store ptr %t411, $s227
+    %t412 = load ptr $s227
+    %t413 = addr @rg.vtable.0
+    store ptr %t412, $s228
+    %t414 = addr $s228
+    %t415 = index u8 %t414, 8
+    store ptr %t413, %t415
+    %t416 = addr $s228
+    %t417 = addr $s26
+    copyobj 16x8 %t416, %t417
+    %t418 = load ptr $s26
+    %t419 = addr $s26
+    %t420 = index u8 %t419, 8
+    %t421 = load ptr %t420
+    store ptr %t418, $s229
+    %t422 = addr $s229
+    %t423 = index u8 %t422, 8
+    store ptr %t421, %t423
+    %t424 = addr @rg.data.25
+    store ptr %t424, $s230
+    %t425 = load ptr $s230
+    %t426 = addr $s229
+    %t427 = call u16 @rg.callable.virtual.0(%t426, %t425)
+    %t428 = addr $s1
+    store ptr %t428, $s231
+    %t429 = load ptr $s231
+    %t430 = addr @rg.vtable.0
+    store ptr %t429, $s232
+    %t431 = addr $s232
+    %t432 = index u8 %t431, 8
+    store ptr %t430, %t432
+    %t433 = addr $s232
+    %t434 = addr $s27
+    copyobj 16x8 %t433, %t434
+    %t435 = load ptr $s27
+    %t436 = addr $s27
+    %t437 = index u8 %t436, 8
+    %t438 = load ptr %t437
+    store ptr %t435, $s233
+    %t439 = addr $s233
+    %t440 = index u8 %t439, 8
+    store ptr %t438, %t440
+    %t441 = addr @rg.data.26
+    store ptr %t441, $s234
+    %t442 = load ptr $s234
+    %t443 = addr $s233
+    %t444 = call u16 @rg.callable.virtual.0(%t443, %t442)
+    %t445 = addr $s1
+    store ptr %t445, $s235
+    %t446 = load ptr $s235
+    %t447 = addr @rg.vtable.0
+    store ptr %t446, $s236
+    %t448 = addr $s236
+    %t449 = index u8 %t448, 8
+    store ptr %t447, %t449
+    %t450 = addr $s236
+    %t451 = addr $s28
+    copyobj 16x8 %t450, %t451
+    %t452 = load ptr $s28
+    %t453 = addr $s28
+    %t454 = index u8 %t453, 8
+    %t455 = load ptr %t454
+    store ptr %t452, $s237
+    %t456 = addr $s237
+    %t457 = index u8 %t456, 8
+    store ptr %t455, %t457
+    %t458 = addr @rg.data.27
+    store ptr %t458, $s238
+    %t459 = load ptr $s238
+    %t460 = addr $s237
+    %t461 = call u16 @rg.callable.virtual.0(%t460, %t459)
+    %t462 = addr $s1
+    store ptr %t462, $s239
+    %t463 = load ptr $s239
+    %t464 = addr @rg.vtable.0
+    store ptr %t463, $s240
+    %t465 = addr $s240
+    %t466 = index u8 %t465, 8
+    store ptr %t464, %t466
+    %t467 = addr $s240
+    %t468 = addr $s29
+    copyobj 16x8 %t467, %t468
+    %t469 = load ptr $s29
+    %t470 = addr $s29
+    %t471 = index u8 %t470, 8
+    %t472 = load ptr %t471
+    store ptr %t469, $s241
+    %t473 = addr $s241
+    %t474 = index u8 %t473, 8
+    store ptr %t472, %t474
+    %t475 = addr @rg.data.28
+    store ptr %t475, $s242
+    %t476 = load ptr $s242
+    %t477 = addr $s241
+    %t478 = call u16 @rg.callable.virtual.0(%t477, %t476)
+    %t479 = addr $s1
+    store ptr %t479, $s243
+    %t480 = load ptr $s243
+    %t481 = addr @rg.vtable.0
+    store ptr %t480, $s244
+    %t482 = addr $s244
+    %t483 = index u8 %t482, 8
+    store ptr %t481, %t483
+    %t484 = addr $s244
+    %t485 = addr $s30
+    copyobj 16x8 %t484, %t485
+    %t486 = load ptr $s30
+    %t487 = addr $s30
+    %t488 = index u8 %t487, 8
+    %t489 = load ptr %t488
+    store ptr %t486, $s245
+    %t490 = addr $s245
+    %t491 = index u8 %t490, 8
+    store ptr %t489, %t491
+    %t492 = addr @rg.data.29
+    store ptr %t492, $s246
+    %t493 = load ptr $s246
+    %t494 = addr $s245
+    %t495 = call u16 @rg.callable.virtual.0(%t494, %t493)
+    %t496 = addr $s1
+    store ptr %t496, $s247
+    %t497 = load ptr $s247
+    %t498 = addr @rg.vtable.0
+    store ptr %t497, $s248
+    %t499 = addr $s248
+    %t500 = index u8 %t499, 8
+    store ptr %t498, %t500
+    %t501 = addr $s248
+    %t502 = addr $s31
+    copyobj 16x8 %t501, %t502
+    %t503 = load ptr $s31
+    %t504 = addr $s31
+    %t505 = index u8 %t504, 8
+    %t506 = load ptr %t505
+    store ptr %t503, $s249
+    %t507 = addr $s249
+    %t508 = index u8 %t507, 8
+    store ptr %t506, %t508
+    %t509 = addr @rg.data.30
+    store ptr %t509, $s250
+    %t510 = load ptr $s250
+    %t511 = addr $s249
+    %t512 = call u16 @rg.callable.virtual.0(%t511, %t510)
+    %t513 = addr $s1
+    store ptr %t513, $s251
+    %t514 = load ptr $s251
+    %t515 = addr @rg.vtable.0
+    store ptr %t514, $s252
+    %t516 = addr $s252
+    %t517 = index u8 %t516, 8
+    store ptr %t515, %t517
+    %t518 = addr $s252
+    %t519 = addr $s32
+    copyobj 16x8 %t518, %t519
+    %t520 = load ptr $s32
+    %t521 = addr $s32
+    %t522 = index u8 %t521, 8
+    %t523 = load ptr %t522
+    store ptr %t520, $s253
+    %t524 = addr $s253
+    %t525 = index u8 %t524, 8
+    store ptr %t523, %t525
+    %t526 = addr @rg.data.31
+    store ptr %t526, $s254
+    %t527 = load ptr $s254
+    %t528 = addr $s253
+    %t529 = call u16 @rg.callable.virtual.0(%t528, %t527)
+    %t530 = addr $s1
+    store ptr %t530, $s255
+    %t531 = load ptr $s255
+    %t532 = addr @rg.vtable.0
+    store ptr %t531, $s256
+    %t533 = addr $s256
+    %t534 = index u8 %t533, 8
+    store ptr %t532, %t534
+    %t535 = addr $s256
+    %t536 = addr $s33
+    copyobj 16x8 %t535, %t536
+    %t537 = load ptr $s33
+    %t538 = addr $s33
+    %t539 = index u8 %t538, 8
+    %t540 = load ptr %t539
+    store ptr %t537, $s257
+    %t541 = addr $s257
+    %t542 = index u8 %t541, 8
+    store ptr %t540, %t542
+    %t543 = addr @rg.data.32
+    store ptr %t543, $s258
+    %t544 = load ptr $s258
+    %t545 = addr $s257
+    %t546 = call u16 @rg.callable.virtual.0(%t545, %t544)
+    %t547 = addr $s1
+    store ptr %t547, $s259
+    %t548 = load ptr $s259
+    %t549 = addr @rg.vtable.0
+    store ptr %t548, $s260
+    %t550 = addr $s260
+    %t551 = index u8 %t550, 8
+    store ptr %t549, %t551
+    %t552 = addr $s260
+    %t553 = addr $s34
+    copyobj 16x8 %t552, %t553
+    %t554 = load ptr $s34
+    %t555 = addr $s34
+    %t556 = index u8 %t555, 8
+    %t557 = load ptr %t556
+    store ptr %t554, $s261
+    %t558 = addr $s261
+    %t559 = index u8 %t558, 8
+    store ptr %t557, %t559
+    %t560 = addr @rg.data.33
+    store ptr %t560, $s262
+    %t561 = load ptr $s262
+    %t562 = addr $s261
+    %t563 = call u16 @rg.callable.virtual.0(%t562, %t561)
+    %t564 = addr $s1
+    store ptr %t564, $s263
+    %t565 = load ptr $s263
+    %t566 = addr @rg.vtable.0
+    store ptr %t565, $s264
+    %t567 = addr $s264
+    %t568 = index u8 %t567, 8
+    store ptr %t566, %t568
+    %t569 = addr $s264
+    %t570 = addr $s35
+    copyobj 16x8 %t569, %t570
+    %t571 = load ptr $s35
+    %t572 = addr $s35
+    %t573 = index u8 %t572, 8
+    %t574 = load ptr %t573
+    store ptr %t571, $s265
+    %t575 = addr $s265
+    %t576 = index u8 %t575, 8
+    store ptr %t574, %t576
+    %t577 = addr @rg.data.34
+    store ptr %t577, $s266
+    %t578 = load ptr $s266
+    %t579 = addr $s265
+    %t580 = call u16 @rg.callable.virtual.0(%t579, %t578)
+    %t581 = addr $s1
+    store ptr %t581, $s267
+    %t582 = load ptr $s267
+    %t583 = addr @rg.vtable.0
+    store ptr %t582, $s268
+    %t584 = addr $s268
+    %t585 = index u8 %t584, 8
+    store ptr %t583, %t585
+    %t586 = addr $s268
+    %t587 = addr $s36
+    copyobj 16x8 %t586, %t587
+    %t588 = load ptr $s36
+    %t589 = addr $s36
+    %t590 = index u8 %t589, 8
+    %t591 = load ptr %t590
+    store ptr %t588, $s269
+    %t592 = addr $s269
+    %t593 = index u8 %t592, 8
+    store ptr %t591, %t593
+    %t594 = addr @rg.data.35
+    store ptr %t594, $s270
+    %t595 = load ptr $s270
+    %t596 = addr $s269
+    %t597 = call u16 @rg.callable.virtual.0(%t596, %t595)
+    %t598 = addr $s1
+    store ptr %t598, $s271
+    %t599 = load ptr $s271
+    %t600 = addr @rg.vtable.0
+    store ptr %t599, $s272
+    %t601 = addr $s272
+    %t602 = index u8 %t601, 8
+    store ptr %t600, %t602
+    %t603 = addr $s272
+    %t604 = addr $s37
+    copyobj 16x8 %t603, %t604
+    %t605 = load ptr $s37
+    %t606 = addr $s37
+    %t607 = index u8 %t606, 8
+    %t608 = load ptr %t607
+    store ptr %t605, $s273
+    %t609 = addr $s273
+    %t610 = index u8 %t609, 8
+    store ptr %t608, %t610
+    %t611 = addr @rg.data.36
+    store ptr %t611, $s274
+    %t612 = load ptr $s274
+    %t613 = addr $s273
+    %t614 = call u16 @rg.callable.virtual.0(%t613, %t612)
+    %t615 = addr $s1
+    store ptr %t615, $s275
+    %t616 = load ptr $s275
+    %t617 = addr @rg.vtable.0
+    store ptr %t616, $s276
+    %t618 = addr $s276
+    %t619 = index u8 %t618, 8
+    store ptr %t617, %t619
+    %t620 = addr $s276
+    %t621 = addr $s38
+    copyobj 16x8 %t620, %t621
+    %t622 = load ptr $s38
+    %t623 = addr $s38
+    %t624 = index u8 %t623, 8
+    %t625 = load ptr %t624
+    store ptr %t622, $s277
+    %t626 = addr $s277
+    %t627 = index u8 %t626, 8
+    store ptr %t625, %t627
+    %t628 = addr @rg.data.37
+    store ptr %t628, $s278
+    %t629 = load ptr $s278
+    %t630 = addr $s277
+    %t631 = call u16 @rg.callable.virtual.0(%t630, %t629)
+    %t632 = addr $s1
+    store ptr %t632, $s279
+    %t633 = load ptr $s279
+    %t634 = addr @rg.vtable.0
+    store ptr %t633, $s280
+    %t635 = addr $s280
+    %t636 = index u8 %t635, 8
+    store ptr %t634, %t636
+    %t637 = addr $s280
+    %t638 = addr $s39
+    copyobj 16x8 %t637, %t638
+    %t639 = load ptr $s39
+    %t640 = addr $s39
+    %t641 = index u8 %t640, 8
+    %t642 = load ptr %t641
+    store ptr %t639, $s281
+    %t643 = addr $s281
+    %t644 = index u8 %t643, 8
+    store ptr %t642, %t644
+    %t645 = addr @rg.data.38
+    store ptr %t645, $s282
+    %t646 = load ptr $s282
+    %t647 = addr $s281
+    %t648 = call u16 @rg.callable.virtual.0(%t647, %t646)
+    %t649 = addr $s1
+    store ptr %t649, $s283
+    %t650 = load ptr $s283
+    %t651 = addr @rg.vtable.0
+    store ptr %t650, $s284
+    %t652 = addr $s284
+    %t653 = index u8 %t652, 8
+    store ptr %t651, %t653
+    %t654 = addr $s284
+    %t655 = addr $s40
+    copyobj 16x8 %t654, %t655
+    %t656 = load ptr $s40
+    %t657 = addr $s40
+    %t658 = index u8 %t657, 8
+    %t659 = load ptr %t658
+    store ptr %t656, $s285
+    %t660 = addr $s285
+    %t661 = index u8 %t660, 8
+    store ptr %t659, %t661
+    %t662 = addr @rg.data.39
+    store ptr %t662, $s286
+    %t663 = load ptr $s286
+    %t664 = addr $s285
+    %t665 = call u16 @rg.callable.virtual.0(%t664, %t663)
+    %t666 = addr $s1
+    store ptr %t666, $s287
+    %t667 = load ptr $s287
+    %t668 = addr @rg.vtable.0
+    store ptr %t667, $s288
+    %t669 = addr $s288
+    %t670 = index u8 %t669, 8
+    store ptr %t668, %t670
+    %t671 = addr $s288
+    %t672 = addr $s41
+    copyobj 16x8 %t671, %t672
+    %t673 = load ptr $s41
+    %t674 = addr $s41
+    %t675 = index u8 %t674, 8
+    %t676 = load ptr %t675
+    store ptr %t673, $s289
+    %t677 = addr $s289
+    %t678 = index u8 %t677, 8
+    store ptr %t676, %t678
+    %t679 = addr @rg.data.40
+    store ptr %t679, $s290
+    %t680 = load ptr $s290
+    %t681 = addr $s289
+    %t682 = call u16 @rg.callable.virtual.0(%t681, %t680)
+    %t683 = addr $s1
+    store ptr %t683, $s291
+    %t684 = load ptr $s291
+    %t685 = addr @rg.vtable.0
+    store ptr %t684, $s292
+    %t686 = addr $s292
+    %t687 = index u8 %t686, 8
+    store ptr %t685, %t687
+    %t688 = addr $s292
+    %t689 = addr $s42
+    copyobj 16x8 %t688, %t689
+    %t690 = load ptr $s42
+    %t691 = addr $s42
+    %t692 = index u8 %t691, 8
+    %t693 = load ptr %t692
+    store ptr %t690, $s293
+    %t694 = addr $s293
+    %t695 = index u8 %t694, 8
+    store ptr %t693, %t695
+    %t696 = addr @rg.data.41
+    store ptr %t696, $s294
+    %t697 = load ptr $s294
+    %t698 = addr $s293
+    %t699 = call u16 @rg.callable.virtual.0(%t698, %t697)
+    %t700 = addr $s1
+    store ptr %t700, $s295
+    %t701 = load ptr $s295
+    %t702 = addr @rg.vtable.0
+    store ptr %t701, $s296
+    %t703 = addr $s296
+    %t704 = index u8 %t703, 8
+    store ptr %t702, %t704
+    %t705 = addr $s296
+    %t706 = addr $s43
+    copyobj 16x8 %t705, %t706
+    %t707 = load ptr $s43
+    %t708 = addr $s43
+    %t709 = index u8 %t708, 8
+    %t710 = load ptr %t709
+    store ptr %t707, $s297
+    %t711 = addr $s297
+    %t712 = index u8 %t711, 8
+    store ptr %t710, %t712
+    %t713 = addr @rg.data.42
+    store ptr %t713, $s298
+    %t714 = load ptr $s298
+    %t715 = addr $s297
+    %t716 = call u16 @rg.callable.virtual.0(%t715, %t714)
+    %t717 = addr $s1
+    store ptr %t717, $s299
+    %t718 = load ptr $s299
+    %t719 = addr @rg.vtable.0
+    store ptr %t718, $s300
+    %t720 = addr $s300
+    %t721 = index u8 %t720, 8
+    store ptr %t719, %t721
+    %t722 = addr $s300
+    %t723 = addr $s44
+    copyobj 16x8 %t722, %t723
+    %t724 = load ptr $s44
+    %t725 = addr $s44
+    %t726 = index u8 %t725, 8
+    %t727 = load ptr %t726
+    store ptr %t724, $s301
+    %t728 = addr $s301
+    %t729 = index u8 %t728, 8
+    store ptr %t727, %t729
+    %t730 = addr @rg.data.43
+    store ptr %t730, $s302
+    %t731 = load ptr $s302
+    %t732 = addr $s301
+    %t733 = call u16 @rg.callable.virtual.0(%t732, %t731)
+    %t734 = addr $s1
+    store ptr %t734, $s303
+    %t735 = load ptr $s303
+    %t736 = addr @rg.vtable.0
+    store ptr %t735, $s304
+    %t737 = addr $s304
+    %t738 = index u8 %t737, 8
+    store ptr %t736, %t738
+    %t739 = addr $s304
+    %t740 = addr $s45
+    copyobj 16x8 %t739, %t740
+    %t741 = load ptr $s45
+    %t742 = addr $s45
+    %t743 = index u8 %t742, 8
+    %t744 = load ptr %t743
+    store ptr %t741, $s305
+    %t745 = addr $s305
+    %t746 = index u8 %t745, 8
+    store ptr %t744, %t746
+    %t747 = addr @rg.data.44
+    store ptr %t747, $s306
+    %t748 = load ptr $s306
+    %t749 = addr $s305
+    %t750 = call u16 @rg.callable.virtual.0(%t749, %t748)
+    %t751 = addr $s1
+    store ptr %t751, $s307
+    %t752 = load ptr $s307
+    %t753 = addr @rg.vtable.0
+    store ptr %t752, $s308
+    %t754 = addr $s308
+    %t755 = index u8 %t754, 8
+    store ptr %t753, %t755
+    %t756 = addr $s308
+    %t757 = addr $s46
+    copyobj 16x8 %t756, %t757
+    %t758 = load ptr $s46
+    %t759 = addr $s46
+    %t760 = index u8 %t759, 8
+    %t761 = load ptr %t760
+    store ptr %t758, $s309
+    %t762 = addr $s309
+    %t763 = index u8 %t762, 8
+    store ptr %t761, %t763
+    %t764 = addr @rg.data.45
+    store ptr %t764, $s310
+    %t765 = load ptr $s310
+    %t766 = addr $s309
+    %t767 = call u16 @rg.callable.virtual.0(%t766, %t765)
+    %t768 = addr $s1
+    store ptr %t768, $s311
+    %t769 = load ptr $s311
+    %t770 = addr @rg.vtable.0
+    store ptr %t769, $s312
+    %t771 = addr $s312
+    %t772 = index u8 %t771, 8
+    store ptr %t770, %t772
+    %t773 = addr $s312
+    %t774 = addr $s47
+    copyobj 16x8 %t773, %t774
+    %t775 = load ptr $s47
+    %t776 = addr $s47
+    %t777 = index u8 %t776, 8
+    %t778 = load ptr %t777
+    store ptr %t775, $s313
+    %t779 = addr $s313
+    %t780 = index u8 %t779, 8
+    store ptr %t778, %t780
+    %t781 = addr @rg.data.46
+    store ptr %t781, $s314
+    %t782 = load ptr $s314
+    %t783 = addr $s313
+    %t784 = call u16 @rg.callable.virtual.0(%t783, %t782)
+    %t785 = addr $s1
+    store ptr %t785, $s315
+    %t786 = load ptr $s315
+    %t787 = addr @rg.vtable.0
+    store ptr %t786, $s316
+    %t788 = addr $s316
+    %t789 = index u8 %t788, 8
+    store ptr %t787, %t789
+    %t790 = addr $s316
+    %t791 = addr $s48
+    copyobj 16x8 %t790, %t791
+    %t792 = load ptr $s48
+    %t793 = addr $s48
+    %t794 = index u8 %t793, 8
+    %t795 = load ptr %t794
+    store ptr %t792, $s317
+    %t796 = addr $s317
+    %t797 = index u8 %t796, 8
+    store ptr %t795, %t797
+    %t798 = addr @rg.data.47
+    store ptr %t798, $s318
+    %t799 = load ptr $s318
+    %t800 = addr $s317
+    %t801 = call u16 @rg.callable.virtual.0(%t800, %t799)
+    %t802 = addr $s1
+    store ptr %t802, $s319
+    %t803 = load ptr $s319
+    %t804 = addr @rg.vtable.0
+    store ptr %t803, $s320
+    %t805 = addr $s320
+    %t806 = index u8 %t805, 8
+    store ptr %t804, %t806
+    %t807 = addr $s320
+    %t808 = addr $s49
+    copyobj 16x8 %t807, %t808
+    %t809 = load ptr $s49
+    %t810 = addr $s49
+    %t811 = index u8 %t810, 8
+    %t812 = load ptr %t811
+    store ptr %t809, $s321
+    %t813 = addr $s321
+    %t814 = index u8 %t813, 8
+    store ptr %t812, %t814
+    %t815 = addr @rg.data.48
+    store ptr %t815, $s322
+    %t816 = load ptr $s322
+    %t817 = addr $s321
+    %t818 = call u16 @rg.callable.virtual.0(%t817, %t816)
+    %t819 = addr $s1
+    store ptr %t819, $s323
+    %t820 = load ptr $s323
+    %t821 = addr @rg.vtable.0
+    store ptr %t820, $s324
+    %t822 = addr $s324
+    %t823 = index u8 %t822, 8
+    store ptr %t821, %t823
+    %t824 = addr $s324
+    %t825 = addr $s50
+    copyobj 16x8 %t824, %t825
+    %t826 = load ptr $s50
+    %t827 = addr $s50
+    %t828 = index u8 %t827, 8
+    %t829 = load ptr %t828
+    store ptr %t826, $s325
+    %t830 = addr $s325
+    %t831 = index u8 %t830, 8
+    store ptr %t829, %t831
+    %t832 = addr @rg.data.49
+    store ptr %t832, $s326
+    %t833 = load ptr $s326
+    %t834 = addr $s325
+    %t835 = call u16 @rg.callable.virtual.0(%t834, %t833)
+    %t836 = addr $s1
+    store ptr %t836, $s327
+    %t837 = load ptr $s327
+    %t838 = addr @rg.vtable.0
+    store ptr %t837, $s328
+    %t839 = addr $s328
+    %t840 = index u8 %t839, 8
+    store ptr %t838, %t840
+    %t841 = addr $s328
+    %t842 = addr $s51
+    copyobj 16x8 %t841, %t842
+    %t843 = load ptr $s51
+    %t844 = addr $s51
+    %t845 = index u8 %t844, 8
+    %t846 = load ptr %t845
+    store ptr %t843, $s329
+    %t847 = addr $s329
+    %t848 = index u8 %t847, 8
+    store ptr %t846, %t848
+    %t849 = addr @rg.data.50
+    store ptr %t849, $s330
+    %t850 = load ptr $s330
+    %t851 = addr $s329
+    %t852 = call u16 @rg.callable.virtual.0(%t851, %t850)
+    %t853 = addr $s1
+    store ptr %t853, $s331
+    %t854 = load ptr $s331
+    %t855 = addr @rg.vtable.0
+    store ptr %t854, $s332
+    %t856 = addr $s332
+    %t857 = index u8 %t856, 8
+    store ptr %t855, %t857
+    %t858 = addr $s332
+    %t859 = addr $s52
+    copyobj 16x8 %t858, %t859
+    %t860 = load ptr $s52
+    %t861 = addr $s52
+    %t862 = index u8 %t861, 8
+    %t863 = load ptr %t862
+    store ptr %t860, $s333
+    %t864 = addr $s333
+    %t865 = index u8 %t864, 8
+    store ptr %t863, %t865
+    %t866 = addr @rg.data.51
+    store ptr %t866, $s334
+    %t867 = load ptr $s334
+    %t868 = addr $s333
+    %t869 = call u16 @rg.callable.virtual.0(%t868, %t867)
+    %t870 = addr $s1
+    store ptr %t870, $s335
+    %t871 = load ptr $s335
+    %t872 = addr @rg.vtable.0
+    store ptr %t871, $s336
+    %t873 = addr $s336
+    %t874 = index u8 %t873, 8
+    store ptr %t872, %t874
+    %t875 = addr $s336
+    %t876 = addr $s53
+    copyobj 16x8 %t875, %t876
+    %t877 = load ptr $s53
+    %t878 = addr $s53
+    %t879 = index u8 %t878, 8
+    %t880 = load ptr %t879
+    store ptr %t877, $s337
+    %t881 = addr $s337
+    %t882 = index u8 %t881, 8
+    store ptr %t880, %t882
+    %t883 = addr @rg.data.52
+    store ptr %t883, $s338
+    %t884 = load ptr $s338
+    %t885 = addr $s337
+    %t886 = call u16 @rg.callable.virtual.0(%t885, %t884)
+    %t887 = addr $s1
+    store ptr %t887, $s339
+    %t888 = load ptr $s339
+    %t889 = addr @rg.vtable.0
+    store ptr %t888, $s340
+    %t890 = addr $s340
+    %t891 = index u8 %t890, 8
+    store ptr %t889, %t891
+    %t892 = addr $s340
+    %t893 = addr $s54
+    copyobj 16x8 %t892, %t893
+    %t894 = load ptr $s54
+    %t895 = addr $s54
+    %t896 = index u8 %t895, 8
+    %t897 = load ptr %t896
+    store ptr %t894, $s341
+    %t898 = addr $s341
+    %t899 = index u8 %t898, 8
+    store ptr %t897, %t899
+    %t900 = addr @rg.data.53
+    store ptr %t900, $s342
+    %t901 = load ptr $s342
+    %t902 = addr $s341
+    %t903 = call u16 @rg.callable.virtual.0(%t902, %t901)
+    %t904 = addr $s1
+    store ptr %t904, $s343
+    %t905 = load ptr $s343
+    %t906 = addr @rg.vtable.0
+    store ptr %t905, $s344
+    %t907 = addr $s344
+    %t908 = index u8 %t907, 8
+    store ptr %t906, %t908
+    %t909 = addr $s344
+    %t910 = addr $s55
+    copyobj 16x8 %t909, %t910
+    %t911 = load ptr $s55
+    %t912 = addr $s55
+    %t913 = index u8 %t912, 8
+    %t914 = load ptr %t913
+    store ptr %t911, $s345
+    %t915 = addr $s345
+    %t916 = index u8 %t915, 8
+    store ptr %t914, %t916
+    %t917 = addr @rg.data.54
+    store ptr %t917, $s346
+    %t918 = load ptr $s346
+    %t919 = addr $s345
+    %t920 = call u16 @rg.callable.virtual.0(%t919, %t918)
+    %t921 = addr $s1
+    store ptr %t921, $s347
+    %t922 = load ptr $s347
+    %t923 = addr @rg.vtable.0
+    store ptr %t922, $s348
+    %t924 = addr $s348
+    %t925 = index u8 %t924, 8
+    store ptr %t923, %t925
+    %t926 = addr $s348
+    %t927 = addr $s56
+    copyobj 16x8 %t926, %t927
+    %t928 = load ptr $s56
+    %t929 = addr $s56
+    %t930 = index u8 %t929, 8
+    %t931 = load ptr %t930
+    store ptr %t928, $s349
+    %t932 = addr $s349
+    %t933 = index u8 %t932, 8
+    store ptr %t931, %t933
+    %t934 = addr @rg.data.55
+    store ptr %t934, $s350
+    %t935 = load ptr $s350
+    %t936 = addr $s349
+    %t937 = call u16 @rg.callable.virtual.0(%t936, %t935)
+    %t938 = addr $s1
+    store ptr %t938, $s351
+    %t939 = load ptr $s351
+    %t940 = addr @rg.vtable.0
+    store ptr %t939, $s352
+    %t941 = addr $s352
+    %t942 = index u8 %t941, 8
+    store ptr %t940, %t942
+    %t943 = addr $s352
+    %t944 = addr $s57
+    copyobj 16x8 %t943, %t944
+    %t945 = load ptr $s57
+    %t946 = addr $s57
+    %t947 = index u8 %t946, 8
+    %t948 = load ptr %t947
+    store ptr %t945, $s353
+    %t949 = addr $s353
+    %t950 = index u8 %t949, 8
+    store ptr %t948, %t950
+    %t951 = addr @rg.data.56
+    store ptr %t951, $s354
+    %t952 = load ptr $s354
+    %t953 = addr $s353
+    %t954 = call u16 @rg.callable.virtual.0(%t953, %t952)
+    %t955 = addr $s1
+    store ptr %t955, $s355
+    %t956 = load ptr $s355
+    %t957 = addr @rg.vtable.0
+    store ptr %t956, $s356
+    %t958 = addr $s356
+    %t959 = index u8 %t958, 8
+    store ptr %t957, %t959
+    %t960 = addr $s356
+    %t961 = addr $s58
+    copyobj 16x8 %t960, %t961
+    %t962 = load ptr $s58
+    %t963 = addr $s58
+    %t964 = index u8 %t963, 8
+    %t965 = load ptr %t964
+    store ptr %t962, $s357
+    %t966 = addr $s357
+    %t967 = index u8 %t966, 8
+    store ptr %t965, %t967
+    %t968 = addr @rg.data.57
+    store ptr %t968, $s358
+    %t969 = load ptr $s358
+    %t970 = addr $s357
+    %t971 = call u16 @rg.callable.virtual.0(%t970, %t969)
+    %t972 = addr $s1
+    store ptr %t972, $s359
+    %t973 = load ptr $s359
+    %t974 = addr @rg.vtable.0
+    store ptr %t973, $s360
+    %t975 = addr $s360
+    %t976 = index u8 %t975, 8
+    store ptr %t974, %t976
+    %t977 = addr $s360
+    %t978 = addr $s59
+    copyobj 16x8 %t977, %t978
+    %t979 = load ptr $s59
+    %t980 = addr $s59
+    %t981 = index u8 %t980, 8
+    %t982 = load ptr %t981
+    store ptr %t979, $s361
+    %t983 = addr $s361
+    %t984 = index u8 %t983, 8
+    store ptr %t982, %t984
+    %t985 = addr @rg.data.58
+    store ptr %t985, $s362
+    %t986 = load ptr $s362
+    %t987 = addr $s361
+    %t988 = call u16 @rg.callable.virtual.0(%t987, %t986)
+    %t989 = addr $s1
+    store ptr %t989, $s363
+    %t990 = load ptr $s363
+    %t991 = addr @rg.vtable.0
+    store ptr %t990, $s364
+    %t992 = addr $s364
+    %t993 = index u8 %t992, 8
+    store ptr %t991, %t993
+    %t994 = addr $s364
+    %t995 = addr $s60
+    copyobj 16x8 %t994, %t995
+    %t996 = load ptr $s60
+    %t997 = addr $s60
+    %t998 = index u8 %t997, 8
+    %t999 = load ptr %t998
+    store ptr %t996, $s365
+    %t1000 = addr $s365
+    %t1001 = index u8 %t1000, 8
+    store ptr %t999, %t1001
+    %t1002 = addr @rg.data.59
+    store ptr %t1002, $s366
+    %t1003 = load ptr $s366
+    %t1004 = addr $s365
+    %t1005 = call u16 @rg.callable.virtual.0(%t1004, %t1003)
+    %t1006 = addr $s1
+    store ptr %t1006, $s367
+    %t1007 = load ptr $s367
+    %t1008 = addr @rg.vtable.0
+    store ptr %t1007, $s368
+    %t1009 = addr $s368
+    %t1010 = index u8 %t1009, 8
+    store ptr %t1008, %t1010
+    %t1011 = addr $s368
+    %t1012 = addr $s61
+    copyobj 16x8 %t1011, %t1012
+    %t1013 = load ptr $s61
+    %t1014 = addr $s61
+    %t1015 = index u8 %t1014, 8
+    %t1016 = load ptr %t1015
+    store ptr %t1013, $s369
+    %t1017 = addr $s369
+    %t1018 = index u8 %t1017, 8
+    store ptr %t1016, %t1018
+    %t1019 = addr @rg.data.60
+    store ptr %t1019, $s370
+    %t1020 = load ptr $s370
+    %t1021 = addr $s369
+    %t1022 = call u16 @rg.callable.virtual.0(%t1021, %t1020)
+    %t1023 = addr $s1
+    store ptr %t1023, $s371
+    %t1024 = load ptr $s371
+    %t1025 = addr @rg.vtable.0
+    store ptr %t1024, $s372
+    %t1026 = addr $s372
+    %t1027 = index u8 %t1026, 8
+    store ptr %t1025, %t1027
+    %t1028 = addr $s372
+    %t1029 = addr $s62
+    copyobj 16x8 %t1028, %t1029
+    %t1030 = load ptr $s62
+    %t1031 = addr $s62
+    %t1032 = index u8 %t1031, 8
+    %t1033 = load ptr %t1032
+    store ptr %t1030, $s373
+    %t1034 = addr $s373
+    %t1035 = index u8 %t1034, 8
+    store ptr %t1033, %t1035
+    %t1036 = addr @rg.data.61
+    store ptr %t1036, $s374
+    %t1037 = load ptr $s374
+    %t1038 = addr $s373
+    %t1039 = call u16 @rg.callable.virtual.0(%t1038, %t1037)
+    %t1040 = addr $s1
+    store ptr %t1040, $s375
+    %t1041 = load ptr $s375
+    %t1042 = addr @rg.vtable.0
+    store ptr %t1041, $s376
+    %t1043 = addr $s376
+    %t1044 = index u8 %t1043, 8
+    store ptr %t1042, %t1044
+    %t1045 = addr $s376
+    %t1046 = addr $s63
+    copyobj 16x8 %t1045, %t1046
+    %t1047 = load ptr $s63
+    %t1048 = addr $s63
+    %t1049 = index u8 %t1048, 8
+    %t1050 = load ptr %t1049
+    store ptr %t1047, $s377
+    %t1051 = addr $s377
+    %t1052 = index u8 %t1051, 8
+    store ptr %t1050, %t1052
+    %t1053 = addr @rg.data.62
+    store ptr %t1053, $s378
+    %t1054 = load ptr $s378
+    %t1055 = addr $s377
+    %t1056 = call u16 @rg.callable.virtual.0(%t1055, %t1054)
+    %t1057 = addr $s1
+    store ptr %t1057, $s379
+    %t1058 = load ptr $s379
+    %t1059 = addr @rg.vtable.0
+    store ptr %t1058, $s380
+    %t1060 = addr $s380
+    %t1061 = index u8 %t1060, 8
+    store ptr %t1059, %t1061
+    %t1062 = addr $s380
+    %t1063 = addr $s64
+    copyobj 16x8 %t1062, %t1063
+    %t1064 = load ptr $s64
+    %t1065 = addr $s64
+    %t1066 = index u8 %t1065, 8
+    %t1067 = load ptr %t1066
+    store ptr %t1064, $s381
+    %t1068 = addr $s381
+    %t1069 = index u8 %t1068, 8
+    store ptr %t1067, %t1069
+    %t1070 = addr @rg.data.63
+    store ptr %t1070, $s382
+    %t1071 = load ptr $s382
+    %t1072 = addr $s381
+    %t1073 = call u16 @rg.callable.virtual.0(%t1072, %t1071)
+    %t1074 = addr $s1
+    store ptr %t1074, $s383
+    %t1075 = load ptr $s383
+    %t1076 = addr @rg.vtable.0
+    store ptr %t1075, $s384
+    %t1077 = addr $s384
+    %t1078 = index u8 %t1077, 8
+    store ptr %t1076, %t1078
+    %t1079 = addr $s384
+    %t1080 = addr $s65
+    copyobj 16x8 %t1079, %t1080
+    %t1081 = load ptr $s65
+    %t1082 = addr $s65
+    %t1083 = index u8 %t1082, 8
+    %t1084 = load ptr %t1083
+    store ptr %t1081, $s385
+    %t1085 = addr $s385
+    %t1086 = index u8 %t1085, 8
+    store ptr %t1084, %t1086
+    %t1087 = addr @rg.data.64
+    store ptr %t1087, $s386
+    %t1088 = load ptr $s386
+    %t1089 = addr $s385
+    %t1090 = call u16 @rg.callable.virtual.0(%t1089, %t1088)
+    %t1091 = addr $s1
+    store ptr %t1091, $s387
+    %t1092 = load ptr $s387
+    %t1093 = addr @rg.vtable.0
+    store ptr %t1092, $s388
+    %t1094 = addr $s388
+    %t1095 = index u8 %t1094, 8
+    store ptr %t1093, %t1095
+    %t1096 = addr $s388
+    %t1097 = addr $s66
+    copyobj 16x8 %t1096, %t1097
+    %t1098 = load ptr $s66
+    %t1099 = addr $s66
+    %t1100 = index u8 %t1099, 8
+    %t1101 = load ptr %t1100
+    store ptr %t1098, $s389
+    %t1102 = addr $s389
+    %t1103 = index u8 %t1102, 8
+    store ptr %t1101, %t1103
+    %t1104 = addr @rg.data.65
+    store ptr %t1104, $s390
+    %t1105 = load ptr $s390
+    %t1106 = addr $s389
+    %t1107 = call u16 @rg.callable.virtual.0(%t1106, %t1105)
+    %t1108 = addr $s1
+    store ptr %t1108, $s391
+    %t1109 = load ptr $s391
+    %t1110 = addr @rg.vtable.0
+    store ptr %t1109, $s392
+    %t1111 = addr $s392
+    %t1112 = index u8 %t1111, 8
+    store ptr %t1110, %t1112
+    %t1113 = addr $s392
+    %t1114 = addr $s67
+    copyobj 16x8 %t1113, %t1114
+    %t1115 = load ptr $s67
+    %t1116 = addr $s67
+    %t1117 = index u8 %t1116, 8
+    %t1118 = load ptr %t1117
+    store ptr %t1115, $s393
+    %t1119 = addr $s393
+    %t1120 = index u8 %t1119, 8
+    store ptr %t1118, %t1120
+    %t1121 = addr @rg.data.66
+    store ptr %t1121, $s394
+    %t1122 = load ptr $s394
+    %t1123 = addr $s393
+    %t1124 = call u16 @rg.callable.virtual.0(%t1123, %t1122)
+    %t1125 = addr $s1
+    store ptr %t1125, $s395
+    %t1126 = load ptr $s395
+    %t1127 = addr @rg.vtable.0
+    store ptr %t1126, $s396
+    %t1128 = addr $s396
+    %t1129 = index u8 %t1128, 8
+    store ptr %t1127, %t1129
+    %t1130 = addr $s396
+    %t1131 = addr $s68
+    copyobj 16x8 %t1130, %t1131
+    %t1132 = load ptr $s68
+    %t1133 = addr $s68
+    %t1134 = index u8 %t1133, 8
+    %t1135 = load ptr %t1134
+    store ptr %t1132, $s397
+    %t1136 = addr $s397
+    %t1137 = index u8 %t1136, 8
+    store ptr %t1135, %t1137
+    %t1138 = addr @rg.data.67
+    store ptr %t1138, $s398
+    %t1139 = load ptr $s398
+    %t1140 = addr $s397
+    %t1141 = call u16 @rg.callable.virtual.0(%t1140, %t1139)
+    %t1142 = addr $s1
+    store ptr %t1142, $s399
+    %t1143 = load ptr $s399
+    %t1144 = addr @rg.vtable.0
+    store ptr %t1143, $s400
+    %t1145 = addr $s400
+    %t1146 = index u8 %t1145, 8
+    store ptr %t1144, %t1146
+    %t1147 = addr $s400
+    %t1148 = addr $s69
+    copyobj 16x8 %t1147, %t1148
+    %t1149 = load ptr $s69
+    %t1150 = addr $s69
+    %t1151 = index u8 %t1150, 8
+    %t1152 = load ptr %t1151
+    store ptr %t1149, $s401
+    %t1153 = addr $s401
+    %t1154 = index u8 %t1153, 8
+    store ptr %t1152, %t1154
+    %t1155 = addr @rg.data.68
+    store ptr %t1155, $s402
+    %t1156 = load ptr $s402
+    %t1157 = addr $s401
+    %t1158 = call u16 @rg.callable.virtual.0(%t1157, %t1156)
+    %t1159 = addr $s1
+    store ptr %t1159, $s403
+    %t1160 = load ptr $s403
+    %t1161 = addr @rg.vtable.0
+    store ptr %t1160, $s404
+    %t1162 = addr $s404
+    %t1163 = index u8 %t1162, 8
+    store ptr %t1161, %t1163
+    %t1164 = addr $s404
+    %t1165 = addr $s70
+    copyobj 16x8 %t1164, %t1165
+    %t1166 = load ptr $s70
+    %t1167 = addr $s70
+    %t1168 = index u8 %t1167, 8
+    %t1169 = load ptr %t1168
+    store ptr %t1166, $s405
+    %t1170 = addr $s405
+    %t1171 = index u8 %t1170, 8
+    store ptr %t1169, %t1171
+    %t1172 = addr @rg.data.69
+    store ptr %t1172, $s406
+    %t1173 = load ptr $s406
+    %t1174 = addr $s405
+    %t1175 = call u16 @rg.callable.virtual.0(%t1174, %t1173)
+    %t1176 = addr $s1
+    store ptr %t1176, $s407
+    %t1177 = load ptr $s407
+    %t1178 = addr @rg.vtable.0
+    store ptr %t1177, $s408
+    %t1179 = addr $s408
+    %t1180 = index u8 %t1179, 8
+    store ptr %t1178, %t1180
+    %t1181 = addr $s408
+    %t1182 = addr $s71
+    copyobj 16x8 %t1181, %t1182
+    %t1183 = load ptr $s71
+    %t1184 = addr $s71
+    %t1185 = index u8 %t1184, 8
+    %t1186 = load ptr %t1185
+    store ptr %t1183, $s409
+    %t1187 = addr $s409
+    %t1188 = index u8 %t1187, 8
+    store ptr %t1186, %t1188
+    %t1189 = addr @rg.data.70
+    store ptr %t1189, $s410
+    %t1190 = load ptr $s410
+    %t1191 = addr $s409
+    %t1192 = call u16 @rg.callable.virtual.0(%t1191, %t1190)
+    %t1193 = addr $s1
+    store ptr %t1193, $s411
+    %t1194 = load ptr $s411
+    %t1195 = addr @rg.vtable.0
+    store ptr %t1194, $s412
+    %t1196 = addr $s412
+    %t1197 = index u8 %t1196, 8
+    store ptr %t1195, %t1197
+    %t1198 = addr $s412
+    %t1199 = addr $s72
+    copyobj 16x8 %t1198, %t1199
+    %t1200 = load ptr $s72
+    %t1201 = addr $s72
+    %t1202 = index u8 %t1201, 8
+    %t1203 = load ptr %t1202
+    store ptr %t1200, $s413
+    %t1204 = addr $s413
+    %t1205 = index u8 %t1204, 8
+    store ptr %t1203, %t1205
+    %t1206 = addr @rg.data.71
+    store ptr %t1206, $s414
+    %t1207 = load ptr $s414
+    %t1208 = addr $s413
+    %t1209 = call u16 @rg.callable.virtual.0(%t1208, %t1207)
+    %t1210 = addr $s1
+    store ptr %t1210, $s415
+    %t1211 = load ptr $s415
+    %t1212 = addr @rg.vtable.0
+    store ptr %t1211, $s416
+    %t1213 = addr $s416
+    %t1214 = index u8 %t1213, 8
+    store ptr %t1212, %t1214
+    %t1215 = addr $s416
+    %t1216 = addr $s73
+    copyobj 16x8 %t1215, %t1216
+    %t1217 = load ptr $s73
+    %t1218 = addr $s73
+    %t1219 = index u8 %t1218, 8
+    %t1220 = load ptr %t1219
+    store ptr %t1217, $s417
+    %t1221 = addr $s417
+    %t1222 = index u8 %t1221, 8
+    store ptr %t1220, %t1222
+    %t1223 = addr @rg.data.72
+    store ptr %t1223, $s418
+    %t1224 = load ptr $s418
+    %t1225 = addr $s417
+    %t1226 = call u16 @rg.callable.virtual.0(%t1225, %t1224)
+    %t1227 = addr $s1
+    store ptr %t1227, $s419
+    %t1228 = load ptr $s419
+    %t1229 = addr @rg.vtable.0
+    store ptr %t1228, $s420
+    %t1230 = addr $s420
+    %t1231 = index u8 %t1230, 8
+    store ptr %t1229, %t1231
+    %t1232 = addr $s420
+    %t1233 = addr $s74
+    copyobj 16x8 %t1232, %t1233
+    %t1234 = load ptr $s74
+    %t1235 = addr $s74
+    %t1236 = index u8 %t1235, 8
+    %t1237 = load ptr %t1236
+    store ptr %t1234, $s421
+    %t1238 = addr $s421
+    %t1239 = index u8 %t1238, 8
+    store ptr %t1237, %t1239
+    %t1240 = addr @rg.data.73
+    store ptr %t1240, $s422
+    %t1241 = load ptr $s422
+    %t1242 = addr $s421
+    %t1243 = call u16 @rg.callable.virtual.0(%t1242, %t1241)
+    %t1244 = addr $s1
+    store ptr %t1244, $s423
+    %t1245 = load ptr $s423
+    %t1246 = addr @rg.vtable.0
+    store ptr %t1245, $s424
+    %t1247 = addr $s424
+    %t1248 = index u8 %t1247, 8
+    store ptr %t1246, %t1248
+    %t1249 = addr $s424
+    %t1250 = addr $s75
+    copyobj 16x8 %t1249, %t1250
+    %t1251 = load ptr $s75
+    %t1252 = addr $s75
+    %t1253 = index u8 %t1252, 8
+    %t1254 = load ptr %t1253
+    store ptr %t1251, $s425
+    %t1255 = addr $s425
+    %t1256 = index u8 %t1255, 8
+    store ptr %t1254, %t1256
+    %t1257 = addr @rg.data.74
+    store ptr %t1257, $s426
+    %t1258 = load ptr $s426
+    %t1259 = addr $s425
+    %t1260 = call u16 @rg.callable.virtual.0(%t1259, %t1258)
+    %t1261 = addr $s1
+    store ptr %t1261, $s427
+    %t1262 = load ptr $s427
+    %t1263 = addr @rg.vtable.0
+    store ptr %t1262, $s428
+    %t1264 = addr $s428
+    %t1265 = index u8 %t1264, 8
+    store ptr %t1263, %t1265
+    %t1266 = addr $s428
+    %t1267 = addr $s76
+    copyobj 16x8 %t1266, %t1267
+    %t1268 = load ptr $s76
+    %t1269 = addr $s76
+    %t1270 = index u8 %t1269, 8
+    %t1271 = load ptr %t1270
+    store ptr %t1268, $s429
+    %t1272 = addr $s429
+    %t1273 = index u8 %t1272, 8
+    store ptr %t1271, %t1273
+    %t1274 = addr @rg.data.75
+    store ptr %t1274, $s430
+    %t1275 = load ptr $s430
+    %t1276 = addr $s429
+    %t1277 = call u16 @rg.callable.virtual.0(%t1276, %t1275)
+    %t1278 = addr $s1
+    store ptr %t1278, $s431
+    %t1279 = load ptr $s431
+    %t1280 = addr @rg.vtable.0
+    store ptr %t1279, $s432
+    %t1281 = addr $s432
+    %t1282 = index u8 %t1281, 8
+    store ptr %t1280, %t1282
+    %t1283 = addr $s432
+    %t1284 = addr $s77
+    copyobj 16x8 %t1283, %t1284
+    %t1285 = load ptr $s77
+    %t1286 = addr $s77
+    %t1287 = index u8 %t1286, 8
+    %t1288 = load ptr %t1287
+    store ptr %t1285, $s433
+    %t1289 = addr $s433
+    %t1290 = index u8 %t1289, 8
+    store ptr %t1288, %t1290
+    %t1291 = addr @rg.data.76
+    store ptr %t1291, $s434
+    %t1292 = load ptr $s434
+    %t1293 = addr $s433
+    %t1294 = call u16 @rg.callable.virtual.0(%t1293, %t1292)
+    %t1295 = addr $s1
+    store ptr %t1295, $s435
+    %t1296 = load ptr $s435
+    %t1297 = addr @rg.vtable.0
+    store ptr %t1296, $s436
+    %t1298 = addr $s436
+    %t1299 = index u8 %t1298, 8
+    store ptr %t1297, %t1299
+    %t1300 = addr $s436
+    %t1301 = addr $s78
+    copyobj 16x8 %t1300, %t1301
+    %t1302 = load ptr $s78
+    %t1303 = addr $s78
+    %t1304 = index u8 %t1303, 8
+    %t1305 = load ptr %t1304
+    store ptr %t1302, $s437
+    %t1306 = addr $s437
+    %t1307 = index u8 %t1306, 8
+    store ptr %t1305, %t1307
+    %t1308 = addr @rg.data.77
+    store ptr %t1308, $s438
+    %t1309 = load ptr $s438
+    %t1310 = addr $s437
+    %t1311 = call u16 @rg.callable.virtual.0(%t1310, %t1309)
+    %t1312 = addr $s1
+    store ptr %t1312, $s439
+    %t1313 = load ptr $s439
+    %t1314 = addr @rg.vtable.0
+    store ptr %t1313, $s440
+    %t1315 = addr $s440
+    %t1316 = index u8 %t1315, 8
+    store ptr %t1314, %t1316
+    %t1317 = addr $s440
+    %t1318 = addr $s79
+    copyobj 16x8 %t1317, %t1318
+    %t1319 = load ptr $s79
+    %t1320 = addr $s79
+    %t1321 = index u8 %t1320, 8
+    %t1322 = load ptr %t1321
+    store ptr %t1319, $s441
+    %t1323 = addr $s441
+    %t1324 = index u8 %t1323, 8
+    store ptr %t1322, %t1324
+    %t1325 = addr @rg.data.78
+    store ptr %t1325, $s442
+    %t1326 = load ptr $s442
+    %t1327 = addr $s441
+    %t1328 = call u16 @rg.callable.virtual.0(%t1327, %t1326)
+    %t1329 = addr $s1
+    store ptr %t1329, $s443
+    %t1330 = load ptr $s443
+    %t1331 = addr @rg.vtable.0
+    store ptr %t1330, $s444
+    %t1332 = addr $s444
+    %t1333 = index u8 %t1332, 8
+    store ptr %t1331, %t1333
+    %t1334 = addr $s444
+    %t1335 = addr $s80
+    copyobj 16x8 %t1334, %t1335
+    %t1336 = load ptr $s80
+    %t1337 = addr $s80
+    %t1338 = index u8 %t1337, 8
+    %t1339 = load ptr %t1338
+    store ptr %t1336, $s445
+    %t1340 = addr $s445
+    %t1341 = index u8 %t1340, 8
+    store ptr %t1339, %t1341
+    %t1342 = addr @rg.data.79
+    store ptr %t1342, $s446
+    %t1343 = load ptr $s446
+    %t1344 = addr $s445
+    %t1345 = call u16 @rg.callable.virtual.0(%t1344, %t1343)
+    %t1346 = addr $s1
+    store ptr %t1346, $s447
+    %t1347 = load ptr $s447
+    %t1348 = addr @rg.vtable.0
+    store ptr %t1347, $s448
+    %t1349 = addr $s448
+    %t1350 = index u8 %t1349, 8
+    store ptr %t1348, %t1350
+    %t1351 = addr $s448
+    %t1352 = addr $s81
+    copyobj 16x8 %t1351, %t1352
+    %t1353 = load ptr $s81
+    %t1354 = addr $s81
+    %t1355 = index u8 %t1354, 8
+    %t1356 = load ptr %t1355
+    store ptr %t1353, $s449
+    %t1357 = addr $s449
+    %t1358 = index u8 %t1357, 8
+    store ptr %t1356, %t1358
+    %t1359 = addr @rg.data.80
+    store ptr %t1359, $s450
+    %t1360 = load ptr $s450
+    %t1361 = addr $s449
+    %t1362 = call u16 @rg.callable.virtual.0(%t1361, %t1360)
+    %t1363 = addr $s1
+    store ptr %t1363, $s451
+    %t1364 = load ptr $s451
+    %t1365 = addr @rg.vtable.0
+    store ptr %t1364, $s452
+    %t1366 = addr $s452
+    %t1367 = index u8 %t1366, 8
+    store ptr %t1365, %t1367
+    %t1368 = addr $s452
+    %t1369 = addr $s82
+    copyobj 16x8 %t1368, %t1369
+    %t1370 = load ptr $s82
+    %t1371 = addr $s82
+    %t1372 = index u8 %t1371, 8
+    %t1373 = load ptr %t1372
+    store ptr %t1370, $s453
+    %t1374 = addr $s453
+    %t1375 = index u8 %t1374, 8
+    store ptr %t1373, %t1375
+    %t1376 = addr @rg.data.81
+    store ptr %t1376, $s454
+    %t1377 = load ptr $s454
+    %t1378 = addr $s453
+    %t1379 = call u16 @rg.callable.virtual.0(%t1378, %t1377)
+    %t1380 = addr $s1
+    store ptr %t1380, $s455
+    %t1381 = load ptr $s455
+    %t1382 = addr @rg.vtable.0
+    store ptr %t1381, $s456
+    %t1383 = addr $s456
+    %t1384 = index u8 %t1383, 8
+    store ptr %t1382, %t1384
+    %t1385 = addr $s456
+    %t1386 = addr $s83
+    copyobj 16x8 %t1385, %t1386
+    %t1387 = load ptr $s83
+    %t1388 = addr $s83
+    %t1389 = index u8 %t1388, 8
+    %t1390 = load ptr %t1389
+    store ptr %t1387, $s457
+    %t1391 = addr $s457
+    %t1392 = index u8 %t1391, 8
+    store ptr %t1390, %t1392
+    %t1393 = addr @rg.data.82
+    store ptr %t1393, $s458
+    %t1394 = load ptr $s458
+    %t1395 = addr $s457
+    %t1396 = call u16 @rg.callable.virtual.0(%t1395, %t1394)
+    %t1397 = addr $s1
+    store ptr %t1397, $s459
+    %t1398 = load ptr $s459
+    %t1399 = addr @rg.vtable.0
+    store ptr %t1398, $s460
+    %t1400 = addr $s460
+    %t1401 = index u8 %t1400, 8
+    store ptr %t1399, %t1401
+    %t1402 = addr $s460
+    %t1403 = addr $s84
+    copyobj 16x8 %t1402, %t1403
+    %t1404 = load ptr $s84
+    %t1405 = addr $s84
+    %t1406 = index u8 %t1405, 8
+    %t1407 = load ptr %t1406
+    store ptr %t1404, $s461
+    %t1408 = addr $s461
+    %t1409 = index u8 %t1408, 8
+    store ptr %t1407, %t1409
+    %t1410 = addr @rg.data.83
+    store ptr %t1410, $s462
+    %t1411 = load ptr $s462
+    %t1412 = addr $s461
+    %t1413 = call u16 @rg.callable.virtual.0(%t1412, %t1411)
+    %t1414 = addr $s1
+    store ptr %t1414, $s463
+    %t1415 = load ptr $s463
+    %t1416 = addr @rg.vtable.0
+    store ptr %t1415, $s464
+    %t1417 = addr $s464
+    %t1418 = index u8 %t1417, 8
+    store ptr %t1416, %t1418
+    %t1419 = addr $s464
+    %t1420 = addr $s85
+    copyobj 16x8 %t1419, %t1420
+    %t1421 = load ptr $s85
+    %t1422 = addr $s85
+    %t1423 = index u8 %t1422, 8
+    %t1424 = load ptr %t1423
+    store ptr %t1421, $s465
+    %t1425 = addr $s465
+    %t1426 = index u8 %t1425, 8
+    store ptr %t1424, %t1426
+    %t1427 = addr @rg.data.84
+    store ptr %t1427, $s466
+    %t1428 = load ptr $s466
+    %t1429 = addr $s465
+    %t1430 = call u16 @rg.callable.virtual.0(%t1429, %t1428)
+    %t1431 = addr $s1
+    store ptr %t1431, $s467
+    %t1432 = load ptr $s467
+    %t1433 = addr @rg.vtable.0
+    store ptr %t1432, $s468
+    %t1434 = addr $s468
+    %t1435 = index u8 %t1434, 8
+    store ptr %t1433, %t1435
+    %t1436 = addr $s468
+    %t1437 = addr $s86
+    copyobj 16x8 %t1436, %t1437
+    %t1438 = load ptr $s86
+    %t1439 = addr $s86
+    %t1440 = index u8 %t1439, 8
+    %t1441 = load ptr %t1440
+    store ptr %t1438, $s469
+    %t1442 = addr $s469
+    %t1443 = index u8 %t1442, 8
+    store ptr %t1441, %t1443
+    %t1444 = addr @rg.data.85
+    store ptr %t1444, $s470
+    %t1445 = load ptr $s470
+    %t1446 = addr $s469
+    %t1447 = call u16 @rg.callable.virtual.0(%t1446, %t1445)
+    %t1448 = addr $s1
+    store ptr %t1448, $s471
+    %t1449 = load ptr $s471
+    %t1450 = addr @rg.vtable.0
+    store ptr %t1449, $s472
+    %t1451 = addr $s472
+    %t1452 = index u8 %t1451, 8
+    store ptr %t1450, %t1452
+    %t1453 = addr $s472
+    %t1454 = addr $s87
+    copyobj 16x8 %t1453, %t1454
+    %t1455 = load ptr $s87
+    %t1456 = addr $s87
+    %t1457 = index u8 %t1456, 8
+    %t1458 = load ptr %t1457
+    store ptr %t1455, $s473
+    %t1459 = addr $s473
+    %t1460 = index u8 %t1459, 8
+    store ptr %t1458, %t1460
+    %t1461 = addr @rg.data.86
+    store ptr %t1461, $s474
+    %t1462 = load ptr $s474
+    %t1463 = addr $s473
+    %t1464 = call u16 @rg.callable.virtual.0(%t1463, %t1462)
+    %t1465 = addr $s1
+    store ptr %t1465, $s475
+    %t1466 = load ptr $s475
+    %t1467 = addr @rg.vtable.0
+    store ptr %t1466, $s476
+    %t1468 = addr $s476
+    %t1469 = index u8 %t1468, 8
+    store ptr %t1467, %t1469
+    %t1470 = addr $s476
+    %t1471 = addr $s88
+    copyobj 16x8 %t1470, %t1471
+    %t1472 = load ptr $s88
+    %t1473 = addr $s88
+    %t1474 = index u8 %t1473, 8
+    %t1475 = load ptr %t1474
+    store ptr %t1472, $s477
+    %t1476 = addr $s477
+    %t1477 = index u8 %t1476, 8
+    store ptr %t1475, %t1477
+    %t1478 = addr @rg.data.87
+    store ptr %t1478, $s478
+    %t1479 = load ptr $s478
+    %t1480 = addr $s477
+    %t1481 = call u16 @rg.callable.virtual.0(%t1480, %t1479)
+    %t1482 = addr $s1
+    store ptr %t1482, $s479
+    %t1483 = load ptr $s479
+    %t1484 = addr @rg.vtable.0
+    store ptr %t1483, $s480
+    %t1485 = addr $s480
+    %t1486 = index u8 %t1485, 8
+    store ptr %t1484, %t1486
+    %t1487 = addr $s480
+    %t1488 = addr $s89
+    copyobj 16x8 %t1487, %t1488
+    %t1489 = load ptr $s89
+    %t1490 = addr $s89
+    %t1491 = index u8 %t1490, 8
+    %t1492 = load ptr %t1491
+    store ptr %t1489, $s481
+    %t1493 = addr $s481
+    %t1494 = index u8 %t1493, 8
+    store ptr %t1492, %t1494
+    %t1495 = addr @rg.data.88
+    store ptr %t1495, $s482
+    %t1496 = load ptr $s482
+    %t1497 = addr $s481
+    %t1498 = call u16 @rg.callable.virtual.0(%t1497, %t1496)
+    %t1499 = addr $s1
+    store ptr %t1499, $s483
+    %t1500 = load ptr $s483
+    %t1501 = addr @rg.vtable.0
+    store ptr %t1500, $s484
+    %t1502 = addr $s484
+    %t1503 = index u8 %t1502, 8
+    store ptr %t1501, %t1503
+    %t1504 = addr $s484
+    %t1505 = addr $s90
+    copyobj 16x8 %t1504, %t1505
+    %t1506 = load ptr $s90
+    %t1507 = addr $s90
+    %t1508 = index u8 %t1507, 8
+    %t1509 = load ptr %t1508
+    store ptr %t1506, $s485
+    %t1510 = addr $s485
+    %t1511 = index u8 %t1510, 8
+    store ptr %t1509, %t1511
+    %t1512 = addr @rg.data.89
+    store ptr %t1512, $s486
+    %t1513 = load ptr $s486
+    %t1514 = addr $s485
+    %t1515 = call u16 @rg.callable.virtual.0(%t1514, %t1513)
+    %t1516 = addr $s1
+    store ptr %t1516, $s487
+    %t1517 = load ptr $s487
+    %t1518 = addr @rg.vtable.0
+    store ptr %t1517, $s488
+    %t1519 = addr $s488
+    %t1520 = index u8 %t1519, 8
+    store ptr %t1518, %t1520
+    %t1521 = addr $s488
+    %t1522 = addr $s91
+    copyobj 16x8 %t1521, %t1522
+    %t1523 = load ptr $s91
+    %t1524 = addr $s91
+    %t1525 = index u8 %t1524, 8
+    %t1526 = load ptr %t1525
+    store ptr %t1523, $s489
+    %t1527 = addr $s489
+    %t1528 = index u8 %t1527, 8
+    store ptr %t1526, %t1528
+    %t1529 = addr @rg.data.90
+    store ptr %t1529, $s490
+    %t1530 = load ptr $s490
+    %t1531 = addr $s489
+    %t1532 = call u16 @rg.callable.virtual.0(%t1531, %t1530)
+    %t1533 = addr $s1
+    store ptr %t1533, $s491
+    %t1534 = load ptr $s491
+    %t1535 = addr @rg.vtable.0
+    store ptr %t1534, $s492
+    %t1536 = addr $s492
+    %t1537 = index u8 %t1536, 8
+    store ptr %t1535, %t1537
+    %t1538 = addr $s492
+    %t1539 = addr $s92
+    copyobj 16x8 %t1538, %t1539
+    %t1540 = load ptr $s92
+    %t1541 = addr $s92
+    %t1542 = index u8 %t1541, 8
+    %t1543 = load ptr %t1542
+    store ptr %t1540, $s493
+    %t1544 = addr $s493
+    %t1545 = index u8 %t1544, 8
+    store ptr %t1543, %t1545
+    %t1546 = addr @rg.data.91
+    store ptr %t1546, $s494
+    %t1547 = load ptr $s494
+    %t1548 = addr $s493
+    %t1549 = call u16 @rg.callable.virtual.0(%t1548, %t1547)
+    %t1550 = addr $s1
+    store ptr %t1550, $s495
+    %t1551 = load ptr $s495
+    %t1552 = addr @rg.vtable.0
+    store ptr %t1551, $s496
+    %t1553 = addr $s496
+    %t1554 = index u8 %t1553, 8
+    store ptr %t1552, %t1554
+    %t1555 = addr $s496
+    %t1556 = addr $s93
+    copyobj 16x8 %t1555, %t1556
+    %t1557 = load ptr $s93
+    %t1558 = addr $s93
+    %t1559 = index u8 %t1558, 8
+    %t1560 = load ptr %t1559
+    store ptr %t1557, $s497
+    %t1561 = addr $s497
+    %t1562 = index u8 %t1561, 8
+    store ptr %t1560, %t1562
+    %t1563 = addr @rg.data.92
+    store ptr %t1563, $s498
+    %t1564 = load ptr $s498
+    %t1565 = addr $s497
+    %t1566 = call u16 @rg.callable.virtual.0(%t1565, %t1564)
+    %t1567 = addr $s1
+    store ptr %t1567, $s499
+    %t1568 = load ptr $s499
+    %t1569 = addr @rg.vtable.0
+    store ptr %t1568, $s500
+    %t1570 = addr $s500
+    %t1571 = index u8 %t1570, 8
+    store ptr %t1569, %t1571
+    %t1572 = addr $s500
+    %t1573 = addr $s94
+    copyobj 16x8 %t1572, %t1573
+    %t1574 = load ptr $s94
+    %t1575 = addr $s94
+    %t1576 = index u8 %t1575, 8
+    %t1577 = load ptr %t1576
+    store ptr %t1574, $s501
+    %t1578 = addr $s501
+    %t1579 = index u8 %t1578, 8
+    store ptr %t1577, %t1579
+    %t1580 = addr @rg.data.93
+    store ptr %t1580, $s502
+    %t1581 = load ptr $s502
+    %t1582 = addr $s501
+    %t1583 = call u16 @rg.callable.virtual.0(%t1582, %t1581)
+    %t1584 = addr $s1
+    store ptr %t1584, $s503
+    %t1585 = load ptr $s503
+    %t1586 = addr @rg.vtable.0
+    store ptr %t1585, $s504
+    %t1587 = addr $s504
+    %t1588 = index u8 %t1587, 8
+    store ptr %t1586, %t1588
+    %t1589 = addr $s504
+    %t1590 = addr $s95
+    copyobj 16x8 %t1589, %t1590
+    %t1591 = load ptr $s95
+    %t1592 = addr $s95
+    %t1593 = index u8 %t1592, 8
+    %t1594 = load ptr %t1593
+    store ptr %t1591, $s505
+    %t1595 = addr $s505
+    %t1596 = index u8 %t1595, 8
+    store ptr %t1594, %t1596
+    %t1597 = addr @rg.data.94
+    store ptr %t1597, $s506
+    %t1598 = load ptr $s506
+    %t1599 = addr $s505
+    %t1600 = call u16 @rg.callable.virtual.0(%t1599, %t1598)
+    %t1601 = addr $s1
+    store ptr %t1601, $s507
+    %t1602 = load ptr $s507
+    %t1603 = addr @rg.vtable.0
+    store ptr %t1602, $s508
+    %t1604 = addr $s508
+    %t1605 = index u8 %t1604, 8
+    store ptr %t1603, %t1605
+    %t1606 = addr $s508
+    %t1607 = addr $s96
+    copyobj 16x8 %t1606, %t1607
+    %t1608 = load ptr $s96
+    %t1609 = addr $s96
+    %t1610 = index u8 %t1609, 8
+    %t1611 = load ptr %t1610
+    store ptr %t1608, $s509
+    %t1612 = addr $s509
+    %t1613 = index u8 %t1612, 8
+    store ptr %t1611, %t1613
+    %t1614 = addr @rg.data.95
+    store ptr %t1614, $s510
+    %t1615 = load ptr $s510
+    %t1616 = addr $s509
+    %t1617 = call u16 @rg.callable.virtual.0(%t1616, %t1615)
+    %t1618 = addr $s1
+    store ptr %t1618, $s511
+    %t1619 = load ptr $s511
+    %t1620 = addr @rg.vtable.0
+    store ptr %t1619, $s512
+    %t1621 = addr $s512
+    %t1622 = index u8 %t1621, 8
+    store ptr %t1620, %t1622
+    %t1623 = addr $s512
+    %t1624 = addr $s97
+    copyobj 16x8 %t1623, %t1624
+    %t1625 = load ptr $s97
+    %t1626 = addr $s97
+    %t1627 = index u8 %t1626, 8
+    %t1628 = load ptr %t1627
+    store ptr %t1625, $s513
+    %t1629 = addr $s513
+    %t1630 = index u8 %t1629, 8
+    store ptr %t1628, %t1630
+    %t1631 = addr @rg.data.96
+    store ptr %t1631, $s514
+    %t1632 = load ptr $s514
+    %t1633 = addr $s513
+    %t1634 = call u16 @rg.callable.virtual.0(%t1633, %t1632)
+    %t1635 = addr $s1
+    store ptr %t1635, $s515
+    %t1636 = load ptr $s515
+    %t1637 = addr @rg.vtable.0
+    store ptr %t1636, $s516
+    %t1638 = addr $s516
+    %t1639 = index u8 %t1638, 8
+    store ptr %t1637, %t1639
+    %t1640 = addr $s516
+    %t1641 = addr $s98
+    copyobj 16x8 %t1640, %t1641
+    %t1642 = load ptr $s98
+    %t1643 = addr $s98
+    %t1644 = index u8 %t1643, 8
+    %t1645 = load ptr %t1644
+    store ptr %t1642, $s517
+    %t1646 = addr $s517
+    %t1647 = index u8 %t1646, 8
+    store ptr %t1645, %t1647
+    %t1648 = addr @rg.data.97
+    store ptr %t1648, $s518
+    %t1649 = load ptr $s518
+    %t1650 = addr $s517
+    %t1651 = call u16 @rg.callable.virtual.0(%t1650, %t1649)
+    %t1652 = addr $s1
+    store ptr %t1652, $s519
+    %t1653 = load ptr $s519
+    %t1654 = addr @rg.vtable.0
+    store ptr %t1653, $s520
+    %t1655 = addr $s520
+    %t1656 = index u8 %t1655, 8
+    store ptr %t1654, %t1656
+    %t1657 = addr $s520
+    %t1658 = addr $s99
+    copyobj 16x8 %t1657, %t1658
+    %t1659 = load ptr $s99
+    %t1660 = addr $s99
+    %t1661 = index u8 %t1660, 8
+    %t1662 = load ptr %t1661
+    store ptr %t1659, $s521
+    %t1663 = addr $s521
+    %t1664 = index u8 %t1663, 8
+    store ptr %t1662, %t1664
+    %t1665 = addr @rg.data.98
+    store ptr %t1665, $s522
+    %t1666 = load ptr $s522
+    %t1667 = addr $s521
+    %t1668 = call u16 @rg.callable.virtual.0(%t1667, %t1666)
+    %t1669 = addr $s1
+    store ptr %t1669, $s523
+    %t1670 = load ptr $s523
+    %t1671 = addr @rg.vtable.0
+    store ptr %t1670, $s524
+    %t1672 = addr $s524
+    %t1673 = index u8 %t1672, 8
+    store ptr %t1671, %t1673
+    %t1674 = addr $s524
+    %t1675 = addr $s100
+    copyobj 16x8 %t1674, %t1675
+    %t1676 = load ptr $s100
+    %t1677 = addr $s100
+    %t1678 = index u8 %t1677, 8
+    %t1679 = load ptr %t1678
+    store ptr %t1676, $s525
+    %t1680 = addr $s525
+    %t1681 = index u8 %t1680, 8
+    store ptr %t1679, %t1681
+    %t1682 = addr @rg.data.99
+    store ptr %t1682, $s526
+    %t1683 = load ptr $s526
+    %t1684 = addr $s525
+    %t1685 = call u16 @rg.callable.virtual.0(%t1684, %t1683)
+    %t1686 = addr $s1
+    store ptr %t1686, $s527
+    %t1687 = load ptr $s527
+    %t1688 = addr @rg.vtable.0
+    store ptr %t1687, $s528
+    %t1689 = addr $s528
+    %t1690 = index u8 %t1689, 8
+    store ptr %t1688, %t1690
+    %t1691 = addr $s528
+    %t1692 = addr $s101
+    copyobj 16x8 %t1691, %t1692
+    %t1693 = load ptr $s101
+    %t1694 = addr $s101
+    %t1695 = index u8 %t1694, 8
+    %t1696 = load ptr %t1695
+    store ptr %t1693, $s529
+    %t1697 = addr $s529
+    %t1698 = index u8 %t1697, 8
+    store ptr %t1696, %t1698
+    %t1699 = addr @rg.data.100
+    store ptr %t1699, $s530
+    %t1700 = load ptr $s530
+    %t1701 = addr $s529
+    %t1702 = call u16 @rg.callable.virtual.0(%t1701, %t1700)
+    %t1703 = addr $s1
+    store ptr %t1703, $s531
+    %t1704 = load ptr $s531
+    %t1705 = addr @rg.vtable.0
+    store ptr %t1704, $s532
+    %t1706 = addr $s532
+    %t1707 = index u8 %t1706, 8
+    store ptr %t1705, %t1707
+    %t1708 = addr $s532
+    %t1709 = addr $s102
+    copyobj 16x8 %t1708, %t1709
+    %t1710 = load ptr $s102
+    %t1711 = addr $s102
+    %t1712 = index u8 %t1711, 8
+    %t1713 = load ptr %t1712
+    store ptr %t1710, $s533
+    %t1714 = addr $s533
+    %t1715 = index u8 %t1714, 8
+    store ptr %t1713, %t1715
+    %t1716 = addr @rg.data.101
+    store ptr %t1716, $s534
+    %t1717 = load ptr $s534
+    %t1718 = addr $s533
+    %t1719 = call u16 @rg.callable.virtual.0(%t1718, %t1717)
+    %t1720 = addr $s1
+    store ptr %t1720, $s535
+    %t1721 = load ptr $s535
+    %t1722 = addr @rg.vtable.0
+    store ptr %t1721, $s536
+    %t1723 = addr $s536
+    %t1724 = index u8 %t1723, 8
+    store ptr %t1722, %t1724
+    %t1725 = addr $s536
+    %t1726 = addr $s103
+    copyobj 16x8 %t1725, %t1726
+    %t1727 = load ptr $s103
+    %t1728 = addr $s103
+    %t1729 = index u8 %t1728, 8
+    %t1730 = load ptr %t1729
+    store ptr %t1727, $s537
+    %t1731 = addr $s537
+    %t1732 = index u8 %t1731, 8
+    store ptr %t1730, %t1732
+    %t1733 = addr @rg.data.102
+    store ptr %t1733, $s538
+    %t1734 = load ptr $s538
+    %t1735 = addr $s537
+    %t1736 = call u16 @rg.callable.virtual.0(%t1735, %t1734)
+    %t1737 = addr $s1
+    store ptr %t1737, $s539
+    %t1738 = load ptr $s539
+    %t1739 = addr @rg.vtable.0
+    store ptr %t1738, $s540
+    %t1740 = addr $s540
+    %t1741 = index u8 %t1740, 8
+    store ptr %t1739, %t1741
+    %t1742 = addr $s540
+    %t1743 = addr $s104
+    copyobj 16x8 %t1742, %t1743
+    %t1744 = load ptr $s104
+    %t1745 = addr $s104
+    %t1746 = index u8 %t1745, 8
+    %t1747 = load ptr %t1746
+    store ptr %t1744, $s541
+    %t1748 = addr $s541
+    %t1749 = index u8 %t1748, 8
+    store ptr %t1747, %t1749
+    %t1750 = addr @rg.data.103
+    store ptr %t1750, $s542
+    %t1751 = load ptr $s542
+    %t1752 = addr $s541
+    %t1753 = call u16 @rg.callable.virtual.0(%t1752, %t1751)
+    %t1754 = addr $s1
+    store ptr %t1754, $s543
+    %t1755 = load ptr $s543
+    %t1756 = addr @rg.vtable.0
+    store ptr %t1755, $s544
+    %t1757 = addr $s544
+    %t1758 = index u8 %t1757, 8
+    store ptr %t1756, %t1758
+    %t1759 = addr $s544
+    %t1760 = addr $s105
+    copyobj 16x8 %t1759, %t1760
+    %t1761 = load ptr $s105
+    %t1762 = addr $s105
+    %t1763 = index u8 %t1762, 8
+    %t1764 = load ptr %t1763
+    store ptr %t1761, $s545
+    %t1765 = addr $s545
+    %t1766 = index u8 %t1765, 8
+    store ptr %t1764, %t1766
+    %t1767 = addr @rg.data.104
+    store ptr %t1767, $s546
+    %t1768 = load ptr $s546
+    %t1769 = addr $s545
+    %t1770 = call u16 @rg.callable.virtual.0(%t1769, %t1768)
+    %t1771 = addr $s1
+    store ptr %t1771, $s547
+    %t1772 = load ptr $s547
+    %t1773 = addr @rg.vtable.0
+    store ptr %t1772, $s548
+    %t1774 = addr $s548
+    %t1775 = index u8 %t1774, 8
+    store ptr %t1773, %t1775
+    %t1776 = addr $s548
+    %t1777 = addr $s106
+    copyobj 16x8 %t1776, %t1777
+    %t1778 = load ptr $s106
+    %t1779 = addr $s106
+    %t1780 = index u8 %t1779, 8
+    %t1781 = load ptr %t1780
+    store ptr %t1778, $s549
+    %t1782 = addr $s549
+    %t1783 = index u8 %t1782, 8
+    store ptr %t1781, %t1783
+    %t1784 = addr @rg.data.105
+    store ptr %t1784, $s550
+    %t1785 = load ptr $s550
+    %t1786 = addr $s549
+    %t1787 = call u16 @rg.callable.virtual.0(%t1786, %t1785)
+    %t1788 = addr $s1
+    store ptr %t1788, $s551
+    %t1789 = load ptr $s551
+    %t1790 = addr @rg.vtable.0
+    store ptr %t1789, $s552
+    %t1791 = addr $s552
+    %t1792 = index u8 %t1791, 8
+    store ptr %t1790, %t1792
+    %t1793 = addr $s552
+    %t1794 = addr $s107
+    copyobj 16x8 %t1793, %t1794
+    %t1795 = load ptr $s107
+    %t1796 = addr $s107
+    %t1797 = index u8 %t1796, 8
+    %t1798 = load ptr %t1797
+    store ptr %t1795, $s553
+    %t1799 = addr $s553
+    %t1800 = index u8 %t1799, 8
+    store ptr %t1798, %t1800
+    %t1801 = addr @rg.data.106
+    store ptr %t1801, $s554
+    %t1802 = load ptr $s554
+    %t1803 = addr $s553
+    %t1804 = call u16 @rg.callable.virtual.0(%t1803, %t1802)
+    %t1805 = addr $s1
+    store ptr %t1805, $s555
+    %t1806 = load ptr $s555
+    %t1807 = addr @rg.vtable.0
+    store ptr %t1806, $s556
+    %t1808 = addr $s556
+    %t1809 = index u8 %t1808, 8
+    store ptr %t1807, %t1809
+    %t1810 = addr $s556
+    %t1811 = addr $s108
+    copyobj 16x8 %t1810, %t1811
+    %t1812 = load ptr $s108
+    %t1813 = addr $s108
+    %t1814 = index u8 %t1813, 8
+    %t1815 = load ptr %t1814
+    store ptr %t1812, $s557
+    %t1816 = addr $s557
+    %t1817 = index u8 %t1816, 8
+    store ptr %t1815, %t1817
+    %t1818 = addr @rg.data.107
+    store ptr %t1818, $s558
+    %t1819 = load ptr $s558
+    %t1820 = addr $s557
+    %t1821 = call u16 @rg.callable.virtual.0(%t1820, %t1819)
+    %t1822 = addr $s1
+    store ptr %t1822, $s559
+    %t1823 = load ptr $s559
+    %t1824 = addr @rg.vtable.0
+    store ptr %t1823, $s560
+    %t1825 = addr $s560
+    %t1826 = index u8 %t1825, 8
+    store ptr %t1824, %t1826
+    %t1827 = addr $s560
+    %t1828 = addr $s109
+    copyobj 16x8 %t1827, %t1828
+    %t1829 = load ptr $s109
+    %t1830 = addr $s109
+    %t1831 = index u8 %t1830, 8
+    %t1832 = load ptr %t1831
+    store ptr %t1829, $s561
+    %t1833 = addr $s561
+    %t1834 = index u8 %t1833, 8
+    store ptr %t1832, %t1834
+    %t1835 = addr @rg.data.108
+    store ptr %t1835, $s562
+    %t1836 = load ptr $s562
+    %t1837 = addr $s561
+    %t1838 = call u16 @rg.callable.virtual.0(%t1837, %t1836)
+    %t1839 = addr $s1
+    store ptr %t1839, $s563
+    %t1840 = load ptr $s563
+    %t1841 = addr @rg.vtable.0
+    store ptr %t1840, $s564
+    %t1842 = addr $s564
+    %t1843 = index u8 %t1842, 8
+    store ptr %t1841, %t1843
+    %t1844 = addr $s564
+    %t1845 = addr $s110
+    copyobj 16x8 %t1844, %t1845
+    %t1846 = load ptr $s110
+    %t1847 = addr $s110
+    %t1848 = index u8 %t1847, 8
+    %t1849 = load ptr %t1848
+    store ptr %t1846, $s565
+    %t1850 = addr $s565
+    %t1851 = index u8 %t1850, 8
+    store ptr %t1849, %t1851
+    %t1852 = addr @rg.data.109
+    store ptr %t1852, $s566
+    %t1853 = load ptr $s566
+    %t1854 = addr $s565
+    %t1855 = call u16 @rg.callable.virtual.0(%t1854, %t1853)
+    %t1856 = addr $s1
+    store ptr %t1856, $s567
+    %t1857 = load ptr $s567
+    %t1858 = addr @rg.vtable.0
+    store ptr %t1857, $s568
+    %t1859 = addr $s568
+    %t1860 = index u8 %t1859, 8
+    store ptr %t1858, %t1860
+    %t1861 = addr $s568
+    %t1862 = addr $s111
+    copyobj 16x8 %t1861, %t1862
+    %t1863 = load ptr $s111
+    %t1864 = addr $s111
+    %t1865 = index u8 %t1864, 8
+    %t1866 = load ptr %t1865
+    store ptr %t1863, $s569
+    %t1867 = addr $s569
+    %t1868 = index u8 %t1867, 8
+    store ptr %t1866, %t1868
+    %t1869 = addr @rg.data.110
+    store ptr %t1869, $s570
+    %t1870 = load ptr $s570
+    %t1871 = addr $s569
+    %t1872 = call u16 @rg.callable.virtual.0(%t1871, %t1870)
+    %t1873 = addr $s1
+    store ptr %t1873, $s571
+    %t1874 = load ptr $s571
+    %t1875 = addr @rg.vtable.0
+    store ptr %t1874, $s572
+    %t1876 = addr $s572
+    %t1877 = index u8 %t1876, 8
+    store ptr %t1875, %t1877
+    %t1878 = addr $s572
+    %t1879 = addr $s112
+    copyobj 16x8 %t1878, %t1879
+    %t1880 = load ptr $s112
+    %t1881 = addr $s112
+    %t1882 = index u8 %t1881, 8
+    %t1883 = load ptr %t1882
+    store ptr %t1880, $s573
+    %t1884 = addr $s573
+    %t1885 = index u8 %t1884, 8
+    store ptr %t1883, %t1885
+    %t1886 = addr @rg.data.111
+    store ptr %t1886, $s574
+    %t1887 = load ptr $s574
+    %t1888 = addr $s573
+    %t1889 = call u16 @rg.callable.virtual.0(%t1888, %t1887)
+    %t1890 = addr $s1
+    store ptr %t1890, $s575
+    %t1891 = load ptr $s575
+    %t1892 = addr @rg.vtable.0
+    store ptr %t1891, $s576
+    %t1893 = addr $s576
+    %t1894 = index u8 %t1893, 8
+    store ptr %t1892, %t1894
+    %t1895 = addr $s576
+    %t1896 = addr $s113
+    copyobj 16x8 %t1895, %t1896
+    %t1897 = load ptr $s113
+    %t1898 = addr $s113
+    %t1899 = index u8 %t1898, 8
+    %t1900 = load ptr %t1899
+    store ptr %t1897, $s577
+    %t1901 = addr $s577
+    %t1902 = index u8 %t1901, 8
+    store ptr %t1900, %t1902
+    %t1903 = addr @rg.data.112
+    store ptr %t1903, $s578
+    %t1904 = load ptr $s578
+    %t1905 = addr $s577
+    %t1906 = call u16 @rg.callable.virtual.0(%t1905, %t1904)
+    %t1907 = addr $s1
+    store ptr %t1907, $s579
+    %t1908 = load ptr $s579
+    %t1909 = addr @rg.vtable.0
+    store ptr %t1908, $s580
+    %t1910 = addr $s580
+    %t1911 = index u8 %t1910, 8
+    store ptr %t1909, %t1911
+    %t1912 = addr $s580
+    %t1913 = addr $s114
+    copyobj 16x8 %t1912, %t1913
+    %t1914 = load ptr $s114
+    %t1915 = addr $s114
+    %t1916 = index u8 %t1915, 8
+    %t1917 = load ptr %t1916
+    store ptr %t1914, $s581
+    %t1918 = addr $s581
+    %t1919 = index u8 %t1918, 8
+    store ptr %t1917, %t1919
+    %t1920 = addr @rg.data.113
+    store ptr %t1920, $s582
+    %t1921 = load ptr $s582
+    %t1922 = addr $s581
+    %t1923 = call u16 @rg.callable.virtual.0(%t1922, %t1921)
+    %t1924 = addr $s1
+    store ptr %t1924, $s583
+    %t1925 = load ptr $s583
+    %t1926 = addr @rg.vtable.0
+    store ptr %t1925, $s584
+    %t1927 = addr $s584
+    %t1928 = index u8 %t1927, 8
+    store ptr %t1926, %t1928
+    %t1929 = addr $s584
+    %t1930 = addr $s115
+    copyobj 16x8 %t1929, %t1930
+    %t1931 = load ptr $s115
+    %t1932 = addr $s115
+    %t1933 = index u8 %t1932, 8
+    %t1934 = load ptr %t1933
+    store ptr %t1931, $s585
+    %t1935 = addr $s585
+    %t1936 = index u8 %t1935, 8
+    store ptr %t1934, %t1936
+    %t1937 = addr @rg.data.114
+    store ptr %t1937, $s586
+    %t1938 = load ptr $s586
+    %t1939 = addr $s585
+    %t1940 = call u16 @rg.callable.virtual.0(%t1939, %t1938)
+    %t1941 = addr $s1
+    store ptr %t1941, $s587
+    %t1942 = load ptr $s587
+    %t1943 = addr @rg.vtable.0
+    store ptr %t1942, $s588
+    %t1944 = addr $s588
+    %t1945 = index u8 %t1944, 8
+    store ptr %t1943, %t1945
+    %t1946 = addr $s588
+    %t1947 = addr $s116
+    copyobj 16x8 %t1946, %t1947
+    %t1948 = load ptr $s116
+    %t1949 = addr $s116
+    %t1950 = index u8 %t1949, 8
+    %t1951 = load ptr %t1950
+    store ptr %t1948, $s589
+    %t1952 = addr $s589
+    %t1953 = index u8 %t1952, 8
+    store ptr %t1951, %t1953
+    %t1954 = addr @rg.data.115
+    store ptr %t1954, $s590
+    %t1955 = load ptr $s590
+    %t1956 = addr $s589
+    %t1957 = call u16 @rg.callable.virtual.0(%t1956, %t1955)
+    %t1958 = addr $s1
+    store ptr %t1958, $s591
+    %t1959 = load ptr $s591
+    %t1960 = addr @rg.vtable.0
+    store ptr %t1959, $s592
+    %t1961 = addr $s592
+    %t1962 = index u8 %t1961, 8
+    store ptr %t1960, %t1962
+    %t1963 = addr $s592
+    %t1964 = addr $s117
+    copyobj 16x8 %t1963, %t1964
+    %t1965 = load ptr $s117
+    %t1966 = addr $s117
+    %t1967 = index u8 %t1966, 8
+    %t1968 = load ptr %t1967
+    store ptr %t1965, $s593
+    %t1969 = addr $s593
+    %t1970 = index u8 %t1969, 8
+    store ptr %t1968, %t1970
+    %t1971 = addr @rg.data.116
+    store ptr %t1971, $s594
+    %t1972 = load ptr $s594
+    %t1973 = addr $s593
+    %t1974 = call u16 @rg.callable.virtual.0(%t1973, %t1972)
+    %t1975 = addr $s1
+    store ptr %t1975, $s595
+    %t1976 = load ptr $s595
+    %t1977 = addr @rg.vtable.0
+    store ptr %t1976, $s596
+    %t1978 = addr $s596
+    %t1979 = index u8 %t1978, 8
+    store ptr %t1977, %t1979
+    %t1980 = addr $s596
+    %t1981 = addr $s118
+    copyobj 16x8 %t1980, %t1981
+    %t1982 = load ptr $s118
+    %t1983 = addr $s118
+    %t1984 = index u8 %t1983, 8
+    %t1985 = load ptr %t1984
+    store ptr %t1982, $s597
+    %t1986 = addr $s597
+    %t1987 = index u8 %t1986, 8
+    store ptr %t1985, %t1987
+    %t1988 = addr @rg.data.117
+    store ptr %t1988, $s598
+    %t1989 = load ptr $s598
+    %t1990 = addr $s597
+    %t1991 = call u16 @rg.callable.virtual.0(%t1990, %t1989)
+    %t1992 = addr $s1
+    store ptr %t1992, $s599
+    %t1993 = load ptr $s599
+    %t1994 = addr @rg.vtable.0
+    store ptr %t1993, $s600
+    %t1995 = addr $s600
+    %t1996 = index u8 %t1995, 8
+    store ptr %t1994, %t1996
+    %t1997 = addr $s600
+    %t1998 = addr $s119
+    copyobj 16x8 %t1997, %t1998
+    %t1999 = load ptr $s119
+    %t2000 = addr $s119
+    %t2001 = index u8 %t2000, 8
+    %t2002 = load ptr %t2001
+    store ptr %t1999, $s601
+    %t2003 = addr $s601
+    %t2004 = index u8 %t2003, 8
+    store ptr %t2002, %t2004
+    %t2005 = addr @rg.data.118
+    store ptr %t2005, $s602
+    %t2006 = load ptr $s602
+    %t2007 = addr $s601
+    %t2008 = call u16 @rg.callable.virtual.0(%t2007, %t2006)
+    %t2009 = addr $s1
+    store ptr %t2009, $s603
+    %t2010 = load ptr $s603
+    %t2011 = addr @rg.vtable.0
+    store ptr %t2010, $s604
+    %t2012 = addr $s604
+    %t2013 = index u8 %t2012, 8
+    store ptr %t2011, %t2013
+    %t2014 = addr $s604
+    %t2015 = addr $s120
+    copyobj 16x8 %t2014, %t2015
+    %t2016 = load ptr $s120
+    %t2017 = addr $s120
+    %t2018 = index u8 %t2017, 8
+    %t2019 = load ptr %t2018
+    store ptr %t2016, $s605
+    %t2020 = addr $s605
+    %t2021 = index u8 %t2020, 8
+    store ptr %t2019, %t2021
+    %t2022 = addr @rg.data.119
+    store ptr %t2022, $s606
+    %t2023 = load ptr $s606
+    %t2024 = addr $s605
+    %t2025 = call u16 @rg.callable.virtual.0(%t2024, %t2023)
+    %t2026 = addr $s1
+    store ptr %t2026, $s607
+    %t2027 = load ptr $s607
+    %t2028 = addr @rg.vtable.0
+    store ptr %t2027, $s608
+    %t2029 = addr $s608
+    %t2030 = index u8 %t2029, 8
+    store ptr %t2028, %t2030
+    %t2031 = addr $s608
+    %t2032 = addr $s121
+    copyobj 16x8 %t2031, %t2032
+    %t2033 = load ptr $s121
+    %t2034 = addr $s121
+    %t2035 = index u8 %t2034, 8
+    %t2036 = load ptr %t2035
+    store ptr %t2033, $s609
+    %t2037 = addr $s609
+    %t2038 = index u8 %t2037, 8
+    store ptr %t2036, %t2038
+    %t2039 = addr @rg.data.120
+    store ptr %t2039, $s610
+    %t2040 = load ptr $s610
+    %t2041 = addr $s609
+    %t2042 = call u16 @rg.callable.virtual.0(%t2041, %t2040)
+    %t2043 = addr $s1
+    store ptr %t2043, $s611
+    %t2044 = load ptr $s611
+    %t2045 = addr @rg.vtable.0
+    store ptr %t2044, $s612
+    %t2046 = addr $s612
+    %t2047 = index u8 %t2046, 8
+    store ptr %t2045, %t2047
+    %t2048 = addr $s612
+    %t2049 = addr $s122
+    copyobj 16x8 %t2048, %t2049
+    %t2050 = load ptr $s122
+    %t2051 = addr $s122
+    %t2052 = index u8 %t2051, 8
+    %t2053 = load ptr %t2052
+    store ptr %t2050, $s613
+    %t2054 = addr $s613
+    %t2055 = index u8 %t2054, 8
+    store ptr %t2053, %t2055
+    %t2056 = addr @rg.data.121
+    store ptr %t2056, $s614
+    %t2057 = load ptr $s614
+    %t2058 = addr $s613
+    %t2059 = call u16 @rg.callable.virtual.0(%t2058, %t2057)
+    %t2060 = addr $s1
+    store ptr %t2060, $s615
+    %t2061 = load ptr $s615
+    %t2062 = addr @rg.vtable.0
+    store ptr %t2061, $s616
+    %t2063 = addr $s616
+    %t2064 = index u8 %t2063, 8
+    store ptr %t2062, %t2064
+    %t2065 = addr $s616
+    %t2066 = addr $s123
+    copyobj 16x8 %t2065, %t2066
+    %t2067 = load ptr $s123
+    %t2068 = addr $s123
+    %t2069 = index u8 %t2068, 8
+    %t2070 = load ptr %t2069
+    store ptr %t2067, $s617
+    %t2071 = addr $s617
+    %t2072 = index u8 %t2071, 8
+    store ptr %t2070, %t2072
+    %t2073 = addr @rg.data.122
+    store ptr %t2073, $s618
+    %t2074 = load ptr $s618
+    %t2075 = addr $s617
+    %t2076 = call u16 @rg.callable.virtual.0(%t2075, %t2074)
+    %t2077 = addr $s1
+    store ptr %t2077, $s619
+    %t2078 = load ptr $s619
+    %t2079 = addr @rg.vtable.0
+    store ptr %t2078, $s620
+    %t2080 = addr $s620
+    %t2081 = index u8 %t2080, 8
+    store ptr %t2079, %t2081
+    %t2082 = addr $s620
+    %t2083 = addr $s124
+    copyobj 16x8 %t2082, %t2083
+    %t2084 = load ptr $s124
+    %t2085 = addr $s124
+    %t2086 = index u8 %t2085, 8
+    %t2087 = load ptr %t2086
+    store ptr %t2084, $s621
+    %t2088 = addr $s621
+    %t2089 = index u8 %t2088, 8
+    store ptr %t2087, %t2089
+    %t2090 = addr @rg.data.123
+    store ptr %t2090, $s622
+    %t2091 = load ptr $s622
+    %t2092 = addr $s621
+    %t2093 = call u16 @rg.callable.virtual.0(%t2092, %t2091)
+    %t2094 = addr $s1
+    store ptr %t2094, $s623
+    %t2095 = load ptr $s623
+    %t2096 = addr @rg.vtable.0
+    store ptr %t2095, $s624
+    %t2097 = addr $s624
+    %t2098 = index u8 %t2097, 8
+    store ptr %t2096, %t2098
+    %t2099 = addr $s624
+    %t2100 = addr $s125
+    copyobj 16x8 %t2099, %t2100
+    %t2101 = load ptr $s125
+    %t2102 = addr $s125
+    %t2103 = index u8 %t2102, 8
+    %t2104 = load ptr %t2103
+    store ptr %t2101, $s625
+    %t2105 = addr $s625
+    %t2106 = index u8 %t2105, 8
+    store ptr %t2104, %t2106
+    %t2107 = addr @rg.data.124
+    store ptr %t2107, $s626
+    %t2108 = load ptr $s626
+    %t2109 = addr $s625
+    %t2110 = call u16 @rg.callable.virtual.0(%t2109, %t2108)
+    %t2111 = addr $s1
+    store ptr %t2111, $s627
+    %t2112 = load ptr $s627
+    %t2113 = addr @rg.vtable.0
+    store ptr %t2112, $s628
+    %t2114 = addr $s628
+    %t2115 = index u8 %t2114, 8
+    store ptr %t2113, %t2115
+    %t2116 = addr $s628
+    %t2117 = addr $s126
+    copyobj 16x8 %t2116, %t2117
+    %t2118 = load ptr $s126
+    %t2119 = addr $s126
+    %t2120 = index u8 %t2119, 8
+    %t2121 = load ptr %t2120
+    store ptr %t2118, $s629
+    %t2122 = addr $s629
+    %t2123 = index u8 %t2122, 8
+    store ptr %t2121, %t2123
+    %t2124 = addr @rg.data.125
+    store ptr %t2124, $s630
+    %t2125 = load ptr $s630
+    %t2126 = addr $s629
+    %t2127 = call u16 @rg.callable.virtual.0(%t2126, %t2125)
+    %t2128 = addr $s1
+    store ptr %t2128, $s631
+    %t2129 = load ptr $s631
+    %t2130 = addr @rg.vtable.0
+    store ptr %t2129, $s632
+    %t2131 = addr $s632
+    %t2132 = index u8 %t2131, 8
+    store ptr %t2130, %t2132
+    %t2133 = addr $s632
+    %t2134 = addr $s127
+    copyobj 16x8 %t2133, %t2134
+    %t2135 = load ptr $s127
+    %t2136 = addr $s127
+    %t2137 = index u8 %t2136, 8
+    %t2138 = load ptr %t2137
+    store ptr %t2135, $s633
+    %t2139 = addr $s633
+    %t2140 = index u8 %t2139, 8
+    store ptr %t2138, %t2140
+    %t2141 = addr @rg.data.126
+    store ptr %t2141, $s634
+    %t2142 = load ptr $s634
+    %t2143 = addr $s633
+    %t2144 = call u16 @rg.callable.virtual.0(%t2143, %t2142)
+    %t2145 = addr $s1
+    store ptr %t2145, $s635
+    %t2146 = load ptr $s635
+    %t2147 = addr @rg.vtable.0
+    store ptr %t2146, $s636
+    %t2148 = addr $s636
+    %t2149 = index u8 %t2148, 8
+    store ptr %t2147, %t2149
+    %t2150 = addr $s636
+    %t2151 = addr $s128
+    copyobj 16x8 %t2150, %t2151
+    %t2152 = load ptr $s128
+    %t2153 = addr $s128
+    %t2154 = index u8 %t2153, 8
+    %t2155 = load ptr %t2154
+    store ptr %t2152, $s637
+    %t2156 = addr $s637
+    %t2157 = index u8 %t2156, 8
+    store ptr %t2155, %t2157
+    %t2158 = addr @rg.data.127
+    store ptr %t2158, $s638
+    %t2159 = load ptr $s638
+    %t2160 = addr $s637
+    %t2161 = call u16 @rg.callable.virtual.0(%t2160, %t2159)
+    %t2162 = addr $s1
+    store ptr %t2162, $s639
+    %t2163 = load ptr $s639
+    %t2164 = addr @rg.vtable.0
+    store ptr %t2163, $s640
+    %t2165 = addr $s640
+    %t2166 = index u8 %t2165, 8
+    store ptr %t2164, %t2166
+    %t2167 = addr $s640
+    %t2168 = addr $s129
+    copyobj 16x8 %t2167, %t2168
+    %t2169 = load ptr $s129
+    %t2170 = addr $s129
+    %t2171 = index u8 %t2170, 8
+    %t2172 = load ptr %t2171
+    store ptr %t2169, $s641
+    %t2173 = addr $s641
+    %t2174 = index u8 %t2173, 8
+    store ptr %t2172, %t2174
+    %t2175 = addr @rg.data.128
+    store ptr %t2175, $s642
+    %t2176 = load ptr $s642
+    %t2177 = addr $s641
+    %t2178 = call u16 @rg.callable.virtual.0(%t2177, %t2176)
+    return void
+}
+function @rg.callable.virtual.0(%p0 : ptr, %p1 : ptr) -> u16 {
+  block ^b0:
+    %t0 = load ptr %p0
+    %t1 = index u8 %p0, 8
+    %t2 = load ptr %t1
+    %t3 = index u8 %t2, 24
+    %t4 = load ptr %t3
+    %t5 = call u16 %t4(%t0, %p1) as (%p0 : ptr, %p1 : ptr) -> u16
+    return u16 %t5
+}
+function @rg.closure.0(%p0 : ptr, %p1 : ptr) -> u16 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = load ptr $s0
+    %t1 = load u16 %t0
+    %t2 = load ptr $s1
+    %t3 = load u16 %t2
+    %t4 = binary add u16 %t1, %t3
+    %t5 = cmp ult u16 %t4, %t1
+    branch %t5, ^b1, ^b2
+  block ^b2:
+    return u16 %t4
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.closure.adapter.FnMut.i2(%p0 : ptr, %p1 : ptr) -> u16 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = load ptr $s0
+    %t1 = load ptr $s1
+    %t2 = call u16 @rg.closure.0(%t0, %t1)
+    return u16 %t2
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.13()
+    return i64 0
+}
