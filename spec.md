@@ -2174,6 +2174,16 @@ those conditions across cold and warm lookup. The
 [source unsizing checkpoint](docs/pa31-source-unsizing.md) defines the actual
 Unsize/CoerceUnsized roles and the retained runtime/CTFE boundaries.
 
+A source projection awaiting normalization may generate erasure requirements for
+a known object target without first exposing its physical head. Every Sized,
+principal, associated equality, auto-marker, lifetime and endpoint requirement
+must prove before completion; failure cannot refute an unknown-head conversion.
+Known object upcasts retain their intrinsic-only principal restriction. Abstract
+internal auto-marker requests must select the actual source trait application,
+including declared-result and parent premises, before structural fallback. The
+[projected erasure packet](docs/pa31-projected-object-erasure.md) retains source,
+negative, native and bounded-work controls and separate tuple-factory requirements.
+
 Conditional source const calls retain declaration requirements separately from
 caller permission. Prepare immutable requirements once for each complete Code
 instance, then prove them under the actual caller environment at every reached

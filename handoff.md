@@ -40,52 +40,49 @@ requirement retained. No original core/alloc/std artifact exists.
 
 ## Current original-core frontier
 
-[Source coercion discovery](docs/pa31-coercion-discovery.md), compilerbddcb51f3 /
-CLI6549fad6, treats a pending projected head as unknown only in the unsizing
-exclusion query. No equality/conversion permission, rawfence change, hotfields,
-newcache, quotas or backend changes. Actual sourceCoerceUnsized presence caused
-Result<U,Error> mismatch discovery before targetU was inferred. Bounded actual
-original-body graph/backtrace identified that caller; temporary instrumentation
-was restored before implementation, and tracebinaryfeeee is retired.
+[Projected source object erasure](docs/pa31-projected-object-erasure.md), compiler
+b642ca4a8 / CLI0107a690, now pays all ordinary object and endpoint requirements for
+a projected source awaiting normalization. Failed requirements remain deferred;
+known object upcasts retain intrinsic principal evidence. Internal marker queries
+select the actual source application. No hot fields, caches, limits or backend
+contract changes. One worker in existing B; no workers or new worktrees.
 
-PA31 owns22 active source outcomes (16accept6reject), all independently object-
-checked and16Rustnative7pass. All22completeLowIR outcomes, seven-counter linear/
-noise invariants, raw comparison/equation/variable/identity guards and4existing
-source/nominal groups pass. Two ordinary pointer-region/receiver-slice controls
-pass. Native17programs (16new +oldactualwrappertransfer/cleanup1),315harness/
-468roots/upstream pass. No textoraclesgeneratedorchanged. One separatelymanifested
-required nested opaque-result equality diagnostic still has the oldNormalization
-boundary, baseline=candidate; it is not counted as completed. WholePA31 planned.
+PA31 owns26 active source outcomes (19accept7reject), independently object-checked,
+all complete LowIR and19 Rust/CPPGM native comparisons (`9 23`). Eight-counter
+width8/32/128/noise128 bounds, source auto-trait/upcast controls, raw comparison/
+equation/identity guards and old unsizing/coercion groups pass.315 harness tests,
+468 roots/13 binaries/44 stages,128 upstream fixtures and126 Reference files pass.
+No text oracles changed. Three original tuple-factory sources are preserved under
+required/, with Rust acceptance/native evidence: their generated const cleanup
+owner still incorrectly requires an authored function header. These remain valid
+unsupported requirements, not passing source outcomes. Active intrinsic twins
+build the same aggregate with a struct literal, retaining the exact field proof.
+No wrapper Copy implementation was added; whole PA31 stays planned.
 
-FortyimmutableA/A+twoABBA controls preserve ordinaryLowIR,2sourcecontroltypeoutputs
-and74frozenoutcomes. Candidate/base1.067/1.008/1.058/1.006; A/A.869/1.206/.775/.973.
-No speed claim. Compiler/tests/fixtures committed beforepin; current6549binds
-bddcb51f3/emptydiff/3886Rusthashes. Retire9bebaselineafterpublication; tracefeeee
-alreadypruned1794342479655130994. Keep optimized21f66e51 for oldpending
-nested-proof A/A+ABBA/release-stack checks. One worker existingB; no new trees.
+Immutable0107 binds b642ca4a8/emptydiff/3887 compiler/CLI/test Rust hashes. Forty
+same-profile A/A+twoABBA observations preserve complete ordinary LowIR, two source
+control outputs and74 frozen outcomes. Ratios0.981/1.000/0.999/0.991;
+A/A0.821/0.981/0.859/1.026, no speed claim. Diagnostic445c/3350 binaries retired by
+scoped prune1794347695205404555. Retain optimized21f for older pending optimized
+nested-proof controls. Baseline6549 can retire after publication/comparison use.
 
-The unchanged120s original observation still FAILS at121.1880s:235records/4470item
-attempts, throughfunction9063,file241:42996,node1298 in time.rs. Noalignment.rs
-failure remains; Alignment::try_from's old conversion fence is absent. First is
-now Discriminant<T>::fmt, mem/mod.rs file54:45756, DebugTuple.field(&self.0) with
-trait obligation requires an unambiguous matching assumption or implementation.
-PartialSHA422521024f3190bf44a720fa4dba9f3e8b14e7e8d16ce3fc40dcbf8eef7e84a4.
-All722sourcehashes/sixconfigbindings/profile/quotasfixed. Prefixesenddifferentitems,
-not raw speed/count comparisons. No fullcensus/bodycount/originalartifact.
+The unchanged120s original observation FAILS at121.1915s:230 failure records/4354
+item attempts, through function8923,file232:10709,node466 in str/mod.rs. All722
+source hashes/six bindings/profile/limits fixed. Progress SHA
+b377219abcf86a5d6d31960dbc657f2dcf82c91923e612a9954504eeb445ed7b.
+No mem/mod.rs failure remains; Discriminant<T>::fmt's old object-proof fence is
+absent. First is now request_by_type_tag, error.rs,file78:15853, unambiguous trait
+obligation. It constructs Tagged<TaggedOption<'a,I>>, calls provide(as_request())
+and returns I::Reified. Following as_request has a separate scalar-operation
+fence. Reduce the actual tags::Type/Reified and receiver proof before shared
+kernel changes. Prefixes differ; raw counts are not speed evidence. No complete
+census, checked-body count or original core/alloc/std artifact exists.
 
-Next reduce actual associated Discriminant representation ->Debug trait-object
-field proof. Ordinary associated-type bound controls first; preserve actual
-compiler-provided DiscriminantKind source identity if theypass. The next retained
-request_by_type_tag record has the same trait-obligation wording. Do not modify
-shared trait kernels without a faithful failure or bounded actual graph.
-
-Full42890284924 onbb9b13eee is active in broadnativecourse; release/course and
-maintainernative pass, including the two repaired private diagnostic assertions.
-Do notcancel/redispatch whilelive. The newcoercionsemantic successor's fullrun is
-due after thatterminal. Earlier full42882896962 failedonly2staleprivate diagnostics
-(3061others+allregularpass; laterstages skipped); localprivate1794340234386664156
-also timedoutClippy-driverlink withzeroexecutions. These are retainedfailures,
-notpassingreceipts. The succeedingfullnowexecutedtheactualrepairedprivatecontrols.
+Full42900791503 on8ac237506 passed every stage (source-coercion predecessor).
+This new semantic checkpoint requires a successor after publication. Never cancel
+an active full dispatch by redispatching; push-fast is separate. The older
+42882896962 failure and local private link timeout remain retained failures;
+42890284924 executed and passed the repaired controls in its full successful run.
 
 [PA19implementedtraitscope](docs/pa19-implemented-trait-scope.md) remains published
 with34newoutcomes/25native/all1233texts andzeroexistingreferencechanges. The prior

@@ -67,7 +67,38 @@ failed receipts remain. Temporary diagnostic code was restored before the
 production implementation. Diagnostic binaries and traces are analysis-only.
 No text oracles were generated or changed. Whole PA31 remains planned.
 
+Immutable dev-fast CLI
+`0107a6901003ea9f5c9bcefa2810d414ddb0508bfc774caccd75c7de585d808d`
+binds compiler b642ca4a8f626df0c42d6b3169cbeeace3daf619, an empty patch and3,887
+compiler/CLI/test Rust hashes. `measure/passed.json` records40 immutable A/A and
+two paired ABBA observations: complete ordinary LowIR, two accepted source-control
+type outputs and74 frozen outcomes remain equal. Candidate/baseline ratios are
+0.981/1.000/0.999/0.991; A/A ratios0.821/0.981/0.859/1.026. No speed claim.
+Changed-path growth is covered by the eight-counter source invariant above.
+
 The predecessor source-coercion full CI42900791503 on8ac237506 passed every stage.
 This semantic successor still requires its own full CI. Original source hashes,
 profile and observation window remain fixed; no original core/alloc/std artifact
 is claimed here. Earlier optimized nested-proof controls remain pending.
+
+## Original core observation
+
+The unchanged120-second observation reaches its infrastructure deadline at
+121.1915seconds. The retained partial stream has230 failure records and4,354
+item attempts, ending at function8923,file232 byte10709,node466 in str/mod.rs.
+All722 original hashes, six configuration bindings, compiler limits and profile
+remain unchanged. Progress SHA-256 is
+`b377219abcf86a5d6d31960dbc657f2dcf82c91923e612a9954504eeb445ed7b`.
+
+No mem/mod.rs failure remains in the recorded prefix: Discriminant<T>::fmt's
+previous object-proof fence is absent. The first retained failure is now
+request_by_type_tag at error.rs,file78 byte15853, again an unambiguous-trait-goal
+error. It constructs Tagged<TaggedOption<'a,I>>, calls provide(as_request()) and
+returns the projected value. The following as_request body separately reaches a
+scalar-operation fence. Reduce the actual tags::Type/Reified bounds and selected
+receiver requirements before changing another shared kernel.
+
+Prefixes end at different items. Their raw failure counts are not whole-core
+performance evidence. This remains an incomplete census and produces no original
+core/alloc/std artifact. Both temporary diagnostic binaries were retired by scoped
+prune1794347695205404555; their sources, hashes and raw traces remain retained.

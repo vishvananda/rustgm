@@ -1,27 +1,29 @@
 # Library build blocker tracker
 
-Latest semantic checkpoint: [source coercion discovery](pa31-coercion-discovery.md)
-keeps unnormalized projected heads unknown to unsizing exclusion without granting
-Eq/conversion. ActualsourceCoerceUnsized caused eagerResult<U,Error> probing.
-PA31owns22activeoutcomes/16native, allcompleteLowerIR and7-counterlinear/noise
-invariants pass. Rawfences/variables/identity errors remain;2ordinarycontrols and
-4oldsource/nominal groups pass. Native17,harness315/468roots/upstream pass. No
-oracles changed;1nestedopaqueEqdiagnostic remains explicitrequired, notqualified.
-No hotfields/cache/quotas/backendchanges.40pairedoutputequalcontrols,no speedclaim.
+Latest semantic checkpoint: [projected source object erasure](pa31-projected-object-erasure.md),
+compiler b642ca4a8 / CLI0107a690. Projected unknown heads generate complete ordinary
+object, Sized, equality, marker, lifetime and endpoint goals. Failure stays
+deferred; actual source marker applications own declared and caller proof. Known
+dyn upcasts retain intrinsic principal restrictions. No new hot fields, caches,
+limits, backend changes or oracles. PA31 retains26 active outcomes/19 native,
+eight-counter scaling/noise and old controls;315 harness/468 roots/upstream pass.
+Three separately manifested Rust-positive tuple factories remain required cleanup
+owner work. Whole PA31 stays planned.
 
-Original120s observation still FAILS at121.1880s:235records/4470attempts, through
-function9063,file241:42996,node1298time.rs. Alignment::try_from's oldfence absent;
-first Discriminant<T>::fmt atmem/mod.rs54:45756 needs actualDebugproof forassociated
-representation atDebugTuple.field(&self.0). Nextrequest_by_type_tag hasthesame
-trait-obligation wording. Original722hashes/sixpins/profile/quotasfixed; unequal
-prefixcountsare notspeed evidence. No completecensus/bodycount/artifact. Reduce
-ordinaryassociatedbound->dynDebugfieldfirst, thenactualDiscriminantKind ifneeded.
+Original120s observation FAILS at121.1915s:230records/4354attempts through
+function8923,file232:10709,node466 in str/mod.rs. No mem/mod.rs failure remains;
+Discriminant<T>::fmt's old object-proof fence is absent. First is now
+request_by_type_tag, error.rs78:15853, actual trait-goal proof for TaggedOption's
+projected representation and provide/as_request receiver. Next as_request has a
+scalar-operation fence. All722 hashes/six bindings/profile/limits fixed; partial
+SHA b377219abcf86a5d6d31960dbc657f2dcf82c91923e612a9954504eeb445ed7b.
+Unequal prefixes are not speed evidence. No complete census or original artifact.
 
-Full42890284924 onbb9 is activebroadnativecourse; release/course andmaintainernative
-pass, including2privateassertionrepairs. No newdispatchwhilelive. Newsemanticfull
-successor dueafterterminal; old42882896962+localprivatetimeout remainfailedhistory.
-[PA19scopecheckpoint](pa19-implemented-trait-scope.md) retains34outcomes/25native/
-all1233texts/unchangedoldreferences. CurrentCLI6549bindsbddcb51f3/emptydiff/3886Rust.
+Full42900791503 on8ac passed every stage; this semantic successor needs its own
+full qualification after publication. Forty immutable A/A+twoABBA controls preserve
+complete ordinary LowIR, source outputs and74 frozen outcomes without a speed
+claim. The PA19 scope and prior coercion checkpoints remain qualified. Keep the
+three tuple-factory requirements and earlier optimized nested-proof checks open.
 
 Previous [pending-join inputs](pa20-pending-join-inputs.md) retain their qualified
 PA20 packet, source/proof ownership and separate1.266x unoptimized direct-control
