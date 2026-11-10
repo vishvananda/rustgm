@@ -1,5 +1,14 @@
 # Library build blocker tracker
 
+Latest semantic checkpoint: [closure parameter projections](pa24-parameter-projections.md)
+registers imported child inputs before pattern binding. PA24 owns18 new outcomes,
+PA31 three real Iterator companions. Nine production controls,39 paired native
+programs, all527 PA24 texts, harness/upstream and paired equality pass. Original
+core moves past round_up but still times out:297 records/4987 attempts; first
+integer_decode missing value resolution. PA20 shorthand projected constants now
+reproduce it; explicit qualification passes. No original artifact. Full42847850912
+is active on the preceding checkpoint; wait before new full dispatch.
+
 Latest semantic checkpoint: [deferred closure casts](pa24-deferred-closure-casts.md)
 passes16 earliest-owner PA24 outcomes, four PA31 source companions,26 paired native
 programs, all509 PA24 text outcomes and focused scaling/ordinary controls. Private

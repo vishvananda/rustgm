@@ -40,26 +40,35 @@ requirement retained. No original core/alloc/std artifact exists.
 
 ## Current original-core frontier
 
-[Deferred closure casts](docs/pa24-deferred-closure-casts.md), compiler ed07f0181 /
-CLId2db4bd2, move the original observation past parse_long_mantissa's POWERS[n]
-as usize. The earliest reduction is PA24 (16 new outcomes); four genuine source
-Index companions stay PA31. Three new production groups, three existing control
-groups,26 paired native programs, independent outcomes, all509 PA24 text outcomes,
-315 harness/468 roots/upstream and30 output-equal paired observations pass.
-Only16 new references were generated; existing references stay unchanged.
-Private execution remains pending: the cold harness Clippy/link timed out inside
-the five-minute budget after a duplicate test-module name was corrected.
+[Closure parameter projections](docs/pa24-parameter-projections.md), compiler
+adfb10e1c / CLIf7be3585, move the original observation past round_up by registering
+imported child signature projections before structural parameter binding. PA24
+owns18 new ordinary outcomes; three source Iterator companions stay PA31.
+Nine exact production tests,39 paired native programs, all527 PA24 text outcomes,
+315 harness/468 roots/upstream and30 full-output-equal paired observations pass.
+Only18 new references were generated. The previous [closure-cast fix](docs/pa24-deferred-closure-casts.md)
+remains covered, with its16 PA24/four PA31 reductions and source ownership intact.
 
-The original120s observation still FAILS at121.04s:307 failure records/5967 item
-attempts through function11290, stdarch x86/avx512f.rs file296 byte212064. The first
-record is now round_up (flt2dec/mod.rs file25:6502), projection normalization.
-PartialSHA543de2845231d2a6159c6827005a24192ddb5aac644070bd42e1ccb3a60cc9aa.
-This is an incomplete prefix, not whole-core qualification or a failure-count
-comparison. All722 inputs/profile/quotas stay fixed; no original artifact exists.
-Next reduce round_up's inferred callback, then repeated call-input/receiver causes.
-Full predecessor42826374117 passed every stage; new full/private qualification is
-due. [Inclusive source calls](docs/pa31-inclusive-source-calls.md), compiler
-a5c7c21e0, remain qualified. No worker/tree or limit increase is authorized.
+The original120s observation still FAILS at121.09s:297 records/4987 item attempts
+through function10041, stdarch x86/sse2.rs file277 byte68548. First failure is now
+integer_decode, num/imp/traits.rs file36:6061, missing value resolution. PartialSHA
+ee870aa56a1f4f65a820c2f0b28557fc68fd72146465a8a5246e710569648964.
+The differing incomplete prefixes are not failure-count/timing or checked-body
+qualification. All722 inputs/profile/quotas stay fixed; no original artifact.
+
+Next is PA20: five independent Rust-positive exploratory sources show T::Int::ZERO
+missing value resolution and Self::Int::ZERO invalid method-candidate inference;
+explicit qualification/direct parameter controls pass frozenf7be. Prepare the
+formal PA20 contract/opponents/object/native checks before implementation. Inputs,
+plan and baseline are under obj/parallel/projected-constants; no compiler edit yet.
+
+Full42826374117 passed every stage. Current42847850912 on751ab7be1 passed fast and
+all-target strict lint/architecture/harness, is still in release/course tests;
+private execution/remaining qualification are pending. The new full successor is
+due only after that run terminates, never cancel it with another dispatch.
+[Inclusive source calls](docs/pa31-inclusive-source-calls.md) remain qualified.
+One worker, existing tree, unchanged limits; optimized nested-proof checks remain
+pending. Current immutablef7be is source-bound toadfb10e1c/empty patch/3880 hashes.
 
 [Incremental census progress](docs/census-progress.md) preserves diagnostics when
 the observer times out. Full joined diagnostic CI42820032217 on df8507cd8 now
