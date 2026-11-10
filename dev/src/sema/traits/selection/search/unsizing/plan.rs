@@ -5,6 +5,9 @@ use crate::{
 };
 pub(super) enum Outcome {
     Ready,
+    /// All erasure requirements must prove the projected source is suitable.
+    /// A failed attempt cannot exclude an upcast hidden by normalization.
+    ConditionalObject,
     Absent,
     Deferred,
     Unsupported(&'static str),
@@ -18,11 +21,22 @@ pub(super) fn requirements(
     goals: &mut Vec<Predicate>,
 ) -> Result<Outcome, Error> {
     context.account_work(1)?;
-    let heads = (
-        context.head(&facts.types, source)?,
-        context.head(&facts.types, target)?,
-    );
-    match heads {
+    let heads = [
+        context.head(&facts.types, source),
+        context.head(&facts.types, target),
+    ];
+    for head in &heads {
+        if let Err(error) = head
+            && *error != Error::Normalization
+        {
+            return Err(*error);
+        }
+    }
+    let target_head = heads[1]?;
+    let conditional = heads[0] == Err(Error::Normalization)
+        && matches!(target_head, Some(Constructor::Dynamic { .. }));
+    let source_head = if conditional { None } else { heads[0]? };
+    match (source_head, target_head) {
         (
             Some(Constructor::Array(_) | Constructor::ArrayTerm(_) | Constructor::ArrayInfer(_)),
             Some(Constructor::Slice),
@@ -58,7 +72,11 @@ pub(super) fn requirements(
                 }
             }
             goals.append(&mut builtins);
-            Ok(Outcome::Ready)
+            Ok(if conditional {
+                Outcome::ConditionalObject
+            } else {
+                Outcome::Ready
+            })
         }
         (
             Some(Constructor::Adt(..) | Constructor::AdtArgs(..)),

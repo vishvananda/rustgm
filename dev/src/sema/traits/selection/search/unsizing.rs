@@ -59,6 +59,11 @@ impl Pending {
             return Ok(false);
         }
         context.account_work(1).map_err(inference)?;
+        if matches!(self.completion(), Completion::ConditionalObject) {
+            // This route must prove Sized and ordinary erasure obligations;
+            // it cannot claim an intrinsic dyn upcast from an unknown head.
+            return Ok(false);
+        }
         Ok(matches!(
             context.head(&facts.types, source).map_err(inference)?,
             Some(infer::Constructor::Dynamic { .. })
@@ -69,6 +74,7 @@ impl Pending {
 #[derive(Clone, Copy)]
 enum Completion {
     Proven,
+    ConditionalObject,
     Absent,
     Deferred,
 }
@@ -145,6 +151,7 @@ impl Search<'_> {
             &mut goals,
         ) {
             Ok(plan::Outcome::Ready) => Completion::Proven,
+            Ok(plan::Outcome::ConditionalObject) => Completion::ConditionalObject,
             Ok(plan::Outcome::Absent) | Err(infer::Error::Mismatch | infer::Error::Occurs) => {
                 Completion::Absent
             }
@@ -158,7 +165,7 @@ impl Search<'_> {
         } else {
             completion
         };
-        if !matches!(completion, Completion::Proven) {
+        if matches!(completion, Completion::Absent | Completion::Deferred) {
             goals.clear();
         }
         let catalog = facts
@@ -280,7 +287,9 @@ impl Search<'_> {
             pending.advance()?;
             pending.end = pending.end.max(self.query.nodes[node].end);
         } else {
-            let completion = if matches!(decision, Decision::Deferred) {
+            let completion = if matches!(decision, Decision::Deferred)
+                || matches!(pending.completion(), Completion::ConditionalObject)
+            {
                 Completion::Deferred
             } else {
                 Completion::Absent
@@ -370,7 +379,7 @@ impl Search<'_> {
         match pending.completion() {
             Completion::Absent => return Ok(Action::Complete(Decision::Absent)),
             Completion::Deferred => return Ok(Action::Complete(Decision::Deferred)),
-            Completion::Proven => {}
+            Completion::Proven | Completion::ConditionalObject => {}
         }
         let children = std::mem::take(&mut pending.children);
         let end = pending.end;

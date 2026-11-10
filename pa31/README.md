@@ -78,6 +78,13 @@ shape probe treats an unnormalized head as unknown without granting equality or
 conversion; ordinary raw fences and complete source proofs remain mandatory.
 One older nested opaque-result equality diagnostic stays explicitly required.
 
+The [projected erasure packet](tests/spec/projected-erasure/README.md) and
+[checkpoint](../docs/pa31-projected-object-erasure.md) retain26 active outcomes
+and19 native comparisons. Pending projected sources pay complete Sized, object,
+marker, equality, lifetime and endpoint proofs; failure grants no negative fact
+about their unknown head. Three independently accepted generic tuple-factory
+inputs remain separate required cleanup-owner work. Whole PA31 remains planned.
+
 The [ResumeTy/get_context checkpoint](../docs/parallel/resume-context-main-join.md)
 uses actual ordinary nominal/function completions and preserves body/unsafe
 proof. Its native companion executes the exact pointer helper with authored

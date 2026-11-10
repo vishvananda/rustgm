@@ -65,18 +65,9 @@ impl Search<'_> {
                     return Ok(ControlFlow::Break(Action::Wait(Dependency::Fields(item))));
                 }
                 Step::Proof(obligation) if source => {
-                    if obligation == root {
-                        // An abstract source application requires its actual
-                        // caller premise; physical shape supplies no permission.
-                        let premise = object_premise(facts, obligation);
-                        pending.query.answer(obligation, premise)?;
-                    } else {
-                        pending.needed = Some(Leaf {
-                            requested: obligation,
-                            proof: obligation,
-                            reveal: false,
-                        });
-                        return Ok(ControlFlow::Break(Action::Descend));
+                    let internal = frame.goal.builtin_bound() == Some(Bound::Auto(root.marker));
+                    if let Some(action) = pending.source_proof(facts, obligation, internal)? {
+                        return Ok(ControlFlow::Break(action));
                     }
                 }
                 Step::Proof(obligation)
@@ -213,6 +204,29 @@ impl Search<'_> {
 }
 
 impl Pending {
+    /// An internal marker request needs the actual source application. That
+    /// application's ordinary selector owns caller and declared-result proofs;
+    /// reaching its structural fallback grants only intrinsic object bounds.
+    fn source_proof(
+        &mut self,
+        facts: &Declarations,
+        obligation: Obligation,
+        internal: bool,
+    ) -> Result<Option<Action>, String> {
+        if obligation == self.root && !internal {
+            self.query
+                .answer(obligation, object_premise(facts, obligation))?;
+            Ok(None)
+        } else {
+            self.needed = Some(Leaf {
+                requested: obligation,
+                proof: obligation,
+                reveal: false,
+            });
+            Ok(Some(Action::Descend))
+        }
+    }
+
     pub(super) fn revealing(&self) -> bool {
         self.needed.as_ref().is_some_and(|leaf| leaf.reveal)
     }

@@ -3,6 +3,8 @@ use crate::provider_traits::{TestResult, lower};
 use std::path::Path;
 #[path = "coercion_provider/envelopes.rs"]
 mod envelopes;
+#[path = "coercion_provider/erasure.rs"]
+mod erasure;
 
 const POSITIVE: &[&str] = &[
     "array-slice",

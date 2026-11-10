@@ -1,0 +1,243 @@
+{
+  "schema": 1,
+  "owner": "pa31 source Unsize for projected sized subjects",
+  "contract": "Predicted complete source/LowIR, independent object and native outcomes are frozen before implementation or oracle generation. A source projection with a known dyn target generates the full existing Sized, principal, equality, auto, outlives and endpoint formation obligations. It grants no physical shape or equality. Known dyn sources retain intrinsic upcast evidence; unknown/failed planning cannot publish unpaid absence. Raw inference/normalization/property fences remain unchanged. Three separately required generic tuple-factory positives remain explicit cleanup-owner requirements. Active intrinsic-field sources construct the same tuple aggregate with a struct literal, preserving the exact projected-field borrowing proof without demanding a separate factory body.",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false
+  },
+  "scaling": {
+    "widths": [
+      8,
+      32,
+      128
+    ],
+    "noise": [
+      0,
+      128
+    ],
+    "invariant": "Fourfold call growth at most4x+1024 inference/canonical/trait/projection/unsizing/method work; unrelated declarations add no call work."
+  },
+  "native_client": {
+    "path": "pa31/tests/spec/projected-erasure/observer.c",
+    "sha256": "b99a8c19c9a4ea239c4119f6f56588f1fe587ec8612afe4b15507303cfc8dd59",
+    "stdout": "9 23\n"
+  },
+  "inputs": [
+    {
+      "path": "pa31/tests/spec/projected-erasure/associated-field.rs",
+      "sha256": "d7159d2af987cbb6a4eee1597640b9c13e5c9a2510f3ba7b2569ec0742cb25c2",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/intrinsic-field.rs",
+      "sha256": "cb04ad07f163287957d51c9fea0b31ebf384f791649ccad6d50611fb4eb4e898",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/assumed-intrinsic.rs",
+      "sha256": "43369916e7cba262e029f816c070a18b207737f5f21531cf50ba3df75c5ca9fd",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/generic-control.rs",
+      "sha256": "220777748ae787b416da42a6aaacfd5fb2c234c2365bce789daeb292b8044dc7",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/concrete-control.rs",
+      "sha256": "8f62b46b85fdbb2065af19da0d96a0474a8c18ac0c829940fb6cbd7341bab524",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/direct-reference.rs",
+      "sha256": "92006f5bed42f30d4f156770fb863a9a05829803d57aadcbde27fed239e59eaf",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/named-field.rs",
+      "sha256": "768a07a03c2babb3650c968c80850fc307eb4bdf84191fda393bbdaa028cc40c",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/default-sized.rs",
+      "sha256": "a978e3a8bd031557b11789d55706bd1395dfb8f74a0918d3c9c9ce61b6628c88",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/explicit-sized.rs",
+      "sha256": "a29ae41538f250da9333766ef60b3a7574bdd170128cdf2516499a8aa2cac239",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/borrowed-lifetime.rs",
+      "sha256": "2e872ad27edd9cd5e8ec7b1839225d93dbe61bbfe0456bf386432b9efeaf8767",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/associated-equality.rs",
+      "sha256": "08321712c5957a06966478be5a50f6056dd3463c89ce61057acd70b0a2a7d344",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/marker-paid.rs",
+      "sha256": "8cf0f62ef309f725f16c521fe273a0568abd3414af678d060cbbe16e6da004c1",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/missing-principal.rs",
+      "sha256": "227bc35af18544fcc230fcedb69c7e40a3da03bba92855ae9a3b9aa4e9fe0c11",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/missing-sized.rs",
+      "sha256": "90ea81b92e6748b47c9b70457d187e2b33bbd1f2e8a3821ab94d57e8032474e0",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/marker-unpaid.rs",
+      "sha256": "721484ba5d177a19f3119586214705f198ac31b8788956d72c9658381e4e8ae5",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/static-escape.rs",
+      "sha256": "f12e89d85a09157d23c7c8b15c9110e671ceb33de69db66419ec8d9bc103cd23",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/wrong-associated-equality.rs",
+      "sha256": "2562d265c94e60f34e6e3132f064474c6a7e2610fab441b6fab4585495bf2e3c",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/unpaid-parent.rs",
+      "sha256": "7e28b5347090c322382545984d5342cb179925ade3c6c49fd046daf553974001",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/width-8-noise-0.rs",
+      "sha256": "b50e7947c127c6d501f5c653bd6feb663a86759962f8aee50c74c3fe75ea1fbe",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/width-8-noise-128.rs",
+      "sha256": "85c88c20539260c7a9ef7b19b08737bdb0a1d533c0bee23e7186dc9d7dfa678d",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/width-32-noise-0.rs",
+      "sha256": "9b04c7d3db859cba7f2c5bb6a23db5ad21ff63227435e18c92dfd6d9e409ddae",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/width-32-noise-128.rs",
+      "sha256": "0bd048ba219b45bc27dc7615a0234f1ee79a3ff568a9eeec119f7ccb02ea5f98",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/width-128-noise-0.rs",
+      "sha256": "bf3a6e8bb125ec11815f99aec9113668ecb1bc0096135c3d464819745e226b31",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/width-128-noise-128.rs",
+      "sha256": "2c8ea6441777a6583da9c97e191c506ce330bb1e33b9d6982725a71d001f15cd",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/projected-upcast.rs",
+      "sha256": "ae8430b9860a30e25e02f37dc11ef38970b2a6558fccd7a2afdfb4f525c2dd0c",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/unknown-overlap.rs",
+      "sha256": "10ea39474be331be56329ac2882335932f0fee14a5f2f6b6f8cb832b8d99e203",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "native": false
+    }
+  ],
+  "required": [
+    {
+      "path": "pa31/tests/spec/projected-erasure/required/intrinsic-field-factory.rs",
+      "sha256": "6e0365ddc6f3b20f1a5c6dc451843447af52c4b2522f6c4c3bf1d023c0ff7131",
+      "rustc_object_status": 0,
+      "native": true,
+      "desired_lowir_status": 0,
+      "current_boundary": "defining cleanup function header is pending",
+      "requirement": "Real generic tuple constructor cleanup must consume its generated owner instead of requiring an authored function header."
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/required/assumed-intrinsic-factory.rs",
+      "sha256": "1f128608a14ae69dd9b1f66678ff513913db560a0da0a87b1d0d820cea923ff2",
+      "rustc_object_status": 0,
+      "native": true,
+      "desired_lowir_status": 0,
+      "current_boundary": "defining cleanup function header is pending",
+      "requirement": "Real generic tuple constructor cleanup must consume its generated owner instead of requiring an authored function header."
+    },
+    {
+      "path": "pa31/tests/spec/projected-erasure/required/generic-control-factory.rs",
+      "sha256": "c5749530aa2a97dd2ec193cc3f1149f83dc198ffefd750c7617a4784135d4179",
+      "rustc_object_status": 0,
+      "native": true,
+      "desired_lowir_status": 0,
+      "current_boundary": "defining cleanup function header is pending",
+      "requirement": "Real generic tuple constructor cleanup must consume its generated owner instead of requiring an authored function header."
+    }
+  ]
+}
