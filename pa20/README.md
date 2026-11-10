@@ -2,9 +2,11 @@
 
 Status: **implemented-draft**. Prerequisite: PA19. The bounded source profile is
 Rust 1.98.0, edition 2024, Linux x86-64, panic abort, overflow checks enabled and
-debug assertions disabled. The public suite has 1,382 text-oracle cases across
-836 distinct source programs: 546 semantic inspections and 836 complete LowIR
-checks, including 508 independently executed positive programs.
+debug assertions disabled. The current public manifest has1,509 text-oracle cases:614 trait-semantic
+inspections and895 complete LowIR checks, with548 declared native executions.
+The latest [projected constant paths](../docs/pa20-projected-constant-paths.md)
+checkpoint adds27 independently checked outcomes and retains all whole-assignment
+release requirements and the remaining original-core method frontier.
 
 ## Required implementation
 

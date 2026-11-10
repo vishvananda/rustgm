@@ -40,35 +40,37 @@ requirement retained. No original core/alloc/std artifact exists.
 
 ## Current original-core frontier
 
-[Closure parameter projections](docs/pa24-parameter-projections.md), compiler
-adfb10e1c / CLIf7be3585, move the original observation past round_up by registering
-imported child signature projections before structural parameter binding. PA24
-owns18 new ordinary outcomes; three source Iterator companions stay PA31.
-Nine exact production tests,39 paired native programs, all527 PA24 text outcomes,
-315 harness/468 roots/upstream and30 full-output-equal paired observations pass.
-Only18 new references were generated. The previous [closure-cast fix](docs/pa24-deferred-closure-casts.md)
-remains covered, with its16 PA24/four PA31 reductions and source ownership intact.
+[Projected constant paths](docs/pa20-projected-constant-paths.md), compiler5167b30c7 /
+CLIe64e93a2, fix Self::Int::ZERO through actual parsed type-prefix facts and
+completed caller normalization. PA20 owns27 new outcomes (20 accept,7 reject).
+Seven production controls,63 paired native programs, all1509 PA20 texts,
+315 harness/468 roots/upstream and30 complete-output-equal paired observations
+pass. Only27 new references were generated; existing bytes are unchanged.
+Raw projection/caller/Copy/visibility/ambiguity/lifetime and budget gates remain.
+The13 old PA31 lookup controls retain their original analysis boundary; stronger
+free-copy/free-sized library lowering still fails identically on baseline and
+candidate and remains required, not qualified as native/source lowering.
 
-The original120s observation still FAILS at121.09s:297 records/4987 item attempts
-through function10041, stdarch x86/sse2.rs file277 byte68548. First failure is now
-integer_decode, num/imp/traits.rs file36:6061, missing value resolution. PartialSHA
-ee870aa56a1f4f65a820c2f0b28557fc68fd72146465a8a5246e710569648964.
-The differing incomplete prefixes are not failure-count/timing or checked-body
-qualification. All722 inputs/profile/quotas stay fixed; no original artifact.
+The original120s observation still FAILS at121.22s:300 records/5819 item attempts
+through function11142, stdarch x86/avx512f.rs file296 byte102769. integer_decode
+advances from missing value at6061 to no applicable receiver method at6128:
+((bits & Self::EXP_MASK) >> Self::SIG_BITS).cast(), with real CastInto<i16> on
+its Int result contract. PartialSHA
+f3dda319bd57e2ddadeb66a7926edad311429377401a473eacf0f489ca2ab8cc.
+No full census, checked-body success or original artifact. All722 inputs, six
+configuration bindings, semantic profile and quotas stay unchanged.
+Next reduce projected receiver method applicability using that actual generic
+CastInto result-bound signature, explicit qualification and direct-parameter
+controls. No next method implementation has begun.
 
-Next is PA20: five independent Rust-positive exploratory sources show T::Int::ZERO
-missing value resolution and Self::Int::ZERO invalid method-candidate inference;
-explicit qualification/direct parameter controls pass frozenf7be. Prepare the
-formal PA20 contract/opponents/object/native checks before implementation. Inputs,
-plan and baseline are under obj/parallel/projected-constants; no compiler edit yet.
-
-Full42826374117 passed every stage. Current42847850912 on751ab7be1 passed fast and
-all-target strict lint/architecture/harness, is still in release/course tests;
-private execution/remaining qualification are pending. The new full successor is
-due only after that run terminates, never cancel it with another dispatch.
-[Inclusive source calls](docs/pa31-inclusive-source-calls.md) remain qualified.
-One worker, existing tree, unchanged limits; optimized nested-proof checks remain
-pending. Current immutablef7be is source-bound toadfb10e1c/empty patch/3880 hashes.
+The [parameter-projection](docs/pa24-parameter-projections.md) and
+[closure-cast](docs/pa24-deferred-closure-casts.md) predecessors now have complete
+full qualification:42847850912 on751ab7be1 and42857585036 on4d430592e PASSED every
+stage, including private/native/debug/independent execution. The old private
+cold-link timeout is resolved by that real CI evidence. A new full successor is
+due after this publication; never cancel an active full dispatch.
+Current immutablee64e93a2 binds5167b30c7/empty patch/3882 Rust hashes. One worker,
+existing tree, unchanged limits; optimized nested-proof checks remain pending.
 
 [Incremental census progress](docs/census-progress.md) preserves diagnostics when
 the observer times out. Full joined diagnostic CI42820032217 on df8507cd8 now

@@ -1,5 +1,14 @@
 # Library build blocker tracker
 
+Latest semantic checkpoint: [projected constant paths](pa20-projected-constant-paths.md)
+closes Self::Int::ZERO via the real normalized type prefix. PA20 owns27 new
+outcomes;7 production controls,63 paired native programs, all1509 PA20 texts,
+harness/upstream and paired equality pass. The unchanged120s original observation
+still times out:300 records/5819 attempts, first integer_decode now at6128's
+cast() lookup. Its old missing value is absent, not a whole-body success.
+Reduce genuine CastInto<i16> on the associated Int result next. No original
+artifact. Both full42847850912 and42857585036 passed every stage; new full due.
+
 Latest semantic checkpoint: [closure parameter projections](pa24-parameter-projections.md)
 registers imported child inputs before pattern binding. PA24 owns18 new outcomes,
 PA31 three real Iterator companions. Nine production controls,39 paired native

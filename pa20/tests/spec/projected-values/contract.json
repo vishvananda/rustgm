@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "pa20 associated constants through projected type prefixes",
-  "contract": "All expected outcomes declared before independent execution, implementation and text generation. Nested generic/Self projected constant shorthand must preserve the same selected identity, full owner arguments, defaults/override, parent formation, lifetime and complete body/native proof as explicit qualification. Ambiguity, missing bound, wrong arguments, member arguments and static escape remain rejections. No rendering/reparsing of paths.",
+  "contract": "All expected outcomes declared before independent execution and text generation. Nested generic/Self projected constant shorthand must preserve the same selected identity, full owner arguments, defaults/override, parent formation, lifetime and complete body/native proof as explicit qualification. Ambiguity, missing bound, wrong arguments, member arguments and static escape remain rejections. No rendering/reparsing of paths.",
   "inputs": [
     {
       "path": "pa20/tests/spec/projected-values/nested-shorthand.rs",

@@ -2,8 +2,8 @@
 
 PA20 owns these27 outcomes (20 accept,7 reject): ordinary associated types,
 result bounds and constants suffice without GATs, closures or source library
-roles. Expectations and hashes are declared before independent execution,
-implementation and oracle generation. Shorthand and explicit qualification must
+roles. Expectations and hashes are declared before independent execution
+and oracle generation. Shorthand and explicit qualification must
 retain identical actual constant selection and native values across generic
 functions, trait Self, supertraits, explicit deeper type qualification, defaults/overrides,
 mixed arguments and borrowed results. Ambiguity, missing contracts, wrong
