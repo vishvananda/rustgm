@@ -65,8 +65,12 @@ fn actual_discriminants_require_current_neg_and_const_impl_before_scalar_evaluat
             .is_none()
     );
     facts.body_work.canonical_steps = crate::support::crates::MAX_COMPONENTS;
-    assert!(source_neg(&report, &mut facts, site).is_err());
+    source_neg(&report, &mut facts, site)?;
     assert!(facts.body_work.canonical_steps > crate::support::crates::MAX_COMPONENTS);
+    assert!(
+        crate::sema::header_attributes::charge_source_contract_query(&facts, usize::MAX).is_err()
+    );
+    assert!(source_neg(&report, &mut facts, site).is_err());
     Ok(())
 }
 #[test]

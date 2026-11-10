@@ -1,0 +1,49 @@
+{
+  "cause": "Borrowed source-header queries treated cumulative canonical-work observations as a local allowance.",
+  "counter_states": [
+    0,
+    1000000,
+    2000000
+  ],
+  "expected": "Current header identity/signature and exact query cost do not depend on prior unrelated canonical work.",
+  "budget": "Actual source producer ledger is charged, remains unchanged and fails sticky, including failed queries. Existing per-query operator/comparison caps remain.",
+  "scope": [
+    "source operator required headers",
+    "source comparison headers",
+    "source range helper identity"
+  ],
+  "deferred": [
+    "mutating storage/layout/transmute consumers"
+  ],
+  "schema": 1,
+  "owner": "pa31 source-declarations",
+  "inputs": [
+    {
+      "path": "pa31/tests/spec/source-functions-transport/minimal-provider.rs",
+      "sha256": "554fbcf9e6b7bd55f2ea8deec5eecab53b2b802806664d0eb0419ecbe47d2297"
+    },
+    {
+      "path": "pa31/tests/spec/source-location/neg-const-real-discriminant.rs",
+      "sha256": "a31f6e98d46cacfd1675573b25ac04eb4a65513410253ff6a5e0e8b2444f2dbb"
+    },
+    {
+      "path": "pa31/tests/spec/source-div/foundation.rs",
+      "sha256": "a87e3222bf81b6a59a79ad2f403fef8f272a8fcb26f8d987f56fa68e1a8989c5"
+    },
+    {
+      "path": "pa31/tests/spec/source-comparisons/equality/actual-equality.rs",
+      "sha256": "82fe3e7b1acb35fe39ef66004cb9c79035b9a9df1772389b8e96cdb94ba0af2d"
+    },
+    {
+      "path": "pa31/tests/spec/range-helper-roles/source-declarations.rs",
+      "sha256": "a0221a357e9f73fe76fa95f8a5a220413db3a7807bd964c4cd0db6d4c33523a5"
+    }
+  ],
+  "checks": [
+    "dev/tests/invariants/not_contracts.rs:unrelated_canonical_work_does_not_spend_a_source_not_query_allowance",
+    "dev/tests/invariants/comparison_authority.rs:unrelated_canonical_work_does_not_spend_a_comparison_query_allowance",
+    "dev/tests/invariants/ranged_headers.rs:warm_queries_failed_payments_and_cold_role_arrays_keep_bounded_ownership",
+    "dev/tests/invariants/neg_contracts.rs:actual_discriminants_require_current_neg_and_const_impl_before_scalar_evaluation",
+    "dev/tests/invariants/division_authority.rs:div_work_is_paid_on_warm_failure_and_repetition_with_an_ordinary_control"
+  ]
+}

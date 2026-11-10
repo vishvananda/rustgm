@@ -203,8 +203,12 @@ fn div_work_is_paid_on_warm_failure_and_repetition_with_an_ordinary_control() ->
         println!("source-div-work width={width} work={work}");
     }
     facts.body_work.canonical_steps = crate::support::crates::MAX_COMPONENTS;
-    assert!(source_binary(&report, &mut facts, key, Hook::Div).is_err());
+    source_binary(&report, &mut facts, key, Hook::Div)?;
     assert!(facts.body_work.canonical_steps > crate::support::crates::MAX_COMPONENTS);
+    assert!(
+        crate::sema::header_attributes::charge_source_contract_query(&facts, usize::MAX).is_err()
+    );
+    assert!(source_binary(&report, &mut facts, key, Hook::Div).is_err());
     let plain = "fn main(){let _=16usize/8usize;}";
     let report = crate::test_source::resolve(plain, true)?;
     let analysis = pipeline::analyze_source(&report)?;

@@ -80,8 +80,11 @@ pub(in crate::sema) fn source_comparison(
         .and_then(|d| facts.associated.owner(d.definition))
         .and_then(|id| facts.associated.owner_members(id))
         .map_or(1, |m| m.len() + 1);
-    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(charge * 16);
-    if facts.body_work.canonical_steps > crate::support::crates::MAX_COMPONENTS {
+    let work = charge.saturating_mul(16);
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work);
+    crate::sema::header_attributes::charge_source_contract_query(facts, work)
+        .map_err(|error| Declarations::error(report, site, error.message.as_str()))?;
+    if work > crate::support::crates::MAX_COMPONENTS {
         return Err(Declarations::error(
             report,
             site,

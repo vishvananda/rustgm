@@ -30,13 +30,6 @@ pub(in crate::sema) fn source_range_member(
     helper: RangeHelper,
 ) -> Result<SourceRangeMember, Error> {
     facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
-    if facts.body_work.canonical_steps > crate::support::crates::MAX_COMPONENTS {
-        return Err(Declarations::error(
-            report,
-            site,
-            "source range identity query exceeds its work budget",
-        ));
-    }
     crate::sema::header_attributes::charge_source_contract_query(facts, 4)?;
     let catalog = facts.source_bindings.as_deref().ok_or_else(|| {
         Declarations::error(

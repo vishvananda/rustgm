@@ -1,5 +1,45 @@
 //! Source comparison calls retain genuine headers and ordinary selected-call proof.
 use crate::{pipeline, sema::model::Operation};
+
+#[test]
+fn unrelated_canonical_work_does_not_spend_a_comparison_query_allowance()
+-> Result<(), Box<dyn std::error::Error>> {
+    let source = crate::test_source::fixture(
+        "pa31/tests/spec/source-comparisons/equality/actual-equality.rs",
+    )?;
+    let report = crate::test_source::source_provider(&source, "comparison_query_budget")?;
+    let mut facts = pipeline::analyze_source(&report)?.facts;
+    let site = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("source catalog")?
+        .language(crate::support::bindings::LangItem::PartialEq)
+        .ok_or("actual PartialEq")?
+        .origin;
+    let method = crate::support::comparisons::Comparison::PartialEq.methods()[0];
+    let mut cost = None;
+    for prior in [
+        0,
+        crate::support::crates::MAX_COMPONENTS,
+        2 * crate::support::crates::MAX_COMPONENTS,
+    ] {
+        facts.body_work.canonical_steps = prior;
+        super::source_comparison(&report, &mut facts, site, method)?;
+        let paid = facts.body_work.canonical_steps - prior;
+        assert!(paid > 0);
+        if let Some(expected) = cost {
+            assert_eq!(paid, expected);
+        }
+        cost = Some(paid);
+    }
+    assert!(
+        crate::sema::header_attributes::charge_source_contract_query(&facts, usize::MAX).is_err()
+    );
+    assert!(super::source_comparison(&report, &mut facts, site, method).is_err());
+    facts.body_work.canonical_steps = 0;
+    assert!(super::source_comparison(&report, &mut facts, site, method).is_err());
+    Ok(())
+}
 #[test]
 fn actual_equality_uses_source_proof_before_scalar_erasure()
 -> Result<(), Box<dyn std::error::Error>> {

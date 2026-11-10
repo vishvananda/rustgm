@@ -890,3 +890,8 @@ checked. Either runtime boolean must preserve the observer's result.
 reductions and a native observer: CTFE true across both independent overflow
 profiles, fixed checked-profile runtime, inherited-word and ordinary-name controls,
 and a malformed-signature rejection without a reference compiler ICE.
+
+`spec/declaration-query-budget/contract.json` registers the typed caller-state
+reduction for source operator, comparison and range-header query budgets. It
+reuses exact source inputs and keeps genuine producer exhaustion sticky; a
+cumulative work observation is not a local allowance.

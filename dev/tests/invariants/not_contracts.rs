@@ -209,9 +209,41 @@ fn source_not_rejects_missing_fake_malformed_and_stale_role_authority() -> Resul
         crate::support::source::SourceFile::new(source(&tail)?.into_bytes())?;
     assert!(source_not(&report, &mut facts, site).is_err());
     let (report, Analysis { mut facts, .. }) = analyze(&tail)?;
-    facts.body_work.canonical_steps = crate::support::crates::MAX_COMPONENTS;
+    assert!(
+        crate::sema::header_attributes::charge_source_contract_query(&facts, usize::MAX).is_err()
+    );
+    let before = facts.body_work.canonical_steps;
     assert!(source_not(&report, &mut facts, site).is_err());
-    assert!(facts.body_work.canonical_steps > crate::support::crates::MAX_COMPONENTS);
+    assert!(facts.body_work.canonical_steps > before);
+    facts.body_work.canonical_steps = 0;
+    assert!(source_not(&report, &mut facts, site).is_err());
+    Ok(())
+}
+
+#[test]
+fn unrelated_canonical_work_does_not_spend_a_source_not_query_allowance() -> Result {
+    let (report, Analysis { mut facts, .. }) = analyze(&format!("{NOT}{BOOL}"))?;
+    let site = NodeKey {
+        file: crate::resolve::unit::FileId(0),
+        node: report.package.units[0].configured.ast.root,
+    };
+    let before = facts.body_work.canonical_steps;
+    let actual = source_not(&report, &mut facts, site)?;
+    let cost = facts.body_work.canonical_steps - before;
+    assert!(cost > 0);
+    for prior in [
+        0,
+        crate::support::crates::MAX_COMPONENTS,
+        2 * crate::support::crates::MAX_COMPONENTS,
+    ] {
+        facts.body_work.canonical_steps = prior;
+        let selected = source_not(&report, &mut facts, site)?;
+        assert_eq!(
+            (selected.definition, selected.method, selected.signature),
+            (actual.definition, actual.method, actual.signature)
+        );
+        assert_eq!(facts.body_work.canonical_steps - prior, cost);
+    }
     Ok(())
 }
 

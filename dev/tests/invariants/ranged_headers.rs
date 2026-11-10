@@ -254,6 +254,7 @@ fn warm_queries_failed_payments_and_cold_role_arrays_keep_bounded_ownership() ->
     let (report, mut facts) = prepared()?;
     let key = source_site(&facts)?;
     let mut previous = None;
+    facts.body_work.canonical_steps = 2 * crate::support::crates::MAX_COMPONENTS;
     for count in [8, 32, 128] {
         let before =
             header_attributes::source_contract_storage(&facts).ok_or("actual header payer")?;

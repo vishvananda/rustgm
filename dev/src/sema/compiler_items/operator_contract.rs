@@ -567,13 +567,16 @@ pub(super) fn query(
     site: NodeKey,
     operator: Operator,
 ) -> Result<SourceOperator, Error> {
-    let mut work = Work(facts.body_work.canonical_steps);
+    let mut work = Work(0);
     let result = checked(report, facts, operator, &mut work).map_err(|failure| match failure {
         Failure::Header(error) => error,
         Failure::Contract(message) => Declarations::error(report, site, message),
     });
-    // Successful and failed attempts both belong to this existing work owner.
-    facts.body_work.canonical_steps = work.0;
+    // This meter is cumulative observation, not this query's local allowance.
+    // Both successful and rejected work still belongs to the source producer.
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work.0);
+    crate::sema::header_attributes::charge_source_contract_query(facts, work.0)
+        .map_err(|error| Declarations::error(report, site, error.message.as_str()))?;
     result
 }
 fn checked(
