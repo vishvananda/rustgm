@@ -1,5 +1,11 @@
 # Core census and transport plan
 
+Latest diagnostic checkpoint: [incremental census progress](census-progress.md)
+retains345 failure records and6469 item attempts before the unchanged120s
+observer timeout. This remains an infrastructure failure and incomplete prefix,
+not a completed census. Full semantic predecessor42813128062 passed all stages.
+Reduce the37 reached inclusive-range call-plan failures next; no original artifact.
+
 Latest semantic checkpoint: [source Unsize upcasts](pa31-source-object-upcasts.md)
 supports non-quantified intrinsic object upcasts with full retained debts.
 Ten PA31 outcomes, seven private controls, bounded diamond/noise work and three

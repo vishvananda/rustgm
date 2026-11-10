@@ -40,14 +40,22 @@ requirement retained. No original core/alloc/std artifact exists.
 
 ## Current original-core frontier
 
-[Failed alias-work accounting](docs/pa21-failed-alias-work.md), compiler67b277950/
-CLI8a653e24, repairs the one real regression in full42805641905. That run failed
-trait-fallback-leak's source budget;3056 other private and all regular targets
-passed, later stages skipped. A plain unsatisfied alias graph now pays completed
-work instead of its full unused allowance; rich/budget failures keep conservative
-payment. Five private and three production groups, harness/upstream and30 full-
-output-equal paired observations pass. No quota or oracle change. Full joined
-successor is due after publication; incremental census progress remains next.
+[Incremental census progress](docs/census-progress.md), compiler9482507e3 /
+CLI792f38b9, now preserves partial source/body/failure diagnostics. One private,
+all14 census-mode tests,315 harness tests, upstream and30 complete-output-equal
+paired observations pass. The original120s run still FAILS at120.99s, but retains
+345 failure records and6469 item attempts, ending in stdarch avx512f.rs file296
+byte710139. This is an incomplete prefix, never checked-body counts or a complete
+census. All722 inputs/profile/quotas stay fixed; two CLI code pins are explicitly
+rebound in the manifest. The old dyn-upcast fence is absent in the reached prefix.
+Next reduce37 inclusive-range actual-call-plan failures. Evidence and immutable
+producer are under obj/parallel/census-progress. No original artifact exists.
+
+[Failed alias-work accounting](docs/pa21-failed-alias-work.md), compiler67b277950 /
+CLI8a653e24, repairs the one real regression in full42805641905. Joined successor
+42813128062 on2a75c680b now PASSED every fast/release/course/native/debug/independent
+stage. The diagnostic successor is due after publication; wait for any active full
+run to terminate before dispatching another.
 
 The [source Unsize upcast checkpoint](docs/pa31-source-object-upcasts.md),
 compiler6d3b6d424/CLIec0e1273, supports non-quantified intrinsic object upcasts
@@ -57,9 +65,8 @@ Rust/CPPGM native observers and30 unchanged-path observations pass. Harness314,
 upstream and selected strict checks pass. Two custom-auto object forms remain
 required; no oracle or backend contract changed. This addresses a shared cause
 of17 retained body fences; no complete new census or original artifact is claimed.
-Next add incremental census progress to diagnose the unchanged120/170s timeout
-without another observer-window increase. Full42805641905 failed one fallback budget regression; the repair above passes
-focused checks and its joined successor is due.
+Incremental progress above now supplies retained partial diagnostics. No further
+observer-window increase is authorized; joined full42813128062 passed all stages.
 
 The [source-probe/body-session checkpoint](docs/pa26-body-place-session.md)
 clears the cumulative method-probe guard and a newly exposed stale indexing
@@ -141,8 +148,7 @@ push-fast is separate.
 
 ## Next work, one worker
 
-1. Add incremental census progress, complete bounded original-body discovery and batch retained failures
-   by shared cause:
+1. Use retained incremental progress to batch reached failures by shared cause:
    Source Unsize, inclusive ranges, receiver lookup and projections lead the list.
    Freeze independently checked reductions in the earliest owning PA.
 2. Inspect the joined successor full CI when available and repair actual failures;
@@ -156,7 +162,8 @@ push-fast is separate.
 
 - Durable decisions: /mnt/vizier/rustgm-scratch/integrator-20261109/pending_decisions.md.
 - Current compiler/test source hashes are bound in pa26-work's
-  obj/parallel/alias-query-work/candidate-dev-fast/producer.json. Current receipts are
+  obj/parallel/census-progress/candidate-dev-fast/producer.json. Current receipts are
+  under obj/parallel/census-progress; semantic receipts are
   under obj/parallel/alias-query-work and obj/parallel/source-upcast; body-session receipts are under
   obj/parallel/place-session and obj/parallel/source-probe-budget; scoped lookup is
   under obj/parallel/scoped-lookup; f01 receipts and
