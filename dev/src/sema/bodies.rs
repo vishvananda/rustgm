@@ -550,6 +550,7 @@ impl<'a> Checker<'a> {
         self.prepare_bound_environment(key.node, owner, None)
     }
     fn begin_constant(&mut self, key: NodeKey, ty: TypeId, module: ModuleId, privacy: TypePrivacy) {
+        self.state.language_places = None;
         self.state.call_types.clear();
         self.state.projections = projections::Pending::default();
         self.state.notifications = notifications::Notifications::default();
@@ -740,6 +741,7 @@ impl Checker<'_> {
         {
             return Ok(Some(dependency));
         }
+        self.state.language_places = None;
         self.state.call_types.clear();
         self.state.projections = projections::Pending::default();
         self.state.notifications = notifications::Notifications::default();

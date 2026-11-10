@@ -84,3 +84,7 @@ Controls include successive live items, non-Copy Drop elements, independent
 source/receiver lifetimes, generic extents, shorter slice metadata, one-time
 formation and lookup precedence. Owned collections and range iteration remain
 required; see `docs/pa26-mutable-iteration.md`.
+
+`spec/place-session/contract.json` registers the typed body-session reduction for
+stale indexing call offsets across function and constant resets, using the active
+shared-index fixture. Current-body mutable refinement retains its existing tests.

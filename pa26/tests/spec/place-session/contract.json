@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "owner": "pa26 mutable indexing",
+  "cause": "Node-local selected place method/call offsets survived CallTypes reset at a new function or constant. A reused NodeId could overwrite another row or panic.",
+  "input": {
+    "path": "pa26/tests/spec/index-mut/shared.rs",
+    "sha256": "ed39b88cf34a731f8f2be365c21ee768c5714f016237a9a6590c6f084011e3fa"
+  },
+  "expected": "A fresh body discards previous selected offsets and mutable-place marks before reusing the same NodeId; real current-body Index-to-IndexMut refinement remains intact.",
+  "checks": [
+    "dev/tests/invariants/place_sessions.rs:fresh_function_discards_previous_body_place_offsets_before_checking_the_same_node",
+    "dev/tests/invariants/place_sessions.rs:fresh_constant_discards_previous_body_place_offsets_before_reusing_a_node"
+  ]
+}

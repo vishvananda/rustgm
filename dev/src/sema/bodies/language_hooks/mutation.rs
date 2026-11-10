@@ -364,3 +364,7 @@ impl Checker<'_> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+#[path = "../../../../tests/invariants/place_sessions.rs"]
+mod tests;
