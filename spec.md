@@ -7466,6 +7466,16 @@ The unchanged nested-readiness invariant must still reject overlapping execution
 at the maximum budget that admits either initializer alone. See the
 [CI repair](docs/source-wrappers-ci-repair.md).
 
+The actual source mul_with_overflow operation retains its genuine one-type Copy
+signature, caller/source/const proof and closed integer instance. Return wrapped
+target bits and a separate overflow flag using the ordinary tuple layout; overflow
+never acquires a panic path. CTFE reuses the checked/wrapping primitive evaluator.
+Native narrow products share ordinary checked multiplication's widened kernel;
+128-bit flag computation uses unsigned magnitudes, sign-dependent bounds and a
+nonzero denominator, preserving both MIN/-1 orders and zero inputs. Keep this
+flag-only operation separate from ordinary checked128 panic guards. See the
+[PA28 multiplication checkpoint](docs/pa28-multiply-overflow.md).
+
 The actual source overflow_checks intrinsic returns true in CTFE independently
 of runtime configuration. Its runtime answer uses this driver's fixed checked
 arithmetic policy. Reuse the actual zero-input checked Call, completed signature,

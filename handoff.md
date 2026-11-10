@@ -40,42 +40,43 @@ requirement retained. No original core/alloc/std artifact exists.
 
 ## Current original-core frontier
 
-The [overflow-query correction](docs/pa31-overflow-query.md), compiler9cf816e81,
-clears pow after [static knowledge](docs/pa31-static-value-knowledge.md),
-compiler9c523798e, cleared checked_ilog. Overflow CTFE is true independently of
-runtime flags; runtime follows this driver's fixed checked arithmetic profile.
-The ordinary same-name function stays false. Actual source/call/prototype,
-indirect-call and imported-policy checks remain. PA31 freezes five independently
-checked reductions and a native observer, stdout1 1 1. Independent disabled
-overflow instead prints1 0 0, confirming the CTFE/runtime distinction.
+The [PA28 multiplication correction](docs/pa28-multiply-overflow.md), compiler
+541972e4a, clears overflowing_mul after [overflow query](docs/pa31-overflow-query.md)
+and [static knowledge](docs/pa31-static-value-knowledge.md) cleared pow and
+checked_ilog. The actual source intrinsic returns target-width wrapped bits and
+an overflow flag without panic. Genuine Copy/source/prototype/call/const proof
+remains. Native narrow multiplication reuses the unchanged widened kernel;
+128-bit flags use unsigned magnitudes and a nonzero denominator, covering zeros
+and both MIN/-1 orders. Ordinary checked128 guards remain unchanged.
 
-Production1794289740510319548 passes5 groups; private1794290079406487644 passes8
-checks; native1794290285447742973 passes2 groups/seven real executables, including
-all6 existing UB configuration combinations. Strict selected/private Clippy,
-format, audit,313 harness/466 roots/44 stages/upstream128/Reference126 pass.
-The first private attempt caught a new test-helper borrowing lint, corrected
-without production changes. A first malformed reference CTFE caused ICE and is
-retained unqualified; the frozen declaration-only negative ordinarily rejects.
+PA28 freezes6 source outcomes and156 independently verified native pairs across
+all12 integer types. Compiler knowledge/configuration query policies stayPA31;
+typed identity alone does not determine the owning assignment. Production
+1794291492523956888 passes3 groups; native1794291677746131719 passes2 groups/five
+real programs; private1794291757965593895 passes10 guards. Strict selected/private
+Clippy, format, audit,313 harness/467 roots/44 stages/upstream128/Reference126 pass.
+Thirty A/A+twoABBA observations preserve complete ordinary multiplication LowIR
+at8/32 functions and74 ordinary outcomes, without a speed claim.
 
 Current immutable source-bound dev-fast CLI is
-`9af9f1877ce5e71ec9335a80503f683506adba15585e34a6c4b6ad1b87ae4552`.
+`bf168bc7dd54bd213780b32fd17ce0a700237220d4a34c22c7b2da26b898ccdd`.
 It opens375 unchanged sources from722 and checks42310 declarations, none
-failed/blocked, bodies0, in73.81s. Next local_annotations record is overflowing_mul
-at num/uint_macros.rs:3171, byte137546: source intrinsic constant execution is
-not implemented. Actual call: intrinsics::mul_with_overflow. Expansion uint_impl
-is num/mod.rs byte45951. TSV SHA
-`3874ec484a5efa1dd1126347df8b957ce8c6be2f1ba298ec243b84accdd25e46`.
-Inputs/profile/limits are unchanged; this is discovery, not an original artifact.
-Split::new remains provisional; close f01 before widening A+O.
+failed/blocked, bodies0, in79.45s. Next local_annotations record is slice/mod.rs
+line2251, byte82861, split's Split::new: quantified clause requires a scoped
+consumer. TSV SHA
+`9a585c80afd2f737e5359956b85c9be14097442b91abd2bc667dbde5896645e2`.
+Inputs/profile/limits remain unchanged; this is discovery, not an original artifact.
+This now reaches the previously retained Split::new/f01 boundary: close f01
+before widening A+O or other bound-region lookup.
 
 Full predecessor42754442914 and slice53f full42760129302 both succeeded in every
-stage. A combined static-knowledge/overflow successor may now dispatch after
-publication. Wait for each full run to terminate before another dispatch;
-push-fast uses a separate concurrency group.
+stage. Combined query full42765929708 on3cd56ee2b passes fast/lint/architecture/
+harness/host graph and is executing release/course checks. Wait for that run to
+terminate before dispatching a multiplication successor. Push-fast is separate.
 
 ## Next work, one worker
 
-1. Confirm and repair the observed overflowing_mul/mul_with_overflow requirement, using the
+1. Confirm and repair the observed slice::split/Split::new scoped-clause requirement, using the
    actual pinned declaration and semantics. Freeze independently checked reducers
    in their earliest owning PA, then rerun the unchanged census.
 2. Inspect the joined successor full CI when available and repair actual failures;
@@ -89,12 +90,16 @@ push-fast uses a separate concurrency group.
 
 - Durable decisions: /mnt/vizier/rustgm-scratch/integrator-20261109/pending_decisions.md.
 - Current compiler/test source hashes are bound in pa26-work's
-  obj/parallel/overflow-query/candidate-dev-fast/producer.json. Current receipts and
-  census are under obj/parallel/overflow-query; prior static-knowledge evidence is
+  obj/parallel/multiply-overflow/candidate-dev-fast/producer.json. Current receipts and
+  census are under obj/parallel/multiply-overflow; prior query evidence is under
+  obj/parallel/overflow-query, and static-knowledge evidence is
   under obj/parallel/static-knowledge, slice evidence is under
   obj/parallel/radix-slice, and joined proof/layout evidence is
   under obj/parallel/reuse-ci and obj/parallel/atomic-layout. All temporary production/test diagnostics are gone.
-- Current overflow ordinary-name/74 controls retain20 full-output-equal A/A+ABBA
+- Current multiplication observations retain30 full-output-equal A/A+ABBA rows:
+  ordinary LowIR at8/32 functions plus74 controls, ratios0.937/1.088/1.003,
+  A/A0.693/1.134/1.019; no timing claim. Prior overflow ordinary-name/74 controls
+  retain20 full-output-equal A/A+ABBA
   observations, ratios0.883/1.007, A/A0.910/0.985, without a speed claim. Earlier
   static-knowledge ordinary-name/74 A/A+ABBA retains20 full-output-equal observations,
   ratios0.956/1.001, A/A0.733/1.154, with no timing claim. Earlier strict-str/74

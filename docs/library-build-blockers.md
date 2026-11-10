@@ -5,6 +5,17 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+The [multiplication checkpoint](pa28-multiply-overflow.md) clears overflowing_mul
+using the genuine safe source intrinsic, checked/wrapping CTFE and a nontrapping
+native overflow flag through128 bits. PA28 owns six independently checked source
+cases and156 native result/flag pairs. CLIbf168bc7 preserves722 hashes/profile/
+limits, opens375 and checks42310 declarations, none failed/blocked, bodies0. It
+reaches slice/mod.rs:2251, byte82861, split's Split::new: quantified clause requires
+a scoped consumer. This is the retained Split/f01 boundary; close its scoped
+proof before widening lookup. Full query predecessor42765929708 is active; wait
+for terminal status before a multiplication successor. Original artifacts remain
+required.
+
 The [overflow-query checkpoint](pa31-overflow-query.md) clears pow using the
 actual intrinsic's CTFE true and this driver's fixed checked runtime profile.
 PA31 freezes five independently checked reductions and the native profile

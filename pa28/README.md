@@ -41,6 +41,13 @@ tuple carrier. All integer widths and ordinary lookalikes have native controls;
 retained reference ICEs supply no language rejection or same-source native proof.
 Original helper graphs, other numeric families and transport remain required.
 
+The [multiplication checkpoint](../docs/pa28-multiply-overflow.md) qualifies the
+actual mul_with_overflow declaration, all12 integer CTFE/native widths and156
+native edge pairs. Reuse source Copy/const/call authority, real tuple layout and
+checked/wrapping semantics;128-bit flags never divide by zero or execute signed
+MIN/-1 division. Ordinary checked128 guards remain distinct. Wider profiles,
+other intrinsic families and transport remain required.
+
 The [unchecked reinterpretation checkpoint](../docs/pa28-source-unchecked-transmute-checkpoint.md)
 qualifies genuine TransmuteUnchecked and unchanged outer NonZero new/get in a
 finite closed-inner profile. Preserve its distinct size-typing and indirect-const
