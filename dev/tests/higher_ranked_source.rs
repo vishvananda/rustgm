@@ -10,6 +10,8 @@ mod equalities;
 use crate::native_references as native;
 #[path = "higher_ranked_source/results.rs"]
 mod results;
+#[path = "higher_ranked_source/universe_calls.rs"]
+mod universe_calls;
 use crate::qualify as rustc;
 use std::{
     io::Write,

@@ -25,7 +25,7 @@ pub(super) struct CallTypes {
     pub input_context: super::callee_inputs::Inputs,
     pub obligations: Vec<(NodeId, crate::types::infer::predicates::Predicate)>,
     pub assumed_obligations: HashSet<usize>,
-    constraints: Option<Box<HashMap<usize, Constraint>>>,
+    constraints: Option<Box<CallConstraints>>,
     pub generic: Vec<(NodeId, DefId, TermId)>,
     pub constants: Vec<super::item_values::Pending>,
     pub generic_constructors: bool,
@@ -50,6 +50,11 @@ pub(super) struct CallTypes {
     pub published: Vec<(TypeId, bool, bool)>,
 }
 #[derive(Default)]
+struct CallConstraints {
+    entries: HashMap<usize, Constraint>,
+    caller: Option<Box<super::trait_goals::CallerInputs>>,
+}
+#[derive(Default)]
 struct Constraint {
     bound_regions: Option<u32>,
     intrinsic: bool,
@@ -57,11 +62,16 @@ struct Constraint {
 const _: [(); 728] = [(); size_of::<CallTypes>()];
 impl CallTypes {
     pub fn bound_regions(&self, index: usize) -> Option<u32> {
-        self.constraints.as_ref()?.get(&index)?.bound_regions
+        self.constraints
+            .as_ref()?
+            .entries
+            .get(&index)?
+            .bound_regions
     }
     pub fn quantify(&mut self, index: usize, count: u32) {
         self.constraints
             .get_or_insert_with(Default::default)
+            .entries
             .entry(index)
             .or_default()
             .bound_regions = Some(count);
@@ -69,6 +79,7 @@ impl CallTypes {
     pub fn require_intrinsic(&mut self, index: usize) {
         self.constraints
             .get_or_insert_with(Default::default)
+            .entries
             .entry(index)
             .or_default()
             .intrinsic = true;
@@ -76,8 +87,17 @@ impl CallTypes {
     pub fn intrinsic(&self, index: usize) -> bool {
         self.constraints
             .as_ref()
-            .and_then(|c| c.get(&index))
+            .and_then(|c| c.entries.get(&index))
             .is_some_and(|c| c.intrinsic)
+    }
+    pub(super) fn caller_inputs(&self) -> Option<&super::trait_goals::CallerInputs> {
+        self.constraints.as_ref()?.caller.as_deref()
+    }
+    pub(super) fn retain_caller_inputs(&mut self, inputs: super::trait_goals::CallerInputs) {
+        self.constraints.get_or_insert_with(Default::default).caller = Some(Box::new(inputs));
+    }
+    pub(super) fn universal_aliases(&self) -> &[RegionId] {
+        &self.universal_regions
     }
     pub fn insert_nominal(&mut self, term: TermId, fields: super::nominals::Fields) {
         self.nominal_receivers.insert(term, fields);

@@ -98,3 +98,7 @@ rustc by name, because its trait method's own `Q: Copy` bound is a clause of
 the contract. The nine accepted controls declare native execution. The
 private invariant `projection_conditions_match_declared_outcomes` checks
 each control's first error.
+
+`spec/binders/universal-inherent/` freezes nine independently checked PA21
+generic-semantic outcomes for closed universal inherent calls: static-only bounds
+reject, universal implementations and actual caller universal premises accept.

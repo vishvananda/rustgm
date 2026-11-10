@@ -3,6 +3,8 @@ mod canonical;
 mod conjunction;
 mod diagnostics;
 mod inference;
+mod universe_calls;
+mod universe_inputs;
 use super::{Checker, Error, NodeId};
 use crate::sema::traits::{
     assumptions::Assumptions,
@@ -12,6 +14,7 @@ use crate::sema::traits::{
 pub(super) use canonical::CanonicalRequirements;
 pub(super) use inference::{Pending, Progress};
 use std::sync::Arc;
+pub(in crate::sema::bodies) use universe_inputs::CallerInputs;
 
 impl Checker<'_> {
     pub(super) fn prove_canonical_trait(

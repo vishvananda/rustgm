@@ -165,7 +165,7 @@ impl Predicate {
         self.has_regions_outside(store, 0)
     }
 
-    pub(super) fn has_regions_outside(
+    pub(crate) fn has_regions_outside(
         self,
         store: &crate::types::Store,
         depth: u16,

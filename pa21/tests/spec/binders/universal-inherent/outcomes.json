@@ -1,0 +1,51 @@
+{
+  "mode": "--emit-generic-semantics",
+  "reference": "Rust 1.98 object compilation, edition 2024, default lints",
+  "cases": [
+    {
+      "file": "static-unique.rs",
+      "expected_status": 1,
+      "source_sha256": "d3a92e6b5664039fbd9006e1306dd4f95b723077f02faddc23d8afdd7a9432f7"
+    },
+    {
+      "file": "universal-unique.rs",
+      "expected_status": 0,
+      "source_sha256": "54e335477be084d5b6d8ba4e67cd23e848001f883e3a4e7b4bd191027c618cc8"
+    },
+    {
+      "file": "assumed-concrete.rs",
+      "expected_status": 0,
+      "source_sha256": "eed01b6e3ddb055c120457a4d38265294dc03784d1c831672953faaae5d15fca"
+    },
+    {
+      "file": "static-forward.rs",
+      "expected_status": 1,
+      "source_sha256": "c13db2c73563ae84168a15ce7094b5dd102784597cd9a795f4e586ffe235b977"
+    },
+    {
+      "file": "assumed-through-capture.rs",
+      "expected_status": 0,
+      "source_sha256": "b13ea9a0052d712dfa93914b0086e047ce2146a38e6609bde512cee9a6d067fd"
+    },
+    {
+      "file": "static-with-caller.rs",
+      "expected_status": 1,
+      "source_sha256": "ee0c54118ea092d7c4d63c5583b790dd30bcf379aa4d947f7d4291de5c09cd49"
+    },
+    {
+      "file": "outlives-caller.rs",
+      "expected_status": 1,
+      "source_sha256": "52378ac9f7aef2225178720b4e63f0d663b0a3226d5ba065e9275ce91c86ab85"
+    },
+    {
+      "file": "capture-outlives-valid.rs",
+      "expected_status": 0,
+      "source_sha256": "4af611f43aeccb1548cf533a964a4fae2c089f1ee4ce0948630a8bda7e49d636"
+    },
+    {
+      "file": "capture-outlives-invalid.rs",
+      "expected_status": 1,
+      "source_sha256": "696bf52bf1f5a7e47e4cc1b9af67de9aa0bcb0cb219041524eb6f1e7cc802abe"
+    }
+  ]
+}

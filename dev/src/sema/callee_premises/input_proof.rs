@@ -58,11 +58,19 @@ impl Inputs<'_> {
         facts: &'a Declarations,
         queries: &mut Queries<'a>,
     ) -> Result<Constraints<'a>, &'static str> {
+        self.seed_limited(facts, queries, LIMIT)
+    }
+    pub(crate) fn seed_limited<'a>(
+        self,
+        facts: &'a Declarations,
+        queries: &mut Queries<'a>,
+        limit: usize,
+    ) -> Result<Constraints<'a>, &'static str> {
         let mut proof = Constraints::new(
             &facts.types,
             &facts.lifetimes.variances,
             self.universals,
-            LIMIT,
+            limit,
         )
         .map_err(|_| "source caller input graph exhausted")?;
         for &parameter in self.parameters {
