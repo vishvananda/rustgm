@@ -10,10 +10,11 @@
   "scope": [
     "source operator required headers",
     "source comparison headers",
-    "source range helper identity"
+    "source range helper identity",
+    "source transmute size queries"
   ],
   "deferred": [
-    "mutating storage/layout/transmute consumers"
+    "source layout intrinsic consumers"
   ],
   "schema": 1,
   "owner": "pa31 source-declarations",
@@ -37,6 +38,10 @@
     {
       "path": "pa31/tests/spec/range-helper-roles/source-declarations.rs",
       "sha256": "a0221a357e9f73fe76fa95f8a5a220413db3a7807bd964c4cd0db6d4c33523a5"
+    },
+    {
+      "path": "pa31/tests/spec/source-transmute/generic-borrowed-const.rs",
+      "sha256": "6aa8034dfffea93bba1b6cf7523e7778357e2888c2ff3c8145033ddbbf3d9265"
     }
   ],
   "checks": [
@@ -44,6 +49,8 @@
     "dev/tests/invariants/comparison_authority.rs:unrelated_canonical_work_does_not_spend_a_comparison_query_allowance",
     "dev/tests/invariants/ranged_headers.rs:warm_queries_failed_payments_and_cold_role_arrays_keep_bounded_ownership",
     "dev/tests/invariants/neg_contracts.rs:actual_discriminants_require_current_neg_and_const_impl_before_scalar_evaluation",
-    "dev/tests/invariants/division_authority.rs:div_work_is_paid_on_warm_failure_and_repetition_with_an_ordinary_control"
+    "dev/tests/invariants/division_authority.rs:div_work_is_paid_on_warm_failure_and_repetition_with_an_ordinary_control",
+    "dev/tests/invariants/bitcast_allowance.rs:transmute_queries_keep_local_work_and_sticky_source_payment",
+    "dev/tests/invariants/bitcast_allowance.rs:local_transmute_limit_still_rejects_before_layout_mutation"
   ]
 }

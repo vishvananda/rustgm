@@ -12,3 +12,9 @@ the same work at prior counters0/1000000/2000000. Genuine source producer budget
 exhaustion still fails sticky, including after resetting the observational meter.
 Warm malformed/stale headers, source const effects and unchanged ordinary paths
 retain their original checks. Source inputs and frozen Rust outcomes are unchanged.
+
+The next observed char/convert.rs transmute query uses the same prior-counter
+states. Equal-size acceptance, unequal-size rejection and exact actual payments
+are invariant. True producer exhaustion and a local exhausted query both fail
+before cold layout mutation. Completed child work and layout state prepayment
+still belong to the real producer. General layout intrinsics remain separate.
