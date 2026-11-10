@@ -875,3 +875,8 @@ header's trait premises are assumed. Each outcome was declared before its
 rustc 1.98.0 oracle, with recorded amendments for one fixture correction and
 ten wrong predictions. A private invariant checks them and the symmetry of
 every swapped pair's diagnostic text; there is no graded manifest.
+
+`spec/whole-slice-validity/` freezes five independently accepted named slice
+result-validity inputs. Three reproduce original core's missing normalized range
+only under the actual MaybeDangling role; ordinary-wrapper and string controls
+retain acceptance. The contract lists all input hashes and baseline outcomes.

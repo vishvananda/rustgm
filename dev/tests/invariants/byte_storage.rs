@@ -11,6 +11,8 @@ mod fragment_ranges;
 mod opaques;
 #[path = "string_memory.rs"]
 mod strings;
+#[path = "unprojected_slices.rs"]
+mod unprojected;
 #[path = "wrapper_work.rs"]
 mod wrapper_work;
 use super::{Cell, Constant, Failure, Machine, Reader, Snapshot};

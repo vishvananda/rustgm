@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "rustc_bootstrap": "1",
+  "rustc_command": [
+    "rustc",
+    "+1.98.0",
+    "--edition=2024",
+    "--crate-type=lib",
+    "--emit=metadata",
+    "{path}",
+    "-o",
+    "{output}"
+  ],
+  "baseline_sha256": "a73fa1351c91c32a3ccdff0baddafb60daf583e3763c29e35a9eb8ca5929a5f7",
+  "cases": [
+    {
+      "path": "byte.rs",
+      "source_sha256": "d54bfa23bba93cd68a20831adb3a333fb8dd46f0e3beb2c01c20c7401a3f53ae",
+      "expected_status": 0,
+      "rustc_status": 0,
+      "baseline_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 918: symbolic slice reference lacks its normalized range\n"
+    },
+    {
+      "path": "array.rs",
+      "source_sha256": "6252eaa97b10cf33cee6f14df63d2cb5ab3cecad4422014cfbc14e4390f6b319",
+      "expected_status": 0,
+      "rustc_status": 0,
+      "baseline_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 918: symbolic slice reference lacks its normalized range\n"
+    },
+    {
+      "path": "empty.rs",
+      "source_sha256": "8ced8f30356b368db27df2294b7ebe77f4c1ca0e776b0c75ae7bb2cb34b0c6d6",
+      "expected_status": 0,
+      "rustc_status": 0,
+      "baseline_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 918: symbolic slice reference lacks its normalized range\n"
+    },
+    {
+      "path": "str.rs",
+      "source_sha256": "26650b768146215b33b9bb37abf7bf3815abe31a15ca5969aa861b6ab776e694",
+      "expected_status": 0,
+      "rustc_status": 0,
+      "baseline_status": 0,
+      "baseline_diagnostic": ""
+    },
+    {
+      "path": "ordinary.rs",
+      "source_sha256": "744d69f2602bb2da2a0b702d176f93d3e82eea6a87f8fc72fa41992798240dd0",
+      "expected_status": 0,
+      "rustc_status": 0,
+      "baseline_status": 0,
+      "baseline_diagnostic": ""
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 //! Slice and str references validate initialized elements in their retained range.
 use super::{Constant, Failure, Machine, Read, Reader, TypeId};
 use crate::{
-    const_eval::static_reads::ReadPurpose,
+    const_eval::{memory::Range, static_reads::ReadPurpose},
     sema::values::{Origin, StoredShape},
 };
 impl Machine<'_, '_> {
@@ -87,8 +87,12 @@ impl Machine<'_, '_> {
         mutable: bool,
     ) -> Result<Read<Constant>, Failure> {
         let path = self.path(address)?;
+        // Array unsizing may retain the original zero-offset place. Its actual
+        // metadata selects a prefix; the backing, element, bounds and validity
+        // checks below remain mandatory, as for an explicit range projection.
         let range = path
             .range()?
+            .or_else(|| address.length().map(|length| Range { from: 0, length }))
             .ok_or("symbolic slice reference lacks its normalized range")?;
         if address.length() != Some(range.length) {
             return Err("symbolic slice metadata differs from its retained range".into());
