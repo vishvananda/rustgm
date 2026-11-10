@@ -5,6 +5,16 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+The [overflow-query checkpoint](pa31-overflow-query.md) clears pow using the
+actual intrinsic's CTFE true and this driver's fixed checked runtime profile.
+PA31 freezes five independently checked reductions and the native profile
+observer; wrong-signature and ordinary-name controls remain authoritative.
+CLI9af9f187 preserves722 hashes/profile/limits, opens375 and checks42310
+declarations with none failed/blocked and bodies0. It reaches overflowing_mul at
+num/uint_macros.rs:3171, byte137546, calling mul_with_overflow. Full predecessor
+42760129302 passed every stage; the combined successor and original artifacts
+remain required.
+
 The [static-value knowledge checkpoint](pa31-static-value-knowledge.md) clears
 checked_ilog by authenticating the actual source intrinsic and selecting the
 permitted conservative false CTFE result. PA31 freezes six independently checked

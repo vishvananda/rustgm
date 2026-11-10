@@ -7466,6 +7466,15 @@ The unchanged nested-readiness invariant must still reject overlapping execution
 at the maximum budget that admits either initializer alone. See the
 [CI repair](docs/source-wrappers-ci-repair.md).
 
+The actual source overflow_checks intrinsic returns true in CTFE independently
+of runtime configuration. Its runtime answer uses this driver's fixed checked
+arithmetic policy. Reuse the actual zero-input checked Call, completed signature,
+const declaration and source provenance; an authored fallback cannot replace its
+intrinsic meaning. The inherited-overflow word supplies no new caller authority.
+Keep UB configuration and frozen/deferred policy distinct. Selectable overflow
+profiles and imported policy transport require their own authenticated data.
+See the [overflow-query checkpoint](docs/pa31-overflow-query.md).
+
 The actual source is_val_statically_known intrinsic may return either boolean.
 RustGM chooses conservative false during constant evaluation after authenticating
 its current completed declaration, formal Copy premise, exact signature and

@@ -40,37 +40,42 @@ requirement retained. No original core/alloc/std artifact exists.
 
 ## Current original-core frontier
 
-The [static-value knowledge correction](docs/pa31-static-value-knowledge.md),
-compiler9c523798e, clears checked_ilog after the earlier
-[whole-slice correction](docs/pa31-whole-slice-validity.md). The permitted CTFE
-result is conservative false; actual Copy/call/source proof and argument effects
-remain mandatory. Native uses the genuine provided body. PA31 freezes six exact
-independent cases and a C observer; native output is0 7 1.
+The [overflow-query correction](docs/pa31-overflow-query.md), compiler9cf816e81,
+clears pow after [static knowledge](docs/pa31-static-value-knowledge.md),
+compiler9c523798e, cleared checked_ilog. Overflow CTFE is true independently of
+runtime flags; runtime follows this driver's fixed checked arithmetic profile.
+The ordinary same-name function stays false. Actual source/call/prototype,
+indirect-call and imported-policy checks remain. PA31 freezes five independently
+checked reductions and a native observer, stdout1 1 1. Independent disabled
+overflow instead prints1 0 0, confirming the CTFE/runtime distinction.
 
-Production1794288468354887891 passes the six cases, private1794288883932928160
-passes8 guards, native1794288639668994706 passes4 actual programs, and pointer
-controls1794289072774898488 pass6 cases. Strict selected/private lint, format,
-audit,313 harness/466 roots/44 stages/upstream128/Reference126 pass. Immutable
-source-bound dev-fast CLI is
-`c52c555adae24b2b362977e0199123d42856a53fba6c929b17159592d49b3f7d`.
+Production1794289740510319548 passes5 groups; private1794290079406487644 passes8
+checks; native1794290285447742973 passes2 groups/seven real executables, including
+all6 existing UB configuration combinations. Strict selected/private Clippy,
+format, audit,313 harness/466 roots/44 stages/upstream128/Reference126 pass.
+The first private attempt caught a new test-helper borrowing lint, corrected
+without production changes. A first malformed reference CTFE caused ICE and is
+retained unqualified; the frozen declaration-only negative ordinarily rejects.
+
+Current immutable source-bound dev-fast CLI is
+`9af9f1877ce5e71ec9335a80503f683506adba15585e34a6c4b6ad1b87ae4552`.
 It opens375 unchanged sources from722 and checks42310 declarations, none
-failed/blocked, bodies0, in81.78s. Next local_annotations record is pow at
-num/uint_macros.rs:3594, byte156465: source intrinsic constant execution is not
-implemented. Expansion uint_impl is num/mod.rs byte45951. TSV SHA
-`77ff18b777a83a43cfeaa2757b89ca8551c26cb5d0b6a2becbb6b521f19f76ef`.
-Actual source lead: intrinsics::overflow_checks(). Independently reduce its
-checked overflow-context semantics next. Inputs/profile/limits are unchanged;
-this is discovery, not an original artifact. Split::new remains provisional;
-close f01 before widening A+O.
+failed/blocked, bodies0, in73.81s. Next local_annotations record is overflowing_mul
+at num/uint_macros.rs:3171, byte137546: source intrinsic constant execution is
+not implemented. Actual call: intrinsics::mul_with_overflow. Expansion uint_impl
+is num/mod.rs byte45951. TSV SHA
+`3874ec484a5efa1dd1126347df8b957ce8c6be2f1ba298ec243b84accdd25e46`.
+Inputs/profile/limits are unchanged; this is discovery, not an original artifact.
+Split::new remains provisional; close f01 before widening A+O.
 
-Full predecessor42754442914 oncca1dbd4d succeeded in every stage. Slice53f full
-42760129302 passes fast/release/course and is executing native qualification.
-Wait for that run to terminate before dispatching a static-knowledge successor.
-Push-fast uses a separate concurrency group.
+Full predecessor42754442914 and slice53f full42760129302 both succeeded in every
+stage. A combined static-knowledge/overflow successor may now dispatch after
+publication. Wait for each full run to terminate before another dispatch;
+push-fast uses a separate concurrency group.
 
 ## Next work, one worker
 
-1. Confirm and repair the observed pow/overflow_checks intrinsic requirement, using the
+1. Confirm and repair the observed overflowing_mul/mul_with_overflow requirement, using the
    actual pinned declaration and semantics. Freeze independently checked reducers
    in their earliest owning PA, then rerun the unchanged census.
 2. Inspect the joined successor full CI when available and repair actual failures;
@@ -84,11 +89,14 @@ Push-fast uses a separate concurrency group.
 
 - Durable decisions: /mnt/vizier/rustgm-scratch/integrator-20261109/pending_decisions.md.
 - Current compiler/test source hashes are bound in pa26-work's
-  obj/parallel/static-knowledge/candidate-dev-fast/producer.json. Current receipts and
-  census are under obj/parallel/static-knowledge; prior slice evidence is under
+  obj/parallel/overflow-query/candidate-dev-fast/producer.json. Current receipts and
+  census are under obj/parallel/overflow-query; prior static-knowledge evidence is
+  under obj/parallel/static-knowledge, slice evidence is under
   obj/parallel/radix-slice, and joined proof/layout evidence is
   under obj/parallel/reuse-ci and obj/parallel/atomic-layout. All temporary production/test diagnostics are gone.
-- Current ordinary-name/74-control A/A+ABBA retains20 full-output-equal observations,
+- Current overflow ordinary-name/74 controls retain20 full-output-equal A/A+ABBA
+  observations, ratios0.883/1.007, A/A0.910/0.985, without a speed claim. Earlier
+  static-knowledge ordinary-name/74 A/A+ABBA retains20 full-output-equal observations,
   ratios0.956/1.001, A/A0.733/1.154, with no timing claim. Earlier strict-str/74
   control A/A+ABBA retains20 full-output-equal observations,
   ratios0.966/1.003, with no timing conclusion. The earlier receiver benchmark preserves30 accepted same-profile A/A+ABBA observations
