@@ -1275,3 +1275,6 @@ mod argument_expectations;
 mod cast_receivers;
 #[path = "associated_declarations/prefix_members.rs"]
 mod prefix_members;
+
+#[path = "associated_declarations/joins.rs"]
+mod joins;

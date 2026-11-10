@@ -121,6 +121,14 @@ fn candidate_properties_require_formation_and_keep_copy_absence() -> Result {
             raw.head(&facts.types, root).err(),
             Some(Error::Normalization)
         );
+        let concrete = raw.known(
+            &facts.types,
+            rustgm::types::TypeId::primitive(rustgm::types::Primitive::U16),
+        )?;
+        assert_eq!(
+            raw.equate_shape(&facts.types, root, concrete),
+            Err(Error::Normalization)
+        );
         let mut query = Query::new(std::sync::Arc::clone(&environment));
         assert_eq!(
             query
@@ -148,6 +156,14 @@ fn candidate_properties_require_formation_and_keep_copy_absence() -> Result {
         )?;
         assert!(value.sized);
         assert_eq!((value.abilities.copy, value.abilities.clone_), (copy, copy));
+        let concrete = formed.known(
+            &facts.types,
+            rustgm::types::TypeId::primitive(rustgm::types::Primitive::U16),
+        )?;
+        assert_eq!(
+            formed.equate_shape(&facts.types, root, concrete),
+            Err(Error::Normalization)
+        );
         formed.account_work(1_000_000 - formed.steps)?;
         for _ in 0..2 {
             assert!(

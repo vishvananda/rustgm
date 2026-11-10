@@ -25030,6 +25030,591 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/pending-joins/projected-if.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "eca4ea0b57d1dbba36ffa09968bb5d670f82781f3339e1e32ee2428e961b611a",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pending-joins/both-inferred.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "4d0861137e679edff8fc70262825104a5e62e4dd4d6d58e470929b3b078e5112",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pending-joins/annotated-if.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "21ad09018d86bf79f74e2870c16689712ebf33b8b4c60cfe6587c754acc17bfb",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pending-joins/typed-control.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "27008cf8ac27a821510ad5f0275e5428006d7ce9c4137d157fa942515738282f",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pending-joins/no-if-control.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "bbd42b33388e31966db13172d2dd12b871c5d9c71b7a3964332c38d167733df0",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pending-joins/direct-control.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "44816f56f1d9f881d2dc9776a940718f5689a4091e481de5b53826f82f2e0c52",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pending-joins/self-default.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "22d92a89c25c66178d7339602a109662810687eab9f939af262e3c079f869ec2",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pending-joins/else-if.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "5d66db0a4c962cee5af45737dc2f4c6067fccc91304d11f659d15b81eecb1312",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pending-joins/nested-tuple.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "edca580c8e066140164f6bc404d67c7885242c3053a9ee5fce6d2cedddb28066",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pending-joins/match.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "d6af9fdf5670417fb8e0c6d3502ef97fcec0177b58858eb87daaab699b21ca36",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pending-joins/loop-breaks.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "fa61aeb8b6f195908dae67d2917712b27bb96dec92b83537b5d5453626a2cf90",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pending-joins/array.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "bcefb6663337d6cae42d7fa8e98581f8401b2ee4442e2417e425414f08ef8f20",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pending-joins/never-left.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "34636e9baed3bd6fbbac9b7f1ce4e3351f5314e50a010a7f45e1e9c41cc1b3e9",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pending-joins/never-right.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "edf184f84c30b8c297f105729ef1d65fe63fba5c7c77a8c30ae5642f9c1e73e8",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pending-joins/reference-join.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "1b076556dd9384bf97f000cb9d9340e45dd1c4a53c27ae2384bf1fd788fbe457",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pending-joins/pointer-join.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "185942496273b75adb394442b1234e3612a49e3e2424319b6f4d694e6aea93d9",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pending-joins/function-pointer-join.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "db6ba23b5a606a1468bb6c0481be79b6d1ef0ae814553d5aebc65ee58868823e",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pending-joins/wrong-rhs.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "b06f6c6f0b2d84c5a62a27108a445bf07024d36d004a5f17f2b1a67708d9c4cf",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs"
+    },
+    {
+      "path": "tests/spec/pending-joins/wrong-result.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "e8462ad1b42243875bbd4acc498a2c5ebd27ecc95dad80e7b2ba72f32c2f44f9",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs"
+    },
+    {
+      "path": "tests/spec/pending-joins/distinct-results.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "b623c68ef62849acc8bc16e71fd0588591104828c47e618f79365810c3540e20",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs"
+    },
+    {
+      "path": "tests/spec/pending-joins/missing-trait.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "9dca0028e1cfa94eee7b8afb2031a215385bfba6630ec8aaa2f554df5c08ce13",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs"
+    },
+    {
+      "path": "tests/spec/pending-joins/static-escape.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "efb724c052fad2a71d6d47becc4c889c913541aeb943630314afcbdc784b63ad",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs"
+    },
+    {
+      "path": "tests/spec/pending-joins/mutable-shared-result.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "d2b1da1439131793dd156e93877665192cf86b31b90e209f20ee6150a7e19559",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs"
+    },
+    {
+      "path": "tests/spec/pending-joins/width-8-noise-0.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "299d2f3e700450b3dc5a8f0f52cc279fce8c2a7c05ce23452df2ea781a4f460b",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pending-joins/width-8-noise-128.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "b67844509d79af12be7699c3743a2007dd9906bd79cd48c2c38695d270bc90e9",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pending-joins/width-32-noise-0.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "a7fa0a186da633d6c0fde37a3ea6c89c254ef094f25c1fdacd37b25518e81888",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pending-joins/width-32-noise-128.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "cb426f6216206d2fa3c92f4606fb0628495eddfd148e26b63ac450eaa6ecc355",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pending-joins/width-128-noise-0.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "f5af4173aa235c17316cc0cfbf759b71e194949a7a49f0832f59f500ec86313b",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/pending-joins/width-128-noise-128.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "4e4f944a1d79ce906bff7eae4d3699ffd0a7a08f510b23694896803591c775cb",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }

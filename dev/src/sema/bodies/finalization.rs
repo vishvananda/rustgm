@@ -53,6 +53,9 @@ impl Checker<'_> {
             .map_err(|e| self.error(body, e))?;
         let evidence = match self.infer_trait_obligations(body)? {
             super::trait_goals::Progress::Ready(evidence) => evidence,
+            super::trait_goals::Progress::Waiting => {
+                return Err(self.error(body, "body completion retained unfinished trait inputs"));
+            }
             super::trait_goals::Progress::Prepare(dependency) => return Ok(Some(dependency)),
         };
         self.finish_nested(evidence)

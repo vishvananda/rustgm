@@ -12,6 +12,7 @@ use std::sync::Arc;
 
 pub(in crate::sema::bodies) enum Progress {
     Ready(HashMap<usize, Source>),
+    Waiting,
     Prepare(Dependency),
 }
 pub(in crate::sema::bodies) struct Pending {
@@ -27,14 +28,52 @@ pub(in crate::sema::bodies) struct Pending {
     partial: HashMap<usize, (Box<selection::Pending>, Reservation)>,
 }
 impl Checker<'_> {
+    /// Intermediate joins may own pending goals while syntax work remains.
+    /// Only completion's own declaration wait resumes finalization directly.
+    pub(in crate::sema::bodies) fn finishing_trait_inputs(&self) -> bool {
+        self.state
+            .trait_goals
+            .as_ref()
+            .is_some_and(|goals| goals.finishing)
+    }
+
     pub(in crate::sema::bodies) fn infer_trait_obligations(
         &mut self,
         body: NodeId,
     ) -> Result<Progress, Error> {
+        self.poll_trait_obligations(body, true)
+    }
+
+    /// A common-type join needs the ready call equations, before inspecting
+    /// projected branch heads. Keep unfinished goals in their original owner;
+    /// numeric fallback and the final evidence gate still belong to completion.
+    pub(in crate::sema::bodies) fn join_readiness(
+        &mut self,
+        node: NodeId,
+    ) -> Result<Option<Dependency>, Error> {
+        if !self.state.projections.active()
+            || !matches!(
+                self.kind(node),
+                crate::syntax::ast::Kind::If { .. }
+                    | crate::syntax::ast::Kind::Match { .. }
+                    | crate::syntax::ast::Kind::Array(_)
+                    | crate::syntax::ast::Kind::Loop { .. }
+                    | crate::syntax::ast::Kind::Block { .. }
+            )
+        {
+            return Ok(None);
+        }
+        match self.poll_trait_obligations(self.state.body.node, false)? {
+            Progress::Prepare(dependency) => Ok(Some(dependency)),
+            Progress::Ready(_) | Progress::Waiting => Ok(None),
+        }
+    }
+
+    fn poll_trait_obligations(&mut self, body: NodeId, finishing: bool) -> Result<Progress, Error> {
         let Some(mut pending) = self.take_trait_goals(body)? else {
             return Ok(Progress::Ready(HashMap::default()));
         };
-        pending.finishing = true;
+        pending.finishing |= finishing;
         loop {
             let index = if let Some(index) = pending.current {
                 index
@@ -42,7 +81,7 @@ impl Checker<'_> {
                 match self.poll_projections(body)? {
                     projections::Advance::Ready(_) => {}
                     projections::Advance::Definition(dependency) => {
-                        self.state.trait_goals = Some(Box::new(pending));
+                        self.state.trait_goals = Some(pending);
                         return Ok(Progress::Prepare(dependency));
                     }
                 }
@@ -57,6 +96,10 @@ impl Checker<'_> {
                 {
                     index
                 } else {
+                    if !finishing {
+                        self.state.trait_goals = Some(pending);
+                        return Ok(Progress::Waiting);
+                    }
                     if !self.state.notifications.waiting() && !self.state.projections.active() {
                         break;
                     }
@@ -83,16 +126,16 @@ impl Checker<'_> {
             pending.current = Some(index);
             let first = self.trait_region_start(body)?;
             if let Some(dependency) = self.advance_trait_goal(&mut pending, index, first)? {
-                self.state.trait_goals = Some(Box::new(pending));
+                self.state.trait_goals = Some(pending);
                 return Ok(Progress::Prepare(dependency));
             }
             pending.current = None;
         }
         Ok(Progress::Ready(pending.evidence))
     }
-    fn take_trait_goals(&mut self, body: NodeId) -> Result<Option<Pending>, Error> {
+    fn take_trait_goals(&mut self, body: NodeId) -> Result<Option<Box<Pending>>, Error> {
         let mut pending = if let Some(pending) = self.state.trait_goals.take() {
-            *pending
+            pending
         } else {
             let goals: Vec<_> = (0..self.state.call_types.obligations.len())
                 .filter(|&index| self.inferred_trait_goal(index))
@@ -100,7 +143,7 @@ impl Checker<'_> {
             if goals.is_empty() && !self.state.projections.active() {
                 return Ok(None);
             }
-            Pending {
+            Box::new(Pending {
                 goals,
                 registered: self.state.call_types.obligations.len(),
                 finishing: false,
@@ -111,7 +154,7 @@ impl Checker<'_> {
                 query: None,
                 reservation: Reservation::default(),
                 partial: HashMap::default(),
-            }
+            })
         };
         for index in pending.registered..self.state.call_types.obligations.len() {
             self.state
@@ -171,7 +214,7 @@ impl Checker<'_> {
         };
         loop {
             if let projections::Advance::Definition(dependency) = self.poll_projections(body)? {
-                self.state.trait_goals = Some(Box::new(pending));
+                self.state.trait_goals = Some(pending);
                 return Ok(Some(dependency));
             }
             if pending.current.is_none() && self.head(call, expected)?.is_some() {
@@ -208,12 +251,12 @@ impl Checker<'_> {
             pending.current = Some(index);
             let first = self.trait_region_start(body)?;
             if let Some(dependency) = self.advance_trait_goal(&mut pending, index, first)? {
-                self.state.trait_goals = Some(Box::new(pending));
+                self.state.trait_goals = Some(pending);
                 return Ok(Some(dependency));
             }
             pending.current = None;
         }
-        self.state.trait_goals = Some(Box::new(pending));
+        self.state.trait_goals = Some(pending);
         Ok(None)
     }
     fn advance_trait_goal(

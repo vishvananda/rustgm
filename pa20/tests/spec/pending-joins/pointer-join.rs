@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait Take<R>{type Out;fn take(self,r:R)->Self::Out;}impl Take<u32> for *mut u8{type Out=*mut u8;fn take(self,_:u32)->Self::Out{self}}fn choose<T:Take<u32,Out=*mut u8>>(x:T,y:*const u8,k:bool)->*const u8{let value=if k{x.take(1)}else{y};value}fn main(){let mut a:u8=7;let b:u8=9;let x=&mut a as *mut u8;let y=&b as *const u8;check(unsafe{*choose(x,y,true)}==7);check(unsafe{*choose(x,y,false)}==9);}

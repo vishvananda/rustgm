@@ -296,7 +296,7 @@ impl Checker<'_> {
             .state
             .infer
             .equate_deferred(&self.facts.types, left, right, relation)
-            .map_err(|e| self.error(node, e))?
+            .map_err(|e| self.equation_error(node, left, right, e))?
         {
             self.state
                 .projections
@@ -306,6 +306,38 @@ impl Checker<'_> {
                 .insert(id, node);
         }
         Ok(())
+    }
+    /// A checked body's rigid opaque result must satisfy its actual equality.
+    /// Completed outer heads distinguish that rejection from a raw operation
+    /// still awaiting normalization. This diagnostic grants no relation or
+    /// reusable negative evidence to implementation/coherence queries.
+    pub(super) fn equation_error(
+        &mut self,
+        node: NodeId,
+        left: TermId,
+        right: TermId,
+        error: crate::types::infer::Error,
+    ) -> Error {
+        use crate::types::infer::{Constructor, Error as InferError};
+        if error == InferError::Normalization {
+            let heads = [left, right].map(|term| self.state.infer.head(&self.facts.types, term));
+            for head in heads {
+                if let Err(error) = head {
+                    return self.error(node, error);
+                }
+            }
+            if heads.iter().all(|head| matches!(head, Ok(Some(_))))
+                && heads
+                    .iter()
+                    .any(|head| matches!(head, Ok(Some(Constructor::Projection(_)))))
+            {
+                return self.error(
+                    node,
+                    "body types require a provable associated-result equality",
+                );
+            }
+        }
+        self.error(node, error)
     }
     #[inline]
     pub(super) fn advance_projections(&mut self, body: NodeId) -> Result<bool, Error> {

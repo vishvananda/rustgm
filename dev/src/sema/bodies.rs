@@ -654,7 +654,7 @@ impl Checker<'_> {
         self.state
             .infer
             .equate(&self.facts.types, left, right)
-            .map_err(|e| self.error(node, e))
+            .map_err(|e| self.equation_error(node, left, right, e))
     }
     fn shape_equation(&mut self, node: NodeId, left: TermId, right: TermId) -> Result<(), Error> {
         // Generic holes also occur beneath callable binders. Once an argument
@@ -688,7 +688,7 @@ impl Checker<'_> {
         self.state
             .infer
             .equate_shape(&self.facts.types, left, right)
-            .map_err(|e| self.error(node, e))
+            .map_err(|e| self.equation_error(node, left, right, e))
     }
     fn head(&mut self, node: NodeId, term: TermId) -> Result<Option<Constructor>, Error> {
         self.advance_projections(node)?;
@@ -917,7 +917,7 @@ impl Checker<'_> {
         if let Some(finalization) = self.state.finalization.take() {
             return self.resume_finalization(*finalization);
         }
-        if self.state.trait_goals.is_some() {
+        if self.finishing_trait_inputs() {
             return self.finish(body);
         }
         loop {
@@ -1037,6 +1037,10 @@ impl Checker<'_> {
         Ok(dependency)
     }
     fn complete_body_expression(&mut self, node: NodeId) -> Result<Option<Dependency>, Error> {
+        if let Some(dependency) = self.join_readiness(node)? {
+            self.state.work.push(Work::Exit(node));
+            return Ok(Some(dependency));
+        }
         if let Some(requirement) = self
             .formatting_readiness(node)?
             .or(self.offset_readiness(node)?)
