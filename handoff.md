@@ -40,27 +40,26 @@ requirement retained. No original core/alloc/std artifact exists.
 
 ## Current original-core frontier
 
-[Inclusive source calls](docs/pa31-inclusive-source-calls.md), compiler a5c7c21e0 /
-CLI6923e768, close the actual constructor fence via the ordinary selected-call,
-argument, binder, generic/const/unsafe/API and body consumers. Both current header
-images are authenticated; no new dense field, plan variant, quota or backend.
-PA31 has22 active new outcomes plus two retained Rust-positive early array-length
-constants (explicit baseline twin lacks nominal outlives facts).48 independent
-metadata/object results,7 production groups including all56 old range outcomes,
-5 private controls,2 native groups/six programs,315 harness/upstream and30 full-
-output-equal paired observations pass. No oracle or upstream byte changes.
+[Deferred closure casts](docs/pa24-deferred-closure-casts.md), compiler ed07f0181 /
+CLId2db4bd2, move the original observation past parse_long_mantissa's POWERS[n]
+as usize. The earliest reduction is PA24 (16 new outcomes); four genuine source
+Index companions stay PA31. Three new production groups, three existing control
+groups,26 paired native programs, independent outcomes, all509 PA24 text outcomes,
+315 harness/468 roots/upstream and30 output-equal paired observations pass.
+Only16 new references were generated; existing references stay unchanged.
+Private execution remains pending: the cold harness Clippy/link timed out inside
+the five-minute budget after a duplicate test-module name was corrected.
 
-The original120s observation still FAILS at120.86s:265 failure records and4086
-item attempts through function8410, slice/mod.rs file210 byte210995. This is a
-different incomplete prefix from the previous345/6469 run; counts are not directly
-comparable. The inclusive call-plan fence is absent;24 of its37 previous function
-identities were reached without a new failure record, not whole-core qualification.
-All722 inputs, semantic profile and compiler quotas stay fixed; the reviewed
-census-progress CLI code pins remain unchanged. No original artifact exists.
-Next reduce the first projection failure, POWERS[n] as usize in dec2flt/slow.rs,
-and the repeated unresolved-call/receiver causes. Evidence and current producer
-are under obj/parallel/inclusive-calls. Last complete table remains119 body
-failures then method budget120, before its later repair.
+The original120s observation still FAILS at121.04s:307 failure records/5967 item
+attempts through function11290, stdarch x86/avx512f.rs file296 byte212064. The first
+record is now round_up (flt2dec/mod.rs file25:6502), projection normalization.
+PartialSHA543de2845231d2a6159c6827005a24192ddb5aac644070bd42e1ccb3a60cc9aa.
+This is an incomplete prefix, not whole-core qualification or a failure-count
+comparison. All722 inputs/profile/quotas stay fixed; no original artifact exists.
+Next reduce round_up's inferred callback, then repeated call-input/receiver causes.
+Full predecessor42826374117 passed every stage; new full/private qualification is
+due. [Inclusive source calls](docs/pa31-inclusive-source-calls.md), compiler
+a5c7c21e0, remain qualified. No worker/tree or limit increase is authorized.
 
 [Incremental census progress](docs/census-progress.md) preserves diagnostics when
 the observer times out. Full joined diagnostic CI42820032217 on df8507cd8 now

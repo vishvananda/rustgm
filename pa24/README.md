@@ -103,13 +103,14 @@ mechanically to evade limits, or read the environment from `dev/src/`.
 
 ## Completion and review
 
-The manifest contains 467 independently declared source outcomes:
-323 accept and 144 reject. The reviewed native classifications contain 311
-runtime comparisons, two unused-body code-generation controls and ten entry-free
+The manifest contains 509 independently declared source outcomes:
+355 accept and 154 reject. The reviewed native classifications contain 342
+runtime comparisons, three unused-body code-generation controls and ten entry-free
 object controls. Draft outcome files retain the history of the source hypotheses;
 they are not substitutes for the released manifest. See
-[the release review](../docs/pa24-release-review.md) for current evidence and
-release qualification. No planned assignment is counted as passing.
+[the release review](../docs/pa24-release-review.md) for the released profile and
+[deferred closure casts](../docs/pa24-deferred-closure-casts.md) for the latest
+checkpoint evidence and pending private/full qualification. No planned assignment is counted as passing.
 
 When updating this assignment, qualify every source with pinned rustc, compare declared
 executions through RustGM/CPPGM, generate and review the complete byte oracles,

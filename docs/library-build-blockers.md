@@ -1,5 +1,14 @@
 # Library build blocker tracker
 
+Latest semantic checkpoint: [deferred closure casts](pa24-deferred-closure-casts.md)
+passes16 earliest-owner PA24 outcomes, four PA31 source companions,26 paired native
+programs, all509 PA24 text outcomes and focused scaling/ordinary controls. Private
+execution remains pending after a cold harness build exceeded five minutes.
+The original120s observation moves past parse_long_mantissa but still times out:
+307 failures/5967 attempts, first round_up's projection normalization. This is an
+incomplete diagnostic prefix; no original artifact. Reduce that callback next.
+Full predecessor42826374117 passed all stages; the new successor remains due.
+
 Latest semantic checkpoint: [inclusive source calls](pa31-inclusive-source-calls.md)
 closes the actual constructor fence through ordinary calls.22 new active outcomes,
 five private controls, six native programs and bounded width/noise checks pass.
