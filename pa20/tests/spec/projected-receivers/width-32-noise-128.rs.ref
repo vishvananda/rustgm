@@ -1,0 +1,123 @@
+function @rg.31() -> void {
+  block ^b0:
+    %t0 = call i16 @rg.30.i4(7)
+    %t1 = cmp eq i16 %t0, 7
+    %t2 = convert trunc i1 i64 %t1
+    call void @rg.13(%t2)
+    return void
+}
+function @rg.30.i4(%p0 : u8) -> i16 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = call i16 @rg.19(%t0)
+    %t2 = load u8 $s0
+    %t3 = call i16 @rg.19(%t2)
+    %t4 = load u8 $s0
+    %t5 = call i16 @rg.19(%t4)
+    %t6 = load u8 $s0
+    %t7 = call i16 @rg.19(%t6)
+    %t8 = load u8 $s0
+    %t9 = call i16 @rg.19(%t8)
+    %t10 = load u8 $s0
+    %t11 = call i16 @rg.19(%t10)
+    %t12 = load u8 $s0
+    %t13 = call i16 @rg.19(%t12)
+    %t14 = load u8 $s0
+    %t15 = call i16 @rg.19(%t14)
+    %t16 = load u8 $s0
+    %t17 = call i16 @rg.19(%t16)
+    %t18 = load u8 $s0
+    %t19 = call i16 @rg.19(%t18)
+    %t20 = load u8 $s0
+    %t21 = call i16 @rg.19(%t20)
+    %t22 = load u8 $s0
+    %t23 = call i16 @rg.19(%t22)
+    %t24 = load u8 $s0
+    %t25 = call i16 @rg.19(%t24)
+    %t26 = load u8 $s0
+    %t27 = call i16 @rg.19(%t26)
+    %t28 = load u8 $s0
+    %t29 = call i16 @rg.19(%t28)
+    %t30 = load u8 $s0
+    %t31 = call i16 @rg.19(%t30)
+    %t32 = load u8 $s0
+    %t33 = call i16 @rg.19(%t32)
+    %t34 = load u8 $s0
+    %t35 = call i16 @rg.19(%t34)
+    %t36 = load u8 $s0
+    %t37 = call i16 @rg.19(%t36)
+    %t38 = load u8 $s0
+    %t39 = call i16 @rg.19(%t38)
+    %t40 = load u8 $s0
+    %t41 = call i16 @rg.19(%t40)
+    %t42 = load u8 $s0
+    %t43 = call i16 @rg.19(%t42)
+    %t44 = load u8 $s0
+    %t45 = call i16 @rg.19(%t44)
+    %t46 = load u8 $s0
+    %t47 = call i16 @rg.19(%t46)
+    %t48 = load u8 $s0
+    %t49 = call i16 @rg.19(%t48)
+    %t50 = load u8 $s0
+    %t51 = call i16 @rg.19(%t50)
+    %t52 = load u8 $s0
+    %t53 = call i16 @rg.19(%t52)
+    %t54 = load u8 $s0
+    %t55 = call i16 @rg.19(%t54)
+    %t56 = load u8 $s0
+    %t57 = call i16 @rg.19(%t56)
+    %t58 = load u8 $s0
+    %t59 = call i16 @rg.19(%t58)
+    %t60 = load u8 $s0
+    %t61 = call i16 @rg.19(%t60)
+    %t62 = load u8 $s0
+    %t63 = call i16 @rg.19(%t62)
+    %t64 = load u8 $s0
+    %t65 = call i16 @rg.19(%t64)
+    return i16 %t65
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.19(%p0 : u8) -> i16 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = convert zext i16 u8 %t0
+    return i16 %t1
+}
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.31()
+    return i64 0
+}

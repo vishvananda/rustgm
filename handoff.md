@@ -40,44 +40,47 @@ requirement retained. No original core/alloc/std artifact exists.
 
 ## Current original-core frontier
 
-[Projected constant paths](docs/pa20-projected-constant-paths.md), compiler5167b30c7 /
-CLIe64e93a2, fix Self::Int::ZERO through actual parsed type-prefix facts and
-completed caller normalization. PA20 owns27 new outcomes (20 accept,7 reject).
-Seven production controls,63 paired native programs, all1509 PA20 texts,
-315 harness/468 roots/upstream and30 complete-output-equal paired observations
-pass. Only27 new references were generated; existing bytes are unchanged.
-Raw projection/caller/Copy/visibility/ambiguity/lifetime and budget gates remain.
-The13 old PA31 lookup controls retain their original analysis boundary; stronger
-free-copy/free-sized library lowering still fails identically on baseline and
-candidate and remains required, not qualified as native/source lowering.
+[Projected receiver methods](docs/pa20-projected-receiver-methods.md), compiler77b274787 /
+CLI030ca340, fix CastInto<i16> lookup through the real completed Int result.
+PA20 owns26 new outcomes (18 accept,8 reject). Nine production controls,
+30 native programs, all1535 PA20 texts,315 harness/468 roots/upstream and30
+complete-output-equal paired observations pass. Only26 new references were
+generated; existing bytes are unchanged. Raw projection/parent/Copy/arguments,
+visibility/ambiguity/lifetime and budget gates remain. Candidate import reuses
+only the actual caller's completed receiver shape; ordinary selected calls still
+prove every debt. Result-template indexing avoids unrelated candidate admission.
 
-The original120s observation still FAILS at121.22s:300 records/5819 item attempts
-through function11142, stdarch x86/avx512f.rs file296 byte102769. integer_decode
-advances from missing value at6061 to no applicable receiver method at6128:
-((bits & Self::EXP_MASK) >> Self::SIG_BITS).cast(), with real CastInto<i16> on
-its Int result contract. PartialSHA
-f3dda319bd57e2ddadeb66a7926edad311429377401a473eacf0f489ca2ab8cc.
-No full census, checked-body success or original artifact. All722 inputs, six
-configuration bindings, semantic profile and quotas stay unchanged.
-Next reduce projected receiver method applicability using that actual generic
-CastInto result-bound signature, explicit qualification and direct-parameter
-controls. No next method implementation has begun.
+The original120s observation still FAILS at121.20s:268 records/4643 item attempts
+through function9434, task/wake.rs file255 byte38495, node1189. integer_decode
+advances to file36 byte6203's mantissa if-expression with associated type
+projection requires normalization. Its old cast lookup fence is absent, not a
+checked-body success. Partial SHA
+bbf8ba77ff7d7e7f2f3124ceccb4a311334098d0868139a24a03331179e7f048.
+No full census or original artifact. All722 inputs, six configuration bindings,
+semantic profile and quotas stay unchanged. Different partial prefixes are not
+failure-count/speed comparisons. Next reduce opaque associated branch-result
+inference against direct parameters, explicit annotations and block/tuple
+controls before implementation. No next conditional implementation has begun.
 
-The [parameter-projection](docs/pa24-parameter-projections.md) and
-[closure-cast](docs/pa24-deferred-closure-casts.md) predecessors now have complete
-full qualification:42847850912 on751ab7be1 and42857585036 on4d430592e PASSED every
-stage, including private/native/debug/independent execution. The old private
-cold-link timeout is resolved by that real CI evidence. Constant successor
-42865122492 FAILED all-target lint on a test-only Query initializer missing the
-new normalized_prefix field; all later qualification stages were skipped.
-Push-fast42865122949 passed. The initializer now supplies None. Its local exact
-private check1794331972028719541 timed out during cold Clippy/link before tests;
-this is not a pass. Production is unchanged; its formation/property guard passes exact public
-fastcheck1794332296024917531 with strict production/CLI checks. Successor full CI
-is required.
-Never cancel an active full dispatch.
-Current immutablee64e93a2 binds5167b30c7/empty patch/3882 Rust hashes. One worker,
-existing tree, unchanged limits; optimized nested-proof checks remain pending.
+[Projected constant paths](docs/pa20-projected-constant-paths.md), compiler5167b30c7,
+precede this with27 PA20 outcomes and63 natives. Its13 old PA31 lookup controls
+retain their original analysis boundary: stronger free-copy/free-sized library
+lowering still fails identically on its baseline/candidate and remains required.
+The parameter/closure-cast full42847850912 and42857585036 PASSED every stage,
+resolving their earlier private pending checks.
+
+Constant successor42865122492 FAILED all-target lint on a private Query initializer
+missing normalized_prefix; later stages were skipped. Repair4446962e1 supplies
+None. Local exact private1794331972028719541 timed out during cold Clippy/link
+before tests; production guard1794332296024917531 passed. Full repair42867198200
+has passed all-target lint, architecture/harness and host graph, and is active in
+release/course tests at this checkpoint. Do not cancel it with a new full dispatch;
+this semantic successor needs full qualification after that run terminates.
+
+Current immutable030ca340 binds77b274787/empty patch/3883 Rust hashes. Retire the
+superseded e64 comparison pin after publishing this replacement; retain optimized
+21f66e51 for the still-pending nested-proof A/A+ABBA/release-stack controls.
+One worker, existing tree, unchanged budgets. No original core/alloc/std artifact.
 
 [Incremental census progress](docs/census-progress.md) preserves diagnostics when
 the observer times out. Full joined diagnostic CI42820032217 on df8507cd8 now

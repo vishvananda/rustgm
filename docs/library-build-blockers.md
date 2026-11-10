@@ -1,5 +1,16 @@
 # Library build blocker tracker
 
+Latest semantic checkpoint: [projected receiver methods](pa20-projected-receiver-methods.md)
+closes CastInto<i16> lookup through the completed associated Int result. PA20 owns26
+new outcomes;9 production checks,30 native programs, all1535 PA20 texts,
+harness/upstream and30 paired output-equal observations pass. The unchanged120s
+original observation still FAILS at121.20s:268 records/4643 item attempts through
+function9434, task/wake.rs file255 byte38495. integer_decode moves to byte6203's
+mantissa if-expression with associated type projection requires normalization.
+Its cast fence is absent, not a whole-body success. Reduce opaque branch-result
+inference next; no complete census or original artifact. Full constant repair
+42867198200 is active after all-target lint/host graph; wait before new full dispatch.
+
 Latest semantic checkpoint: [projected constant paths](pa20-projected-constant-paths.md)
 closes Self::Int::ZERO via the real normalized type prefix. PA20 owns27 new
 outcomes;7 production controls,63 paired native programs, all1509 PA20 texts,
