@@ -40,57 +40,58 @@ requirement retained. No original core/alloc/std artifact exists.
 
 ## Current original-core frontier
 
-[Implemented trait scope](docs/pa19-implemented-trait-scope.md), compiler17baa8cb9 /
-CLI9beaaac9, adds each source impl's resolved trait identity to its actual lexical
-scope once. PA19 owns34 independently checked outcomes (25accept/9reject), including
-nested/generated scopes, generic arguments, priority, missing proofs and ambiguity.
-All34 completeLowIR outcomes,4 existing controls, six-counter scaling,25 native
-executions, all1233PA19 texts and315harness/468roots/upstream pass. Only34 new
-reference triples were generated; every existingPA19 reference is unchanged.
-No hot fields/new cache/quotas/backend changes. Bound priority and implicit
-supertrait visibility are unchanged; the contribution supplies lexical eligibility.
+[Source coercion discovery](docs/pa31-coercion-discovery.md), compilerbddcb51f3 /
+CLI6549fad6, treats a pending projected head as unknown only in the unsizing
+exclusion query. No equality/conversion permission, rawfence change, hotfields,
+newcache, quotas or backend changes. Actual sourceCoerceUnsized presence caused
+Result<U,Error> mismatch discovery before targetU was inferred. Bounded actual
+original-body graph/backtrace identified that caller; temporary instrumentation
+was restored before implementation, and tracebinaryfeeee is retired.
 
-Thirty immutable A/A+twoABBA controls preserve complete ordinary LowIR and74 frozen
-survey outcomes. Candidate/base1.069/.994/1.004, A/A.885/.991/1.016; no speed claim.
-The unrelated128unit-struct cost is384visibility steps for scopes/type/value
-bindings, constant across8/32/128call widths; other five call-work counters addnone.
-Initial supertrait/source and scaling assumptions were independently corrected;
-failed receipts remain in the checkpoint, without changing old oracles.
+PA31 owns22 active source outcomes (16accept6reject), all independently object-
+checked and16Rustnative7pass. All22completeLowIR outcomes, seven-counter linear/
+noise invariants, raw comparison/equation/variable/identity guards and4existing
+source/nominal groups pass. Two ordinary pointer-region/receiver-slice controls
+pass. Native17programs (16new +oldactualwrappertransfer/cleanup1),315harness/
+468roots/upstream pass. No textoraclesgeneratedorchanged. One separatelymanifested
+required nested opaque-result equality diagnostic still has the oldNormalization
+boundary, baseline=candidate; it is not counted as completed. WholePA31 planned.
 
-The unchanged120s original observation still FAILS at121.2436s:253 failure records/
-5122item attempts, through function10219, file279:9949 node427 (x86/ssse3.rs).
-No num/error.rs failure remains in its recorded prefix. First failure is now
-Alignment::try_from, mem/alignment.rs file55:11798, `align.get().try_into()` with
-associated type projection requires normalization. Partial SHA
-769a0935d408714c3614bc02c95c9eba52287755bf855d467ccaa0926c5d9308.
-All722source hashes/sixconfigurationbindings/profile/quotas stay fixed. No complete
-census/body count/original artifact; unequal prefixes are not raw speed comparisons.
+FortyimmutableA/A+twoABBA controls preserve ordinaryLowIR,2sourcecontroltypeoutputs
+and74frozenoutcomes. Candidate/base1.067/1.008/1.058/1.006; A/A.869/1.206/.775/.973.
+No speed claim. Compiler/tests/fixtures committed beforepin; current6549binds
+bddcb51f3/emptydiff/3886Rusthashes. Retire9bebaselineafterpublication; tracefeeee
+alreadypruned1794342479655130994. Keep optimized21f66e51 for oldpending
+nested-proof A/A+ABBA/release-stack checks. One worker existingB; no new trees.
 
-Next independently reduce ordinary blanket conversion and return-type inference
-from Alignment's const TryFrom<NonZero<usize>> body. Select the earliest PA owning
-all reduction features; keep a genuine const/source companion if ordinary code
-already passes. Discriminant<T>::fmt's actual Debug obligation is the next record.
-One worker continues in the existing B tree; no workers or worktrees are queued.
+The unchanged120s original observation still FAILS at121.1880s:235records/4470item
+attempts, throughfunction9063,file241:42996,node1298 in time.rs. Noalignment.rs
+failure remains; Alignment::try_from's old conversion fence is absent. First is
+now Discriminant<T>::fmt, mem/mod.rs file54:45756, DebugTuple.field(&self.0) with
+trait obligation requires an unambiguous matching assumption or implementation.
+PartialSHA422521024f3190bf44a720fa4dba9f3e8b14e7e8d16ce3fc40dcbf8eef7e84a4.
+All722sourcehashes/sixconfigbindings/profile/quotasfixed. Prefixesenddifferentitems,
+not raw speed/count comparisons. No fullcensus/bodycount/originalartifact.
 
-Full pending-join qualification42882896962 on8feedb05a is terminal FAILED: two
-stale private diagnostic assertions,3061otherprivate/allregularintegration pass;
-course/native/debug/independent gates skipped. Existing PA31 assumed-parent,
-unknown-result and residual-Try-type sources independently RustE0308 reject;
-unchangedCLI9be rejectsallthree with the body missing-equality diagnostic. Two
-private expected literals are corrected; raw opaque normalization/property proofs,
-fixtures, production and references unchanged. Exactprivate1794340234386664156
-passesformat/audit then244.70sClippy-driverbuild/linktimeout(total275.87s), zero
-privateexecutions. Retainthisfailure; fullsuccessorprivate checks remain required.
-No duplicatecargo-testlib/releasebuild. Publishrepair then dispatchnewfull only
-after confirming nootherfull isactive; nevercancelmanualpredecessor.
-Older parameter/cast full42847850912 and42857585036 passed every stage.
+Next reduce actual associated Discriminant representation ->Debug trait-object
+field proof. Ordinary associated-type bound controls first; preserve actual
+compiler-provided DiscriminantKind source identity if theypass. The next retained
+request_by_type_tag record has the same trait-obligation wording. Do not modify
+shared trait kernels without a faithful failure or bounded actual graph.
 
-Current immutable9beaaac9 binds17baa8cb9/empty patch/3885Rust hashes. Retire ae2e09ae
-comparison pin after publication;030/e64/f7 pins are already retired. Keep optimized
-21f66e51 for pending nested-proof A/A+ABBA/release-stack checks. The preceding
-[pending-join checkpoint](docs/pa20-pending-join-inputs.md) retains its separate
-1.266x tiny unoptimized direct-control limitation and all prior qualification.
-No original core/alloc/std artifact exists.
+Full42890284924 onbb9b13eee is active in broadnativecourse; release/course and
+maintainernative pass, including the two repaired private diagnostic assertions.
+Do notcancel/redispatch whilelive. The newcoercionsemantic successor's fullrun is
+due after thatterminal. Earlier full42882896962 failedonly2staleprivate diagnostics
+(3061others+allregularpass; laterstages skipped); localprivate1794340234386664156
+also timedoutClippy-driverlink withzeroexecutions. These are retainedfailures,
+notpassingreceipts. The succeedingfullnowexecutedtheactualrepairedprivatecontrols.
+
+[PA19implementedtraitscope](docs/pa19-implemented-trait-scope.md) remains published
+with34newoutcomes/25native/all1233texts andzeroexistingreferencechanges. The prior
+[pending-joincheckpoint](docs/pa20-pending-join-inputs.md) retains its separate
+1.266x tinyunoptimizeddirectcontrol limitation. Broadoptimizedqualification remains
+pending; no originalcore/alloc/stdartifact exists.
 
 [Incremental census progress](docs/census-progress.md) preserves diagnostics when
 the observer times out. Full joined diagnostic CI42820032217 on df8507cd8 now

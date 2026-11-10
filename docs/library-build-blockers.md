@@ -1,27 +1,27 @@
 # Library build blocker tracker
 
-Latest semantic checkpoint: [implemented trait scope](pa19-implemented-trait-scope.md)
-adds the implemented trait declaration to its actual lexical scope once. PA19
-owns34 independently checked reductions (25accept9reject): all completeLowIR,
-25native executions, six-counter scaling and all1233PA19 texts pass. Only34 new
-reference triples; all existingPA19 oracle bytes unchanged. Harness315/468roots/
-upstream pass. No hot fields/new cache/quotas/backend. Full42882896962 on8feedb05a
-failedtwo staleprivate diagnostic assertions;3061otherprivate/allregular groups
-pass, latercourse/native/debug/independent skipped. Two expectedbody-equality
-messages are corrected after allthree existing negatives independently RustE0308
-and CLI reject. Raw proofs/production/fixtures/references unchanged. Exactprivate
-1794340234386664156 timed out inClippy-driverlink(total275.87s), zeroexecutions;
-format/auditpass. Fullsuccessor remains due; nevercancelanactivefull run.
+Latest semantic checkpoint: [source coercion discovery](pa31-coercion-discovery.md)
+keeps unnormalized projected heads unknown to unsizing exclusion without granting
+Eq/conversion. ActualsourceCoerceUnsized caused eagerResult<U,Error> probing.
+PA31owns22activeoutcomes/16native, allcompleteLowerIR and7-counterlinear/noise
+invariants pass. Rawfences/variables/identity errors remain;2ordinarycontrols and
+4oldsource/nominal groups pass. Native17,harness315/468roots/upstream pass. No
+oracles changed;1nestedopaqueEqdiagnostic remains explicitrequired, notqualified.
+No hotfields/cache/quotas/backendchanges.40pairedoutputequalcontrols,no speedclaim.
 
-Original120s observation still FAILS at121.2436s:253 failures/5122item attempts,
-through function10219,file279:9949,node427 in x86/ssse3.rs. Earlier num/error.rs
-literal/match fmt lookup fences are absent in the retained prefix. First failure:
-Alignment::try_from, mem/alignment.rs55:11798, `align.get().try_into()` with associated
-type projection requires normalization. No complete census/body count/artifact;
-all722hashes/sixpins/profile/quotas fixed, unequal prefixes are not speed evidence.
-Reduce ordinary blanket conversion/return inference first; retain const/source
-contracts if needed. The next record is Discriminant<T>::fmt's genuine Debug proof.
-Thirty output-equal A/A+twoABBA controls retain ratios1.069/.994/1.004, no speed claim.
+Original120s observation still FAILS at121.1880s:235records/4470attempts, through
+function9063,file241:42996,node1298time.rs. Alignment::try_from's oldfence absent;
+first Discriminant<T>::fmt atmem/mod.rs54:45756 needs actualDebugproof forassociated
+representation atDebugTuple.field(&self.0). Nextrequest_by_type_tag hasthesame
+trait-obligation wording. Original722hashes/sixpins/profile/quotasfixed; unequal
+prefixcountsare notspeed evidence. No completecensus/bodycount/artifact. Reduce
+ordinaryassociatedbound->dynDebugfieldfirst, thenactualDiscriminantKind ifneeded.
+
+Full42890284924 onbb9 is activebroadnativecourse; release/course andmaintainernative
+pass, including2privateassertionrepairs. No newdispatchwhilelive. Newsemanticfull
+successor dueafterterminal; old42882896962+localprivatetimeout remainfailedhistory.
+[PA19scopecheckpoint](pa19-implemented-trait-scope.md) retains34outcomes/25native/
+all1233texts/unchangedoldreferences. CurrentCLI6549bindsbddcb51f3/emptydiff/3886Rust.
 
 Previous [pending-join inputs](pa20-pending-join-inputs.md) retain their qualified
 PA20 packet, source/proof ownership and separate1.266x unoptimized direct-control
