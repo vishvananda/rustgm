@@ -152,6 +152,7 @@ fn a_suspended_path_retains_its_prefix_and_trial_without_publishing_probe_region
         let mut query = Query {
             prefix,
             term,
+            normalized_prefix: None,
             mode: Mode::Trait { bound: false },
             members: vec![member].into_iter(),
             lexical: None,

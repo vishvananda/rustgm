@@ -74,6 +74,18 @@ All six configuration source bindings stay identical; no rebinding was needed.
 
 Both full42847850912 on751ab7be1 and successor42857585036 on4d430592e PASSED every
 stage, including the previously locally timed-out private cast tests, release,
-native, debug and independent qualification. A new full successor is due after
-this checkpoint's publication. Optimized nested-proof qualification remains
+native, debug and independent qualification. Optimized nested-proof qualification remains
 pending. One worker continues in the same tree under the unchanged limits.
+
+Full successor42865122492 on0ae860faf failed all-target lint because the private
+path-readiness test directly initialized Query without normalized_prefix. Its
+initializer now explicitly supplies None; production behavior is unchanged.
+Push-fast42865122949 passed. Local exact private fastcheck1794331972028719541
+exhausted the cold Clippy/link budget before tests, so private execution remains
+pending successor CI. The failed full run skipped all later qualification stages;
+it is not a qualified full pass.
+
+The production property/formation guard passes exact fastcheck1794332296024917531
+with strict production/CLI Clippy, formatting and architecture (36.98s). The first
+public selection incorrectly named its binary as a suite; it failed setup before
+checks and is retained. Only the private test initializer changed.

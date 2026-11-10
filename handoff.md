@@ -67,8 +67,15 @@ The [parameter-projection](docs/pa24-parameter-projections.md) and
 [closure-cast](docs/pa24-deferred-closure-casts.md) predecessors now have complete
 full qualification:42847850912 on751ab7be1 and42857585036 on4d430592e PASSED every
 stage, including private/native/debug/independent execution. The old private
-cold-link timeout is resolved by that real CI evidence. A new full successor is
-due after this publication; never cancel an active full dispatch.
+cold-link timeout is resolved by that real CI evidence. Constant successor
+42865122492 FAILED all-target lint on a test-only Query initializer missing the
+new normalized_prefix field; all later qualification stages were skipped.
+Push-fast42865122949 passed. The initializer now supplies None. Its local exact
+private check1794331972028719541 timed out during cold Clippy/link before tests;
+this is not a pass. Production is unchanged; its formation/property guard passes exact public
+fastcheck1794332296024917531 with strict production/CLI checks. Successor full CI
+is required.
+Never cancel an active full dispatch.
 Current immutablee64e93a2 binds5167b30c7/empty patch/3882 Rust hashes. One worker,
 existing tree, unchanged limits; optimized nested-proof checks remain pending.
 
