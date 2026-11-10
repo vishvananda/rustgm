@@ -20,7 +20,12 @@ use std::sync::Arc;
 /// Concrete proofs without debts can outlive a single normalization's witnesses.
 /// The owner must retain the same environment and implementation availability.
 #[derive(Default)]
-pub(in crate::sema) struct Completed(HashMap<u16, crate::sema::traits::selection::Reuse>);
+pub(in crate::sema) struct Completed(HashMap<u16, Retained>);
+#[derive(Default)]
+struct Retained {
+    proofs: crate::sema::traits::selection::Reuse,
+    sizes: Vec<crate::sema::nominals::sizes::Learned>,
+}
 
 #[derive(Debug, PartialEq, Eq)]
 pub(in crate::sema) enum Progress {
@@ -127,10 +132,38 @@ impl Cursor {
             return Err("normalization cursor has an unfinished query");
         }
         self.used = true;
+        if let Some(retained) = self.reusable.0.get_mut(&0) {
+            retained.sizes.clear();
+            retained.proofs.set_physical(None);
+        }
         self.nested = 0;
         self.before = self.fold.steps();
         self.step = Some(self.fold.start(&mut facts.types, ty)?);
         Ok(())
+    }
+
+    pub fn start_sizing(
+        &mut self,
+        facts: &mut Declarations,
+        ty: TypeId,
+        physical: Option<Box<crate::sema::nominals::sizes::Physical>>,
+    ) -> Result<(), &'static str> {
+        self.start(facts, ty)?;
+        if physical.is_some() {
+            self.reusable
+                .0
+                .entry(0)
+                .or_default()
+                .proofs
+                .set_physical(physical);
+        }
+        Ok(())
+    }
+    pub fn take_sizes(&mut self) -> Vec<crate::sema::nominals::sizes::Learned> {
+        self.reusable
+            .0
+            .get_mut(&0)
+            .map_or_else(Vec::new, |retained| std::mem::take(&mut retained.sizes))
     }
 
     pub fn exchange_completed(&mut self, completed: &mut Completed) {
@@ -214,7 +247,7 @@ impl Cursor {
                     && request.alias.associated().is_some_and(|application| {
                         facts.types.contains_projected_sizes(application.subject) == Some(true)
                     }) {
-                    Some(self.reusable.0.entry(request.depth).or_default())
+                    Some(&mut self.reusable.0.entry(request.depth).or_default().proofs)
                 } else {
                     None
                 };
@@ -286,6 +319,13 @@ impl Cursor {
             |parent, count| proof.callable_scope(parent, count),
         )?;
         proof.append_streamed_at(projected.proof, scope)?;
+        if self.depth == 0
+            && request.depth == 0
+            && !projected.provisional_size
+            && let Some(learned) = projected.learned
+        {
+            self.reusable.0.entry(0).or_default().sizes.push(*learned);
+        }
         Ok(resolution)
     }
 

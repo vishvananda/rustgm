@@ -158,6 +158,7 @@ fn known(
     Ok(
         selection::known_normalized(facts, environment, request)?.map(|(source, resolution)| {
             Projected {
+                learned: None,
                 work: 0,
                 provisional_size: false,
                 source: Some(source),
@@ -538,6 +539,7 @@ impl Query {
             .saturating_add(self.state.context.nested());
         #[cfg(test)]
         selection::record_nested_work(self.state.context.steps);
+        let learned = self.state.take_sizes();
         let sized = std::mem::take(&mut self.state.sized);
         let provisional_size = self.state.provisional_size;
         let proof = self.state.finish();
@@ -554,6 +556,7 @@ impl Query {
             resolution = Some(Resolution::Type(ty));
         }
         Ok(Progress::Ready(Projected {
+            learned,
             work,
             provisional_size,
             source: self.source,

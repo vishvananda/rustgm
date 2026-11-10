@@ -195,6 +195,7 @@ impl Source {
     }
 }
 pub(in crate::sema) struct Evidence {
+    pub learned: Option<Box<crate::sema::nominals::sizes::Learned>>,
     /// At least one selected branch assumed an active nominal's unfinished size.
     pub provisional_size: bool,
     pub source: Source,
@@ -578,6 +579,7 @@ pub(in crate::sema) fn select_assumption(
             let mut obligations = Obligations::new(proof.regions.start);
             obligations.regions.end = proof.regions.end;
             Ok(Selection::Proven(Evidence {
+                learned: None,
                 provisional_size: false,
                 source,
                 proof: obligations,

@@ -1,0 +1,79 @@
+{
+  "schema": 1,
+  "description": "Authored minimal source sizing-role reductions; all outcomes declared and independently checked before freezing.",
+  "candidate_sha256": "88b42b4cff92fc4ac0f6398f4866707db876fd1117491d9f61d9efcb26c6f412",
+  "cases": [
+    {
+      "path": "depth-1.rs",
+      "source_sha256": "f355d64a6fea8bb4b1436c62bcb9038fbbcf0b0bfc23a0eebd81f2643b5e1be9",
+      "rustc_status": 0,
+      "rustgm_status": 0,
+      "rustc": "1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+      "oracle_source": "cp2/reductions/oracle.json"
+    },
+    {
+      "path": "depth-4.rs",
+      "source_sha256": "2dc74cb8d1369c6cedbe72e5730c57b87a79a53bf97301f8b54668c3293573f0",
+      "rustc_status": 0,
+      "rustgm_status": 0,
+      "rustc": "1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+      "oracle_source": "cp2/reductions/oracle.json"
+    },
+    {
+      "path": "depth-12.rs",
+      "source_sha256": "56daa80302a8f3503c5629180956ab8118ca0846faff9731ce64906944096518",
+      "rustc_status": 0,
+      "rustgm_status": 0,
+      "rustc": "1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+      "oracle_source": "cp2/reductions/oracle.json"
+    },
+    {
+      "path": "depth-16.rs",
+      "source_sha256": "64f1e7238e6c6ae9563b0c5b25d6dfe3f80f1b2096078bfb0d650474fe0f24c6",
+      "rustc_status": 0,
+      "rustgm_status": 0,
+      "rustc": "1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+      "oracle_source": "cp2/reductions/oracle.json"
+    },
+    {
+      "path": "depth-31.rs",
+      "source_sha256": "6b5b2136b528c40c0fa23856322301531d9dfe23c1893752a5e1e2ff752257e5",
+      "rustc_status": 0,
+      "rustgm_status": 0,
+      "rustc": "1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+      "oracle_source": "cp2/reductions/oracle.json"
+    },
+    {
+      "path": "depth-32.rs",
+      "source_sha256": "4087cc21527bf8939a15028b7b6ed4c7833200a107e3353da6c080b0590364a0",
+      "rustc_status": 0,
+      "rustgm_status": 0,
+      "rustc": "1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+      "oracle_source": "cp2/reductions/oracle.json"
+    },
+    {
+      "path": "closed-12.rs",
+      "source_sha256": "43223e879a6b06091c638f0b7372b492cfb39e8e341a25add0a28597172dff94",
+      "rustc_status": 0,
+      "rustgm_status": 0,
+      "rustc": "1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+      "oracle_source": "cp3/closed-minimal-2/results.json"
+    },
+    {
+      "path": "closed-31.rs",
+      "source_sha256": "e05c732534b6459083a9ab4cfa22e4f187abb07c22d0caa912207c1ad380a194",
+      "rustc_status": 0,
+      "rustgm_status": 0,
+      "rustc": "1.98.0 --edition=2024 --crate-type=lib --emit=metadata",
+      "oracle_source": "cp3/closed-minimal-2/results.json"
+    }
+  ],
+  "rustgm_profile": {
+    "edition": "2024",
+    "emit": "types",
+    "cap_lints": "allow",
+    "source_core": "probe@nested_reuse",
+    "crate_name": "probe",
+    "crate_disambiguator": "nested_reuse"
+  }
+}

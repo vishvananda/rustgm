@@ -2059,6 +2059,16 @@ The [whole-caller sizing investigation](docs/pa31-source-sizing-reuse.md) shows
 why isolated query DAG counters must be complemented by full typed source calls:
 separate roots can repeat a complete nested suffix despite each query being linear.
 
+Nested sizing proofs charge each completed child's own and nested work exactly
+once to their owning budget; repeated builtin calls charge only their new delta.
+Keep reported own counters distinct, saturating budget failures sticky and the
+actual nested-owner guard named. Reuse completed physical properties and sizes
+only under the exact immutable caller and implementation view. Structural
+answers never replace nominal formation or selected trait/lifetime evidence;
+exclude provisional and private-region results. The [nested proof checkpoint](docs/parallel/nested-proof-reuse.md)
+records linear normalization counts, the remaining affine-work target and
+PA31's independently checked source reductions.
+
 Source sizing follows rustc 1.98's hierarchy. `PointeeSized` holds for every
 type. A rigid projection is `MetaSized` or `Sized` only from an environment
 assumption that names it or from its associated type's own item bounds: its

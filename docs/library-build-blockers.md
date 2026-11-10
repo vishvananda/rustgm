@@ -144,28 +144,22 @@ fence:
   because the other header's `U: Tr<Out = u8>` is a trait premise, which this
   item does not assume. The `probe-trait-premise` pair stays open for the
   same reason.
-- Pre-existing performance item, found by item B's test E. The shared
-  nominal size proof starts 2^d - 1 normalizations for `P^d<T>`, where
-  `struct P<T: ?Sized + Tr>(<T as Tr>::Out)` and `impl<X: ?Sized> Tr for X`.
-  The premise-less and placeholder proofs have the same counts (1, 3, 7, 15,
-  63, 255, 1023 and 4095 for d = 1, 2, 3, 4, 6, 8, 10 and 12). The CLI takes
-  0.36 s on `pub struct Field<U>(P^8<U>, u8)`, about 5.5 s at d = 12, and
-  times out after 60 s at d = 16, on main and with item B alike. A
-  premise-less unit proof overflows a 2 MiB test-thread stack at d = 16.
-  It has two parts:
-  1. No reuse between the sibling nested proofs of each `P^k<T>`. This is the
-     likely mechanism and is still to be traced: each level's normalization
-     selects `impl<X: ?Sized> Tr for X`, whose `X: MetaSized` re-proves the
-     next level in a fresh nested proof.
-  2. Nested proof work is never charged to the outer proof's accounting. The
-     accounted work stays linear, about 16 to 18 steps a level, so no work
-     budget stops the blow-up. It ends as a timeout or a stack overflow, never
-     a named budget failure. This part alone is a robustness bug: any input
-     can run unbounded.
-
-  Lane B's next item, ahead of item C, makes the count linear in d and
-  charges nested work to the outer budget, with a named budget failure at a
-  declared depth.
+- The [nested proof checkpoint](parallel/nested-proof-reuse.md) repairs the
+  repeated projected-size suffix work and its omitted nested accounting. The
+  measured normalization count changes from 2^d-1 to d through 31 for both truth
+  values and premise modes. All child work is paid once; original work limits
+  and a named actual-owner depth guard remain live. Generic depths 31/32 and
+  closed 12/31 are accepted on the default development CLI stack. The earlier
+  predicted nominal-depth 32 rejection was disproved and is not imposed.
+- Remaining performance debt: total accounted work is quadratic on these
+  controls, with larger metadata/tail work for false results. The proposed
+  affine bound failed and remains open. Immutable development A/A+ABBA passes;
+  matching optimized measurement and release-stack qualification remain pending.
+- Known rejects-valid: canonical selection for
+  `Field<U>(for<'a> fn(P^d<&'a U>), u8)` at d>=2. Body-inference Cursor owners
+  still bound child work locally without summing it into their own ledger;
+  dispatch normalization needs the same ownership audit. Neither follow-up is
+  represented as completed by this checkpoint.
 
 Lane C [zero-slot nominal callable fields](parallel/callable-fields.md), (ii),
 lets a version-13 export carry a struct's or tuple variant's closed Rust fn
@@ -2705,7 +2699,7 @@ Both former workers remain stopped and their completed commits are on main.
 The existing warm worktree and scratch
 now reside on btrfs at /mnt/vizier/rustgm-scratch/rustgm-pa26-work, with the home
 path retained as an alias. Source/tool and saved binary hashes survived the move;
-resource caps and the150GiB reserve are unchanged. No additional worker, tree or
+resource caps and the 150 GiB reserve are unchanged. No additional worker, tree or
 cache was created.
 
 

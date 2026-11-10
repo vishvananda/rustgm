@@ -105,6 +105,7 @@ pub(crate) struct State {
     nesting: selection::Nesting,
 }
 pub(crate) struct Projected {
+    pub learned: Option<Box<crate::sema::nominals::sizes::Learned>>,
     pub work: usize,
     pub provisional_size: bool,
     pub source: Option<selection::Source>,
@@ -144,6 +145,16 @@ impl State {
         self.context.nested()
     }
 
+    pub(in crate::sema::nominals) fn for_builtin(
+        facts: &mut Declarations,
+        environment: Option<Arc<Environment>>,
+        scope: Option<(u32, u32)>,
+        availability: Availability,
+    ) -> Result<Self, &'static str> {
+        let mut state = Self::new(facts, environment, scope)?;
+        state.availability = availability;
+        Ok(state)
+    }
     pub(crate) fn instance(
         facts: &mut Declarations,
         universals: u32,
@@ -446,12 +457,6 @@ impl State {
             || self.terms.is_some()
             || self.shapes.is_some()
     }
-    /// The work this State has accounted. Nested proofs that its searches
-    /// start are not charged to it.
-    #[cfg(test)]
-    pub(super) const fn work(&self) -> usize {
-        self.context.steps
-    }
     #[cfg(test)]
     pub(super) fn placeholders(&self) -> Option<&crate::types::parameters::shape::Placeholders> {
         self.placeholders.as_ref()
@@ -630,6 +635,7 @@ impl State {
                 let source = evidence.source.clone();
                 self.provisional_size |= evidence.provisional_size;
                 self.sized.append(&mut evidence.sized);
+                self.retain_sizes(evidence.learned.take())?;
                 self.obligations.append(evidence)?;
                 Ok(Some(source))
             }

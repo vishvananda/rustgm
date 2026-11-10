@@ -142,7 +142,7 @@ impl Search<'_> {
             );
             return self.complete_source_sizing(facts, frame, goal, debt);
         }
-        let shape = self.builtin_shape(facts, frame, goal.ty)?;
+        let shape = self.sizing_shape(facts, frame, goal.ty)?;
         if !shape.well_formed {
             return Ok(Some(Action::Complete(Decision::Absent)));
         }
@@ -317,6 +317,36 @@ impl Search<'_> {
         Ok(self
             .source_sizing_result(facts, frame)?
             .filter(|action| !matches!(action, Action::Complete(Decision::Absent))))
+    }
+    /// The actual source formation has completed before these structural
+    /// properties can be consumed; they never select or prove a trait.
+    fn sizing_shape(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &Frame,
+        ty: crate::types::TypeId,
+    ) -> Result<crate::types::parameters::shape::Properties, &'static str> {
+        if let Some(properties) = self
+            .query
+            .reuse
+            .as_ref()
+            .and_then(|active| active.reuse.physical())
+            .and_then(|physical| {
+                physical.get(
+                    ty,
+                    self.caller.environment,
+                    self.caller.placeholders,
+                    self.query.availability,
+                )
+            })
+        {
+            return Ok(properties);
+        }
+        let properties = self.builtin_shape(facts, frame, ty)?;
+        self.with_builtins(facts, |proof, facts| {
+            proof.record_physical_size(facts, ty, properties)?;
+            Ok(properties)
+        })
     }
     /// The physical shape of a source builtin goal's subject, whose nominal
     /// formation the frame already retains as child goals. Normalized inputs

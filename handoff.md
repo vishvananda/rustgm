@@ -1,4 +1,4 @@
-# RustGM single-worker continuation — 2026-11-09
+# RustGM single-worker continuation — 2026-11-10
 
 This current section supersedes the historical multi-lane snapshot below.
 The user explicitly asked for one worker. Do not spawn workers or create worktrees.
@@ -12,10 +12,10 @@ requirement retained. No original core/alloc/std artifact exists.
   Reused 2,022 passing private selections after verifying all recorded source
   hashes. Fresh 16 affected integration cases and 5 native groups pass, as do
   313 harness tests, 465 registered roots, layout and upstream verification.
-- Full predecessor CI `42689087036` succeeded. Record-variant full CI
-  `42701179456` is running; its fast job passed. Do not cancel it with another
-  dispatch. A push has a separate concurrency group and does not cancel it.
-- This compiler checkpoint completes batch 22 P1: unresolved projections stay
+- Full predecessor CI `42689087036`, record-variant full CI `42701179456` and
+  P1 full CI `42708775327` succeeded. A new full dispatch must wait for any
+  existing full run to terminate; pushes use a separate concurrency group.
+- The P1 compiler checkpoint completed batch 22: unresolved projections stay
   possible during lookup, while chosen-callable proof remains mandatory.
   See docs/parallel/census-batch22.md. Thirteen byte-identical independent Rust
   controls, 11 exact private/integration tests, strict production/private Clippy,
@@ -42,10 +42,16 @@ and follows this observed lead. Close f01 before widening A+O bound-region looku
 
 ## Next work, one worker
 
-1. Finish nested-proof reuse in pa26-work, starting with the prep byte-identity
-   gates. Prep binary `ed4cf61a` exists and matches its recorded SHA at b621764b0.
-   Checkpoints 2 and 3 still land together; no accepted-to-rejected intermediate
-   checkpoint is published. See its restart note below and the approved notice.
+1. Nested-proof reuse is now qualified for development integration in pa26-work:
+   prep d810f780c, accounting d4dbbd4ba and this reuse checkpoint land together.
+   [The checkpoint](docs/parallel/nested-proof-reuse.md) records 130 passing private
+   cases, strict production checks, identical 8,356-row golden table, 74/336 paired
+   outcomes, fixture/upstream gates and unchanged original-core census. Final
+   source-bound dev-fast pin f5b5db49 passes generic 31/32 and closed 12/31; stack
+   bracket 448–512 KiB. Two development A/A+ABBA cycles are output-equal. Total work
+   remains quadratic; optimized A/A+ABBA and its release-stack check are pending
+   (the old release build took 7m20s), as are full CI gates. No artifact or whole
+   PA completion is implied. PA31 has eight frozen minimal source reductions.
 2. Repair the observed closed projected-field layout requirement, reusing typed
    phase results, then run the next census and follow its actual first record.
 3. HR transport may start from main now that record variants landed. Its approved
@@ -63,10 +69,11 @@ and follows this observed lead. Close f01 before widening A+O bound-region looku
   candidate pin until a replacement census baseline is published. Source-binding
   supplements reconstruct each pin's exact saved HEAD/diff, including pre-format
   bytes and diagnostic instrumentation; raw observation bindings are preserved.
-- All diagnostic emitters are reverted. Before another implementation edit, compare
-  against fastcheck's 3,906 recorded compiler/test source hashes. No new builds in
-  /home/vishvananda/rustgm. Use existing scratch trees only and wrapped commands.
-- About 229 GiB was free. Keep one heavy local command at a time for now; perform
+- All diagnostic emitters are reverted. Before another implementation edit,
+  compare compiler/test hashes with pa26-work/obj/lane-b10/cp3b-dev-fast/producer.json.
+  No new builds in /home/vishvananda/rustgm. Use existing scratch trees only and
+  wrapped commands.
+- The resource wrapper continues to enforce the 150 GiB reserve. Keep one heavy local command at a time for now; perform
   guarded cleanup at idle boundaries. Never change reserves to obtain admission.
 - Standing rm rule: literal, inspected absolute paths only; bulk cleanup goes
   through storage.py/make tidy. Single-line commit subjects, no trailers. Do not

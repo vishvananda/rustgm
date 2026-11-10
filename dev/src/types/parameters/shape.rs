@@ -59,6 +59,11 @@ impl Placeholders {
     pub fn meta_sized(&self, ty: TypeId) -> (bool, usize) {
         lookup(&self.sets.meta_sized, ty)
     }
+    /// Whether these premises are the same immutable caller handle.
+    #[must_use]
+    pub(crate) fn same_owner(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.sets, &other.sets)
+    }
     /// Whether neither premise set has a member.
     #[cfg(test)]
     #[must_use]
@@ -88,6 +93,64 @@ fn lookup(set: &[TypeId], ty: TypeId) -> (bool, usize) {
     let work = set.len().max(1).ilog2() as usize + 1;
     (set.binary_search_by_key(&ty.0, |ty| ty.0).is_ok(), work)
 }
+/// Completed unshifted physical properties reachable from one pending alias.
+/// Input proof authority stays with the caller; this snapshot contains no duties.
+#[derive(Default)]
+pub(crate) struct Completed {
+    pub(crate) properties: Vec<(TypeId, Properties)>,
+    pub(crate) steps: usize,
+}
+impl Shapes {
+    /// Copy only this alias's completed, projection-free physical inputs. A
+    /// callable's descendants belong to another scope and are not exported.
+    pub(crate) fn snapshot_properties(
+        &mut self,
+        types: &Store,
+        root: TypeId,
+        normalized: bool,
+    ) -> Result<Completed, &'static str> {
+        let mut result = Completed::default();
+        if types.contains_projected_sizes(root) != Some(true) {
+            return Ok(result);
+        }
+        let query = self.query(normalized);
+        if query.cache.is_empty() {
+            return Ok(result);
+        }
+        let mut pending = vec![root];
+        let mut seen = crate::support::hash::HashSet::default();
+        while let Some(ty) = pending.pop() {
+            result.steps = result.steps.saturating_add(1);
+            if result.steps.saturating_add(pending.len()) > 1_000_000 {
+                return Err("physical shape snapshot work budget exceeded");
+            }
+            if !seen.insert(ty) {
+                continue;
+            }
+            let kind = types
+                .kind(ty)
+                .ok_or("invalid physical shape snapshot input")?;
+            if types.contains_projected_sizes(ty) == Some(true)
+                && types.contains_projections(ty) == Some(false)
+                && let Some(&properties) = query.cached(ty, 0)
+            {
+                result.properties.push((ty, properties));
+            }
+            children(types, kind, 0, |child, depth| {
+                result.steps = result.steps.saturating_add(1);
+                if result.steps.saturating_add(pending.len()) >= 1_000_000 {
+                    return Err("physical shape snapshot work budget exceeded");
+                }
+                if depth == 0 {
+                    pending.push(child);
+                }
+                Ok(())
+            })?;
+        }
+        Ok(result)
+    }
+}
+
 pub struct Shapes {
     environment: Arc<Environment>,
     builtins: Option<Box<BuiltinQuery>>,

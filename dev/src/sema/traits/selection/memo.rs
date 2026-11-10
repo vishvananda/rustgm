@@ -78,6 +78,7 @@ impl Memo {
             return None;
         };
         Some(Selection::Proven(Evidence {
+            learned: None,
             provisional_size: false,
             source: Source::Implementation {
                 owner: answer.owner,

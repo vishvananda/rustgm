@@ -5,11 +5,39 @@ use crate::types::lifetime_proof::ScopeId;
 
 /// Owned by one fixed environment, implementation view and builtin-retention mode.
 /// No failed search, provisional answer or caller-allocated witness enters this map.
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+enum Key {
+    Proof(Predicate),
+    Physical,
+}
+enum Entry {
+    Source(Source),
+    Physical(Box<crate::sema::nominals::sizes::Physical>),
+}
 #[derive(Default)]
 pub(in crate::sema) struct Reuse {
-    completed: HashMap<Predicate, Source>,
+    completed: HashMap<Key, Entry>,
 }
 impl Reuse {
+    /// A separate structural namespace in the existing cold map keeps the
+    /// inline search record fixed; these entries never pay a trait goal.
+    pub(in crate::sema) fn set_physical(
+        &mut self,
+        physical: Option<Box<crate::sema::nominals::sizes::Physical>>,
+    ) {
+        if let Some(physical) = physical {
+            self.completed
+                .insert(Key::Physical, Entry::Physical(physical));
+        } else {
+            self.completed.remove(&Key::Physical);
+        }
+    }
+    pub(in crate::sema) fn physical(&self) -> Option<&crate::sema::nominals::sizes::Physical> {
+        match self.completed.get(&Key::Physical) {
+            Some(Entry::Physical(physical)) => Some(physical),
+            _ => None,
+        }
+    }
     pub(in crate::sema) fn needed(
         facts: &Declarations,
         predicate: Predicate,
@@ -24,7 +52,10 @@ impl Reuse {
     #[cfg(test)]
     pub(in crate::sema) fn observations(&self) -> (usize, usize) {
         (
-            self.completed.len(),
+            self.completed
+                .keys()
+                .filter(|key| matches!(key, Key::Proof(_)))
+                .count(),
             size_of::<Self>() + crate::support::retained::map(&self.completed),
         )
     }
@@ -35,11 +66,12 @@ impl Reuse {
         goal: Predicate,
         first: u32,
     ) -> Result<Option<super::Selection>, String> {
-        let Some(source) = self.completed.get(&goal) else {
+        let Some(Entry::Source(source)) = self.completed.get(&Key::Proof(goal)) else {
             return Ok(None);
         };
         validate_source(facts, goal, source)?;
         Ok(Some(super::Selection::Proven(super::Evidence {
+            learned: None,
             provisional_size: false,
             source: source.clone(),
             proof: super::super::Obligations::new(first),
@@ -109,7 +141,10 @@ impl Query {
             && let Some(source) = node.source.as_ref()
         {
             validate_source(facts, node.goal, source)?;
-            active.reuse.completed.insert(node.goal, source.clone());
+            active
+                .reuse
+                .completed
+                .insert(Key::Proof(node.goal), Entry::Source(source.clone()));
         }
         Ok(())
     }
@@ -122,12 +157,12 @@ impl Query {
         if frame.scope != ScopeId::ROOT || self.universal.is_some() {
             return Ok(None);
         }
-        let Some(source) = self
-            .reuse
-            .as_ref()
-            .and_then(|active| active.reuse.completed.get(&goal))
-            .cloned()
-        else {
+        let Some(source) = self.reuse.as_ref().and_then(|active| {
+            match active.reuse.completed.get(&Key::Proof(goal)) {
+                Some(Entry::Source(source)) => Some(source.clone()),
+                _ => None,
+            }
+        }) else {
             return Ok(None);
         };
         validate_source(facts, goal, &source)?;

@@ -825,6 +825,13 @@ satisfies the parameter's bound and rejected when it does not (E0277); the
 accepted case is a recorded gap. Each outcome was declared before its rustc
 1.98.0 oracle. A private invariant checks them; there is no graded manifest.
 
+`spec/nested-projection-work/` freezes eight independently checked, authored
+source-role reductions for repeated projected-size proofs: generic depths1,4,12,
+16,31,32 and closed12/31. Every source appears with its hash and accepted rustc
+1.98.0/RustGM outcome in `outcomes.json`. Private checks enforce linear
+normalization count, bounded total work, live work/depth errors and immutable
+caller ownership. There is no graded manifest or assignment activation.
+
 `spec/negative-metasized/` freezes thirteen declared no_core controls from
 Lane B's MetaSized batch: pairs that only a `?Sized` negative impl
 (`impl<T: ?Sized> !Seal for &T`) makes disjoint. rustc negates one impl's

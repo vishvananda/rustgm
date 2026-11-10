@@ -40,6 +40,7 @@ pub(super) struct Proof {
     /// This proof's level below its root trait proof, which its trait State shares.
     nesting: crate::sema::traits::selection::Nesting,
     provisional: bool,
+    availability: crate::sema::traits::implementations::Availability,
 }
 impl Proof {
     pub(super) fn resume_body_shapes(&mut self, first: u32) -> Result<(), &'static str> {
@@ -89,6 +90,7 @@ impl Proof {
             scope: None,
             nesting: crate::sema::traits::selection::Nesting::ROOT,
             provisional: false,
+            availability: crate::sema::traits::implementations::Availability::Declarations,
         }
     }
     pub fn new(
@@ -116,12 +118,29 @@ impl Proof {
             scope: None,
             nesting: crate::sema::traits::selection::Nesting::ROOT,
             provisional: false,
+            availability: crate::sema::traits::implementations::Availability::Declarations,
         }
     }
     /// The level of a builtin proof that a selection search starts; its trait
     /// State and every proof that State starts are nested below it.
     pub(in crate::sema) fn nest_at(&mut self, nesting: crate::sema::traits::selection::Nesting) {
         self.nesting = nesting;
+    }
+    /// The builtin proof uses exactly the implementation view of its search.
+    pub(in crate::sema) fn for_selection(
+        environment: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
+        nesting: crate::sema::traits::selection::Nesting,
+        availability: crate::sema::traits::implementations::Availability,
+    ) -> Self {
+        let mut proof =
+            if availability == crate::sema::traits::implementations::Availability::Declarations {
+                Self::for_unvalidated_implementations(environment)
+            } else {
+                Self::new(environment)
+            };
+        proof.nest_at(nesting);
+        proof.availability = availability;
+        proof
     }
     /// Declaration selection may use derive contracts before fields finish.
     /// The mandatory nominal gates still validate every selected derive later.
@@ -603,13 +622,44 @@ impl Proof {
         facts: &mut Declarations,
         placeholders: Option<crate::types::parameters::shape::Placeholders>,
     ) -> Result<(), &'static str> {
-        let mut state = traits::State::new(facts, self.environment.clone(), self.scope)?;
+        let mut state = traits::State::for_builtin(
+            facts,
+            self.environment.clone(),
+            self.scope,
+            self.availability,
+        )?;
         state.assume_placeholders(placeholders)?;
         state.nest_at(self.nesting);
         self.traits = Some(Box::new(state));
         Ok(())
     }
 
+    pub(in crate::sema) fn record_physical_size(
+        &mut self,
+        facts: &Declarations,
+        ty: TypeId,
+        properties: crate::types::parameters::shape::Properties,
+    ) -> Result<(), &'static str> {
+        if properties.well_formed
+            && let Some(state) = self.traits.as_deref_mut()
+        {
+            state.record_physical_size(facts, ty, properties.sized)?;
+        }
+        Ok(())
+    }
+    pub(in crate::sema) fn take_sizes(&mut self) -> Option<Box<sizes::Learned>> {
+        self.traits
+            .as_deref_mut()
+            .and_then(traits::State::take_sizes)
+    }
+    #[cfg(test)]
+    pub(in crate::sema) fn preload_nested(
+        &mut self,
+        facts: &mut Declarations,
+        work: usize,
+    ) -> Result<(), &'static str> {
+        self.trait_state(facts)?.preload_nested(work)
+    }
     pub(in crate::sema) fn trait_selection_steps(&self) -> usize {
         self.traits
             .as_deref()
@@ -655,11 +705,6 @@ impl Proof {
     }
     pub(in crate::sema) fn nested_work(&self) -> usize {
         self.traits.as_deref().map_or(0, traits::State::nested_work)
-    }
-    /// The work this proof's trait State has accounted, or none before it has one.
-    #[cfg(test)]
-    pub(in crate::sema) fn trait_state_work(&self) -> usize {
-        self.traits.as_deref().map_or(0, traits::State::work)
     }
     /// Whether this proof's trait State, if it has started one, holds a set.
     #[cfg(test)]

@@ -11,7 +11,10 @@ use crate::{
         sizedness::Rules,
     },
 };
-pub(in crate::sema) use query::{Progress, Query, Step};
+#[cfg(test)]
+pub(in crate::sema) use query::Progress;
+pub(in crate::sema) use query::learned::{Learned, Owner, Physical};
+pub(in crate::sema) use query::{Normalized, Query, Step};
 use std::sync::Arc;
 
 pub(in crate::sema) struct Requirement {

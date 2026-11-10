@@ -798,6 +798,7 @@ impl Search<'_> {
             .clone()
             .ok_or("missing selected trait evidence")?;
         let mut evidence = Evidence {
+            learned: self.query.builtins.take_sizes(),
             provisional_size: self.query.nodes[root].provisional_size,
             source,
             proof: std::mem::replace(

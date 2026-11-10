@@ -17,6 +17,62 @@ use std::sync::Arc;
 struct Scope {
     sizes: sizes::Query,
     cursor: Cursor,
+    owner: sizes::Owner,
+}
+impl Scope {
+    fn physical(
+        owner: &sizes::Owner,
+        facts: &Declarations,
+        shapes: &mut Shapes,
+        request: Request,
+        normalized: bool,
+        context: &mut crate::types::infer::Context,
+    ) -> Result<Option<Box<sizes::Physical>>, &'static str> {
+        if request.depth != 0 {
+            return Ok(None);
+        }
+        let (physical, work) =
+            sizes::Physical::capture(owner, &facts.types, shapes, request.ty, normalized)?;
+        transfer_work(context, work, "size normalization work budget exceeded")?;
+        Ok(physical)
+    }
+    fn new(
+        facts: &mut Declarations,
+        mut owner: sizes::Owner,
+        nesting: crate::sema::traits::selection::Nesting,
+        anchor: (&Obligations, ScopeId),
+        depth: u16,
+        context: &mut crate::types::infer::Context,
+    ) -> Result<Self, &'static str> {
+        let mut cursor = Cursor::new(
+            owner.environment.clone(),
+            anchor.0,
+            anchor.1,
+            owner.availability,
+        )?;
+        cursor.assume_placeholders(owner.placeholders.clone())?;
+        cursor.nest_at(nesting);
+        owner.environment = scoped_environment(facts, owner.environment.as_ref(), depth, context)?;
+        Ok(Self {
+            sizes: sizes::Query::with_placeholders(
+                owner.environment.clone(),
+                owner.placeholders.clone(),
+            ),
+            cursor,
+            owner,
+        })
+    }
+}
+
+fn transfer_work(
+    context: &mut crate::types::infer::Context,
+    work: usize,
+    cause: &'static str,
+) -> Result<(), &'static str> {
+    context.account_nested(work).map_err(|_| cause)?;
+    #[cfg(test)]
+    crate::sema::traits::selection::record_nested_work(work);
+    Ok(())
 }
 
 fn scoped_environment(
@@ -43,6 +99,7 @@ fn scoped_environment(
 pub(super) struct Sizes {
     mappings: HashMap<(Option<u32>, bool), Mapping>,
     queries: HashMap<ScopeId, Scope>,
+    learned: Option<Box<sizes::Learned>>,
 }
 
 #[derive(Default)]
@@ -113,24 +170,19 @@ impl State {
             return Err("nominal size request changed its binder depth");
         }
         if let std::collections::hash_map::Entry::Vacant(entry) = sizes.queries.entry(scope) {
-            let environment = scoped_environment(
+            let owner = sizes::Owner {
+                environment: self.environment.clone(),
+                placeholders: self.placeholders.clone(),
+                availability: self.availability,
+            };
+            entry.insert(Scope::new(
                 facts,
-                self.environment.as_ref(),
+                owner,
+                self.nesting,
+                (&self.obligations, scope),
                 request.depth,
                 &mut self.context,
-            )?;
-            let mut cursor = Cursor::new(
-                self.environment.clone(),
-                &self.obligations,
-                scope,
-                self.availability,
-            )?;
-            cursor.assume_placeholders(self.placeholders.clone())?;
-            cursor.nest_at(self.nesting);
-            entry.insert(Scope {
-                sizes: sizes::Query::with_placeholders(environment, self.placeholders.clone()),
-                cursor,
-            });
+            )?);
         }
         let query = sizes
             .queries
@@ -139,10 +191,19 @@ impl State {
         let before = query.sizes.steps;
         #[cfg(test)]
         let premised = self.placeholders.is_some();
-        let result = query.sizes.demand(facts, ty, |facts, ty| {
+        let owner = query.owner.clone();
+        let result = query.sizes.demand_with_sizes(facts, ty, |facts, ty| {
             #[cfg(test)]
             super::count_size_normalization(premised);
-            query.cursor.start(facts, ty)?;
+            let physical = Scope::physical(
+                &owner,
+                facts,
+                shapes,
+                Request { ty, ..request },
+                normalized,
+                &mut self.context,
+            )?;
+            query.cursor.start_sizing(facts, ty, physical)?;
             match query
                 .cursor
                 .advance(facts, &mut self.obligations, &mut |_, _| Ok(None))?
@@ -154,7 +215,11 @@ impl State {
                     self.context
                         .account_work(steps)
                         .map_err(|_| "size normalization work budget exceeded")?;
-                    Ok(ty)
+                    Ok(sizes::Normalized::Sizes {
+                        ty,
+                        learned: query.cursor.take_sizes(),
+                        availability: self.availability,
+                    })
                 }
                 Progress::Definition(_) | Progress::Dependency(_) => {
                     Err("final nominal size proof requires completed declarations")
@@ -175,17 +240,78 @@ impl State {
         self.context
             .account_work(query.sizes.steps.saturating_sub(before))
             .map_err(|_| "nominal size proof budget exceeded")?;
-        match result {
-            sizes::Progress::Ready {
-                sized,
-                provisional: false,
-            } => Ok(sized),
-            sizes::Progress::Ready {
-                provisional: true, ..
-            }
-            | sizes::Progress::Fields => {
-                Err("final nominal size proof cannot retain provisional fields")
-            }
+        result.final_sized()
+    }
+}
+
+impl State {
+    #[cfg(test)]
+    pub(in crate::sema::nominals) fn preload_nested(
+        &mut self,
+        work: usize,
+    ) -> Result<(), &'static str> {
+        self.context
+            .account_nested(work)
+            .map_err(|_| "size normalization work budget exceeded")
+    }
+    pub(in crate::sema::nominals) fn record_physical_size(
+        &mut self,
+        facts: &Declarations,
+        ty: crate::types::TypeId,
+        sized: bool,
+    ) -> Result<(), &'static str> {
+        if self.provisional_size
+            || facts.types.contains_projected_sizes(ty) != Some(true)
+            || facts.types.has_free_regions(ty, 0) != Some(false)
+        {
+            return Ok(());
         }
+        let owner = sizes::Owner {
+            environment: self.environment.clone(),
+            placeholders: self.placeholders.clone(),
+            availability: self.availability,
+        };
+        transfer_work(
+            &mut self.context,
+            1,
+            "nominal size result work budget exceeded",
+        )?;
+        self.shapes
+            .get_or_insert_with(Default::default)
+            .learned
+            .get_or_insert_with(|| Box::new(sizes::Learned::new(owner)))
+            .insert(ty, sized)
+    }
+    pub(in crate::sema::nominals) fn take_sizes(&mut self) -> Option<Box<sizes::Learned>> {
+        let learned = self.shapes.as_mut().and_then(|sizes| sizes.learned.take());
+        if self.provisional_size { None } else { learned }
+    }
+    pub(super) fn retain_sizes(
+        &mut self,
+        learned: Option<Box<sizes::Learned>>,
+    ) -> Result<(), &'static str> {
+        let Some(learned) = learned else {
+            return Ok(());
+        };
+        let owner = sizes::Owner {
+            environment: self.environment.clone(),
+            placeholders: self.placeholders.clone(),
+            availability: self.availability,
+        };
+        if !learned.belongs_to(&owner) {
+            return Ok(());
+        }
+        let stored = &mut self.shapes.get_or_insert_with(Default::default).learned;
+        if let Some(stored) = stored {
+            transfer_work(
+                &mut self.context,
+                learned.len(),
+                "nominal size result work budget exceeded",
+            )?;
+            stored.extend(*learned)?;
+        } else {
+            *stored = Some(learned);
+        }
+        Ok(())
     }
 }

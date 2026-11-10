@@ -1,12 +1,36 @@
 //! One caller retains its size proof frontier across missing field declarations.
+pub(super) mod learned;
 use super::{Declarations, Environment, ItemId, Kind, TypeId, assumed, prepare};
 use crate::support::hash::{HashMap, HashSet};
 use crate::types::{Primitive, Store, parameters::environment::BuiltinQuery, sizedness::Condition};
 use std::sync::Arc;
 
+pub(in crate::sema) enum Normalized {
+    #[cfg(test)]
+    Type(TypeId),
+    Sizes {
+        ty: TypeId,
+        learned: Vec<learned::Learned>,
+        availability: crate::sema::traits::implementations::Availability,
+    },
+}
 pub(in crate::sema) enum Progress {
     Ready { sized: bool, provisional: bool },
     Fields,
+}
+impl Progress {
+    /// Final physical size consumers cannot retain unfinished field assumptions.
+    pub fn final_sized(self) -> Result<bool, &'static str> {
+        if let Self::Ready {
+            sized,
+            provisional: false,
+        } = self
+        {
+            Ok(sized)
+        } else {
+            Err("final nominal size proof cannot retain provisional fields")
+        }
+    }
 }
 pub(in crate::sema) enum Step {
     Ready { sized: bool, provisional: bool },
@@ -59,11 +83,22 @@ impl Query {
             steps: 0,
         }
     }
+    #[cfg(test)]
     pub fn demand(
         &mut self,
         facts: &mut Declarations,
         root: TypeId,
         mut normalize: impl FnMut(&mut Declarations, TypeId) -> Result<TypeId, &'static str>,
+    ) -> Result<Progress, &'static str> {
+        self.demand_with_sizes(facts, root, |facts, ty| {
+            normalize(facts, ty).map(Normalized::Type)
+        })
+    }
+    pub fn demand_with_sizes(
+        &mut self,
+        facts: &mut Declarations,
+        root: TypeId,
+        mut normalize: impl FnMut(&mut Declarations, TypeId) -> Result<Normalized, &'static str>,
     ) -> Result<Progress, &'static str> {
         loop {
             match self.advance(facts, root)? {
@@ -72,7 +107,20 @@ impl Query {
                 }
                 Step::Fields(_) => return Ok(Progress::Fields),
                 Step::Projection(ty) => {
-                    let normalized = normalize(facts, ty)?;
+                    let normalized = match normalize(facts, ty)? {
+                        #[cfg(test)]
+                        Normalized::Type(ty) => ty,
+                        Normalized::Sizes {
+                            ty,
+                            learned,
+                            availability,
+                        } => {
+                            for answers in learned {
+                                self.seed(answers, availability)?;
+                            }
+                            ty
+                        }
+                    };
                     self.projection = None;
                     if normalized == ty {
                         let sized = self.rigid_sized(&facts.types, ty)?;

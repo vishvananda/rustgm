@@ -84,32 +84,60 @@ fn observe_at(
 fn nested_work_is_the_sum_of_each_owners_own_work_once() -> TestResult {
     let mut fixture = fixture()?;
     let environment = scoped(&fixture.facts)?;
-    let own = [[20, 38, 56, 74], [22, 38, 54, 70]];
-    let total = [[79, 342, 999, 2442], [79, 343, 1004, 2459]];
     for depth in 1..=4 {
-        for (index, premised) in [false, true].into_iter().enumerate() {
+        for premised in [false, true] {
             let row = observe(&mut fixture, &environment, depth, premised)?;
             assert_eq!(row.result, Ok(true));
-            assert_eq!(row.own, own[index][depth - 1]);
-            assert_eq!(row.own + row.nested, total[index][depth - 1]);
+            assert_eq!(
+                row.own,
+                if premised {
+                    20 + depth.max(2)
+                } else {
+                    18 * depth + 2
+                }
+            );
             assert_eq!(row.nested, row.tally);
-            assert_eq!(usize::from(row.level), 3 * depth - usize::from(premised));
+            assert!(row.own + row.nested <= 80 * depth * depth);
+            assert_eq!(
+                row.level,
+                if !premised {
+                    3
+                } else if depth == 1 {
+                    2
+                } else {
+                    5
+                }
+            );
+            eprintln!(
+                "conservation depth={depth} premised={premised} own={} nested={}",
+                row.own, row.nested
+            );
         }
     }
     Ok(())
 }
 
 #[test]
-fn nested_work_exhausts_before_the_exponential_tree_can_continue() -> TestResult {
+fn nested_work_budget_remains_live_after_reuse() -> TestResult {
+    const CAUSE: &str = "size normalization work budget exceeded";
     for premised in [false, true] {
         let mut fixture = fixture()?;
         let environment = scoped(&fixture.facts)?;
-        let before = observe(&mut fixture, &environment, 12, premised)?;
-        assert_eq!(before.result, Ok(true));
-        assert_eq!(before.level, if premised { 35 } else { 36 });
-        assert!(before.own + before.nested <= 1_000_000);
-        let after = observe(&mut fixture, &environment, 13, premised)?;
-        assert_eq!(after.result, Err("size normalization work budget exceeded"));
+        let ty = chain(&mut fixture, 4, premised)?;
+        let mut proof = proof(&fixture, &environment, premised)?;
+        proof.preload_nested(&mut fixture.facts, 0)?;
+        let preload = 1_000_000 - proof.own_work() - 5;
+        proof.preload_nested(&mut fixture.facts, preload)?;
+        assert_eq!(prove_sized(&mut proof, &mut fixture.facts, ty), Err(CAUSE));
+        let mut saturated = self::proof(&fixture, &environment, premised)?;
+        assert_eq!(
+            saturated.preload_nested(&mut fixture.facts, usize::MAX),
+            Err(CAUSE)
+        );
+        assert_eq!(
+            prove_sized(&mut saturated, &mut fixture.facts, ty),
+            Err(CAUSE)
+        );
     }
     Ok(())
 }
@@ -120,13 +148,13 @@ fn depth_failure_reaches_the_root_without_stack_overflow() -> TestResult {
         .stack_size(16 * 1024 * 1024)
         .spawn(|| -> Result<(), String> {
             let mut nesting = selection::Nesting::ROOT;
-            for _ in 0..90 {
+            for _ in 0..92 {
                 nesting = nesting.nested();
             }
             for premised in [false, true] {
                 let mut fixture = fixture().map_err(|error| error.to_string())?;
                 let environment = scoped(&fixture.facts).map_err(|error| error.to_string())?;
-                let row = observe_at(&mut fixture, &environment, 4, premised, nesting)
+                let row = observe_at(&mut fixture, &environment, 1, premised, nesting)
                     .map_err(|error| error.to_string())?;
                 assert_eq!(row.level, 94, "result: {:?}", row.result);
                 assert_eq!(row.result, Err(selection::NESTED_PROOF_DEPTH));
@@ -232,5 +260,127 @@ fn nested_saturation_is_a_sticky_error_and_hot_layouts_stay_fixed() -> TestResul
         size_of::<crate::sema::traits::selection::search::continuation::Query>(),
         696
     );
+    Ok(())
+}
+
+#[test]
+fn reuse_counts_and_work_observation() -> TestResult {
+    let worker = std::thread::Builder::new().stack_size(16 * 1024 * 1024)
+        .spawn(|| -> Result<(), String> {
+            let mut fixture = fixture().map_err(|e| e.to_string())?;
+            let environment = scoped(&fixture.facts).map_err(|e| e.to_string())?;
+            for depth in [1, 2, 3, 4, 10, 13, 31] {
+                for premised in [false, true] {
+                    let before = crate::sema::nominals::traits::size_normalizations();
+                    let row = observe(&mut fixture, &environment, depth, premised).map_err(|e| e.to_string())?;
+                    let after = crate::sema::nominals::traits::size_normalizations();
+                    let count = after[usize::from(premised)] - before[usize::from(premised)];
+                    eprintln!("reuse depth={depth} premised={premised} result={:?} own={} nested={} tally={} level={} normalizations={count}",row.result,row.own,row.nested,row.tally,row.level);
+                    assert_eq!(row.result, Ok(true));
+                    assert_eq!(count, depth);
+                    assert_eq!(row.nested, row.tally);
+                }
+            }
+            Ok(())
+        })?;
+    worker
+        .join()
+        .map_err(|_| "reuse observer worker panicked")??;
+    Ok(())
+}
+
+#[test]
+fn completed_sizes_do_not_cross_premises_or_implementation_views() -> TestResult {
+    use crate::sema::nominals::sizes;
+    let mut fixture = fixture()?;
+    let ty = chain(&mut fixture, 2, true)?;
+    let source = premises(&[fixture.unsized_], &[])?;
+    let equal = premises(&[fixture.unsized_], &[])?;
+    let opposed = premises(&[], &[fixture.unsized_])?;
+    for (target, availability, reused, expected) in [
+        (source.clone(), Availability::Declarations, true, true),
+        (equal, Availability::Declarations, false, true),
+        (opposed, Availability::Declarations, false, false),
+        (source.clone(), Availability::Validated, false, true),
+    ] {
+        let mut producer =
+            Proof::for_selection(None, selection::Nesting::ROOT, Availability::Declarations);
+        producer.assume_placeholders(&fixture.facts.types, source.clone())?;
+        let physical = producer.physical_shape(&mut fixture.facts, ty)?;
+        assert!(physical.sized && physical.well_formed);
+        producer.record_physical_size(&fixture.facts, ty, physical)?;
+        let learned = producer
+            .take_sizes()
+            .ok_or("missing completed size result")?;
+        let mut query = sizes::Query::with_placeholders(None, Some(target.clone()));
+        query.seed(*learned, availability)?;
+        let mut proof = Proof::for_selection(None, selection::Nesting::ROOT, availability);
+        proof.assume_placeholders(&fixture.facts.types, target)?;
+        let mut visits = 0;
+        let answer = query
+            .demand(&mut fixture.facts, ty, |facts, ty| {
+                visits += 1;
+                proof.normalize(facts, ty)
+            })?
+            .final_sized()?;
+        assert_eq!(answer, expected);
+        assert_eq!(visits == 0, reused);
+    }
+    Ok(())
+}
+
+#[test]
+fn source_reductions_accept_deep_generic_and_closed_fields() -> TestResult {
+    for name in [
+        "depth-1",
+        "depth-4",
+        "depth-12",
+        "depth-16",
+        "depth-31",
+        "depth-32",
+        "closed-12",
+        "closed-31",
+    ] {
+        let source = crate::test_source::fixture(&format!(
+            "pa31/tests/spec/nested-projection-work/{name}.rs"
+        ))?;
+        let report = crate::test_source::source_provider(&source, "nested_source_reuse")?;
+        crate::pipeline::analyze_source(&report)?;
+    }
+    Ok(())
+}
+
+#[test]
+fn unrelated_completed_shapes_do_not_multiply_snapshot_work() -> TestResult {
+    let mut work = Vec::new();
+    for warm in [false, true] {
+        let mut fixture = fixture()?;
+        let environment = scoped(&fixture.facts)?;
+        let ty = chain(&mut fixture, 4, false)?;
+        let mut proof = Proof::new(Some(environment));
+        if warm {
+            for length in 0..128 {
+                let array = fixture.facts.types.intern(Kind::Array {
+                    element: fixture.sized,
+                    length,
+                })?;
+                let unrelated = nominal(&mut fixture.facts, fixture.projected, array)?;
+                assert!(prove_sized(&mut proof, &mut fixture.facts, unrelated)?);
+            }
+        }
+        let own = proof.own_work();
+        let nested = proof.nested_work();
+        let before = crate::sema::nominals::traits::size_normalizations();
+        selection::take_nested_observation();
+        assert!(prove_sized(&mut proof, &mut fixture.facts, ty)?);
+        let (_, tally) = selection::take_nested_observation();
+        assert_eq!(proof.nested_work() - nested, tally);
+        assert_eq!(
+            crate::sema::nominals::traits::size_normalizations()[0] - before[0],
+            4
+        );
+        work.push(proof.own_work() - own + proof.nested_work() - nested);
+    }
+    assert!(work[1] <= work[0] + 10, "{work:?}");
     Ok(())
 }

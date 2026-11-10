@@ -15,6 +15,12 @@ use crate::{
     },
 };
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
+fn retained_source(reuse: &Reuse, goal: Predicate) -> Result<Source> {
+    match reuse.completed.get(&Key::Proof(goal)) {
+        Some(Entry::Source(source)) => Ok(source.clone()),
+        _ => Err("missing retained proof source".into()),
+    }
+}
 fn provider(constant: bool) -> Result<Declarations> {
     let (prefix, _) = crate::provider_cases::UNUSED_CONDITIONAL_CONST_PAID
         .split_once("const fn unused")
@@ -93,7 +99,9 @@ fn actual_const_impl_uses_preserve_canonical_capability_and_effect_cache_keys() 
                     // Explicitly retain this successful complete source to cover
                     // the direct lookup even if a conservative child was not exported.
                     assert!(evidence.proof.is_empty() && evidence.sized.is_empty());
-                    reuse.completed.insert(goal, evidence.source);
+                    reuse
+                        .completed
+                        .insert(Key::Proof(goal), Entry::Source(evidence.source));
                     assert!(reuse.selection(&facts, goal, 1)?.is_some());
                 }
             }
@@ -101,12 +109,8 @@ fn actual_const_impl_uses_preserve_canonical_capability_and_effect_cache_keys() 
             let required = predicate(&mut facts, Constness::Const)?;
             let mut ordinary_only = Reuse::default();
             ordinary_only.completed.insert(
-                ordinary,
-                reuse
-                    .completed
-                    .get(&ordinary)
-                    .ok_or("ordinary source")?
-                    .clone(),
+                Key::Proof(ordinary),
+                Entry::Source(retained_source(&reuse, ordinary)?),
             );
             assert!(ordinary_only.selection(&facts, required, 1)?.is_none());
             let (application, _) = ordinary.bound.trait_parts().ok_or("application")?;
@@ -214,7 +218,9 @@ fn source_const_header_mismatch_fails_publication_and_direct_completed_reuse() -
     registry.prepare(&mut facts.types, trait_item, make())?;
     facts.generics.implementations = Some(Box::new(registry));
     let mut reuse = Reuse::default();
-    reuse.completed.insert(goal, evidence.source);
+    reuse
+        .completed
+        .insert(Key::Proof(goal), Entry::Source(evidence.source));
     assert!(reuse.selection(&facts, goal, 1).is_err());
     Ok(())
 }

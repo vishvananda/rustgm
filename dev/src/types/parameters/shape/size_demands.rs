@@ -125,7 +125,7 @@ impl Shapes {
             .ok_or("invalid shape size binder")
     }
 
-    fn query(&mut self, normalized: bool) -> &mut Self {
+    pub(super) fn query(&mut self, normalized: bool) -> &mut Self {
         if !normalized {
             return self;
         }

@@ -258,7 +258,7 @@ fn sizing_sharing_preserves_each_debt_and_scope() -> Result {
                 .ok_or("reuse")?
                 .reuse
                 .completed
-                .contains_key(&goal),
+                .contains_key(&Key::Proof(goal)),
             fault == 0
         );
     }
@@ -306,7 +306,7 @@ fn sizing_sharing_requires_every_completed_formation_sibling() -> Result {
                 .ok_or("reuse")?
                 .reuse
                 .completed
-                .contains_key(&goal),
+                .contains_key(&Key::Proof(goal)),
             !unpaid
         );
     }
@@ -349,7 +349,7 @@ fn unrelated_builtin_does_not_acquire_sizing_sharing_and_hot_layouts_stay_fixed(
             .ok_or("reuse")?
             .reuse
             .completed
-            .contains_key(&freeze)
+            .contains_key(&Key::Proof(freeze))
     );
     // Amended at batch 11's integration: the test build's `Query` also holds
     // the test-only `candidate_lists` log of `user_callable_output`; the
