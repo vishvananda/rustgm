@@ -2,10 +2,11 @@
 
 
 Latest budget checkpoint: [PA31 query ownership](pa31-declaration-query-budget.md)
-clears cell.rs's cumulative unary allowance. Compiler291e6c36c/CLI16244e10 keeps
-all limits and original722 inputs/375 opens/42310 passing declarations. Bodies
-report71 failures before transmute-layout budget record72 at char/convert.rs
-byte993. Repair that actual query owner next; no original artifact exists.
+clears cumulative unary and transmute allowances. Compiler1d88db5df/CLIaa421ca4
+keeps original722 inputs/375 opens/42310 passing declarations and all limits.
+Bodies report119 failures before method-selection budget record120 in chain.rs
+byte3640. Inspect that guard's ownership next; no original artifact exists.
+Scoped-lookup full42793756438 succeeded; query-budget successor remains due.
 
 Adopted 2026-11-07. This replaces the serial first-error probe loop as the
 operational path to original core, alloc and std. It changes execution order

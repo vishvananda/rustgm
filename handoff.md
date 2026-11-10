@@ -41,14 +41,15 @@ requirement retained. No original core/alloc/std artifact exists.
 ## Current original-core frontier
 
 The [PA31 query budget checkpoint](docs/pa31-declaration-query-budget.md)
-clears cell.rs's unary query stop by separating local work from cumulative
-observations. Compiler291e6c36c, immutable CLI16244e10, retains the actual source
-producer budget and all limits. On unchanged722 inputs/375 opened sources,
-42310 declarations pass; bodies report checked0/failed71/blocked0 before budget
-record72 at char/convert.rs, file116 byte993: source transmute layout work budget
-exceeded.91.27s, TSV ce3610633c2a318efe1d98b47b4cbdb44a3b1f72a90320a572d52581fdeca887.
-Nine private checks, two production groups and complete-output paired controls
-pass. Repair transmute's query owner next; no original artifact exists.
+clears cumulative unary and transmute allowances without changing limits.
+Compiler1d88db5df, immutable CLIaa421ca4, retains actual producer payments and
+per-query caps. On unchanged722 inputs/375 opened sources,42310 declarations
+pass; bodies report checked0/failed119/blocked0 before method-selection budget
+record120 at iter/adapters/chain.rs, file142 byte3640.82.96s, TSV
+ e21ad8822d098081b987f654afc5fcfc122cb54f49b9c992029e01030f0b4d4e.
+Seven new private checks and the production MaybeUninit regression group pass,
+plus harness/upstream and30 complete-output-equal paired observations. Inspect
+method-selection budget ownership next; no original artifact exists.
 
 Seven new PA21 scoped lookup outcomes and three PA24 width128 callable inputs
 are independently checked.12 focused checks and8 final affected checks pass,
@@ -106,13 +107,13 @@ multiplication42773069633 all succeeded in every stage. Full f01 42782379010
 failed one private captured-vtable and two public closure-context work guards;
 all three now pass locally after retaining computed duties with their owning
 consumers and limiting early checks to ordinary trait selections. Later full
-stages were skipped. Joined full42793756438 is active; release/course and native maintainer pass.
+stages were skipped. Joined full42793756438 passed every stage; query-budget successor is due.
 Wait for an active full dispatch to terminate before dispatching another;
 push-fast is separate.
 
 ## Next work, one worker
 
-1. Attribute and repair the body transmute-layout budget at char/convert.rs byte993 without
+1. Attribute and repair the body method-selection budget at chain.rs byte3640 without
    changing limits. Use the newly reached census to batch body failures by cause:
    Source Unsize, inclusive ranges, receiver lookup and projections lead the list.
    Freeze independently checked reductions in the earliest owning PA.
