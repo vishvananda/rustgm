@@ -32,11 +32,12 @@ pub(super) fn requirements(
             context.equate_scoped_terms(&facts.types, source, target)?;
             Ok(Outcome::Ready)
         }
-        (Some(Constructor::Dynamic { .. }), Some(Constructor::Dynamic { .. })) => Ok(
-            Outcome::Unsupported("source Unsize dyn upcast goals are not implemented"),
-        ),
-        (_, Some(Constructor::Dynamic { .. })) => {
-            let requirements = context.object_requirements(&mut facts.types, source, target)?;
+        (source_head, Some(Constructor::Dynamic { .. })) => {
+            let requirements = if matches!(source_head, Some(Constructor::Dynamic { .. })) {
+                context.upcast_requirements(&mut facts.types, source, target)?
+            } else {
+                context.object_requirements(&mut facts.types, source, target)?
+            };
             context.account_work(requirements.len())?;
             if requirements
                 .iter()

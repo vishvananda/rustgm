@@ -1,0 +1,10 @@
+same-principal.rs	0
+supertrait.rs	0
+erase-auto.rs	0
+associated.rs	0
+associated-wrong.rs	1
+unrelated-impl.rs	1
+add-auto.rs	1
+lifetime-shorten.rs	0
+lifetime-escape.rs	1
+actual-value.rs	0

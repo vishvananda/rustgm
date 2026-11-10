@@ -245,3 +245,6 @@ fn source_unsizing_goal_native_answers() -> TestResult {
     }
     Ok(())
 }
+
+#[path = "coercion_provider/upcast_goals.rs"]
+mod upcast_goals;

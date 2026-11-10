@@ -1,0 +1,126 @@
+{
+  "schema": 1,
+  "owner": "pa31 source Unsize role proof",
+  "status": "10 active typed-lowering outcomes and three paired Rust/CPPGM native answers pass; two unrepresented custom-marker forms remain required",
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "inputs": [
+    {
+      "path": "pa31/tests/spec/unsizing-upcasts/same-principal.rs",
+      "sha256": "f0333abadaab8bd51a8f81570bfc5e7dbbc9e3ccc306e66f08f620385448b049",
+      "exit_status": 0,
+      "rustc_metadata_status": 0,
+      "rustc_object_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/unsizing-upcasts/supertrait.rs",
+      "sha256": "421799de18ab2713ef6b4174a2af2fddbc02d60f2a80f561a703373c513ba819",
+      "exit_status": 0,
+      "rustc_metadata_status": 0,
+      "rustc_object_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/unsizing-upcasts/custom-auto-erase-auto-required.rs",
+      "sha256": "1d67ba3f4584f748a68b84f18ec48a3b68b479828ac8c5a929dcda6175fd0081",
+      "exit_status": 0,
+      "rustc_metadata_status": 0,
+      "rustc_object_status": 0,
+      "profile": "required followup: unrepresented custom object marker"
+    },
+    {
+      "path": "pa31/tests/spec/unsizing-upcasts/associated.rs",
+      "sha256": "76c4106d5e7f69a3addf9f3151ac0127fd5c16a9e484a5f9c2c43037080c4b9c",
+      "exit_status": 0,
+      "rustc_metadata_status": 0,
+      "rustc_object_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/unsizing-upcasts/associated-wrong.rs",
+      "sha256": "e4aec4c1a898d3833b7d97091da14e7bef24cafbd00017b1ac711808e6773ccc",
+      "exit_status": 1,
+      "rustc_metadata_status": 1,
+      "rustc_object_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/unsizing-upcasts/unrelated-impl.rs",
+      "sha256": "fd35022b0f716ddb09c7c4be934eb5d787cb2b863251ee209a7a198f7e74fa2c",
+      "exit_status": 1,
+      "rustc_metadata_status": 1,
+      "rustc_object_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/unsizing-upcasts/custom-auto-add-auto-required.rs",
+      "sha256": "534a14f38deddc2eaac64f003436f593601098002aeb92cee0d110e7d49464e5",
+      "exit_status": 1,
+      "rustc_metadata_status": 1,
+      "rustc_object_status": 1,
+      "profile": "required followup: unrepresented custom object marker"
+    },
+    {
+      "path": "pa31/tests/spec/unsizing-upcasts/lifetime-shorten.rs",
+      "sha256": "2b41f866ef76a08c350f7e69ac9ff489bc87eca1a4923b95c3d5b9cdc33ebd43",
+      "exit_status": 0,
+      "rustc_metadata_status": 0,
+      "rustc_object_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/unsizing-upcasts/lifetime-escape.rs",
+      "sha256": "39aa6456a9d35330069f1a1826302b7d441b6ac693176b85f68c676753cf2191",
+      "exit_status": 1,
+      "rustc_metadata_status": 1,
+      "rustc_object_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/unsizing-upcasts/actual-value.rs",
+      "sha256": "babc37b5df1d75a0fedbdf1ce65c5d5026b32a75c0cd21ecb02ff4cb0954d00d",
+      "exit_status": 0,
+      "rustc_metadata_status": 0,
+      "rustc_object_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/unsizing-upcasts/erase-auto.rs",
+      "sha256": "44f0d79ecdea376a46b30085c06b33ea8d12f75653170e9941fd949cf0efd302",
+      "exit_status": 0,
+      "rustc_metadata_status": 0,
+      "rustc_object_status": 0,
+      "profile": "current represented marker upcast"
+    },
+    {
+      "path": "pa31/tests/spec/unsizing-upcasts/add-auto.rs",
+      "sha256": "9a2861da26a76746a4441593cbcc21e4c4d91f11245df564e9ea8136ce5ed04c",
+      "exit_status": 1,
+      "rustc_metadata_status": 1,
+      "rustc_object_status": 1,
+      "profile": "current represented marker upcast"
+    }
+  ],
+  "native_client": "pa31/tests/spec/unsizing-roles/array-slice.c",
+  "native_stdout": "7\n",
+  "deferred": [
+    "quantified object Unsize goals",
+    "nominal-tail Unsize goals",
+    "original library artifacts",
+    "unrepresented custom object auto-trait markers"
+  ],
+  "initial_actual_value_hypothesis": {
+    "rustc_status": 0,
+    "observed_status": 1,
+    "cause": "Initial fixture omitted actual DispatchFromDyn declaration required for dyn-compatible reference receiver dispatch. Original independent errors retained."
+  },
+  "represented_marker_setup": {
+    "initial": "lang=send",
+    "observed": "Rust E0522 unknown lang item",
+    "correct": "pinned core Send uses only rustc_diagnostic_item=Send; initial bytes retained under independent3/inputs"
+  },
+  "cases_tsv_sha256": "fa661ea3aad844e75d582d9987b987efdbbbbc9c2fca2fc5b735eaecaf795b4e",
+  "native_client_sha256": "7876bf81c5fe859922efc22bc93af210556b767fc8b596731f4a728891943365",
+  "evidence": {
+    "independent_metadata_object": "obj/parallel/source-upcast/independent4/observations.json",
+    "independent_native": "obj/parallel/source-upcast/independent-native/observations.json",
+    "production": "obj/qualification/fast/1794310483035974763",
+    "private": "obj/qualification/fast/1794310694454392873",
+    "candidate_native": "obj/qualification/fast/1794310877641415552"
+  }
+}

@@ -35,6 +35,35 @@ impl Pending {
     fn index(&self) -> Result<usize, String> {
         usize::try_from(self.cursor).map_err(|_| "Unsize cursor exceeds host indexing".into())
     }
+    /// A dyn principal must come from its intrinsic bound, never an ordinary
+    /// implementation/caller premise. The two endpoint formation goals keep
+    /// their ordinary sizing evidence instead.
+    fn intrinsic_child(
+        &self,
+        facts: &Declarations,
+        context: &mut infer::Context,
+        source: infer::TermId,
+    ) -> Result<bool, String> {
+        let index = self.index()?;
+        let inputs = self
+            .goals
+            .len()
+            .checked_sub(2)
+            .ok_or("missing Unsize inputs")?;
+        if index >= inputs
+            || self
+                .goals
+                .get(index)
+                .is_none_or(|goal| goal.trait_arguments().is_none())
+        {
+            return Ok(false);
+        }
+        context.account_work(1).map_err(inference)?;
+        Ok(matches!(
+            context.head(&facts.types, source).map_err(inference)?,
+            Some(infer::Constructor::Dynamic { .. })
+        ))
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -219,6 +248,20 @@ impl Search<'_> {
                 .len()
                 .checked_sub(2)
                 .ok_or("missing Unsize inputs")?;
+        let intrinsic = matches!(decision, Decision::Proven(_))
+            && pending.intrinsic_child(facts, &mut frame.inputs.context, frame.goal.subject())?;
+        let decision = match decision {
+            Decision::Proven(node)
+                if intrinsic
+                    && !matches!(
+                        self.query.nodes[node].source,
+                        Some(Source::ResultBound(_) | Source::QuantifiedResultBound { .. })
+                    ) =>
+            {
+                Decision::Absent
+            }
+            decision => decision,
+        };
         pending.end = pending.end.max(self.query.allocations.end());
         if let Decision::Proven(node) = decision {
             frame

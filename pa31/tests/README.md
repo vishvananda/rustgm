@@ -895,3 +895,7 @@ and a malformed-signature rejection without a reference compiler ICE.
 reduction for source operator, comparison and range-header query budgets. It
 reuses exact source inputs and keeps genuine producer exhaustion sticky; a
 cumulative work observation is not a local allowance.
+
+`spec/unsizing-upcasts/manifest.json` declares ten source Unsize object-upcast
+reductions, including an unrelated ordinary implementation opponent, associated
+equality, auto-marker and lifetime controls, and actual reference dispatch.
