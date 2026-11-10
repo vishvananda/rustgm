@@ -40,19 +40,15 @@ requirement retained. No original core/alloc/std artifact exists.
 
 ## Current original-core frontier
 
-The [scoped method lookup checkpoint](docs/pa21-scoped-method-lookup.md) clears
-Split::new and enters bodies. Final source-bound CLI is
-f24650d0dc28d39f0741377b48a50f0a02fd875921310c15e4eac4e1d2058a83,
-committed compiler61efef104. All722 inputs/profile/limits stay unchanged,375
-sources open,42310 declarations pass with none failed/blocked,83.96s. The census
-reports bodies checked0/failed67/blocked0, then budget record68 at cell.rs:1393,
-byte47857, `!is_writing(self.borrow.get())`: source unary declaration query
-exceeds its work budget. TSV SHA
-0bfa9f46206eafc260aa1533b21888b86f5c479c6a21971039ba3aa5a7a3602d.
-The67 failures group into19 source Unsize fences,12 inclusive-range call plans,
-12 receiver lookups,5 projection normalizations and smaller causes. Attribute
-the budget first, then repair shared causes with earliest-owning PA reductions.
-No original artifact exists.
+The [PA31 query budget checkpoint](docs/pa31-declaration-query-budget.md)
+clears cell.rs's unary query stop by separating local work from cumulative
+observations. Compiler291e6c36c, immutable CLI16244e10, retains the actual source
+producer budget and all limits. On unchanged722 inputs/375 opened sources,
+42310 declarations pass; bodies report checked0/failed71/blocked0 before budget
+record72 at char/convert.rs, file116 byte993: source transmute layout work budget
+exceeded.91.27s, TSV ce3610633c2a318efe1d98b47b4cbdb44a3b1f72a90320a572d52581fdeca887.
+Nine private checks, two production groups and complete-output paired controls
+pass. Repair transmute's query owner next; no original artifact exists.
 
 Seven new PA21 scoped lookup outcomes and three PA24 width128 callable inputs
 are independently checked.12 focused checks and8 final affected checks pass,
@@ -110,13 +106,13 @@ multiplication42773069633 all succeeded in every stage. Full f01 42782379010
 failed one private captured-vtable and two public closure-context work guards;
 all three now pass locally after retaining computed duties with their owning
 consumers and limiting early checks to ordinary trait selections. Later full
-stages were skipped. A fresh joined successor is due after publication.
+stages were skipped. Joined full42793756438 is active; release/course and native maintainer pass.
 Wait for an active full dispatch to terminate before dispatching another;
 push-fast is separate.
 
 ## Next work, one worker
 
-1. Attribute and repair the body unary-declaration budget at cell.rs:1393 without
+1. Attribute and repair the body transmute-layout budget at char/convert.rs byte993 without
    changing limits. Use the newly reached census to batch body failures by cause:
    Source Unsize, inclusive ranges, receiver lookup and projections lead the list.
    Freeze independently checked reductions in the earliest owning PA.

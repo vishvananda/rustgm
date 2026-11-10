@@ -1,5 +1,12 @@
 # Library build blocker tracker
 
+
+Latest budget checkpoint: [PA31 query ownership](pa31-declaration-query-budget.md)
+clears cell.rs's cumulative unary allowance. Compiler291e6c36c/CLI16244e10 keeps
+all limits and original722 inputs/375 opens/42310 passing declarations. Bodies
+report71 failures before transmute-layout budget record72 at char/convert.rs
+byte993. Repair that actual query owner next; no original artifact exists.
+
 Execution follows the [core census and transport plan](core-census-plan.md)
 from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
