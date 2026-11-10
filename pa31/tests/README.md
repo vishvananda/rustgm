@@ -880,3 +880,8 @@ every swapped pair's diagnostic text; there is no graded manifest.
 result-validity inputs. Three reproduce original core's missing normalized range
 only under the actual MaybeDangling role; ordinary-wrapper and string controls
 retain acceptance. The contract lists all input hashes and baseline outcomes.
+
+`spec/static-knowledge/` freezes six source declaration/CTFE controls and a native
+observer for is_val_statically_known. Copy rejection, one-time argument evaluation,
+ordinary-name opposition and the conservative CTFE choice are independently
+checked. Either runtime boolean must preserve the observer's result.

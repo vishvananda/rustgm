@@ -240,3 +240,6 @@ mod deprecation_releases;
 
 #[path = "../../census_mode.rs"]
 mod census_mode;
+
+#[path = "../../knowledge_sources.rs"]
+mod knowledge_sources;

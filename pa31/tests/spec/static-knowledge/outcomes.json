@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "bootstrap": "1",
+  "baseline_sha256": "61e80685835aaf615a40d2eb527c6d1ef15fad700778f7c6e1bc13f3659c6782",
+  "cases": [
+    {
+      "file": "direct.rs",
+      "source_sha256": "e81c49f95a4a3ef67126dd0eb0e0cc56631cc048f597d74571e7d7f4c1e0b945",
+      "expected_status": 0,
+      "rustc_status": 0,
+      "baseline_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 692: source intrinsic constant execution is not implemented\n"
+    },
+    {
+      "file": "side-effect.rs",
+      "source_sha256": "dece04e61065b9306030fd3d8a31a9787672c8d6ae11cbc5f0cf305469e52b85",
+      "expected_status": 0,
+      "rustc_status": 0,
+      "baseline_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 696: source intrinsic constant execution is not implemented\n"
+    },
+    {
+      "file": "ordinary.rs",
+      "source_sha256": "47ebc9a4444698bec11ecd3c48908200fd9117d319836d794737d6aa2a55cb47",
+      "expected_status": 0,
+      "rustc_status": 0,
+      "baseline_status": 0,
+      "baseline_diagnostic": ""
+    },
+    {
+      "file": "noncopy.rs",
+      "source_sha256": "418115ab225bbf089c62cfef6057d09a7228fc94338712a1fb69163143536743",
+      "expected_status": 1,
+      "rustc_status": 1,
+      "baseline_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 712: trait obligation requires an unambiguous matching assumption or implementation\n"
+    },
+    {
+      "file": "true-body.rs",
+      "source_sha256": "5e7aa5716a6db9a0d06cd398b6b60b23e9b218b2ef3f9c2c5b5faa90a57994f7",
+      "expected_status": 0,
+      "rustc_status": 0,
+      "baseline_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 691: source intrinsic constant execution is not implemented\n"
+    },
+    {
+      "file": "native.rs",
+      "source_sha256": "07605d6f63a3128c0d8eccbbfeed48af511d951de1b1c6db2277e0cb6110da25",
+      "expected_status": 0,
+      "rustc_status": 0,
+      "baseline_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 692: source intrinsic constant execution is not implemented\n"
+    }
+  ],
+  "auxiliary": [
+    {
+      "path": "observer.c",
+      "sha256": "b10573d696535fa381be1e527d9c0699b591ce6a73b8181bf3453a634362596f"
+    }
+  ],
+  "native_stdout": "0 7 1\n",
+  "native_status": 0
+}

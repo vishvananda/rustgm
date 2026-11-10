@@ -45,7 +45,8 @@ impl Machine<'_, '_> {
                 if crate::sema::compiler_items::wrapping_operator(kind).is_some()
                     || crate::sema::compiler_items::bit_counts::operation(kind).is_some()
                     || crate::sema::compiler_items::assume_contract::is_assumption(kind)
-                    || crate::sema::compiler_items::guaranteed_compare::is_operation(kind) =>
+                    || crate::sema::compiler_items::guaranteed_compare::is_operation(kind)
+                    || crate::sema::compiler_items::knowledge::is_operation(kind) =>
             {
                 // The reached direct-call arithmetic or `assume` owner
                 // authenticates and executes this operation; it is not a
@@ -144,7 +145,7 @@ impl Machine<'_, '_> {
         if let Some(answer) = self.source_caller_location(body, frame, position, target)? {
             return Ok(answer);
         }
-        if let Some(answer) = self.source_guaranteed_compare(body, frame, position, target)? {
+        if let Some(answer) = self.source_knowledge_call(body, frame, position, target)? {
             return Ok(answer);
         }
         if let Some(answer) = self.source_wrapping_offset(body, frame, position, target)? {
