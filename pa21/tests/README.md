@@ -106,3 +106,6 @@ reject, universal implementations and actual caller universal premises accept.
 `spec/binders/scoped-lookup/` adds seven independently checked outcomes for
 quantified method applicability, trait fallback and the function-pointer Split
 shape. All are checked through types, generic semantics and complete LowIR.
+
+`spec/binders/probe-failure-work/contract.json` registers actual failed alias-work
+accounting and the existing independently checked trait-fallback reductions.

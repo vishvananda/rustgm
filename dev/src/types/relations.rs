@@ -758,6 +758,22 @@ impl<'a> Constraints<'a> {
             .check_aliases()
             .map(|steps| steps.saturating_add(preparation))
     }
+    pub(crate) fn check_aliases_counted(mut self) -> super::region_graph::AliasCheck {
+        if let Err(error) = self.verify_projections() {
+            return super::region_graph::AliasCheck {
+                result: Err(error),
+                steps: self.limit,
+                conservative: true,
+            };
+        }
+        let mut checked = self.graph.check_aliases_counted();
+        checked.steps = if checked.conservative {
+            self.limit
+        } else {
+            checked.steps.saturating_add(self.steps)
+        };
+        checked
+    }
 
     /// Conditions implied by an independently justified declaration premise.
     /// This does not prove the input graph and cannot authorize a new goal.

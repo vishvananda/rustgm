@@ -113,12 +113,12 @@ impl Checker<'_> {
             .account_work(query_steps)
             .map_err(|e| self.error(node, e))?;
         required.map_err(|e| self.error(node, e))?;
-        let answer = constraints.check_aliases();
-        let steps = answer.as_ref().map_or(limit, |steps| *steps);
+        let answer = constraints.check_aliases_counted();
+        let steps = answer.steps;
         self.state
             .infer
             .account_work(steps)
             .map_err(|e| self.error(node, e))?;
-        answer.map(|_| ()).map_err(|error| self.error(node, error))
+        answer.result.map_err(|error| self.error(node, error))
     }
 }

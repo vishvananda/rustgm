@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "owner": "pa21 quantified method applicability",
+  "cause": "A normally unsatisfied alias graph charged its entire unused allowance, exhausting the source producer before a valid trait fallback.",
+  "expected": "Plain failed alias checks retain their actual completed work; all errors and ordinary fallback selection remain unchanged. Rich/limited failures preserve conservative payment.",
+  "inputs": [
+    {
+      "path": "pa21/tests/spec/binders/scoped-lookup/fallback-static.rs",
+      "sha256": "72185d08dfc8c47e660e3b9dffff755d983a6f0eeae5405d3333a1e2c3400b95"
+    },
+    {
+      "path": "pa31/tests/spec/quantified-lookup-conditions/trait-fallback-leak.rs",
+      "sha256": "2ee0bbe1968539de527dfad3edc65596511f3e099e2a9dabdaa6021cf17a448f"
+    }
+  ],
+  "check": "dev/tests/invariants/alias_frontiers.rs:rejected_alias_checks_pay_completed_work_independent_of_unused_allowance"
+}

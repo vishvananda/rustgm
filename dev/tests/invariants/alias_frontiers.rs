@@ -144,3 +144,32 @@ fn alias_frontier_storage_is_independent_of_unused_width_and_linear_in_contexts(
     }
     Ok(())
 }
+
+#[test]
+fn rejected_alias_checks_pay_completed_work_independent_of_unused_allowance() -> Result<(), Error> {
+    let mut expected = None;
+    for limit in [1024, 32_768, 1_000_000] {
+        let mut graph = Graph::new(limit);
+        let first = graph.region(Kind::Universal { universe: 0 })?;
+        let second = graph.region(Kind::Universal { universe: 0 })?;
+        graph.require(first, second, 7)?;
+        let checked = graph.check_aliases_counted();
+        assert!(matches!(
+            checked.result,
+            Err(Error::Unsatisfied { source: 7, .. })
+        ));
+        assert!(!checked.conservative);
+        assert!(checked.steps > 0 && checked.steps < 64);
+        if let Some(expected) = expected {
+            assert_eq!(checked.steps, expected);
+        }
+        expected = Some(checked.steps);
+    }
+    for member in [false, true] {
+        let checked = rich(member, false)?.check_aliases_counted();
+        assert!(checked.result.is_err());
+        assert!(checked.conservative);
+        assert_eq!(checked.steps, 100_000);
+    }
+    Ok(())
+}

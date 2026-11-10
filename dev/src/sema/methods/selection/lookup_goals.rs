@@ -74,12 +74,10 @@ impl Goal {
                 "invalid method universal lifetime proof",
             )
         })?;
-        let answer = graph.check_aliases();
-        context
-            .account_work(answer.as_ref().map_or(limit, |&steps| steps))
-            .map_err(inference)?;
-        match answer {
-            Ok(_) => Ok(true),
+        let answer = graph.check_aliases_counted();
+        context.account_work(answer.steps).map_err(inference)?;
+        match answer.result {
+            Ok(()) => Ok(true),
             Err(
                 RegionError::Unsatisfied { .. }
                 | RegionError::Verification { .. }

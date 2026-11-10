@@ -84,6 +84,13 @@ pub struct Graph {
     members: Option<Box<members::Members>>,
     limit: usize,
 }
+/// Work from a proof-only check, including an unsatisfied plain alias goal.
+/// Rich/limited failures retain their former conservative allowance payment.
+pub(crate) struct AliasCheck {
+    pub result: Result<(), Error>,
+    pub steps: usize,
+    pub conservative: bool,
+}
 pub struct Solution {
     pub regions: usize,
     pub obligations: usize,
