@@ -6261,6 +6261,16 @@ at every wrapper. Projected field equality is independent of subtyping the outer
 reference. Keep original reference ancestry and regions in the source proof;
 mutable conversions borrow the original sized place before building metadata.
 
+Explicit reference `as` casts for arrays and same-owner nominal struct tails
+reuse the ordinary coercion and reborrow selection. Final nominal validation
+requires its exact target, distinct source/target referents and retained terminal
+conversion at the operand. Matching pointer metadata grants no conversion.
+Keep original place/region/loan proof, evaluate the operand once and consume the
+selected slice or object conversion during lowering. The
+[nominal reference cast checkpoint](docs/pa22-nominal-reference-casts.md) owns
+PA22 slice-tail reductions and PA23 object-tail counterparts; actual source
+Unsize nominal-tail selection remains PA31 work.
+
 Retain the terminal source array identity as a typed unsizing selection.
 `Rvalue::Unsize` carries that identity through generic substitution, instance
 normalization and lowering. The normalized physical field supplies the length,

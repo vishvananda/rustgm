@@ -124,3 +124,15 @@ blocks, three executions per observation and eight RSS samples remain available.
 The candidate-only rows use repeated candidate observations rather than a
 speedup comparison with a compiler that rejects their inputs. Cleanup removed
 38 temporary object files, receipt `obj/cleanup/1792535010547426074.jsonl`.
+
+
+## 2026-11-10 nominal reference cast development checkpoint
+
+The [nominal reference cast checkpoint](pa22-nominal-reference-casts.md) records
+the independently declared slice/object reductions, selected-conversion change,
+focused/native/scaling evidence and scoped reference generation. Current totals
+are 420 cases (274 accept,146 reject),89 executions and185 compile-only
+controls, including the earlier15 local-dyn-principal cases.
+Both current text suites pass; all2313 previous reference files retain their bytes.
+The historical release results above describe their original snapshots. Full
+successor CI, including private guards, remains pending for this new checkpoint.

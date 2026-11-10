@@ -1,8 +1,8 @@
 # PA23 fixtures
 
-The manifest owns 400 course-authored LowIR fixtures: 263 accept and 137 reject.
+The manifest owns 420 course-authored LowIR fixtures: 274 accept and 146 reject.
 All outcomes were declared and checked with pinned rustc before generating text
-oracles. Accepted inputs include 86 native execution controls and 177 explicit
+oracles. Accepted inputs include 89 native execution controls and 185 explicit
 compile-only controls. The latter check acceptance and unused bodies without
 claiming to execute those bodies.
 
@@ -10,13 +10,19 @@ claiming to execute those bodies.
 | --- | ---: | --- |
 | annotations | 59 | Dyn compatibility, associated bindings, quantified principals and default binding time |
 | conversions | 34 | Concrete implementations, equalities and object coercion proof |
-| members | 34 | Intrinsic object evidence, method selection and scoped requirements |
+| members | 49 | Intrinsic object evidence, method selection and scoped requirements |
 | markers | 147 | Structural and explicit builtin markers, object marker sets and proof cycles |
 | hidden-results | 25 | Defining-body readiness, hidden lifetimes, independent captures and retained proofs |
 | dispatch | 44 | Virtual/default/inherited calls, ABI, conditional method slots and reification |
 | lifetimes | 20 | Container defaults, object extents and erased referent obligations |
 | upcasts | 19 | Supertrait conversions, raw metadata and inherited associated equalities |
 | storage | 18 | Nested dynamic tails, alignment, constants and promotion |
+| nominal-reference-casts | 5 | Selected object-tail casts, real shared/mutable dispatch and borrowed object extents |
+
+The totals include the earlier 15 local-dyn-principal inherent cases (eight
+accept, seven reject) and five new nominal reference casts (three executions,
+two rejections). The cast sources need ordinary object coercions; actual source
+Unsize protocol counterparts belong to PA31.
 
 `maintainer_origin` identifies the independently qualified source table. The
 prior PA19 future-object boundary is preserved byte-for-byte in

@@ -24,6 +24,9 @@ existing LowIR backend contract.
   supertrait evidence; an unrelated implementation for an object is insufficient.
   Dropping markers is permitted, while adding one requires retained principal
   evidence. Preserve full quantified and associated-type obligations.
+- Permit nominal struct-tail reference `as` casts through the existing object
+  coercion proof and selected terminal conversion. Preserve single evaluation,
+  prefix storage, virtual dispatch, mutability and borrowed object lifetimes.
 - Support shared/mutable references and raw-pointer metadata, nominal unsized
   tails, constants and promotions. Compute dynamic tail alignment from the
   selected table without changing the established packing and validity checks.

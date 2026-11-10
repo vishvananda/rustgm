@@ -40,58 +40,59 @@ requirement retained. No original core/alloc/std artifact exists.
 
 ## Current original-core frontier
 
-[Associated-result input regions](docs/pa31-projection-argument-discovery.md),
-compiler96548ba41 / CLIe06cd0d9, repairs request_by_type_tag's source CoerceUnsized
-mis-discovery. Two independently completed opaque results have identical complete
-input shapes but fresh versus bound lifetime IDs. The unsizing filter now reuses
-existing normalized shapes, with no equality/region/parent/conversion permission.
-Other raw operations remain unchanged. Complete shapes are traversed once, not
-again at every nested input. No hot fields, caches, limits or backend changes.
+[Nominal reference casts](docs/pa22-nominal-reference-casts.md), compilerba4cc6555 /
+CLI2cab6320, repairs ordinary as_request's scalar-operation fence. Same-owner
+nominal reference operands reuse the existing coercion/reborrow selection. Final
+validation consumes its exact target and retained terminal conversion; no new
+hot fields, scans, caches, limits or backend changes. PA22 owns36 new reductions
+(24 executions/12 rejections), PA23 five (three executions/two rejections).
+Every input is in its owning manifest, independently object-checked before
+implementation; all27 native positives observe real fields/metadata/effects.
 
-PA31 owns26 new outcomes (19accept7reject), independently object-checked and19
-Rust-native9 23 results before implementation. All26 complete LowIR outcomes,
-eight-counter call/noise bounds and typed input/member/const/group/raw equality/
-identity/budget guards pass. Nested8/32/128 growth is linear. The first attempt
-was functionally correct but repeated prefixes (205steps at8,2737at32); its failed
-receipt remains. Final7 exact tests1794350414882768771 pass88.83s; finalNative20
-(19new+oldwrapper/cleanup1)1794350534890245310 pass54.12s. Six old source/nominal,
-pointer ownership and receiver-reference/slice controls pass.315harness/468roots/
-13bins/44stages/128upstream/126Reference pass. No oracles changed; PA31 planned.
+Five exact public tests1794352619515397280 pass50.84s, including all41 complete
+LowIR outcomes, eight-counter width8/32/128/noise128 bounds,28 old array outcomes
+and pointer/region/ownership controls. Two native groups1794352683577490572 pass
+66.11s:27 new+18 old programs. Full392 PA22+420 PA23 texts pass. Only41 new
+reference triples were generated after review; all2313 old reference files stay
+byte-identical. The initial batch stopped after PA22 on stale PA23 count405;
+actual prior415/current420 include15 earlier local-dyn cases. Harness315/468roots/
+13bins/44stages/upstream128/Reference126 pass1794353223207592137. Strict selected
+production/CLI/test Clippy, full fmt and architecture pass. Private selected-
+terminal guard is added but remains pending full CI, since the known cold harness
+link exceeds the five-minute budget. No local cold retry or release build.
 
-Finalimmutablee06 binds96548ba41/emptydiff/3888Rusthashes. Evidence is in B's
-obj/parallel/tagged-request/. Forty A/A+twoABBA observations preserve complete
-ordinary LowIR, two source outputs and74 frozen outcomes; ratios1.008/1.056/1.016/
-0.982, A/A0.648/0.841/1.005/0.999; no speed claim. Initial7892 candidate retired by
-scoped1794350742473176755, analysis02bd trace also retired. Keep currente06 and optimized21f. Baseline0107 was retired after publication by
-scoped prune1794351105933247284; its metadata/observations remain, not its binary.
-One worker, existing B, no new trees or agents.
+Current immutable CLI2cab63208593afcab05565227edfa4db3906e1754e58ba4c5fd5b3ad0778f2ef
+bindsba4cc655567ffa4e91a215cceae525a69511ded9/emptydiff/3889Rust hashes, at B's
+obj/parallel/dst-casts/candidate-dev-fast/rustgm. Forty exclusive A/A+twoABBA
+observations in measure3 preserve complete import/array-cast LowIR, sourceknownrepr
+output and74 frozen outcomes. Ratios1.034/1.022/1.078/1.052 with noisy A/A;
+no speed/neutrality claim. Earlier measurement setups missing main/libraryidentity
+failed before observations and remain retained. Evidence stays under dst-casts/.
 
-Unchanged120s original observation FAILS at121.1873s:229failure records/4426item
-attempts through function8996,file232:110334,node2429 in str/mod.rs. All722 hashes,
+Original120s observation still FAILS at121.2293s,249failure records/5638item attempts
+through function10921,file288:2132,node112 in stdarch x86/sse4a.rs. All722 hashes,
 sixbindings/profile/limits fixed. Progress SHA
-832a38f90433b1590380edf7a68880c08a9ac646a3ba93de793f61ad353d8ef0.
-No request_by_type_tag failure remains in the prefix. First is now as_request,
-error.rs78:34589: operation requires a scalar type. The explicit reference cast
-from Tagged<TaggedOption<'a,I>> to Tagged<dynErased<'a>> fails an ordinary reduction,
-while implicit erasure passes. Next reduce nominal DST reference casts with a
-slice tail, then retain actual objects/source roles if necessary. Earliest owning
-PA follows that reduction; do not assume PA31 merely because core exposed it.
-Prefixes differ; no raw speed/count comparison, full census/bodycount or artifact.
+6b17984da8f3ecd7b126d5a924acad1bf91677738c48d7f5e9c6323b0176a4bb.
+Firstas_request error.rs78:34589 now reports source Unsize nominal-tail goals not
+implemented. Four reached records share it. The ordinary original-shaped request
+and all seven earliest-owner probes now pass; actual source faithful counterpart
+reproduces the new PA31 fence. Next extend actual Unsize using existing completed
+storage-tail eligibility/field instances and full argument/endpoint/child proof.
+Read dev/src/sema/traits/selection/search/unsizing/plan.rs and reuse typed facts;
+do not reconstruct layout permission or call the body Checker from trait selection.
+Existing pa31/tests/spec/unsizing-roles/nominal-unsize-required.rs is a retained
+Rust-positive requirement; activate it only after real qualification and add actual
+runtime conversion/negative/scaling companions. Whole PA31 stays planned.
 
-Full42909829598 on3273d5032 passed every stage for the preceding erasure checkpoint.
-Full42918510671 on216364b72 is active for this newer semantic checkpoint. Never
-cancel it with a new dispatch; later CI-status edits change documentation only. [Projected erasure](docs/pa31-projected-object-erasure.md)
-retains its26 outcomes/19native and3 separately required Rust-positive tuple-factory
-cleanup owners. No original core/alloc/std artifact or whole PA31 completion.
-
-Next cast evidence: obj/parallel/dst-casts/probe1-plan.json and baseline1/ bind
-seven ordinary Rust-positive objects to currente06. Explicit nominal slice-tail
-reference cast FAILS scalar-operation, implicit twin PASS; direct array-reference
-cast PASS, slice reference->raw pointer PASS, transparent raw rebranding PASS.
-Explicit nominal object-tail cast FAILS, implicit twin PASS. Thus earliest owner
-is PA22; actual core's source-role counterpart remains separate PA31 work. No new
-cast compiler edit yet. Read PA22 handout and cast/reference dispatch, freeze
-source/native/negative regressions there before implementation. Existing B only.
+Full42909829598 on3273 passed all stages. Full42918510671 on216364b72 remains
+active for the preceding projection-input checkpoint; release/course and native
+maintainer and broad native passed, debug invariants active at last query. Do not cancel/restart it
+for the new cast successor. Earlier projected erasure's three generic tuple-
+factory cleanup owners and optimized nested-proof checks remain required.
+One worker in existing B, main Git-only, no new agents/trees. Current pin2cab;
+prior e06 comparison may be retired only after this checkpoint is published.
+Keep optimized21f for the older pending optimized nested-proof measurements.
+No complete census, body-count or original core/alloc/std artifact is claimed.
 
 [PA19implementedtraitscope](docs/pa19-implemented-trait-scope.md) remains published
 with34newoutcomes/25native/all1233texts andzeroexistingreferencechanges. The prior

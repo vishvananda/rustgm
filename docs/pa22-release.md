@@ -134,3 +134,15 @@ source, diagnostics, observations and receipts. Full qualification removed 8,700
 generated files, reclaiming 8.11 GiB; measurement removed its 23 object files.
 The large full scan is reserved for suites with scattered output; focused batches
 use explicit cleanup roots. Only current immutable comparison binaries remain pinned. The active C++ and v5rust checkouts were not modified.
+
+
+## 2026-11-10 nominal reference cast development checkpoint
+
+The [nominal reference cast checkpoint](pa22-nominal-reference-casts.md) records
+the independently declared slice/object reductions, selected-conversion change,
+focused/native/scaling evidence and scoped reference generation. Current totals
+are 392 cases (278 accept,114 reject),144 executions (139 pass,five expected
+panics) and134 compile-only controls.
+Both current text suites pass; all2313 previous reference files retain their bytes.
+The historical release results above describe their original snapshots. Full
+successor CI, including private guards, remains pending for this new checkpoint.

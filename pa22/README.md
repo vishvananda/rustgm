@@ -1,6 +1,6 @@
 # RustGM Programming Assignment 22: Unsized types
 
-Status: **implemented**. The maintainer reference and 356-case text suite
+Status: **implemented**. The maintainer reference and 392-case text suite
 implement the contract below; this is the current grading boundary.
 Prerequisite: PA21. The common source profile is Rust 1.98.0, initially edition
 2024 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
@@ -32,9 +32,11 @@ The remaining source contract is:
   parameters may change, including marker types used by associated-type
   projections; those marker types need not themselves unsize. Preserve the
   other arguments and prove element types, mutability and lifetimes independently.
-- Permit explicit array-reference to slice-reference `as` casts through the same
-  coercion and reborrow rules. Evaluate the operand once and preserve its selected
-  element count, including empty and zero-sized arrays. Nested reference casts
+- Permit explicit array-reference to slice-reference and same-owner nominal
+  struct-tail reference `as` casts through the same coercion and reborrow rules.
+  Consume the selected terminal conversion, evaluate the operand once and preserve
+  its element count, including empty and zero-sized tails. Independently prove
+  prefix/element compatibility, mutability and lifetimes. Nested reference casts
   and the reverse slice-to-array conversion remain invalid.
 - Cover shared/mutable references and const/mutable raw pointers. Creating or
   coercing a raw pointer is safe; dereferencing it still needs the unsafe
@@ -74,8 +76,8 @@ outputs. `reference.json` records their source and fixture provenance.
 
 ## Published tests
 
-The manifest contains 356 cases: 254 accept and 102 reject. Pinned rustc independently
-qualifies every source. There are 120 execution comparisons (115 pass, five expected
+The manifest contains 392 cases: 278 accept and 114 reject. Pinned rustc independently
+qualifies every source. There are 144 execution comparisons (139 pass, five expected
 panics) and 134 compile-only controls, explicitly distinguished in the manifest.
 See [tests/README.md](tests/README.md) for the eight families.
 

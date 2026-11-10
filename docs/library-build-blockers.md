@@ -1,30 +1,32 @@
 # Library build blocker tracker
 
-Latest semantic checkpoint: [associated-result input regions](pa31-projection-argument-discovery.md),
-compiler96548ba41 / CLIe06cd0d9. Source nominal discovery compares independently
-completed opaque input shapes without treating lifetime IDs as constructors.
-Existing equality, lifetime, parent and actual conversion proofs remain mandatory.
-Complete shapes are traversed once; nested8/32/128 and call/noise work bounds pass.
-PA31 owns26 new outcomes/19 native, with all complete LowIR and raw guards passing.
-FinalNative20 includes the old wrapper transfer/cleanup observer. Six affected old
-controls, strict selected checks,315 harness/468 roots/upstream pass. No hot fields,
-caches, limits, backend or oracle changes; whole PA31 remains planned.
+Latest semantic checkpoint: [nominal reference casts](pa22-nominal-reference-casts.md),
+compilerba4cc6555 / CLI2cab6320. PA22 owns36 new reductions (24 native positives),
+PA23 five (three native positives). Same-owner nominal reference casts consume
+ordinary selected tail conversions and reborrow proofs. All41 complete outcomes,
+width/noise bounds,45 native programs,812 current PA22/23 texts and harness/upstream
+pass. Only41 new triples were generated after independent review;2313 existing
+reference files remain byte-identical. Private/full successor qualification stays
+pending; no new hot fields, caches, limits or backend changes.
 
-Original120s observation FAILS at121.1873s:229records/4426attempts through
-function8996,file232:110334,node2429 in str/mod.rs. No request_by_type_tag failure
-remains. First is now as_request, error.rs78:34589, scalar-operation fence at an
-explicit nominal DST reference cast. Ordinary explicit nominal slice-tail cast fails while its implicit twin passes;
-direct array, raw-pointer and transparent-wrapper controls pass. PA22 owns this
-next cast reduction; the genuine source-role counterpart remains PA31 work. All722 hashes,
-sixbindings/profile/limits fixed. Partial SHA
-832a38f90433b1590380edf7a68880c08a9ac646a3ba93de793f61ad353d8ef0.
-Unequal prefixes are not speed evidence. No full census or original artifact.
+The ordinary original-shaped request now passes. Its actual source-role counterpart
+and original core first reach `source Unsize nominal-tail goals are not implemented`
+at as_request, error.rs file78 byte34589. Four reached records share that fence.
+The fixed120s observer still FAILS at121.2293s,249records/5638item attempts through
+function10921,file288:2132,node112 in stdarch x86/sse4a.rs. All722 input hashes,
+sixbindings/profile/limits fixed; partial SHA
+6b17984da8f3ecd7b126d5a924acad1bf91677738c48d7f5e9c6323b0176a4bb.
+Next qualify actual source Unsize nominal-tail selection in PA31 using completed
+typed storage and all argument/endpoint/terminal proof. Different observer prefixes
+are not speed/completion evidence; no full census or original artifact exists.
 
-Full42909829598 on3273 passed every stage for preceding projected erasure. Full42918510671 on216364b72 is active for this semantic successor; do not cancel
-it with another full dispatch. Forty
-immutable A/A+twoABBA controls preserve complete ordinary/source outputs and74
-frozen outcomes; no speed claim. Previous erasure's three valid unsupported tuple
-factories and earlier optimized nested-proof checks remain required.
+Forty immutable A/A+twoABBA observations preserve complete ordinary import/array
+LowIR, sourceknownrepr and74 existing outcomes, with no speed/neutrality claim.
+Full42918510671 on216364b72 remains active for the preceding
+[associated-result input fix](pa31-projection-argument-discovery.md); release/course
+and maintainer native passed. Wait for its terminal result before successor
+dispatch. Full42909829598 on3273 passed all stages. Erasure's three required tuple
+factories and earlier optimized nested-proof checks remain open.
 
 Previous [pending-join inputs](pa20-pending-join-inputs.md) retain their qualified
 PA20 packet, source/proof ownership and separate1.266x unoptimized direct-control
