@@ -825,6 +825,11 @@ satisfies the parameter's bound and rejected when it does not (E0277); the
 accepted case is a recorded gap. Each outcome was declared before its rustc
 1.98.0 oracle. A private invariant checks them; there is no graded manifest.
 
+`spec/closed-projected-layout/` freezes independently accepted projected and
+direct-field alignment assertions for the AtomicPtr storage-layout blocker.
+`outcomes.json` declares acceptance and the exact baseline failure; the private
+regression checks actual normalized fields and repeated layout preparation.
+
 `spec/nested-projection-work/` freezes eight independently checked, authored
 source-role reductions for repeated projected-size proofs: generic depths1,4,12,
 16,31,32 and closed12/31. Every source appears with its hash and accepted rustc

@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "description": "Authored reduction of the AtomicPtr closed projected-field alignment blocker. Expected acceptance declared before implementation.",
+  "baseline_sha256": "f5b5db49798fb73c7141c414b3ab97a0bc9d727c1e33afbe2c85584a553724fe",
+  "profile": {
+    "edition": "2024",
+    "source_core": "probe@atomic_layout",
+    "crate_name": "probe",
+    "crate_disambiguator": "atomic_layout",
+    "cap_lints": "allow"
+  },
+  "cases": [
+    {
+      "path": "projection.rs",
+      "source_sha256": "e872246ee7dc0ffae79184bcbfdaa1e50b62c460bd7504df7f3aed303a3d4b27",
+      "rustc_status": 0,
+      "baseline_rustgm_status": 1,
+      "expected_rustgm_status": 0,
+      "expected_alignment": 8,
+      "first_qualified_rustgm_status": 0
+    },
+    {
+      "path": "plain.rs",
+      "source_sha256": "d63df3741515628b2ca7f12a18c67498867f58beabfb6debe4c6ab2987cc97d6",
+      "rustc_status": 0,
+      "baseline_rustgm_status": 0,
+      "expected_rustgm_status": 0,
+      "expected_alignment": 8,
+      "first_qualified_rustgm_status": 0
+    }
+  ],
+  "rustc_command": [
+    "rustc",
+    "+1.98.0",
+    "--edition=2024",
+    "--crate-type=lib",
+    "--emit=metadata",
+    "INPUT",
+    "-o",
+    "OUTPUT"
+  ],
+  "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "first_qualified_candidate_sha256": "2bfed766c444f8d19cb248b2bac673cd3ce979ab7048057b2d57700f72a7ec48"
+}

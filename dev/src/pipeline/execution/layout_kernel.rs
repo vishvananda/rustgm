@@ -1,4 +1,5 @@
 //! Source intrinsic kernels are reached only from a checked direct constant call.
+mod normalized_fields;
 use super::{Declarations, Engine, Error, FileId, Report, const_eval};
 use crate::{
     support::bindings::{LayoutIntrinsic, SourceIntrinsic},
@@ -178,16 +179,21 @@ impl Engine {
 fn prepare_layout(
     facts: &mut Declarations,
     element: crate::types::TypeId,
-) -> Result<Option<crate::types::ItemId>, &'static str> {
+) -> Result<Option<crate::types::ItemId>, String> {
     let limit = crate::support::crates::MAX_COMPONENTS;
     facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
     if facts.body_work.canonical_steps > limit {
-        return Err("source layout field preparation work budget exceeded");
+        return Err("source layout field preparation work budget exceeded".into());
     }
     let before = facts.aggregates.instantiation_steps();
-    let fields = facts
-        .aggregates
-        .prepare_storage_fields_pending(&mut facts.types, element);
+    let fields = if facts.aggregates.has_projected_templates() {
+        normalized_fields::prepare(facts, element)
+    } else {
+        facts
+            .aggregates
+            .prepare_storage_fields_pending(&mut facts.types, element)
+            .map_err(String::from)
+    };
     facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(
         facts
             .aggregates
@@ -202,7 +208,7 @@ fn prepare_layout(
         .canonical_steps
         .saturating_add(facts.layouts.pending_state_work(&facts.types, element));
     if facts.body_work.canonical_steps > limit {
-        return Err("source layout state preparation work budget exceeded");
+        return Err("source layout state preparation work budget exceeded".into());
     }
     let limit = limit.saturating_sub(facts.body_work.canonical_steps);
     let mut work = 0;
@@ -226,7 +232,7 @@ fn prepare_layout(
         .body_work
         .canonical_steps
         .saturating_add(facts.layouts.steps.saturating_sub(before));
-    result.map(|_| None).map_err(|error| error.message)
+    result.map(|_| None).map_err(|error| error.message.into())
 }
 
 #[cfg(test)]

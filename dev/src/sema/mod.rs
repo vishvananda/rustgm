@@ -8,6 +8,7 @@ pub mod closures;
 mod constants;
 pub(crate) mod coroutine_methods;
 pub mod crates;
+pub(crate) mod discharge;
 pub mod numbered_regions;
 pub use constants::values;
 mod api_exposure;

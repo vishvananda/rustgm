@@ -230,3 +230,114 @@ fn pending_field_publication() -> Result {
     assert_eq!(layouts.at(id).ok_or("prepared child layout")?.size, 2);
     Ok(())
 }
+
+#[test]
+fn closed_projected_alignment_prepares_the_actual_stored_field() -> Result {
+    for name in ["projection", "plain"] {
+        let input = crate::test_source::fixture(&format!(
+            "pa31/tests/spec/closed-projected-layout/{name}.rs"
+        ))?;
+        let report = crate::test_source::source_provider(&input, "atomic_layout")?;
+        let capture = crate::sema::copy_trace::Capture::matching(&["normal-form selection:"])?;
+        let mut facts = pipeline::analyze_source(&report)
+            .inspect_err(|_| {
+                if let Ok(rows) = capture.rows() {
+                    for row in rows {
+                        eprintln!("layout proof: {row}");
+                    }
+                }
+            })?
+            .facts;
+        drop(capture);
+        let owner = if name == "projection" {
+            "Atomic"
+        } else {
+            "Plain"
+        };
+        let ty = closed_layout_type(&report, &mut facts, owner)?;
+        assert_eq!(
+            facts.layouts.get(ty).ok_or("missing reached layout")?.align,
+            8
+        );
+        if name == "projection" {
+            let raw = facts
+                .aggregates
+                .raw_shape(&facts.types, ty)?
+                .variant(0)
+                .ok_or("missing raw fields")?
+                .fields;
+            let normal = facts
+                .aggregates
+                .shape(&facts.types, ty)?
+                .variant(0)
+                .ok_or("missing normalized fields")?
+                .fields;
+            assert_ne!(raw, normal);
+        }
+        let recipes = facts.stored_field_work().recipes;
+        let work = facts.body_work.canonical_steps;
+        assert!(prepare_layout(&mut facts, ty)?.is_none());
+        assert!(facts.body_work.canonical_steps > work);
+        assert_eq!(facts.stored_field_work().recipes, recipes);
+        assert_eq!(facts.layouts.get(ty).ok_or("missing warm layout")?.align, 8);
+    }
+    Ok(())
+}
+
+fn closed_layout_type(
+    report: &crate::resolve::expansion::Report,
+    facts: &mut Declarations,
+    owner: &str,
+) -> Result<TypeId> {
+    let definition = report
+        .resolution
+        .definitions
+        .iter()
+        .position(|definition| report.package.names.get(definition.name) == owner)
+        .ok_or("missing layout owner")?;
+    let arguments = if owner == "Atomic" {
+        facts
+            .types
+            .intern_arguments(&[crate::types::arguments::Argument::Type(TypeId::primitive(
+                crate::types::Primitive::U8,
+            ))])?
+    } else {
+        GenericArgs::EMPTY
+    };
+    Ok(facts.types.intern(crate::types::Kind::Adt(
+        ItemId(u32::try_from(definition)?),
+        arguments,
+    ))?)
+}
+
+#[test]
+fn exhausted_layout_budget_stops_before_projected_fields_are_materialized() -> Result {
+    let source =
+        crate::test_source::fixture("pa31/tests/spec/closed-projected-layout/projection.rs")?;
+    let declarations = source
+        .split("pub fn closed_projection")
+        .next()
+        .ok_or("source declarations")?;
+    let report = crate::test_source::source_provider(declarations, "layout_budget")?;
+    let mut facts = pipeline::analyze_source(&report)?.facts;
+    let ty = closed_layout_type(&report, &mut facts, "Atomic")?;
+    assert!(facts.aggregates.shape(&facts.types, ty).is_err());
+    assert!(facts.layouts.get(ty).is_none());
+    facts.body_work.canonical_steps = crate::support::crates::MAX_COMPONENTS - 1;
+    assert_eq!(
+        prepare_layout(&mut facts, ty)
+            .err()
+            .ok_or("spent layout budget accepted")?,
+        "source layout storage normalization work budget exceeded",
+    );
+    assert!(facts.aggregates.shape(&facts.types, ty).is_err());
+    assert!(facts.layouts.get(ty).is_none());
+    assert!(facts.body_work.canonical_steps > crate::support::crates::MAX_COMPONENTS);
+    assert_eq!(
+        prepare_layout(&mut facts, ty)
+            .err()
+            .ok_or("spent layout budget recovered")?,
+        "source layout field preparation work budget exceeded",
+    );
+    Ok(())
+}

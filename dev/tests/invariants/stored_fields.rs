@@ -127,6 +127,44 @@ fn normalized_storage_preserves_raw_inputs_and_separate_caller_debts()
 }
 
 #[test]
+fn closed_consumers_reject_unowned_lifetime_debts_after_normalization()
+-> Result<(), Box<dyn std::error::Error>> {
+    let (mut facts, ty) = context()?;
+    let mut proof = Obligations::new(100);
+    Preparation::default().prepare(
+        &mut facts,
+        ty,
+        &mut projections::concrete(&mut proof, ScopeId::ROOT)?,
+    )?;
+    assert!(!proof.outlives.is_empty());
+    assert!(
+        crate::sema::discharge::closed(
+            &facts,
+            &proof,
+            "closed storage lifetime requirement is not satisfied",
+        )
+        .is_err()
+    );
+    // The published structural shape cannot discharge a fresh caller's debt.
+    let mut independent = Obligations::new(proof.regions.end);
+    Preparation::default().prepare(
+        &mut facts,
+        ty,
+        &mut projections::concrete(&mut independent, ScopeId::ROOT)?,
+    )?;
+    assert!(!independent.outlives.is_empty());
+    assert!(
+        crate::sema::discharge::closed(
+            &facts,
+            &independent,
+            "closed storage lifetime requirement is not satisfied",
+        )
+        .is_err()
+    );
+    Ok(())
+}
+
+#[test]
 fn repeated_stored_fields_share_graph_work_within_one_caller()
 -> Result<(), Box<dyn std::error::Error>> {
     let (mut facts, ty) = context()?;

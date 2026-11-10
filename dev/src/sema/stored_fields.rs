@@ -66,6 +66,10 @@ impl Query {
     }
 }
 impl Preparation {
+    /// Work retained by this caller, including its own projection folds.
+    pub(crate) const fn steps(&self) -> usize {
+        self.steps
+    }
     fn charge(&mut self, count: usize) -> Result<(), &'static str> {
         self.steps = self
             .steps

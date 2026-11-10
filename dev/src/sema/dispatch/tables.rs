@@ -5,8 +5,8 @@ use crate::{
     resolve::model::DefId,
     sema::{model::Declarations, vtable_plans::Slot},
     types::{
-        ItemId, Kind, RegionId, TypeId, arguments::Argument, instance::Instance, outlives::Queries,
-        parameters::argument_id, relations::Constraints,
+        ItemId, Kind, RegionId, TypeId, arguments::Argument, instance::Instance,
+        parameters::argument_id,
     },
 };
 
@@ -58,21 +58,11 @@ fn conditions(
 }
 
 fn certify(facts: &Declarations, proof: &super::Obligations) -> Result<(), String> {
-    if proof.is_empty() {
-        return Ok(());
-    }
-    let mut constraints = Constraints::new(&facts.types, &facts.lifetimes.variances, 0, 1_000_000)
-        .map_err(|e| e.to_string())?;
-    let mut queries = Queries::new(
-        &facts.types,
-        &facts.lifetimes.nominal_requirements,
-        &facts.lifetimes.callables,
-    );
-    proof.require(&mut constraints, &mut queries)?;
-    constraints
-        .solve()
-        .map(|_| ())
-        .map_err(|e| format!("vtable entry lifetime requirement is not satisfied: {e}"))
+    crate::sema::discharge::closed(
+        facts,
+        proof,
+        "vtable entry lifetime requirement is not satisfied",
+    )
 }
 
 fn bindings(
