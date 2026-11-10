@@ -3,12 +3,10 @@ use super::{Context, Declarations, OwnedCaller};
 #[cfg(test)]
 #[path = "../../../../../tests/invariants/path_readiness.rs"]
 mod tests;
-use crate::{
-    sema::traits::{
-        assumptions::Assumptions,
-        selection::{self, Selection},
-    },
-    types::infer::predicates::Predicate,
+use super::super::lookup_goals::Goal;
+use crate::sema::traits::{
+    assumptions::Assumptions,
+    selection::{self, Selection},
 };
 
 pub(super) enum Progress {
@@ -36,7 +34,7 @@ impl Pending {
         &mut self,
         facts: &mut Declarations,
         context: &mut Context,
-        goals: &[Predicate],
+        goals: &[Goal],
         caller: &mut OwnedCaller,
     ) -> Result<Progress, &'static str> {
         loop {
@@ -60,6 +58,9 @@ impl Pending {
                     selection::Progress::Ready(Selection::Deferred) => self.next.push(index),
                     selection::Progress::Ready(Selection::Proven(proof)) => {
                         self.first = self.first.max(proof.proof.regions.end);
+                        if !goals[index].possible(facts, context, &proof.proof)? {
+                            return Ok(Progress::Ready(false));
+                        }
                     }
                 }
                 self.cursor += 1;
@@ -78,7 +79,7 @@ impl Pending {
         &mut self,
         facts: &mut Declarations,
         context: &mut Context,
-        goal: &Predicate,
+        goal: &Goal,
         caller: &mut OwnedCaller,
     ) -> Result<selection::Progress, &'static str> {
         let selected = if let Some(query) = self.query.take() {
@@ -86,12 +87,21 @@ impl Pending {
             // immutable prefix and caller predate the wait. Fresh header trials
             // allocate beyond both its own watermark and any intervening bodies.
             self.first = self.first.max(frontier(facts)?);
-            query.resume(facts, context, goal, self.first)
+            query.resume(facts, context, &goal.predicate, self.first)
+        } else if let Some(count) = goal.bound_regions {
+            selection::begin_canonical(
+                facts,
+                context,
+                &goal.predicate,
+                caller.selection(self.first),
+                (caller.availability, Some(count)),
+                None,
+            )
         } else if facts
             .generics
             .implementations
             .as_ref()
-            .map(|registry| registry.selection_goal_ready(&facts.types, context, goal))
+            .map(|registry| registry.selection_goal_ready(&facts.types, context, &goal.predicate))
             .transpose()
             .map_err(|_| "invalid pending method header readiness")?
             .unwrap_or(true)
@@ -101,7 +111,7 @@ impl Pending {
             selection::select_available(
                 facts,
                 context,
-                goal,
+                &goal.predicate,
                 selection::Caller {
                     assumptions: caller.traits.as_deref().unwrap_or(&empty),
                     environment: caller.environment.as_ref(),
@@ -117,15 +127,8 @@ impl Pending {
             selection::begin(
                 facts,
                 context,
-                goal,
-                selection::OwnedCaller {
-                    assumptions: caller.traits.get_or_insert_with(Default::default).clone(),
-                    environment: caller.environment.clone(),
-                    first_region: self.first,
-                    retain_sized: false,
-                    nesting: selection::Nesting::ROOT,
-                    placeholders: None,
-                },
+                &goal.predicate,
+                caller.selection(self.first),
                 caller.availability,
             )
         };

@@ -137,8 +137,8 @@ mod wf_graph_work;
 mod wf_scope_cache;
 pub(in crate::sema) use suspension::{
     Pending, Progress, begin, begin_borrowed, begin_canonical, begin_canonical_counted,
-    begin_declaration_counted, begin_executable_counted, begin_projection, begin_refining,
-    begin_refining_untouched, begin_scoped_refining,
+    begin_declaration_counted, begin_executable_counted, begin_projection,
+    begin_quantified_borrowed, begin_refining, begin_refining_untouched, begin_scoped_refining,
 };
 #[cfg(test)]
 #[path = "../../../../tests/invariants/universal_premises.rs"]

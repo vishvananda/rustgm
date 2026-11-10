@@ -102,3 +102,7 @@ each control's first error.
 `spec/binders/universal-inherent/` freezes nine independently checked PA21
 generic-semantic outcomes for closed universal inherent calls: static-only bounds
 reject, universal implementations and actual caller universal premises accept.
+
+`spec/binders/scoped-lookup/` adds seven independently checked outcomes for
+quantified method applicability, trait fallback and the function-pointer Split
+shape. All are checked through types, generic semantics and complete LowIR.

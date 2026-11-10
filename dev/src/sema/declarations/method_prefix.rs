@@ -56,15 +56,12 @@ impl Checker<'_> {
         {
             return Ok(Some(Arc::clone(assumptions)));
         }
-        let mut assumptions = crate::sema::traits::assumptions::Assumptions::default();
-        for clause in environment
-            .trait_clauses()
-            .map_err(|message| self.error(key, message))?
-        {
-            assumptions
-                .insert_clause(&self.facts.types, clause)
-                .map_err(|e| self.error(key, e.to_string()))?;
-        }
+        let assumptions = crate::sema::traits::assumptions::Assumptions::from_environment_counted(
+            &self.facts.types,
+            Some(environment),
+            &mut self.facts.body_work.canonical_steps,
+        )
+        .map_err(|message| self.error(key, message))?;
         let assumptions = Arc::new(assumptions);
         self.method_trait_environments
             .get_or_insert_with(Default::default)

@@ -1,0 +1,55 @@
+{
+  "mode": "--emit-generic-semantics",
+  "reference": "Rust1.98 objects, edition2024, panic abort, overflow checks enabled, debug assertions disabled",
+  "cases": [
+    {
+      "file": "inherent-universal.rs",
+      "expected_status": 0,
+      "source_sha256": "a7c6e7a4146aceed3d66696a1e238b2bd87ce2d5ead4f37374f1155a49697aa4",
+      "reference_status": 0,
+      "baseline_status": 1
+    },
+    {
+      "file": "static-unavailable.rs",
+      "expected_status": 1,
+      "source_sha256": "feaef1b304ced7875f368d53f7d65a75864dd24259d03db793b9cb64d37dc867",
+      "reference_status": 1,
+      "baseline_status": 1
+    },
+    {
+      "file": "fallback-static.rs",
+      "expected_status": 0,
+      "source_sha256": "72185d08dfc8c47e660e3b9dffff755d983a6f0eeae5405d3333a1e2c3400b95",
+      "reference_status": 0,
+      "baseline_status": 1
+    },
+    {
+      "file": "fallback-correlated.rs",
+      "expected_status": 0,
+      "source_sha256": "adb1d378c7740d36fa46b586c945ea06b368236bf247f8e27024d11053830630",
+      "reference_status": 0,
+      "baseline_status": 1
+    },
+    {
+      "file": "receiver-static.rs",
+      "expected_status": 0,
+      "source_sha256": "7a2c01367fd1b5c1b0373cafd007e786ce507f23cf6670bc8517692049e810cd",
+      "reference_status": 0,
+      "baseline_status": 1
+    },
+    {
+      "file": "assumed-universal.rs",
+      "expected_status": 0,
+      "source_sha256": "d76569801c1c139cabee3df868a5ca490c8f8a28a26513629b062a2f2396e9d8",
+      "reference_status": 0,
+      "baseline_status": 1
+    },
+    {
+      "file": "split-pointer.rs",
+      "expected_status": 0,
+      "source_sha256": "7442b88de5ed3ea72d1d7f62b3c1de2d9948721ce78518995febb79cb4c869c5",
+      "reference_status": 0,
+      "baseline_status": 1
+    }
+  ]
+}

@@ -30,8 +30,12 @@ impl Sources for NoFiles {
     }
 }
 
-fn fixture(depth: usize) -> TestResult<(Report, Declarations, DefId)> {
-    let mut source = String::from("trait B0<'a>{}impl<'a>B0<'a>for &'a u8{}\n");
+fn fixture(depth: usize, quantified: bool) -> TestResult<(Report, Declarations, DefId)> {
+    let mut source = String::from(if quantified {
+        "trait B0<'a>{}impl<'a,'b>B0<'a>for &'b u8{}\n"
+    } else {
+        "trait B0<'a>{}impl<'a>B0<'a>for &'a u8{}\n"
+    });
     for i in 1..=depth {
         writeln!(
             source,
@@ -39,9 +43,19 @@ fn fixture(depth: usize) -> TestResult<(Report, Declarations, DefId)> {
             i - 1
         )?;
     }
+    let condition = if quantified {
+        format!(" where for<'r>Self:B{depth}<'r>")
+    } else {
+        String::new()
+    };
+    let bound = if quantified {
+        format!("for<'r>B{depth}<'r>")
+    } else {
+        format!("B{depth}<'a>")
+    };
     writeln!(
         source,
-        "trait A<'a>{{const C:usize;}}impl<'a,T:B{depth}<'a>>A<'a>for T{{const C:usize=3;}}"
+        "trait A<'a>{condition}{{const C:usize;}}impl<'a,T:{bound}>A<'a>for T{{const C:usize=3;}}"
     )?;
     let input = InputFile {
         identity: "lookup.rs".into(),
@@ -106,8 +120,11 @@ fn delay(facts: &mut Declarations) -> TestResult<HashMap<DefId, (ItemId, Impleme
 
 #[test]
 fn a_suspended_path_retains_its_prefix_and_trial_without_publishing_probe_regions() -> TestResult {
-    for depth in [8, 32, 128] {
-        let (report, mut facts, member) = fixture(depth)?;
+    for (depth, quantified) in [8, 32, 128]
+        .into_iter()
+        .flat_map(|depth| [false, true].map(|quantified| (depth, quantified)))
+    {
+        let (report, mut facts, member) = fixture(depth, quantified)?;
         let key = report.resolution.definitions[member.0 as usize]
             .node
             .ok_or("missing member source")?;

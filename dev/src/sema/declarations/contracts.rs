@@ -238,6 +238,11 @@ impl Checker<'_> {
             && bounds.is_empty()
             && !self.facts.generics.has_parameters(owner)
         {
+            // A zero-slot signature can still have a concrete where clause.
+            // Local lookup needs its declaring owner even without lifetimes.
+            if self.facts.generics.environments.contains_key(&owner) {
+                self.function_binders.insert(key, binder);
+            }
             return empty_schemes::prepare(self, key, owner, binder, signatures, captures, bounds);
         }
         self.function_binders.insert(key, binder);

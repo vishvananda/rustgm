@@ -15,6 +15,16 @@ pub(in crate::sema) struct OwnedCaller {
     pub traits: Option<Arc<Assumptions>>,
 }
 impl OwnedCaller {
+    fn selection(&mut self, first_region: u32) -> crate::sema::traits::selection::OwnedCaller {
+        crate::sema::traits::selection::OwnedCaller {
+            assumptions: self.traits.get_or_insert_with(Default::default).clone(),
+            environment: self.environment.clone(),
+            first_region,
+            retain_sized: false,
+            nesting: crate::sema::traits::selection::Nesting::ROOT,
+            placeholders: None,
+        }
+    }
     fn borrowed(&self) -> Caller<'_> {
         Caller {
             availability: self.availability,

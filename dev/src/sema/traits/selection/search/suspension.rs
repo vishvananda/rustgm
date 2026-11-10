@@ -66,6 +66,25 @@ pub(in crate::sema) fn begin_borrowed(
         },
     )
 }
+/// A non-refining universal probe borrows its caller until a real suspension.
+pub(in crate::sema) fn begin_quantified_borrowed(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Goal,
+    caller: Caller<'_>,
+    mode: (Availability, u32),
+) -> Result<BorrowedProgress, String> {
+    begin_borrowed_inputs(
+        facts,
+        context,
+        goal,
+        caller,
+        mode.0,
+        Mode::Canonical(Some(mode.1)),
+        Hooks::default(),
+    )
+}
+
 /// Optional caller observers of one search.
 #[derive(Default)]
 struct Hooks<'a> {

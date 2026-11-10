@@ -32,6 +32,39 @@ pub struct Obligations {
     quantified: Option<Box<quantified::Quantified>>,
 }
 impl Obligations {
+    /// Whether all debt identities belong to this proof rather than its caller.
+    pub(crate) fn self_contained(&self, store: &super::Store) -> Result<bool, &'static str> {
+        for (scope, _, _, block) in self.blocks() {
+            let depth = self.scope_depth(scope)?;
+            let local = |region: RegionId| {
+                region == RegionId::STATIC
+                    || self.owns_region(region)
+                    || region.bound_parts().is_some_and(|(level, _)| level < depth)
+            };
+            if block
+                .equalities
+                .iter()
+                .chain(&block.outlives)
+                .any(|&(left, right)| !local(left) || !local(right))
+            {
+                return Ok(false);
+            }
+            for &(ty, region) in &block.types {
+                if !local(region)
+                    || store
+                        .contains_parameters(ty)
+                        .ok_or("invalid quantified call type debt")?
+                    || store
+                        .has_free_regions(ty, depth)
+                        .ok_or("invalid quantified call type debt")?
+                {
+                    return Ok(false);
+                }
+            }
+        }
+        Ok(true)
+    }
+
     #[must_use]
     pub fn new(first: u32) -> Self {
         Self {

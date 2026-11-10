@@ -4,17 +4,15 @@
 //! body. Census 23's record is such a lookup: core's `drain::Drain::new` in
 //! `<[T; N]>::try_map`, an inherent `new` of `impl<'l, 'f, T, U, F: FnMut(T)
 //! -> U>` beside the trait method `ZipImpl::new`. A binder that quantifies a
-//! lifetime still requires a scoped consumer.
+//! lifetime retains its scoped goal and filters impossible closed proof debts.
 use super::TestResult;
 use std::fmt::Write as _;
 
 const CONTROLS: &str = "pa31/tests/spec/quantified-lookup-conditions";
-const SCOPED: &str = "quantified clause requires a scoped consumer";
 
 /// Independently checked rustc outcomes: `None` accepts, otherwise the first
-/// error this compiler reports. rustc accepts the six bound-region controls
-/// that still fail with [`SCOPED`], known rejects-valid until lookup opens a
-/// quantified lifetime; it rejects the last four (E0277 or E0599).
+/// error this compiler reports. The six bound-region controls now open their
+/// actual scoped goals; rustc rejects the last four (E0277 or E0599).
 const CASES: [(&str, Option<&str>); 22] = [
     ("core-drain-shape", None),
     ("nonconst-caller", None),
@@ -28,12 +26,12 @@ const CASES: [(&str, Option<&str>); 22] = [
     ("unique-inherent", None),
     ("plain-bound", None),
     ("sugar-lifetime-unique", None),
-    ("explicit-binder", Some(SCOPED)),
-    ("sugar-lifetime", Some(SCOPED)),
-    ("split-shape", Some(SCOPED)),
-    ("trait-fallback-region", Some(SCOPED)),
-    ("trait-fallback-leak", Some(SCOPED)),
-    ("receiver-sugar-lifetime", Some(SCOPED)),
+    ("explicit-binder", None),
+    ("sugar-lifetime", None),
+    ("split-shape", None),
+    ("trait-fallback-region", None),
+    ("trait-fallback-leak", None),
+    ("receiver-sugar-lifetime", None),
     ("fail-inferred", Some(super::OBLIGATION)),
     (
         "fail-explicit",
@@ -45,7 +43,22 @@ const CASES: [(&str, Option<&str>); 22] = [
 
 #[test]
 fn quantified_lookup_conditions_match_declared_outcomes() -> TestResult {
-    super::match_outcomes(CONTROLS, &CASES, "quantified_lookup_condition")
+    super::match_outcomes(CONTROLS, &CASES, "quantified_lookup_condition")?;
+    let capture = crate::sema::copy_trace::Capture::matching(&[
+        "assumption-context",
+        "assumption-match",
+        "assumption-needs",
+        "assumption-unresolved",
+    ])?;
+    let source =
+        crate::test_source::fixture("pa21/tests/spec/binders/scoped-lookup/assumed-universal.rs")?;
+    let report = crate::test_source::resolve(&source, true)?;
+    let checked = crate::sema::declarations::analyze(&report)
+        .and_then(|facts| crate::pipeline::analyze(&report, facts));
+    if let Err(error) = checked {
+        return Err(format!("{error}; {:?}", capture.rows()?).into());
+    }
+    Ok(())
 }
 
 /// At most 256 rows are captured per analysis: one lookup has about 7N + 2

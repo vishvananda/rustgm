@@ -26,7 +26,7 @@ mod tests;
 
 pub(super) struct Conditions {
     pub builtins: Vec<(TermId, Bound)>,
-    pub traits: Vec<infer::predicates::Predicate>,
+    pub traits: Vec<super::lookup_goals::Goal>,
 }
 
 pub(in crate::sema::methods) fn applicable(
@@ -152,6 +152,12 @@ fn declaration_conditions(
             continue;
         }
         let clause = predicate.value;
+        if let Some(goal) =
+            super::lookup_goals::quantified(&mut facts.types, context, clause, substitution)?
+        {
+            conditions.traits.push(goal);
+            continue;
+        }
         let Some(predicate) = scope.condition(&facts.types, &mut facts.body_work, clause)? else {
             continue;
         };
@@ -180,11 +186,11 @@ fn declaration_conditions(
                 predicate,
                 &mut mapped,
             )? {
-                conditions.traits.push(
+                conditions.traits.push(super::lookup_goals::Goal::ordinary(
                     context
                         .instantiate_predicate(&mut facts.types, predicate, substitution)
                         .map_err(inference)?,
-                );
+                ));
             }
             continue;
         }
@@ -392,7 +398,7 @@ pub(super) fn builtin_requirements(
 fn trait_requirements(
     facts: &mut Declarations,
     context: &mut Context,
-    goals: &[infer::predicates::Predicate],
+    goals: &[super::lookup_goals::Goal],
     caller: Caller<'_>,
 ) -> Result<bool, &'static str> {
     if goals.is_empty() {
@@ -409,7 +415,7 @@ fn trait_requirements(
         let before = pending.len();
         let mut next = Vec::new();
         for goal in pending {
-            match selection::select_available(
+            match super::lookup_goals::select_available(
                 facts,
                 context,
                 goal,
@@ -437,7 +443,12 @@ fn trait_requirements(
                 }
                 Selection::Absent => return Ok(false),
                 Selection::Deferred => next.push(goal),
-                Selection::Proven(proof) => first_region = proof.proof.regions.end,
+                Selection::Proven(proof) => {
+                    first_region = first_region.max(proof.proof.regions.end);
+                    if !goal.possible(facts, context, &proof.proof)? {
+                        return Ok(false);
+                    }
+                }
             }
         }
         if next.len() == before {

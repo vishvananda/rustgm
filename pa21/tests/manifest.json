@@ -13903,6 +13903,111 @@
       },
       "maintainer_origin": "dev/tests/higher_ranked_source/universe_calls.rs:CASES",
       "mode": "--emit-generic-semantics"
+    },
+    {
+      "path": "tests/spec/binders/scoped-lookup/inherent-universal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.binders"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/higher_ranked_source/universe_calls.rs:LOOKUPS",
+      "mode": "--emit-generic-semantics"
+    },
+    {
+      "path": "tests/spec/binders/scoped-lookup/static-unavailable.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.binders"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/higher_ranked_source/universe_calls.rs:LOOKUPS",
+      "mode": "--emit-generic-semantics"
+    },
+    {
+      "path": "tests/spec/binders/scoped-lookup/fallback-static.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.binders"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/higher_ranked_source/universe_calls.rs:LOOKUPS",
+      "mode": "--emit-generic-semantics"
+    },
+    {
+      "path": "tests/spec/binders/scoped-lookup/fallback-correlated.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.binders"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/higher_ranked_source/universe_calls.rs:LOOKUPS",
+      "mode": "--emit-generic-semantics"
+    },
+    {
+      "path": "tests/spec/binders/scoped-lookup/receiver-static.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.binders"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/higher_ranked_source/universe_calls.rs:LOOKUPS",
+      "mode": "--emit-generic-semantics"
+    },
+    {
+      "path": "tests/spec/binders/scoped-lookup/assumed-universal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.binders"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/higher_ranked_source/universe_calls.rs:LOOKUPS",
+      "mode": "--emit-generic-semantics"
+    },
+    {
+      "path": "tests/spec/binders/scoped-lookup/split-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.binders"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/higher_ranked_source/universe_calls.rs:LOOKUPS",
+      "mode": "--emit-generic-semantics"
     }
   ]
 }

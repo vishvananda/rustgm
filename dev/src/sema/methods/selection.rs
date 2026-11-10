@@ -1,5 +1,6 @@
 //! Prefix-only candidate probes never consume result or call-argument constraints.
 mod applicability;
+mod lookup_goals;
 mod paths;
 use super::buckets::Bucket;
 use crate::support::hash::HashMap;
