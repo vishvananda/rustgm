@@ -7466,6 +7466,16 @@ The unchanged nested-readiness invariant must still reject overlapping execution
 at the maximum budget that admits either initializer alone. See the
 [CI repair](docs/source-wrappers-ci-repair.md).
 
+The actual source is_val_statically_known intrinsic may return either boolean.
+RustGM chooses conservative false during constant evaluation after authenticating
+its current completed declaration, formal Copy premise, exact signature and
+checked direct Call. All argument expressions execute once; no pointee or layout
+inspection supplies knowledge. An ordinary same-named function has no intrinsic
+authority. Native execution requires the genuine provided body and ordinary
+source/body/call proof. Imported provenance and indirect const-call permission
+remain separate requirements. The [static-knowledge checkpoint](docs/pa31-static-value-knowledge.md)
+freezes independent outcomes and actual native execution.
+
 Strict slice-result validity accepts an array-unsized pointer that retains its
 original zero-offset array place and actual length metadata. When no explicit
 range is retained, validate that metadata prefix against the same actual array

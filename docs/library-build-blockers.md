@@ -5,6 +5,16 @@ from 2026-11-07. LIB-193 is the first lane; after it, an analysis-only census of
 original core replaces one-at-a-time discovery, and each batch of repairs gets one
 entry here.
 
+The [static-value knowledge checkpoint](pa31-static-value-knowledge.md) clears
+checked_ilog by authenticating the actual source intrinsic and selecting the
+permitted conservative false CTFE result. PA31 freezes six independently checked
+reductions and a native observer; ordinary same-name and non-Copy controls retain
+their behavior. CLIc52c555a preserves all722 hashes/profile/limits, opens375 and
+checks42310 declarations, none failed/blocked, bodies0. It advances to pow at
+num/uint_macros.rs:3594, byte156465: unsupported constant intrinsic execution.
+The actual source lead is overflow_checks; reduce its checked context semantics
+next. Full successor qualification and original artifacts remain required.
+
 The [whole-slice result-validity correction](pa31-whole-slice-validity.md) clears
 fmt/num.rs's digit-table range failure under the actual MaybeDangling policy.
 CLI61e80685 preserves all722/375 source hashes/profile/limits and reaches

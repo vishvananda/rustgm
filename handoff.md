@@ -35,41 +35,42 @@ requirement retained. No original core/alloc/std artifact exists.
   formatting, architecture,313 harness tests/465 roots/44 stages,128 upstream
   fixtures and126 Reference files pass. The PA31 dereference packet now lists39
   cases, including independently checked static/unpaid lifetime controls.
-  Full successor CI remains pending. Wait for an existing full dispatch to
+  Full42754442914 passed every stage. Wait for an existing full dispatch to
   terminate before dispatching another; push-fast uses separate concurrency.
 
 ## Current original-core frontier
 
-The [whole-slice correction](docs/pa31-whole-slice-validity.md), compiler7d13f1244,
-clears fmt/num.rs's named digit-table failure. PA31 whole-slice-validity freezes
-five independent Rust outcomes before implementation; byte/array/empty reproduce
-the exact old missing-range error, while str and an ordinary wrapper are controls.
-The actual MaybeDangling role activates strict result validation. All temporary
-traces are withdrawn. Existing initialization, bounds, element, lifetime and write
-checks remain; an array-unsized pointer keeps its actual location and metadata.
+The [static-value knowledge correction](docs/pa31-static-value-knowledge.md),
+compiler9c523798e, clears checked_ilog after the earlier
+[whole-slice correction](docs/pa31-whole-slice-validity.md). The permitted CTFE
+result is conservative false; actual Copy/call/source proof and argument effects
+remain mandatory. Native uses the genuine provided body. PA31 freezes six exact
+independent cases and a C observer; native output is0 7 1.
 
-Private1794285598981203174 passes16 cases; production1794285826400693246 passes
-33 wrapper+37 MaybeUninit outcomes; native1794286021356961497 passes three actual
-programs. Strict lint/format/audit,313 harness/465 roots/44 stages/upstream checks
-pass. Current immutable dev-fast CLI is
-`61e80685835aaf615a40d2eb527c6d1ef15fad700778f7c6e1bc13f3659c6782`.
-Its source-bound unchanged722-input census opens375 sources, checks42310
-declarations, none failed/blocked, bodies0. The next record is local_annotations
-at num/uint_macros.rs:1824, byte75957, checked_ilog: "source intrinsic constant
-execution is not implemented". Expansion uint_impl is at num/mod.rs byte49157.
-TSV SHA`aef48e5a37e6c4e936af398fac7f39769f09213ff230e0a79d1358cc9f1d276a`.
-Inputs, profile and limits remain unchanged; this is discovery, not an artifact.
-Inspect the actual registered intrinsic next; is_val_statically_known is the
-first source lead. Split::new remains provisional; close f01 before widening A+O.
+Production1794288468354887891 passes the six cases, private1794288883932928160
+passes8 guards, native1794288639668994706 passes4 actual programs, and pointer
+controls1794289072774898488 pass6 cases. Strict selected/private lint, format,
+audit,313 harness/466 roots/44 stages/upstream128/Reference126 pass. Immutable
+source-bound dev-fast CLI is
+`c52c555adae24b2b362977e0199123d42856a53fba6c929b17159592d49b3f7d`.
+It opens375 unchanged sources from722 and checks42310 declarations, none
+failed/blocked, bodies0, in81.78s. Next local_annotations record is pow at
+num/uint_macros.rs:3594, byte156465: source intrinsic constant execution is not
+implemented. Expansion uint_impl is num/mod.rs byte45951. TSV SHA
+`77ff18b777a83a43cfeaa2757b89ca8551c26cb5d0b6a2becbb6b521f19f76ef`.
+Actual source lead: intrinsics::overflow_checks(). Independently reduce its
+checked overflow-context semantics next. Inputs/profile/limits are unchanged;
+this is discovery, not an original artifact. Split::new remains provisional;
+close f01 before widening A+O.
 
-Full predecessor42754442914 oncca1dbd4d has passed fast, lint/architecture/harness,
-independent host build graph, release/course and native maintainer checks. Broad
-native, debug and independent stages remain pending. Push-fast42754389428 passes.
-Do not dispatch the slice successor while predecessor full is active.
+Full predecessor42754442914 oncca1dbd4d succeeded in every stage. Slice53f full
+42760129302 passes fast/release/course and is executing native qualification.
+Wait for that run to terminate before dispatching a static-knowledge successor.
+Push-fast uses a separate concurrency group.
 
 ## Next work, one worker
 
-1. Confirm and repair the observed checked_ilog intrinsic requirement, using the
+1. Confirm and repair the observed pow/overflow_checks intrinsic requirement, using the
    actual pinned declaration and semantics. Freeze independently checked reducers
    in their earliest owning PA, then rerun the unchanged census.
 2. Inspect the joined successor full CI when available and repair actual failures;
@@ -83,10 +84,13 @@ Do not dispatch the slice successor while predecessor full is active.
 
 - Durable decisions: /mnt/vizier/rustgm-scratch/integrator-20261109/pending_decisions.md.
 - Current compiler/test source hashes are bound in pa26-work's
-  obj/parallel/radix-slice/candidate-dev-fast/producer.json. Current receipts and
-  census are under obj/parallel/radix-slice; prior joined proof/layout evidence is
+  obj/parallel/static-knowledge/candidate-dev-fast/producer.json. Current receipts and
+  census are under obj/parallel/static-knowledge; prior slice evidence is under
+  obj/parallel/radix-slice, and joined proof/layout evidence is
   under obj/parallel/reuse-ci and obj/parallel/atomic-layout. All temporary production/test diagnostics are gone.
-- Current strict-str/74-control A/A+ABBA retains20 full-output-equal observations,
+- Current ordinary-name/74-control A/A+ABBA retains20 full-output-equal observations,
+  ratios0.956/1.001, A/A0.733/1.154, with no timing claim. Earlier strict-str/74
+  control A/A+ABBA retains20 full-output-equal observations,
   ratios0.966/1.003, with no timing conclusion. The earlier receiver benchmark preserves30 accepted same-profile A/A+ABBA observations
   with identical complete LowIR and a real exported return7/calling entry point.
   Dev-fast ratios at8/16/32 are0.815/0.651/0.437;74 ordinary inputs retain10
