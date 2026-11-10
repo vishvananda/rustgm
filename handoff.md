@@ -164,6 +164,51 @@ push-fast is separate.
 
 ## Next work, one worker
 
+Current single-worker continuation, 2026-11-10 14:06 UTC:
+
+- Main is published7db87a632 (compiler a5c7c21e0). New full CI42826374117 is
+  active; fast passed, qualification was in release/course tests at14:03.
+  Do not dispatch another full while it is active. Predecessor42820032217 passed.
+- Work remains in B, no workers/new trees. Current immutable CLI6923e768 is
+  obj/parallel/inclusive-calls/candidate-dev-fast/rustgm. The comparison792f38b9
+  remains in census-progress; optimized nested baseline21f66 remains pinned.
+  Older alias8a653e24 and upcastec0e1273 binaries were retired/pruned with
+  record1794317914176088955. Preserve backend pins and old pins that protect
+  source/encoded input bytes rather than obsolete executable comparisons.
+- Next projection investigation has NO compiler edit. All exploratory inputs,
+  declared hypotheses and raw observations are under obj/parallel/projection-casts.
+  Ordinary direct/generic-equality scalar casts, primitive/overloaded indexing,
+  source Index casts, correctly supplied standalone closures and known-input
+  three-level array/slice/selector forwarding all pass baseline6923. Do not
+  rerun those controls. Missing callable/const-stability/Eq provided-member
+  prerequisites and genuinely ambiguous uncalled closures are retained failed
+  hypotheses, not evidence of the core bug.
+- The next probe is probe9.py, plan probe9-plan.json: an inferred forwarding
+  closure is followed by a real f(1usize) call; typed, generic-parent and local
+  constant companions are declared Rust-positive. This should test whether a
+  future caller supplies the argument type after early cast preparation.
+  It has NOT executed: probe9.log and probe9-retry.log are admission failures.
+  baseline9/ should not exist until the guarded driver actually launches.
+- Storage is currently the blocker for that probe. At14:05,156.5 GiB free vs
+  159.6 required with the unchanged16 GiB cap/150 GiB reserve. Routine tidy
+  removed7 tiny artifacts (1794319267274421841); tidy-archive was refused at
+  154.3/154.6. make tidy-build completed (1794319379538845190), retiring Cargo
+  cache output while preserving pins/evidence. A same-cap retry still refused;
+  shared/cache accounting means this cleanup increased unused cap reservations.
+  Do not lower caps/reserves or clean another checkout. Wait for external free
+  space before retrying; this turn's resource blockage is the first blocked audit,
+  with substantial completed work earlier in the same turn. Goal stays active.
+- At admission, retry exactly one heavy command with a fresh log:
+  python3 scripts/resources.py run --max-output-gib 16 --
+  python3 scripts/storage.py run --prune-under obj/parallel/projection-casts/baseline9
+  -- python3 obj/parallel/projection-casts/probe9.py
+  Inspect every outcome before
+  assigning the reducer to a PA or changing cast preparation. Keep source frozen
+  until the wrapper exits. The first core record remains slow.rs POWERS[n] as
+  usize; prepare_pointer_cast and the function-pointer cast guard both inspect
+  source heads before final inference. This is a hypothesis, not a proven cause.
+
+
 1. Use retained incremental progress to batch reached failures by shared cause:
    Projection demand, unresolved call inputs and receiver lookup lead the list.
    The first retained expression is POWERS[n] as usize in dec2flt/slow.rs.
