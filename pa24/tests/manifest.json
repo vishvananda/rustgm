@@ -8837,6 +8837,66 @@
       "features": [
         "pa24.closure-captures-and-calls"
       ]
+    },
+    {
+      "path": "tests/spec/callable-proof-width/context-width.rs",
+      "exit_status": 0,
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/environment_execution/contextual.rs:PROOF_WIDTH",
+      "source_sha256": "77c6efd8c47da208555c40aad8be1dc5cdb940322446f4647c1a3c0a4aac5011",
+      "input": "file",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callable-proof-width/tuple-width.rs",
+      "exit_status": 0,
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/environment_execution/contextual.rs:PROOF_WIDTH",
+      "source_sha256": "6ffaad37415fd335c5daaa6820042df3d8983434242e606ac7d1059b1dca14f3",
+      "input": "file",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callable-proof-width/object-width.rs",
+      "exit_status": 0,
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/environment_execution/contextual.rs:PROOF_WIDTH",
+      "source_sha256": "f4617c5c2632c231b533c7cfd5b43482dc0b52b3e9262a97a176f031542a1b6e",
+      "input": "file",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }

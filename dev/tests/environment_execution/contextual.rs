@@ -25,6 +25,29 @@ const CASES: &[(&str, bool)] = &[
     ("unused-identity", true),
     ("unused-captured-identity", true),
 ];
+const PROOF_WIDTH: &[&str] = &["context-width", "tuple-width", "object-width"];
+
+#[test]
+fn computed_callable_duties_keep_their_body_consumer_at_width128()
+-> Result<(), Box<dyn std::error::Error>> {
+    for name in PROOF_WIDTH {
+        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join(format!("../pa24/tests/spec/callable-proof-width/{name}.rs"));
+        for mode in ["--emit-generic-semantics", "--emit-lowir"] {
+            let output = Command::new(env!("CARGO_BIN_EXE_rustgm"))
+                .arg(mode)
+                .arg(&path)
+                .output()?;
+            assert_eq!(
+                output.status.code(),
+                Some(0),
+                "{name} {mode}: {}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+        }
+    }
+    Ok(())
+}
 
 fn fixture(name: &str) -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))

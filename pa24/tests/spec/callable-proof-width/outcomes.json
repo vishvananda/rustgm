@@ -1,0 +1,31 @@
+{
+  "reference": "Rust1.98 objects, edition2024, panic abort, checked overflow, debug assertions disabled",
+  "cases": [
+    {
+      "file": "context-width.rs",
+      "expected_status": 0,
+      "source_sha256": "77c6efd8c47da208555c40aad8be1dc5cdb940322446f4647c1a3c0a4aac5011",
+      "reference_status": 0,
+      "baseline_status": 1,
+      "candidate_status": 0
+    },
+    {
+      "file": "tuple-width.rs",
+      "expected_status": 0,
+      "source_sha256": "6ffaad37415fd335c5daaa6820042df3d8983434242e606ac7d1059b1dca14f3",
+      "reference_status": 0,
+      "baseline_status": 1,
+      "candidate_status": 0
+    },
+    {
+      "file": "object-width.rs",
+      "expected_status": 0,
+      "source_sha256": "f4617c5c2632c231b533c7cfd5b43482dc0b52b3e9262a97a176f031542a1b6e",
+      "reference_status": 0,
+      "baseline_status": 1,
+      "candidate_status": 0
+    }
+  ],
+  "mode": "--emit-lowir",
+  "discovery_mode": "--emit-generic-semantics"
+}

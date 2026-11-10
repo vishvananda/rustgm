@@ -48,3 +48,7 @@ values from fresh call/partial-annotation reborrows. Keep actual source capture
 ancestry across final coercion resets and branch joins. Explicit dereferences,
 move closures and genuine call reborrows retain their independently checked
 positive behavior; short-lived carriers and local references still reject.
+
+The `spec/callable-proof-width/` reductions freeze three independently accepted
+width128 callable/context/object inputs. Their original scaling invariants and
+negative context controls remain in the maintainer suites.
