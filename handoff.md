@@ -62,8 +62,8 @@ Finalimmutablee06 binds96548ba41/emptydiff/3888Rusthashes. Evidence is in B's
 obj/parallel/tagged-request/. Forty A/A+twoABBA observations preserve complete
 ordinary LowIR, two source outputs and74 frozen outcomes; ratios1.008/1.056/1.016/
 0.982, A/A0.648/0.841/1.005/0.999; no speed claim. Initial7892 candidate retired by
-scoped1794350742473176755, analysis02bd trace also retired. Keep only currente06
-and optimized21f after retiring baseline0107 following publication/comparison.
+scoped1794350742473176755, analysis02bd trace also retired. Keep currente06 and optimized21f. Baseline0107 was retired after publication by
+scoped prune1794351105933247284; its metadata/observations remain, not its binary.
 One worker, existing B, no new trees or agents.
 
 Unchanged120s original observation FAILS at121.1873s:229failure records/4426item
@@ -79,10 +79,19 @@ PA follows that reduction; do not assume PA31 merely because core exposed it.
 Prefixes differ; no raw speed/count comparison, full census/bodycount or artifact.
 
 Full42909829598 on3273d5032 passed every stage for the preceding erasure checkpoint.
-This newer semantic checkpoint needs its full successor after publication. Never
-cancel an active full run with a new dispatch. [Projected erasure](docs/pa31-projected-object-erasure.md)
+Full42918510671 on216364b72 is active for this newer semantic checkpoint. Never
+cancel it with a new dispatch; later CI-status edits change documentation only. [Projected erasure](docs/pa31-projected-object-erasure.md)
 retains its26 outcomes/19native and3 separately required Rust-positive tuple-factory
 cleanup owners. No original core/alloc/std artifact or whole PA31 completion.
+
+Next cast evidence: obj/parallel/dst-casts/probe1-plan.json and baseline1/ bind
+seven ordinary Rust-positive objects to currente06. Explicit nominal slice-tail
+reference cast FAILS scalar-operation, implicit twin PASS; direct array-reference
+cast PASS, slice reference->raw pointer PASS, transparent raw rebranding PASS.
+Explicit nominal object-tail cast FAILS, implicit twin PASS. Thus earliest owner
+is PA22; actual core's source-role counterpart remains separate PA31 work. No new
+cast compiler edit yet. Read PA22 handout and cast/reference dispatch, freeze
+source/native/negative regressions there before implementation. Existing B only.
 
 [PA19implementedtraitscope](docs/pa19-implemented-trait-scope.md) remains published
 with34newoutcomes/25native/all1233texts andzeroexistingreferencechanges. The prior

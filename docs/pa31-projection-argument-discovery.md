@@ -87,8 +87,8 @@ change or backend-contract change was added. Temporary tracing was restored befo
 implementation; its binary is analysis-only.
 
 Full42909829598 on3273d5032 passed every stage for the preceding erasure
-checkpoint. This newer semantic change requires its own full successor after
-publication; never cancel a live full run by redispatching. Original core remains unbuilt.
+checkpoint. Full42918510671 on216364b72 is active for this semantic successor;
+never cancel it with another full dispatch. Original core remains unbuilt.
 
 ## Immutable controls and original core
 
@@ -120,3 +120,10 @@ This determines the earliest PA rather than assigning the whole core call toPA31
 
 The prefixes end at different items, so raw counts are not whole-core performance
 evidence. No complete census, checked-body count or original core artifact exists.
+
+The next seven-case ordinary probe confirms PA22 ownership for the cast blocker:
+explicit nominal slice/reference erasure fails, implicit erasure and direct array,
+raw-pointer and transparent-wrapper controls pass. Object-tail variants retain
+the same explicit/implicit distinction. No cast implementation change is part of
+this checkpoint. The superseded0107 baseline was retired after publication by
+scoped prune1794351105933247284; metadata and observations remain retained.

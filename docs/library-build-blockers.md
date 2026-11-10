@@ -13,14 +13,15 @@ caches, limits, backend or oracle changes; whole PA31 remains planned.
 Original120s observation FAILS at121.1873s:229records/4426attempts through
 function8996,file232:110334,node2429 in str/mod.rs. No request_by_type_tag failure
 remains. First is now as_request, error.rs78:34589, scalar-operation fence at an
-explicit nominal DST reference cast. Ordinary explicit cast fails while implicit
-erasure passes; reduce a slice tail before assigning PA ownership. All722 hashes,
+explicit nominal DST reference cast. Ordinary explicit nominal slice-tail cast fails while its implicit twin passes;
+direct array, raw-pointer and transparent-wrapper controls pass. PA22 owns this
+next cast reduction; the genuine source-role counterpart remains PA31 work. All722 hashes,
 sixbindings/profile/limits fixed. Partial SHA
 832a38f90433b1590380edf7a68880c08a9ac646a3ba93de793f61ad353d8ef0.
 Unequal prefixes are not speed evidence. No full census or original artifact.
 
-Full42909829598 on3273 passed every stage for preceding projected erasure. This
-new semantic checkpoint requires its full successor after publication. Forty
+Full42909829598 on3273 passed every stage for preceding projected erasure. Full42918510671 on216364b72 is active for this semantic successor; do not cancel
+it with another full dispatch. Forty
 immutable A/A+twoABBA controls preserve complete ordinary/source outputs and74
 frozen outcomes; no speed claim. Previous erasure's three valid unsupported tuple
 factories and earlier optimized nested-proof checks remain required.
