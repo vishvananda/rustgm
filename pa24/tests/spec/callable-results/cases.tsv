@@ -45,3 +45,7 @@ width-32-noise-0.rs	0
 width-32-noise-128.rs	0
 width-128-noise-0.rs	0
 width-128-noise-128.rs	0
+capture-generic-owned.rs	0
+capture-generic-shared.rs	0
+capture-generic-nested.rs	0
+capture-local-escape.rs	1

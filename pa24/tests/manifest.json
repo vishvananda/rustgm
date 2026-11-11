@@ -10445,6 +10445,82 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/callable-results/capture-generic-owned.rs",
+      "exit_status": 0,
+      "source_sha256": "740de1be90b3d5e9dd53dafb715bd4a14c30d1b76c05800da39ea5c7606a49f7",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/source_closures.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callable-results/capture-generic-shared.rs",
+      "exit_status": 0,
+      "source_sha256": "64f8756ab7a3921193474f009348d992f8c6027867c3800858dc2cb81f4083c2",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/source_closures.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callable-results/capture-generic-nested.rs",
+      "exit_status": 0,
+      "source_sha256": "961c1dbe373811cd931b97a1b9135cdc8db07bd98ee04ac258f20fdcc6a6e3d1",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/source_closures.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callable-results/capture-local-escape.rs",
+      "exit_status": 1,
+      "source_sha256": "34d7fddfc534b1c4b982f409d46c69d15915e94f072393b30f3ac84b5b1f1da2",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/source_closures.rs"
     }
   ]
 }

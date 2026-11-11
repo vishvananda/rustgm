@@ -108,8 +108,8 @@ mechanically to evade limits, or read the environment from `dev/src/`.
 
 ## Completion and review
 
-The manifest contains 574 independently declared source outcomes:
-405 accept and 169 reject. The reviewed native classifications contain 392
+The manifest contains 578 independently declared source outcomes:
+408 accept and 170 reject. The reviewed native classifications contain 395
 runtime comparisons, three unused-body code-generation controls and ten entry-free
 object controls. Draft outcome files retain the history of the source hypotheses;
 they are not substitutes for the released manifest. See

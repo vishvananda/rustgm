@@ -199,6 +199,12 @@ impl Checker<'_> {
         ) {
             return Ok(None);
         }
+        // A contextual reference conversion must choose its result before
+        // selecting a closure output witness. Its ordinary completion already
+        // supplies that context; structural consumers have no such expectation.
+        if self.state.reference_expected.contains(&call) {
+            return Ok(None);
+        }
         let Some(active) = self.state.call_types.active.get(&call) else {
             return Ok(None);
         };

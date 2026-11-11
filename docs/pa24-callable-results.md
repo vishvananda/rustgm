@@ -8,7 +8,7 @@ unnecessary to reproduce it. Explicit result/type arguments, function pointers
 and custom Make::Output controls already pass. PA24 is the earliest owner.
 Actual core's const/source FnMut/Try companions remain required.
 
-The [47-case packet](../pa24/tests/spec/callable-results/README.md) declares
+The initial [47-case packet](../pa24/tests/spec/callable-results/README.md) declares
 35 accepted executable programs and 12 rejections before implementation or oracle
 generation. All outcomes independently agree with pinned Rust1.98.0, edition2024,
 aborting panics and checked overflow. All35 positives independently execute actual
@@ -46,6 +46,33 @@ The preceding native batch1794358997144576224 passes both existing native groups
 (15 projected-parameter and17 source-closure programs), but fails the new group's
 filename-derived crate name. The corrected test removes `.rs` from that name;
 no production change or source-fixture change was needed.
+
+The full PA24 comparison then exposed three real generic captured-reference
+regressions in existing positive fixtures. Keep those sources, outcomes and
+references. Four additional capture contrasts were frozen before repairing that
+interaction: owned/shared/nested generic captured-reference tuples accept, while
+a local capture escaping to static rejects. Independent Rust object/native checks
+agree for all four and recheck the three existing positive controls. The current
+packet therefore owns51 outcomes (38 executable positives,13 rejections).
+
+Type analysis passed the regressions, but demanded lifetime proof found two
+independent callee universals without the source closure's necessary outlives
+relation. Retain those checked source conditions in the existing declared
+callee-premise payload after validating the exact predicates. The source caller
+must prove that whole payload; only the checked-caller route converts it into
+callee assumptions. Shared typed source argument substitution and complete Self
+matching preserve capture/output slots and nested binders. Body entry consumers
+reuse those same kernels. Only the empty quantifier from callable sugar is lifted
+through the existing binder operation; nonempty quantifiers keep their scoped
+consumer. Contextual reference conversions retain their ordinary ordering.
+
+Corrected receipt1794361457829517119 passes9exact tests in119.97s: all51 complete
+LowIR outcomes, width/noise, all22 generic and21 nested receiver outcomes and the
+five existing controls above. Strict selected production/CLI/test Clippy, full
+formatting and architecture pass. Native1794361591493889968 passes4groups in65.06s:
+38 new,17 generic receiver,13 nested receiver and15 projected-parameter programs.
+Complete text/provenance checks and publication remain pending; initial
+immutable6069289c is not a qualified replacement.
 
 PA12 already owns the unchanged `reject/tuple-field.rs` reduction. Its Rust
 rejection remains1; tuple access now checks the selected arity before child lookup.

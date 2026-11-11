@@ -18,7 +18,7 @@ fn cases() -> Result<Vec<(String, String, bool)>> {
             accepted,
         ));
     }
-    assert_eq!(cases.len(), 47);
+    assert_eq!(cases.len(), 51);
     Ok(cases)
 }
 #[test]
@@ -103,7 +103,7 @@ fn callable_result_work_tracks_sites_without_unrelated_type_scans() -> Result {
 #[ignore = "requires the pinned CPPGM backend and host C linker"]
 fn inferred_callable_results_execute_values_captures_moves_and_borrows() -> Result {
     let inputs: Vec<_> = cases()?.into_iter().filter(|row| row.2).collect();
-    assert_eq!(inputs.len(), 35);
+    assert_eq!(inputs.len(), 38);
     let cases: Vec<_> = inputs
         .iter()
         .map(|(name, source, _)| {

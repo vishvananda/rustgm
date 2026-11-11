@@ -1,7 +1,9 @@
 //! Typed closure captures and callable contracts; source inference supplies place uses.
+pub(crate) mod actual;
 pub mod captures;
 mod execution_requirements;
 pub mod imports;
+pub(crate) mod matching;
 pub(crate) mod qualification;
 mod source_roots;
 pub use source_roots::FormationInput;

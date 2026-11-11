@@ -1,6 +1,7 @@
 //! A checked callable's declared trait premises retain their specialized lifetime witnesses.
 mod input_proof;
 mod original_inputs;
+mod promised_outputs;
 use super::{model::Declarations, nominals::traits::State};
 use crate::support::hash::HashMap;
 use crate::{
@@ -137,7 +138,12 @@ fn clauses(
             return Err("instance premise has no validated implementation");
         }
     }
-    Ok(state.map(State::finish))
+    let Some(state) = state else {
+        return Ok(None);
+    };
+    let mut proof = state.finish();
+    promised_outputs::append(facts, predicates, &mut proof)?;
+    Ok(Some(proof))
 }
 
 /// A canonical implementation condition is validated even without lifetime
