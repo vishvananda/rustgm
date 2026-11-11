@@ -1,16 +1,28 @@
 # Library build blocker tracker
 
-[Source reference coercions](pa26-borrow-coercions.md) are locally qualified:
-57 independent outcomes retain all28 previous bytes and qualify39 complete
-source checked bodies plus4 real source Rust/CPPGM programs (1342,guard1345,const41
-twice). Ordinary18/imports/native2 remain required. Final15public/3native strict
-checks, bounded width/noise and upstream/harness pass. The compiler must now be
-frozen, compared and reobserved against original core before claiming RefCell
-cleared. Last original observation remains source5798's partial120s deadline,
-first RefCell::replace112:35607. No original artifact. Prior full43034322443 on
-exact357d0bc5e/source5798 PASSED every stage; semantic successor is due after
-publication and checking no active full run. All retained handoff requirements
-remain required. This section supersedes older next-step text below.
+[Source reference coercions](pa26-borrow-coercions.md),source7c7b1b132 plus diagnostic
+successor6556387ca/CLI0912e08f, clear the reached original RefCell::replace and
+clone_from failure records. Both real bodies are reached on unchanged722 inputs,
+375opens/sixbindings/profile/limits. The120s observer still FAILS deadline121.226504s,
+retaining141 partial records/14,554 item attempts through unicode/unicode_data.rs,
+file244:58785,line998. First remaining is **RefCell::clone**,cell.rs112:49655,
+line1449, `RefCell::new(self.borrow().clone())`: trait selection requires an
+unambiguous assumption/implementation. partial_cmp/cmp remain separate failures.
+No complete census or original artifact; partial counts are not throughput evidence.
+Postcheck1794414625686080575 binds all current3905 Rust hashes and immutableCLI.
+
+The checkpoint qualifies57 independent outcomes/all28 prior bytes,39 complete
+source bodies and4 actual source Rust/CPPGM programs. Ordinary18/imports/native2
+remain required. Final15public/3native strict checks, bounded width/noise and
+upstream/harness pass. Thirty calibrated comparisons preserve outputs; slower/
+noisy values remain and no neutrality/optimized/core-speed claim is made. Optional
+implementation progress and projected item locations pass4 exact tests and leave
+final tables byte-identical. Earlier phase samples do not establish a repeatable
+regression or cause; the diagnostic hint-revert is non-equivalent and not adopted.
+Publish this checkpoint, dispatch one full successor if idle, then reduce the
+actual clone expression. Prior full43034322443 on exact357d0bc5e/source5798 PASSED
+every stage. All handoff requirements remain required. This section supersedes
+older next-step text below.
 
 [Callback formation versus invocation](pa25-callback-formation.md),source5798bd7f1/
 CLI05cc3029, clears the reached LazyCell<T>::default failure. Existing typed bounds
@@ -34,7 +46,7 @@ are verified unchanged. No complete census, comparable throughput or original
 core/alloc/std artifact exists.
 
 Prior full43019302026 on exactbc401434a/sourcef93 passed EVERY stage. Callback
-full43034322443 is ACTIVE on exact357d0bc5e/source5798; never restart it for
+full43034322443 PASSED every stage on exact357d0bc5e/source5798; never restart it for
 docs/input descendants. After replacement publication, comparisonf46 was explicitly
 pruned1794405662867398530; executable absent. Current05cc and optimized21f remain.
 Older94bd/00d2/9109/e7 executables are also absent. Preserve two paid-alias artifacts, two generic projected

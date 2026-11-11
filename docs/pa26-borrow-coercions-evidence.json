@@ -1,11 +1,20 @@
 {
   "schema": 1,
-  "state": "Focused source reference coercions qualified; frozen producer/comparison/original observation next. No original artifact.",
+  "state": "Source reference coercions qualified; unchanged original core reaches replace/clone_from without prior failures. Clone remains first; incomplete observer, no original artifact.",
   "compiler": {
-    "provisional_cli_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
     "rust_source_count": 3905,
     "rust_sources_map_sha256": "38152c5fed9198a875a2ebc1941b357e07206e1483610771b1d7f17a26cd2040",
-    "source_commit_binding": "Frozen immutable producer follows this source commit; do not infer an original-core result."
+    "source_commit_binding": "7c7b1b132596c6204cc16abc9807481807d69665",
+    "cli_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+    "empty_tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "diagnostic_successor": {
+      "source_commit": "6556387caa0effa62a8383d01a756ebd15d27073",
+      "cli_sha256": "0912e08f677a2880a62b42bef9c5baf3dcd253ceec5e5d805b22a873e34a58a8",
+      "empty_tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rust_source_count": 3905,
+      "producer_json_sha256": "57811472e4e6ac51f3e77679252799369f5a369242731973ef5193ceb4206cd7",
+      "changes": "Optional implementation events and source projection for all item events, using existing diagnostic provenance; no language-semantic changes."
+    }
   },
   "contracts": {
     "total": 57,
@@ -158,6 +167,18 @@
         }
       ],
       "counter_harness_retired_after_observation": true
+    },
+    "progress_extension": {
+      "receipt": "1794413794013879880",
+      "exact_tests": 3,
+      "state": "passed"
+    },
+    "projected_progress": {
+      "receipt": "1794414341537683152",
+      "exact_tests": 4,
+      "seconds": 42.85,
+      "state": "passed",
+      "strict_selected_clippy_format_architecture": "passed"
     }
   },
   "regression": {
@@ -437,10 +458,78 @@
     "do_not_restart_for_documentation": true
   },
   "original_core": {
-    "new_observation": false,
-    "last": "Callback source5798;120s observer deadline121.668676s/118partialrecords/first RefCell::replace cell.rs112:35607",
+    "new_observation": true,
+    "compiler_sha256": "0912e08f677a2880a62b42bef9c5baf3dcd253ceec5e5d805b22a873e34a58a8",
+    "source_commit": "6556387caa0effa62a8383d01a756ebd15d27073",
+    "result": {
+      "infrastructure_failure": true,
+      "classification": "infrastructure/setup failure",
+      "observer_deadline_seconds": 120,
+      "progress_requested": true,
+      "lint_cap": "allow",
+      "source_contract_limits": {
+        "work": 14500624,
+        "attempted_bytes": 1073741824,
+        "retained_bytes": 67108864
+      },
+      "expected_cli_sha256": "0912e08f677a2880a62b42bef9c5baf3dcd253ceec5e5d805b22a873e34a58a8",
+      "expected_cli_source": "explicit caller input",
+      "error": "original-core observer deadline",
+      "partial_progress": {
+        "analysis_only": true,
+        "complete_census": false,
+        "records": 141,
+        "last_item": "item\tfunction\t9261\tfile 244:58785\tnode 9472"
+      },
+      "total_seconds": 121.22650357999373,
+      "raw_sha256": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "whole-core.openat": "cfb4812734c25afcbc14649f0ac9e6749c03c24400e1cd9fedb893dd8d1c78b1",
+        "progress.tsv": "1444d340ebf3b801acb112bdb9c3369326fbe53138c102c7aace338c83ef5bcf"
+      }
+    },
+    "item_attempts": 14554,
+    "last_mapped_source": {
+      "file": 244,
+      "path": "library/core/src/unicode/unicode_data.rs",
+      "offset": 58785,
+      "line": 998,
+      "function": 9261
+    },
+    "first_remaining": {
+      "record": 1,
+      "function": "RefCell::clone",
+      "path": "library/core/src/cell.rs",
+      "file": 112,
+      "offset": 49655,
+      "line": 1449,
+      "expression": "RefCell::new(self.borrow().clone())",
+      "message": "trait obligation requires an unambiguous matching assumption or implementation"
+    },
+    "cleared_prior_records_in_reached_prefix": [
+      {
+        "function": "RefCell::replace",
+        "item_definition": 3753,
+        "body_offset": 35560,
+        "prior_failure_offset": 35607
+      },
+      {
+        "function": "RefCell::clone_from",
+        "item_definition": 3771,
+        "body_offset": 49846,
+        "prior_failure_offset": 49882
+      }
+    ],
+    "separate_remaining_records": [
+      "RefCell::partial_cmp",
+      "RefCell::cmp"
+    ],
+    "all722_hashes_375_opens_six_config_bindings_3905_current_rust_hashes_profile_limits_unchanged": true,
+    "postcheck_cleanup_receipt": "1794414625686080575",
     "artifact": false,
-    "complete_census": false
+    "complete_census": false,
+    "partial_counts_are_not_comparable_throughput": true
   },
   "unchanged": [
     "backend17b024f69",
@@ -463,6 +552,273 @@
     "builtin-plan.json": "42d288ce7fd061c2e962d16265a0db0bd1a9b2ce5c3542bedd74e7ec203c2597",
     "builtin-probe/observations.json": "f2f0d6c2316394c9dfaa6df0d4794900df67cfa9a546776363175f514083c987",
     "qualified-extra-plan.json": "36f0740a26e84877aa60c24a4c4fa156cc9ff4c18ff873aa412ed716d2cf217d",
-    "qualified-extra-independent/observations.json": "02c7aed1e23cd5bcd37595aae8e4415654aa34fdab177bfa86b4c9735ce1c8cd"
-  }
+    "qualified-extra-independent/observations.json": "02c7aed1e23cd5bcd37595aae8e4415654aa34fdab177bfa86b4c9735ce1c8cd",
+    "candidate-dev-fast/producer.json": "candidate-dev-fast/producer.json",
+    "measure/plan.json": "measure/plan.json",
+    "measure/observations.json": "measure/observations.json",
+    "measure/passed.json": "measure/passed.json",
+    "original/result.json": "original/result.json",
+    "post-observer.log": "post-observer.log",
+    "projected-progress-dev-fast/producer.json": "projected-progress-dev-fast/producer.json",
+    "projected-progress-original/result.json": "projected-progress-original/result.json",
+    "projected-progress-original/progress.tsv": "projected-progress-original/progress.tsv",
+    "post-projected-progress-observer.log": "post-projected-progress-observer.log"
+  },
+  "calibrated_comparisons": {
+    "rows": 30,
+    "complete_output_equality": true,
+    "summary": {
+      "import-control": {
+        "seconds": {
+          "aa_ratio": 0.8499284888678947,
+          "paired_candidate_over_base": 1.0441055942680046
+        },
+        "cpu_seconds": {
+          "aa_ratio": 0.8517858240609821,
+          "paired_candidate_over_base": 1.0426226102002338
+        }
+      },
+      "builtin-before-deref": {
+        "seconds": {
+          "aa_ratio": 1.0837258125479041,
+          "paired_candidate_over_base": 0.9980929450232546
+        },
+        "cpu_seconds": {
+          "aa_ratio": 1.0865601311206718,
+          "paired_candidate_over_base": 0.9988381768969693
+        }
+      },
+      "priority-native": {
+        "seconds": {
+          "aa_ratio": 0.738740958359738,
+          "paired_candidate_over_base": 1.0287027790970333
+        },
+        "cpu_seconds": {
+          "aa_ratio": 0.737663645518632,
+          "paired_candidate_over_base": 1.0294774323808493
+        }
+      }
+    },
+    "no_optimized_or_core_speed_claim": true,
+    "compiler_sha256": [
+      "05cc3029540dc069cf360821f180521d74278c5f5986a8e8e69255dc7955def5",
+      "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48"
+    ]
+  },
+  "prior_original_observation": {
+    "infrastructure_failure": true,
+    "classification": "infrastructure/setup failure",
+    "observer_deadline_seconds": 120,
+    "progress_requested": true,
+    "lint_cap": "allow",
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "expected_cli_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+    "expected_cli_source": "explicit caller input",
+    "error": "original-core observer deadline",
+    "partial_progress": {
+      "analysis_only": true,
+      "complete_census": false,
+      "records": 0,
+      "last_item": null
+    },
+    "total_seconds": 122.06939330499154,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "whole-core.openat": "ed42edc37fb87a9bb79e642b276bacf63395ae48a5028fc8ef3b00fb4f297d0f",
+      "progress.tsv": "0842334acd4146737b808e17daab315165d59cc5602638e63c98243b89afc257"
+    }
+  },
+  "startup_diagnostics": [
+    {
+      "raw": "startup-profile",
+      "result": {
+        "analysis_only": true,
+        "qualification": false,
+        "purpose": "90s interrupted stack attributes pre-body original-core time; not a new census qualification or observer extension",
+        "command": [
+          "gdb",
+          "-nh",
+          "-nx",
+          "--batch",
+          "--command",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/startup-profile/snapshot.gdb",
+          "--args",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/candidate-dev-fast/rustgm",
+          "--cap-lints=allow",
+          "--source-contract-work-limit=14500624",
+          "--source-contract-attempted-bytes=1073741824",
+          "--source-contract-retained-bytes=67108864",
+          "--emit-types",
+          "--census-output",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/startup-profile/census.tsv",
+          "--census-progress",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/startup-profile/progress.tsv",
+          "--edition=2024",
+          "--crate-name",
+          "core",
+          "--crate-disambiguator",
+          "core_1_98_88d9",
+          "--source-core",
+          "core@core_1_98_88d9",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/lib.rs"
+        ],
+        "status": 0,
+        "interrupted_at_seconds": 90,
+        "total_seconds": 91.46846978692338,
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "all_sources_and_immutable_binding_unchanged": true
+      },
+      "phase": "implementation method-signature normalization"
+    },
+    {
+      "raw": "baseline-startup-profile",
+      "result": {
+        "analysis_only": true,
+        "qualification": false,
+        "purpose": "90s immutable prior-compiler comparison stack on identical original sources/profile/limits; not a census or throughput qualification",
+        "command": [
+          "gdb",
+          "-nh",
+          "-nx",
+          "--batch",
+          "--command",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/baseline-startup-profile/snapshot.gdb",
+          "--args",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/lazy-default/candidate-dev-fast/rustgm",
+          "--cap-lints=allow",
+          "--source-contract-work-limit=14500624",
+          "--source-contract-attempted-bytes=1073741824",
+          "--source-contract-retained-bytes=67108864",
+          "--emit-types",
+          "--census-output",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/baseline-startup-profile/census.tsv",
+          "--census-progress",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/baseline-startup-profile/progress.tsv",
+          "--edition=2024",
+          "--crate-name",
+          "core",
+          "--crate-disambiguator",
+          "core_1_98_88d9",
+          "--source-core",
+          "core@core_1_98_88d9",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/lib.rs"
+        ],
+        "status": 0,
+        "interrupted_at_seconds": 90,
+        "total_seconds": 91.134906371939,
+        "compiler_sha256": "05cc3029540dc069cf360821f180521d74278c5f5986a8e8e69255dc7955def5",
+        "all_sources_and_immutable_binding_unchanged": true
+      },
+      "phase": "ordinary body stored-field preparation"
+    },
+    {
+      "raw": "return-hint-startup-profile",
+      "result": {
+        "analysis_only": true,
+        "qualification": false,
+        "purpose": "90s diagnostic variant with only general known-result hints disabled; non-equivalent language behavior, never a qualifying compiler. Attributes declarations-stage cost only.",
+        "command": [
+          "gdb",
+          "-nh",
+          "-nx",
+          "--batch",
+          "--command",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/return-hint-startup-profile/snapshot.gdb",
+          "--args",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/diagnostic-return-hint-dev-fast/rustgm",
+          "--cap-lints=allow",
+          "--source-contract-work-limit=14500624",
+          "--source-contract-attempted-bytes=1073741824",
+          "--source-contract-retained-bytes=67108864",
+          "--emit-types",
+          "--census-output",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/return-hint-startup-profile/census.tsv",
+          "--census-progress",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/return-hint-startup-profile/progress.tsv",
+          "--edition=2024",
+          "--crate-name",
+          "core",
+          "--crate-disambiguator",
+          "core_1_98_88d9",
+          "--source-core",
+          "core@core_1_98_88d9",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/lib.rs"
+        ],
+        "status": 0,
+        "interrupted_at_seconds": 90,
+        "total_seconds": 90.99820836400613,
+        "compiler_sha256": "4f308445a78d3359639a974c43f6eefab17aef08a9d958c15018a58bc8856c38",
+        "all_sources_and_immutable_binding_unchanged": true
+      },
+      "phase": "local annotations; non-equivalent diagnostic hint-revert"
+    },
+    {
+      "raw": "implementation-startup-profile2",
+      "result": {
+        "analysis_only": true,
+        "qualification": false,
+        "purpose": "90s interrupted diagnostic attributes source implementation conformance before bodies through typed source locations; not a new census qualification or observer extension",
+        "command": [
+          "gdb",
+          "-nh",
+          "-nx",
+          "--batch",
+          "--command",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/implementation-startup-profile2/snapshot.gdb",
+          "--args",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/progress-dev-fast/rustgm",
+          "--cap-lints=allow",
+          "--source-contract-work-limit=14500624",
+          "--source-contract-attempted-bytes=1073741824",
+          "--source-contract-retained-bytes=67108864",
+          "--emit-types",
+          "--census-output",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/implementation-startup-profile2/census.tsv",
+          "--census-progress",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/implementation-startup-profile2/progress.tsv",
+          "--edition=2024",
+          "--crate-name",
+          "core",
+          "--crate-disambiguator",
+          "core_1_98_88d9",
+          "--source-core",
+          "core@core_1_98_88d9",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/lib.rs"
+        ],
+        "status": 0,
+        "interrupted_at_seconds": 90,
+        "total_seconds": 91.19034079404082,
+        "compiler_sha256": "d77b1d133bc99d316c76e519c7f30f49f3e558ba9cce927fdb977893fc605d1c",
+        "all_sources_and_immutable_binding_unchanged": true,
+        "items": 11356,
+        "last_item": "item\tfunction\t3335\tfile 98:11654\tnode 647",
+        "progress_sha256": "6d4e0191d91376c436a5d1a228bbbda11ef269afb980f816ba13e769dbb306ec"
+      },
+      "phase": "ordinary body method applicability"
+    }
+  ],
+  "startup_diagnostics_causal_conclusion": "Single phase snapshots do not establish a repeatable regression or its cause. The hint-revert is non-qualifying and is not adopted.",
+  "diagnostic_development_failures": [
+    {
+      "log": "progress-check.log",
+      "scope": "Invalid suite prefix; no tests executed."
+    },
+    {
+      "log": "implementation-startup-profile.log",
+      "scope": "Diagnostic script command slicing error; no compiler observation executed."
+    },
+    {
+      "receipt": "1794414158385371850",
+      "scope": "Formatting only; no tests executed."
+    },
+    {
+      "receipt": "1794414204432424740",
+      "scope": "3 passed, new test failed in helper expecting no macro trace; source mapping comparison itself passed."
+    }
+  ]
 }

@@ -64,14 +64,40 @@ positive was inverted, and all original28 language outcomes remain fixed.
 
 ## Core and remaining requirements
 
-The implementation addresses the reduced shape of original RefCell::replace,
-`mem::replace(&mut self.borrow_mut(), t)`. The original source has not yet been
-reobserved with a frozen compiler for this checkpoint. Do not claim that the
-original blocker is cleared until that observation reaches the real function.
-The immutable producer, matched comparisons and unchanged120s original observer
-are next. Prior callback full43034322443 on exact357d0bc5e/source5798 PASSED every
-stage. A semantic successor is due after this source is published and no active
-full run exists; never restart it for documentation/input descendants.
+Source7c7b1b132 freezes CLI2b7a8d17, empty tracked patch and3905 Rust hashes.
+Thirty exclusive A/A+twoABBA observations retain complete output equality on an
+ordinary import, accepted builtin-before-Deref conversion and actual priority
+LowIR graph. Candidate/base wall ratios1.044/.998/1.029, CPU1.043/.999/1.029,
+A/Awall.850/1.084/.739 retain noise and slower values. There is no optimized,
+neutrality or original-core throughput claim.
+
+Its first unchanged120s original observation ended at122.069393s with no item
+events or failure records. This was an infrastructure deadline, not a language
+rejection. Bounded stack snapshots reached different declaration/body phases;
+they establish no repeatable regression or cause. A diagnostic hint-revert is
+non-equivalent and was not adopted. The
+[progress extension](census-progress.md) exposes implementation conformance and
+projects all item locations through existing diagnostic provenance.
+
+The qualified diagnostic successor6556387ca/CLI0912e08f binds an empty patch and
+3905 Rust hashes. Its unchanged120s original observation ends at121.226504s,
+retaining141 partial records and14,554 item attempts through function9261,
+unicode/unicode_data.rsfile244:58785,line998. Both actual **RefCell::replace**
+(function3753,body112:35560) and **clone_from** (function3771,body112:49846) are
+reached without their prior failure records. The first remaining failure is
+**RefCell::clone**,cell.rs112:49655,line1449, at
+`RefCell::new(self.borrow().clone())`, requiring an unambiguous trait selection.
+partial_cmp/cmp remain separate failures. ProgressSHA
+1444d340ebf3b801acb112bdb9c3369326fbe53138c102c7aace338c83ef5bcf.
+Postcheck1794414625686080575 verifies all722 source hashes,375opens,sixbindings,
+the immutable/current3905 source hashes and unchanged profile/limits. No complete
+census or original artifact exists; partial counts are not throughput evidence.
+
+Prior callback full43034322443 on exact357d0bc5e/source5798 PASSED every stage.
+A semantic successor is due after this checkpoint is published and no active
+full run exists; never restart it for documentation/input descendants. Reduce
+the actual clone expression next, retaining its ordinary caller bounds and
+the actual Deref call rather than inferring a cause from method names.
 
 Core/alloc/std artifacts, complete source/library transport, ordinary bootstrap
 imports and broader Deref/unsizing compositions remain required. Keep every

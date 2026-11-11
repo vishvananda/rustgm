@@ -5,7 +5,7 @@ one worker: do not spawn agents or create worktrees. Use existing B
 `/mnt/vizier/rustgm-scratch/rustgm-pa26-work`; main is Git-only. Goal: original
 core, then alloc/std. No original library artifact exists.
 
-## Current callback checkpoint
+## Published callback predecessor
 
 [Formation versus invocation](docs/pa25-callback-formation.md), source5798bd7f1,
 clears the reached LazyCell<T>::default initializer failure. Function-value
@@ -34,7 +34,7 @@ remain; no neutrality/optimized/core-speed claim. Current05cc and olderoptimized
 replacement publication with explicit scoped prune1794405662867398530. Its
 executable is absent, as are94bd/00d2/9109/e7; raw observations/producer remain.
 
-## Original core and next work
+## Prior original-core observation
 
 Unchanged120s observer FAILS deadline121.668676s:118 partial records through
 function6558,range/iter.rsfile195:3846,node310. LazyCell default is reached at
@@ -57,10 +57,10 @@ Never cancel/restart for documentation/input descendants. The LazyCell stash was
 restored, verified and dropped; no stash restoration remains to do.
 
 Machine record: docs/pa25-callback-formation-evidence.json. Raw evidence:
-Bobj/parallel/lazy-default. Checkpoint published and comparison pin retired. Next freeze and observe the qualified source coercion checkpoint below. Keep the paid
+Bobj/parallel/lazy-default. Checkpoint published and comparison pin retired. The newer original observation and source coercions are below. Keep the paid
 alias2, projected-premise2 and every retained requirement below positive/required.
 
-## Source reference coercion checkpoint — freeze and observe
+## Current source reference coercion checkpoint — original observed
 
 [Qualified source coercions](docs/pa26-borrow-coercions.md) now use actual selected
 Deref/DerefMut calls, preserving original expression operations in a separate
@@ -90,7 +90,7 @@ source programs plus oldcontrols. StrictselectedprodCLItestsClippy/fullfmt/audit
 PASS. Phases1794410310412904864 verifies57CLItype observations/all3905Rusthashes/
 source39API qualification/native4; checks-final upstream128/Reference126/harness315/
 468roots13bins44stages andall57 independent identities PASS. No course oracles,
-assignment activation, original artifact or fresh original observation yet.
+assignment activation or original artifact. The fresh original observation is below.
 
 Draft24 author predictions were checked independently. Two no-result-hint cases
 and6unhinted scale drafts are genuineRustE0308, not positives; exact bytes/raw
@@ -99,21 +99,47 @@ prefix opponents have independently required1; no Rust-valid outcome inverted.
 Alloriginal28 outcomes remain fixed. Machine docs bind the review and failed
 exploratory receipts without calling failed batches passed.
 
-NEXT: commit coherent qualified source/tests/fixtures/spec/docs (no production
-changes since final ordering repair), then freeze immutable dev-fastCLI with empty
-tracked diff/all3905 source hashes. Compare against AVAILABLE05cc via exclusive
-A/A+pairedABBA on frozen accepted old paths and ordinary control; new accepted
-coercions use bounded-work evidence, no accepting baseline. Then exact original
-120s observer/all722/sixbindings/profile/limits unchanged, postcheck375opens and
-all source hashes. Last real observation STILL firstRefCell112:35607; only claim
-clearance after reaching it. Update actual first mapped blocker/handoff/evidence,
-publish and dispatch ONE full successor only if idle. Retire05cc only AFTER new
-publication/comparisons with explicit scoped prune. Olderoptimized21f stays.
-Prior callback43034322443 PASSED every stage on EXACT357d0bc5e/source5798; its
-raw official jobs are Bobj/parallel/refcell-coercion/prior-callback-full-ci.json.
-No active full known; never restart for docs/input descendants. Raw new evidence:
-Bobj/parallel/refcell-coercion. Keep all prior requirements below; broad source/
-ordinary/library transport and Deref/unsizing composition remain required.
+SOURCE7c7b1b132 is committed, immutableCLI2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48,
+empty patch/all3905 Rust hashes. Thirty exclusive A/A+twoABBA observations retain
+complete outputs on import/builtin-before-Deref/priorityLowIR. Wall1.044/.998/1.029,
+CPU1.043/.999/1.029,AAwall.850/1.084/.739; slower/noisy values remain. No optimized,
+neutrality or core throughput claim. Its first120s original observer ends122.069393s
+with0records/noitems. Four bounded90s phase snapshots vary between declaration
+passes and bodies, so no repeatable regression or cause is established. The
+non-equivalent hint-revert is not adopted or qualifying.
+
+Diagnostic successors53e2509c1/6556387ca add typed implementation progress and
+correct all item events to existing diagnostic provenance, retaining ASTidentity
+separately. Four exact checks1794414341537683152/42.85s, strictselectedClippy,
+fullfmt/audit pass; final census tables are byte-identical with/without progress.
+Current immutableCLI0912e08f677a2880a62b42bef9c5baf3dcd253ceec5e5d805b22a873e34a58a8
+at Bobj/parallel/refcell-coercion/projected-progress-dev-fast binds6556387ca,
+empty patch/all3905 Rust hashes. Managed dev-fast CLI now matches this source.
+
+EXACT120s original observer ends121.226504s,141partialrecords/14,554itemattempts,
+lastfunction9261,file244:58785,line998 unicode/unicode_data.rs. Actual
+RefCell::replace(function3753,body112:35560) and clone_from(function3771,
+body112:49846) are reached with no prior failure records. FIRST REMAINING is
+RefCell::clone,cell.rs112:49655,line1449:
+RefCell::new(self.borrow().clone()), trait selection requires an unambiguous
+assumption/implementation. partial_cmp/cmp remain separate. ProgressSHA
+1444d340ebf3b801acb112bdb9c3369326fbe53138c102c7aace338c83ef5bcf.
+Postcheck1794414625686080575 verifies all722/375opens/sixbindings/immutable/current
+3905 hashes/profile/limits unchanged. No complete census/original artifact;
+partial counts are not comparable throughput. Do not repeat for a longer prefix
+or extend limits. Raw new observation: Bobj/parallel/refcell-coercion/projected-progress-original.
+
+NEXT: publish qualified source+diagnostics+this record, check no active manual/
+scheduled full, dispatch ONE successor. Then reduce real clone expression using
+actual ordinary Clone caller debt and actual Deref selection; do not assume a
+shared comparison cause without contrasts. Current0912, comparison05cc, historical
+2b7, diagnosticd77/NONQUAL4f and olderoptimized21f pins are available. Retire
+superseded/diagnostic pins explicitly after publication; keep only current and
+actually needed comparisons. Prior callback43034322443 PASSED every stage on
+EXACT357d0bc5e/source5798. Never restart full CI for docs/input descendants.
+All prior requirements below remain required, including ordinary18/native2,
+paid-alias2/projected-premise2/symbolic-index native2/depth128/factory/tuple/
+bootstrap/transport/optimized gates. No backend/storage/source-pin/limit change.
 
 ## Retained requirements and resource rules
 
