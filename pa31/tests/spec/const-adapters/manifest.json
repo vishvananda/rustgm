@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "owner": "PA31 actual source FnMut and Destruct adapter contrasts",
+  "state": "Required draft outcomes, frozen before implementation; no course oracles or whole-PA activation",
+  "contract": "This packet preserves authenticated source language-trait headers from the existing PA25 const-closure support. Self/forwarding/binary adapters reproduce original NeverShortCircuit returned conditional const callable eligibility. Plain const-factory and direct conditional-call controls distinguish shape and call permission. Source bindings add no permission for ordinary closures, missing conditional bounds or runtime const creation.",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": "1",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0,
+    "cap_lints": "allow"
+  },
+  "inputs": [
+    {
+      "path": "pa31/tests/spec/const-adapters/self.rs",
+      "sha256": "4a6d48f17330c509c77a01b0088191cb0351127e7f54d0ebe22ba43b7548e08d",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "required source declaration/body proof; complete LowIR/native qualification remains separate"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/binary.rs",
+      "sha256": "9eec040577fc2261d50c7988260404e47602647735ff1a69a66afbab4f017c3c",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "required source declaration/body proof; complete LowIR/native qualification remains separate"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/forward.rs",
+      "sha256": "c6416a3b25616ce20db85cf6eb1345cddc151a4fd34645d63bdc5df5fcf154ed",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "required source declaration/body proof; complete LowIR/native qualification remains separate"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/direct.rs",
+      "sha256": "1aa74f2b2d662d9b2eea540f993b9395c863e9850335ae25dbfb16149168712e",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "required source declaration/body proof; complete LowIR/native qualification remains separate"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/ordinary.rs",
+      "sha256": "477755566df1a6e4a8fd2bd5ab5a3252056b85fa48f3ffffdca89d37279ec883",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "required source declaration/body proof; complete LowIR/native qualification remains separate"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/const-factory.rs",
+      "sha256": "3b89f7cf43012cb6fb554586762558c41e8522a290498cdafe7c3986da7dced2",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "required source declaration/body proof; complete LowIR/native qualification remains separate"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/ordinary-bound-reject.rs",
+      "sha256": "218f2f60230d5197f2d5823c21e69a6067832a523dbbe77892c3c77fe161c628",
+      "rustc_object_status": 1,
+      "source_analysis_status": 1,
+      "qualification": "language rejection with actual authenticated callable roles"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/ordinary-closure-reject.rs",
+      "sha256": "c2744a37086ae1099d4ff1a2bf769e0040d9edd75a984327995c05619d7199df",
+      "rustc_object_status": 1,
+      "source_analysis_status": 1,
+      "qualification": "language rejection with actual authenticated callable roles"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/wrong-output-reject.rs",
+      "sha256": "eb7fffb715ea86fa6e1d9ca0317f6b37e044f7623b7a5e2095268f94d1317a9f",
+      "rustc_object_status": 1,
+      "source_analysis_status": 1,
+      "qualification": "language rejection with actual authenticated callable roles"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/runtime-creation-reject.rs",
+      "sha256": "2bc0d234c4ddae416b3c80a519154e4a1a1af24584b3b59de15f8294a0bc4a52",
+      "rustc_object_status": 1,
+      "source_analysis_status": 1,
+      "qualification": "Language rejection: const closure created directly in an ordinary runtime function; surrounding bounds are ordinary"
+    }
+  ]
+}

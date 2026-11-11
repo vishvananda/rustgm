@@ -25,6 +25,17 @@ then retain real source FnMut/Destruct/Try roles where needed. Read the PA25/31
 contracts and choose the earliest owner from the minimum; source mode is not an
 assumed prerequisite. No complete census/original artifact or speed claim.
 
+The [const adapter reduction packet](pa25-const-adapter-reductions.md) now owns10
+ordinary PA25 cases and10 source-role PA31 contrasts. Each declares6positive/
+4negative outcomes before correction; all20 agree with independent Rust objects,
+and six ordinary positives execute successfully. Actual source self/binary/forward
+adapters reproduce canonical selection failure; diagnostic-only tracing confirms
+the reducer reaches the explicit defining-obligation scoped-continuation fence.
+Ordinary/const-factory LowIR and direct conditional/source type controls separate
+this from setup and call-shape failures. Valid unsupported adapters remain
+positive requirements. No compiler correction, course oracle or candidate-native
+claim was made. Upstream and harness checks pass1794366696019332445.
+
 Forty immutable exclusive A/A+twoABBA observations retain complete outputs for
 import/explicit-result LowIR and scalar/source-role type controls. Noisy A/A
 supports no timing claim. Full42930363606on4a PASSED every stage, qualifying the

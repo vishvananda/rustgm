@@ -88,6 +88,41 @@ source mode or PA31 is necessary. Expected outcomes precede corrections/oracles;
 valid unsupported cases remain positive requirements. No original artifact,
 complete census, body-count or speed claim. Do not raise the observer window.
 
+[Const adapter reductions](docs/pa25-const-adapter-reductions.md) now freeze10
+ordinary language cases in PA25 and10 actual-source-role contrasts in PA31.
+Each manifest declares6positive/4negative outcomes before correction. Independent
+Rust object compilation agrees with all20; six ordinary positives execute0 with
+empty output. Committed independent-review.json receipts bind final source hashes.
+Upstream128/Reference126 and harness315/468roots13bins44stages pass guarded
+1794366696019332445; no compiler source or course oracle changes were made.
+
+Immutable8b7 passes the ordinary/const-factory LowIR controls. Other ordinary
+conditional forms stop at Destruct lookup or const declaration preparation;
+these remain PA25 positive requirements, not reclassified negatives. PA31
+self/binary/forward reproduce the canonical-selection failure. A diagnostic-only
+ab8a CLI confirms the reducer's actual cause: const closure defining obligations
+require a scoped continuation, in traits/callables/eligibility.rs. The trace
+instrumentation was removed. Direct conditional/source ordinary/const-factory
+controls pass type analysis; generic body inspection has a separate construction
+fence and is not native or complete library evidence. Four language opponents
+retain rejection contracts; the refined runtime-creation source preserves the
+actual Fn hierarchy and reaches the genuine const-context error in both compilers.
+Completed diagnostic ab8a executable and failed probe2 objects were retired by
+scoped cleanup1794366792736214583; their inputs/producer patch/raw observations
+remain. Current8b7 and optimized21f pins remain available; ab8a does not.
+
+Next implement the selected closure's defining-debt continuation using the
+existing iterative scoped clause engine. closures::actual::arguments supplies
+the exact owner parameter/captured-lifetime mapping; traits::effects::in_context
+retains the requested use effect. Prove every instantiated requirement as a child
+before Source::Callable publication, preserving quantifiers, source/capture/kind
+checks, lifetime evidence and work/retained-storage charges. Do not remove the
+generic/conditional fence or treat signature equality as const permission.
+Read docs/pa25-const-adapter-reductions.md and both packet manifests first.
+Ordinary bootstrap preparation, generic body construction, actual adapter
+CTFE/runtime/native behavior, general conditional function items and transport
+remain required. No new original observer or implementation qualification yet.
+
 The preceding [nominal source Unsize checkpoint](docs/pa31-nominal-unsize.md)
 retains46 outcomes/31native, both element-inference directions and its completed
 storage-tail/unchanged-argument/actual-field/endpoint proofs. Full42930363606on4a

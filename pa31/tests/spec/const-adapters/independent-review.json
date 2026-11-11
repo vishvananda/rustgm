@@ -1,0 +1,237 @@
+{
+  "schema": 1,
+  "state": "Independent observations for required draft reductions; candidate adapter implementation remains pending",
+  "manifest_sha256": "46524368baca61c11999e0ee8f95e82cad30a6979087b7e338f49ea505b4707f",
+  "rustc_version_verbose": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.0\nLLVM version: 22.1.8\n",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": "1",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0,
+    "cap_lints": "allow"
+  },
+  "rustc_accepts": 6,
+  "rustc_rejects": 4,
+  "rustc_native_executions": 0,
+  "candidate_compiler_head": "31cfbe08b0c9589c2bc55b93ac895076f72087c3",
+  "candidate_sha256": "8b73f15a8334129dc7b9849347d05dc7d7ca7fac3c6286dc871b45c3fbcb1361",
+  "candidate_source_count": 3896,
+  "candidate_source_diff_empty": true,
+  "no_cppgm_native_claim": true,
+  "no_generated_course_oracles": true,
+  "inputs": [
+    {
+      "path": "pa31/tests/spec/const-adapters/self.rs",
+      "sha256": "4a6d48f17330c509c77a01b0088191cb0351127e7f54d0ebe22ba43b7548e08d",
+      "expected_object_status": 0,
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 1576: invalid canonical trait selection\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-body-ir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 1576: invalid canonical trait selection\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/binary.rs",
+      "sha256": "9eec040577fc2261d50c7988260404e47602647735ff1a69a66afbab4f017c3c",
+      "expected_object_status": 0,
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 1578: invalid canonical trait selection\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-body-ir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 1578: invalid canonical trait selection\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/forward.rs",
+      "sha256": "c6416a3b25616ce20db85cf6eb1345cddc151a4fd34645d63bdc5df5fcf154ed",
+      "expected_object_status": 0,
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 1545: invalid canonical trait selection\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-body-ir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 1545: invalid canonical trait selection\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/direct.rs",
+      "sha256": "1aa74f2b2d662d9b2eea540f993b9395c863e9850335ae25dbfb16149168712e",
+      "expected_object_status": 0,
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "0630cc9891f501e8e14d84275eb3f623a9d878b0a6d25ede6ee639ded8b268f1"
+        },
+        "--emit-body-ir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 1533: generic body construction requires parameterized ownership and destruction\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/ordinary.rs",
+      "sha256": "477755566df1a6e4a8fd2bd5ab5a3252056b85fa48f3ffffdca89d37279ec883",
+      "expected_object_status": 0,
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "b3ce647a4812fff1e706d9574c830a24b50e9a87a8d40e8a13e866f0637d38a3"
+        },
+        "--emit-body-ir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 1548: generic body construction requires parameterized ownership and destruction\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/const-factory.rs",
+      "sha256": "3b89f7cf43012cb6fb554586762558c41e8522a290498cdafe7c3986da7dced2",
+      "expected_object_status": 0,
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "f42615f3c1d11742c131607f888cba0cb4ccbff4b6ace0cfdcadfd69168f4945"
+        },
+        "--emit-body-ir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 1548: generic body construction requires parameterized ownership and destruction\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/ordinary-bound-reject.rs",
+      "sha256": "218f2f60230d5197f2d5823c21e69a6067832a523dbbe77892c3c77fe161c628",
+      "expected_object_status": 1,
+      "observed_object_status": 1,
+      "rustc_diagnostic": "error[E0277]: the trait bound `F: [const] FnMut<(A,)>` is not satisfied\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/const-adapters/ordinary-bound-reject.rs:24:161\n   |\n24 | ...t(A)->T+[const]Destruct{const move|a|Self(f(a))}}\n   |                                              - ^\n   |                                              |\n   |                                              required by a bound introduced by this call\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0277`.\n",
+      "rustc_diagnostic_sha256": "970e50338a7f3da13d4c76a19c3d6533271aa2601a70af7236858bdf66f4d881",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 1673: call requires a known function type\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-body-ir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 1673: call requires a known function type\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/ordinary-closure-reject.rs",
+      "sha256": "c2744a37086ae1099d4ff1a2bf769e0040d9edd75a984327995c05619d7199df",
+      "expected_object_status": 1,
+      "observed_object_status": 1,
+      "rustc_diagnostic": "error[E0277]: the trait bound `{closure@ordinary-closure-reject.rs:24:148}: [const] FnMut<(A,)>` is not satisfied\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/const-adapters/ordinary-closure-reject.rs:24:62\n   |\n24 | struct Wrap<T>(T);impl<T>Wrap<T>{const fn one<A,F>(mut f:F)->impl [const]FnMut(A)->Self+[const]Destruct where F:[const]FnMut(A)->T+[...\n   |                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n   |\n   = note: the full name for the type has been written to '/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/const-adapter/qualified/pa31-ordinary-closure-reject.long-type-17777757178873031449.txt'\n   = note: consider using `--verbose` to print the full type name to the console\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0277`.\n",
+      "rustc_diagnostic_sha256": "b12c956dbb50bb3ad8cfd28373acb52722e2cb613f1fdfd72a576fc0a5901bf5",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 1576: quantified body requirement needs a matching assumption or implementation\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-body-ir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 1576: quantified body requirement needs a matching assumption or implementation\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/wrong-output-reject.rs",
+      "sha256": "eb7fffb715ea86fa6e1d9ca0317f6b37e044f7623b7a5e2095268f94d1317a9f",
+      "expected_object_status": 1,
+      "observed_object_status": 1,
+      "rustc_diagnostic": "error[E0308]: mismatched types\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/const-adapters/wrong-output-reject.rs:24:161\n   |\n24 | ...pl<T>Wrap<T>{const fn one<A,F>(mut f:F)->impl [const]FnMut(A)->Self+[const]Destruct where F:[const]FnMut(A)->T+[const]Destruct{const move|a|f(a)}}\n   |       - found this type parameter                                                                                                              ^^^^ expected `Wrap<T>`, found type parameter `T`\n   |\n   = note:      expected struct `Wrap<T>`\n           found type parameter `T`\nhelp: try wrapping the expression in `Wrap`\n   |\n24 | struct Wrap<T>(T);impl<T>Wrap<T>{const fn one<A,F>(mut f:F)->impl [const]FnMut(A)->Self+[const]Destruct where F:[const]FnMut(A)->T+[const]Destruct{const move|a|Wrap(f(a))}}\n   |                                                                                                                                                                 +++++    +\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0308`.\n",
+      "rustc_diagnostic_sha256": "3ec6ba0ef92e2443a9bc274a81e2a957a8c9bd8a77afc73408dd360bef3985d0",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 1675: incompatible types\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-body-ir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 1675: incompatible types\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/runtime-creation-reject.rs",
+      "sha256": "2bc0d234c4ddae416b3c80a519154e4a1a1af24584b3b59de15f8294a0bc4a52",
+      "expected_object_status": 1,
+      "observed_object_status": 1,
+      "rustc_diagnostic": "error: cannot use `const` closures outside of const contexts\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/const-adapters/runtime-creation-reject.rs:24:114\n   |\n24 | struct Wrap<T>(T);impl<T>Wrap<T>{fn one<A,F>(mut f:F)->impl FnMut(A)->Self+Destruct where F:FnMut(A)->T+Destruct{const move|a|Self(f...\n   |                                                                                                                  ^^^^^^^^^^^^^\n\nerror: aborting due to 1 previous error\n\n",
+      "rustc_diagnostic_sha256": "13a91ae1c54905236716e90937dede6b168a68a8b8710dda1a3f731da4ae6205",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 1628: cannot use const closures outside of const contexts\n"
+        },
+        "--emit-body-ir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 1628: cannot use const closures outside of const contexts\n"
+        }
+      }
+    }
+  ],
+  "evidence_root": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/const-adapter",
+  "checks": {
+    "upstream": {
+      "status": 0,
+      "log_sha256": "19edc114e22639322b3ce9f0bcda582a6fc7d9641501c9a6ac1deca7ce08d175"
+    },
+    "harness": {
+      "status": 0,
+      "log_sha256": "5bee9e24f89bd714d538d966b0eea62d6f9e336795b7e0af78214ec6480bee67"
+    }
+  }
+}

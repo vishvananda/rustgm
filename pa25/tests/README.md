@@ -19,6 +19,13 @@ Put required regressions here, in the earliest assignment owning all their
 features. Keep draft inputs in explicit outcome files until release; then register
 every input in `manifest.json`. No undiscovered fixtures may enter the graded suite.
 
+The [const adapter packet](spec/const-adapters/README.md) declares six required
+ordinary positives and four rejections before correction. All ten agree with
+independent Rust object checks; all six positives execute. Valid conditional
+adapters remain required while bootstrap setup and their defining-debt proof are
+unfinished. Actual source-role counterparts belong to PA31; this packet does
+not activate the planned assignment or generate course text oracles.
+
 `inspection-outcomes.json` declares the entry-free library, compressed-repeat,
 unused-invalid-initializer and unused-invalid-body inspection controls. The exact
 proposed row grammar and ordering are in

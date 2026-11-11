@@ -1,0 +1,107 @@
+{
+  "schema": 1,
+  "owner": "PA25 const closure adapter semantics",
+  "state": "Required draft outcomes, frozen before implementation; no course oracles or whole-PA activation",
+  "contract": "Conditional const callable outputs, actual captures and runtime creation/invocation retain their exact call and destruction obligations. Every valid unsupported form stays a positive requirement. Ordinary forms remain here even when current bootstrap declaration preparation stops earlier. Source-role contrasts are separately owned in PA31.",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": "1",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0,
+    "cap_lints": "allow"
+  },
+  "inputs": [
+    {
+      "path": "pa25/tests/spec/const-adapters/ordinary.rs",
+      "sha256": "28e5c27310b434c0e52e160df40ea03505c55c911ec03fc956ade3f8259c5c29",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "native_status": 0,
+      "native_stdout": "",
+      "native_stderr": "",
+      "qualification": "required; candidate currently unsupported where conditional roles are needed"
+    },
+    {
+      "path": "pa25/tests/spec/const-adapters/const-factory.rs",
+      "sha256": "55a807ae5d907b4b3faa16d6612f6c47db3fd9b8d7a204ec22d8fabd0c8c13cc",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "native_status": 0,
+      "native_stdout": "",
+      "native_stderr": "",
+      "qualification": "required; candidate currently unsupported where conditional roles are needed"
+    },
+    {
+      "path": "pa25/tests/spec/const-adapters/conditional-self.rs",
+      "sha256": "ab1da295efc70cd1cafdeaa35ae79ae95a90fea0f233080b559e50a80eb52ac7",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "native_status": 0,
+      "native_stdout": "",
+      "native_stderr": "",
+      "qualification": "required; candidate currently unsupported where conditional roles are needed"
+    },
+    {
+      "path": "pa25/tests/spec/const-adapters/conditional-binary.rs",
+      "sha256": "6e324056b625985d45bb5d6e71dfde011ee806ae2f6da45e5d8bb7382197d297",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "native_status": 0,
+      "native_stdout": "",
+      "native_stderr": "",
+      "qualification": "required; candidate currently unsupported where conditional roles are needed"
+    },
+    {
+      "path": "pa25/tests/spec/const-adapters/conditional-tuple.rs",
+      "sha256": "e8705ee13b0e0c0c8268f509eab57d8e70c99d412842864a0e33d26c5d6ab9d0",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "native_status": 0,
+      "native_stdout": "",
+      "native_stderr": "",
+      "qualification": "required; candidate currently unsupported where conditional roles are needed"
+    },
+    {
+      "path": "pa25/tests/spec/const-adapters/conditional-runtime.rs",
+      "sha256": "0c1a8219a5d7991d0d3ecaa46cc33754fd764663a24c8fbefe04374fb607a732",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "native_status": 0,
+      "native_stdout": "",
+      "native_stderr": "",
+      "qualification": "required; candidate currently unsupported where conditional roles are needed"
+    },
+    {
+      "path": "pa25/tests/spec/const-adapters/ordinary-bound-reject.rs",
+      "sha256": "413d8506e6315fe6144f4779d7bebbd93b5c10bc13abc26f931d198bfca30d9e",
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "qualification": "language rejection; independent cause must agree before correction"
+    },
+    {
+      "path": "pa25/tests/spec/const-adapters/ordinary-closure-reject.rs",
+      "sha256": "50bd381a64c4f944577aa0f4b1caa15980fcfed1a66073fcd05600622d8a09a6",
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "qualification": "language rejection; independent cause must agree before correction"
+    },
+    {
+      "path": "pa25/tests/spec/const-adapters/wrong-output-reject.rs",
+      "sha256": "e5055f64c373100854f2b4a04496dde8cf8573694d8e7dfdfde7bc8499719c1b",
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "qualification": "language rejection; independent cause must agree before correction"
+    },
+    {
+      "path": "pa25/tests/spec/const-adapters/runtime-creation-reject.rs",
+      "sha256": "3524360b5743ac575263e6cd1091ef91c29d7e88bcf90053ee1b2ff623225cdc",
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "qualification": "Language rejection: const closure created directly in an ordinary runtime function; surrounding bounds are ordinary"
+    }
+  ]
+}

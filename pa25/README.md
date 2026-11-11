@@ -47,6 +47,11 @@ rejects creating a const closure directly in an ordinary runtime context. Cover
 real CTFE invocation, captured storage and instance/ownership proofs; grammar
 and the const_closures feature request alone do not establish these semantics.
 
+The [const adapter reductions](../docs/pa25-const-adapter-reductions.md) retain
+ordinary conditional-callable requirements in PA25 and actual source-role
+contrasts in PA31. Their independently checked draft manifests precede any
+defining-obligation correction; unsupported positives remain required.
+
 The maintainer implements this responsibility in `dev/src/` and introduces its
 typed interface before generating text views. Consult `spec.md`, the pinned
 Rust Reference, and the existing CPPGM implementation for efficient algorithms.

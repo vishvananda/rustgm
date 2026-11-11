@@ -9,6 +9,11 @@ staged deprecation; all original source hashes/profile/limits remain unchanged.
 Generic/conditional const caller proof, adapters, bootstrap and authenticated
 source transport remain required. PA31 and original artifact gates stay open.
 
+The [const adapter reduction packet](tests/spec/const-adapters/README.md)
+reproduces the current original-core canonical-selection fence with actual
+source callable roles. Ordinary language forms stay in PA25. Both draft packets
+have independent positive/negative outcomes; implementation remains required.
+
 The [complete Field offset/native checkpoint](../docs/parallel/field-offset-execution.md)
 executes the genuine provided initializer, actual reached field_offset and shared
 layout with full source/caller/generic/lifetime proof. The complete frozen native
