@@ -5,7 +5,8 @@ source defining-proof failures in NeverShortCircuit::wrap_mut_1/2. Ordinary
 language requirements remain in PA25; authenticated source-role counterparts
 remain in PA31. No whole assignment is activated and no original core artifact
 exists. Full preceding CI42953042040 onfe8753c38 passed every gate; the new
-compiler's full successor remains required.
+compiler's full successor42966631710 onEXACTa1c3d961c is running; its fast job
+passed and qualification remains active. Do not redispatch for input/doc descendants.
 
 The selector now retains a const closure's actual source role, completed capture
 permission and body identity, then proves its additional defining const clauses
@@ -100,3 +101,8 @@ Currente7b5 and the older optimized21f nested-proof baseline remain available.
 Three earlier tuple-factory cleanup owners and optimized nested-proof A/A/stack
 qualification remain separate required work. Work stays single-worker in the
 existing B tree; main is Git-only, with no CPPGM/v5 checkout modification.
+
+The next receiver failure is now reduced in
+[the Deref method packet](pa26-deref-method-reductions.md): ordinaryPA26/sourcePA31,
+27 independent outcomes and a real Rust/C shared/mutable observer. Implementation
+remains required; no new original observation or compiler change accompanies it.

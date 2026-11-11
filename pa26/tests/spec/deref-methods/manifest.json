@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "owner": "PA26 ordinary Deref method-call requirements",
+  "state": "Draft required outcomes declared before implementation; no empty-suite success, course oracles or assignment activation",
+  "contract": "Search real Deref targets in Rust receiver order, preserve inherent/trait priority, prove each selected call and lifetime, select real DerefMut for a mutable consumer, evaluate the operand once and retain normal move/borrow/const checks. Unsupported positives remain required.",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": "not required",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0,
+    "cap_lints": "allow"
+  },
+  "inputs": [
+    {
+      "path": "pa26/tests/spec/deref-methods/wrapped-sized.rs",
+      "sha256": "a069b8ca0782a18bee81ccce54294dd6629c8cc31ab7c913c90525fb2c603ea8",
+      "rustc_object_status": 0,
+      "ordinary_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa26/tests/spec/deref-methods/explicit-sized.rs",
+      "sha256": "87b1536b135dc76a4687e7c49124603022103d6b0112c943639dbfbcf56d6e08",
+      "rustc_object_status": 0,
+      "ordinary_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa26/tests/spec/deref-methods/wrapped-unsized.rs",
+      "sha256": "cac827f01506a44d875bbd485737d3d5aa43d9d6306fe3e915c97947967f9053",
+      "rustc_object_status": 0,
+      "ordinary_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa26/tests/spec/deref-methods/explicit-unsized.rs",
+      "sha256": "ef8a6864214e9b68f738f058cc7dca7da709a45ca078cf18b4effc93b94546be",
+      "rustc_object_status": 0,
+      "ordinary_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa26/tests/spec/deref-methods/manually-drop.rs",
+      "sha256": "5cb441b588b4647ebc7232ae071938531ba0d22b2182f6914d89a24b2d0b7354",
+      "rustc_object_status": 0,
+      "ordinary_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa26/tests/spec/deref-methods/explicit-caller-bound.rs",
+      "sha256": "a7565d9ebffc3b499941f8abe58e68db5819d426d66013df3e8d06721770d3df",
+      "rustc_object_status": 0,
+      "ordinary_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa26/tests/spec/deref-methods/unpaid-bound.rs",
+      "sha256": "4894a7441cf38c07100c3f5068ce9eeb494414514ee73466e028d1e11d19d742",
+      "rustc_object_status": 1,
+      "ordinary_analysis_status": 1,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    }
+  ]
+}

@@ -1,0 +1,399 @@
+{
+  "schema": 1,
+  "state": "Independent byte-identical reductions qualified; implicit Deref method implementation remains required",
+  "manifest_sha256": "a26f20ace2900cf4ee3f5e04dec82db0026efb85f7c192089abfb179e55e5505",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": "1",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0,
+    "cap_lints": "allow"
+  },
+  "candidate_compiler_head": "27cef3f64b9ac4c58cf49f73aef827e715061cf6",
+  "candidate_sha256": "e7b59bbd91cd2f589572e18808100c63d109bbac34ea278b2c82a8b2523b0a7e",
+  "candidate_source_hash_count": 3898,
+  "independent_accepts": 17,
+  "independent_rejects": 3,
+  "independent_native_count": 1,
+  "path_adaptation": "Committed files are byte-identical copies of the explicitly recorded obj inputs; independent/candidate commands used fixed crate names, no file/line macros or include paths occur",
+  "candidate_full_packet_qualified": false,
+  "no_generated_course_oracles": true,
+  "inputs": [
+    {
+      "path": "pa31/tests/spec/deref-methods/ordinary-direct-sized.rs",
+      "sha256": "b53981320b2fe846d7dbe9d68d1c6610cb9e88bac2e6fd1c0a70fe84339979a2",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete",
+      "observed_input": "obj/parallel/array-receiver/inputs/source-ordinary-direct-sized.rs",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "77fc70b27775ecb759ac855e06b7d600084c62e03f140b59516ab337a585b32a"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/ordinary-wrapped-sized.rs",
+      "sha256": "525afc3d882c13a5081691995db9c85c316b8c5ba2aec69bc2f948358220c6a6",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete",
+      "observed_input": "obj/parallel/array-receiver/inputs/source-ordinary-wrapped-sized.rs",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 3557: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/ordinary-explicit-sized.rs",
+      "sha256": "6282a96cf5810e2871bdf800c892a4a26e0de396373d8670eebdd66be133c5ad",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete",
+      "observed_input": "obj/parallel/array-receiver/inputs/source-ordinary-explicit-sized.rs",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "5269ff1ccee43b35850a332db930dd57f7151162e8bfe2780ed7339027c2f89d"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/ordinary-direct-unsized.rs",
+      "sha256": "9e03f3d45efe05964598efca1ec85dfe4e02222e9be84cf5e3d7287209d13794",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete",
+      "observed_input": "obj/parallel/array-receiver/inputs/source-ordinary-direct-unsized.rs",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "4887e7e5ecc0ba71d8ac43d2de1f0cd91456f6f85bb300531a20d5f183caa5d0"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/ordinary-wrapped-unsized.rs",
+      "sha256": "581f925acab75554ea3d73d902782199dd0188b5f267abe82056d217ffd86fd7",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete",
+      "observed_input": "obj/parallel/array-receiver/inputs/source-ordinary-wrapped-unsized.rs",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 3573: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/ordinary-explicit-unsized.rs",
+      "sha256": "9948eec7efe578daf01518a728a177206ebb61d58b02e5453b95287fe95d756a",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete",
+      "observed_input": "obj/parallel/array-receiver/inputs/source-ordinary-explicit-unsized.rs",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "b029657af2fca8513ad5b0d7c1cad01ee61bb3622edde9cf36507ca517679b70"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/const-direct-sized.rs",
+      "sha256": "a8f49f24710a38795e63980bef01dc5aed282d98c6eb1f8cae7243769ec86446",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete",
+      "observed_input": "obj/parallel/array-receiver/inputs/source-const-direct-sized.rs",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "6bfc5cc04e7a0c14a33e91867bcb5a1c379f84a3a8834cdd88c271de4c532773"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/const-wrapped-sized.rs",
+      "sha256": "9461e1713e2a300a53ea0ccc5a127f613c402e2e700a7cbe09cc3d8114579b45",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete",
+      "observed_input": "obj/parallel/array-receiver/inputs/source-const-wrapped-sized.rs",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 3569: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/const-explicit-sized.rs",
+      "sha256": "7177bd59882f71713eddf20ce78216fa2652041414e7212481786e0d3f28d678",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete",
+      "observed_input": "obj/parallel/array-receiver/inputs/source-const-explicit-sized.rs",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "6fda0ba4ecf19319c13f145faf8200307659e69bbb75226126da78123d59b284"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/const-direct-unsized.rs",
+      "sha256": "d3d5a18fb862a37ea15edb849ceafd6b8e8cf14d3c862c35fa57321c03911a24",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete",
+      "observed_input": "obj/parallel/array-receiver/inputs/source-const-direct-unsized.rs",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "c2fd8802bea1cc6bfec36a8332d6dacfb8bbbe159ff18fc36c2742f94c1690d8"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/const-wrapped-unsized.rs",
+      "sha256": "ba21dd9332b2958a2154f6c0eabb606513575f144d61da7cae4bc0abfd8405b8",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete",
+      "observed_input": "obj/parallel/array-receiver/inputs/source-const-wrapped-unsized.rs",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 3585: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/const-explicit-unsized.rs",
+      "sha256": "f8847fecf5a006744e6d0ed0c4b6f10ff18e9a113506701682f211abdb07281d",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete",
+      "observed_input": "obj/parallel/array-receiver/inputs/source-const-explicit-unsized.rs",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "c4b95f329a0fcea2ec916123b1bb07fe501947330b25dbbb4e2db8c0275fc38f"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/concrete.rs",
+      "sha256": "2c25eb17d1feb88093127208572d83f7ccc76c9f5ad23e82441a07e260f9180d",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete",
+      "observed_input": "obj/parallel/array-receiver/inputs/source-concrete.rs",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 3446: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/borrowed.rs",
+      "sha256": "1a1e0d40514a3876a5193649123d4db9a25f5481552ce31f8ecdef0bd4951890",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete",
+      "observed_input": "obj/parallel/array-receiver/inputs/source-borrowed.rs",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 3495: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/move-reject.rs",
+      "sha256": "9c2c45d768e2c18d8dd54f738f0257b7c45042753dfbef68275b2964f66d8739",
+      "rustc_object_status": 1,
+      "source_analysis_status": 1,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete",
+      "observed_input": "obj/parallel/array-receiver/inputs/source-move-reject.rs",
+      "observed_object_status": 1,
+      "rustc_diagnostic": "error[E0507]: cannot move out of dereference of `Hold<S>`\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/array-receiver/inputs/source-move-reject.rs:80:25\n   |\n80 | fn check(h:Hold<S>)->u8{h.take()}\n   |                         ^ ------ value moved due to this method call\n   |                         |\n   |                         move occurs because value has type `S`, which does not implement the `Copy` trait\n   |\nnote: `S::take` takes ownership of the receiver `self`, which moves value\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/array-receiver/inputs/source-move-reject.rs:77:88\n   |\n77 | struct S{n:u8}impl S{fn get(&self)->u8{self.n}fn set(&mut self,n:u8){self.n=n;}fn take(self)->u8{self.n}}\n   |                                                                                        ^^^^\nnote: if `S` implemented `Clone`, you could clone the value\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/array-receiver/inputs/source-move-reject.rs:77:1\n   |\n77 | struct S{n:u8}impl S{fn get(&self)->u8{self.n}fn set(&mut self,n:u8){self.n=n;}fn take(self)->u8{self.n}}\n   | ^^^^^^^^ consider implementing `Clone` for this type\n...\n80 | fn check(h:Hold<S>)->u8{h.take()}\n   |                         - you could clone this value\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0507`.\n",
+      "rustc_diagnostic_sha256": "5646f8994ed075eb8c3ab3f06c15ff5fa29bd312462061f4ae46c9ec0f4895ad",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 3445: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/mutable.rs",
+      "sha256": "17fa6f2e4cc8a9653ac4263fa73e3ffb0b9fa3bb7ab59f737a398b22ee449552",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete",
+      "observed_input": "obj/parallel/array-receiver/inputs/source-mutable.rs",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 3446: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/immutable-reject.rs",
+      "sha256": "7aec3ab1b93be5a967a8328a55f89f233026a46c443ee2769c2566121c999a89",
+      "rustc_object_status": 1,
+      "source_analysis_status": 1,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete",
+      "observed_input": "obj/parallel/array-receiver/inputs/source-immutable-reject.rs",
+      "observed_object_status": 1,
+      "rustc_diagnostic": "error[E0596]: cannot borrow `h` as mutable, as it is not declared as mutable\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/array-receiver/inputs/source-immutable-reject.rs:80:21\n   |\n80 | fn check(h:Hold<S>){h.set(41);}\n   |                     ^ cannot borrow as mutable\n   |\nhelp: consider changing this to be mutable\n   |\n80 | fn check(mut h:Hold<S>){h.set(41);}\n   |          +++\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0596`.\n",
+      "rustc_diagnostic_sha256": "6deb3e72cea127613a7cfbc42605f1d30a040a08ca32708c7a744863e3f1476d",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 3441: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/inherent-priority.rs",
+      "sha256": "25299914d59ad1261145637474cd520ffcb63d7608c0444239578d8f7f8427bb",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete",
+      "observed_input": "obj/parallel/array-receiver/inputs/source-inherent-priority.rs",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "1d7984533ccd7c8079fa077e3f0375aa1968e7f29073494e49d7ca12d33412ee"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/missing-deref.rs",
+      "sha256": "d9dfbeb9e017cfc95c94d5aeaf3cfc35246404c79f38f18aaafa399b64562784",
+      "rustc_object_status": 1,
+      "source_analysis_status": 1,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete",
+      "observed_input": "obj/parallel/array-receiver/inputs/source-missing-deref.rs",
+      "observed_object_status": 1,
+      "rustc_diagnostic": "error[E0599]: no method named `get` found for reference `&Hold<S>` in the current scope\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/array-receiver/inputs/source-missing-deref.rs:80:28\n   |\n80 | fn check(h:&Hold<S>)->u8{h.get()}\n   |                            ^^^ method not found in `&Hold<S>`\n   |\nhelp: one of the expressions' fields has a method of the same name\n   |\n80 | fn check(h:&Hold<S>)->u8{h.0.get()}\n   |                            ++\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0599`.\n",
+      "rustc_diagnostic_sha256": "10ba8e6ef8f9d090a06b9620b0789430bf2a9b7229771d4b1751fd06f4978f5f",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 3305: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/native.rs",
+      "sha256": "c554a4c2130176e2e2ac77c7d66271c5f22d2448a7a179c1d9cf3d075f541da1",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete",
+      "independent_native": {
+        "status": 0,
+        "stdout": "receiver 23 41\n",
+        "stderr": ""
+      },
+      "source_lowir_status": 0,
+      "observed_input": "obj/parallel/array-receiver/inputs/source-native.rs",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 3500: no inherent method with this name\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "independent_native_observed": {
+        "status": 0,
+        "stdout": "receiver 23 41\n",
+        "stderr": ""
+      }
+    }
+  ],
+  "evidence_root": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/array-receiver"
+}

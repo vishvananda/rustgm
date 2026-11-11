@@ -15,6 +15,12 @@ roles and bounded local-child completion. Ordinary language forms stay in PA25.
 The expanded31-case source packet retains three required runtime/CTFE positives;
 the full assignments and original library artifacts remain incomplete.
 
+The [Deref method reduction packet](tests/spec/deref-methods/README.md) isolates
+the next array-iterator receiver failure down to a concrete wrapped getter.
+Ordinary language/library forms stay in PA26. Its twenty actual-source outcomes
+and real Rust/C shared/mutable observer precede the implicit receiver correction;
+no candidate-native or whole-library qualification is implied.
+
 The [complete Field offset/native checkpoint](../docs/parallel/field-offset-execution.md)
 executes the genuine provided initializer, actual reached field_offset and shared
 layout with full source/caller/generic/lifetime proof. The complete frozen native

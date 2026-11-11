@@ -19,6 +19,12 @@ typed interface before generating text views. Consult `spec.md`, the pinned
 Rust Reference, and the existing CPPGM implementation for efficient algorithms.
 Do not introduce rendered text as transport between compiler phases.
 
+The [Deref method reduction packet](tests/spec/deref-methods/README.md) retains
+seven ordinary requirements and twenty actual-source PA31 counterparts. Pinned
+Rust object and shared/mutable native outcomes are frozen before implementation.
+General implicit Deref method receiver calls, ordinary bootstrap and the remaining
+hook families remain required; the packet does not activate this assignment.
+
 ## Tool surface
 
 Extend `dev/rustgm --emit-lowir -o OUTPUT SOURCE`. Earlier stage views remain

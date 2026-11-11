@@ -75,8 +75,8 @@ Native1794374970814447695 passes actual closure-source23/47/23/23/47 in39.45s.
 Independent final41 inputs agree30accept/11reject/9Rust natives; generated
 observation receipts retain pending candidate executions. No course oracles.
 Upstream128/Reference126, harness315/468roots13bins44stages and post-observer
-hash/opens checks pass1794375059873301041. Full new-compiler CI remains due.
-Preceding full42953042040 onfe8753c38 PASSED every fast/release/course/native/debug/
+hash/opens checks pass1794375059873301041. Full42966631710 onEXACTa1c3d961c is running: fastPASS, qualificationactive.
+Do not cancel/redispatch for documentation/input descendants. Preceding full42953042040 onfe8753c38 PASSED every fast/release/course/native/debug/
 independent/PA25 gate, qualifying the13 independently reviewed earlier references.
 
 Current CLIe7b59bbd91cd2f589572e18808100c63d109bbac34ea278b2c82a8b2523b0a7e
@@ -96,15 +96,22 @@ All722hashes/375opened/sixbindings/profile/limits verified unchanged afterward.
 NeverShortCircuit wrap_mut1/2 file95 failures are absent from this prefix.
 First now len/is_empty,array/iter.rsfile102:12256/12334,no applicable method.
 Actual receiver is ManuallyDrop<PolymorphicIter<[MaybeUninit<T>;N]>>, with generic
-DATA:PartialDrop and the real conditional const Deref. Reduce ordinary twins
-first, choose earliest owning PA from actual features, then retain source roles
-only where needed. Keep expectations before independent checks/correction.
+DATA:PartialDrop and the real conditional const Deref. The new
+[Deref method reduction packet](docs/pa26-deref-method-reductions.md) now owns7
+ordinary PA26 requirements and20 actual-source PA31 contrasts. All27 independent
+Rust objects agree23accept/4reject; real shared/mutable Rust/C native prints23/41.
+The concrete Hold<S>.get() minimum also fails, while direct/explicit inner and
+wrapper-owned methods pass. Arrays, generic bounds and const effects are not
+necessary for this implicit receiver gap. Ordinary Deref import remains an earlier
+bootstrap requirement; early lookup errors do not qualify move/mutability opponents.
+No compiler correction or new course oracle in this input-only packet.
+Upstream/harness/hash checks pass1794376235015368027.
 Next source records are arrayeach_ref/mut const-stability, then projected
 try_from_fn_erased; do not conflate those with receiver lookup.
 
 No complete census/body-count/speed claim or original core/alloc/std artifact.
 Do not raise the120s observer window. Single worker, existing B, mainGitonly,
-no new worktrees/agents/CPPv5 changes. Source receiver reductions are next;
+no new worktrees/agents/CPPv5 changes. Actual implicit Deref method implementation is next;
 three old tuple-factory cleanup owners and optimized nested-proof A/A/stack
 checks remain required. Whole PA25/31 and remaining assignments stay planned.
 

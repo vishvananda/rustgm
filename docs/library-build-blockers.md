@@ -35,8 +35,8 @@ Native1794374970814447695 passes actual closure-source23/47/23/23/47 in39.45s.
 Independent final41 inputs agree30accept/11reject/9Rust natives; generated
 observation receipts retain pending candidate executions. No course oracles.
 Upstream128/Reference126, harness315/468roots13bins44stages and post-observer
-hash/opens checks pass1794375059873301041. Full new-compiler CI remains due.
-Preceding full42953042040 onfe8753c38 PASSED every fast/release/course/native/debug/
+hash/opens checks pass1794375059873301041. Full42966631710 onEXACTa1c3d961c is running: fastPASS, qualificationactive.
+Do not cancel/redispatch for documentation/input descendants. Preceding full42953042040 onfe8753c38 PASSED every fast/release/course/native/debug/
 independent/PA25 gate, qualifying the13 independently reviewed earlier references.
 
 Current CLIe7b59bbd91cd2f589572e18808100c63d109bbac34ea278b2c82a8b2523b0a7e
@@ -67,6 +67,16 @@ Do not raise the120s observer window. Single worker, existing B, mainGitonly,
 no new worktrees/agents/CPPv5 changes. Source receiver reductions are next;
 three old tuple-factory cleanup owners and optimized nested-proof A/A/stack
 checks remain required. Whole PA25/31 and remaining assignments stay planned.
+
+[The Deref method packet](pa26-deref-method-reductions.md) now owns7 ordinary
+PA26 forms and20 actual-source PA31 counterparts, independently23accept/4reject
+plus actual Rust/C shared/mutable23/41. Even concrete Hold<S>.get() fails, while
+direct/explicit and wrapper-owned calls pass: arrays/generic bounds/const are not
+required to expose the implicit receiver gap. Bootstrap imports remain required;
+early lookup does not qualify move/mutability rejections. Upstream/harness/hash
+checks pass1794376235015368027; no compiler or course oracle changed. Implement
+actual implicit Deref/DerefMut receiver steps next, preserving calls, source,
+const, lifetime, priority and one-time evaluation through the existing machinery.
 
 Previous [pending-join inputs](pa20-pending-join-inputs.md) retain their qualified
 PA20 packet, source/proof ownership and separate1.266x unoptimized direct-control

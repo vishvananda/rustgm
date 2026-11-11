@@ -1,0 +1,176 @@
+{
+  "schema": 1,
+  "owner": "PA31 actual source Deref/Target method-call contracts",
+  "state": "Draft required outcomes declared before implementation; no empty-suite success, course oracles or assignment activation",
+  "contract": "Search real Deref targets in Rust receiver order, preserve inherent/trait priority, prove each selected call and lifetime, select real DerefMut for a mutable consumer, evaluate the operand once and retain normal move/borrow/const checks. Unsupported positives remain required.",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": "1",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0,
+    "cap_lints": "allow"
+  },
+  "inputs": [
+    {
+      "path": "pa31/tests/spec/deref-methods/ordinary-direct-sized.rs",
+      "sha256": "b53981320b2fe846d7dbe9d68d1c6610cb9e88bac2e6fd1c0a70fe84339979a2",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/ordinary-wrapped-sized.rs",
+      "sha256": "525afc3d882c13a5081691995db9c85c316b8c5ba2aec69bc2f948358220c6a6",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/ordinary-explicit-sized.rs",
+      "sha256": "6282a96cf5810e2871bdf800c892a4a26e0de396373d8670eebdd66be133c5ad",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/ordinary-direct-unsized.rs",
+      "sha256": "9e03f3d45efe05964598efca1ec85dfe4e02222e9be84cf5e3d7287209d13794",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/ordinary-wrapped-unsized.rs",
+      "sha256": "581f925acab75554ea3d73d902782199dd0188b5f267abe82056d217ffd86fd7",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/ordinary-explicit-unsized.rs",
+      "sha256": "9948eec7efe578daf01518a728a177206ebb61d58b02e5453b95287fe95d756a",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/const-direct-sized.rs",
+      "sha256": "a8f49f24710a38795e63980bef01dc5aed282d98c6eb1f8cae7243769ec86446",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/const-wrapped-sized.rs",
+      "sha256": "9461e1713e2a300a53ea0ccc5a127f613c402e2e700a7cbe09cc3d8114579b45",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/const-explicit-sized.rs",
+      "sha256": "7177bd59882f71713eddf20ce78216fa2652041414e7212481786e0d3f28d678",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/const-direct-unsized.rs",
+      "sha256": "d3d5a18fb862a37ea15edb849ceafd6b8e8cf14d3c862c35fa57321c03911a24",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/const-wrapped-unsized.rs",
+      "sha256": "ba21dd9332b2958a2154f6c0eabb606513575f144d61da7cae4bc0abfd8405b8",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/const-explicit-unsized.rs",
+      "sha256": "f8847fecf5a006744e6d0ed0c4b6f10ff18e9a113506701682f211abdb07281d",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/concrete.rs",
+      "sha256": "2c25eb17d1feb88093127208572d83f7ccc76c9f5ad23e82441a07e260f9180d",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/borrowed.rs",
+      "sha256": "1a1e0d40514a3876a5193649123d4db9a25f5481552ce31f8ecdef0bd4951890",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/move-reject.rs",
+      "sha256": "9c2c45d768e2c18d8dd54f738f0257b7c45042753dfbef68275b2964f66d8739",
+      "rustc_object_status": 1,
+      "source_analysis_status": 1,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/mutable.rs",
+      "sha256": "17fa6f2e4cc8a9653ac4263fa73e3ffb0b9fa3bb7ab59f737a398b22ee449552",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/immutable-reject.rs",
+      "sha256": "7aec3ab1b93be5a967a8328a55f89f233026a46c443ee2769c2566121c999a89",
+      "rustc_object_status": 1,
+      "source_analysis_status": 1,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/inherent-priority.rs",
+      "sha256": "25299914d59ad1261145637474cd520ffcb63d7608c0444239578d8f7f8427bb",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/missing-deref.rs",
+      "sha256": "d9dfbeb9e017cfc95c94d5aeaf3cfc35246404c79f38f18aaafa399b64562784",
+      "rustc_object_status": 1,
+      "source_analysis_status": 1,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/native.rs",
+      "sha256": "c554a4c2130176e2e2ac77c7d66271c5f22d2448a7a179c1d9cf3d075f541da1",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete",
+      "independent_native": {
+        "status": 0,
+        "stdout": "receiver 23 41\n",
+        "stderr": ""
+      },
+      "source_lowir_status": 0
+    }
+  ],
+  "auxiliary": [
+    {
+      "path": "pa31/tests/spec/deref-methods/observer.c",
+      "sha256": "0b8bff87cc011994ce700c479d6e0da3ec408347e5f0bb2f28c733a4e191121e"
+    },
+    {
+      "path": "pa31/tests/spec/dereference-source/foundation.rs",
+      "sha256": "3fa614b5e1fc24d9b0d4c8b15ed92ddf3de29d6ed0812649c80e2696e4271e51",
+      "use": "Authenticated source-support attribution; ordinary source variants preserve these bytes, const variants explicitly change only Deref trait/impl constness and add usize Copy support"
+    }
+  ]
+}
