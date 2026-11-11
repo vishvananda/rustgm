@@ -49,9 +49,8 @@ Full [43009364083](https://github.com/vishvananda/rustgm/actions/runs/4300936408
 on exact9fdf58f75, containing the preceding sourceb15, failed those two public
 tests after all3,065 private tests passed. Later qualification stages were skipped.
 Full successor [43019302026](https://github.com/vishvananda/rustgm/actions/runs/43019302026)
-is active on exact`bc401434ac3a525781359f6d194a65cf5811aa6f`, containing this source
-repair. Full qualification remains pending. Documentation descendants do not
-restart this run.
+PASSED every stage on exact`bc401434ac3a525781359f6d194a65cf5811aa6f`, containing
+this source repair, including native/debug/independent/PA25 qualification.
 
 ## Immutable observations and remaining work
 
@@ -75,8 +74,9 @@ metadata is not an available executable for another run.
 
 No new original-core observation was run for this CI repair. The last partial
 observation remains b15's `LazyCell<T>::default` at cell/lazy.rs113:12567, passing
-`T::default` to `LazyCell::new`. Resume the exact callback-formation WIP retained
-in the single worker's Git stash. No original core/alloc/std artifact exists.
+`T::default` to `LazyCell::new`. That WIP was restored and qualified as the
+[callback checkpoint](pa25-callback-formation.md); its later partial observation
+clears the reached initializer failure and first reports RefCell::replace. No original core/alloc/std artifact exists.
 The two symbolic-index native artifacts, deep receiver inference, const-adapter
 factories, bootstrap/imports, transport, tuple factories and optimized qualification
 remain required. No compiler limit, source pin, backend or storage.py changed.

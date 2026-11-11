@@ -1,46 +1,34 @@
 # Library build blocker tracker
 
-The [post-inference property repair](pa20-post-inference-properties.md), source
-f93ffdb7f/CLIf46b54f3, repairs both public failures in full43009364083. Structural
-possibilities are rechecked after trait inference, and newly exposed projections
-reuse the retained selector/frontier. The minimum PA19 input stays unchanged;
-four new concrete-projection PA20 outcomes and references pass. Four generic
-projected-premise requirements retain exact source and independent outcomes in
-PA20 pending.json; their two valid positives remain unsupported. Selected strict
-checks, actual priority/destructor execution, upstream/harness and thirty immutable
-output-equal observations pass, with slower tiny controls honestly retained.
-No new core observation was run. Resume the independently frozen LazyCell callback
-WIP from the existing single worker's Git stash, as handoff.md describes.
+[Callback formation versus invocation](pa25-callback-formation.md),source5798bd7f1/
+CLI05cc3029, clears the reached LazyCell<T>::default failure. Existing typed bounds
+pay ordinary formation and actual conditional invocation separately. Earliest
+PA19/24/25/31 packets own46 independent object outcomes;46 type phases,44 complete
+LowIR outcomes,12 bounded creation/invocation scaling inputs and3 new actual
+Rust/CPPGM executions23/23/41 pass. Two paid alias/reference full LowIR artifacts
+remain required positives at the existing literal-callee body gate. Exactly5 new
+reviewed text triples and all5,461 old oracle/receipt bytes remain qualified.
+Selected strict checks, old native controls, upstream/harness and30 immutable
+output-equal observations pass; slower/noisy tiny measurements remain recorded.
 
-The preceding [projected candidate/reborrow checkpoint](pa20-projected-candidate-properties.md),
-compiler b15d29240/CLI94bd08b4, clears the reached try_from_fn_erased
-normalization record at guard.array_mut.len(). Existing semantic selection proves
-projected candidate bounds; actual reborrow places receive field instances through
-existing preparation paths. PA18 owns5 new ordinary reductions, PA20 owns27,
-PA31 owns7 source counterparts. All32 ordinary full LowIR outcomes,20 source
-analysis contracts including13 reused cases, bounded growth/noise, actual priority
-values and one real destructor execution pass. Exactly32 new text triples are
-reviewed and checked; all old oracles remain unchanged. No limits/backend/storage
-change or whole-assignment release is implied.
+The unchanged120s original observer FAILS deadline121.668676s with118 partial
+records throughfunction6558,range/iter.rsfile195:3846. LazyCell default is reached
+with no file113 failure. First now **RefCell::replace**,cell.rsfile112:35607,
+line1026: incompatible types at mem::replace(&mut self.borrow_mut(), t). Reduce
+its mutable-borrow wrapper coercion first; later clone/clone_from/comparison
+records are separate until a contrast establishes a shared cause. All722 original
+hashes/375opens/sixbindings/profile/limits and immutable/current compiler hashes
+are verified unchanged. No complete census, comparable throughput or original
+core/alloc/std artifact exists.
 
-The same120s original observer fails deadline121.279946s with159 partial records
-throughfunction10718,file283:70779. First now **LazyCell<T>::default**,
-cell/lazy.rsfile113:12567: unsatisfied trait obligation at initializer creation
-using T::default and LazyCell::new. File112 is cell.rs, with later replace/clone/
-clone_from/comparison records; earlier Option attribution was incorrect. All722
-hashes/375opens/sixbindings/profilelimits remain unchanged. No complete census,
-comparable body count, throughput result or original artifact exists. Ordinary
-callback creation/constructor/effect contrasts are now frozen in the stashed WIP;
-resume their correction using existing conditional function-item/adapter producers.
-Preserve all pending native panic,
-128-depth inference, factory execution, bootstrap, transport and optimized checks
-listed in handoff.md. Full42988281942 on exact31be succeeded every stage.
-Full43009364083 on exact9fdf58f75 containing sourceb15 FAILED those two public
-tests after3,065 private passes. Fast/setup/host checks passed; later stages were
-skipped. Full successor43019302026 is ACTIVE on exactbc401434a containing sourcef93.
-Documentation descendants must not restart this run. Baseline94bd was retired
-after replacement publication with explicit prune1794399578264808714; currentf46
-and optimized21f remain available.
+Prior full43019302026 on exactbc401434a/sourcef93 passed EVERY stage. Callback
+source full successor is due after publication and an active-run check; never
+restart it for docs/input descendants.05cc/current,f46/comparison and21f/optimized
+are retained until explicit post-publication f46 retirement; older94bd/00d2/9109/
+e7 executables are absent. Preserve two paid-alias artifacts, two generic projected
+premise positives, symbolic-index native2, depth128 inference, factory execution,
+bootstrap/imports, transport, tuple factories and optimized checks in handoff.md.
+No source pin, compiler limit, backend contract or storage.py changed.
 
 Earlier const-adapter/implicit receiver observations below are historical;
 the current frontier above supersedes their next-step text.

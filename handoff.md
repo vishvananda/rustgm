@@ -1,148 +1,66 @@
 # RustGM single-worker continuation — 2026-11-11
 
-This current section supersedes the historical multi-lane snapshot below.
-The user explicitly asked for one worker. Do not spawn workers or create worktrees.
-Use existing B `/mnt/vizier/rustgm-scratch/rustgm-pa26-work`; main is Git-only.
-The goal remains original core, then alloc/std. No original library artifact exists.
+This current section supersedes historical snapshots below. The user asked for
+one worker: do not spawn agents or create worktrees. Use existing B
+`/mnt/vizier/rustgm-scratch/rustgm-pa26-work`; main is Git-only. Goal: original
+core, then alloc/std. No original library artifact exists.
 
-## Current CI repair
+## Current callback checkpoint
 
-[Post-inference property repair](docs/pa20-post-inference-properties.md), source
-f93ffdb7fb7f413148406c0284408fe83f68f2d8, repairs the two public failures in full
-43009364083. The ordinary Copy condition remains until trait inference settles;
-newly exposed projections use the existing semantic selector and retained private
-frontier. No proof permission, new engine/state, limits/backend/storage change.
-The original PA19 regression is unchanged. Four concrete-projection PA20 outcomes
-pass with exactly four reviewed new triples; all8,512 old PA19/PA20 oracle/receipt
-files stay unchanged. Four generic projected-premise inputs remain in PA20
-late-method-properties/pending.json, with complete bytes and independent outcomes;
-their two valid unpaid positives still need caller-premise inference.
+[Formation versus invocation](docs/pa25-callback-formation.md), source5798bd7f1,
+clears the reached LazyCell<T>::default initializer failure. Function-value
+creation pays ordinary bounds; actual calls retain conditional const obligations
+using existing typed clauses/bindings/selection. No new proof engine or permission,
+backend/storage/limits changes. Canonical FunctionItem arguments reuse the existing
+known_arguments API. Required const-trait members retain actual-call checking.
 
-Both original CI tests and three existing property/scaling/state controls pass in
-1794397840938770713, but that exploratory batch fails the newly authored generic
-positive. Never call the entire batch passed. Its production identities equal
-the final receipts. Final finite4 pass1794398451632493330; actual native priority
-and destructor2 pass1794398656352842239. Strict Clippy/fmt/audit, upstream128/
-Reference126 and315 harness tests/468roots/13bins/44stages pass. CLI
-f46b54f3248e174e3cafeb1d791811a5bdbbf96004bbdd4dc74a6f3df2c53bf6 is pinned at
-Bobj/parallel/projected-ci-repair/candidate-dev-fast/rustgm, producerf93/empty
-patch/3902Rusthashes.
-Thirty exclusive A/A+twoABBA observations preserve complete outputs for ordinary
-import, accepted128-call property path and priority LowIR. Wall ratios1.044/1.046/
-.930, CPU1.045/1.046/.929; AA.876/.993/1.004. Keep slower observations; no neutrality/
-optimized/core speed claim. Baseline94bd was retired after replacement publication,
-explicit prune1794399578264808714; its executable is absent. Only currentf46 and
-optimized21f remain pinned. Full43019302026 is ACTIVE on EXACTbc401434ac3a525781359f6d194a65cf5811aa6f,
-containing sourcef93. Do not cancel/redispatch it for docs/input descendants.
-No new original-core observation or artifact exists.
+Earliest PA19=3/24=2/25=37/31=4 packets freeze46 independent Rust object outcomes,
+37accept/9reject. All46 declared type phases and44 complete LowIR outcomes pass.
+Two paid alias/reference full LowIR positives remain REQUIRED: typing succeeds,
+existing checked-body literal-callee identity gate still fails. No positive was
+inverted. Twelve creation/paid-invocation width8/32/128+noise128 bounded-work checks
+pass. Three new real Rust/CPPGM executions check23/23/41; old priority and actual
+destructor execute. Public1794402541806766803 passes6exact/206.71s; native
+1794402928426840181 passes3exact/75.08s. Selected strict Clippy/fullfmt/audit pass.
+Exactly5 reviewed new PA19/24 triples pass; all5,461 old oracle/receipt bytes stay
+unchanged. Upstream128/Reference126/harness315/468roots13bins44stages pass.
 
-## Last original-core observation and preceding foundation
+Immutable CLI05cc3029540dc069cf360821f180521d74278c5f5986a8e8e69255dc7955def5
+at Bobj/parallel/lazy-default/candidate-dev-fast/rustgm binds source5798,empty
+tracked patch/3903Rust hashes. Thirty exclusive A/A+twoABBA observations match
+complete outputs on ordinary import,accepted paid calls128,actual priorityLowIR;
+wall.965/1.018/.994,CPU.990/1.026/.961,AAwall1.026/1.019/.693. Slower/noisy values
+remain; no neutrality/optimized/core-speed claim. Current05cc,comparisonf46 and
+olderoptimized21f are available; retire f46 only AFTER replacement publication
+with explicit scoped prune.94bd/00d2/9109/e7 executable pins are absent.
 
-[Projected method properties and actual borrowed places](docs/pa20-projected-candidate-properties.md),
-compiler b15d29240f5f1a00894a2149bac1ddc46d18ed20, clears the reached
-try_from_fn_erased normalization error at guard.array_mut.len(). The structural
-possibility query requests semantic work explicitly; the original bound then
-uses existing non-refining trait selection, with actual caller/scoped projection
-formation and pending-declaration handling. Unresolved possibilities stay possible;
-budget and malformed-graph errors stay errors. A raw nominal size suspension is
-refused before another property root reuses that walker. Selected calls still
-prove their full trait/region/effect/body debts. No new proof engine or permission.
+## Original core and next work
 
-Full LowIR exposed a pre-existing reborrow field-instance failure in five explicit
-controls. The shared actual-borrow root producer now supplies both existing field
-preparation paths, including raw-pointer coercions. No inference-arena scan,
-representation, global cache, compiler limit, backend or storage.py change.
+Unchanged120s observer FAILS deadline121.668676s:118 partial records through
+function6558,range/iter.rsfile195:3846,node310. LazyCell default is reached at
+function3647,file113:12543 with no file113 failure. First now **RefCell::replace**,
+cell.rsfile112:35607,line1026, incompatible types at
+mem::replace(&mut self.borrow_mut(), t). Subsequent clone/clone_from/partial_cmp/
+cmp records remain separate. Reduce the actual mutable-borrow wrapper coercion;
+do not infer a shared cloning cause without a contrast. Earlier Cell::replace
+shorthand identified only the module. ProgressSHA972dee75d1fc8bcc9cfd77fc38928e798f07ba823cc9f20587fb53b12975d177.
+Postcheck1794405273338140972 verifies722hashes/375opens/sixbindings/immutable
+compiler/current3903/profile/limits. No complete census, comparable throughput or
+original artifact. Never raise the120s window or budgets to hide a blocker.
 
-Earliest owning reductions are committed: PA18 has5 new ordinary cases (4accept/
-1reject), PA20 has27 (24accept/3reject, including6 width/noise inputs), and PA31
-has7 independently accepted source-object cases. All32 ordinary full LowIR
-outcomes pass. Two Rust/CPPGM programs execute method priority41/41/23/23/41/31
-and the actual non-Copy destructor exactly once. All13 existing source lookup
-contracts pass; explicit-rigid/explicit-concrete/method-rigid now accept their
-original valid language outcomes. All source bytes/original Rust outcomes stay
-unchanged. Exactly32 NEW text triples were independently reviewed/generated/
-rechecked; every OLD PA18/PA20 oracle and receipt remains byte-identical.
+Prior [method-inference repair](docs/pa20-post-inference-properties.md),sourcef93,
+passed EVERY full43019302026 stage on exactbc401434ac3a525781359f6d194a65cf5811aa6f.
+Its two generic projected-premise positives remain required in PA20 pending.json
+with complete frozen bytes/outcomes. Full callback successor is due after source
+publication and checking no active manual/scheduled full run; dispatch once,
+never cancel/restart for documentation/input descendants. The LazyCell stash was
+restored, verified and dropped; no stash restoration remains to do.
 
-Immutable CLI94bd08b42caf5680d4ccce6efbeef449e6eb159473ae3668b1a21a94a746f808
-is Bobj/parallel/projected-properties/candidate-dev-fast/rustgm. Producer binds
-b15d29240, empty whole tracked diff,3902 Rust hashes. Thirty exclusive matched
-A/A+twoABBA observations preserve complete output equality for ordinary import,
-generic-reborrow library and unresolved-projection controls. Tiny unoptimized
-paired wall ratios1.150/1.167/1.035 and A/A.690/.632/.952 remain recorded; no
-speed/neutrality/optimized/core claim. New rigid-projection acceptance has no
-accepting baseline; width8/32/128+noise128 bounded-work checks cover that path.
-Optimized qualification remains pending. Baseline00d2 was retired after replacement
-publication and explicit prune1794395534452651774; its executable is absent.
-Keep currentf46 and older optimized21f. Baseline94bd is now also retired/absent.
-Old9109 and e7 executables are also absent;
-metadata does not make retired executables available for new runs.
-
-The unchanged120s original observer FAILS deadline121.279946s with159 partial
-records throughfunction10718,file283:70779,node3113. ProgressSHA
-486344dc4ca80525c50eb9badff41e64679392a3959f1712c0c377bd1cb63133.
-Array function3385 at98:30975 was reached; try_from_fn_erased has no record in
-this prefix. First now default113:12567, unsatisfied trait obligation. The mapped
-source is **core/src/cell/lazy.rs**, LazyCell<T>::default: it passes T::default
-to LazyCell::new as an initializer. File112 is **core/src/cell.rs**: replace has
-incompatible types, clone has an unpaid trait obligation, clone_from incompatible
-types, then partial_cmp/cmp trait obligations. Earlier Option attribution was
-incorrect. Do not infer modules from method names. All722 hashes/375opens/six
-bindings/profile/limits and immutable/current compiler hashes are verified
-unchanged by postcheck1794393775288810739. No complete census/body count,
-throughput result or original core/alloc/std artifact exists.
-
-## Continue here
-
-Restore the exact LazyCell callback WIP from the Git stash named "lazy callback
-formation WIP; preserve while repairing projected-properties CI" after this repair
-is published. It touches body/generic/function-value obligations, one canonical
-FunctionItem argument reader branch, closureconst tests and PA19/24/25/31 fixtures;
-it has no overlap with this repair's production files. Prefer stash apply, verify
-the result, then drop that exact stash. Do not create another checkout/worker.
-
-Bobj/parallel/lazy-default freezes31 independently checked Rust OBJECT outcomes:
-22accept9reject, installed in the stash by earliest owner PA19=3, PA24=2, PA25=22,
-PA31=4. All ordinary/runtime FnOnce constructor and pointer cases pass baseline;
-eight valid conditional-trait function-value creations fail. Actual unpaid const
-invocations remain genuine negatives. Two paid alias/reference calls retain an
-existing full-LowIR exact-callee boundary as REQUIRED POSITIVES. Three real Rust
-executions23/23/41 and six width/noise objects also pass, but those nine inputs
-are only in obj/execution-declared and not installed or candidate-qualified yet.
-
-WIP separates formation's ordinary requirements from actual invocation effects,
-using existing member-use clauses, instantiation and trait selection. It keeps
-method/operator/implicit call effects, and follows full typed receivers through
-locals/references at actual calls. No new state/proof engine/permission. Its first
-batch failed a new canonical FunctionItem argument read on a plain const call;
-the attempted duplicate helper then failed compilation. The STASH now reuses the
-EXISTING public Context::known_arguments from infer/projections/inputs.rs through
-one new item_arguments branch; no duplicate helper remains. This corrected WIP
-is UNQUALIFIED and must pass exact new31, existing const/adapter/method controls
-before publication or any claim that LazyCell is cleared. Reuse the frozen Rust
-outcomes; do not reclassify positives or raise limits. Keep Cell replacement and
-cloning separate until a contrast proves a shared cause.
-
-Evidence root is Bobj/parallel/projected-properties. Final-production
-1794391956383811769 PASS8exact2targets115.16s covers21 ordinary PA20/5 PA18
-full-LowIR cases, the source groups, width/noise, prior14symbolic index contracts
-and real CTFE47. Separate CLI preflight/course checks qualify all32 full-LowIR
-outcomes including six scaling inputs. Size-state1794392290746405887 PASS1exact;
-native1794392342902064203 PASS2exact37.54s. Strict selected production/CLI/test
-Clippy, full formatting and architecture pass. Existing bounded constructor-field
-control passes1794391641399698727. Source7/frozen byte identities and all32 ordinary
-Rust object outcomes are verified; upstream128/Reference126 and315 harness tests/
-468roots/13bins/44stages pass. Private affine/budget/fields-only/header/universe
-checks stay in full CI; no cold private/release link was used locally. Machine
-record: docs/pa20-projected-candidate-properties-evidence.json.
-
-Full42988281942 on EXACT31be0c24f PASSED every fast/release/course/native/debug/
-independent/PA25 stage, qualifying the previous symbolic-index source004ae71e9.
-Full43009364083 on EXACT9fdf58f7588a35c69b85601fe3b70e242a937247 containing sourceb15
-FAILED the two public tests repaired above after all3065 private passes. Fast,
-lint/architecture/harness and independent host graph passed; later stages skipped.
-Successor43019302026 is now ACTIVE on EXACTbc401434ac3a525781359f6d194a65cf5811aa6f,
-sourcef93, fast/qualification started. Do not cancel/redispatch it for documentation
-or input descendants; monitor its terminal result while working on LazyCell.
+Machine record: docs/pa25-callback-formation-evidence.json. Raw evidence:
+Bobj/parallel/lazy-default. Next publish this coherent source+docs checkpoint,
+start one full qualification if idle, retire the completed comparison pin, then
+implement an independently reduced RefCell::replace correction. Keep the paid
+alias2, projected-premise2 and every retained requirement below positive/required.
 
 ## Retained requirements and resource rules
 

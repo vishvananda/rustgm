@@ -1,0 +1,419 @@
+{
+  "schema": 1,
+  "state": "Focused callback checkpoint qualified; reached LazyCell initializer failure cleared in partial deadline observation; no original artifact. Full successor due after publication.",
+  "compiler": {
+    "commit": "5798bd7f161f4420117079ac02306458d9a8b621",
+    "cli_sha256": "05cc3029540dc069cf360821f180521d74278c5f5986a8e8e69255dc7955def5",
+    "immutable_cli": "B obj/parallel/lazy-default/candidate-dev-fast/rustgm",
+    "producer_sha256": "2a5c815e1750ce23149c69c66bedac23efc51e9d26127b5289b168f877875e8e",
+    "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "rust_source_count": 3903
+  },
+  "contracts": {
+    "total": 46,
+    "independent_accepts": 37,
+    "independent_rejects": 9,
+    "owners": {
+      "pa19": 3,
+      "pa24": 2,
+      "pa25": 37,
+      "pa31": 4
+    },
+    "phase_results": {
+      "cases": 46,
+      "qualified_types": 46,
+      "qualified_full_lowir": 44,
+      "required_positive_lowir_pending": [
+        "pa25/tests/spec/callback-formation/alias-paid.rs",
+        "pa25/tests/spec/callback-formation/reference-paid.rs"
+      ],
+      "candidate_sha256": "05cc3029540dc069cf360821f180521d74278c5f5986a8e8e69255dc7955def5"
+    },
+    "attributed_source_prefixes": 4,
+    "no_positive_outcome_inverted": true
+  },
+  "qualification": {
+    "public": {
+      "receipt": "1794402541806766803",
+      "exact_tests": 6,
+      "targets": 3,
+      "seconds": 206.71,
+      "status": "pass"
+    },
+    "native": {
+      "receipt": "1794402928426840181",
+      "exact_tests": 3,
+      "targets": 2,
+      "seconds": 75.08,
+      "status": "pass",
+      "new_observers": [
+        23,
+        23,
+        41
+      ],
+      "old_priority": [
+        41,
+        41,
+        23,
+        23,
+        41,
+        31
+      ],
+      "old_destructor": 1
+    },
+    "strict_selected_clippy_format_architecture": "pass",
+    "scaling": {
+      "families": [
+        "formation",
+        "paid invocation"
+      ],
+      "widths": [
+        8,
+        32,
+        128
+      ],
+      "unrelated_types": [
+        0,
+        128
+      ],
+      "cases": 12,
+      "bounded_work": true,
+      "unrelated_type_counters_identical": true
+    },
+    "checks": {
+      "all46independent_objects_and_fixture_identities": true,
+      "attributed_source_prefixes_preserved": 4,
+      "logs": {
+        "upstream": "19edc114e22639322b3ce9f0bcda582a6fc7d9641501c9a6ac1deca7ce08d175",
+        "harness": "7148b503fab30993c5e77262ce2923e06526c9133bd73146aa993d2d4787f683"
+      }
+    },
+    "upstream": 128,
+    "reference_script": 126,
+    "harness": 315,
+    "integration_roots": 468,
+    "binaries": 13,
+    "stages": 44,
+    "references": {
+      "new_triples": 5,
+      "old_unchanged_files": 5461,
+      "batches": [
+        "pa19/reference-batches/1794403150970515882-6bc6425a9f2a.json",
+        "pa24/reference-batches/1794403152587056289-2e0c894104fe.json"
+      ],
+      "planned_pa25_pa31_oracles": false
+    }
+  },
+  "measurements": {
+    "rows": 30,
+    "complete_output_equality": true,
+    "summary": {
+      "import-control": {
+        "seconds": {
+          "aa_ratio": 1.0262155104119,
+          "paired_candidate_over_base": 0.9651529421692056
+        },
+        "cpu_seconds": {
+          "aa_ratio": 0.8926784059314182,
+          "paired_candidate_over_base": 0.9895600530848154
+        }
+      },
+      "calls-width-128-noise-0": {
+        "seconds": {
+          "aa_ratio": 1.0186308219208944,
+          "paired_candidate_over_base": 1.017970935378783
+        },
+        "cpu_seconds": {
+          "aa_ratio": 1.006080506379191,
+          "paired_candidate_over_base": 1.0260497877785062
+        }
+      },
+      "priority-native": {
+        "seconds": {
+          "aa_ratio": 0.6928481192898909,
+          "paired_candidate_over_base": 0.9939370080116687
+        },
+        "cpu_seconds": {
+          "aa_ratio": 1.006395847046112,
+          "paired_candidate_over_base": 0.9610686258831865
+        }
+      }
+    },
+    "no_optimized_or_core_speed_claim": true
+  },
+  "comparison_baseline": {
+    "sha256": "f46b54f3248e174e3cafeb1d791811a5bdbbf96004bbdd4dc74a6f3df2c53bf6",
+    "lifecycle": "Available for completed comparison; retire explicitly after replacement publication."
+  },
+  "original_core": {
+    "result": {
+      "infrastructure_failure": true,
+      "classification": "infrastructure/setup failure",
+      "observer_deadline_seconds": 120,
+      "progress_requested": true,
+      "lint_cap": "allow",
+      "source_contract_limits": {
+        "work": 14500624,
+        "attempted_bytes": 1073741824,
+        "retained_bytes": 67108864
+      },
+      "expected_cli_sha256": "05cc3029540dc069cf360821f180521d74278c5f5986a8e8e69255dc7955def5",
+      "expected_cli_source": "explicit caller input",
+      "error": "original-core observer deadline",
+      "partial_progress": {
+        "analysis_only": true,
+        "complete_census": false,
+        "records": 118,
+        "last_item": "item\tfunction\t6558\tfile 195:3846\tnode 310"
+      },
+      "total_seconds": 121.66867591696791,
+      "raw_sha256": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "whole-core.openat": "d782ba36d0dd2d8a1503d2af6343759f505eb03f14787575c23b6e6ed2b76563",
+        "progress.tsv": "972dee75d1fc8bcc9cfd77fc38928e798f07ba823cc9f20587fb53b12975d177"
+      }
+    },
+    "postcheck": {
+      "all722source_hashes": true,
+      "immutable_bindings_unchanged": true,
+      "opened_source_count": 375,
+      "config_bindings": 6,
+      "record_count": 118,
+      "first_records": [
+        "record\t1\tbodies\tfailed\tfunction `replace`\tfile 112:35607\t-\tincompatible types",
+        "record\t2\tbodies\tfailed\tfunction `clone`\tfile 112:49655\t-\ttrait obligation requires an unambiguous matching assumption or implementation",
+        "record\t3\tbodies\tfailed\tfunction `clone_from`\tfile 112:49882\t-\tincompatible types",
+        "record\t4\tbodies\tfailed\tfunction `partial_cmp`\tfile 112:50950\t-\ttrait obligation requires an unambiguous matching assumption or implementation",
+        "record\t5\tbodies\tfailed\tfunction `cmp`\tfile 112:52128\t-\ttrait obligation requires an unambiguous matching assumption or implementation",
+        "record\t6\tbodies\tfailed\tfunction `next`\tfile 133:2226\t-\treceiver has no inherent nominal method"
+      ],
+      "source_hash_count": 3903,
+      "progress_sha256": "972dee75d1fc8bcc9cfd77fc38928e798f07ba823cc9f20587fb53b12975d177"
+    },
+    "postcheck_cleanup": "1794405273338140972",
+    "last_item_source": "core/src/range/iter.rs",
+    "lazy_default_reached_item": "item\tfunction\t3647\tfile 113:12543\tnode 564",
+    "lazy_file_failure_records": 0,
+    "first_failure": {
+      "function": "RefCell::replace",
+      "file": 112,
+      "path": "core/src/cell.rs",
+      "offset": 35607,
+      "line": 1026,
+      "message": "incompatible types"
+    },
+    "complete_census": false,
+    "artifact": false,
+    "no_comparable_throughput_claim": true
+  },
+  "prior_full_ci": {
+    "run": 43019302026,
+    "head": "bc401434ac3a525781359f6d194a65cf5811aa6f",
+    "source_commit": "f93ffdb7fb7f413148406c0284408fe83f68f2d8",
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 130518183605,
+        "name": "qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 43019302026,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Pinned Rust",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Lint, architecture and harness",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Independent host build graph",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "Release and course tests",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6
+          },
+          {
+            "name": "Native maintainer qualification",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7
+          },
+          {
+            "name": "Broad native course sweep",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8
+          },
+          {
+            "name": "Debug invariants",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 9
+          },
+          {
+            "name": "Retire completed debug build cache",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 10
+          },
+          {
+            "name": "Independent Rust qualification",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 11
+          },
+          {
+            "name": "PA25 const-machine candidate contract",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 12
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 24
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 25
+          }
+        ]
+      },
+      {
+        "id": 130518183901,
+        "name": "fast",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 43019302026,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Pinned Rust",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Run actions/cache@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Audit setup",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "Five-minute compiler smoke",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6
+          },
+          {
+            "name": "Harness, audit cache and upstream contracts",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7
+          },
+          {
+            "name": "Retain focused evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8
+          },
+          {
+            "name": "Post Run actions/cache@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17
+          }
+        ]
+      }
+    ]
+  },
+  "current_full_ci": {
+    "status": "due after publication and active-run check",
+    "source_commit": "5798bd7f161f4420117079ac02306458d9a8b621",
+    "do_not_restart_for_documentation": true
+  },
+  "unchanged": [
+    "backend17b024f69",
+    "storage.py",
+    "722 original source hashes",
+    "six bindings",
+    "profile",
+    "compiler limits",
+    "120s observer window"
+  ],
+  "next": "Reduce actual RefCell::replace borrowed-wrapper coercion with earliest owning ordinary/source contrasts. Retain separate cloning/comparison debts and all handoff pending requirements.",
+  "raw_evidence": {
+    "candidate-dev-fast/producer.json": "2a5c815e1750ce23149c69c66bedac23efc51e9d26127b5289b168f877875e8e",
+    "phases/observations.json": "9c53ac8f12e82ce1799b41411e340106c8211e3c5134b81da2bba85ef3bdc19e",
+    "phases/passed.json": "0758d1042fd488b3b8f6dce06dc2a7e87a3a8169c202d83c36da25be55376ebc",
+    "checks/passed.json": "5da98eef383e711b0ddb6a34a9cb2596ec2ce6597e42d7fa1973a285391340e2",
+    "measure/plan.json": "b8054303ae6dcd31c3674d8dc36b72cb81c07c5f61a175e3f2b50ab19c566581",
+    "measure/observations.json": "6b0dba3a2b13749d8e15cde7a9d51bf9ecf65f98b9c8253919a019b3830d8626",
+    "measure/passed.json": "44cd0d4d7054205ac1f52c5fba0b1f316758f052e5fc89a0fcc02c0982cb93db",
+    "original/binding.json": "1411f7f3c661b80f59fcf4f4d516b3d67758c882f140fa5b4e703c961d65b251",
+    "original/result.json": "e765f38b3340bdf0ea0e1c913338137196018019de8855a17206f7a14eee32da",
+    "original/progress.tsv": "972dee75d1fc8bcc9cfd77fc38928e798f07ba823cc9f20587fb53b12975d177",
+    "original/whole-core.openat": "d782ba36d0dd2d8a1503d2af6343759f505eb03f14787575c23b6e6ed2b76563",
+    "post-observer.log": "677aa96105f514202970f3ac64f1218c361cadd4e0da990de4b2a291dbeec409"
+  },
+  "all_prior_requirements_retained": true
+}
