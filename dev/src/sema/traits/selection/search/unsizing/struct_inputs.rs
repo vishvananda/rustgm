@@ -5,6 +5,7 @@ use crate::{
     support::bindings::LangItem,
     types::{
         ItemId, TypeId,
+        arguments::Argument as Canonical,
         infer::{Context, Error, TermId, arguments::Argument, predicates::Predicate},
     },
 };
@@ -23,20 +24,19 @@ pub(super) fn requirements(
     if selected.is_empty() {
         return Ok(Outcome::Absent);
     }
-    unchanged_arguments(facts, context, pair, &selected)?;
-    let source = context.resolved(&mut facts.types, pair.0)?;
-    let target = context.resolved(&mut facts.types, pair.1)?;
+    let source = context.item_arguments(&facts.types, pair.0)?;
+    let target = context.item_arguments(&facts.types, pair.1)?;
+    unchanged_arguments(facts, context, &source, &target, &selected)?;
     let field = facts
         .aggregates
         .get(owners.0)
         .and_then(|definition| facts.aggregates.variants(definition).first())
         .and_then(|variant| facts.types.list(variant.fields))
-        .and_then(|fields| fields.len().checked_sub(1))
+        .and_then(|fields| fields.last())
+        .copied()
         .ok_or("source Unsize lost its completed final field")?;
-    let source = tail(facts, context, source, field)?;
-    let target = tail(facts, context, target, field)?;
-    let source = context.known(&facts.types, source)?;
-    let target = context.known(&facts.types, target)?;
+    let source = tail(facts, context, owners.0, source, field)?;
+    let target = tail(facts, context, owners.0, target, field)?;
     let role = facts
         .source_bindings
         .as_deref()
@@ -78,18 +78,22 @@ fn parameters(
 fn unchanged_arguments(
     facts: &Declarations,
     context: &mut Context,
-    pair: (TermId, TermId),
+    source: &[Argument],
+    target: &[Argument],
     selected: &[u32],
 ) -> Result<(), Failure> {
-    let source = context.item_arguments(&facts.types, pair.0)?;
-    let target = context.item_arguments(&facts.types, pair.1)?;
     if source.len() != target.len() {
         return Err(Error::Mismatch.into());
     }
     context.account_work(source.len())?;
     let mut slots = selected.iter().copied().peekable();
     let mut unchanged = Vec::with_capacity(source.len());
-    for (index, pair) in source.into_iter().zip(target).enumerate() {
+    for (index, pair) in source
+        .iter()
+        .copied()
+        .zip(target.iter().copied())
+        .enumerate()
+    {
         if slots.peek().is_some_and(|&slot| slot as usize == index) {
             slots.next();
             if !matches!(
@@ -113,16 +117,24 @@ fn unchanged_arguments(
 fn tail(
     facts: &mut Declarations,
     context: &mut Context,
-    ty: TypeId,
-    field: usize,
-) -> Result<TypeId, Failure> {
+    owner: ItemId,
+    arguments: Vec<Argument>,
+    field: TypeId,
+) -> Result<TermId, Failure> {
+    let mut fields =
+        crate::sema::annotations::Fields::for_arguments(facts, context, owner, arguments)?;
     let pay =
         crate::sema::header_attributes::caller_payments(facts.must_use_contracts.as_deref(), true)
             .map_err(|_| "nominal source Unsize lacks its completed payer")?;
-    let mut fields = facts.aggregates.semantic_fields(&facts.types, ty)?;
-    let result = fields.field_paid(&mut facts.types, 0, field, &|work, bytes| {
-        pay.charge(work, bytes)
-    });
-    context.account_work(fields.work())?;
-    Ok(result?)
+    let result = fields.regions.argument_inside_charged(
+        &mut facts.types,
+        Canonical::Type(field),
+        0,
+        &|work, bytes| pay.charge(work, bytes),
+    );
+    context.account_work(fields.regions.steps)?;
+    let Canonical::Type(field) = result? else {
+        return Err("nominal source Unsize field changed kind".into());
+    };
+    Ok(context.instantiate_with(&mut facts.types, field, &mut fields.parameters)?)
 }

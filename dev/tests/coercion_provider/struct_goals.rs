@@ -21,7 +21,7 @@ fn cases() -> TestResult<Vec<(String, String, bool, bool)>> {
             *native == "execute",
         ));
     }
-    assert_eq!(rows.len(), 44);
+    assert_eq!(rows.len(), 46);
     Ok(rows)
 }
 
@@ -101,7 +101,7 @@ fn nominal_unsize_conversions_execute_real_fields_metadata_and_dispatch() -> Tes
     std::fs::create_dir_all(&folder)?;
     let client = crate::resolve::fixture(&format!("{PACKET}/observer.c"))?;
     let rows: Vec<_> = cases()?.into_iter().filter(|row| row.3).collect();
-    assert_eq!(rows.len(), 29);
+    assert_eq!(rows.len(), 31);
     for (name, source, _, _) in rows {
         let program = lower(&source)?;
         std::fs::write(folder.join(format!("{name}.rs")), source)?;

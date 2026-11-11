@@ -11,7 +11,7 @@ use crate::{
     },
     types::{
         ItemId,
-        arguments::{Argument as Canonical, ConstKind},
+        arguments::Argument as Canonical,
         infer::{Instantiation, arguments::Argument},
         substitute::Bound,
     },
@@ -326,60 +326,7 @@ impl Checker<'_> {
             .infer
             .item_arguments(&self.facts.types, receiver)
             .map_err(|e| self.error(node, e))?;
-        let Some(parameters) = self.facts.generics.parameters.get(&DefId(owner.0)) else {
-            let count = self
-                .facts
-                .lifetimes
-                .parameters
-                .get(&DefId(owner.0))
-                .map_or(0, Vec::len);
-            if arguments.len() != count {
-                return Err(self.error(node, "invalid nominal lifetime argument count"));
-            }
-            let regions = arguments
-                .into_iter()
-                .map(|argument| match argument {
-                    Argument::Lifetime(region) => Ok(region),
-                    _ => Err(self.error(node, "nominal lifetime argument kind mismatch")),
-                })
-                .collect::<Result<Vec<_>, _>>()?;
-            return Ok(Fields {
-                regions: Bound::new(regions),
-                parameters: Instantiation::new(&mut self.state.infer, &self.facts.types, &[])
-                    .map_err(|e| self.error(node, e))?,
-            });
-        };
-        if parameters.len() != arguments.len() {
-            return Err(self.error(node, "invalid nominal argument count"));
-        }
-        let mut regions = Vec::new();
-        let mut bindings = Vec::new();
-        for (parameter, argument) in parameters.iter().zip(arguments) {
-            let id = match (parameter.argument, argument) {
-                (Canonical::Lifetime(_), Argument::Lifetime(region)) => {
-                    regions.push(region);
-                    continue;
-                }
-                (Canonical::Type(ty), Argument::Type(_)) => {
-                    let Some(Type::Parameter(id)) = self.facts.types.kind(ty) else {
-                        return Err(self.error(node, "missing nominal type parameter"));
-                    };
-                    id
-                }
-                (Canonical::Const(id), Argument::Const(_)) => {
-                    let Some(ConstKind::Parameter(id)) = self.facts.types.const_kind(id) else {
-                        return Err(self.error(node, "missing nominal const parameter"));
-                    };
-                    id
-                }
-                _ => return Err(self.error(node, "nominal argument kind mismatch")),
-            };
-            bindings.push((id, argument));
-        }
-        Ok(Fields {
-            regions: Bound::new(regions),
-            parameters: Instantiation::new(&mut self.state.infer, &self.facts.types, &bindings)
-                .map_err(|e| self.error(node, e))?,
-        })
+        Fields::for_arguments(self.facts, &mut self.state.infer, owner, arguments)
+            .map_err(|error| self.error(node, error))
     }
 }

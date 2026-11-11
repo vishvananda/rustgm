@@ -42,3 +42,5 @@ width-128-noise-0.rs	0	execute
 width-128-noise-128.rs	0	execute
 prefix-lifetime-shorten.rs	1	reject
 prefix-lifetime-equal.rs	0	compile-only
+target-element-inference.rs	0	execute
+source-element-inference.rs	0	execute

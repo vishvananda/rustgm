@@ -1,7 +1,7 @@
 # Actual source Unsize over nominal storage tails
 
-The manifest freezes44 independently checked sources:31 accept and13 reject;
-29 positives execute the real conversion through the exported observer and return
+The manifest freezes46 independently checked sources:33 accept and13 reject;
+31 positives execute the real conversion through the exported observer and return
 `9 23`. Two acceptance controls check original-shaped generic bodies and explicit
 prefix-lifetime equality without claiming native execution. The unchanged earlier
 `unsizing-roles/nominal-unsize-required.rs` is also a required positive.
@@ -28,3 +28,7 @@ under `obj/parallel/nominal-unsize/`. Active observations use real pattern reads
 and writes, completed source prerequisites and a bounded state transition for
 evaluation count. Original source-faithful bytes are preserved. PA31 stays planned;
 candidate qualification and original core compilation remain required.
+
+Two explicit-goal cases require source or target element inference through the
+nominal field. Both independently object-check and execute; the initial candidate
+rejects them, so the final field must retain the existing inference variables.

@@ -2,6 +2,7 @@
 mod applications;
 mod qualified;
 mod requirements;
+mod struct_fields;
 use super::{declarations, model::Declarations};
 use crate::{
     resolve::{expansion::Report, model::Target, package::Error, unit::NodeKey},
@@ -13,6 +14,7 @@ use crate::{
     },
 };
 pub(super) use applications::Fields;
+pub(super) use struct_fields::FieldError;
 
 pub(super) trait Host {
     fn report(&self) -> &Report;

@@ -12,30 +12,7 @@ pub(super) enum Outcome {
     Deferred,
     Unsupported(&'static str),
 }
-#[derive(Debug)]
-pub(super) enum Failure {
-    Inference(Error),
-    Declaration(&'static str),
-}
-impl From<Error> for Failure {
-    fn from(error: Error) -> Self {
-        Self::Inference(error)
-    }
-}
-impl From<&'static str> for Failure {
-    fn from(error: &'static str) -> Self {
-        Self::Declaration(error)
-    }
-}
-impl std::fmt::Display for Failure {
-    fn fmt(&self, out: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Inference(error) => error.fmt(out),
-            Self::Declaration(error) => out.write_str(error),
-        }
-    }
-}
-impl std::error::Error for Failure {}
+pub(super) use crate::sema::annotations::FieldError as Failure;
 
 pub(super) fn requirements(
     facts: &mut Declarations,

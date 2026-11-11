@@ -317,6 +317,20 @@
       "exit_status": 0,
       "rustc_object_status": 0,
       "native": false
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/target-element-inference.rs",
+      "sha256": "885bcc66071671165fef235174aab9e24b8cb8986666209fcb0cfb94952888b3",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa31/tests/spec/nominal-unsize/source-element-inference.rs",
+      "sha256": "ab65a01d2f6cd9ea093a14d1f622945c80a7f9d78d399d474f6b1c6cbcc626d8",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "native": true
     }
   ],
   "native_client": {
