@@ -51,45 +51,69 @@ original artifact. Never raise the120s window or budgets to hide a blocker.
 Prior [method-inference repair](docs/pa20-post-inference-properties.md),sourcef93,
 passed EVERY full43019302026 stage on exactbc401434ac3a525781359f6d194a65cf5811aa6f.
 Its two generic projected-premise positives remain required in PA20 pending.json
-with complete frozen bytes/outcomes. Full callback43034322443 is ACTIVE on EXACT357d0bc5e188e3e8af4da4c264c28f2e3b918d26
+with complete frozen bytes/outcomes. Full callback43034322443 PASSED every stage on EXACT357d0bc5e188e3e8af4da4c264c28f2e3b918d26
 containing source5798, dispatched after checking no active manual/scheduled full.
 Never cancel/restart for documentation/input descendants. The LazyCell stash was
 restored, verified and dropped; no stash restoration remains to do.
 
 Machine record: docs/pa25-callback-formation-evidence.json. Raw evidence:
-Bobj/parallel/lazy-default. Checkpoint published and comparison pin retired. Next implement the independently
-frozen RefCell::replace correction below while monitoring the SAME active full run. Keep the paid
+Bobj/parallel/lazy-default. Checkpoint published and comparison pin retired. Next freeze and observe the qualified source coercion checkpoint below. Keep the paid
 alias2, projected-premise2 and every retained requirement below positive/required.
 
-## Frozen RefCell conversion packet — implement next
+## Source reference coercion checkpoint — freeze and observe
 
-[Reducer checkpoint](docs/pa26-borrow-coercion-reductions.md) adds PA26ordinary13,
-PA30native1+Cdriver, PA31source14 requirements. All28 Rust1.98 object outcomes
-agree22accept/6reject before implementation; both actual Rust/C native observers
-print borrow-coercion23 41 1342. All original bytes stay frozen. PA31's3 direct/
-explicit positives and2mutability/wrong-target negatives pass full checked-body
-prepared-root controls. Public1794406262569032574 PASS3exact1target48.30s also
-refreshes2existing receiver groups, strict selected Clippy/fullfmt/audit. Initial
-1794406194065418192 failedformatONLY, retainedraw. Upstream128/Reference126/
-harness315/468roots13bins44stages pass;14exactsourceprefixes/all28hashes verified.
+[Qualified source coercions](docs/pa26-borrow-coercions.md) now use actual selected
+Deref/DerefMut calls, preserving original expression operations in a separate
+sparse conversion plan. Existing access-call lowering executes once; actual
+returned-reference ancestry supplies lifetime proof. A known result hint reaches
+call inputs; an incompatible pointee destination cannot rewrite a constructor.
+Built-in reference/unsize conversion precedes Deref exploration. An independently
+accepted builtin-before-deref regression (baseline05cc0/localWIP1) proves no unused
+conditional debt may remain. No new proof engine/global cache/denseNodeFacts,
+Frame,Declarations orCallTypes field; backend/storage/limits are unchanged.
 
-ALL7 implicit source positives still report incompatible types, including explicit
-T arguments. Ordinary inputs still stop at existing core::ops imports. Escaping
-loans independently require E0515; baseline mismatch is not genuine loan proof.
-Both new candidate-native artifacts remain REQUIRED POSITIVES, unqualified.
-CLI bin probes lack main and library probes hit source-contract transport; neither
-is full body qualification. Reuse existing prepared root-builder API, as new
-public controls do. No course oracles, assignment activation or production edits.
+Packets now own57 independent outcomes43accept14reject: PA26ordinary16(11/5),
+PA30native2(2/0), PA31source39(30/9). All28 original bytes/outcomes unchanged,
+38constDeref prefixes and one originalUnsize prefix exact. All39 complete source
+checked-body/prepared-root outcomes pass; the2loan negatives typecheck before
+actual body rejection. Ordinary18/imports still prevent candidate qualification;
+import errors qualify no language rejection. Ordinary2native remain REQUIRED.
+Newsource4real Rust/CPPGM executions:23/41/1342,guard23/41/1345,const41 twice.
+Oldreceiver23/41 and3callback native executions pass. Six accepted width8/32/128
+noise0/128 have inference3653/13253/51653,trait56/224/896,methodwork0; all noise
+counters identical. Temporary immutable counter harness retired; raw/hash kept.
 
-Next reuse charged Deref/Target discovery, actual dereference_call and existing
-access-call plan/lowering for reference coercions. Keep conversion plans distinct
-from each expression's method/field/call operation; authenticate actual call/const/
-borrow/return-region facts, including closure captures. No target-only/layout cast
-permission. Qualify seven positives, true escape rejection and actual native trace
-before claiming this original blocker cleared. Full43034322443 continues unchanged
-on exact357d0bc5e/source5798; monitor, never restart for these inputs/tests/docs.
-Current frozen05cc+optimized21f available, f46andolder retired. New raw evidence is
-Bobj/parallel/refcell-coercion. No reobservation/binary needed for input-only work.
+FINALPUBLIC1794409791154946495 PASS15exact2targets104.59s includes newsource,
+oldreceiver,callback/15adapter/unusedchild,PA18factory contexts and oldsource
+Unsize/upcasts. FINALNATIVE1794410023347977560 PASS3exact38.29s runs4newactual
+source programs plus oldcontrols. StrictselectedprodCLItestsClippy/fullfmt/audit
+PASS. Phases1794410310412904864 verifies57CLItype observations/all3905Rusthashes/
+source39API qualification/native4; checks-final upstream128/Reference126/harness315/
+468roots13bins44stages andall57 independent identities PASS. No course oracles,
+assignment activation, original artifact or fresh original observation yet.
+
+Draft24 author predictions were checked independently. Two no-result-hint cases
+and6unhinted scale drafts are genuineRustE0308, not positives; exact bytes/raw
+remain. Separately declared explicit-type6scales accept. Corrected ordinary/source
+prefix opponents have independently required1; no Rust-valid outcome inverted.
+Alloriginal28 outcomes remain fixed. Machine docs bind the review and failed
+exploratory receipts without calling failed batches passed.
+
+NEXT: commit coherent qualified source/tests/fixtures/spec/docs (no production
+changes since final ordering repair), then freeze immutable dev-fastCLI with empty
+tracked diff/all3905 source hashes. Compare against AVAILABLE05cc via exclusive
+A/A+pairedABBA on frozen accepted old paths and ordinary control; new accepted
+coercions use bounded-work evidence, no accepting baseline. Then exact original
+120s observer/all722/sixbindings/profile/limits unchanged, postcheck375opens and
+all source hashes. Last real observation STILL firstRefCell112:35607; only claim
+clearance after reaching it. Update actual first mapped blocker/handoff/evidence,
+publish and dispatch ONE full successor only if idle. Retire05cc only AFTER new
+publication/comparisons with explicit scoped prune. Olderoptimized21f stays.
+Prior callback43034322443 PASSED every stage on EXACT357d0bc5e/source5798; its
+raw official jobs are Bobj/parallel/refcell-coercion/prior-callback-full-ci.json.
+No active full known; never restart for docs/input descendants. Raw new evidence:
+Bobj/parallel/refcell-coercion. Keep all prior requirements below; broad source/
+ordinary/library transport and Deref/unsizing composition remain required.
 
 ## Retained requirements and resource rules
 

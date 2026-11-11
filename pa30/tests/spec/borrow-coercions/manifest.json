@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "PA30 borrowed-wrapper C ABI execution requirement",
-  "state": "Independently frozen requirements; implicit conversions are unimplemented; whole assignment remains planned",
+  "state": "Implementation in focused qualification; independent outcomes fixed, no whole assignment release",
   "contract": "Convert shared/mutable reference through actual selected Deref/DerefMut calls, preserving every bound/const/region/loan/formation debt and source evaluation order. Known and inferred generic contexts agree. Mutability, target mismatch and escaping references remain errors. No layout-only cast grants conversion.",
   "profile": {
     "rustc": "1.98.0",
@@ -25,13 +25,55 @@
       "independent_stdout": "borrow-coercion 23 41 1342\n",
       "required_candidate_native_status": 0,
       "required_candidate_stdout": "borrow-coercion 23 41 1342\n",
-      "qualification": "Required actual execution positive at earliest foreign-ABI owner PA30; both hook imports and actual coercions/CPP execution remain required."
+      "qualification": "Independent required outcome retained; ordinary core::ops imports still prevent full candidate checking. Import failure does not qualify a language rejection.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
+    },
+    {
+      "path": "pa30/tests/spec/borrow-coercions/native-guard.rs",
+      "sha256": "132390c66219655be816c9bdeafafa452cf442455e042f5b1c1290f0a91f606c",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "qualification": "Independent required outcome retained; ordinary core::ops imports still prevent full candidate checking. Import failure does not qualify a language rejection.",
+      "independent_native_status": 0,
+      "independent_stdout": "borrow-guard 23 41 1345\n",
+      "required_candidate_native_status": 0,
+      "required_candidate_stdout": "borrow-guard 23 41 1345\n",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
     }
   ],
   "auxiliaries": [
     {
       "path": "pa30/tests/spec/borrow-coercions/observer.c",
       "sha256": "5ca3c7f85f298cfcda6dc66b8128268b7223e9c6832eb1fbb6d2a5f32d6515f9"
+    },
+    {
+      "path": "pa30/tests/spec/borrow-coercions/guard-observer.c",
+      "sha256": "ab2ed033f6824c375680086e6648c6e7810f59d299f83deefbcac21092ad6f6d"
+    },
+    {
+      "path": "pa30/tests/spec/borrow-coercions/constant-observer.c",
+      "sha256": "f82c4e6f3c4d0ea79e9021cbdea86ace15a805f86edc0c796dd67fe02c4d890d"
     }
-  ]
+  ],
+  "required_positive_outcomes_preserved": true,
+  "candidate_qualification": {
+    "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+    "source39_full_checked_body": "ordinary imports still required",
+    "no_course_oracles": true,
+    "full_assignment_planned": true
+  }
 }

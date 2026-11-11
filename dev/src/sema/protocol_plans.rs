@@ -12,6 +12,12 @@ pub(crate) enum Kind {
         dereferences: u32,
         steps: access::Range,
     },
+    Coercion {
+        operand: NodeId,
+        receiver: TypeId,
+        dereferences: u32,
+        steps: access::Range,
+    },
     Receiver {
         operand: NodeId,
         receiver: TypeId,
@@ -46,6 +52,23 @@ pub(crate) struct Plan {
     pub kind: Kind,
 }
 impl Kind {
+    pub(crate) fn retained_id(
+        self,
+        facts: &super::model::Declarations,
+        node: NodeKey,
+    ) -> Option<super::bodies::ProtocolPlanId> {
+        if matches!(self, Self::Coercion { .. }) {
+            return facts.reference_adjustments.get(&node)?.plan;
+        }
+        match facts.node(node)?.operation? {
+            super::model::Operation::Field { plan, .. } => plan,
+            super::model::Operation::MethodReceiver { plan }
+            | super::model::Operation::Try { plan }
+            | super::model::Operation::Iteration { plan } => Some(plan),
+            _ => None,
+        }
+    }
+
     pub(crate) fn access(self) -> Option<(NodeId, TypeId, u32, access::Range)> {
         match self {
             Self::Field {
@@ -54,6 +77,12 @@ impl Kind {
                 dereferences,
                 steps,
                 ..
+            }
+            | Self::Coercion {
+                operand,
+                receiver,
+                dereferences,
+                steps,
             }
             | Self::Receiver {
                 operand,
@@ -69,7 +98,9 @@ impl Kind {
 impl Plan {
     pub(crate) fn calls(self) -> Result<Calls, &'static str> {
         let (next, remaining) = match self.kind {
-            Kind::Field { steps, .. } | Kind::Receiver { steps, .. } => {
+            Kind::Field { steps, .. }
+            | Kind::Coercion { steps, .. }
+            | Kind::Receiver { steps, .. } => {
                 let count = steps
                     .end
                     .checked_sub(steps.start)
@@ -101,7 +132,12 @@ impl Plan {
                 calls.remaining = 0;
                 return Ok(Some(call));
             }
-            (Kind::Field { steps, .. } | Kind::Receiver { steps, .. }, _) => {
+            (
+                Kind::Field { steps, .. }
+                | Kind::Coercion { steps, .. }
+                | Kind::Receiver { steps, .. },
+                _,
+            ) => {
                 return access::next(facts, self, owner, steps, calls)
                     .map(|step| step.map(|step| step.call));
             }

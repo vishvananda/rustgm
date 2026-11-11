@@ -68,6 +68,9 @@ impl Checker<'_> {
             {
                 proof_actual = solved.types[view.0 as usize];
             }
+            if let Some(view) = self.coercion_reference_view(index)? {
+                proof_actual = solved.types[view.0 as usize];
+            }
             if let Some(borrow) = shared_borrow {
                 proof_actual = borrow;
             }
@@ -163,6 +166,12 @@ impl Checker<'_> {
                     ReferenceAdjustment {
                         conversion: *conversion,
                         borrow: solved.types[borrow.0 as usize],
+                        plan: self.coercion_plan(adjustment.node).and_then(|_| {
+                            self.facts
+                                .reference_adjustments
+                                .get(&key)
+                                .and_then(|row| row.plan)
+                        }),
                     },
                 );
             } else {

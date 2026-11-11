@@ -73,6 +73,25 @@ impl Collector<'_> {
         checker: &mut Checker<'_>,
         work: &Work,
     ) -> Result<Work, Error> {
+        if let Some(id) = checker.coercion_plan(work.node) {
+            let selected = checker.capture_access_receiver(work.node, id)?;
+            let usage = match checker.head(work.node, selected.borrow)? {
+                Some(Constructor::Reference { mutable: true, .. }) => Use::Mutable,
+                Some(Constructor::Reference { mutable: false, .. }) => Use::Shared,
+                _ => {
+                    return Err(checker.error(
+                        work.node,
+                        "conversion capture lost its actual receiver borrow",
+                    ));
+                }
+            };
+            return Ok(Work {
+                node: work.node,
+                usage,
+                dereferences: selected.dereferences,
+                receiver: Some((work.node, AccessKind::Reference)),
+            });
+        }
         let selected = self
             .references
             .get(&work.node)

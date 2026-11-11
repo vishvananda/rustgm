@@ -16,6 +16,9 @@ impl Checker<'_> {
             self.contextual_head(node, actual)?,
             self.contextual_head(node, expected)?,
         );
+        if self.constructor_deref_destination(node, actual, expected)? {
+            return Ok(None);
+        }
         if matches!(heads,
             (Some(Constructor::Adt(a, _) | Constructor::AdtArgs(a, _)),
              Some(Constructor::Adt(b, _) | Constructor::AdtArgs(b, _))) if a != b)

@@ -1,24 +1,14 @@
-# Borrowed-wrapper coercion requirements
+# Borrowed-wrapper reference coercions
 
-These13 inputs freeze10 Rust object accepts and3 rejections before implementation.
-Direct references and explicit dereferences are controls for implicit conversion
-of local, temporary and borrowed wrappers, with shared/mutable targets and known
-or inferred generic arguments. The negative cases retain actual shared-to-mutable,
-wrong-target and escaping-loan requirements. A baseline type mismatch does not
-qualify the escaping-loan rejection.
+These16 ordinary object outcomes are11 accepts and5 rejections. Their core::ops
+imports remain unsupported by the candidate, so no import failure qualifies a
+language rejection. The source twins are in PA31; C ABI observers belong to PA30.
 
-The ordinary hook requirements live in PA26; actual source language-item
-counterparts live in PA31. Ordinary forms currently stop at core::ops imports.
-Source forms preserve the exact existing const-Deref foundation prefix. Source
-analysis accepts the3 direct/explicit controls; all7 implicit positives currently
-report incompatible types. Complete checked-body/LowIR and genuine failure causes
-remain required. CLI source-library transport is a separate limitation; use the
-existing prepared root-builder API for the checked-body contract.
-
-The native companion requiring the foreign ABI lives in PA30, with the actual
-source companion in PA31. Both and the shared C observer independently print
-`borrow-coercion 23 41 1342` under Rust1.98/cc. It evaluates the wrapper once,
-invokes real DerefMut before the next argument, changes23 to41, then invokes real
-Deref for a shared read. Candidate RustGM/CPPGM execution remains REQUIRED and
-unqualified. No negative oracle, empty success or cast substitutes for those calls.
-Every input is in the manifest; no course reference or whole-PA release is added.
+All28 original inputs retain their exact bytes and independent outcomes. Every
+input and C driver is in its owning manifest. The original draft inference
+predictions were checked against Rust: unhinted statement/unit calls reject with
+E0308; explicit-type scaling positives were declared separately. No Rust-valid
+positive was inverted. See the [qualified implementation](../../../../docs/pa26-borrow-coercions.md)
+and [earlier reduction record](../../../../docs/pa26-borrow-coercion-reductions.md).
+Ordinary bootstrap, broader composition, source/library transport and every
+parent requirement remain required. No new course oracle or whole-PA activation.

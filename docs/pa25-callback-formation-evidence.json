@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "state": "Focused callback checkpoint qualified; full43034322443 ACTIVE on exact357d0bc5e/source5798. Reached LazyCell failure cleared; original observation partial/no artifact.",
+  "state": "Full43034322443 on exact357d0bc5e/source5798 PASSED every stage; later source coercion checkpoint in qualification.",
   "compiler": {
     "commit": "5798bd7f161f4420117079ac02306458d9a8b621",
     "cli_sha256": "05cc3029540dc069cf360821f180521d74278c5f5986a8e8e69255dc7955def5",
@@ -390,13 +390,13 @@
     "run": 43034322443,
     "head": "357d0bc5e188e3e8af4da4c264c28f2e3b918d26",
     "source_commit": "5798bd7f161f4420117079ac02306458d9a8b621",
-    "status": "active",
+    "status": "completed",
     "jobs": [
       {
         "id": 130569084387,
         "name": "fast",
-        "status": "in_progress",
-        "conclusion": null,
+        "status": "completed",
+        "conclusion": "success",
         "run_id": 43034322443,
         "logs_url": null,
         "steps": [
@@ -426,47 +426,53 @@
           },
           {
             "name": "Audit setup",
-            "status": "in_progress",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "number": 5
           },
           {
             "name": "Five-minute compiler smoke",
-            "status": "pending",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "number": 6
           },
           {
             "name": "Harness, audit cache and upstream contracts",
-            "status": "pending",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "number": 7
           },
           {
             "name": "Retain focused evidence",
-            "status": "pending",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "number": 8
           },
           {
             "name": "Post Run actions/cache@v6",
-            "status": "pending",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "number": 15
           },
           {
             "name": "Post Run actions/checkout@v6",
-            "status": "pending",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "number": 16
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17
           }
         ]
       },
       {
         "id": 130569084828,
         "name": "qualification",
-        "status": "in_progress",
-        "conclusion": null,
+        "status": "completed",
+        "conclusion": "success",
         "run_id": 43034322443,
         "logs_url": null,
         "steps": [
@@ -490,68 +496,75 @@
           },
           {
             "name": "Lint, architecture and harness",
-            "status": "in_progress",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "number": 4
           },
           {
             "name": "Independent host build graph",
-            "status": "pending",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "number": 5
           },
           {
             "name": "Release and course tests",
-            "status": "pending",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "number": 6
           },
           {
             "name": "Native maintainer qualification",
-            "status": "pending",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "number": 7
           },
           {
             "name": "Broad native course sweep",
-            "status": "pending",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "number": 8
           },
           {
             "name": "Debug invariants",
-            "status": "pending",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "number": 9
           },
           {
             "name": "Retire completed debug build cache",
-            "status": "pending",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "number": 10
           },
           {
             "name": "Independent Rust qualification",
-            "status": "pending",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "number": 11
           },
           {
             "name": "PA25 const-machine candidate contract",
-            "status": "pending",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "number": 12
           },
           {
             "name": "Post Run actions/checkout@v6",
-            "status": "pending",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "number": 24
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 25
           }
         ]
       }
     ],
-    "do_not_restart_for_documentation": true
+    "do_not_restart_for_documentation": true,
+    "conclusion": "success"
   },
   "unchanged": [
     "backend17b024f69",

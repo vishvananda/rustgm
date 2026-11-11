@@ -89,6 +89,7 @@ impl Checker<'_> {
     pub(in crate::sema::bodies) fn is_protocol_call(
         &self,
         node: crate::syntax::ast::NodeId,
+        index: usize,
     ) -> bool {
         matches!(
             self.kind(node),
@@ -99,6 +100,19 @@ impl Checker<'_> {
                 }
                 | crate::syntax::ast::Kind::For { .. }
         ) || self.access_plan(node).is_some()
+            || self
+                .coercion_plan(node)
+                .and_then(|id| self.state.call_types.protocol_plans.get(id.index()))
+                .and_then(|plan| plan.kind.access())
+                .is_some_and(|access| {
+                    access.calls.is_some_and(|calls| {
+                        index >= calls.call as usize
+                            && access
+                                .steps
+                                .len()
+                                .is_ok_and(|n| index - (calls.call as usize) < n)
+                    })
+                })
     }
     pub(in crate::sema::bodies) fn replayed_protocol_context(
         &self,
@@ -106,17 +120,23 @@ impl Checker<'_> {
         operation: Option<Operation>,
         effect: crate::support::constness::Constness,
     ) -> Result<Option<SourceCallUse>, Error> {
-        let Some(
-            Operation::Try { plan }
-            | Operation::MethodReceiver { plan }
-            | Operation::Iteration { plan }
-            | Operation::Field {
-                plan: Some(plan), ..
-            },
-        ) = operation
-        else {
-            return Ok(None);
-        };
+        let plan = self
+            .facts
+            .reference_adjustments
+            .get(&key)
+            .and_then(|row| row.plan)
+            .or(match operation {
+                Some(
+                    Operation::Try { plan }
+                    | Operation::MethodReceiver { plan }
+                    | Operation::Iteration { plan }
+                    | Operation::Field {
+                        plan: Some(plan), ..
+                    },
+                ) => Some(plan),
+                _ => None,
+            });
+        let Some(plan) = plan else { return Ok(None) };
         let plan = plan
             .current(self.facts, self.state.body, key)
             .map_err(|e| Declarations::error(self.report, key, e))?;
@@ -182,7 +202,8 @@ impl Checker<'_> {
             let open = self.state.call_types.protocol_plans[index];
             let kind = match open.kind {
                 super::super::protocol_control::OpenKind::Field(field)
-                | super::super::protocol_control::OpenKind::Receiver { access: field, .. } => {
+                | super::super::protocol_control::OpenKind::Receiver { access: field, .. }
+                | super::super::protocol_control::OpenKind::Coercion { access: field, .. } => {
                     self.publish_field_plan(open, field, solved, source_use)?
                 }
                 kind => kind.solved(solved).map_err(|e| self.error(open.node, e))?,
@@ -199,19 +220,14 @@ impl Checker<'_> {
             plans.push(plan);
         }
         self.commit_protocol_plans(plans)?;
-        self.state.call_types.protocol_plans = Vec::new();
+        // Open ranges remain until body cleanup so conversion calls stay distinct
+        // from an ordinary call at the same coerced expression node.
         Ok(())
     }
     fn commit_protocol_plans(&mut self, plans: Vec<Plan>) -> Result<(), Error> {
         let mut new_count = 0;
         for plan in &plans {
-            if let Some(
-                Operation::Try { plan: id }
-                | Operation::MethodReceiver { plan: id }
-                | Operation::Iteration { plan: id }
-                | Operation::Field { plan: Some(id), .. },
-            ) = self.facts.node(plan.node).and_then(|node| node.operation)
-            {
+            if let Some(id) = plan.kind.retained_id(self.facts, plan.node) {
                 if id
                     .current(self.facts, self.state.body, plan.node)
                     .map_err(|e| self.error(plan.node.node, e))?
@@ -244,16 +260,24 @@ impl Checker<'_> {
             .reserve_protocol(new_count)
             .map_err(|e| Declarations::error(report, owner, e))?;
         for plan in plans {
-            if matches!(
-                self.facts.nodes[plan.node.file.0 as usize][plan.node.node.get() as usize]
-                    .operation,
-                Some(
-                    Operation::Try { .. }
-                        | Operation::MethodReceiver { .. }
-                        | Operation::Iteration { .. }
-                        | Operation::Field { plan: Some(_), .. }
+            let existing = if matches!(plan.kind, Kind::Coercion { .. }) {
+                self.facts
+                    .reference_adjustments
+                    .get(&plan.node)
+                    .is_some_and(|r| r.plan.is_some())
+            } else {
+                matches!(
+                    self.facts.nodes[plan.node.file.0 as usize][plan.node.node.get() as usize]
+                        .operation,
+                    Some(
+                        Operation::Try { .. }
+                            | Operation::MethodReceiver { .. }
+                            | Operation::Iteration { .. }
+                            | Operation::Field { plan: Some(_), .. }
+                    )
                 )
-            ) {
+            };
+            if existing {
                 continue;
             }
             let id = ProtocolPlanId(
@@ -263,6 +287,21 @@ impl Checker<'_> {
                 .ok_or_else(|| Declarations::error(report, owner, "Try plan identity exhausted"))?,
             );
             contexts.plans.push(plan);
+            if matches!(plan.kind, Kind::Coercion { .. }) {
+                let row = self
+                    .facts
+                    .reference_adjustments
+                    .get_mut(&plan.node)
+                    .ok_or_else(|| {
+                        Declarations::error(
+                            report,
+                            plan.node,
+                            "conversion lost its actual reference adjustment",
+                        )
+                    })?;
+                row.plan = Some(id);
+                continue;
+            }
             self.facts.nodes[plan.node.file.0 as usize][plan.node.node.get() as usize].operation =
                 Some(match plan.kind {
                     Kind::Field { field, .. } => Operation::Field {
@@ -345,7 +384,10 @@ impl Checker<'_> {
                     }),
                 ]
             }
-            Kind::Iteration { .. } | Kind::Field { .. } | Kind::Receiver { .. } => {
+            Kind::Iteration { .. }
+            | Kind::Field { .. }
+            | Kind::Receiver { .. }
+            | Kind::Coercion { .. } => {
                 return Err(self.error(plan.node.node, "iteration plan lost its source branch"));
             }
         };

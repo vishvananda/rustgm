@@ -115,9 +115,11 @@ Rust Reference, and the existing CPPGM implementation for efficient algorithms.
 Do not introduce rendered text as transport between compiler phases.
 
 The [borrowed-wrapper coercion reductions](../docs/pa26-borrow-coercion-reductions.md)
-freeze the reached RefCell::replace conversion gap before implementation.
-Ordinary hooks belong to PA26, the C ABI observer to PA30 and actual source roles
-to PA31. Unsupported implicit conversions and native parity remain required;
+freeze the reached RefCell::replace conversion gap. The
+[implementation checkpoint](../docs/pa26-borrow-coercions.md) qualifies39 actual
+source checked-body outcomes and4 real source native/CTFE programs. Ordinary hooks
+belong to PA26, the C ABI observers to PA30 and actual source roles to PA31.
+Ordinary imports/native parity, complete composition and transport remain required;
 this packet does not activate a whole assignment.
 
 ## Tool surface

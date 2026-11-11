@@ -170,6 +170,32 @@ impl<'a> DefiningCalls<'a> {
         charge: &mut impl FnMut(usize) -> Result<(), &'static str>,
     ) -> Result<(crate::sema::bodies::SourceCallUse, bool), &'static str> {
         charge(1)?;
+        if let Some(id) = crate::sema::protocol_plans::access::conversion_call(
+            self.facts,
+            self.owner,
+            call.site,
+            crate::sema::iteration::Call {
+                callable: call.target,
+                signature: call.signature,
+            },
+        )? {
+            let plan = id.current(self.facts, self.owner, call.site)?;
+            crate::sema::protocol_plans::access::retained_call(
+                self.facts,
+                plan,
+                self.owner,
+                crate::sema::iteration::Call {
+                    callable: call.target,
+                    signature: call.signature,
+                },
+            )
+            .map_err(|_| "abstract conversion lost its actual retained call")?;
+            if !matches!(self.facts.types.kind(call.signature), Some(Kind::Function { result, .. }) if result == call.result)
+            {
+                return Err("abstract conversion changed its actual call result");
+            }
+            return Ok((plan.source_use, true));
+        }
         let node = self
             .facts
             .node(call.site)

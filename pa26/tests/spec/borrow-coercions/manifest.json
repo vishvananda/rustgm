@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "PA26 ordinary library hook borrowed-wrapper coercion requirements",
-  "state": "Independently frozen requirements; implicit conversions are unimplemented; whole assignment remains planned",
+  "state": "Implementation in focused qualification; independent outcomes fixed, no whole assignment release",
   "contract": "Convert shared/mutable reference through actual selected Deref/DerefMut calls, preserving every bound/const/region/loan/formation debt and source evaluation order. Known and inferred generic contexts agree. Mutability, target mismatch and escaping references remain errors. No layout-only cast grants conversion.",
   "profile": {
     "rustc": "1.98.0",
@@ -23,8 +23,16 @@
       "rustc_object_status": 0,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 54: unresolved import\n",
-      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
-      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive."
+      "qualification": "Independent required outcome retained; ordinary core::ops imports still prevent full candidate checking. Import failure does not qualify a language rejection.",
+      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
     },
     {
       "path": "pa26/tests/spec/borrow-coercions/explicit-place.rs",
@@ -33,8 +41,16 @@
       "rustc_object_status": 0,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 54: unresolved import\n",
-      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
-      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive."
+      "qualification": "Independent required outcome retained; ordinary core::ops imports still prevent full candidate checking. Import failure does not qualify a language rejection.",
+      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
     },
     {
       "path": "pa26/tests/spec/borrow-coercions/explicit-temporary.rs",
@@ -43,8 +59,16 @@
       "rustc_object_status": 0,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 54: unresolved import\n",
-      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
-      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive."
+      "qualification": "Independent required outcome retained; ordinary core::ops imports still prevent full candidate checking. Import failure does not qualify a language rejection.",
+      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
     },
     {
       "path": "pa26/tests/spec/borrow-coercions/implicit-known.rs",
@@ -53,8 +77,16 @@
       "rustc_object_status": 0,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 54: unresolved import\n",
-      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
-      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive."
+      "qualification": "Independent required outcome retained; ordinary core::ops imports still prevent full candidate checking. Import failure does not qualify a language rejection.",
+      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
     },
     {
       "path": "pa26/tests/spec/borrow-coercions/implicit-inferred.rs",
@@ -63,8 +95,16 @@
       "rustc_object_status": 0,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 54: unresolved import\n",
-      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
-      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive."
+      "qualification": "Independent required outcome retained; ordinary core::ops imports still prevent full candidate checking. Import failure does not qualify a language rejection.",
+      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
     },
     {
       "path": "pa26/tests/spec/borrow-coercions/implicit-temporary-known.rs",
@@ -73,8 +113,16 @@
       "rustc_object_status": 0,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 54: unresolved import\n",
-      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
-      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive."
+      "qualification": "Independent required outcome retained; ordinary core::ops imports still prevent full candidate checking. Import failure does not qualify a language rejection.",
+      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
     },
     {
       "path": "pa26/tests/spec/borrow-coercions/implicit-temporary-inferred.rs",
@@ -83,8 +131,16 @@
       "rustc_object_status": 0,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 54: unresolved import\n",
-      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
-      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive."
+      "qualification": "Independent required outcome retained; ordinary core::ops imports still prevent full candidate checking. Import failure does not qualify a language rejection.",
+      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
     },
     {
       "path": "pa26/tests/spec/borrow-coercions/implicit-borrowed.rs",
@@ -93,8 +149,16 @@
       "rustc_object_status": 0,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 54: unresolved import\n",
-      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
-      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive."
+      "qualification": "Independent required outcome retained; ordinary core::ops imports still prevent full candidate checking. Import failure does not qualify a language rejection.",
+      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
     },
     {
       "path": "pa26/tests/spec/borrow-coercions/implicit-shared.rs",
@@ -103,8 +167,16 @@
       "rustc_object_status": 0,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 54: unresolved import\n",
-      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
-      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive."
+      "qualification": "Independent required outcome retained; ordinary core::ops imports still prevent full candidate checking. Import failure does not qualify a language rejection.",
+      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
     },
     {
       "path": "pa26/tests/spec/borrow-coercions/implicit-annotated.rs",
@@ -113,8 +185,16 @@
       "rustc_object_status": 0,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 54: unresolved import\n",
-      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
-      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive."
+      "qualification": "Independent required outcome retained; ordinary core::ops imports still prevent full candidate checking. Import failure does not qualify a language rejection.",
+      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
     },
     {
       "path": "pa26/tests/spec/borrow-coercions/implicit-mutability-reject.rs",
@@ -123,8 +203,16 @@
       "rustc_object_status": 1,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 54: unresolved import\n",
-      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
-      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive."
+      "qualification": "Independent required outcome retained; ordinary core::ops imports still prevent full candidate checking. Import failure does not qualify a language rejection.",
+      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
     },
     {
       "path": "pa26/tests/spec/borrow-coercions/implicit-escape-reject.rs",
@@ -133,8 +221,16 @@
       "rustc_object_status": 1,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 54: unresolved import\n",
-      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
-      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive."
+      "qualification": "Independent required outcome retained; ordinary core::ops imports still prevent full candidate checking. Import failure does not qualify a language rejection.",
+      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
     },
     {
       "path": "pa26/tests/spec/borrow-coercions/implicit-wrong-target-reject.rs",
@@ -143,9 +239,69 @@
       "rustc_object_status": 1,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 54: unresolved import\n",
-      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
-      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive."
+      "qualification": "Independent required outcome retained; ordinary core::ops imports still prevent full candidate checking. Import failure does not qualify a language rejection.",
+      "pending": "Existing unresolved core::ops Deref/DerefMut imports; does not qualify negative cause or any positive.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
+    },
+    {
+      "path": "pa26/tests/spec/borrow-coercions/inferred-statement.rs",
+      "sha256": "fb2d983f41f8d41972590bbbda02aef40230fd099362deec220093f0e3aa0f26",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "qualification": "Independent required outcome retained; ordinary core::ops imports still prevent full candidate checking. Import failure does not qualify a language rejection.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
+    },
+    {
+      "path": "pa26/tests/spec/borrow-coercions/inferred-unit-call.rs",
+      "sha256": "f9be8f9d6a74015da11b3f933310bfab44ebeaa927a20dcea1e2f1cbacf68d28",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "qualification": "Independent required outcome retained; ordinary core::ops imports still prevent full candidate checking. Import failure does not qualify a language rejection.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
+    },
+    {
+      "path": "pa26/tests/spec/borrow-coercions/inferred-only-wrapper.rs",
+      "sha256": "98e30c3a809f61974e11acb520284047a00cdeaa93e10cb55542f74aad81bd22",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "qualification": "Independent required outcome retained; ordinary core::ops imports still prevent full candidate checking. Import failure does not qualify a language rejection.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
     }
   ],
-  "auxiliaries": []
+  "auxiliaries": [],
+  "required_positive_outcomes_preserved": true,
+  "candidate_qualification": {
+    "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+    "source39_full_checked_body": "ordinary imports still required",
+    "no_course_oracles": true,
+    "full_assignment_planned": true
+  }
 }

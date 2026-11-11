@@ -48,15 +48,7 @@ impl Checker<'_> {
     ) -> Result<Kind, Error> {
         let key = self.key(open.node);
         let count = field.steps.len().map_err(|e| self.error(open.node, e))?;
-        let existing = match self.facts.node(key).and_then(|node| node.operation) {
-            Some(
-                Operation::Field { plan: Some(id), .. } | Operation::MethodReceiver { plan: id },
-            ) => Some(
-                id.current(self.facts, self.state.body, key)
-                    .map_err(|e| self.error(open.node, e))?,
-            ),
-            _ => None,
-        };
+        let existing = self.retained_access_plan(open)?;
         let start = if let Some((_, _, _, steps)) = existing.and_then(|plan| plan.kind.access()) {
             steps.start
         } else {
@@ -110,6 +102,12 @@ impl Checker<'_> {
             first: first.ok_or_else(|| self.error(open.node, "access plan has no first step"))?,
         };
         let kind = match open.kind {
+            super::super::protocol_control::OpenKind::Coercion { .. } => Kind::Coercion {
+                operand: field.operand,
+                receiver,
+                dereferences: field.dereferences,
+                steps,
+            },
             super::super::protocol_control::OpenKind::Field(_) => Kind::Field {
                 operand: field.operand,
                 field: field.field.ok_or_else(|| {
@@ -142,6 +140,39 @@ impl Checker<'_> {
         protocol_plans::access::check_rows(self.report, self.facts, self.state.body, plan, &rows)?;
         self.commit_field_rows(open.node, existing, plan, rows)?;
         Ok(kind)
+    }
+
+    /// Replay checks the conversion's own sparse owner, independently of the
+    /// original expression operation and its field/method plan.
+    fn retained_access_plan(&self, open: OpenPlan) -> Result<Option<Plan>, Error> {
+        let existing = if matches!(
+            open.kind,
+            super::super::protocol_control::OpenKind::Coercion { .. }
+        ) {
+            self.facts
+                .reference_adjustments
+                .get(&self.key(open.node))
+                .and_then(|row| row.plan)
+                .map(|id| id.current(self.facts, self.state.body, self.key(open.node)))
+                .transpose()
+                .map_err(|e| self.error(open.node, e))?
+        } else {
+            match self
+                .facts
+                .node(self.key(open.node))
+                .and_then(|node| node.operation)
+            {
+                Some(
+                    Operation::Field { plan: Some(id), .. }
+                    | Operation::MethodReceiver { plan: id },
+                ) => Some(
+                    id.current(self.facts, self.state.body, self.key(open.node))
+                        .map_err(|e| self.error(open.node, e))?,
+                ),
+                _ => None,
+            }
+        };
+        Ok(existing)
     }
 
     fn prepay_field_rows(

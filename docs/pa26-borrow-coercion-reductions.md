@@ -1,3 +1,8 @@
+The [source implementation checkpoint](pa26-borrow-coercions.md) supersedes the
+preimplementation candidate status below. Its57 independent outcomes retain all
+original28 bytes/outcomes and qualify39 source checked bodies/four real source
+native programs. Ordinary18/imports/native parity remain required.
+
 # RefCell borrowed-wrapper coercion reductions
 
 The next reached original-core blocker is RefCell::replace in cell.rs at

@@ -6107,6 +6107,24 @@ root before wrapping it in an automatic borrow. Share the existing field-root
 worklist and completed instantiation cache; repeated receivers must not repeat
 substitution of their whole field list.
 
+Reference coercions can retain actual source Deref/DerefMut calls separately
+from the expression's original method, field or call operation. Prefer an
+available built-in reference conversion or unsizing; exploring an unused source
+Deref path cannot impose its conditional bounds. Only actual selected calls pay
+Deref/Target, const-effect, formation, argument and lifetime requirements. Reuse
+existing charged discovery, call instantiation, field/access steps, capture and
+region proof. The last returned reference supplies ancestry for the final borrow;
+a destination type or associated Target supplies no permission. Lower the operand
+and each actual call once, including temporary cleanup and argument order.
+
+A known result expectation supplies a shape hint before generic call inputs.
+It cannot replace a source constructor's incompatible nominal identity or its
+field inputs with a later Deref destination. Preserve compatible factory/unsizing
+context and source-time prefix inference: a later argument alone does not rewrite
+an already inferred wrapper input. The [reference coercion checkpoint](docs/pa26-borrow-coercions.md)
+records independently checked contexts, const effects, captures and real runtime/
+CTFE traces. Ordinary bootstrap, complete composition and transport remain required.
+
 Share live storage tails persistently. An exit records the suffix it ends,
 without copying the surrounding live-local list or repeating every storage-end
 statement at every failure branch. Preserve reverse lifetime order and skip

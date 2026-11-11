@@ -22,25 +22,42 @@ impl Builder<'_> {
         if !required && self.facts.associated.trait_owner(definition).is_none() {
             return Ok(());
         }
-        let source_use = match self.fact(node)?.operation {
-            Some(Operation::Call {
-                signature: expected,
-                source_use: Some(source),
-            }) if expected == signature => source,
-            Some(
-                Operation::Field {
-                    plan: Some(plan), ..
+        let conversion = crate::sema::protocol_plans::access::conversion_call(
+            self.facts,
+            self.source,
+            crate::resolve::unit::NodeKey {
+                node,
+                ..self.source
+            },
+            crate::sema::iteration::Call {
+                callable,
+                signature,
+            },
+        )
+        .map_err(|e| self.error(node, e))?;
+        let source_use = if let Some(id) = conversion {
+            self.protocol_site_source(node, id, callable, signature)?
+        } else {
+            match self.fact(node)?.operation {
+                Some(Operation::Call {
+                    signature: expected,
+                    source_use: Some(source),
+                }) if expected == signature => source,
+                Some(
+                    Operation::Field {
+                        plan: Some(plan), ..
+                    }
+                    | Operation::MethodReceiver { plan }
+                    | Operation::Try { plan }
+                    | Operation::Iteration { plan },
+                ) => self.protocol_site_source(node, plan, callable, signature)?,
+                _ if !required => return Ok(()),
+                _ => {
+                    return Err(self.error(
+                        node,
+                        "tracked generated call requires its prepared source-call context",
+                    ));
                 }
-                | Operation::MethodReceiver { plan }
-                | Operation::Try { plan }
-                | Operation::Iteration { plan },
-            ) => self.protocol_site_source(node, plan, callable, signature)?,
-            _ if !required => return Ok(()),
-            _ => {
-                return Err(self.error(
-                    node,
-                    "tracked generated call requires its prepared source-call context",
-                ));
             }
         };
         let location = source_use

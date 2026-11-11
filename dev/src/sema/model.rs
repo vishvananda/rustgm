@@ -144,6 +144,8 @@ pub struct ReferenceConversion {
 pub struct ReferenceAdjustment {
     pub conversion: ReferenceConversion,
     pub borrow: TypeId,
+    /// Actual source dereference calls precede the final built-in reborrow.
+    pub plan: Option<super::bodies::ProtocolPlanId>,
 }
 #[derive(Clone, Copy, Default)]
 pub struct NodeFacts {

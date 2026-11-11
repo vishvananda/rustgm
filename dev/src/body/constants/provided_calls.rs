@@ -229,6 +229,17 @@ pub(super) fn closed_request(
         return Ok(false);
     }
     work.charge(5)?;
+    if let Some(id) = crate::sema::protocol_plans::access::conversion_call(
+        facts,
+        source,
+        call.site,
+        crate::sema::iteration::Call {
+            callable: call.target,
+            signature: call.signature,
+        },
+    )? {
+        return closed_field(report, facts, body, source, call, id, work);
+    }
     let node = facts
         .node(call.site)
         .ok_or("const member lost its typed site")?;

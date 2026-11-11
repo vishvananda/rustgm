@@ -59,6 +59,10 @@ impl Builder<'_> {
             .fact(node)?
             .adjustment
             .ok_or_else(|| self.error(node, "missing reference conversion target"))?;
+        if reference.plan.is_some() {
+            let value = self.dereference_reborrow(node, place, reference)?;
+            return self.save(node, value);
+        }
         let remaining = self.remaining_receiver_dereferences(
             node,
             crate::sema::closures::AccessKind::Reference,
@@ -95,6 +99,47 @@ impl Builder<'_> {
         };
         self.save(node, value)
     }
+    fn dereference_reborrow(
+        &mut self,
+        node: NodeId,
+        place: Place,
+        reference: crate::sema::model::ReferenceAdjustment,
+    ) -> Result<ValueId, Error> {
+        let id = reference
+            .plan
+            .ok_or_else(|| self.error(node, "conversion lost its actual call plan"))?;
+        let plan = crate::sema::protocol_plans::checked(
+            self.report,
+            self.facts,
+            self.source,
+            NodeKey {
+                node,
+                ..self.source
+            },
+            id,
+        )?;
+        let place = self.access_call_place(
+            node,
+            place,
+            plan,
+            crate::sema::closures::AccessKind::Reference,
+        )?;
+        let value = self.evaluate(
+            node,
+            reference.borrow,
+            Rvalue::Borrow {
+                place,
+                kind: BorrowKind::Immediate,
+            },
+        )?;
+        let target = self
+            .fact(node)?
+            .adjustment
+            .ok_or_else(|| self.error(node, "conversion lost its final borrow target"))?
+            .target;
+        self.evaluate(node, target, Rvalue::Constrain(value))
+    }
+
     pub(super) fn selected_pointer(
         &mut self,
         node: NodeId,

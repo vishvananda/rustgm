@@ -1,5 +1,17 @@
 # Library build blocker tracker
 
+[Source reference coercions](pa26-borrow-coercions.md) are locally qualified:
+57 independent outcomes retain all28 previous bytes and qualify39 complete
+source checked bodies plus4 real source Rust/CPPGM programs (1342,guard1345,const41
+twice). Ordinary18/imports/native2 remain required. Final15public/3native strict
+checks, bounded width/noise and upstream/harness pass. The compiler must now be
+frozen, compared and reobserved against original core before claiming RefCell
+cleared. Last original observation remains source5798's partial120s deadline,
+first RefCell::replace112:35607. No original artifact. Prior full43034322443 on
+exact357d0bc5e/source5798 PASSED every stage; semantic successor is due after
+publication and checking no active full run. All retained handoff requirements
+remain required. This section supersedes older next-step text below.
+
 [Callback formation versus invocation](pa25-callback-formation.md),source5798bd7f1/
 CLI05cc3029, clears the reached LazyCell<T>::default failure. Existing typed bounds
 pay ordinary formation and actual conditional invocation separately. Earliest

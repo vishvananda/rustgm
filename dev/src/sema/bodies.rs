@@ -25,6 +25,7 @@ pub use effect_facts::{OffsetPlanId, ProtocolPlanId, SourceCallUse};
 mod access_paths;
 pub(crate) mod assembly_values;
 mod autoderef;
+mod deref_coercions;
 mod environment_values;
 mod field_storage;
 mod finalization;
@@ -2488,10 +2489,7 @@ impl Checker<'_> {
             }
             if !constructor
                 && self.contextual_head(node, result)?.is_none()
-                && matches!(
-                    self.contextual_head(node, expected)?,
-                    Some(Constructor::Function { .. })
-                )
+                && self.contextual_head(node, expected)?.is_some()
             {
                 self.callable_shape(node, result, expected)?;
             }

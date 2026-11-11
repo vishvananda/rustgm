@@ -98,5 +98,242 @@
     "observer": "pa30/tests/spec/borrow-coercions/observer.c"
   },
   "raw_evidence_root": "B obj/parallel/refcell-coercion",
-  "no_candidate_native_claim": true
+  "no_candidate_native_claim": true,
+  "expanded_independent_objects": [
+    {
+      "path": "pa31/tests/spec/borrow-coercions/inferred-statement.rs",
+      "sha256": "40188373056b66d045af24a709ef1e43000a6e0c14caa6335ca12ff4fde71330",
+      "exit_status": 0,
+      "kind": "source",
+      "declared_before_execution": true,
+      "rustc_object_status": 1,
+      "rustc_stderr": "error[E0308]: mismatched types\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/extra-declared/inferred-statement.rs:80:52\n   |\n80 | fn check<T>(mut x:Hold<T>,t:T){let _=accept(&mut x,t);}\n   |          -                           ------        ^ expected `Hold<T>`, found type parameter `T`\n   |          |                           |\n   |          found this type parameter   arguments to this function are incorrect\n   |\n   = note:      expected struct `Hold<T>`\n           found type parameter `T`\nhelp: the return type of this call is `T` due to the type of the argument passed\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/extra-declared/inferred-statement.rs:80:38\n   |\n80 | fn check<T>(mut x:Hold<T>,t:T){let _=accept(&mut x,t);}\n   |                                      ^^^^^^^^^^^^^^-^\n   |                                                    |\n   |                                                    this argument influences the return type of `accept`\nnote: function defined here\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/extra-declared/inferred-statement.rs:79:4\n   |\n79 | fn accept<T>(_:&mut T,t:T)->T{t}\n   |    ^^^^^^             ---\nhelp: try wrapping the expression in `Hold`\n   |\n80 | fn check<T>(mut x:Hold<T>,t:T){let _=accept(&mut x,Hold(t));}\n   |                                                    +++++ +\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0308`.\n"
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/inferred-unit-call.rs",
+      "sha256": "1346f10a6b87325df65c3133669e7392875b644523459968d0a5e3fd3b979001",
+      "exit_status": 0,
+      "kind": "source",
+      "declared_before_execution": true,
+      "rustc_object_status": 1,
+      "rustc_stderr": "error[E0308]: mismatched types\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/extra-declared/inferred-unit-call.rs:80:71\n   |\n80 | fn unit<T>(_:&mut T,_:T){} fn check<T>(mut x:Hold<T>,t:T){unit(&mut x,t)}\n   |                                     -                     ----        ^ expected `Hold<T>`, found type parameter `T`\n   |                                     |                     |\n   |                                     |                     arguments to this function are incorrect\n   |                                     found this type parameter\n   |\n   = note:      expected struct `Hold<T>`\n           found type parameter `T`\nnote: function defined here\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/extra-declared/inferred-unit-call.rs:80:4\n   |\n80 | fn unit<T>(_:&mut T,_:T){} fn check<T>(mut x:Hold<T>,t:T){unit(&mut x,t)}\n   |    ^^^^             ---\nhelp: try wrapping the expression in `Hold`\n   |\n80 | fn unit<T>(_:&mut T,_:T){} fn check<T>(mut x:Hold<T>,t:T){unit(&mut x,Hold(t))}\n   |                                                                       +++++ +\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0308`.\n"
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/inferred-only-wrapper.rs",
+      "sha256": "cd01e89c4da8874353410533fc5ead9d453284cf4a436352bbb5ed3571ad5cc7",
+      "exit_status": 0,
+      "kind": "source",
+      "declared_before_execution": true,
+      "rustc_object_status": 0,
+      "rustc_stderr": ""
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/later-argument-wrong-reject.rs",
+      "sha256": "7c0ecc8bc33fba06b14648492d2a2393ab6b9bd76f139af2f6c666953eb3c20d",
+      "exit_status": 1,
+      "kind": "source",
+      "declared_before_execution": true,
+      "rustc_object_status": 1,
+      "rustc_stderr": "error[E0308]: mismatched types\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/extra-declared/later-argument-wrong-reject.rs:80:65\n   |\n80 | fn unit<T>(_:&mut T,_:T){} fn check(mut x:Hold<u8>){unit(&mut x,2u16)}\n   |                                                     ----        ^^^^ expected `Hold<u8>`, found `u16`\n   |                                                     |\n   |                                                     arguments to this function are incorrect\n   |\n   = note: expected struct `Hold<u8>`\n                found type `u16`\nnote: function defined here\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/extra-declared/later-argument-wrong-reject.rs:80:4\n   |\n80 | fn unit<T>(_:&mut T,_:T){} fn check(mut x:Hold<u8>){unit(&mut x,2u16)}\n   |    ^^^^             ---\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0308`.\n"
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/method-return.rs",
+      "sha256": "714fe21035c6f68d08b72a577a9bf4968af2018778a0ef8104c1682c55e9b09a",
+      "exit_status": 0,
+      "kind": "source",
+      "declared_before_execution": true,
+      "rustc_object_status": 0,
+      "rustc_stderr": ""
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/field-reference.rs",
+      "sha256": "d0603bc6d301038fdd19781b21c7555dadf2cf4e5ea99d2801c9d58926b8d135",
+      "exit_status": 0,
+      "kind": "source",
+      "declared_before_execution": true,
+      "rustc_object_status": 0,
+      "rustc_stderr": ""
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/method-reference.rs",
+      "sha256": "0d9e16d360ef84c1f29ac109079d6362c6f67d6f65052967cb4dbd9ea79703d4",
+      "exit_status": 0,
+      "kind": "source",
+      "declared_before_execution": true,
+      "rustc_object_status": 0,
+      "rustc_stderr": ""
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/borrowed-lifetime-paid.rs",
+      "sha256": "0003c121dd03f5d39508c42b8c871056863ea25fbf35b2e0ebcaf0dd1b1c24c4",
+      "exit_status": 0,
+      "kind": "source",
+      "declared_before_execution": true,
+      "rustc_object_status": 0,
+      "rustc_stderr": ""
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/borrowed-lifetime-reject.rs",
+      "sha256": "7e24f6f00583802f4dcb98bf5209498f9c3cb6144261a624ec370459cba98cb0",
+      "exit_status": 1,
+      "kind": "source",
+      "declared_before_execution": true,
+      "rustc_object_status": 1,
+      "rustc_stderr": "error: lifetime may not live long enough\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/extra-declared/borrowed-lifetime-reject.rs:80:51\n   |\n80 | fn check<'a,T>(x:&'a mut Hold<T>)->&'static mut T{x}\n   |          -- lifetime `'a` defined here            ^ returning this value requires that `'a` must outlive `'static`\n\nerror: aborting due to 1 previous error\n\n"
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/bound-paid.rs",
+      "sha256": "f742764eea4d35ba9efc4b62ff16b69e46608d675853a8cca7d1e073bc485a18",
+      "exit_status": 0,
+      "kind": "source",
+      "declared_before_execution": true,
+      "rustc_object_status": 0,
+      "rustc_stderr": ""
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/captured-mut.rs",
+      "sha256": "1009e58d73de111e3250fcbdaa9163275ed0aa309aa3c414bd81352bfa469468",
+      "exit_status": 0,
+      "kind": "source",
+      "declared_before_execution": true,
+      "rustc_object_status": 0,
+      "rustc_stderr": ""
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/const-paid.rs",
+      "sha256": "1e85fa9d5f1267342cb9758e285b086469c656a676efd7ad0d3e87ce2f0d9932",
+      "exit_status": 0,
+      "kind": "source",
+      "declared_before_execution": true,
+      "rustc_object_status": 0,
+      "rustc_stderr": ""
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/const-unpaid-reject.rs",
+      "sha256": "2251f5a35f663dc02153da6394f5fae0d1640c3a09a0f17eacfe02827fd6680d",
+      "exit_status": 1,
+      "kind": "source",
+      "declared_before_execution": true,
+      "rustc_object_status": 1,
+      "rustc_stderr": "error[E0277]: the trait bound `Hold<u8>: const Deref` is not satisfied\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/extra-declared/const-unpaid-reject.rs:80:74\n   |\n80 | const fn read(x:&mut u8)->u8{*x} const VALUE:u8={let mut x=Hold(41);read(&mut x)};\n   |                                                                          ^^^^^^\n   |\nhelp: make the `impl` of trait `Deref` `const`\n   |\n77 | struct Hold<T>(T);impl<T>const Deref for Hold<T>{type Target=T;fn deref(&self)->&T{&self.0}}\n   |                          +++++\n\nerror[E0277]: the trait bound `Hold<u8>: const DerefMut` is not satisfied\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/extra-declared/const-unpaid-reject.rs:80:74\n   |\n80 | const fn read(x:&mut u8)->u8{*x} const VALUE:u8={let mut x=Hold(41);read(&mut x)};\n   |                                                                          ^^^^^^\n   |\nhelp: make the `impl` of trait `DerefMut` `const`\n   |\n78 | impl<T>const DerefMut for Hold<T>{fn deref_mut(&mut self)->&mut T{&mut self.0}}\n   |        +++++\n\nerror: aborting due to 2 previous errors\n\nFor more information about this error, try `rustc --explain E0277`.\n"
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/const-unforced-wrapper.rs",
+      "sha256": "766ca7faf74fe89b161d56d027986660554a158640236a2c7b8a14e11388ccc6",
+      "exit_status": 0,
+      "kind": "source",
+      "declared_before_execution": true,
+      "rustc_object_status": 0,
+      "rustc_stderr": ""
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/nested-two.rs",
+      "sha256": "08e94a597ea8a4c868c03be9e26475e8cf6995ea2cf51626f23aaa4605aec468",
+      "exit_status": 0,
+      "kind": "source",
+      "declared_before_execution": true,
+      "rustc_object_status": 0,
+      "rustc_stderr": ""
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/builtin-after-deref.rs",
+      "sha256": "a6cdab4fa9cefe4e2d732536f6bb09ebd58c3a1962468efbfd546ce0b59e572d",
+      "exit_status": 0,
+      "kind": "source",
+      "declared_before_execution": true,
+      "rustc_object_status": 0,
+      "rustc_stderr": ""
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/nested-shared-reject.rs",
+      "sha256": "57a45ab9bb1b1d8e6b79c9a0f3842f478e411a16be55e9ea38327513d8c82813",
+      "exit_status": 1,
+      "kind": "source",
+      "declared_before_execution": true,
+      "rustc_object_status": 1,
+      "rustc_stderr": "error[E0308]: mismatched types\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/extra-declared/nested-shared-reject.rs:80:43\n   |\n80 | fn check(x:&Hold<&mut u8>){let _: &mut u8=x;}\n   |                                   ------- ^ types differ in mutability\n   |                                   |\n   |                                   expected due to this\n   |\n   = note: expected mutable reference `&mut u8`\n                      found reference `&Hold<&mut u8>`\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0308`.\n"
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/native-guard.rs",
+      "sha256": "17d3b6d3480f5ca72d57c05a536bbb2dd84d396cf919450e9d9cb2ea8a297f2e",
+      "exit_status": 0,
+      "kind": "source",
+      "native": true,
+      "declared_before_execution": true,
+      "native_stdout": "borrow-guard 23 41 1345\n",
+      "native_status": 0,
+      "rustc_object_status": 0,
+      "rustc_stderr": ""
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/paid-width-8-noise-0.rs",
+      "sha256": "e70d0f4c3bb01a57f22ed4ee0a1bcc27be9667bf14e936afa43e6d50da1c6b12",
+      "exit_status": 0,
+      "kind": "source",
+      "rustc_object_status": 0,
+      "rustc_stderr": ""
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/paid-width-8-noise-128.rs",
+      "sha256": "3caeab21f2e17163fc5f3194fbaea7d230e28fe4fcbd99740f4214d9d4ecaed3",
+      "exit_status": 0,
+      "kind": "source",
+      "rustc_object_status": 0,
+      "rustc_stderr": ""
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/paid-width-32-noise-0.rs",
+      "sha256": "4378fd98f6123a325a62b5961dd7d84d17c63b773dcfe4f2a625a9f7951a742c",
+      "exit_status": 0,
+      "kind": "source",
+      "rustc_object_status": 0,
+      "rustc_stderr": ""
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/paid-width-32-noise-128.rs",
+      "sha256": "0c934298605fe4ab709c5f01eea8b31426dea4a2974c94fa8b0fa4caa56e7706",
+      "exit_status": 0,
+      "kind": "source",
+      "rustc_object_status": 0,
+      "rustc_stderr": ""
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/paid-width-128-noise-0.rs",
+      "sha256": "28a35d2f7ef13e4d4700ea19e7d6877502d2f4d0e641fb228027682b972317b7",
+      "exit_status": 0,
+      "kind": "source",
+      "rustc_object_status": 0,
+      "rustc_stderr": ""
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/paid-width-128-noise-128.rs",
+      "sha256": "ea73c0db78bba3aa287c81d412150575bda34b3b3f616cf34e644f17c5c511c7",
+      "exit_status": 0,
+      "kind": "source",
+      "rustc_object_status": 0,
+      "rustc_stderr": ""
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/builtin-before-deref.rs",
+      "sha256": "9c5a54f80b194fa44bbaff17d8e885dc0600bf149e1dc23183a11b1b22d3b42f",
+      "rustc_object_status": 0,
+      "baseline_candidate": {
+        "rustc_object_status": 0,
+        "rows": [
+          {
+            "label": "baseline",
+            "compiler_sha256": "05cc3029540dc069cf360821f180521d74278c5f5986a8e8e69255dc7955def5",
+            "status": 0,
+            "stderr": ""
+          },
+          {
+            "label": "candidate",
+            "compiler_sha256": "dce6b12a7988bc53a9ef4cfca48797032ed18e8c35c153464715be3e535d8a7e",
+            "status": 1,
+            "stderr": "ERROR: file 0: 1973: associated type requires an unambiguous validated implementation\n"
+          }
+        ]
+      }
+    }
+  ]
 }

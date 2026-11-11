@@ -258,7 +258,7 @@ impl Checker<'_> {
                 }
                 continue;
             }
-            if self.is_protocol_call(node) {
+            if self.is_protocol_call(node, index) {
                 if let Some(source) = self.replayed_protocol_context(key, operation, effect)? {
                     if existing.is_some_and(|old| old != source) {
                         return Err(Declarations::error(
@@ -417,10 +417,10 @@ impl Checker<'_> {
         self.publish_displacement_plans(solved, source_use, &mut allowances)?;
         self.commit_caller_sites(&sites, warm);
         self.commit_safety_sites(&safety, warm);
-        for (node, term) in &self.state.calls {
+        for (index, (node, term)) in self.state.calls.iter().enumerate() {
             if matches!(self.kind(*node), crate::syntax::ast::Kind::For { .. })
                 || self.erased_source_operator(*node)?
-                || self.is_protocol_call(*node)
+                || self.is_protocol_call(*node, index)
                 || matches!(self.kind(*node), crate::syntax::ast::Kind::OffsetOf { .. })
             {
                 continue;

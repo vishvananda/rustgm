@@ -125,6 +125,9 @@ impl Checker<'_> {
     ) -> Result<bool, Error> {
         let (converted, selection, mut unsizing) =
             self.reference_conversion(node, actual, expected, identity_reborrow)?;
+        if self.deref_reference_coercion(node, actual, expected, converted, identity_reborrow)? {
+            return Ok(true);
+        }
         let Some(selection) = selection else {
             return self.shared_identity_adjustment(node, actual, expected, identity_reborrow);
         };

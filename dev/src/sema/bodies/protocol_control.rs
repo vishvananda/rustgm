@@ -10,6 +10,10 @@ pub(super) struct OpenCall {
 #[derive(Clone, Copy)]
 pub(super) enum OpenKind {
     Field(super::access_paths::OpenAccess),
+    Coercion {
+        access: super::access_paths::OpenAccess,
+        mutable: bool,
+    },
     ReceiverDiscovery(super::access_paths::OpenAccess),
     Receiver {
         access: super::access_paths::OpenAccess,
@@ -68,7 +72,8 @@ impl OpenKind {
         match self {
             Self::Field(access)
             | Self::ReceiverDiscovery(access)
-            | Self::Receiver { access, .. } => Some(access),
+            | Self::Receiver { access, .. }
+            | Self::Coercion { access, .. } => Some(access),
             _ => None,
         }
     }
@@ -76,7 +81,8 @@ impl OpenKind {
         match self {
             Self::Field(access)
             | Self::ReceiverDiscovery(access)
-            | Self::Receiver { access, .. } => Some(access),
+            | Self::Receiver { access, .. }
+            | Self::Coercion { access, .. } => Some(access),
             _ => None,
         }
     }
@@ -90,6 +96,7 @@ impl OpenKind {
                 .len()?
                 .checked_add(1)
                 .ok_or("method receiver call count overflow"),
+            Self::Coercion { access, .. } => access.steps.len(),
             Self::Field(field) => {
                 let count = field.steps.len()?;
                 if count == 0 || field.field.is_none() || field.calls.is_none() {
@@ -112,7 +119,10 @@ impl OpenKind {
                 .ok_or("source protocol lost a solved type")
         };
         Ok(match self {
-            Self::Field(_) | Self::ReceiverDiscovery(_) | Self::Receiver { .. } => {
+            Self::Field(_)
+            | Self::ReceiverDiscovery(_)
+            | Self::Receiver { .. }
+            | Self::Coercion { .. } => {
                 return Err(
                     "field plan requires its actual final calls and checked step publication",
                 );

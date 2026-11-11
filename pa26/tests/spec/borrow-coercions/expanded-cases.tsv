@@ -1,0 +1,3 @@
+pa26/tests/spec/borrow-coercions/inferred-statement.rs	1
+pa26/tests/spec/borrow-coercions/inferred-unit-call.rs	1
+pa26/tests/spec/borrow-coercions/inferred-only-wrapper.rs	0

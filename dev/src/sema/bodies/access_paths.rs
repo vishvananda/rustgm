@@ -77,6 +77,8 @@ const _: [(); 12] = [(); size_of::<CaptureReceiver>()];
 #[derive(Default)]
 pub(super) struct Pending {
     pub steps: Vec<OpenStep>,
+    /// Conversion plans coexist with the expression's original selected operation.
+    pub conversions: crate::support::hash::HashMap<NodeId, AccessPlanId>,
     /// Current inference roots, keyed by the actual Field source. No type is erased.
     visited: HashSet<(NodeId, TermId)>,
     /// The existing protocol-plan inventory is visited once, including resumes.
@@ -116,7 +118,10 @@ impl Checker<'_> {
                 let call = u32::try_from(self.state.calls.len())
                     .map_err(|_| self.error(open.node, "field call inventory overflow"))?;
                 self.reserve_field_calls(open.node, count)?;
-                let mutable = self.mutable_language_place(open.node);
+                let mutable = match open.kind {
+                    super::protocol_control::OpenKind::Coercion { mutable, .. } => mutable,
+                    _ => self.mutable_language_place(open.node),
+                };
                 for index in 0..count {
                     self.prepare_field_step(
                         open.node,
@@ -162,6 +167,14 @@ impl Checker<'_> {
         let Some(id) = self.access_plan(node) else {
             return Ok(None);
         };
+        self.capture_access_receiver(node, id).map(Some)
+    }
+
+    pub(super) fn capture_access_receiver(
+        &self,
+        node: NodeId,
+        id: AccessPlanId,
+    ) -> Result<CaptureReceiver, Error> {
         let open = self
             .state
             .call_types
@@ -175,6 +188,9 @@ impl Checker<'_> {
             .access()
             .ok_or_else(|| self.error(node, "access capture changed its actual plan kind"))?;
         let source_matches = match open.kind {
+            super::protocol_control::OpenKind::Coercion { .. } => {
+                field.operand == node && field.field.is_none()
+            }
             super::protocol_control::OpenKind::Field(_) => {
                 matches!(self.kind(node), crate::syntax::ast::Kind::Field { value, .. } if value == field.operand)
                     && field.field.is_some()
@@ -212,11 +228,11 @@ impl Checker<'_> {
         if dereferences != step.dereferences {
             return Err(self.error(node, "field capture changed its actual receiver prefix"));
         }
-        Ok(Some(CaptureReceiver {
+        Ok(CaptureReceiver {
             operand: field.operand,
             dereferences,
             borrow: borrow.ok_or_else(|| self.error(node, "field capture has no actual borrow"))?,
-        }))
+        })
     }
 
     fn prepare_field_step(

@@ -3,7 +3,7 @@ use crate::resolve;
 use rustgm::{expand::config::Config, pipeline, support::diagnostics::LintCap};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
-fn program(source: &str) -> Result<rustgm::lowir::program::Program> {
+pub(super) fn program(source: &str) -> Result<rustgm::lowir::program::Program> {
     let mut config = Config::default();
     config.set_lint_cap(LintCap::Allow);
     let report = resolve::source_provider_config(source, "implicit_receiver", &config)?;

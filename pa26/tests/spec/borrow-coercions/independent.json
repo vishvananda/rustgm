@@ -79,5 +79,31 @@
     }
   ],
   "raw_evidence_root": "B obj/parallel/refcell-coercion",
-  "no_candidate_native_claim": true
+  "no_candidate_native_claim": true,
+  "expanded_independent_objects": [
+    {
+      "path": "pa26/tests/spec/borrow-coercions/inferred-statement.rs",
+      "sha256": "fb2d983f41f8d41972590bbbda02aef40230fd099362deec220093f0e3aa0f26",
+      "exit_status": 1,
+      "kind": "ordinary",
+      "rustc_object_status": 1,
+      "rustc_stderr": "error[E0308]: mismatched types\n --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/qualified-extra-declared/ordinary-inferred-statement.rs:6:52\n  |\n6 | fn check<T>(mut x:Hold<T>,t:T){let _=accept(&mut x,t);}\n  |          -                           ------        ^ expected `Hold<T>`, found type parameter `T`\n  |          |                           |\n  |          found this type parameter   arguments to this function are incorrect\n  |\n  = note:      expected struct `Hold<T>`\n          found type parameter `T`\nhelp: the return type of this call is `T` due to the type of the argument passed\n --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/qualified-extra-declared/ordinary-inferred-statement.rs:6:38\n  |\n6 | fn check<T>(mut x:Hold<T>,t:T){let _=accept(&mut x,t);}\n  |                                      ^^^^^^^^^^^^^^-^\n  |                                                    |\n  |                                                    this argument influences the return type of `accept`\nnote: function defined here\n --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/qualified-extra-declared/ordinary-inferred-statement.rs:5:4\n  |\n5 | fn accept<T>(_:&mut T,t:T)->T{t}\n  |    ^^^^^^             ---\nhelp: try wrapping the expression in `Hold`\n  |\n6 | fn check<T>(mut x:Hold<T>,t:T){let _=accept(&mut x,Hold(t));}\n  |                                                    +++++ +\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0308`.\n"
+    },
+    {
+      "path": "pa26/tests/spec/borrow-coercions/inferred-unit-call.rs",
+      "sha256": "f9be8f9d6a74015da11b3f933310bfab44ebeaa927a20dcea1e2f1cbacf68d28",
+      "exit_status": 1,
+      "kind": "ordinary",
+      "rustc_object_status": 1,
+      "rustc_stderr": "error[E0308]: mismatched types\n --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/qualified-extra-declared/ordinary-inferred-unit-call.rs:6:71\n  |\n6 | fn unit<T>(_:&mut T,_:T){} fn check<T>(mut x:Hold<T>,t:T){unit(&mut x,t)}\n  |                                     -                     ----        ^ expected `Hold<T>`, found type parameter `T`\n  |                                     |                     |\n  |                                     |                     arguments to this function are incorrect\n  |                                     found this type parameter\n  |\n  = note:      expected struct `Hold<T>`\n          found type parameter `T`\nnote: function defined here\n --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-coercion/qualified-extra-declared/ordinary-inferred-unit-call.rs:6:4\n  |\n6 | fn unit<T>(_:&mut T,_:T){} fn check<T>(mut x:Hold<T>,t:T){unit(&mut x,t)}\n  |    ^^^^             ---\nhelp: try wrapping the expression in `Hold`\n  |\n6 | fn unit<T>(_:&mut T,_:T){} fn check<T>(mut x:Hold<T>,t:T){unit(&mut x,Hold(t))}\n  |                                                                       +++++ +\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0308`.\n"
+    },
+    {
+      "path": "pa26/tests/spec/borrow-coercions/inferred-only-wrapper.rs",
+      "sha256": "98e30c3a809f61974e11acb520284047a00cdeaa93e10cb55542f74aad81bd22",
+      "exit_status": 0,
+      "kind": "ordinary",
+      "rustc_object_status": 0,
+      "rustc_stderr": ""
+    }
+  ]
 }

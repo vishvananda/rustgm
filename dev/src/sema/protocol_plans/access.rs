@@ -124,27 +124,10 @@ pub(crate) fn retained(
         .kind
         .access()
         .ok_or_else(|| Error::unlocated("access lookup received another actual protocol"))?;
-    let id = match (
-        plan.kind,
-        facts.node(plan.node).and_then(|node| node.operation),
-    ) {
-        (
-            super::Kind::Field { field, .. },
-            Some(super::super::model::Operation::Field {
-                field: actual,
-                plan: Some(id),
-            }),
-        ) if field == actual => id,
-        (
-            super::Kind::Receiver { .. },
-            Some(super::super::model::Operation::MethodReceiver { plan: id }),
-        ) => id,
-        _ => {
-            return Err(Error::unlocated(
-                "access lookup lost its current source plan",
-            ));
-        }
-    };
+    let id = plan
+        .kind
+        .retained_id(facts, plan.node)
+        .ok_or_else(|| Error::unlocated("access lookup lost its current source plan"))?;
     if id
         .current(facts, owner, plan.node)
         .map_err(Error::unlocated)?
@@ -278,6 +261,16 @@ pub(in crate::sema) fn check_rows(
         .node(plan.node.node)
         .kind;
     let valid = match plan.kind {
+        super::Kind::Coercion { .. } => {
+            operand == plan.node.node && facts.reference_adjustments.get(&plan.node).is_some_and(|r| {
+                r.conversion.dereferences == dereferences + 1 && !r.conversion.unsize
+                && matches!(facts.types.kind(r.borrow), Some(crate::types::Kind::Reference { referent, .. }) if referent == receiver)
+                && facts.node(plan.node).and_then(|n| n.adjustment).is_some_and(|a| {
+                    a.kind == super::super::model::AdjustmentKind::Reborrow
+                    && matches!(facts.types.kind(a.target), Some(crate::types::Kind::Reference { referent, .. }) if referent == receiver)
+                })
+            })
+        },
         super::Kind::Field { field, .. } => {
             matches!(syntax, crate::syntax::ast::Kind::Field { value, .. } if value == operand)
                 && matches!(facts.node(plan.node).and_then(|node| node.operation), Some(super::super::model::Operation::Field { field: actual, .. }) if actual == field)
@@ -526,4 +519,39 @@ fn check_method(
         return Err(fail());
     }
     Ok(())
+}
+
+/// A converted expression may also contain its own ordinary call. Select only
+/// actual calls present in the distinct, retained conversion range.
+pub(crate) fn conversion_call(
+    facts: &super::super::model::Declarations,
+    owner: NodeKey,
+    node: NodeKey,
+    call: super::super::iteration::Call,
+) -> Result<Option<super::super::bodies::ProtocolPlanId>, &'static str> {
+    let Some(id) = facts
+        .reference_adjustments
+        .get(&node)
+        .and_then(|row| row.plan)
+    else {
+        return Ok(None);
+    };
+    let plan = id.current(facts, owner, node)?;
+    let super::Kind::Coercion { steps, .. } = plan.kind else {
+        return Err("reference conversion changed its actual protocol kind");
+    };
+    let entries = rows(facts, plan, owner, steps)?;
+    super::super::header_attributes::charge_source_contract_query(
+        facts,
+        entries.len().checked_ilog2().map_or(1, |n| n as usize + 2),
+    )
+    .map_err(|_| "reference conversion lookup budget exceeded")?;
+    let Ok(index) = entries.binary_search_by_key(&call.callable.0, |step| step.call.callable.0)
+    else {
+        return Ok(None);
+    };
+    if entries[index].call != call {
+        return Err("reference conversion changed its complete actual call signature");
+    }
+    Ok(Some(id))
 }

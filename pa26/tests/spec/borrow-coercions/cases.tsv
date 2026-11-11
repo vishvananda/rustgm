@@ -11,3 +11,6 @@ pa26/tests/spec/borrow-coercions/implicit-annotated.rs	0
 pa26/tests/spec/borrow-coercions/implicit-mutability-reject.rs	1
 pa26/tests/spec/borrow-coercions/implicit-escape-reject.rs	1
 pa26/tests/spec/borrow-coercions/implicit-wrong-target-reject.rs	1
+pa26/tests/spec/borrow-coercions/inferred-statement.rs	1
+pa26/tests/spec/borrow-coercions/inferred-unit-call.rs	1
+pa26/tests/spec/borrow-coercions/inferred-only-wrapper.rs	0

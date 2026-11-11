@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "PA31 actual source language item borrowed-wrapper coercion requirements",
-  "state": "Independently frozen requirements; implicit conversions are unimplemented; whole assignment remains planned",
+  "state": "Implementation in focused qualification; independent outcomes fixed, no whole assignment release",
   "contract": "Convert shared/mutable reference through actual selected Deref/DerefMut calls, preserving every bound/const/region/loan/formation debt and source evaluation order. Known and inferred generic contexts agree. Mutability, target mismatch and escaping references remain errors. No layout-only cast grants conversion.",
   "profile": {
     "rustc": "1.98.0",
@@ -23,9 +23,18 @@
       "rustc_object_status": 0,
       "baseline_types_status": 0,
       "baseline_diagnostic": "",
-      "qualification": "Qualified exact complete checked-body/prepared-root control; no demanded native conversion artifact is claimed.",
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
       "checked_body_root_builder_status": 0,
-      "checked_body_receipt": "1794406262569032574"
+      "checked_body_receipt": "1794406262569032574",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
     },
     {
       "path": "pa31/tests/spec/borrow-coercions/explicit-place.rs",
@@ -34,9 +43,18 @@
       "rustc_object_status": 0,
       "baseline_types_status": 0,
       "baseline_diagnostic": "",
-      "qualification": "Qualified exact complete checked-body/prepared-root control; no demanded native conversion artifact is claimed.",
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
       "checked_body_root_builder_status": 0,
-      "checked_body_receipt": "1794406262569032574"
+      "checked_body_receipt": "1794406262569032574",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
     },
     {
       "path": "pa31/tests/spec/borrow-coercions/explicit-temporary.rs",
@@ -45,9 +63,18 @@
       "rustc_object_status": 0,
       "baseline_types_status": 0,
       "baseline_diagnostic": "",
-      "qualification": "Qualified exact complete checked-body/prepared-root control; no demanded native conversion artifact is claimed.",
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
       "checked_body_root_builder_status": 0,
-      "checked_body_receipt": "1794406262569032574"
+      "checked_body_receipt": "1794406262569032574",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
     },
     {
       "path": "pa31/tests/spec/borrow-coercions/implicit-known.rs",
@@ -56,8 +83,16 @@
       "rustc_object_status": 0,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 3418: incompatible types\n",
-      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
-      "pending": "Required implicit Deref/DerefMut argument/reference conversion; currently incompatible types."
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
     },
     {
       "path": "pa31/tests/spec/borrow-coercions/implicit-inferred.rs",
@@ -66,8 +101,16 @@
       "rustc_object_status": 0,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 3420: incompatible types\n",
-      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
-      "pending": "Required implicit Deref/DerefMut argument/reference conversion; currently incompatible types."
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
     },
     {
       "path": "pa31/tests/spec/borrow-coercions/implicit-temporary-known.rs",
@@ -76,8 +119,16 @@
       "rustc_object_status": 0,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 3413: incompatible types\n",
-      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
-      "pending": "Required implicit Deref/DerefMut argument/reference conversion; currently incompatible types."
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
     },
     {
       "path": "pa31/tests/spec/borrow-coercions/implicit-temporary-inferred.rs",
@@ -86,8 +137,16 @@
       "rustc_object_status": 0,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 3416: incompatible types\n",
-      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
-      "pending": "Required implicit Deref/DerefMut argument/reference conversion; currently incompatible types."
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
     },
     {
       "path": "pa31/tests/spec/borrow-coercions/implicit-borrowed.rs",
@@ -96,8 +155,16 @@
       "rustc_object_status": 0,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 3419: incompatible types\n",
-      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
-      "pending": "Required implicit Deref/DerefMut argument/reference conversion; currently incompatible types."
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
     },
     {
       "path": "pa31/tests/spec/borrow-coercions/implicit-shared.rs",
@@ -106,8 +173,16 @@
       "rustc_object_status": 0,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 3428: incompatible types\n",
-      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
-      "pending": "Required implicit Deref/DerefMut argument/reference conversion; currently incompatible types."
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
     },
     {
       "path": "pa31/tests/spec/borrow-coercions/implicit-annotated.rs",
@@ -116,8 +191,16 @@
       "rustc_object_status": 0,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 3419: incompatible types\n",
-      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
-      "pending": "Required implicit Deref/DerefMut argument/reference conversion; currently incompatible types."
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
     },
     {
       "path": "pa31/tests/spec/borrow-coercions/implicit-mutability-reject.rs",
@@ -126,9 +209,18 @@
       "rustc_object_status": 1,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 3415: cannot coerce a shared reference to a mutable reference\n",
-      "qualification": "Qualified exact complete checked-body/prepared-root control; no demanded native conversion artifact is claimed.",
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
       "checked_body_root_builder_status": 1,
-      "checked_body_receipt": "1794406262569032574"
+      "checked_body_receipt": "1794406262569032574",
+      "candidate_checked_body_status": 1,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
     },
     {
       "path": "pa31/tests/spec/borrow-coercions/implicit-escape-reject.rs",
@@ -137,8 +229,16 @@
       "rustc_object_status": 1,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 3404: incompatible types\n",
-      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
-      "pending": "Must reject the actual escaping loan after conversion works; baseline incompatible types does not qualify the required lifetime rejection."
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 1,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
     },
     {
       "path": "pa31/tests/spec/borrow-coercions/implicit-wrong-target-reject.rs",
@@ -147,9 +247,18 @@
       "rustc_object_status": 1,
       "baseline_types_status": 1,
       "baseline_diagnostic": "ERROR: file 0: 3416: incompatible types\n",
-      "qualification": "Qualified exact complete checked-body/prepared-root control; no demanded native conversion artifact is claimed.",
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
       "checked_body_root_builder_status": 1,
-      "checked_body_receipt": "1794406262569032574"
+      "checked_body_receipt": "1794406262569032574",
+      "candidate_checked_body_status": 1,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
     },
     {
       "path": "pa31/tests/spec/borrow-coercions/native-order.rs",
@@ -160,17 +269,466 @@
       "independent_stdout": "borrow-coercion 23 41 1342\n",
       "required_candidate_native_status": 0,
       "required_candidate_stdout": "borrow-coercion 23 41 1342\n",
-      "qualification": "Required actual execution positive; Rust/C independently execute23/41/1342. No candidate native qualification or replacement by casts."
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": true,
+      "native_receipt": "1794410023347977560",
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/inferred-statement.rs",
+      "sha256": "40188373056b66d045af24a709ef1e43000a6e0c14caa6335ca12ff4fde71330",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "draft_author_prediction": 0,
+      "independent_review": "Genuine Rust E0308 disproved draft prediction before candidate testing; source bytes unchanged. No Rust-valid positive was inverted.",
+      "candidate_checked_body_status": 1,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/inferred-unit-call.rs",
+      "sha256": "1346f10a6b87325df65c3133669e7392875b644523459968d0a5e3fd3b979001",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "draft_author_prediction": 0,
+      "independent_review": "Genuine Rust E0308 disproved draft prediction before candidate testing; source bytes unchanged. No Rust-valid positive was inverted.",
+      "candidate_checked_body_status": 1,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/inferred-only-wrapper.rs",
+      "sha256": "cd01e89c4da8874353410533fc5ead9d453284cf4a436352bbb5ed3571ad5cc7",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/later-argument-wrong-reject.rs",
+      "sha256": "7c0ecc8bc33fba06b14648492d2a2393ab6b9bd76f139af2f6c666953eb3c20d",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 1,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/method-return.rs",
+      "sha256": "714fe21035c6f68d08b72a577a9bf4968af2018778a0ef8104c1682c55e9b09a",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/field-reference.rs",
+      "sha256": "d0603bc6d301038fdd19781b21c7555dadf2cf4e5ea99d2801c9d58926b8d135",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/method-reference.rs",
+      "sha256": "0d9e16d360ef84c1f29ac109079d6362c6f67d6f65052967cb4dbd9ea79703d4",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/borrowed-lifetime-paid.rs",
+      "sha256": "0003c121dd03f5d39508c42b8c871056863ea25fbf35b2e0ebcaf0dd1b1c24c4",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/borrowed-lifetime-reject.rs",
+      "sha256": "7e24f6f00583802f4dcb98bf5209498f9c3cb6144261a624ec370459cba98cb0",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 1,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/bound-paid.rs",
+      "sha256": "f742764eea4d35ba9efc4b62ff16b69e46608d675853a8cca7d1e073bc485a18",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/captured-mut.rs",
+      "sha256": "1009e58d73de111e3250fcbdaa9163275ed0aa309aa3c414bd81352bfa469468",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/const-paid.rs",
+      "sha256": "1e85fa9d5f1267342cb9758e285b086469c656a676efd7ad0d3e87ce2f0d9932",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "independent_native_status": 0,
+      "independent_stdout": "borrow-const 41\n",
+      "required_candidate_native_status": 0,
+      "required_candidate_stdout": "borrow-const 41\n",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": true,
+      "native_receipt": "1794410023347977560",
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/const-unpaid-reject.rs",
+      "sha256": "2251f5a35f663dc02153da6394f5fae0d1640c3a09a0f17eacfe02827fd6680d",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 1,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/const-unforced-wrapper.rs",
+      "sha256": "766ca7faf74fe89b161d56d027986660554a158640236a2c7b8a14e11388ccc6",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "independent_native_status": 0,
+      "independent_stdout": "borrow-const 41\n",
+      "required_candidate_native_status": 0,
+      "required_candidate_stdout": "borrow-const 41\n",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": true,
+      "native_receipt": "1794410023347977560",
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/nested-two.rs",
+      "sha256": "08e94a597ea8a4c868c03be9e26475e8cf6995ea2cf51626f23aaa4605aec468",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/builtin-after-deref.rs",
+      "sha256": "a6cdab4fa9cefe4e2d732536f6bb09ebd58c3a1962468efbfd546ce0b59e572d",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/nested-shared-reject.rs",
+      "sha256": "57a45ab9bb1b1d8e6b79c9a0f3842f478e411a16be55e9ea38327513d8c82813",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 1,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 1,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/native-guard.rs",
+      "sha256": "17d3b6d3480f5ca72d57c05a536bbb2dd84d396cf919450e9d9cb2ea8a297f2e",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "independent_native_status": 0,
+      "independent_stdout": "borrow-guard 23 41 1345\n",
+      "required_candidate_native_status": 0,
+      "required_candidate_stdout": "borrow-guard 23 41 1345\n",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": true,
+      "native_receipt": "1794410023347977560",
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/paid-width-8-noise-0.rs",
+      "sha256": "e70d0f4c3bb01a57f22ed4ee0a1bcc27be9667bf14e936afa43e6d50da1c6b12",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/paid-width-8-noise-128.rs",
+      "sha256": "3caeab21f2e17163fc5f3194fbaea7d230e28fe4fcbd99740f4214d9d4ecaed3",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/paid-width-32-noise-0.rs",
+      "sha256": "4378fd98f6123a325a62b5961dd7d84d17c63b773dcfe4f2a625a9f7951a742c",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/paid-width-32-noise-128.rs",
+      "sha256": "0c934298605fe4ab709c5f01eea8b31426dea4a2974c94fa8b0fa4caa56e7706",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/paid-width-128-noise-0.rs",
+      "sha256": "28a35d2f7ef13e4d4700ea19e7d6877502d2f4d0e641fb228027682b972317b7",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/paid-width-128-noise-128.rs",
+      "sha256": "ea73c0db78bba3aa287c81d412150575bda34b3b3f616cf34e644f17c5c511c7",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed.",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/builtin-before-deref.rs",
+      "sha256": "9c5a54f80b194fa44bbaff17d8e885dc0600bf149e1dc23183a11b1b22d3b42f",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 0,
+      "exploratory_candidate_types_status": 1,
+      "required_outcome": "Built-in unsize pays its own actual bounds; unrelated conditional Deref is not selected.",
+      "attributed_prefix": "pa31/tests/spec/unsizing-roles/object-goal.rs",
+      "attributed_prefix_sha256": "cfd385d84442d6d2c17b49ef55b38d3bbf5f198a46027841a1f550b07828cedf",
+      "candidate_checked_body_status": 0,
+      "checked_body_qualification": "Final15exact public receipt1794409791154946495 covers all39 source inputs through existing prepared-root builder and complete checked bodies; generic unused source does not claim demanded native instantiation.",
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      },
+      "qualification": "Complete checked body/prepared-root outcome qualified in1794409791154946495; native execution qualified only where explicitly declared and observed."
     }
   ],
   "auxiliaries": [
     {
       "path": "pa30/tests/spec/borrow-coercions/observer.c",
       "sha256": "5ca3c7f85f298cfcda6dc66b8128268b7223e9c6832eb1fbb6d2a5f32d6515f9"
+    },
+    {
+      "path": "pa30/tests/spec/borrow-coercions/guard-observer.c",
+      "sha256": "ab2ed033f6824c375680086e6648c6e7810f59d299f83deefbcac21092ad6f6d"
+    },
+    {
+      "path": "pa30/tests/spec/borrow-coercions/constant-observer.c",
+      "sha256": "f82c4e6f3c4d0ea79e9021cbdea86ace15a805f86edc0c796dd67fe02c4d890d"
     }
   ],
   "qualified_controls": 5,
   "implicit_positive_count_pending": 7,
   "escaping_loan_cause_pending": true,
-  "native_pending": true
+  "native_pending": true,
+  "required_positive_outcomes_preserved": true,
+  "candidate_qualification": {
+    "compiler_sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+    "source39_full_checked_body": "pass",
+    "no_course_oracles": true,
+    "full_assignment_planned": true
+  }
 }

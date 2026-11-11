@@ -31,5 +31,19 @@
     "stderr": "",
     "observer": "pa30/tests/spec/borrow-coercions/observer.c"
   },
-  "no_candidate_native_claim": true
+  "no_candidate_native_claim": true,
+  "expanded_independent_objects": [
+    {
+      "path": "pa30/tests/spec/borrow-coercions/native-guard.rs",
+      "sha256": "132390c66219655be816c9bdeafafa452cf442455e042f5b1c1290f0a91f606c",
+      "exit_status": 0,
+      "kind": "ordinary",
+      "native": true,
+      "native_stdout": "borrow-guard 23 41 1345\n",
+      "observer": "obj/parallel/refcell-coercion/extra-declared/guard-observer.c",
+      "rustc_object_status": 0,
+      "rustc_stderr": "",
+      "native_status": 0
+    }
+  ]
 }
