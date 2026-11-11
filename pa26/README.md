@@ -485,3 +485,5 @@ See [source predictions](tests/spec/unsized-parameters/README.md) and the
 Concrete DST ABI, allocation/destruction/address profiles and imported ownership
 remain required. Unchanged str::len and println positives retain their required
 library boundaries. This does not complete PA26 or build original core.
+
+The [source Deref/Clone checkpoint](../docs/pa26-deref-clone.md) fixes proof ownership at shared call sites and retains all ordinary, source and native contracts in `tests/spec/deref-clone/manifest.json`. This remains a finite development checkpoint; the whole assignment is planned.

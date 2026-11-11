@@ -6117,8 +6117,12 @@ region proof. The last returned reference supplies ancestry for the final borrow
 a destination type or associated Target supplies no permission. Lower the operand
 and each actual call once, including temporary cleanup and argument order.
 
-A known result expectation supplies a shape hint before generic call inputs.
-It cannot replace a source constructor's incompatible nominal identity or its
+A known result expectation supplies a shape hint before generic call inputs
+when the unresolved result root reaches the actual formal input graph. Visit
+shared input nodes once with charged work, excluding non-injective projections;
+a result-only Self cannot supply an earlier argument prefix for trait selection.
+Preserve existing function-pointer result context and later ordinary result
+coercion. The hint cannot replace a source constructor's incompatible nominal identity or its
 field inputs with a later Deref destination. Preserve compatible factory/unsizing
 context and source-time prefix inference: a later argument alone does not rewrite
 an already inferred wrapper input. The [reference coercion checkpoint](docs/pa26-borrow-coercions.md)
@@ -7500,7 +7504,12 @@ at the view boundary. Count mode consumes the same facts without text rendering.
 Expose trait/impl ownership, declared parameters and defaults, complete predicates,
 validated method/default mappings, qualified paths, receiver adjustments and
 selected implementation arguments. Preserve bound-selected lookup origin through
-this view. Region/loan constraints remain explicitly pending: inspection succeeds
+this view, authenticated by the selected member's identity. A syntax node can
+also own implicit Deref or conversion calls. A caller-only lookup restriction
+belongs to the selected member; each other actual call still proves its own
+complete application through normal selection. Retain that member in the existing
+sparse lookup index rather than granting or restricting proof by node alone.
+Region/loan constraints remain explicitly pending: inspection succeeds
 at the inference boundary, while LowIR emission retains every template, lifetime,
 ownership, loan, cleanup and demanded-instance proof. The new view must not change
 that execution boundary or mutate the analyzed facts.

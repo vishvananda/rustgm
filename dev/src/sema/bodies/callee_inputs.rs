@@ -189,6 +189,64 @@ fn reference_frontier(
 }
 
 impl Checker<'_> {
+    /// A result-only Self cannot become an argument prefix for trait selection.
+    /// Ordinary result coercion still checks it after the arguments. Direct
+    /// signature inputs may share the hint without using non-injective projections.
+    pub(super) fn call_result_reaches_inputs(
+        &mut self,
+        node: NodeId,
+        signature: TermId,
+        result: TermId,
+    ) -> Result<bool, Error> {
+        let Some(Constructor::Function { parameters, .. }) = self.head(node, signature)? else {
+            return Err(self.error(node, "call context lost its function signature"));
+        };
+        let result = self
+            .state
+            .infer
+            .root(result)
+            .map_err(|e| self.error(node, e))?;
+        let mut work = Vec::with_capacity(parameters as usize);
+        let mut seen = HashSet::default();
+        for index in 0..parameters {
+            work.push(self.child(node, signature, index as usize)?);
+        }
+        while let Some(input) = work.pop() {
+            self.state
+                .infer
+                .account_work(1)
+                .map_err(|e| self.error(node, e))?;
+            let input = self
+                .state
+                .infer
+                .root(input)
+                .map_err(|e| self.error(node, e))?;
+            if input == result {
+                return Ok(true);
+            }
+            if !seen.insert(input) {
+                continue;
+            }
+            match self.state.infer.head(&self.facts.types, input) {
+                Ok(None | Some(Constructor::Projection(_))) | Err(InferError::Normalization) => {
+                    continue;
+                }
+                Ok(Some(_)) => {}
+                Err(error) => return Err(self.error(node, error)),
+            }
+            let count = self
+                .state
+                .infer
+                .arity(&self.facts.types, input)
+                .map_err(|e| self.error(node, e))?
+                .unwrap_or(0);
+            for index in 0..count {
+                work.push(self.child(node, input, index)?);
+            }
+        }
+        Ok(false)
+    }
+
     pub(super) fn call_result_readiness(
         &mut self,
         call: NodeId,

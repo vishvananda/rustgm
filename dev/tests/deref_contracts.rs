@@ -1,6 +1,8 @@
 //! Real source dereference dispatch preserves effects, places and ownership.
 #[path = "deref_contracts/autocalls.rs"]
 mod autocalls;
+#[path = "deref_contracts/cloning.rs"]
+mod cloning;
 #[path = "deref_contracts/coercions.rs"]
 mod coercions;
 use crate::resolve as test_source;

@@ -274,11 +274,11 @@ impl Query {
                 self.prepare(report, facts, member)?;
                 continue;
             }
-            if self.selected.is_some() {
+            if let Some(selected) = self.selected {
                 if matches!(self.mode, Mode::Trait { bound: true }) {
-                    facts.methods.bound_uses.insert(key);
+                    facts.methods.bound_uses.insert(key, selected);
                 }
-                return Ok(Progress::Ready(self.selected));
+                return Ok(Progress::Ready(Some(selected)));
             }
             if let Some(lexical) = self.lexical.take() {
                 self.members = lexical.into_iter();

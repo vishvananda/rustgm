@@ -151,3 +151,5 @@ a real ?Sized original, sized specialization and automatic destructor through
 ordinary C observations7 then9, independently compared with Rust. Concrete
 unsized parameter ABI, owned allocation handoff and cross-crate transport remain
 required; PA26 owns the source permission and ownership rules.
+
+The [source Deref/Clone checkpoint](../docs/pa26-deref-clone.md) fixes proof ownership at shared call sites and retains all ordinary, source and native contracts in `tests/spec/deref-clone/manifest.json`. This remains a finite development checkpoint; the whole assignment is planned.

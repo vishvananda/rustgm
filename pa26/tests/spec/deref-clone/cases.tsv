@@ -1,0 +1,14 @@
+case	required_status
+owned-known.rs	0
+owned-generic.rs	0
+explicit-generic.rs	0
+factory-generic.rs	0
+factory-qualified.rs	0
+associated-name.rs	0
+reference-priority-reject.rs	1
+wrapper-priority-reject.rs	1
+unpaid-reject.rs	1
+reference-return.rs	0
+same-member-implicit.rs	0
+same-member-explicit.rs	0
+result-context-trait.rs	0

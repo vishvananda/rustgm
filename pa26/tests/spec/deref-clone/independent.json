@@ -1,0 +1,85 @@
+{
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": "1 for actual source only",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0,
+    "emit": "object"
+  },
+  "independent_outcomes_declared_before_execution": true,
+  "objects": [
+    {
+      "path": "pa26/tests/spec/deref-clone/owned-known.rs",
+      "sha256": "344efc27baf062493f9ba43564cee7b7a33b23ec5518b04c1a5117019acc3dc1",
+      "object_status": 0
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/owned-generic.rs",
+      "sha256": "c3f1e8159909e5f7d8f8b40ca7c5df1cfd4160850462de483a9e9402736f7270",
+      "object_status": 0
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/explicit-generic.rs",
+      "sha256": "f69cc90e8992b31c63be7eb80ed57575b66d6b9846d7a360656f780a68fa5323",
+      "object_status": 0
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/factory-generic.rs",
+      "sha256": "46a85f9b5b96533f1fb2d56c5d84b7a1b23d15effdbb59bb8589dd65659ae0a9",
+      "object_status": 0
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/factory-qualified.rs",
+      "sha256": "46962f007685ed1d0cc483167953f9d8935a2341f32147f0eb013c03d250746b",
+      "object_status": 0
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/associated-name.rs",
+      "sha256": "9d5b80a00ee0d1de27566cabb7c4b402a6104ba399c29c5df54637cad23960b7",
+      "object_status": 0
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/reference-priority-reject.rs",
+      "sha256": "6426372afa9f2f6badd8743385e5327636da961f8714d719196147c23c95136d",
+      "object_status": 1
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/wrapper-priority-reject.rs",
+      "sha256": "b74f9dcdca968f91dbf12990643fe26d3ff2603cb83916ed79345eb14a3cd20c",
+      "object_status": 1
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/unpaid-reject.rs",
+      "sha256": "431bacd64840346bf3f1d478e069b0db866567b07f7e2c494947b10df0842261",
+      "object_status": 1
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/reference-return.rs",
+      "sha256": "29830097543a6572ea0c153997a769eafa317084da5a46237f8842d9f0075e1d",
+      "object_status": 0
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/same-member-implicit.rs",
+      "sha256": "7169a7ab7ce570b3d647757c05daea618dd1593a901d4db9c1d942ed63d4430a",
+      "object_status": 0
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/same-member-explicit.rs",
+      "sha256": "1ba44ef0d49c5e0d6bf4e1454143e8feeec0a65c88610472bd8ff45d05b806b2",
+      "object_status": 0
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/result-context-trait.rs",
+      "sha256": "53cac30a3fab9437700db8a6516bfca6c4ce3014d0f855ad51f8a0e80b82b77f",
+      "object_status": 0
+    }
+  ],
+  "native": [],
+  "raw_evidence_root": "B obj/parallel/refcell-clone",
+  "candidate_native_execution_qualified": false,
+  "explicit_profile_recheck": "obj/parallel/refcell-clone/profile-correction.json"
+}

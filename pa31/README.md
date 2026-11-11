@@ -771,3 +771,5 @@ Joined Field capture and concrete cleanup planning controls pass, and original
 core advances past coroutine role admission to panic_bounds_check. This does not
 prove complete original-module typing, generated coroutine execution or a library
 artifact. Preserve the remaining source/runtime/transport requirements above.
+
+The [source Deref/Clone checkpoint](../docs/pa26-deref-clone.md) fixes proof ownership at shared call sites and retains all ordinary, source and native contracts in `tests/spec/deref-clone/manifest.json`. This remains a finite development checkpoint; the whole assignment is planned.

@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "required_positive_artifacts": [
+    {
+      "path": "pa31/tests/spec/deref-clone/reference-return.rs",
+      "sha256": "dee2446bfed81c5879bff22f892c691959e8eebca3356f2ba447369198ff700b",
+      "required_status": 0,
+      "typing_status": 0,
+      "artifact": "Complete checked-body/prepared-root lowering",
+      "observed_failure": "generic aggregate requires instantiated fields",
+      "raw_evidence": "obj/qualification/fast/1794416211058458754/suite_frontend.stdout",
+      "no_positive_outcome_inverted": true
+    }
+  ]
+}

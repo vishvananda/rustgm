@@ -338,7 +338,7 @@ fn uses(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
     for (key, call) in calls {
         let origin = if facts.associated.trait_owner(call.method).is_none() {
             "inherent"
-        } else if facts.methods.bound_uses.contains(key) {
+        } else if facts.methods.bound_uses.get(key) == Some(&call.method) {
             "bound"
         } else {
             "lexical"
@@ -402,7 +402,8 @@ fn paths(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
         } else {
             "implicit"
         };
-        let origin = if facts.methods.bound_uses.contains(key) {
+        let method = selected_method(facts, *key)?;
+        let origin = if facts.methods.bound_uses.get(key) == Some(&method) {
             "bound"
         } else {
             "ordinary"
@@ -412,7 +413,7 @@ fn paths(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
             "trait-path source={}:{} method={} trait={} qualifier={qualifier} origin={origin} subject-source=",
             key.file.0,
             key.node.get(),
-            selected_method(facts, *key)?.0,
+            method.0,
             path.owner.0
         )?;
         if let Some(subject) = path.subject {

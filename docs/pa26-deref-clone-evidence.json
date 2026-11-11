@@ -1,0 +1,739 @@
+{
+  "schema": 1,
+  "state": "Focused member/call-kind proof ownership and result-input context qualified; freeze and original observation next. No original artifact.",
+  "compiler": {
+    "cli_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+    "rust_source_count": 3906,
+    "source_commit_binding": "Clean coherent source commit follows this evidence; no original-clearance claim yet."
+  },
+  "contracts": {
+    "total": 40,
+    "independent_accept": 34,
+    "independent_reject": 6,
+    "owners": {
+      "pa26": 13,
+      "pa30": 2,
+      "pa31": 25
+    },
+    "source_typing_qualified": 25,
+    "source_full_prepared_root_qualified": 24,
+    "pending_required_source_artifact": [
+      "pa31/tests/spec/deref-clone/reference-return.rs"
+    ],
+    "ordinary_import_contracts_pending": 15,
+    "source_native_qualified": 2,
+    "ordinary_native_artifacts_required": 2,
+    "independent_native_programs": 4,
+    "prior57_input_bytes_unchanged": true,
+    "no_positive_inverted": true
+  },
+  "implementation": {
+    "sparse_lookup": "Existing bound-use index retains actual member; no added dense field.",
+    "call_kind": "Implicit and pattern protocol calls keep normal complete selection even for the same member at the same node; explicit selected member retains caller-only proof.",
+    "effects": "Actual callee context unchanged.",
+    "result_hints": "A new general early result hint must reach the formal input graph; shared nodes visited once, projection inputs excluded. Ordinary result coercion and prior function-pointer context preserved."
+  },
+  "qualification": {
+    "public": {
+      "receipt": "1794418559800884712",
+      "state": "passed",
+      "tests": 15,
+      "targets": 3,
+      "seconds": 121.07
+    },
+    "scaling": {
+      "receipt": "1794420857250870920",
+      "state": "passed",
+      "tests": 3,
+      "targets": 1,
+      "seconds": 63.24,
+      "production_code_changed": false
+    },
+    "native": {
+      "receipt": "1794418832230328990",
+      "state": "passed",
+      "tests": 4,
+      "seconds": 83.66,
+      "new_source_stdout": [
+        "deref-clone 23 123\n",
+        "deref-member 23 12\n"
+      ],
+      "old_source_programs": 8
+    },
+    "strict_selected_clippy_full_format_architecture": "passed",
+    "phases": {
+      "cases": 40,
+      "independent_outcomes": {
+        "accept": 34,
+        "reject": 6
+      },
+      "source_type_outcomes_qualified": 25,
+      "source_full_checked_body_outcomes_qualified": 24,
+      "pending_required_source_artifact": [
+        "pa31/tests/spec/deref-clone/reference-return.rs"
+      ],
+      "ordinary_import_contracts_pending": 15,
+      "source_native_programs_qualified": 2,
+      "source_native_receipt": "1794418832230328990",
+      "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+      "counter_harness_sha256": "500c5dc72c6b65f1c1946692f696b2c3a514b58e8ead1ae989619727089b557f",
+      "counter_harness_explicitly_unlinked_after_observation": true,
+      "source_hash_count": 3906,
+      "work": [
+        {
+          "width": 8,
+          "noise": 0,
+          "work": [
+            3653,
+            56,
+            0,
+            0
+          ]
+        },
+        {
+          "width": 8,
+          "noise": 128,
+          "work": [
+            3653,
+            56,
+            0,
+            0
+          ]
+        },
+        {
+          "width": 32,
+          "noise": 0,
+          "work": [
+            13253,
+            224,
+            0,
+            0
+          ]
+        },
+        {
+          "width": 32,
+          "noise": 128,
+          "work": [
+            13253,
+            224,
+            0,
+            0
+          ]
+        },
+        {
+          "width": 128,
+          "noise": 0,
+          "work": [
+            51653,
+            896,
+            0,
+            0
+          ]
+        },
+        {
+          "width": 128,
+          "noise": 128,
+          "work": [
+            51653,
+            896,
+            0,
+            0
+          ]
+        }
+      ],
+      "clone_work": [
+        {
+          "width": 8,
+          "noise": 0,
+          "work": [
+            6492,
+            55,
+            43,
+            1
+          ]
+        },
+        {
+          "width": 8,
+          "noise": 128,
+          "work": [
+            6492,
+            55,
+            43,
+            1
+          ]
+        },
+        {
+          "width": 32,
+          "noise": 0,
+          "work": [
+            23580,
+            199,
+            43,
+            1
+          ]
+        },
+        {
+          "width": 32,
+          "noise": 128,
+          "work": [
+            23580,
+            199,
+            43,
+            1
+          ]
+        },
+        {
+          "width": 128,
+          "noise": 0,
+          "work": [
+            91932,
+            775,
+            43,
+            1
+          ]
+        },
+        {
+          "width": 128,
+          "noise": 128,
+          "work": [
+            91932,
+            775,
+            43,
+            1
+          ]
+        }
+      ],
+      "scaling_receipt": "1794420857250870920"
+    },
+    "checks": {
+      "all40_independent_outcomes_and_owning_manifests": true,
+      "source_prefix_counts": [
+        17,
+        5,
+        3
+      ],
+      "all57_prior_borrow_coercion_bytes_unchanged": true,
+      "all8_profile_corrections_explicitly_verified": true,
+      "required_generic_reference_artifact_preserved": true,
+      "logs": {
+        "upstream": "19edc114e22639322b3ce9f0bcda582a6fc7d9641501c9a6ac1deca7ce08d175",
+        "harness": "ed0790de742385b27349cb5048142b310fa7fdfb824cbbf9b9583a913c379bea"
+      }
+    },
+    "upstream": 128,
+    "reference_files": 126,
+    "harness": 315,
+    "roots": 468,
+    "binaries": 13,
+    "stages": 44
+  },
+  "prior_full_ci": {
+    "run": 43059556041,
+    "head": "eae11a06ad731c3ea4d618095daa43a5b1025bb8",
+    "source_commit": "6556387caa0effa62a8383d01a756ebd15d27073",
+    "status": "completed",
+    "conclusion": "failure",
+    "failure": "Existing function_inputs_match_qualified_prefix_outcomes result-self-context negative incorrectly accepted. Expected Rust rejection unchanged.",
+    "later_native_debug_independent_stages": "not run",
+    "exact_regression_now_passes_in": "1794418559800884712",
+    "jobs": [
+      {
+        "id": 130658088276,
+        "name": "fast",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 43059556041,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Pinned Rust",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Run actions/cache@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Audit setup",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "Five-minute compiler smoke",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6
+          },
+          {
+            "name": "Harness, audit cache and upstream contracts",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7
+          },
+          {
+            "name": "Retain focused evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8
+          },
+          {
+            "name": "Post Run actions/cache@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17
+          }
+        ]
+      },
+      {
+        "id": 130658088812,
+        "name": "qualification",
+        "status": "completed",
+        "conclusion": "failure",
+        "run_id": 43059556041,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Pinned Rust",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Lint, architecture and harness",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Independent host build graph",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "Release and course tests",
+            "status": "completed",
+            "conclusion": "failure",
+            "number": 6
+          },
+          {
+            "name": "Native maintainer qualification",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 7
+          },
+          {
+            "name": "Broad native course sweep",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 8
+          },
+          {
+            "name": "Debug invariants",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 9
+          },
+          {
+            "name": "Retire completed debug build cache",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 10
+          },
+          {
+            "name": "Independent Rust qualification",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 11
+          },
+          {
+            "name": "PA25 const-machine candidate contract",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 12
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 24
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 25
+          }
+        ]
+      }
+    ]
+  },
+  "current_full_ci": {
+    "status": "Due after semantic publication and no active manual/scheduled full; never restart for docs/input descendants."
+  },
+  "development_review": {
+    "draft_header_review": [
+      {
+        "original": {
+          "path": "obj/parallel/refcell-clone/declared-v2/source-full-clone-owned-known.rs",
+          "kind": "source-full-clone",
+          "case": "owned-known",
+          "required_rust_status": 0,
+          "sha256": "e3f23301b09217544bac468aba72e2ec1c27b864601f600a258e44cd058e23d1"
+        },
+        "diagnostic": "error: trait has missing const stability attribute\n   --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-clone/declared/source-full-clone-owned-known.rs:146:16\n    |\n146 | #[lang=\"deref\"]pub const trait Deref:PointeeSized{#[lang=\"deref_target\"]type Target:PointeeSized;fn deref(&self)->&Self::Target;}\n    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nerror: trait has missing const stability attribute\n   --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-clone/declared/source-full-clone-owned-known.rs:147:20\n    |\n147 | #[lang=\"deref_mut\"]pub const trait DerefMut:Deref+PointeeSized{fn deref_mut(&mut self)->&mut Self::Target;}\n    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nerror: aborting due to 2 previous errors\n\n",
+        "cause": "Authored draft combined staged Clone foundation with reduced const Deref headers lacking required const stability metadata. No candidate observation ran. Required language outcome remains accept; original draft retained."
+      },
+      {
+        "original": {
+          "path": "obj/parallel/refcell-clone/declared-v2/source-full-clone-owned-generic.rs",
+          "kind": "source-full-clone",
+          "case": "owned-generic",
+          "required_rust_status": 0,
+          "sha256": "21cd369a27b0ccf53c1e021ce0c989cd624f5af03b73e615b47e93ad7ce45394"
+        },
+        "diagnostic": "error: trait has missing const stability attribute\n   --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-clone/declared/source-full-clone-owned-generic.rs:146:16\n    |\n146 | #[lang=\"deref\"]pub const trait Deref:PointeeSized{#[lang=\"deref_target\"]type Target:PointeeSized;fn deref(&self)->&Self::Target;}\n    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nerror: trait has missing const stability attribute\n   --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-clone/declared/source-full-clone-owned-generic.rs:147:20\n    |\n147 | #[lang=\"deref_mut\"]pub const trait DerefMut:Deref+PointeeSized{fn deref_mut(&mut self)->&mut Self::Target;}\n    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nerror: aborting due to 2 previous errors\n\n",
+        "cause": "Authored draft combined staged Clone foundation with reduced const Deref headers lacking required const stability metadata. No candidate observation ran. Required language outcome remains accept; original draft retained."
+      },
+      {
+        "original": {
+          "path": "obj/parallel/refcell-clone/declared-v2/source-full-clone-factory-generic.rs",
+          "kind": "source-full-clone",
+          "case": "factory-generic",
+          "required_rust_status": 0,
+          "sha256": "3c889c34ec7f9b7f64bc6376abdaa94c203eb7cc65c363e7daf33d3a893a4cce"
+        },
+        "diagnostic": "error: trait has missing const stability attribute\n   --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-clone/declared/source-full-clone-factory-generic.rs:146:16\n    |\n146 | #[lang=\"deref\"]pub const trait Deref:PointeeSized{#[lang=\"deref_target\"]type Target:PointeeSized;fn deref(&self)->&Self::Target;}\n    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nerror: trait has missing const stability attribute\n   --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-clone/declared/source-full-clone-factory-generic.rs:147:20\n    |\n147 | #[lang=\"deref_mut\"]pub const trait DerefMut:Deref+PointeeSized{fn deref_mut(&mut self)->&mut Self::Target;}\n    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nerror: aborting due to 2 previous errors\n\n",
+        "cause": "Authored draft combined staged Clone foundation with reduced const Deref headers lacking required const stability metadata. No candidate observation ran. Required language outcome remains accept; original draft retained."
+      },
+      {
+        "original": {
+          "path": "obj/parallel/refcell-clone/declared-v2/source-full-clone-factory-qualified.rs",
+          "kind": "source-full-clone",
+          "case": "factory-qualified",
+          "required_rust_status": 0,
+          "sha256": "2452d6c9746f12d75ce42ac74d6f72a5126332c60928be4ed2ecf22542781b51"
+        },
+        "diagnostic": "error: trait has missing const stability attribute\n   --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-clone/declared/source-full-clone-factory-qualified.rs:146:16\n    |\n146 | #[lang=\"deref\"]pub const trait Deref:PointeeSized{#[lang=\"deref_target\"]type Target:PointeeSized;fn deref(&self)->&Self::Target;}\n    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nerror: trait has missing const stability attribute\n   --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-clone/declared/source-full-clone-factory-qualified.rs:147:20\n    |\n147 | #[lang=\"deref_mut\"]pub const trait DerefMut:Deref+PointeeSized{fn deref_mut(&mut self)->&mut Self::Target;}\n    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nerror: aborting due to 2 previous errors\n\n",
+        "cause": "Authored draft combined staged Clone foundation with reduced const Deref headers lacking required const stability metadata. No candidate observation ran. Required language outcome remains accept; original draft retained."
+      }
+    ],
+    "profile_correction": {
+      "reason": "Eight new auxiliary checks originally omitted explicit overflow/debug/optimization flags. Their original commands/raw outcomes remain; rerun only those eight to bind every qualification to the declared object/native profile. No outcomes or input bytes changed.",
+      "rows": [
+        {
+          "path": "pa26/tests/spec/deref-clone/same-member-implicit.rs",
+          "sha256": "7169a7ab7ce570b3d647757c05daea618dd1593a901d4db9c1d942ed63d4430a",
+          "command": [
+            "rustc",
+            "+1.98.0",
+            "--edition=2024",
+            "--crate-type=lib",
+            "--crate-name",
+            "profileprobe",
+            "--emit=obj",
+            "--cap-lints=allow",
+            "-Cpanic=abort",
+            "-Coverflow-checks=yes",
+            "-Cdebug-assertions=no",
+            "-Copt-level=0",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa26/tests/spec/deref-clone/same-member-implicit.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-clone/profile-recheck/0.o"
+          ],
+          "bootstrap": false,
+          "rustc_status": 0
+        },
+        {
+          "path": "pa26/tests/spec/deref-clone/same-member-explicit.rs",
+          "sha256": "1ba44ef0d49c5e0d6bf4e1454143e8feeec0a65c88610472bd8ff45d05b806b2",
+          "command": [
+            "rustc",
+            "+1.98.0",
+            "--edition=2024",
+            "--crate-type=lib",
+            "--crate-name",
+            "profileprobe",
+            "--emit=obj",
+            "--cap-lints=allow",
+            "-Cpanic=abort",
+            "-Coverflow-checks=yes",
+            "-Cdebug-assertions=no",
+            "-Copt-level=0",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa26/tests/spec/deref-clone/same-member-explicit.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-clone/profile-recheck/1.o"
+          ],
+          "bootstrap": false,
+          "rustc_status": 0
+        },
+        {
+          "path": "pa26/tests/spec/deref-clone/result-context-trait.rs",
+          "sha256": "53cac30a3fab9437700db8a6516bfca6c4ce3014d0f855ad51f8a0e80b82b77f",
+          "command": [
+            "rustc",
+            "+1.98.0",
+            "--edition=2024",
+            "--crate-type=lib",
+            "--crate-name",
+            "profileprobe",
+            "--emit=obj",
+            "--cap-lints=allow",
+            "-Cpanic=abort",
+            "-Coverflow-checks=yes",
+            "-Cdebug-assertions=no",
+            "-Copt-level=0",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa26/tests/spec/deref-clone/result-context-trait.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-clone/profile-recheck/2.o"
+          ],
+          "bootstrap": false,
+          "rustc_status": 0
+        },
+        {
+          "path": "pa30/tests/spec/deref-clone/same-member-native.rs",
+          "sha256": "7c91ceccbc8fabedb608a490b97968e0d9b0a62c3d0467b8711d75219e7c3ef9",
+          "command": [
+            "rustc",
+            "+1.98.0",
+            "--edition=2024",
+            "--crate-type=lib",
+            "--crate-name",
+            "profileprobe",
+            "--emit=obj",
+            "--cap-lints=allow",
+            "-Cpanic=abort",
+            "-Coverflow-checks=yes",
+            "-Cdebug-assertions=no",
+            "-Copt-level=0",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa30/tests/spec/deref-clone/same-member-native.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-clone/profile-recheck/3.o"
+          ],
+          "bootstrap": false,
+          "rustc_status": 0,
+          "native": {
+            "status": 0,
+            "stdout": "deref-member 23 12\n"
+          }
+        },
+        {
+          "path": "pa31/tests/spec/deref-clone/same-member-implicit.rs",
+          "sha256": "dfeffb76fae2bd1b407d5af96003bda42fe4a3889a592b8268b0cc71c0d8b2bd",
+          "command": [
+            "rustc",
+            "+1.98.0",
+            "--edition=2024",
+            "--crate-type=lib",
+            "--crate-name",
+            "profileprobe",
+            "--emit=obj",
+            "--cap-lints=allow",
+            "-Cpanic=abort",
+            "-Coverflow-checks=yes",
+            "-Cdebug-assertions=no",
+            "-Copt-level=0",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/deref-clone/same-member-implicit.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-clone/profile-recheck/4.o"
+          ],
+          "bootstrap": true,
+          "rustc_status": 0
+        },
+        {
+          "path": "pa31/tests/spec/deref-clone/same-member-explicit.rs",
+          "sha256": "5a4f5dcb876e0ae7c0b9fe3569fc87fe7efa1fd835cfff96926d11bbf6fb19b7",
+          "command": [
+            "rustc",
+            "+1.98.0",
+            "--edition=2024",
+            "--crate-type=lib",
+            "--crate-name",
+            "profileprobe",
+            "--emit=obj",
+            "--cap-lints=allow",
+            "-Cpanic=abort",
+            "-Coverflow-checks=yes",
+            "-Cdebug-assertions=no",
+            "-Copt-level=0",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/deref-clone/same-member-explicit.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-clone/profile-recheck/5.o"
+          ],
+          "bootstrap": true,
+          "rustc_status": 0
+        },
+        {
+          "path": "pa31/tests/spec/deref-clone/same-member-native.rs",
+          "sha256": "31b863c0d6c50cb33b7ec1cbc142578321e6339f32af2a09a6ad57e8ec252788",
+          "command": [
+            "rustc",
+            "+1.98.0",
+            "--edition=2024",
+            "--crate-type=lib",
+            "--crate-name",
+            "profileprobe",
+            "--emit=obj",
+            "--cap-lints=allow",
+            "-Cpanic=abort",
+            "-Coverflow-checks=yes",
+            "-Cdebug-assertions=no",
+            "-Copt-level=0",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/deref-clone/same-member-native.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-clone/profile-recheck/6.o"
+          ],
+          "bootstrap": true,
+          "rustc_status": 0,
+          "native": {
+            "status": 0,
+            "stdout": "deref-member 23 12\n"
+          }
+        },
+        {
+          "path": "pa31/tests/spec/deref-clone/result-context-trait.rs",
+          "sha256": "05d5089852405ece7f90fa34166ba4e95bde321eaeffb216636aec45f1a6a980",
+          "command": [
+            "rustc",
+            "+1.98.0",
+            "--edition=2024",
+            "--crate-type=lib",
+            "--crate-name",
+            "profileprobe",
+            "--emit=obj",
+            "--cap-lints=allow",
+            "-Cpanic=abort",
+            "-Coverflow-checks=yes",
+            "-Cdebug-assertions=no",
+            "-Copt-level=0",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/deref-clone/result-context-trait.rs",
+            "-o",
+            "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/refcell-clone/profile-recheck/7.o"
+          ],
+          "bootstrap": true,
+          "rustc_status": 0
+        }
+      ],
+      "declared_profile_matched": true,
+      "other26_matching_original_checks_reused": true
+    },
+    "retired_query_diagnostic": {
+      "sha256": "2be5910e893bcdb1eab8781530295bdd6b7b7dc78707815d4213f7f656b05736",
+      "executable_absent": true,
+      "raw_typed_queries_and_patch_retained": true
+    },
+    "phase_output_admission": {
+      "current_output_bytes": 11412869120,
+      "current_output_gib": 10.62906265258789,
+      "temporary_counter_harness_bytes": 124135208,
+      "planned_extra_text_reserve_bytes": 67108864,
+      "proposed_phase_cap_gib": 12,
+      "policy_reserve_gib": 150,
+      "reason": "No Cargo build; frozen CLI observations plus one temporary read-only counter harness copy. Output cap is stricter than the approved16GiB ceiling; no compiler/profile/reserve limits change."
+    }
+  },
+  "pending_reference_artifact": {
+    "schema": 1,
+    "required_positive_artifacts": [
+      {
+        "path": "pa31/tests/spec/deref-clone/reference-return.rs",
+        "sha256": "dee2446bfed81c5879bff22f892c691959e8eebca3356f2ba447369198ff700b",
+        "required_status": 0,
+        "typing_status": 0,
+        "artifact": "Complete checked-body/prepared-root lowering",
+        "observed_failure": "generic aggregate requires instantiated fields",
+        "raw_evidence": "obj/qualification/fast/1794416211058458754/suite_frontend.stdout",
+        "no_positive_outcome_inverted": true
+      }
+    ]
+  },
+  "failed_attempts": [
+    {
+      "receipt": "1794416119380833628",
+      "cause": "Formatting only, no tests."
+    },
+    {
+      "receipt": "1794416211058458754",
+      "cause": "10 passed/1 failed valid reference-return complete artifact. Preserved as required positive; inference now qualified separately."
+    },
+    {
+      "log": "public4.log",
+      "cause": "16GiB resource admission refusal; no checks/tests."
+    },
+    {
+      "log": "phases.log",
+      "cause": "16GiB admission refusal; no observations."
+    },
+    {
+      "log": "phases2.log",
+      "cause": "Recording script expected numeric backend status; actual helper records typed Unix ExitStatus. Prior29 type observations reused after binding checks."
+    },
+    {
+      "log": "phases-final.log",
+      "cause": "12GiB resource admission refusal before observation."
+    },
+    {
+      "log": "checks-final.log",
+      "cause": "11.5GiB resource admission refusal before checks."
+    }
+  ],
+  "original_core": {
+    "new_observation": false,
+    "last": "Source655/CLI0912,120s deadline121.226504s/141partialrecords/first RefCell::clone cell.rs112:49655",
+    "complete_census": false,
+    "artifact": false
+  },
+  "unchanged": [
+    "backend bridge17b024f69",
+    "storage.py",
+    "722 original source hashes",
+    "six configuration source bindings",
+    "compiler source-profile budgets",
+    "120s observer window",
+    "all prior requirements"
+  ],
+  "raw_evidence_root": "B obj/parallel/refcell-clone",
+  "course_oracles_generated": false,
+  "assignments_activated": false
+}

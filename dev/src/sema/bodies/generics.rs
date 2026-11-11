@@ -80,7 +80,7 @@ impl Checker<'_> {
             ty,
             None,
             protocol_self,
-            super::bounds::Use::Call,
+            super::bounds::Use::ProtocolCall,
         )
     }
     fn instantiate_function(

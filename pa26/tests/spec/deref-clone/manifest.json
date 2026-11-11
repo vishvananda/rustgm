@@ -1,0 +1,274 @@
+{
+  "schema": 1,
+  "owner": "PA26 ordinary Deref and Clone method contracts",
+  "state": "Independent contracts frozen; complete candidate qualification pending; assignment remains planned",
+  "contract": "Actual generic target Clone call through the selected Deref receiver. Caller-bound lookup restrictions belong to the selected member and cannot leak to another implicit call at the same syntax node. Preserve lifetime/effects and reference/wrapper priority.",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": "1 for actual source only",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0,
+    "emit": "object"
+  },
+  "baseline_compiler_sha256": "0912e08f677a2880a62b42bef9c5baf3dcd253ceec5e5d805b22a873e34a58a8",
+  "inputs": [
+    {
+      "path": "pa26/tests/spec/deref-clone/owned-known.rs",
+      "sha256": "344efc27baf062493f9ba43564cee7b7a33b23ec5518b04c1a5117019acc3dc1",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 25: unresolved import\n",
+      "source_kind": "ordinary",
+      "qualification": "Required independent outcome remains; ordinary core::ops imports prevent language/body/native qualification. Import errors qualify no rejection.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/owned-generic.rs",
+      "sha256": "c3f1e8159909e5f7d8f8b40ca7c5df1cfd4160850462de483a9e9402736f7270",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 25: unresolved import\n",
+      "source_kind": "ordinary",
+      "qualification": "Required independent outcome remains; ordinary core::ops imports prevent language/body/native qualification. Import errors qualify no rejection.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/explicit-generic.rs",
+      "sha256": "f69cc90e8992b31c63be7eb80ed57575b66d6b9846d7a360656f780a68fa5323",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 25: unresolved import\n",
+      "source_kind": "ordinary",
+      "qualification": "Required independent outcome remains; ordinary core::ops imports prevent language/body/native qualification. Import errors qualify no rejection.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/factory-generic.rs",
+      "sha256": "46a85f9b5b96533f1fb2d56c5d84b7a1b23d15effdbb59bb8589dd65659ae0a9",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 25: unresolved import\n",
+      "source_kind": "ordinary",
+      "qualification": "Required independent outcome remains; ordinary core::ops imports prevent language/body/native qualification. Import errors qualify no rejection.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/factory-qualified.rs",
+      "sha256": "46962f007685ed1d0cc483167953f9d8935a2341f32147f0eb013c03d250746b",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 25: unresolved import\n",
+      "source_kind": "ordinary",
+      "qualification": "Required independent outcome remains; ordinary core::ops imports prevent language/body/native qualification. Import errors qualify no rejection.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/associated-name.rs",
+      "sha256": "9d5b80a00ee0d1de27566cabb7c4b402a6104ba399c29c5df54637cad23960b7",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 25: unresolved import\n",
+      "source_kind": "ordinary",
+      "qualification": "Required independent outcome remains; ordinary core::ops imports prevent language/body/native qualification. Import errors qualify no rejection.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/reference-priority-reject.rs",
+      "sha256": "6426372afa9f2f6badd8743385e5327636da961f8714d719196147c23c95136d",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 25: unresolved import\n",
+      "source_kind": "ordinary",
+      "qualification": "Required independent outcome remains; ordinary core::ops imports prevent language/body/native qualification. Import errors qualify no rejection.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/wrapper-priority-reject.rs",
+      "sha256": "b74f9dcdca968f91dbf12990643fe26d3ff2603cb83916ed79345eb14a3cd20c",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 25: unresolved import\n",
+      "source_kind": "ordinary",
+      "qualification": "Required independent outcome remains; ordinary core::ops imports prevent language/body/native qualification. Import errors qualify no rejection.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/unpaid-reject.rs",
+      "sha256": "431bacd64840346bf3f1d478e069b0db866567b07f7e2c494947b10df0842261",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 25: unresolved import\n",
+      "source_kind": "ordinary",
+      "qualification": "Required independent outcome remains; ordinary core::ops imports prevent language/body/native qualification. Import errors qualify no rejection.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/reference-return.rs",
+      "sha256": "29830097543a6572ea0c153997a769eafa317084da5a46237f8842d9f0075e1d",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 25: unresolved import\n",
+      "source_kind": "ordinary",
+      "qualification": "Required independent outcome remains; ordinary core::ops imports prevent language/body/native qualification. Import errors qualify no rejection.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/same-member-implicit.rs",
+      "sha256": "7169a7ab7ce570b3d647757c05daea618dd1593a901d4db9c1d942ed63d4430a",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "source_kind": "ordinary",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "qualification": "Required independent outcome remains; ordinary core::ops imports prevent language/body/native qualification. Import errors qualify no rejection.",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/same-member-explicit.rs",
+      "sha256": "1ba44ef0d49c5e0d6bf4e1454143e8feeec0a65c88610472bd8ff45d05b806b2",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "source_kind": "ordinary",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "qualification": "Required independent outcome remains; ordinary core::ops imports prevent language/body/native qualification. Import errors qualify no rejection.",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
+    },
+    {
+      "path": "pa26/tests/spec/deref-clone/result-context-trait.rs",
+      "sha256": "53cac30a3fab9437700db8a6516bfca6c4ce3014d0f855ad51f8a0e80b82b77f",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 25: unresolved import\n",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "qualification": "Required independent outcome remains; ordinary core::ops imports prevent language/body/native qualification. Import errors qualify no rejection.",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 1,
+        "types_qualified": false,
+        "checked_body_qualified": false
+      }
+    }
+  ],
+  "auxiliaries": [],
+  "required_positive_outcomes_preserved": true,
+  "source_prefix_provenance": null,
+  "full_source_prefix_provenance": null,
+  "candidate_qualification": {
+    "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+    "public_receipt": "1794418559800884712",
+    "native_receipt": null,
+    "complete_checked_body_outcomes": 0,
+    "source_native_programs": 0,
+    "required_positive_artifacts_pending": [
+      "pa26/tests/spec/deref-clone/owned-known.rs",
+      "pa26/tests/spec/deref-clone/owned-generic.rs",
+      "pa26/tests/spec/deref-clone/explicit-generic.rs",
+      "pa26/tests/spec/deref-clone/factory-generic.rs",
+      "pa26/tests/spec/deref-clone/factory-qualified.rs",
+      "pa26/tests/spec/deref-clone/associated-name.rs",
+      "pa26/tests/spec/deref-clone/reference-return.rs",
+      "pa26/tests/spec/deref-clone/same-member-implicit.rs",
+      "pa26/tests/spec/deref-clone/same-member-explicit.rs",
+      "pa26/tests/spec/deref-clone/result-context-trait.rs"
+    ],
+    "no_course_oracles": true,
+    "full_assignment_planned": true
+  }
+}

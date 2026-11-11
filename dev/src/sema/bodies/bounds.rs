@@ -17,6 +17,7 @@ pub(super) use universal::Requirements;
 pub(super) enum Use {
     Value,
     Call,
+    ProtocolCall,
     InvokedValue,
 }
 impl super::State {
@@ -479,7 +480,7 @@ impl Checker<'_> {
         }
         let effect = match use_ {
             Use::Value => crate::support::constness::Constness::Ordinary,
-            Use::Call | Use::InvokedValue => self.callee_use_effect()?,
+            Use::Call | Use::ProtocolCall | Use::InvokedValue => self.callee_use_effect()?,
         };
         let mut regions = Vec::new();
         if let Some(scheme) = self.facts.lifetimes.functions.get(&owner) {
@@ -508,7 +509,11 @@ impl Checker<'_> {
                 regions.push(region);
             }
         }
-        let assumed = self.bound_method_requirement(node, owner)?;
+        let assumed = if matches!(use_, Use::ProtocolCall) {
+            None
+        } else {
+            self.bound_method_requirement(node, owner)?
+        };
         let mut substitution = substitute::Bound::new(regions);
         let mut inference = crate::types::infer::Instantiation::pooled(
             &mut self.state.infer,
@@ -734,7 +739,9 @@ impl Checker<'_> {
         node: NodeId,
         owner: DefId,
     ) -> Result<Option<crate::types::parameters::predicates::Predicate>, Error> {
-        if !self.facts.methods.bound_uses.contains(&self.key(node)) {
+        // An implicit Deref call can share this node with a bound-selected
+        // method. Only that actual selected member is restricted to caller proof.
+        if self.facts.methods.bound_uses.get(&self.key(node)) != Some(&owner) {
             return Ok(None);
         }
         let trait_owner = self.facts.associated.trait_owner(owner);

@@ -94,8 +94,10 @@ the immutable/current3905 source hashes and unchanged profile/limits. No complet
 census or original artifact exists; partial counts are not throughput evidence.
 
 Prior callback full43034322443 on exact357d0bc5e/source5798 PASSED every stage.
-This checkpoint is published at eae11a06a; full43059556041 is ACTIVE on that
-exact head/source6556387ca. Never restart it for documentation/input descendants.
+This checkpoint is published at eae11a06a; full43059556041 finished FAILURE on
+that exact head/source6556387ca: the unchanged result-self-context negative was
+accepted. The [clone checkpoint](pa26-deref-clone.md) repairs the result-input
+boundary and passes that exact regression; a fresh semantic full successor is due.
 Comparison05cc and superseded2b7/d77/diagnostic4f executables were explicitly
 retired after publication (prune1794414887003043616); raw producers/observations
 remain. Current0912 and the separately pending optimized baseline remain. Reduce

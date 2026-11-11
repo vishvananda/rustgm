@@ -1,3 +1,14 @@
+Current single-worker continuation: use existing B, main Git-only; no agents or
+new worktrees. The [clone checkpoint](pa26-deref-clone.md) qualifies40 outcomes,
+25 source typing/24 prepared-root artifacts and2 actual native programs, with one
+valid source artifact and15 ordinary import cases still required. Public/native/
+scaling/upstream/harness checks pass. Full43059556041 finished with one unchanged
+result-context regression, repaired by this checkpoint; its full successor is due
+after semantic publication. Freeze/compare/unchanged120s original observation
+follow. No original library artifact. Preserve all prior requirements and the
+150GiB reserve; bounded output reservations11–12GiB fit the approved16GiB ceiling.
+This paragraph supersedes historical worker assignments below.
+
 The [cold/deprecation integration](parallel/cold-deprecation-main-join.md) passes
 4 private/23 regular/6 native controls and282 harness/460 roots. JoinedCLI48a0b12a
 clears LIB192 to unlocated query-work guard193 in19.6071s/375opens on unchanged722

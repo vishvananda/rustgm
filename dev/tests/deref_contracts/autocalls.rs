@@ -4,6 +4,13 @@ use rustgm::{expand::config::Config, pipeline, support::diagnostics::LintCap};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 pub(super) fn program(source: &str) -> Result<rustgm::lowir::program::Program> {
+    program_with_exports(source, "observed_")
+}
+
+pub(super) fn program_with_exports(
+    source: &str,
+    export_prefix: &str,
+) -> Result<rustgm::lowir::program::Program> {
     let mut config = Config::default();
     config.set_lint_cap(LintCap::Allow);
     let report = resolve::source_provider_config(source, "implicit_receiver", &config)?;
@@ -19,7 +26,7 @@ pub(super) fn program(source: &str) -> Result<rustgm::lowir::program::Program> {
                 .package
                 .names
                 .get(report.resolution.definitions[f.definition.0 as usize].name)
-                .starts_with("observed_")
+                .starts_with(export_prefix)
         })
         .map(|f| f.definition)
         .collect::<Vec<_>>();

@@ -2490,6 +2490,10 @@ impl Checker<'_> {
             if !constructor
                 && self.contextual_head(node, result)?.is_none()
                 && self.contextual_head(node, expected)?.is_some()
+                && (matches!(
+                    self.contextual_head(node, expected)?,
+                    Some(Constructor::Function { .. })
+                ) || self.call_result_reaches_inputs(node, term, result)?)
             {
                 self.callable_shape(node, result, expected)?;
             }

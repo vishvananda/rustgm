@@ -40,8 +40,8 @@ pub struct Methods {
     pub(super) indices: HashMap<(ItemId, NameId), Candidates>,
     pub(super) shapes: Option<Box<crate::types::substitute::Bound>>,
     pub qualified: HashMap<NodeKey, Qualified>,
-    /// Parameter-bound lookup restricts the selected trait application to caller evidence.
-    pub(super) bound_uses: HashSet<NodeKey>,
+    /// Caller-only evidence belongs to this selected member, not other calls at its node.
+    pub(super) bound_uses: HashMap<NodeKey, DefId>,
     pub(super) receivers: HashMap<DefId, (TypeId, u32)>,
     pub calls: HashMap<NodeKey, Call>,
     /// Unique owner-pair probes, shared across names and independent of call demand.

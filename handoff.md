@@ -5,6 +5,38 @@ one worker: do not spawn agents or create worktrees. Use existing B
 `/mnt/vizier/rustgm-scratch/rustgm-pa26-work`; main is Git-only. Goal: original
 core, then alloc/std. No original library artifact exists.
 
+## Current clone checkpoint — local qualification complete
+
+[Source Deref proof ownership](docs/pa26-deref-clone.md) fixes the reduced
+RefCell::clone failure: a bound-selected Clone member cannot impose caller-only
+proof on its implicit Deref call. The existing sparse index retains the selected
+member, and actual protocol calls use normal complete application selection,
+including when both calls name the same member with different Self types.
+The preceding full43059556041 finished FAILURE on exact eae11a06a/source655:
+one unchanged result-self-context negative was accepted. General early result
+hints now require the unresolved result to reach actual formal inputs; the exact
+old regression and valid shared-Self controls pass. Backend/storage/limits fixed.
+
+New packets own40 independently checked outcomes: PA26ordinary13, PA30native2,
+PA31source25. All25 source typing/24 complete prepared-root outcomes qualify;
+one valid borrowed-reference return keeps its required artifact pending in
+PA31 pending.json. Ordinary15 including native2 remain required behind imports.
+New actual source native programs print deref-clone23/123 and deref-member23/12.
+Final public15/121.07s, native4/83.66s, scaling3/63.24s pass selected strict
+Clippy/fullfmt/audit. Width8/32/128 inference6492/23580/91932, traits55/199/775,
+method steps43/probes1; noise128 changes no counters. All57 old bytes unchanged,
+all40 manifests/independent outcomes, upstream128/Reference126/harness315/468roots
+pass. No positive inversion, oracle generation or whole-assignment activation.
+
+Current managed CLI5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c
+is qualified production code. Next freeze a clean source commit, compare against
+available0912 with calibrated accepting controls, then run unchanged120s original
+core and postverify722/six/375/source/profile. No new actual clone-clearance claim
+yet: the last original first failure remains cell.rs112:49655,line1449 below.
+Full semantic successor is due after publication and a fresh no-active-full check.
+Keep all requirements below. Smaller bounded output reservations11–12GiB are
+within the approved16GiB ceiling; resource reserve150GiB stays unchanged.
+
 ## Published callback predecessor
 
 [Formation versus invocation](docs/pa25-callback-formation.md), source5798bd7f1,
@@ -131,8 +163,9 @@ partial counts are not comparable throughput. Do not repeat for a longer prefix
 or extend limits. Raw new observation: Bobj/parallel/refcell-coercion/projected-progress-original.
 
 PUBLISHED source+diagnostics+D1eae11a06a; B/main/origin clean at publication.
-Full43059556041 is ACTIVE on EXACTeae11a06ad731c3ea4d618095daa43a5b1025bb8,
-containing source6556387ca. Dispatch followed a fresh no-active-full check.
+Full43059556041 finished FAILURE on EXACTeae11a06ad731c3ea4d618095daa43a5b1025bb8,
+containing source6556387ca; the current clone checkpoint above repairs its sole
+unchanged result-self-context regression. Dispatch followed a fresh no-active-full check.
 Never cancel/restart it for docs/input descendants. Prior callback43034322443
 PASSED every stage on EXACT357d0bc5e/source5798.
 

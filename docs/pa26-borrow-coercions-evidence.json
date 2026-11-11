@@ -457,8 +457,11 @@
     "run": 43059556041,
     "head": "eae11a06ad731c3ea4d618095daa43a5b1025bb8",
     "source_commit": "6556387caa0effa62a8383d01a756ebd15d27073",
-    "status": "in_progress",
-    "do_not_restart_for_documentation": true
+    "status": "completed",
+    "do_not_restart_for_documentation": true,
+    "conclusion": "failure",
+    "failure": "Unchanged result-self-context negative incorrectly accepted; repaired and focused-test qualified by the source clone checkpoint.",
+    "successor": "Due after clone semantic publication; no restart for documentation descendants."
   },
   "original_core": {
     "new_observation": true,

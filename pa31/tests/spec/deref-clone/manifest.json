@@ -1,0 +1,605 @@
+{
+  "schema": 1,
+  "owner": "PA31 actual source Deref and Clone method contracts",
+  "state": "Independent contracts frozen; complete candidate qualification pending; assignment remains planned",
+  "contract": "Actual generic target Clone call through the selected Deref receiver. Caller-bound lookup restrictions belong to the selected member and cannot leak to another implicit call at the same syntax node. Preserve lifetime/effects and reference/wrapper priority.",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": "1 for actual source only",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0,
+    "emit": "object"
+  },
+  "baseline_compiler_sha256": "0912e08f677a2880a62b42bef9c5baf3dcd253ceec5e5d805b22a873e34a58a8",
+  "inputs": [
+    {
+      "path": "pa31/tests/spec/deref-clone/owned-known.rs",
+      "sha256": "b87ab322e404d4658e71eaba8a6c75306e0539e57b344a019fad50f2ba0887b7",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 0,
+      "baseline_diagnostic": "",
+      "source_kind": "source",
+      "qualification": "Complete prepared-root outcome qualified in exact public receipt1794418559800884712. Generic unused roots do not claim native instantiation.",
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": false,
+      "candidate_checked_body_status": 0,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794418559800884712",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/owned-generic.rs",
+      "sha256": "6555c029c2f8d2062173fdc1f99d35d80f8abbade5781cf3dd13e9d7fbaf670d",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 3303: trait obligation requires an unambiguous matching assumption or implementation\n",
+      "source_kind": "source",
+      "qualification": "Complete prepared-root outcome qualified in exact public receipt1794418559800884712. Generic unused roots do not claim native instantiation.",
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": false,
+      "candidate_checked_body_status": 0,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794418559800884712",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/explicit-generic.rs",
+      "sha256": "7ab11dae6b6e0f5318741b2af2d90de5d4015bb900bbeca7094e232a058f74f2",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 0,
+      "baseline_diagnostic": "",
+      "source_kind": "source",
+      "qualification": "Complete prepared-root outcome qualified in exact public receipt1794418559800884712. Generic unused roots do not claim native instantiation.",
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": false,
+      "candidate_checked_body_status": 0,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794418559800884712",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/factory-generic.rs",
+      "sha256": "11f11573624803d1e0d274eb4c86f1be65cb6bd98d2a6b16171bc9010e69db9e",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 3436: trait obligation requires an unambiguous matching assumption or implementation\n",
+      "source_kind": "source",
+      "qualification": "Complete prepared-root outcome qualified in exact public receipt1794418559800884712. Generic unused roots do not claim native instantiation.",
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": false,
+      "candidate_checked_body_status": 0,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794418559800884712",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/factory-qualified.rs",
+      "sha256": "e1632ba74623387c9b20d6864f7edd0bfd76e17045c908b6fe5c844a7a255553",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 0,
+      "baseline_diagnostic": "",
+      "source_kind": "source",
+      "qualification": "Complete prepared-root outcome qualified in exact public receipt1794418559800884712. Generic unused roots do not claim native instantiation.",
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": false,
+      "candidate_checked_body_status": 0,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794418559800884712",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/associated-name.rs",
+      "sha256": "c4788ab04a445427a217236dffb4e0cbc5cc336af56076b22317242768bf9249",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 3369: trait obligation requires an unambiguous matching assumption or implementation\n",
+      "source_kind": "source",
+      "qualification": "Complete prepared-root outcome qualified in exact public receipt1794418559800884712. Generic unused roots do not claim native instantiation.",
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": false,
+      "candidate_checked_body_status": 0,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794418559800884712",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/reference-priority-reject.rs",
+      "sha256": "ddb1a23e5e9f228bad8cf5a880b648aea0519d52309eddf80fa84e46eefecb1e",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 3303: incompatible types\n",
+      "source_kind": "source",
+      "qualification": "Complete prepared-root outcome qualified in exact public receipt1794418559800884712. Generic unused roots do not claim native instantiation.",
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": false,
+      "candidate_checked_body_status": 1,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794418559800884712",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 1,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/wrapper-priority-reject.rs",
+      "sha256": "536e4221c9bd27d3c3171994c5fd6011fd6ccc0e9917aae703aa0f56d6caa9ca",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 3371: incompatible types\n",
+      "source_kind": "source",
+      "qualification": "Complete prepared-root outcome qualified in exact public receipt1794418559800884712. Generic unused roots do not claim native instantiation.",
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": false,
+      "candidate_checked_body_status": 1,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794418559800884712",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 1,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/unpaid-reject.rs",
+      "sha256": "e0a3b912cea0ae5f942549db74bb1cb2173884a96fc124c52e91a871717aa6ac",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 3297: no applicable method for this receiver\n",
+      "source_kind": "source",
+      "qualification": "Complete prepared-root outcome qualified in exact public receipt1794418559800884712. Generic unused roots do not claim native instantiation.",
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": false,
+      "candidate_checked_body_status": 1,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794418559800884712",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 1,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/reference-return.rs",
+      "sha256": "dee2446bfed81c5879bff22f892c691959e8eebca3356f2ba447369198ff700b",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 0,
+      "baseline_diagnostic": "",
+      "source_kind": "source",
+      "qualification": "Required full RootBuilder positive remains pending; pipeline inference only is qualified. Expected language/artifact status remains0.",
+      "candidate_checked_body_qualified": false,
+      "candidate_native_qualified": false,
+      "required_root_builder_status": 0,
+      "observed_root_builder_failure": "generic aggregate requires instantiated fields",
+      "pending": true,
+      "candidate_checked_body_status": null,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": null,
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": false
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/full-clone-owned-known.rs",
+      "sha256": "e3f23301b09217544bac468aba72e2ec1c27b864601f600a258e44cd058e23d1",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 0,
+      "baseline_diagnostic": "",
+      "source_kind": "source-full-clone",
+      "qualification": "Complete prepared-root outcome qualified in exact public receipt1794418559800884712. Generic unused roots do not claim native instantiation.",
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": false,
+      "candidate_checked_body_status": 0,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794418559800884712",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/full-clone-owned-generic.rs",
+      "sha256": "21cd369a27b0ccf53c1e021ce0c989cd624f5af03b73e615b47e93ad7ce45394",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 6181: trait obligation requires an unambiguous matching assumption or implementation\n",
+      "source_kind": "source-full-clone",
+      "qualification": "Complete prepared-root outcome qualified in exact public receipt1794418559800884712. Generic unused roots do not claim native instantiation.",
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": false,
+      "candidate_checked_body_status": 0,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794418559800884712",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/full-clone-factory-generic.rs",
+      "sha256": "3c889c34ec7f9b7f64bc6376abdaa94c203eb7cc65c363e7daf33d3a893a4cce",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 6314: trait obligation requires an unambiguous matching assumption or implementation\n",
+      "source_kind": "source-full-clone",
+      "qualification": "Complete prepared-root outcome qualified in exact public receipt1794418559800884712. Generic unused roots do not claim native instantiation.",
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": false,
+      "candidate_checked_body_status": 0,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794418559800884712",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/full-clone-factory-qualified.rs",
+      "sha256": "2452d6c9746f12d75ce42ac74d6f72a5126332c60928be4ed2ecf22542781b51",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 0,
+      "baseline_diagnostic": "",
+      "source_kind": "source-full-clone",
+      "qualification": "Complete prepared-root outcome qualified in exact public receipt1794418559800884712. Generic unused roots do not claim native instantiation.",
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": false,
+      "candidate_checked_body_status": 0,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794418559800884712",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/native-order.rs",
+      "sha256": "b293e9ce36794bdda886bd0d90ff76f58d60df11c9e0f0f71c533f93ad011b63",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "source_kind": "source-native",
+      "independent_native": {
+        "status": 0,
+        "stdout": "deref-clone 23 123\n",
+        "observer": "pa30/tests/spec/deref-clone/observer.c"
+      },
+      "qualification": "Complete prepared-root outcome qualified in exact public receipt1794418559800884712. Generic unused roots do not claim native instantiation.",
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": true,
+      "candidate_checked_body_status": 0,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794418559800884712",
+      "candidate_native": {
+        "status": 0,
+        "stdout": "deref-clone 23 123\n",
+        "receipt": "1794418832230328990"
+      },
+      "native_receipt": "1794418832230328990",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/same-member-implicit.rs",
+      "sha256": "dfeffb76fae2bd1b407d5af96003bda42fe4a3889a592b8268b0cc71c0d8b2bd",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "source_kind": "source",
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": false,
+      "qualification": "Complete prepared-root outcome qualified in exact public receipt1794418559800884712. Generic unused roots do not claim native instantiation.",
+      "member_map_only_observation": {
+        "compiler_sha256": "885785f521c1cb19ef7cc66fd1e9383c6d9a8be7bc509f825c3b5a2c2f7ccc8c",
+        "status": 1,
+        "stderr": "ERROR: file 0: 3374: trait obligation requires an unambiguous matching assumption or implementation\n"
+      },
+      "candidate_checked_body_status": 0,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794418559800884712",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/same-member-explicit.rs",
+      "sha256": "5a4f5dcb876e0ae7c0b9fe3569fc87fe7efa1fd835cfff96926d11bbf6fb19b7",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "source_kind": "source",
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": false,
+      "qualification": "Complete prepared-root outcome qualified in exact public receipt1794418559800884712. Generic unused roots do not claim native instantiation.",
+      "member_map_only_observation": {
+        "compiler_sha256": "885785f521c1cb19ef7cc66fd1e9383c6d9a8be7bc509f825c3b5a2c2f7ccc8c",
+        "status": 0,
+        "stderr": ""
+      },
+      "candidate_checked_body_status": 0,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794418559800884712",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/same-member-native.rs",
+      "sha256": "31b863c0d6c50cb33b7ec1cbc142578321e6339f32af2a09a6ad57e8ec252788",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "source_kind": "source-native",
+      "independent_native": {
+        "status": 0,
+        "stdout": "deref-member 23 12\n",
+        "observer": "pa30/tests/spec/deref-clone/member-observer.c"
+      },
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": true,
+      "qualification": "Complete prepared-root outcome qualified in exact public receipt1794418559800884712. Generic unused roots do not claim native instantiation.",
+      "candidate_checked_body_status": 0,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794418559800884712",
+      "candidate_native": {
+        "status": 0,
+        "stdout": "deref-member 23 12\n",
+        "receipt": "1794418832230328990"
+      },
+      "native_receipt": "1794418832230328990",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/result-context-trait.rs",
+      "sha256": "05d5089852405ece7f90fa34166ba4e95bde321eaeffb216636aec45f1a6a980",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 0,
+      "baseline_diagnostic": "",
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": false,
+      "qualification": "Complete prepared-root outcome qualified in exact public receipt1794418559800884712. Generic unused roots do not claim native instantiation.",
+      "candidate_checked_body_status": 0,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794418559800884712",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/width-8-noise-0.rs",
+      "sha256": "aae66c11e86cbc37979fec7e33ff6123c22193fbc23d62fdf5e186ce42d1f877",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "source_kind": "source-scaling",
+      "width": 8,
+      "noise": 0,
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": false,
+      "qualification": "Complete prepared-root outcome qualified by scaling receipt1794420857250870920; no demanded native instantiation claimed.",
+      "candidate_checked_body_status": 0,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794420857250870920",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/width-8-noise-128.rs",
+      "sha256": "71b6c16f8b353cfec40658a974d6659322f301f1edc56b0b3652389e76805526",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "source_kind": "source-scaling",
+      "width": 8,
+      "noise": 128,
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": false,
+      "qualification": "Complete prepared-root outcome qualified by scaling receipt1794420857250870920; no demanded native instantiation claimed.",
+      "candidate_checked_body_status": 0,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794420857250870920",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/width-32-noise-0.rs",
+      "sha256": "48b9dd9c63cac6d16a1f5e76bdce3a44a46f3e64c50b26b9ec5f5bafd529c8fd",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "source_kind": "source-scaling",
+      "width": 32,
+      "noise": 0,
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": false,
+      "qualification": "Complete prepared-root outcome qualified by scaling receipt1794420857250870920; no demanded native instantiation claimed.",
+      "candidate_checked_body_status": 0,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794420857250870920",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/width-32-noise-128.rs",
+      "sha256": "954f4154450f61c39508db816fc0e4b3bed8992aa18fa7c829ab0cd92c657cf1",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "source_kind": "source-scaling",
+      "width": 32,
+      "noise": 128,
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": false,
+      "qualification": "Complete prepared-root outcome qualified by scaling receipt1794420857250870920; no demanded native instantiation claimed.",
+      "candidate_checked_body_status": 0,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794420857250870920",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/width-128-noise-0.rs",
+      "sha256": "a1f1e37dbe9ba00fe229c4ace98cb6a3fa5e393b08552417bd5f3a3a074ecbd6",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "source_kind": "source-scaling",
+      "width": 128,
+      "noise": 0,
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": false,
+      "qualification": "Complete prepared-root outcome qualified by scaling receipt1794420857250870920; no demanded native instantiation claimed.",
+      "candidate_checked_body_status": 0,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794420857250870920",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    },
+    {
+      "path": "pa31/tests/spec/deref-clone/width-128-noise-128.rs",
+      "sha256": "87978af5a82bbcd82346abe679b06e880efb4b8edd42b83ee9be7a964375ce69",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "source_kind": "source-scaling",
+      "width": 128,
+      "noise": 128,
+      "candidate_checked_body_qualified": true,
+      "candidate_native_qualified": false,
+      "qualification": "Complete prepared-root outcome qualified by scaling receipt1794420857250870920; no demanded native instantiation claimed.",
+      "candidate_checked_body_status": 0,
+      "typing_pipeline_qualified": true,
+      "checked_body_receipt": "1794420857250870920",
+      "candidate_phases": {
+        "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+        "types_status": 0,
+        "types_qualified": true,
+        "checked_body_qualified": true
+      }
+    }
+  ],
+  "auxiliaries": [
+    {
+      "path": "pa30/tests/spec/deref-clone/observer.c",
+      "sha256": "3050e1a90b9bf070e04ff5144a2316d475d69edc572c57b43012c9cc2f06dddb"
+    },
+    {
+      "path": "pa30/tests/spec/deref-clone/member-observer.c",
+      "sha256": "e0716348c6743ef9ed39c3573d8aaf2aad8d2a40900b1c61583f6dd367cd857c"
+    }
+  ],
+  "required_positive_outcomes_preserved": true,
+  "source_prefix_provenance": {
+    "borrow_coercions_sha256": "f111bc9c0d493e4d82e28cbcb4fdf0f0acd38b2a14ed9eb9f3eb7231ebdae668",
+    "full_clone_prefix_sha256": "d2ecfe35e28f0a76cc04a5455e13bf09e822f837d5eb828f19664bdc5d8805f6"
+  },
+  "full_source_prefix_provenance": {
+    "provenance": "Exact existing union-clone foundation through drop_glue, followed by exact original ops/deref.rs Deref and DerefMut trait declarations including const stability and conditional supertrait.",
+    "sha256": "7cb066d612c9705e0687e60f13996808330aee5da10d64e6fc356a2da9a8b778",
+    "original_deref_trait_sha256": "4285ac8490098a2c0a587ca7b1b777b222c58ccb2c372bae4aed0d1fd58c234b",
+    "original_deref_mut_trait_sha256": "f9b71eca0b892ee2ce5d58676e8e3d5521393933ebbd93aedfaaddd94c8798e2"
+  },
+  "candidate_qualification": {
+    "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+    "public_receipt": "1794418559800884712",
+    "native_receipt": "1794418832230328990",
+    "complete_checked_body_outcomes": 24,
+    "source_native_programs": 2,
+    "required_positive_artifacts_pending": [
+      "pa31/tests/spec/deref-clone/reference-return.rs"
+    ],
+    "no_course_oracles": true,
+    "full_assignment_planned": true,
+    "scaling_receipt": "1794420857250870920"
+  }
+}

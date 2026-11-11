@@ -107,7 +107,7 @@ impl Checker<'_> {
             }
         };
         if selected.from_bound {
-            self.facts.methods.bound_uses.insert(key);
+            self.facts.methods.bound_uses.insert(key, selected.method);
         }
         let adjusted = self.bind_selected_receiver(node, site.receiver, term, selected)?;
         self.facts.methods.demand_library_method(selected.method);
