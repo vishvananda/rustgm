@@ -751,6 +751,38 @@ fn incremental_progress_preserves_reached_records_and_the_unchanged_final_table(
     Ok(())
 }
 #[test]
+fn implementation_progress_projects_macro_generated_sources_like_diagnostics() -> Result {
+    let input = input(
+        "macro-progress",
+        "trait T{fn required(&self);}struct S;\n\
+         macro_rules! implement{()=>{impl T for S{}}}implement!();",
+    )?;
+    let baseline = census("--emit-types", &input, "without-progress", &[])?;
+    let path = input.with_extension("partial.tsv");
+    let progress_path = path.to_str().ok_or("progress path")?;
+    let final_text = census(
+        "--emit-types",
+        &input,
+        "with-progress",
+        &["--census-progress", progress_path],
+    )?;
+    assert_eq!(final_text, baseline);
+    let progress = fs::read_to_string(path)?;
+    let implementation =
+        line(&progress, "item\timplementation\t").ok_or("generated implementation progress")?;
+    let failure = line(&baseline, "record\t1\t").ok_or("implementation failure")?;
+    let site = failure.split('\t').nth(5).ok_or("diagnostic source")?;
+    assert_eq!(implementation.split('\t').nth(3), Some(site));
+    let offset: usize = site.split_once(':').ok_or("source offset")?.1.parse()?;
+    assert!(offset < fs::read(&input)?.len());
+    let ordinary = rustgm("--emit-types", &input, &[])?;
+    assert_eq!(ordinary.status.code(), Some(1));
+    let stderr = String::from_utf8(ordinary.stderr)?;
+    assert!(stderr.starts_with(&format!("ERROR: file 0: {offset}: ")));
+    assert!(stderr.contains("\n  in macro implement at file 0: "));
+    Ok(())
+}
+#[test]
 fn progress_requires_census_and_cannot_overwrite_the_final_or_existing_stream() -> Result {
     let input = input("progress-paths", "fn f(){}")?;
     let path = input.with_extension("progress.tsv");

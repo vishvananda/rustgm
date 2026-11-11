@@ -1,5 +1,5 @@
 //! Optional typed diagnostic events; the caller owns all output and I/O.
-use super::{Census, Record};
+use super::{Census, Location, Record};
 use crate::resolve::{expansion::Report, model::DefId, package::Error, unit::NodeKey};
 
 #[derive(Clone, Copy, Debug)]
@@ -14,7 +14,7 @@ pub enum Progress<'a> {
         kind: ItemKind,
         definition: DefId,
         key: NodeKey,
-        offset: u32,
+        location: &'a Location,
     },
     Record {
         index: usize,
@@ -78,11 +78,12 @@ impl Census {
             .and_then(|unit| unit.configured.ast.nodes.get(key.node.get() as usize))
             .map(|node| node.span.start)
             .ok_or_else(|| Error::unlocated("census progress item lacks its source node"))?;
+        let location = Location::of(&report.diagnostic(Error::at(key.file, offset, "")));
         self.progress.notify(Progress::Item {
             kind,
             definition,
             key,
-            offset,
+            location: &location,
         });
         self.progress
             .error

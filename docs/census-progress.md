@@ -7,8 +7,23 @@ covers declaration work that precedes body events. Focused receipt
 1794413794013879880 passes three exact tests, including an actual implementation
 location before body progress and byte-identical final tables with and without
 the observer. Strict selected Clippy, full formatting and architecture pass.
-The earlier selection attempt used an invalid suite prefix and executed no test;
-its failed receipt remains under obj/parallel/refcell-coercion/progress-check.log.
+Item locations now use the same provenance projection as ordinary diagnostics;
+the AST key remains available separately to typed observers. This also corrects
+function/initializer events for macro-generated nodes. Final receipt
+1794414341537683152 passes four exact tests in42.85s, including a generated impl
+whose source position matches the ordinary diagnostic and its macro trace. The
+canonical final table stays byte-identical. Earlier invalid selection, formatting
+and test-helper failures remain in obj/parallel/refcell-coercion; none qualifies
+as a passing batch.
+
+A bounded90s diagnostic using the first implementation-event compiler53e2509c1
+reached bodies (function3335,file98:11654), after11,356 item attempts. Its stack
+was in method applicability during ordinary body checking. Earlier90s samples
+placed source7c7 in implementation signature normalization, prior5798 in bodies,
+and a non-equivalent diagnostic hint-revert in local annotations. These phase
+snapshots do not establish a repeatable performance regression or its cause.
+The diagnostic hint-revert is never a qualifying compiler. Original-core
+qualification still requires the normal observer and unchanged source bindings.
 
 Compiler9482507e3 adds an optional typed census observer and the CLI option
 `--census-progress PATH`. A fresh, flushed stream records the source map,

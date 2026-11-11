@@ -222,7 +222,7 @@ fn write_progress(output: &mut impl Write, event: Progress<'_>) -> io::Result<()
             kind,
             definition,
             key,
-            offset,
+            location: site,
         } => {
             let kind = match kind {
                 ItemKind::Implementation => "implementation",
@@ -231,9 +231,9 @@ fn write_progress(output: &mut impl Write, event: Progress<'_>) -> io::Result<()
             };
             writeln!(
                 output,
-                "item\t{kind}\t{}\tfile {}:{offset}\tnode {}",
+                "item\t{kind}\t{}\t{}\tnode {}",
                 definition.0,
-                key.file.0,
+                location(site),
                 key.node.get()
             )
         }
