@@ -5717,6 +5717,16 @@ field cannot invent an arity; check its index against the actual selected tuple.
 The [PA24 callable-result checkpoint](docs/pa24-callable-results.md) records the
 earliest reductions, independent outcomes and candidate qualification.
 
+An exact declared callable Output premise may retain the checked source closure's
+necessary lifetime conditions. Validate the premise first and match the complete
+substituted Self using the same typed matcher as body entry selection. Normalize
+formal and actual Self, retaining formal normalization in its original coordinates
+until matching supplies the caller slots. Rebase private witnesses before restoring
+those slots. The source caller proves the whole payload; only a checked caller
+may turn it into callee assumptions. Manual instances still pay their debts.
+Lift only the empty quantifier from callable sugar through the existing binder
+operation; nonempty quantifiers retain their scoped proof consumer.
+
 At a real call, a completely matching expected result may propose only that
 callee's fresh late lifetime arguments. Keep rigid Self, type, const and member
 identity, reject conflicting slots and nested-local escapes, and publish no

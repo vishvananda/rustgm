@@ -10521,6 +10521,26 @@
         "default_lints": true
       },
       "maintainer_origin": "dev/tests/source_closures.rs"
+    },
+    {
+      "path": "tests/spec/callable-results/capture-projected-self.rs",
+      "exit_status": 0,
+      "source_sha256": "447243b5dfc5d3afb51604556687d2ec28b4a9fb679e7a5df74d928602cc5878",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/source_closures.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }

@@ -74,6 +74,18 @@ formatting and architecture pass. Native1794361591493889968 passes4groups in65.0
 Complete text/provenance checks and publication remain pending; initial
 immutable6069289c is not a qualified replacement.
 
+One additional projected-Self capture was then declared and independently
+object/native checked before its correction. It passes type analysis but fails
+complete lowering on50a2fb65 with a structural source-contract mismatch. As the
+existing body entry path requires, normalize the substituted formal and actual
+Self before matching. Formal normalization keeps its own source coordinates and
+proof; rebase its private witnesses, restore matched caller slots, then append
+every debt to the existing payload. The final packet owns52 outcomes
+(39 executable positives,13 rejections). Final public receipt1794362197862994056
+passes the same9exact controls, including all52 outcomes, in137.82s. Native
+1794362417748714215 passes4groups in54.25s:39 new and45 existing programs.
+All selected strict checks and the unchanged width/noise work bounds pass.
+
 PA12 already owns the unchanged `reject/tuple-field.rs` reduction. Its Rust
 rejection remains1; tuple access now checks the selected arity before child lookup.
 Only that predeclared diagnostic reference may change from an internal identity

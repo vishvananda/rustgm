@@ -158,3 +158,14 @@ Planned assignments after PA24 continue to reject empty-suite success.
 
 PA25–PA30 keep their full independent responsibilities and queued work. This
 review supplies no evidence that those later stages are complete.
+
+## Later core blocker reductions
+
+The [callable result checkpoint](pa24-callable-results.md) adds52 earliest-owner
+PA24 reductions, including39 executable positives and13 rejections. Outcomes and
+source hashes precede each implementation correction and text generation.
+The manifest now contains579 outcomes (409 accept,170 reject), with396 runtime,
+three code-generation andten object classifications. The original release evidence
+above retains its historical scope. The checkpoint records its focused evidence
+and pending full qualification separately; no original core/alloc/std artifact
+or additional whole assignment is claimed.

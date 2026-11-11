@@ -1,1 +1,1 @@
-ERROR: file 0: 32: invalid inference identity
+ERROR: file 0: 32: tuple field index is out of range
