@@ -6,6 +6,22 @@ const ORDINARY: &str = "pa20/tests/spec/projected-method-inputs";
 const SOURCE: &str = "pa31/tests/spec/projected-method-inputs";
 
 #[test]
+fn property_conditions_follow_trait_inference_with_concrete_projections() -> Result {
+    let cases = resolve::fixture("pa20/tests/spec/late-method-properties/cases.tsv")?;
+    assert_eq!(cases.lines().count(), 4);
+    for line in cases.lines() {
+        let (path, status) = line.split_once('\t').ok_or("late property columns")?;
+        let result = super::prove(&resolve::fixture(path)?);
+        match (status, result) {
+            ("0", Ok(())) => {}
+            ("1", Err(error)) if error.to_string().contains("multiple applicable") => {}
+            (_, result) => return Err(format!("{path}: {result:?}").into()),
+        }
+    }
+    Ok(())
+}
+
+#[test]
 fn a_semantic_size_request_leaves_the_next_property_condition_usable() -> Result {
     use rustgm::types::{
         self, GenericArgs, ItemId, Kind, Primitive, TypeId,

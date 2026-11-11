@@ -37,10 +37,21 @@ pub(in crate::sema::methods) fn applicable(
     receiver: Option<Receiver>,
     caller: Caller<'_>,
 ) -> Result<bool, &'static str> {
-    let Some(conditions) = prepare(facts, context, prefix, owner, receiver, caller)? else {
+    let Some(mut conditions) = prepare(facts, context, prefix, owner, receiver, caller)? else {
         return Ok(false);
     };
-    trait_requirements(facts, context, &conditions.traits, caller)
+    loop {
+        if !trait_requirements(facts, context, &conditions.traits, caller)? {
+            return Ok(false);
+        }
+        let before = conditions.traits.len();
+        if !builtin_requirements(facts, context, &mut conditions, caller.environment)? {
+            return Ok(false);
+        }
+        if conditions.traits.len() == before {
+            return Ok(true);
+        }
+    }
 }
 
 pub(super) fn prepare(
@@ -358,7 +369,7 @@ fn lookup_condition(
     clause.ordinary()
 }
 
-fn builtin_requirements(
+pub(super) fn builtin_requirements(
     facts: &mut Declarations,
     context: &mut Context,
     conditions: &mut Conditions,
@@ -373,41 +384,49 @@ fn builtin_requirements(
         Arc::new(Environment::new(&facts.types, &[])?)
     };
     let mut properties = Query::new(environment);
-    for (term, bound) in conditions.builtins.drain(..) {
-        let Some(value) = properties.try_demand(
+    let mut result = Ok(true);
+    conditions.builtins.retain(|&(term, bound)| {
+        if result != Ok(true) {
+            return true;
+        }
+        let value = match properties.try_demand(
             context,
             &mut facts.types,
             &facts.aggregates,
             &facts.derives,
             term,
-        )?
-        else {
-            // The structural filter cannot read a projected property. Reuse
-            // ordinary non-refining trait selection, which owns normalization,
-            // caller premises and pending declarations. No probe evidence is
-            // published; the selected callable still proves its complete use.
-            conditions.traits.push(super::lookup_goals::Goal::ordinary(
-                infer::predicates::Predicate::builtin(term, bound),
-            ));
-            continue;
+        ) {
+            Ok(Some(value)) => value,
+            Err(error) => {
+                result = Err(error);
+                return true;
+            }
+            Ok(None) => {
+                // The structural filter cannot read a projected property. Reuse
+                // ordinary non-refining trait selection, which owns normalization,
+                // caller premises and pending declarations. No probe evidence is
+                // published; the selected callable still proves its complete use.
+                conditions.traits.push(super::lookup_goals::Goal::ordinary(
+                    infer::predicates::Predicate::builtin(term, bound),
+                ));
+                return false;
+            }
         };
-        let possible = match bound {
-            Bound::Sized => value.sized,
-            Bound::Copy => value.abilities.copy,
-            Bound::Clone => value.abilities.clone_,
-            Bound::Outlives(_) => return Err("unexpected candidate region predicate"),
+        result = match bound {
+            Bound::Sized => Ok(value.sized),
+            Bound::Copy => Ok(value.abilities.copy),
+            Bound::Clone => Ok(value.abilities.clone_),
+            Bound::Outlives(_) => Err("unexpected candidate region predicate"),
             Bound::Trait(_) | Bound::ConstTrait(_) | Bound::MaybeConstTrait(_) | Bound::Auto(_) => {
-                return Err("user trait candidate obligations require trait selection");
+                Err("user trait candidate obligations require trait selection")
             }
-            Bound::ProjectionEqual(_) => {
-                return Err("projection equality requires a normalization proof");
-            }
+            Bound::ProjectionEqual(_) => Err("projection equality requires a normalization proof"),
         };
-        if !possible {
-            return Ok(false);
-        }
-    }
-    Ok(true)
+        // A possibility read before trait equations settle is not final.
+        // Retain this structural condition for the post-selection check.
+        true
+    });
+    result
 }
 fn trait_requirements(
     facts: &mut Declarations,

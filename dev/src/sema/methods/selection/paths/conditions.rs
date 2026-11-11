@@ -21,6 +21,14 @@ pub(super) struct Pending {
     query: Option<Box<selection::Pending>>,
 }
 impl Pending {
+    /// A newly exposed property goal shares this trial's private region frontier.
+    pub fn retry(&mut self, count: usize) {
+        self.goals.clear();
+        self.goals.extend(0..count);
+        self.cursor = 0;
+        self.next.clear();
+    }
+
     pub fn new(count: usize, facts: &Declarations) -> Result<Self, &'static str> {
         Ok(Self {
             goals: (0..count).collect(),

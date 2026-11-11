@@ -26170,6 +26170,82 @@
         "reason": "Unused generic lookup scaling contract; priority-native.rs executes instantiated method-selection opponents."
       },
       "maintainer_origin": "dev/tests/method_selection/possibility.rs"
+    },
+    {
+      "path": "tests/spec/late-method-properties/method-noncopy.rs",
+      "source_sha256": "531e35afb2a5b992102faf1ff68adc8a4415056d0f08c101853f68a9e50e250c",
+      "exit_status": 0,
+      "mode": "--emit-lowir",
+      "input": "file",
+      "features": [
+        "pa20.late-method-properties"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic function checks candidate filtering after trait equations with concrete associated type normalization. Method priority execution has separate declared observers."
+      }
+    },
+    {
+      "path": "tests/spec/late-method-properties/method-copy.rs",
+      "source_sha256": "61cb3e3915ed55354edda366a363d21dcb2e2d50acc0e924fa2269c158c0c427",
+      "exit_status": 1,
+      "mode": "--emit-lowir",
+      "input": "file",
+      "features": [
+        "pa20.late-method-properties"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs"
+    },
+    {
+      "path": "tests/spec/late-method-properties/qualified-noncopy.rs",
+      "source_sha256": "fa528e42f4d35d7ef2e2ce17fea502c2860fd6649acab099aa7da40c2e86962f",
+      "exit_status": 0,
+      "mode": "--emit-lowir",
+      "input": "file",
+      "features": [
+        "pa20.late-method-properties"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic function checks candidate filtering after trait equations with concrete associated type normalization. Method priority execution has separate declared observers."
+      }
+    },
+    {
+      "path": "tests/spec/late-method-properties/qualified-copy.rs",
+      "source_sha256": "de988b51f9e10cde359da847e2d28e05e7320279eed0572ca2d88a1058a4ef02",
+      "exit_status": 1,
+      "mode": "--emit-lowir",
+      "input": "file",
+      "features": [
+        "pa20.late-method-properties"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs"
     }
   ]
 }

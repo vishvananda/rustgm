@@ -1,0 +1,40 @@
+{
+  "state": "Independent complete outcomes reviewed before scoped generation",
+  "candidate_sha256": "f46b54f3248e174e3cafeb1d791811a5bdbbf96004bbdd4dc74a6f3df2c53bf6",
+  "old_oracles_snapshot_sha256": "8df2e31301d1982b8166f3e7b0c9f53e5b85b99cc5e30437f0ed5c652f5b5170",
+  "new_cases": [
+    {
+      "path": "tests/spec/late-method-properties/method-noncopy.rs",
+      "source_sha256": "531e35afb2a5b992102faf1ff68adc8a4415056d0f08c101853f68a9e50e250c",
+      "status": 0,
+      "stdout_sha256": "ec918c5814d7f98554209830f5c5debdb73649a1aba4a760ad1b50691bfa7b23",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "review": "Two-function empty main graph with matching definition/entry IDs"
+    },
+    {
+      "path": "tests/spec/late-method-properties/method-copy.rs",
+      "source_sha256": "61cb3e3915ed55354edda366a363d21dcb2e2d50acc0e924fa2269c158c0c427",
+      "status": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4c33e02c8dd60d76b5ebfb09cdc219082e57063602dffd39e96acf22ad3bb017",
+      "review": "Genuine method ambiguity matching pinned Rust E0034"
+    },
+    {
+      "path": "tests/spec/late-method-properties/qualified-noncopy.rs",
+      "source_sha256": "fa528e42f4d35d7ef2e2ce17fea502c2860fd6649acab099aa7da40c2e86962f",
+      "status": 0,
+      "stdout_sha256": "ec918c5814d7f98554209830f5c5debdb73649a1aba4a760ad1b50691bfa7b23",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "review": "Two-function empty main graph with matching definition/entry IDs"
+    },
+    {
+      "path": "tests/spec/late-method-properties/qualified-copy.rs",
+      "source_sha256": "de988b51f9e10cde359da847e2d28e05e7320279eed0572ca2d88a1058a4ef02",
+      "status": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "6e64c6dda5115a4cd138d5ce5f957b61ebbb92a557b7fad34e719f3b30c97114",
+      "review": "Genuine method ambiguity matching pinned Rust E0034"
+    }
+  ],
+  "pending_generic_cases": "pending.json retains the four complete independently declared generic projection inputs as requirements; both positives still need caller-premise inference"
+}

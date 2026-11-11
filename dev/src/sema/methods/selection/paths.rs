@@ -236,7 +236,7 @@ impl Query {
     ) -> Result<Progress, &'static str> {
         loop {
             if let Some(mut trial) = self.trial.take() {
-                let possible = match trial.pending.poll(
+                let mut possible = match trial.pending.poll(
                     facts,
                     &mut trial.context,
                     &trial.conditions.traits,
@@ -248,6 +248,20 @@ impl Query {
                     }
                     conditions::Progress::Ready(possible) => possible,
                 };
+                let before = trial.conditions.traits.len();
+                if possible {
+                    possible = applicability::builtin_requirements(
+                        facts,
+                        &mut trial.context,
+                        &mut trial.conditions,
+                        self.caller.environment.as_ref(),
+                    )?;
+                }
+                if possible && trial.conditions.traits.len() != before {
+                    trial.pending.retry(trial.conditions.traits.len());
+                    self.trial = Some(trial);
+                    continue;
+                }
                 account_probe(facts, trial.context.steps)?;
                 if possible && self.selected.replace(trial.member).is_some() {
                     return Err(match self.mode {

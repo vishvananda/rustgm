@@ -1,0 +1,55 @@
+{
+  "state": "Required independently frozen generic projection inputs; positive outcomes are not waived. Serialized source remains here until the existing caller-premise inference path can qualify their full LowIR. These are not passing course cases.",
+  "owner": "PA20",
+  "inputs": [
+    {
+      "name": "method-unpaid",
+      "source_utf8": "trait Family{type Out;}\ntrait A<U>{}\nstruct S<T,U,V>(T,U,V);\nimpl<T:A<U>,U:Copy>S<T,U,u8>{fn run(self){}}\nimpl<T:A<U>,U>S<T,U,u16>{fn run(self){}}\nfn pick<T:A<I::Out>,I:Family>(){let s:S<T,_,_>=loop{};s.run()}\nfn main(){}\n",
+      "source_sha256": "8539bb5143aa303938a353e36278abb01f4fe645e86fd8631b6332f0b99da547",
+      "rustc_object_status": 0,
+      "required_lowir_status": 0,
+      "observed_lowir_status": 1,
+      "observed_diagnostic": "ERROR: file 0: 201: multiple applicable methods for this receiver\n",
+      "contract": "Trait matching resolves U to a projected type before the retained Copy condition. Unpaid Copy selects the other impl; paid Copy leaves two candidates."
+    },
+    {
+      "name": "method-paid",
+      "source_utf8": "trait Family{type Out;}\ntrait A<U>{}\nstruct S<T,U,V>(T,U,V);\nimpl<T:A<U>,U:Copy>S<T,U,u8>{fn run(self){}}\nimpl<T:A<U>,U>S<T,U,u16>{fn run(self){}}\nfn pick<T:A<I::Out>,I:Family>() where I::Out:Copy{let s:S<T,_,_>=loop{};s.run()}\nfn main(){}\n",
+      "source_sha256": "a7788e6ca0388556fe3e2783eb267660ea4504d8cb2640decde45a395e7a8a39",
+      "rustc_object_status": 1,
+      "required_lowir_status": 1,
+      "observed_lowir_status": 1,
+      "observed_diagnostic": "ERROR: file 0: 219: multiple applicable methods for this receiver\n",
+      "contract": "Trait matching resolves U to a projected type before the retained Copy condition. Unpaid Copy selects the other impl; paid Copy leaves two candidates."
+    },
+    {
+      "name": "qualified-unpaid",
+      "source_utf8": "trait Family{type Out;}\ntrait A<U>{}\nstruct S<T,U,V>(T,U,V);\nimpl<T:A<U>,U:Copy>S<T,U,u8>{fn run(self){}}\nimpl<T:A<U>,U>S<T,U,u16>{fn run(self){}}\nfn pick<T:A<I::Out>,I:Family>(){S::<T,_,_>::run(loop{})}\nfn main(){}\n",
+      "source_sha256": "e63dd650ae8be4068256621b930246766955814dd18e5e63fd8aa097abe16c0d",
+      "rustc_object_status": 0,
+      "required_lowir_status": 0,
+      "observed_lowir_status": 1,
+      "observed_diagnostic": "ERROR: file 0: 179: multiple applicable inherent methods\n",
+      "contract": "Trait matching resolves U to a projected type before the retained Copy condition. Unpaid Copy selects the other impl; paid Copy leaves two candidates."
+    },
+    {
+      "name": "qualified-paid",
+      "source_utf8": "trait Family{type Out;}\ntrait A<U>{}\nstruct S<T,U,V>(T,U,V);\nimpl<T:A<U>,U:Copy>S<T,U,u8>{fn run(self){}}\nimpl<T:A<U>,U>S<T,U,u16>{fn run(self){}}\nfn pick<T:A<I::Out>,I:Family>() where I::Out:Copy{S::<T,_,_>::run(loop{})}\nfn main(){}\n",
+      "source_sha256": "0105387071c947bc43c8c3ce3be68913d682d8fd2e160c003640dd252acf5c45",
+      "rustc_object_status": 1,
+      "required_lowir_status": 1,
+      "observed_lowir_status": 1,
+      "observed_diagnostic": "ERROR: file 0: 197: multiple applicable inherent methods\n",
+      "contract": "Trait matching resolves U to a projected type before the retained Copy condition. Unpaid Copy selects the other impl; paid Copy leaves two candidates."
+    }
+  ],
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0
+  }
+}

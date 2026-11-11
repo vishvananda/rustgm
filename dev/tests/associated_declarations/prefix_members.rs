@@ -283,13 +283,12 @@ fn projected_constants_execute_actual_selected_values_and_borrows() -> Result {
 
 #[test]
 fn source_projection_lookup_controls_preserve_their_existing_boundaries() -> Result {
-    const NORMALIZE: &str = "candidate properties require associated type normalization";
     let cases = [
         ("free-inferred", None),
         ("core-default-method", None),
         ("unique-inherent", None),
-        ("explicit-rigid", Some(NORMALIZE)),
-        ("explicit-concrete", Some(NORMALIZE)),
+        ("explicit-rigid", None),
+        ("explicit-concrete", None),
         (
             "explicit-concrete-fail",
             Some("no applicable trait method for this prefix"),
@@ -302,7 +301,7 @@ fn source_projection_lookup_controls_preserve_their_existing_boundaries() -> Res
         ),
         ("free-copy", None),
         ("free-sized", None),
-        ("method-rigid", Some(NORMALIZE)),
+        ("method-rigid", None),
         ("method-unresolved", None),
     ];
     for (name, expected) in cases {

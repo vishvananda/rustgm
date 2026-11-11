@@ -1,0 +1,4 @@
+pa20/tests/spec/late-method-properties/method-noncopy.rs	0
+pa20/tests/spec/late-method-properties/method-copy.rs	1
+pa20/tests/spec/late-method-properties/qualified-noncopy.rs	0
+pa20/tests/spec/late-method-properties/qualified-copy.rs	1
