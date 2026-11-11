@@ -146,10 +146,13 @@ impl Checker<'_> {
 
     pub(super) fn finish_nested(
         &mut self,
-        evidence: HashMap<usize, Source>,
+        evidence: Option<HashMap<usize, Source>>,
     ) -> Result<Option<Dependency>, Error> {
         let Some(&index) = self.state.closure_children.get(self.state.closure_cursor) else {
-            return self.finish_inference(evidence);
+            return match evidence {
+                Some(evidence) => self.finish_inference(evidence),
+                None => self.finish(self.state.body.node),
+            };
         };
         self.state.closure_cursor += 1;
         let kind = self

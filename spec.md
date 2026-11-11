@@ -6073,6 +6073,27 @@ CFG operations before demanded evaluation. Both conditional branches participate
 source after an unconditional transfer does not. Keep the earlier initializer
 eligibility boundary separate from the still-developing general evaluator.
 
+Conditional const closure eligibility retains the actual source role, completed
+capture permission and const body identity. Bind the selected instance's defining
+parameters and inherited lifetimes in their producer's declaration order. A
+defining opaque result can precede its enclosing callable template; that order
+supplies substitution coordinates, never executable permission. Ordinary
+formation and signature requirements keep their existing producers. Prove the
+additional defining const clauses through the existing scoped clause frontier,
+retaining all child proofs, quantifiers and region debts before publishing
+callable evidence. Share the frontier with async callable conditions and prepay
+its work and retained storage. Do not duplicate ordinary constraints as const
+selection work or upgrade an ordinary parent's effect.
+
+A local const closure's source body can finish after parent call inference.
+Retain the parent's suspended queries and unpaid goals while the existing flat
+nested scheduler completes its remaining children. Retry that frontier once
+after child publication, charging the repeated goal scan. Every parent trait,
+const-call, lifetime and ownership check still runs before final publication;
+child completion grants no assumption. Keep executable formal-order and actual
+receiver checks separate. The [adapter checkpoint](docs/pa25-const-adapter-reductions.md)
+records independently checked defining and execution requirements.
+
 Constant cleanup eligibility consumes the already selected destruction schedule.
 A possible destructor access is forbidden, including an abstract generic drop;
 transferring an owned result does not destroy it. Reuse the initialization and

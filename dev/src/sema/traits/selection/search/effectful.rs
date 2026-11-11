@@ -199,9 +199,15 @@ fn requirements(
             &|work, bytes| payments.charge(work, bytes),
         )?
     };
-    let mut clauses = declaration_inputs::all(&facts.generics, facts.crates.as_deref(), owner)?
-        .map(|input| facts.member_use_clause(owner, input, effect))
-        .collect::<Result<Vec<_>, _>>()?;
+    // Ordinary formation and signature constraints retain their existing
+    // producers, exactly as for an ordinary closure call. Const eligibility
+    // adds the defining const conditions; it cannot certify ordinary formation.
+    let mut clauses = Vec::with_capacity(count.saturating_add(1));
+    for input in declaration_inputs::all(&facts.generics, facts.crates.as_deref(), owner)? {
+        if const_condition(&facts.types, input.value)? {
+            clauses.push(input.value);
+        }
+    }
     if let Some(source) = facts
         .function_indices
         .get(&owner)
@@ -229,6 +235,23 @@ fn requirements(
         regions,
         steps: fold.steps,
     })
+}
+
+fn const_condition(store: &crate::types::Store, clause: Clause) -> Result<bool, &'static str> {
+    let predicate = match clause {
+        Clause::UnstableFeature(_) => return Ok(true),
+        Clause::Predicate(predicate) => predicate,
+        Clause::ForAll(id) => {
+            store
+                .quantified(id)
+                .ok_or("const defining condition lost its original binder")?
+                .predicate
+        }
+    };
+    Ok(predicate
+        .bound
+        .trait_parts()
+        .is_some_and(|(_, effect)| effect != Constness::Ordinary))
 }
 
 fn owner_bounds(facts: &Declarations, owner: crate::resolve::model::DefId) -> &[Pair] {

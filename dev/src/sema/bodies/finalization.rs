@@ -10,7 +10,8 @@ use crate::{
 };
 
 pub(super) enum Finalization {
-    Closures(HashMap<usize, Source>),
+    /// None retains the parent's inference frontier while children publish.
+    Closures(Option<HashMap<usize, Source>>),
     Storage(Box<Publication>),
     Caller(Box<Publication>),
     Requirements(HiddenResults),
@@ -52,10 +53,8 @@ impl Checker<'_> {
             .default_defining_results(&self.facts.types)
             .map_err(|e| self.error(body, e))?;
         let evidence = match self.infer_trait_obligations(body)? {
-            super::trait_goals::Progress::Ready(evidence) => evidence,
-            super::trait_goals::Progress::Waiting => {
-                return Err(self.error(body, "body completion retained unfinished trait inputs"));
-            }
+            super::trait_goals::Progress::Ready(evidence) => Some(evidence),
+            super::trait_goals::Progress::Waiting => None,
             super::trait_goals::Progress::Prepare(dependency) => return Ok(Some(dependency)),
         };
         self.finish_nested(evidence)

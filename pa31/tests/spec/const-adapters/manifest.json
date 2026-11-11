@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "owner": "PA31 actual source FnMut and Destruct adapter contrasts",
-  "state": "Required draft outcomes, frozen before implementation; no course oracles or whole-PA activation",
-  "contract": "This packet preserves authenticated source language-trait headers from the existing PA25 const-closure support. Self/forwarding/binary adapters reproduce original NeverShortCircuit returned conditional const callable eligibility. Plain const-factory and direct conditional-call controls distinguish shape and call permission. Source bindings add no permission for ordinary closures, missing conditional bounds or runtime const creation.",
+  "owner": "PA31 actual source callable defining contracts and required execution",
+  "state": "Draft defining-proof packet with separately required factory execution; no whole-PA activation or course text oracles",
+  "contract": "Actual source FnOnce/FnMut/Fn and Destruct roles preserve owner parameters, capture permission, conditional const proof and ordinary formation. Source declaration/body proofs, bounded work and local completion are distinct from the separately required concrete factory runtime/CTFE executions. Every unsupported positive remains a required positive.",
   "profile": {
     "rustc": "1.98.0",
     "edition": 2024,
@@ -84,6 +84,215 @@
       "rustc_object_status": 1,
       "source_analysis_status": 1,
       "qualification": "Language rejection: const closure created directly in an ordinary runtime function; surrounding bounds are ordinary"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/runtime-self.rs",
+      "sha256": "3003d56f63163d895cc7d34de7d184fb65c72110e779604d62935b03f54ca508",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "source_lowir_status": 0,
+      "independent_native": {
+        "status": 0,
+        "stdout": "adapter 23\n",
+        "stderr": ""
+      },
+      "contract": "required actual factory consumer; candidate lowering/CTFE boundary remains unsupported",
+      "phase": "factory-execution-required"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/runtime-forward.rs",
+      "sha256": "4d82db8bf8ae3acf7fa4cf08de955ddcd4301f39be587d7d14ac1cd3e5a2b685",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "source_lowir_status": 0,
+      "independent_native": {
+        "status": 0,
+        "stdout": "adapter 23\n",
+        "stderr": ""
+      },
+      "contract": "required actual factory consumer; candidate lowering/CTFE boundary remains unsupported",
+      "phase": "factory-execution-required"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/ctfe-self.rs",
+      "sha256": "04df9498ae4f18e5af14f44ea86b9f4af4e908d71004e2eafd99c9d4a93c6ab4",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "source_lowir_status": 0,
+      "independent_native": {
+        "status": 0,
+        "stdout": "adapter 23\n",
+        "stderr": ""
+      },
+      "contract": "required actual factory consumer; candidate lowering/CTFE boundary remains unsupported",
+      "phase": "factory-execution-required"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/width-8-noise-0.rs",
+      "sha256": "78edeef3328598115e59de4fd200f23826e804c351629e5707c719a208c90652",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "defining-proof-scaling",
+      "width": 8,
+      "noise": 0,
+      "qualification": "required positive; exact body work should scale by sites and stay identical with unrelated nominal headers"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/width-8-noise-128.rs",
+      "sha256": "5391634a056f8637e028204f4aa69430193b526950da5b9f4f17dc509bcaba3e",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "defining-proof-scaling",
+      "width": 8,
+      "noise": 128,
+      "qualification": "required positive; exact body work should scale by sites and stay identical with unrelated nominal headers"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/width-32-noise-0.rs",
+      "sha256": "cfbee7600d849508f3f6978e7f9380d789822767546c968d051c6477f95e3dc7",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "defining-proof-scaling",
+      "width": 32,
+      "noise": 0,
+      "qualification": "required positive; exact body work should scale by sites and stay identical with unrelated nominal headers"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/width-32-noise-128.rs",
+      "sha256": "e70b933d29cbe8dc4b5b8033e21db77e9ae10ab19378c670a2e32c094b6b1adc",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "defining-proof-scaling",
+      "width": 32,
+      "noise": 128,
+      "qualification": "required positive; exact body work should scale by sites and stay identical with unrelated nominal headers"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/width-128-noise-0.rs",
+      "sha256": "45f8cd78df01a0e58ee7a4c0a4a65b7fdb226f7194a3e807f2a4187496681bf8",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "defining-proof-scaling",
+      "width": 128,
+      "noise": 0,
+      "qualification": "required positive; exact body work should scale by sites and stay identical with unrelated nominal headers"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/width-128-noise-128.rs",
+      "sha256": "42a4a4d61889ea7044664b7f0bc3b2b6629e93676fa636b4920f40b469fc83f7",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "defining-proof-scaling",
+      "width": 128,
+      "noise": 128,
+      "qualification": "required positive; exact body work should scale by sites and stay identical with unrelated nominal headers"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/ordinary-owner-paid.rs",
+      "sha256": "bc15ffacfdd34e56a73085d240aa8cfd76c3dc1cfefbc0bd60eb6a72bb16e855",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "ordinary-formation-guard",
+      "qualification": "ordinary owner predicates remain enforced at factory formation; const eligibility must not erase or duplicate their producer"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/ordinary-owner-unpaid.rs",
+      "sha256": "8d1260f4261bb64bf6bb5fa5a893b351a56988952f1446239f3d6cd1e9fe7175",
+      "rustc_object_status": 1,
+      "source_analysis_status": 1,
+      "phase": "ordinary-formation-guard",
+      "qualification": "ordinary owner predicates remain enforced at factory formation; const eligibility must not erase or duplicate their producer"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/once-via-mut.rs",
+      "sha256": "6347f241aca90ce1339182692816de7cafcb0f857ccf952e6b2184f6c1056dfd",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "defining-proof-receiver-contrast",
+      "qualification": "Rust accepts FnOnce use of the const FnMut closure under the written bound; exploratory destruction-rejection prediction was disproved and remains in raw evidence"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/local-width-8-noise-0.rs",
+      "sha256": "ec5f9147512abf384a9559b2d5446a9b97774d99e0b1fac2cedbda44c22464e4",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "local-completion-scaling",
+      "width": 8,
+      "noise": 0
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/local-width-8-noise-128.rs",
+      "sha256": "dc213ca6840270c7391e06c2a240c4f887e71a3d520cbd0650c1aeac908e1596",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "local-completion-scaling",
+      "width": 8,
+      "noise": 128
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/local-width-32-noise-0.rs",
+      "sha256": "965666614238621cce7582517f11b8c1b5d5b79197ed5453e446132326126b71",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "local-completion-scaling",
+      "width": 32,
+      "noise": 0
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/local-width-32-noise-128.rs",
+      "sha256": "c4525c655f23d7045d5d647a81b7daa9b2c584cbd6613811ef8da02bf53bbe86",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "local-completion-scaling",
+      "width": 32,
+      "noise": 128
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/local-width-128-noise-0.rs",
+      "sha256": "bd92c8e01ad8109c61a4c6615ff901846561df34643cfb6c67c1fb1995cb40b5",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "local-completion-scaling",
+      "width": 128,
+      "noise": 0
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/local-width-128-noise-128.rs",
+      "sha256": "48bb1b4721d5963e250c847ffc8ccf4f4a974759e875650a6c2ff64faeb863b7",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "local-completion-scaling",
+      "width": 128,
+      "noise": 128
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/local-ordinary-child-reject.rs",
+      "sha256": "f7b1065c2de3a7d2af64a202a99a3448276690541b4f14407f3759fd1e8d45e5",
+      "rustc_object_status": 1,
+      "source_analysis_status": 0,
+      "phase": "local-completion-const-call-check",
+      "source_lowir_status": 1,
+      "qualification": "Type view accepts ordinary call typing; complete body checking must reject the non-const call in the completed const child. Rust object rejection remains required."
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/local-unpaid-child-reject.rs",
+      "sha256": "30e0553dfd12fc9af1fea2c37cd98c8e2473fa60646f28e6e7c009c44393674b",
+      "rustc_object_status": 1,
+      "source_analysis_status": 1,
+      "phase": "local-completion-opponent"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/lifetime-via-mut.rs",
+      "sha256": "d8545d2bb768793a3fdf853588ef04f2ee55c64a4afa40ae0154c87a5a40b99d",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "local-completion-lifetime"
+    }
+  ],
+  "auxiliary": [
+    {
+      "path": "pa31/tests/spec/const-adapters/observer.c",
+      "sha256": "1c501530a08e194cc2a35250c37d3d04e03535a84370e613067962653357d037"
     }
   ]
 }

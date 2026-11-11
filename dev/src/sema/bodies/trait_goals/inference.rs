@@ -111,6 +111,20 @@ impl Checker<'_> {
                     {
                         continue;
                     }
+                    if self.state.closure_cursor < self.state.closure_children.len() {
+                        // A collected local closure already supplies signature
+                        // equations and capture permission. Its const source
+                        // contract is published only after nested completion.
+                        // Finish the remaining children once, then retry this
+                        // same frontier; retain every query and unpaid goal.
+                        self.state
+                            .infer
+                            .account_work(pending.goals.len())
+                            .map_err(|e| self.error(body, e))?;
+                        pending.cursor = 0;
+                        self.state.trait_goals = Some(pending);
+                        return Ok(Progress::Waiting);
+                    }
                     let Some(index) = self.state.notifications.first_pending() else {
                         return Err(
                             self.error(body, "associated projection inputs remain unresolved")

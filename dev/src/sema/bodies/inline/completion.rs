@@ -13,7 +13,7 @@ impl Checker<'_> {
     pub(in crate::sema::bodies) fn finish_inline_child(
         &mut self,
         index: usize,
-        evidence: HashMap<usize, Source>,
+        evidence: Option<HashMap<usize, Source>>,
     ) -> Result<Option<Dependency>, Error> {
         let body = self.state.body.node;
         let mut scheduler = self
