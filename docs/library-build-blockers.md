@@ -1,18 +1,28 @@
 # Library build blocker tracker
 
-The current [symbolic source-index checkpoint](pa31-symbolic-index.md), compiler
-004ae71e9/CLI00d205dc, clears reached each_ref/each_mut const-stable failures by
-classifying existing ArrayTerm with fixed arrays/slices after real proof. All14
-source language contracts,3 existing PA18 controls,actualCTFE47/realboundsnegative
-and source panic guards pass. Both new Rust/C native companions remain required
-candidate artifacts pending genuine panic routing; existing7native controls pass.
-The unchanged120s original observer times out121.46912s with198 partial records
-throughfunction10445,file282:35667. First now try_from_fn_erased98:31073 at
-guard.array_mut.len(): candidate properties require associated type normalization.
-All722hashes/375opens/sixbindings/profilelimits remain unchanged. No complete
-census/body count/throughput/artifact. See handoff.md for current reductions and
-all retained requirements. Full42979017824 on exact8aa passed every stage,
-qualifying the preceding source5f78ed963; the new004 semantic successor is due.
+The current [projected candidate/reborrow checkpoint](pa20-projected-candidate-properties.md),
+compiler b15d29240/CLI94bd08b4, clears the reached try_from_fn_erased
+normalization record at guard.array_mut.len(). Existing semantic selection proves
+projected candidate bounds; actual reborrow places receive field instances through
+existing preparation paths. PA18 owns5 new ordinary reductions, PA20 owns27,
+PA31 owns7 source counterparts. All32 ordinary full LowIR outcomes,20 source
+analysis contracts including13 reused cases, bounded growth/noise, actual priority
+values and one real destructor execution pass. Exactly32 new text triples are
+reviewed and checked; all old oracles remain unchanged. No limits/backend/storage
+change or whole-assignment release is implied.
+
+The same120s original observer fails deadline121.279946s with159 partial records
+throughfunction10718,file283:70779. First now **LazyCell<T>::default**,
+cell/lazy.rsfile113:12567: unsatisfied trait obligation at initializer creation
+using T::default and LazyCell::new. File112 is cell.rs, with later replace/clone/
+clone_from/comparison records; earlier Option attribution was incorrect. All722
+hashes/375opens/sixbindings/profilelimits remain unchanged. No complete census,
+comparable body count, throughput result or original artifact exists. Next freeze
+ordinary callback creation/constructor/effect contrasts, reusing conditional
+function-item and const-adapter requirements. Preserve all pending native panic,
+128-depth inference, factory execution, bootstrap, transport and optimized checks
+listed in handoff.md. Full42988281942 on exact31be succeeded every stage; the
+new b15 semantic successor is due after publication.
 
 Earlier const-adapter/implicit receiver observations below are historical;
 the current frontier above supersedes their next-step text.

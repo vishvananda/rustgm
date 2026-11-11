@@ -7,81 +7,95 @@ The goal remains original core, then alloc/std. No original library artifact exi
 
 ## Current checkpoint and original-core frontier
 
-[Symbolic source indexing](docs/pa31-symbolic-index.md), compiler004ae71e9,
-adds the existing ArrayTerm constructor to the shared builtin-index classifier.
-Actual role/implementation/const-effect proof, exact usize input and element
-Output checks remain mandatory. Existing IndexParameter, mutable places, bounds
-and source-context consumers are reused. No stability exception, new cache,
-representation, compiler limit, backend or storage.py change.
+[Projected method properties and actual borrowed places](docs/pa20-projected-candidate-properties.md),
+compiler b15d29240f5f1a00894a2149bac1ddc46d18ed20, clears the reached
+try_from_fn_erased normalization error at guard.array_mut.len(). The structural
+possibility query requests semantic work explicitly; the original bound then
+uses existing non-refining trait selection, with actual caller/scoped projection
+formation and pending-declaration handling. Unresolved possibilities stay possible;
+budget and malformed-graph errors stay errors. A raw nominal size suspension is
+refused before another property root reuses that walker. Selected calls still
+prove their full trait/region/effect/body debts. No new proof engine or permission.
 
-The PA31 packet has14 independent source inputs:10 accepts/4 rejects. All14
-language/type/body contracts pass, alongside three existing PA18 ordinary read/
-write/reference controls and actual generic CTFE47. The out-of-bounds opponent
-fails for length2/index2, not const policy or a resource guard. Both new native
-companions are REQUIRED POSITIVES: real Rust/C prints41/23/47/23/41/23/23/47;
-RustGM source analysis and CTFE47 pass, but demanded native LowIR stops at the
-existing checked source panic signature/caller/runtime routing boundary. Both
-concrete-wrapper and generic-helper reductions retain that boundary. Do not
-remove the hook, waive the guard, invert these positives or claim candidate
-native parity. The existing7 native indexing observers pass separately.
+Full LowIR exposed a pre-existing reborrow field-instance failure in five explicit
+controls. The shared actual-borrow root producer now supplies both existing field
+preparation paths, including raw-pointer coercions. No inference-arena scan,
+representation, global cache, compiler limit, backend or storage.py change.
 
-Immutable CLI00d205dc7bab488fbdadc5064be2d421947f9bdc3dd573f1c5691175faa8fc3e
-is Bobj/parallel/symbolic-index/candidate-dev-fast/rustgm. Producer binds004ae71e9,
-empty whole tracked diff at build,3901 Rust source hashes. Twenty exclusive
-same-profile A/A+twoABBA observations preserve complete import LowIR and source
-custom-key type output equality. Wall ratios.990/.998 and A/A.576/1.435 are noisy;
-no speed, neutrality or whole-core claim. Current9109 comparison pin can retire
-once this checkpoint is published; keep current00d2 and older optimized21f.
+Earliest owning reductions are committed: PA18 has5 new ordinary cases (4accept/
+1reject), PA20 has27 (24accept/3reject, including6 width/noise inputs), and PA31
+has7 independently accepted source-object cases. All32 ordinary full LowIR
+outcomes pass. Two Rust/CPPGM programs execute method priority41/41/23/23/41/31
+and the actual non-Copy destructor exactly once. All13 existing source lookup
+contracts pass; explicit-rigid/explicit-concrete/method-rigid now accept their
+original valid language outcomes. All source bytes/original Rust outcomes stay
+unchanged. Exactly32 NEW text triples were independently reviewed/generated/
+rechecked; every OLD PA18/PA20 oracle and receipt remains byte-identical.
 
-The unchanged120s original-core observer still FAILS its deadline at121.46912s.
-It retains198 partial diagnostics throughfunction10445,file282:35667,node1125.
-ProgressSHA330acd717cf9ce19fd5161ceac824416dbd12e218fc4926b9e2a5525a13ef505.
-All722 source hashes,375 opened files,six bindings,profile and limits verified
-unchanged afterward. The reached each_ref/each_mut98:24013/25143 failures are
-absent, as are earlier file102len/is_empty and file95wrap_mut failures. First now
-try_from_fn_erased,array/mod.rsfile98:31073: candidate properties require
-associated type normalization. The location is guard.array_mut.len(), not the
-Guard initializer or generator branch. Later Option default113:12567 and replace/
-clone112 records are separate. No complete census/body count/throughput/artifact.
+Immutable CLI94bd08b42caf5680d4ccce6efbeef449e6eb159473ae3668b1a21a94a746f808
+is Bobj/parallel/projected-properties/candidate-dev-fast/rustgm. Producer binds
+b15d29240, empty whole tracked diff,3902 Rust hashes. Thirty exclusive matched
+A/A+twoABBA observations preserve complete output equality for ordinary import,
+generic-reborrow library and unresolved-projection controls. Tiny unoptimized
+paired wall ratios1.150/1.167/1.035 and A/A.690/.632/.952 remain recorded; no
+speed/neutrality/optimized/core claim. New rigid-projection acceptance has no
+accepting baseline; width8/32/128+noise128 bounded-work checks cover that path.
+Optimized qualification remains pending. Baseline00d2 can retire after replacement
+publication and explicit prune; keep current94bd and older optimized21f. Old9109
+and e7 executables are absent; metadata does not make them available for new runs.
+
+The unchanged120s original observer FAILS deadline121.279946s with159 partial
+records throughfunction10718,file283:70779,node3113. ProgressSHA
+486344dc4ca80525c50eb9badff41e64679392a3959f1712c0c377bd1cb63133.
+Array function3385 at98:30975 was reached; try_from_fn_erased has no record in
+this prefix. First now default113:12567, unsatisfied trait obligation. The mapped
+source is **core/src/cell/lazy.rs**, LazyCell<T>::default: it passes T::default
+to LazyCell::new as an initializer. File112 is **core/src/cell.rs**: replace has
+incompatible types, clone has an unpaid trait obligation, clone_from incompatible
+types, then partial_cmp/cmp trait obligations. Earlier Option attribution was
+incorrect. Do not infer modules from method names. All722 hashes/375opens/six
+bindings/profile/limits and immutable/current compiler hashes are verified
+unchanged by postcheck1794393775288810739. No complete census/body count,
+throughput result or original core/alloc/std artifact exists.
 
 ## Continue here
 
-Freeze ordinary associated-output wrapper/slice method reductions before a kernel
-change. Test conditional Copy/Clone vs no-Copy declarations, concrete vs associated
-outputs, explicit caller bounds and direct controls. Source MaybeUninit/const Try
-counterparts belong in PA31 only if needed. Choose earliest ownership from actual
-minimal features; ordinary associated relationships generally belong to PA20.
-Reuse existing ordinary fixtures if they already express the full contrast.
+Inspect the exact LazyCell::new declaration and T::default callback creation
+before changing effects or bounds. Freeze ordinary user Factory/function-item
+contrasts: direct function-pointer return vs constructor argument, inferred vs
+explicit pointer type, shorthand vs UFCS, runtime vs const creation and actual
+invocation opponents. Reuse the earlier const-adapter and conditional function-item
+packets where their complete contracts match. Determine earliest PA from the
+minimum; actual source Default/FnOnce/language-role counterparts belong in PA31
+only when those features are needed. Keep Cell replacement/cloning separate until
+an independent contrast establishes a shared cause. No next-family implementation
+or reductions have been made yet.
 
-types/infer/properties.rs::Query computes Sized,Copy,Clone together after isolated
-candidate equations. A resolved constructed Projection without an opaque mark
-produces the current error. methods/selection/applicability.rs::builtin_requirements
-uses that full Query even for a Sized obligation. Slice len's T is
-MaybeUninit<R::Output>; conditional Copy may force an irrelevant projection walk,
-or normalization/rigid marks may be missing in the isolated probe. These are
-investigation hypotheses. Preserve real caller/scoped projection evidence,
-negative candidate ordering and final trait/region/const/body proofs. Possibility
-filters never authorize a call. Do not replace normalization failures with a
-blanket permission or add another proof engine. Keep later Option families separate.
+Evidence root is Bobj/parallel/projected-properties. Final-production
+1794391956383811769 PASS8exact2targets115.16s covers21 ordinary PA20/5 PA18
+full-LowIR cases, the source groups, width/noise, prior14symbolic index contracts
+and real CTFE47. Separate CLI preflight/course checks qualify all32 full-LowIR
+outcomes including six scaling inputs. Size-state1794392290746405887 PASS1exact;
+native1794392342902064203 PASS2exact37.54s. Strict selected production/CLI/test
+Clippy, full formatting and architecture pass. Existing bounded constructor-field
+control passes1794391641399698727. Source7/frozen byte identities and all32 ordinary
+Rust object outcomes are verified; upstream128/Reference126 and315 harness tests/
+468roots/13bins/44stages pass. Private affine/budget/fields-only/header/universe
+checks stay in full CI; no cold private/release link was used locally. Machine
+record: docs/pa20-projected-candidate-properties-evidence.json.
 
-Source checkpoint evidence is Bobj/parallel/symbolic-index. Final public
-1794384185094759145 PASS3exact2targets51.67s (14language+3PA18+CTFE47+guard).
-Earlier1794383015766934024 passes existing73source-index/canonical-work/const-slice/
-ordinary-source and primitive/mutable controls; its new native attempt fails at
-the retained guard runtime. Nativecontrol1794384358973196561 passes7old observers
-in45.71s. Strict selected Clippy/fullfmt/audit pass. Manifest/input hashes,
-upstream128/Reference126 and315 harness/468roots/13bins/44stages pass. Actual
-Rust1.98.0/88d9e12ae hostx86_64-unknown-linux-gnu is recorded. No course oracles.
-Post-observer1794385451286756961 verifies all pins/source/profile/opens unchanged.
-Machine evidence: docs/pa31-symbolic-index-evidence.json.
-
-Full42979017824 on EXACT8aa27348d PASSED every fast/release/course/native/debug/
-independent/PA25 stage, qualifying the prior implicit receiver source5f78ed963.
-The new004 semantic publication needs its successor full CI. Wait for any active
-full run before dispatching; never cancel/restart for documentation descendants.
+Full42988281942 on EXACT31be0c24f PASSED every fast/release/course/native/debug/
+independent/PA25 stage, qualifying the previous symbolic-index source004ae71e9.
+After publishing this b15 semantic checkpoint, dispatch its full successor only
+if no full run is active. Never cancel/restart a run for documentation descendants.
 
 ## Retained requirements and resource rules
 
+- [Symbolic source indexing](docs/pa31-symbolic-index.md) retains both new native
+  companions as REQUIRED POSITIVES pending genuine source panic signature/caller/
+  runtime routing. Both real Rust/C programs print41/23/47/23/41/23/23/47; source
+  analysis and CTFE47 pass. Keep the hook and guard. Existing7 native indexing
+  controls passed at their checkpoint. No candidate-native parity for these2.
 - The [implicit receiver checkpoint](docs/pa26-implicit-deref-methods.md) retains
   full source/generic/region/const/stability/capture/borrow proofs and one operand
   evaluation. Its PA31 Deref packet42 has40 qualified finite contracts and2 valid
