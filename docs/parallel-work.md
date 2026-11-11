@@ -3,8 +3,8 @@ new worktrees. The [clone checkpoint](pa26-deref-clone.md) qualifies40 outcomes,
 25 source typing/24 prepared-root artifacts and2 actual native programs, with one
 valid source artifact and15 ordinary import cases still required. Public/native/
 scaling/upstream/harness checks pass. Full43059556041 finished with one unchanged
-result-context regression, repaired by this checkpoint; its full successor is due
-after semantic publication. Clean source5cd41810b/frozen5d43 and30 calibrated output-equal comparisons pass.
+result-context regression, repaired by this checkpoint; full43081009696 is ACTIVE EXACT2c13e1cff/source5cd41810b after publication
+and fresh no-active check; no restart for docs/input descendants. Clean source5cd41810b/frozen5d43 and30 calibrated output-equal comparisons pass.
 Unchanged120s original reaches all cell bodies without failures; FIRST now
 ArrayChunks::next atfile133:2226,line66. Postcheck722/375/six/current3906 unchanged.
 No complete census or original library artifact; reduce the actual adapter call. Preserve all prior requirements and the

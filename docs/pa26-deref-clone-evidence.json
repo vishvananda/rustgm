@@ -413,7 +413,12 @@
     ]
   },
   "current_full_ci": {
-    "status": "Due after semantic publication and no active manual/scheduled full; never restart for docs/input descendants."
+    "run": 43081009696,
+    "head": "2c13e1cff3fa3cca23410d35efab337621251aa2",
+    "source_commit": "5cd41810bfa18d71e936bfed53c9a0422580e83f",
+    "status": "in_progress",
+    "no_active_full_verified_before_dispatch": true,
+    "do_not_restart_for_documentation": true
   },
   "development_review": {
     "draft_header_review": [
@@ -852,5 +857,11 @@
     "candidate-original/progress.tsv": "56159896464f2c90c80b1826b3e1636876870f20a591de499ede030834a80745",
     "candidate-original/result.json": "c1ddd090040c463ee1c2e0efa726e16d48fb4f3466a7fa07b36575e2da8a622c",
     "post-observer.log": "123dbf094586d79b739af4a9e747e95c957289bcffb328a875b2a4145ddef414"
+  },
+  "retired_baseline": {
+    "retired": "obj/parallel/refcell-coercion/projected-progress-dev-fast",
+    "sha256": "0912e08f677a2880a62b42bef9c5baf3dcd253ceec5e5d805b22a873e34a58a8",
+    "executable_absent": true,
+    "reason": "Replacement source5cd41810b and qualification published; all immutable comparisons finished. Producer/raw observations retained; current5d43 and pending optimized21f remain."
   }
 }

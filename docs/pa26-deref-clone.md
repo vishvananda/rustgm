@@ -99,3 +99,10 @@ some launches before execution. Bounded runs use smaller output reservations
 within the approved16GiB ceiling after measuring retained output and temporary
 copies; the150GiB reserve and compiler/observer limits are unchanged. Raw evidence
 is B obj/parallel/refcell-clone; see the machine record beside this document.
+
+Published source5cd41810b and evidence2c13e1cff; full43081009696 is ACTIVE on
+EXACT2c13e1cff3fa3cca23410d35efab337621251aa2/source5cd41810b after a fresh
+no-active-manual/scheduled-full check. Do not restart for docs/input descendants.
+Comparison0912 was explicitly unpinned and pruned1794422858133137399 after
+publication/comparisons; its executable is ABSENT, producer/raw observations kept.
+Current5d43 and the separately pending optimized21f remain available.

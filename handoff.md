@@ -45,7 +45,10 @@ nominal method. Later adapter projection failures stay separate. ProgressSHA
 Postcheck1794422695891811776 verifies722/375opens/six/immutable/current3906/profile/
 limits. NOcompletecensus/originalartifact; partialcounts NOTthroughput. NEXT reduce
 actual first adapter call; do not extend120s or repeat for longer prefix alone.
-Full semantic successor due after publication and fresh no-active-full check.
+Published D1 2c13e1cff; FULL43081009696 ACTIVE EXACT2c13e1cff3fa3cca23410d35efab337621251aa2/source5cd41810b,
+after fresh no-active-full check. Never restart for docs/input descendants.
+Comparison0912 explicitly retired1794422858133137399 AFTER publication/comparisons:
+executable ABSENT, producer/raw retained. Current5d43+optimized21f remain available.
 Keep all requirements below. Smaller bounded reservations11–12GiB fit approved16;
 resource reserve150GiB and compilerbudgets unchanged.
 
