@@ -1,0 +1,122 @@
+{
+  "schema": 1,
+  "compiler_source": "004ae71e9ee5d3415612c35c3fb168338d8c66ab",
+  "candidate_sha256": "00d205dc7bab488fbdadc5064be2d421947f9bdc3dd573f1c5691175faa8fc3e",
+  "producer_sha256": "11b08cb49248ea4bf3597773eb149c3d2eca16b694309836351e6bb86dbe6d7d",
+  "compiler_source_hash_count": 3901,
+  "source_packet": {
+    "manifest_sha256": "095702c2d79f60d8ab43d29e945ba0d4ef7b5de24ecd51777bf065a70dd23187",
+    "independent_accepts": 10,
+    "independent_rejects": 4,
+    "typed_language_cases": 14,
+    "ordinary_pa18_controls": 3,
+    "actual_ctfe_value": 47,
+    "independent_rust_native_count": 2,
+    "candidate_native_required_positives_pending": 2,
+    "candidate_native_pending_reason": "Installed genuine source panic signature/caller/runtime routing, not implemented or waived here"
+  },
+  "receipts": {
+    "final_language_ctfe_guard": {
+      "path": "obj/qualification/fast/1794384185094759145/receipt.json",
+      "sha256": "32f4b510898c5958bb5e738533bbcfffffcfd240ab52c3d4d080584aa97ef431"
+    },
+    "earlier_controls_and_retained_native_failure": {
+      "path": "obj/qualification/fast/1794383015766934024/receipt.json",
+      "sha256": "4000f036bb47d1aa7d82937f548260c1d08ce793761a22225e17934000a2dd82"
+    },
+    "existing_native_controls": {
+      "path": "obj/qualification/fast/1794384358973196561/receipt.json",
+      "sha256": "adf5d5f91c365bda16acc753f0bc25c017f1eb64692f06db461cb48fb9a3309b"
+    }
+  },
+  "existing_native_control_observers": 7,
+  "source_panic_guard_regression_passed": true,
+  "checks": {
+    "independent_source_inputs": 14,
+    "independent_accepts": 10,
+    "independent_rejects": 4,
+    "existing_pa18_ordinary_controls": 3,
+    "independent_rust_native": 2,
+    "candidate_typed_contracts": 14,
+    "actual_ctfe_value": 47,
+    "candidate_native_required_positives_pending": 2,
+    "source_panic_guard_not_waived": true,
+    "checks": {
+      "upstream": {
+        "status": 0,
+        "log_sha256": "19edc114e22639322b3ce9f0bcda582a6fc7d9641501c9a6ac1deca7ce08d175"
+      },
+      "harness": {
+        "status": 0,
+        "log_sha256": "f690ce11d145937afc2ac7fe4f8a82ecbee8f33cae433c687c5bd512fb5eb049"
+      }
+    },
+    "no_oracles_or_backend_changes": true
+  },
+  "pinned_host": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.0\nLLVM version: 22.1.8\n",
+  "measurements": {
+    "pins": [
+      "9109d6559285c010f3589bf28ed1420f734cbceff94cddb4290ca9d7f8a9af6e",
+      "00d205dc7bab488fbdadc5064be2d421947f9bdc3dd573f1c5691175faa8fc3e"
+    ],
+    "rows": 20,
+    "complete_output_equality": true,
+    "summary": {
+      "import-control": {
+        "seconds": {
+          "aa_ratio": 0.5760590037983199,
+          "paired_geomean_candidate_over_base": 0.989752299003613
+        },
+        "cpu_seconds": {
+          "aa_ratio": 0.5768933912204532,
+          "paired_geomean_candidate_over_base": 0.9915289868886038
+        }
+      },
+      "custom-key": {
+        "seconds": {
+          "aa_ratio": 1.4345909393636977,
+          "paired_geomean_candidate_over_base": 0.9980604508274307
+        },
+        "cpu_seconds": {
+          "aa_ratio": 1.4335053262316901,
+          "paired_geomean_candidate_over_base": 0.9976899366877825
+        }
+      }
+    },
+    "no_optimized_or_core_speed_claim": true
+  },
+  "original": {
+    "infrastructure_failure": true,
+    "error": "original-core observer deadline",
+    "total_seconds": 121.46911960002035,
+    "partial_progress": {
+      "analysis_only": true,
+      "complete_census": false,
+      "records": 198,
+      "last_item": "item\tfunction\t10445\tfile 282:35667\tnode 1125"
+    },
+    "first_records": [
+      "record\t1\tbodies\tfailed\tfunction `try_from_fn_erased`\tfile 98:31073\t-\tcandidate properties require associated type normalization",
+      "record\t2\tbodies\tfailed\tfunction `default`\tfile 113:12567\t-\ttrait obligation requires an unambiguous matching assumption or implementation",
+      "record\t3\tbodies\tfailed\tfunction `replace`\tfile 112:35607\t-\tincompatible types"
+    ],
+    "progress_sha256": "330acd717cf9ce19fd5161ceac824416dbd12e218fc4926b9e2a5525a13ef505",
+    "postcheck_log_sha256": "fb704c521c08d25866824136db87af9380b27cc290f4542150da38d5588dd626",
+    "all722_sources_immutable": true,
+    "opened_source_count": 375,
+    "config_bindings": 6,
+    "profile_limits_unchanged": true,
+    "array_each_ref_mut_failures_absent_from_reached_prefix": true,
+    "no_complete_census_or_artifact": true
+  },
+  "prior_full_ci": {
+    "run": 42979017824,
+    "head": "8aa27348d2078a787ad2bcf78f70f6b7f42c444d",
+    "status": "success"
+  },
+  "current_full_ci": "Due after publication; no active predecessor full run at last query",
+  "no_generated_course_oracles": true,
+  "backend_unchanged": "17b024f69",
+  "storage_py_unchanged": true,
+  "evidence_root": "obj/parallel/symbolic-index"
+}

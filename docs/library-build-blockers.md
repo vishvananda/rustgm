@@ -1,17 +1,21 @@
 # Library build blocker tracker
 
-The current [implicit Deref receiver checkpoint](pa26-implicit-deref-methods.md),
-compiler5f78ed963/CLI9109d655, clears the reached array iterator len/is_empty
-failures. The unchanged120s observer times out at121.42045s with187 partial
-diagnostics throughfunction7853,file227:4711. First now each_ref/each_mut at
-array/mod.rsfile98:24013/25143, const-stable API policy at builtin indexing.
-Next try_from_fn_erased projection normalization is separate. All722 hashes,
-375 opens,six bindings,profile/limits remain unchanged. No original artifact or
-complete census exists. See handoff.md for the next reductions, exact evidence
-and retained128-layer inference/const-adapter/bootstrap/cleanup requirements.
+The current [symbolic source-index checkpoint](pa31-symbolic-index.md), compiler
+004ae71e9/CLI00d205dc, clears reached each_ref/each_mut const-stable failures by
+classifying existing ArrayTerm with fixed arrays/slices after real proof. All14
+source language contracts,3 existing PA18 controls,actualCTFE47/realboundsnegative
+and source panic guards pass. Both new Rust/C native companions remain required
+candidate artifacts pending genuine panic routing; existing7native controls pass.
+The unchanged120s original observer times out121.46912s with198 partial records
+throughfunction10445,file282:35667. First now try_from_fn_erased98:31073 at
+guard.array_mut.len(): candidate properties require associated type normalization.
+All722hashes/375opens/sixbindings/profilelimits remain unchanged. No complete
+census/body count/throughput/artifact. See handoff.md for current reductions and
+all retained requirements. Full42979017824 on exact8aa passed every stage,
+qualifying the preceding source5f78ed963; the new004 semantic successor is due.
 
-The preceding const-adapter checkpoint and its original observation follow as
-historical evidence; the current frontier above supersedes their next-step text.
+Earlier const-adapter/implicit receiver observations below are historical;
+the current frontier above supersedes their next-step text.
 
 [Conditional const adapter defining proofs](pa25-const-adapter-reductions.md)
 are the current checkpoint, compilerd1d55648b+27cef3f64. The existing scoped

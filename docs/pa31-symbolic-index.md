@@ -40,3 +40,19 @@ retain actual custom/explicit calls, source const values, unsized places and
 ordered effects. This is regression evidence, not native qualification for the
 two pending new companions. Upstream/hash/harness checks and the next immutable
 original-core observation are recorded in the handoff and raw evidence.
+
+Immutable CLI00d205dc7bab488fbdadc5064be2d421947f9bdc3dd573f1c5691175faa8fc3e
+binds004ae71e9, empty tracked build diff and3901 Rust source hashes. Twenty
+same-profile exclusive A/A+twoABBA control observations preserve complete output
+equality; noisy timings support no speed/neutrality claim.
+
+The unchanged120s original observer times out at121.46912s with198 partial records
+throughfunction10445,file282:35667. Reached each_ref/each_mut failures are absent;
+first now try_from_fn_erased98:31073, associated-type normalization at
+`guard.array_mut.len()`. All722 hashes,375 opens,six bindings and original
+profile/limits remain unchanged. ProgressSHA
+330acd717cf9ce19fd5161ceac824416dbd12e218fc4926b9e2a5525a13ef505.
+[Machine evidence](pa31-symbolic-index-evidence.json) binds these finite results.
+No complete census/body count/throughput/original artifact is claimed. Full prior
+42979017824 on8aa27348d passed every stage; new source successor qualification
+remains due after publication.

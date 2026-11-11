@@ -7,89 +7,105 @@ The goal remains original core, then alloc/std. No original library artifact exi
 
 ## Current checkpoint and original-core frontier
 
-[Implicit Deref method receivers](docs/pa26-implicit-deref-methods.md), compiler
-5f78ed963, now execute actual source Deref/DerefMut chains before the final method.
-They reuse existing field access storage and all normal source/generic/region/
-const/stability/capture/borrow proofs. Explicit generic method arguments remain
-separate from implicit calls. The operand is evaluated once before arguments.
-Operation16, Methods::Call20, Plan64, Calls8, Step40 and cold selection12 remain;
-no dense fields, global caches, limits, backend or storage.py changes.
+[Symbolic source indexing](docs/pa31-symbolic-index.md), compiler004ae71e9,
+adds the existing ArrayTerm constructor to the shared builtin-index classifier.
+Actual role/implementation/const-effect proof, exact usize input and element
+Output checks remain mandatory. Existing IndexParameter, mutable places, bounds
+and source-context consumers are reused. No stability exception, new cache,
+representation, compiler limit, backend or storage.py change.
 
-PA26 keeps7 ordinary requirements; bootstrap Deref imports still block positives.
-PA31 now has42 independently checked source inputs,35 accepts/7 rejects. Forty
-finite checked-body contracts pass:36 functional and4 depth/noise cases. Real
-Rust/C and RustGM/CPPGM native outputs agree: receiver23/41 and ordered trace
-23/125/41/134625. Actual constants23/41, generic method arguments, captures,
-priority and paid/unpaid bound/lifetime/move/borrow/const checks pass. The two
-128-layer generic-chain positives remain required. Tested noise0 exhausts the
-existing inference budget; noise128 is not qualified. At8/32, canonical work
-1513/5185 is linear and inference14674/192018 quadratic; noise128 changes neither.
-Do not call the failing128 case a language rejection or whole packet success.
+The PA31 packet has14 independent source inputs:10 accepts/4 rejects. All14
+language/type/body contracts pass, alongside three existing PA18 ordinary read/
+write/reference controls and actual generic CTFE47. The out-of-bounds opponent
+fails for length2/index2, not const policy or a resource guard. Both new native
+companions are REQUIRED POSITIVES: real Rust/C prints41/23/47/23/41/23/23/47;
+RustGM source analysis and CTFE47 pass, but demanded native LowIR stops at the
+existing checked source panic signature/caller/runtime routing boundary. Both
+concrete-wrapper and generic-helper reductions retain that boundary. Do not
+remove the hook, waive the guard, invert these positives or claim candidate
+native parity. The existing7 native indexing observers pass separately.
 
-Immutable CLI9109d6559285c010f3589bf28ed1420f734cbceff94cddb4290ca9d7f8a9af6e
-is Bobj/parallel/array-receiver/candidate-dev-fast/rustgm. Producer binds5f78ed963,
-empty whole tracked diff at build,3900 Rust source hashes. Forty exclusive
-same-profile A/A+twoABBA observations retain complete output equality for ordinary
-import/result LowIR, direct source methods and ordinary source Deref. Unoptimized
-wall ratios.746/1.016/.941/.919 are noisy; no speed/neutrality/core claim.
+Immutable CLI00d205dc7bab488fbdadc5064be2d421947f9bdc3dd573f1c5691175faa8fc3e
+is Bobj/parallel/symbolic-index/candidate-dev-fast/rustgm. Producer binds004ae71e9,
+empty whole tracked diff at build,3901 Rust source hashes. Twenty exclusive
+same-profile A/A+twoABBA observations preserve complete import LowIR and source
+custom-key type output equality. Wall ratios.990/.998 and A/A.576/1.435 are noisy;
+no speed, neutrality or whole-core claim. Current9109 comparison pin can retire
+once this checkpoint is published; keep current00d2 and older optimized21f.
 
-The unchanged120s original-core observer still FAILS its deadline at121.42045s.
-It retains187 partial diagnostics throughfunction7853,file227:4711,node313.
-ProgressSHAaae1f21d89790cb17f1ffa01539b3d90951c8253ec3faf505c1364313791c3c8.
+The unchanged120s original-core observer still FAILS its deadline at121.46912s.
+It retains198 partial diagnostics throughfunction10445,file282:35667,node1125.
+ProgressSHA330acd717cf9ce19fd5161ceac824416dbd12e218fc4926b9e2a5525a13ef505.
 All722 source hashes,375 opened files,six bindings,profile and limits verified
-unchanged afterward. No file102 array iterator len/is_empty or file95 wrap_mut
-failure remains in this reached prefix. First failures are now each_ref/each_mut
-at array/mod.rsfile98:24013/25143: const-stable body calls a function without
-const-stable API policy. Both locations are array indexing expressions. The next
-try_from_fn_erased projection-normalization record atfile98:31073 is separate.
-No complete census, body count, throughput or original artifact is claimed.
+unchanged afterward. The reached each_ref/each_mut98:24013/25143 failures are
+absent, as are earlier file102len/is_empty and file95wrap_mut failures. First now
+try_from_fn_erased,array/mod.rsfile98:31073: candidate properties require
+associated type normalization. The location is guard.array_mut.len(), not the
+Guard initializer or generator branch. Later Option default113:12567 and replace/
+clone112 records are separate. No complete census/body count/throughput/artifact.
 
 ## Continue here
 
-Reduce ordinary and staged actual-source array/slice usize indexing in const-stable
-bodies, including mutable assignment and raw borrows, before a kernel change.
-Inspect existing source-index-places contracts: exact proved builtin indexing is
-erased after real source role/impl/effect proof; custom index/output cases remain
-real calls. Reuse that typed classification when determining actual API-call
-policy. This is an investigation hypothesis, not permission to skip const, source,
-unsafe, borrow or implementation checks. Choose earliest owning PA from each
-minimal input and preserve expected outcomes before independent checks. Keep
-try_from_fn_erased and later Option/default/replace families separate.
+Freeze ordinary associated-output wrapper/slice method reductions before a kernel
+change. Test conditional Copy/Clone vs no-Copy declarations, concrete vs associated
+outputs, explicit caller bounds and direct controls. Source MaybeUninit/const Try
+counterparts belong in PA31 only if needed. Choose earliest ownership from actual
+minimal features; ordinary associated relationships generally belong to PA20.
+Reuse existing ordinary fixtures if they already express the full contrast.
 
-Focused evidence remains Bobj/parallel/array-receiver. Passing named controls are
-in1794379018015906478,1794380127522383238,1794380243985419751 and
-1794380572512005089; the latter batches also retain failed scaling attempts.
-Final finite scaling1794380763860385209 PASS; native1794380820997909008 all3
-selected groups PASS36.80s. Strict selected Clippy/fullfmt/audit pass. Manifest,
-upstream128/Reference126 and315 harness/468roots/13bins/44stages passchecks-final2.
-No course oracles. Post-observer verification1794381376904819178 passes.
-The machine evidence is docs/pa26-implicit-deref-methods-evidence.json.
+types/infer/properties.rs::Query computes Sized,Copy,Clone together after isolated
+candidate equations. A resolved constructed Projection without an opaque mark
+produces the current error. methods/selection/applicability.rs::builtin_requirements
+uses that full Query even for a Sized obligation. Slice len's T is
+MaybeUninit<R::Output>; conditional Copy may force an irrelevant projection walk,
+or normalization/rigid marks may be missing in the isolated probe. These are
+investigation hypotheses. Preserve real caller/scoped projection evidence,
+negative candidate ordering and final trait/region/const/body proofs. Possibility
+filters never authorize a call. Do not replace normalization failures with a
+blanket permission or add another proof engine. Keep later Option families separate.
 
-Full42966631710 on EXACT a1c3d961c passed every fast/release/course/native/debug/
-independent/PA25 stage, qualifying the preceding const-adapter source. The new
-implicit receiver publication needs its successor full CI. Wait for any active
+Source checkpoint evidence is Bobj/parallel/symbolic-index. Final public
+1794384185094759145 PASS3exact2targets51.67s (14language+3PA18+CTFE47+guard).
+Earlier1794383015766934024 passes existing73source-index/canonical-work/const-slice/
+ordinary-source and primitive/mutable controls; its new native attempt fails at
+the retained guard runtime. Nativecontrol1794384358973196561 passes7old observers
+in45.71s. Strict selected Clippy/fullfmt/audit pass. Manifest/input hashes,
+upstream128/Reference126 and315 harness/468roots/13bins/44stages pass. Actual
+Rust1.98.0/88d9e12ae hostx86_64-unknown-linux-gnu is recorded. No course oracles.
+Post-observer1794385451286756961 verifies all pins/source/profile/opens unchanged.
+Machine evidence: docs/pa31-symbolic-index-evidence.json.
+
+Full42979017824 on EXACT8aa27348d PASSED every fast/release/course/native/debug/
+independent/PA25 stage, qualifying the prior implicit receiver source5f78ed963.
+The new004 semantic publication needs its successor full CI. Wait for any active
 full run before dispatching; never cancel/restart for documentation descendants.
 
 ## Retained requirements and resource rules
 
-- Generic-chain128 and total inference sharing stay required alongside optimized
-  nested-proof A/A+ABBA and release-stack checks. Keep older optimized21f pinned;
-  avoid cold private/release links in the local five-minute loop.
-- The preceding d1d55648b+27cef3f64 const-adapter checkpoint remains qualified:
-  scoped defining const clauses and bounded local-child completion preserve every
-  ordinary formation, signature, scope and lifetime debt. Its PA25 packet10 and
-  PA31 packet31 retain four ordinary bootstrap positives and three actual-source
-  runtime/CTFE execution positives. Runtime-self/runtime-forward typecheck but
-  LowIR still stops at actual callable ownership; CTFE-self still stops at formal
-  order preparation. General conditional function items, bootstrap/imports and
-  authenticated transport remain required. Do not invert these valid positives.
+- The [implicit receiver checkpoint](docs/pa26-implicit-deref-methods.md) retains
+  full source/generic/region/const/stability/capture/borrow proofs and one operand
+  evaluation. Its PA31 Deref packet42 has40 qualified finite contracts and2 valid
+  128-layer positives pending inference sharing. Canonical work at8/32 is linear;
+  total inference is quadratic, noise128unchanged. No budget raise or negative
+  language qualification. PA26's7 ordinary requirements still need bootstrap
+  imports. Operation16/MethodsCall20/Plan64/Calls8/Step40/coldselection12 remain.
+- Keep optimized nested-proof A/A+ABBA/release-stack checks and older optimized21f
+  pinned; avoid cold private/release links in the local five-minute loop.
+- Prior d1d55648b+27cef3f64 const-adapter scoped defining proofs/local-child
+  completion remain qualified. Its PA25 packet10 and PA31 packet31 retain four
+  ordinary bootstrap positives and three source runtime/CTFE execution positives.
+  Runtime-self/runtime-forward typecheck but LowIR still stops at callable owner;
+  CTFE-self still stops at formal order preparation. General conditional function
+  items, bootstrap/imports and authenticated transport remain required.
 - Three older tuple-factory cleanup-owner cases remain required. Whole PA25–PA44
-  stay planned; earlier implemented finite releases retain their recorded scope.
-- Main never builds. Single worker, existing B, no new worktrees/agents or CPPGM/v5
+  stay planned; earlier finite releases retain their recorded scope. Genuine
+  source panic runtime routing is required for the two new native artifacts and
+  final core artifacts. No frontend/body/abort substitution is authorized.
+- Main never builds. Single worker, existing B, no new worktrees/agents/CPPGM/v5
   edits. Backend remains17b024f69. Every heavy command uses storage/resource guards,
   jobs2,16GiB output cap,150GiB reserve and <=300s feedback. Never raise the120s
-  core observer window or compiler limits. Preserve inputs/raw receipts; retire
-  obsolete pins explicitly and prune scoped output only at an idle boundary.
+  observer window or compiler limits. Preserve input/raw receipts; retire pins
+  explicitly and prune scoped output only at an idle boundary.
 
 [PA19implementedtraitscope](docs/pa19-implemented-trait-scope.md) remains published
 with34newoutcomes/25native/all1233texts andzeroexistingreferencechanges. The prior
