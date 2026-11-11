@@ -1,5 +1,15 @@
 # Interrupted core analysis retains diagnostic progress
 
+The 2026-11-11 extension emits `item\timplementation` before each source
+trait implementation's conformance check. It uses the existing typed observer,
+definition and AST location; it supplies no semantic facts or permission. This
+covers declaration work that precedes body events. Focused receipt
+1794413794013879880 passes three exact tests, including an actual implementation
+location before body progress and byte-identical final tables with and without
+the observer. Strict selected Clippy, full formatting and architecture pass.
+The earlier selection attempt used an invalid suite prefix and executed no test;
+its failed receipt remains under obj/parallel/refcell-coercion/progress-check.log.
+
 Compiler9482507e3 adds an optional typed census observer and the CLI option
 `--census-progress PATH`. A fresh, flushed stream records the source map,
 item attempts and reached failure records. Its header explicitly says

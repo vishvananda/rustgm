@@ -225,6 +225,7 @@ fn write_progress(output: &mut impl Write, event: Progress<'_>) -> io::Result<()
             offset,
         } => {
             let kind = match kind {
+                ItemKind::Implementation => "implementation",
                 ItemKind::Function => "function",
                 ItemKind::Initializer => "initializer",
             };

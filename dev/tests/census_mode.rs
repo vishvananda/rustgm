@@ -709,7 +709,7 @@ fn a_lookahead_selection_over_a_complete_matching_set_selects_as_ordinary_checki
 fn incremental_progress_preserves_reached_records_and_the_unchanged_final_table() -> Result {
     let input = input(
         "progress",
-        "fn a()->bool{0}fn b()->u8{false}fn fine()->u8{7}",
+        "trait T{}struct S;impl T for S{}fn a()->bool{0}fn b()->u8{false}fn fine()->u8{7}",
     )?;
     let baseline = census("--emit-types", &input, "without-progress", &[])?;
     let path = input.with_extension("partial.tsv");
@@ -727,6 +727,15 @@ fn incremental_progress_preserves_reached_records_and_the_unchanged_final_table(
             .starts_with("rustgm-census-progress\t1\tpartial-analysis-only\tnot-a-qualification\n")
     );
     assert_eq!(records(&progress), records(&baseline));
+    let implementation = progress
+        .lines()
+        .find(|line| line.starts_with("item\timplementation\t"))
+        .ok_or("implementation progress")?;
+    let offset = fs::read_to_string(&input)?
+        .find("impl T for S")
+        .ok_or("implementation source")?;
+    assert!(implementation.contains(&format!("\tfile 0:{offset}\t")));
+    assert!(progress.find(implementation) < progress.find("item\tfunction\t"));
     assert_eq!(
         progress
             .lines()

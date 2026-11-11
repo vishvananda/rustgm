@@ -4,6 +4,7 @@ use crate::resolve::{expansion::Report, model::DefId, package::Error, unit::Node
 
 #[derive(Clone, Copy, Debug)]
 pub enum ItemKind {
+    Implementation,
     Function,
     Initializer,
 }

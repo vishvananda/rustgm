@@ -85,6 +85,14 @@ impl Checker<'_> {
                 self.imported_conformance(owner, predicate)?;
                 continue;
             };
+            if let Some(ledger) = self.census.as_deref_mut() {
+                ledger.census.progress_item(
+                    self.report,
+                    crate::sema::census::ItemKind::Implementation,
+                    owner,
+                    Some(source),
+                )?;
+            }
             self.validate_impl_owner(
                 owner,
                 source,
