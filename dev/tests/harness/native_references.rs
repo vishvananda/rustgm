@@ -94,7 +94,7 @@ pub fn check_cases_with(
     cases: &[(&str, &str, bool)],
     frontend: impl Fn(&str, &Path) -> Result<Vec<u8>, Box<dyn std::error::Error>>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    check_inputs(suite, cases, true, frontend)
+    check_inputs(suite, cases, true, false, frontend)
 }
 /// Literal sources retain leading crate attributes and their independently frozen bytes.
 #[allow(
@@ -105,7 +105,7 @@ pub fn check_literal_cases(
     suite: &str,
     cases: &[(&str, &str, bool)],
 ) -> Result<(), Box<dyn std::error::Error>> {
-    literal_cases(suite, cases, false)
+    literal_cases(suite, cases, false, false)
 }
 /// Compilation/runtime qualification explicitly defers advisory producer parity.
 /// Hard frontend errors, backend diagnostics and runtime outcomes remain strict.
@@ -117,14 +117,26 @@ pub fn check_literal_cases_capped(
     suite: &str,
     cases: &[(&str, &str, bool)],
 ) -> Result<(), Box<dyn std::error::Error>> {
-    literal_cases(suite, cases, true)
+    literal_cases(suite, cases, true, false)
+}
+/// Explicit unstable-language profile, limited to the independent rustc child.
+#[allow(
+    dead_code,
+    reason = "the shared harness is also compiled in suites without unstable-language native cases"
+)]
+pub fn check_literal_cases_bootstrap(
+    suite: &str,
+    cases: &[(&str, &str, bool)],
+) -> Result<(), Box<dyn std::error::Error>> {
+    literal_cases(suite, cases, true, true)
 }
 fn literal_cases(
     suite: &str,
     cases: &[(&str, &str, bool)],
     cap: bool,
+    bootstrap: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    check_inputs(suite, cases, false, |_, path| {
+    check_inputs(suite, cases, false, bootstrap, |_, path| {
         let mut command = Command::new(env!("CARGO_BIN_EXE_rustgm"));
         command.arg("--emit-lowir");
         if cap {
@@ -146,7 +158,7 @@ pub fn check_literal_cases_with_warnings(
         .iter()
         .map(|&(name, body, panic, _)| (name, body, panic))
         .collect();
-    check_inputs(suite, &sources, false, |_, path| {
+    check_inputs(suite, &sources, false, false, |_, path| {
         let name = path
             .file_stem()
             .and_then(|name| name.to_str())
@@ -171,6 +183,7 @@ fn check_inputs(
     suite: &str,
     cases: &[(&str, &str, bool)],
     prefix: bool,
+    bootstrap: bool,
     frontend: impl Fn(&str, &Path) -> Result<Vec<u8>, Box<dyn std::error::Error>>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -187,11 +200,17 @@ fn check_inputs(
         };
         std::fs::write(&path, &source)?;
         let independent = folder.join(format!("{name}.rustc"));
+        let mut rustc = Command::new("rustc");
+        rustc.arg("+1.98.0");
+        if bootstrap {
+            rustc
+                .env("RUSTC_BOOTSTRAP", "1")
+                .args(["-Cdebug-assertions=no", "-Copt-level=0"]);
+        }
         compile(
             name,
-            Command::new("rustc")
+            rustc
                 .args([
-                    "+1.98.0",
                     "--edition=2024",
                     "--crate-name=probe",
                     "--cap-lints=allow",

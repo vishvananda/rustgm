@@ -1,0 +1,53 @@
+{
+  "state": "Independent outcomes and complete outputs reviewed before generating only new references",
+  "candidate_sha256": "05cc3029540dc069cf360821f180521d74278c5f5986a8e8e69255dc7955def5",
+  "cases": [
+    {
+      "stage": "pa19",
+      "path": "tests/spec/callback-formation/pointer-return.rs",
+      "source_sha256": "29c98cef0c3f0a54e77205ce1dc95aa3d23991567252c6c52036054d0967f4e5",
+      "status": 0,
+      "stdout_sha256": "ce8d7b0d1ccfaeeb9b7f26f09ae68940a9e95caefaf31540b95144e22e410156",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "review": "Two-function empty main graph, matching definition/entry IDs; unused generic declaration bodies still checked"
+    },
+    {
+      "stage": "pa19",
+      "path": "tests/spec/callback-formation/pointer-runtime.rs",
+      "source_sha256": "8f3ef9a4ba1a41464bc8e894a059a74953ad96038fec13067f0eb89b961ab772",
+      "status": 0,
+      "stdout_sha256": "8ba95aef1e5e924b3f528c4666072c4bfc0d86b9de0240c73b50bd29844943b1",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "review": "Two-function empty main graph, matching definition/entry IDs; unused generic declaration bodies still checked"
+    },
+    {
+      "stage": "pa19",
+      "path": "tests/spec/callback-formation/unpaid-creation.rs",
+      "source_sha256": "008b3483f19c23e1f0b1d2b7f802b9461c248a6570abf1b119d95efec5f0ff4f",
+      "status": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "abcfe58b48114707da5dae5c515bf7e9abdaedf75bf4468df25c4339180e588a",
+      "review": "Genuine missing trait bound"
+    },
+    {
+      "stage": "pa24",
+      "path": "tests/spec/callback-formation/generic-runtime.rs",
+      "source_sha256": "66f102debbc52a4551470c8357416b2576c24132df470dc2a60c93040a71360c",
+      "status": 0,
+      "stdout_sha256": "0036e8dc705d1e7b8317de9d3d4f672064a3e9cafa5630cbc497462e9a72386a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "review": "Two-function empty main graph, matching definition/entry IDs; unused generic declaration bodies still checked"
+    },
+    {
+      "stage": "pa24",
+      "path": "tests/spec/callback-formation/trait-runtime.rs",
+      "source_sha256": "90418e0ae18f476f50d37be3aa2866240cbcb513004bc855b8550c011dbb25c9",
+      "status": 0,
+      "stdout_sha256": "d48ade190222b5a76623aec6f6652db3daeae838cc37e087e257b310be50809d",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "review": "Two-function empty main graph, matching definition/entry IDs; unused generic declaration bodies still checked"
+    }
+  ],
+  "private_ids": "Only the definition-to-entry identity relation is observable here; no name-mode numbering authority",
+  "old_oracles_snapshot_sha256": "1bfbc15221c339eb7629ee67ec3280be2eb15169f8a3ca30e74163821a851024"
+}

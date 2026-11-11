@@ -1,0 +1,739 @@
+{
+  "schema": 1,
+  "state": "Independent object outcomes frozen before implementation; no whole assignment activation",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "crate_type": "lib",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0,
+    "cap_lints": "allow"
+  },
+  "inputs": [
+    {
+      "name": "pointer-const",
+      "sha256": "d81565fc09fc6baa6c563875db5baec3701840c2fdcdb6b8ef9c8fa30740b95f",
+      "earliest_pa": 25,
+      "contract": "Const constructor stores ordinary function pointer; callback is not invoked.",
+      "bootstrap": null,
+      "candidate_phase_requirement": "full LowIR; preserve separate type and lowering observations",
+      "original_path": "obj/parallel/lazy-default/inputs/pointer-const.rs",
+      "path": "pa25/tests/spec/callback-formation/pointer-const.rs",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "qualification": "required declared outcome",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "generic-const",
+      "sha256": "01c82e3f4f72fe31d62dd6ac81307fa9bf49069cbce1d5cc69c65c85c503fe5f",
+      "earliest_pa": 25,
+      "contract": "Const constructor stores callback under ordinary FnOnce bound.",
+      "bootstrap": null,
+      "candidate_phase_requirement": "full LowIR; preserve separate type and lowering observations",
+      "original_path": "obj/parallel/lazy-default/inputs/generic-const.rs",
+      "path": "pa25/tests/spec/callback-formation/generic-const.rs",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "qualification": "required declared outcome",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "generic-typed",
+      "sha256": "dc5600c137ad0a10c90aee95ad89d9787e411f7d075cab1b60286befe42a7aec",
+      "earliest_pa": 25,
+      "contract": "Explicit pointer binding precedes constructor inference.",
+      "bootstrap": null,
+      "candidate_phase_requirement": "full LowIR; preserve separate type and lowering observations",
+      "original_path": "obj/parallel/lazy-default/inputs/generic-typed.rs",
+      "path": "pa25/tests/spec/callback-formation/generic-typed.rs",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "qualification": "required declared outcome",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "generic-explicit",
+      "sha256": "f1f15281d926621b5cf3e06fa180b23e2bfa65d904ac8e1946fa3481f0f0bcd8",
+      "earliest_pa": 25,
+      "contract": "Explicit constructor arguments select function pointer.",
+      "bootstrap": null,
+      "candidate_phase_requirement": "full LowIR; preserve separate type and lowering observations",
+      "original_path": "obj/parallel/lazy-default/inputs/generic-explicit.rs",
+      "path": "pa25/tests/spec/callback-formation/generic-explicit.rs",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "qualification": "required declared outcome",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "generic-qualified",
+      "sha256": "ac1f70f43e720faf7c09d5db502f12f79a0f938fc8d55da30102655de0aea30d",
+      "earliest_pa": 25,
+      "contract": "Qualified trait path must agree with shorthand.",
+      "bootstrap": null,
+      "candidate_phase_requirement": "full LowIR; preserve separate type and lowering observations",
+      "original_path": "obj/parallel/lazy-default/inputs/generic-qualified.rs",
+      "path": "pa25/tests/spec/callback-formation/generic-qualified.rs",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "qualification": "required declared outcome",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "trait-const",
+      "sha256": "9148ce884c15153c64ec42671abd28fa3ae0d1d878281f6f7d98f87e1614d466",
+      "earliest_pa": 25,
+      "contract": "Conditional impl has ordinary T bound and only creates initializer.",
+      "bootstrap": "1",
+      "candidate_phase_requirement": "full LowIR; preserve separate type and lowering observations",
+      "original_path": "obj/parallel/lazy-default/inputs/trait-const.rs",
+      "path": "pa25/tests/spec/callback-formation/trait-const.rs",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "qualification": "required declared outcome",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "trait-const-typed",
+      "sha256": "fb4c2c05c07ced41e01da319e499f692e4e8e313056e63fe33b96d4736f6b92d",
+      "earliest_pa": 25,
+      "contract": "Conditional impl with explicit callback binding.",
+      "bootstrap": "1",
+      "candidate_phase_requirement": "full LowIR; preserve separate type and lowering observations",
+      "original_path": "obj/parallel/lazy-default/inputs/trait-const-typed.rs",
+      "path": "pa25/tests/spec/callback-formation/trait-const-typed.rs",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "qualification": "required declared outcome",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "trait-const-explicit",
+      "sha256": "7372f90181458bd8d423008e354e3863db291209cc45c8fc441fc3e8ac54eca4",
+      "earliest_pa": 25,
+      "contract": "Conditional impl with explicit receiver arguments and qualified callback.",
+      "bootstrap": "1",
+      "candidate_phase_requirement": "full LowIR; preserve separate type and lowering observations",
+      "original_path": "obj/parallel/lazy-default/inputs/trait-const-explicit.rs",
+      "path": "pa25/tests/spec/callback-formation/trait-const-explicit.rs",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "qualification": "required declared outcome",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "conditional-pointer",
+      "sha256": "b91a358c190755db05e196d1281030773f4316faaa2755b24692a28bf4f62911",
+      "earliest_pa": 25,
+      "contract": "Ordinary bound suffices to form pointer to conditional trait function.",
+      "bootstrap": "1",
+      "candidate_phase_requirement": "full LowIR; preserve separate type and lowering observations",
+      "original_path": "obj/parallel/lazy-default/inputs/conditional-pointer.rs",
+      "path": "pa25/tests/spec/callback-formation/conditional-pointer.rs",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "qualification": "required declared outcome",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "unpaid-const-call",
+      "sha256": "bc6b52d4fd3489c517bb13942174981fe8be70d9676f59063ce7d33e9452c41b",
+      "earliest_pa": 25,
+      "contract": "Actual const invocation requires const Factory bound.",
+      "bootstrap": "1",
+      "candidate_phase_requirement": "full LowIR; preserve separate type and lowering observations",
+      "original_path": "obj/parallel/lazy-default/inputs/unpaid-const-call.rs",
+      "path": "pa25/tests/spec/callback-formation/unpaid-const-call.rs",
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "qualification": "required declared outcome",
+      "expected_types_status": 1,
+      "candidate_phases": {
+        "types": 1,
+        "lowir": 1,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "paid-const-call",
+      "sha256": "c54127fa6d212999527de63ba9792166bcb6a03abae6fcdbde3039a89d28c89c",
+      "earliest_pa": 25,
+      "contract": "Actual const invocation has required conditional Factory bound.",
+      "bootstrap": "1",
+      "candidate_phase_requirement": "full LowIR; preserve separate type and lowering observations",
+      "original_path": "obj/parallel/lazy-default/inputs/paid-const-call.rs",
+      "path": "pa25/tests/spec/callback-formation/paid-const-call.rs",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "qualification": "required declared outcome",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "conditional-runtime",
+      "sha256": "6c8776164b8b3ba29a6caebf34569c4f582d7a6dbfd636fbe7ed9f689e50f3be",
+      "earliest_pa": 25,
+      "contract": "Runtime formation of conditional trait callback.",
+      "bootstrap": "1",
+      "source_mode": false,
+      "candidate_phase_requirement": "full LowIR; type and body errors retained separately",
+      "original_path": "obj/parallel/lazy-default/inputs/conditional-runtime.rs",
+      "path": "pa25/tests/spec/callback-formation/conditional-runtime.rs",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "qualification": "required declared outcome",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "alias-unpaid",
+      "sha256": "9b7d499af7c8e37908fb3cae84aaa7be5680f95daf89340adf816b60489149d3",
+      "earliest_pa": 25,
+      "contract": "An inferred function-item local must pay actual const invocation.",
+      "bootstrap": "1",
+      "source_mode": false,
+      "candidate_phase_requirement": "full LowIR; type and body errors retained separately",
+      "original_path": "obj/parallel/lazy-default/inputs/alias-unpaid.rs",
+      "path": "pa25/tests/spec/callback-formation/alias-unpaid.rs",
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "qualification": "required declared outcome",
+      "expected_types_status": 1,
+      "candidate_phases": {
+        "types": 1,
+        "lowir": 1,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "alias-paid",
+      "sha256": "57bbc1db135fdc89bb896fca0c943867c0e0f39d4bc089ff8f67e861677e1432",
+      "earliest_pa": 25,
+      "contract": "Function-item local retains paid invocation.",
+      "bootstrap": "1",
+      "source_mode": false,
+      "candidate_phase_requirement": "full LowIR; type and body errors retained separately",
+      "original_path": "obj/parallel/lazy-default/inputs/alias-paid.rs",
+      "path": "pa25/tests/spec/callback-formation/alias-paid.rs",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "qualification": "required full LowIR positive; existing const-member alias body boundary remains",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 1,
+        "lowir_qualified": false
+      }
+    },
+    {
+      "name": "reference-unpaid",
+      "sha256": "dd8ab5b5fa0ea8041871044eef7d05dabf8a49c6b4d669c5921730d69f401841",
+      "earliest_pa": 25,
+      "contract": "Reference invocation must pay the actual const trait bound.",
+      "bootstrap": "1",
+      "source_mode": false,
+      "candidate_phase_requirement": "full LowIR; type and body errors retained separately",
+      "original_path": "obj/parallel/lazy-default/inputs/reference-unpaid.rs",
+      "path": "pa25/tests/spec/callback-formation/reference-unpaid.rs",
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "qualification": "required declared outcome",
+      "expected_types_status": 1,
+      "candidate_phases": {
+        "types": 1,
+        "lowir": 1,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "reference-paid",
+      "sha256": "4d2001ae3daae9c9807b6894cbdc686530bfd927e63cef0e7aa4dc41fbcf0948",
+      "earliest_pa": 25,
+      "contract": "Reference invocation retains paid bound.",
+      "bootstrap": "1",
+      "source_mode": false,
+      "candidate_phase_requirement": "full LowIR; type and body errors retained separately",
+      "original_path": "obj/parallel/lazy-default/inputs/reference-paid.rs",
+      "path": "pa25/tests/spec/callback-formation/reference-paid.rs",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "qualification": "required full LowIR positive; existing const-member alias body boundary remains",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 1,
+        "lowir_qualified": false
+      }
+    },
+    {
+      "name": "pointer-call-reject",
+      "sha256": "00668424ec5246388604d4836d58446801c00f743c383f3265e374b5e3765456",
+      "earliest_pa": 25,
+      "contract": "Erasure to function pointer grants no const-call permission.",
+      "bootstrap": "1",
+      "source_mode": false,
+      "candidate_phase_requirement": "full LowIR; type and body errors retained separately",
+      "original_path": "obj/parallel/lazy-default/inputs/pointer-call-reject.rs",
+      "path": "pa25/tests/spec/callback-formation/pointer-call-reject.rs",
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "qualification": "required declared outcome",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 1,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "helper-pointer",
+      "sha256": "53237bbd889e4899c2848f04d372bbf9d253a4a8350f539558bbb738ea0d693d",
+      "earliest_pa": 25,
+      "contract": "Formation of a const helper instantiates its conditional clauses ordinarily.",
+      "bootstrap": "1",
+      "source_mode": false,
+      "candidate_phase_requirement": "full LowIR; type and body errors retained separately",
+      "original_path": "obj/parallel/lazy-default/inputs/helper-pointer.rs",
+      "path": "pa25/tests/spec/callback-formation/helper-pointer.rs",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "qualification": "required declared outcome",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "helper-unpaid",
+      "sha256": "f8cdabd112c4ea87b3b085f0e2143700fce83e1e9e81dbf663295f4cebb13b67",
+      "earliest_pa": 25,
+      "contract": "Actual helper invocation must retain conditional clauses.",
+      "bootstrap": "1",
+      "source_mode": false,
+      "candidate_phase_requirement": "full LowIR; type and body errors retained separately",
+      "original_path": "obj/parallel/lazy-default/inputs/helper-unpaid.rs",
+      "path": "pa25/tests/spec/callback-formation/helper-unpaid.rs",
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "qualification": "required declared outcome",
+      "expected_types_status": 1,
+      "candidate_phases": {
+        "types": 1,
+        "lowir": 1,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "helper-paid",
+      "sha256": "dc6b75655d27f97b3a8a941c36604169e38dc228877882ac76ad45f8778f2976",
+      "earliest_pa": 25,
+      "contract": "Actual helper invocation has conditional clauses.",
+      "bootstrap": "1",
+      "source_mode": false,
+      "candidate_phase_requirement": "full LowIR; type and body errors retained separately",
+      "original_path": "obj/parallel/lazy-default/inputs/helper-paid.rs",
+      "path": "pa25/tests/spec/callback-formation/helper-paid.rs",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "qualification": "required declared outcome",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "helper-alias-unpaid",
+      "sha256": "30c34e367023d440df0d7f55d8e5235f9c2046037fdc7598330cedc384417530",
+      "earliest_pa": 25,
+      "contract": "A local helper value is not permission to call it in const context.",
+      "bootstrap": "1",
+      "source_mode": false,
+      "candidate_phase_requirement": "full LowIR; type and body errors retained separately",
+      "original_path": "obj/parallel/lazy-default/inputs/helper-alias-unpaid.rs",
+      "path": "pa25/tests/spec/callback-formation/helper-alias-unpaid.rs",
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "qualification": "required declared outcome",
+      "expected_types_status": 1,
+      "candidate_phases": {
+        "types": 1,
+        "lowir": 1,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "conditional-unbound",
+      "sha256": "c71cb2ed9241bdc03ce48a822355db7b35e5fae0e2b5666bed1822e3923c0250",
+      "earliest_pa": 25,
+      "contract": "Conditional trait identity still requires ordinary formation bound.",
+      "bootstrap": "1",
+      "source_mode": false,
+      "candidate_phase_requirement": "full LowIR; type and body errors retained separately",
+      "original_path": "obj/parallel/lazy-default/inputs/conditional-unbound.rs",
+      "path": "pa25/tests/spec/callback-formation/conditional-unbound.rs",
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "qualification": "required declared outcome",
+      "expected_types_status": 1,
+      "candidate_phases": {
+        "types": 1,
+        "lowir": 1,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "native-initializer",
+      "path": "pa25/tests/spec/callback-formation/native-initializer.rs",
+      "original_path": "obj/parallel/lazy-default/execution-declared/native-initializer.rs",
+      "sha256": "ee37c19a42e154cd503588b687c02c1304ff3675ae8dd4ada1ec77ba152b7f8d",
+      "earliest_pa": 25,
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "bootstrap": "1",
+      "qualification": "required full LowIR positive",
+      "contract": "Stores and later invokes actual function initializer",
+      "native": {
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": "",
+        "checked_value": 23
+      },
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "native-const-pointer",
+      "path": "pa25/tests/spec/callback-formation/native-const-pointer.rs",
+      "original_path": "obj/parallel/lazy-default/execution-declared/native-const-pointer.rs",
+      "sha256": "3d562860cab6d4ea072b39627266f51ad9fe8132b728c0986ea25d635da0b8dc",
+      "earliest_pa": 25,
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "bootstrap": "1",
+      "qualification": "required full LowIR positive",
+      "contract": "Stores and later invokes actual function initializer",
+      "native": {
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": "",
+        "checked_value": 23
+      },
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "native-paid-call",
+      "path": "pa25/tests/spec/callback-formation/native-paid-call.rs",
+      "original_path": "obj/parallel/lazy-default/execution-declared/native-paid-call.rs",
+      "sha256": "7e84480c3e32e8639b7cec0c1a76163017bd90c069ded72773637205b2d2228f",
+      "earliest_pa": 25,
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "bootstrap": "1",
+      "qualification": "required full LowIR positive",
+      "contract": "Stores and later invokes actual function initializer",
+      "native": {
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": "",
+        "checked_value": 41
+      },
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "width-8-noise-0",
+      "path": "pa25/tests/spec/callback-formation/width-8-noise-0.rs",
+      "original_path": "obj/parallel/lazy-default/execution-declared/width-8-noise-0.rs",
+      "sha256": "1119a116c73ad479f32db61c657f27d8d9eb0a547710abdbb2b8c73842350588",
+      "earliest_pa": 25,
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "bootstrap": "1",
+      "qualification": "required full LowIR positive",
+      "contract": "Bounded creation or actual invocation work with unrelated-type opposition",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "width-8-noise-128",
+      "path": "pa25/tests/spec/callback-formation/width-8-noise-128.rs",
+      "original_path": "obj/parallel/lazy-default/execution-declared/width-8-noise-128.rs",
+      "sha256": "00a282c481a9d1f9a40cb54e701348dc53dad2d92b6221ac7739cc6fbf317813",
+      "earliest_pa": 25,
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "bootstrap": "1",
+      "qualification": "required full LowIR positive",
+      "contract": "Bounded creation or actual invocation work with unrelated-type opposition",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "width-32-noise-0",
+      "path": "pa25/tests/spec/callback-formation/width-32-noise-0.rs",
+      "original_path": "obj/parallel/lazy-default/execution-declared/width-32-noise-0.rs",
+      "sha256": "97524b2ab3097dc2e6bb0a5d21622bb9b9ccbc1350574a10fa9a638cdf7ebe79",
+      "earliest_pa": 25,
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "bootstrap": "1",
+      "qualification": "required full LowIR positive",
+      "contract": "Bounded creation or actual invocation work with unrelated-type opposition",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "width-32-noise-128",
+      "path": "pa25/tests/spec/callback-formation/width-32-noise-128.rs",
+      "original_path": "obj/parallel/lazy-default/execution-declared/width-32-noise-128.rs",
+      "sha256": "febdb90a092baa16156c5846fec71ba6b91d607c60ef3d3beb0c3c0d2ec92644",
+      "earliest_pa": 25,
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "bootstrap": "1",
+      "qualification": "required full LowIR positive",
+      "contract": "Bounded creation or actual invocation work with unrelated-type opposition",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "width-128-noise-0",
+      "path": "pa25/tests/spec/callback-formation/width-128-noise-0.rs",
+      "original_path": "obj/parallel/lazy-default/execution-declared/width-128-noise-0.rs",
+      "sha256": "bb89312b76819dbf5c24f2c4192605f184d51a1fad8829f111b0e7c07d4976f8",
+      "earliest_pa": 25,
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "bootstrap": "1",
+      "qualification": "required full LowIR positive",
+      "contract": "Bounded creation or actual invocation work with unrelated-type opposition",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "width-128-noise-128",
+      "path": "pa25/tests/spec/callback-formation/width-128-noise-128.rs",
+      "original_path": "obj/parallel/lazy-default/execution-declared/width-128-noise-128.rs",
+      "sha256": "04da96e60225a892ed233575e71abb713f3f291c1361c2faea85e157af131d34",
+      "earliest_pa": 25,
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "bootstrap": "1",
+      "qualification": "required full LowIR positive",
+      "contract": "Bounded creation or actual invocation work with unrelated-type opposition",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "calls-width-8-noise-0",
+      "path": "pa25/tests/spec/callback-formation/calls-width-8-noise-0.rs",
+      "original_path": "obj/parallel/lazy-default/invocation-declared/calls-width-8-noise-0.rs",
+      "sha256": "45ac28ba12978e5d1f9bd450b4b84efbc81f877e6f0d568670520e694db0a2cd",
+      "earliest_pa": 25,
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "bootstrap": "1",
+      "qualification": "required full LowIR positive",
+      "contract": "Bounded creation or actual invocation work with unrelated-type opposition",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "calls-width-8-noise-128",
+      "path": "pa25/tests/spec/callback-formation/calls-width-8-noise-128.rs",
+      "original_path": "obj/parallel/lazy-default/invocation-declared/calls-width-8-noise-128.rs",
+      "sha256": "c6a61a8d4ae3deea1ea5ea5cc250684de6552a7bfac5bace862a821028a0a8c5",
+      "earliest_pa": 25,
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "bootstrap": "1",
+      "qualification": "required full LowIR positive",
+      "contract": "Bounded creation or actual invocation work with unrelated-type opposition",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "calls-width-32-noise-0",
+      "path": "pa25/tests/spec/callback-formation/calls-width-32-noise-0.rs",
+      "original_path": "obj/parallel/lazy-default/invocation-declared/calls-width-32-noise-0.rs",
+      "sha256": "57226ff6b2246fdff49a7cc61e37bc2ee26333ad72d797426c0995b9359f6918",
+      "earliest_pa": 25,
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "bootstrap": "1",
+      "qualification": "required full LowIR positive",
+      "contract": "Bounded creation or actual invocation work with unrelated-type opposition",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "calls-width-32-noise-128",
+      "path": "pa25/tests/spec/callback-formation/calls-width-32-noise-128.rs",
+      "original_path": "obj/parallel/lazy-default/invocation-declared/calls-width-32-noise-128.rs",
+      "sha256": "54c1f8439e84f1d024045df189e64f05694bcaa550c04758bee0a17548f24645",
+      "earliest_pa": 25,
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "bootstrap": "1",
+      "qualification": "required full LowIR positive",
+      "contract": "Bounded creation or actual invocation work with unrelated-type opposition",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "calls-width-128-noise-0",
+      "path": "pa25/tests/spec/callback-formation/calls-width-128-noise-0.rs",
+      "original_path": "obj/parallel/lazy-default/invocation-declared/calls-width-128-noise-0.rs",
+      "sha256": "c18007c8df45207cbc4353b4c9aeadeffb649c91d5d5ef50ddc6e329a62b13d6",
+      "earliest_pa": 25,
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "bootstrap": "1",
+      "qualification": "required full LowIR positive",
+      "contract": "Bounded creation or actual invocation work with unrelated-type opposition",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "calls-width-128-noise-128",
+      "path": "pa25/tests/spec/callback-formation/calls-width-128-noise-128.rs",
+      "original_path": "obj/parallel/lazy-default/invocation-declared/calls-width-128-noise-128.rs",
+      "sha256": "23fafd1f52059395753edfe21cb6f2f0f866d774335dad87e8c703deb96a7c03",
+      "earliest_pa": 25,
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "bootstrap": "1",
+      "qualification": "required full LowIR positive",
+      "contract": "Bounded creation or actual invocation work with unrelated-type opposition",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    }
+  ],
+  "candidate_qualification": {
+    "compiler_sha256": "05cc3029540dc069cf360821f180521d74278c5f5986a8e8e69255dc7955def5",
+    "full_lowir_required_for_all_inputs": true,
+    "two_paid_alias_references": "Required valid positives; existing defining-callee IR shape still prevents full LowIR; no negative oracle or acceptance waiver."
+  }
+}

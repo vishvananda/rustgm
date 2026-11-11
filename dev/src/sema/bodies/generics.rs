@@ -16,6 +16,23 @@ impl Checker<'_> {
         owner: DefId,
         ty: TypeId,
     ) -> Result<TermId, Error> {
+        self.generic_function_use(node, owner, ty, super::bounds::Use::Call)
+    }
+    pub(super) fn generic_function_value(
+        &mut self,
+        node: NodeId,
+        owner: DefId,
+        ty: TypeId,
+    ) -> Result<TermId, Error> {
+        self.generic_function_use(node, owner, ty, super::bounds::Use::Value)
+    }
+    fn generic_function_use(
+        &mut self,
+        node: NodeId,
+        owner: DefId,
+        ty: TypeId,
+        use_: super::bounds::Use,
+    ) -> Result<TermId, Error> {
         let supplied = self
             .facts
             .generics
@@ -24,7 +41,7 @@ impl Checker<'_> {
             .ok_or_else(|| self.error(node, "generic function arguments were not elaborated"))?
             .arguments
             .clone();
-        self.instantiate_function(node, owner, ty, Some(&supplied), None)
+        self.instantiate_function(node, owner, ty, Some(&supplied), None, use_)
     }
     pub(super) fn implicit_source_function(
         &mut self,
@@ -57,7 +74,14 @@ impl Checker<'_> {
             .copied()
             .flatten()
             .ok_or_else(|| self.error(node, "source protocol lost its actual function item"))?;
-        self.instantiate_function(node, owner, ty, None, protocol_self)
+        self.instantiate_function(
+            node,
+            owner,
+            ty,
+            None,
+            protocol_self,
+            super::bounds::Use::Call,
+        )
     }
     fn instantiate_function(
         &mut self,
@@ -66,6 +90,7 @@ impl Checker<'_> {
         ty: TypeId,
         supplied: Option<&[SourceArgument]>,
         protocol_self: Option<(TypeId, TypeId)>,
+        use_: super::bounds::Use,
     ) -> Result<TermId, Error> {
         let ty = self.function_item(node, owner, ty)?;
         let Some(Type::FunctionItem {
@@ -133,7 +158,7 @@ impl Checker<'_> {
         if projected_signature || shifted_projections || self.state.projections.active() {
             self.defer_normalization(node, crate::types::lifetime_proof::ScopeId::ROOT, signature)?;
         }
-        self.bound_obligations(node, owner, &arguments, &bindings)?;
+        self.bound_obligations_for(node, owner, &arguments, &bindings, use_)?;
         let term = self
             .state
             .infer
@@ -142,7 +167,7 @@ impl Checker<'_> {
         self.state.call_types.generic.push((node, owner, term));
         Ok(term)
     }
-    fn callable_parameters(
+    pub(super) fn callable_parameters(
         &self,
         node: NodeId,
         owner: DefId,

@@ -3,6 +3,76 @@ use super::{Checker, Constructor, DefId, Error, NodeId, TermId};
 use crate::sema::function_context::FunctionContext;
 
 impl Checker<'_> {
+    /// Only decides whether to inspect effects; membership grants no permission.
+    fn const_declaration(&self, owner: DefId) -> bool {
+        self.facts.is_const_function(owner)
+            || self
+                .facts
+                .associated
+                .trait_owner(owner)
+                .is_some_and(|parent| self.facts.associated.constant_trait(parent) == Some(true))
+    }
+
+    pub(super) fn invoked_value_obligations(
+        &mut self,
+        node: NodeId,
+        mut receiver: TermId,
+    ) -> Result<(), Error> {
+        if self.callee_use_effect()? == crate::support::constness::Constness::Ordinary {
+            return Ok(());
+        }
+        let owner = loop {
+            self.state
+                .infer
+                .account_work(1)
+                .map_err(|e| self.error(node, e))?;
+            match self.head(node, receiver)? {
+                Some(Constructor::Reference { .. }) => receiver = self.child(node, receiver, 0)?,
+                Some(
+                    Constructor::FunctionItem(item, _) | Constructor::FunctionItemArgs(item, _),
+                ) => {
+                    break DefId(item.0);
+                }
+                // An erased pointer retains its separate const-call rejection.
+                _ => return Ok(()),
+            }
+        };
+        if !self.const_declaration(owner) {
+            return Ok(());
+        }
+        let arguments = self
+            .state
+            .infer
+            .item_arguments(&self.facts.types, receiver)
+            .map_err(|e| self.error(node, e))?;
+        let parameters = self.callable_parameters(node, owner)?;
+        let actual = arguments
+            .iter()
+            .copied()
+            .filter(|argument| {
+                !matches!(
+                    argument,
+                    crate::types::infer::arguments::Argument::Lifetime(_)
+                )
+            })
+            .collect::<Vec<_>>();
+        self.state
+            .infer
+            .account_work(arguments.len().saturating_add(parameters.len()))
+            .map_err(|e| self.error(node, e))?;
+        if parameters.len() != actual.len() {
+            return Err(self.error(node, "invoked function value changed its parameter order"));
+        }
+        let bindings = parameters.into_iter().zip(actual).collect::<Vec<_>>();
+        self.bound_obligations_for(
+            node,
+            owner,
+            &arguments,
+            &bindings,
+            super::bounds::Use::InvokedValue,
+        )
+    }
+
     pub(super) fn retain_defining_member(
         &mut self,
         node: NodeId,
@@ -16,13 +86,7 @@ impl Checker<'_> {
             .infer
             .account_work(4)
             .map_err(|e| self.error(node, e))?;
-        if !self.facts.is_const_function(owner)
-            && self
-                .facts
-                .associated
-                .trait_owner(owner)
-                .is_none_or(|parent| self.facts.associated.constant_trait(parent) != Some(true))
-        {
+        if !self.const_declaration(owner) {
             return Ok(());
         }
         self.state

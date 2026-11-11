@@ -10541,6 +10541,48 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/callback-formation/generic-runtime.rs",
+      "source_sha256": "66f102debbc52a4551470c8357416b2576c24132df470dc2a60c93040a71360c",
+      "exit_status": 0,
+      "mode": "--emit-lowir",
+      "input": "file",
+      "features": [
+        "pa24.callback-formation"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/closureconst/callback_uses.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic function body is a compilation contract; actual callback execution is separately required."
+      }
+    },
+    {
+      "path": "tests/spec/callback-formation/trait-runtime.rs",
+      "source_sha256": "90418e0ae18f476f50d37be3aa2866240cbcb513004bc855b8550c011dbb25c9",
+      "exit_status": 0,
+      "mode": "--emit-lowir",
+      "input": "file",
+      "features": [
+        "pa24.callback-formation"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/closureconst/callback_uses.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic function body is a compilation contract; actual callback execution is separately required."
+      }
     }
   ]
 }

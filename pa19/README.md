@@ -247,10 +247,13 @@ source-to-LowIR functionality can compile the same program.
 
 ## Validation
 
-The manifest contains 1,233 cases: 788 accepted and 445 rejected. There are 468
-semantic inspection cases and 765 LowIR cases. The LowIR lane has 334 accepted
-programs, all with declared clean execution through rustc and CPPGM, and 431
-rejections. No accepted native control is silently skipped.
+The manifest contains 1,236 cases: 790 accepted and 446 rejected. There are 468
+semantic inspection cases and 768 LowIR cases. The LowIR lane has 336 accepted
+programs: 334 declared runtime comparisons and two explicitly declared unused
+generic compilation controls. Its 432 rejections retain their genuine language
+outcomes. No accepted native control is silently skipped.
+The [callback formation packet](tests/spec/callback-formation/README.md) owns the
+ordinary trait-function pointer minimum; const effects belong in PA25.
 
 Five acceptance differences are explicit: one later-stage boundary, one
 pending-lifetime inspection control and three redundant-binder compiler

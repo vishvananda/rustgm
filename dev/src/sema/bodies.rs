@@ -1681,7 +1681,7 @@ impl Checker<'_> {
                 if self.facts.generics.has_parameters(id)
                     || self.facts.methods.qualified.contains_key(&self.key(node))
                 {
-                    return self.generic_function(node, id, ty);
+                    return self.generic_function_value(node, id, ty);
                 }
                 if definition.kind == DefKind::Const
                     && !self.state.in_function
@@ -2437,6 +2437,7 @@ impl Checker<'_> {
             return Err(self.error(node, "invalid call work"));
         };
         let receiver = self.term(callee)?;
+        self.invoked_value_obligations(node, receiver)?;
         let mut term = receiver;
         let constructor = matches!(self.head(node, term)?,
         Some(Constructor::FunctionItem(item, _) | Constructor::FunctionItemArgs(item, _))

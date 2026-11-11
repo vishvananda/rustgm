@@ -1,0 +1,102 @@
+{
+  "schema": 1,
+  "state": "Independent object outcomes frozen before implementation; no whole assignment activation",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "crate_type": "lib",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0,
+    "cap_lints": "allow"
+  },
+  "inputs": [
+    {
+      "name": "source-conditional-pointer",
+      "sha256": "839bf5f7ce7e25c6d7a25eb4677c7e6ff705b882bfbe9f5b1acf056ead9263ae",
+      "earliest_pa": 31,
+      "contract": "Exact original ordinary counterpart with existing attributed source-role foundation.",
+      "bootstrap": "1",
+      "source_mode": true,
+      "candidate_phase_requirement": "full LowIR; type and body errors retained separately",
+      "original_path": "obj/parallel/lazy-default/inputs/source-conditional-pointer.rs",
+      "path": "pa31/tests/spec/callback-formation/source-conditional-pointer.rs",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "qualification": "required declared outcome",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "source-trait-const",
+      "sha256": "f46a04b62de3bacbaf4afc58eba0fb521271de84793115aa57093bff9e14475a",
+      "earliest_pa": 31,
+      "contract": "Exact original ordinary counterpart with existing attributed source-role foundation.",
+      "bootstrap": "1",
+      "source_mode": true,
+      "candidate_phase_requirement": "full LowIR; type and body errors retained separately",
+      "original_path": "obj/parallel/lazy-default/inputs/source-trait-const.rs",
+      "path": "pa31/tests/spec/callback-formation/source-trait-const.rs",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "qualification": "required declared outcome",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "source-trait-const-typed",
+      "sha256": "137230dc336d72ac084204a808f25f761a824d7019dbef7d7e692cb65230234b",
+      "earliest_pa": 31,
+      "contract": "Exact original ordinary counterpart with existing attributed source-role foundation.",
+      "bootstrap": "1",
+      "source_mode": true,
+      "candidate_phase_requirement": "full LowIR; type and body errors retained separately",
+      "original_path": "obj/parallel/lazy-default/inputs/source-trait-const-typed.rs",
+      "path": "pa31/tests/spec/callback-formation/source-trait-const-typed.rs",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "qualification": "required declared outcome",
+      "expected_types_status": 0,
+      "candidate_phases": {
+        "types": 0,
+        "lowir": 0,
+        "lowir_qualified": true
+      }
+    },
+    {
+      "name": "source-unpaid-const-call",
+      "sha256": "789d704eda727508cdfd08b109a1212af923e7d4cbed98ab39c34e4a4becfa6c",
+      "earliest_pa": 31,
+      "contract": "Exact original ordinary counterpart with existing attributed source-role foundation.",
+      "bootstrap": "1",
+      "source_mode": true,
+      "candidate_phase_requirement": "full LowIR; type and body errors retained separately",
+      "original_path": "obj/parallel/lazy-default/inputs/source-unpaid-const-call.rs",
+      "path": "pa31/tests/spec/callback-formation/source-unpaid-const-call.rs",
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "qualification": "required declared outcome",
+      "expected_types_status": 1,
+      "candidate_phases": {
+        "types": 1,
+        "lowir": 1,
+        "lowir_qualified": true
+      }
+    }
+  ],
+  "candidate_qualification": {
+    "compiler_sha256": "05cc3029540dc069cf360821f180521d74278c5f5986a8e8e69255dc7955def5",
+    "full_lowir_required_for_all_inputs": true,
+    "two_paid_alias_references": "Required valid positives; existing defining-callee IR shape still prevents full LowIR; no negative oracle or acceptance waiver."
+  }
+}

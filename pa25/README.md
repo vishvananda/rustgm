@@ -53,6 +53,11 @@ contrasts in PA31. The finite scoped defining-proof and local-child completion
 checkpoint now passes; ordinary bootstrap and three concrete source factory
 runtime/CTFE positives remain required. No whole assignment is released.
 
+The [conditional callback packet](tests/spec/callback-formation/README.md)
+separates function-value formation from actual invocation effects. Its paired
+ordinary/source controls, bounded creation/invocation work and three native
+observers pass; two paid alias/reference LowIR artifacts remain explicit positives.
+
 The maintainer implements this responsibility in `dev/src/` and introduces its
 typed interface before generating text views. Consult `spec.md`, the pinned
 Rust Reference, and the existing CPPGM implementation for efficient algorithms.

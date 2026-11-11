@@ -1,0 +1,9 @@
+# Conditional trait callbacks
+
+These37 independently checked Rust 1.98 object outcomes separate creating a function value from actually invoking it. Const constructors may store a callback under ordinary Factory/FnOnce bounds. Taking an ordinary function address in a const context does not grant const invocation. Inferred locals and references retain the actual const obligation, and an erased function pointer cannot be called in a const function.
+
+The packet includes twelve scaling inputs: creation and paid invocation at widths8/32/128, each with0/128 unrelated types. Inference, trait-selection and method-work bounds pass; unrelated types leave those counters unchanged. Three actual Rust/CPPGM executions check initializer23, a const-created pointer invoked later23, and paid compile-time evaluation41. The independent Rust child alone receives RUSTC_BOOTSTRAP=1, debug assertions disabled and optimization0; production compiler builds do not acquire that override.
+
+Two paid alias/reference inputs remain REQUIRED full LowIR positives. They typecheck, but the existing const-member IR checker still insists on a literal Function callee and rejects their local/reference reads. Their manifest keeps exit_status0 and records the observed stage failure. No rejection oracle or passing full-LowIR claim replaces these requirements. Unpaid actual-call opponents now reject during type checking; the pointer-call opponent rejects in the checked body.
+
+Together with PA19/24 and the four PA31 source-role contrasts,46 inputs have independent object outcomes:37accept/9reject. All declared type-phase outcomes and44 full LowIR outcomes pass; the two paid alias/reference artifacts remain pending. Planned PA25 has no new course text references or whole-assignment release here. The broader const-adapter/factory, bootstrap and transport requirements remain required.

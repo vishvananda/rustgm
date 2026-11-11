@@ -11,6 +11,14 @@ use crate::types::{
     substitute,
 };
 pub(super) use universal::Requirements;
+
+/// A function value pays formation; only its actual invocation pays call effects.
+#[derive(Clone, Copy)]
+pub(super) enum Use {
+    Value,
+    Call,
+    InvokedValue,
+}
 impl super::State {
     pub(super) fn prepare_parameter_queries(&mut self) {
         self.parameter_shapes = self
@@ -409,7 +417,7 @@ impl Checker<'_> {
             .copied()
             .map(Argument::Lifetime)
             .collect::<Vec<_>>();
-        self.bound_obligations(node, owner, &arguments, &[])
+        self.bound_obligations_for(node, owner, &arguments, &[], Use::Value)
     }
     fn call_input_clauses(
         &mut self,
@@ -454,10 +462,25 @@ impl Checker<'_> {
         arguments: &[Argument],
         bindings: &[(ParameterId, Argument)],
     ) -> Result<(), Error> {
+        self.bound_obligations_for(node, owner, arguments, bindings, Use::Call)
+    }
+
+    pub(super) fn bound_obligations_for(
+        &mut self,
+        node: NodeId,
+        owner: DefId,
+        arguments: &[Argument],
+        bindings: &[(ParameterId, Argument)],
+        use_: Use,
+    ) -> Result<(), Error> {
         let predicates = self.call_input_clauses(node, owner)?;
         if predicates.is_empty() {
             return Ok(());
         }
+        let effect = match use_ {
+            Use::Value => crate::support::constness::Constness::Ordinary,
+            Use::Call | Use::InvokedValue => self.callee_use_effect()?,
+        };
         let mut regions = Vec::new();
         if let Some(scheme) = self.facts.lifetimes.functions.get(&owner) {
             regions.resize(scheme.total as usize, crate::types::RegionId::STATIC);
@@ -498,7 +521,6 @@ impl Checker<'_> {
         // Keep declaration clauses intact and retain the first clause's own binder.
         let mut quantified = crate::support::hash::HashSet::default();
         for predicate in predicates {
-            let effect = self.callee_use_effect()?;
             let copied = self
                 .facts
                 .member_use_clause(owner, predicate, effect)
@@ -506,6 +528,23 @@ impl Checker<'_> {
             let clause =
                 crate::sema::traits::effects::in_context(&mut self.facts.types, copied, effect)
                     .map_err(|e| self.error(node, e))?;
+            if matches!(use_, Use::InvokedValue) {
+                // The original value already owes every ordinary clause. Add
+                // only the effects selected by this particular invocation.
+                self.state
+                    .infer
+                    .account_work(1)
+                    .map_err(|e| self.error(node, e))?;
+                let ordinary = crate::sema::traits::effects::in_context(
+                    &mut self.facts.types,
+                    predicate.value,
+                    crate::support::constness::Constness::Ordinary,
+                )
+                .map_err(|e| self.error(node, e))?;
+                if clause == ordinary {
+                    continue;
+                }
+            }
             if let crate::types::parameters::clauses::Clause::ForAll(id) = clause {
                 let (key, work) = self
                     .facts

@@ -2,6 +2,11 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
+The [source callback packet](tests/spec/callback-formation/README.md) preserves
+actual callable-language declarations while separating initializer creation from
+const invocation. Ordinary minima stay in PA19/24/25; no library artifact or
+whole-assignment completion follows from these finite source checks.
+
 The [projected receiver packet](tests/spec/projected-method-inputs/README.md)
 adds seven independently checked actual slice-method contracts. Ordinary method
 conditions and reborrow field preparation remain in PA20 and PA18 respectively.

@@ -155,6 +155,7 @@ impl Context {
     pub fn item_arguments(&mut self, store: &Store, term: TermId) -> Result<Vec<Argument>, Error> {
         let term = self.root(term)?;
         let (args, offset) = match self.materialize(store, term)? {
+            Constructor::FunctionItem(_, args) => return self.known_arguments(store, args),
             Constructor::AdtArgs(_, args)
             | Constructor::Opaque(_, args)
             | Constructor::Future(_, args) => (args, 0),
