@@ -1,56 +1,72 @@
 # Library build blocker tracker
 
-Latest semantic checkpoint: [callable results](pa24-callable-results.md),
-compiler31cfbe08b / immutableCLI8b73f15a. Earliest PA24 owns52 reductions
-(39executable positives,13rejections); all independent Rust outcomes/native,
-complete candidate LowIR, nine focused controls and84 paired native programs pass.
-Call-owned constraints settle before structural consumers. Checked declared
-callee premises retain source closure conditions through shared complete Self
-matching and scoped normalization transport; final permission/lifetime/ownership
-proof remains required. Width/noise, strict selected checks, all579PA24+125PA12
-texts, harness/upstream and three old nominal/required-factory controls pass.
-All1581 old PA24 sidecars are unchanged. Only PA12's predeclared tuple-field
-diagnostic changes. No hot fields, global cache/scans, limits or backend change.
-Full42948079201 passed3065 private and all regular integration tests, then
-failed13 earlier PA20/PA21 text comparisons; later qualification was skipped.
-The [independently reviewed reference repair](pa24-callable-result-ci-review.md)
-passes13 Rust objects/11 paired native programs and complete PA20/PA21 texts.
-Only11 semantic stdout/2 diagnostic sidecars change, all7280others unchanged.
-No input/status/compiler/backend change; full successor remains due. Whole PA31
-stays planned.
+[Conditional const adapter defining proofs](pa25-const-adapter-reductions.md)
+are the current checkpoint, compilerd1d55648b+27cef3f64. The existing scoped
+engine proves the selected source closure's additional const defining clauses,
+retaining every child/scope/lifetime debt. Ordinary formation/signature checks
+keep their existing producers. Exact owner declaration order breaks the free
+forwarding opaque-result preparation cycle; executable formal-order checks stay
+strict. The flat nested scheduler retains unpaid parent goals while local child
+bodies complete, then charges one retry of that original frontier. No hot fields,
+global caches/scans, compiler limits, LowIR or backend contract changes.
 
-The unchanged120s original observer still FAILS at121.2428s:203failure records/
-4328item attempts through function8870,file239:53421,node3300 in str/pattern.rs.
-All722 hashes/sixbindings/profile/limits fixed. Partial SHA
-12f5ce98e668bbf2cebbb2128cdceecf534bcac52e9be6b34a4eafd22d2bb7d2.
-No file93 IndexRange fold/rfold field-access failure remains in that prefix.
-First now wrap_mut_1/2, ops/try_trait.rs95:16817/17146: invalid canonical trait
-selection. Their actual const fn returns impl [const]FnMut(...)->Self plus
-[const]Destruct with a const move closure. Freeze ordinary const-callable twins,
-then retain real source FnMut/Destruct/Try roles where needed. Read the PA25/31
-contracts and choose the earliest owner from the minimum; source mode is not an
-assumed prerequisite. No complete census/original artifact or speed claim.
+PA25 retains10 ordinary reductions,6 Rust-native positives/4 rejections. Four
+conditional ordinary forms still stop at bootstrap Destruct/preparation and stay
+required positives. PA31 now owns31 source-role cases,24 Rust accepts/7 rejects.
+Its28 non-factory-execution cases pass their declared typing/checked-body
+contracts;12 width/noise inputs cover separate functions and many local children.
+Borrowed lifetimes, FnMut-to-FnOnce, ordinary owner payment and unpaid/ordinary/
+wrong-result/creation opponents retain actual proof. One direct-call opponent
+requires full const body checking after successful ordinary typing; the shared
+API regression proves the real non-const diagnostic, while its CLI artifact
+request stops separately at a declaration metadata profile.
 
-The [const adapter reduction packet](pa25-const-adapter-reductions.md) now owns10
-ordinary PA25 cases and10 source-role PA31 contrasts. Each declares6positive/
-4negative outcomes before correction; all20 agree with independent Rust objects,
-and six ordinary positives execute successfully. Actual source self/binary/forward
-adapters reproduce canonical selection failure; diagnostic-only tracing confirms
-the reducer reaches the explicit defining-obligation scoped-continuation fence.
-Ordinary/const-factory LowIR and direct conditional/source type controls separate
-this from setup and call-shape failures. Valid unsupported adapters remain
-positive requirements. No compiler correction, course oracle or candidate-native
-claim was made. Upstream and harness checks pass1794366696019332445.
+Three concrete source runtime/CTFE inputs remain required positives. All three
+Rust object/C native observers print adapter23; current RustGM runtime2 typecheck
+but LowIR stops at actual const call receiver ownership, and CTFE1 stops at
+completed callable formal-order preparation. These are explicit pending execution
+requirements, not negative tests or candidate-native passes. General conditional
+function items, ordinary bootstrap, capture cleanup and transport remain required.
 
-Forty immutable exclusive A/A+twoABBA observations retain complete outputs for
-import/explicit-result LowIR and scalar/source-role type controls. Noisy A/A
-supports no timing claim. Full42930363606on4a PASSED every stage, qualifying the
-preceding nominal source Unsize checkpoint; prior42925327481oncba and
-42918510671on216364 also passed. Callable checkpoint2d94c3ce6 is published; full42948079201
-FAILED on that exact snapshot after its private/regular success, as reviewed
-above. No active full predecessor existed when dispatched. Publish the reviewed
-reference correction before another full successor. The earlier three valid tuple-factory
-cleanup owners and optimized nested-proof checks remain required.
+Finalpublic1794374366529445966 passes11exact126.68s across two targets, with
+strict selected Clippy/fullfmt/audit, both scaling families, captured CTFE,
+Async proof controls, all52 earlier PA24 completeLowIR cases and old result work.
+Native1794374970814447695 passes actual closure-source23/47/23/23/47 in39.45s.
+Independent final41 inputs agree30accept/11reject/9Rust natives; generated
+observation receipts retain pending candidate executions. No course oracles.
+Upstream128/Reference126, harness315/468roots13bins44stages and post-observer
+hash/opens checks pass1794375059873301041. Full new-compiler CI remains due.
+Preceding full42953042040 onfe8753c38 PASSED every fast/release/course/native/debug/
+independent/PA25 gate, qualifying the13 independently reviewed earlier references.
+
+Current CLIe7b59bbd91cd2f589572e18808100c63d109bbac34ea278b2c82a8b2523b0a7e
+at Bobj/parallel/const-adapter/candidate2-dev-fast/rustgm binds27cef3f64/emptydiff/
+3898Rusthashes. Forty exclusive frozen A/A+twoABBA observations preserve complete
+ordinary import/result LowIR and const factory/capture types. Ratios1.007/1.062/
+1.012/.997, noisy A/A; no speed/neutrality/optimized/core claim. Width8/32/128
+separate inference3771/15075/60291; local6957/27477/109557, all noise128identical.
+Completed6a38/8b73 pins retired1794375081738822218; four analysis pins retired
+1794374525077841808. Metadata/raw remain, binaries absent. Preserve currente7b5
+and older optimized21f; no fresh release/private cold link per edit.
+
+Final120s original observation still FAILS deadline121.1028s,200diagnosticrecords
+throughfunction8926,str/mod.rsfile232:14801,node605. ProgressSHA
+2860478db2b59f79cbb7e028026c067e7432d0045f4b7519e8a5f9bcd6f40760.
+All722hashes/375opened/sixbindings/profile/limits verified unchanged afterward.
+NeverShortCircuit wrap_mut1/2 file95 failures are absent from this prefix.
+First now len/is_empty,array/iter.rsfile102:12256/12334,no applicable method.
+Actual receiver is ManuallyDrop<PolymorphicIter<[MaybeUninit<T>;N]>>, with generic
+DATA:PartialDrop and the real conditional const Deref. Reduce ordinary twins
+first, choose earliest owning PA from actual features, then retain source roles
+only where needed. Keep expectations before independent checks/correction.
+Next source records are arrayeach_ref/mut const-stability, then projected
+try_from_fn_erased; do not conflate those with receiver lookup.
+
+No complete census/body-count/speed claim or original core/alloc/std artifact.
+Do not raise the120s observer window. Single worker, existing B, mainGitonly,
+no new worktrees/agents/CPPv5 changes. Source receiver reductions are next;
+three old tuple-factory cleanup owners and optimized nested-proof A/A/stack
+checks remain required. Whole PA25/31 and remaining assignments stay planned.
 
 Previous [pending-join inputs](pa20-pending-join-inputs.md) retain their qualified
 PA20 packet, source/proof ownership and separate1.266x unoptimized direct-control

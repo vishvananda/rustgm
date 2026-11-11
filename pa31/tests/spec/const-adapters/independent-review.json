@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "state": "Independent observations for required draft reductions; candidate adapter implementation remains pending",
-  "manifest_sha256": "46524368baca61c11999e0ee8f95e82cad30a6979087b7e338f49ea505b4707f",
+  "state": "Finite defining proof and local completion qualified; factory runtime/CTFE execution remains required",
+  "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
   "rustc_version_verbose": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.0\nLLVM version: 22.1.8\n",
   "profile": {
     "rustc": "1.98.0",
@@ -14,80 +14,77 @@
     "opt_level": 0,
     "cap_lints": "allow"
   },
-  "rustc_accepts": 6,
-  "rustc_rejects": 4,
-  "rustc_native_executions": 0,
-  "candidate_compiler_head": "31cfbe08b0c9589c2bc55b93ac895076f72087c3",
-  "candidate_sha256": "8b73f15a8334129dc7b9849347d05dc7d7ca7fac3c6286dc871b45c3fbcb1361",
-  "candidate_source_count": 3896,
-  "candidate_source_diff_empty": true,
-  "no_cppgm_native_claim": true,
+  "rustc_accepts": 24,
+  "rustc_rejects": 7,
+  "rustc_native_executions": 3,
+  "candidate_compiler_head": "27cef3f64b9ac4c58cf49f73aef827e715061cf6",
+  "candidate_sha256": "e7b59bbd91cd2f589572e18808100c63d109bbac34ea278b2c82a8b2523b0a7e",
+  "candidate_source_count": 3898,
+  "candidate_source_diff_empty_at_freeze": true,
+  "no_cppgm_native_claim_for_new_adapters": true,
   "no_generated_course_oracles": true,
   "inputs": [
     {
       "path": "pa31/tests/spec/const-adapters/self.rs",
       "sha256": "4a6d48f17330c509c77a01b0088191cb0351127e7f54d0ebe22ba43b7548e08d",
-      "expected_object_status": 0,
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "required source declaration/body proof; complete LowIR/native qualification remains separate",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
       "observed_object_status": 0,
       "rustc_diagnostic": "",
       "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "candidate_observations": {
         "--emit-types": {
-          "status": 1,
-          "stderr": "ERROR: file 0: 1576: invalid canonical trait selection\n",
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-        },
-        "--emit-body-ir": {
-          "status": 1,
-          "stderr": "ERROR: file 0: 1576: invalid canonical trait selection\n",
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "b246fb45b79896320d825d671751407f853492d89aa7211624adbd6cfffcc031"
         }
       }
     },
     {
       "path": "pa31/tests/spec/const-adapters/binary.rs",
       "sha256": "9eec040577fc2261d50c7988260404e47602647735ff1a69a66afbab4f017c3c",
-      "expected_object_status": 0,
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "required source declaration/body proof; complete LowIR/native qualification remains separate",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
       "observed_object_status": 0,
       "rustc_diagnostic": "",
       "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "candidate_observations": {
         "--emit-types": {
-          "status": 1,
-          "stderr": "ERROR: file 0: 1578: invalid canonical trait selection\n",
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-        },
-        "--emit-body-ir": {
-          "status": 1,
-          "stderr": "ERROR: file 0: 1578: invalid canonical trait selection\n",
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "65ff1d1b8a656a7bb4ddb17b5befad00044a8e83b49c15c90688d53add912cbd"
         }
       }
     },
     {
       "path": "pa31/tests/spec/const-adapters/forward.rs",
       "sha256": "c6416a3b25616ce20db85cf6eb1345cddc151a4fd34645d63bdc5df5fcf154ed",
-      "expected_object_status": 0,
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "required source declaration/body proof; complete LowIR/native qualification remains separate",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
       "observed_object_status": 0,
       "rustc_diagnostic": "",
       "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "candidate_observations": {
         "--emit-types": {
-          "status": 1,
-          "stderr": "ERROR: file 0: 1545: invalid canonical trait selection\n",
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-        },
-        "--emit-body-ir": {
-          "status": 1,
-          "stderr": "ERROR: file 0: 1545: invalid canonical trait selection\n",
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "4e2aa2673b15061cc98f7c929ddfc53de21bda8ccfc32bcd75d2b51137e4d3ef"
         }
       }
     },
     {
       "path": "pa31/tests/spec/const-adapters/direct.rs",
       "sha256": "1aa74f2b2d662d9b2eea540f993b9395c863e9850335ae25dbfb16149168712e",
-      "expected_object_status": 0,
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "required source declaration/body proof; complete LowIR/native qualification remains separate",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
       "observed_object_status": 0,
       "rustc_diagnostic": "",
       "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -96,18 +93,16 @@
           "status": 0,
           "stderr": "",
           "stdout_sha256": "0630cc9891f501e8e14d84275eb3f623a9d878b0a6d25ede6ee639ded8b268f1"
-        },
-        "--emit-body-ir": {
-          "status": 1,
-          "stderr": "ERROR: file 0: 1533: generic body construction requires parameterized ownership and destruction\n",
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       }
     },
     {
       "path": "pa31/tests/spec/const-adapters/ordinary.rs",
       "sha256": "477755566df1a6e4a8fd2bd5ab5a3252056b85fa48f3ffffdca89d37279ec883",
-      "expected_object_status": 0,
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "required source declaration/body proof; complete LowIR/native qualification remains separate",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
       "observed_object_status": 0,
       "rustc_diagnostic": "",
       "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -116,18 +111,16 @@
           "status": 0,
           "stderr": "",
           "stdout_sha256": "b3ce647a4812fff1e706d9574c830a24b50e9a87a8d40e8a13e866f0637d38a3"
-        },
-        "--emit-body-ir": {
-          "status": 1,
-          "stderr": "ERROR: file 0: 1548: generic body construction requires parameterized ownership and destruction\n",
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       }
     },
     {
       "path": "pa31/tests/spec/const-adapters/const-factory.rs",
       "sha256": "3b89f7cf43012cb6fb554586762558c41e8522a290498cdafe7c3986da7dced2",
-      "expected_object_status": 0,
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "qualification": "required source declaration/body proof; complete LowIR/native qualification remains separate",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
       "observed_object_status": 0,
       "rustc_diagnostic": "",
       "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -136,28 +129,21 @@
           "status": 0,
           "stderr": "",
           "stdout_sha256": "f42615f3c1d11742c131607f888cba0cb4ccbff4b6ace0cfdcadfd69168f4945"
-        },
-        "--emit-body-ir": {
-          "status": 1,
-          "stderr": "ERROR: file 0: 1548: generic body construction requires parameterized ownership and destruction\n",
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       }
     },
     {
       "path": "pa31/tests/spec/const-adapters/ordinary-bound-reject.rs",
       "sha256": "218f2f60230d5197f2d5823c21e69a6067832a523dbbe77892c3c77fe161c628",
-      "expected_object_status": 1,
+      "rustc_object_status": 1,
+      "source_analysis_status": 1,
+      "qualification": "language rejection with actual authenticated callable roles",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
       "observed_object_status": 1,
       "rustc_diagnostic": "error[E0277]: the trait bound `F: [const] FnMut<(A,)>` is not satisfied\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/const-adapters/ordinary-bound-reject.rs:24:161\n   |\n24 | ...t(A)->T+[const]Destruct{const move|a|Self(f(a))}}\n   |                                              - ^\n   |                                              |\n   |                                              required by a bound introduced by this call\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0277`.\n",
       "rustc_diagnostic_sha256": "970e50338a7f3da13d4c76a19c3d6533271aa2601a70af7236858bdf66f4d881",
       "candidate_observations": {
         "--emit-types": {
-          "status": 1,
-          "stderr": "ERROR: file 0: 1673: call requires a known function type\n",
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-        },
-        "--emit-body-ir": {
           "status": 1,
           "stderr": "ERROR: file 0: 1673: call requires a known function type\n",
           "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
@@ -167,17 +153,15 @@
     {
       "path": "pa31/tests/spec/const-adapters/ordinary-closure-reject.rs",
       "sha256": "c2744a37086ae1099d4ff1a2bf769e0040d9edd75a984327995c05619d7199df",
-      "expected_object_status": 1,
+      "rustc_object_status": 1,
+      "source_analysis_status": 1,
+      "qualification": "language rejection with actual authenticated callable roles",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
       "observed_object_status": 1,
-      "rustc_diagnostic": "error[E0277]: the trait bound `{closure@ordinary-closure-reject.rs:24:148}: [const] FnMut<(A,)>` is not satisfied\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/const-adapters/ordinary-closure-reject.rs:24:62\n   |\n24 | struct Wrap<T>(T);impl<T>Wrap<T>{const fn one<A,F>(mut f:F)->impl [const]FnMut(A)->Self+[const]Destruct where F:[const]FnMut(A)->T+[...\n   |                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n   |\n   = note: the full name for the type has been written to '/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/const-adapter/qualified/pa31-ordinary-closure-reject.long-type-17777757178873031449.txt'\n   = note: consider using `--verbose` to print the full type name to the console\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0277`.\n",
-      "rustc_diagnostic_sha256": "b12c956dbb50bb3ad8cfd28373acb52722e2cb613f1fdfd72a576fc0a5901bf5",
+      "rustc_diagnostic": "error[E0277]: the trait bound `{closure@ordinary-closure-reject.rs:24:148}: [const] FnMut<(A,)>` is not satisfied\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/const-adapters/ordinary-closure-reject.rs:24:62\n   |\n24 | struct Wrap<T>(T);impl<T>Wrap<T>{const fn one<A,F>(mut f:F)->impl [const]FnMut(A)->Self+[const]Destruct where F:[const]FnMut(A)->T+[...\n   |                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n   |\n   = note: the full name for the type has been written to '/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/const-adapter/final-qualified/pa31-ordinary-closure-reject.long-type-2027360080018404710.txt'\n   = note: consider using `--verbose` to print the full type name to the console\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0277`.\n",
+      "rustc_diagnostic_sha256": "db60776b4a09f3361ee08d5e87e312956546bf28d349aec8afda43fe60babb53",
       "candidate_observations": {
         "--emit-types": {
-          "status": 1,
-          "stderr": "ERROR: file 0: 1576: quantified body requirement needs a matching assumption or implementation\n",
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-        },
-        "--emit-body-ir": {
           "status": 1,
           "stderr": "ERROR: file 0: 1576: quantified body requirement needs a matching assumption or implementation\n",
           "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
@@ -187,17 +171,15 @@
     {
       "path": "pa31/tests/spec/const-adapters/wrong-output-reject.rs",
       "sha256": "eb7fffb715ea86fa6e1d9ca0317f6b37e044f7623b7a5e2095268f94d1317a9f",
-      "expected_object_status": 1,
+      "rustc_object_status": 1,
+      "source_analysis_status": 1,
+      "qualification": "language rejection with actual authenticated callable roles",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
       "observed_object_status": 1,
       "rustc_diagnostic": "error[E0308]: mismatched types\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/const-adapters/wrong-output-reject.rs:24:161\n   |\n24 | ...pl<T>Wrap<T>{const fn one<A,F>(mut f:F)->impl [const]FnMut(A)->Self+[const]Destruct where F:[const]FnMut(A)->T+[const]Destruct{const move|a|f(a)}}\n   |       - found this type parameter                                                                                                              ^^^^ expected `Wrap<T>`, found type parameter `T`\n   |\n   = note:      expected struct `Wrap<T>`\n           found type parameter `T`\nhelp: try wrapping the expression in `Wrap`\n   |\n24 | struct Wrap<T>(T);impl<T>Wrap<T>{const fn one<A,F>(mut f:F)->impl [const]FnMut(A)->Self+[const]Destruct where F:[const]FnMut(A)->T+[const]Destruct{const move|a|Wrap(f(a))}}\n   |                                                                                                                                                                 +++++    +\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0308`.\n",
       "rustc_diagnostic_sha256": "3ec6ba0ef92e2443a9bc274a81e2a957a8c9bd8a77afc73408dd360bef3985d0",
       "candidate_observations": {
         "--emit-types": {
-          "status": 1,
-          "stderr": "ERROR: file 0: 1675: incompatible types\n",
-          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-        },
-        "--emit-body-ir": {
           "status": 1,
           "stderr": "ERROR: file 0: 1675: incompatible types\n",
           "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
@@ -207,31 +189,531 @@
     {
       "path": "pa31/tests/spec/const-adapters/runtime-creation-reject.rs",
       "sha256": "2bc0d234c4ddae416b3c80a519154e4a1a1af24584b3b59de15f8294a0bc4a52",
-      "expected_object_status": 1,
+      "rustc_object_status": 1,
+      "source_analysis_status": 1,
+      "qualification": "Language rejection: const closure created directly in an ordinary runtime function; surrounding bounds are ordinary",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
       "observed_object_status": 1,
       "rustc_diagnostic": "error: cannot use `const` closures outside of const contexts\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/const-adapters/runtime-creation-reject.rs:24:114\n   |\n24 | struct Wrap<T>(T);impl<T>Wrap<T>{fn one<A,F>(mut f:F)->impl FnMut(A)->Self+Destruct where F:FnMut(A)->T+Destruct{const move|a|Self(f...\n   |                                                                                                                  ^^^^^^^^^^^^^\n\nerror: aborting due to 1 previous error\n\n",
       "rustc_diagnostic_sha256": "13a91ae1c54905236716e90937dede6b168a68a8b8710dda1a3f731da4ae6205",
       "candidate_observations": {
         "--emit-types": {
           "status": 1,
-          "stderr": "ERROR: file 0: 1628: cannot use const closures outside of const contexts\n"
+          "stderr": "ERROR: file 0: 1628: cannot use const closures outside of const contexts\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/runtime-self.rs",
+      "sha256": "3003d56f63163d895cc7d34de7d184fb65c72110e779604d62935b03f54ca508",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "source_lowir_status": 0,
+      "independent_native": {
+        "status": 0,
+        "stdout": "adapter 23\n",
+        "stderr": ""
+      },
+      "contract": "required actual factory consumer; candidate lowering/CTFE boundary remains unsupported",
+      "phase": "factory-execution-required",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "independent_link_status": 0,
+      "independent_native_observed": {
+        "status": 0,
+        "stdout": "adapter 23\n",
+        "stderr": ""
+      },
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "c992a9c1d496d54744502cf85ebfc33310ec739d9b6573b77359c9fc6cccd29b"
         },
-        "--emit-body-ir": {
+        "--emit-lowir": {
           "status": 1,
-          "stderr": "ERROR: file 0: 1628: cannot use const closures outside of const contexts\n"
+          "stderr": "ERROR: file 0: 2055: const call operators require their actual source function owner\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/runtime-forward.rs",
+      "sha256": "4d82db8bf8ae3acf7fa4cf08de955ddcd4301f39be587d7d14ac1cd3e5a2b685",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "source_lowir_status": 0,
+      "independent_native": {
+        "status": 0,
+        "stdout": "adapter 23\n",
+        "stderr": ""
+      },
+      "contract": "required actual factory consumer; candidate lowering/CTFE boundary remains unsupported",
+      "phase": "factory-execution-required",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "independent_link_status": 0,
+      "independent_native_observed": {
+        "status": 0,
+        "stdout": "adapter 23\n",
+        "stderr": ""
+      },
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "f6d587ab336add7559f89accb598111b512581f4ca62ef71586cb0d480ae9e42"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 2021: const call operators require their actual source function owner\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/ctfe-self.rs",
+      "sha256": "04df9498ae4f18e5af14f44ea86b9f4af4e908d71004e2eafd99c9d4a93c6ab4",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "source_lowir_status": 0,
+      "independent_native": {
+        "status": 0,
+        "stdout": "adapter 23\n",
+        "stderr": ""
+      },
+      "contract": "required actual factory consumer; candidate lowering/CTFE boundary remains unsupported",
+      "phase": "factory-execution-required",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "independent_link_status": 0,
+      "independent_native_observed": {
+        "status": 0,
+        "stdout": "adapter 23\n",
+        "stderr": ""
+      },
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 2136: const invocation has no completed callable formal order\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 2136: const invocation has no completed callable formal order\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/width-8-noise-0.rs",
+      "sha256": "78edeef3328598115e59de4fd200f23826e804c351629e5707c719a208c90652",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "defining-proof-scaling",
+      "width": 8,
+      "noise": 0,
+      "qualification": "required positive; exact body work should scale by sites and stay identical with unrelated nominal headers",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "f3d3c369e137bfea6f3d6193c137d2dfc024701e03bd47e96d3f092df08b57db"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/width-8-noise-128.rs",
+      "sha256": "5391634a056f8637e028204f4aa69430193b526950da5b9f4f17dc509bcaba3e",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "defining-proof-scaling",
+      "width": 8,
+      "noise": 128,
+      "qualification": "required positive; exact body work should scale by sites and stay identical with unrelated nominal headers",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "88793273c71659066d729752c8079aa3b86413238fbf988f54e581f6d1ed760c"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/width-32-noise-0.rs",
+      "sha256": "cfbee7600d849508f3f6978e7f9380d789822767546c968d051c6477f95e3dc7",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "defining-proof-scaling",
+      "width": 32,
+      "noise": 0,
+      "qualification": "required positive; exact body work should scale by sites and stay identical with unrelated nominal headers",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "83b750aaba0b510486103ad8ca61cfb343e0445e909595aa14cc9654009147f9"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/width-32-noise-128.rs",
+      "sha256": "e70b933d29cbe8dc4b5b8033e21db77e9ae10ab19378c670a2e32c094b6b1adc",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "defining-proof-scaling",
+      "width": 32,
+      "noise": 128,
+      "qualification": "required positive; exact body work should scale by sites and stay identical with unrelated nominal headers",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "bdbc6fad2d1f58020653b62593a9c98ca6bc96d2a7f4494d2284a7ad985fd923"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/width-128-noise-0.rs",
+      "sha256": "45f8cd78df01a0e58ee7a4c0a4a65b7fdb226f7194a3e807f2a4187496681bf8",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "defining-proof-scaling",
+      "width": 128,
+      "noise": 0,
+      "qualification": "required positive; exact body work should scale by sites and stay identical with unrelated nominal headers",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "3280d64e8ca3f02d8d7af659f6f873db379e773db4e7a9466dcc4886e51196dc"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/width-128-noise-128.rs",
+      "sha256": "42a4a4d61889ea7044664b7f0bc3b2b6629e93676fa636b4920f40b469fc83f7",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "defining-proof-scaling",
+      "width": 128,
+      "noise": 128,
+      "qualification": "required positive; exact body work should scale by sites and stay identical with unrelated nominal headers",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "d296b83cc2b0ffea40d3404f381af0595b9dec4c588771b990dd2b3e6eeef9f6"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/ordinary-owner-paid.rs",
+      "sha256": "bc15ffacfdd34e56a73085d240aa8cfd76c3dc1cfefbc0bd60eb6a72bb16e855",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "ordinary-formation-guard",
+      "qualification": "ordinary owner predicates remain enforced at factory formation; const eligibility must not erase or duplicate their producer",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "6a2d88acc001428b6ec2e52e4fe9dfe2d498645b15884116bbd1d0495154f1a6"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/ordinary-owner-unpaid.rs",
+      "sha256": "8d1260f4261bb64bf6bb5fa5a893b351a56988952f1446239f3d6cd1e9fe7175",
+      "rustc_object_status": 1,
+      "source_analysis_status": 1,
+      "phase": "ordinary-formation-guard",
+      "qualification": "ordinary owner predicates remain enforced at factory formation; const eligibility must not erase or duplicate their producer",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
+      "observed_object_status": 1,
+      "rustc_diagnostic": "error[E0277]: the trait bound `u8: Marker` is not satisfied\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/const-adapters/ordinary-owner-unpaid.rs:29:37\n   |\n29 | fn runtime()->u8{let mut call=one::<u8,u8,_>(identity);call(23)}\n   |                                     ^^ the trait `Marker` is not implemented for `u8`\n   |\nhelp: this trait has no implementations, consider adding one\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/const-adapters/ordinary-owner-unpaid.rs:24:1\n   |\n24 | trait Marker{}\n   | ^^^^^^^^^^^^\nnote: required by a bound in `one`\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/const-adapters/ordinary-owner-unpaid.rs:26:16\n   |\n26 | const fn one<T:Marker,A,F>(mut f:F)->impl [const]FnMut(A)->T+[const]Destruct where F:[const]FnMut(A)->T+[const]Destruct{const move|a...\n   |                ^^^^^^ required by this bound in `one`\n\nerror[E0277]: the trait bound `u8: Marker` is not satisfied\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/const-adapters/ordinary-owner-unpaid.rs:29:31\n   |\n29 | fn runtime()->u8{let mut call=one::<u8,u8,_>(identity);call(23)}\n   |                               ^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Marker` is not implemented for `u8`\n   |\nhelp: this trait has no implementations, consider adding one\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/const-adapters/ordinary-owner-unpaid.rs:24:1\n   |\n24 | trait Marker{}\n   | ^^^^^^^^^^^^\nnote: required by a bound in `one`\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/const-adapters/ordinary-owner-unpaid.rs:26:16\n   |\n26 | const fn one<T:Marker,A,F>(mut f:F)->impl [const]FnMut(A)->T+[const]Destruct where F:[const]FnMut(A)->T+[const]Destruct{const move|a...\n   |                ^^^^^^ required by this bound in `one`\n\nerror[E0277]: the trait bound `u8: Marker` is not satisfied\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/const-adapters/ordinary-owner-unpaid.rs:29:56\n   |\n29 | fn runtime()->u8{let mut call=one::<u8,u8,_>(identity);call(23)}\n   |                                                        ^^^^^^^^ the trait `Marker` is not implemented for `u8`\n   |\nhelp: this trait has no implementations, consider adding one\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/const-adapters/ordinary-owner-unpaid.rs:24:1\n   |\n24 | trait Marker{}\n   | ^^^^^^^^^^^^\nnote: required by a bound in `one`\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/const-adapters/ordinary-owner-unpaid.rs:26:16\n   |\n26 | const fn one<T:Marker,A,F>(mut f:F)->impl [const]FnMut(A)->T+[const]Destruct where F:[const]FnMut(A)->T+[const]Destruct{const move|a...\n   |                ^^^^^^ required by this bound in `one`\n\nerror: aborting due to 3 previous errors\n\nFor more information about this error, try `rustc --explain E0277`.\n",
+      "rustc_diagnostic_sha256": "7e3a9c78cff51e58371d1ec9ed7c2e4b715567903556c2dc25adf89a783fe28f",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 1732: trait obligation requires an unambiguous matching assumption or implementation\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/once-via-mut.rs",
+      "sha256": "6347f241aca90ce1339182692816de7cafcb0f857ccf952e6b2184f6c1056dfd",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "defining-proof-receiver-contrast",
+      "qualification": "Rust accepts FnOnce use of the const FnMut closure under the written bound; exploratory destruction-rejection prediction was disproved and remains in raw evidence",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "be416e36d7b4c33c6b8b14c603f65405c78d8dc7bd0b300eb6aa0c39656fbbc3"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/local-width-8-noise-0.rs",
+      "sha256": "ec5f9147512abf384a9559b2d5446a9b97774d99e0b1fac2cedbda44c22464e4",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "local-completion-scaling",
+      "width": 8,
+      "noise": 0,
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "885cd003bfcf7f9356830887484fdef94291e34ce7dcf7025d5c43e7b33deeee"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/local-width-8-noise-128.rs",
+      "sha256": "dc213ca6840270c7391e06c2a240c4f887e71a3d520cbd0650c1aeac908e1596",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "local-completion-scaling",
+      "width": 8,
+      "noise": 128,
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "d8b314efa416b8aba05babb980d4a562297846ae2f9be009483e050b216af626"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/local-width-32-noise-0.rs",
+      "sha256": "965666614238621cce7582517f11b8c1b5d5b79197ed5453e446132326126b71",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "local-completion-scaling",
+      "width": 32,
+      "noise": 0,
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "ea48f58bf00d070099a26dc11262714c53a4e832ff9b56c03526797cb57166b8"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/local-width-32-noise-128.rs",
+      "sha256": "c4525c655f23d7045d5d647a81b7daa9b2c584cbd6613811ef8da02bf53bbe86",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "local-completion-scaling",
+      "width": 32,
+      "noise": 128,
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "3b06d112d7c034eed11dfd38b0641b3c5933b74b209599f3073efbfab22607a3"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/local-width-128-noise-0.rs",
+      "sha256": "bd92c8e01ad8109c61a4c6615ff901846561df34643cfb6c67c1fb1995cb40b5",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "local-completion-scaling",
+      "width": 128,
+      "noise": 0,
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "b098486132cae5badf59497222284727bab415dade52d8287b594a0b37bfe4a3"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/local-width-128-noise-128.rs",
+      "sha256": "48bb1b4721d5963e250c847ffc8ccf4f4a974759e875650a6c2ff64faeb863b7",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "local-completion-scaling",
+      "width": 128,
+      "noise": 128,
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "a8093d02a1a300cfbd13ca05553485e9ad6a407355d41d50b7af8641332c459d"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/local-ordinary-child-reject.rs",
+      "sha256": "f7b1065c2de3a7d2af64a202a99a3448276690541b4f14407f3759fd1e8d45e5",
+      "rustc_object_status": 1,
+      "source_analysis_status": 0,
+      "phase": "local-completion-const-call-check",
+      "source_lowir_status": 1,
+      "qualification": "Type view accepts ordinary call typing; complete body checking must reject the non-const call in the completed const child. Rust object rejection remains required.",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
+      "observed_object_status": 1,
+      "rustc_diagnostic": "error[E0015]: cannot call non-const function `ordinary` in constant functions\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/const-adapters/local-ordinary-child-reject.rs:26:44\n   |\n26 | const fn local()->u8{let call=const move|v|ordinary(v);consume(call)}\n   |                                            ^^^^^^^^^^^\n   |\nnote: function `ordinary` is not const\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/const-adapters/local-ordinary-child-reject.rs:25:1\n   |\n25 | fn ordinary(v:u8)->u8{v}\n   | ^^^^^^^^^^^^^^^^^^^^^\n   = note: calls in constant functions are limited to constant functions, tuple structs and tuple variants\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0015`.\n",
+      "rustc_diagnostic_sha256": "7126eb7d2ed226597f60657f0a94afe8943f97e8920735d87579117daa8d30a6",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "3afc55bec0b11aa4a32e30f5831a48a0f3bf495e1c9e4e921c7826e3b28b5c6b"
+        },
+        "--emit-lowir": {
+          "status": 1,
+          "stderr": "ERROR: input: source declaration kind is outside the initial source profile\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "full_body_const_check": {
+        "test": "closureconst::ambient_calls::completed_local_const_children_still_check_direct_call_legality",
+        "receipt": "obj/qualification/fast/1794374366529445966",
+        "status": 0,
+        "required_diagnostic": "non-const",
+        "note": "Shared typed API checks real const legality; this CLI artifact request rejects earlier at source declaration transport."
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/local-unpaid-child-reject.rs",
+      "sha256": "30e0553dfd12fc9af1fea2c37cd98c8e2473fa60646f28e6e7c009c44393674b",
+      "rustc_object_status": 1,
+      "source_analysis_status": 1,
+      "phase": "local-completion-opponent",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
+      "observed_object_status": 1,
+      "rustc_diagnostic": "error[E0277]: the trait bound `F: [const] FnMut<(u8,)>` is not satisfied\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/const-adapters/local-unpaid-child-reject.rs:25:70\n   |\n25 | const fn local<F:FnMut(u8)->u8>(mut f:F)->u8{let call=const move|v|f(v);consume(call)}\n   |                                                                    - ^\n   |                                                                    |\n   |                                                                    required by a bound introduced by this call\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0277`.\n",
+      "rustc_diagnostic_sha256": "b922559969f1cde77899fc2bdb877e40239122b6d7fc4a3a471a803f307a3c5e",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 1,
+          "stderr": "ERROR: file 0: 1640: call requires a known function type\n",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/lifetime-via-mut.rs",
+      "sha256": "d8545d2bb768793a3fdf853588ef04f2ee55c64a4afa40ae0154c87a5a40b99d",
+      "rustc_object_status": 0,
+      "source_analysis_status": 0,
+      "phase": "local-completion-lifetime",
+      "manifest_sha256": "318d9527c1f4bc0071d45e6b2c087474ad9af14385654c849628f4621c939c9a",
+      "observed_object_status": 0,
+      "rustc_diagnostic": "",
+      "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "candidate_observations": {
+        "--emit-types": {
+          "status": 0,
+          "stderr": "",
+          "stdout_sha256": "cdaeeabeb9e929afe6803fd08259c38f5c6905e3e9c35665abc639cd2c04ea6a"
         }
       }
     }
   ],
-  "evidence_root": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/const-adapter",
-  "checks": {
-    "upstream": {
-      "status": 0,
-      "log_sha256": "19edc114e22639322b3ce9f0bcda582a6fc7d9641501c9a6ac1deca7ce08d175"
+  "required_factory_execution_mismatches": [
+    {
+      "path": "pa31/tests/spec/const-adapters/runtime-self.rs",
+      "mode": "--emit-lowir",
+      "status": 1,
+      "stderr": "ERROR: file 0: 2055: const call operators require their actual source function owner\n",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
-    "harness": {
-      "status": 0,
-      "log_sha256": "5bee9e24f89bd714d538d966b0eea62d6f9e336795b7e0af78214ec6480bee67"
+    {
+      "path": "pa31/tests/spec/const-adapters/runtime-forward.rs",
+      "mode": "--emit-lowir",
+      "status": 1,
+      "stderr": "ERROR: file 0: 2021: const call operators require their actual source function owner\n",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/ctfe-self.rs",
+      "mode": "--emit-types",
+      "status": 1,
+      "stderr": "ERROR: file 0: 2136: const invocation has no completed callable formal order\n",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "pa31/tests/spec/const-adapters/ctfe-self.rs",
+      "mode": "--emit-lowir",
+      "status": 1,
+      "stderr": "ERROR: file 0: 2136: const invocation has no completed callable formal order\n",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
-  }
+  ],
+  "qualified_fastcheck_receipt": "obj/qualification/fast/1794374366529445966",
+  "evidence_root": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/const-adapter"
 }

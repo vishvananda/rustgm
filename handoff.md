@@ -40,114 +40,73 @@ requirement retained. No original core/alloc/std artifact exists.
 
 ## Current original-core frontier
 
-[Callable results](docs/pa24-callable-results.md) are the latest checkpoint.
-Compiler31cfbe08b / immutableCLI8b73f15a progresses each call's own ready output
-requirements before structural consumers, retaining all final proof. Contextual
-reference conversions keep their ordering. Checked declared callee premises retain
-actual source closure conditions through the shared argument/Self matcher, including
-formal normalization debts, rebased private witnesses and original binder slots.
-No hot fields, global cache/type scan, compiler limit, LowIR or backend change.
+[Conditional const adapter defining proofs](docs/pa25-const-adapter-reductions.md)
+are the current checkpoint, compilerd1d55648b+27cef3f64. The existing scoped
+engine proves the selected source closure's additional const defining clauses,
+retaining every child/scope/lifetime debt. Ordinary formation/signature checks
+keep their existing producers. Exact owner declaration order breaks the free
+forwarding opaque-result preparation cycle; executable formal-order checks stay
+strict. The flat nested scheduler retains unpaid parent goals while local child
+bodies complete, then charges one retry of that original frontier. No hot fields,
+global caches/scans, compiler limits, LowIR or backend contract changes.
 
-The earliest PA24 packet owns52 independently checked outcomes (39 executable
-positives,13 rejections). Finalpublic1794362197862994056 passes9exact137.82s;
-all52 completeLowIR, width8/32/128noise128, old22generic/21nested receiver and5
-scoped/projection/object/source controls. Native1794362417748714215 passes4groups
-54.25s:39new+45existing real Rust/CPPGM programs. Full579PA24+125PA12text pass;
-all1581 oldPA24sidecars unchanged. PA12's existing tuple-field rejection changes
-only its predeclared diagnostic, not source/status. Harness315/468roots13bins44
-stages/upstream128/Reference126 pass1794362838437194980; three nominal/required
-factory controls pass1794362959289190435. Full/private successor remains pending.
+PA25 retains10 ordinary reductions,6 Rust-native positives/4 rejections. Four
+conditional ordinary forms still stop at bootstrap Destruct/preparation and stay
+required positives. PA31 now owns31 source-role cases,24 Rust accepts/7 rejects.
+Its28 non-factory-execution cases pass their declared typing/checked-body
+contracts;12 width/noise inputs cover separate functions and many local children.
+Borrowed lifetimes, FnMut-to-FnOnce, ordinary owner payment and unpaid/ordinary/
+wrong-result/creation opponents retain actual proof. One direct-call opponent
+requires full const body checking after successful ordinary typing; the shared
+API regression proves the real non-const diagnostic, while its CLI artifact
+request stops separately at a declaration metadata profile.
 
-Current pin8b73f15a8334129dc7b9849347d05dc7d7ca7fac3c6286dc871b45c3fbcb1361
-at Bobj/parallel/callable-results/candidate3-dev-fast/rustgm binds committed
-31cfbe08b0c9589c2bc55b93ac895076f72087c3/emptydiff3896Rusthashes. Initial606
-failed three existing borrowed-return regressions;50a then failed the new projected
-Self contrast. Those and analysis e9/6ba pins were retired1794363184111643302;
-metadata/observations remain, binaries do not. Tidy1794363184280435301 removes100
-other outputs. Preserve current8b7 and optimized21f. Completed00b comparison was retired
-after publication by1794365201348336431; its metadata/observations remain,
-its executable does not. Forty exclusive A/A+twoABBA observations preserve complete
-import/explicit-result LowIR and scalar/sourceknownrepr types. Ratios1.012/1.006/
-.969/.939, noisyA/A; no speed/neutrality claim. The first20 valid rows precede a
-wrong executable-mode selection for an entry-free scalar input; only the remaining
-20 were run in their declared type modes. Raw evidence and final-review.json
-retain that failure honestly. No broad/per-release matrix was run per edit.
+Three concrete source runtime/CTFE inputs remain required positives. All three
+Rust object/C native observers print adapter23; current RustGM runtime2 typecheck
+but LowIR stops at actual const call receiver ownership, and CTFE1 stops at
+completed callable formal-order preparation. These are explicit pending execution
+requirements, not negative tests or candidate-native passes. General conditional
+function items, ordinary bootstrap, capture cleanup and transport remain required.
 
-Original120s observation still FAILS deadline121.2428s,203failure records/4328item
-attempts through function8870,file239:53421,node3300 in str/pattern.rs. All722
-hashes/sixbindings/profile/limits fixed. Partial progress SHA
-12f5ce98e668bbf2cebbb2128cdceecf534bcac52e9be6b34a4eafd22d2bb7d2.
-The prior file93 IndexRange::fold/rfold field-access fences are absent from this
-prefix. First now NeverShortCircuit::wrap_mut_1/2, ops/try_trait.rs file95
-byte16817/17146, invalid canonical trait selection. Actual source const fn returns
-impl [const]FnMut(...)->Self+[const]Destruct, captures f in const move closure,
-where F:[const]FnMut(...)->T+[const]Destruct. Reduce ordinary const-callable twins
-first, then preserve authenticated source roles/Try companions where essential.
-Read PA25/PA31 handouts and select the earliest owner from evidence; do not assume
-source mode or PA31 is necessary. Expected outcomes precede corrections/oracles;
-valid unsupported cases remain positive requirements. No original artifact,
-complete census, body-count or speed claim. Do not raise the observer window.
+Finalpublic1794374366529445966 passes11exact126.68s across two targets, with
+strict selected Clippy/fullfmt/audit, both scaling families, captured CTFE,
+Async proof controls, all52 earlier PA24 completeLowIR cases and old result work.
+Native1794374970814447695 passes actual closure-source23/47/23/23/47 in39.45s.
+Independent final41 inputs agree30accept/11reject/9Rust natives; generated
+observation receipts retain pending candidate executions. No course oracles.
+Upstream128/Reference126, harness315/468roots13bins44stages and post-observer
+hash/opens checks pass1794375059873301041. Full new-compiler CI remains due.
+Preceding full42953042040 onfe8753c38 PASSED every fast/release/course/native/debug/
+independent/PA25 gate, qualifying the13 independently reviewed earlier references.
 
-[Const adapter reductions](docs/pa25-const-adapter-reductions.md) now freeze10
-ordinary language cases in PA25 and10 actual-source-role contrasts in PA31.
-Each manifest declares6positive/4negative outcomes before correction. Independent
-Rust object compilation agrees with all20; six ordinary positives execute0 with
-empty output. Committed independent-review.json receipts bind final source hashes.
-Upstream128/Reference126 and harness315/468roots13bins44stages pass guarded
-1794366696019332445; no compiler source or course oracle changes were made.
+Current CLIe7b59bbd91cd2f589572e18808100c63d109bbac34ea278b2c82a8b2523b0a7e
+at Bobj/parallel/const-adapter/candidate2-dev-fast/rustgm binds27cef3f64/emptydiff/
+3898Rusthashes. Forty exclusive frozen A/A+twoABBA observations preserve complete
+ordinary import/result LowIR and const factory/capture types. Ratios1.007/1.062/
+1.012/.997, noisy A/A; no speed/neutrality/optimized/core claim. Width8/32/128
+separate inference3771/15075/60291; local6957/27477/109557, all noise128identical.
+Completed6a38/8b73 pins retired1794375081738822218; four analysis pins retired
+1794374525077841808. Metadata/raw remain, binaries absent. Preserve currente7b5
+and older optimized21f; no fresh release/private cold link per edit.
 
-Immutable8b7 passes the ordinary/const-factory LowIR controls. Other ordinary
-conditional forms stop at Destruct lookup or const declaration preparation;
-these remain PA25 positive requirements, not reclassified negatives. PA31
-self/binary/forward reproduce the canonical-selection failure. A diagnostic-only
-ab8a CLI confirms the reducer's actual cause: const closure defining obligations
-require a scoped continuation, in traits/callables/eligibility.rs. The trace
-instrumentation was removed. Direct conditional/source ordinary/const-factory
-controls pass type analysis; generic body inspection has a separate construction
-fence and is not native or complete library evidence. Four language opponents
-retain rejection contracts; the refined runtime-creation source preserves the
-actual Fn hierarchy and reaches the genuine const-context error in both compilers.
-Completed diagnostic ab8a executable and failed probe2 objects were retired by
-scoped cleanup1794366792736214583; their inputs/producer patch/raw observations
-remain. Current8b7 and optimized21f pins remain available; ab8a does not.
+Final120s original observation still FAILS deadline121.1028s,200diagnosticrecords
+throughfunction8926,str/mod.rsfile232:14801,node605. ProgressSHA
+2860478db2b59f79cbb7e028026c067e7432d0045f4b7519e8a5f9bcd6f40760.
+All722hashes/375opened/sixbindings/profile/limits verified unchanged afterward.
+NeverShortCircuit wrap_mut1/2 file95 failures are absent from this prefix.
+First now len/is_empty,array/iter.rsfile102:12256/12334,no applicable method.
+Actual receiver is ManuallyDrop<PolymorphicIter<[MaybeUninit<T>;N]>>, with generic
+DATA:PartialDrop and the real conditional const Deref. Reduce ordinary twins
+first, choose earliest owning PA from actual features, then retain source roles
+only where needed. Keep expectations before independent checks/correction.
+Next source records are arrayeach_ref/mut const-stability, then projected
+try_from_fn_erased; do not conflate those with receiver lookup.
 
-Next implement the selected closure's defining-debt continuation using the
-existing iterative scoped clause engine. closures::actual::arguments supplies
-the exact owner parameter/captured-lifetime mapping; traits::effects::in_context
-retains the requested use effect. Prove every instantiated requirement as a child
-before Source::Callable publication, preserving quantifiers, source/capture/kind
-checks, lifetime evidence and work/retained-storage charges. Do not remove the
-generic/conditional fence or treat signature equality as const permission.
-Read docs/pa25-const-adapter-reductions.md and both packet manifests first.
-Ordinary bootstrap preparation, generic body construction, actual adapter
-CTFE/runtime/native behavior, general conditional function items and transport
-remain required. No new original observer or implementation qualification yet.
-
-The preceding [nominal source Unsize checkpoint](docs/pa31-nominal-unsize.md)
-retains46 outcomes/31native, both element-inference directions and its completed
-storage-tail/unchanged-argument/actual-field/endpoint proofs. Full42930363606on4a
-now PASSED every fast/release/course/native/debug/independent/PA25 stage, joining
-successful42925327481oncba and42918510671on216364. Callable source/fixtures/references are published2d94c3ce61e660e046e345dccaacd2a843f6da05.
-Full42948079201 ran that exact snapshot and FAILED13 PA20/PA21 text comparisons
-after all3065 private and all regular integration tests passed. Native/debug/
-independent successor stages were skipped. It was dispatched only after
-confirming no active full predecessor.
-Push-fast42947808422 is separate. Do not cancel or redispatch the full run for
-documentation-only descendants. Wait for terminal status before another full.
-Three tuple-factory cleanup owners and optimized nested-proof A/A/stack remain
-required. Singleworker existing B; mainGitonly, no new trees/agents or CPP/v5 edits.
-Whole PA31 remains planned; core compilation remains incomplete.
-
-[The CI reference review](docs/pa24-callable-result-ci-review.md) independently
-checks all13 unchanged inputs/statuses with Rust objects and11 complete paired
-Rust/CPPGM native programs (1794367199157806503). Exact generation changes only
-11semantic stdout/2diagnostic sidecars; all7280other PA20/PA21 sidecars remain
-identical. Full1564PA20+867PA21 text suites pass1794367453687235048. Scoped receipts
-are generated with these13oracles, no hand edits. Witness numbering changes
-preserve all3 quantified proof blocks and their relation; new reflexive/outlives
-records retain proof rather than erase it. No compiler/backend/input/outcome
-change or new core observation. New full successor is due after publication,
-after checking no active full run; its native/debug/independent gates remain due.
+No complete census/body-count/speed claim or original core/alloc/std artifact.
+Do not raise the120s observer window. Single worker, existing B, mainGitonly,
+no new worktrees/agents/CPPv5 changes. Source receiver reductions are next;
+three old tuple-factory cleanup owners and optimized nested-proof A/A/stack
+checks remain required. Whole PA25/31 and remaining assignments stay planned.
 
 [PA19implementedtraitscope](docs/pa19-implemented-trait-scope.md) remains published
 with34newoutcomes/25native/all1233texts andzeroexistingreferencechanges. The prior

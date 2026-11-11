@@ -10,9 +10,10 @@ Generic/conditional const caller proof, adapters, bootstrap and authenticated
 source transport remain required. PA31 and original artifact gates stay open.
 
 The [const adapter reduction packet](tests/spec/const-adapters/README.md)
-reproduces the current original-core canonical-selection fence with actual
-source callable roles. Ordinary language forms stay in PA25. Both draft packets
-have independent positive/negative outcomes; implementation remains required.
+now qualifies the scoped defining-contract proof with actual source callable
+roles and bounded local-child completion. Ordinary language forms stay in PA25.
+The expanded31-case source packet retains three required runtime/CTFE positives;
+the full assignments and original library artifacts remain incomplete.
 
 The [complete Field offset/native checkpoint](../docs/parallel/field-offset-execution.md)
 executes the genuine provided initializer, actual reached field_offset and shared

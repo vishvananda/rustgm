@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "state": "Independent observations for required draft reductions; candidate adapter implementation remains pending",
+  "state": "Independent ordinary requirements qualified; four conditional adapters remain positive requirements behind bootstrap setup fences",
   "manifest_sha256": "9a611035759ce88a549329ffe389d2063432d1f9731f1f4e90a92b8067f88cda",
   "rustc_version_verbose": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.0\nLLVM version: 22.1.8\n",
   "profile": {
@@ -17,21 +17,29 @@
   "rustc_accepts": 6,
   "rustc_rejects": 4,
   "rustc_native_executions": 6,
-  "candidate_compiler_head": "31cfbe08b0c9589c2bc55b93ac895076f72087c3",
-  "candidate_sha256": "8b73f15a8334129dc7b9849347d05dc7d7ca7fac3c6286dc871b45c3fbcb1361",
-  "candidate_source_count": 3896,
-  "candidate_source_diff_empty": true,
+  "candidate_compiler_head": "27cef3f64b9ac4c58cf49f73aef827e715061cf6",
+  "candidate_sha256": "e7b59bbd91cd2f589572e18808100c63d109bbac34ea278b2c82a8b2523b0a7e",
+  "candidate_source_count": 3898,
+  "candidate_source_diff_empty_at_freeze": true,
+  "candidate_full_packet_qualified": false,
   "no_cppgm_native_claim": true,
   "no_generated_course_oracles": true,
   "inputs": [
     {
       "path": "pa25/tests/spec/const-adapters/ordinary.rs",
       "sha256": "28e5c27310b434c0e52e160df40ea03505c55c911ec03fc956ade3f8259c5c29",
-      "expected_object_status": 0,
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "native_status": 0,
+      "native_stdout": "",
+      "native_stderr": "",
+      "qualification": "required; candidate currently unsupported where conditional roles are needed",
+      "manifest_sha256": "9a611035759ce88a549329ffe389d2063432d1f9731f1f4e90a92b8067f88cda",
       "observed_object_status": 0,
       "rustc_diagnostic": "",
       "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "independent_native": {
+      "independent_link_status": 0,
+      "independent_native_observed": {
         "status": 0,
         "stdout": "",
         "stderr": ""
@@ -52,11 +60,18 @@
     {
       "path": "pa25/tests/spec/const-adapters/const-factory.rs",
       "sha256": "55a807ae5d907b4b3faa16d6612f6c47db3fd9b8d7a204ec22d8fabd0c8c13cc",
-      "expected_object_status": 0,
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "native_status": 0,
+      "native_stdout": "",
+      "native_stderr": "",
+      "qualification": "required; candidate currently unsupported where conditional roles are needed",
+      "manifest_sha256": "9a611035759ce88a549329ffe389d2063432d1f9731f1f4e90a92b8067f88cda",
       "observed_object_status": 0,
       "rustc_diagnostic": "",
       "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "independent_native": {
+      "independent_link_status": 0,
+      "independent_native_observed": {
         "status": 0,
         "stdout": "",
         "stderr": ""
@@ -77,11 +92,18 @@
     {
       "path": "pa25/tests/spec/const-adapters/conditional-self.rs",
       "sha256": "ab1da295efc70cd1cafdeaa35ae79ae95a90fea0f233080b559e50a80eb52ac7",
-      "expected_object_status": 0,
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "native_status": 0,
+      "native_stdout": "",
+      "native_stderr": "",
+      "qualification": "required; candidate currently unsupported where conditional roles are needed",
+      "manifest_sha256": "9a611035759ce88a549329ffe389d2063432d1f9731f1f4e90a92b8067f88cda",
       "observed_object_status": 0,
       "rustc_diagnostic": "",
       "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "independent_native": {
+      "independent_link_status": 0,
+      "independent_native_observed": {
         "status": 0,
         "stdout": "",
         "stderr": ""
@@ -102,11 +124,18 @@
     {
       "path": "pa25/tests/spec/const-adapters/conditional-binary.rs",
       "sha256": "6e324056b625985d45bb5d6e71dfde011ee806ae2f6da45e5d8bb7382197d297",
-      "expected_object_status": 0,
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "native_status": 0,
+      "native_stdout": "",
+      "native_stderr": "",
+      "qualification": "required; candidate currently unsupported where conditional roles are needed",
+      "manifest_sha256": "9a611035759ce88a549329ffe389d2063432d1f9731f1f4e90a92b8067f88cda",
       "observed_object_status": 0,
       "rustc_diagnostic": "",
       "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "independent_native": {
+      "independent_link_status": 0,
+      "independent_native_observed": {
         "status": 0,
         "stdout": "",
         "stderr": ""
@@ -127,11 +156,18 @@
     {
       "path": "pa25/tests/spec/const-adapters/conditional-tuple.rs",
       "sha256": "e8705ee13b0e0c0c8268f509eab57d8e70c99d412842864a0e33d26c5d6ab9d0",
-      "expected_object_status": 0,
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "native_status": 0,
+      "native_stdout": "",
+      "native_stderr": "",
+      "qualification": "required; candidate currently unsupported where conditional roles are needed",
+      "manifest_sha256": "9a611035759ce88a549329ffe389d2063432d1f9731f1f4e90a92b8067f88cda",
       "observed_object_status": 0,
       "rustc_diagnostic": "",
       "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "independent_native": {
+      "independent_link_status": 0,
+      "independent_native_observed": {
         "status": 0,
         "stdout": "",
         "stderr": ""
@@ -152,11 +188,18 @@
     {
       "path": "pa25/tests/spec/const-adapters/conditional-runtime.rs",
       "sha256": "0c1a8219a5d7991d0d3ecaa46cc33754fd764663a24c8fbefe04374fb607a732",
-      "expected_object_status": 0,
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "native_status": 0,
+      "native_stdout": "",
+      "native_stderr": "",
+      "qualification": "required; candidate currently unsupported where conditional roles are needed",
+      "manifest_sha256": "9a611035759ce88a549329ffe389d2063432d1f9731f1f4e90a92b8067f88cda",
       "observed_object_status": 0,
       "rustc_diagnostic": "",
       "rustc_diagnostic_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "independent_native": {
+      "independent_link_status": 0,
+      "independent_native_observed": {
         "status": 0,
         "stdout": "",
         "stderr": ""
@@ -177,7 +220,10 @@
     {
       "path": "pa25/tests/spec/const-adapters/ordinary-bound-reject.rs",
       "sha256": "413d8506e6315fe6144f4779d7bebbd93b5c10bc13abc26f931d198bfca30d9e",
-      "expected_object_status": 1,
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "qualification": "language rejection; independent cause must agree before correction",
+      "manifest_sha256": "9a611035759ce88a549329ffe389d2063432d1f9731f1f4e90a92b8067f88cda",
       "observed_object_status": 1,
       "rustc_diagnostic": "error[E0277]: the trait bound `F: [const] FnMut(A)` is not satisfied\n --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa25/tests/spec/const-adapters/ordinary-bound-reject.rs:3:189\n  |\n3 | ...]core::marker::Destruct{const move|a|Self(f(a))}}\n  |                                              - ^\n  |                                              |\n  |                                              required by a bound introduced by this call\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0277`.\n",
       "rustc_diagnostic_sha256": "7714fa15a940182c4b0fa36e98e51576665f95322e895dd0f11b0fb9e9df7b5b",
@@ -197,10 +243,13 @@
     {
       "path": "pa25/tests/spec/const-adapters/ordinary-closure-reject.rs",
       "sha256": "50bd381a64c4f944577aa0f4b1caa15980fcfed1a66073fcd05600622d8a09a6",
-      "expected_object_status": 1,
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "qualification": "language rejection; independent cause must agree before correction",
+      "manifest_sha256": "9a611035759ce88a549329ffe389d2063432d1f9731f1f4e90a92b8067f88cda",
       "observed_object_status": 1,
-      "rustc_diagnostic": "error[E0277]: the trait bound `{closure@ordinary-closure-reject.rs:3:176}: [const] FnMut(A)` is not satisfied\n --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa25/tests/spec/const-adapters/ordinary-closure-reject.rs:3:62\n  |\n3 | struct Wrap<T>(T);impl<T>Wrap<T>{const fn one<A,F>(mut f:F)->impl [const]FnMut(A)->Self+[const]core::marker::Destruct where F:[const]...\n  |                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  |\n  = note: the full name for the type has been written to '/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/const-adapter/qualified/pa25-ordinary-closure-reject.long-type-17831320544661755705.txt'\n  = note: consider using `--verbose` to print the full type name to the console\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0277`.\n",
-      "rustc_diagnostic_sha256": "75d439cf2d16d5654c38b93650c8ab6b1e6e947e7c3780011e93ae2b7c966df2",
+      "rustc_diagnostic": "error[E0277]: the trait bound `{closure@ordinary-closure-reject.rs:3:176}: [const] FnMut(A)` is not satisfied\n --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa25/tests/spec/const-adapters/ordinary-closure-reject.rs:3:62\n  |\n3 | struct Wrap<T>(T);impl<T>Wrap<T>{const fn one<A,F>(mut f:F)->impl [const]FnMut(A)->Self+[const]core::marker::Destruct where F:[const]...\n  |                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  |\n  = note: the full name for the type has been written to '/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/const-adapter/final-qualified/pa25-ordinary-closure-reject.long-type-8718947092541101358.txt'\n  = note: consider using `--verbose` to print the full type name to the console\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0277`.\n",
+      "rustc_diagnostic_sha256": "bfe7507f432a4bc842c1cec9785d3bdb4b00c63135284d69dc9996f1a2049e81",
       "candidate_observations": {
         "--emit-types": {
           "status": 1,
@@ -217,7 +266,10 @@
     {
       "path": "pa25/tests/spec/const-adapters/wrong-output-reject.rs",
       "sha256": "e5055f64c373100854f2b4a04496dde8cf8573694d8e7dfdfde7bc8499719c1b",
-      "expected_object_status": 1,
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "qualification": "language rejection; independent cause must agree before correction",
+      "manifest_sha256": "9a611035759ce88a549329ffe389d2063432d1f9731f1f4e90a92b8067f88cda",
       "observed_object_status": 1,
       "rustc_diagnostic": "error[E0308]: mismatched types\n --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa25/tests/spec/const-adapters/wrong-output-reject.rs:3:189\n  |\n3 | ...pl<T>Wrap<T>{const fn one<A,F>(mut f:F)->impl [const]FnMut(A)->Self+[const]core::marker::Destruct where F:[const]FnMut(A)->T+[const]core::marker::Destruct{const move|a|f(a)}}\n  |       - found this type parameter                                                                                                                                          ^^^^ expected `Wrap<T>`, found type parameter `T`\n  |\n  = note:      expected struct `Wrap<T>`\n          found type parameter `T`\nhelp: try wrapping the expression in `Wrap`\n  |\n3 | struct Wrap<T>(T);impl<T>Wrap<T>{const fn one<A,F>(mut f:F)->impl [const]FnMut(A)->Self+[const]core::marker::Destruct where F:[const]FnMut(A)->T+[const]core::marker::Destruct{const move|a|Wrap(f(a))}}\n  |                                                                                                                                                                                             +++++    +\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0308`.\n",
       "rustc_diagnostic_sha256": "001e00d4c94d495de9f62ea665c2c613f0732059b2c249cf978b6bffd92d6203",
@@ -237,7 +289,10 @@
     {
       "path": "pa25/tests/spec/const-adapters/runtime-creation-reject.rs",
       "sha256": "3524360b5743ac575263e6cd1091ef91c29d7e88bcf90053ee1b2ff623225cdc",
-      "expected_object_status": 1,
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "qualification": "Language rejection: const closure created directly in an ordinary runtime function; surrounding bounds are ordinary",
+      "manifest_sha256": "9a611035759ce88a549329ffe389d2063432d1f9731f1f4e90a92b8067f88cda",
       "observed_object_status": 1,
       "rustc_diagnostic": "error: cannot use `const` closures outside of const contexts\n --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa25/tests/spec/const-adapters/runtime-creation-reject.rs:3:142\n  |\n3 | ...rker::Destruct where F:FnMut(A)->T+core::marker::Destruct{const move|a|Self(f(a))}}\n  |                                                              ^^^^^^^^^^^^^\n\nerror: aborting due to 1 previous error\n\n",
       "rustc_diagnostic_sha256": "8296b682b92de5c9f0fbe5dae73c34b87fb7873a992209da91b00d699fdad60e",
@@ -255,15 +310,5 @@
       }
     }
   ],
-  "evidence_root": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/const-adapter",
-  "checks": {
-    "upstream": {
-      "status": 0,
-      "log_sha256": "19edc114e22639322b3ce9f0bcda582a6fc7d9641501c9a6ac1deca7ce08d175"
-    },
-    "harness": {
-      "status": 0,
-      "log_sha256": "5bee9e24f89bd714d538d966b0eea62d6f9e336795b7e0af78214ec6480bee67"
-    }
-  }
+  "evidence_root": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/const-adapter"
 }

@@ -49,8 +49,9 @@ and the const_closures feature request alone do not establish these semantics.
 
 The [const adapter reductions](../docs/pa25-const-adapter-reductions.md) retain
 ordinary conditional-callable requirements in PA25 and actual source-role
-contrasts in PA31. Their independently checked draft manifests precede any
-defining-obligation correction; unsupported positives remain required.
+contrasts in PA31. The finite scoped defining-proof and local-child completion
+checkpoint now passes; ordinary bootstrap and three concrete source factory
+runtime/CTFE positives remain required. No whole assignment is released.
 
 The maintainer implements this responsibility in `dev/src/` and introduces its
 typed interface before generating text views. Consult `spec.md`, the pinned

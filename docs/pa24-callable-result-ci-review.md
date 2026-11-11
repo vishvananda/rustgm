@@ -40,3 +40,7 @@ display excerpts and stopped before writing any oracle. Its corrected successor
 retains full diffs and checks CI's display limit only for that log comparison.
 Both scripts and observations remain under `obj/parallel/callable-ci/`; the full
 reviewed diff includes the quantified proof blocks hidden by CI's truncation.
+
+Full successor42953042040 onfe8753c38 subsequently passed every fast, release/
+course, native, debug, independent and PA25 component gate. This qualifies the
+reviewed reference repair; the later const-adapter compiler has separate gates.
