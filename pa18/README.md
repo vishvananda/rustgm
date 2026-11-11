@@ -73,6 +73,12 @@ earlier move.
 
 ## Template proofs and concrete execution
 
+Actual implicit reborrow places retain their referent field instances before
+immutable ownership queries. The [borrowed-place packet](tests/spec/borrowed-place-fields/README.md)
+adds five independent outcomes and checks a non-Copy referent's real destructor
+exactly once. Selected borrow data feeds the existing preparation and declaration
+wait paths; the ordinary move and lifetime requirements still apply.
+
 Check bodies with rigid type/const parameters and their own assumptions. The
 built-in Sized, Copy and Clone identities and the existing supported derives
 provide the bounded capability profile; Copy implies Clone, while Clone alone

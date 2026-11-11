@@ -7883,6 +7883,107 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/borrowed-place-fields/shared.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "input": "file",
+      "source_sha256": "68575a82b20530876cdb1edf858dabcf7f4c63591ac1f781d0dd32d096264a19",
+      "features": [
+        "pa18.templates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused parameterized body and referent field-preparation contract; drop-native.rs exercises real borrowing and destruction."
+      }
+    },
+    {
+      "path": "tests/spec/borrowed-place-fields/mutable.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "input": "file",
+      "source_sha256": "8bac5d6b9dda6df903eba2be3a0e7c47c719b2228b45c7ebe6d8e22edfd93dd3",
+      "features": [
+        "pa18.templates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused parameterized body and referent field-preparation contract; drop-native.rs exercises real borrowing and destruction."
+      }
+    },
+    {
+      "path": "tests/spec/borrowed-place-fields/concrete.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "input": "file",
+      "source_sha256": "d076f667eac43cd5a530bb57fda90f15013b09dfb9c5606dffcd3d00d79ccf79",
+      "features": [
+        "pa18.templates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused parameterized body and referent field-preparation contract; drop-native.rs exercises real borrowing and destruction."
+      }
+    },
+    {
+      "path": "tests/spec/borrowed-place-fields/move-out.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "input": "file",
+      "source_sha256": "6bc9466e225ae5639414639703b9e886980788d03c981fafbac54e6d2751cb19",
+      "features": [
+        "pa18.templates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs"
+    },
+    {
+      "path": "tests/spec/borrowed-place-fields/drop-native.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "input": "file",
+      "source_sha256": "be375fa8fd5f572b8ccfaa553a9fe76a5394a222106deb1a8f3a8a88239b307f",
+      "features": [
+        "pa18.templates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }

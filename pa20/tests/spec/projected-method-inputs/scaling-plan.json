@@ -1,0 +1,57 @@
+{
+  "state": "Declared before independent or candidate execution of scaling inputs. Semantic change already made; no outcomes inferred from it.",
+  "profile": {
+    "rustc": "1.98.0",
+    "target": "x86_64-unknown-linux-gnu",
+    "edition": 2024,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0,
+    "cap_lints": "allow"
+  },
+  "cases": [
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/width-8-noise-0.rs",
+      "sha256": "648b8726857f71d92a68cf5b8d08e40af6d61889545517f5501e46c871610ffa",
+      "exit_status": 0,
+      "width": 8,
+      "noise": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/width-8-noise-128.rs",
+      "sha256": "0bbad68c8a6e97b541ae09192ffb4407dc16a834a123c2af42d8f5d62802907d",
+      "exit_status": 0,
+      "width": 8,
+      "noise": 128
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/width-32-noise-0.rs",
+      "sha256": "b6e8f9462d32d8d5255881912a6ce24340f655a96c3dd9d7926a489448b9476e",
+      "exit_status": 0,
+      "width": 32,
+      "noise": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/width-32-noise-128.rs",
+      "sha256": "51bd81888b8818ffca0a6b7fb09d50518f638b3178866e215dcd95d8493440e4",
+      "exit_status": 0,
+      "width": 32,
+      "noise": 128
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/width-128-noise-0.rs",
+      "sha256": "ca0ca99c8e62cdaae85a321a33774a18fcc3a0a8069667899a529fc580308b61",
+      "exit_status": 0,
+      "width": 128,
+      "noise": 0
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/width-128-noise-128.rs",
+      "sha256": "3cbb86975107fd64eb841184787ab3fb4d046c70e6ac81bc8bff8b8070c5554a",
+      "exit_status": 0,
+      "width": 128,
+      "noise": 128
+    }
+  ]
+}

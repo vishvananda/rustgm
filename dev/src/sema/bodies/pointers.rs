@@ -3,7 +3,7 @@ use super::{Checker, Constructor, Error, NodeId, TermId};
 use crate::{
     resolve::unit::NodeKey,
     sema::model::{AdjustmentKind, BodyRegionOrigin, Coercion, ReferenceConversion},
-    types::{Kind as Type, TypeId, infer::Solved},
+    types::infer::Solved,
 };
 
 pub(super) struct Pending {
@@ -12,26 +12,6 @@ pub(super) struct Pending {
 }
 
 impl Checker<'_> {
-    pub(super) fn pointer_storage(&self, solved: &Solved) -> Vec<TypeId> {
-        if self.state.pointer_adjustments.is_empty() {
-            return Vec::new();
-        }
-        self.state
-            .adjustments
-            .iter()
-            .enumerate()
-            .filter_map(|(index, adjustment)| {
-                if adjustment.kind != AdjustmentKind::PointerReborrow {
-                    return None;
-                }
-                let (_, borrow) = self.state.reference_adjustments.get(&index)?;
-                match self.facts.types.kind(solved.types[borrow.0 as usize]) {
-                    Some(Type::Reference { referent, .. }) => Some(referent),
-                    _ => None,
-                }
-            })
-            .collect()
-    }
     pub(super) fn publish_pointer_adjustments(&mut self, solved: &Solved, body: NodeKey) {
         if self.state.pointer_adjustments.is_empty() {
             return;

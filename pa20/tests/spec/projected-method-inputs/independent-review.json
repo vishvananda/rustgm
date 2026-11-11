@@ -1,0 +1,146 @@
+{
+  "state": "Predictions and all exact original bytes independently reviewed before compiler edits; initial UFCS fallback predictions disproved by Rust and preserved under obj. These inputs retain the independently accepted fallback cases and add separate absent-fallback negatives.",
+  "profile": {
+    "rustc": "1.98.0",
+    "target": "x86_64-unknown-linux-gnu",
+    "edition": 2024,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0,
+    "cap_lints": "allow"
+  },
+  "cases": [
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/plain-concrete.rs",
+      "sha256": "1e01177b7e5af51b41e5e5cea285c3928f477d36b60b86a7c9cac87cbcc103d5",
+      "exit_status": 0,
+      "native": false
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/plain-associated.rs",
+      "sha256": "6eece91453164f7008d871a00dcab13723b7fa0da3c3bfee548723df92d7a073",
+      "exit_status": 0,
+      "native": false
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/plain-explicit.rs",
+      "sha256": "667a3b502653f8c7b825e182b6e5ca1b25250d0a2dc17eb9ca21fea347fbbac2",
+      "exit_status": 0,
+      "native": false
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/copy-concrete.rs",
+      "sha256": "651fab45d4344601a0c3de37c6c1f85b4a7670dfd2fa30ade60d3462ea8c98b0",
+      "exit_status": 0,
+      "native": false
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/copy-associated.rs",
+      "sha256": "c79d1fe1a0499aded10a3f037bbde3968b22c1e11b3beb4dbaa8f01c13b4bfcf",
+      "exit_status": 0,
+      "native": false
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/copy-explicit.rs",
+      "sha256": "02b51492438b9c451e21365edc8d59ae2462ae6d9f6cc3529f36c36b7c836402",
+      "exit_status": 0,
+      "native": false
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/slice-associated.rs",
+      "sha256": "c1f546cbf2882dc76354ae18973e6e3195fdc6ee53a45b0a56f4b8784e56d47f",
+      "exit_status": 0,
+      "native": false
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/slice-wrapped-associated.rs",
+      "sha256": "47a3093df1f4289e17de1aee9aa743cb779737eff3c8c37b623451a7d54162c0",
+      "exit_status": 0,
+      "native": false
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/condition-paid.rs",
+      "sha256": "9c3cc5b9cb86319e30efe75be3ec265823a1f89f8a456668b28de854e3cce306",
+      "exit_status": 0,
+      "native": false
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/condition-unpaid.rs",
+      "sha256": "fe74c1314b9549844c2c3eb6858bf6628b5a2394d70f5cd80fe4287773f4a442",
+      "exit_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/condition-explicit.rs",
+      "sha256": "52f38f6a47078858e2d4d4635f7ab3c2e0f3f2b4c3a4e52a6fe039dc7aa35c71",
+      "exit_status": 0,
+      "native": false
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/condition-concrete.rs",
+      "sha256": "6d6da0a873c5cd27905ac9363f3db2b43e41dc3a5c00d31c652d480d059bab7e",
+      "exit_status": 0,
+      "native": false
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/fallback-unpaid.rs",
+      "sha256": "86626722ff6751634ac8f333609f0b00389d2f08d081eb9e430b628f009c2379",
+      "exit_status": 0,
+      "native": false
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/inherent-paid.rs",
+      "sha256": "629f56ce13abf2fcf1e8e5e5805243c11426b738a5c312bbcc721010faacde8a",
+      "exit_status": 0,
+      "native": false
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/inherent-concrete.rs",
+      "sha256": "9040db168af22fd523be0c14d1568d721ed2c6c857c5f62c5cd2d1387c4eb012",
+      "exit_status": 0,
+      "native": false
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/fallback-concrete.rs",
+      "sha256": "c9f653ca13ffdcb9153ba31c02488edc68d908ef2af32bf2465ae0c884616d92",
+      "exit_status": 0,
+      "native": false
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/explicit-unpaid.rs",
+      "sha256": "befd20a7b5b04e39ebbac6f426467da64d2d3cc862da253c1634e17bed759d53",
+      "exit_status": 0,
+      "native": false
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/explicit-noncopy.rs",
+      "sha256": "ddda85826d4ed8a80d57a5444b12d9e8dbe0d691463b6b09566ef2de9db7b8e1",
+      "exit_status": 0,
+      "native": false
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/priority-native.rs",
+      "sha256": "035f5feacb05ce1bdc2f61143ea251c21d4e2aab237a63329a738f34157f7444",
+      "exit_status": 0,
+      "native": true
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/explicit-unpaid-no-fallback.rs",
+      "sha256": "03bbd34f75984cc25cd517282107ec9d3a7704f28c88ad6fdf9d4bf01c6108bc",
+      "exit_status": 1,
+      "native": false
+    },
+    {
+      "path": "pa20/tests/spec/projected-method-inputs/explicit-noncopy-no-fallback.rs",
+      "sha256": "b82ebaa04c281d5b7b2da3a7dd3c2d9c39dfb9f588bc8ecf3892daa9e36a3387",
+      "exit_status": 1,
+      "native": false
+    }
+  ],
+  "evidence": [
+    "obj/parallel/projected-properties/probe1/observations.json",
+    "obj/parallel/projected-properties/opponent-probe1/observations.json",
+    "obj/parallel/projected-properties/opponent-probe2/observations.json"
+  ]
+}

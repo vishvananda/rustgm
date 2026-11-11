@@ -1114,9 +1114,9 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let mut well_formed = HashSet::default();
         let mut nominal_types = bounds::Requirements::default();
-        // A pointer conversion's immediate reborrow introduces a dereferenced
-        // storage place even when the source expression is only a reference.
-        for ty in self.pointer_storage(solved) {
+        // An implicit reborrow introduces a dereferenced storage place even
+        // when the source expression is only a reference.
+        for ty in self.borrow_storage(solved) {
             self.prepare_storage(body, ty)?;
         }
         // A generic result retains declaration lifetimes even when its expression

@@ -1,0 +1,50 @@
+{
+  "state": "Predictions declared before independent/candidate execution and before any field-preparation edit. Ordinary parameterized nominal methods require PA18; existing associated-result cases retain PA20 ownership.",
+  "profile": {
+    "rustc": "1.98.0",
+    "target": "x86_64-unknown-linux-gnu",
+    "edition": 2024,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0,
+    "cap_lints": "allow"
+  },
+  "cases": [
+    {
+      "path": "pa18/tests/spec/borrowed-place-fields/shared.rs",
+      "sha256": "68575a82b20530876cdb1edf858dabcf7f4c63591ac1f781d0dd32d096264a19",
+      "exit_status": 0,
+      "native_exit_status": null,
+      "original_path": "obj/parallel/projected-properties/borrow-inputs/shared.rs"
+    },
+    {
+      "path": "pa18/tests/spec/borrowed-place-fields/mutable.rs",
+      "sha256": "8bac5d6b9dda6df903eba2be3a0e7c47c719b2228b45c7ebe6d8e22edfd93dd3",
+      "exit_status": 0,
+      "native_exit_status": null,
+      "original_path": "obj/parallel/projected-properties/borrow-inputs/mutable.rs"
+    },
+    {
+      "path": "pa18/tests/spec/borrowed-place-fields/concrete.rs",
+      "sha256": "d076f667eac43cd5a530bb57fda90f15013b09dfb9c5606dffcd3d00d79ccf79",
+      "exit_status": 0,
+      "native_exit_status": null,
+      "original_path": "obj/parallel/projected-properties/borrow-inputs/concrete.rs"
+    },
+    {
+      "path": "pa18/tests/spec/borrowed-place-fields/move-out.rs",
+      "sha256": "6bc9466e225ae5639414639703b9e886980788d03c981fafbac54e6d2751cb19",
+      "exit_status": 1,
+      "native_exit_status": null,
+      "original_path": "obj/parallel/projected-properties/borrow-inputs/move-out.rs"
+    },
+    {
+      "path": "pa18/tests/spec/borrowed-place-fields/drop-native.rs",
+      "sha256": "be375fa8fd5f572b8ccfaa553a9fe76a5394a222106deb1a8f3a8a88239b307f",
+      "exit_status": 0,
+      "native_exit_status": 0,
+      "original_path": "obj/parallel/projected-properties/borrow-inputs/drop-native.rs"
+    }
+  ]
+}

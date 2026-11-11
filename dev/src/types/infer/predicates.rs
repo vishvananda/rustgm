@@ -28,7 +28,7 @@ pub struct Predicate {
     requirement: Requirement,
 }
 impl Predicate {
-    pub(super) const fn builtin(subject: TermId, bound: Bound) -> Self {
+    pub(crate) const fn builtin(subject: TermId, bound: Bound) -> Self {
         Self {
             subject,
             requirement: Requirement::Builtin(bound),

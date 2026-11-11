@@ -40,10 +40,7 @@ pub(in crate::sema::methods) fn applicable(
     let Some(conditions) = prepare(facts, context, prefix, owner, receiver, caller)? else {
         return Ok(false);
     };
-    if !trait_requirements(facts, context, &conditions.traits, caller)? {
-        return Ok(false);
-    }
-    builtin_requirements(facts, context, &conditions.builtins, caller.environment)
+    trait_requirements(facts, context, &conditions.traits, caller)
 }
 
 pub(super) fn prepare(
@@ -113,7 +110,7 @@ pub(super) fn prepare(
         Err(infer::Error::Mismatch | infer::Error::Occurs) => return Ok(None),
         Err(e) => return Err(inference(e)),
     }
-    declaration_conditions(
+    let Some(mut conditions) = declaration_conditions(
         facts,
         context,
         owner,
@@ -123,7 +120,14 @@ pub(super) fn prepare(
             builtins: obligations,
             traits: Vec::new(),
         },
-    )
+    )?
+    else {
+        return Ok(None);
+    };
+    if !builtin_requirements(facts, context, &mut conditions, caller.environment)? {
+        return Ok(None);
+    }
+    Ok(Some(conditions))
 }
 
 fn declaration_conditions(
@@ -354,13 +358,13 @@ fn lookup_condition(
     clause.ordinary()
 }
 
-pub(super) fn builtin_requirements(
+fn builtin_requirements(
     facts: &mut Declarations,
     context: &mut Context,
-    obligations: &[(TermId, Bound)],
+    conditions: &mut Conditions,
     environment: Option<&Arc<Environment>>,
 ) -> Result<bool, &'static str> {
-    if obligations.is_empty() {
+    if conditions.builtins.is_empty() {
         return Ok(true);
     }
     let environment = if let Some(environment) = environment {
@@ -369,14 +373,24 @@ pub(super) fn builtin_requirements(
         Arc::new(Environment::new(&facts.types, &[])?)
     };
     let mut properties = Query::new(environment);
-    for &(term, bound) in obligations {
-        let value = properties.demand(
+    for (term, bound) in conditions.builtins.drain(..) {
+        let Some(value) = properties.try_demand(
             context,
             &mut facts.types,
             &facts.aggregates,
             &facts.derives,
             term,
-        )?;
+        )?
+        else {
+            // The structural filter cannot read a projected property. Reuse
+            // ordinary non-refining trait selection, which owns normalization,
+            // caller premises and pending declarations. No probe evidence is
+            // published; the selected callable still proves its complete use.
+            conditions.traits.push(super::lookup_goals::Goal::ordinary(
+                infer::predicates::Predicate::builtin(term, bound),
+            ));
+            continue;
+        };
         let possible = match bound {
             Bound::Sized => value.sized,
             Bound::Copy => value.abilities.copy,

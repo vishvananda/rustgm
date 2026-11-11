@@ -246,15 +246,7 @@ impl Query {
                         self.trial = Some(trial);
                         return Ok(Progress::Pending(owner));
                     }
-                    conditions::Progress::Ready(possible) => {
-                        possible
-                            && applicability::builtin_requirements(
-                                facts,
-                                &mut trial.context,
-                                &trial.conditions.builtins,
-                                self.caller.environment.as_ref(),
-                            )?
-                    }
+                    conditions::Progress::Ready(possible) => possible,
                 };
                 account_probe(facts, trial.context.steps)?;
                 if possible && self.selected.replace(trial.member).is_some() {

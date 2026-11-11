@@ -2,6 +2,12 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
+The [projected receiver packet](tests/spec/projected-method-inputs/README.md)
+adds seven independently checked actual slice-method contracts. Ordinary method
+conditions and reborrow field preparation remain in PA20 and PA18 respectively.
+The three previously documented valid normalization failures in
+`projection-lookup-conditions` now accept under the focused source checks.
+
 The [captured closure/pointer integration](../docs/parallel/captured-pointer-main-join.md)
 qualifies genuine ptr_guaranteed_cmp declaration/CTFE/native fallback and real
 captured const execution together with Field. Original core now reaches LIB192

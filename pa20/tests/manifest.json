@@ -25615,6 +25615,561 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/plain-concrete.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "1e01177b7e5af51b41e5e5cea285c3928f477d36b60b86a7c9cac87cbcc103d5",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic body and lookup language contract; priority-native.rs separately instantiates and executes the selected implementations."
+      }
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/plain-associated.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "6eece91453164f7008d871a00dcab13723b7fa0da3c3bfee548723df92d7a073",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic body and lookup language contract; priority-native.rs separately instantiates and executes the selected implementations."
+      }
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/plain-explicit.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "667a3b502653f8c7b825e182b6e5ca1b25250d0a2dc17eb9ca21fea347fbbac2",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic body and lookup language contract; priority-native.rs separately instantiates and executes the selected implementations."
+      }
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/copy-concrete.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "651fab45d4344601a0c3de37c6c1f85b4a7670dfd2fa30ade60d3462ea8c98b0",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic body and lookup language contract; priority-native.rs separately instantiates and executes the selected implementations."
+      }
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/copy-associated.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "c79d1fe1a0499aded10a3f037bbde3968b22c1e11b3beb4dbaa8f01c13b4bfcf",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic body and lookup language contract; priority-native.rs separately instantiates and executes the selected implementations."
+      }
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/copy-explicit.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "02b51492438b9c451e21365edc8d59ae2462ae6d9f6cc3529f36c36b7c836402",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic body and lookup language contract; priority-native.rs separately instantiates and executes the selected implementations."
+      }
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/slice-associated.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "c1f546cbf2882dc76354ae18973e6e3195fdc6ee53a45b0a56f4b8784e56d47f",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic body and lookup language contract; priority-native.rs separately instantiates and executes the selected implementations."
+      }
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/slice-wrapped-associated.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "47a3093df1f4289e17de1aee9aa743cb779737eff3c8c37b623451a7d54162c0",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic body and lookup language contract; priority-native.rs separately instantiates and executes the selected implementations."
+      }
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/condition-paid.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "9c3cc5b9cb86319e30efe75be3ec265823a1f89f8a456668b28de854e3cce306",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic body and lookup language contract; priority-native.rs separately instantiates and executes the selected implementations."
+      }
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/condition-unpaid.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "fe74c1314b9549844c2c3eb6858bf6628b5a2394d70f5cd80fe4287773f4a442",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs"
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/condition-explicit.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "52f38f6a47078858e2d4d4635f7ab3c2e0f3f2b4c3a4e52a6fe039dc7aa35c71",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic body and lookup language contract; priority-native.rs separately instantiates and executes the selected implementations."
+      }
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/condition-concrete.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "6d6da0a873c5cd27905ac9363f3db2b43e41dc3a5c00d31c652d480d059bab7e",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic body and lookup language contract; priority-native.rs separately instantiates and executes the selected implementations."
+      }
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/fallback-unpaid.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "86626722ff6751634ac8f333609f0b00389d2f08d081eb9e430b628f009c2379",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic body and lookup language contract; priority-native.rs separately instantiates and executes the selected implementations."
+      }
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/inherent-paid.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "629f56ce13abf2fcf1e8e5e5805243c11426b738a5c312bbcc721010faacde8a",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic body and lookup language contract; priority-native.rs separately instantiates and executes the selected implementations."
+      }
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/inherent-concrete.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "9040db168af22fd523be0c14d1568d721ed2c6c857c5f62c5cd2d1387c4eb012",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic body and lookup language contract; priority-native.rs separately instantiates and executes the selected implementations."
+      }
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/fallback-concrete.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "c9f653ca13ffdcb9153ba31c02488edc68d908ef2af32bf2465ae0c884616d92",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic body and lookup language contract; priority-native.rs separately instantiates and executes the selected implementations."
+      }
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/explicit-unpaid.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "befd20a7b5b04e39ebbac6f426467da64d2d3cc862da253c1634e17bed759d53",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic body and lookup language contract; priority-native.rs separately instantiates and executes the selected implementations."
+      }
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/explicit-noncopy.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "ddda85826d4ed8a80d57a5444b12d9e8dbe0d691463b6b09566ef2de9db7b8e1",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic body and lookup language contract; priority-native.rs separately instantiates and executes the selected implementations."
+      }
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/priority-native.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "035f5feacb05ce1bdc2f61143ea251c21d4e2aab237a63329a738f34157f7444",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/explicit-unpaid-no-fallback.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "03bbd34f75984cc25cd517282107ec9d3a7704f28c88ad6fdf9d4bf01c6108bc",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs"
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/explicit-noncopy-no-fallback.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "b82ebaa04c281d5b7b2da3a7dd3c2d9c39dfb9f588bc8ecf3892daa9e36a3387",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs"
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/width-8-noise-0.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "648b8726857f71d92a68cf5b8d08e40af6d61889545517f5501e46c871610ffa",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic lookup scaling contract; priority-native.rs executes instantiated method-selection opponents."
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs"
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/width-8-noise-128.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "0bbad68c8a6e97b541ae09192ffb4407dc16a834a123c2af42d8f5d62802907d",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic lookup scaling contract; priority-native.rs executes instantiated method-selection opponents."
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs"
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/width-32-noise-0.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "b6e8f9462d32d8d5255881912a6ce24340f655a96c3dd9d7926a489448b9476e",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic lookup scaling contract; priority-native.rs executes instantiated method-selection opponents."
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs"
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/width-32-noise-128.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "51bd81888b8818ffca0a6b7fb09d50518f638b3178866e215dcd95d8493440e4",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic lookup scaling contract; priority-native.rs executes instantiated method-selection opponents."
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs"
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/width-128-noise-0.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "ca0ca99c8e62cdaae85a321a33774a18fcc3a0a8069667899a529fc580308b61",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic lookup scaling contract; priority-native.rs executes instantiated method-selection opponents."
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs"
+    },
+    {
+      "path": "tests/spec/projected-method-inputs/width-128-noise-128.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "3cbb86975107fd64eb841184787ab3fb4d046c70e6ac81bc8bff8b8070c5554a",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused generic lookup scaling contract; priority-native.rs executes instantiated method-selection opponents."
+      },
+      "maintainer_origin": "dev/tests/method_selection/possibility.rs"
     }
   ]
 }

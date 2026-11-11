@@ -7,13 +7,12 @@ use crate::types::{
 };
 use std::{fmt::Write as _, sync::Arc};
 
-const NORMALIZE: &str = "candidate properties require associated type normalization";
 const CASES: [(&str, Option<&str>); 13] = [
     ("free-inferred", None),
     ("core-default-method", None),
     ("unique-inherent", None),
-    ("explicit-rigid", Some(NORMALIZE)),
-    ("explicit-concrete", Some(NORMALIZE)),
+    ("explicit-rigid", None),
+    ("explicit-concrete", None),
     (
         "explicit-concrete-fail",
         Some("no applicable trait method for this prefix"),
@@ -23,7 +22,7 @@ const CASES: [(&str, Option<&str>); 13] = [
     ("inferred-concrete-fail", Some(super::OBLIGATION)),
     ("free-copy", None),
     ("free-sized", None),
-    ("method-rigid", Some(NORMALIZE)),
+    ("method-rigid", None),
     ("method-unresolved", None),
 ];
 

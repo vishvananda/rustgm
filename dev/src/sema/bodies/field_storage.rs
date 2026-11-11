@@ -65,7 +65,7 @@ impl Checker<'_> {
 
     fn storage_roots(&self, solved: &crate::types::infer::Solved) -> Result<Vec<TypeId>, Error> {
         let mut roots = vec![self.state.result];
-        roots.extend(self.pointer_storage(solved));
+        roots.extend(self.borrow_storage(solved));
         roots.extend(self.pointer_cast_storage(solved)?);
         for &node in &self.state.touched {
             if !self.state.type_annotations.contains(&node) {
@@ -83,6 +83,25 @@ impl Checker<'_> {
             roots.extend(method.value_types(solved));
         }
         Ok(roots)
+    }
+
+    /// An implicit reborrow constructs a place for its referent. Destruction
+    /// classification reads that place's fields even when no value is moved.
+    /// Keep source order and reuse the actual selected borrow, including raw
+    /// pointer coercions; unrelated reference types remain unexpanded.
+    pub(super) fn borrow_storage(&self, solved: &crate::types::infer::Solved) -> Vec<TypeId> {
+        if self.state.reference_adjustments.is_empty() {
+            return Vec::new();
+        }
+        (0..self.state.adjustments.len())
+            .filter_map(|index| {
+                let (_, borrow) = self.state.reference_adjustments.get(&index)?;
+                match self.facts.types.kind(solved.types[borrow.0 as usize]) {
+                    Some(crate::types::Kind::Reference { referent, .. }) => Some(referent),
+                    _ => None,
+                }
+            })
+            .collect()
     }
 
     /// Declaration-time typing of a demanded body can reach a nominal whose

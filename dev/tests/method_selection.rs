@@ -1,4 +1,6 @@
 //! Prefix selection preserves caller rigidity, unknown aliases and ordinary lowering.
+#[path = "method_selection/possibility.rs"]
+mod possibility;
 use crate::native_references as native;
 use crate::qualify as rustc;
 use crate::semantic;

@@ -2,8 +2,12 @@
 
 Status: **implemented-draft**. Prerequisite: PA19. The bounded source profile is
 Rust 1.98.0, edition 2024, Linux x86-64, panic abort, overflow checks enabled and
-debug assertions disabled. The current public manifest has1,564 text-oracle cases:614 trait-semantic
-inspections and950 complete LowIR checks, with589 declared native executions.
+debug assertions disabled. The current public manifest has1,591 text-oracle cases:614 trait-semantic
+inspections and977 complete LowIR checks, with590 declared native executions.
+The [projected candidate packet](tests/spec/projected-method-inputs/README.md)
+adds27 independently checked outcomes and retains actual bound-sensitive method
+priority through existing semantic selection. Ordinary referent field preparation
+reductions stay in PA18; actual source slice methods stay in PA31.
 The latest [pending-join input checkpoint](../docs/pa20-pending-join-inputs.md)
 adds29 independently checked outcomes after the projected constant/receiver cases.
 All whole-assignment release requirements and the remaining original-core

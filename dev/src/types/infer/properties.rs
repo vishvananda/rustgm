@@ -5,7 +5,10 @@ use crate::types::{
     ItemId, Primitive,
     aggregate::Definitions,
     copy::{Copies, Declaration, Properties},
-    parameters::{environment::Environment, shape::Shapes},
+    parameters::{
+        environment::Environment,
+        shape::{Progress as ShapeProgress, Shapes},
+    },
 };
 use std::{hash::BuildHasher, sync::Arc};
 
@@ -53,6 +56,22 @@ impl Query {
         selected: &std::collections::HashMap<ItemId, Declaration, S>,
         root: TermId,
     ) -> Result<Possible, &'static str> {
+        self.try_demand(context, store, definitions, selected, root)?
+            .ok_or("candidate properties require associated type normalization")
+    }
+    /// Read a possibility when structural information suffices. `None` requests
+    /// semantic selection of the original bound, including projection formation;
+    /// it is neither an absent candidate nor permission to use a value.
+    /// # Errors
+    /// Rejects malformed graphs, missing assumptions and exhausted query resources.
+    pub fn try_demand<S: BuildHasher>(
+        &mut self,
+        context: &mut Context,
+        store: &mut Store,
+        definitions: &Definitions,
+        selected: &std::collections::HashMap<ItemId, Declaration, S>,
+        root: TermId,
+    ) -> Result<Option<Possible>, &'static str> {
         let root = context.root(root).map_err(inference)?;
         let mut work = vec![(root, false)];
         let mut children = Vec::new();
@@ -65,7 +84,12 @@ impl Query {
             let term = context.terms[id.0 as usize];
             let value = match term.value {
                 Value::Variable(_) => Possible::UNKNOWN,
-                Value::Known(ty) => self.known(store, definitions, selected, ty)?,
+                Value::Known(ty) => {
+                    let Some(value) = self.known(store, definitions, selected, ty)? else {
+                        return Ok(None);
+                    };
+                    value
+                }
                 Value::Construct(Constructor::Projection(_))
                     if context.opaque_projection(id).is_some() =>
                 {
@@ -80,9 +104,7 @@ impl Query {
                 }
                 Value::Construct(Constructor::Projection(_)) => match context.resolved(store, id) {
                     Err(Error::Unresolved) => Possible::UNKNOWN,
-                    Ok(_) => {
-                        return Err("candidate properties require associated type normalization");
-                    }
+                    Ok(_) => return Ok(None),
                     Err(error) => return Err(inference(error)),
                 },
                 Value::Construct(kind) => {
@@ -132,7 +154,10 @@ impl Query {
                         None
                     };
                     if let Some(ty) = ty {
-                        self.known(store, definitions, selected, ty)?
+                        let Some(value) = self.known(store, definitions, selected, ty)? else {
+                            return Ok(None);
+                        };
+                        value
                     } else {
                         partial(kind, &children, definitions, selected)
                     }
@@ -143,6 +168,7 @@ impl Query {
         self.cache
             .get(&root)
             .copied()
+            .map(Some)
             .ok_or("missing candidate properties")
     }
     fn known<S: BuildHasher>(
@@ -151,7 +177,7 @@ impl Query {
         definitions: &Definitions,
         selected: &std::collections::HashMap<ItemId, Declaration, S>,
         ty: TypeId,
-    ) -> Result<Possible, &'static str> {
+    ) -> Result<Option<Possible>, &'static str> {
         let field_only = match store.kind(ty) {
             Some(crate::types::Kind::Adt(item, _)) => selected
                 .get(&item)
@@ -162,14 +188,26 @@ impl Query {
         // implementation still proves actual fields before any value operation.
         let abilities = if let Some(declaration) = field_only {
             declaration.properties()
+        } else if store.contains_projections(ty) == Some(true) {
+            return Ok(None);
         } else {
             self.copies.demand(store, definitions, selected, ty)?
         };
-        Ok(Possible {
+        let shape = match self.shapes.advance(store, ty, 0, false)? {
+            ShapeProgress::Ready(shape) => shape,
+            ShapeProgress::Projection => return Ok(None),
+            ShapeProgress::Size(request) => {
+                // Semantic selection owns this request. Abandon only the raw
+                // frontier so another condition can reuse completed siblings.
+                self.shapes.refuse_size(false, request)?;
+                return Ok(None);
+            }
+        };
+        Ok(Some(Possible {
             ty: Some(ty),
-            sized: self.shapes.demand(store, ty)?.sized,
+            sized: shape.sized,
             abilities,
-        })
+        }))
     }
 }
 

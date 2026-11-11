@@ -1,0 +1,70 @@
+{
+  "state": "All seven independently accepted Rust object inputs; exact foundation prefix preserved. Declared before semantic routing changes.",
+  "inputs": [
+    {
+      "path": "pa31/tests/spec/projected-method-inputs/slice-direct.rs",
+      "sha256": "8e96c94f9b698c6c0f77b641661dc3b597fdc008b4994ef58665b896a9e5729c",
+      "rustc_object_status": 0,
+      "source_language_status": 0,
+      "original_path": "obj/parallel/projected-properties/source-inputs/slice-direct.rs"
+    },
+    {
+      "path": "pa31/tests/spec/projected-method-inputs/slice-plain.rs",
+      "sha256": "4d4fc8bf061923faeeb45e69225325e936a8d0d6cc2fb8471a04a6241ca11d77",
+      "rustc_object_status": 0,
+      "source_language_status": 0,
+      "original_path": "obj/parallel/projected-properties/source-inputs/slice-plain.rs"
+    },
+    {
+      "path": "pa31/tests/spec/projected-method-inputs/slice-copy.rs",
+      "sha256": "64ad773fa1c2c970df95f47f79eba659f08d46612142e5027069ff424638faa0",
+      "rustc_object_status": 0,
+      "source_language_status": 0,
+      "original_path": "obj/parallel/projected-properties/source-inputs/slice-copy.rs"
+    },
+    {
+      "path": "pa31/tests/spec/projected-method-inputs/slice-copy-explicit.rs",
+      "sha256": "2a67ecddd4a1fc245f2b8a951f967229186527c0b9051a1587eba57b49058787",
+      "rustc_object_status": 0,
+      "source_language_status": 0,
+      "original_path": "obj/parallel/projected-properties/source-inputs/slice-copy-explicit.rs"
+    },
+    {
+      "path": "pa31/tests/spec/projected-method-inputs/slice-copy-field.rs",
+      "sha256": "3bfbd0f8e9cba85f0e8035e1b68307c6ff61db354f34ec1c61a861687cb027e9",
+      "rustc_object_status": 0,
+      "source_language_status": 0,
+      "original_path": "obj/parallel/projected-properties/source-inputs/slice-copy-field.rs"
+    },
+    {
+      "path": "pa31/tests/spec/projected-method-inputs/slice-copy-field-typed.rs",
+      "sha256": "321be70daf430883322510101da3317ee1f9a962ad7c664aa4d242f28406f517",
+      "rustc_object_status": 0,
+      "source_language_status": 0,
+      "original_path": "obj/parallel/projected-properties/source-inputs/slice-copy-field-typed.rs"
+    },
+    {
+      "path": "pa31/tests/spec/projected-method-inputs/slice-copy-concrete.rs",
+      "sha256": "fca8968cd8dc9d37a5abe829e45cbde6afc3b7ac4ae1190fa4a6047d1ba2fb90",
+      "rustc_object_status": 0,
+      "source_language_status": 0,
+      "original_path": "obj/parallel/projected-properties/source-inputs/slice-copy-concrete.rs"
+    }
+  ],
+  "profile": {
+    "rustc": "1.98.0",
+    "target": "x86_64-unknown-linux-gnu",
+    "edition": 2024,
+    "bootstrap": "1",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0,
+    "cap_lints": "allow"
+  },
+  "prefix": {
+    "path": "pa31/tests/spec/function-pointers/foundation.rs",
+    "sha256": "47ab84ecaf2ffd02a36cb994ea59e6aa74383676fd2f434e3731ecc6b1adfb05",
+    "adaptation": "Original foundation bytes untouched; explicitly prepend actual rustc_coherence_is_core request to author local slice inherent implementation"
+  }
+}
