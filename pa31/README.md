@@ -15,6 +15,12 @@ roles and bounded local-child completion. Ordinary language forms stay in PA25.
 The expanded31-case source packet retains three required runtime/CTFE positives;
 the full assignments and original library artifacts remain incomplete.
 
+The [symbolic index checkpoint](../docs/pa31-symbolic-index.md) adds the existing
+ArrayTerm constructor to the shared builtin-index classifier. Fourteen actual
+source language contracts and const47 pass; ordinary generic-array controls stay
+in PA18. Both independently executing native companions remain required positives
+pending genuine source panic runtime routing. No whole-library artifact is implied.
+
 The [Deref method reduction packet](tests/spec/deref-methods/README.md) isolates
 the next array-iterator receiver failure down to a concrete wrapped getter.
 Ordinary language/library forms stay in PA26. Its expanded42-case source

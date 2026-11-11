@@ -1,4 +1,6 @@
 //! Actual source indexing keeps actual returned places, signature identity and ordinary proof.
+#[path = "idxops/indexed_lengths.rs"]
+mod indexed_lengths;
 use crate::resolve as test_source;
 use rustgm::{
     lowir::program::Program,

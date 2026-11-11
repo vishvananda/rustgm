@@ -88,8 +88,9 @@ impl Checker<'_> {
         let actual = solved.types[array.0 as usize];
         let idx = solved.types[self.term(index)?.0 as usize];
         let result = solved.types[self.term(node)?.0 as usize];
-        let Some(Type::Array { element, .. } | Type::Slice(element)) =
-            self.facts.types.kind(actual)
+        let Some(
+            Type::Array { element, .. } | Type::ArrayTerm { element, .. } | Type::Slice(element),
+        ) = self.facts.types.kind(actual)
         else {
             return Ok(false);
         };

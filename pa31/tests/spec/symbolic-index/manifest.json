@@ -1,0 +1,164 @@
+{
+  "schema": 1,
+  "owner": "PA31 actual source Index/IndexMut and const-stable indexing contracts",
+  "state": "Required outcomes frozen before ArrayTerm classifier correction; whole assignment remains planned",
+  "contract": "Shared symbolic-length array classification retains actual role/impl/effect proof and exact usize/element output; custom index/output and explicit calls remain real calls",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": 2024,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0,
+    "bootstrap": "1",
+    "cap_lints": "allow",
+    "target": "x86_64-unknown-linux-gnu",
+    "target_selection": "default host verified with pinned rustc -vV; commands retain their original explicit transcript"
+  },
+  "inputs": [
+    {
+      "path": "pa31/tests/spec/symbolic-index/runtime-symbolic.rs",
+      "sha256": "33e8f3cbbbc74f516e08bc0c0dbe4d98f65a73d0c0dfcf8909e907608e83ab82",
+      "rustc_object_status": 0,
+      "full_body_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/symbolic-index/fixed-stable.rs",
+      "sha256": "260eb192a18f71989f5e30cb4c405d937d94b96265634ffc9c425d0bcf54bd0f",
+      "rustc_object_status": 0,
+      "full_body_status": 0,
+      "setup_note": "Existing authored genuine panic_bounds_check body enables object emission; only in-bounds behavior is observed; source/API/const/borrow obligations unchanged"
+    },
+    {
+      "path": "pa31/tests/spec/symbolic-index/symbolic-stable.rs",
+      "sha256": "b6cf30d4f87f53e69231f1909bba78871535851c285e58d642365e3035a79b72",
+      "rustc_object_status": 0,
+      "full_body_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/symbolic-index/symbolic-mutable.rs",
+      "sha256": "6b44865ca0f74ffd2c12681a1600b30a146a4c6691ab9b3d34614594ce6262f5",
+      "rustc_object_status": 0,
+      "full_body_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/symbolic-index/symbolic-raw.rs",
+      "sha256": "dabe6cf779dade3ae59495b2288437c8e4713dd5a25ead6214510219c754b62e",
+      "rustc_object_status": 0,
+      "full_body_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/symbolic-index/symbolic-raw-mut.rs",
+      "sha256": "691f6443f064d0a280eeacdfda4bceb71ef47a016177e9baa142db248b8c6801",
+      "rustc_object_status": 0,
+      "full_body_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/symbolic-index/custom-key.rs",
+      "sha256": "8b6e0f9dc4c7663a7353f5b7836bc324e68a7e39326236178cc2c24611b355c2",
+      "rustc_object_status": 0,
+      "full_body_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/symbolic-index/changed-output.rs",
+      "sha256": "539707a42807201333372efc6895b03eee866ced21a50758f558da1b271383d9",
+      "rustc_object_status": 0,
+      "full_body_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/symbolic-index/missing-impl.rs",
+      "sha256": "ff622ba22aff645a09e10021f17df03ea10a42eb27fddbfd20efd71d52e5ffa2",
+      "rustc_object_status": 1,
+      "full_body_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/symbolic-index/nonconst-impl.rs",
+      "sha256": "dd41489b6d1306792146796bc6f6dc2cb33d00f54d8fb36d38248a492d90b29a",
+      "rustc_object_status": 1,
+      "full_body_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/symbolic-index/explicit-stable.rs",
+      "sha256": "5a071247ea4eb6ce6909231c0d52928e3b0a3b4ad1a089b7a5c5e09216c5d5c7",
+      "rustc_object_status": 1,
+      "full_body_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/symbolic-index/native.rs",
+      "sha256": "7ffac5f945b047d8e7e54400cc5661ceda512ce48fbb888409a75e462e08710c",
+      "rustc_object_status": 0,
+      "full_body_status": 0,
+      "independent_native": {
+        "status": 0,
+        "stdout": "symbolic-index 41 23 47 23 41 23 23 47\n",
+        "stderr": ""
+      },
+      "setup_note": "Existing authored genuine panic_bounds_check body enables object emission; only in-bounds behavior is observed; source/API/const/borrow obligations unchanged",
+      "source_lowir_status": 0,
+      "qualification": "Required native positive: source typing and actual CTFE47 pass; demanded LowIR currently stops at installed source panic bounds routing. Native-generic isolates that same boundary in symbolic helper indexing. No negative language qualification."
+    },
+    {
+      "path": "pa31/tests/spec/symbolic-index/native-generic.rs",
+      "sha256": "3c08db29c416aaf3ba8720510519d17c0dc60af3a2d89abbb19e9c8ac1dbd21e",
+      "rustc_object_status": 0,
+      "full_body_status": 0,
+      "independent_native": {
+        "status": 0,
+        "stdout": "symbolic-index 41 23 47 23 41 23 23 47\n",
+        "stderr": ""
+      },
+      "setup_note": "Existing authored genuine panic_bounds_check body enables object emission; only in-bounds behavior is observed; source/API/const/borrow obligations unchanged",
+      "reduction": "Wrapper output reads use the same generic-length helper; original native fixed-wrapper bound guards remain a separate required source panic-runtime positive",
+      "source_lowir_status": 0,
+      "qualification": "Required native positive: source typing and actual CTFE47 pass; demanded LowIR currently stops at installed source panic bounds routing. Native-generic isolates that same boundary in symbolic helper indexing. No negative language qualification."
+    },
+    {
+      "path": "pa31/tests/spec/symbolic-index/out-of-bounds.rs",
+      "sha256": "7d24d2412c8d503ac4a3a7f995c2ce45004008623b98a607308055ff77d442c7",
+      "rustc_object_status": 1,
+      "full_body_status": 1,
+      "cause": "Actual generic builtin const read at index2 of length2 rejects on bounds, despite an authored Index implementation returning element0"
+    }
+  ],
+  "ordinary_controls": [
+    {
+      "path": "pa18/tests/spec/operands/read.rs",
+      "sha256": "d6b294115635660f1674b812a76979309adfe0c1a4e942d7e57042eb4a22d69e",
+      "rustc_object_status": 0,
+      "ordinary_types_status": 0
+    },
+    {
+      "path": "pa18/tests/spec/operands/write.rs",
+      "sha256": "51de2d1d5ec635e8061fbdbccc214e0071bde1d4d7fa533566d9836b8cbe4cc6",
+      "rustc_object_status": 0,
+      "ordinary_types_status": 0
+    },
+    {
+      "path": "pa18/tests/spec/operands/reference.rs",
+      "sha256": "3c0b69b676f487be932832bb429639ad6085d35cacb80a92a4a49c15bd4b004c",
+      "rustc_object_status": 0,
+      "ordinary_types_status": 0
+    }
+  ],
+  "auxiliary": [
+    {
+      "path": "pa31/tests/spec/symbolic-index/observer.c",
+      "sha256": "94e5ebaf1e67fd5fa2c80594f8b8c269b2a17712a684121836d9c72046fe9c54"
+    }
+  ],
+  "support_prefix": {
+    "from": "pa31/tests/spec/source-index-places/primitive-body.rs",
+    "bytes": 15423,
+    "sha256": "738b2797458a5196a6cb2cb2235d60357cddc6778a32b8f35a7ac5f57ecbaf1b",
+    "existing_original_bytes_preserved": true
+  },
+  "runtime_setup": {
+    "source": "pa31/tests/spec/projection-casts/source-chain-generic-called.rs",
+    "line_sha256": "7f3dc4635da160d31405ad2211b81122f40148ebb98cf952efa6e054bc86dc8e",
+    "initial_setup_failure": "Rust object emission for fixed stable and native cases required panic_bounds_check. Original predictions/bytes/diagnostics remain in plan.json/probe1."
+  },
+  "pending_requirements": [
+    "Both native.rs and native-generic.rs remain required full LowIR/native positives; installed source panic runtime routing is not implemented or waived by this classifier repair."
+  ],
+  "phase_note": "full_body_status is the checked body language outcome; native source_lowir_status and independent_native.status are separate required artifact outcomes."
+}
