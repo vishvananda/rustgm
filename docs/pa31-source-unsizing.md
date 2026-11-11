@@ -103,3 +103,14 @@ accepted CTFE forms need a real bounded cleanup continuation and const proof;
 the existing actual-helper placeholder denial stays intact. Owned Box ordering,
 full Drop/Pin/default overrides, source-string panic forms and all other retained
 PA27/PA28 gaps remain required. Ordinary upstream routines stay in Rust source.
+
+
+## 2026-11-11 nominal-tail continuation
+
+The [nominal source Unsize checkpoint](pa31-nominal-unsize.md) qualifies46 new
+outcomes and31 actual native conversions, plus complete LowIR acceptance of the
+unchanged earlier nominal-unsize-required input. It retains actual final-field,
+argument/lifetime and endpoint proof and preserves inference through the shared
+field environment. The initial required boundary above records its earlier scope;
+this continuation supplies that nominal-tail proof. Broader assignment closure,
+private/full successor CI and original library artifacts remain required.

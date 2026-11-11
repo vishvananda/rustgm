@@ -1,32 +1,33 @@
 # Library build blocker tracker
 
-Latest semantic checkpoint: [nominal reference casts](pa22-nominal-reference-casts.md),
-compilerba4cc6555 / CLI2cab6320. PA22 owns36 new reductions (24 native positives),
-PA23 five (three native positives). Same-owner nominal reference casts consume
-ordinary selected tail conversions and reborrow proofs. All41 complete outcomes,
-width/noise bounds,45 native programs,812 current PA22/23 texts and harness/upstream
-pass. Only41 new triples were generated after independent review;2313 existing
-reference files remain byte-identical. Private/full successor qualification stays
-pending; no new hot fields, caches, limits or backend changes.
+Latest semantic checkpoint: [actual nominal source Unsize](pa31-nominal-unsize.md),
+compilerc31afe8d7 / CLI00b2af11. PA31 owns46 reductions (33accept13reject), including
+31 independently matched native conversions and both element-inference directions.
+Completed storage-tail eligibility, unchanged-argument equality, actual field
+Unsize and both endpoint/lifetime proofs remain distinct. The shared existing
+field environment preserves inference and body cache behavior. Eight focused
+public tests, three native groups, three old nominal/required-factory controls,
+width/noise bounds, harness/upstream and strict selected checks pass. No hot fields,
+new cache/scans, compiler limits, backend or oracle changes. Full/private successor
+qualification remains pending; whole PA31 stays planned.
 
-The ordinary original-shaped request now passes. Its actual source-role counterpart
-and original core first reach `source Unsize nominal-tail goals are not implemented`
-at as_request, error.rs file78 byte34589. Four reached records share that fence.
-The fixed120s observer still FAILS at121.2293s,249records/5638item attempts through
-function10921,file288:2132,node112 in stdarch x86/sse4a.rs. All722 input hashes,
-sixbindings/profile/limits fixed; partial SHA
-6b17984da8f3ecd7b126d5a924acad1bf91677738c48d7f5e9c6323b0176a4bb.
-Next qualify actual source Unsize nominal-tail selection in PA31 using completed
-typed storage and all argument/endpoint/terminal proof. Different observer prefixes
-are not speed/completion evidence; no full census or original artifact exists.
+The unchanged120s original observer still FAILS at121.1401s:220failure records/
+3743item attempts through function7809,file226:27629,node2318 in slice/index.rs.
+All722 hashes/sixbindings/profile/limits fixed. Partial SHA
+6feb6dc8314b77a07327749901e41fb58afffa72d08c9dcc6e703177279e3341.
+No as_request or nominal-tail fence remains in that prefix. FirstIndexRange::fold,
+ops/index_range.rs93:4858, requires a known tuple/struct for the wrapped try_fold
+result's .0. Reversefold shares it; actual const-closure wrap_mut_1/2 have a separate
+invalid canonical selection. Reduce ordinary wrapped-call result inference, then
+retain actual source callable/const/Try prerequisites where necessary. Select the
+earliest owning PA from evidence. No complete census or original artifact exists.
 
-Forty immutable A/A+twoABBA observations preserve complete ordinary import/array
-LowIR, sourceknownrepr and74 existing outcomes, with no speed/neutrality claim.
-Full42918510671 on216364b72 remains active for the preceding
-[associated-result input fix](pa31-projection-argument-discovery.md); release/course
-and maintainer native passed. Wait for its terminal result before successor
-dispatch. Full42909829598 on3273 passed all stages. Erasure's three required tuple
-factories and earlier optimized nested-proof checks remain open.
+Forty frozen A/A+twoABBA observations preserve complete import/array-cast LowIR,
+sourceknownrepr and74 old outcomes; noisy timings make no speed/neutrality claim.
+Full42918510671on216364b72 PASSED every stage. Full42925327481on PA22/23 checkpoint
+cba471220 is active, with release/course and maintainer native passed. Wait for its
+terminal result before this successor; do not cancel it. The earlier three valid
+tuple-factory cleanup owners and optimized nested-proof checks remain required.
 
 Previous [pending-join inputs](pa20-pending-join-inputs.md) retain their qualified
 PA20 packet, source/proof ownership and separate1.266x unoptimized direct-control

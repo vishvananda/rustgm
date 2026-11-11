@@ -2174,6 +2174,15 @@ those conditions across cold and warm lookup. The
 [source unsizing checkpoint](docs/pa31-source-unsizing.md) defines the actual
 Unsize/CoerceUnsized roles and the retained runtime/CTFE boundaries.
 
+Actual source nominal Unsize consumes completed same-owner storage-tail rules,
+equates every unchanged type/const/lifetime input and proves the actual final
+field Unsize as an ordinary child. Keep both endpoint formations and lifetime
+debts even on a mismatch or deferred child. Reuse the existing typed field
+argument environment so source/target element inference survives; do not require
+a resolved whole nominal application before selecting its field. The
+[nominal source packet](docs/pa31-nominal-unsize.md) retains ordinary inference,
+negative, native and bounded-work evidence. Layout grants no conversion proof.
+
 A source projection awaiting normalization may generate erasure requirements for
 a known object target without first exposing its physical head. Every Sized,
 principal, associated equality, auto-marker, lifetime and endpoint requirement

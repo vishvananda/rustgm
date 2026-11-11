@@ -90,7 +90,17 @@ and [checkpoint](../docs/pa31-projection-argument-discovery.md) retain26 outcome
 and19 native programs. Unsizing discovery reuses independently completed opaque
 input shapes without treating their lifetime IDs as different constructors.
 Equality, lifetime, parent and actual conversion proofs remain mandatory. The
-original as_request cast and whole-assignment requirements remain open.
+ordinary casts and actual nominal Unsize have the separately qualified
+follow-up below; whole-assignment requirements remain open.
+
+The [nominal source Unsize packet](tests/spec/nominal-unsize/README.md) and
+[checkpoint](../docs/pa31-nominal-unsize.md) qualify46 outcomes and31 native
+conversions, including source/target element inference. Existing stored-tail
+eligibility, argument equality and the shared typed field environment generate
+the actual final-field child and both endpoint proofs. The original observation
+has no as_request/nominal-tail fence in its prefix; it first fails at the wrapped
+try_fold result's field projection. The observer still times out, with no
+original artifact or whole PA31 completion.
 
 The [ResumeTy/get_context checkpoint](../docs/parallel/resume-context-main-join.md)
 uses actual ordinary nominal/function completions and preserves body/unsafe

@@ -40,59 +40,61 @@ requirement retained. No original core/alloc/std artifact exists.
 
 ## Current original-core frontier
 
-[Nominal reference casts](docs/pa22-nominal-reference-casts.md), compilerba4cc6555 /
-CLI2cab6320, repairs ordinary as_request's scalar-operation fence. Same-owner
-nominal reference operands reuse the existing coercion/reborrow selection. Final
-validation consumes its exact target and retained terminal conversion; no new
-hot fields, scans, caches, limits or backend changes. PA22 owns36 new reductions
-(24 executions/12 rejections), PA23 five (three executions/two rejections).
-Every input is in its owning manifest, independently object-checked before
-implementation; all27 native positives observe real fields/metadata/effects.
+[Actual nominal source Unsize](docs/pa31-nominal-unsize.md), compilerc31afe8d7 /
+CLI00b2af11, qualifies PA31's original nominal-tail fence. Completed existing
+storage-tail rules establish eligibility; unchanged arguments use bulk equality.
+The actual final field pays source Unsize plus both endpoint formation/lifetime
+proofs. Field terms reuse the existing body argument environment, preserving
+unresolved elements/type/const inputs. The constructor is shared with body field
+access, retaining its owner check, cache and projection continuation. No hot
+fields, global scans/cache, compiler limits, LowIR or backend change.
 
-Five exact public tests1794352619515397280 pass50.84s, including all41 complete
-LowIR outcomes, eight-counter width8/32/128/noise128 bounds,28 old array outcomes
-and pointer/region/ownership controls. Two native groups1794352683577490572 pass
-66.11s:27 new+18 old programs. Full392 PA22+420 PA23 texts pass. Only41 new
-reference triples were generated after review; all2313 old reference files stay
-byte-identical. The initial batch stopped after PA22 on stale PA23 count405;
-actual prior415/current420 include15 earlier local-dyn cases. Harness315/468roots/
-13bins/44stages/upstream128/Reference126 pass1794353223207592137. Strict selected
-production/CLI/test Clippy, full fmt and architecture pass. Private selected-
-terminal guard is added but remains pending full CI, since the known cold harness
-link exceeds the five-minute budget. No local cold retry or release build.
+PA31 nominal-unsize manifest owns46 outcomes (33positive13negative), independently
+object-checked;31 Rust-native/CPPGM observers return9 23. Source-faithful bytes and
+old nominal-unsize-required are unchanged; the latter now passes complete LowIR.
+Initial44-case candidatef22/5e passed6exact188.67s but two added independent element-
+inference cases failed. Finalc31 sharedFields fixes those, not a new language fence.
+public2 receipt1794355091892551059 passes8exact196.49s:46completeLowIR/requiredold,
+8-counter width8/32/128noise128, oldsourcearray/object/upcast/erasure plus ordinary
+PA22/23nominal41 and oldarray28. Native1794355334645613177 passes3groups65.37s:
+31new+oldsourceupcast+oldnominaltransfer/cleanup. Controls1794355520793219579 passes
+3groups41.37s including all3 required tuple-factory cleanup-owner boundaries.
+Strict selectedprodCLItestClippy/fullfmt/arch pass.315harness/468roots13bins44stages/
+upstream128/Reference126 pass1794355460066739241. No oracle/source-pin changes.
+Private/full successor remains pending; no cold private/release/all-target retry.
 
-Current immutable CLI2cab63208593afcab05565227edfa4db3906e1754e58ba4c5fd5b3ad0778f2ef
-bindsba4cc655567ffa4e91a215cceae525a69511ded9/emptydiff/3889Rust hashes, at B's
-obj/parallel/dst-casts/candidate-dev-fast/rustgm. Forty exclusive A/A+twoABBA
-observations in measure3 preserve complete import/array-cast LowIR, sourceknownrepr
-output and74 frozen outcomes. Ratios1.034/1.022/1.078/1.052 with noisy A/A;
-no speed/neutrality claim. Earlier measurement setups missing main/libraryidentity
-failed before observations and remain retained. Evidence stays under dst-casts/.
+Current immutable00b2af11b5d3e0396043305fbf4164ed5ea9bdf89ba7a3d16561f9fb367a486e
+at Bobj/parallel/nominal-unsize/candidate2-dev-fast/rustgm binds committed
+c31afe8d78f3e6487b3c4524574dd40a6c341f4e/emptydiff3892Rusthashes. Initial5e pin
+retired after replacement by1794355873725556381 (metadata/failed inference evidence
+retained); tidy1794355873834134744 removed82 disposable outputs. Comparison2cab
+may retire after publication; optimized21f remains for older pending measurements.
+Forty exclusive A/A+twoABBA observations preserve complete ordinaryimport/array
+LowIR/sourceknownrepr+74survey; ratios.979/1.084/.959/.997, noisy A/A,
+no speed/neutrality claim. Raw evidence under obj/parallel/nominal-unsize/.
 
-Original120s observation still FAILS at121.2293s,249failure records/5638item attempts
-through function10921,file288:2132,node112 in stdarch x86/sse4a.rs. All722 hashes,
-sixbindings/profile/limits fixed. Progress SHA
-6b17984da8f3ecd7b126d5a924acad1bf91677738c48d7f5e9c6323b0176a4bb.
-Firstas_request error.rs78:34589 now reports source Unsize nominal-tail goals not
-implemented. Four reached records share it. The ordinary original-shaped request
-and all seven earliest-owner probes now pass; actual source faithful counterpart
-reproduces the new PA31 fence. Next extend actual Unsize using existing completed
-storage-tail eligibility/field instances and full argument/endpoint/child proof.
-Read dev/src/sema/traits/selection/search/unsizing/plan.rs and reuse typed facts;
-do not reconstruct layout permission or call the body Checker from trait selection.
-Existing pa31/tests/spec/unsizing-roles/nominal-unsize-required.rs is a retained
-Rust-positive requirement; activate it only after real qualification and add actual
-runtime conversion/negative/scaling companions. Whole PA31 stays planned.
+Original120s observation still FAILS deadline121.1401s,220failure records/3743item
+attempts through function7809,file226:27629,node2318 in slice/index.rs. All722
+hashes/sixbindings/profile/limits fixed. Partial progress SHA
+6feb6dc8314b77a07327749901e41fb58afffa72d08c9dcc6e703177279e3341.
+No as_request or nominal-tail fence remains. FirstIndexRange::fold in
+ops/index_range.rs file93 byte4858, known tuple/struct required for
+self.try_fold(init,NeverShortCircuit::wrap_mut_2(f)).0; rfold same at6101.
+Adapter source in ops/try_trait.rs file95 returns impl [const]FnMut(...) -> Self
+with const move closure; wrap_mut_1/2 themselves have invalid canonical selection.
+Next freeze ordinary drive(wrap(f)).0 / generic associated callable-result twins
+before compiler edits; keep actual const/sourceFnMut/Try roles if necessary.
+Determine earliest PA from reduction (ordinary closure PA24 candidate, source
+protocol PA31 if essential), preserve actual source counterpart. Do not turn
+valid unsupported cases into negatives. Different census prefixes give no speed,
+body-count or completion claim. No original core/alloc/std artifact.
 
-Full42909829598 on3273 passed all stages. Full42918510671 on216364b72 remains
-active for the preceding projection-input checkpoint; release/course and native
-maintainer and broad native passed, debug invariants active at last query. Do not cancel/restart it
-for the new cast successor. Earlier projected erasure's three generic tuple-
-factory cleanup owners and optimized nested-proof checks remain required.
-One worker in existing B, main Git-only, no new agents/trees. Current pin2cab;
-prior e06 comparison may be retired only after this checkpoint is published.
-Keep optimized21f for the older pending optimized nested-proof measurements.
-No complete census, body-count or original core/alloc/std artifact is claimed.
+Full42918510671on216364b72 terminalSUCCESS everygate. Pushfast42924479783oncbaPASS.
+Full42925327481oncba471220 ACTIVE, release/course+maintainernativePASS and broad
+nativeactive at last query. DO NOT cancel/redispatch; wait terminal before this
+source checkpoint successor. Three tuple-factory owners and optimized nested-
+proof A/A/stack checks remain required. Singleworker existing B; mainGitonly,
+no new trees/agents or edits to active CPP/v5. Whole PA31 remains planned.
 
 [PA19implementedtraitscope](docs/pa19-implemented-trait-scope.md) remains published
 with34newoutcomes/25native/all1233texts andzeroexistingreferencechanges. The prior
