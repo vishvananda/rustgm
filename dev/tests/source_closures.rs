@@ -413,3 +413,6 @@ mod parameter_projections;
 mod prefix_growth;
 #[path = "source_closures/receivers.rs"]
 mod receivers;
+
+#[path = "source_closures/flow_results.rs"]
+mod flow_results;

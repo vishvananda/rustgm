@@ -182,6 +182,24 @@ impl Checker<'_> {
         call: NodeId,
         expected: super::super::TermId,
     ) -> Result<Option<Dependency>, Error> {
+        self.refine_owned_call(call, Some(expected))
+    }
+
+    /// All arguments have been checked. Advance this call's ready requirements
+    /// before a consumer asks for its result shape. Unfinished goals and their
+    /// complete evidence remain in the same caller; no numeric fallback runs.
+    pub(in crate::sema::bodies) fn refine_call_result(
+        &mut self,
+        call: NodeId,
+    ) -> Result<Option<Dependency>, Error> {
+        self.refine_owned_call(call, None)
+    }
+
+    fn refine_owned_call(
+        &mut self,
+        call: NodeId,
+        expected: Option<super::super::TermId>,
+    ) -> Result<Option<Dependency>, Error> {
         let callable = if let crate::syntax::ast::Kind::Call { callee, .. } = self.kind(call) {
             Some(self.term(callee)?)
         } else {
@@ -217,7 +235,10 @@ impl Checker<'_> {
                 self.state.trait_goals = Some(pending);
                 return Ok(Some(dependency));
             }
-            if pending.current.is_none() && self.head(call, expected)?.is_some() {
+            if pending.current.is_none()
+                && let Some(expected) = expected
+                && self.head(call, expected)?.is_some()
+            {
                 break;
             }
             let index = if let Some(index) = pending.current {

@@ -5706,6 +5706,17 @@ ordering. Reuse immutable trait-name reachability
 after header completion to avoid opening irrelevant quantified naming bounds;
 actual member and implementation selection still consume semantic contracts.
 
+After checking a call's arguments, progress its own ready trait requirements
+before consumers require the result's structure. Reuse the indexed call owner,
+notifications, suspended queries and complete evidence. Inspect existing input
+summaries once without interning or walking unresolved suffixes; do not repeat
+a wide result prefix after each ready goal. Register newly introduced result
+projections in the same body normalizer. Unfinished requirements, number fallback
+and final lifetime/ownership proof retain their ordinary boundaries. A tuple
+field cannot invent an arity; check its index against the actual selected tuple.
+The [PA24 callable-result checkpoint](docs/pa24-callable-results.md) records the
+earliest reductions, independent outcomes and candidate qualification.
+
 At a real call, a completely matching expected result may propose only that
 callee's fresh late lifetime arguments. Keep rigid Self, type, const and member
 identity, reject conflicting slots and nested-local escapes, and publish no

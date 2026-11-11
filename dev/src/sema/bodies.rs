@@ -1037,6 +1037,10 @@ impl Checker<'_> {
         Ok(dependency)
     }
     fn complete_body_expression(&mut self, node: NodeId) -> Result<Option<Dependency>, Error> {
+        if let Some(dependency) = self.call_result_readiness(node)? {
+            self.state.work.push(Work::Exit(node));
+            return Ok(Some(dependency));
+        }
         if let Some(dependency) = self.join_readiness(node)? {
             self.state.work.push(Work::Exit(node));
             return Ok(Some(dependency));

@@ -33,6 +33,20 @@ impl Completed {
 }
 
 impl Context {
+    /// Read existing input summaries without traversing unresolved subgraphs or
+    /// interning a type. This is readiness data, never a normalization or proof.
+    pub(crate) fn inputs_fixed(&mut self, store: &Store, root: TermId) -> Result<bool, Error> {
+        self.step()?;
+        let root = self.root(root)?;
+        match self.terms[root.0 as usize].value {
+            Value::Known(_) => Ok(true),
+            Value::Variable(_) => Ok(false),
+            Value::Construct(_) => self
+                .remember_structure(store, root)
+                .map(|facts| facts.is_some()),
+        }
+    }
+
     /// Inspect only a nominal's already completed inputs, without interning or
     /// recursively visiting missing summaries. Compatible equations preserve a
     /// completed certificate; missing inputs retain ordinary contextual inference.

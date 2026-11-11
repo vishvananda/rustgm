@@ -1,10 +1,10 @@
 # PA24 fixture ownership
 
-The manifest and generated text oracles cover 467 source files: 323 accepted
-and 144 rejected. Every source outcome was independently checked with pinned
+The manifest covers 574 source files: 405 accepted
+and 169 rejected. Every source outcome was independently checked with pinned
 rustc before reference generation.
 
-The accepted native classifications comprise 311 runtime comparisons, two
+The accepted native classifications comprise 392 runtime comparisons, three
 code-generation-only controls for intentionally unused bodies, and ten entry-free
 library object controls. Object generation does not establish runtime behavior.
 Negative tests must reach their intended capture, permission, type or lifetime
@@ -52,3 +52,10 @@ positive behavior; short-lived carriers and local references still reject.
 The `spec/callable-proof-width/` reductions freeze three independently accepted
 width128 callable/context/object inputs. Their original scaling invariants and
 negative context controls remain in the maintainer suites.
+
+The `spec/callable-results/` packet adds 47 reductions for generic callable
+outputs before structural consumers: 35 actual executions and 12 language
+rejections. Associated outputs, opaque adapters, moves, borrowed results and
+quantified correlation retain their ordinary proof. Six width/noise cases
+exercise bounded work without scanning unrelated types. See the
+[checkpoint review](../../docs/pa24-callable-results.md).

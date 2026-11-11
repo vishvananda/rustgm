@@ -189,6 +189,46 @@ fn reference_frontier(
 }
 
 impl Checker<'_> {
+    pub(super) fn call_result_readiness(
+        &mut self,
+        call: NodeId,
+    ) -> Result<Option<Dependency>, Error> {
+        if !matches!(
+            self.kind(call),
+            Kind::Call { .. } | Kind::MethodCall { .. } | Kind::GenericMethodCall { .. }
+        ) {
+            return Ok(None);
+        }
+        let Some(active) = self.state.call_types.active.get(&call) else {
+            return Ok(None);
+        };
+        let signature = active.signature;
+        let Some(Constructor::Function { parameters, .. }) = self.head(call, signature)? else {
+            return Err(self.error(call, "call result lost its active signature"));
+        };
+        let result = self.child(call, signature, parameters as usize)?;
+        if self
+            .state
+            .infer
+            .inputs_fixed(&self.facts.types, result)
+            .map_err(|e| self.error(call, e))?
+        {
+            return Ok(None);
+        }
+        // Inspect the summary once, then consume only this owner's ready goals.
+        // Rechecking a wide partial result after every child would repeat prefixes.
+        if let Some(dependency) = self.refine_call_result(call)? {
+            return Ok(Some(dependency));
+        }
+        // A selected output can introduce projections that were absent from
+        // the generic result variable when its signature was instantiated.
+        self.defer_normalization(call, crate::types::lifetime_proof::ScopeId::ROOT, result)?;
+        match self.poll_projections(call)? {
+            super::projections::Advance::Ready(_) => Ok(None),
+            super::projections::Advance::Definition(dependency) => Ok(Some(dependency)),
+        }
+    }
+
     fn call_parameter(&mut self, call: NodeId, parameter: u32) -> Result<TermId, Error> {
         let signature = self
             .state

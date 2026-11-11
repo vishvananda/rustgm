@@ -597,6 +597,15 @@ impl Checker<'_> {
                 let Name::Index(index) = name else {
                     return Err(self.error(node, "tuple field requires a numeric index"));
                 };
+                let count = self
+                    .state
+                    .infer
+                    .arity(&self.facts.types, receiver)
+                    .map_err(|e| self.error(node, e))?
+                    .ok_or_else(|| self.error(node, "tuple field lost its selected arity"))?;
+                if index as usize >= count {
+                    return Err(self.error(node, "tuple field index is out of range"));
+                }
                 let ty = self.child(node, receiver, index as usize)?;
                 (Selection::Tuple(index), ty)
             }

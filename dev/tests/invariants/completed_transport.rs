@@ -70,6 +70,32 @@ fn unresolved_constants_and_types_do_not_receive_completed_certificates() -> Res
 }
 
 #[test]
+fn result_readiness_uses_certificates_without_interning_or_walking_unknown_suffixes()
+-> Result<(), Error> {
+    let store = Store::default();
+    for depth in [8, 32, 128] {
+        let mut context = Context::default();
+        let hole = context.variable(Domain::Any)?;
+        let mut partial = hole;
+        for _ in 0..depth {
+            partial = context.construct(Constructor::Tuple, &[partial])?;
+        }
+        let byte = context.known(&store, TypeId::primitive(Primitive::U8))?;
+        let fixed = context.construct(Constructor::Tuple, &vec![byte; depth])?;
+        let count = store.len();
+        let before = context.steps;
+        assert!(!context.inputs_fixed(&store, partial)?);
+        assert!(context.steps - before <= 8);
+        assert!(context.inputs_fixed(&store, fixed)?);
+        assert_eq!(store.len(), count);
+        assert!(context.region_equalities.is_empty());
+        context.steps = 1_000_000;
+        assert_eq!(context.inputs_fixed(&store, byte), Err(Error::Budget));
+    }
+    Ok(())
+}
+
+#[test]
 fn region_mapping_never_publishes_a_private_lifetime_to_the_caller() -> Result<(), Error> {
     let mut store = Store::default();
     let mut caller = Context::default();

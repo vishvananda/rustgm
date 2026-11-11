@@ -41,6 +41,11 @@ LowIR instances.
   Keep public late-bound slots, enclosing capture lifetimes and local proof
   variables distinct. Required callable goals may wait for inference; unresolved
   caller terms must not enter a completed semantic cache.
+- Settle a generic call's actual callable-output constraints before consuming
+  its result as a tuple, nominal, array or callable. Retain complete argument,
+  receiver, ownership, lifetime and quantified proof; a field use supplies no
+  result shape. Normalize projections introduced by the selected output in the
+  existing body environment.
 - Prove original bodies, including unused closures and unused nested children,
   before accepting the program. Prove demanded substitutions and adapters as
   well. Returned references require actual source lifetime evidence; selection
@@ -103,14 +108,15 @@ mechanically to evade limits, or read the environment from `dev/src/`.
 
 ## Completion and review
 
-The manifest contains 527 independently declared source outcomes:
-370 accept and 157 reject. The reviewed native classifications contain 357
+The manifest contains 574 independently declared source outcomes:
+405 accept and 169 reject. The reviewed native classifications contain 392
 runtime comparisons, three unused-body code-generation controls and ten entry-free
 object controls. Draft outcome files retain the history of the source hypotheses;
 they are not substitutes for the released manifest. See
 [the release review](../docs/pa24-release-review.md) for the released profile and
-[closure parameter projections](../docs/pa24-parameter-projections.md) for the latest
-checkpoint evidence and pending private/full qualification. No planned assignment is counted as passing.
+[closure parameter projections](../docs/pa24-parameter-projections.md) and
+[callable results](../docs/pa24-callable-results.md) for later checkpoint evidence
+and pending private/full qualification. No planned assignment is counted as passing.
 
 When updating this assignment, qualify every source with pinned rustc, compare declared
 executions through RustGM/CPPGM, generate and review the complete byte oracles,
