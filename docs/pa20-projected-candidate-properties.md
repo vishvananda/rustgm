@@ -13,9 +13,11 @@ in `cell/lazy.rs`, where `T::default` is passed to `LazyCell::new` as an initial
 The 120-second observation remains partial and fails its deadline; no original
 core, alloc or std artifact exists.
 
-Immutable dev-fast CLI
-`94bd08b42caf5680d4ccce6efbeef449e6eb159473ae3668b1a21a94a746f808` is retained at
-B's `obj/parallel/projected-properties/candidate-dev-fast/rustgm`. Its producer
+Historical immutable dev-fast CLI
+`94bd08b42caf5680d4ccce6efbeef449e6eb159473ae3668b1a21a94a746f808` was retained at
+B's `obj/parallel/projected-properties/candidate-dev-fast/rustgm`. After comparison
+and replacement publication it was retired in receipt1794399578264808714; its
+executable is absent. Its retained producer
 binds the source commit, an empty whole tracked diff and 3,902 compiler/CLI/test
 Rust hashes. The [machine evidence](pa20-projected-candidate-properties-evidence.json)
 binds the inputs, focused receipts, generated references, measurements and
@@ -129,7 +131,9 @@ Optimized performance and the older nested-proof/stack qualification remain
 required; no smoothing rerun or quota increase is used.
 The old `00d205dc` executable was explicitly pruned after comparison and replacement
 publication in receipt `1794395534452651774`. Its producer and raw observations
-remain; current `94bd08b4` and the older optimized `21f` baseline remain pinned.
+remain; the later comparison baseline `94bd08b4` was also retired after the
+post-inference repair's publication. Current `f46b54f3` and older optimized `21f`
+remain pinned.
 
 The original observer fails its unchanged 120-second deadline after
 121.279946 seconds, retaining 159 partial records through function10718,

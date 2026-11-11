@@ -30,9 +30,11 @@ patch/3902Rusthashes.
 Thirty exclusive A/A+twoABBA observations preserve complete outputs for ordinary
 import, accepted128-call property path and priority LowIR. Wall ratios1.044/1.046/
 .930, CPU1.045/1.046/.929; AA.876/.993/1.004. Keep slower observations; no neutrality/
-optimized/core speed claim. Current comparison baseline94bd and optimized21f stay
-pinned until replacement publication/explicit retirement. Full repair qualification
-is due after publication. No new original-core observation or artifact exists.
+optimized/core speed claim. Baseline94bd was retired after replacement publication,
+explicit prune1794399578264808714; its executable is absent. Only currentf46 and
+optimized21f remain pinned. Full43019302026 is ACTIVE on EXACTbc401434ac3a525781359f6d194a65cf5811aa6f,
+containing sourcef93. Do not cancel/redispatch it for docs/input descendants.
+No new original-core observation or artifact exists.
 
 ## Last original-core observation and preceding foundation
 
@@ -71,7 +73,8 @@ speed/neutrality/optimized/core claim. New rigid-projection acceptance has no
 accepting baseline; width8/32/128+noise128 bounded-work checks cover that path.
 Optimized qualification remains pending. Baseline00d2 was retired after replacement
 publication and explicit prune1794395534452651774; its executable is absent.
-Keep current94bd and older optimized21f. Old9109 and e7 executables are also absent;
+Keep currentf46 and older optimized21f. Baseline94bd is now also retired/absent.
+Old9109 and e7 executables are also absent;
 metadata does not make retired executables available for new runs.
 
 The unchanged120s original observer FAILS deadline121.279946s with159 partial
@@ -137,8 +140,9 @@ independent/PA25 stage, qualifying the previous symbolic-index source004ae71e9.
 Full43009364083 on EXACT9fdf58f7588a35c69b85601fe3b70e242a937247 containing sourceb15
 FAILED the two public tests repaired above after all3065 private passes. Fast,
 lint/architecture/harness and independent host graph passed; later stages skipped.
-Publish the repair and start one full successor if no active schedule/manual full
-exists. Do not cancel/redispatch that successor for documentation/input descendants.
+Successor43019302026 is now ACTIVE on EXACTbc401434ac3a525781359f6d194a65cf5811aa6f,
+sourcef93, fast/qualification started. Do not cancel/redispatch it for documentation
+or input descendants; monitor its terminal result while working on LazyCell.
 
 ## Retained requirements and resource rules
 

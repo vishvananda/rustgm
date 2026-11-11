@@ -48,15 +48,17 @@ individual results and retains the failed exploratory evidence.
 Full [43009364083](https://github.com/vishvananda/rustgm/actions/runs/43009364083)
 on exact9fdf58f75, containing the preceding sourceb15, failed those two public
 tests after all3,065 private tests passed. Later qualification stages were skipped.
-A full successor is due after publication; this repair's full qualification is
-pending.
+Full successor [43019302026](https://github.com/vishvananda/rustgm/actions/runs/43019302026)
+is active on exact`bc401434ac3a525781359f6d194a65cf5811aa6f`, containing this source
+repair. Full qualification remains pending. Documentation descendants do not
+restart this run.
 
 ## Immutable observations and remaining work
 
 CLI`f46b54f3248e174e3cafeb1d791811a5bdbbf96004bbdd4dc74a6f3df2c53bf6`
 is pinned at B`obj/parallel/projected-ci-repair/candidate-dev-fast/rustgm`.
 Its producer binds the source commit, empty tracked patch and3,902 Rust hashes.
-Thirty exclusive A/A and paired ABBA observations compare it with the retained
+Thirty exclusive A/A and paired ABBA observations compare it with the then-retained
 b15 CLI94bd. Complete outputs agree for an ordinary import, the changed accepted
 128-call property path and the actual method-priority LowIR graph.
 
@@ -65,6 +67,11 @@ Tiny unoptimized paired wall ratios are1.044/1.046/.930; CPU ratios are
 remain recorded. There is no performance-neutrality, optimized or original-core
 throughput claim. Repaired non-Copy inference positives have no accepting retained
 baseline; the existing width/noise controls qualify bounded work instead.
+
+After replacement publication, baseline94bd was explicitly pruned in receipt
+1794399578264808714. Its executable is absent; producer and raw observations
+remain. Only currentf46 and the older optimized21f baseline remain pinned. Retired
+metadata is not an available executable for another run.
 
 No new original-core observation was run for this CI repair. The last partial
 observation remains b15's `LazyCell<T>::default` at cell/lazy.rs113:12567, passing

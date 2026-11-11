@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "state": "Focused CI repair qualified; full successor due after publication. No new original-core observation or library artifact.",
+  "state": "Focused CI repair qualified; full successor43019302026 active on exactbc401434a. No new original-core observation or library artifact.",
   "compiler": {
     "commit": "f93ffdb7fb7f413148406c0284408fe83f68f2d8",
     "cli_sha256": "f46b54f3248e174e3cafeb1d791811a5bdbbf96004bbdd4dc74a6f3df2c53bf6",
@@ -291,5 +291,183 @@
     "artifact": false
   },
   "next": "Resume exact single-worker LazyCell callback WIP from Git stash; independent31 ordinary/source outcomes22accept9reject plus3 Rust execution and6 scaling inputs retained in obj/parallel/lazy-default.",
-  "all_prior_requirements_retained": true
+  "all_prior_requirements_retained": true,
+  "current_full_ci": {
+    "run": 43019302026,
+    "head": "bc401434ac3a525781359f6d194a65cf5811aa6f",
+    "source_commit": "f93ffdb7fb7f413148406c0284408fe83f68f2d8",
+    "status": "active",
+    "jobs": [
+      {
+        "id": 130518183605,
+        "name": "qualification",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_id": 43019302026,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Pinned Rust",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Lint, architecture and harness",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 4
+          },
+          {
+            "name": "Independent host build graph",
+            "status": "pending",
+            "conclusion": null,
+            "number": 5
+          },
+          {
+            "name": "Release and course tests",
+            "status": "pending",
+            "conclusion": null,
+            "number": 6
+          },
+          {
+            "name": "Native maintainer qualification",
+            "status": "pending",
+            "conclusion": null,
+            "number": 7
+          },
+          {
+            "name": "Broad native course sweep",
+            "status": "pending",
+            "conclusion": null,
+            "number": 8
+          },
+          {
+            "name": "Debug invariants",
+            "status": "pending",
+            "conclusion": null,
+            "number": 9
+          },
+          {
+            "name": "Retire completed debug build cache",
+            "status": "pending",
+            "conclusion": null,
+            "number": 10
+          },
+          {
+            "name": "Independent Rust qualification",
+            "status": "pending",
+            "conclusion": null,
+            "number": 11
+          },
+          {
+            "name": "PA25 const-machine candidate contract",
+            "status": "pending",
+            "conclusion": null,
+            "number": 12
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "pending",
+            "conclusion": null,
+            "number": 24
+          }
+        ]
+      },
+      {
+        "id": 130518183901,
+        "name": "fast",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_id": 43019302026,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Pinned Rust",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Run actions/cache@v6",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 4
+          },
+          {
+            "name": "Audit setup",
+            "status": "pending",
+            "conclusion": null,
+            "number": 5
+          },
+          {
+            "name": "Five-minute compiler smoke",
+            "status": "pending",
+            "conclusion": null,
+            "number": 6
+          },
+          {
+            "name": "Harness, audit cache and upstream contracts",
+            "status": "pending",
+            "conclusion": null,
+            "number": 7
+          },
+          {
+            "name": "Retain focused evidence",
+            "status": "pending",
+            "conclusion": null,
+            "number": 8
+          },
+          {
+            "name": "Post Run actions/cache@v6",
+            "status": "pending",
+            "conclusion": null,
+            "number": 15
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "pending",
+            "conclusion": null,
+            "number": 16
+          }
+        ]
+      }
+    ],
+    "do_not_restart_for_documentation": true
+  },
+  "retired_baseline": {
+    "retired_cli_sha256": "94bd08b42caf5680d4ccce6efbeef449e6eb159473ae3668b1a21a94a746f808",
+    "retired_path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/projected-properties/candidate-dev-fast/rustgm",
+    "executable_absent": true,
+    "replacement_cli_sha256": "f46b54f3248e174e3cafeb1d791811a5bdbbf96004bbdd4dc74a6f3df2c53bf6",
+    "replacement_source_commit": "f93ffdb7fb7f413148406c0284408fe83f68f2d8",
+    "replacement_published": true,
+    "explicit_prune_output": "Removed 1 generated files (0.10 GiB unshared blocks); record: /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/cleanup/1794399578264808714.jsonl\n",
+    "producer_and_raw_observations_retained": true,
+    "not_available_for_new_runs": true
+  }
 }

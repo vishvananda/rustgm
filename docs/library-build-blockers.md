@@ -12,7 +12,7 @@ output-equal observations pass, with slower tiny controls honestly retained.
 No new core observation was run. Resume the independently frozen LazyCell callback
 WIP from the existing single worker's Git stash, as handoff.md describes.
 
-The current [projected candidate/reborrow checkpoint](pa20-projected-candidate-properties.md),
+The preceding [projected candidate/reborrow checkpoint](pa20-projected-candidate-properties.md),
 compiler b15d29240/CLI94bd08b4, clears the reached try_from_fn_erased
 normalization record at guard.array_mut.len(). Existing semantic selection proves
 projected candidate bounds; actual reborrow places receive field instances through
@@ -29,15 +29,18 @@ cell/lazy.rsfile113:12567: unsatisfied trait obligation at initializer creation
 using T::default and LazyCell::new. File112 is cell.rs, with later replace/clone/
 clone_from/comparison records; earlier Option attribution was incorrect. All722
 hashes/375opens/sixbindings/profilelimits remain unchanged. No complete census,
-comparable body count, throughput result or original artifact exists. Next freeze
-ordinary callback creation/constructor/effect contrasts, reusing conditional
-function-item and const-adapter requirements. Preserve all pending native panic,
+comparable body count, throughput result or original artifact exists. Ordinary
+callback creation/constructor/effect contrasts are now frozen in the stashed WIP;
+resume their correction using existing conditional function-item/adapter producers.
+Preserve all pending native panic,
 128-depth inference, factory execution, bootstrap, transport and optimized checks
 listed in handoff.md. Full42988281942 on exact31be succeeded every stage.
 Full43009364083 on exact9fdf58f75 containing sourceb15 FAILED those two public
 tests after3,065 private passes. Fast/setup/host checks passed; later stages were
-skipped. The post-inference repair's full successor is due after publication.
-Documentation descendants must not restart an active full run.
+skipped. Full successor43019302026 is ACTIVE on exactbc401434a containing sourcef93.
+Documentation descendants must not restart this run. Baseline94bd was retired
+after replacement publication with explicit prune1794399578264808714; currentf46
+and optimized21f remain available.
 
 Earlier const-adapter/implicit receiver observations below are historical;
 the current frontier above supersedes their next-step text.
