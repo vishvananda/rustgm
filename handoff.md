@@ -28,14 +28,26 @@ method steps43/probes1; noise128 changes no counters. All57 old bytes unchanged,
 all40 manifests/independent outcomes, upstream128/Reference126/harness315/468roots
 pass. No positive inversion, oracle generation or whole-assignment activation.
 
-Current managed CLI5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c
-is qualified production code. Next freeze a clean source commit, compare against
-available0912 with calibrated accepting controls, then run unchanged120s original
-core and postverify722/six/375/source/profile. No new actual clone-clearance claim
-yet: the last original first failure remains cell.rs112:49655,line1449 below.
-Full semantic successor is due after publication and a fresh no-active-full check.
-Keep all requirements below. Smaller bounded output reservations11–12GiB are
-within the approved16GiB ceiling; resource reserve150GiB stays unchanged.
+ImmutableCLI5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c
+at Bobj/parallel/refcell-clone/candidate-dev-fast binds clean source5cd41810b,
+empty patch/all3906Rust hashes. Thirty exclusive A/A+twoABBA accepting controls
+match complete outputs versus0912; pairedwall1.015/.957/.941, CPU1.015/.957/.941,
+AAwall.647/.849/.871. Slower/noisy retained; no optimized/neutrality/core-speed claim.
+
+EXACT120s original observer ends121.159034s,123partialrecords/13,428itemattempts,
+lastfunction7265,file202:105885,line2987 fmt/mod.rs. ActualRefCell::clone
+function3770/body112:49632 and later cell bodies reached; NOfile112failure records.
+Clone/replace/clone_from/comparison failures absent in this reached prefix.
+FIRST REMAINING ArrayChunks::next,iter/adapters/array_chunks.rsfile133:2226,line66,
+self.try_for_each(ControlFlow::Break).break_value(), receiver has no inherent
+nominal method. Later adapter projection failures stay separate. ProgressSHA
+56159896464f2c90c80b1826b3e1636876870f20a591de499ede030834a80745.
+Postcheck1794422695891811776 verifies722/375opens/six/immutable/current3906/profile/
+limits. NOcompletecensus/originalartifact; partialcounts NOTthroughput. NEXT reduce
+actual first adapter call; do not extend120s or repeat for longer prefix alone.
+Full semantic successor due after publication and fresh no-active-full check.
+Keep all requirements below. Smaller bounded reservations11–12GiB fit approved16;
+resource reserve150GiB and compilerbudgets unchanged.
 
 ## Published callback predecessor
 

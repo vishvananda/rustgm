@@ -68,15 +68,30 @@ unsupported positive was inverted and no text oracle was generated.
 
 ## Core and retained work
 
-Current development CLI SHA is
-5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c.
-A clean source commit and immutable producer, calibrated comparisons and the
-unchanged120s original-core observation follow this local checkpoint. The last
-real original observation still first fails at RefCell::clone,
-cell.rs112:49655,line1449; only a new observation reaching that body can clear it.
-No complete census or original core/alloc/std artifact exists. Preserve every
-paid-alias, projected-premise, symbolic-index native, depth128, factory, tuple,
-bootstrap, transport and optimized requirement in handoff.md.
+Immutable CLI5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c
+at B obj/parallel/refcell-clone/candidate-dev-fast binds clean source5cd41810b,
+empty tracked patch/all3906 Rust hashes. Thirty exclusive A/A+twoABBA accepting
+observations match complete outputs against available0912: ordinary import,
+shared-Self result context and actual priority LowIR. Paired wall ratios are
+1.015/.957/.941, CPU1.015/.957/.941, A/Awall.647/.849/.871. Keep slower/noisy
+values; no optimized, neutrality or original-core speed claim follows.
+
+The unchanged120s original observer ends121.159034s with123 partial records and
+13,428 item attempts, last function7265,file202:105885,line2987 fmt/mod.rs. It
+reaches actual RefCell::clone function3770/body112:49632 and later cell bodies,
+with no file112 failure records: clone, replace, clone_from and comparison
+failures are absent in the reached prefix. FIRST REMAINING is ArrayChunks::next,
+iter/adapters/array_chunks.rsfile133:2226,line66:
+`self.try_for_each(ControlFlow::Break).break_value()`, receiver has no inherent
+nominal method. Later try_fold/next_back/try_rfold/remainder projection failures
+remain separate. ProgressSHA56159896464f2c90c80b1826b3e1636876870f20a591de499ede030834a80745.
+Postcheck1794422695891811776 verifies all722 hashes/375 opens/six bindings,
+immutable/current3906 hashes/profile/limits. The deadline is an infrastructure
+failure, not language rejection; no complete census or original core/alloc/std
+artifact exists. Partial counts are not comparable throughput. Reduce the actual
+first adapter call next; do not repeat merely for a longer prefix or raise limits.
+Preserve every paid-alias, projected-premise, symbolic-index native, depth128,
+factory, tuple, bootstrap, transport and optimized requirement in handoff.md.
 
 Backend bridge17b024f69, storage.py, all722 original source hashes, six source
 configuration bindings and compiler budgets are unchanged. Disk pressure refused

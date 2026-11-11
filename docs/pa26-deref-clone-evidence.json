@@ -1,10 +1,13 @@
 {
   "schema": 1,
-  "state": "Focused member/call-kind proof ownership and result-input context qualified; freeze and original observation next. No original artifact.",
+  "state": "Qualified and frozen clone proof-ownership checkpoint; unchanged original core reaches all cell bodies without recorded failure, first now array_chunks::next. Incomplete observation, no original artifact.",
   "compiler": {
     "cli_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
     "rust_source_count": 3906,
-    "source_commit_binding": "Clean coherent source commit follows this evidence; no original-clearance claim yet."
+    "source_commit_binding": "5cd41810bfa18d71e936bfed53c9a0422580e83f",
+    "empty_tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "producer_json_sha256": "df381e87ed9f2120fab9447ce29a2ec6c2201b51346ba92c868233a59d47891f",
+    "immutable_binary": "B obj/parallel/refcell-clone/candidate-dev-fast/rustgm"
   },
   "contracts": {
     "total": 40,
@@ -719,10 +722,72 @@
     }
   ],
   "original_core": {
-    "new_observation": false,
-    "last": "Source655/CLI0912,120s deadline121.226504s/141partialrecords/first RefCell::clone cell.rs112:49655",
+    "new_observation": true,
+    "compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+    "source_commit": "5cd41810bfa18d71e936bfed53c9a0422580e83f",
+    "result": {
+      "infrastructure_failure": true,
+      "classification": "infrastructure/setup failure",
+      "observer_deadline_seconds": 120,
+      "progress_requested": true,
+      "lint_cap": "allow",
+      "source_contract_limits": {
+        "work": 14500624,
+        "attempted_bytes": 1073741824,
+        "retained_bytes": 67108864
+      },
+      "expected_cli_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+      "expected_cli_source": "explicit caller input",
+      "error": "original-core observer deadline",
+      "partial_progress": {
+        "analysis_only": true,
+        "complete_census": false,
+        "records": 123,
+        "last_item": "item\tfunction\t7265\tfile 202:105885\tnode 4510"
+      },
+      "total_seconds": 121.15903424704447,
+      "raw_sha256": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "whole-core.openat": "6bc3f1dfc6731d87ef8c087dfdce834e2b7ddecb01f4314b67a0dc4d3f5bcdec",
+        "progress.tsv": "56159896464f2c90c80b1826b3e1636876870f20a591de499ede030834a80745"
+      }
+    },
+    "item_attempts": 13428,
+    "last_mapped_source": {
+      "function": 7265,
+      "file": 202,
+      "path": "library/core/src/fmt/mod.rs",
+      "offset": 105885,
+      "line": 2987
+    },
+    "first_remaining": {
+      "record": 1,
+      "function": "ArrayChunks::next",
+      "path": "library/core/src/iter/adapters/array_chunks.rs",
+      "file": 133,
+      "offset": 2226,
+      "line": 66,
+      "expression": "self.try_for_each(ControlFlow::Break).break_value()",
+      "message": "receiver has no inherent nominal method"
+    },
+    "reached_prior_clone": {
+      "function": 3770,
+      "body_offset": 49632,
+      "previous_failure_offset": 49655,
+      "no_file112_failure_records": true
+    },
+    "separate_remaining_records": [
+      "try_fold: associated type projection requires normalization",
+      "next_back: associated type projection requires normalization",
+      "try_rfold: associated type projection requires normalization",
+      "next_back_remainder: associated type projection requires normalization"
+    ],
+    "all722_hashes_375_opens_six_bindings_3906_current_rust_hashes_profile_limits_unchanged": true,
+    "postcheck_cleanup_receipt": "1794422695891811776",
     "complete_census": false,
-    "artifact": false
+    "artifact": false,
+    "partial_counts_are_not_comparable_throughput": true
   },
   "unchanged": [
     "backend bridge17b024f69",
@@ -735,5 +800,57 @@
   ],
   "raw_evidence_root": "B obj/parallel/refcell-clone",
   "course_oracles_generated": false,
-  "assignments_activated": false
+  "assignments_activated": false,
+  "calibrated_comparisons": {
+    "rows": 30,
+    "complete_output_equality": true,
+    "summary": {
+      "import-control": {
+        "seconds": {
+          "aa_ratio": 0.6469016836358815,
+          "paired_candidate_over_base": 1.0154253502616606
+        },
+        "cpu_seconds": {
+          "aa_ratio": 0.6420945602440264,
+          "paired_candidate_over_base": 1.015262724772724
+        }
+      },
+      "result-context-trait": {
+        "seconds": {
+          "aa_ratio": 0.8486938885540898,
+          "paired_candidate_over_base": 0.9573357621340608
+        },
+        "cpu_seconds": {
+          "aa_ratio": 0.8472671771795488,
+          "paired_candidate_over_base": 0.956736970765458
+        }
+      },
+      "priority-native": {
+        "seconds": {
+          "aa_ratio": 0.8713419937936331,
+          "paired_candidate_over_base": 0.941107757772639
+        },
+        "cpu_seconds": {
+          "aa_ratio": 0.8728554110419341,
+          "paired_candidate_over_base": 0.9405075319244153
+        }
+      }
+    },
+    "no_optimized_or_core_speed_claim": true,
+    "compiler_sha256": [
+      "0912e08f677a2880a62b42bef9c5baf3dcd253ceec5e5d805b22a873e34a58a8",
+      "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c"
+    ],
+    "limitation": "No accepting retained baseline for newly accepted implicit generic Clone calls. Changed-path scaling is separately qualified; no optimized, neutrality or original-core speed claim."
+  },
+  "raw_bindings": {
+    "candidate-dev-fast/producer.json": "df381e87ed9f2120fab9447ce29a2ec6c2201b51346ba92c868233a59d47891f",
+    "measure/plan.json": "713f00d53595c654501674d4953d142d57a63239ddd21500fd20c78952f0cb2a",
+    "measure/observations.json": "12cad2dcf36defbb44264bd532f3321239ab8be34b76577209d32327748cd89c",
+    "measure/passed.json": "1f0789edb7479390ff1cb8ef36002a6c6ecf02e1c0050f6fae33d454da6efb4c",
+    "candidate-original/binding.json": "6de4bc29f63b00cf219607c6fee9572903ee406c2ace1fb5819f8442ef090c10",
+    "candidate-original/progress.tsv": "56159896464f2c90c80b1826b3e1636876870f20a591de499ede030834a80745",
+    "candidate-original/result.json": "c1ddd090040c463ee1c2e0efa726e16d48fb4f3466a7fa07b36575e2da8a622c",
+    "post-observer.log": "123dbf094586d79b739af4a9e747e95c957289bcffb328a875b2a4145ddef414"
+  }
 }
