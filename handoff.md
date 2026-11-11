@@ -40,9 +40,10 @@ generic-reborrow library and unresolved-projection controls. Tiny unoptimized
 paired wall ratios1.150/1.167/1.035 and A/A.690/.632/.952 remain recorded; no
 speed/neutrality/optimized/core claim. New rigid-projection acceptance has no
 accepting baseline; width8/32/128+noise128 bounded-work checks cover that path.
-Optimized qualification remains pending. Baseline00d2 can retire after replacement
-publication and explicit prune; keep current94bd and older optimized21f. Old9109
-and e7 executables are absent; metadata does not make them available for new runs.
+Optimized qualification remains pending. Baseline00d2 was retired after replacement
+publication and explicit prune1794395534452651774; its executable is absent.
+Keep current94bd and older optimized21f. Old9109 and e7 executables are also absent;
+metadata does not make retired executables available for new runs.
 
 The unchanged120s original observer FAILS deadline121.279946s with159 partial
 records throughfunction10718,file283:70779,node3113. ProgressSHA
@@ -86,8 +87,11 @@ record: docs/pa20-projected-candidate-properties-evidence.json.
 
 Full42988281942 on EXACT31be0c24f PASSED every fast/release/course/native/debug/
 independent/PA25 stage, qualifying the previous symbolic-index source004ae71e9.
-After publishing this b15 semantic checkpoint, dispatch its full successor only
-if no full run is active. Never cancel/restart a run for documentation descendants.
+Full successor43009364083 is ACTIVE on EXACT9fdf58f7588a35c69b85601fe3b70e242a937247,
+which contains sourceb15. Fast passed; qualification lint/architecture/harness and
+independent host graph passed; release/course was in progress when last checked.
+Do not cancel/redispatch it for this documentation descendant or later input/docs
+commits. Check its terminal outcome while progressing the next independent family.
 
 ## Retained requirements and resource rules
 

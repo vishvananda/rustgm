@@ -21,8 +21,10 @@ comparable body count, throughput result or original artifact exists. Next freez
 ordinary callback creation/constructor/effect contrasts, reusing conditional
 function-item and const-adapter requirements. Preserve all pending native panic,
 128-depth inference, factory execution, bootstrap, transport and optimized checks
-listed in handoff.md. Full42988281942 on exact31be succeeded every stage; the
-new b15 semantic successor is due after publication.
+listed in handoff.md. Full42988281942 on exact31be succeeded every stage.
+Full successor43009364083 is active on exact9fdf58f75 containing sourceb15;
+fast and qualification setup/host checks passed, release/course was running.
+Do not restart it for documentation descendants.
 
 Earlier const-adapter/implicit receiver observations below are historical;
 the current frontier above supersedes their next-step text.

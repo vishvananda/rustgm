@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "state": "Qualified finite development checkpoint; full semantic successor CI pending publication; original artifacts absent",
+  "state": "Qualified finite development checkpoint published; full semantic successor CI in progress; original artifacts absent",
   "compiler": {
     "commit": "b15d29240f5f1a00894a2149bac1ddc46d18ed20",
     "sha256": "94bd08b42caf5680d4ccce6efbeef449e6eb159473ae3668b1a21a94a746f808",
@@ -476,5 +476,152 @@
     "Three tuple-factory cleanup-owner cases",
     "Optimized nested-proof/stack and optimized performance qualification",
     "Whole PA25 through PA44 remain planned"
-  ]
+  ],
+  "current_full_ci": {
+    "run": 43009364083,
+    "head": "9fdf58f7588a35c69b85601fe3b70e242a937247",
+    "source_commit": "b15d29240f5f1a00894a2149bac1ddc46d18ed20",
+    "jobs": [
+      {
+        "name": "qualification",
+        "status": "in_progress",
+        "conclusion": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Pinned Rust",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Lint, architecture and harness",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Independent host build graph",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Release and course tests",
+            "status": "in_progress",
+            "conclusion": null
+          },
+          {
+            "name": "Native maintainer qualification",
+            "status": "pending",
+            "conclusion": null
+          },
+          {
+            "name": "Broad native course sweep",
+            "status": "pending",
+            "conclusion": null
+          },
+          {
+            "name": "Debug invariants",
+            "status": "pending",
+            "conclusion": null
+          },
+          {
+            "name": "Retire completed debug build cache",
+            "status": "pending",
+            "conclusion": null
+          },
+          {
+            "name": "Independent Rust qualification",
+            "status": "pending",
+            "conclusion": null
+          },
+          {
+            "name": "PA25 const-machine candidate contract",
+            "status": "pending",
+            "conclusion": null
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "pending",
+            "conclusion": null
+          }
+        ]
+      },
+      {
+        "name": "fast",
+        "status": "completed",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Pinned Rust",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/cache@v6",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Audit setup",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Five-minute compiler smoke",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Harness, audit cache and upstream contracts",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Retain focused evidence",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/cache@v6",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ]
+      }
+    ]
+  },
+  "retired_baseline": {
+    "sha256": "00d205dc7bab488fbdadc5064be2d421947f9bdc3dd573f1c5691175faa8fc3e",
+    "executable_available": false,
+    "raw_observations_retained": true,
+    "prune_receipt": "obj/cleanup/1794395534452651774.jsonl"
+  }
 }

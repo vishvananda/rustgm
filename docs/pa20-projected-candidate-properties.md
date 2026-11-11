@@ -97,8 +97,12 @@ in 13 binaries and 44 assignment stages.
 Focused public checks supply local development evidence. Private affine, budget,
 fields-only and pending-header controls remain in full CI. The preceding full
 run [42988281942](https://github.com/vishvananda/rustgm/actions/runs/42988281942)
-on exact `31be0c24f` passed every stage. This semantic successor needs its own full
-run after publication; documentation descendants do not restart an active run.
+on exact `31be0c24f` passed every stage. Successor
+[43009364083](https://github.com/vishvananda/rustgm/actions/runs/43009364083) runs
+on exact `9fdf58f7588a35c69b85601fe3b70e242a937247`, containing source `b15d29240`.
+Fast, qualification lint/architecture/harness and the independent host graph
+passed; release/course was running at the recorded observation. Documentation
+descendants do not restart this run.
 
 ## Measurements and original observation
 
@@ -115,6 +119,9 @@ The slower observations and calibration variability remain recorded. They prove
 neither performance neutrality nor an optimized or whole-core speed result.
 Optimized performance and the older nested-proof/stack qualification remain
 required; no smoothing rerun or quota increase is used.
+The old `00d205dc` executable was explicitly pruned after comparison and replacement
+publication in receipt `1794395534452651774`. Its producer and raw observations
+remain; current `94bd08b4` and the older optimized `21f` baseline remain pinned.
 
 The original observer fails its unchanged 120-second deadline after
 121.279946 seconds, retaining 159 partial records through function10718,
