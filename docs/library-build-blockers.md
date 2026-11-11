@@ -1,37 +1,37 @@
 # Library build blocker tracker
 
-Latest semantic checkpoint: [actual nominal source Unsize](pa31-nominal-unsize.md),
-compilerc31afe8d7 / CLI00b2af11. PA31 owns46 reductions (33accept13reject), including
-31 independently matched native conversions and both element-inference directions.
-Completed storage-tail eligibility, unchanged-argument equality, actual field
-Unsize and both endpoint/lifetime proofs remain distinct. The shared existing
-field environment preserves inference and body cache behavior. Eight focused
-public tests, three native groups, three old nominal/required-factory controls,
-width/noise bounds, harness/upstream and strict selected checks pass. No hot fields,
-new cache/scans, compiler limits, backend or oracle changes. Full/private successor
-qualification remains pending; whole PA31 stays planned.
+Latest semantic checkpoint: [callable results](pa24-callable-results.md),
+compiler31cfbe08b / immutableCLI8b73f15a. Earliest PA24 owns52 reductions
+(39executable positives,13rejections); all independent Rust outcomes/native,
+complete candidate LowIR, nine focused controls and84 paired native programs pass.
+Call-owned constraints settle before structural consumers. Checked declared
+callee premises retain source closure conditions through shared complete Self
+matching and scoped normalization transport; final permission/lifetime/ownership
+proof remains required. Width/noise, strict selected checks, all579PA24+125PA12
+texts, harness/upstream and three old nominal/required-factory controls pass.
+All1581 old PA24 sidecars are unchanged. Only PA12's predeclared tuple-field
+diagnostic changes. No hot fields, global cache/scans, limits or backend change.
+Full/private callable successor remains pending; whole PA31 stays planned.
 
-The unchanged120s original observer still FAILS at121.1401s:220failure records/
-3743item attempts through function7809,file226:27629,node2318 in slice/index.rs.
+The unchanged120s original observer still FAILS at121.2428s:203failure records/
+4328item attempts through function8870,file239:53421,node3300 in str/pattern.rs.
 All722 hashes/sixbindings/profile/limits fixed. Partial SHA
-6feb6dc8314b77a07327749901e41fb58afffa72d08c9dcc6e703177279e3341.
-No as_request or nominal-tail fence remains in that prefix. FirstIndexRange::fold,
-ops/index_range.rs93:4858, requires a known tuple/struct for the wrapped try_fold
-result's .0. Reversefold shares it; actual const-closure wrap_mut_1/2 have a separate
-invalid canonical selection. Reduce ordinary wrapped-call result inference, then
-retain actual source callable/const/Try prerequisites where necessary. Select the
-earliest owning PA from evidence. Independent ordinary probes now isolate PA24:
-FnOnce/FnMut/Fn tuple results forwarded through a generic call fail before .0,
-while explicit results, function pointers and generic/opaque custom Make output
-controls pass. Actual source const/callable/Try companions stay required. No new
-PA24 implementation or complete census/original artifact exists.
+12f5ce98e668bbf2cebbb2128cdceecf534bcac52e9be6b34a4eafd22d2bb7d2.
+No file93 IndexRange fold/rfold field-access failure remains in that prefix.
+First now wrap_mut_1/2, ops/try_trait.rs95:16817/17146: invalid canonical trait
+selection. Their actual const fn returns impl [const]FnMut(...)->Self plus
+[const]Destruct with a const move closure. Freeze ordinary const-callable twins,
+then retain real source FnMut/Destruct/Try roles where needed. Read the PA25/31
+contracts and choose the earliest owner from the minimum; source mode is not an
+assumed prerequisite. No complete census/original artifact or speed claim.
 
-Forty frozen A/A+twoABBA observations preserve complete import/array-cast LowIR,
-sourceknownrepr and74 old outcomes; noisy timings make no speed/neutrality claim.
-Full42918510671on216364b72 and full42925327481on PA22/23 checkpointcba471220
-PASSED every stage. New full42930363606 runs the published nominal-source checkpoint
-4a9409a58; do not cancel it for later documentation-only changes. The earlier three valid
-tuple-factory cleanup owners and optimized nested-proof checks remain required.
+Forty immutable exclusive A/A+twoABBA observations retain complete outputs for
+import/explicit-result LowIR and scalar/source-role type controls. Noisy A/A
+supports no timing claim. Full42930363606on4a PASSED every stage, qualifying the
+preceding nominal source Unsize checkpoint; prior42925327481oncba and
+42918510671on216364 also passed. Dispatch the callable successor after publication
+and after verifying no active full run. The earlier three valid tuple-factory
+cleanup owners and optimized nested-proof checks remain required.
 
 Previous [pending-join inputs](pa20-pending-join-inputs.md) retain their qualified
 PA20 packet, source/proof ownership and separate1.266x unoptimized direct-control

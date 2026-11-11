@@ -1,0 +1,2117 @@
+function @rg.273() -> void {
+  block ^b0:
+    %t0 = call u8 @rg.16.i4()
+    %t1 = cmp eq u8 %t0, 23
+    %t2 = convert trunc i1 i64 %t1
+    call void @rg.13(%t2)
+    return void
+}
+function @rg.16.i4() -> u8 {
+  slot $s0 : obj<1x1>
+  slot $s1 : obj<1x1>
+  slot $s2 : obj<1x1>
+  slot $s3 : obj<1x1>
+  slot $s4 : obj<1x1>
+  slot $s5 : obj<1x1>
+  slot $s6 : obj<1x1>
+  slot $s7 : obj<1x1>
+  slot $s8 : obj<1x1>
+  slot $s9 : obj<1x1>
+  slot $s10 : obj<1x1>
+  slot $s11 : obj<1x1>
+  slot $s12 : obj<1x1>
+  slot $s13 : obj<1x1>
+  slot $s14 : obj<1x1>
+  slot $s15 : obj<1x1>
+  slot $s16 : obj<1x1>
+  slot $s17 : obj<1x1>
+  slot $s18 : obj<1x1>
+  slot $s19 : obj<1x1>
+  slot $s20 : obj<1x1>
+  slot $s21 : obj<1x1>
+  slot $s22 : obj<1x1>
+  slot $s23 : obj<1x1>
+  slot $s24 : obj<1x1>
+  slot $s25 : obj<1x1>
+  slot $s26 : obj<1x1>
+  slot $s27 : obj<1x1>
+  slot $s28 : obj<1x1>
+  slot $s29 : obj<1x1>
+  slot $s30 : obj<1x1>
+  slot $s31 : obj<1x1>
+  slot $s32 : obj<1x1>
+  slot $s33 : obj<1x1>
+  slot $s34 : obj<1x1>
+  slot $s35 : obj<1x1>
+  slot $s36 : obj<1x1>
+  slot $s37 : obj<1x1>
+  slot $s38 : obj<1x1>
+  slot $s39 : obj<1x1>
+  slot $s40 : obj<1x1>
+  slot $s41 : obj<1x1>
+  slot $s42 : obj<1x1>
+  slot $s43 : obj<1x1>
+  slot $s44 : obj<1x1>
+  slot $s45 : obj<1x1>
+  slot $s46 : obj<1x1>
+  slot $s47 : obj<1x1>
+  slot $s48 : obj<1x1>
+  slot $s49 : obj<1x1>
+  slot $s50 : obj<1x1>
+  slot $s51 : obj<1x1>
+  slot $s52 : obj<1x1>
+  slot $s53 : obj<1x1>
+  slot $s54 : obj<1x1>
+  slot $s55 : obj<1x1>
+  slot $s56 : obj<1x1>
+  slot $s57 : obj<1x1>
+  slot $s58 : obj<1x1>
+  slot $s59 : obj<1x1>
+  slot $s60 : obj<1x1>
+  slot $s61 : obj<1x1>
+  slot $s62 : obj<1x1>
+  slot $s63 : obj<1x1>
+  slot $s64 : obj<1x1>
+  slot $s65 : obj<1x1>
+  slot $s66 : obj<1x1>
+  slot $s67 : obj<1x1>
+  slot $s68 : obj<1x1>
+  slot $s69 : obj<1x1>
+  slot $s70 : obj<1x1>
+  slot $s71 : obj<1x1>
+  slot $s72 : obj<1x1>
+  slot $s73 : obj<1x1>
+  slot $s74 : obj<1x1>
+  slot $s75 : obj<1x1>
+  slot $s76 : obj<1x1>
+  slot $s77 : obj<1x1>
+  slot $s78 : obj<1x1>
+  slot $s79 : obj<1x1>
+  slot $s80 : obj<1x1>
+  slot $s81 : obj<1x1>
+  slot $s82 : obj<1x1>
+  slot $s83 : obj<1x1>
+  slot $s84 : obj<1x1>
+  slot $s85 : obj<1x1>
+  slot $s86 : obj<1x1>
+  slot $s87 : obj<1x1>
+  slot $s88 : obj<1x1>
+  slot $s89 : obj<1x1>
+  slot $s90 : obj<1x1>
+  slot $s91 : obj<1x1>
+  slot $s92 : obj<1x1>
+  slot $s93 : obj<1x1>
+  slot $s94 : obj<1x1>
+  slot $s95 : obj<1x1>
+  slot $s96 : obj<1x1>
+  slot $s97 : obj<1x1>
+  slot $s98 : obj<1x1>
+  slot $s99 : obj<1x1>
+  slot $s100 : obj<1x1>
+  slot $s101 : obj<1x1>
+  slot $s102 : obj<1x1>
+  slot $s103 : obj<1x1>
+  slot $s104 : obj<1x1>
+  slot $s105 : obj<1x1>
+  slot $s106 : obj<1x1>
+  slot $s107 : obj<1x1>
+  slot $s108 : obj<1x1>
+  slot $s109 : obj<1x1>
+  slot $s110 : obj<1x1>
+  slot $s111 : obj<1x1>
+  slot $s112 : obj<1x1>
+  slot $s113 : obj<1x1>
+  slot $s114 : obj<1x1>
+  slot $s115 : obj<1x1>
+  slot $s116 : obj<1x1>
+  slot $s117 : obj<1x1>
+  slot $s118 : obj<1x1>
+  slot $s119 : obj<1x1>
+  slot $s120 : obj<1x1>
+  slot $s121 : obj<1x1>
+  slot $s122 : obj<1x1>
+  slot $s123 : obj<1x1>
+  slot $s124 : obj<1x1>
+  slot $s125 : obj<1x1>
+  slot $s126 : obj<1x1>
+  slot $s127 : obj<1x1>
+  slot $s128 : obj<1x1>
+  slot $s129 : obj<1x1>
+  block ^b0:
+    %t0 = addr $s0
+    %t1 = addr $s1
+    call void @rg.15.i5(%t1, %t0)
+    %t2 = addr $s0
+    %t3 = addr $s2
+    call void @rg.15.i6(%t3, %t2)
+    %t4 = addr $s0
+    %t5 = addr $s3
+    call void @rg.15.i7(%t5, %t4)
+    %t6 = addr $s0
+    %t7 = addr $s4
+    call void @rg.15.i8(%t7, %t6)
+    %t8 = addr $s0
+    %t9 = addr $s5
+    call void @rg.15.i9(%t9, %t8)
+    %t10 = addr $s0
+    %t11 = addr $s6
+    call void @rg.15.i10(%t11, %t10)
+    %t12 = addr $s0
+    %t13 = addr $s7
+    call void @rg.15.i11(%t13, %t12)
+    %t14 = addr $s0
+    %t15 = addr $s8
+    call void @rg.15.i12(%t15, %t14)
+    %t16 = addr $s0
+    %t17 = addr $s9
+    call void @rg.15.i13(%t17, %t16)
+    %t18 = addr $s0
+    %t19 = addr $s10
+    call void @rg.15.i14(%t19, %t18)
+    %t20 = addr $s0
+    %t21 = addr $s11
+    call void @rg.15.i15(%t21, %t20)
+    %t22 = addr $s0
+    %t23 = addr $s12
+    call void @rg.15.i16(%t23, %t22)
+    %t24 = addr $s0
+    %t25 = addr $s13
+    call void @rg.15.i17(%t25, %t24)
+    %t26 = addr $s0
+    %t27 = addr $s14
+    call void @rg.15.i18(%t27, %t26)
+    %t28 = addr $s0
+    %t29 = addr $s15
+    call void @rg.15.i19(%t29, %t28)
+    %t30 = addr $s0
+    %t31 = addr $s16
+    call void @rg.15.i20(%t31, %t30)
+    %t32 = addr $s0
+    %t33 = addr $s17
+    call void @rg.15.i21(%t33, %t32)
+    %t34 = addr $s0
+    %t35 = addr $s18
+    call void @rg.15.i22(%t35, %t34)
+    %t36 = addr $s0
+    %t37 = addr $s19
+    call void @rg.15.i23(%t37, %t36)
+    %t38 = addr $s0
+    %t39 = addr $s20
+    call void @rg.15.i24(%t39, %t38)
+    %t40 = addr $s0
+    %t41 = addr $s21
+    call void @rg.15.i25(%t41, %t40)
+    %t42 = addr $s0
+    %t43 = addr $s22
+    call void @rg.15.i26(%t43, %t42)
+    %t44 = addr $s0
+    %t45 = addr $s23
+    call void @rg.15.i27(%t45, %t44)
+    %t46 = addr $s0
+    %t47 = addr $s24
+    call void @rg.15.i28(%t47, %t46)
+    %t48 = addr $s0
+    %t49 = addr $s25
+    call void @rg.15.i29(%t49, %t48)
+    %t50 = addr $s0
+    %t51 = addr $s26
+    call void @rg.15.i30(%t51, %t50)
+    %t52 = addr $s0
+    %t53 = addr $s27
+    call void @rg.15.i31(%t53, %t52)
+    %t54 = addr $s0
+    %t55 = addr $s28
+    call void @rg.15.i32(%t55, %t54)
+    %t56 = addr $s0
+    %t57 = addr $s29
+    call void @rg.15.i33(%t57, %t56)
+    %t58 = addr $s0
+    %t59 = addr $s30
+    call void @rg.15.i34(%t59, %t58)
+    %t60 = addr $s0
+    %t61 = addr $s31
+    call void @rg.15.i35(%t61, %t60)
+    %t62 = addr $s0
+    %t63 = addr $s32
+    call void @rg.15.i36(%t63, %t62)
+    %t64 = addr $s0
+    %t65 = addr $s33
+    call void @rg.15.i37(%t65, %t64)
+    %t66 = addr $s0
+    %t67 = addr $s34
+    call void @rg.15.i38(%t67, %t66)
+    %t68 = addr $s0
+    %t69 = addr $s35
+    call void @rg.15.i39(%t69, %t68)
+    %t70 = addr $s0
+    %t71 = addr $s36
+    call void @rg.15.i40(%t71, %t70)
+    %t72 = addr $s0
+    %t73 = addr $s37
+    call void @rg.15.i41(%t73, %t72)
+    %t74 = addr $s0
+    %t75 = addr $s38
+    call void @rg.15.i42(%t75, %t74)
+    %t76 = addr $s0
+    %t77 = addr $s39
+    call void @rg.15.i43(%t77, %t76)
+    %t78 = addr $s0
+    %t79 = addr $s40
+    call void @rg.15.i44(%t79, %t78)
+    %t80 = addr $s0
+    %t81 = addr $s41
+    call void @rg.15.i45(%t81, %t80)
+    %t82 = addr $s0
+    %t83 = addr $s42
+    call void @rg.15.i46(%t83, %t82)
+    %t84 = addr $s0
+    %t85 = addr $s43
+    call void @rg.15.i47(%t85, %t84)
+    %t86 = addr $s0
+    %t87 = addr $s44
+    call void @rg.15.i48(%t87, %t86)
+    %t88 = addr $s0
+    %t89 = addr $s45
+    call void @rg.15.i49(%t89, %t88)
+    %t90 = addr $s0
+    %t91 = addr $s46
+    call void @rg.15.i50(%t91, %t90)
+    %t92 = addr $s0
+    %t93 = addr $s47
+    call void @rg.15.i51(%t93, %t92)
+    %t94 = addr $s0
+    %t95 = addr $s48
+    call void @rg.15.i52(%t95, %t94)
+    %t96 = addr $s0
+    %t97 = addr $s49
+    call void @rg.15.i53(%t97, %t96)
+    %t98 = addr $s0
+    %t99 = addr $s50
+    call void @rg.15.i54(%t99, %t98)
+    %t100 = addr $s0
+    %t101 = addr $s51
+    call void @rg.15.i55(%t101, %t100)
+    %t102 = addr $s0
+    %t103 = addr $s52
+    call void @rg.15.i56(%t103, %t102)
+    %t104 = addr $s0
+    %t105 = addr $s53
+    call void @rg.15.i57(%t105, %t104)
+    %t106 = addr $s0
+    %t107 = addr $s54
+    call void @rg.15.i58(%t107, %t106)
+    %t108 = addr $s0
+    %t109 = addr $s55
+    call void @rg.15.i59(%t109, %t108)
+    %t110 = addr $s0
+    %t111 = addr $s56
+    call void @rg.15.i60(%t111, %t110)
+    %t112 = addr $s0
+    %t113 = addr $s57
+    call void @rg.15.i61(%t113, %t112)
+    %t114 = addr $s0
+    %t115 = addr $s58
+    call void @rg.15.i62(%t115, %t114)
+    %t116 = addr $s0
+    %t117 = addr $s59
+    call void @rg.15.i63(%t117, %t116)
+    %t118 = addr $s0
+    %t119 = addr $s60
+    call void @rg.15.i64(%t119, %t118)
+    %t120 = addr $s0
+    %t121 = addr $s61
+    call void @rg.15.i65(%t121, %t120)
+    %t122 = addr $s0
+    %t123 = addr $s62
+    call void @rg.15.i66(%t123, %t122)
+    %t124 = addr $s0
+    %t125 = addr $s63
+    call void @rg.15.i67(%t125, %t124)
+    %t126 = addr $s0
+    %t127 = addr $s64
+    call void @rg.15.i68(%t127, %t126)
+    %t128 = addr $s0
+    %t129 = addr $s65
+    call void @rg.15.i69(%t129, %t128)
+    %t130 = addr $s0
+    %t131 = addr $s66
+    call void @rg.15.i70(%t131, %t130)
+    %t132 = addr $s0
+    %t133 = addr $s67
+    call void @rg.15.i71(%t133, %t132)
+    %t134 = addr $s0
+    %t135 = addr $s68
+    call void @rg.15.i72(%t135, %t134)
+    %t136 = addr $s0
+    %t137 = addr $s69
+    call void @rg.15.i73(%t137, %t136)
+    %t138 = addr $s0
+    %t139 = addr $s70
+    call void @rg.15.i74(%t139, %t138)
+    %t140 = addr $s0
+    %t141 = addr $s71
+    call void @rg.15.i75(%t141, %t140)
+    %t142 = addr $s0
+    %t143 = addr $s72
+    call void @rg.15.i76(%t143, %t142)
+    %t144 = addr $s0
+    %t145 = addr $s73
+    call void @rg.15.i77(%t145, %t144)
+    %t146 = addr $s0
+    %t147 = addr $s74
+    call void @rg.15.i78(%t147, %t146)
+    %t148 = addr $s0
+    %t149 = addr $s75
+    call void @rg.15.i79(%t149, %t148)
+    %t150 = addr $s0
+    %t151 = addr $s76
+    call void @rg.15.i80(%t151, %t150)
+    %t152 = addr $s0
+    %t153 = addr $s77
+    call void @rg.15.i81(%t153, %t152)
+    %t154 = addr $s0
+    %t155 = addr $s78
+    call void @rg.15.i82(%t155, %t154)
+    %t156 = addr $s0
+    %t157 = addr $s79
+    call void @rg.15.i83(%t157, %t156)
+    %t158 = addr $s0
+    %t159 = addr $s80
+    call void @rg.15.i84(%t159, %t158)
+    %t160 = addr $s0
+    %t161 = addr $s81
+    call void @rg.15.i85(%t161, %t160)
+    %t162 = addr $s0
+    %t163 = addr $s82
+    call void @rg.15.i86(%t163, %t162)
+    %t164 = addr $s0
+    %t165 = addr $s83
+    call void @rg.15.i87(%t165, %t164)
+    %t166 = addr $s0
+    %t167 = addr $s84
+    call void @rg.15.i88(%t167, %t166)
+    %t168 = addr $s0
+    %t169 = addr $s85
+    call void @rg.15.i89(%t169, %t168)
+    %t170 = addr $s0
+    %t171 = addr $s86
+    call void @rg.15.i90(%t171, %t170)
+    %t172 = addr $s0
+    %t173 = addr $s87
+    call void @rg.15.i91(%t173, %t172)
+    %t174 = addr $s0
+    %t175 = addr $s88
+    call void @rg.15.i92(%t175, %t174)
+    %t176 = addr $s0
+    %t177 = addr $s89
+    call void @rg.15.i93(%t177, %t176)
+    %t178 = addr $s0
+    %t179 = addr $s90
+    call void @rg.15.i94(%t179, %t178)
+    %t180 = addr $s0
+    %t181 = addr $s91
+    call void @rg.15.i95(%t181, %t180)
+    %t182 = addr $s0
+    %t183 = addr $s92
+    call void @rg.15.i96(%t183, %t182)
+    %t184 = addr $s0
+    %t185 = addr $s93
+    call void @rg.15.i97(%t185, %t184)
+    %t186 = addr $s0
+    %t187 = addr $s94
+    call void @rg.15.i98(%t187, %t186)
+    %t188 = addr $s0
+    %t189 = addr $s95
+    call void @rg.15.i99(%t189, %t188)
+    %t190 = addr $s0
+    %t191 = addr $s96
+    call void @rg.15.i100(%t191, %t190)
+    %t192 = addr $s0
+    %t193 = addr $s97
+    call void @rg.15.i101(%t193, %t192)
+    %t194 = addr $s0
+    %t195 = addr $s98
+    call void @rg.15.i102(%t195, %t194)
+    %t196 = addr $s0
+    %t197 = addr $s99
+    call void @rg.15.i103(%t197, %t196)
+    %t198 = addr $s0
+    %t199 = addr $s100
+    call void @rg.15.i104(%t199, %t198)
+    %t200 = addr $s0
+    %t201 = addr $s101
+    call void @rg.15.i105(%t201, %t200)
+    %t202 = addr $s0
+    %t203 = addr $s102
+    call void @rg.15.i106(%t203, %t202)
+    %t204 = addr $s0
+    %t205 = addr $s103
+    call void @rg.15.i107(%t205, %t204)
+    %t206 = addr $s0
+    %t207 = addr $s104
+    call void @rg.15.i108(%t207, %t206)
+    %t208 = addr $s0
+    %t209 = addr $s105
+    call void @rg.15.i109(%t209, %t208)
+    %t210 = addr $s0
+    %t211 = addr $s106
+    call void @rg.15.i110(%t211, %t210)
+    %t212 = addr $s0
+    %t213 = addr $s107
+    call void @rg.15.i111(%t213, %t212)
+    %t214 = addr $s0
+    %t215 = addr $s108
+    call void @rg.15.i112(%t215, %t214)
+    %t216 = addr $s0
+    %t217 = addr $s109
+    call void @rg.15.i113(%t217, %t216)
+    %t218 = addr $s0
+    %t219 = addr $s110
+    call void @rg.15.i114(%t219, %t218)
+    %t220 = addr $s0
+    %t221 = addr $s111
+    call void @rg.15.i115(%t221, %t220)
+    %t222 = addr $s0
+    %t223 = addr $s112
+    call void @rg.15.i116(%t223, %t222)
+    %t224 = addr $s0
+    %t225 = addr $s113
+    call void @rg.15.i117(%t225, %t224)
+    %t226 = addr $s0
+    %t227 = addr $s114
+    call void @rg.15.i118(%t227, %t226)
+    %t228 = addr $s0
+    %t229 = addr $s115
+    call void @rg.15.i119(%t229, %t228)
+    %t230 = addr $s0
+    %t231 = addr $s116
+    call void @rg.15.i120(%t231, %t230)
+    %t232 = addr $s0
+    %t233 = addr $s117
+    call void @rg.15.i121(%t233, %t232)
+    %t234 = addr $s0
+    %t235 = addr $s118
+    call void @rg.15.i122(%t235, %t234)
+    %t236 = addr $s0
+    %t237 = addr $s119
+    call void @rg.15.i123(%t237, %t236)
+    %t238 = addr $s0
+    %t239 = addr $s120
+    call void @rg.15.i124(%t239, %t238)
+    %t240 = addr $s0
+    %t241 = addr $s121
+    call void @rg.15.i125(%t241, %t240)
+    %t242 = addr $s0
+    %t243 = addr $s122
+    call void @rg.15.i126(%t243, %t242)
+    %t244 = addr $s0
+    %t245 = addr $s123
+    call void @rg.15.i127(%t245, %t244)
+    %t246 = addr $s0
+    %t247 = addr $s124
+    call void @rg.15.i128(%t247, %t246)
+    %t248 = addr $s0
+    %t249 = addr $s125
+    call void @rg.15.i129(%t249, %t248)
+    %t250 = addr $s0
+    %t251 = addr $s126
+    call void @rg.15.i130(%t251, %t250)
+    %t252 = addr $s0
+    %t253 = addr $s127
+    call void @rg.15.i131(%t253, %t252)
+    %t254 = addr $s0
+    %t255 = addr $s128
+    call void @rg.15.i132(%t255, %t254)
+    %t256 = addr $s129
+    call void @rg.15.i133(%t256)
+    %t257 = load u8 $s129
+    return u8 %t257
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.15.i5(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i6(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i7(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i8(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i9(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i10(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i11(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i12(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i13(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i14(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i15(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i16(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i17(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i18(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i19(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i20(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i21(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i22(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i23(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i24(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i25(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i26(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i27(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i28(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i29(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i30(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i31(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i32(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i33(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i34(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i35(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i36(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i37(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i38(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i39(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i40(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i41(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i42(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i43(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i44(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i45(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i46(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i47(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i48(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i49(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i50(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i51(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i52(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i53(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i54(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i55(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i56(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i57(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i58(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i59(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i60(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i61(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i62(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i63(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i64(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i65(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i66(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i67(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i68(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i69(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i70(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i71(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i72(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i73(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i74(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i75(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i76(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i77(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i78(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i79(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i80(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i81(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i82(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i83(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i84(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i85(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i86(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i87(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i88(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i89(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i90(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i91(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i92(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i93(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i94(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i95(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i96(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i97(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i98(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i99(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i100(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i101(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i102(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i103(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i104(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i105(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i106(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i107(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i108(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i109(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i110(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i111(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i112(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i113(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i114(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i115(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i116(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i117(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i118(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i119(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i120(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i121(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i122(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i123(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i124(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i125(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i126(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i127(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i128(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i129(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i130(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i131(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i132(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.closure.0(%t1)
+    %t2 = addr $s1
+    copyobj 1x1 %t2, %p0
+    return void
+}
+function @rg.15.i133(%p0 : ptr) -> void {
+  slot $s0 : obj<1x1>
+  block ^b0:
+    %t0 = addr $s0
+    call void @rg.closure.0(%t0)
+    %t1 = addr $s0
+    copyobj 1x1 %t1, %p0
+    return void
+}
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.closure.0(%p0 : ptr) -> void {
+  slot $s0 : obj<1x1>
+  block ^b0:
+    store u8 23, $s0
+    %t0 = addr $s0
+    copyobj 1x1 %t0, %p0
+    return void
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.273()
+    return i64 0
+}

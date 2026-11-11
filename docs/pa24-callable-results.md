@@ -53,7 +53,7 @@ references. Four additional capture contrasts were frozen before repairing that
 interaction: owned/shared/nested generic captured-reference tuples accept, while
 a local capture escaping to static rejects. Independent Rust object/native checks
 agree for all four and recheck the three existing positive controls. The current
-packet therefore owns51 outcomes (38 executable positives,13 rejections).
+packet at that snapshot owns51 outcomes (38 executable positives,13 rejections).
 
 Type analysis passed the regressions, but demanded lifetime proof found two
 independent callee universals without the source closure's necessary outlives
@@ -71,8 +71,8 @@ LowIR outcomes, width/noise, all22 generic and21 nested receiver outcomes and th
 five existing controls above. Strict selected production/CLI/test Clippy, full
 formatting and architecture pass. Native1794361591493889968 passes4groups in65.06s:
 38 new,17 generic receiver,13 nested receiver and15 projected-parameter programs.
-Complete text/provenance checks and publication remain pending; initial
-immutable6069289c is not a qualified replacement.
+Complete text/provenance checks remained pending at that snapshot; initial
+immutable6069289c was not a qualified replacement.
 
 One additional projected-Self capture was then declared and independently
 object/native checked before its correction. It passes type analysis but fails
@@ -88,8 +88,44 @@ All selected strict checks and the unchanged width/noise work bounds pass.
 
 PA12 already owns the unchanged `reject/tuple-field.rs` reduction. Its Rust
 rejection remains1; tuple access now checks the selected arity before child lookup.
-Only that predeclared diagnostic reference may change from an internal identity
-error to `tuple field index is out of range`. New PA24 references, complete affected
-text checks, provenance review, immutable measurements and a fresh original-core
-observation remain pending at this implementation snapshot. No original
-core/alloc/std artifact is claimed.
+Only that predeclared diagnostic reference changes from an internal identity
+error to `tuple field index is out of range`. Scoped generation and complete
+comparisons pass all579 PA24 and125 PA12 cases. All1581 existing PA24 sidecars
+retain their exact bytes;374 of375 PA12 sidecars remain unchanged. The52 new
+triples and scoped provenance ship together. Reference review and original
+diagnostics are retained under obj/parallel/callable-results/.
+
+The final immutable dev-fast CLI is
+8b73f15a8334129dc7b9849347d05dc7d7ca7fac3c6286dc871b45c3fbcb1361,
+bound to committed31cfbe08b0c9589c2bc55b93ac895076f72087c3, an empty patch and3896
+Rust source hashes. Retiredbad606/50a and analysis e9/6ba executables are absent;
+their observations and source bindings remain. Cleanup1794363184111643302 removes
+those four pins; tidy1794363184280435301 removes100 disposable outputs.
+
+Harness1794362838437194980 passes315 tests,468 roots/13 binaries/44 stages,
+128 upstream fixtures and126 Reference files. Controls1794362959289190435 passes
+three exact nominal/source-opponent/required tuple-factory checks in50.51s.
+The three separate valid tuple-factory cleanup owners remain required.
+
+Forty exclusive A/A+twoABBA observations retain complete output equality for
+ordinary import and explicit-result LowIR, scalar callable-result types and the
+unchanged source-role known-representation types. The first batch completed20
+valid observations before its entry-free scalar input was accidentally selected
+in executable mode. Those20 were retained; only the remaining two groups ran
+with their declared type modes. Candidate/base ratios in that order are
+1.012/1.006/0.969/0.939, with A/A0.712/0.867/0.923/1.042. No speed or neutrality
+claim follows from these noisy unoptimized observations. Width/noise counters
+above supply the changed-path scaling invariant; the broad matrix remains CI work.
+
+The unchanged120s original-core observation still FAILS at121.2428s. Its retained
+prefix has203 failures and4328 item attempts through function8870,file239:53421,
+node3300 in str/pattern.rs; progress SHA256
+12f5ce98e668bbf2cebbb2128cdceecf534bcac52e9be6b34a4eafd22d2bb7d2.
+All722 input hashes, six bindings, profile and limits remain fixed. No file93
+IndexRange failure remains in the prefix. The first errors are wrap_mut_1/2 in
+ops/try_trait.rs file95:16817/17146, both invalid canonical trait selection.
+Preserve their actual const/source FnMut/Destruct/Try roles while reducing the
+next blocker; choose the earliest owner from the resulting minimum. Different
+census prefixes establish no speed or body-count claim. No original core/alloc/std
+artifact exists. Private/full successor qualification and the earlier optimized
+nested-proof measurements remain pending.

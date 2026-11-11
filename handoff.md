@@ -1,4 +1,4 @@
-# RustGM single-worker continuation — 2026-11-10
+# RustGM single-worker continuation — 2026-11-11
 
 This current section supersedes the historical multi-lane snapshot below.
 The user explicitly asked for one worker. Do not spawn workers or create worktrees.
@@ -40,79 +40,62 @@ requirement retained. No original core/alloc/std artifact exists.
 
 ## Current original-core frontier
 
-[Actual nominal source Unsize](docs/pa31-nominal-unsize.md), compilerc31afe8d7 /
-CLI00b2af11, qualifies PA31's original nominal-tail fence. Completed existing
-storage-tail rules establish eligibility; unchanged arguments use bulk equality.
-The actual final field pays source Unsize plus both endpoint formation/lifetime
-proofs. Field terms reuse the existing body argument environment, preserving
-unresolved elements/type/const inputs. The constructor is shared with body field
-access, retaining its owner check, cache and projection continuation. No hot
-fields, global scans/cache, compiler limits, LowIR or backend change.
+[Callable results](docs/pa24-callable-results.md) are the latest checkpoint.
+Compiler31cfbe08b / immutableCLI8b73f15a progresses each call's own ready output
+requirements before structural consumers, retaining all final proof. Contextual
+reference conversions keep their ordering. Checked declared callee premises retain
+actual source closure conditions through the shared argument/Self matcher, including
+formal normalization debts, rebased private witnesses and original binder slots.
+No hot fields, global cache/type scan, compiler limit, LowIR or backend change.
 
-PA31 nominal-unsize manifest owns46 outcomes (33positive13negative), independently
-object-checked;31 Rust-native/CPPGM observers return9 23. Source-faithful bytes and
-old nominal-unsize-required are unchanged; the latter now passes complete LowIR.
-Initial44-case candidatef22/5e passed6exact188.67s but two added independent element-
-inference cases failed. Finalc31 sharedFields fixes those, not a new language fence.
-public2 receipt1794355091892551059 passes8exact196.49s:46completeLowIR/requiredold,
-8-counter width8/32/128noise128, oldsourcearray/object/upcast/erasure plus ordinary
-PA22/23nominal41 and oldarray28. Native1794355334645613177 passes3groups65.37s:
-31new+oldsourceupcast+oldnominaltransfer/cleanup. Controls1794355520793219579 passes
-3groups41.37s including all3 required tuple-factory cleanup-owner boundaries.
-Strict selectedprodCLItestClippy/fullfmt/arch pass.315harness/468roots13bins44stages/
-upstream128/Reference126 pass1794355460066739241. No oracle/source-pin changes.
-Private/full successor remains pending; no cold private/release/all-target retry.
+The earliest PA24 packet owns52 independently checked outcomes (39 executable
+positives,13 rejections). Finalpublic1794362197862994056 passes9exact137.82s;
+all52 completeLowIR, width8/32/128noise128, old22generic/21nested receiver and5
+scoped/projection/object/source controls. Native1794362417748714215 passes4groups
+54.25s:39new+45existing real Rust/CPPGM programs. Full579PA24+125PA12text pass;
+all1581 oldPA24sidecars unchanged. PA12's existing tuple-field rejection changes
+only its predeclared diagnostic, not source/status. Harness315/468roots13bins44
+stages/upstream128/Reference126 pass1794362838437194980; three nominal/required
+factory controls pass1794362959289190435. Full/private successor remains pending.
 
-Current immutable00b2af11b5d3e0396043305fbf4164ed5ea9bdf89ba7a3d16561f9fb367a486e
-at Bobj/parallel/nominal-unsize/candidate2-dev-fast/rustgm binds committed
-c31afe8d78f3e6487b3c4524574dd40a6c341f4e/emptydiff3892Rusthashes. Initial5e pin
-retired after replacement by1794355873725556381 (metadata/failed inference evidence
-retained); tidy1794355873834134744 removed82 disposable outputs. Comparison2cab was retired after publication and the input-only probes by
-scoped1794356864064214354; metadata and observations remain, its binary does not.
-Keep current00b and optimized21f for the older pending measurements.
-Forty exclusive A/A+twoABBA observations preserve complete ordinaryimport/array
-LowIR/sourceknownrepr+74survey; ratios.979/1.084/.959/.997, noisy A/A,
-no speed/neutrality claim. Raw evidence under obj/parallel/nominal-unsize/.
+Current pin8b73f15a8334129dc7b9849347d05dc7d7ca7fac3c6286dc871b45c3fbcb1361
+at Bobj/parallel/callable-results/candidate3-dev-fast/rustgm binds committed
+31cfbe08b0c9589c2bc55b93ac895076f72087c3/emptydiff3896Rusthashes. Initial606
+failed three existing borrowed-return regressions;50a then failed the new projected
+Self contrast. Those and analysis e9/6ba pins were retired1794363184111643302;
+metadata/observations remain, binaries do not. Tidy1794363184280435301 removes100
+other outputs. Preserve current8b7 and optimized21f; retire completed00b comparison
+after publication. Forty exclusive A/A+twoABBA observations preserve complete
+import/explicit-result LowIR and scalar/sourceknownrepr types. Ratios1.012/1.006/
+.969/.939, noisyA/A; no speed/neutrality claim. The first20 valid rows precede a
+wrong executable-mode selection for an entry-free scalar input; only the remaining
+20 were run in their declared type modes. Raw evidence and final-review.json
+retain that failure honestly. No broad/per-release matrix was run per edit.
 
-Original120s observation still FAILS deadline121.1401s,220failure records/3743item
-attempts through function7809,file226:27629,node2318 in slice/index.rs. All722
+Original120s observation still FAILS deadline121.2428s,203failure records/4328item
+attempts through function8870,file239:53421,node3300 in str/pattern.rs. All722
 hashes/sixbindings/profile/limits fixed. Partial progress SHA
-6feb6dc8314b77a07327749901e41fb58afffa72d08c9dcc6e703177279e3341.
-No as_request or nominal-tail fence remains. FirstIndexRange::fold in
-ops/index_range.rs file93 byte4858, known tuple/struct required for
-self.try_fold(init,NeverShortCircuit::wrap_mut_2(f)).0; rfold same at6101.
-Adapter source in ops/try_trait.rs file95 returns impl [const]FnMut(...) -> Self
-with const move closure; wrap_mut_1/2 themselves have invalid canonical selection.
-Next freeze ordinary drive(wrap(f)).0 / generic associated callable-result twins
-before compiler edits; keep actual const/sourceFnMut/Try roles if necessary.
-Determine earliest PA from reduction (ordinary closure PA24 candidate, source
-protocol PA31 if essential), preserve actual source counterpart. Do not turn
-valid unsupported cases into negatives. Different census prefixes give no speed,
-body-count or completion claim. No original core/alloc/std artifact.
+12f5ce98e668bbf2cebbb2128cdceecf534bcac52e9be6b34a4eafd22d2bb7d2.
+The prior file93 IndexRange::fold/rfold field-access fences are absent from this
+prefix. First now NeverShortCircuit::wrap_mut_1/2, ops/try_trait.rs file95
+byte16817/17146, invalid canonical trait selection. Actual source const fn returns
+impl [const]FnMut(...)->Self+[const]Destruct, captures f in const move closure,
+where F:[const]FnMut(...)->T+[const]Destruct. Reduce ordinary const-callable twins
+first, then preserve authenticated source roles/Try companions where essential.
+Read PA25/PA31 handouts and select the earliest owner from evidence; do not assume
+source mode or PA31 is necessary. Expected outcomes precede corrections/oracles;
+valid unsupported cases remain positive requirements. No original artifact,
+complete census, body-count or speed claim. Do not raise the observer window.
 
-Next input-only discovery is complete at obj/parallel/callback-result/.
-Probe1eight+probe2seven+probe3six inputs independently Rust1.98object0, with exact
-frozen2cab/00b comparisons. Generic FnOnce/FnMut/Fn -> (T,) forwarded through a
-function drive<R,F:Fn...()->R>(f:F)->R then .0 fails known-tuple/struct in both
-binaries. Opaque Self/named/free wrapped callbacks fail too; explicit result or
-explicit R type passes. Direct opaque invocation separately needs known function
-type. General custom Make<Output=Wrap<T>>, including generic/opaque/inherited-
-output, all pass; function-pointer forwarding and scalar-result cast pass.
-Thus earliest owning reduction is PA24 (call-trait result inference); nominal,
-opaque, const and actual source roles are unnecessary to reproduce it. Keep
-actual original const/sourceFnMut/Try counterparts required. No PA24 packet or
-kernel edit yet. Read complete_field in dev/src/sema/bodies/aggregates.rs and
-callable-result projection advancement; do not invent a tuple arity from .0 or
-infer equality from output layout. Source-compatible constraints must settle.
-
-Full42918510671on216364b72 and full42925327481oncba471220 terminalSUCCESS every
-fast/release/course/native/debug/independent/PA25 gate. Pushfast42924479783oncbaPASS.
-Published nominal-source checkpoint4a9409a58f41712581476c352747920490c5bd2c; newfull
-42930363606 on that exact source/fixture snapshot is ACTIVE, dispatched only after
-confirming predecessor terminal/no active full. Pushfast42930175480 separate.
-Do not cancel or redispatch this full run for later documentation-only updates.
-Three tuple-factory owners and optimized nested-proof A/A/stack remain required.
-Singleworker existing B; mainGitonly, no new trees/agents or edits to active CPP/v5.
+The preceding [nominal source Unsize checkpoint](docs/pa31-nominal-unsize.md)
+retains46 outcomes/31native, both element-inference directions and its completed
+storage-tail/unchanged-argument/actual-field/endpoint proofs. Full42930363606on4a
+now PASSED every fast/release/course/native/debug/independent/PA25 stage, joining
+successful42925327481oncba and42918510671on216364. The callable successor is due
+only after publication; confirm no active full run before dispatch. Push-fast has
+separate concurrency. Do not cancel a full run for documentation-only updates.
+Three tuple-factory cleanup owners and optimized nested-proof A/A/stack remain
+required. Singleworker existing B; mainGitonly, no new trees/agents or CPP/v5 edits.
 Whole PA31 remains planned; core compilation remains incomplete.
 
 [PA19implementedtraitscope](docs/pa19-implemented-trait-scope.md) remains published
