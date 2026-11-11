@@ -22,8 +22,10 @@ Do not introduce rendered text as transport between compiler phases.
 The [Deref method reduction packet](tests/spec/deref-methods/README.md) retains
 seven ordinary requirements and twenty actual-source PA31 counterparts. Pinned
 Rust object and shared/mutable native outcomes are frozen before implementation.
-General implicit Deref method receiver calls, ordinary bootstrap and the remaining
-hook families remain required; the packet does not activate this assignment.
+The [implicit receiver checkpoint](../docs/pa26-implicit-deref-methods.md) now
+qualifies40 actual-source contracts and real shared/mutable/order execution.
+Ordinary bootstrap/imports,128-layer inference sharing and remaining hook families
+stay required; the packet does not activate this assignment.
 
 ## Tool surface
 

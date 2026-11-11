@@ -76,7 +76,7 @@ impl Checker<'_> {
             .get(&self.key(node))
             .copied()
             .ok_or_else(|| self.error(node, "missing resolved method call site"))?;
-        let term = self.term(site.receiver)?;
+        let term = self.method_receiver_term(node, site.receiver)?;
         let environment = self.trait_query_environment(node)?;
         let traits = self.trait_assumptions(node)?;
         let key = self.key(node);
@@ -95,6 +95,13 @@ impl Checker<'_> {
         )?;
         let selected = match progress {
             receiver::Progress::Ready(selected) => selected,
+            receiver::Progress::Absent(message) => {
+                return if self.advance_method_receiver(node, site.receiver, term)? {
+                    Ok(None)
+                } else {
+                    Err(self.error(node, message))
+                };
+            }
             receiver::Progress::Prepare(members) => {
                 return self.method_headers(node, Box::new(members));
             }
@@ -145,6 +152,14 @@ impl Checker<'_> {
                 unsize: selected.unsize,
             },
         ));
+        self.complete_method_receiver(
+            node,
+            borrow,
+            super::protocol_control::OpenCall {
+                callable,
+                signature,
+            },
+        )?;
         let target_function = self.selected_target_function(node, callable)?;
         self.retain_active_call(node, signature, target_function)?;
         self.schedule_call_arguments(node, signature, site.arguments, 1)?;
@@ -453,7 +468,9 @@ impl Checker<'_> {
                 self.state.checks.push(*node);
                 continue;
             }
-            if !matches!(self.kind(*node), crate::syntax::ast::Kind::Field { .. }) {
+            if !self.access_step_method(*node, index)
+                && !matches!(self.kind(*node), crate::syntax::ast::Kind::Field { .. })
+            {
                 self.facts.methods.calls.insert(
                     key,
                     Call {

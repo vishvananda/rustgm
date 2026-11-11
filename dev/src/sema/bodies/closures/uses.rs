@@ -88,7 +88,9 @@ impl Checker<'_> {
                 .call_types
                 .methods
                 .iter()
-                .filter(|(node, _)| self.field_plan(*node).is_none())
+                .enumerate()
+                .filter(|(index, (node, _))| !self.access_step_method(*node, *index))
+                .map(|(_, value)| value)
                 .map(|(node, pending)| (*node, pending.capture_receiver()))
                 .collect(),
             comparisons: self
@@ -96,7 +98,9 @@ impl Checker<'_> {
                 .call_types
                 .methods
                 .iter()
-                .filter(|(node, _)| self.field_plan(*node).is_none())
+                .enumerate()
+                .filter(|(index, (node, _))| !self.access_step_method(*node, *index))
+                .map(|(_, value)| value)
                 .filter_map(|(node, pending)| {
                     crate::sema::compiler_items::comparison_member(
                         self.report,

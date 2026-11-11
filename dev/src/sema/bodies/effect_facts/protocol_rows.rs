@@ -98,7 +98,7 @@ impl Checker<'_> {
                     ..
                 }
                 | crate::syntax::ast::Kind::For { .. }
-        ) || self.field_plan(node).is_some()
+        ) || self.access_plan(node).is_some()
     }
     pub(in crate::sema::bodies) fn replayed_protocol_context(
         &self,
@@ -108,6 +108,7 @@ impl Checker<'_> {
     ) -> Result<Option<SourceCallUse>, Error> {
         let Some(
             Operation::Try { plan }
+            | Operation::MethodReceiver { plan }
             | Operation::Iteration { plan }
             | Operation::Field {
                 plan: Some(plan), ..
@@ -180,7 +181,8 @@ impl Checker<'_> {
         for index in 0..count {
             let open = self.state.call_types.protocol_plans[index];
             let kind = match open.kind {
-                super::super::protocol_control::OpenKind::Field(field) => {
+                super::super::protocol_control::OpenKind::Field(field)
+                | super::super::protocol_control::OpenKind::Receiver { access: field, .. } => {
                     self.publish_field_plan(open, field, solved, source_use)?
                 }
                 kind => kind.solved(solved).map_err(|e| self.error(open.node, e))?,
@@ -205,6 +207,7 @@ impl Checker<'_> {
         for plan in &plans {
             if let Some(
                 Operation::Try { plan: id }
+                | Operation::MethodReceiver { plan: id }
                 | Operation::Iteration { plan: id }
                 | Operation::Field { plan: Some(id), .. },
             ) = self.facts.node(plan.node).and_then(|node| node.operation)
@@ -246,6 +249,7 @@ impl Checker<'_> {
                     .operation,
                 Some(
                     Operation::Try { .. }
+                        | Operation::MethodReceiver { .. }
                         | Operation::Iteration { .. }
                         | Operation::Field { plan: Some(_), .. }
                 )
@@ -266,6 +270,7 @@ impl Checker<'_> {
                         plan: Some(id),
                     },
                     Kind::Iteration { .. } => Operation::Iteration { plan: id },
+                    Kind::Receiver { .. } => Operation::MethodReceiver { plan: id },
                     _ => Operation::Try { plan: id },
                 });
         }
@@ -276,7 +281,7 @@ impl Checker<'_> {
         plan: Plan,
         allowances: &mut crate::resolve::expansion::MacroAllowanceSession<'_>,
     ) -> Result<(), Error> {
-        if matches!(plan.kind, Kind::Field { .. }) {
+        if plan.kind.access().is_some() {
             crate::sema::protocol_plans::access::check(
                 self.report,
                 self.facts,
@@ -340,7 +345,7 @@ impl Checker<'_> {
                     }),
                 ]
             }
-            Kind::Iteration { .. } | Kind::Field { .. } => {
+            Kind::Iteration { .. } | Kind::Field { .. } | Kind::Receiver { .. } => {
                 return Err(self.error(plan.node.node, "iteration plan lost its source branch"));
             }
         };

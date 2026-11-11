@@ -2,7 +2,7 @@
 use super::{CallContexts, Checker, Error, MAX_RETAINED, MAX_ROWS, MAX_TRANSIENT, SourceCallUse};
 use crate::{
     sema::{
-        bodies::{access_paths::OpenField, protocol_control::OpenPlan},
+        bodies::{access_paths::OpenAccess, protocol_control::OpenPlan},
         model::Operation,
         protocol_plans::{
             self, Kind, Plan,
@@ -42,27 +42,22 @@ impl Checker<'_> {
     pub(in crate::sema::bodies) fn publish_field_plan(
         &mut self,
         open: OpenPlan,
-        field: OpenField,
+        field: OpenAccess,
         solved: &Solved,
         source_use: SourceCallUse,
     ) -> Result<Kind, Error> {
         let key = self.key(open.node);
         let count = field.steps.len().map_err(|e| self.error(open.node, e))?;
-        let selected = field
-            .field
-            .ok_or_else(|| self.error(open.node, "field publication lost its selected member"))?;
         let existing = match self.facts.node(key).and_then(|node| node.operation) {
-            Some(Operation::Field { plan: Some(id), .. }) => Some(
+            Some(
+                Operation::Field { plan: Some(id), .. } | Operation::MethodReceiver { plan: id },
+            ) => Some(
                 id.current(self.facts, self.state.body, key)
                     .map_err(|e| self.error(open.node, e))?,
             ),
             _ => None,
         };
-        let start = if let Some(Plan {
-            kind: Kind::Field { steps, .. },
-            ..
-        }) = existing
-        {
+        let start = if let Some((_, _, _, steps)) = existing.and_then(|plan| plan.kind.access()) {
             steps.start
         } else {
             u32::try_from(
@@ -71,7 +66,7 @@ impl Checker<'_> {
                     .and_then(CallContexts::access_steps)
                     .map_or(0, <[_]>::len),
             )
-            .map_err(|_| self.error(open.node, "field checked-step index overflow"))?
+            .map_err(|_| self.error(open.node, "access checked-step index overflow"))?
         };
         let end = start
             .checked_add(
@@ -105,20 +100,39 @@ impl Checker<'_> {
             }
         }
         permute(&mut rows, &mut order).map_err(|e| self.error(open.node, e))?;
-        let kind = Kind::Field {
-            operand: field.operand,
-            field: selected,
-            receiver: *solved
-                .types
-                .get(field.receiver.0 as usize)
-                .ok_or_else(|| self.error(open.node, "field lost its solved receiver"))?,
-            dereferences: field.dereferences,
-            steps: Range {
-                start,
-                end,
-                first: first
-                    .ok_or_else(|| self.error(open.node, "field plan has no first step"))?,
+        let receiver = *solved
+            .types
+            .get(field.receiver.0 as usize)
+            .ok_or_else(|| self.error(open.node, "access lost its solved receiver"))?;
+        let steps = Range {
+            start,
+            end,
+            first: first.ok_or_else(|| self.error(open.node, "access plan has no first step"))?,
+        };
+        let kind = match open.kind {
+            super::super::protocol_control::OpenKind::Field(_) => Kind::Field {
+                operand: field.operand,
+                field: field.field.ok_or_else(|| {
+                    self.error(open.node, "field publication lost its selected member")
+                })?,
+                receiver,
+                dereferences: field.dereferences,
+                steps,
             },
+            super::super::protocol_control::OpenKind::Receiver { call, .. }
+                if field.field.is_none() =>
+            {
+                Kind::Receiver {
+                    operand: field.operand,
+                    receiver,
+                    dereferences: field.dereferences,
+                    steps,
+                    call: call.solved(solved).map_err(|e| self.error(open.node, e))?,
+                }
+            }
+            _ => {
+                return Err(self.error(open.node, "access publication lost its completed protocol"));
+            }
         };
         let plan = Plan {
             node: key,
@@ -172,14 +186,11 @@ impl Checker<'_> {
     fn field_candidates(
         &self,
         open: OpenPlan,
-        field: OpenField,
+        field: OpenAccess,
         solved: &Solved,
         source_use: SourceCallUse,
     ) -> Result<(Vec<Step>, Vec<u32>), Error> {
-        let count = open
-            .kind
-            .call_count()
-            .map_err(|e| self.error(open.node, e))?;
+        let count = field.steps.len().map_err(|e| self.error(open.node, e))?;
         let mut rows = Vec::new();
         let mut order = Vec::new();
         rows.try_reserve_exact(count)
@@ -262,7 +273,7 @@ impl Checker<'_> {
         plan: Plan,
         rows: Vec<Step>,
     ) -> Result<(), Error> {
-        let Kind::Field { steps, .. } = plan.kind else {
+        let Some((_, _, _, steps)) = plan.kind.access() else {
             return Err(self.error(node, "field publication lost its kind"));
         };
         if let Some(existing) = existing {

@@ -12,6 +12,13 @@ pub(crate) enum Kind {
         dereferences: u32,
         steps: access::Range,
     },
+    Receiver {
+        operand: NodeId,
+        receiver: TypeId,
+        dereferences: u32,
+        steps: access::Range,
+        call: Call,
+    },
     Block {
         body: NodeId,
         from_output: Call,
@@ -38,16 +45,42 @@ pub(crate) struct Plan {
     pub source_use: SourceCallUse,
     pub kind: Kind,
 }
+impl Kind {
+    pub(crate) fn access(self) -> Option<(NodeId, TypeId, u32, access::Range)> {
+        match self {
+            Self::Field {
+                operand,
+                receiver,
+                dereferences,
+                steps,
+                ..
+            }
+            | Self::Receiver {
+                operand,
+                receiver,
+                dereferences,
+                steps,
+                ..
+            } => Some((operand, receiver, dereferences, steps)),
+            _ => None,
+        }
+    }
+}
 impl Plan {
     pub(crate) fn calls(self) -> Result<Calls, &'static str> {
         let (next, remaining) = match self.kind {
-            Kind::Field { steps, .. } => {
+            Kind::Field { steps, .. } | Kind::Receiver { steps, .. } => {
                 let count = steps
                     .end
                     .checked_sub(steps.start)
                     .filter(|&count| count != 0)
                     .ok_or("field calls have an invalid actual step range")?;
-                (steps.first.get() - 1, count)
+                (
+                    steps.first.get() - 1,
+                    count
+                        .checked_add(u32::from(matches!(self.kind, Kind::Receiver { .. })))
+                        .ok_or("receiver call count overflow")?,
+                )
             }
             Kind::Block { .. } => (0, 1),
             Kind::Branch { .. } | Kind::Iteration { .. } => (0, 2),
@@ -64,7 +97,11 @@ impl Plan {
             return Ok(None);
         }
         let call = match (self.kind, calls.next) {
-            (Kind::Field { steps, .. }, _) => {
+            (Kind::Receiver { call, .. }, 0) if calls.remaining == 1 => {
+                calls.remaining = 0;
+                return Ok(Some(call));
+            }
+            (Kind::Field { steps, .. } | Kind::Receiver { steps, .. }, _) => {
                 return access::next(facts, self, owner, steps, calls)
                     .map(|step| step.map(|step| step.call));
             }
@@ -127,7 +164,7 @@ pub(crate) fn checked(
         .ast
         .node(node.node)
         .kind;
-    if matches!(plan.kind, Kind::Field { .. }) {
+    if plan.kind.access().is_some() {
         access::check(report, facts, owner, plan)?;
         return Ok(plan);
     }

@@ -139,11 +139,20 @@ impl Collector<'_> {
         node: NodeId,
         receiver: NodeId,
     ) -> Result<(), Error> {
-        let (dereferences, borrow) = self
-            .methods
-            .get(&node)
-            .copied()
-            .ok_or_else(|| checker.error(node, "missing capture method receiver selection"))?;
+        let selected = checker.field_capture_receiver(node)?;
+        let (dereferences, borrow) = if let Some(selected) = selected {
+            if selected.operand != receiver {
+                return Err(
+                    checker.error(node, "method capture changed its actual source receiver")
+                );
+            }
+            (selected.dereferences, Some(selected.borrow))
+        } else {
+            self.methods
+                .get(&node)
+                .copied()
+                .ok_or_else(|| checker.error(node, "missing capture method receiver selection"))?
+        };
         let usage = if let Some(borrow) = borrow {
             match checker.head(node, borrow)? {
                 Some(Constructor::Reference { mutable: true, .. }) => Use::Mutable,

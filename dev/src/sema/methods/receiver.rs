@@ -26,6 +26,7 @@ pub(in crate::sema) struct Selected {
 pub(in crate::sema) enum Progress {
     Ready(Selected),
     Prepare(std::vec::IntoIter<DefId>),
+    Absent(&'static str),
 }
 #[derive(Clone, Copy)]
 enum Lane {
@@ -91,7 +92,7 @@ pub(in crate::sema) fn choose(
     let has_traits = facts.methods.trait_names.contains(&site.name);
     let library = library_method(report, head, site.name);
     if inherent.members.is_empty() && !has_traits && library.is_none() {
-        return Err(error(if inherent.filtered {
+        return Ok(Progress::Absent(if inherent.filtered {
             "no applicable inherent method for this receiver"
         } else if matches!(head, Some(Constructor::Adt(..) | Constructor::AdtArgs(..))) {
             "no inherent method with this name"
@@ -152,7 +153,7 @@ pub(in crate::sema) fn choose(
             return Ok(Progress::Ready(selected));
         }
     }
-    Err(error(if has_traits {
+    Ok(Progress::Absent(if has_traits {
         "no applicable method for this receiver"
     } else {
         "no applicable inherent method for this receiver"

@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "PA31 actual source Deref/Target method-call contracts",
-  "state": "Draft required outcomes declared before implementation; no empty-suite success, course oracles or assignment activation",
+  "state": "Required source outcomes, full checked-body and LowIR contracts; whole PA31 remains planned",
   "contract": "Search real Deref targets in Rust receiver order, preserve inherent/trait priority, prove each selected call and lifetime, select real DerefMut for a mutable consumer, evaluate the operand once and retain normal move/borrow/const checks. Unsupported positives remain required.",
   "profile": {
     "rustc": "1.98.0",
@@ -20,146 +20,341 @@
       "sha256": "b53981320b2fe846d7dbe9d68d1c6610cb9e88bac2e6fd1c0a70fe84339979a2",
       "rustc_object_status": 0,
       "source_analysis_status": 0,
-      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+      "qualification": "Existing independently frozen language outcome; full checked-body/LowIR contract required",
+      "full_body_status": 0
     },
     {
       "path": "pa31/tests/spec/deref-methods/ordinary-wrapped-sized.rs",
       "sha256": "525afc3d882c13a5081691995db9c85c316b8c5ba2aec69bc2f948358220c6a6",
       "rustc_object_status": 0,
       "source_analysis_status": 0,
-      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+      "qualification": "Existing independently frozen language outcome; full checked-body/LowIR contract required",
+      "full_body_status": 0
     },
     {
       "path": "pa31/tests/spec/deref-methods/ordinary-explicit-sized.rs",
       "sha256": "6282a96cf5810e2871bdf800c892a4a26e0de396373d8670eebdd66be133c5ad",
       "rustc_object_status": 0,
       "source_analysis_status": 0,
-      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+      "qualification": "Existing independently frozen language outcome; full checked-body/LowIR contract required",
+      "full_body_status": 0
     },
     {
       "path": "pa31/tests/spec/deref-methods/ordinary-direct-unsized.rs",
       "sha256": "9e03f3d45efe05964598efca1ec85dfe4e02222e9be84cf5e3d7287209d13794",
       "rustc_object_status": 0,
       "source_analysis_status": 0,
-      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+      "qualification": "Existing independently frozen language outcome; full checked-body/LowIR contract required",
+      "full_body_status": 0
     },
     {
       "path": "pa31/tests/spec/deref-methods/ordinary-wrapped-unsized.rs",
       "sha256": "581f925acab75554ea3d73d902782199dd0188b5f267abe82056d217ffd86fd7",
       "rustc_object_status": 0,
       "source_analysis_status": 0,
-      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+      "qualification": "Existing independently frozen language outcome; full checked-body/LowIR contract required",
+      "full_body_status": 0
     },
     {
       "path": "pa31/tests/spec/deref-methods/ordinary-explicit-unsized.rs",
       "sha256": "9948eec7efe578daf01518a728a177206ebb61d58b02e5453b95287fe95d756a",
       "rustc_object_status": 0,
       "source_analysis_status": 0,
-      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+      "qualification": "Existing independently frozen language outcome; full checked-body/LowIR contract required",
+      "full_body_status": 0
     },
     {
       "path": "pa31/tests/spec/deref-methods/const-direct-sized.rs",
       "sha256": "a8f49f24710a38795e63980bef01dc5aed282d98c6eb1f8cae7243769ec86446",
       "rustc_object_status": 0,
       "source_analysis_status": 0,
-      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+      "qualification": "Existing independently frozen language outcome; full checked-body/LowIR contract required",
+      "full_body_status": 0
     },
     {
       "path": "pa31/tests/spec/deref-methods/const-wrapped-sized.rs",
       "sha256": "9461e1713e2a300a53ea0ccc5a127f613c402e2e700a7cbe09cc3d8114579b45",
       "rustc_object_status": 0,
       "source_analysis_status": 0,
-      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+      "qualification": "Existing independently frozen language outcome; full checked-body/LowIR contract required",
+      "full_body_status": 0
     },
     {
       "path": "pa31/tests/spec/deref-methods/const-explicit-sized.rs",
       "sha256": "7177bd59882f71713eddf20ce78216fa2652041414e7212481786e0d3f28d678",
       "rustc_object_status": 0,
       "source_analysis_status": 0,
-      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+      "qualification": "Existing independently frozen language outcome; full checked-body/LowIR contract required",
+      "full_body_status": 0
     },
     {
       "path": "pa31/tests/spec/deref-methods/const-direct-unsized.rs",
       "sha256": "d3d5a18fb862a37ea15edb849ceafd6b8e8cf14d3c862c35fa57321c03911a24",
       "rustc_object_status": 0,
       "source_analysis_status": 0,
-      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+      "qualification": "Existing independently frozen language outcome; full checked-body/LowIR contract required",
+      "full_body_status": 0
     },
     {
       "path": "pa31/tests/spec/deref-methods/const-wrapped-unsized.rs",
       "sha256": "ba21dd9332b2958a2154f6c0eabb606513575f144d61da7cae4bc0abfd8405b8",
       "rustc_object_status": 0,
       "source_analysis_status": 0,
-      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+      "qualification": "Existing independently frozen language outcome; full checked-body/LowIR contract required",
+      "full_body_status": 0
     },
     {
       "path": "pa31/tests/spec/deref-methods/const-explicit-unsized.rs",
       "sha256": "f8847fecf5a006744e6d0ed0c4b6f10ff18e9a113506701682f211abdb07281d",
       "rustc_object_status": 0,
       "source_analysis_status": 0,
-      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+      "qualification": "Existing independently frozen language outcome; full checked-body/LowIR contract required",
+      "full_body_status": 0
     },
     {
       "path": "pa31/tests/spec/deref-methods/concrete.rs",
       "sha256": "2c25eb17d1feb88093127208572d83f7ccc76c9f5ad23e82441a07e260f9180d",
       "rustc_object_status": 0,
       "source_analysis_status": 0,
-      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+      "qualification": "Existing independently frozen language outcome; full checked-body/LowIR contract required",
+      "full_body_status": 0
     },
     {
       "path": "pa31/tests/spec/deref-methods/borrowed.rs",
       "sha256": "1a1e0d40514a3876a5193649123d4db9a25f5481552ce31f8ecdef0bd4951890",
       "rustc_object_status": 0,
       "source_analysis_status": 0,
-      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+      "qualification": "Existing independently frozen language outcome; full checked-body/LowIR contract required",
+      "full_body_status": 0
     },
     {
       "path": "pa31/tests/spec/deref-methods/move-reject.rs",
       "sha256": "9c2c45d768e2c18d8dd54f738f0257b7c45042753dfbef68275b2964f66d8739",
       "rustc_object_status": 1,
       "source_analysis_status": 1,
-      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+      "qualification": "Existing independently frozen language outcome; full checked-body/LowIR contract required",
+      "full_body_status": 1
     },
     {
       "path": "pa31/tests/spec/deref-methods/mutable.rs",
       "sha256": "17fa6f2e4cc8a9653ac4263fa73e3ffb0b9fa3bb7ab59f737a398b22ee449552",
       "rustc_object_status": 0,
       "source_analysis_status": 0,
-      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+      "qualification": "Existing independently frozen language outcome; full checked-body/LowIR contract required",
+      "full_body_status": 0
     },
     {
       "path": "pa31/tests/spec/deref-methods/immutable-reject.rs",
       "sha256": "7aec3ab1b93be5a967a8328a55f89f233026a46c443ee2769c2566121c999a89",
       "rustc_object_status": 1,
       "source_analysis_status": 1,
-      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+      "qualification": "Existing independently frozen language outcome; full checked-body/LowIR contract required",
+      "full_body_status": 1
     },
     {
       "path": "pa31/tests/spec/deref-methods/inherent-priority.rs",
       "sha256": "25299914d59ad1261145637474cd520ffcb63d7608c0444239578d8f7f8427bb",
       "rustc_object_status": 0,
       "source_analysis_status": 0,
-      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+      "qualification": "Existing independently frozen language outcome; full checked-body/LowIR contract required",
+      "full_body_status": 0
     },
     {
       "path": "pa31/tests/spec/deref-methods/missing-deref.rs",
       "sha256": "d9dfbeb9e017cfc95c94d5aeaf3cfc35246404c79f38f18aaafa399b64562784",
       "rustc_object_status": 1,
       "source_analysis_status": 1,
-      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete"
+      "qualification": "Existing independently frozen language outcome; full checked-body/LowIR contract required",
+      "full_body_status": 1
     },
     {
       "path": "pa31/tests/spec/deref-methods/native.rs",
       "sha256": "c554a4c2130176e2e2ac77c7d66271c5f22d2448a7a179c1d9cf3d075f541da1",
       "rustc_object_status": 0,
       "source_analysis_status": 0,
-      "qualification": "Required independent language outcome; candidate implicit method calls remain incomplete",
+      "qualification": "Existing independently frozen language outcome; full checked-body/LowIR contract required",
       "independent_native": {
         "status": 0,
         "stdout": "receiver 23 41\n",
         "stderr": ""
       },
-      "source_lowir_status": 0
+      "source_lowir_status": 0,
+      "full_body_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/generic-method.rs",
+      "sha256": "3747e7b2f71c957cbeb772d82fb304b50da4cac9dab06f93d0317b29e64304aa",
+      "rustc_object_status": 0,
+      "full_body_status": 0,
+      "observed_input": "obj/parallel/array-receiver/extended-inputs/generic-method.rs",
+      "qualification": "Independent object prediction agrees; full checked-body/LowIR contract required"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/nested.rs",
+      "sha256": "bd0309c5270df3223141426246063a7177129cdd2ea39d440e11359e6ba1c55b",
+      "rustc_object_status": 0,
+      "full_body_status": 0,
+      "observed_input": "obj/parallel/array-receiver/extended-inputs/nested.rs",
+      "qualification": "Independent object prediction agrees; full checked-body/LowIR contract required"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/parameter-bound.rs",
+      "sha256": "4f59aa11b705094fb9f7cff6ce97824e0359858a1db8612c3847328eaec2bf95",
+      "rustc_object_status": 0,
+      "full_body_status": 0,
+      "observed_input": "obj/parallel/array-receiver/extended-inputs/parameter-bound.rs",
+      "qualification": "Independent object prediction agrees; full checked-body/LowIR contract required"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/trait-priority.rs",
+      "sha256": "4163703745b784303479301693922a631a547cbcc9b4de2b8f8516e30321500d",
+      "rustc_object_status": 0,
+      "full_body_status": 0,
+      "observed_input": "obj/parallel/array-receiver/extended-inputs/trait-priority.rs",
+      "qualification": "Independent object prediction agrees; full checked-body/LowIR contract required"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/shared-priority.rs",
+      "sha256": "1ac890a4a4f8fe10c57f269ca78a6a906380c2a496b6a1491b6b3e6379497ca4",
+      "rustc_object_status": 0,
+      "full_body_status": 0,
+      "observed_input": "obj/parallel/array-receiver/extended-inputs/shared-priority.rs",
+      "qualification": "Independent object prediction agrees; full checked-body/LowIR contract required"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/deref-bound-unpaid.rs",
+      "sha256": "b2afb2447b580f72b6b88c1162cf844fc2d528b497c2e09d733424c026f56258",
+      "rustc_object_status": 1,
+      "full_body_status": 1,
+      "observed_input": "obj/parallel/array-receiver/extended-inputs/deref-bound-unpaid.rs",
+      "qualification": "Independent object prediction agrees; full checked-body/LowIR contract required"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/deref-bound-paid.rs",
+      "sha256": "9dc5307705b568abf99b2e8de4d9d0b5dd9e944e25bd9eabacc65ac00d7c7b5e",
+      "rustc_object_status": 0,
+      "full_body_status": 0,
+      "observed_input": "obj/parallel/array-receiver/extended-inputs/deref-bound-paid.rs",
+      "qualification": "Independent object prediction agrees; full checked-body/LowIR contract required"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/static-paid.rs",
+      "sha256": "e2f2c6df5eb4aaa17a7a39fc74fed92e85687401d3a9061575abdd136e939de6",
+      "rustc_object_status": 0,
+      "full_body_status": 0,
+      "observed_input": "obj/parallel/array-receiver/extended-inputs/static-paid.rs",
+      "qualification": "Independent object prediction agrees; full checked-body/LowIR contract required"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/static-unpaid.rs",
+      "sha256": "65b28fd50cf0f91fc5b5d0758366c3df3370b6b3949724049b3b34fd168f73d5",
+      "rustc_object_status": 1,
+      "full_body_status": 1,
+      "observed_input": "obj/parallel/array-receiver/extended-inputs/static-unpaid.rs",
+      "qualification": "Independent object prediction agrees; full checked-body/LowIR contract required"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/captured-shared.rs",
+      "sha256": "8862423c3f32f8cda24ff1a7a9b8cfdb6537ce3e8873277a2de99de77c761210",
+      "rustc_object_status": 0,
+      "full_body_status": 0,
+      "observed_input": "obj/parallel/array-receiver/extended-inputs/captured-shared.rs",
+      "qualification": "Independent object prediction agrees; full checked-body/LowIR contract required"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/captured-mutable.rs",
+      "sha256": "ee6dea0fb510db72596c4919677bc753ba1e532334bf7ca540168bc8642cbadf",
+      "rustc_object_status": 0,
+      "full_body_status": 0,
+      "observed_input": "obj/parallel/array-receiver/extended-inputs/captured-mutable.rs",
+      "qualification": "Independent object prediction agrees; full checked-body/LowIR contract required"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/ctfe-shared.rs",
+      "sha256": "c07de61da69fc92ae11c56d580c6697e598413d65b60567a1ab9ec24b0b8f8c1",
+      "rustc_object_status": 0,
+      "full_body_status": 0,
+      "observed_input": "obj/parallel/array-receiver/extended-inputs/ctfe-shared.rs",
+      "qualification": "Independent object prediction agrees; full checked-body/LowIR contract required"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/ctfe-mutable.rs",
+      "sha256": "5472b98189c4ccef9d71e1e503576b1974bcc39e5bdb0b3a602bd95f1778d7b0",
+      "rustc_object_status": 0,
+      "full_body_status": 0,
+      "observed_input": "obj/parallel/array-receiver/extended-inputs/ctfe-mutable.rs",
+      "qualification": "Independent object prediction agrees; full checked-body/LowIR contract required"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/ctfe-ordinary-method-reject.rs",
+      "sha256": "affac549d832953564c2c4751e2160f611ca4ba1d5c34e30cde761e33c60acbe",
+      "rustc_object_status": 1,
+      "full_body_status": 1,
+      "observed_input": "obj/parallel/array-receiver/extended-inputs/ctfe-ordinary-method-reject.rs",
+      "qualification": "Independent object prediction agrees; full checked-body/LowIR contract required"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/cycle-missing-reject.rs",
+      "sha256": "feae49a8194817489199fec84b4bc2b14f3400473001c4a1d1868dc94ec29b9a",
+      "rustc_object_status": 1,
+      "full_body_status": 1,
+      "observed_input": "obj/parallel/array-receiver/extended-inputs/cycle-missing-reject.rs",
+      "qualification": "Independent object prediction agrees; full checked-body/LowIR contract required"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/evaluation-order.rs",
+      "sha256": "3498b15e8c8ebde24ffdc2ff7bd8161caae94bfdd6557b7ea417ae754db7a550",
+      "rustc_object_status": 0,
+      "full_body_status": 0,
+      "independent_native": {
+        "status": 0,
+        "stdout": "receiver-order 23 125 41 134625\n",
+        "stderr": ""
+      },
+      "observed_input": "obj/parallel/array-receiver/extended-inputs/evaluation-order.rs",
+      "qualification": "Independent object prediction agrees; full checked-body/LowIR contract required"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/depth-8-noise-0.rs",
+      "sha256": "d49df40a5856466d879951d4120a461740e768f87ca599593342661939972095",
+      "rustc_object_status": 0,
+      "full_body_status": 0,
+      "qualification": "Depth and unrelated declaration scaling, outcomes declared before independent execution"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/depth-8-noise-128.rs",
+      "sha256": "e66391c16ed8a0e849099b223890a7b8a7023c1234ff8cb6269cec6ce2d9bd0b",
+      "rustc_object_status": 0,
+      "full_body_status": 0,
+      "qualification": "Depth and unrelated declaration scaling, outcomes declared before independent execution"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/depth-32-noise-0.rs",
+      "sha256": "edc3c38f20631c7702813f870e9c159d0c5508a9bb14ac0b70842e532411c78f",
+      "rustc_object_status": 0,
+      "full_body_status": 0,
+      "qualification": "Depth and unrelated declaration scaling, outcomes declared before independent execution"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/depth-32-noise-128.rs",
+      "sha256": "d38424609237872f3a111fe0ca37030e7e20157622a85394333b4512709c8353",
+      "rustc_object_status": 0,
+      "full_body_status": 0,
+      "qualification": "Depth and unrelated declaration scaling, outcomes declared before independent execution"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/depth-128-noise-0.rs",
+      "sha256": "de44a3a4802d61d38c9aaa851e73939b39798e7d865aa42e4274089ae61c5183",
+      "rustc_object_status": 0,
+      "full_body_status": 0,
+      "qualification": "Required valid positive; candidate exhausts existing type-constraint work budget. Pending inference-sharing repair; excluded from the passing finite depth8/32 selection."
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/depth-128-noise-128.rs",
+      "sha256": "fc7fdfceaad4c0d25f3433b4955c68668e5862c8acdbcee12aa0e1fded66e7f2",
+      "rustc_object_status": 0,
+      "full_body_status": 0,
+      "qualification": "Required valid positive; candidate exhausts existing type-constraint work budget. Pending inference-sharing repair; excluded from the passing finite depth8/32 selection."
     }
   ],
   "auxiliary": [
@@ -171,6 +366,16 @@
       "path": "pa31/tests/spec/dereference-source/foundation.rs",
       "sha256": "3fa614b5e1fc24d9b0d4c8b15ed92ddf3de29d6ed0812649c80e2696e4271e51",
       "use": "Authenticated source-support attribution; ordinary source variants preserve these bytes, const variants explicitly change only Deref trait/impl constness and add usize Copy support"
+    },
+    {
+      "path": "pa31/tests/spec/deref-methods/order-observer.c",
+      "sha256": "9af305ae7848f4212e0fb21735fbc2e0d7fe2bf738bffe178b05540a9bf60302"
     }
+  ],
+  "phase_note": "source_analysis_status is the historical declared language outcome; move/immutable permission rejections require full checked-body/LowIR checking, not only CLI type rendering",
+  "pending_requirements": [
+    "Both depth128/noise0 and depth128/noise128 remain required positives; the tested noise0 case exhausts existing inference budget, and noise128 is not qualified.",
+    "Total inference work in nested generic Self chains is quadratic; canonical proof work in the qualified prefix is linear.",
+    "Ordinary PA26 bootstrap/imports and whole original-library artifacts remain required."
   ]
 }

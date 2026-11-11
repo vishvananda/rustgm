@@ -13,7 +13,10 @@ enum Selected {
         kind: Selection,
     },
     Field {
-        plan: super::super::access_paths::FieldPlanId,
+        plan: super::super::access_paths::AccessPlanId,
+    },
+    Receiver {
+        plan: super::super::access_paths::AccessPlanId,
     },
 }
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -172,7 +175,7 @@ impl Checker<'_> {
     pub(in crate::sema::bodies) fn language_index_method(&self, node: NodeId) -> Option<usize> {
         match self.state.language_places.as_ref()?.selected.get(&node)? {
             Selected::Call { method, .. } => Some(*method as usize),
-            Selected::Field { .. } => None,
+            Selected::Field { .. } | Selected::Receiver { .. } => None,
         }
     }
     pub(super) fn retain_language_index_call(
@@ -213,7 +216,7 @@ impl Checker<'_> {
             .copied();
         let call = match previous {
             Some(Selected::Call { call, .. }) => call,
-            Some(Selected::Field { .. }) => {
+            Some(Selected::Field { .. } | Selected::Receiver { .. }) => {
                 return Err(self.error(node, "language call overlaps an unfinished field plan"));
             }
             None => u32::try_from(self.state.calls.len())
@@ -284,18 +287,43 @@ impl Checker<'_> {
     pub(in crate::sema::bodies) fn field_plan(
         &self,
         node: NodeId,
-    ) -> Option<super::super::access_paths::FieldPlanId> {
+    ) -> Option<super::super::access_paths::AccessPlanId> {
         match self.state.language_places.as_ref()?.selected.get(&node)? {
             Selected::Field { plan } => Some(*plan),
-            Selected::Call { .. } => None,
+            Selected::Call { .. } | Selected::Receiver { .. } => None,
         }
     }
 
+    pub(in crate::sema::bodies) fn receiver_plan(
+        &self,
+        node: NodeId,
+    ) -> Option<super::super::access_paths::AccessPlanId> {
+        match self.state.language_places.as_ref()?.selected.get(&node)? {
+            Selected::Receiver { plan } => Some(*plan),
+            _ => None,
+        }
+    }
+    pub(in crate::sema::bodies) fn access_plan(
+        &self,
+        node: NodeId,
+    ) -> Option<super::super::access_paths::AccessPlanId> {
+        self.field_plan(node).or_else(|| self.receiver_plan(node))
+    }
     pub(in crate::sema::bodies) fn retain_field_plan(
         &mut self,
         node: NodeId,
-        plan: super::super::access_paths::FieldPlanId,
+        plan: super::super::access_paths::AccessPlanId,
     ) -> Result<(), Error> {
+        self.retain_access_plan(node, Selected::Field { plan })
+    }
+    pub(in crate::sema::bodies) fn retain_receiver_plan(
+        &mut self,
+        node: NodeId,
+        plan: super::super::access_paths::AccessPlanId,
+    ) -> Result<(), Error> {
+        self.retain_access_plan(node, Selected::Receiver { plan })
+    }
+    fn retain_access_plan(&mut self, node: NodeId, selected: Selected) -> Result<(), Error> {
         let previous = self
             .state
             .language_places
@@ -303,18 +331,25 @@ impl Checker<'_> {
             .and_then(|places| places.selected.get(&node))
             .copied();
         if previous.is_some_and(|previous| {
-            !matches!(previous,
-            Selected::Field { plan: actual } if actual == plan)
+            !matches!((previous, selected),
+            (Selected::Field { plan: a }, Selected::Field { plan: b }) |
+            (Selected::Receiver { plan: a }, Selected::Receiver { plan: b }) if a == b)
         }) {
-            return Err(self.error(node, "field plan changed its actual selected place"));
+            return Err(self.error(node, "access plan changed its actual selected place"));
         }
         self.reserve_place_selection(node, usize::from(previous.is_none()))?;
         self.state
             .language_places
             .get_or_insert_with(Default::default)
             .selected
-            .insert(node, Selected::Field { plan });
+            .insert(node, selected);
         Ok(())
+    }
+    pub(in crate::sema::bodies) fn mark_receiver_mutable(
+        &mut self,
+        node: NodeId,
+    ) -> Result<(), Error> {
+        self.retain_mutable_field(node)
     }
 
     fn retain_mutable_field(&mut self, node: NodeId) -> Result<(), Error> {

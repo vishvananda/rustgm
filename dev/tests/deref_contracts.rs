@@ -1,4 +1,6 @@
 //! Real source dereference dispatch preserves effects, places and ownership.
+#[path = "deref_contracts/autocalls.rs"]
+mod autocalls;
 use crate::resolve as test_source;
 use rustgm::{lower, pipeline};
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;

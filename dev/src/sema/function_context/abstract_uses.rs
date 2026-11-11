@@ -174,7 +174,7 @@ impl<'a> DefiningCalls<'a> {
             .facts
             .node(call.site)
             .ok_or("abstract const call has no actual typed source site")?;
-        let source = match node.operation {
+        match node.operation {
             Some(Operation::Call {
                 signature,
                 source_use,
@@ -182,14 +182,16 @@ impl<'a> DefiningCalls<'a> {
                 if signature != call.signature || node.ty != Some(call.result) {
                     return Err("abstract const call changed its opened signature or result");
                 }
-                return Ok((
+                Ok((
                     source_use.ok_or("abstract const call has no defining source-use fact")?,
                     false,
-                ));
+                ))
             }
-            Some(Operation::Field { plan: Some(id), .. }) => {
+            Some(
+                Operation::Field { plan: Some(id), .. } | Operation::MethodReceiver { plan: id },
+            ) => {
                 let plan = id.current(self.facts, self.owner, call.site)?;
-                let crate::sema::protocol_plans::Kind::Field { steps, .. } = plan.kind else {
+                let Some((_, _, _, steps)) = plan.kind.access() else {
                     return Err("abstract const field changed its actual protocol");
                 };
                 charge(
@@ -199,7 +201,7 @@ impl<'a> DefiningCalls<'a> {
                         .checked_ilog2()
                         .map_or(1, |n| n as usize + 2),
                 )?;
-                crate::sema::protocol_plans::access::retained(
+                let step = crate::sema::protocol_plans::access::retained_call(
                     self.facts,
                     plan,
                     self.owner,
@@ -213,11 +215,10 @@ impl<'a> DefiningCalls<'a> {
                 {
                     return Err("abstract const field changed its actual call result");
                 }
-                plan.source_use
+                Ok((plan.source_use, step))
             }
-            _ => return Err("abstract const call changed its typed source operation"),
-        };
-        Ok((source, true))
+            _ => Err("abstract const call changed its typed source operation"),
+        }
     }
 
     fn check_premise(

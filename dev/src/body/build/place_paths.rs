@@ -20,16 +20,25 @@ impl Builder<'_> {
             ..self.source
         };
         let plan = protocol_plans::checked(self.report, self.facts, self.source, key, id)?;
-        let Kind::Field {
-            field,
-            receiver,
-            dereferences,
-            steps,
-            ..
-        } = plan.kind
-        else {
+        let Kind::Field { field, .. } = plan.kind else {
             return Err(self.error(node, "field construction received another actual protocol"));
         };
+        place =
+            self.access_call_place(node, place, plan, crate::sema::closures::AccessKind::Field)?;
+        self.project(node, self.ty(node)?, place, ProjectionKind::Field(field))
+    }
+
+    pub(super) fn access_call_place(
+        &mut self,
+        node: NodeId,
+        mut place: Place,
+        plan: protocol_plans::Plan,
+        access_kind: crate::sema::closures::AccessKind,
+    ) -> Result<Place, Error> {
+        let (_, receiver, dereferences, steps) = plan
+            .kind
+            .access()
+            .ok_or_else(|| self.error(node, "place access received another actual protocol"))?;
         let mut calls = plan.calls().map_err(|e| self.error(node, e))?;
         let mut first = true;
         while let Some(step) =
@@ -47,11 +56,7 @@ impl Builder<'_> {
                 );
             };
             let prefix = if first {
-                self.remaining_receiver_dereferences(
-                    node,
-                    crate::sema::closures::AccessKind::Field,
-                    step.dereferences,
-                )?
+                self.remaining_receiver_dereferences(node, access_kind, step.dereferences)?
             } else {
                 step.dereferences
             };
@@ -82,6 +87,6 @@ impl Builder<'_> {
         if self.place_type(node, place)? != receiver {
             return Err(self.error(node, "field construction changed its full final receiver"));
         }
-        self.project(node, self.ty(node)?, place, ProjectionKind::Field(field))
+        Ok(place)
     }
 }

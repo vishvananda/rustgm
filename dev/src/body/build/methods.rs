@@ -3,6 +3,41 @@ use super::{Builder, Error, List, NodeId, NodeKey, Rvalue, Type, ValueId};
 use crate::body::ir::BorrowKind;
 
 impl Builder<'_> {
+    pub(super) fn receiver_call_signature(
+        &self,
+        node: NodeId,
+        callee: ValueId,
+    ) -> Result<crate::types::TypeId, Error> {
+        match self.fact(node)?.operation {
+            Some(crate::sema::model::Operation::MethodReceiver { plan }) => {
+                let key = NodeKey {
+                    node,
+                    ..self.source
+                };
+                let plan = crate::sema::protocol_plans::checked(
+                    self.report,
+                    self.facts,
+                    self.source,
+                    key,
+                    plan,
+                )?;
+                match plan.kind {
+                    crate::sema::protocol_plans::Kind::Receiver { call, .. }
+                        if self
+                            .body
+                            .values
+                            .get(callee.0 as usize)
+                            .is_some_and(|value| value.ty == call.callable) =>
+                    {
+                        Ok(call.signature)
+                    }
+                    _ => Err(self.error(node, "method receiver changed its actual final call")),
+                }
+            }
+            _ => Err(self.error(node, "missing call signature")),
+        }
+    }
+
     pub(super) fn method_receiver(&mut self, node: NodeId) -> Result<(), Error> {
         let key = NodeKey {
             node,
@@ -15,7 +50,7 @@ impl Builder<'_> {
             .get(&key)
             .ok_or_else(|| self.error(node, "missing method source operands"))?;
         let place = self.pop_place(site.receiver)?;
-        let Some(place) = place.filter(|_| self.current.is_some()) else {
+        let Some(mut place) = place.filter(|_| self.current.is_some()) else {
             return Ok(());
         };
         let selected = self
@@ -25,14 +60,39 @@ impl Builder<'_> {
             .get(&key)
             .copied()
             .ok_or_else(|| self.error(node, "missing selected receiver conversion"))?;
-        let value = self.receiver_value(
-            node,
-            place,
+        let access = if let Some(crate::sema::model::Operation::MethodReceiver { plan }) =
+            self.fact(node)?.operation
+        {
+            let plan = crate::sema::protocol_plans::checked(
+                self.report,
+                self.facts,
+                self.source,
+                key,
+                plan,
+            )?;
+            place = self.access_call_place(
+                node,
+                place,
+                plan,
+                crate::sema::closures::AccessKind::Method,
+            )?;
+            true
+        } else {
+            false
+        };
+        let dereferences = if access {
+            selected.dereferences
+        } else {
             self.remaining_receiver_dereferences(
                 node,
                 crate::sema::closures::AccessKind::Method,
                 selected.dereferences,
-            )?,
+            )?
+        };
+        let value = self.receiver_value(
+            node,
+            place,
+            dereferences,
             selected.borrow,
             selected.receiver,
             BorrowKind::TwoPhase,

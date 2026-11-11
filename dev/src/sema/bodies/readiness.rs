@@ -253,7 +253,9 @@ impl Checker<'_> {
                     crate::sema::model::Operation::Call {
                         source_use: Some(_),
                         ..
-                    } | crate::sema::model::Operation::Try { .. }
+                    } | crate::sema::model::Operation::MethodReceiver { .. }
+                        | crate::sema::model::Operation::Field { plan: Some(_), .. }
+                        | crate::sema::model::Operation::Try { .. }
                         | crate::sema::model::Operation::Iteration { .. }
                 )
             ) {

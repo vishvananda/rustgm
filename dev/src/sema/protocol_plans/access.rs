@@ -83,6 +83,36 @@ pub(crate) fn lookup(
 
 /// Borrow only the already published exact row. This supplies data, never a
 /// source header, defining premise, region proof or const execution permission.
+pub(crate) fn retained_call(
+    facts: &super::super::model::Declarations,
+    plan: Plan,
+    owner: NodeKey,
+    call: super::super::iteration::Call,
+) -> Result<bool, crate::resolve::package::Error> {
+    use crate::resolve::package::Error;
+    if matches!(plan.kind, super::Kind::Receiver { call: selected, .. } if selected == call) {
+        let Some(super::super::model::Operation::MethodReceiver { plan: id }) =
+            facts.node(plan.node).and_then(|node| node.operation)
+        else {
+            return Err(Error::unlocated(
+                "method access lost its current source plan",
+            ));
+        };
+        if id
+            .current(facts, owner, plan.node)
+            .map_err(Error::unlocated)?
+            != plan
+        {
+            return Err(Error::unlocated(
+                "method access changed its current source owner",
+            ));
+        }
+        check_method(facts, plan, call)?;
+        return Ok(false);
+    }
+    retained(facts, plan, owner, call).map(|_| true)
+}
+
 pub(crate) fn retained(
     facts: &super::super::model::Declarations,
     plan: Plan,
@@ -90,28 +120,38 @@ pub(crate) fn retained(
     call: super::super::iteration::Call,
 ) -> Result<Step, crate::resolve::package::Error> {
     use crate::resolve::package::Error;
-    let super::Kind::Field { steps, field, .. } = plan.kind else {
-        return Err(Error::unlocated(
-            "field lookup received another actual protocol",
-        ));
+    let (_, _, _, steps) = plan
+        .kind
+        .access()
+        .ok_or_else(|| Error::unlocated("access lookup received another actual protocol"))?;
+    let id = match (
+        plan.kind,
+        facts.node(plan.node).and_then(|node| node.operation),
+    ) {
+        (
+            super::Kind::Field { field, .. },
+            Some(super::super::model::Operation::Field {
+                field: actual,
+                plan: Some(id),
+            }),
+        ) if field == actual => id,
+        (
+            super::Kind::Receiver { .. },
+            Some(super::super::model::Operation::MethodReceiver { plan: id }),
+        ) => id,
+        _ => {
+            return Err(Error::unlocated(
+                "access lookup lost its current source plan",
+            ));
+        }
     };
-    let Some(super::super::model::Operation::Field {
-        plan: Some(id),
-        field: actual,
-    }) = facts.node(plan.node).and_then(|node| node.operation)
-    else {
-        return Err(Error::unlocated(
-            "field lookup lost its current source plan",
-        ));
-    };
-    if actual != field
-        || id
-            .current(facts, owner, plan.node)
-            .map_err(Error::unlocated)?
-            != plan
+    if id
+        .current(facts, owner, plan.node)
+        .map_err(Error::unlocated)?
+        != plan
     {
         return Err(Error::unlocated(
-            "field lookup changed its current owner or plan",
+            "access lookup changed its current owner or plan",
         ));
     }
     let entries = rows(facts, plan, owner, steps).map_err(Error::unlocated)?;
@@ -187,11 +227,15 @@ fn next_from(
     rows: &[Step],
     calls: &mut super::Calls,
 ) -> Result<Option<Step>, &'static str> {
-    if calls.remaining == 0 {
+    let remaining = calls
+        .remaining
+        .checked_sub(u32::from(matches!(plan.kind, super::Kind::Receiver { .. })))
+        .ok_or("access call cursor exceeded its final call")?;
+    if remaining == 0 {
         return Ok(None);
     }
     let step = current_from(plan, range, rows, calls.next)?;
-    if (calls.remaining == 1) != step.next.is_none() {
+    if (remaining == 1) != step.next.is_none() {
         return Err("field evaluation links do not visit its complete actual range");
     }
     calls.next = step.next.map_or(0, |next| next.get() - 1);
@@ -207,7 +251,7 @@ pub(crate) fn check(
     plan: Plan,
 ) -> Result<(), crate::resolve::package::Error> {
     let error = |message| super::super::model::Declarations::error(report, plan.node, message);
-    let super::Kind::Field { steps, .. } = plan.kind else {
+    let Some((_, _, _, steps)) = plan.kind.access() else {
         return Err(error("field validation received another actual protocol"));
     };
     let entries = rows(facts, plan, owner, steps).map_err(error)?;
@@ -222,16 +266,10 @@ pub(in crate::sema) fn check_rows(
     entries: &[Step],
 ) -> Result<(), crate::resolve::package::Error> {
     let error = |message| super::super::model::Declarations::error(report, plan.node, message);
-    let super::Kind::Field {
-        operand,
-        field,
-        receiver,
-        dereferences,
-        steps,
-    } = plan.kind
-    else {
-        return Err(error("field validation received another actual protocol"));
-    };
+    let (operand, receiver, dereferences, steps) = plan
+        .kind
+        .access()
+        .ok_or_else(|| error("access validation received another actual protocol"))?;
     let syntax = report
         .package
         .unit(plan.node.file)
@@ -239,13 +277,27 @@ pub(in crate::sema) fn check_rows(
         .ast
         .node(plan.node.node)
         .kind;
-    if plan.node.file != owner.file
-        || !matches!(syntax, crate::syntax::ast::Kind::Field { value, .. } if value == operand)
-        || !matches!(facts.node(plan.node).and_then(|node| node.operation),
-            Some(super::super::model::Operation::Field { field: actual, .. }) if actual == field)
-    {
+    let valid = match plan.kind {
+        super::Kind::Field { field, .. } => {
+            matches!(syntax, crate::syntax::ast::Kind::Field { value, .. } if value == operand)
+                && matches!(facts.node(plan.node).and_then(|node| node.operation), Some(super::super::model::Operation::Field { field: actual, .. }) if actual == field)
+        }
+        super::Kind::Receiver { call, .. } => {
+            matches!(syntax,
+                crate::syntax::ast::Kind::MethodCall { receiver, .. }
+                | crate::syntax::ast::Kind::GenericMethodCall { receiver, .. }
+                if receiver == operand)
+                && facts
+                    .methods
+                    .calls
+                    .get(&plan.node)
+                    .is_some_and(|selected| selected.callable == call.callable)
+        }
+        _ => false,
+    };
+    if plan.node.file != owner.file || !valid {
         return Err(error(
-            "field plan changed its actual source operation or member",
+            "access plan changed its actual source operation or member",
         ));
     }
     plan.source_use.effect_for(facts, owner).map_err(error)?;
@@ -290,6 +342,9 @@ pub(in crate::sema) fn check_rows(
     }
     if references(facts, ty, dereferences).map_err(error)? != receiver {
         return Err(error("field step chain changed its actual final receiver"));
+    }
+    if let super::Kind::Receiver { call, .. } = plan.kind {
+        check_method(facts, plan, call)?;
     }
     Ok(())
 }
@@ -439,3 +494,36 @@ fn check_opening(
 #[cfg(test)]
 #[path = "../../../tests/invariants/access_guards.rs"]
 mod tests;
+
+fn check_method(
+    facts: &super::super::model::Declarations,
+    plan: Plan,
+    call: super::super::iteration::Call,
+) -> Result<(), crate::resolve::package::Error> {
+    let fail = || {
+        crate::resolve::package::Error::unlocated(
+            "method access changed its actual selected call or signature",
+        )
+    };
+    let selected = facts.methods.calls.get(&plan.node).ok_or_else(fail)?;
+    let Some(crate::types::Kind::FunctionItem { item, .. }) = facts.types.kind(call.callable)
+    else {
+        return Err(fail());
+    };
+    let Some(crate::types::Kind::Function { parameters, .. }) = facts.types.kind(call.signature)
+    else {
+        return Err(fail());
+    };
+    if item.0 != selected.method.0
+        || selected.callable != call.callable
+        || facts
+            .types
+            .list(parameters)
+            .and_then(|parameters| parameters.first())
+            .copied()
+            != Some(selected.receiver)
+    {
+        return Err(fail());
+    }
+    Ok(())
+}

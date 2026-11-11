@@ -24,6 +24,7 @@ pub(super) use effect_facts::CallContexts;
 pub use effect_facts::{OffsetPlanId, ProtocolPlanId, SourceCallUse};
 mod access_paths;
 pub(crate) mod assembly_values;
+mod autoderef;
 mod environment_values;
 mod field_storage;
 mod finalization;

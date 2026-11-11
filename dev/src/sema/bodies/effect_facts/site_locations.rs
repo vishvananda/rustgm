@@ -202,7 +202,7 @@ impl Checker<'_> {
         for index in 0..self.state.calls.len() {
             let (node, _) = self.state.calls[index];
             if self.is_protocol_call(node) {
-                if self.field_plan(node).is_some() {
+                if self.access_plan(node).is_some() {
                     // Open plans below visit each actual Field call exactly once.
                     continue;
                 }

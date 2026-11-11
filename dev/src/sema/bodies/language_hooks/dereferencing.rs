@@ -59,7 +59,7 @@ impl Checker<'_> {
                 effect,
             ),
         ));
-        self.complete_method_arguments(node, selected.method)?;
+        let callable = self.implicit_source_function(node, selected.method)?;
         let item = self.facts.definitions[selected.method.0 as usize]
             .ok_or_else(|| self.error(node, "source dereference lost its actual method item"))?;
         if !matches!(self.facts.types.kind(item),Some(Type::FunctionItem{item,signature,..}) if item.0==selected.method.0 && signature==selected.signature)
@@ -69,7 +69,6 @@ impl Checker<'_> {
                 "source dereference method differs from its actual header",
             ));
         }
-        let callable = self.generic_function(node, selected.method, item)?;
         let signature = self.child(node, callable, 0)?;
         let signature = self.call_signature(node, signature)?;
         let receiver = self.child(node, signature, 0)?;

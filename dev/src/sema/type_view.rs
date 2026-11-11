@@ -619,6 +619,7 @@ fn operation(value: Operation, out: &mut impl Write) -> io::Result<()> {
         Operation::Dereference => write!(out, "deref"),
         Operation::IndexSlice => write!(out, "index length=dynamic"),
         Operation::Field { field, .. } => write!(out, "field {field:?}"),
+        Operation::MethodReceiver { plan } => write!(out, "method-receiver plan={}", plan.index()),
         Operation::Index { length } => write!(out, "index length={length}"),
         Operation::IndexParameter { length } => write!(out, "index length=const:{}", length.0),
         Operation::AssignPlace {

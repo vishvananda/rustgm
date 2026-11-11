@@ -9,8 +9,8 @@ use std::num::NonZeroU32;
 /// An unfinished field plan's location in this body's existing open-plan owner.
 /// This is never a checked protocol-plan identity or permission to call a method.
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub(super) struct FieldPlanId(NonZeroU32);
-impl FieldPlanId {
+pub(super) struct AccessPlanId(NonZeroU32);
+impl AccessPlanId {
     pub(super) fn new(index: usize) -> Result<Self, &'static str> {
         let index = u32::try_from(index)
             .ok()
@@ -45,7 +45,7 @@ pub(super) struct CallRange {
 }
 
 #[derive(Clone, Copy)]
-pub(super) struct OpenField {
+pub(super) struct OpenAccess {
     pub operand: NodeId,
     pub field: Option<crate::sema::members::Selection>,
     pub receiver: TermId,
@@ -93,8 +93,16 @@ impl Checker<'_> {
         let mut cursor = rows.next_plan;
         while cursor < self.state.call_types.protocol_plans.len() {
             let open = self.state.call_types.protocol_plans[cursor];
-            if let super::protocol_control::OpenKind::Field(field) = open.kind {
-                if field.calls.is_some() || field.field.is_none() || field.steps.len().is_err() {
+            if let Some(field) = open.kind.access() {
+                if field.calls.is_some()
+                    || matches!(
+                        open.kind,
+                        super::protocol_control::OpenKind::ReceiverDiscovery(_)
+                    )
+                    || (matches!(open.kind, super::protocol_control::OpenKind::Field(_))
+                        && field.field.is_none())
+                    || field.steps.len().is_err()
+                {
                     return Err(
                         self.error(open.node, "field call preparation changed its actual stage")
                     );
@@ -122,8 +130,9 @@ impl Checker<'_> {
                     .alignment
                     .borrows
                     .push((open.node, field.operand));
-                let super::protocol_control::OpenKind::Field(actual) =
-                    &mut self.state.call_types.protocol_plans[cursor].kind
+                let Some(actual) = self.state.call_types.protocol_plans[cursor]
+                    .kind
+                    .access_mut()
                 else {
                     return Err(self.error(open.node, "field call plan changed during preparation"));
                 };
@@ -150,7 +159,7 @@ impl Checker<'_> {
         &self,
         node: NodeId,
     ) -> Result<Option<CaptureReceiver>, Error> {
-        let Some(id) = self.field_plan(node) else {
+        let Some(id) = self.access_plan(node) else {
             return Ok(None);
         };
         let open = self
@@ -161,13 +170,26 @@ impl Checker<'_> {
             .copied()
             .filter(|open| open.node == node)
             .ok_or_else(|| self.error(node, "field capture belongs to another actual plan"))?;
-        let super::protocol_control::OpenKind::Field(field) = open.kind else {
-            return Err(self.error(node, "field capture changed its actual plan kind"));
+        let field = open
+            .kind
+            .access()
+            .ok_or_else(|| self.error(node, "access capture changed its actual plan kind"))?;
+        let source_matches = match open.kind {
+            super::protocol_control::OpenKind::Field(_) => {
+                matches!(self.kind(node), crate::syntax::ast::Kind::Field { value, .. } if value == field.operand)
+                    && field.field.is_some()
+            }
+            super::protocol_control::OpenKind::Receiver { .. } => {
+                self.report
+                    .resolution
+                    .method_calls
+                    .get(&self.key(node))
+                    .is_some_and(|site| site.receiver == field.operand)
+                    && field.field.is_none()
+            }
+            _ => false,
         };
-        if !matches!(self.kind(node), crate::syntax::ast::Kind::Field { value, .. } if value == field.operand)
-            || field.field.is_none()
-            || field.steps.len().map_err(|e| self.error(node, e))? == 0
-        {
+        if !source_matches || field.steps.len().map_err(|e| self.error(node, e))? == 0 {
             return Err(self.error(node, "field capture lost its actual source or discovery"));
         }
         // Reuse the real contiguous method/call range authentication, retaining
@@ -200,7 +222,7 @@ impl Checker<'_> {
     fn prepare_field_step(
         &mut self,
         node: NodeId,
-        field: OpenField,
+        field: OpenAccess,
         index: usize,
         range: CallRange,
         mutable: bool,
@@ -307,7 +329,7 @@ impl Checker<'_> {
             })?;
         for ordinal in 0..self.state.call_types.protocol_plans.len() {
             let open = self.state.call_types.protocol_plans[ordinal];
-            let super::protocol_control::OpenKind::Field(field) = open.kind else {
+            let Some(field) = open.kind.access() else {
                 continue;
             };
             let calls = field
@@ -497,7 +519,7 @@ impl Checker<'_> {
         } else {
             let plan = self.retain_try(super::protocol_control::OpenPlan {
                 node,
-                kind: super::protocol_control::OpenKind::Field(OpenField {
+                kind: super::protocol_control::OpenKind::Field(OpenAccess {
                     operand,
                     field: None,
                     receiver: self.term(operand)?,
@@ -506,7 +528,7 @@ impl Checker<'_> {
                     calls: None,
                 }),
             })?;
-            let id = FieldPlanId::new(plan).map_err(|e| self.error(node, e))?;
+            let id = AccessPlanId::new(plan).map_err(|e| self.error(node, e))?;
             self.retain_field_plan(node, id)?;
         }
         Ok(())
@@ -515,7 +537,7 @@ impl Checker<'_> {
     fn complete_field_discovery(
         &mut self,
         node: NodeId,
-        id: FieldPlanId,
+        id: AccessPlanId,
         receiver: TermId,
         dereferences: u32,
     ) -> Result<(), Error> {

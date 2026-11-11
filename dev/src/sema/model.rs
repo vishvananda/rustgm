@@ -58,6 +58,9 @@ pub enum Operation {
         field: super::members::Selection,
         plan: Option<super::bodies::ProtocolPlanId>,
     },
+    MethodReceiver {
+        plan: super::bodies::ProtocolPlanId,
+    },
     Index {
         length: u64,
     },

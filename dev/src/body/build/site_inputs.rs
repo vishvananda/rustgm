@@ -31,6 +31,7 @@ impl Builder<'_> {
                 Operation::Field {
                     plan: Some(plan), ..
                 }
+                | Operation::MethodReceiver { plan }
                 | Operation::Try { plan }
                 | Operation::Iteration { plan },
             ) => self.protocol_site_source(node, plan, callable, signature)?,
@@ -86,7 +87,8 @@ impl Builder<'_> {
         let plan = id
             .current(self.facts, self.source, key)
             .map_err(|error| self.error(node, error))?;
-        if matches!(plan.kind, crate::sema::protocol_plans::Kind::Field { .. }) {
+        let final_call = matches!(plan.kind, crate::sema::protocol_plans::Kind::Receiver { call, .. } if call.callable == callable && call.signature == signature);
+        if plan.kind.access().is_some() && !final_call {
             crate::sema::protocol_plans::access::lookup(
                 self.report,
                 self.facts,

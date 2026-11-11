@@ -9,7 +9,12 @@ pub(super) struct OpenCall {
 }
 #[derive(Clone, Copy)]
 pub(super) enum OpenKind {
-    Field(super::access_paths::OpenField),
+    Field(super::access_paths::OpenAccess),
+    ReceiverDiscovery(super::access_paths::OpenAccess),
+    Receiver {
+        access: super::access_paths::OpenAccess,
+        call: OpenCall,
+    },
     Block {
         body: NodeId,
         call: OpenCall,
@@ -59,10 +64,32 @@ impl OpenCall {
     }
 }
 impl OpenKind {
+    pub(super) fn access(self) -> Option<super::access_paths::OpenAccess> {
+        match self {
+            Self::Field(access)
+            | Self::ReceiverDiscovery(access)
+            | Self::Receiver { access, .. } => Some(access),
+            _ => None,
+        }
+    }
+    pub(super) fn access_mut(&mut self) -> Option<&mut super::access_paths::OpenAccess> {
+        match self {
+            Self::Field(access)
+            | Self::ReceiverDiscovery(access)
+            | Self::Receiver { access, .. } => Some(access),
+            _ => None,
+        }
+    }
     pub(super) fn call_count(self) -> Result<usize, &'static str> {
         match self {
             Self::Block { .. } => Ok(1),
             Self::Branch { .. } | Self::Iteration { .. } => Ok(2),
+            Self::ReceiverDiscovery(_) => Err("method receiver discovery is unfinished"),
+            Self::Receiver { access, .. } => access
+                .steps
+                .len()?
+                .checked_add(1)
+                .ok_or("method receiver call count overflow"),
             Self::Field(field) => {
                 let count = field.steps.len()?;
                 if count == 0 || field.field.is_none() || field.calls.is_none() {
@@ -85,7 +112,7 @@ impl OpenKind {
                 .ok_or("source protocol lost a solved type")
         };
         Ok(match self {
-            Self::Field(_) => {
+            Self::Field(_) | Self::ReceiverDiscovery(_) | Self::Receiver { .. } => {
                 return Err(
                     "field plan requires its actual final calls and checked step publication",
                 );
@@ -158,7 +185,12 @@ impl Checker<'_> {
                 OpenKind::Branch { residual: call, .. } | OpenKind::Iteration { next: call, .. },
                 1,
             ) => Ok(call),
-            (OpenKind::Field(field), index) if index < field.steps.len()? => {
+            (kind, index)
+                if kind
+                    .access()
+                    .is_some_and(|access| access.steps.len().is_ok_and(|count| index < count)) =>
+            {
+                let field = kind.access().ok_or("access call lost its actual plan")?;
                 let range = field.calls.ok_or("field call selection is unfinished")?;
                 let (source, method) = self
                     .state
@@ -186,6 +218,9 @@ impl Checker<'_> {
                     callable: method.callable,
                     signature: *signature,
                 })
+            }
+            (OpenKind::Receiver { access, call }, index) if index == access.steps.len()? => {
+                Ok(call)
             }
             _ => Err("protocol call cursor is outside its actual plan"),
         }

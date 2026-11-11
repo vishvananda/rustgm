@@ -1,5 +1,9 @@
 # Deref method receiver reductions
 
+This is the frozen preimplementation discovery packet. The subsequent
+[implicit receiver checkpoint](pa26-implicit-deref-methods.md) qualifies the
+finite actual-source correction and retains the128-layer inference requirement.
+
 After the conditional const adapter checkpoint, original core first fails in
 array iterator len/is_empty at file102:12256/12334. The actual receiver is
 ManuallyDrop<PolymorphicIter<[MaybeUninit<T>;N]>>. Its len implementation is generic
@@ -50,5 +54,5 @@ are byte-identical to those observed inputs; their original paths are recorded.
 The compiler and original upstream files are unchanged. Both whole assignments,
 ordinary bootstrap, general imported contracts and original artifacts remain open.
 
-Full42966631710 is running on the preceding semantic publicationa1c3d961c;
-its fast job passed. Do not cancel or redispatch it for this input-only packet.
+Full42966631710 on the preceding semantic publicationa1c3d961c subsequently
+passed every stage. Its result qualifies that exact prior const-adapter source.

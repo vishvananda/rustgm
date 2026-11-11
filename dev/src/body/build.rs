@@ -1874,8 +1874,11 @@ impl<'a> Builder<'a> {
         arguments: List,
         receiver: Option<ValueId>,
     ) -> Result<ValueId, Error> {
-        let Some(Operation::Call { signature, .. }) = self.fact(node)?.operation else {
-            return Err(self.error(node, "missing call signature"));
+        let signature = if let Some(Operation::Call { signature, .. }) = self.fact(node)?.operation
+        {
+            signature
+        } else {
+            self.receiver_call_signature(node, callee)?
         };
         let arguments = self.call_inputs(node, arguments, receiver)?;
         if let Some(operation) = self.intrinsic_call(node, callee, arguments)? {

@@ -232,7 +232,11 @@ pub(super) fn closed_request(
     let node = facts
         .node(call.site)
         .ok_or("const member lost its typed site")?;
-    if let Some(crate::sema::model::Operation::Field { plan: Some(id), .. }) = node.operation {
+    if let Some(
+        crate::sema::model::Operation::Field { plan: Some(id), .. }
+        | crate::sema::model::Operation::MethodReceiver { plan: id },
+    ) = node.operation
+    {
         return closed_field(report, facts, body, source, call, id, work);
     }
     let Some(crate::sema::model::Operation::Call {
@@ -294,7 +298,7 @@ fn closed_field(
 ) -> Result<bool, &'static str> {
     work.charge(8)?;
     let plan = id.current(facts, source, call.site)?;
-    let crate::sema::protocol_plans::Kind::Field { steps, .. } = plan.kind else {
+    let Some((_, _, _, steps)) = plan.kind.access() else {
         return Err("const field call changed its actual protocol");
     };
     work.charge(
@@ -304,17 +308,16 @@ fn closed_field(
             .checked_ilog2()
             .map_or(1, |n| n as usize + 2),
     )?;
-    crate::sema::protocol_plans::access::lookup(
-        report,
-        facts,
-        plan,
-        source,
-        crate::sema::iteration::Call {
-            callable: call.target,
-            signature: call.signature,
-        },
-    )
-    .map_err(|_| "const field call lost its actual owner, source or complete call")?;
+    let actual = crate::sema::iteration::Call {
+        callable: call.target,
+        signature: call.signature,
+    };
+    let step = crate::sema::protocol_plans::access::retained_call(facts, plan, source, actual)
+        .map_err(|_| "const access call lost its actual owner, source or complete call")?;
+    if step {
+        crate::sema::protocol_plans::access::lookup(report, facts, plan, source, actual)
+            .map_err(|_| "const access call changed its actual opened source signature")?;
+    }
     if !matches!(facts.types.kind(call.signature), Some(Kind::Function { result, .. }) if result == call.result)
     {
         return Err("const field call changed its actual reference result");

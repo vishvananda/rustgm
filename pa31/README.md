@@ -17,9 +17,11 @@ the full assignments and original library artifacts remain incomplete.
 
 The [Deref method reduction packet](tests/spec/deref-methods/README.md) isolates
 the next array-iterator receiver failure down to a concrete wrapped getter.
-Ordinary language/library forms stay in PA26. Its twenty actual-source outcomes
-and real Rust/C shared/mutable observer precede the implicit receiver correction;
-no candidate-native or whole-library qualification is implied.
+Ordinary language/library forms stay in PA26. Its expanded42-case source
+packet now qualifies40 finite contracts and paired shared/mutable/order native
+observers through the [implicit receiver checkpoint](../docs/pa26-implicit-deref-methods.md).
+Two128-layer positives remain required because of inference work; ordinary
+bootstrap and whole-library qualification remain open.
 
 The [complete Field offset/native checkpoint](../docs/parallel/field-offset-execution.md)
 executes the genuine provided initializer, actual reached field_offset and shared
