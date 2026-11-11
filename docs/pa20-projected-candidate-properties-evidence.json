@@ -483,140 +483,185 @@
     "source_commit": "b15d29240f5f1a00894a2149bac1ddc46d18ed20",
     "jobs": [
       {
+        "id": 130484791140,
         "name": "qualification",
-        "status": "in_progress",
-        "conclusion": null,
+        "status": "completed",
+        "conclusion": "failure",
+        "run_id": 43009364083,
+        "logs_url": null,
         "steps": [
           {
             "name": "Set up job",
             "status": "completed",
-            "conclusion": "success"
+            "conclusion": "success",
+            "number": 1
           },
           {
             "name": "Run actions/checkout@v6",
             "status": "completed",
-            "conclusion": "success"
+            "conclusion": "success",
+            "number": 2
           },
           {
             "name": "Pinned Rust",
             "status": "completed",
-            "conclusion": "success"
+            "conclusion": "success",
+            "number": 3
           },
           {
             "name": "Lint, architecture and harness",
             "status": "completed",
-            "conclusion": "success"
+            "conclusion": "success",
+            "number": 4
           },
           {
             "name": "Independent host build graph",
             "status": "completed",
-            "conclusion": "success"
+            "conclusion": "success",
+            "number": 5
           },
           {
             "name": "Release and course tests",
-            "status": "in_progress",
-            "conclusion": null
+            "status": "completed",
+            "conclusion": "failure",
+            "number": 6
           },
           {
             "name": "Native maintainer qualification",
-            "status": "pending",
-            "conclusion": null
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 7
           },
           {
             "name": "Broad native course sweep",
-            "status": "pending",
-            "conclusion": null
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 8
           },
           {
             "name": "Debug invariants",
-            "status": "pending",
-            "conclusion": null
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 9
           },
           {
             "name": "Retire completed debug build cache",
-            "status": "pending",
-            "conclusion": null
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 10
           },
           {
             "name": "Independent Rust qualification",
-            "status": "pending",
-            "conclusion": null
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 11
           },
           {
             "name": "PA25 const-machine candidate contract",
-            "status": "pending",
-            "conclusion": null
-          },
-          {
-            "name": "Post Run actions/checkout@v6",
-            "status": "pending",
-            "conclusion": null
-          }
-        ]
-      },
-      {
-        "name": "fast",
-        "status": "completed",
-        "conclusion": "success",
-        "steps": [
-          {
-            "name": "Set up job",
             "status": "completed",
-            "conclusion": "success"
-          },
-          {
-            "name": "Run actions/checkout@v6",
-            "status": "completed",
-            "conclusion": "success"
-          },
-          {
-            "name": "Pinned Rust",
-            "status": "completed",
-            "conclusion": "success"
-          },
-          {
-            "name": "Run actions/cache@v6",
-            "status": "completed",
-            "conclusion": "success"
-          },
-          {
-            "name": "Audit setup",
-            "status": "completed",
-            "conclusion": "success"
-          },
-          {
-            "name": "Five-minute compiler smoke",
-            "status": "completed",
-            "conclusion": "success"
-          },
-          {
-            "name": "Harness, audit cache and upstream contracts",
-            "status": "completed",
-            "conclusion": "success"
-          },
-          {
-            "name": "Retain focused evidence",
-            "status": "completed",
-            "conclusion": "success"
-          },
-          {
-            "name": "Post Run actions/cache@v6",
-            "status": "completed",
-            "conclusion": "success"
+            "conclusion": "skipped",
+            "number": 12
           },
           {
             "name": "Post Run actions/checkout@v6",
             "status": "completed",
-            "conclusion": "success"
+            "conclusion": "success",
+            "number": 24
           },
           {
             "name": "Complete job",
             "status": "completed",
-            "conclusion": "success"
+            "conclusion": "success",
+            "number": 25
+          }
+        ]
+      },
+      {
+        "id": 130484791778,
+        "name": "fast",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 43009364083,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Pinned Rust",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Run actions/cache@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Audit setup",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "Five-minute compiler smoke",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6
+          },
+          {
+            "name": "Harness, audit cache and upstream contracts",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7
+          },
+          {
+            "name": "Retain focused evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8
+          },
+          {
+            "name": "Post Run actions/cache@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17
           }
         ]
       }
-    ]
+    ],
+    "status": "completed",
+    "conclusion": "failure",
+    "private_passes": 3065,
+    "public_failures": [
+      "stale projection source expectations",
+      "builtin-after-trait-inference ambiguity"
+    ],
+    "repair": "f93ffdb7fb7f413148406c0284408fe83f68f2d8",
+    "repair_evidence": "pa20-post-inference-properties-evidence.json"
   },
   "retired_baseline": {
     "sha256": "00d205dc7bab488fbdadc5064be2d421947f9bdc3dd573f1c5691175faa8fc3e",

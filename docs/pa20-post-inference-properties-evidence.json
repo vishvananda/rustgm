@@ -1,0 +1,295 @@
+{
+  "schema": 1,
+  "state": "Focused CI repair qualified; full successor due after publication. No new original-core observation or library artifact.",
+  "compiler": {
+    "commit": "f93ffdb7fb7f413148406c0284408fe83f68f2d8",
+    "cli_sha256": "f46b54f3248e174e3cafeb1d791811a5bdbbf96004bbdd4dc74a6f3df2c53bf6",
+    "immutable_cli": "B obj/parallel/projected-ci-repair/candidate-dev-fast/rustgm",
+    "producer_sha256": "2b93186949d71fb35de6ebf9c6af3a6d3a4f2a49506facc5d788cb575604dcb3",
+    "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "rust_source_count": 3902
+  },
+  "prior_full_ci": {
+    "run": 43009364083,
+    "head": "9fdf58f7588a35c69b85601fe3b70e242a937247",
+    "conclusion": "failure",
+    "private_passes": 3065,
+    "public_failures": [
+      "stale three source normalization expectations",
+      "real builtin-after-trait-inference ambiguity"
+    ],
+    "later_stages": "skipped",
+    "jobs": [
+      {
+        "id": 130484791140,
+        "name": "qualification",
+        "status": "completed",
+        "conclusion": "failure",
+        "run_id": 43009364083,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Pinned Rust",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Lint, architecture and harness",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Independent host build graph",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "Release and course tests",
+            "status": "completed",
+            "conclusion": "failure",
+            "number": 6
+          },
+          {
+            "name": "Native maintainer qualification",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 7
+          },
+          {
+            "name": "Broad native course sweep",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 8
+          },
+          {
+            "name": "Debug invariants",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 9
+          },
+          {
+            "name": "Retire completed debug build cache",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 10
+          },
+          {
+            "name": "Independent Rust qualification",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 11
+          },
+          {
+            "name": "PA25 const-machine candidate contract",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 12
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 24
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 25
+          }
+        ]
+      },
+      {
+        "id": 130484791778,
+        "name": "fast",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 43009364083,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Pinned Rust",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Run actions/cache@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Audit setup",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "Five-minute compiler smoke",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6
+          },
+          {
+            "name": "Harness, audit cache and upstream contracts",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7
+          },
+          {
+            "name": "Retain focused evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8
+          },
+          {
+            "name": "Post Run actions/cache@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17
+          }
+        ]
+      }
+    ],
+    "raw_log_sha256": "717959d1e60f5b6c0a3efc6958ccb5124f4b14028e214916729f16ab75a11d54"
+  },
+  "qualification": {
+    "receipts": {
+      "1794397840938770713": {
+        "sha256": "5d00a006cadcac6186ff3294fb5e2cb7f70a0904191e5ac4d4f4d3558980607b",
+        "state": "failed"
+      },
+      "1794398451632493330": {
+        "sha256": "95efadee1f2303e52e94e9be981646e51abb83af2fbce6c64d526fbc5b2870f6",
+        "state": "passed"
+      },
+      "1794398656352842239": {
+        "sha256": "37234497d809aeab7a97ca9b833dd6eac66eca23c3d04912a5ef8e3163231c50",
+        "state": "passed"
+      }
+    },
+    "exploratory_receipt": "1794397840938770713 failed only the newly authored generic projected-premise positive. Five exact controls passed, including both original CI failures; final production identities are identical. The new generic positive remains required in pending.json. Do not treat this whole exploratory batch as passed.",
+    "final_finite_case_receipt": "1794398451632493330 passed current four concrete-projection outcomes",
+    "native_receipt": "1794398656352842239 passed method priority41/41/23/23/41/31 and actual destructor1",
+    "strict_clippy_format_architecture": "passed on final production/CLI/selected target",
+    "references": {
+      "passed": true,
+      "new_reference_triples": 4,
+      "old_oracles_unchanged": 8512,
+      "old_pa19_course_case": "passed",
+      "candidate_sha256": "f46b54f3248e174e3cafeb1d791811a5bdbbf96004bbdd4dc74a6f3df2c53bf6",
+      "review_sha256": "f831f4c02b954f53f6a96004745feb9e7faa76144e439d6a649b45f788774905"
+    },
+    "checks": {
+      "passed": true,
+      "finite_independent_object_cases": 4,
+      "unqualified_generic_requirements_preserved": 4,
+      "logs": {
+        "upstream": "19edc114e22639322b3ce9f0bcda582a6fc7d9641501c9a6ac1deca7ce08d175",
+        "harness": "56b0614c527a55cceedd0ee4af2a7ec0143d6c16c1a3f91a5f3bf38dfe768689"
+      }
+    },
+    "resource_policy": {
+      "schema": 2,
+      "jobs": 2,
+      "reserve_gib": 150,
+      "worker_gib": 50,
+      "cpu_percent": 800,
+      "memory_gib": 12,
+      "tasks": 256
+    }
+  },
+  "measurements": {
+    "rows": 30,
+    "complete_output_equality": true,
+    "summary": {
+      "import-control": {
+        "seconds": {
+          "aa_ratio": 0.8758970692440744,
+          "paired_candidate_over_base": 1.0436967395872143
+        },
+        "cpu_seconds": {
+          "aa_ratio": 0.8774244277476849,
+          "paired_candidate_over_base": 1.0447120721968235
+        }
+      },
+      "width-128-noise-0": {
+        "seconds": {
+          "aa_ratio": 0.9927285846676814,
+          "paired_candidate_over_base": 1.0462434487291432
+        },
+        "cpu_seconds": {
+          "aa_ratio": 0.992402355753643,
+          "paired_candidate_over_base": 1.046365123367874
+        }
+      },
+      "priority-native": {
+        "seconds": {
+          "aa_ratio": 1.0037688066243913,
+          "paired_candidate_over_base": 0.9300374094479563
+        },
+        "cpu_seconds": {
+          "aa_ratio": 1.003723451132461,
+          "paired_candidate_over_base": 0.9294209028819245
+        }
+      }
+    },
+    "no_optimized_or_core_speed_claim": true
+  },
+  "pending_generic_projection_requirements": {
+    "manifest": "pa20/tests/spec/late-method-properties/pending.json",
+    "sha256": "bf0357fb4d3882c2e3e6e8d9d788bcfb1ba0450204157778ebbe6f18e82be2f0",
+    "cases": 4,
+    "valid_positives_still_required": 2
+  },
+  "original_core": {
+    "last_observation_compiler": "b15d29240",
+    "last_observation_cli": "94bd08b42caf5680d4ccce6efbeef449e6eb159473ae3668b1a21a94a746f808",
+    "partial_only": true,
+    "first": "LazyCell<T>::default in core/src/cell/lazy.rs,113:12567",
+    "new_observation_for_this_repair": false,
+    "artifact": false
+  },
+  "next": "Resume exact single-worker LazyCell callback WIP from Git stash; independent31 ordinary/source outcomes22accept9reject plus3 Rust execution and6 scaling inputs retained in obj/parallel/lazy-default.",
+  "all_prior_requirements_retained": true
+}

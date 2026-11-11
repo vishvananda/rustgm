@@ -1,5 +1,17 @@
 # Library build blocker tracker
 
+The [post-inference property repair](pa20-post-inference-properties.md), source
+f93ffdb7f/CLIf46b54f3, repairs both public failures in full43009364083. Structural
+possibilities are rechecked after trait inference, and newly exposed projections
+reuse the retained selector/frontier. The minimum PA19 input stays unchanged;
+four new concrete-projection PA20 outcomes and references pass. Four generic
+projected-premise requirements retain exact source and independent outcomes in
+PA20 pending.json; their two valid positives remain unsupported. Selected strict
+checks, actual priority/destructor execution, upstream/harness and thirty immutable
+output-equal observations pass, with slower tiny controls honestly retained.
+No new core observation was run. Resume the independently frozen LazyCell callback
+WIP from the existing single worker's Git stash, as handoff.md describes.
+
 The current [projected candidate/reborrow checkpoint](pa20-projected-candidate-properties.md),
 compiler b15d29240/CLI94bd08b4, clears the reached try_from_fn_erased
 normalization record at guard.array_mut.len(). Existing semantic selection proves
@@ -22,9 +34,10 @@ ordinary callback creation/constructor/effect contrasts, reusing conditional
 function-item and const-adapter requirements. Preserve all pending native panic,
 128-depth inference, factory execution, bootstrap, transport and optimized checks
 listed in handoff.md. Full42988281942 on exact31be succeeded every stage.
-Full successor43009364083 is active on exact9fdf58f75 containing sourceb15;
-fast and qualification setup/host checks passed, release/course was running.
-Do not restart it for documentation descendants.
+Full43009364083 on exact9fdf58f75 containing sourceb15 FAILED those two public
+tests after3,065 private passes. Fast/setup/host checks passed; later stages were
+skipped. The post-inference repair's full successor is due after publication.
+Documentation descendants must not restart an active full run.
 
 Earlier const-adapter/implicit receiver observations below are historical;
 the current frontier above supersedes their next-step text.

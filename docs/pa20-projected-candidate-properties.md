@@ -1,5 +1,11 @@
 # Projected method properties and actual borrowed places
 
+The [post-inference CI repair](pa20-post-inference-properties.md), sourcef93ffdb7f,
+supersedes the candidate condition lifetime described here. This b15 checkpoint's
+full CI found a real post-inference property regression and a stale public test;
+both are repaired in that successor. Its original-core observation below remains
+the last observation; the new compiler has not yet been observed against core.
+
 Compiler `b15d29240f5f1a00894a2149bac1ddc46d18ed20` removes the reached
 `try_from_fn_erased` normalization diagnostic at `guard.array_mut.len()` in the
 unchanged original core. The next first diagnostic is `LazyCell<T>::default`
@@ -98,11 +104,13 @@ Focused public checks supply local development evidence. Private affine, budget,
 fields-only and pending-header controls remain in full CI. The preceding full
 run [42988281942](https://github.com/vishvananda/rustgm/actions/runs/42988281942)
 on exact `31be0c24f` passed every stage. Successor
-[43009364083](https://github.com/vishvananda/rustgm/actions/runs/43009364083) runs
+[43009364083](https://github.com/vishvananda/rustgm/actions/runs/43009364083) ran
 on exact `9fdf58f7588a35c69b85601fe3b70e242a937247`, containing source `b15d29240`.
 Fast, qualification lint/architecture/harness and the independent host graph
-passed; release/course was running at the recorded observation. Documentation
-descendants do not restart this run.
+passed. All3,065 private tests passed; release/course then failed the stale public
+source expectations and real builtin-after-trait-inference ambiguity. Later
+stages were skipped. The post-inference successor above repairs both failures;
+its full qualification remains pending after publication.
 
 ## Measurements and original observation
 

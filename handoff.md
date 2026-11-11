@@ -5,7 +5,36 @@ The user explicitly asked for one worker. Do not spawn workers or create worktre
 Use existing B `/mnt/vizier/rustgm-scratch/rustgm-pa26-work`; main is Git-only.
 The goal remains original core, then alloc/std. No original library artifact exists.
 
-## Current checkpoint and original-core frontier
+## Current CI repair
+
+[Post-inference property repair](docs/pa20-post-inference-properties.md), source
+f93ffdb7fb7f413148406c0284408fe83f68f2d8, repairs the two public failures in full
+43009364083. The ordinary Copy condition remains until trait inference settles;
+newly exposed projections use the existing semantic selector and retained private
+frontier. No proof permission, new engine/state, limits/backend/storage change.
+The original PA19 regression is unchanged. Four concrete-projection PA20 outcomes
+pass with exactly four reviewed new triples; all8,512 old PA19/PA20 oracle/receipt
+files stay unchanged. Four generic projected-premise inputs remain in PA20
+late-method-properties/pending.json, with complete bytes and independent outcomes;
+their two valid unpaid positives still need caller-premise inference.
+
+Both original CI tests and three existing property/scaling/state controls pass in
+1794397840938770713, but that exploratory batch fails the newly authored generic
+positive. Never call the entire batch passed. Its production identities equal
+the final receipts. Final finite4 pass1794398451632493330; actual native priority
+and destructor2 pass1794398656352842239. Strict Clippy/fmt/audit, upstream128/
+Reference126 and315 harness tests/468roots/13bins/44stages pass. CLI
+f46b54f3248e174e3cafeb1d791811a5bdbbf96004bbdd4dc74a6f3df2c53bf6 is pinned at
+Bobj/parallel/projected-ci-repair/candidate-dev-fast/rustgm, producerf93/empty
+patch/3902Rusthashes.
+Thirty exclusive A/A+twoABBA observations preserve complete outputs for ordinary
+import, accepted128-call property path and priority LowIR. Wall ratios1.044/1.046/
+.930, CPU1.045/1.046/.929; AA.876/.993/1.004. Keep slower observations; no neutrality/
+optimized/core speed claim. Current comparison baseline94bd and optimized21f stay
+pinned until replacement publication/explicit retirement. Full repair qualification
+is due after publication. No new original-core observation or artifact exists.
+
+## Last original-core observation and preceding foundation
 
 [Projected method properties and actual borrowed places](docs/pa20-projected-candidate-properties.md),
 compiler b15d29240f5f1a00894a2149bac1ddc46d18ed20, clears the reached
@@ -61,16 +90,34 @@ throughput result or original core/alloc/std artifact exists.
 
 ## Continue here
 
-Inspect the exact LazyCell::new declaration and T::default callback creation
-before changing effects or bounds. Freeze ordinary user Factory/function-item
-contrasts: direct function-pointer return vs constructor argument, inferred vs
-explicit pointer type, shorthand vs UFCS, runtime vs const creation and actual
-invocation opponents. Reuse the earlier const-adapter and conditional function-item
-packets where their complete contracts match. Determine earliest PA from the
-minimum; actual source Default/FnOnce/language-role counterparts belong in PA31
-only when those features are needed. Keep Cell replacement/cloning separate until
-an independent contrast establishes a shared cause. No next-family implementation
-or reductions have been made yet.
+Restore the exact LazyCell callback WIP from the Git stash named "lazy callback
+formation WIP; preserve while repairing projected-properties CI" after this repair
+is published. It touches body/generic/function-value obligations, one canonical
+FunctionItem argument reader branch, closureconst tests and PA19/24/25/31 fixtures;
+it has no overlap with this repair's production files. Prefer stash apply, verify
+the result, then drop that exact stash. Do not create another checkout/worker.
+
+Bobj/parallel/lazy-default freezes31 independently checked Rust OBJECT outcomes:
+22accept9reject, installed in the stash by earliest owner PA19=3, PA24=2, PA25=22,
+PA31=4. All ordinary/runtime FnOnce constructor and pointer cases pass baseline;
+eight valid conditional-trait function-value creations fail. Actual unpaid const
+invocations remain genuine negatives. Two paid alias/reference calls retain an
+existing full-LowIR exact-callee boundary as REQUIRED POSITIVES. Three real Rust
+executions23/23/41 and six width/noise objects also pass, but those nine inputs
+are only in obj/execution-declared and not installed or candidate-qualified yet.
+
+WIP separates formation's ordinary requirements from actual invocation effects,
+using existing member-use clauses, instantiation and trait selection. It keeps
+method/operator/implicit call effects, and follows full typed receivers through
+locals/references at actual calls. No new state/proof engine/permission. Its first
+batch failed a new canonical FunctionItem argument read on a plain const call;
+the attempted duplicate helper then failed compilation. The STASH now reuses the
+EXISTING public Context::known_arguments from infer/projections/inputs.rs through
+one new item_arguments branch; no duplicate helper remains. This corrected WIP
+is UNQUALIFIED and must pass exact new31, existing const/adapter/method controls
+before publication or any claim that LazyCell is cleared. Reuse the frozen Rust
+outcomes; do not reclassify positives or raise limits. Keep Cell replacement and
+cloning separate until a contrast proves a shared cause.
 
 Evidence root is Bobj/parallel/projected-properties. Final-production
 1794391956383811769 PASS8exact2targets115.16s covers21 ordinary PA20/5 PA18
@@ -87,11 +134,11 @@ record: docs/pa20-projected-candidate-properties-evidence.json.
 
 Full42988281942 on EXACT31be0c24f PASSED every fast/release/course/native/debug/
 independent/PA25 stage, qualifying the previous symbolic-index source004ae71e9.
-Full successor43009364083 is ACTIVE on EXACT9fdf58f7588a35c69b85601fe3b70e242a937247,
-which contains sourceb15. Fast passed; qualification lint/architecture/harness and
-independent host graph passed; release/course was in progress when last checked.
-Do not cancel/redispatch it for this documentation descendant or later input/docs
-commits. Check its terminal outcome while progressing the next independent family.
+Full43009364083 on EXACT9fdf58f7588a35c69b85601fe3b70e242a937247 containing sourceb15
+FAILED the two public tests repaired above after all3065 private passes. Fast,
+lint/architecture/harness and independent host graph passed; later stages skipped.
+Publish the repair and start one full successor if no active schedule/manual full
+exists. Do not cancel/redispatch that successor for documentation/input descendants.
 
 ## Retained requirements and resource rules
 

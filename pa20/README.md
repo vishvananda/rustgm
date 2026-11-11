@@ -2,8 +2,11 @@
 
 Status: **implemented-draft**. Prerequisite: PA19. The bounded source profile is
 Rust 1.98.0, edition 2024, Linux x86-64, panic abort, overflow checks enabled and
-debug assertions disabled. The current public manifest has1,591 text-oracle cases:614 trait-semantic
-inspections and977 complete LowIR checks, with590 declared native executions.
+debug assertions disabled. The current public manifest has1,595 text-oracle cases:614 trait-semantic
+inspections and981 complete LowIR checks, with590 declared native executions.
+The [post-inference property repair](../docs/pa20-post-inference-properties.md)
+keeps candidate conditions after trait equations settle, with four concrete
+projection controls and explicit remaining generic projected-premise requirements.
 The [projected candidate packet](tests/spec/projected-method-inputs/README.md)
 adds27 independently checked outcomes and retains actual bound-sensitive method
 priority through existing semantic selection. Ordinary referent field preparation
