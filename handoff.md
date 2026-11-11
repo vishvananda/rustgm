@@ -30,7 +30,8 @@ at Bobj/parallel/lazy-default/candidate-dev-fast/rustgm binds source5798,empty
 tracked patch/3903Rust hashes. Thirty exclusive A/A+twoABBA observations match
 complete outputs on ordinary import,accepted paid calls128,actual priorityLowIR;
 wall.965/1.018/.994,CPU.990/1.026/.961,AAwall1.026/1.019/.693. Slower/noisy values
-remain; no neutrality/optimized/core-speed claim. Current05cc and olderoptimized21f are available. Comparisonf46 was retired AFTER
+remain; no neutrality/optimized/core-speed claim. Historical05cc is now retired after successor publication; current0912 and
+olderoptimized21f remain available. Comparisonf46 was retired AFTER
 replacement publication with explicit scoped prune1794405662867398530. Its
 executable is absent, as are94bd/00d2/9109/e7; raw observations/producer remain.
 
@@ -129,14 +130,18 @@ Postcheck1794414625686080575 verifies all722/375opens/sixbindings/immutable/curr
 partial counts are not comparable throughput. Do not repeat for a longer prefix
 or extend limits. Raw new observation: Bobj/parallel/refcell-coercion/projected-progress-original.
 
-NEXT: publish qualified source+diagnostics+this record, check no active manual/
-scheduled full, dispatch ONE successor. Then reduce real clone expression using
-actual ordinary Clone caller debt and actual Deref selection; do not assume a
-shared comparison cause without contrasts. Current0912, comparison05cc, historical
-2b7, diagnosticd77/NONQUAL4f and olderoptimized21f pins are available. Retire
-superseded/diagnostic pins explicitly after publication; keep only current and
-actually needed comparisons. Prior callback43034322443 PASSED every stage on
-EXACT357d0bc5e/source5798. Never restart full CI for docs/input descendants.
+PUBLISHED source+diagnostics+D1eae11a06a; B/main/origin clean at publication.
+Full43059556041 is ACTIVE on EXACTeae11a06ad731c3ea4d618095daa43a5b1025bb8,
+containing source6556387ca. Dispatch followed a fresh no-active-full check.
+Never cancel/restart it for docs/input descendants. Prior callback43034322443
+PASSED every stage on EXACT357d0bc5e/source5798.
+
+NEXT reduce real clone expression using actual ordinary Clone caller debt and
+actual Deref selection; do not assume a shared comparison cause without contrasts.
+Current0912 and olderoptimized21f are available. After replacement publication,
+comparison05cc, historical2b7, diagnosticd77/NONQUAL4f were explicitly unpinned
+and pruned1794414887003043616; all four executables are ABSENT. Producers/raw
+observations/hashes remain. Do not use those old paths as available binaries.
 All prior requirements below remain required, including ordinary18/native2,
 paid-alias2/projected-premise2/symbolic-index native2/depth128/factory/tuple/
 bootstrap/transport/optimized gates. No backend/storage/source-pin/limit change.

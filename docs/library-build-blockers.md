@@ -19,8 +19,9 @@ noisy values remain and no neutrality/optimized/core-speed claim is made. Option
 implementation progress and projected item locations pass4 exact tests and leave
 final tables byte-identical. Earlier phase samples do not establish a repeatable
 regression or cause; the diagnostic hint-revert is non-equivalent and not adopted.
-Publish this checkpoint, dispatch one full successor if idle, then reduce the
-actual clone expression. Prior full43034322443 on exact357d0bc5e/source5798 PASSED
+Checkpoint published at eae11a06a; full43059556041 is ACTIVE on that exact
+head/source6556387ca. Never restart it for docs/input descendants. Reduce the
+actual clone expression next. Prior full43034322443 on exact357d0bc5e/source5798 PASSED
 every stage. All handoff requirements remain required. This section supersedes
 older next-step text below.
 
@@ -48,7 +49,8 @@ core/alloc/std artifact exists.
 Prior full43019302026 on exactbc401434a/sourcef93 passed EVERY stage. Callback
 full43034322443 PASSED every stage on exact357d0bc5e/source5798; never restart it for
 docs/input descendants. After replacement publication, comparisonf46 was explicitly
-pruned1794405662867398530; executable absent. Current05cc and optimized21f remain.
+pruned1794405662867398530; executable absent. Current0912 and optimized21f remain;05cc/2b7/d77/4f were retired after
+replacement publication with scoped prune1794414887003043616.
 Older94bd/00d2/9109/e7 executables are also absent. Preserve two paid-alias artifacts, two generic projected
 premise positives, symbolic-index native2, depth128 inference, factory execution,
 bootstrap/imports, transport, tuple factories and optimized checks in handoff.md.

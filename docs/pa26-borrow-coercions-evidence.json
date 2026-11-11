@@ -454,7 +454,10 @@
     ]
   },
   "current_full_ci": {
-    "status": "due after source publication and active-run check",
+    "run": 43059556041,
+    "head": "eae11a06ad731c3ea4d618095daa43a5b1025bb8",
+    "source_commit": "6556387caa0effa62a8383d01a756ebd15d27073",
+    "status": "in_progress",
     "do_not_restart_for_documentation": true
   },
   "original_core": {
@@ -820,5 +823,33 @@
       "receipt": "1794414204432424740",
       "scope": "3 passed, new test failed in helper expecting no macro trace; source mapping comparison itself passed."
     }
-  ]
+  ],
+  "retired_predecessors": {
+    "replacement": "0912e08f677a2880a62b42bef9c5baf3dcd253ceec5e5d805b22a873e34a58a8",
+    "retired": [
+      {
+        "directory": "obj/parallel/lazy-default/candidate-dev-fast",
+        "sha256": "05cc3029540dc069cf360821f180521d74278c5f5986a8e8e69255dc7955def5",
+        "reason": "Published replacement; completed comparisons/diagnostics retained as raw observations and hashes."
+      },
+      {
+        "directory": "obj/parallel/refcell-coercion/candidate-dev-fast",
+        "sha256": "2b7a8d17e768a1d60303dce88283f30e8f4096c8e6000eb34f976b790bb9ef48",
+        "reason": "Published replacement; completed comparisons/diagnostics retained as raw observations and hashes."
+      },
+      {
+        "directory": "obj/parallel/refcell-coercion/progress-dev-fast",
+        "sha256": "d77b1d133bc99d316c76e519c7f30f49f3e558ba9cce927fdb977893fc605d1c",
+        "reason": "Published replacement; completed comparisons/diagnostics retained as raw observations and hashes."
+      },
+      {
+        "directory": "obj/parallel/refcell-coercion/diagnostic-return-hint-dev-fast",
+        "sha256": "4f308445a78d3359639a974c43f6eefab17aef08a9d958c15018a58bc8856c38",
+        "reason": "Published replacement; completed comparisons/diagnostics retained as raw observations and hashes."
+      }
+    ],
+    "all_retired_executables_absent": true,
+    "raw_producers_receipts_observations_retained": true,
+    "cleanup_receipt": "1794414887003043616"
+  }
 }
