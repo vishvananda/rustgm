@@ -29,8 +29,9 @@ Forty immutable exclusive A/A+twoABBA observations retain complete outputs for
 import/explicit-result LowIR and scalar/source-role type controls. Noisy A/A
 supports no timing claim. Full42930363606on4a PASSED every stage, qualifying the
 preceding nominal source Unsize checkpoint; prior42925327481oncba and
-42918510671on216364 also passed. Dispatch the callable successor after publication
-and after verifying no active full run. The earlier three valid tuple-factory
+42918510671on216364 also passed. Callable checkpoint2d94c3ce6 is published; full42948079201
+is ACTIVE on that exact snapshot (fast passed). No active full predecessor existed
+when dispatched. Do not cancel or redispatch it for documentation-only updates. The earlier three valid tuple-factory
 cleanup owners and optimized nested-proof checks remain required.
 
 Previous [pending-join inputs](pa20-pending-join-inputs.md) retain their qualified

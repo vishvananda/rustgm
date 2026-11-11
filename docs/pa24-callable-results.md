@@ -129,3 +129,12 @@ next blocker; choose the earliest owner from the resulting minimum. Different
 census prefixes establish no speed or body-count claim. No original core/alloc/std
 artifact exists. Private/full successor qualification and the earlier optimized
 nested-proof measurements remain pending.
+
+Published checkpoint2d94c3ce61e660e046e345dccaacd2a843f6da05 carries implementation,
+fixtures, all generated triples/provenance and the updated frontier together.
+Full42948079201 runs that snapshot; fast passed, full qualification is active.
+Its predecessor42930363606 on4a passed every stage. Do not restart the active
+full run for documentation-only descendants. Completed comparison00b was retired
+after publication by1794365201348336431; only current8b7 and the earlier optimized
+21f baseline remain pinned. Historical observations do not imply old binaries
+remain available.

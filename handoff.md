@@ -64,8 +64,9 @@ at Bobj/parallel/callable-results/candidate3-dev-fast/rustgm binds committed
 failed three existing borrowed-return regressions;50a then failed the new projected
 Self contrast. Those and analysis e9/6ba pins were retired1794363184111643302;
 metadata/observations remain, binaries do not. Tidy1794363184280435301 removes100
-other outputs. Preserve current8b7 and optimized21f; retire completed00b comparison
-after publication. Forty exclusive A/A+twoABBA observations preserve complete
+other outputs. Preserve current8b7 and optimized21f. Completed00b comparison was retired
+after publication by1794365201348336431; its metadata/observations remain,
+its executable does not. Forty exclusive A/A+twoABBA observations preserve complete
 import/explicit-result LowIR and scalar/sourceknownrepr types. Ratios1.012/1.006/
 .969/.939, noisyA/A; no speed/neutrality claim. The first20 valid rows precede a
 wrong executable-mode selection for an entry-free scalar input; only the remaining
@@ -91,9 +92,11 @@ The preceding [nominal source Unsize checkpoint](docs/pa31-nominal-unsize.md)
 retains46 outcomes/31native, both element-inference directions and its completed
 storage-tail/unchanged-argument/actual-field/endpoint proofs. Full42930363606on4a
 now PASSED every fast/release/course/native/debug/independent/PA25 stage, joining
-successful42925327481oncba and42918510671on216364. The callable successor is due
-only after publication; confirm no active full run before dispatch. Push-fast has
-separate concurrency. Do not cancel a full run for documentation-only updates.
+successful42925327481oncba and42918510671on216364. Callable source/fixtures/references are published2d94c3ce61e660e046e345dccaacd2a843f6da05.
+Full42948079201 runs that exact snapshot and is ACTIVE (fast passed; release/course
+at last query). It was dispatched only after confirming no active full predecessor.
+Push-fast42947808422 is separate. Do not cancel or redispatch the full run for
+documentation-only descendants. Wait for terminal status before another full.
 Three tuple-factory cleanup owners and optimized nested-proof A/A/stack remain
 required. Singleworker existing B; mainGitonly, no new trees/agents or CPP/v5 edits.
 Whole PA31 remains planned; core compilation remains incomplete.
