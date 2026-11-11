@@ -2,118 +2,94 @@
 
 This current section supersedes the historical multi-lane snapshot below.
 The user explicitly asked for one worker. Do not spawn workers or create worktrees.
-The goal remains original core, then alloc/std, with every owning assignment
-requirement retained. No original core/alloc/std artifact exists.
+Use existing B `/mnt/vizier/rustgm-scratch/rustgm-pa26-work`; main is Git-only.
+The goal remains original core, then alloc/std. No original library artifact exists.
 
-## Published and qualified
+## Current checkpoint and original-core frontier
 
-- Record variants and P1 are published. Full predecessor CI42689087036,
-  record-variant CI42701179456 and P1 CI42708775327 succeeded.
-- Nested-proof prep/accounting/reuse landed together through77e6b407e.
-  [Its initial checkpoint](docs/parallel/nested-proof-reuse.md) records130
-  passing private cases, identical8356-row golden table and74/336 complete
-  outcome comparisons. PA31 has eight frozen projected-size source reductions.
-  Normalization count is linear; total work remains quadratic. Optimized
-  A/A+ABBA and release-stack checks remain pending outside the local five-minute
-  feedback loop; the old release build took7m20s.
-- Full77e CI42736874497 failed one Evidence/Selection136-byte guard (actual144)
-  and three actual receiver128 tests with the projection work budget. Other3039
-  private and545 frontend cases passed. Later native/debug/independent steps
-  were skipped. Do not describe that run as qualified.
-- CI repair748ef1aaa retains cold completion detail in the old padded flag word,
-  preserves the136-byte guard, and contracts actual selected Deref suffixes
-  inside their original proof query. Whole-parent lifetime evidence remains
-  mandatory; const/scoped/provisional/equality-dependent cases fall back.
-- Projected-layout correction5334dd135 follows the repair. It consumes shared
-  typed stored fields, independently discharges a fresh caller's lifetimes and
-  charges completed graph/caller/nested work between producer steps. PA31's two
-  independently checked alignment reductions freeze the original atomic blocker.
-- [The joined checkpoint](docs/parallel/nested-proof-ci-repair.md) passes151
-  exact private tests (1794282814262496754),6 production tests including all3
-  original CI failures (1794282980906312191), and1 real native nested-borrow
-  observer (1794283232090614989; stdout23). Strict selected/private Clippy,
-  formatting, architecture,313 harness tests/465 roots/44 stages,128 upstream
-  fixtures and126 Reference files pass. The PA31 dereference packet now lists39
-  cases, including independently checked static/unpaid lifetime controls.
-  Full42754442914 passed every stage. Wait for an existing full dispatch to
-  terminate before dispatching another; push-fast uses separate concurrency.
+[Implicit Deref method receivers](docs/pa26-implicit-deref-methods.md), compiler
+5f78ed963, now execute actual source Deref/DerefMut chains before the final method.
+They reuse existing field access storage and all normal source/generic/region/
+const/stability/capture/borrow proofs. Explicit generic method arguments remain
+separate from implicit calls. The operand is evaluated once before arguments.
+Operation16, Methods::Call20, Plan64, Calls8, Step40 and cold selection12 remain;
+no dense fields, global caches, limits, backend or storage.py changes.
 
-## Current original-core frontier
+PA26 keeps7 ordinary requirements; bootstrap Deref imports still block positives.
+PA31 now has42 independently checked source inputs,35 accepts/7 rejects. Forty
+finite checked-body contracts pass:36 functional and4 depth/noise cases. Real
+Rust/C and RustGM/CPPGM native outputs agree: receiver23/41 and ordered trace
+23/125/41/134625. Actual constants23/41, generic method arguments, captures,
+priority and paid/unpaid bound/lifetime/move/borrow/const checks pass. The two
+128-layer generic-chain positives remain required. Tested noise0 exhausts the
+existing inference budget; noise128 is not qualified. At8/32, canonical work
+1513/5185 is linear and inference14674/192018 quadratic; noise128 changes neither.
+Do not call the failing128 case a language rejection or whole packet success.
 
-[Conditional const adapter defining proofs](docs/pa25-const-adapter-reductions.md)
-are the current checkpoint, compilerd1d55648b+27cef3f64. The existing scoped
-engine proves the selected source closure's additional const defining clauses,
-retaining every child/scope/lifetime debt. Ordinary formation/signature checks
-keep their existing producers. Exact owner declaration order breaks the free
-forwarding opaque-result preparation cycle; executable formal-order checks stay
-strict. The flat nested scheduler retains unpaid parent goals while local child
-bodies complete, then charges one retry of that original frontier. No hot fields,
-global caches/scans, compiler limits, LowIR or backend contract changes.
+Immutable CLI9109d6559285c010f3589bf28ed1420f734cbceff94cddb4290ca9d7f8a9af6e
+is Bobj/parallel/array-receiver/candidate-dev-fast/rustgm. Producer binds5f78ed963,
+empty whole tracked diff at build,3900 Rust source hashes. Forty exclusive
+same-profile A/A+twoABBA observations retain complete output equality for ordinary
+import/result LowIR, direct source methods and ordinary source Deref. Unoptimized
+wall ratios.746/1.016/.941/.919 are noisy; no speed/neutrality/core claim.
 
-PA25 retains10 ordinary reductions,6 Rust-native positives/4 rejections. Four
-conditional ordinary forms still stop at bootstrap Destruct/preparation and stay
-required positives. PA31 now owns31 source-role cases,24 Rust accepts/7 rejects.
-Its28 non-factory-execution cases pass their declared typing/checked-body
-contracts;12 width/noise inputs cover separate functions and many local children.
-Borrowed lifetimes, FnMut-to-FnOnce, ordinary owner payment and unpaid/ordinary/
-wrong-result/creation opponents retain actual proof. One direct-call opponent
-requires full const body checking after successful ordinary typing; the shared
-API regression proves the real non-const diagnostic, while its CLI artifact
-request stops separately at a declaration metadata profile.
+The unchanged120s original-core observer still FAILS its deadline at121.42045s.
+It retains187 partial diagnostics throughfunction7853,file227:4711,node313.
+ProgressSHAaae1f21d89790cb17f1ffa01539b3d90951c8253ec3faf505c1364313791c3c8.
+All722 source hashes,375 opened files,six bindings,profile and limits verified
+unchanged afterward. No file102 array iterator len/is_empty or file95 wrap_mut
+failure remains in this reached prefix. First failures are now each_ref/each_mut
+at array/mod.rsfile98:24013/25143: const-stable body calls a function without
+const-stable API policy. Both locations are array indexing expressions. The next
+try_from_fn_erased projection-normalization record atfile98:31073 is separate.
+No complete census, body count, throughput or original artifact is claimed.
 
-Three concrete source runtime/CTFE inputs remain required positives. All three
-Rust object/C native observers print adapter23; current RustGM runtime2 typecheck
-but LowIR stops at actual const call receiver ownership, and CTFE1 stops at
-completed callable formal-order preparation. These are explicit pending execution
-requirements, not negative tests or candidate-native passes. General conditional
-function items, ordinary bootstrap, capture cleanup and transport remain required.
+## Continue here
 
-Finalpublic1794374366529445966 passes11exact126.68s across two targets, with
-strict selected Clippy/fullfmt/audit, both scaling families, captured CTFE,
-Async proof controls, all52 earlier PA24 completeLowIR cases and old result work.
-Native1794374970814447695 passes actual closure-source23/47/23/23/47 in39.45s.
-Independent final41 inputs agree30accept/11reject/9Rust natives; generated
-observation receipts retain pending candidate executions. No course oracles.
-Upstream128/Reference126, harness315/468roots13bins44stages and post-observer
-hash/opens checks pass1794375059873301041. Full42966631710 onEXACTa1c3d961c is running: fastPASS, qualificationactive.
-Do not cancel/redispatch for documentation/input descendants. Preceding full42953042040 onfe8753c38 PASSED every fast/release/course/native/debug/
-independent/PA25 gate, qualifying the13 independently reviewed earlier references.
+Reduce ordinary and staged actual-source array/slice usize indexing in const-stable
+bodies, including mutable assignment and raw borrows, before a kernel change.
+Inspect existing source-index-places contracts: exact proved builtin indexing is
+erased after real source role/impl/effect proof; custom index/output cases remain
+real calls. Reuse that typed classification when determining actual API-call
+policy. This is an investigation hypothesis, not permission to skip const, source,
+unsafe, borrow or implementation checks. Choose earliest owning PA from each
+minimal input and preserve expected outcomes before independent checks. Keep
+try_from_fn_erased and later Option/default/replace families separate.
 
-Current CLIe7b59bbd91cd2f589572e18808100c63d109bbac34ea278b2c82a8b2523b0a7e
-at Bobj/parallel/const-adapter/candidate2-dev-fast/rustgm binds27cef3f64/emptydiff/
-3898Rusthashes. Forty exclusive frozen A/A+twoABBA observations preserve complete
-ordinary import/result LowIR and const factory/capture types. Ratios1.007/1.062/
-1.012/.997, noisy A/A; no speed/neutrality/optimized/core claim. Width8/32/128
-separate inference3771/15075/60291; local6957/27477/109557, all noise128identical.
-Completed6a38/8b73 pins retired1794375081738822218; four analysis pins retired
-1794374525077841808. Metadata/raw remain, binaries absent. Preserve currente7b5
-and older optimized21f; no fresh release/private cold link per edit.
+Focused evidence remains Bobj/parallel/array-receiver. Passing named controls are
+in1794379018015906478,1794380127522383238,1794380243985419751 and
+1794380572512005089; the latter batches also retain failed scaling attempts.
+Final finite scaling1794380763860385209 PASS; native1794380820997909008 all3
+selected groups PASS36.80s. Strict selected Clippy/fullfmt/audit pass. Manifest,
+upstream128/Reference126 and315 harness/468roots/13bins/44stages passchecks-final2.
+No course oracles. Post-observer verification1794381376904819178 passes.
+The machine evidence is docs/pa26-implicit-deref-methods-evidence.json.
 
-Final120s original observation still FAILS deadline121.1028s,200diagnosticrecords
-throughfunction8926,str/mod.rsfile232:14801,node605. ProgressSHA
-2860478db2b59f79cbb7e028026c067e7432d0045f4b7519e8a5f9bcd6f40760.
-All722hashes/375opened/sixbindings/profile/limits verified unchanged afterward.
-NeverShortCircuit wrap_mut1/2 file95 failures are absent from this prefix.
-First now len/is_empty,array/iter.rsfile102:12256/12334,no applicable method.
-Actual receiver is ManuallyDrop<PolymorphicIter<[MaybeUninit<T>;N]>>, with generic
-DATA:PartialDrop and the real conditional const Deref. The new
-[Deref method reduction packet](docs/pa26-deref-method-reductions.md) now owns7
-ordinary PA26 requirements and20 actual-source PA31 contrasts. All27 independent
-Rust objects agree23accept/4reject; real shared/mutable Rust/C native prints23/41.
-The concrete Hold<S>.get() minimum also fails, while direct/explicit inner and
-wrapper-owned methods pass. Arrays, generic bounds and const effects are not
-necessary for this implicit receiver gap. Ordinary Deref import remains an earlier
-bootstrap requirement; early lookup errors do not qualify move/mutability opponents.
-No compiler correction or new course oracle in this input-only packet.
-Upstream/harness/hash checks pass1794376235015368027.
-Next source records are arrayeach_ref/mut const-stability, then projected
-try_from_fn_erased; do not conflate those with receiver lookup.
+Full42966631710 on EXACT a1c3d961c passed every fast/release/course/native/debug/
+independent/PA25 stage, qualifying the preceding const-adapter source. The new
+implicit receiver publication needs its successor full CI. Wait for any active
+full run before dispatching; never cancel/restart for documentation descendants.
 
-No complete census/body-count/speed claim or original core/alloc/std artifact.
-Do not raise the120s observer window. Single worker, existing B, mainGitonly,
-no new worktrees/agents/CPPv5 changes. Actual implicit Deref method implementation is next;
-three old tuple-factory cleanup owners and optimized nested-proof A/A/stack
-checks remain required. Whole PA25/31 and remaining assignments stay planned.
+## Retained requirements and resource rules
+
+- Generic-chain128 and total inference sharing stay required alongside optimized
+  nested-proof A/A+ABBA and release-stack checks. Keep older optimized21f pinned;
+  avoid cold private/release links in the local five-minute loop.
+- The preceding d1d55648b+27cef3f64 const-adapter checkpoint remains qualified:
+  scoped defining const clauses and bounded local-child completion preserve every
+  ordinary formation, signature, scope and lifetime debt. Its PA25 packet10 and
+  PA31 packet31 retain four ordinary bootstrap positives and three actual-source
+  runtime/CTFE execution positives. Runtime-self/runtime-forward typecheck but
+  LowIR still stops at actual callable ownership; CTFE-self still stops at formal
+  order preparation. General conditional function items, bootstrap/imports and
+  authenticated transport remain required. Do not invert these valid positives.
+- Three older tuple-factory cleanup-owner cases remain required. Whole PA25–PA44
+  stay planned; earlier implemented finite releases retain their recorded scope.
+- Main never builds. Single worker, existing B, no new worktrees/agents or CPPGM/v5
+  edits. Backend remains17b024f69. Every heavy command uses storage/resource guards,
+  jobs2,16GiB output cap,150GiB reserve and <=300s feedback. Never raise the120s
+  core observer window or compiler limits. Preserve inputs/raw receipts; retire
+  obsolete pins explicitly and prune scoped output only at an idle boundary.
 
 [PA19implementedtraitscope](docs/pa19-implemented-trait-scope.md) remains published
 with34newoutcomes/25native/all1233texts andzeroexistingreferencechanges. The prior

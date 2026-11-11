@@ -1,0 +1,129 @@
+{
+  "schema": 1,
+  "compiler_source": "5f78ed9631473a79f567218a6b3e3b4d1edcad7a",
+  "candidate_sha256": "9109d6559285c010f3589bf28ed1420f734cbceff94cddb4290ca9d7f8a9af6e",
+  "producer_sha256": "e6e5f67032b5c58fdffc85406bf136d2471bc69176ab6e68a6679ed1aa8d051a",
+  "compiler_source_hash_count": 3900,
+  "source_packet": {
+    "manifest_sha256": "863eacdbfc1b7a6505f96ddc169d3e5f7c159d874c673dd071f3eff0cf78bf7e",
+    "independent_accepts": 35,
+    "independent_rejects": 7,
+    "qualified_finite_checked_body_cases": 40,
+    "required_positive_depth128_cases_pending": 2,
+    "independent_native_count": 2
+  },
+  "native": {
+    "receipt": "obj/qualification/fast/1794380820997909008/receipt.json",
+    "receipt_sha256": "3414de67ee933cd0abe2a7a50896597f2c054751517070c5c65d91b6f9217119",
+    "selected_groups": 3,
+    "status": 0,
+    "new_outputs": [
+      "receiver 23 41\n",
+      "receiver-order 23 125 41 134625\n"
+    ]
+  },
+  "checks": {
+    "independent_inputs": 49,
+    "rustc_accepts": 41,
+    "rustc_rejects": 8,
+    "rustc_native_count": 2,
+    "candidate_source_cases": 40,
+    "candidate_depth128_required_positive_pending": 2,
+    "no_oracles_or_backend_changes": true,
+    "checks": {
+      "upstream": {
+        "status": 0,
+        "log_sha256": "19edc114e22639322b3ce9f0bcda582a6fc7d9641501c9a6ac1deca7ce08d175"
+      },
+      "harness": {
+        "status": 0,
+        "log_sha256": "348a33bf0b599b75643e69ed4282d1d36d3c7c34a4a7f36e75d250dbc6667e16"
+      }
+    }
+  },
+  "measurements": {
+    "pins": [
+      "e7b59bbd91cd2f589572e18808100c63d109bbac34ea278b2c82a8b2523b0a7e",
+      "9109d6559285c010f3589bf28ed1420f734cbceff94cddb4290ca9d7f8a9af6e"
+    ],
+    "rows": 40,
+    "complete_output_equality": true,
+    "summary": {
+      "import-control": {
+        "seconds": {
+          "aa_ratio": 1.0061023263854965,
+          "paired_geomean_candidate_over_base": 0.7458589890416966
+        },
+        "cpu_seconds": {
+          "aa_ratio": 1.0120584782840678,
+          "paired_geomean_candidate_over_base": 0.8730233296165139
+        }
+      },
+      "explicit-result": {
+        "seconds": {
+          "aa_ratio": 1.0255778102192628,
+          "paired_geomean_candidate_over_base": 1.016266286567928
+        },
+        "cpu_seconds": {
+          "aa_ratio": 0.9951886006847003,
+          "paired_geomean_candidate_over_base": 1.0218653365096757
+        }
+      },
+      "ordinary-direct-sized": {
+        "seconds": {
+          "aa_ratio": 1.111826943271183,
+          "paired_geomean_candidate_over_base": 0.9408935107686442
+        },
+        "cpu_seconds": {
+          "aa_ratio": 1.0078282943438654,
+          "paired_geomean_candidate_over_base": 1.0215106708713102
+        }
+      },
+      "native": {
+        "seconds": {
+          "aa_ratio": 1.1077940812409128,
+          "paired_geomean_candidate_over_base": 0.9190016520911961
+        },
+        "cpu_seconds": {
+          "aa_ratio": 1.0602700230101738,
+          "paired_geomean_candidate_over_base": 1.0194274574919593
+        }
+      }
+    },
+    "no_optimized_or_core_speed_claim": true
+  },
+  "original": {
+    "infrastructure_failure": true,
+    "error": "original-core observer deadline",
+    "total_seconds": 121.42044859402813,
+    "partial_progress": {
+      "analysis_only": true,
+      "complete_census": false,
+      "records": 187,
+      "last_item": "item\tfunction\t7853\tfile 227:4711\tnode 313"
+    },
+    "first_records": [
+      "record\t1\tbodies\tfailed\tfunction `each_ref`\tfile 98:24013\t-\tconst-stable body calls a function without const-stable API policy",
+      "record\t2\tbodies\tfailed\tfunction `each_mut`\tfile 98:25143\t-\tconst-stable body calls a function without const-stable API policy",
+      "record\t3\tbodies\tfailed\tfunction `try_from_fn_erased`\tfile 98:31073\t-\tcandidate properties require associated type normalization"
+    ],
+    "progress_sha256": "aae1f21d89790cb17f1ffa01539b3d90951c8253ec3faf505c1364313791c3c8",
+    "postcheck_log_sha256": "82df50c7c89595685dca5b39fb1fd81dba15e668cedb62d8d436de632880bf69",
+    "all722_sources_immutable": true,
+    "opened_source_count": 375,
+    "config_bindings": 6,
+    "profile_limits_unchanged": true,
+    "array_iterator_len_is_empty_absent_from_reached_prefix": true,
+    "no_complete_census_or_artifact": true
+  },
+  "prior_full_ci": {
+    "run": 42966631710,
+    "head": "a1c3d961cef5e1a9ed64002fc8adab5965815024",
+    "status": "success"
+  },
+  "current_full_ci": "Due after publication; no prior active full run at last check",
+  "no_generated_course_oracles": true,
+  "backend_unchanged": "17b024f69",
+  "storage_py_unchanged": true,
+  "evidence_root": "obj/parallel/array-receiver"
+}

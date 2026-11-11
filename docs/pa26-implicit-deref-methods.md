@@ -55,3 +55,19 @@ execution/bootstrap/transport requirements, generic-chain inference sharing,
 three older tuple-factory cleanup owners and optimized nested-proof measurements
 remain open. No original core/alloc/std artifact or whole-library qualification
 is implied.
+
+Immutable CLI9109d6559285c010f3589bf28ed1420f734cbceff94cddb4290ca9d7f8a9af6e
+binds compiler5f78ed963, empty tracked build diff and3900 Rust source hashes.
+The40 frozen A/A+twoABBA control observations preserve complete output equality;
+raw unoptimized ratios support no speed or neutrality claim.
+
+Original core's reached array iterator len/is_empty failures are absent from the
+new prefix. The unchanged120s observer times out at121.42045s with187 partial
+records throughfunction7853,file227:4711. First now each_ref/each_mut,
+array/mod.rsfile98:24013/25143, const-stable policy at indexing; next projected
+try_from_fn_erased is separate. All722 hashes,375 opens,six bindings and original
+profile/limits remain unchanged. ProgressSHA
+ aae1f21d89790cb17f1ffa01539b3d90951c8253ec3faf505c1364313791c3c8.
+No complete census, body count, throughput or original artifact is claimed.
+[Machine evidence](pa26-implicit-deref-methods-evidence.json) binds the producer,
+independent packet, actual native outputs, controls and original observation.

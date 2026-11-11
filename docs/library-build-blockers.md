@@ -1,5 +1,18 @@
 # Library build blocker tracker
 
+The current [implicit Deref receiver checkpoint](pa26-implicit-deref-methods.md),
+compiler5f78ed963/CLI9109d655, clears the reached array iterator len/is_empty
+failures. The unchanged120s observer times out at121.42045s with187 partial
+diagnostics throughfunction7853,file227:4711. First now each_ref/each_mut at
+array/mod.rsfile98:24013/25143, const-stable API policy at builtin indexing.
+Next try_from_fn_erased projection normalization is separate. All722 hashes,
+375 opens,six bindings,profile/limits remain unchanged. No original artifact or
+complete census exists. See handoff.md for the next reductions, exact evidence
+and retained128-layer inference/const-adapter/bootstrap/cleanup requirements.
+
+The preceding const-adapter checkpoint and its original observation follow as
+historical evidence; the current frontier above supersedes their next-step text.
+
 [Conditional const adapter defining proofs](pa25-const-adapter-reductions.md)
 are the current checkpoint, compilerd1d55648b+27cef3f64. The existing scoped
 engine proves the selected source closure's additional const defining clauses,
@@ -35,7 +48,7 @@ Native1794374970814447695 passes actual closure-source23/47/23/23/47 in39.45s.
 Independent final41 inputs agree30accept/11reject/9Rust natives; generated
 observation receipts retain pending candidate executions. No course oracles.
 Upstream128/Reference126, harness315/468roots13bins44stages and post-observer
-hash/opens checks pass1794375059873301041. Full42966631710 onEXACTa1c3d961c is running: fastPASS, qualificationactive.
+hash/opens checks pass1794375059873301041. Full42966631710 onEXACTa1c3d961c subsequently PASSED every stage.
 Do not cancel/redispatch for documentation/input descendants. Preceding full42953042040 onfe8753c38 PASSED every fast/release/course/native/debug/
 independent/PA25 gate, qualifying the13 independently reviewed earlier references.
 
