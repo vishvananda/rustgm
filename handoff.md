@@ -5,6 +5,68 @@ one worker: do not spawn agents or create worktrees. Use existing B
 `/mnt/vizier/rustgm-scratch/rustgm-pa26-work`; main is Git-only. Goal: original
 core, then alloc/std. No original library artifact exists.
 
+## Current continuation — projected callable result, uncommitted
+
+The published clone checkpoint below now passes ALL full43081009696 stages on
+exact2c13e1cff/source5cd41810b. Main/origin remains a documentation descendant
+of that qualified source. No original core/alloc/std artifact exists.
+
+Actual next core failure is ArrayChunks::next, file133:2226,line66,
+`self.try_for_each(ControlFlow::Break).break_value()`. New ordinary PA20 and
+actual-source PA31 callable-result-heads packets freeze22 Rust1.98 outcomes,
+18accept/4reject (11perowner). All independent outcomes match. Literal/plain
+parameter callback inputs pass frozen5d43; projected Self::Item fails, including
+known-item equality, so preserve that contrast. Explicit constructor type
+arguments also pass. The original positive/reject bytes remain unchanged.
+
+B has UNCOMMITTED, UNBUILT candidate in dev/src/sema/bodies/bounds.rs: reuse
+existing selection::vacuous for empty callable binders before ordinary call-bound
+instantiation, one local lowering cache with charged work. Nonempty binders keep
+their scopes; no proof waiver/new engine/dense field. This helper already serves
+impl conditions and promised outputs. Call requirements had retained ForAll0,
+which skips ordinary input normalization. The actual repair is NOT qualified yet.
+All22 require full prepared-root outcomes in the new callback_results test.
+New PA20 root manifest declares11 library LowIR contracts; text oracles are NOT
+generated yet. Do not publish this source/input WIP before qualification/review.
+
+Two experiments were rejected and fully reverted: registering all projection
+requirements broke an old valid control and did not fix the target; normalizing
+partial projection inputs passed old controls but did not fix the target.
+Receipts1794423588006291090 and1794425579473678173 are failures, not evidence of
+a fix. The latter passes strict Clippy/format/audit and2old tests, but fails the
+new regression. Its output reservation also proved too small; retain that failure.
+Current managed CLI/cache is absent after retiring the rejected trial. Immutable
+5d43 at refcell-clone/candidate-dev-fast and pending optimized21f remain available;
+0912 and temporary diagnostic838 are absent. No new original observation is due
+until a real repair is qualified. Never raise compiler or observer budgets.
+
+Build admission currently depends on shared disk space. The controller's150GiB
+reserve stays fixed. User was asynchronously asked to free~3GiB elsewhere on
+/mnt/vizier; continue if admission becomes available without asking permission
+again. After cold selected CLI+one integration builds, measured output growth is
+about2.12GiB, greater than an earlier1.888GiB estimate; budget honestly. Both
+successful warm caches and normal strict checks should resume when space allows.
+No storage.py/backend/source-pin change is made.
+
+Lossless history compaction indices under Bobj/archives (original source/diagnostic
+bytes verified before removing originals; run restore commands in index order):
+- scratch-1794424239030029370.json: historical obj/qualification/fast,34chunks.
+- scratch-1794424834350891549.json: obj/language-qualification,26chunks.
+- scratch-1794424909950641998.json: obj/tests,61chunks/302394members. The maintenance
+  timer interrupted after complete verified chunks; a guarded finish rechecked
+  all archive/index hashes and every source fingerprint before deletion.
+- scratch-1794425360608884852.json: historical obj/parallel/pa26,55chunks/263667members.
+Older raw paths in historical notes may need restoration; receipt IDs/hashes remain.
+Current refcell-clone/array-chunks-next evidence and frozen compiler pins are direct.
+
+NEXT: qualify the empty-binder candidate with normal fastcheck new ALL22 full API,
+old argument-context regression and callable-projection controls, plus nonempty
+binder/escape contrasts, bounded work, native if needed, independent oracle review
+and upstream/harness after fixtures. Source/fixture/profile/budget controls stay
+fixed. After an actual qualified checkpoint freeze/measure/original120s+postverify
+all722/six/375, map the first reached actual source. No prefix-only rerun or window
+extension. Full prior clone CI must not be redispatched for these docs.
+
 ## Current clone checkpoint — local qualification complete
 
 [Source Deref proof ownership](docs/pa26-deref-clone.md) fixes the reduced
@@ -45,7 +107,7 @@ nominal method. Later adapter projection failures stay separate. ProgressSHA
 Postcheck1794422695891811776 verifies722/375opens/six/immutable/current3906/profile/
 limits. NOcompletecensus/originalartifact; partialcounts NOTthroughput. NEXT reduce
 actual first adapter call; do not extend120s or repeat for longer prefix alone.
-Published D1 2c13e1cff; FULL43081009696 ACTIVE EXACT2c13e1cff3fa3cca23410d35efab337621251aa2/source5cd41810b,
+Published D1 2c13e1cff; FULL43081009696 PASSED ALL STAGES EXACT2c13e1cff3fa3cca23410d35efab337621251aa2/source5cd41810b,
 after fresh no-active-full check. Never restart for docs/input descendants.
 Comparison0912 explicitly retired1794422858133137399 AFTER publication/comparisons:
 executable ABSENT, producer/raw retained. Current5d43+optimized21f remain available.

@@ -1,9 +1,17 @@
+Current continuation: published clone source5cd41810b passed every full43081009696
+stage on exact2c13e1cff. Core first now ArrayChunks::next at133:2226. Existing B
+holds an uncommitted empty-callable-binder candidate and22 independent PA20/31
+reductions; it is unbuilt/unqualified. Two earlier failed experiments are reverted.
+Normal checks await space above the unchanged150GiB reserve; user was asked for
+~3GiB shared-volume headroom. Use root handoff.md for exact WIP, archive restore
+indices and retained requirements. No new agent/tree or original library artifact.
+
 Current single-worker continuation: use existing B, main Git-only; no agents or
 new worktrees. The [clone checkpoint](pa26-deref-clone.md) qualifies40 outcomes,
 25 source typing/24 prepared-root artifacts and2 actual native programs, with one
 valid source artifact and15 ordinary import cases still required. Public/native/
 scaling/upstream/harness checks pass. Full43059556041 finished with one unchanged
-result-context regression, repaired by this checkpoint; full43081009696 is ACTIVE EXACT2c13e1cff/source5cd41810b after publication
+result-context regression, repaired by this checkpoint; full43081009696 PASSED ALL STAGES EXACT2c13e1cff/source5cd41810b after publication
 and fresh no-active check; no restart for docs/input descendants. Clean source5cd41810b/frozen5d43 and30 calibrated output-equal comparisons pass.
 Unchanged120s original reaches all cell bodies without failures; FIRST now
 ArrayChunks::next atfile133:2226,line66. Postcheck722/375/six/current3906 unchanged.
