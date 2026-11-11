@@ -1,0 +1,102 @@
+{
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": "1 for no_core source only",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0,
+    "emit": "obj"
+  },
+  "independent_outcomes_declared_before_execution": true,
+  "objects": [
+    {
+      "path": "pa31/tests/spec/borrow-coercions/direct-known.rs",
+      "sha256": "6cc4a7b6b7e426861810b2cf9e63b6f207a8ecd17bd438c5e6f513678c84b525",
+      "object_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/explicit-place.rs",
+      "sha256": "4adafbec83bd3d15427303a99b388c291ff50feaae0305d9a142f2499710d564",
+      "object_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/explicit-temporary.rs",
+      "sha256": "9c21240ffacac214f829d51a0ce999a233bd76069771b8f9c26a35cf2da85169",
+      "object_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/implicit-known.rs",
+      "sha256": "4556776e0888f572d7f3e9cfc12e039bea2be68a1c8b1dce4c4716eae458803f",
+      "object_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/implicit-inferred.rs",
+      "sha256": "c776aafcf0f732f39614c622f34bd756771c92aaa2f60dd0e55f171584506e3e",
+      "object_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/implicit-temporary-known.rs",
+      "sha256": "7997b7e19899011450ee77191b2b79ed3192018686404423f7959fd514017f1f",
+      "object_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/implicit-temporary-inferred.rs",
+      "sha256": "387f6774d4be4a57ded92a794edff687629caa84daafbc4513a4ba1fe975efe1",
+      "object_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/implicit-borrowed.rs",
+      "sha256": "a68d0198d8770408c6ac347ecfe01c0db57493f2d6ed9f68286ab1723874447a",
+      "object_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/implicit-shared.rs",
+      "sha256": "519cd5081b6cd9badc54a5cddd6a4b2d2e070a6825b924ad3fec1351e3976bb4",
+      "object_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/implicit-annotated.rs",
+      "sha256": "cdc7a45f0add9af23e1c242696bb05e8d81c920d3d4d59314d691ed57eb5e0af",
+      "object_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/implicit-mutability-reject.rs",
+      "sha256": "5b6c5df6c6733a0b32101c43fbd616d5707e4e274586f4f12f4af07dbd9fe503",
+      "object_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/implicit-escape-reject.rs",
+      "sha256": "e4ad919b32d9fe47a283fa06b296651f0cc77d5178bce1132b6ffa0b8f46d0ec",
+      "object_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/implicit-wrong-target-reject.rs",
+      "sha256": "d117a071b9433d14eff57df351a52849a406cb8268ac2d99604535277d0d9931",
+      "object_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/native-order.rs",
+      "sha256": "e7aaea1da04cf7c8f6f86f3ba87a8ff9a3886fa48384fd8b74d91393f3887c45",
+      "object_status": 0
+    }
+  ],
+  "native": {
+    "path": "pa31/tests/spec/borrow-coercions/native-order.rs",
+    "sha256": "e7aaea1da04cf7c8f6f86f3ba87a8ff9a3886fa48384fd8b74d91393f3887c45",
+    "kind": "source",
+    "required_object_status": 0,
+    "required_native_status": 0,
+    "required_stdout": "borrow-coercion 23 41 1342\n",
+    "required_stderr": "",
+    "rustc_object_status": 0,
+    "native_status": 0,
+    "stdout": "borrow-coercion 23 41 1342\n",
+    "stderr": "",
+    "observer": "pa30/tests/spec/borrow-coercions/observer.c"
+  },
+  "raw_evidence_root": "B obj/parallel/refcell-coercion",
+  "no_candidate_native_claim": true
+}

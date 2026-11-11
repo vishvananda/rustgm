@@ -114,6 +114,12 @@ typed interface before generating text views. Consult `spec.md`, the pinned
 Rust Reference, and the existing CPPGM implementation for efficient algorithms.
 Do not introduce rendered text as transport between compiler phases.
 
+The [borrowed-wrapper coercion reductions](../docs/pa26-borrow-coercion-reductions.md)
+freeze the reached RefCell::replace conversion gap before implementation.
+Ordinary hooks belong to PA26, the C ABI observer to PA30 and actual source roles
+to PA31. Unsupported implicit conversions and native parity remain required;
+this packet does not activate a whole assignment.
+
 ## Tool surface
 
 Extend `dev/rustgm --emit-lowir -o OUTPUT SOURCE`. Earlier stage views remain

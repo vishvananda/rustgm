@@ -30,6 +30,15 @@ premise positives, symbolic-index native2, depth128 inference, factory execution
 bootstrap/imports, transport, tuple factories and optimized checks in handoff.md.
 No source pin, compiler limit, backend contract or storage.py changed.
 
+The [RefCell reduction packet](pa26-borrow-coercion-reductions.md) now freezes28
+independent object outcomes in PA26/30/31 (22accept/6reject), including2real Rust/C
+native traces23/41/1342. Three direct/explicit source positives and2mutability/
+wrong-target controls pass complete checked bodies;3exact selected public tests,
+strict checks and upstream/harness pass. All7 implicit positives, actual E0515
+escape proof, ordinary bootstrap imports and2candidate-native artifacts remain
+required. Implementation is next; no original blocker-cleared claim, production
+change, new observer or binary is implied. See handoff.md for exact receipts.
+
 Earlier const-adapter/implicit receiver observations below are historical;
 the current frontier above supersedes their next-step text.
 

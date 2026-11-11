@@ -543,6 +543,12 @@ This is a bounded implementation checkpoint. Provided/default body environments,
 generic/imported early callers, actual UB policy and attribute consumers remain
 required before the original library and assignment can complete.
 
+The [borrowed-wrapper coercion reductions](../docs/pa26-borrow-coercion-reductions.md)
+freeze the reached RefCell::replace conversion gap before implementation.
+Ordinary hooks belong to PA26, the C ABI observer to PA30 and actual source roles
+to PA31. Unsupported implicit conversions and native parity remain required;
+this packet does not activate a whole assignment.
+
 ## Tool surface
 
 Extend the existing `dev/rustgm --emit-lowir` view and explicit crate-build interfaces.

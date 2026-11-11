@@ -1,0 +1,13 @@
+pa26/tests/spec/borrow-coercions/direct-known.rs	0
+pa26/tests/spec/borrow-coercions/explicit-place.rs	0
+pa26/tests/spec/borrow-coercions/explicit-temporary.rs	0
+pa26/tests/spec/borrow-coercions/implicit-known.rs	0
+pa26/tests/spec/borrow-coercions/implicit-inferred.rs	0
+pa26/tests/spec/borrow-coercions/implicit-temporary-known.rs	0
+pa26/tests/spec/borrow-coercions/implicit-temporary-inferred.rs	0
+pa26/tests/spec/borrow-coercions/implicit-borrowed.rs	0
+pa26/tests/spec/borrow-coercions/implicit-shared.rs	0
+pa26/tests/spec/borrow-coercions/implicit-annotated.rs	0
+pa26/tests/spec/borrow-coercions/implicit-mutability-reject.rs	1
+pa26/tests/spec/borrow-coercions/implicit-escape-reject.rs	1
+pa26/tests/spec/borrow-coercions/implicit-wrong-target-reject.rs	1

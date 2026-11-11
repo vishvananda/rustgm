@@ -57,9 +57,39 @@ Never cancel/restart for documentation/input descendants. The LazyCell stash was
 restored, verified and dropped; no stash restoration remains to do.
 
 Machine record: docs/pa25-callback-formation-evidence.json. Raw evidence:
-Bobj/parallel/lazy-default. Checkpoint published and comparison pin retired. Next implement an independently
-reduced RefCell::replace correction while monitoring the SAME active full run. Keep the paid
+Bobj/parallel/lazy-default. Checkpoint published and comparison pin retired. Next implement the independently
+frozen RefCell::replace correction below while monitoring the SAME active full run. Keep the paid
 alias2, projected-premise2 and every retained requirement below positive/required.
+
+## Frozen RefCell conversion packet — implement next
+
+[Reducer checkpoint](docs/pa26-borrow-coercion-reductions.md) adds PA26ordinary13,
+PA30native1+Cdriver, PA31source14 requirements. All28 Rust1.98 object outcomes
+agree22accept/6reject before implementation; both actual Rust/C native observers
+print borrow-coercion23 41 1342. All original bytes stay frozen. PA31's3 direct/
+explicit positives and2mutability/wrong-target negatives pass full checked-body
+prepared-root controls. Public1794406262569032574 PASS3exact1target48.30s also
+refreshes2existing receiver groups, strict selected Clippy/fullfmt/audit. Initial
+1794406194065418192 failedformatONLY, retainedraw. Upstream128/Reference126/
+harness315/468roots13bins44stages pass;14exactsourceprefixes/all28hashes verified.
+
+ALL7 implicit source positives still report incompatible types, including explicit
+T arguments. Ordinary inputs still stop at existing core::ops imports. Escaping
+loans independently require E0515; baseline mismatch is not genuine loan proof.
+Both new candidate-native artifacts remain REQUIRED POSITIVES, unqualified.
+CLI bin probes lack main and library probes hit source-contract transport; neither
+is full body qualification. Reuse existing prepared root-builder API, as new
+public controls do. No course oracles, assignment activation or production edits.
+
+Next reuse charged Deref/Target discovery, actual dereference_call and existing
+access-call plan/lowering for reference coercions. Keep conversion plans distinct
+from each expression's method/field/call operation; authenticate actual call/const/
+borrow/return-region facts, including closure captures. No target-only/layout cast
+permission. Qualify seven positives, true escape rejection and actual native trace
+before claiming this original blocker cleared. Full43034322443 continues unchanged
+on exact357d0bc5e/source5798; monitor, never restart for these inputs/tests/docs.
+Current frozen05cc+optimized21f available, f46andolder retired. New raw evidence is
+Bobj/parallel/refcell-coercion. No reobservation/binary needed for input-only work.
 
 ## Retained requirements and resource rules
 

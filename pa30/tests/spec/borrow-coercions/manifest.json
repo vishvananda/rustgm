@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "owner": "PA30 borrowed-wrapper C ABI execution requirement",
+  "state": "Independently frozen requirements; implicit conversions are unimplemented; whole assignment remains planned",
+  "contract": "Convert shared/mutable reference through actual selected Deref/DerefMut calls, preserving every bound/const/region/loan/formation debt and source evaluation order. Known and inferred generic contexts agree. Mutability, target mismatch and escaping references remain errors. No layout-only cast grants conversion.",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": "1 for actual source only",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0,
+    "emit": "object"
+  },
+  "baseline_compiler_sha256": "05cc3029540dc069cf360821f180521d74278c5f5986a8e8e69255dc7955def5",
+  "inputs": [
+    {
+      "path": "pa30/tests/spec/borrow-coercions/native-order.rs",
+      "sha256": "d8929c1cd21277db1e76ffa6814d652f2e3f7803d71de6e52c4099185f88bf84",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "independent_native_status": 0,
+      "independent_stdout": "borrow-coercion 23 41 1342\n",
+      "required_candidate_native_status": 0,
+      "required_candidate_stdout": "borrow-coercion 23 41 1342\n",
+      "qualification": "Required actual execution positive at earliest foreign-ABI owner PA30; both hook imports and actual coercions/CPP execution remain required."
+    }
+  ],
+  "auxiliaries": [
+    {
+      "path": "pa30/tests/spec/borrow-coercions/observer.c",
+      "sha256": "5ca3c7f85f298cfcda6dc66b8128268b7223e9c6832eb1fbb6d2a5f32d6515f9"
+    }
+  ]
+}

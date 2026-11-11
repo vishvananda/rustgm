@@ -1,0 +1,128 @@
+{
+  "schema": 1,
+  "state": "Independent RefCell::replace coercion requirements frozen; implementation pending. Direct/explicit controls and existing receiver contracts pass; no original artifact.",
+  "baseline": {
+    "source_commit": "5798bd7f161f4420117079ac02306458d9a8b621",
+    "cli_sha256": "05cc3029540dc069cf360821f180521d74278c5f5986a8e8e69255dc7955def5",
+    "immutable_cli": "B obj/parallel/lazy-default/candidate-dev-fast/rustgm",
+    "available": true,
+    "new_frontend_production_changes": false
+  },
+  "ownership": {
+    "pa26": "13 ordinary hook contrasts:10accept/3reject",
+    "pa30": "1 C ABI native requirement plus observer:1accept",
+    "pa31": "14 exact source-role contrasts:11accept/3reject"
+  },
+  "independent": {
+    "object_inputs": 28,
+    "accepts": 22,
+    "rejects": 6,
+    "declared_before_execution": true,
+    "all_object_outcomes_match_declaration": true,
+    "source_prefix_sha256": "f111bc9c0d493e4d82e28cbcb4fdf0f0acd38b2a14ed9eb9f3eb7231ebdae668",
+    "native": {
+      "compiler": "Rust1.98.0 + cc, independent of RustGM",
+      "rows": [
+        {
+          "path": "obj/parallel/refcell-coercion/execution-declared/ordinary-order.rs",
+          "sha256": "d8929c1cd21277db1e76ffa6814d652f2e3f7803d71de6e52c4099185f88bf84",
+          "kind": "ordinary",
+          "required_object_status": 0,
+          "required_native_status": 0,
+          "required_stdout": "borrow-coercion 23 41 1342\n",
+          "required_stderr": "",
+          "rustc_object_status": 0,
+          "native_status": 0,
+          "stdout": "borrow-coercion 23 41 1342\n",
+          "stderr": ""
+        },
+        {
+          "path": "obj/parallel/refcell-coercion/execution-declared/source-order.rs",
+          "sha256": "e7aaea1da04cf7c8f6f86f3ba87a8ff9a3886fa48384fd8b74d91393f3887c45",
+          "kind": "source",
+          "required_object_status": 0,
+          "required_native_status": 0,
+          "required_stdout": "borrow-coercion 23 41 1342\n",
+          "required_stderr": "",
+          "rustc_object_status": 0,
+          "native_status": 0,
+          "stdout": "borrow-coercion 23 41 1342\n",
+          "stderr": ""
+        }
+      ]
+    },
+    "native_cleanup": "1794406115734901280",
+    "negative_codes": {
+      "mutability": "E0308",
+      "wrong_target": "E0308",
+      "escaping_borrow": "E0515"
+    }
+  },
+  "candidate": {
+    "source_implicit_positives": 7,
+    "source_implicit_current_type_failures": 7,
+    "failure": "incompatible types even with explicit type arguments",
+    "ordinary_blocker": "unresolved core::ops Deref/DerefMut imports",
+    "qualified_checked_body_controls": [
+      "direct-known",
+      "explicit-place",
+      "explicit-temporary",
+      "implicit-mutability-reject",
+      "implicit-wrong-target-reject"
+    ],
+    "escaping_loan_cause": "Required true loan rejection; baseline mismatch does not qualify it.",
+    "native_parity": "REQUIRED, not yet qualified",
+    "required_positive_outcomes_unchanged": true,
+    "no_cast_substitute": true,
+    "cli_probe_limits": "Original bin probes also found absent main; library mode found independent source language-contract transport limitation. Use existing prepared root-builder checked-body API. Raw failures retained; neither qualifies positive LowIR."
+  },
+  "qualification": {
+    "fastcheck": "1794406262569032574",
+    "exact_tests": 3,
+    "targets": 1,
+    "seconds": 48.3,
+    "status": "pass",
+    "includes": "5 new full checked-body controls plus2 existing implicit-receiver test groups",
+    "strict_selected_clippy_full_format_architecture": "pass",
+    "first_exploratory_fastcheck": "1794406194065418192 failed format only; final corrected test formatting passed",
+    "checks": {
+      "all28independent_object_outcomes_and_owning_manifests": true,
+      "all14_exact_source_prefixes_preserved": true,
+      "native_observer_sha256": "5ca3c7f85f298cfcda6dc66b8128268b7223e9c6832eb1fbb6d2a5f32d6515f9",
+      "logs": {
+        "upstream": "19edc114e22639322b3ce9f0bcda582a6fc7d9641501c9a6ac1deca7ce08d175",
+        "harness": "6bb120e906e4018007287a5cbfe2a3d3d581e7a61bc509c0fe32ef81cc5ee433"
+      }
+    },
+    "upstream": 128,
+    "reference_script": 126,
+    "harness": 315,
+    "integration_roots": 468,
+    "binaries": 13,
+    "stages": 44
+  },
+  "implementation_next": [
+    "Reuse existing charged Deref/Target discovery and actual dereference_call selection for reference conversions; do not copy target normalization or trait proof engines.",
+    "Retain actual conversion call chains separately from original expression operations; a method/field/call expression can itself be coerced. Preserve current receiver/field plans.",
+    "Carry selected return-region views into existing variance/loan proofs, with actual DerefMut calls, const effects and closure capture loans.",
+    "Have existing checked-body access lowering evaluate original operand and each call once before final reference conversion; qualify seven source positives, genuine escape rejection and actual native trace.",
+    "Keep ordinary imports as required separate work, retain bounded growth/noise and existing deep-chain requirements; no budget/source/observer changes."
+  ],
+  "original_core": {
+    "new_observation": false,
+    "last_observation": "Callback source5798 reached RefCell::replace cell.rs112:35607 after clearing LazyCell initializer;120s deadline/118partialrecords",
+    "artifact": false
+  },
+  "course_oracles_generated": false,
+  "assignments_activated": false,
+  "backend_or_storage_changed": false,
+  "raw_evidence": {
+    "plan.json": "c9c1dd3f20577d4e684d74e5d067fdb509520064c46c3f13411c18653caa88a0",
+    "baseline/observations.json": "44672425ee4f3c214a9db2ef636a3606ec17ce73a83f7ce8c7fb9f951982ab26",
+    "library/observations.json": "7c369cecef7fd72363de59347e3e85ec1dde23596a4e3e275bfbabba7afdad2d",
+    "execution-plan.json": "342aec72c23ba38dd93d9a313a9a135b8eaa7aac2cbee721b0309bb46cc178aa",
+    "independent-native/passed.json": "1210b57ecede4ae2e9d8e0edc24402d227af22d00b9991e4f3150f5202ad9632",
+    "checks/passed.json": "cae50035bbebde7f996fefa30ede9de7c53021b2077c26f27daefa69d2038963"
+  },
+  "all_prior_requirements_retained": true
+}

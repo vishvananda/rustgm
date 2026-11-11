@@ -1,0 +1,176 @@
+{
+  "schema": 1,
+  "owner": "PA31 actual source language item borrowed-wrapper coercion requirements",
+  "state": "Independently frozen requirements; implicit conversions are unimplemented; whole assignment remains planned",
+  "contract": "Convert shared/mutable reference through actual selected Deref/DerefMut calls, preserving every bound/const/region/loan/formation debt and source evaluation order. Known and inferred generic contexts agree. Mutability, target mismatch and escaping references remain errors. No layout-only cast grants conversion.",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": "1 for actual source only",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0,
+    "emit": "object"
+  },
+  "baseline_compiler_sha256": "05cc3029540dc069cf360821f180521d74278c5f5986a8e8e69255dc7955def5",
+  "inputs": [
+    {
+      "path": "pa31/tests/spec/borrow-coercions/direct-known.rs",
+      "sha256": "6cc4a7b6b7e426861810b2cf9e63b6f207a8ecd17bd438c5e6f513678c84b525",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 0,
+      "baseline_diagnostic": "",
+      "qualification": "Qualified exact complete checked-body/prepared-root control; no demanded native conversion artifact is claimed.",
+      "checked_body_root_builder_status": 0,
+      "checked_body_receipt": "1794406262569032574"
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/explicit-place.rs",
+      "sha256": "4adafbec83bd3d15427303a99b388c291ff50feaae0305d9a142f2499710d564",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 0,
+      "baseline_diagnostic": "",
+      "qualification": "Qualified exact complete checked-body/prepared-root control; no demanded native conversion artifact is claimed.",
+      "checked_body_root_builder_status": 0,
+      "checked_body_receipt": "1794406262569032574"
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/explicit-temporary.rs",
+      "sha256": "9c21240ffacac214f829d51a0ce999a233bd76069771b8f9c26a35cf2da85169",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 0,
+      "baseline_diagnostic": "",
+      "qualification": "Qualified exact complete checked-body/prepared-root control; no demanded native conversion artifact is claimed.",
+      "checked_body_root_builder_status": 0,
+      "checked_body_receipt": "1794406262569032574"
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/implicit-known.rs",
+      "sha256": "4556776e0888f572d7f3e9cfc12e039bea2be68a1c8b1dce4c4716eae458803f",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 3418: incompatible types\n",
+      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
+      "pending": "Required implicit Deref/DerefMut argument/reference conversion; currently incompatible types."
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/implicit-inferred.rs",
+      "sha256": "c776aafcf0f732f39614c622f34bd756771c92aaa2f60dd0e55f171584506e3e",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 3420: incompatible types\n",
+      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
+      "pending": "Required implicit Deref/DerefMut argument/reference conversion; currently incompatible types."
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/implicit-temporary-known.rs",
+      "sha256": "7997b7e19899011450ee77191b2b79ed3192018686404423f7959fd514017f1f",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 3413: incompatible types\n",
+      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
+      "pending": "Required implicit Deref/DerefMut argument/reference conversion; currently incompatible types."
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/implicit-temporary-inferred.rs",
+      "sha256": "387f6774d4be4a57ded92a794edff687629caa84daafbc4513a4ba1fe975efe1",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 3416: incompatible types\n",
+      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
+      "pending": "Required implicit Deref/DerefMut argument/reference conversion; currently incompatible types."
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/implicit-borrowed.rs",
+      "sha256": "a68d0198d8770408c6ac347ecfe01c0db57493f2d6ed9f68286ab1723874447a",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 3419: incompatible types\n",
+      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
+      "pending": "Required implicit Deref/DerefMut argument/reference conversion; currently incompatible types."
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/implicit-shared.rs",
+      "sha256": "519cd5081b6cd9badc54a5cddd6a4b2d2e070a6825b924ad3fec1351e3976bb4",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 3428: incompatible types\n",
+      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
+      "pending": "Required implicit Deref/DerefMut argument/reference conversion; currently incompatible types."
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/implicit-annotated.rs",
+      "sha256": "cdc7a45f0add9af23e1c242696bb05e8d81c920d3d4d59314d691ed57eb5e0af",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 3419: incompatible types\n",
+      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
+      "pending": "Required implicit Deref/DerefMut argument/reference conversion; currently incompatible types."
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/implicit-mutability-reject.rs",
+      "sha256": "5b6c5df6c6733a0b32101c43fbd616d5707e4e274586f4f12f4af07dbd9fe503",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 3415: cannot coerce a shared reference to a mutable reference\n",
+      "qualification": "Qualified exact complete checked-body/prepared-root control; no demanded native conversion artifact is claimed.",
+      "checked_body_root_builder_status": 1,
+      "checked_body_receipt": "1794406262569032574"
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/implicit-escape-reject.rs",
+      "sha256": "e4ad919b32d9fe47a283fa06b296651f0cc77d5178bce1132b6ffa0b8f46d0ec",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 3404: incompatible types\n",
+      "qualification": "Required language outcome independently checked before implementation; no candidate full checked-body/LowIR qualification yet",
+      "pending": "Must reject the actual escaping loan after conversion works; baseline incompatible types does not qualify the required lifetime rejection."
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/implicit-wrong-target-reject.rs",
+      "sha256": "d117a071b9433d14eff57df351a52849a406cb8268ac2d99604535277d0d9931",
+      "exit_status": 1,
+      "rustc_object_status": 1,
+      "baseline_types_status": 1,
+      "baseline_diagnostic": "ERROR: file 0: 3416: incompatible types\n",
+      "qualification": "Qualified exact complete checked-body/prepared-root control; no demanded native conversion artifact is claimed.",
+      "checked_body_root_builder_status": 1,
+      "checked_body_receipt": "1794406262569032574"
+    },
+    {
+      "path": "pa31/tests/spec/borrow-coercions/native-order.rs",
+      "sha256": "e7aaea1da04cf7c8f6f86f3ba87a8ff9a3886fa48384fd8b74d91393f3887c45",
+      "exit_status": 0,
+      "rustc_object_status": 0,
+      "independent_native_status": 0,
+      "independent_stdout": "borrow-coercion 23 41 1342\n",
+      "required_candidate_native_status": 0,
+      "required_candidate_stdout": "borrow-coercion 23 41 1342\n",
+      "qualification": "Required actual execution positive; Rust/C independently execute23/41/1342. No candidate native qualification or replacement by casts."
+    }
+  ],
+  "auxiliaries": [
+    {
+      "path": "pa30/tests/spec/borrow-coercions/observer.c",
+      "sha256": "5ca3c7f85f298cfcda6dc66b8128268b7223e9c6832eb1fbb6d2a5f32d6515f9"
+    }
+  ],
+  "qualified_controls": 5,
+  "implicit_positive_count_pending": 7,
+  "escaping_loan_cause_pending": true,
+  "native_pending": true
+}

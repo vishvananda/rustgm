@@ -27,6 +27,12 @@ qualifies40 actual-source contracts and real shared/mutable/order execution.
 Ordinary bootstrap/imports,128-layer inference sharing and remaining hook families
 stay required; the packet does not activate this assignment.
 
+The [borrowed-wrapper coercion reductions](../docs/pa26-borrow-coercion-reductions.md)
+freeze the reached RefCell::replace conversion gap before implementation.
+Ordinary hooks belong to PA26, the C ABI observer to PA30 and actual source roles
+to PA31. Unsupported implicit conversions and native parity remain required;
+this packet does not activate a whole assignment.
+
 ## Tool surface
 
 Extend `dev/rustgm --emit-lowir -o OUTPUT SOURCE`. Earlier stage views remain

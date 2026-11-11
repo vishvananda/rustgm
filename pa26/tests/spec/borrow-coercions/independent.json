@@ -1,0 +1,83 @@
+{
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": "1 for no_core source only",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0,
+    "emit": "obj"
+  },
+  "independent_outcomes_declared_before_execution": true,
+  "objects": [
+    {
+      "path": "pa26/tests/spec/borrow-coercions/direct-known.rs",
+      "sha256": "6b68e88c6a4a933087c82f9ad312035f25df6cea0d451e77690417d52c1380d6",
+      "object_status": 0
+    },
+    {
+      "path": "pa26/tests/spec/borrow-coercions/explicit-place.rs",
+      "sha256": "b0ebc1c18567b12eb61b91383f515daf15e52e15bc46efce4f948b11d3eeaa99",
+      "object_status": 0
+    },
+    {
+      "path": "pa26/tests/spec/borrow-coercions/explicit-temporary.rs",
+      "sha256": "71278e16178052199274d447c9daa2977934ac35f3699c571e39a403f132540c",
+      "object_status": 0
+    },
+    {
+      "path": "pa26/tests/spec/borrow-coercions/implicit-known.rs",
+      "sha256": "7a6c5e635058460bca5a5e03750aa8bc4eaf07eedddbe5f470710abaf7b85b39",
+      "object_status": 0
+    },
+    {
+      "path": "pa26/tests/spec/borrow-coercions/implicit-inferred.rs",
+      "sha256": "774a6e3a30600658285d62215401b2707e7dfd59615cd33b2c3f1269ed4fb3af",
+      "object_status": 0
+    },
+    {
+      "path": "pa26/tests/spec/borrow-coercions/implicit-temporary-known.rs",
+      "sha256": "e530a6314ca9a84efcbe13ffe48f58bd16f5dd758495a15961eea1078e102dc7",
+      "object_status": 0
+    },
+    {
+      "path": "pa26/tests/spec/borrow-coercions/implicit-temporary-inferred.rs",
+      "sha256": "c4da04d4435e55ac4f49f532e35474d48bbbafbff7a1554aef1ab80b8db12bf4",
+      "object_status": 0
+    },
+    {
+      "path": "pa26/tests/spec/borrow-coercions/implicit-borrowed.rs",
+      "sha256": "3ed6236302de28ed5f96567191f3697b3b30233dad6531e32e35b034c0b86667",
+      "object_status": 0
+    },
+    {
+      "path": "pa26/tests/spec/borrow-coercions/implicit-shared.rs",
+      "sha256": "f62a8d495a457f050f907a92bf899a75031bbf51a3a586ff6ebc30c137e6d91a",
+      "object_status": 0
+    },
+    {
+      "path": "pa26/tests/spec/borrow-coercions/implicit-annotated.rs",
+      "sha256": "f38798317132681f0a8957fa3ad93a8645d334eb8f759b7bcfc89f40ee4cd0d9",
+      "object_status": 0
+    },
+    {
+      "path": "pa26/tests/spec/borrow-coercions/implicit-mutability-reject.rs",
+      "sha256": "9427aadbd55552a6eff03659297f3f7ed50b0ee99d813d765e52fc7f9fd33047",
+      "object_status": 1
+    },
+    {
+      "path": "pa26/tests/spec/borrow-coercions/implicit-escape-reject.rs",
+      "sha256": "637902a547266671b206b8a3694ba7748955c02b5e076ab4da61039fd87ac784",
+      "object_status": 1
+    },
+    {
+      "path": "pa26/tests/spec/borrow-coercions/implicit-wrong-target-reject.rs",
+      "sha256": "d27a0d7db47662a634a5116cf118d6ac9931ccf15e2d27096532d4daaf1f1fed",
+      "object_status": 1
+    }
+  ],
+  "raw_evidence_root": "B obj/parallel/refcell-coercion",
+  "no_candidate_native_claim": true
+}
