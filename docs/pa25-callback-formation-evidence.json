@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "state": "Focused callback checkpoint qualified; reached LazyCell initializer failure cleared in partial deadline observation; no original artifact. Full successor due after publication.",
+  "state": "Focused callback checkpoint qualified; full43034322443 ACTIVE on exact357d0bc5e/source5798. Reached LazyCell failure cleared; original observation partial/no artifact.",
   "compiler": {
     "commit": "5798bd7f161f4420117079ac02306458d9a8b621",
     "cli_sha256": "05cc3029540dc069cf360821f180521d74278c5f5986a8e8e69255dc7955def5",
@@ -143,7 +143,7 @@
   },
   "comparison_baseline": {
     "sha256": "f46b54f3248e174e3cafeb1d791811a5bdbbf96004bbdd4dc74a6f3df2c53bf6",
-    "lifecycle": "Available for completed comparison; retire explicitly after replacement publication."
+    "lifecycle": "Retired after completed comparison and replacement publication; executable absent."
   },
   "original_core": {
     "result": {
@@ -387,8 +387,170 @@
     ]
   },
   "current_full_ci": {
-    "status": "due after publication and active-run check",
+    "run": 43034322443,
+    "head": "357d0bc5e188e3e8af4da4c264c28f2e3b918d26",
     "source_commit": "5798bd7f161f4420117079ac02306458d9a8b621",
+    "status": "active",
+    "jobs": [
+      {
+        "id": 130569084387,
+        "name": "fast",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_id": 43034322443,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Pinned Rust",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Run actions/cache@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Audit setup",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 5
+          },
+          {
+            "name": "Five-minute compiler smoke",
+            "status": "pending",
+            "conclusion": null,
+            "number": 6
+          },
+          {
+            "name": "Harness, audit cache and upstream contracts",
+            "status": "pending",
+            "conclusion": null,
+            "number": 7
+          },
+          {
+            "name": "Retain focused evidence",
+            "status": "pending",
+            "conclusion": null,
+            "number": 8
+          },
+          {
+            "name": "Post Run actions/cache@v6",
+            "status": "pending",
+            "conclusion": null,
+            "number": 15
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "pending",
+            "conclusion": null,
+            "number": 16
+          }
+        ]
+      },
+      {
+        "id": 130569084828,
+        "name": "qualification",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_id": 43034322443,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Pinned Rust",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Lint, architecture and harness",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 4
+          },
+          {
+            "name": "Independent host build graph",
+            "status": "pending",
+            "conclusion": null,
+            "number": 5
+          },
+          {
+            "name": "Release and course tests",
+            "status": "pending",
+            "conclusion": null,
+            "number": 6
+          },
+          {
+            "name": "Native maintainer qualification",
+            "status": "pending",
+            "conclusion": null,
+            "number": 7
+          },
+          {
+            "name": "Broad native course sweep",
+            "status": "pending",
+            "conclusion": null,
+            "number": 8
+          },
+          {
+            "name": "Debug invariants",
+            "status": "pending",
+            "conclusion": null,
+            "number": 9
+          },
+          {
+            "name": "Retire completed debug build cache",
+            "status": "pending",
+            "conclusion": null,
+            "number": 10
+          },
+          {
+            "name": "Independent Rust qualification",
+            "status": "pending",
+            "conclusion": null,
+            "number": 11
+          },
+          {
+            "name": "PA25 const-machine candidate contract",
+            "status": "pending",
+            "conclusion": null,
+            "number": 12
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "pending",
+            "conclusion": null,
+            "number": 24
+          }
+        ]
+      }
+    ],
     "do_not_restart_for_documentation": true
   },
   "unchanged": [
@@ -415,5 +577,16 @@
     "original/whole-core.openat": "d782ba36d0dd2d8a1503d2af6343759f505eb03f14787575c23b6e6ed2b76563",
     "post-observer.log": "677aa96105f514202970f3ac64f1218c361cadd4e0da990de4b2a291dbeec409"
   },
-  "all_prior_requirements_retained": true
+  "all_prior_requirements_retained": true,
+  "retired_baseline": {
+    "retired_cli_sha256": "f46b54f3248e174e3cafeb1d791811a5bdbbf96004bbdd4dc74a6f3df2c53bf6",
+    "retired_path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/projected-ci-repair/candidate-dev-fast/rustgm",
+    "executable_absent": true,
+    "replacement_cli_sha256": "05cc3029540dc069cf360821f180521d74278c5f5986a8e8e69255dc7955def5",
+    "replacement_source_commit": "5798bd7f161f4420117079ac02306458d9a8b621",
+    "replacement_published": true,
+    "explicit_prune_output": "Removed 1 generated files (0.10 GiB unshared blocks); record: /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/cleanup/1794405662867398530.jsonl\n",
+    "producer_and_raw_observations_retained": true,
+    "not_available_for_new_runs": true
+  }
 }

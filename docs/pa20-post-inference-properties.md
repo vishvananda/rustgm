@@ -69,8 +69,9 @@ baseline; the existing width/noise controls qualify bounded work instead.
 
 After replacement publication, baseline94bd was explicitly pruned in receipt
 1794399578264808714. Its executable is absent; producer and raw observations
-remain. Only currentf46 and the older optimized21f baseline remain pinned. Retired
-metadata is not an available executable for another run.
+remain. After the later callback checkpoint publication, f46 was also explicitly pruned
+in1794405662867398530. Its executable is absent; current05cc and older optimized21f
+remain pinned. Retired metadata is not an available executable for another run.
 
 No new original-core observation was run for this CI repair. The last partial
 observation remains b15's `LazyCell<T>::default` at cell/lazy.rs113:12567, passing

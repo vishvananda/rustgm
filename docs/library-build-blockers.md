@@ -22,10 +22,10 @@ are verified unchanged. No complete census, comparable throughput or original
 core/alloc/std artifact exists.
 
 Prior full43019302026 on exactbc401434a/sourcef93 passed EVERY stage. Callback
-source full successor is due after publication and an active-run check; never
-restart it for docs/input descendants.05cc/current,f46/comparison and21f/optimized
-are retained until explicit post-publication f46 retirement; older94bd/00d2/9109/
-e7 executables are absent. Preserve two paid-alias artifacts, two generic projected
+full43034322443 is ACTIVE on exact357d0bc5e/source5798; never restart it for
+docs/input descendants. After replacement publication, comparisonf46 was explicitly
+pruned1794405662867398530; executable absent. Current05cc and optimized21f remain.
+Older94bd/00d2/9109/e7 executables are also absent. Preserve two paid-alias artifacts, two generic projected
 premise positives, symbolic-index native2, depth128 inference, factory execution,
 bootstrap/imports, transport, tuple factories and optimized checks in handoff.md.
 No source pin, compiler limit, backend contract or storage.py changed.

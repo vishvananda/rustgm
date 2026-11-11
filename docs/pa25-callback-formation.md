@@ -80,11 +80,16 @@ No original core/alloc/std artifact exists.
 
 Prior full [43019302026](https://github.com/vishvananda/rustgm/actions/runs/43019302026)
 on exactbc401434ac3a525781359f6d194a65cf5811aa6f, containing sourcef93, passed
-EVERY fast/release/course/native/debug/independent/PA25 stage. A full successor
-for this callback source is due after publication and an active-run check.
+EVERY fast/release/course/native/debug/independent/PA25 stage. Full successor
+[43034322443](https://github.com/vishvananda/rustgm/actions/runs/43034322443) is
+ACTIVE on exact357d0bc5e188e3e8af4da4c264c28f2e3b918d26 containing source5798.
 Do not restart that successor for documentation/input descendants.
 
 The two paid-alias artifacts, two generic projected-premise inference positives,
 two symbolic-index native artifacts,128-depth inference, source factory executions,
 bootstrap/imports, transport, tuple factories and optimized qualification remain
 required as listed in handoff.md. Whole PA25–PA44 remain planned.
+
+After completed comparison and replacement publication, baselinef46 was explicitly
+pruned in1794405662867398530. Its executable is absent; raw observations and
+producer remain. Only current05cc and older optimized21f are available pins.

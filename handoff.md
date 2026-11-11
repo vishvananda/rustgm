@@ -30,9 +30,9 @@ at Bobj/parallel/lazy-default/candidate-dev-fast/rustgm binds source5798,empty
 tracked patch/3903Rust hashes. Thirty exclusive A/A+twoABBA observations match
 complete outputs on ordinary import,accepted paid calls128,actual priorityLowIR;
 wall.965/1.018/.994,CPU.990/1.026/.961,AAwall1.026/1.019/.693. Slower/noisy values
-remain; no neutrality/optimized/core-speed claim. Current05cc,comparisonf46 and
-olderoptimized21f are available; retire f46 only AFTER replacement publication
-with explicit scoped prune.94bd/00d2/9109/e7 executable pins are absent.
+remain; no neutrality/optimized/core-speed claim. Current05cc and olderoptimized21f are available. Comparisonf46 was retired AFTER
+replacement publication with explicit scoped prune1794405662867398530. Its
+executable is absent, as are94bd/00d2/9109/e7; raw observations/producer remain.
 
 ## Original core and next work
 
@@ -51,15 +51,14 @@ original artifact. Never raise the120s window or budgets to hide a blocker.
 Prior [method-inference repair](docs/pa20-post-inference-properties.md),sourcef93,
 passed EVERY full43019302026 stage on exactbc401434ac3a525781359f6d194a65cf5811aa6f.
 Its two generic projected-premise positives remain required in PA20 pending.json
-with complete frozen bytes/outcomes. Full callback successor is due after source
-publication and checking no active manual/scheduled full run; dispatch once,
-never cancel/restart for documentation/input descendants. The LazyCell stash was
+with complete frozen bytes/outcomes. Full callback43034322443 is ACTIVE on EXACT357d0bc5e188e3e8af4da4c264c28f2e3b918d26
+containing source5798, dispatched after checking no active manual/scheduled full.
+Never cancel/restart for documentation/input descendants. The LazyCell stash was
 restored, verified and dropped; no stash restoration remains to do.
 
 Machine record: docs/pa25-callback-formation-evidence.json. Raw evidence:
-Bobj/parallel/lazy-default. Next publish this coherent source+docs checkpoint,
-start one full qualification if idle, retire the completed comparison pin, then
-implement an independently reduced RefCell::replace correction. Keep the paid
+Bobj/parallel/lazy-default. Checkpoint published and comparison pin retired. Next implement an independently
+reduced RefCell::replace correction while monitoring the SAME active full run. Keep the paid
 alias2, projected-premise2 and every retained requirement below positive/required.
 
 ## Retained requirements and resource rules
