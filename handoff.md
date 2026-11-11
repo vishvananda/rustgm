@@ -67,8 +67,9 @@ Current immutable00b2af11b5d3e0396043305fbf4164ed5ea9bdf89ba7a3d16561f9fb367a486
 at Bobj/parallel/nominal-unsize/candidate2-dev-fast/rustgm binds committed
 c31afe8d78f3e6487b3c4524574dd40a6c341f4e/emptydiff3892Rusthashes. Initial5e pin
 retired after replacement by1794355873725556381 (metadata/failed inference evidence
-retained); tidy1794355873834134744 removed82 disposable outputs. Comparison2cab is eligible for retirement after the next input-only probes;
-optimized21f remains for older pending measurements.
+retained); tidy1794355873834134744 removed82 disposable outputs. Comparison2cab was retired after publication and the input-only probes by
+scoped1794356864064214354; metadata and observations remain, its binary does not.
+Keep current00b and optimized21f for the older pending measurements.
 Forty exclusive A/A+twoABBA observations preserve complete ordinaryimport/array
 LowIR/sourceknownrepr+74survey; ratios.979/1.084/.959/.997, noisy A/A,
 no speed/neutrality claim. Raw evidence under obj/parallel/nominal-unsize/.
