@@ -7,18 +7,48 @@ use crate::{
         substitute::Bound,
     },
 };
+use std::borrow::Cow;
 pub(crate) struct Arguments {
     pub bindings: Vec<(ParameterId, Argument)>,
     pub captures: Vec<RegionId>,
 }
+
+/// A defining closure can precede its enclosing opaque callable's template.
+/// This is the producer's declaration order, not executable or caller evidence.
+pub(crate) fn defining_parameters(
+    facts: &Declarations,
+    owner: crate::resolve::model::DefId,
+) -> Result<Cow<'_, [ParameterId]>, &'static str> {
+    match facts
+        .lifetimes
+        .callables
+        .generic_parameters(ItemId(owner.0))
+    {
+        Some(parameters) => Ok(Cow::Borrowed(parameters)),
+        None => facts
+            .generics
+            .callable_parameters(&facts.types, owner)
+            .map(|(_, parameters)| Cow::Owned(parameters)),
+    }
+}
+
+pub(crate) fn defining_arguments(
+    facts: &Declarations,
+    instance: Instance,
+    body: Body,
+) -> Result<Arguments, &'static str> {
+    let owner = body
+        .owner
+        .ok_or("defining closure has no enclosing owner")?;
+    let parameters = defining_parameters(facts, owner)?;
+    bind_arguments(facts, instance, body, &parameters)
+}
+
 pub(crate) fn arguments(
     facts: &Declarations,
     instance: Instance,
     body: Body,
 ) -> Result<Arguments, &'static str> {
-    let Some(Kind::Closure { arguments, .. }) = facts.types.kind(instance.ty()) else {
-        return Err("closure arguments require a canonical closure instance");
-    };
     let owner = body.owner.ok_or("generic closure has no enclosing owner")?;
     let parameters = match facts
         .lifetimes
@@ -28,6 +58,18 @@ pub(crate) fn arguments(
         Some(parameters) => parameters,
         None if !facts.generics.has_parameters(owner) => &[],
         None => return Err("missing enclosing closure parameters"),
+    };
+    bind_arguments(facts, instance, body, parameters)
+}
+
+fn bind_arguments(
+    facts: &Declarations,
+    instance: Instance,
+    body: Body,
+    parameters: &[ParameterId],
+) -> Result<Arguments, &'static str> {
+    let Some(Kind::Closure { arguments, .. }) = facts.types.kind(instance.ty()) else {
+        return Err("closure arguments require a canonical closure instance");
     };
     let arguments = facts
         .types

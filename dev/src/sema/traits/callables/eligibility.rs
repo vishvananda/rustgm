@@ -12,6 +12,7 @@ pub(in crate::sema) enum Eligibility {
     Rejected,
     Pending,
     Unpaid(Instance),
+    Closure(Instance),
     Unsupported(&'static str),
 }
 
@@ -46,15 +47,9 @@ pub(super) fn for_goal(
             if declaration.constant() != Some(body.constant.is_some()) {
                 return Err("const closure qualification changed its actual source owner".into());
             }
-            if declaration.constant() == Some(true)
-                && body
-                    .owner
-                    .is_some_and(|owner| facts.generics.has_parameters(owner))
-            {
-                return Ok(Eligibility::Unsupported(
-                    "const closure defining obligations require a scoped continuation",
-                ));
-            }
+            let mut needs_contract = body
+                .owner
+                .is_some_and(|owner| facts.generics.has_parameters(owner));
             if let Some(owner) = body.owner
                 && facts.function_indices.contains_key(&owner)
             {
@@ -64,14 +59,20 @@ pub(super) fn for_goal(
                     .ok_or("const closure source catalog disappeared")?
                     .prepared_call_effect(owner)?
                 {
-                    Some(CallEffect::Conditional) => {
-                        return Ok(Eligibility::Unsupported(
-                            "const closure defining obligations require a scoped continuation",
-                        ));
-                    }
+                    Some(CallEffect::Conditional) => needs_contract = true,
                     None => return Ok(Eligibility::Pending),
                     Some(CallEffect::Ordinary) => {}
                 }
+            }
+            if needs_contract {
+                let ty = match context.resolved(&mut facts.types, goal.subject()) {
+                    Ok(ty) => ty,
+                    Err(infer::Error::Unresolved | infer::Error::Normalization) => {
+                        return Ok(Eligibility::Pending);
+                    }
+                    Err(error) => return Err(error.to_string()),
+                };
+                return Ok(Eligibility::Closure(Instance::closure(&facts.types, ty)?));
             }
             Ok(Eligibility::Allowed)
         }

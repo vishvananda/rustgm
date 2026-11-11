@@ -1,4 +1,6 @@
 //! Authenticated const creation and checked child effects keep ordinary closure boundaries.
+#[path = "closureconst/ambient_calls.rs"]
+mod ambient_calls;
 use rustgm::{expand::config::Config, pipeline, support::diagnostics::LintCap};
 type Result = std::result::Result<(), Box<dyn std::error::Error>>;
 

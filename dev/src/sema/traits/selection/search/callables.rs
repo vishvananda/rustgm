@@ -162,6 +162,9 @@ impl Search<'_> {
         if matches!(frame.language.as_deref(), Some(Pending::Async(_))) {
             return self.complete_async_callable(facts, frame);
         }
+        if matches!(frame.language.as_deref(), Some(Pending::Scoped(_))) {
+            return self.advance_callable_conditions(facts, frame);
+        }
         if matches!(frame.language.as_deref(), Some(Pending::Components(_))) {
             return self.complete_component_markers(facts, frame);
         }
@@ -197,6 +200,9 @@ impl Search<'_> {
                     "source const callable conditional obligations require a scoped continuation"
                         .into(),
                 );
+            }
+            callables::Eligibility::Closure(instance) => {
+                return self.begin_scoped_callable(facts, frame, instance);
             }
             callables::Eligibility::Unsupported(message) => return Err(message.into()),
         }

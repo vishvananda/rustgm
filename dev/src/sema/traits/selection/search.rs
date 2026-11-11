@@ -2,12 +2,14 @@
 mod allocations;
 mod conjunction;
 pub(in crate::sema) use conjunction::{Conjunction, prove_conjunction};
+mod ambient;
 mod asynchronous;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/auto_cycle_work.rs"]
 mod auto_cycle_tests;
 mod auto_obligations;
 mod automatic_traits;
+mod effectful;
 pub(in crate::sema) use automatic_traits::predicate as automatic_predicate;
 mod builtins;
 mod callable_queries;
@@ -728,9 +730,9 @@ impl Search<'_> {
         }
         if matches!(
             frame.language.as_deref(),
-            Some(mechanical::Pending::Async(_))
+            Some(mechanical::Pending::Async(_) | mechanical::Pending::Scoped(_))
         ) {
-            return Self::accept_async_callable(frame, decision);
+            return Self::accept_scoped_callable(frame, decision);
         }
         if matches!(
             frame.language.as_deref(),

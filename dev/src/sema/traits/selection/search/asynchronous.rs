@@ -1,5 +1,5 @@
 //! Automatic async callable evidence proves the actual returned Future and trait inputs.
-mod lending_frontier;
+use super::ambient::Cursor;
 use super::mechanical::Pending as Language;
 use super::{Action, Decision, Declarations, Frame, Node, Predicate, Search, Source, inference};
 use crate::{
@@ -7,10 +7,9 @@ use crate::{
         Requirements,
         callables::{self, Matched, asynchronous},
     },
-    support::{constness::Constness, hash::HashMap},
+    support::constness::Constness,
     types::{
         infer::{self, Constructor},
-        lifetime_proof::ScopeId,
         parameters::clauses::Clause,
     },
 };
@@ -28,29 +27,33 @@ struct Inputs {
     goal: Predicate,
     future: Predicate,
     requirements: Arc<Requirements>,
-    cursor: usize,
-    children: Vec<usize>,
-    universes: HashMap<u32, ScopeId>,
-    stopped: Option<Decision>,
-    suspended: Option<usize>,
-    publish: bool,
+    cursor: Cursor,
 }
 impl Pending {
     pub(super) fn regions(&self) -> Range<u32> {
         self.matched.regions.clone()
     }
     pub(super) fn retained_child(&self) -> Option<usize> {
-        self.inputs.as_deref().and_then(|inputs| inputs.suspended)
+        self.inputs
+            .as_deref()
+            .and_then(|inputs| inputs.cursor.suspended)
+    }
+    pub(super) fn condition(&mut self) -> Result<(Option<Clause>, &mut Cursor), String> {
+        let inputs = self
+            .inputs
+            .as_deref_mut()
+            .ok_or("missing async conditions")?;
+        Ok((inputs.clause(), &mut inputs.cursor))
     }
 }
 impl Inputs {
     fn clause(&self) -> Option<Clause> {
         let required = &self.requirements.required;
         let implied = &self.requirements.implied;
-        if self.cursor < required.len() {
-            return required.get(self.cursor).copied();
+        if self.cursor.index < required.len() {
+            return required.get(self.cursor.index).copied();
         }
-        let index = self.cursor - required.len();
+        let index = self.cursor.index - required.len();
         if index < implied.len() {
             return implied.get(index).copied();
         }
@@ -178,12 +181,7 @@ impl Search<'_> {
             goal,
             future,
             requirements,
-            cursor: 0,
-            children: Vec::with_capacity(count),
-            universes: HashMap::default(),
-            stopped: None,
-            suspended: None,
-            publish: false,
+            cursor: Cursor::with_capacity(count),
         }));
         Ok(true)
     }
@@ -208,7 +206,7 @@ impl Search<'_> {
         if !Self::prepare_async_inputs(facts, frame)? {
             return Ok(self.pending_async_callable(frame));
         }
-        self.advance_async_conditions(facts, frame)
+        self.advance_callable_conditions(facts, frame)
     }
 
     fn pending_async_callable(&self, frame: &Frame) -> Action {
@@ -219,7 +217,7 @@ impl Search<'_> {
         }
     }
 
-    fn finish_async_callable(
+    pub(super) fn finish_async_callable(
         &mut self,
         facts: &mut Declarations,
         frame: &mut Frame,
@@ -231,6 +229,7 @@ impl Search<'_> {
             .take()
             .ok_or("missing completed async inputs")?;
         let future = inputs
+            .cursor
             .children
             .last()
             .ok_or("async callable has no Future proof")?;
@@ -253,7 +252,7 @@ impl Search<'_> {
                 provisional_size: false,
                 goal: inputs.goal,
                 source: Some(Source::AsyncCallable(Arc::new(selected))),
-                children: inputs.children,
+                children: inputs.cursor.children,
                 first: frame.first,
                 end: regions.end.max(self.query.allocations.end()),
                 equalities: std::mem::take(&mut frame.inputs.context.region_equalities),

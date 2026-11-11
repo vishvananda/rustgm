@@ -146,6 +146,7 @@ impl Frame {
             .map_or(first, |autos| first.max(autos.end));
         match self.language.as_deref() {
             Some(super::mechanical::Pending::Async(pending)) => first.max(pending.regions().end),
+            Some(super::mechanical::Pending::Scoped(pending)) => first.max(pending.regions().end),
             Some(super::mechanical::Pending::Unsize(pending)) => first.max(pending.end),
             _ => first,
         }

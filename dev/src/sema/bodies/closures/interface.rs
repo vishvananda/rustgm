@@ -3,7 +3,7 @@ use super::{
     Argument, Checker, Constructor, Error, NodeId, Refinement, TermId, contextual, universes,
 };
 use crate::resolve::model::DefId;
-use crate::types::{ItemId, Kind, RegionId, arguments::ConstKind, parameters::ParameterKind};
+use crate::types::{Kind, RegionId, arguments::ConstKind, parameters::ParameterKind};
 
 pub(super) struct Inputs<'a> {
     pub terms: &'a [TermId],
@@ -197,20 +197,9 @@ impl Checker<'_> {
         let Some(owner) = self.state.environment_owner else {
             return Ok(Vec::new());
         };
-        let parameters = if let Some(parameters) = self
-            .facts
-            .lifetimes
-            .callables
-            .generic_parameters(ItemId(owner.0))
-        {
-            parameters.to_vec()
-        } else {
-            self.facts
-                .generics
-                .callable_parameters(&self.facts.types, owner)
-                .map_err(|e| self.error(node, e))?
-                .1
-        };
+        let parameters = crate::sema::closures::actual::defining_parameters(self.facts, owner)
+            .map_err(|e| self.error(node, e))?
+            .into_owned();
         let mut arguments = Vec::with_capacity(self.state.body_binders as usize + parameters.len());
         for index in 0..self.state.body_binders {
             let index = u16::try_from(index)

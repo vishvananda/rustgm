@@ -221,6 +221,7 @@ impl Snapshot {
                 }
                 let child = match frame.language.as_deref() {
                     Some(super::mechanical::Pending::Async(pending)) => pending.retained_child(),
+                    Some(super::mechanical::Pending::Scoped(pending)) => pending.retained_child(),
                     Some(super::mechanical::Pending::Forward(pending)) => pending.retained_child(),
                     Some(super::mechanical::Pending::Unsize(pending)) => pending.retained_child(),
                     Some(super::mechanical::Pending::Components(pending)) => {
