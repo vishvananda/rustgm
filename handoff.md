@@ -67,8 +67,8 @@ Current immutable00b2af11b5d3e0396043305fbf4164ed5ea9bdf89ba7a3d16561f9fb367a486
 at Bobj/parallel/nominal-unsize/candidate2-dev-fast/rustgm binds committed
 c31afe8d78f3e6487b3c4524574dd40a6c341f4e/emptydiff3892Rusthashes. Initial5e pin
 retired after replacement by1794355873725556381 (metadata/failed inference evidence
-retained); tidy1794355873834134744 removed82 disposable outputs. Comparison2cab
-may retire after publication; optimized21f remains for older pending measurements.
+retained); tidy1794355873834134744 removed82 disposable outputs. Comparison2cab is eligible for retirement after the next input-only probes;
+optimized21f remains for older pending measurements.
 Forty exclusive A/A+twoABBA observations preserve complete ordinaryimport/array
 LowIR/sourceknownrepr+74survey; ratios.979/1.084/.959/.997, noisy A/A,
 no speed/neutrality claim. Raw evidence under obj/parallel/nominal-unsize/.
@@ -89,12 +89,30 @@ protocol PA31 if essential), preserve actual source counterpart. Do not turn
 valid unsupported cases into negatives. Different census prefixes give no speed,
 body-count or completion claim. No original core/alloc/std artifact.
 
-Full42918510671on216364b72 terminalSUCCESS everygate. Pushfast42924479783oncbaPASS.
-Full42925327481oncba471220 ACTIVE, release/course+maintainernativePASS and broad
-nativeactive at last query. DO NOT cancel/redispatch; wait terminal before this
-source checkpoint successor. Three tuple-factory owners and optimized nested-
-proof A/A/stack checks remain required. Singleworker existing B; mainGitonly,
-no new trees/agents or edits to active CPP/v5. Whole PA31 remains planned.
+Next input-only discovery is complete at obj/parallel/callback-result/.
+Probe1eight+probe2seven+probe3six inputs independently Rust1.98object0, with exact
+frozen2cab/00b comparisons. Generic FnOnce/FnMut/Fn -> (T,) forwarded through a
+function drive<R,F:Fn...()->R>(f:F)->R then .0 fails known-tuple/struct in both
+binaries. Opaque Self/named/free wrapped callbacks fail too; explicit result or
+explicit R type passes. Direct opaque invocation separately needs known function
+type. General custom Make<Output=Wrap<T>>, including generic/opaque/inherited-
+output, all pass; function-pointer forwarding and scalar-result cast pass.
+Thus earliest owning reduction is PA24 (call-trait result inference); nominal,
+opaque, const and actual source roles are unnecessary to reproduce it. Keep
+actual original const/sourceFnMut/Try counterparts required. No PA24 packet or
+kernel edit yet. Read complete_field in dev/src/sema/bodies/aggregates.rs and
+callable-result projection advancement; do not invent a tuple arity from .0 or
+infer equality from output layout. Source-compatible constraints must settle.
+
+Full42918510671on216364b72 and full42925327481oncba471220 terminalSUCCESS every
+fast/release/course/native/debug/independent/PA25 gate. Pushfast42924479783oncbaPASS.
+Published nominal-source checkpoint4a9409a58f41712581476c352747920490c5bd2c; newfull
+42930363606 on that exact source/fixture snapshot is ACTIVE, dispatched only after
+confirming predecessor terminal/no active full. Pushfast42930175480 separate.
+Do not cancel or redispatch this full run for later documentation-only updates.
+Three tuple-factory owners and optimized nested-proof A/A/stack remain required.
+Singleworker existing B; mainGitonly, no new trees/agents or edits to active CPP/v5.
+Whole PA31 remains planned; core compilation remains incomplete.
 
 [PA19implementedtraitscope](docs/pa19-implemented-trait-scope.md) remains published
 with34newoutcomes/25native/all1233texts andzeroexistingreferencechanges. The prior

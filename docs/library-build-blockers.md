@@ -20,13 +20,17 @@ ops/index_range.rs93:4858, requires a known tuple/struct for the wrapped try_fol
 result's .0. Reversefold shares it; actual const-closure wrap_mut_1/2 have a separate
 invalid canonical selection. Reduce ordinary wrapped-call result inference, then
 retain actual source callable/const/Try prerequisites where necessary. Select the
-earliest owning PA from evidence. No complete census or original artifact exists.
+earliest owning PA from evidence. Independent ordinary probes now isolate PA24:
+FnOnce/FnMut/Fn tuple results forwarded through a generic call fail before .0,
+while explicit results, function pointers and generic/opaque custom Make output
+controls pass. Actual source const/callable/Try companions stay required. No new
+PA24 implementation or complete census/original artifact exists.
 
 Forty frozen A/A+twoABBA observations preserve complete import/array-cast LowIR,
 sourceknownrepr and74 old outcomes; noisy timings make no speed/neutrality claim.
-Full42918510671on216364b72 PASSED every stage. Full42925327481on PA22/23 checkpoint
-cba471220 is active, with release/course and maintainer native passed. Wait for its
-terminal result before this successor; do not cancel it. The earlier three valid
+Full42918510671on216364b72 and full42925327481on PA22/23 checkpointcba471220
+PASSED every stage. New full42930363606 runs the published nominal-source checkpoint
+4a9409a58; do not cancel it for later documentation-only changes. The earlier three valid
 tuple-factory cleanup owners and optimized nested-proof checks remain required.
 
 Previous [pending-join inputs](pa20-pending-join-inputs.md) retain their qualified

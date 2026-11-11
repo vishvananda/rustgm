@@ -121,7 +121,19 @@ inference first, then retain actual source callable/const/Try prerequisites wher
 needed; select the earliest owner from that evidence.
 
 Full42918510671 on216364b72 passed every stage for the preceding projection-input
-checkpoint. Full42925327481 on the PA22/23 checkpointcba471220 is active, with
-release/course and maintainer native passed. Do not cancel it for this new
-successor. No complete census or original core/alloc/std artifact exists; earlier
+checkpoint. Full42925327481 on the PA22/23 checkpointcba471220 also passed every stage.
+New full42930363606 runs the published nominal-source checkpoint4a9409a58. It
+was dispatched after both predecessors completed; do not cancel it for later
+documentation-only updates. No complete census or original core/alloc/std artifact exists; earlier
 optimized nested-proof checks and the three tuple factories remain required.
+
+
+The following input-only probes independently qualify21 ordinary Rust objects.
+All reproduce or control the same behavior on frozen2cab and00b: generic
+FnOnce/FnMut/Fn result forwarding can leave a tuple head unknown before `.0`,
+including without opaque or nominal types. Custom trait output forwarding,
+inherited output, function pointers and explicit result/type arguments pass.
+PA24 therefore owns the next ordinary reduction. Direct opaque invocation has a
+separate known-function error; actual source const/callable/Try counterparts
+remain required. Plans and exact outputs are under `obj/parallel/callback-result/`;
+no PA24 compiler change or passing new contract is claimed yet.
