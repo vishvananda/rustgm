@@ -128,13 +128,26 @@ retains46 outcomes/31native, both element-inference directions and its completed
 storage-tail/unchanged-argument/actual-field/endpoint proofs. Full42930363606on4a
 now PASSED every fast/release/course/native/debug/independent/PA25 stage, joining
 successful42925327481oncba and42918510671on216364. Callable source/fixtures/references are published2d94c3ce61e660e046e345dccaacd2a843f6da05.
-Full42948079201 runs that exact snapshot and is ACTIVE (fast passed; release/course
-at last query). It was dispatched only after confirming no active full predecessor.
+Full42948079201 ran that exact snapshot and FAILED13 PA20/PA21 text comparisons
+after all3065 private and all regular integration tests passed. Native/debug/
+independent successor stages were skipped. It was dispatched only after
+confirming no active full predecessor.
 Push-fast42947808422 is separate. Do not cancel or redispatch the full run for
 documentation-only descendants. Wait for terminal status before another full.
 Three tuple-factory cleanup owners and optimized nested-proof A/A/stack remain
 required. Singleworker existing B; mainGitonly, no new trees/agents or CPP/v5 edits.
 Whole PA31 remains planned; core compilation remains incomplete.
+
+[The CI reference review](docs/pa24-callable-result-ci-review.md) independently
+checks all13 unchanged inputs/statuses with Rust objects and11 complete paired
+Rust/CPPGM native programs (1794367199157806503). Exact generation changes only
+11semantic stdout/2diagnostic sidecars; all7280other PA20/PA21 sidecars remain
+identical. Full1564PA20+867PA21 text suites pass1794367453687235048. Scoped receipts
+are generated with these13oracles, no hand edits. Witness numbering changes
+preserve all3 quantified proof blocks and their relation; new reflexive/outlives
+records retain proof rather than erase it. No compiler/backend/input/outcome
+change or new core observation. New full successor is due after publication,
+after checking no active full run; its native/debug/independent gates remain due.
 
 [PA19implementedtraitscope](docs/pa19-implemented-trait-scope.md) remains published
 with34newoutcomes/25native/all1233texts andzeroexistingreferencechanges. The prior

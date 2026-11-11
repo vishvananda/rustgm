@@ -38,7 +38,7 @@ production/CLI/test Clippy, full formatting and architecture pass.
 Inference work at widths8/32/128 is6229/21541/82789, trait selections33/105/393;
 canonical work stays25. Projection, unsizing and method counters remainzero.
 The128 unrelated types add exactlyzero body work at every width. A new private
-certificate/no-interning/budget guard remains pending in full CI; the cold private
+certificate/no-interning/budget guard passes fullCI42948079201; the cold private
 harness is not rebuilt locally after its known five-minute limit.
 
 Native receipt1794359073388122651 passes all35 new Rust/CPPGM programs in55.37s.
@@ -127,14 +127,17 @@ ops/try_trait.rs file95:16817/17146, both invalid canonical trait selection.
 Preserve their actual const/source FnMut/Destruct/Try roles while reducing the
 next blocker; choose the earliest owner from the resulting minimum. Different
 census prefixes establish no speed or body-count claim. No original core/alloc/std
-artifact exists. Private/full successor qualification and the earlier optimized
-nested-proof measurements remain pending.
+artifact exists. Native/debug/independent successor qualification and the earlier
+optimized nested-proof measurements remain pending.
 
 Published checkpoint2d94c3ce61e660e046e345dccaacd2a843f6da05 carries implementation,
 fixtures, all generated triples/provenance and the updated frontier together.
-Full42948079201 runs that snapshot; fast passed, full qualification is active.
-Its predecessor42930363606 on4a passed every stage. Do not restart the active
-full run for documentation-only descendants. Completed comparison00b was retired
+Full42948079201 ran that snapshot: fast, all3065 private and all regular
+integration tests passed, then13 PA20/PA21 text comparisons failed. The
+[reference review](pa24-callable-result-ci-review.md) independently checks those
+unchanged inputs/statuses and11 paired native programs before exact generation;
+complete1564PA20+867PA21 texts now pass. Later full stages remain pending in a
+successor. Its predecessor42930363606 on4a passed every stage. Completed comparison00b was retired
 after publication by1794365201348336431; only current8b7 and the earlier optimized
 21f baseline remain pinned. Historical observations do not imply old binaries
 remain available.

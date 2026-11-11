@@ -11,7 +11,13 @@ proof remains required. Width/noise, strict selected checks, all579PA24+125PA12
 texts, harness/upstream and three old nominal/required-factory controls pass.
 All1581 old PA24 sidecars are unchanged. Only PA12's predeclared tuple-field
 diagnostic changes. No hot fields, global cache/scans, limits or backend change.
-Full/private callable successor remains pending; whole PA31 stays planned.
+Full42948079201 passed3065 private and all regular integration tests, then
+failed13 earlier PA20/PA21 text comparisons; later qualification was skipped.
+The [independently reviewed reference repair](pa24-callable-result-ci-review.md)
+passes13 Rust objects/11 paired native programs and complete PA20/PA21 texts.
+Only11 semantic stdout/2 diagnostic sidecars change, all7280others unchanged.
+No input/status/compiler/backend change; full successor remains due. Whole PA31
+stays planned.
 
 The unchanged120s original observer still FAILS at121.2428s:203failure records/
 4328item attempts through function8870,file239:53421,node3300 in str/pattern.rs.
@@ -41,8 +47,9 @@ import/explicit-result LowIR and scalar/source-role type controls. Noisy A/A
 supports no timing claim. Full42930363606on4a PASSED every stage, qualifying the
 preceding nominal source Unsize checkpoint; prior42925327481oncba and
 42918510671on216364 also passed. Callable checkpoint2d94c3ce6 is published; full42948079201
-is ACTIVE on that exact snapshot (fast passed). No active full predecessor existed
-when dispatched. Do not cancel or redispatch it for documentation-only updates. The earlier three valid tuple-factory
+FAILED on that exact snapshot after its private/regular success, as reviewed
+above. No active full predecessor existed when dispatched. Publish the reviewed
+reference correction before another full successor. The earlier three valid tuple-factory
 cleanup owners and optimized nested-proof checks remain required.
 
 Previous [pending-join inputs](pa20-pending-join-inputs.md) retain their qualified

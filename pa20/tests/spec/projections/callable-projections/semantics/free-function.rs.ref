@@ -116,6 +116,7 @@ region-equal body=0:65 left=region:1 right=region:1
 region-equal body=0:65 left=region:1 right=region:1
 region-equal body=0:65 left=region:1 right=region:1
 region-equal body=0:65 left=region:1 right=region:1
+region-equal body=0:65 left=region:1 right=region:1
 region-equal body=0:65 left=region:1 right=bound:0:0
 region-equal body=0:96 left=region:1 right=region:6
 region-coercion body=0:65 source=0:63 actual=31 expected=41 kind=same-shape pending

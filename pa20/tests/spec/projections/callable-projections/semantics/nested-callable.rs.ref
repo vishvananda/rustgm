@@ -114,6 +114,7 @@ region-equal body=0:46 left=region:1 right=region:1
 region-equal body=0:46 left=region:1 right=region:1
 region-equal body=0:46 left=region:1 right=region:1
 region-equal body=0:46 left=region:1 right=region:1
+region-equal body=0:46 left=region:1 right=region:1
 region-equal body=0:46 left=region:1 right=bound:0:0
 region-equal body=0:92 left=region:1 right=region:6
 region-coercion body=0:46 source=0:44 actual=22 expected=39 kind=same-shape pending

@@ -122,9 +122,11 @@ implementation-use source=0:123 owner=18 arguments=[]
 implementation-use source=0:123 owner=23 arguments=[type:11]
 region-var region:1 body=0:101 source=0:99 origin=call-argument pending
 region-var region:2 body=0:101 source=0:98 origin=inference pending
+region-var region:3 body=0:101 source=0:99 origin=universal-alias pending
 region-var region:1 body=0:132 source=0:127 origin=call-argument pending
 region-var region:2 body=0:132 source=0:126 origin=expression-borrow pending
 region-var region:3 body=0:132 source=0:126 origin=inference pending
+region-equal body=0:101 left=region:3 right=bound:0:0
 region-coercion body=0:101 source=0:98 actual=36 expected=46 kind=reborrow pending
 region-coercion body=0:101 source=0:98 actual=49 expected=46 kind=same-shape pending
 region-coercion body=0:132 source=0:124 actual=42 expected=41 kind=function-pointer pending

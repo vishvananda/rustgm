@@ -122,12 +122,14 @@ region-var region:5 body=0:52 source=0:50 origin=inference pending
 region-equal body=0:52 left=region:1 right=bound:0:1
 region-equal body=0:52 left=region:3 right=region:3
 region-equal body=0:52 left=region:3 right=region:3
+region-equal body=0:52 left=region:3 right=region:3
 region-equal body=0:52 left=region:2 right=bound:0:0
 region-equal body=0:52 left=region:3 right=bound:0:1
 region-coercion body=0:52 source=0:50 actual=24 expected=34 kind=reborrow pending
 region-coercion body=0:52 source=0:50 actual=62 expected=34 kind=same-shape pending
 region-coercion body=0:52 source=0:52 actual=52 expected=29 kind=same-shape pending
 type-outlives body=0:52 source=0:52 type=23 shorter=region:1 pending
+type-outlives body=0:52 source=0:51 type=23 shorter=region:3 pending
 type-outlives body=0:52 source=0:52 type=23 shorter=region:3 pending
 type-outlives body=0:52 source=0:52 type=23 shorter=region:3 pending
 associated-type def=15 type=25
