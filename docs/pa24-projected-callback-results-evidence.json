@@ -373,6 +373,15 @@
       "old_normalization_diagnostic_controls": 11,
       "old_normalization_controls_changed": 0,
       "compiler_sha256": "6c0853071ccf7675c2f6c919eea99414c901f874ccb925279da1e0cc0defa620"
+    },
+    "public_refresh_callers": {
+      "receipt": "1794448122967457238",
+      "tests": 3,
+      "targets": 1,
+      "seconds": 42.77,
+      "state": "passed exact tests, full formatting, architecture and selected strict Clippy",
+      "production_cli_files_unchanged": 2246,
+      "binary_sha256": "6c0853071ccf7675c2f6c919eea99414c901f874ccb925279da1e0cc0defa620"
     }
   },
   "development_review": {
@@ -427,7 +436,14 @@
     "source": "5cd41810bfa18d71e936bfed53c9a0422580e83f",
     "state": "all stages passed"
   },
-  "current_full_ci": "Pending publication and a fresh check for active full workflows.",
+  "current_full_ci": {
+    "run": 43135131607,
+    "head": "ec2d2a0b4cca7cc3a009647fb8f964c2bb8e2b5c",
+    "source": "d1980b3255cf607355b2a254dc83393463fb27b5",
+    "state": "failed all-target Clippy: three suite_inference callers of mutable Refinement::refresh; later stages skipped",
+    "fast_job": "passed",
+    "replacement": "required on published test-only correction after fresh active-full check"
+  },
   "unchanged": [
     "third-party source bytes/checksums",
     "backend17b024f69",

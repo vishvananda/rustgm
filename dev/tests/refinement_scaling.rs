@@ -74,7 +74,7 @@ fn shared_partial_parent_changes_are_reconciled_in_one_graph()
             }
             query.context().equate_input_pairs(&store, &pairs)?;
             if refresh {
-                query.refresh(&store, &mut source)?;
+                query.refresh(&mut store, &mut source)?;
                 assert_eq!(source.unresolved_domain(source_leaf)?, Some(Domain::Any));
             }
             let before = source.steps;

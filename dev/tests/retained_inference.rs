@@ -51,7 +51,7 @@ fn repeated_publication_reuses_fresh_type_and_const_holes_then_refreshes_the_que
     let byte = source.known(&store, TypeId::primitive(Primitive::U8))?;
     let fixed = source.construct(Constructor::Array(3), &[byte])?;
     source.equate(&store, input, fixed)?;
-    query.refresh(&store, &mut source)?;
+    query.refresh(&mut store, &mut source)?;
     assert_eq!(
         query.context.resolved(&mut store, element)?,
         TypeId::primitive(Primitive::U8)

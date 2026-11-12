@@ -129,7 +129,7 @@ fn source_refinement_during_a_wait_is_reconciled_with_the_query() -> TestResult 
     let later = source.variable(Domain::Any)?;
     let shape = source.construct(Constructor::Tuple, &[later, later])?;
     source.equate(&store, input, shape)?;
-    query.refresh(&store, &mut source)?;
+    query.refresh(&mut store, &mut source)?;
     let child = query.context().child(&store, ty(inputs[0])?, 1)?;
     let byte = query.context().known(&store, BYTE)?;
     query.context().equate(&store, child, byte)?;

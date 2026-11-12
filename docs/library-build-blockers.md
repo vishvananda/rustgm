@@ -16,8 +16,12 @@ No new failures occur among previously passing reached baseline bodies. All722/
 375opens/sixbindings/current+immutable3907/profile/limits verify unchanged.
 No complete census, throughput or original core/alloc/std artifact is claimed.
 Prior clone full43081009696 PASSED ALL stages on exact2c13e1cff/source5cd41810b;
-current full CI awaits publication/fresh no-active-full check. This entry supersedes
-older frontier/workflow text. Reduce the actual wrapped try_fold result next.
+full43135131607 on ec2d2a0b4 failed all-target Clippy on three test callers of
+mutable refresh; later stages were skipped. The test-only correction passes three
+exact tests/fmt/audit/selected strict Clippy in42.77s, receipt1794448122967457238.
+Production/CLI hashes and binary6c085307 are unchanged. Publish the correction
+and start one replacement full after checking for active full workflows. This
+entry supersedes older frontier/workflow text. Reduce the wrapped try_fold result next.
 
 [Callback formation versus invocation](pa25-callback-formation.md),source5798bd7f1/
 CLI05cc3029, clears the reached LazyCell<T>::default failure. Existing typed bounds

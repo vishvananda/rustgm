@@ -17,7 +17,7 @@ PA24 is correct earliest owner; PA20 manifest restored unchanged. No original ar
 Intermediate local sourcef7e9c2814/immutable81a3c693 cleared reached ArrayChunks
 failure records but exposed four regressions: Chain::last135:4953, FlattenCompat::last
 142:17747, MapWindows::next_window148:3241, Option::into_flat_iter182:73756.
-Latest uncommitted repair passes every reduced complete API regression and control.
+Published repair passes every reduced complete API regression and control.
 It uses shared scoped pending-pair comparison (no inverse projection inference),
 signature input equations only for unresolved projection roots, one recollected
 normalization plan, and exact canonical selected-function identity after progress.
@@ -41,7 +41,8 @@ Two exact private invariants remain pendingCI after fixed-budget combinedcompile
 Latestclean sourceD1980b3255cf607355b2a254dc83393463fb27b5 andimmutablefixed-dev-fast
 CLI6c085307 bind3907Rust/empty patch. 30exclusive A/A+twoABBA observationsmatch
 completeoutputs vs5d43; wall.998/.966/.960, CPU.993/.965/.961, AA.874/.914/.869;
-nooptimized/neutrality/core-speedclaim. Old81candidate retainsknownregressions.
+nooptimized/neutrality/core-speedclaim. Old81candidate was retired after publication;
+its raw observations and producer remain, but its executable is absent.
 
 EXACT120s original6c observer ends121.415000s,111partialrecords/13562itemattempts,
 lastfn7515 slice/sort/select.rs220:6377,line168. All5ArrayChunks and4regression
@@ -54,12 +55,19 @@ immutable3907/profile/limits. ProgressSHA
 No completecensus/originalartifact, partialcountsNOTthroughput. Rawfixed-original/
 andfixed-original-comparison.json. No rerunmerelyforlongerprefix/limitextension.
 
-NEXT: publishqualifiedsource+evidence, ONEfullCIafterfreshnoactivefullcheck;
-thenreduceactualByRefSized wrappedtry_fold outputbefore.0consumer, ordinaryPA24+
-sourcePA31 first. Otheradapterprojection/closurefailures separate. Prior full
-43081009696 ALLPASSED exact2c13e1cff/source5cd41810b, no docsrestart.
-Main/originstill537a86863; BHEADf7e9local. Keep5d43/81/optimized21fpins untilqualified
-replacement publication/comparison; optimized21f remains required. Singleworker/no
+Published ec2d2a0b4/source d1980b325. Full43135131607 failed at all-target Clippy:
+three suite_inference tests still passed an immutable Store to mutable refresh.
+Only those three callers changed. Focused fastcheck1794448122967457238 passes all
+three exact tests/fullfmt/audit/selected strict Clippy in42.77s. Production/CLI2246
+hashes and both managed/immutable CLI6c085307 remain identical; original evidence
+is not rerun for test-only changes. Later full CI stages were skipped, not passed.
+
+NEXT: publish test-only correction, ONE replacement full after fresh no-active-full
+check; then reduce actual ByRefSized wrappedtry_fold output before.0 consumer,
+ordinaryPA24+sourcePA31 first. Other adapter projection/closure failures separate.
+Prior full43081009696 ALLPASSED exact2c13e1cff/source5cd41810b, no docsrestart.
+Keep5d43 until replacement full qualifies; keep optimized21f for its pending work.
+Intermediate81 executable is absent. Singleworker/no
 newtrees. Allpaid-alias/projected-premise/symbolic-index/depth128/factory/tuple/
 bootstrap/import/transport/optimized requirements below remain. Goalactive.
 

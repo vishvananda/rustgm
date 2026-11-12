@@ -112,9 +112,17 @@ try_fold result before its tuple-field consumer next; broader adapter failures
 remain separate.
 
 Prior fullCI43081009696 passed every stage on exact2c13e1cff/source5cd41810b.
-The repaired semantic successor needs full CI after publication and a fresh
-check for active full workflows. Keep immutable5d43 for accepting comparisons, local81 for the
-regression observation, and optimized21f for pending optimized qualification.
+Full43135131607 on ec2d2a0b4/source d1980b325 passed its fast job, then failed
+all-target Clippy because three suite_inference callers still supplied immutable
+Store references to mutable refresh. Later qualification stages were skipped.
+The three test-only corrections pass fastcheck1794448122967457238: three exact
+tests, full formatting/audit and selected strict Clippy,42.77s. All2246 production
+and CLI source hashes and managed/immutable CLI6c085307 are unchanged. The existing
+original observation remains applicable; no new original run is claimed.
+A replacement full run is required after publishing the correction and checking
+for active full workflows. Keep immutable5d43 until that successor qualifies and
+optimized21f for pending optimized qualification. Intermediate81 was explicitly
+retired after publication; its executable is absent, with raw evidence retained.
 Retain every earlier paid-alias, projected-premise, symbolic-index, depth128,
 factory, tuple, bootstrap, import, transport and optimized requirement in handoff.md.
 The [machine record](pa24-projected-callback-results-evidence.json) binds raw
