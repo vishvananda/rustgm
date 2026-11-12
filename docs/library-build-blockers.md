@@ -13,8 +13,9 @@ with 50 records, 14,545 attempts and last item 9248, unicode_data.rs:919. The
 first remaining failure is next_if_eq 5023 at peekable.rs:318: an unresolved
 trait obligation behind the "typed source shape" diagnostic formatting fence.
 Next are first_size/other_size (quantified body requirements) and fold
-157:7745 (unresolved call inputs). The clean pin observation is pending. No core
-artifact exists.
+157:7745 (unresolved call inputs). Clean b1063aab2/frozen 05289eb6 confirms
+this: 49 records and 14,192 attempts, last item 8659 str/traits.rs:125, with all
+722/375/six/3908 bindings verified. No core artifact exists.
 
 The [helper return-output checkpoint](pa24-flatten-helper-outputs.md) publishes
 declared opaque inputs as partial progress, then exposes the unique declared

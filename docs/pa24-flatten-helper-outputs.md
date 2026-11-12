@@ -134,4 +134,21 @@ The 14,206 attempts are fewer than a08's 14,659, under different host load,
 while the previously failing bodies now check completely. Partial counts make no
 throughput claim, and this is neither a complete census nor a core artifact.
 
-Full CI successor 43188445172 runs on 0af99f4a6.
+Full CI 43188445172 on 0af99f4a6 passed fast checks and every release
+integration suite. One private test failed, and the later course and native
+steps did not run. `provisional_results_preserve_known_never_cfg_and_explicit_feature_frontier`
+pinned the old normalization fence for `fn delayed()->u8{Delayed<<1;}`. There,
+`1` selects between `Shl<i32>` (Output `!`) and `Shl<usize>`, so the statement's
+type is a pending associated result.
+
+With this checkpoint's contextual never-check, the block reports "incompatible
+types" at `{`. Rust 1.98 rejects it with E0308 ("expected `u8`, found `()`"),
+exactly like the sibling `binding` case that the same test already expected, and
+the packet's independent observations record that. Only that one expectation is
+updated, with the Rust agreement in a comment. Its `branch` case is unchanged.
+The CI log's actual RustGM output, "incompatible types" at byte 4742, is exactly
+`rfind("{Delayed<<1")`. Two focused private runs, 1794477130209495369 and
+1794477429020339780, passed formatting and architecture but exhausted the fixed
+five-minute budget in the cold private-lint build before running the test. The
+full successor runs it; no budget was raised.
+The full successor is recorded with the next checkpoint.

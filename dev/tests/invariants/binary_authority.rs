@@ -346,12 +346,11 @@ fn source_operator_work_scales_and_ordinary_path_retains_hot_layouts() -> TestRe
 #[test]
 fn provisional_results_preserve_known_never_cfg_and_explicit_feature_frontier() -> TestResult {
     let mut failures = Vec::new();
+    // A pending associated result is not yet definitely Never. Rust 1.98
+    // rejects both the block and binding forms with E0308 (expected u8,
+    // found ()), as the packet's independent observations record.
     for (name, expected, site) in [
-        (
-            "block",
-            "associated type projection requires normalization",
-            "Delayed<<1",
-        ),
+        ("block", "incompatible types", "{Delayed<<1"),
         ("binding", "incompatible types", "{let _value="),
         (
             "branch",

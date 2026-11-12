@@ -112,21 +112,37 @@ PA20 now has 1604 cases (1147 accept). Upstream verification, the maintainer
 suite registration, layout, metadata and harness unit checks pass. No planned
 assignment is activated.
 
-## Core progress
+## Clean pin and core progress
 
-Exploratory pin 789ed468 carries the same change before formatting. The unchanged
-120s observer ends at its deadline after 121.162s, with 50 partial records and
-14,545 attempts. The last item is 9248, unicode/unicode_data.rs:919.
+Clean published source b1063aab2 freezes CLI
+`05289eb6710bc876240e420a44a21cb036912f3494d838ed91c2f640feb759da`, with 3908
+Rust hashes and an empty patch (`obj/parallel/candidate-graph/candidate-dev-fast`).
+It is byte-identical to the text-qualification candidate.
 
-Against clean 0665938a it clears all six candidate-graph bodies: try_fold
-4961/5066/5196/5247/5350 and try_rfold 5092. No new failure appears among
-previously passing reached bodies.
+**Original core.** The unchanged 120s observer ends at its deadline after
+121.396s, with 49 partial records and 14,192 attempts. The last item is 8659,
+str/traits.rs:125. Against clean 0665938a it clears all six candidate-graph
+bodies: try_fold 4961/5066/5196/5247/5350 and try_rfold 5092. No new failure
+appears among previously passing reached bodies.
 
-The first remaining failure is next_if_eq 5023 at peekable.rs:318. That is an
-unresolved trait obligation behind the unimplemented "typed source shape"
-diagnostic formatting fence. Then come first_size/other_size (quantified body
-requirements) and fold 157:7745 (unresolved call inputs). Partial counts make
-no throughput claim, and this is neither a complete census nor a core artifact.
+The postcheck verifies all 722 source hashes, 375 opens, six configuration
+bindings, 3908 current and immutable compiler hashes, and unchanged profile and
+limits. The progress SHA is
+`2d909e79ca43832a4ecb222c321d8076356a3cd7737fd2f3b56b46a3fe1ed29c`.
 
-A clean pin, its unchanged observation and postcheck, measurement and a full
-successor are pending.
+The first remaining failure is next_if_eq 5023 at peekable.rs:318: an
+unresolved trait obligation behind the "typed source shape" diagnostic
+formatting fence. Then come first_size/other_size (quantified body
+requirements) and fold 157:7745 (unresolved call inputs). The exploratory
+789ed468 observation agrees: 50 records, last item 9248.
+
+**Measurement.** Forty exclusive A/A plus ABBA accepting observations against
+0665938a preserve complete outputs. The controls are an ordinary import, the
+method-priority graph, a projected receiver lookup and the inferred-path
+projected header. Paired wall ratios are 1.080/1.137/1.073/1.071, against A/A
+0.733/0.755/1.013/1.055, at 20–45 ms. Within one binary, runs vary by about
+±20%, including on the unaffected ordinary control. No optimized, neutrality or
+original-core speed is claimed; the bounded-work tests above qualify the work.
+
+Partial counts make no throughput claim, and this is neither a complete census
+nor a core artifact.

@@ -81,8 +81,10 @@ normalizes method candidate headers such as `ControlFlow<R, R::Output>` into
 projection-equality conditions. It has nine new PA20 text outcomes and seven
 native positives. One unbound-output rejection stays required for its cause. An
 exploratory observation clears the six adapter `.into_try()` bodies. The first
-remaining failure is next_if_eq behind a diagnostic-formatting fence. A clean
-pin and the full successor are pending.
+remaining failure is next_if_eq behind a diagnostic-formatting fence. Clean pin
+05289eb6 confirms this, with 49 records. Full 43188445172 for the helper-output
+commit stopped on one stale private delayed-Never expectation. Rust's E0308
+qualifies the updated cause; the full successor is pending.
 
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage

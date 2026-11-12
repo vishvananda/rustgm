@@ -178,7 +178,14 @@ the passing receipts, not those attempts, qualify the current implementation.
     bodies. The next first failure is next_if_eq 5023 at peekable.rs:318, a
     diagnostic-formatting fence.
   - The `unbound` rejection-cause contract is in that packet's pending.json.
-  - Pending: a clean pin, observation, measurement and a full successor.
+  - Clean pin `obj/parallel/candidate-graph/candidate-dev-fast` (05289eb6, source
+    b1063aab2) has passed the unchanged observation and its postcheck: 49 records,
+    with all six bodies cleared. It is the current comparison baseline.
+- Full 43188445172 (on 0af99f4a6) passed fast and all release integration
+  suites. It stopped on the private `provisional_results_preserve_known_never…`
+  delayed-Never `block` expectation. Rust gives E0308, so that expectation
+  changed to "incompatible types", like `binding`. A fresh full successor
+  qualifies both checkpoints.
 
 **2026-11-12 update:** steps1–6 are complete; the checkpoint is ee8c11abb
 ([evidence](docs/pa24-flatten-helper-inputs.md)). Immutable pin
