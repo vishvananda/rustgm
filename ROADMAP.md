@@ -233,6 +233,14 @@ reductions agree with rustc, and two PA31 match-capture positives qualify. An
 uncaptured scrutinee's lowering and precise field and referent captures remain
 recorded gaps.
 
+The [always-const premise checkpoint](docs/pa31-always-const-premises.md) lets
+a `const` premise prove a `[const]` requirement, as core's `simd.rs` `eq`
+bodies 9611 and 9643 need from `SimdElement`'s `const PartialEq` supertrait.
+Eighteen source-core reductions agree with rustc, including four E0277 effect
+rejections and an E0284 ambiguity that the base accepted. Two pre-existing
+prepared lowering gaps are recorded: an impl-proved trait member call in a
+const body, and an `&T == &T` comparison's receiver region.
+
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage
 limit controls, pass text, independent Rust and native checks with frozen a08ab1a4.

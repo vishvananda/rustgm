@@ -229,9 +229,7 @@ impl Context {
         let Some((id, constness)) = assumption.bound.trait_parts() else {
             return Err(Error::Mismatch);
         };
-        if trait_.constness != crate::support::constness::Constness::Ordinary
-            && trait_.constness != constness
-        {
+        if !constness.proves(trait_.constness) {
             return Err(Error::Mismatch);
         }
         let application = store.trait_application(id).ok_or(Error::InvalidIdentity)?;

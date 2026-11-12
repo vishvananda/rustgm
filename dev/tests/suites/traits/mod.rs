@@ -73,6 +73,8 @@ pub(crate) mod resolve;
 mod result_bound_contracts;
 #[path = "../../support/semantic.rs"]
 pub(crate) mod semantic;
+#[path = "../../supertrait_const_premises.rs"]
+mod supertrait_const_premises;
 #[path = "../../trait_applications.rs"]
 mod trait_applications;
 #[path = "../../trait_bounds.rs"]

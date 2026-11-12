@@ -1089,3 +1089,18 @@ with `if let`.
 A maintainer integration test checks them through the CLI and prepared
 lowering, in each case's edition. An ignored native test runs six
 ordinary-mode programs. There is no graded manifest.
+
+`spec/always-const-premises/` freezes eighteen declared no_core reductions of
+core's `simd.rs` `Simd` `eq`, which compares `[T; N]` under an always-const
+`const PartialEq` supertrait.
+
+- Accepted forms: core's form, array and element comparisons through the
+  supertrait, an impl with a `const` premise, `const` requirements from
+  `const` premises, and three controls.
+- Rejected at typing: `const` from a `[const]` premise or an ordinary
+  supertrait (E0277), and a `const` beside a `[const]` premise (E0284).
+- Recorded prepared lowering gaps, which the base shares: a trait member call
+  in a const body whose `Self` an impl proves, and an `&T == &T` comparison.
+
+A maintainer integration test checks typing through the CLI and prepared
+lowering for every accepted case. There is no graded manifest or native test.

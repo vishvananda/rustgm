@@ -149,6 +149,20 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-12 always-const premise update (supersedes the blocks below):**
+
+- The `simd.rs` `eq` 9611/9643 "unambiguous matching assumption" failure has a
+  typing fix ([evidence](docs/pa31-always-const-premises.md)). A `const`
+  premise now proves a `[const]` requirement.
+  - Eighteen reductions are in `pa31/tests/spec/always-const-premises`.
+  - The five declared batches, the diagnostics and the lowering runs are in
+    `obj/parallel/simd-eq/`.
+- Recorded prepared lowering gaps, shared with the base, which block the
+  later core build of these bodies:
+  - an impl-proved trait member call in a const body ("const function member
+    lacks its current conditional trait premise");
+  - `&T == &T` ("method borrow differs from selected receiver place").
+
 **2026-11-12 closure capture pattern update (supersedes the blocks below):**
 
 - The `fmt_decimal` 9097 "capture patterns for a matched place are not

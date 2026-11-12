@@ -336,3 +336,46 @@ fn ordinary_duplicate_effects_do_not_pay_const_obligations()
     }
     Ok(())
 }
+
+/// An always-const premise holds in every context, so it also proves a
+/// `[const]` goal, as an elaborated `const PartialEq` supertrait does in
+/// core's `Simd` comparison. A `[const]` premise never proves a `const` goal.
+#[test]
+fn always_const_premises_prove_conditional_goals() -> Result<(), Box<dyn std::error::Error>> {
+    use super::Selection;
+    use crate::{support::constness::Constness, types::GenericArgs};
+    const EFFECTS: [Constness; 3] = [
+        Constness::Ordinary,
+        Constness::Conditional,
+        Constness::Const,
+    ];
+    let mut store = Store::default();
+    let application = store.intern_trait_application(Application {
+        item: ItemId(9),
+        arguments: GenericArgs::EMPTY,
+    })?;
+    let ty = TypeId::primitive(Primitive::U16);
+    let mut proved = Vec::new();
+    for premise in EFFECTS {
+        let mut assumptions = Assumptions::default();
+        let bound = Bound::trait_application(application, premise);
+        assumptions.insert(&store, Predicate { ty, bound })?;
+        for goal in EFFECTS {
+            let mut context = Context::default();
+            let mut substitution = Instantiation::new(&mut context, &store, &[])?;
+            let bound = Bound::trait_application(application, goal);
+            let goal = context.instantiate_predicate(
+                &mut store,
+                Predicate { ty, bound },
+                &mut substitution,
+            )?;
+            let selected = assumptions.select(&mut store, &mut context, &goal)?;
+            proved.push(matches!(selected, Selection::Proven(_)));
+        }
+    }
+    assert_eq!(
+        proved,
+        [true, false, false, true, true, false, true, true, true]
+    );
+    Ok(())
+}

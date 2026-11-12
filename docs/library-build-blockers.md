@@ -1,5 +1,20 @@
 # Library build blocker tracker
 
+The [always-const premise checkpoint](pa31-always-const-premises.md) fixes
+"trait obligation requires an unambiguous matching assumption or
+implementation" in core's `core_arch` `simd.rs` `eq` bodies 9611 and 9643
+(`simd.rs:91`, `:304`). Their `T: SimdElement` premise elaborates to
+`T: const PartialEq`. That premise now proves the `[const]` requirement of
+`self.as_array() == other.as_array()`, as in rustc. Eighteen source-core
+reductions and function-linear work qualify the fix. Recorded gaps remain for
+the later core build, and the base shares both:
+
+- a trait member call in a const body whose `Self` an impl proves, such as
+  `[T; N]: [const] PartialEq`, stops prepared lowering at "const function
+  member lacks its current conditional trait premise". Core's form stops here;
+- `a == b` on two `&T` operands stops prepared lowering at "method borrow
+  differs from selected receiver place".
+
 The [closure capture pattern checkpoint](pa31-closure-capture-patterns.md)
 fixes "capture patterns for a matched place are not implemented" in core's
 `Duration` `fmt_decimal` 9097 (`time.rs:1493`). Its closure tests

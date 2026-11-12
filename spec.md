@@ -1379,6 +1379,16 @@ closure's leading dereferences. A scrutinee that no pattern uses is only
 mentioned. A compound `let` pattern on a computed value consumes the value. See
 the [closure capture pattern checkpoint](docs/pa31-closure-capture-patterns.md).
 
+A trait premise proves a requirement of the same or a weaker effect, as rustc's
+`BoundConstness::satisfies` does. Every premise proves an ordinary
+requirement, a `[const]` premise also proves a `[const]` requirement, and a
+`const` premise proves all three. An always-const supertrait, such as
+`SimdElement: const PartialEq`, therefore gives `T: [const] PartialEq`. A
+`[const]` requirement with both a `const` and a `[const]` premise for the same
+inputs stays ambiguous, as in rustc. A scoped equation between two
+requirements still compares effects exactly. See the
+[always-const premise checkpoint](docs/pa31-always-const-premises.md).
+
 The bounded sizing profile requires actual sizing identities, complete headers
 and deny-explicit-impl restrictions before retaining fundamental, specialization
 or coinductive markers; those markers grant no general implementation or cycle

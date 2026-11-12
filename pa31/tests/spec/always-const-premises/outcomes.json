@@ -1,0 +1,194 @@
+{
+ "schema": 1,
+ "declared": "2026-11-12, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run (obj/parallel/simd-eq/core/declared.json, batches 3 and 5; batches 1 and 2 were malformed fixtures and batch 4 was three ungraded diagnostics, all recorded there). Batch 5 was declared after the exploratory change was written and before it was built. Each case's first line records its prefix: pa31/tests/spec/comparison-rhs/core-network.rs through its PartialEq, followed by core/array/equality.rs, core/cmp.rs reference equality and stdarch core_arch/src/simd.rs fragments.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "rustgm_argv": "rustgm --emit-types --edition=2024 --cap-lints=allow --source-core minicore@reduce --crate-name minicore --crate-disambiguator reduce",
+ "cases": {
+  "core-form.rs": {
+   "sha256": "4ec18727559af5691f3666f0d8b66a101106b0bb8f2ca7a1541b22d1518c5643",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "stdarch's const PartialEq for Simd: &[T; N] == &[T; N] needs T: [const] PartialEq from SimdElement's const PartialEq supertrait",
+   "batch": 3,
+   "probe": "core-form-cmp",
+   "rustgm_d901f562c": 1,
+   "rustgm_exploratory_19e2f209": 0
+  },
+  "direct-call.rs": {
+   "sha256": "797862a61506c1181dafa6c16d7bce95889837490ff60d85080167f1060db1f1",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "the array comparison through a path call, without the reference impl",
+   "batch": 3,
+   "probe": "direct-call-cmp",
+   "rustgm_d901f562c": 1,
+   "rustgm_exploratory_19e2f209": 0
+  },
+  "element-fn.rs": {
+   "sha256": "c46ae9e5d2105f629c3613a7d69504c5189568694b9ab663a8b3a243816726e4",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "a generic const fn compares arrays through the always-const supertrait",
+   "batch": 3,
+   "probe": "element-fn-cmp",
+   "rustgm_d901f562c": 1,
+   "rustgm_exploratory_19e2f209": 0
+  },
+  "ordinary-impl.rs": {
+   "sha256": "e1cf68c04943af172278f8465dc3d41e5c696d1741ff183ba4bb22520e9d65f3",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "an ordinary impl needs only PartialEq",
+   "batch": 3,
+   "probe": "ordinary-impl-cmp",
+   "rustgm_d901f562c": 0,
+   "rustgm_exploratory_19e2f209": 0
+  },
+  "plain-supertrait.rs": {
+   "sha256": "5110c333eb2d556a3daef270c0838af8cf3fe19d1b04624077087c3bd5e02594",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "E0277",
+   "form": "E0277 expected: a plain PartialEq supertrait does not give [const] PartialEq in a const impl",
+   "batch": 3,
+   "probe": "plain-supertrait-cmp",
+   "rustgm_d901f562c": 1,
+   "rustgm_exploratory_19e2f209": 1
+  },
+  "maybe-supertrait.rs": {
+   "sha256": "cfff4c653efc5b2fd4f5393bf77982efa93a8abd50c991813672376ef9635b7e",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "a [const] supertrait under a [const] SimdElement premise",
+   "batch": 3,
+   "probe": "maybe-supertrait-cmp",
+   "rustgm_d901f562c": 0,
+   "rustgm_exploratory_19e2f209": 0
+  },
+  "maybe-plain-premise.rs": {
+   "sha256": "cb8d2252d6b5fbdbbe00c258d0db43033c451313a0366393afd3fff150816a01",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "E0277",
+   "form": "E0277 expected: a plain SimdElement premise does not give its [const] supertrait as [const]",
+   "batch": 3,
+   "probe": "maybe-plain-premise-cmp",
+   "rustgm_d901f562c": 1,
+   "rustgm_exploratory_19e2f209": 1
+  },
+  "scalar-refs-op.rs": {
+   "sha256": "a14c8e2803dfa528a31f208bf4b35d8c016732cd2b064a0364e72962d40ff90e",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "`a == b` on `&T` through the reference impl's `[const]` premise",
+   "batch": 5,
+   "probe": "scalar-refs-op",
+   "rustgm_d901f562c": 1,
+   "rustgm_exploratory_19e2f209": 0
+  },
+  "scalar-op.rs": {
+   "sha256": "68641123ffe23d7cc15bff0848d3d1aca8d9d684419434e15bc361502721bc75",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "`*a == *b` through the always-const supertrait",
+   "batch": 5,
+   "probe": "scalar-op",
+   "rustgm_d901f562c": 1,
+   "rustgm_exploratory_19e2f209": 0
+  },
+  "transitive.rs": {
+   "sha256": "be8bee32a607358c86a8adb47120f16feded5df7812ebb8e6982a884c77c8fca",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "the const supertrait reached through a second trait",
+   "batch": 5,
+   "probe": "transitive",
+   "rustgm_d901f562c": 1,
+   "rustgm_exploratory_19e2f209": 0
+  },
+  "const-goal-const-premise.rs": {
+   "sha256": "fa08da769f32d47f8a086fd963d663657f10291a444fd417b5f51a73b5796b4a",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "a `const` requirement from a `const` premise",
+   "batch": 5,
+   "probe": "const-goal-const-premise",
+   "rustgm_d901f562c": 0,
+   "rustgm_exploratory_19e2f209": 0
+  },
+  "const-goal-supertrait.rs": {
+   "sha256": "0dfec219b6f704de4fa5b63295ba11de45b1716f9cc77f912a17f082ec97fcfc",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "a `const` requirement from the always-const supertrait",
+   "batch": 5,
+   "probe": "const-goal-supertrait",
+   "rustgm_d901f562c": 0,
+   "rustgm_exploratory_19e2f209": 0
+  },
+  "const-goal-maybe-premise.rs": {
+   "sha256": "02fedc6b189404da6cfa1bd837aacf5e649e6abcfeedf6aade57b3af9993c6d7",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "E0277",
+   "form": "a `const` requirement from a `[const]` premise",
+   "batch": 5,
+   "probe": "const-goal-maybe-premise",
+   "rustgm_d901f562c": 1,
+   "rustgm_exploratory_19e2f209": 1
+  },
+  "const-impl-maybe-premise.rs": {
+   "sha256": "c4313d2b13e6ff91c5bc64f83c906d22eed66b8dbab60e586270807266472c3a",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "E0277",
+   "form": "an impl's `const` premise from a `[const]` premise",
+   "batch": 5,
+   "probe": "const-impl-maybe-premise",
+   "rustgm_d901f562c": 1,
+   "rustgm_exploratory_19e2f209": 1
+  },
+  "const-impl-supertrait.rs": {
+   "sha256": "2aaac2ffc3da982b701342b201433f756ddab990bc6816b43cdc1961b81f993f",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "an impl's `const` premise from the always-const supertrait",
+   "batch": 5,
+   "probe": "const-impl-supertrait",
+   "rustgm_d901f562c": 1,
+   "rustgm_exploratory_19e2f209": 0
+  },
+  "ordinary-fn-supertrait.rs": {
+   "sha256": "1c4d86208554e4daafe1379537e9ff10400aa22afdd8420c07f64722e9ba6768",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "an ordinary function's comparison through the supertrait",
+   "batch": 5,
+   "probe": "ordinary-fn-supertrait",
+   "rustgm_d901f562c": 0,
+   "rustgm_exploratory_19e2f209": 0
+  },
+  "both-premises.rs": {
+   "sha256": "97903fd714d236ce75b02339bacaecf35e80c9c7b417e22bf119c95902e543ba",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "E0284",
+   "form": "a `[const]` goal with both a `const` and a `[const]` premise; declared ambiguous",
+   "batch": 5,
+   "probe": "both-premises",
+   "rustgm_d901f562c": 0,
+   "rustgm_exploratory_19e2f209": 1
+  },
+  "concrete-use.rs": {
+   "sha256": "ab5e8dafb1c181a7d1f954018bb83c3b4643177b501612dbce42dfc078970d12",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "core's Simd impl used at `u8`",
+   "batch": 5,
+   "probe": "concrete-use",
+   "rustgm_d901f562c": 1,
+   "rustgm_exploratory_19e2f209": 0
+  }
+ }
+}
