@@ -84,15 +84,16 @@ exploratory observation clears the six adapter `.into_try()` bodies. The first
 remaining failure is next_if_eq behind a diagnostic-formatting fence. Clean pin
 05289eb6 confirms this, with 49 records. Full 43188445172 for the helper-output
 commit stopped on one stale private delayed-Never expectation. Rust's E0308
-qualifies the updated cause; the full successor is pending.
+qualifies the updated cause, and full successor 43196757856 on dd7d8e9d3 passed.
 
 The [rigid candidate header checkpoint](docs/pa20-rigid-candidate-headers.md)
 refutes a trait implementation header that needs a goal's rigid associated item
 to equal a parameter or a concrete head, as rustc does. It adds five PA20 and
 one PA24 text outcomes, four native positives and seven source-core reductions.
-An exploratory observation clears next_if_eq and is_sorted. The first remaining
-failure is step_by first_size, a quantified body requirement. The clean pin,
-its observation and measurement are pending.
+Clean pin 487e0881 (source ec763f142) clears next_if_eq and is_sorted with no
+new reached failure, within its unchanged 120s observer (28 records). The first
+remaining failure is step_by first_size, a quantified body requirement. The
+measurement supports no speed claim either way.
 
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage

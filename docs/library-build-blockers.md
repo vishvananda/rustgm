@@ -12,8 +12,10 @@ reached failure. The unchanged 120s observer ends at 121.012s with 51 records,
 14,682 attempts and last item 9521, escape.rs:137. The first remaining failure
 is first_size 5171 at step_by.rs:232: a quantified body requirement needs a
 matching assumption or implementation. Then come other_size and fold 157:7745
-(unresolved call inputs). The clean pin and its observation are pending. No
-core artifact exists.
+(unresolved call inputs). Clean pin 487e0881 (source ec763f142) agrees. Its
+unchanged observer ends at 121.137s with 28 records, 13,270 attempts and last
+item 6977, fmt/builders.rs:341. It clears both bodies and adds no reached
+failure; the postcheck passes. No core artifact exists.
 
 The [projected inherent header checkpoint](pa20-projected-inherent-headers.md)
 normalizes a method candidate's projected implementation header, such as

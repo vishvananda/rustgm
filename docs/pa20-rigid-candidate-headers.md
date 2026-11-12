@@ -151,7 +151,38 @@ PA20 now has 1609 cases (1150 accept), and PA24 has 700 (502 accept). Upstream
 verification, the 468-root maintainer suite registration, layout, metadata and
 harness unit checks pass. No planned assignment is activated.
 
-## Core progress
+## Clean pin and core progress
+
+Clean published source ec763f142 freezes CLI
+`487e08812453bc5bf88735c38d5225cf344f95cc9fd05783b5ac28b559c4aead`, with 3910
+Rust hashes and an empty patch (`obj/parallel/peekable-eq/candidate-dev-fast`).
+It is byte-identical to the text-qualification candidate.
+
+**Original core.** The unchanged 120s observer ends at its deadline after
+121.137s, with 28 partial records and 13,270 attempts. The last item is 6977,
+fmt/builders.rs:341. Against clean 05289eb6 (49 records, 14,192 attempts, last
+item 8659) it clears `next_if_eq` 5023 and `is_sorted` 5811. No new failure
+appears among previously passing reached bodies. The first remaining failure is
+`first_size` 5171 at step_by.rs:232, as in the exploratory observation below.
+How far a partial run reaches depends on machine load. A first clean attempt
+under a load average near 80 stalled and is kept only as
+`original-clean-loaded-1/NOT-EVIDENCE.md`.
+
+The postcheck verifies all 722 source hashes, 375 opens, six configuration
+bindings and unchanged immutable bindings. The working tree already carried the
+next checkpoint's edits, so it checks the 3910 compiler hashes against the
+blobs of the producer's recorded head (`post-original-clean-head.py`). The
+progress SHA is
+`289509ffe82c564df05e30f8575addbc211653cd6f6181c207cf64b065110cb2`.
+
+**Measurement.** Fifty exclusive A/A plus ABBA accepting observations against
+05289eb6 preserve complete outputs. The controls are an ordinary import, the
+method-priority graph, source-core reference equality over plain parameters
+beside the `FnPtr` blanket, a projected receiver lookup and the inferred-path
+projected header. Paired wall ratios are 1.022/0.959/0.983/1.098/1.012,
+against A/A 0.989/1.046/0.883/1.204/0.819, at 18–55 ms. No optimized,
+neutrality or original-core speed is claimed; the bounded-work test above
+qualifies the work.
 
 **Exploratory observation.** Pin `obj/parallel/peekable-eq/wip1-dev-fast`
 (34ce5ba3) carries the relation before the test and fixture work. The unchanged
@@ -164,9 +195,6 @@ bodies.
 The first remaining failure is `first_size` 5171 at step_by.rs:232: "quantified
 body requirement needs a matching assumption or implementation". `other_size`
 follows, then `fold` 157:7745 (unresolved call inputs).
-
-A clean pin, its unchanged observation with the postcheck, and measurement
-follow publication; this checkpoint records them below when they complete.
 
 Partial counts make no throughput claim, and this is neither a complete census
 nor a core artifact.

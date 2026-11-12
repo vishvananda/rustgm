@@ -164,12 +164,17 @@ the passing receipts, not those attempts, qualify the current implementation.
     step_by.rs:232, a quantified body requirement.
   - Reduction history, including rejected prelude drafts, is in
     `obj/parallel/peekable-eq/reduce/declared.json`.
-- The comparison baseline stays clean pin
-  `obj/parallel/candidate-graph/candidate-dev-fast` (05289eb6, source
-  b1063aab2) until this checkpoint's clean pin passes its observation. The older
-  0665938a pin was retired and pruned; its producer evidence remains.
-- Full 43196757856 on dd7d8e9d3 covers the helper-output and projected-header
-  checkpoints. Check it before dispatching another full run.
+- Clean pin `obj/parallel/peekable-eq/candidate-dev-fast` (487e0881, source
+  ec763f142) passed its unchanged observation (28 records, first failure
+  first_size 5171), the postcheck and an A/A plus ABBA measurement. It is now
+  the comparison baseline. The 05289eb6 pin is retired; its producer evidence
+  remains.
+- Full 43196757856 on dd7d8e9d3 passed. It covers the helper-output and
+  projected-header checkpoints.
+- In progress: first_size/other_size 5171/5172. Closure capture classification
+  read Copy only from derives, so a captured source `impl Copy` value (core's
+  `NonZero<usize>`) made the closure FnOnce. Declared reductions and the
+  exploratory pin are in `obj/parallel/step-size/`.
 
 **2026-11-12 later update (supersedes the blocks below):**
 
