@@ -33,6 +33,12 @@ pub(super) struct Metadata {
     fields: Vec<TermId>,
     pub(super) lifetimes: universes::Interface,
 }
+impl Metadata {
+    /// The body's own callable signature, whose inputs may hold private regions.
+    pub(super) fn signature(&self) -> TermId {
+        self.signature
+    }
+}
 impl Checker<'_> {
     pub(super) fn enter_closure(
         &mut self,
@@ -294,7 +300,8 @@ impl Checker<'_> {
             self.facts.types.complete_closure(metadata.identity, kind)
         };
         completed.map_err(|e| self.error(body, e))?;
-        self.prepare_nested_output(&mut metadata.lifetimes, parent.body)?;
+        let signature = metadata.signature;
+        self.prepare_nested_output(&mut metadata.lifetimes, parent.body, Some(signature))?;
         self.closure_result_boundary(&metadata.lifetimes)?;
         // The child resumes these after its real incoming caller constraints.
         // Existing Exit work then performs the full original cast preparation.

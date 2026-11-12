@@ -1334,6 +1334,17 @@ references of the same depth and mutability, an earlier array referent unsizes
 to a later slice referent. Other earlier-to-later unsizings fail closed. See the
 [branch unsizing checkpoint](docs/pa31-branch-unsizing.md).
 
+A closure without an expected signature gets fresh parameter types. Its body
+can give a parameter a reference type whose region the body creates, as in
+`|a, b| Cmp::cmp2(a, b)`. That region is external to the closure body, as
+rustc's borrow checker makes every free region of a closure signature. It
+becomes an output port: the parent gets a fresh region, the body a universal
+slot, and the body's requirements on it become the parent's obligations.
+Imported input regions keep their identity. Instantiating such a closure inside
+an instantiated generic function fails closed until the port slots join the
+call binder that instantiation reconstructs. See the
+[closure input region checkpoint](docs/pa31-closure-input-regions.md).
+
 The bounded sizing profile requires actual sizing identities, complete headers
 and deny-explicit-impl restrictions before retaining fundamental, specialization
 or coinductive markers; those markers grant no general implementation or cycle

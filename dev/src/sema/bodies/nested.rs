@@ -190,7 +190,9 @@ impl Checker<'_> {
                 .ok_or_else(|| {
                     self.error(self.state.body.node, "missing output interface parent")
                 })?;
-            self.prepare_nested_output(scheduler.entries[index].payload.lifetimes_mut(), parent)?;
+            let payload = &mut scheduler.entries[index].payload;
+            let signature = payload.closure().ok().map(closures::Metadata::signature);
+            self.prepare_nested_output(payload.lifetimes_mut(), parent, signature)?;
         }
         let result = match kind {
             Some(Kind::Closure) => self.export_closure_inputs(&mut scheduler),

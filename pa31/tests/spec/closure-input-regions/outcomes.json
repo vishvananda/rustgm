@@ -1,0 +1,133 @@
+{
+ "schema": 1,
+ "declared": "2026-11-12, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run of each file (obj/parallel/closure-infer/core/declared.json, batches 1-10; batches 1, 3, 6 and 7 were malformed and are recorded there). Each case's first line records its prefix.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "base": "clean candidate 22902d20 (dfc2f922a)",
+ "declaration_agreement": "13/13 graded declarations agree with rustc. Of the recorded probes, deferred-path was declared accept and rustc rejects its uninitialized use (E0381).",
+ "lowering_gaps": "const-later-sig, const-later-sig-match, const-concrete and const-typed-fn type and stop in lowering at take's [const] Fn call (const invocation differs from its defining call-trait or effect fact); const-later-once and const-typed-once stop at the const closure body (const call operators require their actual source function owner). The annotated controls show both predate inferred inputs.",
+ "not_graded": {
+  "method-unknown2": "let c = |a, b| a.cmp2(b): rustc E0282; RustGM types it once the closure exports. deferred-receiver shows the same deferred method receiver without a closure on the base.",
+  "deferred-receiver": "let v; let r = v.cmp2(y); v = x;: rustc E0282; RustGM base and wip types it",
+  "generic-match (native)": "an unannotated closure inside an instantiated generic function: the frontend stops at closure signature lifetime interface differs from its body (obj/parallel/closure-infer/native)"
+ },
+ "cases": {
+  "later-sig.rs": {
+   "sha256": "1c120d40ff7ecd4a3266cf7ee951f2af0d2b8342c09cfc67ad67b23366d83f56",
+   "probe": "later-sig2",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "let c = |a, b| Cmp::cmp2(a, b); take(x, y, c): parameter types come from the later Fn(&'l A, &'l A) bound",
+   "batch": 2,
+   "rustgm_base_22902d20": "reject: invalid inference identity"
+  },
+  "later-sig-match.rs": {
+   "sha256": "1647809faa285bf2469a2de0b33e177b470afe682a967283fd98c1ca81b41e4d",
+   "probe": "later-sig-match2",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "core-shaped body: let c = |a, b| match Cmp::cmp2(a, b) { 0 => 1, n => n }",
+   "batch": 2,
+   "rustgm_base_22902d20": "reject: invalid inference identity"
+  },
+  "typed-params.rs": {
+   "sha256": "d72d6f8e536e7b03c465fad4caca96b7689471a6e972c3aac70dba64aeb8b332",
+   "probe": "typed-params2",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "control: let c = |a: &A, b: &A| Cmp::cmp2(a, b)",
+   "batch": 2,
+   "rustgm_base_22902d20": "accept at typing"
+  },
+  "direct-argument.rs": {
+   "sha256": "9609d3461a0fe81a8d3a08283cac93e2fb2c8d11dde6157741114eaae4f85287",
+   "probe": "direct-argument2",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "control: take(x, y, |a, b| Cmp::cmp2(a, b)); the expected bound supplies the signature",
+   "batch": 2,
+   "rustgm_base_22902d20": "accept at typing"
+  },
+  "static-bound-caller.rs": {
+   "sha256": "2c778ad485f18c0d3b7a312f460997ea3fd59cee61b8ee33b649e267e37104d7",
+   "probe": "static-bound-caller",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "control: the same closure with &'static caller references",
+   "batch": 4,
+   "rustgm_base_22902d20": "reject: invalid inference identity"
+  },
+  "static-bound.rs": {
+   "sha256": "94864e3de880000395d46cfdff0bf88090591b966ef66b10b866850fe2d6b455",
+   "probe": "static-bound",
+   "declared": 1,
+   "rustc": "reject E0521",
+   "form": "E0521 expected: let c = |a, b| keep5(a, b) with keep5<'x: 'static>; the parameter's private region must outlive 'static, and the caller passes a local borrow",
+   "batch": 4,
+   "rustgm_base_22902d20": "reject: invalid inference identity"
+  },
+  "const-later-sig.rs": {
+   "sha256": "19b27617613c5296af5a0f350147d046ebc0f836513bd5857eb8b0be6c04963f",
+   "probe": "const-later-sig8",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "core form: let c = const |a, b| Cmp::cmp2(a, b); take(x, y, c) under A: [const] Cmp (const stability on the trait, impl and functions)",
+   "batch": 8,
+   "rustgm_base_22902d20": "reject: invalid inference identity"
+  },
+  "const-later-sig-match.rs": {
+   "sha256": "2a5463c07bcad1581436dfc5186cf8f31ab8cd208eccdb00ee157dc6f57f59e7",
+   "probe": "const-later-sig-match8",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "core-shaped body: const |a, b| match Cmp::cmp2(a, b) { 0 => 1, n => n } (const stability on the trait, impl and functions)",
+   "batch": 8,
+   "rustgm_base_22902d20": "reject: invalid inference identity"
+  },
+  "const-concrete.rs": {
+   "sha256": "6f59725dd7c4a6e8f2f87c36686718f54b6456cf27e79b1999ca772ef4486968",
+   "probe": "const-concrete8",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "a concrete caller with const impl Cmp for u8 (const stability on the trait, impl and functions)",
+   "batch": 8,
+   "rustgm_base_22902d20": "reject: invalid inference identity"
+  },
+  "const-nonconst-impl.rs": {
+   "sha256": "eb33eb969f548cd9d82daadbbc6020d9da791093b658e44b4aeed147648559df",
+   "probe": "const-nonconst-impl8",
+   "declared": 1,
+   "rustc": "reject E0277",
+   "form": "E0277 expected: the same closure over u16, whose Cmp impl is not const (const stability on the trait, impl and functions)",
+   "batch": 8,
+   "rustgm_base_22902d20": "reject: invalid inference identity"
+  },
+  "const-typed-fn.rs": {
+   "sha256": "fec0eb12ead5ef9bff1a33b3ba15ee32ac18e4d44c667a4adfa7b32d22fccb6e",
+   "probe": "const-typed-fn",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "control: const-later-sig8 with annotated parameters |a: &A, b: &A|, so its prepared lowering failure (if any) does not come from inferred inputs",
+   "batch": 9,
+   "rustgm_base_22902d20": "accept at typing"
+  },
+  "const-later-once.rs": {
+   "sha256": "6ba70fe5f2f5d94c6831d61344e6d7e29ef77637fd3e9c2ac3aa483b20c2adfc",
+   "probe": "const-later-once",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "const-later-sig8 with take bounded by [const] FnOnce instead of [const] Fn",
+   "batch": 9,
+   "rustgm_base_22902d20": "reject: invalid inference identity"
+  },
+  "const-typed-once.rs": {
+   "sha256": "b90f0ba95cde512148baf10289d5d1baea3edc1dfed75928b09689f5ed0cf8d0",
+   "probe": "const-typed-once",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "control: const-later-once with annotated parameters |a: &A, b: &A|",
+   "batch": 10,
+   "rustgm_base_22902d20": "accept at typing"
+  }
+ }
+}

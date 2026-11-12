@@ -52,3 +52,5 @@ mod source_closures;
 
 #[path = "../../postponed_casts.rs"]
 mod postponed_casts;
+#[path = "../../unannotated_closure_inputs.rs"]
+mod unannotated_closure_inputs;

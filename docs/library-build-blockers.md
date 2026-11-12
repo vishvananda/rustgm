@@ -1,5 +1,19 @@
 # Library build blocker tracker
 
+The [closure input region checkpoint](pa31-closure-input-regions.md) fixes the
+"invalid inference identity" in core's `partial_compare` 7660 and `compare`
+7676 (`slice/cmp.rs:184`, `:287`). Their closures have no expected signature,
+and the body's path call gives each parameter a reference with a body-created
+region, which export could not map. Such regions are now output ports, as
+private result regions already were. Thirteen source-core reductions, two
+native programs and call-linear work qualify the fix. Recorded gaps remain for
+the later core build:
+
+- instantiating such a closure inside an instantiated generic function
+  ("closure signature lifetime interface differs from its body");
+- a `[const] Fn` call by reference in a const body;
+- a const closure body's own call.
+
 The [branch unsizing checkpoint](pa31-branch-unsizing.md) gives `if` and
 `match` branches one reference type, as rustc's `CoerceMany` does. Core's
 `Split::as_slice` 7874 (`slice/iter.rs:427`) returns

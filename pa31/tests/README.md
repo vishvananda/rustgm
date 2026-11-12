@@ -1037,3 +1037,15 @@ Typing rejects two array lengths with no expectation, a shared array against a
 integration test checks them through the CLI and prepared lowering, and an
 ignored native test runs four ordinary-mode programs. There is no graded
 manifest.
+
+`spec/closure-input-regions/` freezes thirteen declared no_core reductions of
+core's `partial_compare` and `compare`, which bind
+`const |a, b| match PartialOrd::partial_cmp(a, b) { ... }` before
+`chaining_impl` fixes the parameter types. Core's form, a `match` body,
+annotated and direct-argument controls, and a `'static` caller accept. A local
+borrow reaching a `'static` requirement is rejected by the enclosing body's
+lifetime proof (E0521), and a non-const impl by typing (E0277). Six const
+accepts type and stop at existing const closure lowering gaps. A maintainer
+integration test checks them through the CLI and prepared lowering, and an
+ignored native test runs two ordinary-mode programs. There is no graded
+manifest.

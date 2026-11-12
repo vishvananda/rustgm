@@ -8,7 +8,11 @@ use crate::{
         model::BodyRegionOrigin,
         nested_outputs::{Bridge, Formation, Link},
     },
-    types::{RegionId, substitute::Bound},
+    types::{
+        RegionId,
+        infer::{Constructor, TermId},
+        substitute::Bound,
+    },
 };
 
 pub(in crate::sema::bodies) struct Ports {
@@ -74,11 +78,18 @@ impl Checker<'_> {
         self.state.closures = Some(scheduler);
         result
     }
-    pub(in crate::sema::bodies) fn prepare_nested_output(
+    /// The result's private and imported regions, and the private regions of a
+    /// closure's inputs. rustc makes every free region of a closure signature
+    /// external to its body. A region that an unannotated parameter gains inside
+    /// the body becomes a port, as a private result region does, so the body's
+    /// requirements on it reach the parent. Imported input regions keep their
+    /// existing identity.
+    fn nested_port_regions(
         &mut self,
-        interface: &mut Interface,
+        interface: &Interface,
         parent: NodeKey,
-    ) -> Result<(), Error> {
+        signature: Option<TermId>,
+    ) -> Result<Vec<(RegionId, Option<RegionId>)>, Error> {
         let source = self.state.body;
         let result = self
             .state
@@ -89,6 +100,21 @@ impl Checker<'_> {
             .infer
             .map_regions(&mut self.facts.types, result, &mut observe)
             .map_err(|e| self.error(source.node, e))?;
+        let mut inputs = Bound::observe_regions();
+        if let Some(signature) = signature {
+            let Some(Constructor::Function { parameters, .. }) =
+                self.head(source.node, signature)?
+            else {
+                return Err(self.error(source.node, "missing closure body signature"));
+            };
+            for index in 0..parameters as usize {
+                let input = self.child(source.node, signature, index)?;
+                self.state
+                    .infer
+                    .map_regions(&mut self.facts.types, input, &mut inputs)
+                    .map_err(|e| self.error(source.node, e))?;
+            }
+        }
         let imported: HashMap<_, _> = interface
             .opening
             .universal_pairs()
@@ -103,27 +129,48 @@ impl Checker<'_> {
             })
             .map(|(caller, private)| (private, caller))
             .collect();
+        let private = |region: RegionId| {
+            region.bound_parts().is_none()
+                && region.0 != 0
+                && self
+                    .facts
+                    .body_regions
+                    .get(source, region)
+                    .is_some_and(|fact| {
+                        fact.body == source
+                            && !matches!(fact.origin, BodyRegionOrigin::UniversalAlias)
+                    })
+        };
         let mut regions: Vec<_> = observe
             .observed_regions()
             .filter_map(|region| {
                 if let Some(&caller) = imported.get(&region) {
                     return Some((region, Some(caller)));
                 }
-                (region.bound_parts().is_none()
-                    && region.0 != 0
-                    && self
-                        .facts
-                        .body_regions
-                        .get(source, region)
-                        .is_some_and(|fact| {
-                            fact.body == source
-                                && !matches!(fact.origin, BodyRegionOrigin::UniversalAlias)
-                        }))
-                .then_some((region, None))
+                private(region).then_some((region, None))
             })
             .collect();
+        regions.extend(
+            inputs
+                .observed_regions()
+                .filter(|region| !imported.contains_key(region) && private(*region))
+                .map(|region| (region, None)),
+        );
         regions.sort_unstable_by_key(|(region, _)| region.0);
-        self.facts.body_work.canonical_steps += observe.steps + interface.opening.universal_count();
+        regions.dedup_by_key(|(region, _)| region.0);
+        self.facts.body_work.canonical_steps +=
+            observe.steps + inputs.steps + interface.opening.universal_count();
+        Ok(regions)
+    }
+
+    pub(in crate::sema::bodies) fn prepare_nested_output(
+        &mut self,
+        interface: &mut Interface,
+        parent: NodeKey,
+        signature: Option<TermId>,
+    ) -> Result<(), Error> {
+        let source = self.state.body;
+        let regions = self.nested_port_regions(interface, parent, signature)?;
         for (private, caller) in regions {
             if interface
                 .outputs

@@ -203,6 +203,14 @@ The [branch unsizing checkpoint](docs/pa31-branch-unsizing.md) gives `if` and
 to a later `&[T]`. Core's `Split::as_slice` and `SplitInclusive::next_back`
 need this. Fourteen source-core reductions agree with rustc.
 
+The [closure input region checkpoint](docs/pa31-closure-input-regions.md) lets a
+closure without an expected signature export parameter types that its body
+gave reference regions, as core's `partial_compare` and `compare` closures do.
+Those regions become output ports, so the body's lifetime requirements reach
+the enclosing body. Thirteen source-core reductions agree with rustc. Generic
+instantiation of such closures and two const closure lowering paths remain
+recorded gaps.
+
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage
 limit controls, pass text, independent Rust and native checks with frozen a08ab1a4.

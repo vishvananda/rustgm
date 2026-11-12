@@ -149,6 +149,25 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-12 closure input region update (supersedes the blocks below):**
+
+- The `partial_compare` 7660 and `compare` 7676 "invalid inference identity"
+  failures have a typing fix ([evidence](docs/pa31-closure-input-regions.md)).
+  Private regions in an unannotated closure's inputs are output ports.
+  - Thirteen reductions are in `pa31/tests/spec/closure-input-regions`. The ten
+    batches (four malformed), the debug traces and the native probes are in
+    `obj/parallel/closure-infer/`.
+  - Recorded gaps for the core build's later lowering stage:
+    - generic instantiation of these closures (port slots follow the call
+      binder);
+    - a const `[const] Fn` call by reference;
+    - a const closure body's own call;
+    - existing leniency for method calls on unknown receivers (rustc E0282).
+  - No core observation of this change has run yet. The branch unsizing clean
+    candidate observation is queued behind a stricter load gate (1-minute < 14
+    and 5-minute < 20). Its first attempt ran while load rose to 62 and ended
+    at item 5510 with no record (`original-candidate-load62`).
+
 **2026-11-12 branch unsizing update (supersedes the blocks below):**
 
 - The `as_slice` 7874 and `next_back` 7900 "incompatible types" failures have

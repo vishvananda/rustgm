@@ -1,0 +1,13 @@
+pa31/tests/spec/closure-input-regions/later-sig.rs	0
+pa31/tests/spec/closure-input-regions/later-sig-match.rs	0
+pa31/tests/spec/closure-input-regions/typed-params.rs	0
+pa31/tests/spec/closure-input-regions/direct-argument.rs	0
+pa31/tests/spec/closure-input-regions/static-bound-caller.rs	0
+pa31/tests/spec/closure-input-regions/static-bound.rs	1
+pa31/tests/spec/closure-input-regions/const-later-sig.rs	0
+pa31/tests/spec/closure-input-regions/const-later-sig-match.rs	0
+pa31/tests/spec/closure-input-regions/const-concrete.rs	0
+pa31/tests/spec/closure-input-regions/const-nonconst-impl.rs	1
+pa31/tests/spec/closure-input-regions/const-typed-fn.rs	0
+pa31/tests/spec/closure-input-regions/const-later-once.rs	0
+pa31/tests/spec/closure-input-regions/const-typed-once.rs	0

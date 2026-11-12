@@ -132,7 +132,7 @@ impl Checker<'_> {
             .payload
             .inline_mut()
             .map_err(|e| self.error(body, e))?;
-        self.prepare_nested_output(&mut metadata.lifetimes, parent.body)?;
+        self.prepare_nested_output(&mut metadata.lifetimes, parent.body, None)?;
         std::mem::swap(&mut entry.inputs.context, &mut self.state.infer);
         let mut closing = metadata
             .lifetimes
