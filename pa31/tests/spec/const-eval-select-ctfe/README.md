@@ -11,8 +11,11 @@ opposites remain in the runtime cluster and are referenced without replacement.
 
 Each new source retains the original qualified semantic provider prefix and its
 body-bearing `const_eval_select` placeholder. Correct CTFE enters the evaluated
-F callback directly; ordinary runtime enters G. Conditional callback fixtures
-retain B's eligibility frontier, and nonempty conditional payment shapes remain
+F callback directly; ordinary runtime enters G. Since the
+[conditional const item checkpoint](../../../../docs/pa25-conditional-const-items.md),
+B proves a conditional F's own `[const]` conditions, so `conditional-empty`
+executes with its declared `7 1` through the existing empty-argument payment
+profile. Nonempty conditional payment shapes (`conditional-nonempty`) remain
 unsupported by the current payment profile.
 
 The provider declarations derive from Rust core revision

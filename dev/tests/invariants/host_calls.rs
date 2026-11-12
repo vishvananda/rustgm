@@ -159,11 +159,12 @@ fn const_callable_rejects_forged_signature_and_retains_unpaid_instance() -> Test
         signature,
     })?;
     let goal = predicate(&mut facts, selected, Constness::Const)?;
-    let error = select(&mut facts, goal)
-        .err()
-        .ok_or("unpaid conditional callable accepted")?
-        .to_string();
-    assert!(error.contains("scoped continuation"), "{error}");
+    // The item's substituted `u8: [const] Clone` condition meets only a
+    // non-const impl, so its scoped proof refutes the unpaid instance.
+    assert!(matches!(
+        select(&mut facts, goal)?,
+        selection::Selection::Absent
+    ));
     facts.lifetimes.callables = crate::types::callable::Templates::default();
     assert!(matches!(
         select(&mut facts, goal)?,

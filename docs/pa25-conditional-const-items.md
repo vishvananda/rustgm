@@ -91,6 +91,25 @@ CLI, PA24's complete text oracle with the dev-fast CLI, and seven exact tests:
 - the source Copy capture outcomes;
 - two PA25 const closure tests.
 
+Full CI 43228587411 on 31466e311 then failed two tests that still asserted the
+removed fence; the focused selection had not included them:
+
+- The private eligibility invariant selected `conditional::<u8>` for
+  `const fn conditional<T: [const] Clone>()` and expected the fence error. Its
+  fixture's `impl Clone for u8` is non-const, so the scoped proof now refutes
+  the goal (`Selection::Absent`), and the invariant asserts that.
+- The CTFE selector frontier expected the fence for both conditional
+  `const_eval_select` fixtures, which are valid Rust. `conditional-empty` now
+  lowers through the existing empty-argument payment profile. It joins the
+  native positives and prints its declared `7 1`. `conditional-nonempty` now
+  stops at the explicit "nonempty conditional callback payment is not
+  implemented" boundary, which the frontier asserts.
+
+Focused receipts 1794493936240703620 (the private invariant and both CTFE
+selector tests) and 1794493229893621408 (the native CTFE selector test) pass.
+They were run on a working tree that also carried the next checkpoint's
+uncommitted callable-input change.
+
 Bounded work (`obj/parallel/item-conditions/scaling-work.txt`), for 8/32/128
 const fns passing `T::default` (member) or a nested conditional const fn
 (nested) to a `[const] FnOnce` bound:

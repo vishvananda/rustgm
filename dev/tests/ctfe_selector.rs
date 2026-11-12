@@ -11,6 +11,7 @@ const POSITIVE: &[(&str, &str)] = &[
     ("null-raw-read-runtime-opposite", "9\n"),
     ("same-item-instances", "7 1\n"),
     ("conditional-owner-two-selectors", "7 1\n"),
+    ("conditional-empty", "7 1\n"),
 ];
 fn fixture(name: &str, extension: &str) -> TestResult<String> {
     Ok(std::fs::read_to_string(
@@ -58,22 +59,18 @@ fn source_ctfe_selector_retains_generic_lifetime_and_conditional_payment_frontie
         ),
         "{error}"
     );
-    for name in ["conditional-empty", "conditional-nonempty"] {
-        let error = lower(&fixture(name, "rs")?)
-            .err()
-            .ok_or_else(|| {
-                format!(
-                    "{name}: conditional callable authority changed; review its reached payment"
-                )
-            })?
-            .to_string();
-        assert!(
-            error.contains(
-                "source const callable conditional obligations require a scoped continuation"
-            ),
-            "{name}: {error}"
-        );
-    }
+    // Scoped item proofs now admit the conditional F; only the existing
+    // empty-argument payment profile may pay its reached selection.
+    let error = lower(&fixture("conditional-nonempty", "rs")?)
+        .err()
+        .ok_or("nonempty conditional payment acquired an unreviewed profile")?
+        .to_string();
+    assert!(
+        error.contains(
+            "source const_eval_select nonempty conditional callback payment is not implemented"
+        ),
+        "{error}"
+    );
     Ok(())
 }
 #[test]
