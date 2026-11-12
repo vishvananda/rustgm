@@ -258,11 +258,15 @@ fn source_try_captures_execute_actual_value_output_and_residual_calls() -> TestR
     )
 }
 
-fn match_capture_program(owner: &str) -> TestResult<rustgm::lowir::program::Program> {
+fn captured_callback_program(
+    owner: &str,
+    packet: &str,
+    identity: &str,
+) -> TestResult<rustgm::lowir::program::Program> {
     if owner == "pa31" {
-        return callback_result_program("match-captures/native-order", "match_capture_execution");
+        return callback_result_program(&format!("{packet}/native-order"), identity);
     }
-    let text = crate::resolve::fixture("pa24/tests/spec/match-captures/native-order.rs")?;
+    let text = crate::resolve::fixture(&format!("pa24/tests/spec/{packet}/native-order.rs"))?;
     let report = crate::resolve::resolve(&text, true)?;
     let facts = rustgm::sema::declarations::analyze(&report)?;
     let analysis = rustgm::pipeline::analyze(&report, facts)?;
@@ -272,7 +276,7 @@ fn match_capture_program(owner: &str) -> TestResult<rustgm::lowir::program::Prog
 #[test]
 fn computed_match_captures_prepare_actual_both_variant_calls() -> TestResult {
     for owner in ["pa24", "pa31"] {
-        match_capture_program(owner)?;
+        captured_callback_program(owner, "match-captures", "match_capture_execution")?;
     }
     Ok(())
 }
@@ -288,9 +292,38 @@ fn computed_match_captures_execute_callbacks_once_in_branch_order() -> TestResul
             &root,
             &out,
             owner,
-            &match_capture_program(owner)?,
+            &captured_callback_program(owner, "match-captures", "match_capture_execution")?,
             &crate::resolve::fixture(&format!("{owner}/tests/spec/match-captures/observer.c"))?,
             "match-capture 7 9 12314\n",
+        )?;
+    }
+    Ok(())
+}
+
+#[test]
+fn helper_inputs_prepare_actual_calls_with_distinct_inputs_sharing_one_result() -> TestResult {
+    for owner in ["pa24", "pa31"] {
+        captured_callback_program(owner, "flatten-helper-inputs", "flatten_helper_execution")?;
+    }
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn helper_inputs_execute_distinct_conversions_and_callbacks_once() -> TestResult {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let out = root.join("obj/parallel/flatten-helper-inputs/native");
+    std::fs::create_dir_all(&out)?;
+    for owner in ["pa24", "pa31"] {
+        crate::ffi_program::check(
+            &root,
+            &out,
+            owner,
+            &captured_callback_program(owner, "flatten-helper-inputs", "flatten_helper_execution")?,
+            &crate::resolve::fixture(&format!(
+                "{owner}/tests/spec/flatten-helper-inputs/observer.c"
+            ))?,
+            "flatten-helper 7 9 1234\n",
         )?;
     }
     Ok(())

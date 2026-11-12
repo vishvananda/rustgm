@@ -5749,6 +5749,16 @@ A captured-place scrutinee requires separate selected pattern operations;
 discriminant reads, wildcards and independent fields must not become blanket
 value moves. Required controls remain in the [match capture checkpoint](docs/pa24-match-captures.md).
 
+A helper returning an opaque callable may receive its inputs from the caller's
+required callable bound. Map the opaque type's formal type, const and lifetime
+captures into the owning inference graph as an ephemeral result; reuse indexed
+declaration templates, and let one compatible declared callable clause supply
+input equations through the existing Probe before projection readiness. Never
+infer an associated projection's inputs from its result, read the hidden type or
+cache unresolved caller terms; the original selector still proves the complete
+trait, formation and lifetime requirements. Pending controls are in the
+[helper input checkpoint](docs/pa24-flatten-helper-inputs.md).
+
 A canonical caller premise may bind an inference hole to its complete projected
 input type. Use the shared scoped worklist; collect comparisons between projection
 results for exact identity or the existing certified-normal-premise relation.

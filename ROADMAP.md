@@ -60,6 +60,12 @@ bodies; first remaining is FlattenCompat::iter_fold at its nested helper call.
 Pinned inputs/configuration/limits verify; full successor qualification remains
 pending. No original artifact or planned-assignment completion is claimed.
 
+The [helper return-input checkpoint](docs/pa24-flatten-helper-inputs.md) relates
+opaque helper callable inputs through published bounds:46 complete API outcomes
+from52 independent contracts,23 new PA24 text outcomes, actual ordinary/source
+native7/9/1234 and call-linear bounded work. Six entire contracts remain required.
+Immutable original observation and full successor qualification are pending.
+
 | PA | Assignment | Status |
 | --- | --- | --- |
 | [1](pa1/README.md) | Source and tokens | implemented-draft |

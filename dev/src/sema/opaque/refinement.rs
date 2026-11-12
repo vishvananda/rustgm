@@ -4,11 +4,10 @@ use crate::{
     sema::model::Declarations,
     types::{
         Kind, RegionId,
-        arguments::Argument as Canonical,
         infer::{Context, Instantiation, TermId, arguments::Argument, predicates::Predicate},
         opaque::OpaqueId,
         outlives::ResultId,
-        parameters::{ParameterId, argument_id},
+        parameters::ParameterId,
         substitute::{Alias, Bound},
     },
 };
@@ -35,27 +34,14 @@ pub(in crate::sema) fn application(
     let Some(Kind::Opaque(_, formal)) = facts.types.kind(declaration.application) else {
         return Err("invalid inferred result template".into());
     };
+    let mut captures = declaration.inferred_arguments(&facts.types, &actual)?;
     let predicate = super::overrides::requirement(facts, Alias::TraitResult(id, formal))?;
-    let formal = facts
-        .types
-        .arguments(formal)
-        .ok_or("invalid inferred capture template")?;
-    if formal.len() != actual.len() {
-        return Err("inferred result capture arity mismatch".into());
-    }
-    let mut regions = Vec::new();
-    let mut bindings = Vec::new();
-    for (formal, &actual) in formal.zip(&actual) {
-        match (formal, actual) {
-            (Canonical::Lifetime(formal), Argument::Lifetime(actual)) => {
-                super::captures::set_region(&mut regions, formal, actual)?;
-            }
-            (formal, actual) => bindings.push((argument_id(&facts.types, formal)?, actual)),
-        }
-    }
-    let predicate = Bound::new(regions).predicate(&mut facts.types, predicate)?;
+    let predicate = captures.regions.predicate(&mut facts.types, predicate)?;
+    context
+        .account_work(captures.regions.steps)
+        .map_err(inference)?;
     let mut substitution =
-        Instantiation::new(context, &facts.types, &bindings).map_err(inference)?;
+        Instantiation::new(context, &facts.types, &captures.parameters).map_err(inference)?;
     let predicate = context
         .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
         .map_err(inference)?;

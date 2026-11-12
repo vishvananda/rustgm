@@ -30,6 +30,15 @@ pub struct Declaration {
     pub(crate) free_regions: Vec<crate::types::RegionId>,
 }
 
+/// One query's capture substitution; inference terms stay in their owning graph.
+pub(crate) struct InferredCaptures {
+    pub regions: crate::types::substitute::Bound,
+    pub parameters: Vec<(
+        crate::types::parameters::ParameterId,
+        crate::types::infer::arguments::Argument,
+    )>,
+}
+
 impl Declaration {
     pub(crate) fn require_current(
         &self,

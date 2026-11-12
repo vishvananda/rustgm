@@ -149,6 +149,12 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-12 update:** steps1–4 are complete and committed as the helper-input
+checkpoint ([evidence](docs/pa24-flatten-helper-inputs.md)). Twenty-three reviewed
+PA24 triples are generated; all prior PA1–PA24 references reproduce; upstream and
+harness pass. Two shared-output fixtures were revised before publication because
+Rust code-generates their non-generic private impl methods. Steps5–7 follow.
+
 1. Inspect B's Git state and `handoff-state.json`; preserve the existing changes.
    The compiler and fixtures have not been committed or pushed.
 2. Qualify the23 new ordinary course cases through the actual CLI library path,

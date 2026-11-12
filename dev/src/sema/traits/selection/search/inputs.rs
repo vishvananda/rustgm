@@ -50,6 +50,17 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Option<Action>, String> {
+        match frame
+            .inputs
+            .context
+            .head(&facts.types, frame.goal.subject())
+        {
+            Ok(Some(infer::Constructor::Opaque(..))) => {
+                self.infer_callable_inputs(facts, frame)?;
+            }
+            Ok(_) | Err(infer::Error::Normalization | infer::Error::Unresolved) => {}
+            Err(error) => return Err(inference(error)),
+        }
         if let Some(original) = frame.canonical
             && !original.contains_projections(&facts.types)?
         {

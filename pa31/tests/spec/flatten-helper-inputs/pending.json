@@ -1,0 +1,104 @@
+{
+  "schema": 1,
+  "required_contracts": [
+    {
+      "owner": "pa31",
+      "name": "escaping-helper",
+      "path": "pa31/tests/spec/flatten-helper-inputs/escaping-helper.rs",
+      "sha256": "97e9ad68a35ac6f7189fe7b17cf29380922ffe592c54a330a4bb38c6bfc50597",
+      "expected_rust_object_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "rustc": {
+        "status": 1,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "flatten_helper",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/inputs/pa31-escaping-helper.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/baseline/23.o"
+        ],
+        "diagnostic": "error[E0310]: the parameter type `F` may not live long enough\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/inputs/pa31-escaping-helper.rs:70:85\n   |\n70 | fn code<T:IntoIterator,B,F:FnMut(B,T::IntoIter)->B>(mut fold:F)->impl FnMut(B,T)->B{flatten(&mut fold)}\n   |                                                                                     ^^^^^^^^^^^^^^^^^^\n   |                                                                                     |\n   |                                                                                     the parameter type `F` must be valid for the static lifetime...\n   |                                                                                     ...so that the type `F` will meet its required lifetime bounds\n   |\nhelp: consider adding an explicit lifetime bound\n   |\n70 | fn code<T:IntoIterator,B,F:FnMut(B,T::IntoIter)->B + 'static>(mut fold:F)->impl FnMut(B,T)->B{flatten(&mut fold)}\n   |                                                    +++++++++\n\nerror[E0597]: `fold` does not live long enough\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/inputs/pa31-escaping-helper.rs:70:93\n   |\n70 | fn code<T:IntoIterator,B,F:FnMut(B,T::IntoIter)->B>(mut fold:F)->impl FnMut(B,T)->B{flatten(&mut fold)}\n   |                                                     --------                        --------^^^^^^^^^-- `fold` dropped here while still borrowed\n   |                                                     |                               |       |\n   |                                                     |                               |       borrowed value does not live long enough\n   |                                                     |                               argument requires that `fold` is borrowed for `'static`\n   |                                                     binding `fold` declared here\n\nerror: aborting due to 2 previous errors\n\nSome errors have detailed explanations: E0310, E0597.\nFor more information about an error, try `rustc --explain E0310`.\n"
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@flatten_helper",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "flatten_helper",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/inputs/pa31-escaping-helper.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3737: trait obligation requires an unambiguous matching assumption or implementation\n"
+      },
+      "frozen_plan_input": "obj/parallel/flatten-helper-inputs/inputs/pa31-escaping-helper.rs",
+      "exit_status": 1,
+      "candidate_complete_prepared_root_qualified": false,
+      "qualification": "Required implicit return-opaque input-context negative; earlier unresolved input is not qualified as its lifetime rejection."
+    },
+    {
+      "owner": "pa31",
+      "name": "borrowed-return-inferred",
+      "path": "pa31/tests/spec/flatten-helper-inputs/borrowed-return-inferred.rs",
+      "sha256": "81215fcdf740545b7b20e56e2c48fa99890f3c5ee87e53d65b4d80c51e62e74d",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "flatten_helper",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/return-context-inputs/pa31-borrowed-return-inferred.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/return-context-observations/2.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@flatten_helper",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "flatten_helper",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/return-context-inputs/pa31-borrowed-return-inferred.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3757: trait obligation requires an unambiguous matching assumption or implementation\n"
+      },
+      "frozen_plan_input": "obj/parallel/flatten-helper-inputs/return-context-inputs/pa31-borrowed-return-inferred.rs",
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false
+    }
+  ]
+}

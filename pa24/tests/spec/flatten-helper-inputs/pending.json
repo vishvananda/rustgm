@@ -1,0 +1,226 @@
+{
+  "schema": 1,
+  "required_contracts": [
+    {
+      "owner": "pa24",
+      "name": "escaping-helper",
+      "path": "obj/parallel/flatten-helper-inputs/inputs/pa24-escaping-helper.rs",
+      "sha256": "acd62beebca43d1aa7f2c5effddd6bd3f179e191fe86d18e6d7f3fdb60602e8e",
+      "expected_rust_object_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "rustc": {
+        "status": 1,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "flatten_helper",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/inputs/pa24-escaping-helper.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/baseline/11.o"
+        ],
+        "diagnostic": "error[E0310]: the parameter type `F` may not live long enough\n --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/inputs/pa24-escaping-helper.rs:4:85\n  |\n4 | fn code<T:IntoIterator,B,F:FnMut(B,T::IntoIter)->B>(mut fold:F)->impl FnMut(B,T)->B{flatten(&mut fold)}\n  |                                                                                     ^^^^^^^^^^^^^^^^^^\n  |                                                                                     |\n  |                                                                                     the parameter type `F` must be valid for the static lifetime...\n  |                                                                                     ...so that the type `F` will meet its required lifetime bounds\n  |\nhelp: consider adding an explicit lifetime bound\n  |\n4 | fn code<T:IntoIterator,B,F:FnMut(B,T::IntoIter)->B + 'static>(mut fold:F)->impl FnMut(B,T)->B{flatten(&mut fold)}\n  |                                                    +++++++++\n\nerror[E0597]: `fold` does not live long enough\n --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/inputs/pa24-escaping-helper.rs:4:93\n  |\n4 | fn code<T:IntoIterator,B,F:FnMut(B,T::IntoIter)->B>(mut fold:F)->impl FnMut(B,T)->B{flatten(&mut fold)}\n  |                                                     --------                        --------^^^^^^^^^-- `fold` dropped here while still borrowed\n  |                                                     |                               |       |\n  |                                                     |                               |       borrowed value does not live long enough\n  |                                                     |                               argument requires that `fold` is borrowed for `'static`\n  |                                                     binding `fold` declared here\n\nerror: aborting due to 2 previous errors\n\nSome errors have detailed explanations: E0310, E0597.\nFor more information about an error, try `rustc --explain E0310`.\n"
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/inputs/pa24-escaping-helper.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 386: trait obligation requires an unambiguous matching assumption or implementation\n"
+      },
+      "frozen_plan_input": "obj/parallel/flatten-helper-inputs/inputs/pa24-escaping-helper.rs",
+      "exit_status": 1,
+      "candidate_complete_prepared_root_qualified": false,
+      "qualification": "Required implicit return-opaque input-context negative; earlier unresolved input is not qualified as its lifetime rejection.",
+      "source_utf8": "trait IntoIterator{type IntoIter;fn into_iter(self)->Self::IntoIter;}\ntrait Iterator:Sized{type Item;fn fold<B,F>(self,init:B,f:F)->B where F:FnMut(B,Self::Item)->B;}\nfn flatten<T:IntoIterator,B>(fold:&mut impl FnMut(B,T::IntoIter)->B)->impl FnMut(B,T)->B+'_ {move|acc,item|fold(acc,item.into_iter())}\nfn code<T:IntoIterator,B,F:FnMut(B,T::IntoIter)->B>(mut fold:F)->impl FnMut(B,T)->B{flatten(&mut fold)}\n",
+      "serialized_in": "pa24/tests/spec/flatten-helper-inputs/pending.json"
+    },
+    {
+      "owner": "pa24",
+      "name": "borrowed-return-inferred",
+      "path": "obj/parallel/flatten-helper-inputs/return-context-inputs/pa24-borrowed-return-inferred.rs",
+      "sha256": "d8f50fd4df66d4001ea5ec1babd223e77ef952fe7338f095c2387271c904ccde",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "flatten_helper",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/return-context-inputs/pa24-borrowed-return-inferred.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/return-context-observations/0.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/return-context-inputs/pa24-borrowed-return-inferred.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 406: trait obligation requires an unambiguous matching assumption or implementation\n"
+      },
+      "frozen_plan_input": "obj/parallel/flatten-helper-inputs/return-context-inputs/pa24-borrowed-return-inferred.rs",
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "source_utf8": "trait IntoIterator{type IntoIter;fn into_iter(self)->Self::IntoIter;}\ntrait Iterator:Sized{type Item;fn fold<B,F>(self,init:B,f:F)->B where F:FnMut(B,Self::Item)->B;}\nfn flatten<T:IntoIterator,B>(fold:&mut impl FnMut(B,T::IntoIter)->B)->impl FnMut(B,T)->B+'_ {move|acc,item|fold(acc,item.into_iter())}\nfn proxy<'a,T:IntoIterator+'a,B:'a,F:FnMut(B,T::IntoIter)->B+'a>(fold:&'a mut F)->impl FnMut(B,T)->B+'a{flatten(fold)}\n",
+      "serialized_in": "pa24/tests/spec/flatten-helper-inputs/pending.json",
+      "qualification": "Required positive for inference through an enclosing opaque return contract, separate from call-argument inference."
+    },
+    {
+      "owner": "pa24",
+      "name": "native-nominal-impl",
+      "path": "obj/parallel/flatten-helper-inputs/more-inputs/pa24-native-order.rs",
+      "sha256": "048253fdb70c247c3632227e6f032b81db7b3e5e29c0f92033b0e9f14649fdc8",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "observer_path": "pa24/tests/spec/flatten-helper-inputs/observer.c",
+      "observer_sha256": "3a6d696fa9a7481260ed04b33abad6c8f124efca57d0f5b853da235d981b2549",
+      "expected_runtime_stdout": "flatten-helper 7 9 1234\n",
+      "required_native_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "flatten_helper_extra",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/more-inputs/pa24-native-order.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/more-observations/16.o"
+        ],
+        "diagnostic": ""
+      },
+      "link": {
+        "command": [
+          "cc",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/more-inputs/observer.c",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/more-observations/16.o",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/more-observations/16.execute"
+        ],
+        "status": 0
+      },
+      "independent_native": {
+        "status": 0,
+        "stdout": "flatten-helper 7 9 1234\n",
+        "stderr": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/more-inputs/pa24-native-order.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 701: associated type requires an unambiguous validated implementation\n"
+      },
+      "frozen_plan_input": "obj/parallel/flatten-helper-inputs/more-inputs/pa24-native-order.rs",
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "source_utf8": "trait IntoIterator{type IntoIter;fn into_iter(self)->Self::IntoIter;}\ntrait Iterator:Sized{type Item;fn fold<B,F>(self,init:B,f:F)->B where F:FnMut(B,Self::Item)->B;}\nfn flatten<T:IntoIterator,B>(fold:&mut impl FnMut(B,T::IntoIter)->B)->impl FnMut(B,T)->B+'_ {move|acc,item|fold(acc,item.into_iter())}\nunsafe extern \"C\" { fn record(tag:u8,value:u8); }\nstruct Bucket(u8);struct Left(u8);struct Right(u8);struct One(Left);struct Two(Right);\nimpl IntoIterator for Left{type IntoIter=Bucket;fn into_iter(self)->Bucket{unsafe{record(1,self.0)};Bucket(self.0)}}\nimpl IntoIterator for Right{type IntoIter=Bucket;fn into_iter(self)->Bucket{unsafe{record(3,9)};Bucket(9)}}\nimpl Iterator for One{type Item=Left;fn fold<B,F>(self,init:B,mut fold:F)->B where F:FnMut(B,Left)->B{fold(init,self.0)}}\nimpl Iterator for Two{type Item=Right;fn fold<B,F>(self,init:B,mut fold:F)->B where F:FnMut(B,Right)->B{fold(init,self.0)}}\nfn apply<I:Iterator,B,F>(iter:I,acc:B,mut fold:F)->B where I::Item:IntoIterator,F:FnMut(B,<I::Item as IntoIterator>::IntoIter)->B{iter.fold(acc,flatten(&mut fold))}\n#[unsafe(no_mangle)]pub extern \"C\" fn code(value:u8)->u8{\n let first=apply(One(Left(value)),3,|_acc,bucket:Bucket|{unsafe{record(2,bucket.0)};bucket.0});\n let second=apply(Two(Right(value)),9,|_acc,bucket:Bucket|{unsafe{record(4,bucket.0)};bucket.0});\n first;second\n}\n",
+      "serialized_in": "pa24/tests/spec/flatten-helper-inputs/pending.json",
+      "qualification": "Required positive: generic impl callable-output conformance stops before helper inference; no rejection/native artifact qualified."
+    },
+    {
+      "owner": "pa24",
+      "name": "native-self-item",
+      "path": "obj/parallel/flatten-helper-inputs/self-item-native-input/native-order.rs",
+      "sha256": "1fceab014b0e261ae64b6c66f9861f71632542c52a62f4aff970b99c06637391",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "observer_path": "obj/parallel/flatten-helper-inputs/more-inputs/observer.c",
+      "observer_sha256": "3a6d696fa9a7481260ed04b33abad6c8f124efca57d0f5b853da235d981b2549",
+      "expected_runtime_stdout": "flatten-helper 7 9 1234\n",
+      "required_native_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "flatten_helper_extra",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/self-item-native-input/native-order.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/self-item-native-observations/0.o"
+        ],
+        "diagnostic": ""
+      },
+      "link": {
+        "command": [
+          "cc",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/more-inputs/observer.c",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/self-item-native-observations/0.o",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/self-item-native-observations/0.execute"
+        ],
+        "status": 0
+      },
+      "independent_native": {
+        "status": 0,
+        "stdout": "flatten-helper 7 9 1234\n",
+        "stderr": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/flatten-helper-inputs/self-item-native-input/native-order.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 701: associated type requires an unambiguous validated implementation\n"
+      },
+      "source_utf8": "trait IntoIterator{type IntoIter;fn into_iter(self)->Self::IntoIter;}\ntrait Iterator:Sized{type Item;fn fold<B,F>(self,init:B,f:F)->B where F:FnMut(B,Self::Item)->B;}\nfn flatten<T:IntoIterator,B>(fold:&mut impl FnMut(B,T::IntoIter)->B)->impl FnMut(B,T)->B+'_ {move|acc,item|fold(acc,item.into_iter())}\nunsafe extern \"C\" { fn record(tag:u8,value:u8); }\nstruct Bucket(u8);struct Left(u8);struct Right(u8);struct One(Left);struct Two(Right);\nimpl IntoIterator for Left{type IntoIter=Bucket;fn into_iter(self)->Bucket{unsafe{record(1,self.0)};Bucket(self.0)}}\nimpl IntoIterator for Right{type IntoIter=Bucket;fn into_iter(self)->Bucket{unsafe{record(3,9)};Bucket(9)}}\nimpl Iterator for One{type Item=Left;fn fold<B,F>(self,init:B,mut fold:F)->B where F:FnMut(B,Self::Item)->B{fold(init,self.0)}}\nimpl Iterator for Two{type Item=Right;fn fold<B,F>(self,init:B,mut fold:F)->B where F:FnMut(B,Self::Item)->B{fold(init,self.0)}}\nfn apply<I:Iterator,B,F>(iter:I,acc:B,mut fold:F)->B where I::Item:IntoIterator,F:FnMut(B,<I::Item as IntoIterator>::IntoIter)->B{iter.fold(acc,flatten(&mut fold))}\n#[unsafe(no_mangle)]pub extern \"C\" fn code(value:u8)->u8{\n let first=apply(One(Left(value)),3,|_acc,bucket:Bucket|{unsafe{record(2,bucket.0)};bucket.0});\n let second=apply(Two(Right(value)),9,|_acc,bucket:Bucket|{unsafe{record(4,bucket.0)};bucket.0});\n first;second\n}\n",
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "serialized_in": "pa24/tests/spec/flatten-helper-inputs/pending.json",
+      "qualification": "Required equivalent Self::Item impl-bound positive; same earlier callable-output conformance gate."
+    }
+  ]
+}

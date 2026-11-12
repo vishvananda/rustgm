@@ -1,6 +1,7 @@
 //! Associated result rules share capture-safe trait argument substitution.
 mod headers;
 mod opaque_bounds;
+pub(in crate::sema::traits) use opaque_bounds::infer_inputs;
 pub(in crate::sema) use opaque_bounds::prepare_outlives as prepare_opaque_outlives;
 mod templates;
 use super::assumptions::Assumptions;

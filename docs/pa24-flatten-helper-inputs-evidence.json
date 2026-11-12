@@ -1,0 +1,213 @@
+{
+ "schema": 1,
+ "state": "locally qualified before clean freeze; immutable original observation and full successor pending",
+ "compiler": {
+  "managed_development_cli_sha256": "a08ab1a46475334d493514fa30ce2d2717f8c8aa6a382638f0239ce68221499b",
+  "production_change": "Opaque helper results map formal captures into the owning inference graph; one compatible declared callable clause supplies input equations through the existing Probe before projection readiness",
+  "base_commit": "a152f3be5255b524639e3405df3c3820321c8939",
+  "new_engine_or_cache_fields": false,
+  "compiler_rust_hashes": 3907,
+  "immutable_pin": "pending clean checkpoint commit"
+ },
+ "contracts": {
+  "independent": 52,
+  "accept": 36,
+  "reject": 16,
+  "pa24_ordinary": 27,
+  "pa31_source": 25,
+  "complete_API_outcomes": 46,
+  "whole_contracts_required": 6,
+  "ordinary_active_course_cases": 23,
+  "course_accept": 16,
+  "course_reject": 7,
+  "assignment_activation": false,
+  "revised_unpublished_fixtures": {
+   "paths": [
+    "pa24/tests/spec/flatten-helper-inputs/shared-output-explicit.rs",
+    "pa24/tests/spec/flatten-helper-inputs/shared-output-inferred.rs"
+   ],
+   "declaration": "obj/parallel/flatten-helper-inputs/shared-carrier/declared.json",
+   "observations": "obj/parallel/flatten-helper-inputs/shared-carrier/observations.json",
+   "failed_first_attempt": "obj/parallel/flatten-helper-inputs/text-review",
+   "reason": "Rust code-generates non-generic private impl methods; RustGM emits an empty unit"
+  }
+ },
+ "qualification": {
+  "receipt": "1794465771008351229",
+  "exact_tests": 3,
+  "targets": 3,
+  "seconds": 33.57,
+  "superseded_receipt": "1794463509909508691",
+  "format_architecture_selected_strict_clippy": "passed",
+  "closing_native_review": "obj/parallel/flatten-helper-inputs/handoff-review/receipt.json",
+  "closing_native_review_sha256": "bc8a0593300275b0a8e1af140c29ea3ab5172ac8b8a8a053adf6f6aee97f5f41",
+  "native_programs": 4,
+  "expected_stdout": "flatten-helper 7 9 1234\n",
+  "old_match_stdout": "match-capture 7 9 12314\n",
+  "course_text": "obj/parallel/flatten-helper-inputs/text-review2/passed.json",
+  "course_text_sha256": "dd3b279ab007344731de756a9ac6749027dee55d4687111c446e24a17858e5ae",
+  "new_reference_batch": "pa24/reference-batches/1794465842242966530-058c41a9fdf9.json",
+  "new_reference_batch_sha256": "058c41a9fdf966ce64054c7e68da918e53f08190906344c4ce97b611516a2f2e",
+  "old_pa24_cases_reproduced": 661,
+  "old_pa21_cases_reproduced": 867,
+  "other_active_stages_reproduced": [
+   "pa1",
+   "pa10",
+   "pa11",
+   "pa12",
+   "pa13",
+   "pa14",
+   "pa15",
+   "pa16",
+   "pa17",
+   "pa18",
+   "pa19",
+   "pa2",
+   "pa20",
+   "pa22",
+   "pa23",
+   "pa3",
+   "pa4",
+   "pa5",
+   "pa6",
+   "pa7",
+   "pa8",
+   "pa9"
+  ],
+  "other_stage_result": "obj/parallel/flatten-helper-inputs/stage-text/result.json",
+  "prior_reference_hashes_unchanged": 28204,
+  "upstream": "make test-upstream passed: 128 fixtures, 126 Reference files",
+  "harness": "make test-harness passed: 315 tests, 468 roots/13 binaries, 44-stage layout"
+ },
+ "work": [
+  {
+   "owner": "pa24",
+   "width": 8,
+   "noise": 0,
+   "work": [
+    23636,
+    90,
+    4302
+   ]
+  },
+  {
+   "owner": "pa24",
+   "width": 8,
+   "noise": 128,
+   "work": [
+    23636,
+    90,
+    4302
+   ]
+  },
+  {
+   "owner": "pa24",
+   "width": 32,
+   "noise": 0,
+   "work": [
+    90894,
+    354,
+    16902
+   ]
+  },
+  {
+   "owner": "pa24",
+   "width": 32,
+   "noise": 128,
+   "work": [
+    90894,
+    354,
+    16902
+   ]
+  },
+  {
+   "owner": "pa24",
+   "width": 128,
+   "noise": 0,
+   "work": [
+    359912,
+    1410,
+    67302
+   ]
+  },
+  {
+   "owner": "pa24",
+   "width": 128,
+   "noise": 128,
+   "work": [
+    359912,
+    1410,
+    67302
+   ]
+  },
+  {
+   "owner": "pa31",
+   "width": 8,
+   "noise": 0,
+   "work": [
+    33799,
+    289,
+    11611
+   ]
+  },
+  {
+   "owner": "pa31",
+   "width": 8,
+   "noise": 128,
+   "work": [
+    33799,
+    289,
+    11611
+   ]
+  },
+  {
+   "owner": "pa31",
+   "width": 32,
+   "noise": 0,
+   "work": [
+    128153,
+    1129,
+    41971
+   ]
+  },
+  {
+   "owner": "pa31",
+   "width": 32,
+   "noise": 128,
+   "work": [
+    128153,
+    1129,
+    41971
+   ]
+  },
+  {
+   "owner": "pa31",
+   "width": 128,
+   "noise": 0,
+   "work": [
+    505555,
+    4489,
+    163411
+   ]
+  },
+  {
+   "owner": "pa31",
+   "width": 128,
+   "noise": 128,
+   "work": [
+    505555,
+    4489,
+    163411
+   ]
+  }
+ ],
+ "pa24_inventory": {
+  "cases": 684,
+  "accept": 490,
+  "reject": 194,
+  "runtime_comparisons": 396,
+  "codegen_only": 5,
+  "object_controls": 89,
+  "declared_empty_objects": 77
+ }
+}

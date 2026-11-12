@@ -101,6 +101,16 @@ impl Search<'_> {
             return Ok(false);
         }
         let first = frame.available_region().max(self.query.allocations.floor());
+        if let Some(regions) = crate::sema::traits::results::infer_inputs(
+            facts,
+            &mut frame.inputs.context,
+            &frame.goal,
+            first,
+        )? {
+            self.query.allocations.record(regions.end);
+            self.query.reserve(frame.scope, regions)?;
+            return Ok(true);
+        }
         match callables::match_signature(facts, &mut frame.inputs.context, &frame.goal, first) {
             Ok(matched) => {
                 self.query.allocations.record(matched.regions.end);

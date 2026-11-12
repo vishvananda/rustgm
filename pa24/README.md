@@ -111,9 +111,9 @@ mechanically to evade limits, or read the environment from `dev/src/`.
 
 ## Completion and review
 
-The manifest contains 661 independently declared source outcomes:
-474 accept and 187 reject. The reviewed native classifications contain 396
-runtime comparisons, five unused-body code-generation controls and 73 entry-free
+The manifest contains 684 independently declared source outcomes:
+490 accept and 194 reject. The reviewed native classifications contain 396
+runtime comparisons, five unused-body code-generation controls and 89 entry-free
 object controls. Draft outcome files retain the history of the source hypotheses;
 they are not substitutes for the released manifest. See
 [the release review](../docs/pa24-release-review.md) for the released profile and
@@ -158,3 +158,8 @@ The [computed-match capture checkpoint](../docs/pa24-match-captures.md) adds
 nineteen reviewed ordinary outcomes and actual ordinary/source execution.
 Captured-place pattern operations and generic Try/import transport remain
 explicit positive requirements; discriminant reads do not imply payload moves.
+
+The [helper return-input checkpoint](../docs/pa24-flatten-helper-inputs.md) adds
+twenty-three reviewed ordinary outcomes and actual ordinary/source execution.
+Implicit return-opaque input context and two impl where-clause native inputs
+remain explicit positive requirements; no associated result is inverted.

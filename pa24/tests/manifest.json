@@ -12603,6 +12603,548 @@
         "crate_name": "match_capture",
         "disambiguator": "wrong_result"
       }
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/direct.rs",
+      "source_sha256": "22bc5486a637116db3d24b3a244312190d7648172e7511ae37422be297220924",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "direct"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Entry-free helper input/body proof; no runtime execution claimed for an unused function.",
+        "lowir": "empty"
+      }
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/escaping-helper-explicit.rs",
+      "source_sha256": "a41df3f883b838487ed82d372507966b99b6a2a720c4135a0be24c17884bc4d0",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "escaping_helper_explicit"
+      }
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/explicit.rs",
+      "source_sha256": "7d303f5be299585fe5737d048d84f70fe091e9426ef9af42fa97e4d40feb5956",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "explicit"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Entry-free helper input/body proof; no runtime execution claimed for an unused function.",
+        "lowir": "empty"
+      }
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/free-applier.rs",
+      "source_sha256": "27e8a1f7ffb69247f73516f46c7a4aeaee7e54231470dcf4011f56307b493a73",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "free_applier"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Entry-free helper input/body proof; no runtime execution claimed for an unused function.",
+        "lowir": "empty"
+      }
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/inline-control.rs",
+      "source_sha256": "75570c966ca936a70e4a455087849adb554732f557d6581ddd0f2be830641dd3",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "inline_control"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Entry-free helper input/body proof; no runtime execution claimed for an unused function.",
+        "lowir": "empty"
+      }
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/mutable-is-not-shared.rs",
+      "source_sha256": "41d97444cdce68a9641031c4fbb3dd872c8eeef6758e100cd80f951a2c24f8d2",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "mutable_is_not_shared"
+      }
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/named-explicit.rs",
+      "source_sha256": "c2f4cae97375eee6852e3d81ef22dbdcce78f04e946bc7f5d17835f7fc03edcc",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "named_explicit"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Entry-free helper input/body proof; no runtime execution claimed for an unused function.",
+        "lowir": "empty"
+      }
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/named.rs",
+      "source_sha256": "64bcaa53a3562063c788f5a35389c6ad1d6be08cef6a1e4de36ab4e0b2b3942e",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "named"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Entry-free helper input/body proof; no runtime execution claimed for an unused function.",
+        "lowir": "empty"
+      }
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/native-order.rs",
+      "source_sha256": "2ff6bda84da1cc034c24ab1d22ba36cb345d5975f83351fc4b6631d509690d28",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "native_order"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Library object contract; actual observer execution qualified separately."
+      },
+      "auxiliary": [
+        "tests/spec/flatten-helper-inputs/observer.c"
+      ]
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/shared-output-explicit.rs",
+      "source_sha256": "8770811980931f63c3f07890fd3a7732066fde6eb001961934b3a5b2ea03be07",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "shared_output_explicit"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Entry-free helper input/body proof; no runtime execution claimed for an unused function.",
+        "lowir": "empty"
+      }
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/shared-output-inferred.rs",
+      "source_sha256": "47ea770a45e41c8f3bad50d2b9d3a9848d1b7ddf235c622b1a8fcd04e37171d5",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "shared_output_inferred"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Entry-free helper input/body proof; no runtime execution claimed for an unused function.",
+        "lowir": "empty"
+      }
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/unconstrained-helper.rs",
+      "source_sha256": "4e357981b9d7c841f176b7f196fd4aa46a0d88567d8bd35f33c2e3c566b6e620",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "unconstrained_helper"
+      }
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/width-128-noise-0.rs",
+      "source_sha256": "c9096d91b8483cb4cadfbf909b5180516d4ec0b63ff29ae872628a08b76a38d0",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "width_128_noise_0"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Entry-free helper input/body proof; no runtime execution claimed for an unused function.",
+        "lowir": "empty"
+      }
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/width-128-noise-128.rs",
+      "source_sha256": "1307d0c2845892394f530312a22c7eb8a6b7a007281d67aee09b3d016270746b",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "width_128_noise_128"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Entry-free helper input/body proof; no runtime execution claimed for an unused function.",
+        "lowir": "empty"
+      }
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/width-32-noise-0.rs",
+      "source_sha256": "1f569cb06826051e1d922e6419d4cd882e3676ac5eca53a6059da0881a595e47",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "width_32_noise_0"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Entry-free helper input/body proof; no runtime execution claimed for an unused function.",
+        "lowir": "empty"
+      }
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/width-32-noise-128.rs",
+      "source_sha256": "e8f3d9960d7d92fd7de369408d27a87a6c20a68cafbbde87b1258503934e2f17",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "width_32_noise_128"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Entry-free helper input/body proof; no runtime execution claimed for an unused function.",
+        "lowir": "empty"
+      }
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/width-8-noise-0.rs",
+      "source_sha256": "c9a19597a4d6fb958325a04ad79aaddbe6e65ba00ab33e2d9c96d6c2610fbb3b",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "width_8_noise_0"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Entry-free helper input/body proof; no runtime execution claimed for an unused function.",
+        "lowir": "empty"
+      }
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/width-8-noise-128.rs",
+      "source_sha256": "7ab87c7131a555cada09392a06e5dad3686018b458901d379ef4175e1a8b3578",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "width_8_noise_128"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Entry-free helper input/body proof; no runtime execution claimed for an unused function.",
+        "lowir": "empty"
+      }
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/wrong-helper-input.rs",
+      "source_sha256": "9e911cc30aee734677fabe1de811cb6f79427fa9c8f048483bbe786748bab3d4",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "wrong_helper_input"
+      }
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/wrong-helper-result.rs",
+      "source_sha256": "c7321f3231adc3d0b92dfbf740ac666a2d18e49d49c51e6ea1881614e291f538",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "wrong_helper_result"
+      }
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/borrowed-return-explicit.rs",
+      "source_sha256": "8b1480073d7f274d67a44ce51ba7de2eeae52da3cade3b71ac2422b78f89ba24",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "borrowed_return_explicit"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic valid caller-borrow return control; no runtime execution claimed.",
+        "lowir": "empty"
+      }
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/unconstrained-two-implementations.rs",
+      "source_sha256": "b1242efa59bdb5268260a00ec2d05e9d224ea6c38ba9250eea9a0ab1a8dbc925",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "unconstrained_two_implementations"
+      }
+    },
+    {
+      "path": "tests/spec/flatten-helper-inputs/unconstrained-one-implementation.rs",
+      "source_sha256": "c5c17b436abec6a504416832c299b51a0e0a5bcf2ed6ca65b817b57a3a485db4",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls",
+        "pa21.opaque-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "flatten_helper",
+        "disambiguator": "unconstrained_one_implementation"
+      }
     }
   ]
 }

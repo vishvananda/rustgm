@@ -25,6 +25,125 @@ fn match_capture_analysis(
 }
 
 #[test]
+fn helper_return_inputs_use_declared_bounds_without_inverse_projection_inference() -> Result {
+    let mut failures = Vec::new();
+    for owner in ["pa24", "pa31"] {
+        for (name, valid) in [
+            ("direct", true),
+            ("explicit", true),
+            ("named", true),
+            ("named-explicit", true),
+            ("free-applier", true),
+            ("inline-control", true),
+            ("shared-output-inferred", true),
+            ("shared-output-explicit", true),
+            ("wrong-helper-input", false),
+            ("wrong-helper-result", false),
+            ("unconstrained-helper", false),
+            ("unconstrained-one-implementation", false),
+            ("unconstrained-two-implementations", false),
+            ("escaping-helper-explicit", false),
+            ("borrowed-return-explicit", true),
+            ("mutable-is-not-shared", false),
+        ] {
+            let text = source::fixture(&format!(
+                "{owner}/tests/spec/flatten-helper-inputs/{name}.rs"
+            ))?;
+            let checked = (|| -> Result {
+                let (
+                    report,
+                    rustgm::pipeline::Analysis {
+                        mut facts,
+                        prepared,
+                    },
+                ) = match_capture_analysis(owner, &text)?;
+                rustgm::lower::instances::build_roots_prepared(
+                    &report,
+                    &mut facts,
+                    rustgm::lower::Roots {
+                        entry: None,
+                        exports: &[],
+                    },
+                    prepared,
+                )?;
+                Ok(())
+            })();
+            let error = checked.err().map(|error| error.to_string());
+            let invalid = error.as_ref().is_some_and(|error| {
+                [
+                    "not implemented",
+                    "exhausted",
+                    "budget",
+                    "lost its",
+                    "invalid canonical",
+                    "invalid method",
+                ]
+                .iter()
+                .any(|message| error.contains(message))
+                    || name.starts_with("escaping-helper")
+                        && !error.contains("outlive")
+                        && !error.contains("hidden lifetime")
+            });
+            println!("{owner}/{name}: {error:?}");
+            if error.is_none() != valid || invalid {
+                failures.push(format!("{owner}/{name}: {error:?}"));
+            }
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
+#[test]
+fn helper_input_equation_work_tracks_calls_without_unrelated_type_growth() -> Result {
+    for owner in ["pa24", "pa31"] {
+        let mut previous = None;
+        for width in [8, 32, 128] {
+            let mut baseline = None;
+            for noise in [0, 128] {
+                let text = source::fixture(&format!(
+                    "{owner}/tests/spec/flatten-helper-inputs/width-{width}-noise-{noise}.rs"
+                ))?;
+                let (
+                    report,
+                    rustgm::pipeline::Analysis {
+                        mut facts,
+                        prepared,
+                    },
+                ) = match_capture_analysis(owner, &text)?;
+                let work = [
+                    facts.body_work.inference_steps,
+                    facts.body_work.trait_selections,
+                    facts.body_work.canonical_steps,
+                ];
+                rustgm::lower::instances::build_roots_prepared(
+                    &report,
+                    &mut facts,
+                    rustgm::lower::Roots {
+                        entry: None,
+                        exports: &[],
+                    },
+                    prepared,
+                )?;
+                println!("helper inputs {owner} width={width} noise={noise} work={work:?}");
+                if noise == 0 {
+                    if let Some(old) = previous {
+                        for (current, before) in work.into_iter().zip(old) {
+                            assert!(current <= 4 * before + 256);
+                        }
+                    }
+                    previous = Some(work);
+                    baseline = Some(work);
+                } else {
+                    assert_eq!(baseline, Some(work));
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+#[test]
 fn computed_match_work_tracks_sites_and_reuses_one_field() -> Result {
     for owner in ["pa24", "pa31"] {
         let mut previous = None;

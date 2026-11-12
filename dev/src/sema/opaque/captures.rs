@@ -1,8 +1,8 @@
 //! Complete capture applications share the ordinary simultaneous substitution.
-use super::Declaration;
+use super::{Declaration, InferredCaptures};
 use crate::types::{
-    GenericArgs, Kind, RegionId, Store, arguments::Argument, parameters::argument_id,
-    substitute::Bound,
+    GenericArgs, Kind, RegionId, Store, arguments::Argument,
+    infer::arguments::Argument as Inferred, parameters::argument_id, substitute::Bound,
 };
 
 impl Declaration {
@@ -19,6 +19,36 @@ impl Declaration {
             return Err("opaque hidden type uses an excluded lifetime capture");
         }
         Ok(())
+    }
+
+    pub(crate) fn inferred_arguments(
+        &self,
+        store: &Store,
+        actual: &[Inferred],
+    ) -> Result<InferredCaptures, &'static str> {
+        let Some(Kind::Opaque(_, formal)) = store.kind(self.application) else {
+            return Err("invalid inferred opaque capture template");
+        };
+        let formal = store
+            .arguments(formal)
+            .ok_or("invalid opaque capture arguments")?;
+        if formal.len() != actual.len() {
+            return Err("inferred opaque capture arity mismatch");
+        }
+        let mut regions = Vec::new();
+        let mut bindings = Vec::new();
+        for (formal, &actual) in formal.zip(actual) {
+            match (formal, actual) {
+                (Argument::Lifetime(formal), Inferred::Lifetime(actual)) => {
+                    set_region(&mut regions, formal, actual)?;
+                }
+                (formal, actual) => bindings.push((argument_id(store, formal)?, actual)),
+            }
+        }
+        Ok(InferredCaptures {
+            regions: Bound::new(regions),
+            parameters: bindings,
+        })
     }
 
     pub(crate) fn substitution(
