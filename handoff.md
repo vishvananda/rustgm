@@ -162,9 +162,11 @@ the passing receipts, not those attempts, qualify the current implementation.
     both bodies. The next first failure is fold 5290, zip.rs:275 (unresolved
     call inputs). `DisplayBuffer::new` 5862 ("repeated array element must
     implement Copy") likely shares the derive-only Copy cause.
-- The comparison baseline stays clean pin
-  `obj/parallel/peekable-eq/candidate-dev-fast` (487e0881) until this
-  checkpoint's clean pin passes its observation.
+- Clean pin `obj/parallel/step-size/candidate-dev-fast` (12358002, source
+  d0e926179) passed its unchanged observation (46 records, first failure fold
+  5290), the postcheck and an A/A plus ABBA measurement. It is now the
+  comparison baseline. The 487e0881 and wip1 pins are retired; their producer
+  evidence remains.
 
 **2026-11-12 rigid-header update:**
 

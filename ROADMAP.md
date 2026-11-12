@@ -100,8 +100,8 @@ closure in a source library copy a capture that is Copy only through a source
 `impl Copy`, such as core's `NonZero<usize>`, so the closure stays `Fn`. Twelve
 declared source-core reductions agree with rustc. An exploratory observation
 clears first_size and other_size; the first remaining failure is zip fold, with
-unresolved call inputs. The clean pin, its observation and measurement are
-pending.
+unresolved call inputs. Clean pin 12358002 (source d0e926179) confirms this with
+46 records, and its measurement supports no speed claim either way.
 
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage

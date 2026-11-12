@@ -117,7 +117,41 @@ included. Adding 128 unrelated source Copy types, each with its own `Clone`
 body, adds a constant 384 inference and 3124 canonical steps at every width,
 and no trait selection.
 
-## Core progress
+## Clean pin and core progress
+
+Clean published source d0e926179 freezes CLI
+`12358002bd7972e54b7b2bf7009ccf7639e5c72605201191eb825bd006e311e6`, with 3911
+Rust hashes and an empty patch (`obj/parallel/step-size/candidate-dev-fast`).
+It is byte-identical to the exploratory pin below.
+
+**Original core.** The unchanged 120s observer ends at its deadline after
+120.908s, with 46 partial records and 14,613 attempts. The last item is 9415,
+task/wake.rs:681. Against clean 487e0881 (28 records, 13,270 attempts, last
+item 6977) it clears `first_size` 5171 and `other_size` 5172. No new failure
+appears among previously passing reached bodies. The first remaining failure is
+`fold` 5290 at zip.rs:275.
+
+The postcheck verifies all 722 source hashes, 375 opens, six configuration
+bindings, unchanged immutable bindings, and the 3911 compiler hashes against the
+blobs of the producer's recorded head. The progress SHA is
+`37271de7a631b5976d5196f8b6bbc2ac552d6065b275ac0873eeb1e2be3b0e8e`.
+
+**Measurement.** Fifty exclusive A/A plus ABBA accepting observations against
+487e0881 preserve complete outputs. The controls are an ordinary import, an
+ordinary closure over a projected item, source-core reference equality, and two
+source-core opaque `Fn` closures that copy a `usize` capture or borrow a
+`NonZero<usize>` capture. Paired wall ratios are
+0.878/0.965/0.967/1.025/1.001, against A/A 0.983/1.024/0.807/1.022/0.984, at
+19–422 ms. External load rose to a load average near 30 as the run started. No
+optimized, neutrality or original-core speed is claimed; the bounded-work test
+above qualifies the work.
+
+An accepted source-core program that reaches the probe, such as a once-called
+closure or an `impl FnOnce` that copies a `NonZero` capture, prints different
+`--emit-types` type numbering on the two pins, because the probe's selection
+interns its goal types. Its acceptance is unchanged, and no ordinary output
+changes (PA24's text oracle reproduces), but such programs cannot be
+output-equality timing controls.
 
 **Exploratory observation.** Pin `obj/parallel/step-size/wip1-dev-fast`
 (12358002) carries the change before the test and fixture work. The unchanged
@@ -133,9 +167,6 @@ iter/traits/iterator.rs (diagnostic formatting fence) and `new` 5862 in
 net/display_buffer.rs, "repeated array element must implement Copy". That body
 repeats `MaybeUninit<u8>`, which is also Copy only through a manual impl, so it
 is likely the same derive-only query in array repetition.
-
-A clean pin, its unchanged observation with the postcheck, and measurement
-follow publication.
 
 Partial counts make no throughput claim, and this is neither a complete census
 nor a core artifact.

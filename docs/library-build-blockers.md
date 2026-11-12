@@ -11,8 +11,11 @@ new reached failure. The unchanged 120s observer ends at 121.049s with 45
 records, 14,240 attempts and last item 8723, str/traits.rs:700. The first
 remaining failure is fold 5290 at zip.rs:275 (unresolved call inputs). Later,
 `DisplayBuffer::new` 5862 rejects a repeated `MaybeUninit<u8>` element as not
-Copy, probably the same derive-only query in array repetition. The clean pin
-and its observation are pending. No core artifact exists.
+Copy, probably the same derive-only query in array repetition. Clean pin
+12358002 (source d0e926179) is byte-identical. Its unchanged observer ends at
+120.908s with 46 records, 14,613 attempts and last item 9415, task/wake.rs:681.
+It clears both bodies and adds no reached failure; the postcheck passes. No core
+artifact exists.
 
 The [rigid candidate header checkpoint](pa20-rigid-candidate-headers.md)
 refutes a trait implementation header that would need a goal's rigid
