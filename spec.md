@@ -5734,6 +5734,14 @@ once and prove every new occurrence. Already resolved projected inputs normalize
 before this inference. Committing a selected function item may use those independent
 equations, then requires exact complete canonical identity for any blocked result.
 
+A canonical caller premise may bind an inference hole to its complete projected
+input type. Use the shared scoped worklist; collect comparisons between projection
+results for exact identity or the existing certified-normal-premise relation.
+No result comparison may infer the projection's inputs. Generic deferred equations
+retain their separate normalization gate and self-dependent-cycle behavior.
+The [wrapped callback-premise checkpoint](docs/pa24-wrapped-callback-premises.md)
+records ordinary, conditional const, actual-source and native reductions.
+
 An exact declared callable Output premise may retain the checked source closure's
 necessary lifetime conditions. Validate the premise first and match the complete
 substituted Self using the same typed matcher as body entry selection. Normalize

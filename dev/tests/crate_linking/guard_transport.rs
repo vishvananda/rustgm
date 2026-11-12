@@ -23,10 +23,7 @@ const ACCEPTED: [&str; 8] = [
 ];
 const OPPONENTS: [(&str, &str); 3] = [
     ("moved-scrutinee", "uninitialized or moved"),
-    (
-        "wrong-predicate",
-        "trait obligation requires an unambiguous matching assumption or implementation",
-    ),
+    ("wrong-predicate", "incompatible types"),
     ("wrong-single", "incompatible types"),
 ];
 const FENCED: &str = "source guard facts require a wider transport profile";

@@ -9,6 +9,7 @@ use super::TestResult;
 use std::fmt::Write as _;
 
 const CONTROLS: &str = "pa31/tests/spec/quantified-lookup-conditions";
+const ASSOCIATED: &str = "associated type requires an unambiguous validated implementation";
 
 /// Independently checked rustc outcomes: `None` accepts, otherwise the first
 /// error this compiler reports. The six bound-region controls now open their
@@ -32,12 +33,12 @@ const CASES: [(&str, Option<&str>); 22] = [
     ("trait-fallback-region", None),
     ("trait-fallback-leak", None),
     ("receiver-sugar-lifetime", None),
-    ("fail-inferred", Some(super::OBLIGATION)),
+    ("fail-inferred", Some(ASSOCIATED)),
     (
         "fail-explicit",
         Some("no applicable trait method for this prefix"),
     ),
-    ("fail-unique", Some(super::OBLIGATION)),
+    ("fail-unique", Some(ASSOCIATED)),
     ("fail-region-unique", Some(super::OBLIGATION)),
 ];
 

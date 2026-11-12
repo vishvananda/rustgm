@@ -18,7 +18,11 @@ const ACCEPTED: [&str; 9] = [
     "ref-closure",
     "ref-capture",
 ];
-const OPPONENTS: [&str; 3] = ["wrong-output", "ref-mutating", "mut-consuming"];
+const OPPONENTS: [(&str, &str); 3] = [
+    ("wrong-output", "incompatible types"),
+    ("ref-mutating", UNPROVED),
+    ("mut-consuming", UNPROVED),
+];
 const UNPROVED: &str =
     "trait obligation requires an unambiguous matching assumption or implementation";
 /// Body IR node 29 (`Rvalue::Invoke`), arity 3, then its call-trait flag.
@@ -49,8 +53,8 @@ fn callable_roles_survive_wire_and_fresh_consumers() -> Result {
     for name in ACCEPTED {
         super::artifacts::checked(name, &packet.folder, &mut packet.client(name))?;
     }
-    for name in OPPONENTS {
-        packet.rejected(name, &mut packet.client(name), UNPROVED)?;
+    for (name, diagnostic) in OPPONENTS {
+        packet.rejected(name, &mut packet.client(name), diagnostic)?;
     }
     let source = packet.fixture("provider");
     for profile in ["module-branches-v12", "module-nominals-v10"] {

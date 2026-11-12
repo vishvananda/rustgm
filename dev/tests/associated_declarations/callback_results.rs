@@ -3,6 +3,134 @@ use crate::{resolve as source, semantic};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 #[test]
+fn wrapped_callback_premises_keep_actual_inputs_and_formation() -> Result {
+    let mut cases = Vec::new();
+    for owner in ["pa24", "pa31"] {
+        for name in [
+            "plain-free-chain",
+            "plain-associated-chain",
+            "plain-split",
+            "plain-annotated",
+            "plain-explicit-factory",
+            "plain-direct-closure",
+            "plain-inherent-byref",
+            "detail-factory-self",
+            "detail-factory-inputs",
+            "detail-factory-first",
+            "detail-factory-second",
+            "detail-factory-callback",
+            "detail-unused-projected",
+            "detail-unused-plain",
+            "detail-invoke-plain",
+            "detail-consume-plain",
+        ] {
+            cases.push((owner, name, None));
+        }
+        for (name, cause) in [
+            ("opponents-wrong-output", "incompatible types"),
+            (
+                "opponents-wrong-input",
+                "associated type requires an unambiguous validated implementation",
+            ),
+            (
+                "opponents-missing-bound-explicit",
+                "associated type requires an unambiguous validated implementation",
+            ),
+            (
+                "opponents-unpaid-parent",
+                "trait obligation requires an unambiguous matching assumption or implementation",
+            ),
+        ] {
+            cases.push((owner, name, Some(cause)));
+        }
+    }
+    // Ordinary overrides, ordinary const imports and multiple-input premises
+    // remain required positives in their manifests; no failing outcome is blessed.
+    for name in ["plain-trait-byref", "plain-trait-byref-forward"] {
+        cases.push(("pa31", name, None));
+    }
+    let mut failures = Vec::new();
+    for (owner, name, cause) in cases {
+        let text = source::fixture(&format!("{owner}/tests/spec/by-ref-fold/{name}.rs"))?;
+        let report = if owner == "pa31" {
+            source::source_provider(&text, "wrapped_callback_premises")?
+        } else {
+            semantic::resolve(&text)?
+        };
+        let outcome = rustgm::pipeline::analyze_source(&report)
+            .and_then(|analysis| complete(&report, analysis));
+        match (cause, outcome) {
+            (None, Ok(_)) => {}
+            (Some(cause), Err(error)) if error.to_string().contains(cause) => {}
+            (cause, outcome) => failures.push(format!(
+                "{owner}/{name}: expected {cause:?}, got {:?}",
+                outcome.err().map(|error| error.to_string())
+            )),
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
+#[test]
+fn conditional_wrapped_callback_factories_infer_actual_projected_inputs() -> Result {
+    // Full lowering retains the existing source const-call owner requirement.
+    // These four accepting artifact contracts remain in pending.json.
+    for name in [
+        "associated-chain",
+        "annotated",
+        "explicit-factory",
+        "trait-byref",
+    ] {
+        let text = source::fixture(&format!("pa31/tests/spec/by-ref-fold/const-{name}.rs"))?;
+        let report = source::source_provider(&text, "conditional_wrapped_callback")?;
+        rustgm::pipeline::analyze_source(&report)?;
+    }
+    Ok(())
+}
+
+#[test]
+fn wrapped_callback_premises_scale_with_actual_projected_arguments() -> Result {
+    for owner in ["pa24", "pa31"] {
+        let mut previous = None;
+        for width in [8, 32, 128] {
+            let mut baseline = None;
+            for noise in [0, 128] {
+                let text = source::fixture(&format!(
+                    "{owner}/tests/spec/by-ref-fold/scale-width-{width}-noise-{noise}.rs"
+                ))?;
+                let report = if owner == "pa31" {
+                    source::source_provider(&text, "wrapped_callback_scaling")?
+                } else {
+                    semantic::resolve(&text)?
+                };
+                let analysis = rustgm::pipeline::analyze_source(&report)?;
+                let work = [
+                    analysis.facts.body_work.inference_steps,
+                    analysis.facts.body_work.trait_selections,
+                    analysis.facts.methods.selection_steps,
+                    analysis.facts.methods.selection_probes,
+                ];
+                complete(&report, analysis)?;
+                println!("wrapped {owner} width={width} noise={noise} work={work:?}");
+                if noise == 0 {
+                    if let Some(old) = previous {
+                        for (current, before) in work.into_iter().zip(old) {
+                            assert!(current <= 4 * before + 256);
+                        }
+                    }
+                    previous = Some(work);
+                    baseline = Some(work);
+                } else {
+                    assert_eq!(Some(work), baseline, "unrelated types caused body work");
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+#[test]
 fn callable_output_shapes_reach_consumers_without_waiving_projection_proof() -> Result {
     let mut failures = Vec::new();
     for owner in ["pa24", "pa31"] {

@@ -437,12 +437,16 @@
     "state": "all stages passed"
   },
   "current_full_ci": {
-    "run": 43135131607,
-    "head": "ec2d2a0b4cca7cc3a009647fb8f964c2bb8e2b5c",
+    "run": 43138039057,
+    "head": "eff52eb9ded5492366e62422ae2958635a909212",
     "source": "d1980b3255cf607355b2a254dc83393463fb27b5",
-    "state": "failed all-target Clippy: three suite_inference callers of mutable Refinement::refresh; later stages skipped",
-    "fast_job": "passed",
-    "replacement": "required on published test-only correction after fresh active-full check"
+    "state": "failed release regular on one private diagnostic test and two linking diagnostic tests; later stages skipped",
+    "fast_lint_harness_host_graph": "passed",
+    "private_passed": 3064,
+    "private_failed": 1,
+    "private_ignored": 3,
+    "previously_pending_signature_invariants": "both passed",
+    "followup": "Four exact diagnostic expectations repaired and checked with wrapped callback-premise checkpoint; full successor required."
   },
   "unchanged": [
     "third-party source bytes/checksums",

@@ -1,5 +1,15 @@
 # Library build blocker tracker
 
+Current [wrapped callback-premise checkpoint](pa24-wrapped-callback-premises.md),
+CLIe8ca58db, qualifies55 complete outcomes plus four source typing outcomes from68
+independent contracts. Source native order23/1234,26 new PA24 text cases, unchanged
+old outputs and bounded width/noise checks pass. Thirteen accepting artifacts
+remain required. Preceding full43138039057 fails only diagnostic expectations in
+one private and two linking tests; four exact expectations are repaired, with22
+CLI declaration controls and both linking tests checked. Full successor and the
+new unchanged120s original observation remain pending. Last original6c still first
+fails ByRefSized::fold134:1322. No original core/alloc/std artifact exists.
+
 The current [projected callback-result checkpoint](pa24-projected-callback-results.md),
 sourced1980b325/immutableCLI6c085307, reaches all five prior ArrayChunks failure
 bodies and four observed regressions without their failure records. Public18,

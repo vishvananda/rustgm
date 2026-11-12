@@ -332,10 +332,10 @@ impl Context {
                 .contains_callables(canonical)
                 .ok_or(Error::InvalidIdentity)?
         {
-            // Settle independent holes before comparing opaque operation identities.
-            // The blocked result pairs never contribute equations on their inputs.
+            // A hole may name a complete canonical projection. Only comparisons
+            // between results wait; they never infer a projection's inputs.
             let mut blocked = Vec::new();
-            self.unify(store, term, known, true, Some(&mut blocked))?;
+            self.equate_scoped_graph(store, term, known, ambient, Some(&mut blocked))?;
             if let Some(premise) = premise {
                 return self.relate_normal_premise(store, blocked, premise);
             }
@@ -352,14 +352,15 @@ impl Context {
         ) {
             return self.equate_scoped_inside(store, term, known, ambient);
         }
-        let result = self.equate_scoped_graph(store, term, known, ambient, true);
-        if result == Err(Error::Normalization) {
-            match self.resolved(store, term) {
-                Ok(original) if original == canonical => return Ok(()),
-                Ok(_) | Err(Error::Unresolved) => {}
-                Err(error) => return Err(error),
-            }
+        let mut blocked = Vec::new();
+        self.equate_scoped_graph(store, term, known, ambient, Some(&mut blocked))?;
+        if blocked.is_empty() {
+            return Ok(());
         }
-        result
+        match self.resolved(store, term) {
+            Ok(original) if original == canonical => Ok(()),
+            Ok(_) | Err(Error::Unresolved) => Err(Error::Normalization),
+            Err(error) => Err(error),
+        }
     }
 }

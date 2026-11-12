@@ -1,0 +1,359 @@
+{
+  "schema": 1,
+  "state": "locally qualified finite checkpoint; original observation and full successor pending",
+  "compiler": {
+    "sha256": "e8ca58dbc0bc0baab5dbf5c883dffd389d85a213f768445b6ff77d8e5747820f",
+    "raw_sources": "obj/parallel/by-ref-fold/review/passed.json",
+    "semantic_source_commit": "pending clean source checkpoint/pin"
+  },
+  "contracts": {
+    "independent": 68,
+    "accept": 60,
+    "reject": 8,
+    "owner_counts": {
+      "pa24": 29,
+      "pa25": 4,
+      "pa30": 1,
+      "pa31": 34
+    },
+    "complete_qualified": 55,
+    "additional_source_typing_only": 4,
+    "required_accepting_artifacts_pending": 13,
+    "classification_correction": "Independent Rust disproved the initial multiple-input negative before candidate execution; acceptance remains required; original bytes/outcomes retained."
+  },
+  "qualification": {
+    "initial_public_receipt": "1794449501835039798",
+    "final_public_receipt": "1794450414769391285",
+    "final_linking_receipt": "1794451117884602258",
+    "public_partial_failure": "1794450255456626962: six controls pass, four const full-artifact requirements fail; no whole batch pass",
+    "private_harness_rerun": "pending CI, no retry of earlier251s private build timeout",
+    "review": "obj/parallel/by-ref-fold/review/passed.json",
+    "native_groups": 5,
+    "native_programs": 11,
+    "native_stdout": "by-ref-fold 23 1234\n",
+    "course_cases_new": 26,
+    "selected_independent_objects": 22,
+    "selected_independent_runtime": 0,
+    "prior_reference_hashes_unchanged": 28065,
+    "old_callback_text_unchanged": 35,
+    "old_diagnostic_controls_unchanged": 11,
+    "new_reference_batch": "pa24/reference-batches/1794450594955412258-3573a240e1c2.json",
+    "new_reference_batch_sha256": "3573a240e1c2a569a8f4d6cd8187668d12f8f11ec21b9df92ba7dab6b3aa83b6",
+    "upstream_harness_tidy": {
+      "receipt": "obj/parallel/by-ref-fold/upstream-review/receipt.json",
+      "state": "passed",
+      "steps": [
+        {
+          "name": "upstream",
+          "command": [
+            "make",
+            "test-upstream"
+          ],
+          "status": 0,
+          "seconds": 0.14866102498490363
+        },
+        {
+          "name": "harness",
+          "command": [
+            "make",
+            "test-harness"
+          ],
+          "status": 0,
+          "seconds": 16.758572959923185
+        },
+        {
+          "name": "tidy",
+          "command": [
+            "make",
+            "tidy"
+          ],
+          "status": 0,
+          "seconds": 15.924546083901078
+        }
+      ]
+    }
+  },
+  "work": [
+    {
+      "owner": "pa24",
+      "width": 8,
+      "noise": 0,
+      "work": [
+        2613,
+        3,
+        0,
+        0
+      ]
+    },
+    {
+      "owner": "pa24",
+      "width": 8,
+      "noise": 128,
+      "work": [
+        2613,
+        3,
+        0,
+        0
+      ]
+    },
+    {
+      "owner": "pa24",
+      "width": 32,
+      "noise": 0,
+      "work": [
+        8065,
+        3,
+        0,
+        0
+      ]
+    },
+    {
+      "owner": "pa24",
+      "width": 32,
+      "noise": 128,
+      "work": [
+        8065,
+        3,
+        0,
+        0
+      ]
+    },
+    {
+      "owner": "pa24",
+      "width": 128,
+      "noise": 0,
+      "work": [
+        29825,
+        3,
+        0,
+        0
+      ]
+    },
+    {
+      "owner": "pa24",
+      "width": 128,
+      "noise": 128,
+      "work": [
+        29825,
+        3,
+        0,
+        0
+      ]
+    },
+    {
+      "owner": "pa31",
+      "width": 8,
+      "noise": 0,
+      "work": [
+        4216,
+        25,
+        0,
+        0
+      ]
+    },
+    {
+      "owner": "pa31",
+      "width": 8,
+      "noise": 128,
+      "work": [
+        4216,
+        25,
+        0,
+        0
+      ]
+    },
+    {
+      "owner": "pa31",
+      "width": 32,
+      "noise": 0,
+      "work": [
+        14156,
+        73,
+        0,
+        0
+      ]
+    },
+    {
+      "owner": "pa31",
+      "width": 32,
+      "noise": 128,
+      "work": [
+        14156,
+        73,
+        0,
+        0
+      ]
+    },
+    {
+      "owner": "pa31",
+      "width": 128,
+      "noise": 0,
+      "work": [
+        53868,
+        265,
+        0,
+        0
+      ]
+    },
+    {
+      "owner": "pa31",
+      "width": 128,
+      "noise": 128,
+      "work": [
+        53868,
+        265,
+        0,
+        0
+      ]
+    }
+  ],
+  "old_work": [
+    {
+      "width": 8,
+      "noise": 0,
+      "work": [
+        51800,
+        208,
+        2664,
+        16
+      ]
+    },
+    {
+      "width": 8,
+      "noise": 128,
+      "work": [
+        51800,
+        208,
+        2664,
+        16
+      ]
+    },
+    {
+      "width": 32,
+      "noise": 0,
+      "work": [
+        205897,
+        832,
+        10656,
+        64
+      ]
+    },
+    {
+      "width": 32,
+      "noise": 128,
+      "work": [
+        205897,
+        832,
+        10656,
+        64
+      ]
+    },
+    {
+      "width": 128,
+      "noise": 0,
+      "work": [
+        822207,
+        3328,
+        42624,
+        256
+      ]
+    },
+    {
+      "width": 128,
+      "noise": 128,
+      "work": [
+        822207,
+        3328,
+        42624,
+        256
+      ]
+    }
+  ],
+  "old_multi_input_work": [
+    {
+      "width": 8,
+      "noise": 0,
+      "work": [
+        6071,
+        18,
+        0,
+        0
+      ]
+    },
+    {
+      "width": 8,
+      "noise": 128,
+      "work": [
+        6071,
+        18,
+        0,
+        0
+      ]
+    },
+    {
+      "width": 32,
+      "noise": 0,
+      "work": [
+        12967,
+        18,
+        0,
+        0
+      ]
+    },
+    {
+      "width": 32,
+      "noise": 128,
+      "work": [
+        12967,
+        18,
+        0,
+        0
+      ]
+    },
+    {
+      "width": 128,
+      "noise": 0,
+      "work": [
+        40807,
+        18,
+        0,
+        0
+      ]
+    },
+    {
+      "width": 128,
+      "noise": 128,
+      "work": [
+        40807,
+        18,
+        0,
+        0
+      ]
+    }
+  ],
+  "preceding_full_ci": {
+    "run": 43138039057,
+    "head": "eff52eb9ded5492366e62422ae2958635a909212",
+    "semantic_source": "d1980b3255cf607355b2a254dc83393463fb27b5",
+    "state": "failed release regular on one private diagnostic test and two linking diagnostic tests; later stages skipped",
+    "private_passed": 3064,
+    "private_failed": 1,
+    "private_ignored": 3,
+    "linking_passed": 283,
+    "linking_failed": 2,
+    "previously_pending_signature_invariants": "both passed",
+    "repair": "four exact expected diagnostic changes; 22 declaration controls and2 public linking tests checked",
+    "raw_log": "obj/parallel/array-chunks-next/full-ci-43138039057.log"
+  },
+  "current_full_ci": "pending publication and fresh no-active-full check",
+  "original_core": "No new observation yet. Previous6c first failure ByRefSized::fold134:1322; original artifact absent.",
+  "assignment_activation": false,
+  "unchanged": [
+    "backend contract and bridge",
+    "storage/resource policy",
+    "original source archive and six configuration bindings",
+    "compiler limits",
+    "old references and checksum files"
+  ],
+  "raw_evidence_root": "obj/parallel/by-ref-fold"
+}

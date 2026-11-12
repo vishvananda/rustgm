@@ -129,12 +129,14 @@ fn source_runtime_selector_native_results_and_single_evaluation_match_rust() -> 
     Ok(())
 }
 
-fn projected_result_program() -> TestResult<rustgm::lowir::program::Program> {
-    let text = crate::resolve::fixture("pa31/tests/spec/callable-result-heads/native-order.rs")?;
+fn callback_result_program(
+    path: &str,
+    identity: &str,
+) -> TestResult<rustgm::lowir::program::Program> {
+    let text = crate::resolve::fixture(&format!("pa31/tests/spec/{path}.rs"))?;
     let mut config = rustgm::expand::config::Config::default();
     config.set_lint_cap(rustgm::support::diagnostics::LintCap::Allow);
-    let report =
-        crate::resolve::source_provider_config(&text, "projected_callback_execution", &config)?;
+    let report = crate::resolve::source_provider_config(&text, identity, &config)?;
     let rustgm::pipeline::Analysis {
         mut facts,
         prepared,
@@ -167,7 +169,11 @@ fn projected_result_program() -> TestResult<rustgm::lowir::program::Program> {
 // bootstrap conformance failure does not qualify a rejection or an artifact.
 #[test]
 fn source_projected_callback_results_prepare_actual_exported_calls() -> TestResult {
-    projected_result_program().map(|_| ())
+    callback_result_program(
+        "callable-result-heads/native-order",
+        "projected_callback_execution",
+    )
+    .map(|_| ())
 }
 
 #[test]
@@ -180,8 +186,39 @@ fn source_projected_callback_results_execute_once() -> TestResult {
         &root,
         &out,
         "pa31",
-        &projected_result_program()?,
+        &callback_result_program(
+            "callable-result-heads/native-order",
+            "projected_callback_execution",
+        )?,
         &crate::resolve::fixture("pa30/tests/spec/callable-result-heads/observer.c")?,
         "callable-result 23 12\n",
+    )
+}
+
+#[test]
+fn source_wrapped_callback_results_prepare_actual_exported_calls() -> TestResult {
+    callback_result_program(
+        "by-ref-fold/native-native-order",
+        "wrapped_callback_execution",
+    )
+    .map(|_| ())
+}
+
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn source_wrapped_callback_results_execute_once() -> TestResult {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let out = root.join("obj/parallel/by-ref-fold/native");
+    std::fs::create_dir_all(&out)?;
+    crate::ffi_program::check(
+        &root,
+        &out,
+        "pa31",
+        &callback_result_program(
+            "by-ref-fold/native-native-order",
+            "wrapped_callback_execution",
+        )?,
+        &crate::resolve::fixture("pa30/tests/spec/by-ref-fold/observer.c")?,
+        "by-ref-fold 23 1234\n",
     )
 }

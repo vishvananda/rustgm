@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "state": "Required accepting contracts; these observed failures are not language outcomes or passing course cases.",
+  "inputs": [
+    {
+      "path": "pa25/tests/spec/by-ref-fold/const-associated-chain.rs",
+      "sha256": "267d80e0b6c3d5f8b0680eb6dc4ddaccf8801af207589789e6609e0ef05a3b18",
+      "name": "const-associated-chain",
+      "packet": "const",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_types_status": 1,
+      "candidate_diagnostic": "ERROR: file 0: 64: unresolved import\n",
+      "candidate_types_match_required": false,
+      "candidate_complete_prepared_root_qualified": false,
+      "frozen_plan_input": "obj/parallel/by-ref-fold/const-inputs/pa25-associated-chain.rs",
+      "independent_observations": "obj/parallel/by-ref-fold/fix-observations2/observations.json"
+    },
+    {
+      "path": "pa25/tests/spec/by-ref-fold/const-annotated.rs",
+      "sha256": "f5ee095396b0cb029d545cdcc54d38df15c7d6d1afe9e7a1b4bc6ec0930dc19f",
+      "name": "const-annotated",
+      "packet": "const",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_types_status": 1,
+      "candidate_diagnostic": "ERROR: file 0: 64: unresolved import\n",
+      "candidate_types_match_required": false,
+      "candidate_complete_prepared_root_qualified": false,
+      "frozen_plan_input": "obj/parallel/by-ref-fold/const-inputs/pa25-annotated.rs",
+      "independent_observations": "obj/parallel/by-ref-fold/fix-observations2/observations.json"
+    },
+    {
+      "path": "pa25/tests/spec/by-ref-fold/const-explicit-factory.rs",
+      "sha256": "3ff5a9ac9d2d3e4b1075b128ad06fb1dabf3b8fc391d82795b5332ce8eb9e1e6",
+      "name": "const-explicit-factory",
+      "packet": "const",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_types_status": 1,
+      "candidate_diagnostic": "ERROR: file 0: 64: unresolved import\n",
+      "candidate_types_match_required": false,
+      "candidate_complete_prepared_root_qualified": false,
+      "frozen_plan_input": "obj/parallel/by-ref-fold/const-inputs/pa25-explicit-factory.rs",
+      "independent_observations": "obj/parallel/by-ref-fold/fix-observations2/observations.json"
+    },
+    {
+      "path": "pa25/tests/spec/by-ref-fold/const-trait-byref.rs",
+      "sha256": "12a21af7a8d31a3be04b77fef4ce4660594f364d160c70c32a9dd2b62767b7a5",
+      "name": "const-trait-byref",
+      "packet": "const",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_types_status": 1,
+      "candidate_diagnostic": "ERROR: file 0: 64: unresolved import\n",
+      "candidate_types_match_required": false,
+      "candidate_complete_prepared_root_qualified": false,
+      "frozen_plan_input": "obj/parallel/by-ref-fold/const-inputs/pa25-trait-byref.rs",
+      "independent_observations": "obj/parallel/by-ref-fold/fix-observations2/observations.json"
+    }
+  ]
+}

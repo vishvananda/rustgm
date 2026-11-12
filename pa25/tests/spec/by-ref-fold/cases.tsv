@@ -1,0 +1,5 @@
+path	exit_status
+pa25/tests/spec/by-ref-fold/const-associated-chain.rs	0
+pa25/tests/spec/by-ref-fold/const-annotated.rs	0
+pa25/tests/spec/by-ref-fold/const-explicit-factory.rs	0
+pa25/tests/spec/by-ref-fold/const-trait-byref.rs	0

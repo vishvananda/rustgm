@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "owner": "pa30",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": 2024,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0
+  },
+  "state": "Independent outcomes frozen;55 supported complete outcomes and4 additional source type outcomes qualify across the packets. Thirteen accepting artifacts remain required; no assignment activation.",
+  "origin": "Pinned core iter/adapters/by_ref_sized.rs:45; actual conditional binary wrapper ops/try_trait.rs:427",
+  "outcomes_declared_before_execution": true,
+  "baseline_compiler_sha256": "6c0853071ccf7675c2f6c919eea99414c901f874ccb925279da1e0cc0defa620",
+  "inputs": [
+    {
+      "path": "pa30/tests/spec/by-ref-fold/native-native-order.rs",
+      "sha256": "efc6fac05f7442461d4f77e27b7e6675090c1af7e165a29cb120bfab334d7d41",
+      "name": "native-native-order",
+      "packet": "native",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_types_status": 1,
+      "candidate_diagnostic": "ERROR: file 0: 623: associated type requires an unambiguous validated implementation\n",
+      "candidate_types_match_required": false,
+      "candidate_complete_prepared_root_qualified": false,
+      "frozen_plan_input": "obj/parallel/by-ref-fold/native-inputs/pa30-native-order.rs",
+      "independent_observations": "obj/parallel/by-ref-fold/fix-observations2/observations.json",
+      "rust_runtime_status": 0,
+      "rust_runtime_stdout": "by-ref-fold 23 1234\n",
+      "expected_runtime_stdout": "by-ref-fold 23 1234\n",
+      "observer": "pa30/tests/spec/by-ref-fold/observer.c",
+      "observer_sha256": "c1ff07b7d35bd81effe64efbbe9583a74fdd0e314fcd8d26d1ed3d8428720291",
+      "required_native_status": 0,
+      "candidate_native_qualified": false
+    }
+  ]
+}

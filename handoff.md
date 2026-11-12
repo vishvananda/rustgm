@@ -1,11 +1,47 @@
-# RustGM single-worker continuation — 2026-11-11
+# RustGM single-worker continuation — 2026-11-12
 
 This current section supersedes historical snapshots below. The user asked for
 one worker: do not spawn agents or create worktrees. Use existing B
 `/mnt/vizier/rustgm-scratch/rustgm-pa26-work`; main is Git-only. Goal: original
 core, then alloc/std. No original library artifact exists.
 
-## Current checkpoint — repaired projected callback results
+## Current checkpoint — wrapped fold premises, original observation next
+
+[Checkpoint/evidence](docs/pa24-wrapped-callback-premises.md): production2files
+reuse scoped comparison to bind complete canonical projected inputs; blocked
+result comparisons remain pending. Generic deferred equations/cycles unchanged.
+CLIe8ca58dbc0bc0baab5dbf5c883dffd389d85a213f768445b6ff77d8e5747820f.
+68independent Rust outcomes60accept8reject: PA24 29(3serialized),PA25 4,PA30 1,
+PA31 34. Complete55qualify;4additionalsourceconsttypeoutcomes qualify. REQUIRED13
+positive artifacts:3ordinary,4ordinaryconstimports,1ordinarynative,1source multiple,
+4sourceconstownerlowering. Multiple-input negative hypothesis DISPROVED byRust;
+acceptance required, originalbytes retained. No inversion/assignment activation.
+Finalpublic1794450414769391285 PASS5exact3targets36.68s; linking
+1794451117884602258 PASS2exact59.61s. Fullfmt/audit/selected strictClippy pass.
+Native5groups/11programsPASS, newsource23/1234 matchesindependentRust/C. Twelve new
+width/noise counters:ordinary2613/8065/29825 traits3;source4216/14156/53868 traits
+25/73/265,methods0; noise128zero. Two oldfamilies exactunchanged. Review raw by-ref-fold/.
+26newtriples generatedafter independentdeclaration+preverification, reviewed;
+28065priorreferencehashes/35oldcallback/11oldneg outputs unchanged. Independent26
+includes22declared emptyobjects/no runtimecomparison. PA24root642/459accept183reject,
+native396runtime5codegen58object. Referencebatch1794450594955412258-3573a240e1c2.
+
+Preceding FULL43138039057 exacteff52eb9d/source d198 is TERMINAL FAILURE: fast,
+alltargetlint/harness/hostgraphPASS; private3064PASS1diagnostictestFAIL3ignored;
+linking283PASS2diagnostictestsFAIL. LaterstagesSKIPPED. Previous2pending signature
+invariants BOTH PASS. Four expecteddiagnostics repaired (including2cases in the
+privatepacket); all22declarationcontrols/independentE0277/E0599 and2fresh-linktests
+checked. Privateharness rerun/fullsuccessor PENDINGCI; no blindretry251scompile.
+
+Upstream/harness/tidy all PASS; old reference hashes unchanged.
+NEXT: commit/freeze exactsource; immutable accepting A/A+
+ABBA; NEWUNCHANGED120s originalobserver+postcheck. No currentoriginalobservation
+ofe8yet; latest6c stillByRefSized::fold134:1322. No core/alloc/stdartifact. Then
+publish+ONEfullafterfreshnoactivefullcheck. Keep5d fullqualifiedbaseline,6c accepting
+comparison andoptimized21f; intermediate81absent. Preserve every older requirement.
+Singleworker/no newtrees/no storage/backend/limits changes; goalACTIVE.
+
+## Preceding checkpoint — repaired projected callback results
 
 [Checkpoint/evidence](docs/pa24-projected-callback-results.md) records84 independent
 Rust outcomes: PA24ordinary35(26accept9reject), PA30native1required pending,

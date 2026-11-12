@@ -22,6 +22,85 @@ fn closed() -> Bound {
 }
 
 #[test]
+fn canonical_premises_bind_projected_arguments_without_inverting_results() -> TestResult {
+    use rustgm::types::{
+        GenericArgs,
+        infer::Instantiation,
+        parameters::predicates::{Bound as Requirement, Predicate as Canonical},
+        projection, traits,
+    };
+    let mut store = Store::default();
+    let item = ItemId(41);
+    let parent = store.intern_trait_application(traits::Application {
+        item: ItemId(40),
+        arguments: GenericArgs::EMPTY,
+    })?;
+    store.declare_projection(
+        item,
+        projection::Schema {
+            trait_item: ItemId(40),
+            sized: true,
+            copies: rustgm::types::copy::Properties::default(),
+        },
+    )?;
+    let projected = store.intern(Kind::Projection(projection::Application {
+        item,
+        subject: BYTE,
+        trait_application: parent,
+        arguments: GenericArgs::EMPTY,
+    }))?;
+    let fields = store.intern_list(&[BYTE, projected])?;
+    let tuple = store.intern(Kind::Tuple(fields))?;
+    let arguments = store.intern_arguments(&[rustgm::types::arguments::Argument::Type(tuple)])?;
+    let canonical = Canonical {
+        ty: TypeId::UNIT,
+        bound: Requirement::Trait(store.intern_trait_application(traits::Application {
+            item: ItemId(50),
+            arguments,
+        })?),
+    };
+    for normal in [false, true] {
+        let mut context = Context::default();
+        let mut substitution = Instantiation::new(&mut context, &store, &[])?;
+        let template = context.instantiate_predicate(&mut store, canonical, &mut substitution)?;
+        let first = context.variable(Domain::Any)?;
+        let second = context.variable(Domain::Any)?;
+        let pair = context.construct(Constructor::Tuple, &[first, second])?;
+        let goal = template.map_inputs(|input| {
+            Ok(if input == template.subject() {
+                input
+            } else {
+                pair
+            })
+        })?;
+        if normal {
+            context.equate_normal_premise(&mut store, &goal, canonical)?;
+        } else {
+            context.equate_trait_predicate(&mut store, &goal, canonical)?;
+        }
+        assert_eq!(context.resolved(&mut store, first)?, BYTE);
+        assert_eq!(context.resolved(&mut store, second)?, projected);
+        assert_eq!(context.head(&store, second), Err(Error::Normalization));
+        let input = context.variable(Domain::Any)?;
+        let unknown = context.projected(&store, item, input, &[], &[])?;
+        let pair = context.construct(Constructor::Tuple, &[first, unknown])?;
+        let goal = template.map_inputs(|input| {
+            Ok(if input == template.subject() {
+                input
+            } else {
+                pair
+            })
+        })?;
+        assert_eq!(
+            context.equate_trait_predicate(&mut store, &goal, canonical),
+            Err(Error::Unresolved)
+        );
+        assert_eq!(context.unresolved_domain(input)?, Some(Domain::Any));
+    }
+    Ok(())
+}
+
+#[test]
 fn unchanged_inputs_keep_their_holes_and_allocate_no_replacements() -> TestResult {
     let mut store = Store::default();
     let mut source = Context::default();

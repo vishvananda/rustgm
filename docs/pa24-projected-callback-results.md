@@ -60,9 +60,9 @@ Final public receipt1794444997306962028 passes18 exact tests across2 targets in
 Clippy pass. The same compiled frontend harness executes four native groups,
 ten actual programs, without another Rust compilation. Six related old frontend
 groups are included in the public receipt. Two exact private invariant checks
-remain pending CI: the fixed-budget combined private lint/link attempt
-1794438008438968646 timed out before executing them. It is an infrastructure
-failure; no private pass or enlarged budget is claimed.
+passed in full43138039057 on eff52eb9d/source d1980b325. The earlier combined
+private lint/link attempt1794438008438968646 timed out before execution and remains
+an infrastructure failure, without an enlarged budget or local retry.
 
 Original widths8/32/128 keep inference51800/205897/822207, traits208/832/3328,
 method steps2664/10656/42624 and probes16/64/256. New multi-input signatures place
@@ -123,6 +123,11 @@ A replacement full run is required after publishing the correction and checking
 for active full workflows. Keep immutable5d43 until that successor qualifies and
 optimized21f for pending optimized qualification. Intermediate81 was explicitly
 retired after publication; its executable is absent, with raw evidence retained.
+Replacement full43138039057 on eff52eb9d passed fast, all-target lint/harness
+and the host graph; release regular failed one private and two linking diagnostic
+tests. Both pending signature invariants passed. The [wrapped premise checkpoint](pa24-wrapped-callback-premises.md)
+repairs four exact diagnostic expectations and retains full successor qualification.
+No acceptance outcome is changed, and later skipped stages are not passes.
 Retain every earlier paid-alias, projected-premise, symbolic-index, depth128,
 factory, tuple, bootstrap, import, transport and optimized requirement in handoff.md.
 The [machine record](pa24-projected-callback-results-evidence.json) binds raw

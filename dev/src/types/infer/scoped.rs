@@ -50,7 +50,13 @@ impl Context {
         left: TermId,
         right: TermId,
     ) -> Result<(), Error> {
-        self.equate_scoped_graph(store, left, right, &[], true)
+        let mut blocked = Vec::new();
+        self.equate_scoped_graph(store, left, right, &[], Some(&mut blocked))?;
+        if blocked.is_empty() {
+            Ok(())
+        } else {
+            Err(Error::Normalization)
+        }
     }
 
     pub(super) fn equate_scoped_inside(
@@ -60,7 +66,7 @@ impl Context {
         right: TermId,
         ambient: &[u32],
     ) -> Result<(), Error> {
-        self.equate_scoped_graph(store, left, right, ambient, false)
+        self.equate_scoped_graph(store, left, right, ambient, None)
     }
 
     pub(super) fn equate_scoped_graph(
@@ -69,7 +75,7 @@ impl Context {
         left: TermId,
         right: TermId,
         ambient: &[u32],
-        defer_normalization: bool,
+        mut blocked: Option<&mut Vec<(TermId, TermId)>>,
     ) -> Result<(), Error> {
         self.join_slot_classes(left, right)?;
         let left = self.root(left)?;
@@ -80,13 +86,12 @@ impl Context {
         for term in [right, left] {
             if let Value::Known(ty) = self.terms[term.0 as usize].value
                 && ambient.is_empty()
-                && !defer_normalization
+                && blocked.is_none()
                 && !store.contains_callables(ty).ok_or(Error::InvalidIdentity)?
             {
                 return self.equate(store, left, right);
             }
         }
-        let mut pending = false;
         let mut work = vec![Work::Pair(left, right)];
         let mut binders = Binders::default();
         self.account_work(ambient.len())?;
@@ -137,8 +142,10 @@ impl Context {
             let right = self.materialize(store, b)?;
             self.pairs.clear();
             match self.structural(store, a, b, false) {
-                Err(Error::Normalization) if defer_normalization => {
-                    pending = true;
+                Err(Error::Normalization) if blocked.is_some() => {
+                    if let Some(blocked) = &mut blocked {
+                        blocked.push((a, b));
+                    }
                     continue;
                 }
                 result => result?,
@@ -151,11 +158,7 @@ impl Context {
             self.account_work(self.pairs.len())?;
             work.extend(self.pairs.drain(..).rev().map(|(a, b)| Work::Pair(a, b)));
         }
-        if pending {
-            Err(Error::Normalization)
-        } else {
-            Ok(())
-        }
+        Ok(())
     }
 
     fn scoped_binder(

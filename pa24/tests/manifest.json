@@ -11483,6 +11483,688 @@
         "crate_name": "callable_heads",
         "disambiguator": "method_value_concrete_owner_reject"
       }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/plain-free-chain.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "54c1db64af9669e1f53a4530baf6eaf1247c95b41087fc90e0c24330d418499f",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic callback/result-shape contract; complete prepared-root lowering remains required.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_plain_free_chain"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/plain-associated-chain.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "4d383cbf2ea869531e5f230dcdc1946b5a628c115a13022322950f79d2a2e3f1",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic callback/result-shape contract; complete prepared-root lowering remains required.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_plain_associated_chain"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/plain-split.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "edb486be28d0b3672db85d65e8fae629d1f5c4b09599fcde965f7f02cbd4f5df",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic callback/result-shape contract; complete prepared-root lowering remains required.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_plain_split"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/plain-annotated.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "f0ff87da4eed17750caad46a5fb6dfbbdf321180e0b2da22b80233bd811e2474",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic callback/result-shape contract; complete prepared-root lowering remains required.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_plain_annotated"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/plain-explicit-factory.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "1db96a51701542c607b99c32005a491a39cdd5cb9374a0c9048f6dc937afe6a4",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic callback/result-shape contract; complete prepared-root lowering remains required.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_plain_explicit_factory"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/plain-direct-closure.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "a8918e372b5095c5d40cc20b1ef8b027d0ae5136d8608f769615f64afc602172",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic callback/result-shape contract; complete prepared-root lowering remains required.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_plain_direct_closure"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/plain-inherent-byref.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "7bc60021e30c8e6a1f0c4fb5f928919e82352cc4e8391523f353650311536298",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic callback/result-shape contract; complete prepared-root lowering remains required.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_plain_inherent_byref"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/detail-factory-self.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "4b5e8d4402daba8e80d4af1e2085d2c2dc5eafcf4b421766f87bb6493eb0fa95",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic callback/result-shape contract; complete prepared-root lowering remains required.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_detail_factory_self"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/detail-factory-inputs.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "7f5da2a32972f6746c3f4fc9afd243e6f6f3b537423eb0d8ca4463e54a1ca687",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic callback/result-shape contract; complete prepared-root lowering remains required.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_detail_factory_inputs"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/detail-factory-first.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "0b2b60e4d54b4d4c516e2bd85657854435e3c5d65204bed85817f7c54f843a80",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic callback/result-shape contract; complete prepared-root lowering remains required.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_detail_factory_first"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/detail-factory-second.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "f1e160a64303c5e652a13521c95c7343bdcb5a1f665c0fbcfb8902ab0212374e",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic callback/result-shape contract; complete prepared-root lowering remains required.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_detail_factory_second"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/detail-factory-callback.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "cbb3759c5fddb14edf5531d360330c91ba957f631f8ca63094b9ea028e1b827a",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic callback/result-shape contract; complete prepared-root lowering remains required.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_detail_factory_callback"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/detail-unused-projected.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "2b78f8f00c40cd31620761d5d76378c4141594d10c967780bf87ef9df36e01d5",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic callback/result-shape contract; complete prepared-root lowering remains required.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_detail_unused_projected"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/detail-unused-plain.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "9687652d8786f3c82796d53c56f45a402a0876c4539a8cf8ad838083cddcd8c2",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic callback/result-shape contract; complete prepared-root lowering remains required.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_detail_unused_plain"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/detail-invoke-plain.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "0c77ee09ca493ea6086520b96b05b01df01223ba8acde9593a3c207893298f69",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic callback/result-shape contract; complete prepared-root lowering remains required.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_detail_invoke_plain"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/detail-consume-plain.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "c363552203e5aab5f929054634d7ed904a2be826c3ae9913ca05880a56d12813",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic callback/result-shape contract; complete prepared-root lowering remains required.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_detail_consume_plain"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/opponents-wrong-output.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "78bab437201b3875394a7ea07c4494e7028c98a8ae8370c3095ba36fe0fa3689",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_opponents_wrong_output"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/opponents-wrong-input.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "087e2ccd460846201f6ad6c4fcf63e22dd569c7cdd25e09d22917feca4675821",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_opponents_wrong_input"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/opponents-missing-bound-explicit.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "269f090c8d9d5de2d1824a517251520134f87d572dcc01ace8650080238adb64",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_opponents_missing_bound_explicit"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/opponents-unpaid-parent.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "6ce64251225dfbea70fa36182a78c3e32fb636afb9ae630b6151f9887a19cebc",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_opponents_unpaid_parent"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/scale-width-8-noise-0.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "6843482034f9502f6c195c0467a212dbde5464f0ae37d701842298763886a0d4",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic callback/result-shape contract; complete prepared-root lowering remains required.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_scale_width_8_noise_0"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/scale-width-8-noise-128.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "5b221f5c9f778673f7255615cd74e1323e80cc1774f158a268b8aa393228ce43",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic callback/result-shape contract; complete prepared-root lowering remains required.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_scale_width_8_noise_128"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/scale-width-32-noise-0.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "55b47abc61bf71ad3b1c7c48d0221f6cbd7c54af0bdeefb13be2e6ddfa1f6df1",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic callback/result-shape contract; complete prepared-root lowering remains required.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_scale_width_32_noise_0"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/scale-width-32-noise-128.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "8495170c3a2ad84cf1283658271d166214983ec2853c134465dc7c7e3024a8af",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic callback/result-shape contract; complete prepared-root lowering remains required.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_scale_width_32_noise_128"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/scale-width-128-noise-0.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "9d93e32efd2903da1eef1cee5e64ef8f2769dff525991d2f933471b6a0b0da7a",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic callback/result-shape contract; complete prepared-root lowering remains required.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_scale_width_128_noise_0"
+      }
+    },
+    {
+      "path": "tests/spec/by-ref-fold/scale-width-128-noise-128.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "b44b7992ab48185dc8ef53f60de839098fddbc6590c6a203e3f6a5f2fa51731b",
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/callback_results.rs",
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic callback/result-shape contract; complete prepared-root lowering remains required.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "callable_heads",
+        "disambiguator": "byref_scale_width_128_noise_128"
+      }
     }
   ]
 }

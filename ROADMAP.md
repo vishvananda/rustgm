@@ -37,6 +37,12 @@ lifetime proof and source native order23/12. One ordinary native artifact and ei
 remain required. This finite checkpoint does not activate a planned assignment
 or establish an original core artifact; the bounded original probe is next.
 
+The [wrapped callback-premise checkpoint](docs/pa24-wrapped-callback-premises.md)
+qualifies55 complete outcomes and four additional source type outcomes from68
+independent contracts, including source native order23/1234. Thirteen accepting
+artifacts remain required. The next unchanged original observation is pending;
+no original core artifact or planned-assignment completion is claimed.
+
 | PA | Assignment | Status |
 | --- | --- | --- |
 | [1](pa1/README.md) | Source and tokens | implemented-draft |
