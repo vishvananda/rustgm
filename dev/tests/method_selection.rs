@@ -1,6 +1,8 @@
 //! Prefix selection preserves caller rigidity, unknown aliases and ordinary lowering.
 #[path = "method_selection/possibility.rs"]
 mod possibility;
+#[path = "method_selection/refuted_receivers.rs"]
+mod refuted_receivers;
 use crate::native_references as native;
 use crate::qualify as rustc;
 use crate::semantic;

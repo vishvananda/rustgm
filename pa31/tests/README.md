@@ -978,3 +978,13 @@ premise's `&Q::Target`. Six positives (core's impl, inherent and other-trait
 callers, free functions over `&**b`, and an `Rhs`-only coercion) and two controls
 accept. Dropping the premise rejects (E0599). A maintainer integration test
 checks them through the CLI. There is no graded manifest.
+
+`spec/negative-receivers/` freezes ten declared no_core reductions of core's
+`Result<&mut T, E>::cloned`. At the autoref step `&&mut T`, `t.clone()` meets
+core's negative `impl !Clone for &mut T`, whose lifetime equations stay unpaid.
+That step does not apply, and autoderef reaches `T: Clone`. Five method-call
+positives and three controls (`T::clone(t)`, no negative impl, the `&T` form)
+accept. Dropping the premise rejects (E0599), and an ordinary
+`need::<&mut u8>()` bound keeps its conditional-negative rejection (E0277). A
+maintainer integration test checks them through the CLI. There is no graded
+manifest.

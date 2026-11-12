@@ -1,5 +1,20 @@
 # Library build blocker tracker
 
+The [negative receiver checkpoint](pa31-negative-receivers.md) lets a method
+receiver step skip a trait requirement that a negative impl refutes. Core's
+`Result<&mut T, E>::cloned` calls `t.clone()` on `&mut T`. Its autoref step
+`&&mut T` met core's `impl !Clone for &mut T` with the negative's own lifetime
+equations unpaid, and ordinary use rejected that conditional refutation instead
+of moving on to `T: Clone`. Ten source-core reductions and call-linear work
+qualify the fix. Ordinary bound obligations keep the conditional boundary.
+
+Exploratory pin 9c1bd81d clears `cloned` 6721, with no new reached failure.
+The unchanged 120s observer ends at 121.022s with 6 records, 13,613 attempts
+and last item 7607, slice/ascii.rs:339, under external load of 13–24. The
+first remaining failure is `AtomicPtr::new` 6835 at sync/atomic.rs:1478
+("constant storage layout requires a closed normalized type"). No core artifact
+exists.
+
 The [premise input checkpoint](pa20-premise-inputs.md) lets a caller premise
 select a path call's inferred `Rhs` as its own projection. Core's `Pin`
 comparison forwarding calls `Ptr::Target::eq(self, other)` under

@@ -149,6 +149,24 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-12 negative receiver update (supersedes the blocks below):**
+
+- The `Result<&mut T, E>::cloned` 6721 blocker is fixed
+  ([evidence](docs/pa31-negative-receivers.md)). A method receiver step now
+  skips a trait requirement that a negative impl refutes, even with the
+  negative's own lifetime equations unpaid. Ordinary obligations keep the
+  conditional boundary.
+  - Ten source-core reductions are in `pa31/tests/spec/negative-receivers`.
+    The history is in `obj/parallel/result-cloned/core/declared.json`.
+  - Exploratory pin `obj/parallel/result-cloned/wip1-dev-fast` (9c1bd81d)
+    clears it. The next first failure is `AtomicPtr::new` 6835 at
+    sync/atomic.rs:1478 ("constant storage layout requires a closed normalized
+    type").
+  - Two declared ordinary probes show separate ordinary-mode false rejections
+    of `t.clone()` on `&mut T` (`obj/parallel/result-cloned/ordinary/`):
+    "concrete dispatch cannot use a symbolic assumption" and "closure signature
+    lifetime interface differs from its body". These are recorded, not fixed.
+
 **2026-11-12 premise input update (supersedes the blocks below):**
 
 - The Pin PartialEq/PartialOrd forwarding blocker (6456–6464) is fixed

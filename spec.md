@@ -1760,6 +1760,15 @@ cycle checks, binder-local deferral and complete child obligations. See the
 [source Freeze checkpoint](docs/pa31-source-freeze-proposal.md) for the measured
 depth, width, unrelated-node and cold/warm controls.
 
+A method receiver step asks only whether its candidate applies. A refuted trait
+requirement makes the step inapplicable, and lookup continues to the next
+adjustment. This includes a conditional negative whose own lifetime equations
+are unpaid, such as core's `impl !Clone for &mut T` at the `&&mut T` step of
+`t.clone()`: no positive candidate completed beside it. The step publishes no
+negative fact or cached absence. Ordinary obligations, path conditions and
+coherence keep the existing refutation guards. See the
+[negative receiver checkpoint](docs/pa31-negative-receivers.md).
+
 Auto traits receive no implicit Self `MetaSized` supertrait; written bounds and
 ordinary trait, parameter and alias defaults remain authoritative. Source
 UnsafeUnpin uses its genuine unsafe auto identity and existing formation,

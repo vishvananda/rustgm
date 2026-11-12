@@ -52,10 +52,10 @@ impl Checker<'_> {
             self.error(
                 node,
                 match error {
-                    selection::Failure::Invalid(message) => message,
                     selection::Failure::Pending(_) => {
                         "ready body sizing unexpectedly requires pending declarations".into()
                     }
+                    failure => failure.message(),
                 },
             )
         })? {

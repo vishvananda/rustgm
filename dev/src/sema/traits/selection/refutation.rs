@@ -7,6 +7,9 @@ use crate::{
 };
 use std::sync::Arc;
 
+pub(super) const CONDITIONAL: &str =
+    "conditional negative implementation requires scoped debt payment";
+
 pub(in crate::sema) enum Refutation {
     DebtFree(Box<Closed>),
     Conditional(Box<Conditional>),
@@ -114,8 +117,20 @@ impl Refutation {
                     meta_sized,
                 } = *conditional;
                 let _unpaid = (identity, proof, sized, meta_sized);
-                Err("conditional negative implementation requires scoped debt payment")
+                Err(CONDITIONAL)
             }
+        }
+    }
+    /// A receiver probe consumes any refutation as an inapplicable candidate.
+    /// A conditional negative's debts stay unpaid: the probe publishes neither
+    /// a negative fact nor a cached absence.
+    pub(in crate::sema) fn exclude(self) -> Result<(), &'static str> {
+        match self {
+            Self::Conditional(conditional) => {
+                let _unpaid = conditional;
+                Ok(())
+            }
+            refutation => refutation.reject(),
         }
     }
 }

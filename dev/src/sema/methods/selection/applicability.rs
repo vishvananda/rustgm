@@ -514,7 +514,7 @@ fn trait_requirements(
                 )
             })? {
                 Selection::Refuted(refutation) => {
-                    refutation.reject()?;
+                    refutation.exclude()?;
                     return Ok(false);
                 }
                 Selection::Absent => return Ok(false),

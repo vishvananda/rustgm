@@ -65,6 +65,9 @@ pub(crate) enum Dependency {
 pub(in crate::sema) enum Failure {
     Pending(Dependency),
     Invalid(String),
+    /// A conditional negative completed the root application. Ordinary uses
+    /// cannot pay its scoped debts; only a receiver probe consumes it.
+    Conditional(Refutation),
 }
 impl From<String> for Failure {
     fn from(message: String) -> Self {
@@ -72,10 +75,11 @@ impl From<String> for Failure {
     }
 }
 impl Failure {
-    fn message(self) -> String {
+    pub(in crate::sema) fn message(self) -> String {
         match self {
             Self::Pending(_) => "trait selection requires pending implementation headers".into(),
             Self::Invalid(message) => message,
+            Self::Conditional(_) => refutation::CONDITIONAL.into(),
         }
     }
 }
@@ -525,6 +529,24 @@ pub(in crate::sema) fn select_available_checked(
     availability: Availability,
 ) -> Result<Selection, Failure> {
     select_from_checked(facts, context, goal, caller, availability, false, None)
+}
+
+/// A method receiver step asks only whether its candidate applies. When a
+/// conditional negative is the application's only completed candidate, its
+/// unpaid scoped debts decide only whether that negative applies: no positive
+/// candidate exists either way. This consumer receives the retained refutation
+/// and publishes no negative fact or cached absence.
+pub(in crate::sema) fn select_applicable(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Goal,
+    caller: Caller<'_>,
+    availability: Availability,
+) -> Result<Selection, String> {
+    match select_from_checked(facts, context, goal, caller, availability, false, None) {
+        Err(Failure::Conditional(refutation)) => Ok(Selection::Refuted(refutation)),
+        result => result.map_err(Failure::message),
+    }
 }
 
 /// The requesting normalizer retains every input's formation and lifetime proof.

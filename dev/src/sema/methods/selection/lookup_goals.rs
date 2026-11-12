@@ -138,7 +138,7 @@ pub(super) fn select_available(
     availability: Availability,
 ) -> Result<selection::Selection, String> {
     let Some(count) = goal.bound_regions else {
-        return selection::select_available(facts, context, &goal.predicate, caller, availability);
+        return selection::select_applicable(facts, context, &goal.predicate, caller, availability);
     };
     let assumptions = caller.assumptions;
     let environment = caller.environment;

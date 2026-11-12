@@ -233,12 +233,12 @@ pub(super) fn prove_checked(
         *reuse = active.reuse;
     }
     let decision = decision?;
-    search
-        .result(facts, context, goal, decision)
-        .map_err(Into::into)
+    search.result_observed(facts, context, goal, decision, None)
 }
 
 impl Search<'_> {
+    /// The message boundary that private invariants observe.
+    #[cfg(test)]
     fn result(
         self,
         facts: &mut Declarations,
@@ -247,6 +247,7 @@ impl Search<'_> {
         decision: Decision,
     ) -> Result<Selection, String> {
         self.result_observed(facts, context, goal, decision, None)
+            .map_err(super::Failure::message)
     }
     fn result_observed(
         mut self,
@@ -255,7 +256,7 @@ impl Search<'_> {
         goal: &Goal,
         decision: Decision,
         mut attempted: Option<&mut usize>,
-    ) -> Result<Selection, String> {
+    ) -> Result<Selection, super::Failure> {
         if let Decision::Proven(root) = decision
             && self.query.universal.is_some()
         {
@@ -286,8 +287,7 @@ impl Search<'_> {
                 // External consumers in this first profile cannot pay a scoped
                 // negative. Retain its full proof until this explicit boundary.
                 if matches!(refutation, super::Refutation::Conditional(_)) {
-                    refutation.reject()?;
-                    return Err("conditional refutation unexpectedly became debt-free".into());
+                    return Err(super::Failure::Conditional(refutation));
                 }
                 Ok(Selection::Refuted(refutation))
             }
@@ -301,7 +301,7 @@ impl Search<'_> {
                         )
                         .map_err(inference)?;
                 }
-                self.evidence(facts, root, chain).map(Selection::Proven)
+                Ok(Selection::Proven(self.evidence(facts, root, chain)?))
             }
         }
     }

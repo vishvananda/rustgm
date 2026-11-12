@@ -743,7 +743,8 @@ fn select_requirement_waiting(
                         Err(error) => Waiting::Failed(error),
                     },
                     selection::Failure::Pending(dependency) => Waiting::Pending(dependency),
-                    failure @ selection::Failure::Invalid(_) => {
+                    failure @ (selection::Failure::Invalid(_)
+                    | selection::Failure::Conditional(_)) => {
                         Waiting::Failed(crate::sema::census::fold_cause(
                             &failure,
                             "canonical trait selection work exhausted",

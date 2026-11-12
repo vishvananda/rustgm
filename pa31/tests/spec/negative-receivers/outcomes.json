@@ -1,0 +1,91 @@
+{
+ "schema": 1,
+ "declared": "2026-11-12, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run (obj/parallel/result-cloned/core/declared.json, batches 2 and 3). Each case's first line records its prefix: pa31/tests/spec/default-const-closures/count.rs through its Fn trait, followed by a reduced Result-like enum and core's reference Clone impls per case.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "cases": {
+  "core-closure.rs": {
+   "sha256": "60530860af21dc2f731b922dfef20d5cf5ca5b353ec0d8ad216e5c49be34341c",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "neg-closure",
+   "rustgm_b41f1792": 1,
+   "rustgm_exploratory_9c1bd81d": 0
+  },
+  "direct.rs": {
+   "sha256": "0d0d27554b0642607db66f06dd9b452d06a93442bb72f58c67b851ca1b4a6c3b",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "neg-direct",
+   "rustgm_b41f1792": 1,
+   "rustgm_exploratory_9c1bd81d": 0
+  },
+  "annotated.rs": {
+   "sha256": "6d63bb6f3da9dd6a7f0ce90ce8e4b7e28474619c4f9677f80f6f13b5d6feaae0",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "neg-annotated",
+   "rustgm_b41f1792": 1,
+   "rustgm_exploratory_9c1bd81d": 0
+  },
+  "path.rs": {
+   "sha256": "2178f31b5a897ba47e5d239fabfd758387ad5729e8e63effc3cf07999e87a404",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "neg-path",
+   "rustgm_b41f1792": 0,
+   "rustgm_exploratory_9c1bd81d": 0
+  },
+  "reference-closure.rs": {
+   "sha256": "216ecd2a965a9df951f6d4bfbed84aefcea10719eb4d77e6887aef62c8d3ca0a",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "neg-ref-closure",
+   "rustgm_b41f1792": 1,
+   "rustgm_exploratory_9c1bd81d": 0
+  },
+  "reference-direct.rs": {
+   "sha256": "e2472d0bc5dbfe3a82d22d254d0615519c01cd96598b8a87ebb92cb0b0c73ef1",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "neg-ref-direct",
+   "rustgm_b41f1792": 1,
+   "rustgm_exploratory_9c1bd81d": 0
+  },
+  "positive-closure.rs": {
+   "sha256": "2724e97e4459bb417bd9498ad0b48ec10f55945d2555658b6b3bb108eefb05f2",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "ref-closure",
+   "rustgm_b41f1792": 0,
+   "rustgm_exploratory_9c1bd81d": 0
+  },
+  "shared.rs": {
+   "sha256": "7a17c2c4c151325e3e686464bb3cb1aada05ac78ec660c655294f6a834cdde38",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "ref-shared",
+   "rustgm_b41f1792": 0,
+   "rustgm_exploratory_9c1bd81d": 0
+  },
+  "missing.rs": {
+   "sha256": "0efa1b5aa98bdbfa8b15fee48a2425bbdcc7a09be7f28ea778afd30436321ad2",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "neg-missing",
+   "rustc_error": "E0599",
+   "rustgm_b41f1792": 1,
+   "rustgm_exploratory_9c1bd81d": 1
+  },
+  "bound-obligation.rs": {
+   "sha256": "d1c02bd99a5934af63d925820841b71314150e7cfe43e92511c69c4dc325fdee",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "E0277",
+   "reduction": "bound-obligation (batch 3)",
+   "rustgm_b41f1792": 1,
+   "rustgm_exploratory_9c1bd81d": 1
+  }
+ },
+ "rustgm_observations": "Exploratory CLI status before qualification (obj/parallel/result-cloned/core/batch2-wip1.txt, batch3.txt). b41f1792 rejects five accepted cases with \"invalid method trait selection\"; 9c1bd81d (wip1) accepts all eight positives, rejects missing.rs with \"no applicable method for this receiver\" and keeps bound-obligation.rs at \"conditional negative implementation requires scoped debt payment\"."
+}

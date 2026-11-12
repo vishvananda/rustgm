@@ -1,0 +1,10 @@
+pa31/tests/spec/negative-receivers/core-closure.rs	0
+pa31/tests/spec/negative-receivers/direct.rs	0
+pa31/tests/spec/negative-receivers/annotated.rs	0
+pa31/tests/spec/negative-receivers/path.rs	0
+pa31/tests/spec/negative-receivers/reference-closure.rs	0
+pa31/tests/spec/negative-receivers/reference-direct.rs	0
+pa31/tests/spec/negative-receivers/positive-closure.rs	0
+pa31/tests/spec/negative-receivers/shared.rs	0
+pa31/tests/spec/negative-receivers/missing.rs	1
+pa31/tests/spec/negative-receivers/bound-obligation.rs	1

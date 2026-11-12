@@ -372,7 +372,7 @@ impl Cause for crate::types::infer::Error {
 impl Cause for crate::sema::traits::selection::Failure {
     fn kind(&self) -> CauseKind {
         match self {
-            Self::Pending(_) => CauseKind::Invalid,
+            Self::Pending(_) | Self::Conditional(_) => CauseKind::Invalid,
             Self::Invalid(message) => CauseKind::of_message(message),
         }
     }

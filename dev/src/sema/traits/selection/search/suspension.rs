@@ -423,6 +423,7 @@ fn begin_borrowed_inputs(
             search
                 .result_observed(facts, context, goal, decision, attempted)
                 .map(|selection| BorrowedProgress(Borrowed::Ready(selection)))
+                .map_err(crate::sema::traits::selection::Failure::message)
         }
         continuation::Progress::Pending(owner) => {
             context.account_work(1).map_err(super::inference)?;
@@ -528,6 +529,7 @@ impl Pending {
                 search
                     .result_observed(facts, context, goal, decision, attempted)
                     .map(Progress::Ready)
+                    .map_err(crate::sema::traits::selection::Failure::message)
             }
             continuation::Progress::Pending(owner) => {
                 let query = search.query;

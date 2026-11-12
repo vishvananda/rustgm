@@ -159,6 +159,14 @@ graded PA20 outcomes and nine source-core reductions agree with rustc. An
 exploratory observation clears the seven forwarding bodies; the first remaining
 failure is `Result::cloned`.
 
+The [negative receiver checkpoint](docs/pa31-negative-receivers.md) lets a
+method receiver step skip a trait requirement that a negative impl refutes,
+even when the negative's own lifetime equations are unpaid, as core's
+`impl !Clone for &mut T` needs for `t.clone()` on `&mut T`. Ordinary
+obligations keep the conditional boundary. Ten source-core reductions agree
+with rustc. An exploratory observation clears `Result::cloned`; the first
+remaining failure is `AtomicPtr::new`.
+
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage
 limit controls, pass text, independent Rust and native checks with frozen a08ab1a4.
