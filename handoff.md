@@ -28,13 +28,26 @@ all28145priorreferencehashesunchanged. RootPA24 661/474accept187reject/native396
 InitialindependentmissingCopy ICE/nativewhitespace and firstCLIpublicenum+missing
 not-yet-generated-warningrefs failures retained; none produced oracles or inverted
 valid source outcomes. Final directpreverification+normalgeneration/textcheck PASS.
-NEXT: upstream/harness/tidy, semanticcommit/pin exact623 (3907Rust unchanged),
-immutable acceptingcomparison, NEWunchanged120s original+postcheck. Last67 first
-filter_map_fold141:1253 line39; no core/alloc/stdartifact. Preserve older requirements.
-Full43154313816 RUNNING EXACT01e7013/sourcec388;fast/lint/architecture/harness/hostgraph
-PASS, release/course running, later stagespending. Do not restart activefull.
-Stable5d/current67/optimized21f retained; e8executableABSENT after publishedreplacement,
-cleanup1794457333921746162, producer/rawkept. Singleworker/no newtrees.
+Upstream/harness/tidy PASS,28203currentreferencehashesunchanged. Clean source
+08794b90955e7ba47674f582511b80c37ebc6152 freezes exact623 with3907Rust/empty patch.
+Thirty exclusive A/A+twoABBA accepting controls preserve complete outputs vs67;
+wall1.075/.995/.968 CPU1.078/.995/.968 AA.980/.999/.997, rawnoise/no speedclaim.
+NEWunchanged120s original ends deadline121.082337s,65records/14018attempts,
+lastfn8351 slice/mod.rs210:118749,line3197. Three filtermap bodies4634/4635/4648
+(body141:1230/1514/5145) and12earlierrequired bodies clear. Eleven prior records
+absentWHENREACHED; NOnewfailuresamongpreviouslypassingreached67bodies. FIRST
+FlattenCompat::iter_fold4718/body142:10360,error142:10701,flatten.rs398:
+self.iter.fold(acc,flatten(&mut fold)), callinputsremainunresolved. Postcheck
+1794458868356791540 verifies722/375/six/current+immutable3907/profile/limits.
+ProgressSHA18a7eb53a2f813bc461bf482b21a203ce219cb0bc58e77adb38889ee0f4b991d.
+No completecensus/throughput/core/alloc/stdartifact. NEXT: publishobservations,
+refreshfullstatus/noactivecheck (doNOTstartanotherfullwhile43154313816active),
+reduceactualnestedflatten return-callableinputTcorrelation ordinaryPA24/sourcePA31.
+Full43154313816 RUNNING EXACT01e7013/sourcec388;fast/lint/architecture/harness/
+hostgraphPASS,release/courseinprogress,laterpending. Stable5d/current623/optimized21f
+retained; preceding67pineligibleforretirementAFTERpublication+comparison. e8ABSENT
+cleanup1794457333921746162, producer/rawkept. Allolderrequirements preserved.
+Singleworker/no newtrees/backend/storage/limitsfixed.
 
 ## Current checkpoint — try-block captures clear filter_try_fold
 

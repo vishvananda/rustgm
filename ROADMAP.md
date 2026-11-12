@@ -55,8 +55,10 @@ The [computed-match capture checkpoint](docs/pa24-match-captures.md) qualifies
 40 complete API outcomes from49 independent contracts,19 new PA24 text outcomes,
 actual ordinary/source native order7/9/12314 and one-field scaling. Nine entire
 positive outcomes and one additional public-helper metadata artifact remain
-required. Immutable original observation and full successor qualification are
-pending; no original artifact or planned-assignment completion is claimed.
+required. The unchanged original observer clears all three filter-map capture
+bodies; first remaining is FlattenCompat::iter_fold at its nested helper call.
+Pinned inputs/configuration/limits verify; full successor qualification remains
+pending. No original artifact or planned-assignment completion is claimed.
 
 | PA | Assignment | Status |
 | --- | --- | --- |

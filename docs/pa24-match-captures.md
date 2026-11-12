@@ -61,9 +61,29 @@ an unsupported positive.
 Upstream, maintainer harness and cleanup all pass;28,203 current reference hashes
 remain unchanged across those checks.
 
-CLI 623ff5bc248b5f8d722ade9e71cf2ed486328cc6b2271fa8a46b1aef3b220204 has the local
-source/text/native evidence. Clean freeze, immutable accepting comparison and the
-unchanged120s original observer are next. No core, alloc or std artifact exists.
+Clean source08794b90955e7ba47674f582511b80c37ebc6152 freezes CLI623ff5bc
+with3907 Rust hashes and an empty tracked patch. Thirty exclusive A/A plus two
+ABBA accepting observations preserve complete outputs against preceding67. Wall
+ratios1.075/.995/.968, CPU1.078/.995/.968 and A/A wall.980/.999/.997 retain all
+raw noise; no optimized speed, neutrality or original-core throughput is claimed.
+
+The unchanged120s original observer ends at its deadline after121.082337s,
+with65 partial records and14,018 attempts; last8351, slice/mod.rs210:118749,
+line3197. Filter_map_fold4634/body141:1230, filter_map_try_fold4635/body141:1514
+and find4648/body141:5145 are reached without their prior failure records,
+alongside all twelve earlier required bodies. Eleven preceding failure records
+are absent when reached; no new failure appears among previously passing reached
+67 bodies. The first remaining is FlattenCompat::iter_fold4718/body142:10360,
+error142:10701, flatten.rs:398: call inputs remain unresolved. The source expression
+is `self.iter.fold(acc, flatten(&mut fold))`.
+
+Postcheck verifies722 source hashes,375 opens, six configuration bindings,3907
+current/immutable Rust hashes and unchanged profile/limits. ProgressSHA
+18a7eb53a2f813bc461bf482b21a203ce219cb0bc58e77adb38889ee0f4b991d.
+This is neither a complete census nor a core/alloc/std artifact. Next reduce the
+actual generic helper and returned-callable input correlation without inferring
+an associated projection's inputs from its result.
+
 Full43154313816 remains active on exact01e7013/sourcec388: fast, lint/architecture/
 harness and host graph pass; release/course is running and later stages remain
 pending. Do not restart it for this descendant. Preserve all older requirements,

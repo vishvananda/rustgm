@@ -1,11 +1,14 @@
 {
   "schema": 1,
-  "state": "locally qualified; clean source freeze, immutable comparison/original observation and full successor pending",
+  "state": "locally qualified; pinned original clears filter-map matches, first remaining FlattenCompat::iter_fold; full successor pending",
   "compiler": {
     "sha256": "623ff5bc248b5f8d722ade9e71cf2ed486328cc6b2271fa8a46b1aef3b220204",
     "production_change": "closures/uses.rs visits typed Match arms/guards and computed or local scrutinees; captured-place pattern use remains an explicit required positive contract",
-    "source_commit": "pending clean source freeze",
-    "new_engine_or_cache_fields": false
+    "source_commit": "08794b90955e7ba47674f582511b80c37ebc6152",
+    "new_engine_or_cache_fields": false,
+    "producer": "obj/parallel/filter-map-captures/candidate-dev-fast/producer.json",
+    "compiler_rust_hashes": 3907,
+    "empty_tracked_patch": true
   },
   "contracts": {
     "independent": 49,
@@ -236,7 +239,95 @@
     "source": "c388b27099c03f75e01adf830346fe3c2a04e3f6",
     "status": "running release/course; fast, lint/architecture/harness and independent host graph passed; later stages pending; do not restart for docs/new descendants"
   },
-  "original_core": "New623 observation pending; preceding67 clears filter_try_fold then firstfails filter_map_fold at141:1253. No original core/alloc/std artifact.",
+  "original_core": {
+    "item_attempts": 14018,
+    "records": 65,
+    "verified_required_bodies": [
+      "item\tfunction\t4394\tfile 133:2216\tnode 161",
+      "item\tfunction\t4397\tfile 133:2695\tnode 278",
+      "item\tfunction\t4400\tfile 133:3607\tnode 356",
+      "item\tfunction\t4401\tfile 133:3850\tnode 432",
+      "item\tfunction\t4403\tfile 133:4795\tnode 493",
+      "item\tfunction\t4429\tfile 134:1245\tnode 153",
+      "item\tfunction\t4435\tfile 134:2178\tnode 310",
+      "item\tfunction\t4450\tfile 135:4894\tnode 555",
+      "item\tfunction\t4600\tfile 140:3018\tnode 398",
+      "item\tfunction\t4634\tfile 141:1230\tnode 181",
+      "item\tfunction\t4635\tfile 141:1514\tnode 253",
+      "item\tfunction\t4648\tfile 141:5145\tnode 721",
+      "item\tfunction\t4739\tfile 142:17593\tnode 2529",
+      "item\tfunction\t4976\tfile 148:2530\tnode 203",
+      "item\tfunction\t6161\tfile 182:73724\tnode 1561"
+    ],
+    "new_failures_in_previously_passing_reached_baseline_bodies": [],
+    "previous_failures_absent_when_reached": [
+      {
+        "item": "item\tfunction\t4634\tfile 141:1230\tnode 181",
+        "record": "record\t1\tbodies\tfailed\tfunction `filter_map_fold`\tfile 141:1253\t-\tthis typed capture use is not implemented"
+      },
+      {
+        "item": "item\tfunction\t4635\tfile 141:1514\tnode 253",
+        "record": "record\t2\tbodies\tfailed\tfunction `filter_map_try_fold`\tfile 141:1537\t-\tthis typed capture use is not implemented"
+      },
+      {
+        "item": "item\tfunction\t4648\tfile 141:5145\tnode 721",
+        "record": "record\t3\tbodies\tfailed\tfunction `find`\tfile 141:5172\t-\tthis typed capture use is not implemented"
+      },
+      {
+        "item": "item\tfunction\t4784\tfile 142:23090\tnode 3318",
+        "record": "record\t12\tbodies\tfailed\tfunction `flatten_one`\tfile 142:23114\t-\tthis typed capture use is not implemented"
+      },
+      {
+        "item": "item\tfunction\t4785\tfile 142:23383\tnode 3381",
+        "record": "record\t13\tbodies\tfailed\tfunction `try_flatten_one`\tfile 142:23407\t-\tthis typed capture use is not implemented"
+      },
+      {
+        "item": "item\tfunction\t5067\tfile 151:2007\tnode 340",
+        "record": "record\t21\tbodies\tfailed\tfunction `scan`\tfile 151:2035\t-\tthis typed capture use is not implemented"
+      },
+      {
+        "item": "item\tfunction\t5770\tfile 175:102483\tnode 2298",
+        "record": "record\t31\tbodies\tfailed\tfunction `check`\tfile 175:102510\t-\tthis typed capture use is not implemented"
+      },
+      {
+        "item": "item\tfunction\t5772\tfile 175:104894\tnode 2464",
+        "record": "record\t32\tbodies\tfailed\tfunction `check`\tfile 175:104921\t-\tthis typed capture use is not implemented"
+      },
+      {
+        "item": "item\tfunction\t5799\tfile 175:126349\tnode 3479",
+        "record": "record\t37\tbodies\tfailed\tfunction `compare`\tfile 175:126375\t-\tthis typed capture use is not implemented"
+      },
+      {
+        "item": "item\tfunction\t5802\tfile 175:129729\tnode 3650",
+        "record": "record\t38\tbodies\tfailed\tfunction `compare`\tfile 175:129755\t-\tthis typed capture use is not implemented"
+      },
+      {
+        "item": "item\tfunction\t5824\tfile 175:141308\tnode 4462",
+        "record": "record\t40\tbodies\tfailed\tfunction `compare`\tfile 175:141327\t-\tthis typed capture use is not implemented"
+      }
+    ],
+    "first_failure": {
+      "item": "item\tfunction\t4718\tfile 142:10360\tnode 1531",
+      "record": "record\t1\tbodies\tfailed\tfunction `iter_fold`\tfile 142:10701\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved",
+      "source": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/iter/adapters/flatten.rs",
+      "line": 398
+    },
+    "last_item_source": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/slice/mod.rs",
+    "last_item_line": 3197,
+    "progress_sha256": "18a7eb53a2f813bc461bf482b21a203ce219cb0bc58e77adb38889ee0f4b991d",
+    "complete_census": false,
+    "artifact": false,
+    "partial_counts_are_not_throughput": true,
+    "seconds": 121.08233745303005,
+    "deadline_seconds": 120,
+    "classification": "infrastructure/setup failure",
+    "source_hashes": 722,
+    "opened_sources": 375,
+    "config_bindings": 6,
+    "compiler_rust_hashes": 3907,
+    "all_bindings_profile_limits_unchanged": true,
+    "postcheck_cleanup": "1794458868356791540"
+  },
   "pending_requirements": "All prior requirements retained. Nine entire positive outcomes and one additional public-helper native CLI metadata artifact stay required.",
   "raw_evidence_root": "obj/parallel/filter-map-captures",
   "unchanged": [
@@ -244,5 +335,44 @@
     "storage/resource policy",
     "original input archive/configuration pins",
     "compiler limits"
-  ]
+  ],
+  "comparison": {
+    "rows": 30,
+    "complete_output_equality": true,
+    "summary": {
+      "import-control": {
+        "seconds": {
+          "aa_ratio": 0.9800691800620861,
+          "paired_candidate_over_base": 1.0748120414285167
+        },
+        "cpu_seconds": {
+          "aa_ratio": 0.9826960784313724,
+          "paired_candidate_over_base": 1.0783341644461293
+        }
+      },
+      "literal": {
+        "seconds": {
+          "aa_ratio": 0.9990199194110482,
+          "paired_candidate_over_base": 0.99537959186768
+        },
+        "cpu_seconds": {
+          "aa_ratio": 0.9979354714806989,
+          "paired_candidate_over_base": 0.9950899700018061
+        }
+      },
+      "priority-native": {
+        "seconds": {
+          "aa_ratio": 0.9970515528060073,
+          "paired_candidate_over_base": 0.9677362979930166
+        },
+        "cpu_seconds": {
+          "aa_ratio": 0.9953821386205735,
+          "paired_candidate_over_base": 0.9678471425857338
+        }
+      }
+    },
+    "no_optimized_or_core_speed_claim": true,
+    "raw": "obj/parallel/filter-map-captures/measure",
+    "cleanup": "1794458685894771241"
+  }
 }

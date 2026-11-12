@@ -4,9 +4,17 @@ The [computed-match capture checkpoint](pa24-match-captures.md), CLI623ff5bc,
 locally qualifies40 complete API outcomes from49 independent contracts, actual
 ordinary/source native7/9/12314,19 reviewed ordinary text contracts and bounded
 one-field scaling. Nine entire positives and one public-helper metadata artifact
-stay required. Clean freeze/new unchanged original observer is next; no original
-core/alloc/std artifact. Full43154313816 on preceding01e7013/sourcec388 remains
-running; do not restart it for this descendant. Earlier snapshots follow.
+stay required. Clean source08794b909/frozen623 clears filter_map_fold, its try
+companion and find, alongside12 earlier required bodies. The unchanged120s
+observer still ends deadline121.082337s,65 partial records/14,018 attempts,
+last8351 slice/mod.rs:3197. Eleven preceding failures are absent when reached;
+no new failure occurs among previously passing reached67 bodies. First remaining
+FlattenCompat::iter_fold4718/body142:10360,error142:10701,line398 at
+self.iter.fold(acc,flatten(&mut fold)). All722/375/six/current+immutable3907/
+profile/limits verify unchanged. No complete census, throughput or original artifact.
+Full43154313816 on preceding01e7013/sourcec388 remains running; do not restart it
+for this descendant. Next reduce the actual nested helper's callable input
+correlation; keep projection inference directional. Earlier snapshots follow.
 
 Current [try-capture checkpoint](pa24-try-captures.md), CLI67f146ab, qualifies
 21 complete source outcomes from36 independent contracts, with15 ordinary
