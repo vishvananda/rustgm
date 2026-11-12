@@ -419,7 +419,7 @@ impl Search<'_> {
             let mut trial = Trial::new(facts, frame, owner, self.query.allocations.floor())?;
             self.query.allocations.record(trial.end);
             self.query.reserve(trial.scope, trial.first..trial.end)?;
-            let result = trial.inputs.context.equate_predicates(
+            let result = trial.inputs.context.equate_candidate_header(
                 &facts.types,
                 &trial.goal,
                 &trial.instance.goal,

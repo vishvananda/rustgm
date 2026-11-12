@@ -1,5 +1,6 @@
 //! Trait obligations retain inference arguments until the whole body is solved.
 mod binder_mapping;
+mod candidate_headers;
 mod equations;
 mod normal_premises;
 #[cfg(test)]

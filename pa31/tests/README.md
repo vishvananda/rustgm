@@ -907,3 +907,14 @@ traces check the actual swapped/reordered private representation, const body,
 endpoint evaluation and Drop; ordinary generic/const/unsafe/lifetime/move proof
 and source header image identity remain required. Full original modules and
 metadata transport remain open.
+
+`spec/rigid-candidate-headers/` freezes seven declared no_core reductions of
+core's `Peekable::next_if_eq` on the `fn-pointer-coherence` core prefix.
+`&I::Item == &T` under `I::Item: PartialEq<T>` must not keep the `FnPtr`
+blanket as an alternative: its header needs `T == <I as Iterator>::Item`, and
+rustc relates that rigid alias structurally. Projected, sized, closure and
+impl-parameter forms accept, as do two plain-parameter controls; a missing
+premise rejects (E0277). Each outcome was declared before its rustc 1.98.0
+oracle. A maintainer integration test checks them through the CLI; the
+ordinary course forms are PA20's `rigid-candidate-headers`. There is no graded
+manifest.

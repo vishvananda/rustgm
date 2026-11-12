@@ -26436,6 +26436,108 @@
         "default_lints": true
       },
       "maintainer_origin": "dev/tests/associated_declarations.rs"
+    },
+    {
+      "path": "tests/spec/rigid-candidate-headers/param.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "b39ce17cc9ca878b731abd048de37d1d5be66611368610283c73ac4f4579b71f",
+      "input": "file",
+      "features": [
+        "pa20.selection",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/rigid-candidate-headers/concrete.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "1d67a86370756bd40085b4740bb933c9f2c3f4de10090f9c09da719a761e50c6",
+      "input": "file",
+      "features": [
+        "pa20.selection",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/rigid-candidate-headers/method.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "19e7b11b7ac2a4f7ede4194f75542a6b9018fe4a9557f2b2363f02a46e78ddbf",
+      "input": "file",
+      "features": [
+        "pa20.selection",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/rigid-candidate-headers/missing-premise.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "fd06dfb718c62c367d79e5b8648ddadde65e4aa35701bb9c42822d9247c6866e",
+      "input": "file",
+      "features": [
+        "pa20.selection",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs"
+    },
+    {
+      "path": "tests/spec/rigid-candidate-headers/concrete-only.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "b875fa66c991f9ff2e3b5b1de09f57730c09a69f5636c30a131e9472ffc86644",
+      "input": "file",
+      "features": [
+        "pa20.selection",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs"
     }
   ]
 }

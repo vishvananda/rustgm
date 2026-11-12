@@ -1,0 +1,7 @@
+pa31/tests/spec/rigid-candidate-headers/projection.rs	0
+pa31/tests/spec/rigid-candidate-headers/sized-projection.rs	0
+pa31/tests/spec/rigid-candidate-headers/closure.rs	0
+pa31/tests/spec/rigid-candidate-headers/method.rs	0
+pa31/tests/spec/rigid-candidate-headers/parameter.rs	0
+pa31/tests/spec/rigid-candidate-headers/same-parameter.rs	0
+pa31/tests/spec/rigid-candidate-headers/missing-premise.rs	1

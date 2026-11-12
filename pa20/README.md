@@ -276,3 +276,8 @@ The [projected inherent header checkpoint](../docs/pa20-projected-inherent-heade
 adds nine reviewed outcomes for method candidates whose implementation header
 contains a projection. An unbound-output rejection remains an explicit
 requirement until method selection refutes the candidate itself.
+
+The [rigid candidate header checkpoint](../docs/pa20-rigid-candidate-headers.md)
+adds five reviewed outcomes. In each, a trait implementation header would need
+the goal's rigid associated item to equal a parameter or a concrete head. Like
+rustc, selection refutes that header instead of keeping it ambiguous.

@@ -118,8 +118,9 @@ impl Context {
                 if S::COMPLETE {
                     // A complete plan holds finished search fold outputs, whose
                     // remaining projections are this frame's normal forms. Only
-                    // the certified premise relation reads these marks, and the
-                    // original predicate and its roots stay unmarked.
+                    // the certified premise and candidate header relations read
+                    // these marks; the original predicate and its roots stay
+                    // unmarked.
                     self.retain_rigid_results(store, ty)?;
                 }
                 results.insert(key, normal);

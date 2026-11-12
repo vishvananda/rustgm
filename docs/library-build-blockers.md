@@ -1,5 +1,20 @@
 # Library build blocker tracker
 
+The [rigid candidate header checkpoint](pa20-rigid-candidate-headers.md)
+refutes a trait implementation header that would need a goal's rigid
+associated item to equal a parameter or another constructor. Core's
+`impl<F: FnPtr> PartialEq for F` was an ambiguous alternative at next_if_eq's
+`&I::Item == &T`. Five PA20 and one PA24 text outcomes, four native positives,
+seven source-core reductions and call-linear selection work qualify it.
+
+Exploratory pin 34ce5ba3 clears next_if_eq 5023 and is_sorted 5811, with no new
+reached failure. The unchanged 120s observer ends at 121.012s with 51 records,
+14,682 attempts and last item 9521, escape.rs:137. The first remaining failure
+is first_size 5171 at step_by.rs:232: a quantified body requirement needs a
+matching assumption or implementation. Then come other_size and fold 157:7745
+(unresolved call inputs). The clean pin and its observation are pending. No
+core artifact exists.
+
 The [projected inherent header checkpoint](pa20-projected-inherent-headers.md)
 normalizes a method candidate's projected implementation header, such as
 `impl<R: Try> ControlFlow<R, R::Output>`, into projection-equality conditions,

@@ -1,0 +1,50 @@
+{
+ "schema": 1,
+ "declared": "2026-11-12, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run (obj/parallel/peekable-eq/reduce/declared.json, batch 8). Earlier batches there record six prelude drafts that rustc or RustGM rejected for unrelated reasons before any claim.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "cases": {
+  "projection.rs": {
+   "sha256": "7a1fd777e8ef5d3855233760f028dd8000d8e1bdff57c00a4d75a7adcba101d1",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "negne-ref-projection"
+  },
+  "sized-projection.rs": {
+   "sha256": "5eebe514fadbc4d2538506bd6866d57c669cbe23f59c9fb01c70980a10d3b69e",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "negne-sized-projection"
+  },
+  "closure.rs": {
+   "sha256": "dcd2a011b3cdf17fd0a22fa3b41b8c03976b56bbbb28397d048c9ebf03421674",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "negne-closure-projection"
+  },
+  "method.rs": {
+   "sha256": "4e85e7211cb3b36cbaabfce4acfe8c486796fcbb7f5e5194bec8a9b4614760a2",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "negne-method-closure"
+  },
+  "parameter.rs": {
+   "sha256": "8ba5e527c6c791f49e691660a6ee03f9caa4075c801bf8df16f98c83b3f64597",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "negne-ref-param"
+  },
+  "same-parameter.rs": {
+   "sha256": "f5f22a0142484416f3a97f8d96849dd2dc94926d14a26e9ccd268a9ba38a22d3",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "negne-ref-same"
+  },
+  "missing-premise.rs": {
+   "sha256": "202135586103837ccdc6b28067d1f0a0a8f5d681a9dccb157c5023ec870fe3c7",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "negne-missing"
+  }
+ }
+}

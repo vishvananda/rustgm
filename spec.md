@@ -5781,6 +5781,16 @@ projection occurrences with the body normalizer before relating it to the
 prefix. Controls are in the
 [projected inherent header checkpoint](docs/pa20-projected-inherent-headers.md).
 
+A trait implementation candidate relates to its goal after the goal's inputs are
+normalized. A projection left in that normalized goal is a rigid normal form.
+Relate it structurally, as rustc 1.98 relates a rigid alias: it equals an
+unknown or the same alias, never a parameter or another constructor. A header
+that needs such an equality does not apply, so it is not an ambiguous
+alternative. Read only the recorded rigid normal-form marks. A projection or
+opaque result from the impl header itself still waits for normalization.
+Controls are in the
+[rigid candidate header checkpoint](docs/pa20-rigid-candidate-headers.md).
+
 A canonical caller premise may bind an inference hole to its complete projected
 input type. Use the shared scoped worklist; collect comparisons between projection
 results for exact identity or the existing certified-normal-premise relation.

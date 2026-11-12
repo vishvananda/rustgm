@@ -13504,6 +13504,28 @@
       "auxiliary": [
         "tests/spec/flatten-helper-outputs/observer.c"
       ]
+    },
+    {
+      "path": "tests/spec/rigid-candidate-headers/closure.rs",
+      "source_sha256": "e2c8d96d202101863793992f716a4974468e1206140a8f3bad7dba2417f4bdd5",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.selection",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }

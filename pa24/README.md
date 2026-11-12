@@ -168,3 +168,8 @@ The [helper return-output checkpoint](../docs/pa24-flatten-helper-outputs.md) ad
 fifteen reviewed ordinary outcomes. Two of them are an observer-linked native
 export and its explicit twin. A borrowed-receiver executable remains an explicit
 positive requirement at the existing opaque-storage gate.
+
+The [rigid candidate header checkpoint](../docs/pa20-rigid-candidate-headers.md)
+adds one reviewed executable closure outcome: a callback over a projected item
+whose trait obligation refutes a blanket header that would need a rigid alias to
+equal a parameter.

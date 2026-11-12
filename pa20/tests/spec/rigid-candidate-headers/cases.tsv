@@ -1,0 +1,5 @@
+pa20/tests/spec/rigid-candidate-headers/param.rs	0
+pa20/tests/spec/rigid-candidate-headers/concrete.rs	0
+pa20/tests/spec/rigid-candidate-headers/method.rs	0
+pa20/tests/spec/rigid-candidate-headers/missing-premise.rs	1
+pa20/tests/spec/rigid-candidate-headers/concrete-only.rs	1

@@ -149,6 +149,28 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-12 rigid-header update (supersedes the blocks below):**
+
+- The next_if_eq 5023 blocker is fixed
+  ([evidence](docs/pa20-rigid-candidate-headers.md)). Trait selection's impl
+  trial now refutes a header that needs a rigid normal form, already recorded by
+  input normalization, to equal a parameter or a concrete head. Core's `FnPtr`
+  `PartialEq` blanket was the ambiguous alternative.
+  - Five PA20 and one PA24 triples are generated, and all 28,361 prior hashes
+    are unchanged. Seven source-core reductions are in
+    `pa31/tests/spec/rigid-candidate-headers`.
+  - Exploratory pin `obj/parallel/peekable-eq/wip1-dev-fast` (34ce5ba3) clears
+    next_if_eq and is_sorted. The next first failure is first_size 5171,
+    step_by.rs:232, a quantified body requirement.
+  - Reduction history, including rejected prelude drafts, is in
+    `obj/parallel/peekable-eq/reduce/declared.json`.
+- The comparison baseline stays clean pin
+  `obj/parallel/candidate-graph/candidate-dev-fast` (05289eb6, source
+  b1063aab2) until this checkpoint's clean pin passes its observation. The older
+  0665938a pin was retired and pruned; its producer evidence remains.
+- Full 43196757856 on dd7d8e9d3 covers the helper-output and projected-header
+  checkpoints. Check it before dispatching another full run.
+
 **2026-11-12 later update (supersedes the blocks below):**
 
 - Full 43177635950 passed every stage on main 774fd9dfe, which qualifies the

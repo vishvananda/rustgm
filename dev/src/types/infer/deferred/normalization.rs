@@ -127,9 +127,10 @@ impl Context {
     /// Record a finished search fold output's rigid projection roots. Every
     /// projection left in such an output is a normal form of that frame's
     /// search, so only the complete input rewrite calls this. Each root is
-    /// this context's one term for that canonical type. The marks are the
-    /// certified premise relation's alone: every other operation, including
-    /// `head`, `structural` and normalization waits, still defers them.
+    /// this context's one term for that canonical type. Only the certified
+    /// premise relation and the candidate header relation read the marks:
+    /// every other operation, including `head`, `structural` and
+    /// normalization waits, still defers them.
     pub(in crate::types::infer) fn retain_rigid_results(
         &mut self,
         store: &Store,
