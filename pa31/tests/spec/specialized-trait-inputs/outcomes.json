@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "declared": "2026-11-12, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run (obj/parallel/zip-specialization/core/declared.json). The prefix is the source-copy-captures prefix with min_specialization added.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "cases": {
+  "trait-path.rs": {
+   "sha256": "911e6318cb8f4f2a4eeea54fc72750663a93ef308dc4fb8c5435450a98b04e6e",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "trait-path"
+  },
+  "trait-path-ref.rs": {
+   "sha256": "fab44eb5d6ea69223946af5e4de8df423bf63f71a31ef227adec310cb6ad0e53",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "trait-path-ref"
+  },
+  "qualified.rs": {
+   "sha256": "d3360d6ba63a488771cb09a82d83b59fbd065973dbcdda34926d6c5a691a66a3",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "qualified"
+  },
+  "method.rs": {
+   "sha256": "292105dff170fb82be873a82aa08bf7b11b50d0949775effe4c301a09916b459",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "method"
+  },
+  "default-body.rs": {
+   "sha256": "dea39f66e7d41795a508d5a3f4685d65ee26ec385492971d67b10dcc2e8ed0f2",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "default-body"
+  },
+  "three-level.rs": {
+   "sha256": "160092a2285babb0fa83cdb37bd376a2c0dc7c742954fea958c1b6cb227ad578",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "three-level"
+  },
+  "caller-concrete.rs": {
+   "sha256": "6b3b8284399058e254b07024acd49762ddffd635f3498111a45a039c09cc0e09",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "caller-concrete"
+  },
+  "call-concrete.rs": {
+   "sha256": "32b4abd804691f29d950b3208c1a36aa81ac1a89b95a72eaac81421df044f1d1",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "call-concrete"
+  },
+  "distinct-inputs.rs": {
+   "sha256": "2a2709139e122a86e5a52a2938a3d508e751074e0617b0f62b0c40bc1c7b5c3d",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "distinct-inputs"
+  }
+ }
+}

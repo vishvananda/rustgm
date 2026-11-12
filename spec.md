@@ -5803,6 +5803,15 @@ operand uses the same classification for sema's early acceptance; the body's
 source Copy requirement for the repeat still proves the obligation. Controls
 are in the [source Copy capture checkpoint](docs/pa24-source-copy-captures.md).
 
+Specialization orders two proved implementation candidates as rustc's
+winnowing does. A goal that still has inference variables is ordered only when
+both candidates resolved its inputs identically, as core's three
+`ZipImpl<A, B> for Zip<A, B>` impls do, so the choice cannot change inference.
+Candidates that resolve the inputs differently, or that defer, keep the goal
+ambiguous. rustc would still drop a specialized impl whose specializing peer
+must apply; that remains a rejects-valid limitation. Controls are in the
+[specialized trait input checkpoint](docs/pa20-specialized-trait-inputs.md).
+
 A canonical caller premise may bind an inference hole to its complete projected
 input type. Use the shared scoped worklist; collect comparisons between projection
 results for exact identity or the existing certified-normal-premise relation.

@@ -1281,6 +1281,8 @@ mod disjoint_aliases;
 mod normalized_inherent_headers;
 #[path = "associated_declarations/prefix_members.rs"]
 mod prefix_members;
+#[path = "associated_declarations/specialized_inputs.rs"]
+mod specialized_inputs;
 
 #[path = "associated_declarations/joins.rs"]
 mod joins;

@@ -1,5 +1,19 @@
 # Library build blocker tracker
 
+The [specialized trait input checkpoint](pa20-specialized-trait-inputs.md)
+lets specialization order two proved impl candidates of a goal with inference
+variables when both resolved its inputs identically. Core's `Zip` `fold`
+called `ZipImpl::size_hint(&self)` with the trait inputs left to inference, and
+two specializing `ZipImpl<A, B> for Zip<A, B>` impls applied. Nine declared
+source-core reductions and call-linear selection work qualify it.
+
+Exploratory pin aec1ea8c clears fold 5290, with no new reached failure. The
+unchanged 120s observer ends at 120.860s with 44 records, 15,680 attempts and
+last item 11021, x86/avx512f.rs:223. The first remaining failure is count 5712
+at iterator.rs:229, behind the diagnostic formatting fence, followed by max,
+min, max_by_key and min_by_key. The clean pin and its observation are pending.
+No core artifact exists.
+
 The [source Copy capture checkpoint](pa24-source-copy-captures.md) classifies a
 source library's closure captures with the library's own `Copy` trait when
 derives leave them non-Copy. Copying a captured `NonZero<usize>` made
@@ -20,8 +34,11 @@ The same source Copy probe now accepts a repeated array operand that is Copy
 only through a source impl, with nine declared reductions. Exploratory pin
 e18b4674 clears `DisplayBuffer::new` 5862, the four `float_to_*_common`
 helpers 7025–7029 and `fmt` 7054/7056, all repeating `MaybeUninit`, with no new
-reached failure. The first remaining failure is still fold 5290. The clean pin
-is pending. No core artifact exists.
+reached failure. The first remaining failure is still fold 5290. Clean pin
+ed7d5ed7 (source a5fdccff7) agrees: its unchanged observer ends at 120.870s
+with 41 records, 15,245 attempts and last item 10458, x86/avx.rs:1065, and the
+postcheck passes. A first clean attempt starved under a load average near 41
+and is kept only as not-evidence.
 
 The [rigid candidate header checkpoint](pa20-rigid-candidate-headers.md)
 refutes a trait implementation header that would need a goal's rigid

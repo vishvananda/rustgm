@@ -149,6 +149,26 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-12 specialized trait input update (supersedes the blocks below):**
+
+- The zip fold 5290 blocker is fixed
+  ([evidence](docs/pa20-specialized-trait-inputs.md)). Specialization now orders
+  two proved impl candidates of a goal with inference variables when both
+  resolved its inputs identically. Differing inputs stay ambiguous, a recorded
+  rejects-valid limitation (`specialized-distinct`).
+  - Nine declared reductions are in `pa31/tests/spec/specialized-trait-inputs`,
+    and the history is in `obj/parallel/zip-specialization/core/declared.json`.
+  - Exploratory pin `obj/parallel/zip-specialization/wip1-dev-fast` (aec1ea8c)
+    clears fold. The next first failure is count 5712, iterator.rs:229
+    (diagnostic formatting fence), then max/min/max_by_key/min_by_key and last
+    5713 (scoped continuation for source const callable conditions).
+  - A focused run selecting the private winnowing test exhausted its budget in
+    a cold private Clippy build. The existing specialization-selection controls
+    pass through the CLI instead, and full CI runs the private test.
+- Clean pin `obj/parallel/repeat-copy/candidate-dev-fast` (ed7d5ed7, source
+  a5fdccff7) passed its observation (41 records) and postcheck. It is the
+  comparison baseline until this checkpoint's clean pin passes.
+
 **2026-11-12 source Copy capture update (supersedes the blocks below):**
 
 - The first_size/other_size 5171/5172 blocker is fixed
@@ -170,7 +190,7 @@ the passing receipts, not those attempts, qualify the current implementation.
 - Follow-on: repeated array operands use the same probe
   (`pa31/tests/spec/source-copy-repeats`, `obj/parallel/repeat-copy/`).
   Exploratory pin e18b4674 clears `DisplayBuffer::new` 5862 and six
-  float-formatting bodies; the clean pin is pending.
+  float-formatting bodies; clean pin ed7d5ed7 confirms it.
 
 **2026-11-12 rigid-header update:**
 

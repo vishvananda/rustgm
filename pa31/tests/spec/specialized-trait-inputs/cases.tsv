@@ -1,0 +1,9 @@
+pa31/tests/spec/specialized-trait-inputs/trait-path.rs	0
+pa31/tests/spec/specialized-trait-inputs/trait-path-ref.rs	0
+pa31/tests/spec/specialized-trait-inputs/qualified.rs	0
+pa31/tests/spec/specialized-trait-inputs/method.rs	0
+pa31/tests/spec/specialized-trait-inputs/default-body.rs	0
+pa31/tests/spec/specialized-trait-inputs/three-level.rs	0
+pa31/tests/spec/specialized-trait-inputs/caller-concrete.rs	0
+pa31/tests/spec/specialized-trait-inputs/call-concrete.rs	0
+pa31/tests/spec/specialized-trait-inputs/distinct-inputs.rs	1

@@ -50,8 +50,9 @@ pub(in crate::sema) fn open(facts: &mut Declarations, report: &Report) -> Result
     Ok(())
 }
 
-/// Order two candidates proven for one fully known goal. `compare` lets this
-/// query complete the pair's own comparison; other queries read only results.
+/// Order two candidates proven for one goal, either fully known or resolved to
+/// identical inputs by both. `compare` lets this query complete the pair's own
+/// comparison; other queries read only results.
 pub(in crate::sema) fn order(
     facts: &mut Declarations,
     previous: DefId,

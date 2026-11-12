@@ -935,3 +935,11 @@ through a source `impl Copy` is accepted, including a const generic length in a
 const fn, which also lowers from a root `main`. A length-one control accepts,
 and two Clone-only operands reject (E0277). The same maintainer test checks
 them through the CLI. There is no graded manifest.
+
+`spec/specialized-trait-inputs/` freezes nine declared no_core reductions of
+core's `Zip` `fold`. `ZImpl::size(..)` inside a specializing impl leaves the
+trait inputs to inference while two or three specializing impls all resolve
+them identically; rustc selects the most specialized impl. Seven positives
+(two controls) and a lowered concrete call accept, and two unrelated impls with
+different inputs reject (E0283). A maintainer integration test checks them
+through the CLI. There is no graded manifest.

@@ -105,7 +105,15 @@ unresolved call inputs. Clean pin 12358002 (source d0e926179) confirms this with
 probe now accepts a repeated array operand that is Copy only through a source
 impl. Nine declared reductions agree with rustc, and an exploratory observation
 clears `DisplayBuffer::new` and six float-formatting bodies that repeat
-`MaybeUninit`. Its clean pin is pending.
+`MaybeUninit`. Clean pin ed7d5ed7 (source a5fdccff7) confirms this with 41
+records.
+
+The [specialized trait input checkpoint](docs/pa20-specialized-trait-inputs.md)
+lets specialization order proved impl candidates whose inferred trait inputs
+agree, as core's `ZipImpl` impls do. Nine declared source-core reductions agree
+with rustc. An exploratory observation clears zip fold; the first remaining
+failure is iterator count, behind the diagnostic formatting fence. The clean
+pin, its observation and measurement are pending.
 
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage

@@ -378,9 +378,13 @@ enum Preference {
 }
 impl Search<'_> {
     /// Each alternative already owns its complete isolated proof. Specialization
-    /// may order those answers only for a fully resolved requesting goal, as
-    /// rustc's winnowing does; inference alternatives and every other ambiguity
-    /// keep deferring. Only a use query may complete the pair's comparison.
+    /// may order those answers, as rustc's winnowing does, for a fully resolved
+    /// requesting goal. It may also order them when both answers resolved the
+    /// goal's inputs identically, as overlapping specializing headers such as
+    /// core's `ZipImpl<A, B> for Zip<A, B>` do, so the choice cannot change
+    /// inference. Inference alternatives with different answers and every
+    /// other ambiguity keep deferring. Only a use query may complete the
+    /// pair's comparison.
     fn preferred_candidate(
         &self,
         facts: &mut Declarations,
@@ -391,22 +395,20 @@ impl Search<'_> {
         let (Chosen::Positive(a), Chosen::Positive(b)) = (previous, next) else {
             return Ok(Preference::Unordered);
         };
-        if !known {
+        let node = |index: usize| {
+            self.query
+                .nodes
+                .get(index)
+                .ok_or("candidate proof disappeared")
+        };
+        if !known && node(a)?.goal != node(b)?.goal {
             return Ok(Preference::Unordered);
         }
         let owner = |index: usize| -> Result<Option<DefId>, &'static str> {
-            Ok(
-                match self
-                    .query
-                    .nodes
-                    .get(index)
-                    .ok_or("candidate proof disappeared")?
-                    .source
-                {
-                    Some(Source::Implementation { owner, .. }) => Some(owner),
-                    _ => None,
-                },
-            )
+            Ok(match node(index)?.source {
+                Some(Source::Implementation { owner, .. }) => Some(owner),
+                _ => None,
+            })
         };
         let (Some(a), Some(b)) = (owner(a)?, owner(b)?) else {
             return Ok(Preference::Unordered);
