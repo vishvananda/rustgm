@@ -108,9 +108,9 @@ mechanically to evade limits, or read the environment from `dev/src/`.
 
 ## Completion and review
 
-The manifest contains 598 independently declared source outcomes:
-423 accept and 175 reject. The reviewed native classifications contain 396
-runtime comparisons, five unused-body code-generation controls and 22 entry-free
+The manifest contains 616 independently declared source outcomes:
+437 accept and 179 reject. The reviewed native classifications contain 396
+runtime comparisons, five unused-body code-generation controls and 36 entry-free
 object controls. Draft outcome files retain the history of the source hypotheses;
 they are not substitutes for the released manifest. See
 [the release review](../docs/pa24-release-review.md) for the released profile and
@@ -120,7 +120,8 @@ and pending private/full qualification. No planned assignment is counted as pass
 The [callback formation packet](tests/spec/callback-formation/README.md) adds
 ordinary FnOnce constructor inference controls; their const counterparts stay in PA25.
 The [projected callback-result checkpoint](../docs/pa24-projected-callback-results.md)
-adds17 outcomes for associated inputs, inherent result consumers and actual lifetime proof.
+adds35 outcomes for associated inputs, inherent result consumers, generic method
+values and actual lifetime proof.
 
 When updating this assignment, qualify every source with pinned rustc, compare declared
 executions through RustGM/CPPGM, generate and review the complete byte oracles,

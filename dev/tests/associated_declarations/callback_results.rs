@@ -196,3 +196,95 @@ fn input_reconciliation_defers_partial_projections_without_false_cycles() -> Res
     );
     Ok(())
 }
+
+#[test]
+fn generic_method_values_keep_input_correlations_and_actual_parent_proof() -> Result {
+    let mut failures = Vec::new();
+    for owner in ["pa24", "pa31"] {
+        for (name, cause) in [
+            ("chain-last", None),
+            ("method-value-one", None),
+            ("method-value-qualified", None),
+            ("method-value-explicit-output", None),
+            ("flatten-last", None),
+            ("flatten-last-unfixed-accumulator", None),
+            ("flatten-method-local", None),
+            ("flatten-method-free", None),
+            ("flatten-parameter-first", None),
+            ("map-member", None),
+            ("map-member-projected", None),
+            ("map-associated", None),
+            ("method-value-paid-parent", None),
+            ("method-value-concrete-owner", None),
+            ("method-value-wrong-result", Some("incompatible types")),
+            (
+                "method-value-unpaid-parent",
+                Some(
+                    "trait obligation requires an unambiguous matching assumption or implementation",
+                ),
+            ),
+            (
+                "method-value-wrong-owner",
+                Some("associated type requires an unambiguous validated implementation"),
+            ),
+            (
+                "method-value-concrete-owner-reject",
+                Some("associated type requires an unambiguous validated implementation"),
+            ),
+        ] {
+            let text = source::fixture(&format!(
+                "{owner}/tests/spec/callable-result-heads/{name}.rs"
+            ))?;
+            let report = if owner == "pa31" {
+                source::source_provider(&text, "method_value_inputs")?
+            } else {
+                semantic::resolve(&text)?
+            };
+            let result = rustgm::pipeline::analyze_source(&report)
+                .and_then(|analysis| complete(&report, analysis))
+                .map(|_| ());
+            match (cause, result) {
+                (None, Ok(())) => {}
+                (Some(cause), Err(error)) if error.to_string().contains(cause) => {}
+                (cause, result) => failures.push(format!("{owner}/{name}: {cause:?}: {result:?}")),
+            }
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
+#[test]
+fn shared_projected_callback_inputs_scale_through_the_independent_anchor() -> Result {
+    let mut previous = None;
+    for width in [8, 32, 128] {
+        let mut baseline = None;
+        for noise in [0, 128] {
+            let text = source::fixture(&format!(
+                "pa31/tests/spec/callable-result-heads/multi-input-width-{width}-noise-{noise}.rs"
+            ))?;
+            let report = source::source_provider(&text, "shared_callback_inputs")?;
+            let analysis = rustgm::pipeline::analyze_source(&report)?;
+            let work = [
+                analysis.facts.body_work.inference_steps,
+                analysis.facts.body_work.trait_selections,
+                analysis.facts.methods.selection_steps,
+                analysis.facts.methods.selection_probes,
+            ];
+            complete(&report, analysis)?;
+            println!("callback inputs={width} noise={noise} work={work:?}");
+            if noise == 0 {
+                if let Some(old) = previous {
+                    for (before, actual) in std::iter::zip(old, work) {
+                        assert!(actual <= 4 * before + 4096, "{old:?}->{work:?}");
+                    }
+                }
+                previous = Some(work);
+                baseline = Some(work);
+            } else {
+                assert_eq!(baseline, Some(work));
+            }
+        }
+    }
+    Ok(())
+}

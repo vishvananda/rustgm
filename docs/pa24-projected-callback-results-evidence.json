@@ -1,23 +1,23 @@
 {
   "schema": 1,
-  "state": "Finite projected callback checkpoint qualified; original-body observation and publication pending. No original library artifact.",
+  "state": "Reduced repairs for ArrayChunks and four observed original-source regressions qualify; new immutable original-source verification and publication pending. No original artifact.",
   "compiler": {
-    "cli_sha256": "81a3c69379d7885ad5df8dd5f40ec43c8c5b03d3216842d7847c03198796012c",
+    "cli_sha256": "6c0853071ccf7675c2f6c919eea99414c901f874ccb925279da1e0cc0defa620",
     "rust_source_count": 3907,
     "tool_config_source_count": 51,
     "source_commit_binding": null,
     "immutable_binary": null
   },
   "contracts": {
-    "primary_total": 42,
-    "independent_accept": 32,
-    "independent_reject": 10,
+    "primary_total": 84,
+    "independent_accept": 66,
+    "independent_reject": 18,
     "owners": {
-      "pa24": 17,
+      "pa24": 35,
       "pa30": 1,
-      "pa31": 24
+      "pa31": 48
     },
-    "complete_prepared_root_outcomes_qualified": 41,
+    "complete_prepared_root_outcomes_qualified": 83,
     "source_native_programs_qualified": 1,
     "source_native_stdout": "callable-result 23 12\n",
     "ordinary_native_positive_required": true,
@@ -26,24 +26,24 @@
   },
   "qualification": {
     "public": {
-      "receipt": "1794441287845235154",
+      "receipt": "1794444997306962028",
       "state": "passed",
-      "tests": 10,
+      "tests": 18,
       "targets": 2,
-      "seconds": 186.89
+      "seconds": 130.45
     },
     "strict_selected_clippy_full_format_architecture": "passed",
     "native_and_old_controls": {
-      "receipt": "obj/parallel/array-chunks-next/native-review/receipt.json",
-      "sha256": "767434c91b01f2c593d15e9123b33d81e803066bd43b30454382bd2d9c1b8556",
+      "receipt": "obj/parallel/array-chunks-next/native-review2/receipt.json",
+      "sha256": "4064198fe30f5be9ad793e1f7fcb6e9b07b03c9d581eabcbb83fd8e5ba9b9d15",
       "native_groups": 4,
       "native_programs": 10,
-      "regular_groups": 6,
+      "regular_groups_in_public_receipt": 6,
       "state": "passed"
     },
     "phases": {
-      "path": "obj/parallel/array-chunks-next/phases3/passed.json",
-      "sha256": "888cb708d16c79a6d6e246f204903d863d2d43e1810247b1f15ec9eebb1c6979",
+      "path": "obj/parallel/array-chunks-next/phases4/passed.json",
+      "sha256": "7b93bcfb82984236c8f1622de4167384b8530bb602d14f0623221e33b4b02ffd",
       "work_columns": [
         "inference",
         "trait_selections",
@@ -109,6 +109,68 @@
             3328,
             42624,
             256
+          ]
+        }
+      ],
+      "multi_input_work": [
+        {
+          "width": 8,
+          "noise": 0,
+          "work": [
+            6071,
+            18,
+            0,
+            0
+          ]
+        },
+        {
+          "width": 8,
+          "noise": 128,
+          "work": [
+            6071,
+            18,
+            0,
+            0
+          ]
+        },
+        {
+          "width": 32,
+          "noise": 0,
+          "work": [
+            12967,
+            18,
+            0,
+            0
+          ]
+        },
+        {
+          "width": 32,
+          "noise": 128,
+          "work": [
+            12967,
+            18,
+            0,
+            0
+          ]
+        },
+        {
+          "width": 128,
+          "noise": 0,
+          "work": [
+            40807,
+            18,
+            0,
+            0
+          ]
+        },
+        {
+          "width": 128,
+          "noise": 128,
+          "work": [
+            40807,
+            18,
+            0,
+            0
           ]
         }
       ],
@@ -216,35 +278,158 @@
       "maintainer_roots": 468,
       "test_binaries": 13,
       "stages": 44,
-      "log": "obj/parallel/array-chunks-next/upstream-harness.log",
-      "sha256": "d5d2a5be3ecdc21e798d18cfd9257b2f99e5c9c30a2bdd6586dfcd0f3ce21b6c"
+      "log": "obj/parallel/array-chunks-next/upstream-harness-regressions.log",
+      "sha256": "0a507db1e9e8629ccb34e38e7b7fe5bbb425b359699c691bbbed227e7f72ece0"
     },
     "source_identity": {
-      "path": "obj/parallel/array-chunks-next/source-identity-review.json",
-      "sha256": "8aebb37b8a9cbbd3ed85ef137e3e7f55bba273da690bcb793f35ad64f25cf7d9"
+      "path": "obj/parallel/array-chunks-next/source-identity-review-regressions.json",
+      "sha256": "e9ec539b6a9249ef7309413c8140255e9c76d6c31d719a0747cf0738fba170ca"
+    },
+    "regression_references": {
+      "selected_paths": [
+        "tests/spec/callable-result-heads/chain-last.rs",
+        "tests/spec/callable-result-heads/method-value-one.rs",
+        "tests/spec/callable-result-heads/method-value-qualified.rs",
+        "tests/spec/callable-result-heads/method-value-explicit-output.rs",
+        "tests/spec/callable-result-heads/flatten-last.rs",
+        "tests/spec/callable-result-heads/map-member.rs",
+        "tests/spec/callable-result-heads/map-associated.rs",
+        "tests/spec/callable-result-heads/flatten-last-unfixed-accumulator.rs",
+        "tests/spec/callable-result-heads/map-member-projected.rs",
+        "tests/spec/callable-result-heads/flatten-method-local.rs",
+        "tests/spec/callable-result-heads/flatten-method-free.rs",
+        "tests/spec/callable-result-heads/flatten-parameter-first.rs",
+        "tests/spec/callable-result-heads/method-value-wrong-result.rs",
+        "tests/spec/callable-result-heads/method-value-unpaid-parent.rs",
+        "tests/spec/callable-result-heads/method-value-wrong-owner.rs",
+        "tests/spec/callable-result-heads/method-value-paid-parent.rs",
+        "tests/spec/callable-result-heads/method-value-concrete-owner.rs",
+        "tests/spec/callable-result-heads/method-value-concrete-owner-reject.rs"
+      ],
+      "new_triples": 18,
+      "new_output_sha256": {
+        "pa24/tests/spec/callable-result-heads/chain-last.rs.ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/chain-last.rs.ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/chain-last.rs.ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "pa24/tests/spec/callable-result-heads/method-value-one.rs.ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/method-value-one.rs.ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/method-value-one.rs.ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "pa24/tests/spec/callable-result-heads/method-value-qualified.rs.ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/method-value-qualified.rs.ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/method-value-qualified.rs.ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "pa24/tests/spec/callable-result-heads/method-value-explicit-output.rs.ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/method-value-explicit-output.rs.ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/method-value-explicit-output.rs.ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "pa24/tests/spec/callable-result-heads/flatten-last.rs.ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/flatten-last.rs.ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/flatten-last.rs.ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "pa24/tests/spec/callable-result-heads/map-member.rs.ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/map-member.rs.ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/map-member.rs.ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "pa24/tests/spec/callable-result-heads/map-associated.rs.ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/map-associated.rs.ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/map-associated.rs.ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "pa24/tests/spec/callable-result-heads/flatten-last-unfixed-accumulator.rs.ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/flatten-last-unfixed-accumulator.rs.ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/flatten-last-unfixed-accumulator.rs.ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "pa24/tests/spec/callable-result-heads/map-member-projected.rs.ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/map-member-projected.rs.ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/map-member-projected.rs.ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "pa24/tests/spec/callable-result-heads/flatten-method-local.rs.ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/flatten-method-local.rs.ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/flatten-method-local.rs.ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "pa24/tests/spec/callable-result-heads/flatten-method-free.rs.ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/flatten-method-free.rs.ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/flatten-method-free.rs.ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "pa24/tests/spec/callable-result-heads/flatten-parameter-first.rs.ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/flatten-parameter-first.rs.ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/flatten-parameter-first.rs.ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "pa24/tests/spec/callable-result-heads/method-value-wrong-result.rs.ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/method-value-wrong-result.rs.ref.stderr": "0b61046cba1b735cff02bf29a80c3e271b78115e70e64449c157c5bc094c0902",
+        "pa24/tests/spec/callable-result-heads/method-value-wrong-result.rs.ref.exit_status": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+        "pa24/tests/spec/callable-result-heads/method-value-unpaid-parent.rs.ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/method-value-unpaid-parent.rs.ref.stderr": "1c0f10e7cabd7e86a8bb1e0a2c419aec1e5643a8b496db848cd327b41a127070",
+        "pa24/tests/spec/callable-result-heads/method-value-unpaid-parent.rs.ref.exit_status": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+        "pa24/tests/spec/callable-result-heads/method-value-wrong-owner.rs.ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/method-value-wrong-owner.rs.ref.stderr": "72a06ce6e9d7ecd1b669f1df957da2fad0fab733162a3964430ebdfbee1e5796",
+        "pa24/tests/spec/callable-result-heads/method-value-wrong-owner.rs.ref.exit_status": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+        "pa24/tests/spec/callable-result-heads/method-value-paid-parent.rs.ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/method-value-paid-parent.rs.ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/method-value-paid-parent.rs.ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "pa24/tests/spec/callable-result-heads/method-value-concrete-owner.rs.ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/method-value-concrete-owner.rs.ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/method-value-concrete-owner.rs.ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "pa24/tests/spec/callable-result-heads/method-value-concrete-owner-reject.rs.ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pa24/tests/spec/callable-result-heads/method-value-concrete-owner-reject.rs.ref.stderr": "36e6a0b5edf89b695fe5848b8e988daa0c9b36bf26ece5fdc49c45314719b275",
+        "pa24/tests/spec/callable-result-heads/method-value-concrete-owner-reject.rs.ref.exit_status": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+      },
+      "new_batch_path": "pa24/reference-batches/1794445414258964956-0c774c257331.json",
+      "new_batch_sha256": "0c774c25733116dc544e6d886b3a27d83c7a6c00b3675d7f147c68d5e1c46f86",
+      "old_oracle_sidecar_hashes_unchanged": 27504,
+      "old_tracked_reference_receipts_unchanged_from_HEAD": 175,
+      "base_reference_sha256": "bc50decf473249f5893fc9832e1c99a205d4c076c66d3782337cb6dda521b2fa",
+      "declared_outcomes_and_complete_CLI_outputs_preverified": "phases4/passed.json",
+      "old_normalization_diagnostic_controls": 11,
+      "old_normalization_controls_changed": 0,
+      "compiler_sha256": "6c0853071ccf7675c2f6c919eea99414c901f874ccb925279da1e0cc0defa620"
     }
   },
   "development_review": {
     "new_public_refresh_regression_before_fix": "1794441197695977487: failed InvalidIdentity rather than required Normalization",
     "after_fix": "1794441287845235154: passed",
-    "ownership": "PA24 owns call-trait output inference; unpublished PA20 references archived, PA20 manifest restored exact HEAD."
+    "ownership": "PA24 owns call-trait output inference; unpublished PA20 references archived, PA20 manifest restored exact HEAD.",
+    "regression_repair": "Shared scoped pending-pair comparison, signature inputs only for unresolved projections, one recollected normalization plan and exact selected function identity; all84 frozen outcomes retained."
   },
-  "original_core": {
-    "state": "No new observation yet; no verified original artifact",
-    "last_reached_first_failure": "ArrayChunks::next file133:2226 line66",
-    "observer_seconds": 120,
-    "source_hashes": 722,
-    "opened_sources": 375,
-    "config_bindings": 6
+  "calibrated_comparison": {
+    "state": "Pending repaired immutable compiler; preceding81 comparison historical",
+    "preceding": {
+      "rows": 30,
+      "complete_output_equality": true,
+      "summary": {
+        "import-control": {
+          "seconds": {
+            "aa_ratio": 0.942190755818382,
+            "paired_candidate_over_base": 1.0467260096720554
+          },
+          "cpu_seconds": {
+            "aa_ratio": 0.937921051166416,
+            "paired_candidate_over_base": 1.039533857723687
+          }
+        },
+        "explicit-constructor": {
+          "seconds": {
+            "aa_ratio": 0.990965333298603,
+            "paired_candidate_over_base": 0.9715573994365748
+          },
+          "cpu_seconds": {
+            "aa_ratio": 0.9912367537040944,
+            "paired_candidate_over_base": 0.9714634774621874
+          }
+        },
+        "priority-native": {
+          "seconds": {
+            "aa_ratio": 1.0096665816056125,
+            "paired_candidate_over_base": 1.0010187070424152
+          },
+          "cpu_seconds": {
+            "aa_ratio": 1.008442145789367,
+            "paired_candidate_over_base": 0.9981110338262961
+          }
+        }
+      },
+      "no_optimized_or_core_speed_claim": true,
+      "baseline_cli_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+      "path": "obj/parallel/array-chunks-next/measure",
+      "exclusive": true
+    }
   },
-  "calibrated_comparison": "pending immutable freeze",
   "prior_full_ci": {
     "run": 43081009696,
     "head": "2c13e1cff3fa3cca23410d35efab337621251aa2",
     "source": "5cd41810bfa18d71e936bfed53c9a0422580e83f",
     "state": "all stages passed"
   },
-  "current_full_ci": "pending publication",
+  "current_full_ci": "Pending repaired original-source verification and publication",
   "unchanged": [
     "third-party source bytes/checksums",
     "backend17b024f69",
@@ -254,5 +439,62 @@
     "observer120s"
   ],
   "assignments_activated": [],
-  "raw_evidence_root": "B obj/parallel/array-chunks-next"
+  "raw_evidence_root": "B obj/parallel/array-chunks-next",
+  "preceding_compiler_original_observation": {
+    "infrastructure_failure": true,
+    "classification": "infrastructure/setup failure",
+    "observer_deadline_seconds": 120,
+    "progress_requested": true,
+    "lint_cap": "allow",
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "expected_cli_sha256": "81a3c69379d7885ad5df8dd5f40ec43c8c5b03d3216842d7847c03198796012c",
+    "expected_cli_source": "explicit caller input",
+    "error": "original-core observer deadline",
+    "partial_progress": {
+      "analysis_only": true,
+      "complete_census": false,
+      "records": 111,
+      "last_item": "item\tfunction\t6830\tfile 199:55490\tnode 861"
+    },
+    "total_seconds": 121.39438557904214,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "whole-core.openat": "0bebb3da63e2e92fe6966ccfa0222b8508b6714fe14db6ea9808fa958a96a6e1",
+      "progress.tsv": "f84f0088ea8f6b82dcabc059e1e20ea6ec76a9f601cfcfdb57e9e765989ab2fd"
+    },
+    "all722_source_hashes_verified": true,
+    "opened_sources": 375,
+    "config_bindings": 6,
+    "all3907_compiler_Rust_hashes_verified": true,
+    "item_attempts": 13181,
+    "partial_counts_are_not_throughput": true,
+    "first_failure": "ByRefSized::fold file134:1322 line45",
+    "array_chunks_five_failure_records_absent_after_reaching_bodies": true,
+    "new_failure_comparison": "obj/parallel/array-chunks-next/original-record-comparison.json",
+    "new_previously_passing_failure_functions": [
+      "Chain::last file135:4953",
+      "FlattenCompat::last file142:17747",
+      "MapWindows::next_window file148:3241",
+      "Option::into_flat_iter file182:73756"
+    ],
+    "postcheck_cleanup": "1794442029381975565",
+    "artifact": false
+  },
+  "original_core": {
+    "state": "Repaired compiler not yet observed; no original artifact",
+    "last_first_failure": "ByRefSized::fold file134:1322 line45",
+    "observer_seconds": 120,
+    "required_regression_body_rechecks": [
+      "Chain::last135:4953",
+      "FlattenCompat::last142:17747",
+      "MapWindows::next_window148:3241",
+      "Option::into_flat_iter182:73756"
+    ],
+    "retain_ArrayChunks_body_verification": true
+  }
 }

@@ -24,6 +24,26 @@ impl Normalization {
         }
     }
 }
+impl Frame {
+    fn resolved_input_roots(
+        &mut self,
+        facts: &mut Declarations,
+        plan: &ProjectionInputs,
+        roots: &mut Vec<(ScopeId, TermId, TypeId)>,
+    ) -> Result<bool, String> {
+        roots.clear();
+        for &(scope, term) in plan.roots() {
+            let ty = match self.inputs.context.resolved(&mut facts.types, term) {
+                Ok(ty) => ty,
+                Err(infer::Error::Unresolved) => return Ok(false),
+                Err(error) => return Err(inference(error)),
+            };
+            roots.push((scope, term, ty));
+        }
+        Ok(true)
+    }
+}
+
 impl Search<'_> {
     pub(super) fn start_inputs(
         &mut self,
@@ -36,20 +56,25 @@ impl Search<'_> {
             return Ok(None);
         }
         let mut roots = Vec::new();
-        let plan = frame
+        let mut plan = frame
             .inputs
             .context
             .projected_inputs(&facts.types, &frame.goal)
             .map_err(inference)?;
-        for &(scope, term) in plan.roots() {
-            let ty = match frame.inputs.context.resolved(&mut facts.types, term) {
-                Ok(ty) => ty,
-                Err(infer::Error::Unresolved) => {
-                    return Ok(Some(Action::Complete(Decision::Deferred)));
-                }
-                Err(error) => return Err(inference(error)),
-            };
-            roots.push((scope, term, ty));
+        if !frame.resolved_input_roots(facts, &plan, &mut roots)? {
+            if !self.infer_callable_inputs(facts, frame)? {
+                return Ok(Some(Action::Complete(Decision::Deferred)));
+            }
+            // Signature equations can introduce fresh projected occurrences.
+            // Recollect once so each occurrence retains normalization proof.
+            plan = frame
+                .inputs
+                .context
+                .projected_inputs(&facts.types, &frame.goal)
+                .map_err(inference)?;
+            if !frame.resolved_input_roots(facts, &plan, &mut roots)? {
+                return Ok(Some(Action::Complete(Decision::Deferred)));
+            }
         }
         let Some(&(source_scope, _, first)) = roots.first() else {
             return Ok(None);

@@ -40,12 +40,36 @@ impl Context {
     ) -> Result<(), Error> {
         self.equate_scoped_inside(store, left, right, &[])
     }
+
+    /// Progress independent callable input equations past normalization waits.
+    /// A pending projection still returns `Error::Normalization`; it grants no
+    /// inverse input equation or proof of the blocked result's equality.
+    pub(crate) fn equate_scoped_inputs(
+        &mut self,
+        store: &Store,
+        left: TermId,
+        right: TermId,
+    ) -> Result<(), Error> {
+        self.equate_scoped_graph(store, left, right, &[], true)
+    }
+
     pub(super) fn equate_scoped_inside(
         &mut self,
         store: &Store,
         left: TermId,
         right: TermId,
         ambient: &[u32],
+    ) -> Result<(), Error> {
+        self.equate_scoped_graph(store, left, right, ambient, false)
+    }
+
+    pub(super) fn equate_scoped_graph(
+        &mut self,
+        store: &Store,
+        left: TermId,
+        right: TermId,
+        ambient: &[u32],
+        defer_normalization: bool,
     ) -> Result<(), Error> {
         self.join_slot_classes(left, right)?;
         let left = self.root(left)?;
@@ -56,11 +80,13 @@ impl Context {
         for term in [right, left] {
             if let Value::Known(ty) = self.terms[term.0 as usize].value
                 && ambient.is_empty()
+                && !defer_normalization
                 && !store.contains_callables(ty).ok_or(Error::InvalidIdentity)?
             {
                 return self.equate(store, left, right);
             }
         }
+        let mut pending = false;
         let mut work = vec![Work::Pair(left, right)];
         let mut binders = Binders::default();
         self.account_work(ambient.len())?;
@@ -110,7 +136,13 @@ impl Context {
             let left = self.materialize(store, a)?;
             let right = self.materialize(store, b)?;
             self.pairs.clear();
-            self.structural(store, a, b, false)?;
+            match self.structural(store, a, b, false) {
+                Err(Error::Normalization) if defer_normalization => {
+                    pending = true;
+                    continue;
+                }
+                result => result?,
+            }
             let entered = self.scoped_binder((a, b), left, right, &mut binders)?;
             self.scoped_regions(store, left, right, &mut binders)?;
             if entered {
@@ -119,7 +151,11 @@ impl Context {
             self.account_work(self.pairs.len())?;
             work.extend(self.pairs.drain(..).rev().map(|(a, b)| Work::Pair(a, b)));
         }
-        Ok(())
+        if pending {
+            Err(Error::Normalization)
+        } else {
+            Ok(())
+        }
     }
 
     fn scoped_binder(

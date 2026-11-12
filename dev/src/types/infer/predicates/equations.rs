@@ -346,6 +346,20 @@ impl Context {
             }
             return Ok(());
         }
-        self.equate_scoped_inside(store, term, known, ambient)
+        if !matches!(
+            store.kind(canonical),
+            Some(crate::types::Kind::FunctionItem { .. })
+        ) {
+            return self.equate_scoped_inside(store, term, known, ambient);
+        }
+        let result = self.equate_scoped_graph(store, term, known, ambient, true);
+        if result == Err(Error::Normalization) {
+            match self.resolved(store, term) {
+                Ok(original) if original == canonical => return Ok(()),
+                Ok(_) | Err(Error::Unresolved) => {}
+                Err(error) => return Err(error),
+            }
+        }
+        result
     }
 }

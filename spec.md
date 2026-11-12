@@ -5726,6 +5726,14 @@ input pair, and discard unfinished resolution scratch after an unresolved walk.
 The [projected callback checkpoint](docs/pa24-projected-callback-results.md)
 records ordinary PA24, native PA30 and actual-source PA31 reductions.
 
+Within callable input comparison, progress independent equations past a blocked
+projection without inferring that projection's inputs. Share the comparison memo
+and retain binder/capture/region discipline; a blocked comparison remains pending.
+After signature inference introduces projections, recollect the normalization plan
+once and prove every new occurrence. Already resolved projected inputs normalize
+before this inference. Committing a selected function item may use those independent
+equations, then requires exact complete canonical identity for any blocked result.
+
 An exact declared callable Output premise may retain the checked source closure's
 necessary lifetime conditions. Validate the premise first and match the complete
 substituted Self using the same typed matcher as body entry selection. Normalize

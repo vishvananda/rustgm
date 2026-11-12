@@ -1,44 +1,20 @@
 # Library build blocker tracker
 
 The current [projected callback-result checkpoint](pa24-projected-callback-results.md)
-qualifies the reduced ArrayChunks::next chain with its actual `[I::Item; N]`
-payload, full lifetime/projection proof and real source native execution23/12.
-Public10, four native groups/ten programs, six related regular groups, unchanged
-17 new and11 old text outputs and bounded width/noise checks pass. The ordinary
-native positive and eight override contrasts remain required; two exact private
-invariants await full CI after a fixed-budget compile timeout. Original-body
-clearance awaits the unchanged120s observer. No original library artifact exists.
+qualifies83 complete outcomes from84 independent contracts, including the actual
+array payload and reduced repairs for four regressions exposed by original core.
+Public18/130.45s, four native groups/ten programs, six related regular controls,
+35 PA24 complete text outcomes/11 old controls and two width/noise families pass.
+The ordinary native artifact, eight override contrasts and two exact private
+invariants remain required. New immutable freeze/original-source verification is
+next; no original core, alloc or std artifact exists.
 
-The prior clone checkpoint5cd41810b/CLI5d43 reached actual RefCell::clone and later
-cell bodies without file112 failure records; first remaining was ArrayChunks::next,
-file133:2226,line66. Full43081009696 PASSED ALL stages on exact2c13e1cff/source5cd.
-This current entry supersedes earlier frontier and workflow statuses below.
-
-
-[Source reference coercions](pa26-borrow-coercions.md),source7c7b1b132 plus diagnostic
-successor6556387ca/CLI0912e08f, clear the reached original RefCell::replace and
-clone_from failure records. Both real bodies are reached on unchanged722 inputs,
-375opens/sixbindings/profile/limits. The120s observer still FAILS deadline121.226504s,
-retaining141 partial records/14,554 item attempts through unicode/unicode_data.rs,
-file244:58785,line998. First remaining is **RefCell::clone**,cell.rs112:49655,
-line1449, `RefCell::new(self.borrow().clone())`: trait selection requires an
-unambiguous assumption/implementation. partial_cmp/cmp remain separate failures.
-No complete census or original artifact; partial counts are not throughput evidence.
-Postcheck1794414625686080575 binds all current3905 Rust hashes and immutableCLI.
-
-The checkpoint qualifies57 independent outcomes/all28 prior bytes,39 complete
-source bodies and4 actual source Rust/CPPGM programs. Ordinary18/imports/native2
-remain required. Final15public/3native strict checks, bounded width/noise and
-upstream/harness pass. Thirty calibrated comparisons preserve outputs; slower/
-noisy values remain and no neutrality/optimized/core-speed claim is made. Optional
-implementation progress and projected item locations pass4 exact tests and leave
-final tables byte-identical. Earlier phase samples do not establish a repeatable
-regression or cause; the diagnostic hint-revert is non-equivalent and not adopted.
-Checkpoint published at eae11a06a; full43059556041 is ACTIVE on that exact
-head/source6556387ca. Never restart it for docs/input descendants. Reduce the
-actual clone expression next. Prior full43034322443 on exact357d0bc5e/source5798 PASSED
-every stage. All handoff requirements remain required. This section supersedes
-older next-step text below.
+The intermediate local81 observer reaches all five prior ArrayChunks failures
+without file133 failure records; first nowByRefSized::fold134:1322,line45. It also
+exposed Chain::last, FlattenCompat::last, MapWindows::next_window and Option::into_flat_iter
+regressions. Their reduced repairs pass; the next unchanged120s observer must
+confirm the original bodies. Prior clone full43081009696 PASSED ALL stages on
+exact2c13e1cff/source5cd41810b. This entry supersedes older frontier/workflow text.
 
 [Callback formation versus invocation](pa25-callback-formation.md),source5798bd7f1/
 CLI05cc3029, clears the reached LazyCell<T>::default failure. Existing typed bounds

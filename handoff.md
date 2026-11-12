@@ -5,53 +5,59 @@ one worker: do not spawn agents or create worktrees. Use existing B
 `/mnt/vizier/rustgm-scratch/rustgm-pa26-work`; main is Git-only. Goal: original
 core, then alloc/std. No original library artifact exists.
 
-## Current checkpoint — projected callback output
+## Current checkpoint — repaired projected callback results
 
-[Checkpoint and evidence](docs/pa24-projected-callback-results.md) qualify the
-reduced ArrayChunks::next chain and actual array payload. Candidate8semanticfiles
-reuse existing binders, canonical identity, symbolic templates, body normalization
-and input refinement. Original trait/lifetime/const/capture debts remain. Refresh
-now discards unresolved resolution scratch; public regression first reproduced
-InvalidIdentity, then passes. No backend/storage/config/limit change.
+[Checkpoint/evidence](docs/pa24-projected-callback-results.md) records84 independent
+Rust outcomes: PA24ordinary35(26accept9reject), PA30native1required pending,
+PA31source48(39accept9reject). All83supported complete API outcomes qualify;
+source native23/12 matches independent Rust/C. Ordinary native bootstrap conformance,
+eight serialized override contrasts and every older pending requirement stay required.
+PA24 is correct earliest owner; PA20 manifest restored unchanged. No original artifact.
 
-Correct ordinary owner is PA24 (complete call traits/Output/closures), not PA20.
-PA20 root manifest is restored exact HEAD; misplaced unpublished references are
-archived in obj. Primary42 Rust1.98 outcomes: PA24ordinary17 (12accept5reject),
-PA30native1 required pending, PA31source24 (19accept5reject). All41 supported
-complete API outcomes qualify, including nonempty lifetime rejection, six scale
-cases and source native23/12. Ordinary native remains required at preexisting
-bootstrap conformance; eight serialized override contrasts retain full artifact
-requirements. Never count these fences as language rejections.
+Intermediate local sourcef7e9c2814/immutable81a3c693 cleared reached ArrayChunks
+failure records but exposed four regressions: Chain::last135:4953, FlattenCompat::last
+142:17747, MapWindows::next_window148:3241, Option::into_flat_iter182:73756.
+Latest uncommitted repair passes every reduced complete API regression and control.
+It uses shared scoped pending-pair comparison (no inverse projection inference),
+signature input equations only for unresolved projection roots, one recollected
+normalization plan, and exact canonical selected-function identity after progress.
+No blanket projection registration/new engine/dense fields/backend/storage/limits.
 
-Final public1794441287845235154 passes10exact/186.89s with strict selected
-production/CLI/test Clippy/fullfmt/audit. Same immutable-during-run frontend harness
-then passes native4/10actualprograms and six old regular groups without rebuilding
-Rust. Native/phase receipts: Bobj/parallel/array-chunks-next/native-review andphases3.
-Current CLI81a3c69379d7885ad5df8dd5f40ec43c8c5b03d3216842d7847c03198796012c,
-3907Rust+51tool/config bindings. Counter widths8/32/128: inference51800/205897/
-822207, traits208/832/3328, methodsteps2664/10656/42624, probes16/64/256;
-noise128 changes none. Counter copy removed. No optimized/core-speed claim.
+CURRENT qualified managedCLI6c0853071ccf7675c2f6c919eea99414c901f874ccb925279da1e0cc0defa620,
+3907Rust+51tool/config bindings. Public1794444997306962028 PASS18exact/130.45s,
+strictselectedprodCLItestClippy/fullfmt/audit. Same compiled frontend passes4native
+/10actualprograms; sixoldregular groups inpublic. Rawphases4/native-review2.
+Original widths8/32/128 counters unchanged[51800,208,2664,16]/[205897,832,10656,64]/
+[822207,3328,42624,256]. Newmulti-input arity8/32/128 inference6071/12967/40807,
+traits18/no methodwork. Noise128 addszero. Countercopy removed. Nooptimizedclaim.
 
-17 new PA24 triples independently reviewed; all27453old sidecars/174tracked
-receipts unchanged. Final compiler matches17new+11old control triples. PA24
-manifest598/423accept/175reject, native396runtime/5codegen/22object. Third-party
-bytes/checksums unchanged. Two private invariants remain pending CI after fixed
-budget combined compile1794438008438968646 timed out before execution. No retry
-or limit increase. WholePA25–44 stay planned; no original library artifact exists.
+35newPA24triples(17initial+18regression) reviewed; finalcompiler matches35new/11old
+controls. Latestreviewpreserves27504prior sidecars/175trackedreceipts. Independent
+new18library checks include14declared emptyobjects/no runtimecomparison. PA24root
+616/437accept/179reject,396runtime5codegen36object. Alloldsourcebytes/checksums fixed.
+Two exact private invariants remain pendingCI after fixed-budget combinedcompile
+1794438008438968646 timedout before execution; no retry/limitraise.
 
-Upstream128/Reference126/harness315/468roots13bins/44-stage layout PASS.
-All24 exact source Fn prefixes and native drop_glue bytes verified unchanged.
-NEXT: clean source checkpoint; immutabledevfast freeze3907Rust;
-exclusive A/A+twoABBA accepting controls vs5d43; exact120s original observer and
-postverify722/375/six/profile/allRust hashes. Verify actual ArrayChunks::next was
-reached before any clearance claim. Then journal actual first failure, publish and
-one semantic fullCI successor after fresh no-active-full check. Prior clone
-43081009696 ALLPASSED exact2c13e1cff/source5cd41810b; never restart for docs.
-Keep immutable5d43 until measured replacement publication, optimized21f pending.
-All paid-alias/projected-premise/symbolic-index/depth128/factory/tuple/bootstrap/
-import/transport/optimized requirements below remain. Shared150GiB reserve and
-normal16GiB cap unchanged; use guards, single worker, same handle terminal before
-new source edits/heavy work. Earlier resource-blocked snapshots are historical.
+Last original120s local81 observer ends121.394386s:111partialrecords/13181itemattempts,
+lastfn6830 atomic.rs199:55490; all5ArrayChunks reached withno133record, firstnow
+ByRefSized::fold134:1322,line45, wrap_mut_2(f)).0; pairedrfold. Postcheck
+1794442029381975565 verifies722/375/six/current+immutable3907/profile/limits.
+ProgressSHAf84f0088ea8f6b82dcabc059e1e20ea6ec76a9f601cfcfdb57e9e765989ab2fd.
+This observer hasknown4regressions; latestrepair MUSTverifyoriginalbodiesagain.
+
+Finalupstream128/Reference126/harness315/468roots13bins/44-stage layout PASS;
+all48Fnsourceprefixes/nativeFreeze/drop_gluebytes verified.
+NEXT: coherentcleanrepaircommit;
+freeze label fixed-dev-fast3907Rust (candidate-dev-fast isold81knownregressions);
+exclusive A/A+twoABBA accepting controls vs5d43; exact120s original usingNEWpin and
+fresh outputroot, postverify722/375/six/3907/profile/limits; explicitly recheck4new
+regressions andallArrayChunks reached before clearance claims. Map actualfirst
+failure, publish afterqualification, ONEsemanticfullCIafterfreshnoactive-fullcheck.
+Prior full43081009696 ALLPASSED exact2c13e1cff/source5cd41810b; no docs restart.
+Main/originstill537a86863; BHEADf7e9local. Keep5d43/81/optimized21fpins untilqualified
+replacement publication/comparison; optimized21f remains required. Singleworker/no
+newtrees. Allpaid-alias/projected-premise/symbolic-index/depth128/factory/tuple/
+bootstrap/import/transport/optimized requirements below remain. Goalactive.
 
 ## Current clone checkpoint — local qualification complete
 

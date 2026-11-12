@@ -84,6 +84,39 @@ impl Search<'_> {
         Ok(Action::Continue)
     }
 
+    /// Infer only signature inputs before unresolved projected inputs can be
+    /// normalized. The original goal still owns formation and callable proof.
+    pub(super) fn infer_callable_inputs(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &mut Frame,
+    ) -> Result<bool, String> {
+        if !self.query.refining {
+            return Ok(false);
+        }
+        let Some((item, _)) = frame.goal.trait_arguments() else {
+            return Ok(false);
+        };
+        if facts.associated.callable(DefId(item.0)).is_none() {
+            return Ok(false);
+        }
+        let first = frame.available_region().max(self.query.allocations.floor());
+        match callables::match_signature(facts, &mut frame.inputs.context, &frame.goal, first) {
+            Ok(matched) => {
+                self.query.allocations.record(matched.regions.end);
+                self.query.reserve(frame.scope, matched.regions)?;
+            }
+            Err(
+                infer::Error::Unresolved
+                | infer::Error::Normalization
+                | infer::Error::Mismatch
+                | infer::Error::Occurs,
+            ) => {}
+            Err(error) => return Err(inference(error)),
+        }
+        Ok(true)
+    }
+
     pub(super) fn start_callable(
         &mut self,
         facts: &mut Declarations,

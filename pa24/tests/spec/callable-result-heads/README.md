@@ -1,6 +1,6 @@
 # Callable results before inherent receiver lookup
 
-This packet freezes seventeen outcomes: twelve accept and five reject against Rust 1.98.0. It reduces original
+This packet freezes thirty-five outcomes: twenty-six accept and nine reject against Rust 1.98.0. It reduces original
 ArrayChunks::next, `self.try_for_each(ControlFlow::Break).break_value()`.
 Chained, split, annotated, qualified, constructor and closure contrasts separate
 output equations from receiver discovery. Literal and plain-parameter inputs
@@ -17,8 +17,16 @@ const-eval-select-runtime/generic-transfer.rs foundation. The ordinary and sourc
 native inputs independently print `callable-result 23 12` with the PA30 observer.
 Inputs and outcome hashes are in manifest.json and independent.json; original
 third-party source bytes and checksums are unchanged. The actual source native program qualifies; the ordinary native companion
-remains required behind bootstrap conformance. Seventeen course text triples are independently reviewed under PA24 ownership. No assignment is newly activated.
+remains required behind bootstrap conformance. Thirty-five course text triples are independently reviewed under PA24 ownership. No assignment is newly activated.
 
 The array-item control preserves the actual const-generic `[I::Item; N]` payload.
 The serialized override contrasts in pending.json preserve required outcomes
 without claiming course or artifact qualification.
+
+The original observer also exposed generic method-value regressions in Chain,
+Flatten, MapWindows and Option. Nested/free helpers, argument order, projected
+buffers, explicit owners and paid-parent counterparts preserve their input
+correlations. Wrong results, unpaid parents and incompatible owners keep their
+required rejections. All declared complete API outcomes qualify; the ordinary
+native companion remains required. The source packet additionally freezes six
+multi-input widths8/32/128 with noise0/128. Existing input bytes are unchanged.
