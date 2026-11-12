@@ -1,0 +1,248 @@
+{
+  "schema": 1,
+  "state": "locally qualified; clean source freeze, immutable comparison/original observation and full successor pending",
+  "compiler": {
+    "sha256": "623ff5bc248b5f8d722ade9e71cf2ed486328cc6b2271fa8a46b1aef3b220204",
+    "production_change": "closures/uses.rs visits typed Match arms/guards and computed or local scrutinees; captured-place pattern use remains an explicit required positive contract",
+    "source_commit": "pending clean source freeze",
+    "new_engine_or_cache_fields": false
+  },
+  "contracts": {
+    "independent": 49,
+    "accept": 41,
+    "reject": 8,
+    "complete_API_outcomes": 40,
+    "ordinary_active_course_cases": 19,
+    "ordinary_serialized_whole_outcomes_required": 5,
+    "source_complete_outcomes": 20,
+    "source_whole_outcomes_required": 4,
+    "additional_public_helper_metadata_artifact_required": 1,
+    "public_helper_complete_API_and_native_execution_passed": true,
+    "assignment_activation": false
+  },
+  "qualification": {
+    "public_receipt": "1794457800427825291",
+    "public_exact_tests": 4,
+    "public_targets": 2,
+    "public_seconds": 129.39,
+    "private_helper_followup_receipt": "1794458273040726694",
+    "private_helper_exact_tests": 1,
+    "private_helper_seconds": 31.93,
+    "format_architecture_selected_strict_clippy": "passed",
+    "native_review": "obj/parallel/filter-map-captures/native-review2/passed.json",
+    "native_programs": 2,
+    "expected_stdout": "match-capture 7 9 12314\n",
+    "earlier_public_helper_and_old_try_native_control": "obj/parallel/filter-map-captures/review/passed.json",
+    "source_try_control_stdout": "try-capture 7 43 23 123\n",
+    "upstream_harness_tidy": {
+      "state": "passed",
+      "steps": [
+        {
+          "name": "upstream",
+          "command": [
+            "make",
+            "test-upstream"
+          ],
+          "status": 0,
+          "seconds": 0.1485833569895476
+        },
+        {
+          "name": "harness",
+          "command": [
+            "make",
+            "test-harness"
+          ],
+          "status": 0,
+          "seconds": 14.742547473986633
+        },
+        {
+          "name": "tidy",
+          "command": [
+            "make",
+            "tidy"
+          ],
+          "status": 0,
+          "seconds": 7.467127718962729
+        }
+      ],
+      "prior_reference_hashes_unchanged": 28203
+    }
+  },
+  "work": [
+    {
+      "owner": "pa24",
+      "width": 8,
+      "noise": 0,
+      "work": [
+        349,
+        0,
+        115
+      ],
+      "stored_fields": 1
+    },
+    {
+      "owner": "pa24",
+      "width": 8,
+      "noise": 128,
+      "work": [
+        349,
+        0,
+        115
+      ],
+      "stored_fields": 1
+    },
+    {
+      "owner": "pa24",
+      "width": 32,
+      "noise": 0,
+      "work": [
+        733,
+        0,
+        427
+      ],
+      "stored_fields": 1
+    },
+    {
+      "owner": "pa24",
+      "width": 32,
+      "noise": 128,
+      "work": [
+        733,
+        0,
+        427
+      ],
+      "stored_fields": 1
+    },
+    {
+      "owner": "pa24",
+      "width": 128,
+      "noise": 0,
+      "work": [
+        2269,
+        0,
+        1675
+      ],
+      "stored_fields": 1
+    },
+    {
+      "owner": "pa24",
+      "width": 128,
+      "noise": 128,
+      "work": [
+        2269,
+        0,
+        1675
+      ],
+      "stored_fields": 1
+    },
+    {
+      "owner": "pa31",
+      "width": 8,
+      "noise": 0,
+      "work": [
+        1466,
+        5,
+        1521
+      ],
+      "stored_fields": 1
+    },
+    {
+      "owner": "pa31",
+      "width": 8,
+      "noise": 128,
+      "work": [
+        1466,
+        5,
+        1521
+      ],
+      "stored_fields": 1
+    },
+    {
+      "owner": "pa31",
+      "width": 32,
+      "noise": 0,
+      "work": [
+        1850,
+        5,
+        1833
+      ],
+      "stored_fields": 1
+    },
+    {
+      "owner": "pa31",
+      "width": 32,
+      "noise": 128,
+      "work": [
+        1850,
+        5,
+        1833
+      ],
+      "stored_fields": 1
+    },
+    {
+      "owner": "pa31",
+      "width": 128,
+      "noise": 0,
+      "work": [
+        3386,
+        5,
+        3081
+      ],
+      "stored_fields": 1
+    },
+    {
+      "owner": "pa31",
+      "width": 128,
+      "noise": 128,
+      "work": [
+        3386,
+        5,
+        3081
+      ],
+      "stored_fields": 1
+    }
+  ],
+  "references": {
+    "new_reference_batch": "pa24/reference-batches/1794458447436189585-55a59cd0e9eb.json",
+    "new_reference_batch_sha256": "55a59cd0e9ebf33691542a946db284b8beefc141a1308d723db7eade2df8df0b",
+    "all_prior_reference_hashes_unchanged": 28145,
+    "positive_independent_object_checks": 15,
+    "declared_empty_objects_verified": 14,
+    "new_reference_triples": 19
+  },
+  "boundaries": {
+    "captured_places": "8 required ordinary/source positive outcomes: discriminant-only, wildcard, copied tuple field and borrowed binding. No unsupported error is a valid rejection.",
+    "ordinary_try": "generic Try import remains required",
+    "public_enum_native": "original public helper passes API/native, CLI library artifact still rejects outside scalar metadata profile; source bytes serialized unchanged; independently checked private-helper variant isolates Match",
+    "type_inspection": "complete ownership checking remains necessary; repeated owned/wildcard invocation rejects",
+    "initial_independent_setup": "Missing bool Copy caused a Rust ICE; original input/raw diagnostic retained in obj; revised qualified bool Copy/Destruct foundation independently checked before execution.",
+    "first_native_setup": "missing whitespace before fn caused independent syntax failure; original raw retained; corrected declarations checked before candidate execution.",
+    "first_text_attempt": "public helper metadata limitation preserved as required positive; no refs generated",
+    "second_independent_attempt": "standard checker needs generated warning references;15 positive checks failed setup before independent compilation. Direct pre-generation accepted_frontend/objects verification then normal generation/check completed."
+  },
+  "course": {
+    "total": 661,
+    "accept": 474,
+    "reject": 187,
+    "native_runtime_comparisons": 396,
+    "native_codegen_controls": 5,
+    "native_object_controls": 73,
+    "new_object_controls": 15,
+    "new_declared_empty_controls": 14
+  },
+  "preceding_full_ci": {
+    "run": 43154313816,
+    "head": "01e7013ebf3b2dea2153fe87661a502805360d59",
+    "source": "c388b27099c03f75e01adf830346fe3c2a04e3f6",
+    "status": "running release/course; fast, lint/architecture/harness and independent host graph passed; later stages pending; do not restart for docs/new descendants"
+  },
+  "original_core": "New623 observation pending; preceding67 clears filter_try_fold then firstfails filter_map_fold at141:1253. No original core/alloc/std artifact.",
+  "pending_requirements": "All prior requirements retained. Nine entire positive outcomes and one additional public-helper native CLI metadata artifact stay required.",
+  "raw_evidence_root": "obj/parallel/filter-map-captures",
+  "unchanged": [
+    "backend bridge/contract",
+    "storage/resource policy",
+    "original input archive/configuration pins",
+    "compiler limits"
+  ]
+}

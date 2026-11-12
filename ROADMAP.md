@@ -51,6 +51,13 @@ updated without changing input or acceptance outcomes. The unchanged original
 observer clears filter_try_fold and first reaches filter_map_fold at its match
 expression. All pinned inputs/configuration/limits verify; no original artifact yet.
 
+The [computed-match capture checkpoint](docs/pa24-match-captures.md) qualifies
+40 complete API outcomes from49 independent contracts,19 new PA24 text outcomes,
+actual ordinary/source native order7/9/12314 and one-field scaling. Nine entire
+positive outcomes and one additional public-helper metadata artifact remain
+required. Immutable original observation and full successor qualification are
+pending; no original artifact or planned-assignment completion is claimed.
+
 | PA | Assignment | Status |
 | --- | --- | --- |
 | [1](pa1/README.md) | Source and tokens | implemented-draft |

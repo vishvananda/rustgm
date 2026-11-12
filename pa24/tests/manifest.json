@@ -12165,6 +12165,444 @@
         "crate_name": "callable_heads",
         "disambiguator": "byref_scale_width_128_noise_128"
       }
+    },
+    {
+      "path": "tests/spec/match-captures/argument.rs",
+      "source_sha256": "1b57e7ea6bac15c5d861213f270b4e9687a4e21164cb68bbe69e3f5ec4c720d3",
+      "exit_status": 0,
+      "input": "file",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "native": {
+        "kind": "object",
+        "reason": "Entry-free generic match/capture body proof, no runtime execution claimed.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "match_capture",
+        "disambiguator": "argument"
+      }
+    },
+    {
+      "path": "tests/spec/match-captures/branch-capture.rs",
+      "source_sha256": "b7db0972021aa174afd300c57f7d945360a467b72330d9bcc5a0c33617ad6fcf",
+      "exit_status": 0,
+      "input": "file",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "native": {
+        "kind": "object",
+        "reason": "Entry-free generic match/capture body proof, no runtime execution claimed.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "match_capture",
+        "disambiguator": "branch_capture"
+      }
+    },
+    {
+      "path": "tests/spec/match-captures/callback.rs",
+      "source_sha256": "19cceb82697a3f7e808a08728b0a878960ae8100c50cb43eb3756aba976c1b36",
+      "exit_status": 0,
+      "input": "file",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "native": {
+        "kind": "object",
+        "reason": "Entry-free generic match/capture body proof, no runtime execution claimed.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "match_capture",
+        "disambiguator": "callback"
+      }
+    },
+    {
+      "path": "tests/spec/match-captures/fold.rs",
+      "source_sha256": "b3452b65dbfcda14de571e0a1d5c4b6f41e282e0536583138b04113f6a751e99",
+      "exit_status": 0,
+      "input": "file",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "native": {
+        "kind": "object",
+        "reason": "Entry-free generic match/capture body proof, no runtime execution claimed.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "match_capture",
+        "disambiguator": "fold"
+      }
+    },
+    {
+      "path": "tests/spec/match-captures/guard.rs",
+      "source_sha256": "d97c29906ec2673ff2f5eb1b8fa5e61263534aae0798f281454410c35ec5ccb0",
+      "exit_status": 0,
+      "input": "file",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "native": {
+        "kind": "object",
+        "reason": "Entry-free generic match/capture body proof, no runtime execution claimed.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "match_capture",
+        "disambiguator": "guard"
+      }
+    },
+    {
+      "path": "tests/spec/match-captures/mutable-arm.rs",
+      "source_sha256": "902fbe7cab39a0c70c12b4d6e078c1020962628fcce7e83bde389d5b898eea40",
+      "exit_status": 0,
+      "input": "file",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "native": {
+        "kind": "object",
+        "reason": "Entry-free generic match/capture body proof, no runtime execution claimed.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "match_capture",
+        "disambiguator": "mutable_arm"
+      }
+    },
+    {
+      "path": "tests/spec/match-captures/native-order.rs",
+      "source_sha256": "80c195f22ab64be2ab6a4d1b8393aee0b8dc69ea4ac530468ff18fe9fec4cc12",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "match_capture",
+        "disambiguator": "native_order"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Library object contract; actual observer execution separately required by the maintainer packet."
+      },
+      "auxiliary": [
+        "tests/spec/match-captures/observer.c"
+      ]
+    },
+    {
+      "path": "tests/spec/match-captures/owned-arm.rs",
+      "source_sha256": "691761d04b91ecd257eaa33190905445379df9f1915de5dbf2d0e5a2387a1185",
+      "exit_status": 0,
+      "input": "file",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "native": {
+        "kind": "object",
+        "reason": "Entry-free generic match/capture body proof, no runtime execution claimed.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "match_capture",
+        "disambiguator": "owned_arm"
+      }
+    },
+    {
+      "path": "tests/spec/match-captures/repeat-owned.rs",
+      "source_sha256": "ba9c86625335e0d798807e32d8f73f138073e6605d819fc1f2601f5a0ace9d46",
+      "exit_status": 1,
+      "input": "file",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "library": {
+        "crate_name": "match_capture",
+        "disambiguator": "repeat_owned"
+      }
+    },
+    {
+      "path": "tests/spec/match-captures/repeat-wildcard.rs",
+      "source_sha256": "c2bcf09aa17f56d299f6d7f602515fffdd961bad4fc49318d6e074ff0fcc1876",
+      "exit_status": 1,
+      "input": "file",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "library": {
+        "crate_name": "match_capture",
+        "disambiguator": "repeat_wildcard"
+      }
+    },
+    {
+      "path": "tests/spec/match-captures/shared-callback.rs",
+      "source_sha256": "6131a0c810b3037400e90ac8195ccf8f507aca473d59c4f94777a7025d5135d8",
+      "exit_status": 1,
+      "input": "file",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "library": {
+        "crate_name": "match_capture",
+        "disambiguator": "shared_callback"
+      }
+    },
+    {
+      "path": "tests/spec/match-captures/width-128-noise-0.rs",
+      "source_sha256": "7069fa6daf46e68906767d466ccba148f2e8b30ea589b6c93a8fda0e0e90dac7",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "match_capture",
+        "disambiguator": "width_128_noise_0"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Library object contract; actual observer execution separately required by the maintainer packet.",
+        "lowir": "empty"
+      }
+    },
+    {
+      "path": "tests/spec/match-captures/width-128-noise-128.rs",
+      "source_sha256": "e41ec22a583a95cfe38205e55ce5fb2fd958b9883892eff03f3ad2ab6fa37228",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "match_capture",
+        "disambiguator": "width_128_noise_128"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Library object contract; actual observer execution separately required by the maintainer packet.",
+        "lowir": "empty"
+      }
+    },
+    {
+      "path": "tests/spec/match-captures/width-32-noise-0.rs",
+      "source_sha256": "1458206e9f8b27940118cea990229970ff3492fbeda1468a0bfdc327d0c38b5f",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "match_capture",
+        "disambiguator": "width_32_noise_0"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Library object contract; actual observer execution separately required by the maintainer packet.",
+        "lowir": "empty"
+      }
+    },
+    {
+      "path": "tests/spec/match-captures/width-32-noise-128.rs",
+      "source_sha256": "2e1f7894c04e63852cb99ecfbf1babc73c978e3fadaf9cb62a016d2ebfd4fb96",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "match_capture",
+        "disambiguator": "width_32_noise_128"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Library object contract; actual observer execution separately required by the maintainer packet.",
+        "lowir": "empty"
+      }
+    },
+    {
+      "path": "tests/spec/match-captures/width-8-noise-0.rs",
+      "source_sha256": "9579aadae302b9f60be4ed1af1f473f56aace969aa7d5fbbfe1f9db1c05ad69b",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "match_capture",
+        "disambiguator": "width_8_noise_0"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Library object contract; actual observer execution separately required by the maintainer packet.",
+        "lowir": "empty"
+      }
+    },
+    {
+      "path": "tests/spec/match-captures/width-8-noise-128.rs",
+      "source_sha256": "baecca70ad444821337226c9bb433f694a9b575e28a2e823e0f9d8b81af343fb",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "library": {
+        "crate_name": "match_capture",
+        "disambiguator": "width_8_noise_128"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Library object contract; actual observer execution separately required by the maintainer packet.",
+        "lowir": "empty"
+      }
+    },
+    {
+      "path": "tests/spec/match-captures/wildcard-computed.rs",
+      "source_sha256": "10d8204bf31e1828a28b7de224cdb537d0a144f8adba58189ce7fe1f06aa2ed2",
+      "exit_status": 0,
+      "input": "file",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "native": {
+        "kind": "object",
+        "reason": "Entry-free generic match/capture body proof, no runtime execution claimed.",
+        "lowir": "empty"
+      },
+      "library": {
+        "crate_name": "match_capture",
+        "disambiguator": "wildcard_computed"
+      }
+    },
+    {
+      "path": "tests/spec/match-captures/wrong-result.rs",
+      "source_sha256": "d7fd7ce20ce0cab9d137a4723eec2e9c33ffe68c383ab014dcd9bf0ed473e9c9",
+      "exit_status": 1,
+      "input": "file",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "library": {
+        "crate_name": "match_capture",
+        "disambiguator": "wrong_result"
+      }
     }
   ]
 }

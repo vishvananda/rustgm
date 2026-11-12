@@ -5,6 +5,37 @@ one worker: do not spawn agents or create worktrees. Use existing B
 `/mnt/vizier/rustgm-scratch/rustgm-pa26-work`; main is Git-only. Goal: original
 core, then alloc/std. No original library artifact exists.
 
+## Current checkpoint — computed match captures locally qualified
+
+[Checkpoint/evidence](docs/pa24-match-captures.md):23 production lines reuse typed
+Match decisions/arms for computed/local scrutinees, guards and arm values. Direct
+captured-place pattern operations remain explicit required positives; no blanket
+move/tag permission. No new engine/field/backend/storage/limit. CLI623ff5bc248b5f8d722ade9e71cf2ed486328cc6b2271fa8a46b1aef3b220204.
+49independent Rust outcomes41accept8reject;40 complete API outcomes qualify,
+20source. Nine entire positives required (4place contrasts perowner+ordinaryTry),
+plus public-helper enum's CLI metadata artifact required despite actual API/native
+success. Original public bytes serialized; private-helper variant independently
+qualified. Public4/2targets129.39s receipt1794457800427825291; privatehelper1/31.93s
+receipt1794458273040726694. Both fullfmt/audit/selected strictClippy. New ordinary/
+source actual native7/9/12314 and oldTry7/43/23/123 PASS; complete move/Fn opponents
+preserved. Width8/32/128 ordinary inference349/733/2269 canonical115/427/1675
+traits0; source1466/1850/3386 canonical1521/1833/3081 traits5; onefield/noise128zero.
+19newordinarytriples independently prechecked;15objects/14declaredempty verified
+inbothcompilers, actualnative separatelyexecuted. Normal batch
+1794458447436189585-55a59cd0e9eb.json SHA55a59cd0e9ebf33691542a946db284b8beefc141a1308d723db7eade2df8df0b;
+all28145priorreferencehashesunchanged. RootPA24 661/474accept187reject/native396/
+5codegen73object. Raw filter-map-captures/{review,native-review2,text-review2}.
+InitialindependentmissingCopy ICE/nativewhitespace and firstCLIpublicenum+missing
+not-yet-generated-warningrefs failures retained; none produced oracles or inverted
+valid source outcomes. Final directpreverification+normalgeneration/textcheck PASS.
+NEXT: upstream/harness/tidy, semanticcommit/pin exact623 (3907Rust unchanged),
+immutable acceptingcomparison, NEWunchanged120s original+postcheck. Last67 first
+filter_map_fold141:1253 line39; no core/alloc/stdartifact. Preserve older requirements.
+Full43154313816 RUNNING EXACT01e7013/sourcec388;fast/lint/architecture/harness/hostgraph
+PASS, release/course running, later stagespending. Do not restart activefull.
+Stable5d/current67/optimized21f retained; e8executableABSENT after publishedreplacement,
+cleanup1794457333921746162, producer/rawkept. Singleworker/no newtrees.
+
 ## Current checkpoint — try-block captures clear filter_try_fold
 
 [Checkpoint](docs/pa24-try-captures.md): productionONEline shares existing

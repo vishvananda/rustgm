@@ -1,0 +1,304 @@
+{
+  "schema": 1,
+  "required_positive_contracts": [
+    {
+      "owner": "pa24",
+      "name": "discriminant-only",
+      "path": "obj/parallel/filter-map-captures/inputs2/pa24-discriminant-only.rs",
+      "sha256": "7078e49f20afa642569970a34749359ed759859c61c42a13807c3c00b951eb89",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "place_capture_contract": true,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa24-discriminant-only.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/12.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa24-discriminant-only.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 67: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "source_utf8": "struct Owned(u8);fn make(value:Option<Owned>)->impl Fn()->u8{move||match value{Some(_)=>7,None=>9}}\n",
+      "serialized_in": "pa24/tests/spec/match-captures/pending.json",
+      "qualification": "Required positive; no unrelated unsupported diagnostic is its language result."
+    },
+    {
+      "owner": "pa24",
+      "name": "wildcard-place",
+      "path": "obj/parallel/filter-map-captures/inputs2/pa24-wildcard-place.rs",
+      "sha256": "28367c5169d0b1022a6ea00cb165c8d3f721acb9c30461e996d36b8600d94086",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "place_capture_contract": true,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa24-wildcard-place.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/13.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa24-wildcard-place.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 56: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "source_utf8": "struct Owned(u8);fn code(){let value=Owned(7);let run=||match value{_=>7};let moved=value;let _=run();let _=moved;}\n",
+      "serialized_in": "pa24/tests/spec/match-captures/pending.json",
+      "qualification": "Required positive; no unrelated unsupported diagnostic is its language result."
+    },
+    {
+      "owner": "pa24",
+      "name": "copy-field",
+      "path": "obj/parallel/filter-map-captures/inputs2/pa24-copy-field.rs",
+      "sha256": "bf5e1234a9ddf7a503efa9ee239b9f6bffb400af9c17a395a8f600be91488bb9",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "place_capture_contract": true,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa24-copy-field.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/14.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa24-copy-field.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 62: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "source_utf8": "struct Owned(u8);fn code(){let value=(7u8,Owned(9));let run=||match value{(x,_)=>x};let moved=value.1;let _=run();let _=moved;}\n",
+      "serialized_in": "pa24/tests/spec/match-captures/pending.json",
+      "qualification": "Required positive; no unrelated unsupported diagnostic is its language result."
+    },
+    {
+      "owner": "pa24",
+      "name": "borrow-binding",
+      "path": "obj/parallel/filter-map-captures/inputs2/pa24-borrow-binding.rs",
+      "sha256": "4e957d18d524da4dafcb39f05269c7628e94498f58a5bba2587c86326116c92b",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "place_capture_contract": true,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa24-borrow-binding.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/15.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa24-borrow-binding.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 59: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "source_utf8": "struct Owned(u8);fn make(value:Owned)->impl Fn()->u8{move||match value{ref x=>x.0}}\n",
+      "serialized_in": "pa24/tests/spec/match-captures/pending.json",
+      "qualification": "Required positive; no unrelated unsupported diagnostic is its language result."
+    },
+    {
+      "owner": "pa24",
+      "name": "try-fold",
+      "path": "obj/parallel/filter-map-captures/inputs2/pa24-try-fold.rs",
+      "sha256": "da888bfae6a6b4ea5c611641500a7d5ef080c48bbf0886f17988da8c857b9c36",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "place_capture_contract": false,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa24-try-fold.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/32.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa24-try-fold.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 58: unresolved type name\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "source_utf8": "#![feature(try_blocks,try_trait_v2)]\nfn make<'a,T,B,Acc,R:std::ops::Try<Output=Acc>>(f:&'a mut impl FnMut(T)->Option<B>,mut fold:impl FnMut(Acc,B)->R+'a)->impl FnMut(Acc,T)->R+'a{move|acc,item|match f(item){Some(x)=>fold(acc,x),None=>try{acc}}}\n",
+      "serialized_in": "pa24/tests/spec/match-captures/pending.json",
+      "qualification": "Required positive; no unrelated unsupported diagnostic is its language result."
+    },
+    {
+      "owner": "pa24",
+      "name": "public-enum-native-order",
+      "path": "obj/parallel/filter-map-captures/native-inputs2/pa24-native-order.rs",
+      "sha256": "4d11aa4a14ef28db7746cfa74976dc47d17b75fdb0279174e8a488b22c6dbcec",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "observer_path": "pa24/tests/spec/match-captures/observer.c",
+      "observer_sha256": "e142a089ab209e8bf85b29c2a48455c0cba573ed83ee7ac0acd169826b8313cb",
+      "expected_runtime_stdout": "match-capture 7 9 12314\n",
+      "required_native_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture_extra",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/native-inputs2/pa24-native-order.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/native-observations2/0.o"
+        ],
+        "diagnostic": ""
+      },
+      "link": {
+        "command": [
+          "cc",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/more-inputs/observer.c",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/native-observations2/0.o",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/native-observations2/0.execute"
+        ],
+        "status": 0
+      },
+      "independent_native": {
+        "status": 0,
+        "stdout": "match-capture 7 9 12314\n",
+        "stderr": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/native-inputs2/pa24-native-order.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 188: this typed capture use is not implemented\n"
+      },
+      "frozen_plan_input": "obj/parallel/filter-map-captures/native-inputs2/pa24-native-order.rs",
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "source_utf8": "pub enum Maybe<T>{Some(T),None}\nunsafe extern \"C\"{fn record(tag:u8,value:u8);}\nfn make(mut f:impl FnMut(u8)->Maybe<u8>,mut fold:impl FnMut(u8,u8)->u8)->impl FnMut(u8,u8)->u8{move|acc,item|match f(item){Maybe::Some(x)=>fold(acc,x),Maybe::None=>acc}}\n#[unsafe(no_mangle)]pub extern \"C\" fn code(value:u8)->u8{\n let mut run=make(move|item|{unsafe{record(1,item)};match item{0=>Maybe::None,_=>Maybe::Some(value)}},|_acc,x|{unsafe{record(2,x)};x});\n let first=run(3,1);unsafe{record(3,first)};\n let second=run(9,0);unsafe{record(4,second)};second\n}\n",
+      "serialized_in": "pa24/tests/spec/match-captures/pending.json",
+      "candidate_native_qualified": true,
+      "required_cli_library_artifact_status": 0,
+      "current_cli_library_artifact_status": 1,
+      "artifact_diagnostic": "exposed declaration is outside the scalar metadata profile",
+      "qualification": "Required public-helper enum transport artifact; unchanged source passes independent Rust/C, complete API and actual RustGM/CPPGM execution."
+    }
+  ]
+}

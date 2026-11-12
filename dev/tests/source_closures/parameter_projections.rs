@@ -3,6 +3,152 @@ use crate::{native_references as native, resolve as source, semantic};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const PACKET: &str = "pa24/tests/spec/parameter-projections";
 
+fn match_capture_analysis(
+    owner: &str,
+    text: &str,
+) -> Result<(
+    rustgm::resolve::expansion::Report,
+    rustgm::pipeline::Analysis,
+)> {
+    let report = if owner == "pa24" {
+        semantic::resolve(text)?
+    } else {
+        source::source_provider(text, "match_capture_uses")?
+    };
+    let analysis = if owner == "pa24" {
+        let facts = rustgm::sema::declarations::analyze(&report)?;
+        rustgm::pipeline::analyze(&report, facts)?
+    } else {
+        rustgm::pipeline::analyze_source(&report)?
+    };
+    Ok((report, analysis))
+}
+
+#[test]
+fn computed_match_work_tracks_sites_and_reuses_one_field() -> Result {
+    for owner in ["pa24", "pa31"] {
+        let mut previous = None;
+        for width in [8, 32, 128] {
+            let mut baseline = None;
+            for noise in [0, 128] {
+                let text = source::fixture(&format!(
+                    "{owner}/tests/spec/match-captures/width-{width}-noise-{noise}.rs"
+                ))?;
+                let (
+                    report,
+                    rustgm::pipeline::Analysis {
+                        mut facts,
+                        prepared,
+                    },
+                ) = match_capture_analysis(owner, &text)?;
+                assert_eq!(facts.closures.all().len(), 1);
+                let body = &facts.closures.all()[0];
+                assert_eq!(
+                    body.execution.ok_or("closure receiver")?.receiver,
+                    rustgm::types::closure::CallKind::Shared
+                );
+                assert_eq!(
+                    facts
+                        .closures
+                        .environment(body.identity)
+                        .ok_or("capture environment")?
+                        .field_types
+                        .len(),
+                    1
+                );
+                let work = [
+                    facts.body_work.inference_steps,
+                    facts.body_work.trait_selections,
+                    facts.body_work.canonical_steps,
+                ];
+                rustgm::lower::instances::build_roots_prepared(
+                    &report,
+                    &mut facts,
+                    rustgm::lower::Roots {
+                        entry: None,
+                        exports: &[],
+                    },
+                    prepared,
+                )?;
+                println!(
+                    "match captures {owner} width={width} noise={noise} work={work:?} fields=1"
+                );
+                if noise == 0 {
+                    if let Some(old) = previous {
+                        for (current, before) in work.into_iter().zip(old) {
+                            assert!(current <= 4 * before + 256);
+                        }
+                    }
+                    previous = Some(work);
+                    baseline = Some(work);
+                } else {
+                    assert_eq!(baseline, Some(work));
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn computed_matches_collect_callback_guard_and_arm_uses() -> Result {
+    let mut failures = Vec::new();
+    for owner in ["pa24", "pa31"] {
+        for (name, valid) in [
+            ("argument", true),
+            ("callback", true),
+            ("fold", true),
+            ("guard", true),
+            ("branch-capture", true),
+            ("owned-arm", true),
+            ("mutable-arm", true),
+            ("wildcard-computed", true),
+            ("wrong-result", false),
+            ("shared-callback", false),
+            ("repeat-owned", false),
+            ("repeat-wildcard", false),
+            ("try-fold", true),
+        ] {
+            if owner == "pa24" && name == "try-fold" {
+                continue;
+            }
+            let text = source::fixture(&format!("{owner}/tests/spec/match-captures/{name}.rs"))?;
+            let result = (|| -> Result {
+                let (
+                    report,
+                    rustgm::pipeline::Analysis {
+                        mut facts,
+                        prepared,
+                    },
+                ) = match_capture_analysis(owner, &text)?;
+                rustgm::lower::instances::build_roots_prepared(
+                    &report,
+                    &mut facts,
+                    rustgm::lower::Roots {
+                        entry: None,
+                        exports: &[],
+                    },
+                    prepared,
+                )?;
+                Ok(())
+            })();
+            let error = result.err().map(|error| error.to_string());
+            let accepted = error.is_none();
+            let implementation_failure = error.as_ref().is_some_and(|error| {
+                ["not implemented", "budget", "exhausted", "lost its"]
+                    .iter()
+                    .any(|message| error.contains(message))
+            });
+            println!("{owner}/{name}: {error:?}");
+            if accepted != valid || implementation_failure {
+                failures.push(format!("{owner}/{name}: {error:?}"));
+            }
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
 #[test]
 fn try_blocks_in_capturing_closures_keep_actual_move_and_target_rules() -> Result {
     let mut failures = Vec::new();

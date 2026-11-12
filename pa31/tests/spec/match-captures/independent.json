@@ -1,0 +1,1261 @@
+{
+  "schema": 1,
+  "profile": {
+    "rust": "1.98.0",
+    "edition": 2024,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0
+  },
+  "inputs": [
+    {
+      "owner": "pa31",
+      "name": "argument",
+      "path": "pa31/tests/spec/match-captures/argument.rs",
+      "sha256": "2192166a332fb7aa8742eda2a508753402bec7b2c08feade8f1ed74b0a276eac",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "place_capture_contract": false,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-argument.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/16.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 0,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-argument.rs"
+        ],
+        "diagnostic": ""
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-argument.rs",
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome. Native and course-text artifact boundaries remain separately recorded."
+    },
+    {
+      "owner": "pa31",
+      "name": "callback",
+      "path": "pa31/tests/spec/match-captures/callback.rs",
+      "sha256": "33dc95df83528297b4b239e864c482ed8f82b80c091534c377ceafe7de8db75d",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "place_capture_contract": false,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-callback.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/17.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-callback.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3454: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-callback.rs",
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome. Native and course-text artifact boundaries remain separately recorded."
+    },
+    {
+      "owner": "pa31",
+      "name": "fold",
+      "path": "pa31/tests/spec/match-captures/fold.rs",
+      "sha256": "198683affb81eed10d1836613ba2d6e64892430eef31c8be3842abf88d1339f0",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "place_capture_contract": false,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-fold.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/18.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-fold.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3501: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-fold.rs",
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome. Native and course-text artifact boundaries remain separately recorded."
+    },
+    {
+      "owner": "pa31",
+      "name": "guard",
+      "path": "pa31/tests/spec/match-captures/guard.rs",
+      "sha256": "6af671c0993eae87658c6a4dd15fff06ca7277e301bfe85d606d0c0e1371e0f7",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "place_capture_contract": false,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-guard.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/19.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-guard.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3485: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-guard.rs",
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome. Native and course-text artifact boundaries remain separately recorded."
+    },
+    {
+      "owner": "pa31",
+      "name": "branch-capture",
+      "path": "pa31/tests/spec/match-captures/branch-capture.rs",
+      "sha256": "b94ac7c180a6324bbbfff820193be83ab7a91cd756789d64f4ffac8662f56668",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "place_capture_contract": false,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-branch-capture.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/20.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-branch-capture.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3430: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-branch-capture.rs",
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome. Native and course-text artifact boundaries remain separately recorded."
+    },
+    {
+      "owner": "pa31",
+      "name": "owned-arm",
+      "path": "pa31/tests/spec/match-captures/owned-arm.rs",
+      "sha256": "ed1dc0c1737c58abef89808293a658b0fb6e87c8abe4888c6e82986d9ff6c6ae",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "place_capture_contract": false,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-owned-arm.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/21.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-owned-arm.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3457: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-owned-arm.rs",
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome. Native and course-text artifact boundaries remain separately recorded."
+    },
+    {
+      "owner": "pa31",
+      "name": "mutable-arm",
+      "path": "pa31/tests/spec/match-captures/mutable-arm.rs",
+      "sha256": "92e9a831ae5abc9c05bca92dc36d42945cda04d698679e0ea4ecdb6070c5838e",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "place_capture_contract": false,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-mutable-arm.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/22.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-mutable-arm.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3448: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-mutable-arm.rs",
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome. Native and course-text artifact boundaries remain separately recorded."
+    },
+    {
+      "owner": "pa31",
+      "name": "wildcard-computed",
+      "path": "pa31/tests/spec/match-captures/wildcard-computed.rs",
+      "sha256": "dde6ad093be345d267f5f79d55a25bf99386e2536543cb7b1e486acd6fd6e7a0",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "place_capture_contract": false,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-wildcard-computed.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/23.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-wildcard-computed.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3449: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-wildcard-computed.rs",
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome. Native and course-text artifact boundaries remain separately recorded."
+    },
+    {
+      "owner": "pa31",
+      "name": "wrong-result",
+      "path": "pa31/tests/spec/match-captures/wrong-result.rs",
+      "sha256": "9960a8d47f088b6b7cbbfd2500fe2d725634c269c7139958e4341874f8bfa7bc",
+      "expected_rust_object_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "place_capture_contract": false,
+      "rustc": {
+        "status": 1,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-wrong-result.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/24.o"
+        ],
+        "diagnostic": "error[E0308]: mismatched types\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-wrong-result.rs:68:104\n   |\n68 | fn make(mut f:impl FnMut(u8)->Maybe<u8>)->impl FnMut(u8)->bool{move|item|match f(item){Maybe::Some(x)=>x,Maybe::None=>7}}\n   |                                                                                                        ^ expected `bool`, found `u8`\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0308`.\n"
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-wrong-result.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3456: incompatible types\n"
+      },
+      "exit_status": 1,
+      "candidate_complete_prepared_root_qualified": true,
+      "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-wrong-result.rs",
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome. Native and course-text artifact boundaries remain separately recorded."
+    },
+    {
+      "owner": "pa31",
+      "name": "shared-callback",
+      "path": "pa31/tests/spec/match-captures/shared-callback.rs",
+      "sha256": "f951f76716db14ab888bc98f2e1c6f3dd2b2cd49b306249fe4ef3296a0c9b4dc",
+      "expected_rust_object_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "place_capture_contract": false,
+      "rustc": {
+        "status": 1,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-shared-callback.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/25.o"
+        ],
+        "diagnostic": "error[E0596]: cannot borrow `f` as mutable, as it is a captured variable in a `Fn` closure\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-shared-callback.rs:68:75\n   |\n68 | fn make(mut f:impl FnMut(u8)->Maybe<u8>)->impl Fn(u8)->u8{move|item|match f(item){Maybe::Some(x)=>x,Maybe::None=>7}}\n   |    ----                                   --------------- ----------      ^ cannot borrow as mutable\n   |                                           |               |\n   |                                           |               in this closure\n   |                                           change this to return `FnMut` instead of `Fn`\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0596`.\n"
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-shared-callback.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3451: this typed capture use is not implemented\n"
+      },
+      "exit_status": 1,
+      "candidate_complete_prepared_root_qualified": true,
+      "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-shared-callback.rs",
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome. Native and course-text artifact boundaries remain separately recorded."
+    },
+    {
+      "owner": "pa31",
+      "name": "repeat-owned",
+      "path": "pa31/tests/spec/match-captures/repeat-owned.rs",
+      "sha256": "d76743fd65a06b1474343ec6e1066371720f346c9deb66e031a072b685d517cd",
+      "expected_rust_object_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "place_capture_contract": false,
+      "rustc": {
+        "status": 1,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-repeat-owned.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/26.o"
+        ],
+        "diagnostic": "error[E0382]: use of moved value: `run`\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-repeat-owned.rs:68:110\n   |\n68 | fn code(){let value=Owned(7);let run=move|flag|match flag{true=>value,false=>Owned(7)};let _=run(true);let _=run(false);}\n   |                                                                                              ---------       ^^^ value used here after move\n   |                                                                                              |\n   |                                                                                              `run` moved due to this call\n   |\nnote: closure cannot be invoked more than once because it moves the variable `value` out of its environment\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-repeat-owned.rs:68:65\n   |\n68 | fn code(){let value=Owned(7);let run=move|flag|match flag{true=>value,false=>Owned(7)};let _=run(true);let _=run(false);}\n   |                                                                 ^^^^^\nnote: this value implements `FnOnce`, which causes it to be moved when called\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-repeat-owned.rs:68:94\n   |\n68 | fn code(){let value=Owned(7);let run=move|flag|match flag{true=>value,false=>Owned(7)};let _=run(true);let _=run(false);}\n   |                                                                                              ^^^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0382`.\n"
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-repeat-owned.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3447: this typed capture use is not implemented\n"
+      },
+      "exit_status": 1,
+      "candidate_complete_prepared_root_qualified": true,
+      "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-repeat-owned.rs",
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome. Native and course-text artifact boundaries remain separately recorded."
+    },
+    {
+      "owner": "pa31",
+      "name": "repeat-wildcard",
+      "path": "pa31/tests/spec/match-captures/repeat-wildcard.rs",
+      "sha256": "e19a083808d572f6e8a698bcdd3323587fab140844cadb1e3f5cba8be752ad90",
+      "expected_rust_object_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "place_capture_contract": false,
+      "rustc": {
+        "status": 1,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-repeat-wildcard.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/27.o"
+        ],
+        "diagnostic": "error[E0382]: use of moved value: `run`\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-repeat-wildcard.rs:68:99\n   |\n68 | fn code(){let value=Owned(7);let run=move||{let _=match true{true=>value,false=>Owned(7)};};run();run();}\n   |                                                                                             ----- ^^^ value used here after move\n   |                                                                                             |\n   |                                                                                             `run` moved due to this call\n   |\nnote: closure cannot be invoked more than once because it moves the variable `value` out of its environment\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-repeat-wildcard.rs:68:68\n   |\n68 | fn code(){let value=Owned(7);let run=move||{let _=match true{true=>value,false=>Owned(7)};};run();run();}\n   |                                                                    ^^^^^\nnote: this value implements `FnOnce`, which causes it to be moved when called\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-repeat-wildcard.rs:68:93\n   |\n68 | fn code(){let value=Owned(7);let run=move||{let _=match true{true=>value,false=>Owned(7)};};run();run();}\n   |                                                                                             ^^^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0382`.\n"
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-repeat-wildcard.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3450: this typed capture use is not implemented\n"
+      },
+      "exit_status": 1,
+      "candidate_complete_prepared_root_qualified": true,
+      "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-repeat-wildcard.rs",
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome. Native and course-text artifact boundaries remain separately recorded."
+    },
+    {
+      "owner": "pa31",
+      "name": "discriminant-only",
+      "path": "pa31/tests/spec/match-captures/discriminant-only.rs",
+      "sha256": "ad68f15b19d7d74d9c93992b642364cf67f9a2f35651127dd08c75e047aa101f",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "place_capture_contract": true,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-discriminant-only.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/28.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-discriminant-only.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3449: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-discriminant-only.rs",
+      "qualification": "Independent outcome established; complete candidate result pending."
+    },
+    {
+      "owner": "pa31",
+      "name": "wildcard-place",
+      "path": "pa31/tests/spec/match-captures/wildcard-place.rs",
+      "sha256": "0dc1174e67319bd2a0290e3a159af9d56fe1afd54cbd1f7dfc11e75af8e8080f",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "place_capture_contract": true,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-wildcard-place.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/29.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-wildcard-place.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3439: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-wildcard-place.rs",
+      "qualification": "Independent outcome established; complete candidate result pending."
+    },
+    {
+      "owner": "pa31",
+      "name": "copy-field",
+      "path": "pa31/tests/spec/match-captures/copy-field.rs",
+      "sha256": "7bca25cb772649e8afc391be412ba397b471c90979e583de4995ca654b9d9626",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "place_capture_contract": true,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-copy-field.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/30.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-copy-field.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3445: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-copy-field.rs",
+      "qualification": "Independent outcome established; complete candidate result pending."
+    },
+    {
+      "owner": "pa31",
+      "name": "borrow-binding",
+      "path": "pa31/tests/spec/match-captures/borrow-binding.rs",
+      "sha256": "8daced18da85c90b003a3197a0fbd47b26f660827298d216d75cb888ab6dbe05",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "place_capture_contract": true,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-borrow-binding.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/31.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-borrow-binding.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3442: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-borrow-binding.rs",
+      "qualification": "Independent outcome established; complete candidate result pending."
+    },
+    {
+      "owner": "pa31",
+      "name": "try-fold",
+      "path": "pa31/tests/spec/match-captures/try-fold.rs",
+      "sha256": "04653de6ada7cbdf67125d69dfeb2c82535e31949123101fda8dfb1e98622fc3",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "place_capture_contract": false,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-try-fold.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/33.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-try-fold.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3528: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-try-fold.rs",
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome. Native and course-text artifact boundaries remain separately recorded."
+    },
+    {
+      "owner": "pa31",
+      "name": "width-8-noise-0",
+      "path": "pa31/tests/spec/match-captures/width-8-noise-0.rs",
+      "sha256": "46ad89919f2e975ca27598d49a7fb41af4941797e97a5e0834eb2cbd2480ea2f",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "width": 8,
+      "noise": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture_extra",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/more-inputs/pa31-width-8-noise-0.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/more-observations/6.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture_extra",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture_extra",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/more-inputs/pa31-width-8-noise-0.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3399: this typed capture use is not implemented\n"
+      },
+      "frozen_plan_input": "obj/parallel/filter-map-captures/more-inputs/pa31-width-8-noise-0.rs",
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome. Native and course-text artifact boundaries remain separately recorded."
+    },
+    {
+      "owner": "pa31",
+      "name": "width-8-noise-128",
+      "path": "pa31/tests/spec/match-captures/width-8-noise-128.rs",
+      "sha256": "a4eb4a52e2e6f837545c28deb138dd2eb8b722942b829dfe345d101ff61bb301",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "width": 8,
+      "noise": 128,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture_extra",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/more-inputs/pa31-width-8-noise-128.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/more-observations/7.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture_extra",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture_extra",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/more-inputs/pa31-width-8-noise-128.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3399: this typed capture use is not implemented\n"
+      },
+      "frozen_plan_input": "obj/parallel/filter-map-captures/more-inputs/pa31-width-8-noise-128.rs",
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome. Native and course-text artifact boundaries remain separately recorded."
+    },
+    {
+      "owner": "pa31",
+      "name": "width-32-noise-0",
+      "path": "pa31/tests/spec/match-captures/width-32-noise-0.rs",
+      "sha256": "580cf0ac94535a2f22278fa4829012da30af8d0d057057985f3504adc5962829",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "width": 32,
+      "noise": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture_extra",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/more-inputs/pa31-width-32-noise-0.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/more-observations/8.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture_extra",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture_extra",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/more-inputs/pa31-width-32-noise-0.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3399: this typed capture use is not implemented\n"
+      },
+      "frozen_plan_input": "obj/parallel/filter-map-captures/more-inputs/pa31-width-32-noise-0.rs",
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome. Native and course-text artifact boundaries remain separately recorded."
+    },
+    {
+      "owner": "pa31",
+      "name": "width-32-noise-128",
+      "path": "pa31/tests/spec/match-captures/width-32-noise-128.rs",
+      "sha256": "6397170259340cc612c2fc7010aa9a36aa26a8896095a40be19cc49016e7a9ab",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "width": 32,
+      "noise": 128,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture_extra",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/more-inputs/pa31-width-32-noise-128.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/more-observations/9.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture_extra",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture_extra",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/more-inputs/pa31-width-32-noise-128.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3399: this typed capture use is not implemented\n"
+      },
+      "frozen_plan_input": "obj/parallel/filter-map-captures/more-inputs/pa31-width-32-noise-128.rs",
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome. Native and course-text artifact boundaries remain separately recorded."
+    },
+    {
+      "owner": "pa31",
+      "name": "width-128-noise-0",
+      "path": "pa31/tests/spec/match-captures/width-128-noise-0.rs",
+      "sha256": "d00527314a6c0ed87db5d96609e5b756c17478736449e6855da544d78ff99ec3",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "width": 128,
+      "noise": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture_extra",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/more-inputs/pa31-width-128-noise-0.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/more-observations/10.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture_extra",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture_extra",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/more-inputs/pa31-width-128-noise-0.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3399: this typed capture use is not implemented\n"
+      },
+      "frozen_plan_input": "obj/parallel/filter-map-captures/more-inputs/pa31-width-128-noise-0.rs",
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome. Native and course-text artifact boundaries remain separately recorded."
+    },
+    {
+      "owner": "pa31",
+      "name": "width-128-noise-128",
+      "path": "pa31/tests/spec/match-captures/width-128-noise-128.rs",
+      "sha256": "7f0ffee073c548e5e0378332d5c8c50df9dfa5519806204d59f3936af1f50505",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "width": 128,
+      "noise": 128,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture_extra",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/more-inputs/pa31-width-128-noise-128.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/more-observations/11.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture_extra",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture_extra",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/more-inputs/pa31-width-128-noise-128.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3399: this typed capture use is not implemented\n"
+      },
+      "frozen_plan_input": "obj/parallel/filter-map-captures/more-inputs/pa31-width-128-noise-128.rs",
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome. Native and course-text artifact boundaries remain separately recorded."
+    },
+    {
+      "owner": "pa31",
+      "name": "native-order",
+      "path": "pa31/tests/spec/match-captures/native-order.rs",
+      "sha256": "7b555517afeb4b764f742df25a3d58d0f30f94abb20ca50c3ee2c9500dfc314d",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "observer_path": "pa31/tests/spec/match-captures/observer.c",
+      "observer_sha256": "e142a089ab209e8bf85b29c2a48455c0cba573ed83ee7ac0acd169826b8313cb",
+      "expected_runtime_stdout": "match-capture 7 9 12314\n",
+      "required_native_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture_extra",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/native-inputs2/pa31-native-order.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/native-observations2/1.o"
+        ],
+        "diagnostic": ""
+      },
+      "link": {
+        "command": [
+          "cc",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/more-inputs/observer.c",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/native-observations2/1.o",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/native-observations2/1.execute"
+        ],
+        "status": 0
+      },
+      "independent_native": {
+        "status": 0,
+        "stdout": "match-capture 7 9 12314\n",
+        "stderr": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture_extra",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture_extra",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/native-inputs2/pa31-native-order.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3539: this typed capture use is not implemented\n"
+      },
+      "frozen_plan_input": "obj/parallel/filter-map-captures/native-inputs2/pa31-native-order.rs",
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome. Native and course-text artifact boundaries remain separately recorded."
+    }
+  ]
+}

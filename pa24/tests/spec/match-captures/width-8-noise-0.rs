@@ -1,0 +1,1 @@
+fn make(value:u8)->impl Fn()->u8{move||{let _r0=match true{true=>value,false=>7};let _r1=match true{true=>value,false=>7};let _r2=match true{true=>value,false=>7};let _r3=match true{true=>value,false=>7};let _r4=match true{true=>value,false=>7};let _r5=match true{true=>value,false=>7};let _r6=match true{true=>value,false=>7};let _r7=match true{true=>value,false=>7};value}}

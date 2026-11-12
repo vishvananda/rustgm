@@ -449,6 +449,29 @@ impl Collector<'_> {
                 self.push(then, Use::Value);
                 self.push(condition, Use::Value);
             }
+            Kind::Match { value, .. } => {
+                if self.places.get(checker, value)?.is_some() {
+                    return Err(checker.error(
+                        value,
+                        "capture patterns for a matched place are not implemented",
+                    ));
+                }
+                let id = *checker
+                    .facts
+                    .patterns
+                    .matches
+                    .get(&checker.key(node))
+                    .ok_or_else(|| checker.error(node, "missing capture match selection"))?;
+                let decision = &checker.facts.patterns.decisions[id as usize];
+                for index in (decision.start..decision.end).rev() {
+                    let arm = checker.facts.patterns.arms[index as usize];
+                    self.push(arm.value.node, Use::Value);
+                    if let Some(guard) = arm.guard {
+                        self.push(guard.node, Use::Value);
+                    }
+                }
+                self.push(value, Use::Value);
+            }
             Kind::Loop { body } | Kind::TryBlock { body, .. } => self.push(body, Use::Value),
             Kind::While { condition, body } => {
                 self.push(body, Use::Value);

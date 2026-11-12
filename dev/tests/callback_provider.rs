@@ -137,10 +137,17 @@ fn callback_result_program(
     let mut config = rustgm::expand::config::Config::default();
     config.set_lint_cap(rustgm::support::diagnostics::LintCap::Allow);
     let report = crate::resolve::source_provider_config(&text, identity, &config)?;
-    let rustgm::pipeline::Analysis {
+    let analysis = rustgm::pipeline::analyze_source(&report)?;
+    callback_export(&report, analysis)
+}
+
+fn callback_export(
+    report: &rustgm::resolve::expansion::Report,
+    rustgm::pipeline::Analysis {
         mut facts,
         prepared,
-    } = rustgm::pipeline::analyze_source(&report)?;
+    }: rustgm::pipeline::Analysis,
+) -> TestResult<rustgm::lowir::program::Program> {
     let exports = facts
         .functions
         .iter()
@@ -155,7 +162,7 @@ fn callback_result_program(
         .collect::<Vec<_>>();
     assert_eq!(exports.len(), 1);
     Ok(rustgm::lower::instances::build_roots_prepared(
-        &report,
+        report,
         &mut facts,
         rustgm::lower::Roots {
             entry: None,
@@ -249,4 +256,42 @@ fn source_try_captures_execute_actual_value_output_and_residual_calls() -> TestR
         &crate::resolve::fixture("pa30/tests/spec/try-captures/observer.c")?,
         "try-capture 7 43 23 123\n",
     )
+}
+
+fn match_capture_program(owner: &str) -> TestResult<rustgm::lowir::program::Program> {
+    if owner == "pa31" {
+        return callback_result_program("match-captures/native-order", "match_capture_execution");
+    }
+    let text = crate::resolve::fixture("pa24/tests/spec/match-captures/native-order.rs")?;
+    let report = crate::resolve::resolve(&text, true)?;
+    let facts = rustgm::sema::declarations::analyze(&report)?;
+    let analysis = rustgm::pipeline::analyze(&report, facts)?;
+    callback_export(&report, analysis)
+}
+
+#[test]
+fn computed_match_captures_prepare_actual_both_variant_calls() -> TestResult {
+    for owner in ["pa24", "pa31"] {
+        match_capture_program(owner)?;
+    }
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn computed_match_captures_execute_callbacks_once_in_branch_order() -> TestResult {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let out = root.join("obj/parallel/filter-map-captures/native");
+    std::fs::create_dir_all(&out)?;
+    for owner in ["pa24", "pa31"] {
+        crate::ffi_program::check(
+            &root,
+            &out,
+            owner,
+            &match_capture_program(owner)?,
+            &crate::resolve::fixture(&format!("{owner}/tests/spec/match-captures/observer.c"))?,
+            "match-capture 7 9 12314\n",
+        )?;
+    }
+    Ok(())
 }

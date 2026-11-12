@@ -1,0 +1,209 @@
+{
+  "schema": 1,
+  "required_positive_contracts": [
+    {
+      "owner": "pa31",
+      "name": "discriminant-only",
+      "path": "pa31/tests/spec/match-captures/discriminant-only.rs",
+      "sha256": "ad68f15b19d7d74d9c93992b642364cf67f9a2f35651127dd08c75e047aa101f",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "place_capture_contract": true,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-discriminant-only.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/28.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-discriminant-only.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3449: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-discriminant-only.rs",
+      "qualification": "Independent outcome established; complete candidate result pending."
+    },
+    {
+      "owner": "pa31",
+      "name": "wildcard-place",
+      "path": "pa31/tests/spec/match-captures/wildcard-place.rs",
+      "sha256": "0dc1174e67319bd2a0290e3a159af9d56fe1afd54cbd1f7dfc11e75af8e8080f",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "place_capture_contract": true,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-wildcard-place.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/29.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-wildcard-place.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3439: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-wildcard-place.rs",
+      "qualification": "Independent outcome established; complete candidate result pending."
+    },
+    {
+      "owner": "pa31",
+      "name": "copy-field",
+      "path": "pa31/tests/spec/match-captures/copy-field.rs",
+      "sha256": "7bca25cb772649e8afc391be412ba397b471c90979e583de4995ca654b9d9626",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "place_capture_contract": true,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-copy-field.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/30.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-copy-field.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3445: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-copy-field.rs",
+      "qualification": "Independent outcome established; complete candidate result pending."
+    },
+    {
+      "owner": "pa31",
+      "name": "borrow-binding",
+      "path": "pa31/tests/spec/match-captures/borrow-binding.rs",
+      "sha256": "8daced18da85c90b003a3197a0fbd47b26f660827298d216d75cb888ab6dbe05",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "place_capture_contract": true,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "match_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-borrow-binding.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/baseline2/31.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@match_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "match_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-map-captures/inputs2/pa31-borrow-binding.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3442: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-borrow-binding.rs",
+      "qualification": "Independent outcome established; complete candidate result pending."
+    }
+  ]
+}

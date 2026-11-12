@@ -207,7 +207,12 @@
     "all_bindings_profile_limits_unchanged": true,
     "postcheck_cleanup": "1794457237662345758"
   },
-  "current_full_ci": "pending publication and fresh no-active-full check",
+  "current_full_ci": {
+    "run": 43154313816,
+    "head": "01e7013ebf3b2dea2153fe87661a502805360d59",
+    "source": "c388b27099c03f75e01adf830346fe3c2a04e3f6",
+    "state": "running release/course; fast/lint/architecture/harness/host graph passed; later stages pending"
+  },
   "unchanged": [
     "backend contract/bridge",
     "storage/resource policy",
@@ -255,5 +260,11 @@
     "no_optimized_or_core_speed_claim": true,
     "raw": "obj/parallel/filter-try-capture/measure",
     "cleanup_receipt": "1794457080845557449"
+  },
+  "preceding_comparison_pin": {
+    "sha256": "e8ca58dbc0bc0baab5dbf5c883dffd389d85a213f768445b6ff77d8e5747820f",
+    "executable_available": false,
+    "raw_and_producer_retained": true,
+    "retirement_cleanup": "1794457333921746162"
   }
 }

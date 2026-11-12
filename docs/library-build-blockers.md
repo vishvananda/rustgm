@@ -1,5 +1,13 @@
 # Library build blocker tracker
 
+The [computed-match capture checkpoint](pa24-match-captures.md), CLI623ff5bc,
+locally qualifies40 complete API outcomes from49 independent contracts, actual
+ordinary/source native7/9/12314,19 reviewed ordinary text contracts and bounded
+one-field scaling. Nine entire positives and one public-helper metadata artifact
+stay required. Clean freeze/new unchanged original observer is next; no original
+core/alloc/std artifact. Full43154313816 on preceding01e7013/sourcec388 remains
+running; do not restart it for this descendant. Earlier snapshots follow.
+
 Current [try-capture checkpoint](pa24-try-captures.md), CLI67f146ab, qualifies
 21 complete source outcomes from36 independent contracts, with15 ordinary
 contracts still required. Actual source native7/43/23/123 and the old ByRef control

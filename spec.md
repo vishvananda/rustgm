@@ -5742,6 +5742,13 @@ ownership proof with their existing consumers. Type inspection alone does not
 qualify moves. The [try-capture checkpoint](docs/pa24-try-captures.md) records
 actual source execution, Fn/FnMut/FnOnce and bounded field/work controls.
 
+A computed match inside a closure consumes its selected scrutinee, guard and
+arm expression facts through the existing capture-use walker. Reuse the typed
+match decision, preserving actual callable receiver use and complete ownership.
+A captured-place scrutinee requires separate selected pattern operations;
+discriminant reads, wildcards and independent fields must not become blanket
+value moves. Required controls remain in the [match capture checkpoint](docs/pa24-match-captures.md).
+
 A canonical caller premise may bind an inference hole to its complete projected
 input type. Use the shared scoped worklist; collect comparisons between projection
 results for exact identity or the existing certified-normal-premise relation.
