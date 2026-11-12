@@ -5812,6 +5812,15 @@ ambiguous. rustc would still drop a specialized impl whose specializing peer
 must apply; that remains a rejects-valid limitation. Controls are in the
 [specialized trait input checkpoint](docs/pa20-specialized-trait-inputs.md).
 
+A const closure defined in a const trait's default body is conditionally const
+through that body's `Self: [const] Trait` premise. It meets a `[const]` callable
+bound through its defining contract: the trait premise and the owner's `[const]`
+predicates, proved under the caller's assumptions. A non-const closure in that
+body still fails the bound. A const trait member publishes no const-fn call
+effect, so eligibility may not wait for one. Const fn items in the same body
+keep their separate scoped-continuation fence. Controls are in the
+[default const closure checkpoint](docs/pa25-default-const-closures.md).
+
 A canonical caller premise may bind an inference hole to its complete projected
 input type. Use the shared scoped worklist; collect comparisons between projection
 results for exact identity or the existing certified-normal-premise relation.

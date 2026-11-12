@@ -1,0 +1,10 @@
+pa31/tests/spec/default-const-closures/count.rs	0
+pa31/tests/spec/default-const-closures/count-typed.rs	0
+pa31/tests/spec/default-const-closures/count-suffix.rs	0
+pa31/tests/spec/default-const-closures/count-no-attribute.rs	0
+pa31/tests/spec/default-const-closures/count-plain.rs	0
+pa31/tests/spec/default-const-closures/count-call.rs	0
+pa31/tests/spec/default-const-closures/call-count.rs	0
+pa31/tests/spec/default-const-closures/count-clone-premise.rs	0
+pa31/tests/spec/default-const-closures/count-plain-const-bounds.rs	1
+pa31/tests/spec/default-const-closures/count-clone-missing.rs	1

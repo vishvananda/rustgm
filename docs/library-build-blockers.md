@@ -1,5 +1,22 @@
 # Library build blocker tracker
 
+The [default const closure checkpoint](pa25-default-const-closures.md) lets a
+const closure defined in a const trait's default body meet a `[const]` callable
+bound through that body's `Self: [const] Trait` premise. Core's
+`Iterator::count` passed `const |accum, _elem| accum + 1` to `fold`'s
+`[const] FnMut` bound. The default method publishes no const-fn call effect, so
+the closure's eligibility waited for one until inference ended. Ten declared
+source-core reductions and closure-linear work qualify it.
+
+Exploratory pin eacd5629 clears count 5712, with no new reached failure. Under
+external load near 22, the unchanged 120s observer ends at 120.848s with 36
+records, 14,291 attempts and last item 8823, str/pattern.rs:691. The first
+remaining failure is last 5713 at iterator.rs:271, which needs a scoped
+continuation for source const callable conditional obligations. max, min,
+max_by_key and min_by_key keep the nested trait path formatting fence for a
+separate cause: function items passed to an ordinary `FnMut` bound. The clean
+pin and its observation are pending. No core artifact exists.
+
 The [specialized trait input checkpoint](pa20-specialized-trait-inputs.md)
 lets specialization order two proved impl candidates of a goal with inference
 variables when both resolved its inputs identically. Core's `Zip` `fold`

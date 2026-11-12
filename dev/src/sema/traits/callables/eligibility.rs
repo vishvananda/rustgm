@@ -47,10 +47,16 @@ pub(super) fn for_goal(
             if declaration.constant() != Some(body.constant.is_some()) {
                 return Err("const closure qualification changed its actual source owner".into());
             }
-            let mut needs_contract = body
-                .owner
-                .is_some_and(|owner| facts.generics.has_parameters(owner));
+            let default_body = match body.owner {
+                Some(owner) => const_trait_default(facts, owner)?,
+                None => false,
+            };
+            let mut needs_contract = default_body
+                || body
+                    .owner
+                    .is_some_and(|owner| facts.generics.has_parameters(owner));
             if let Some(owner) = body.owner
+                && !default_body
                 && facts.function_indices.contains_key(&owner)
             {
                 match facts
@@ -79,6 +85,25 @@ pub(super) fn for_goal(
         None => Ok(Eligibility::Pending),
         _ => Err("const callable proof has no direct callable subject".into()),
     }
+}
+
+/// A const trait's default body is conditionally const through the trait's
+/// `Self: [const] Trait` premise, not through a const-fn call effect, so it
+/// never publishes one. A closure it defines is proved by its defining
+/// requirements, which add that premise (`default_self_clause`).
+fn const_trait_default(facts: &Declarations, owner: DefId) -> Result<bool, &'static str> {
+    let Some(body) = facts
+        .function_indices
+        .get(&owner)
+        .and_then(|&index| facts.functions.get(index))
+        .and_then(|function| function.body)
+    else {
+        return Ok(false);
+    };
+    Ok(matches!(
+        facts.function_context(owner, body)?,
+        crate::sema::function_context::FunctionContext::ConstTraitDefault { .. }
+    ))
 }
 
 fn actual_role(facts: &Declarations, goal: &Predicate) -> Result<(), &'static str> {

@@ -943,3 +943,12 @@ them identically; rustc selects the most specialized impl. Seven positives
 (two controls) and a lowered concrete call accept, and two unrelated impls with
 different inputs reject (E0283). A maintainer integration test checks them
 through the CLI. There is no graded manifest.
+
+`spec/default-const-closures/` freezes ten declared no_core reductions of
+core's `Iterator::count`. A const closure defined in a const trait's default
+body must meet `fold`'s `[const] FnMut` bound through the trait's
+`Self: [const] Trait` premise. Seven positives, including concrete calls from a
+library function and a root `main` and a `[const] Clone` premise, and an
+ordinary control accept. A non-const closure and a clone under only `Clone`
+reject (E0277). A maintainer integration test checks them through the CLI.
+There is no graded manifest.

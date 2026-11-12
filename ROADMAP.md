@@ -116,6 +116,14 @@ failure is iterator count, behind the diagnostic formatting fence. Clean pin
 3a1a6772 (source bcbafa25a) confirms this with 43 records, and its measurement
 supports no speed claim either way.
 
+The [default const closure checkpoint](docs/pa25-default-const-closures.md)
+lets a const closure defined in a const trait's default body meet a `[const]`
+callable bound through that body's `Self: [const] Trait` premise, as core's
+`Iterator::count` needs. Ten declared source-core reductions agree with rustc.
+An exploratory observation clears count; the first remaining failure is
+iterator `last`, which needs a scoped continuation for a const fn item. The
+clean pin, its observation and measurement are pending.
+
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage
 limit controls, pass text, independent Rust and native checks with frozen a08ab1a4.

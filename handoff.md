@@ -149,6 +149,26 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-12 default const closure update (supersedes the blocks below):**
+
+- The count 5712 blocker is fixed
+  ([evidence](docs/pa25-default-const-closures.md)). A const closure defined in
+  a const trait's default body now meets a `[const]` callable bound through
+  its defining contract, which adds the trait's `Self: [const] Trait` premise.
+  - Ten declared reductions are in `pa31/tests/spec/default-const-closures`,
+    and the history is in `obj/parallel/count-fold/core/declared.json`. Scratch
+    probes that isolated the cause are in `obj/parallel/count-fold/probes/`.
+  - Exploratory pin `obj/parallel/count-fold/wip1-dev-fast` (eacd5629) clears
+    count. The next first failure is last 5713 (scoped continuation for a const
+    fn item), then max/min/max_by_key/min_by_key (function items passed to an
+    ordinary `FnMut` bound, behind the nested trait path formatting fence).
+  - Recorded limitations: source-core mode accepts a const closure's
+    non-const call (`count-nonconst-call`, deferred defining const checks), and
+    LowIR of `fold`'s `[const] FnMut` call fails for any argument.
+- Clean pin `obj/parallel/zip-specialization/candidate-dev-fast` (3a1a6772,
+  source bcbafa25a) remains the comparison baseline until this checkpoint's
+  clean pin passes. Full CI 43216665164 was dispatched on 8cff15463.
+
 **2026-11-12 specialized trait input update (supersedes the blocks below):**
 
 - The zip fold 5290 blocker is fixed

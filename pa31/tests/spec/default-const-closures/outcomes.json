@@ -1,0 +1,68 @@
+{
+ "schema": 1,
+ "declared": "2026-11-12, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run of each file (obj/parallel/count-fold/core/declared.json, batches 1-3 and corrections 1-2). The prefix is the source-copy-captures prefix with const_closures, stmt_expr_attributes and const_precise_live_drops, and the core Add trait with its integer and float impls.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "cases": {
+  "count.rs": {
+   "sha256": "7cdfd156241c145eaf8742a686a43fababf8b6836d17bb04d4f3586d7dd1a741",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "count"
+  },
+  "count-typed.rs": {
+   "sha256": "25355d02d0a9f66a771e45f8bc9a7ccaa893f7b2259e50235da6f865eeba3bc3",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "count-typed"
+  },
+  "count-suffix.rs": {
+   "sha256": "d714815e42e3c213e4d2a4b93ca97c603005cc004d9de9ced12c5ad1c1a84920",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "count-suffix"
+  },
+  "count-no-attribute.rs": {
+   "sha256": "6bd5531f039186b5a04cdc37bd914fcbe178fbbe688432a7c2fa3dc54606e040",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "count-no-attribute"
+  },
+  "count-plain.rs": {
+   "sha256": "0cabb29076108b66783a104a9646647c4c1788cbbd4c214d91ae2cefe4be4424",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "count-plain"
+  },
+  "count-call.rs": {
+   "sha256": "f0284d4c8b9fdebf4f71ced31e3ec24af432b667117f215ce2de64b6a4d2905b",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "count-call"
+  },
+  "call-count.rs": {
+   "sha256": "bc6414d6e52ba4e94c1b1705a216752e95634ccf2c8c90a17dab1a7d2637d408",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "call-count"
+  },
+  "count-clone-premise.rs": {
+   "sha256": "a62e91fc310b884fb866bd2f814d3ce93e8ebbf7ccaf2d89b943aae063135cf9",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "count-clone-premise"
+  },
+  "count-plain-const-bounds.rs": {
+   "sha256": "02b0a22e8a1d85172c2ca58af6b22187434bd99f301c682975b2d55aed7b46dd",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "count-plain-const-bounds"
+  },
+  "count-clone-missing.rs": {
+   "sha256": "cf9f24db43de48dc505f7f6c4d64d39e3d352136e404a6d0eb8047409acb5f20",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "count-clone-missing"
+  }
+ }
+}
