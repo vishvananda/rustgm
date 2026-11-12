@@ -1,9 +1,223 @@
-# RustGM single-worker continuation — 2026-11-12
+# RustGM handoff — 2026-11-12
 
-This current section supersedes historical snapshots below. The user asked for
-one worker: do not spawn agents or create worktrees. Use existing B
-`/mnt/vizier/rustgm-scratch/rustgm-pa26-work`; main is Git-only. Goal: original
-core, then alloc/std. No original library artifact exists.
+The user requested this handoff and cleared the active goal. Implementation work
+is stopped. Resume only on a new instruction. The original objective was to
+compile the pinned original core, then alloc/std; **none of those library artifacts
+exists yet**. This section supersedes every historical “current”, “NEXT”, CI and
+pin-availability statement below. All older language/artifact requirements remain.
+
+## Workspace and Git
+
+- Main `/home/vishvananda/rustgm` is Git-only. Build and edit compiler code in B:
+  `/mnt/vizier/rustgm-scratch/rustgm-pa26-work`.
+- B branch: `implement/scoped-inherent-20261110`. Latest published implementation
+  base is `03b2ad7e0d7cf77554bbd61ff1f22a9e05ea8098`; its compiler source is
+  `08794b90955e7ba47674f582511b80c37ebc6152`. A documentation-only handoff commit
+  may descend from that base.
+- **The new helper-inference implementation is uncommitted in B.** It is not in
+  main/origin and must not be treated as the fully qualified baseline. There are
+  10 tracked modified files and 58 untracked fixture/manifest files, all listed
+  and hashed in `obj/parallel/flatten-helper-inputs/handoff-state.json` in B.
+- A complete restoration/review patch, including untracked fixtures, is saved as
+  `obj/parallel/flatten-helper-inputs/handoff-wip.patch`. The work is already
+  present in B; the patch is for restoration, not application on top of the WIP.
+- Continue as one worker. Do not spawn agents or create another worktree. Do not
+  modify the active C++/v5rust checkouts or another checkout's output.
+
+## Fully qualified published baseline
+
+[Full CI43157950706](https://github.com/vishvananda/rustgm/actions/runs/43157950706)
+**passed every stage** on exact `03b2ad7e0d7cf77554bbd61ff1f22a9e05ea8098`:
+fast, all-target lint/architecture/harness, host build graph, release/course,
+native maintainer, broad native course, debug, independent Rust and PA25's
+candidate contract. Job metadata is saved in
+`obj/parallel/flatten-helper-inputs/full-ci-43157950706-jobs.json`.
+Do not dispatch a replacement full run merely for this handoff documentation.
+
+The immutable baseline compiler remains available at
+`obj/parallel/filter-map-captures/candidate-dev-fast/rustgm` in B:
+`623ff5bc248b5f8d722ade9e71cf2ed486328cc6b2271fa8a46b1aef3b220204`.
+Its producer binds clean source08794,3907 Rust source hashes and an empty patch.
+The published baseline includes the try-capture and computed-match fixes and
+three independently reviewed PA21 inspection reference updates. See
+[match evidence](docs/pa24-match-captures.md) and
+[the PA21 reference review](docs/pa21-empty-binder-ci-review.md).
+
+The baseline's last original-core observation used the unchanged120s deadline
+and ended at121.082337s, with65 partial failure records/14,018 item attempts.
+All15 required prior bodies, including filter_map_fold4634,
+filter_map_try_fold4635 and find4648, were reached without their old failures.
+Eleven earlier failures were absent when reached; no new failure appeared among
+previously passing reached bodies. Partial counts are not throughput or a complete
+census. Postcheck verified all722 source hashes,375 opened sources, six configuration
+bindings,3907 current/immutable compiler Rust hashes and unchanged profile/limits.
+
+The **first verified remaining blocker** is `FlattenCompat::iter_fold`,
+`library/core/src/iter/adapters/flatten.rs:398`, function4718/body142:10360,
+error142:10701: `self.iter.fold(acc, flatten(&mut fold))`; call inputs remain
+unresolved. Raw evidence is `obj/parallel/filter-map-captures/original/` and
+`original-comparison.json`; progress SHA is
+`18a7eb53a2f813bc461bf482b21a203ce219cb0bc58e77adb38889ee0f4b991d`.
+**The new WIP has not been reobserved on original core.**
+
+## Current uncommitted helper-inference change
+
+The reduced helper returns `impl FnMut(B,T)->B`, while its input mentions only
+`T::IntoIter`. Explicitly naming T works in the baseline. The inferred direct,
+named and free-applier forms fail. The parent fold's required callable inputs
+must determine T from the published opaque bound; an associated result must not
+be used to guess its inputs.
+
+Seven production files change:
+
+- `dev/src/sema/opaque.rs` adds an ephemeral `InferredCaptures` result, not a
+  persistent field in the compiler's dense models.
+- `dev/src/sema/opaque/captures.rs` maps formal type/const/lifetime captures into
+  the owning inference graph. `opaque/refinement.rs` shares that mapping with
+  existing trait-result refinement and accounts the region-fold work.
+- `dev/src/sema/traits/results.rs` exposes the query helper;
+  `results/opaque_bounds.rs` reuses the existing indexed declaration templates.
+  A single compatible callable clause supplies input equations through the
+  existing Probe and scoped predicate relation. It reads no hidden representation
+  and caches no unresolved caller terms. The original selector still proves the
+  full trait, formation and lifetime requirements.
+- `dev/src/sema/traits/selection/search/callables.rs` invokes that contextual
+  refinement and reserves opened regions. `search/inputs.rs` attempts it for
+  opaque heads before projection readiness. Normalization/Unresolved from head
+  inspection must continue to the existing normalizer; propagating that error
+  was an early prototype regression and is fixed in the current files.
+
+Tests change in `dev/tests/source_closures/parameter_projections.rs` and
+`dev/tests/callback_provider.rs`; existing integration roots stay registered.
+The shared exported-callback helper also serves the old match packet.
+
+The managed WIP CLI is `obj/rust/dev-fast/rustgm`, SHA
+`a08ab1a46475334d493514fa30ce2d2717f8c8aa6a382638f0239ce68221499b`.
+It is **not an immutable pin**. There are still3907 development Rust files.
+No backend, storage.py, resource-policy, original-input, configuration-pin or
+compiler-limit change is part of this WIP.
+
+## Qualified evidence and explicit pending contracts
+
+All52 independently frozen Rust1.98 outcomes precede their candidate checks:
+36 accept/16 reject, split PA24ordinary27 and PA31actual-source25. **46 complete
+API outcomes qualify**:32 body/rule cases,12 width/noise cases and two real native
+exports. Six whole contracts remain required, with their original outcomes:
+
+- Ordinary and source implicit enclosing-return-opaque input context: one valid
+  borrowed-return proxy and one escaping-borrow rejection per owner. The earlier
+  unresolved-input error is not qualified as the intended lifetime rejection.
+  The explicit borrowed-return twin passes; the explicit escaping twin rejects
+  with an actual hidden-lifetime error.
+- Two ordinary native inputs using nominal or `Self::Item` impl where-clauses
+  stop at the existing callable-output conformance gate before the helper call.
+  Both are independently valid and remain serialized positive requirements.
+  The ordinary executable used for current qualification instead has a real
+  provided fold body that executes one take and one callback. The source native
+  input retains the original method implementation.
+
+Owning packets: `pa24/tests/spec/flatten-helper-inputs/` and the PA31 counterpart.
+Each has manifest, independent results, pending contracts and README. Ordinary
+pending inputs are serialized where necessary to keep them out of active course
+inventory; source files remain declared in the planned PA31 packet. No unsupported
+positive is reclassified as a language rejection and no assignment is activated.
+
+Latest exact fastcheck receipt `1794463509909508691` **passes3 tests/3 targets in
+75.80s**, including32 complete rule cases, both real exported-call lowerings and
+six existing RPIT identity/lifetime controls. Full formatting, architecture and
+strict selected production/CLI/test Clippy pass. The earlier receipt
+`1794461596019812828` passed the two complete rule/scaling groups and old match
+lowerings, but was overall failed on the original ordinary native conformance
+form; do not describe that earlier receipt as passed.
+
+Closing review `obj/parallel/flatten-helper-inputs/handoff-review/receipt.json`
+passes both exact ignored native groups (four actual programs,0.557s). New ordinary
+and source programs print `flatten-helper 7 9 1234`, matching independent Rust/C:
+Left and Right share Bucket as their associated result but perform their distinct
+conversions and callbacks. Old ordinary/source match programs still print
+`match-capture 7 9 12314`. Twelve work observations also pass in6.458s:
+
+| Owner | Width8: inference/traits/canonical | Width32 | Width128 |
+| --- | --- | --- | --- |
+| PA24 | 23636/90/4302 | 90894/354/16902 | 359912/1410/67302 |
+| PA31 | 33799/289/11611 | 128153/1129/41971 | 505555/4489/163411 |
+
+Adding128 unrelated types changes no counter. These bounds make no optimized or
+whole-core speed claim. Cleanup receipt is1794463736369907909. Earlier failed
+compile/lint/prototype attempts and all original hypotheses remain in raw evidence;
+the passing receipts, not those attempts, qualify the current implementation.
+
+## Work still needed before integrating this WIP
+
+1. Inspect B's Git state and `handoff-state.json`; preserve the existing changes.
+   The compiler and fixtures have not been committed or pushed.
+2. Qualify the23 new ordinary course cases through the actual CLI library path,
+   check their declared outcomes and successful stderr, and independently verify
+   all object classifications. The root PA24 manifest currently declares684 cases
+   (490accept/194reject), including16 accepted new cases and7 rejects. Fifteen
+   new positives declare empty library objects; one is the real exported native
+   program. **No new reference triples or reference batch have been generated.**
+   API/native success alone does not establish CLI metadata publication.
+3. Declare/review the new text contract before normal scoped oracle generation;
+   preserve all old reference hashes and input bytes. Check relevant old accepting
+   outputs because query interning/order and the shared opaque refinement changed.
+   Never hand-edit references or bless an unsupported positive. The standard native
+   checker expects warning sidecars: before first generation, use declared-warning
+   checks and independent object checks, then normal generation and review.
+4. Run the fixture-owning upstream/harness checks. Existing source formatting and
+   selected strict Clippy already pass; repeat only checks invalidated by new work.
+   No broad local private/release/all-target/native sweep is authorized per edit.
+5. Once a coherent source checkpoint is committed, freeze the exact candidate,
+   bind all3907 Rust hashes/empty patch, and compare immutable accepting controls
+   with frozen inputs, A/A calibration and paired ABBA under exclusive admission.
+   Use fully qualified623 as the available baseline. Retain honest counter/noise
+   observations; this WIP has no immutable timing comparison yet.
+6. Run a **new unchanged120s** original observer on that genuinely changed frozen
+   candidate and perform the usual722/375/six/source/profile/limit postcheck and
+   reached-body regression comparison. Reuse the pinned archive/manifest below;
+   do not extend the deadline or rerun merely for a longer prefix. Until then,
+   the verified original frontier remains iter_fold.
+7. Publish only relevant qualified work. Full43157950706 passed source08794;
+   it does not qualify this new compiler. A full successor is due after the new
+   implementation publishes and a fresh no-active-full check. Do not dispatch or
+   restart a full workflow for this handoff-only documentation.
+
+Original archive:
+`/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea`.
+Manifest in B: `obj/parallel/census-progress/original-manifest.json`.
+Prior observer/postcheck/compare scripts in `obj/parallel/filter-map-captures/`
+are templates, not ready-made WIP observations; change their candidate bindings
+and output root deliberately. All older PA20/25/26/30/31 artifact, import, depth,
+coercion, const, cleanup and optimized-proof requirements below remain required.
+
+## Resource and artifact state
+
+No local compiler/test/resource job is active at this handoff. `make tidy` completed.
+Current controller:2 shared jobs,150GiB reserve,16GiB output ceiling per run,
+CPU800%,12GiB RAM,256 tasks; Cargo/test threads2. Check free space again before
+resuming. Keep builds, logs, inputs and measurements in obj. Use `make fastcheck`
+with exact selections; direct commands need the storage/resource wrappers. The
+five-minute feedback budget includes admission. Preserve the warm dev-fast cache;
+use the existing package environment/incremental settings when freezing a CLI.
+Do not lower the reserve or duplicate strict Clippy with cargo check.
+
+Current immutable623 is retained. Historical5d was retired **after** full431579
+passed, cleanup1794464101014086908;67/6c were retired after publication/comparison,
+cleanup1794459354367224635; e8 retired under1794457333921746162. Their raw evidence
+and producers remain, but their executables are absent. Earlier81 and other retired
+binaries also remain unavailable. Never treat a pruned path as available for a new
+run. Preserve the older optimized21f requirement/pin from the historical work; its
+exact executable path was not reverified here and must be located/hash-checked before
+new optimized measurements. Do not remove pins protecting source/encoded inputs.
+
+Journal: `/mnt/vizier/rustgm-scratch/integrator-20261109/pending_decisions.md`.
+The B-local handoff-state/patch and current passing receipts are the restart anchors.
+
+## Historical checkpoints and retained requirements
+
+The following entries preserve history and outstanding contracts. Their older
+“current”, “next”, active-goal, CI-status and binary-availability wording is
+superseded by the current handoff above.
 
 ## Current checkpoint — computed match captures locally qualified
 
