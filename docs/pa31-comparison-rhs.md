@@ -174,5 +174,12 @@ The first exploratory pin, wip1 (a150d249), found the stale per-body table (see
 verified from `/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae...`
 into `obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea`.
 
-Not yet run: a clean candidate pin from the committed tree, and its
-observation. Exploratory observations are not candidate evidence.
+Clean candidate pin `obj/parallel/pointer-rhs/candidate-dev-fast` was built
+from the committed tree (4af504787, empty patch) and is byte-identical to wip2
+(00a18645). Its unchanged 120s observation ran exclusively at load 7. It
+makes 15,493 attempts, reaches item 10742 and records 14 failures. It clears
+7571, with no new failure in a previously passing reached body. Its first
+failure is the same `bidirectional_merge` 7581. Its three further records,
+beyond wip2's reach, are `core_arch` `_mm256_stream_*` bodies ("assembly
+register class is not implemented for this target"). This candidate also
+covers f2cb90629 and 25edf3f42, so their earlier pins are retired.

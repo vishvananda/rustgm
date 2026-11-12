@@ -170,8 +170,10 @@ the passing receipts, not those attempts, qualify the current implementation.
     the manifest.
   - f2cb90629 grew `Declarations` to 7,200 bytes. The separate commit boxing the
     smart receiver name set restores 7,168.
-  - The clean pins for this and the previous two commits, and the pending
-    measurements, are not run.
+  - Clean candidate `obj/parallel/pointer-rhs/candidate-dev-fast` (4af504787,
+    00a18645) is observed at load 7 with the same first failure. It covers the
+    previous two commits, whose pins are retired. The pending let-condition and
+    premise-input measurements are still not run.
 
 **2026-11-12 pinned method call update (supersedes the blocks below):**
 
