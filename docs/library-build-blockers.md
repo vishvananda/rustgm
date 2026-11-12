@@ -1,5 +1,22 @@
 # Library build blocker tracker
 
+The [abstract callable input checkpoint](pa24-abstract-callable-inputs.md) lets
+a function item whose inputs are inferred only through a callable bound meet an
+abstract projection input such as `Self::Item`. Core's `max`, `min`,
+`max_by_key` and `min_by_key` pass `Ord::cmp` or a local `compare` to `max_by`'s
+`FnMut(&Self::Item, &Self::Item)` bound. Signature matching blocked on identical
+projections, then required the complete input tuples, including the item's
+fresh signature regions, to be identical. Nine graded PA24 outcomes, eleven
+source-core reductions and use-linear work qualify the fix.
+
+Exploratory pin ead8009c clears all four, with no new reached failure. The
+unchanged 120s observer ends at 121.155s with 22 records, 14,277 attempts and
+last item 8794, str/pattern.rs:501. The first remaining failure is
+read_radix_max_digits at net/parser.rs:117 ("this typed capture use is not
+implemented"), then `Pin`'s `PartialEq`/`PartialOrd` forwarding bodies at
+pin.rs:1108 ("associated type projection requires normalization"). The clean
+pin and its observation are pending. No core artifact exists.
+
 The [conditional const item checkpoint](pa25-conditional-const-items.md) lets
 a conditional const fn item, or a const trait member's item, meet a `[const]`
 callable bound through its substituted const conditions: the item's `[const]`

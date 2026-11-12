@@ -149,6 +149,26 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-12 abstract callable input update (supersedes the blocks below):**
+
+- The max/min/max_by_key/min_by_key blocker is fixed
+  ([evidence](docs/pa24-abstract-callable-inputs.md)). Callable signature
+  matching now checks identity for each blocked projection comparison, so a
+  function item such as `Ord::cmp` meets an `I::Item` reference input.
+  - Nine graded PA24 cases are in `pa24/tests/spec/abstract-callable-inputs`
+    (batch `1794492319042947748-d8bde8227435`), with eleven source-core
+    reductions in `pa31/tests/spec/abstract-callable-inputs`. The history is in
+    `obj/parallel/max-items/core/declared.json`, and diagnostic probes are in
+    `obj/parallel/max-items/probes/`.
+  - Exploratory pin `obj/parallel/max-items/wip2-dev-fast` (ead8009c) clears all
+    four. The next first failure is read_radix_max_digits (typed capture use),
+    then Pin's PartialEq/PartialOrd forwarding (projection normalization).
+- Full CI 43228587411 on 31466e311 failed two tests that still asserted the
+  removed scoped-continuation fence. 700c969fb updates them (see
+  docs/pa25-conditional-const-items.md). A new full CI run is needed.
+- Clean pin `obj/parallel/item-conditions/candidate-dev-fast` (716cbe11) remains
+  the comparison baseline until this checkpoint's clean pin passes.
+
 **2026-11-12 conditional const item update (supersedes the blocks below):**
 
 - The last 5713 blocker and nine other scoped-continuation bodies are fixed

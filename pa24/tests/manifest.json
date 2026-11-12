@@ -13526,6 +13526,187 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/abstract-callable-inputs/generic-item.rs",
+      "source_sha256": "14e3b5acea4562a0df46e7d5605e225d0523325c062119ccc8e29429cadca052",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/abstract_callable_inputs.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/abstract-callable-inputs/unbounded-item.rs",
+      "source_sha256": "61d8aeb18475aaa457880515a2d5a19e7c44976e66b2fa21a3cb73ea92e969c4",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/abstract_callable_inputs.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/abstract-callable-inputs/two-reference-item.rs",
+      "source_sha256": "ac428429f5ea260a6d1dc43bf9937d131546824251c02e8819b6b4bfe22b16cc",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/abstract_callable_inputs.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/abstract-callable-inputs/trait-member-item.rs",
+      "source_sha256": "eaaebec10fafbbd1bf3a6109fe67cd37f053655ea0479de967004e9dbc7b117b",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/abstract_callable_inputs.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/abstract-callable-inputs/default-method-item.rs",
+      "source_sha256": "63f41f98108589acccbcf197ab10456855f3cec66dda50ab6f1cadf6b9b9c53c",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/abstract_callable_inputs.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/abstract-callable-inputs/ord-cmp.rs",
+      "source_sha256": "2354741fb6ff632da74d5cff771195a076f702075f0e47c52455b5867a440ad4",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/abstract_callable_inputs.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/abstract-callable-inputs/parameter-item.rs",
+      "source_sha256": "7866198d9b4ec0ce0cbe0c0f3b5e8e3a72756fb147c248067ce21bf508aea2bf",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/abstract_callable_inputs.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/abstract-callable-inputs/mismatch.rs",
+      "source_sha256": "b151b80a93afad2955395555244466f834e60dcfed7a19a5ce2d57b4d2912c0d",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/abstract_callable_inputs.rs"
+    },
+    {
+      "path": "tests/spec/abstract-callable-inputs/distinct.rs",
+      "source_sha256": "f3430a4edbf87e88c5d89efcc99a7f6f2fb92264e0098117e483c7e53db69610",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa24.closures",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/abstract_callable_inputs.rs"
     }
   ]
 }

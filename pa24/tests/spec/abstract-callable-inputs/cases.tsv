@@ -1,0 +1,9 @@
+pa24/tests/spec/abstract-callable-inputs/generic-item.rs	0
+pa24/tests/spec/abstract-callable-inputs/unbounded-item.rs	0
+pa24/tests/spec/abstract-callable-inputs/two-reference-item.rs	0
+pa24/tests/spec/abstract-callable-inputs/trait-member-item.rs	0
+pa24/tests/spec/abstract-callable-inputs/default-method-item.rs	0
+pa24/tests/spec/abstract-callable-inputs/ord-cmp.rs	0
+pa24/tests/spec/abstract-callable-inputs/parameter-item.rs	0
+pa24/tests/spec/abstract-callable-inputs/mismatch.rs	1
+pa24/tests/spec/abstract-callable-inputs/distinct.rs	1

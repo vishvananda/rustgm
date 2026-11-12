@@ -173,3 +173,8 @@ The [rigid candidate header checkpoint](../docs/pa20-rigid-candidate-headers.md)
 adds one reviewed executable closure outcome: a callback over a projected item
 whose trait obligation refutes a blanket header that would need a rigid alias to
 equal a parameter.
+
+The [abstract callable input checkpoint](../docs/pa24-abstract-callable-inputs.md)
+adds nine reviewed ordinary outcomes. Seven executable positives pass a function
+item, such as a trait member path or `Ord::cmp`, for an `I::Item` callable input.
+A concrete item and one item for two projections reject.

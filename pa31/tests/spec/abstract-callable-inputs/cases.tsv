@@ -1,0 +1,11 @@
+pa31/tests/spec/abstract-callable-inputs/max.rs	0
+pa31/tests/spec/abstract-callable-inputs/max-call.rs	0
+pa31/tests/spec/abstract-callable-inputs/max-by-key.rs	0
+pa31/tests/spec/abstract-callable-inputs/projection-item.rs	0
+pa31/tests/spec/abstract-callable-inputs/generic-item.rs	0
+pa31/tests/spec/abstract-callable-inputs/unbounded-item.rs	0
+pa31/tests/spec/abstract-callable-inputs/parameter-item.rs	0
+pa31/tests/spec/abstract-callable-inputs/qualified-item.rs	0
+pa31/tests/spec/abstract-callable-inputs/max-missing.rs	1
+pa31/tests/spec/abstract-callable-inputs/projection-mismatch.rs	1
+pa31/tests/spec/abstract-callable-inputs/projection-distinct.rs	1

@@ -134,6 +134,16 @@ core bodies; the first remaining failure is iterator `max`. Clean pin 716cbe11
 (source be48c2501) confirms this with 32 records, and its measurement supports
 no speed claim either way.
 
+The [abstract callable input checkpoint](docs/pa24-abstract-callable-inputs.md)
+lets a function item whose inputs are inferred only through a callable bound
+meet an abstract projection input such as `I::Item`. It checks identity for each
+blocked projection comparison, not for the complete input tuple, as core's
+`max` needs when it passes `Ord::cmp`. Nine graded PA24 outcomes and eleven
+source-core reductions agree with rustc. An exploratory observation clears
+`max`, `min`, `max_by_key` and `min_by_key`; the first remaining failure is
+`read_radix_max_digits`. The clean pin, its observation and measurement are
+pending.
+
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage
 limit controls, pass text, independent Rust and native checks with frozen a08ab1a4.

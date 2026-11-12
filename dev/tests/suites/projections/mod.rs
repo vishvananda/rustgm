@@ -1,4 +1,6 @@
 //! Maintainer integration suites for projections.
+#[path = "../../abstract_callable_inputs.rs"]
+mod abstract_callable_inputs;
 #[path = "../../associated_declarations.rs"]
 mod associated_declarations;
 #[path = "../../associated_resolution.rs"]

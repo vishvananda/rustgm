@@ -1,0 +1,74 @@
+{
+ "schema": 1,
+ "declared": "2026-11-12, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run (obj/parallel/max-items/core/declared.json, batch 1). The prefix is the default-const-closures count.rs prefix, with a reduced Ordering, Ord and Iterator added per case.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "cases": {
+  "max.rs": {
+   "sha256": "e18ddf66c6cab0a1165a5b4ec83585e3ace68f8b90b70ccd5ce2e001cc855310",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "max"
+  },
+  "max-call.rs": {
+   "sha256": "1678a540e040a0c32e72015a9aadaf1529ecf04e47f49d62296abce80b4f6c7a",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "max-call"
+  },
+  "max-by-key.rs": {
+   "sha256": "b69f25270fc14284986e3e32d726da5224c99f4ba4949b32e3574fd9196de1b9",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "max-by-key"
+  },
+  "projection-item.rs": {
+   "sha256": "6641325345a74eeaa8b3f6166ffc7198c7bfd96a2beefe831c21c469cbb8c0b2",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "projection-item"
+  },
+  "generic-item.rs": {
+   "sha256": "ea9445d260e423b84463d97beb328fedd8d7955efab821870f25061c3e1a077e",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "generic-item"
+  },
+  "unbounded-item.rs": {
+   "sha256": "c5332c0c0d4c08cb3da6537442a11a4ce6718483a905104db46d66f1682a0018",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "unbounded-item"
+  },
+  "parameter-item.rs": {
+   "sha256": "a184a395efc08f5f09104b67df77b849a5bd2b468a2b0d2420f25c5514ccf193",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "parameter-item"
+  },
+  "qualified-item.rs": {
+   "sha256": "cd4b8c2797ba286759b7cae9c7f7650bd5fb50c8fa41349dbf351199ff4b23ee",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "qualified-item"
+  },
+  "max-missing.rs": {
+   "sha256": "2402ccdf7b475e0df85d81614655f45809bfb8546ebe319236878d815d4adb7f",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "max-missing"
+  },
+  "projection-mismatch.rs": {
+   "sha256": "fa0c1295b9f53d34a3c6cf018bd4395d4650e1236dc2400a808e78a39522d3ba",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "projection-mismatch"
+  },
+  "projection-distinct.rs": {
+   "sha256": "0d8182a8fa75acec2152b88dc7ada51ee72256e0326527f23119dbbc7d35766b",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "projection-distinct"
+  }
+ }
+}

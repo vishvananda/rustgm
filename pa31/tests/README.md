@@ -961,3 +961,12 @@ positives (a nested conditional fn, `T::default`, `Deref::deref` and a const
 impl member) and an unconditional control accept. Four items with an unmet
 condition reject (E0277). A maintainer integration test checks them through
 the CLI. There is no graded manifest.
+
+`spec/abstract-callable-inputs/` freezes eleven declared no_core reductions of
+core's `Iterator::max` and `max_by_key`. A function item whose inputs are
+inferred only through a callable bound must meet an abstract projection input
+such as `Self::Item`. Six positives (`Ord::cmp`, core's local `compare` through
+`Map`, and generic local items) and two controls accept. A missing `Ord` bound
+rejects (E0277), and a concrete item or one item for two projections rejects
+(E0631). A maintainer integration test checks them through the CLI. There is no
+graded manifest.

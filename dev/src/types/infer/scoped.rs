@@ -42,21 +42,25 @@ impl Context {
     }
 
     /// Progress independent callable input equations past normalization waits.
-    /// A pending projection still returns `Error::Normalization`; it grants no
-    /// inverse input equation or proof of the blocked result's equality.
+    /// Equal complete applications are congruent, so a blocked pair whose sides
+    /// resolve to one type needs no normal form. Any other pending projection
+    /// still returns `Error::Normalization`; it grants no inverse input equation
+    /// or proof of the blocked result's equality.
     pub(crate) fn equate_scoped_inputs(
         &mut self,
-        store: &Store,
+        store: &mut Store,
         left: TermId,
         right: TermId,
     ) -> Result<(), Error> {
         let mut blocked = Vec::new();
         self.equate_scoped_graph(store, left, right, &[], Some(&mut blocked))?;
-        if blocked.is_empty() {
-            Ok(())
-        } else {
-            Err(Error::Normalization)
+        self.account_work(blocked.len())?;
+        for (left, right) in blocked {
+            if self.resolved(store, left)? != self.resolved(store, right)? {
+                return Err(Error::Normalization);
+            }
         }
+        Ok(())
     }
 
     pub(super) fn equate_scoped_inside(

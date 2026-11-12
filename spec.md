@@ -5734,6 +5734,14 @@ once and prove every new occurrence. Already resolved projected inputs normalize
 before this inference. Committing a selected function item may use those independent
 equations, then requires exact complete canonical identity for any blocked result.
 
+Check that identity for each blocked comparison, not for the complete input
+tuple. A function item's late-bound inputs take fresh signature regions, so
+`&'r S` and the bound's `&'a I::Item` differ as complete types even when their
+blocked projections are identical. The independent region equations remain the
+caller's lifetime obligations, and any other blocked comparison still waits.
+Controls are in the
+[abstract callable input checkpoint](docs/pa24-abstract-callable-inputs.md).
+
 Closure capture collection visits a try block's body as a value use: its
 from_output operation consumes the tail even when the completed result is
 subsequently discarded by a wildcard. Reuse the ordinary iterative use walker;
