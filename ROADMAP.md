@@ -141,8 +141,8 @@ blocked projection comparison, not for the complete input tuple, as core's
 `max` needs when it passes `Ord::cmp`. Nine graded PA24 outcomes and eleven
 source-core reductions agree with rustc. An exploratory observation clears
 `max`, `min`, `max_by_key` and `min_by_key`; the first remaining failure is
-`read_radix_max_digits`. The clean pin, its observation and measurement are
-pending.
+`read_radix_max_digits`. Clean pin ead8009c (source a7ce2784a) confirms this
+with 20 records, and its measurement supports no speed claim either way.
 
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage

@@ -157,8 +157,33 @@ net/parser.rs:117 ("this typed capture use is not implemented"). Next come
 pin.rs:1108, which stop at "associated type projection requires
 normalization".
 
-A clean pin, its unchanged observation with the postcheck, and measurement
-follow publication.
+**Clean pin.** Pin ead8009c is built from clean source a7ce2784a, with 3915
+Rust hashes and an empty patch (`obj/parallel/max-items/candidate-dev-fast`).
+Only test and documentation files changed after the exploratory build, so it is
+byte-identical to wip2. Its unchanged observation ends at its deadline after
+121.104s, with 20 partial records and 14,011 attempts. The last item is 8344,
+slice/mod.rs:2768. External load stayed near a load average of 22–27. Against
+clean 716cbe11 it clears the four bodies above, with no new failure among
+previously passing reached bodies, and the first remaining failure is
+`read_radix_max_digits` 6024. The postcheck verifies all 722 source hashes, 375
+opens, six configuration bindings, unchanged immutable bindings and the 3915
+head blobs. The progress SHA is
+`5612831617c31158a5bbe531c5ad63b6b8d613bb2ff417279eeac52a1988ab91`.
+
+**Measurement.** Ninety exclusive A/A plus ABBA accepting observations against
+716cbe11 preserve complete outputs. The controls are the previous checkpoint's
+seven, plus `parameter-item` from each new packet. Paired wall ratios are
+1.011/1.075/0.962/0.990/1.002/1.071/1.021/1.061/0.997, against A/A
+0.843/1.138/1.050/0.922/0.857/1.011/0.948/0.887/1.025, at 11–810 ms.
+
+User-space instruction counts (`instructions.txt`, three runs per pin) differ
+by −0.007% for `trait-blanket` and +0.004% for the PA24 `parameter-item`. Both
+use callable signature matching. `count-plain` runs 0.11% fewer instructions.
+The two earlier attempts stopped at the script's frozen-input assertions before
+timing anything: both new controls are named `parameter-item.rs`, in
+same-named PA24 and PA31 directories (`measure-aborted-1`, `measure-aborted-2`).
+No optimized, neutrality or original-core speed is claimed; the bounded-work
+test above qualifies the work.
 
 Partial counts make no throughput claim, and this is neither a complete census
 nor a core artifact.

@@ -166,8 +166,11 @@ the passing receipts, not those attempts, qualify the current implementation.
 - Full CI 43228587411 on 31466e311 failed two tests that still asserted the
   removed scoped-continuation fence. 700c969fb updates them (see
   docs/pa25-conditional-const-items.md). A new full CI run is needed.
-- Clean pin `obj/parallel/item-conditions/candidate-dev-fast` (716cbe11) remains
-  the comparison baseline until this checkpoint's clean pin passes.
+- Clean pin `obj/parallel/max-items/candidate-dev-fast` (ead8009c, source
+  a7ce2784a) passed its observation (20 records), postcheck and measurement
+  against 716cbe11. It is the comparison baseline. The 716cbe11 pin and the
+  max-items wip1 and wip2 pins are retired; their evidence remains. Full CI
+  43239321921 was dispatched on a7ce2784a.
 
 **2026-11-12 conditional const item update (supersedes the blocks below):**
 

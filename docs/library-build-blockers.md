@@ -14,8 +14,11 @@ unchanged 120s observer ends at 121.155s with 22 records, 14,277 attempts and
 last item 8794, str/pattern.rs:501. The first remaining failure is
 read_radix_max_digits at net/parser.rs:117 ("this typed capture use is not
 implemented"), then `Pin`'s `PartialEq`/`PartialOrd` forwarding bodies at
-pin.rs:1108 ("associated type projection requires normalization"). The clean
-pin and its observation are pending. No core artifact exists.
+pin.rs:1108 ("associated type projection requires normalization"). Clean pin
+ead8009c (source a7ce2784a) confirms it: its unchanged observer ends at
+121.104s with 20 records, 14,011 attempts and last item 8344,
+slice/mod.rs:2768. Its measurement supports no speed claim either way;
+instruction counts match within 0.11%. No core artifact exists.
 
 The [conditional const item checkpoint](pa25-conditional-const-items.md) lets
 a conditional const fn item, or a const trait member's item, meet a `[const]`
