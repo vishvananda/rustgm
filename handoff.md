@@ -149,6 +149,19 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-12 array length pattern update (supersedes the blocks below):**
+
+- The `is_sorted_by` 8380 "array pattern requires a known fixed-array type"
+  failure has a typing fix ([evidence](docs/pa31-array-length-patterns.md)).
+  An array pattern without a rest fixes an inferred length.
+  - Thirteen reductions are in `pa31/tests/spec/array-length-patterns`. The
+    four declared batches, the diagnostics and the native probes are in
+    `obj/parallel/array-pattern/`.
+  - Recorded gap for the core build's later lowering stage: a closure passing
+    its callee-region parameter to a captured `FnMut(&'a T, &'a T)` fails the
+    lifetime proof (`d-ident`, also on the base). It is the next item.
+  - No core observation of this change has run yet.
+
 **2026-11-12 closure input region update (supersedes the blocks below):**
 
 - The `partial_compare` 7660 and `compare` 7676 "invalid inference identity"

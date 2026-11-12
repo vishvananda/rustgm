@@ -1,5 +1,16 @@
 # Library build blocker tracker
 
+The [array length pattern checkpoint](pa31-array-length-patterns.md) fixes
+"array pattern requires a known fixed-array type" in core's `is_sorted_by` 8380
+(`slice/mod.rs:4782`). Its closure `|[a, b]| compare(a, b)` is the only thing
+that fixes `array_windows`'s `N`. As in rustc's `check_array_pat_len`, an array
+pattern without a rest now equates an inferred length with its element count.
+Thirteen source-core reductions, four native programs and call-linear work
+qualify the fix. A recorded gap remains for the later core build: a closure
+body passing a parameter whose region comes from the callee to a captured
+`FnMut(&'a T, &'a T)` fails prepared lowering ("required lifetime does not
+outlive its target"). The base fails the same way without an array pattern.
+
 The [closure input region checkpoint](pa31-closure-input-regions.md) fixes the
 "invalid inference identity" in core's `partial_compare` 7660 and `compare`
 7676 (`slice/cmp.rs:184`, `:287`). Their closures have no expected signature,

@@ -1,0 +1,150 @@
+{
+ "schema": 1,
+ "declared": "2026-11-12, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run of each file (obj/parallel/array-pattern/core/declared.json, batches 1-4; batch 4 is diagnostic and not graded). Each case's first line records its prefix.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "base": "clean candidate dbeadba6 (e3af1168c)",
+ "declaration_agreement": "13/13 graded declarations agree with rustc, as do the batch 3 and 4 diagnostics.",
+ "rule": "rustc check_array_pat_len: an array pattern without a rest equates an array whose length is an inference variable with [T; elements]; with a rest it reports E0730",
+ "cases": {
+  "infer-len.rs": {
+   "sha256": "ee6e306be909256ea88f76a4d0f038a727ef7b8a9bee75570be015405892ee16",
+   "probe": "infer-len",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "call(|[a, b]| *b): the closure pattern fixes N = 2",
+   "batch": 1,
+   "rustgm_base_dbeadba6": "reject: array pattern requires a known fixed-array type",
+   "rustgm": "accept at typing and prepared lowering"
+  },
+  "core-form.rs": {
+   "sha256": "3665951bab640dc062a28824070bf0b46de939990bb9324ea2e42af0f461225c",
+   "probe": "core-form",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "core form: array_windows(v).all(|[a, b]| compare(a, b)) with Windows<'a, T, N>",
+   "batch": 1,
+   "rustgm_base_dbeadba6": "reject: array pattern requires a known fixed-array type",
+   "rustgm": "accept at typing; prepared lowering: required lifetime does not outlive its target"
+  },
+  "core-form-known.rs": {
+   "sha256": "18bd9f4b64157ddce8a6e2c9a4f82c1864e3c79df9d5f2eb109572261de68bf9",
+   "probe": "core-form-known",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "control: core form with array_windows::<T, 2>, so the length is known before the closure",
+   "batch": 3,
+   "rustgm_base_dbeadba6": "accept at typing; prepared lowering: required lifetime does not outlive its target",
+   "rustgm": "accept at typing; prepared lowering: required lifetime does not outlive its target"
+  },
+  "by-value.rs": {
+   "sha256": "70cbbcd8c2e107cff89cf185f577be83db2ee51793bdb3e0084cd765942759bb",
+   "probe": "by-value",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "call2(|[a, b, c]| c) with FnMut([u8; N]): the length is 3",
+   "batch": 1,
+   "rustgm_base_dbeadba6": "reject: array pattern requires a known fixed-array type",
+   "rustgm": "accept at typing and prepared lowering"
+  },
+  "let-infer.rs": {
+   "sha256": "ed548b4681edd530c77224777911bf115b2c0fe3f5400596874e5ee0fc614e52",
+   "probe": "let-infer",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "let [a, b] = make() with make<const N>() -> [u8; N]: the pattern fixes N = 2",
+   "batch": 2,
+   "rustgm_base_dbeadba6": "reject: array pattern requires a known fixed-array type",
+   "rustgm": "accept at typing and prepared lowering"
+  },
+  "ref-pattern.rs": {
+   "sha256": "e2bac105844bcb0c92920be646f972492ccea1765d0526d57fcf5dcebf36195a",
+   "probe": "ref-pattern",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "call(|&[a, b]| b): a reference pattern around the array pattern fixes N = 2",
+   "batch": 2,
+   "rustgm_base_dbeadba6": "reject: array pattern requires a known fixed-array type",
+   "rustgm": "accept at typing and prepared lowering"
+  },
+  "nested-infer.rs": {
+   "sha256": "82aaf9f86e05dd721979a57a63fe6ee9bd159e82c6f041e9aff820c99c585303",
+   "probe": "nested-infer",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "call3(|[[a, b], [c, d]]| *d): both inferred lengths become 2",
+   "batch": 2,
+   "rustgm_base_dbeadba6": "reject: array pattern requires a known fixed-array type",
+   "rustgm": "accept at typing and prepared lowering"
+  },
+  "rest-known.rs": {
+   "sha256": "2ad984d39dce81ece07f1b38c382a465e363fe754379f19fbd2e613a8f25ec99",
+   "probe": "rest-known",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "control: call::<3, _>(|[a, ..]| *a) has a known length, so a rest is allowed",
+   "batch": 2,
+   "rustgm_base_dbeadba6": "accept at typing",
+   "rustgm": "accept at typing and prepared lowering"
+  },
+  "let-ergonomic.rs": {
+   "sha256": "2d0efb51bc9c0322ea6d608993a63bbad09abf64f22300b4189b7a7c43f8fd3d",
+   "probe": "let-ergonomic",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "control without a closure: let [a, b] = w with w: &'a [T; 2] binds a, b: &'a T by default binding mode",
+   "batch": 3,
+   "rustgm_base_dbeadba6": "accept at typing and prepared lowering",
+   "rustgm": "accept at typing and prepared lowering"
+  },
+  "rest-unknown.rs": {
+   "sha256": "2d354b293dd4ff5496d77fdc43625551c3cde15abd5d46629b1679d950563880",
+   "probe": "rest-unknown",
+   "declared": 1,
+   "rustc": "reject E0730",
+   "form": "E0730 expected: call(|[a, ..]| *a); a rest pattern cannot fix the length",
+   "batch": 1,
+   "rustgm_base_dbeadba6": "reject: array pattern requires a known fixed-array type",
+   "rustgm": "reject: array pattern requires a known fixed-array type"
+  },
+  "known-mismatch.rs": {
+   "sha256": "bda0f3ac4c1fb1242149c49f42872707ecdbbbb0d7071936e55a99d2fbbf49de",
+   "probe": "known-mismatch",
+   "declared": 1,
+   "rustc": "reject E0527",
+   "form": "E0527 expected: call::<3, _>(|[a, b]| *b); the pattern has 2 elements and the array 3",
+   "batch": 1,
+   "rustgm_base_dbeadba6": "reject: array pattern length disagrees with its type",
+   "rustgm": "reject: array pattern length disagrees with its type"
+  },
+  "match-two-lengths.rs": {
+   "sha256": "2738ff1daca3c2b3160123f9ca9451abda4474f52f3dd98a2ae62feb61269149",
+   "probe": "match-two-lengths",
+   "declared": 1,
+   "rustc": "reject E0527",
+   "form": "E0527 expected: the first arm fixes N = 2, so the second arm's three elements disagree",
+   "batch": 2,
+   "rustgm_base_dbeadba6": "reject: array pattern requires a known fixed-array type",
+   "rustgm": "reject: array pattern length disagrees with its type"
+  },
+  "generic-len.rs": {
+   "sha256": "323d21698952430ba82314f2b1e4805f70409b91ed1bdf800a964837eb9d2e0e",
+   "probe": "generic-len",
+   "declared": 1,
+   "rustc": "reject E0308",
+   "form": "E0308 expected: a const parameter length is not an inference variable, so [u8; 2] does not equal [u8; N]",
+   "batch": 2,
+   "rustgm_base_dbeadba6": "reject: array pattern requires a known fixed-array type",
+   "rustgm": "reject: array pattern requires a known fixed-array type"
+  }
+ },
+ "lowering_gaps": "core-form and core-form-known type and stop in prepared lowering with required lifetime does not outlive its target, with an inferred or a known length. The closure's parameter region comes from the callee's instantiated lifetime, and its body passes the parameter to a captured FnMut(&'a T, &'a T). The base dbeadba6 and 22902d20 fail the same way without any array pattern (d-ident), and a function item instead of the captured FnMut lowers (d-ident-fn).",
+ "not_graded": {
+  "closure-ergonomic": "a known-length closure take(w, |[a, b]| compare(a, b)): rustc accepts; types, lowering lifetime gap as core-form-known",
+  "d-tuple": "a tuple pattern in the closure parameter: rustc accepts; types, same lowering lifetime gap",
+  "d-ident": "take1(x, |a| compare(a, a)) without a pattern: rustc accepts; types, same lowering lifetime gap on dbeadba6, 22902d20 and wip1",
+  "d-ident-fn": "as d-ident with a function item cmp: rustc accepts; types and lowers",
+  "d-let-in-closure": "let [a, b] = p inside the closure body: rustc accepts; typing stops at compound capture patterns are not implemented",
+  "diagnostic lowering": "obj/parallel/array-pattern/diag copies append fn main() {} so the CLI's LowIR path runs prepared lowering"
+ }
+}

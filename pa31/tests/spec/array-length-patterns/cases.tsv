@@ -1,0 +1,13 @@
+pa31/tests/spec/array-length-patterns/infer-len.rs	0
+pa31/tests/spec/array-length-patterns/core-form.rs	0
+pa31/tests/spec/array-length-patterns/core-form-known.rs	0
+pa31/tests/spec/array-length-patterns/by-value.rs	0
+pa31/tests/spec/array-length-patterns/let-infer.rs	0
+pa31/tests/spec/array-length-patterns/ref-pattern.rs	0
+pa31/tests/spec/array-length-patterns/nested-infer.rs	0
+pa31/tests/spec/array-length-patterns/rest-known.rs	0
+pa31/tests/spec/array-length-patterns/let-ergonomic.rs	0
+pa31/tests/spec/array-length-patterns/rest-unknown.rs	1
+pa31/tests/spec/array-length-patterns/known-mismatch.rs	1
+pa31/tests/spec/array-length-patterns/match-two-lengths.rs	1
+pa31/tests/spec/array-length-patterns/generic-len.rs	1

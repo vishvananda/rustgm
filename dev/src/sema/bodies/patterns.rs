@@ -780,8 +780,21 @@ impl Checker<'_> {
         if self.head(node, term)? == Some(Constructor::Slice) {
             return self.slice_pattern(node, term, elements, rest, mode);
         }
-        let Some(Constructor::Array(length)) = self.head(node, term)? else {
-            return Err(self.error(node, "array pattern requires a known fixed-array type"));
+        let length = match self.head(node, term)? {
+            Some(Constructor::Array(length)) => length,
+            // rustc's `check_array_pat_len`: without a rest, the pattern's
+            // element count fixes an inferred array length.
+            Some(Constructor::ArrayInfer(_)) if rest.is_none() => {
+                let element = self.child(node, term, 0)?;
+                let array = self
+                    .state
+                    .infer
+                    .construct(Constructor::Array(explicit), &[element])
+                    .map_err(|e| self.error(node, e))?;
+                self.equate(node, term, array)?;
+                explicit
+            }
+            _ => return Err(self.error(node, "array pattern requires a known fixed-array type")),
         };
         if explicit > length || (rest.is_none() && explicit != length) {
             return Err(self.error(node, "array pattern length disagrees with its type"));

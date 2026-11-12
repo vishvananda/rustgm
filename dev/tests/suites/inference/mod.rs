@@ -1,6 +1,8 @@
 //! Maintainer integration suites for inference.
 #[path = "../../argument_inference.rs"]
 mod argument_inference;
+#[path = "../../array_length_patterns.rs"]
+mod array_length_patterns;
 #[path = "../../call_inference.rs"]
 mod call_inference;
 #[path = "../../constructor_inference.rs"]

@@ -1049,3 +1049,14 @@ accepts type and stop at existing const closure lowering gaps. A maintainer
 integration test checks them through the CLI and prepared lowering, and an
 ignored native test runs two ordinary-mode programs. There is no graded
 manifest.
+
+`spec/array-length-patterns/` freezes thirteen declared no_core reductions of
+core's `is_sorted_by`, whose `array_windows().all(|[a, b]| ...)` closure
+pattern fixes the window length. Closure, `let`, reference, by-value and nested
+patterns fix inferred lengths, and three known-length controls accept. Typing
+rejects a rest with an unknown length (E0730), a disagreeing known or
+first-arm length (E0527) and a const parameter length (E0308). Core's form and
+its known-length control type and stop at an existing closure lifetime gap in
+prepared lowering. A maintainer integration test checks them through the CLI
+and prepared lowering, and an ignored native test runs four ordinary-mode
+programs. There is no graded manifest.

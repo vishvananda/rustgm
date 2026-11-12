@@ -211,6 +211,12 @@ the enclosing body. Thirteen source-core reductions agree with rustc. Generic
 instantiation of such closures and two const closure lowering paths remain
 recorded gaps.
 
+The [array length pattern checkpoint](docs/pa31-array-length-patterns.md) lets
+an array pattern without a rest fix an inferred array length, as core's
+`is_sorted_by` closure `|[a, b]| compare(a, b)` fixes `array_windows`'s `N`.
+Thirteen source-core reductions agree with rustc. An existing closure lifetime
+gap stops prepared lowering of core's form and is recorded.
+
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage
 limit controls, pass text, independent Rust and native checks with frozen a08ab1a4.

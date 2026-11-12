@@ -1345,6 +1345,12 @@ an instantiated generic function fails closed until the port slots join the
 call binder that instantiation reconstructs. See the
 [closure input region checkpoint](docs/pa31-closure-input-regions.md).
 
+An array pattern without a rest fixes an array length that is still an
+inference variable, as rustc's `check_array_pat_len` does: the array equates
+with `[T; n]` for the pattern's `n` elements. A rest with an unknown length and
+a const parameter length fail closed. See the
+[array length pattern checkpoint](docs/pa31-array-length-patterns.md).
+
 The bounded sizing profile requires actual sizing identities, complete headers
 and deny-explicit-impl restrictions before retaining fundamental, specialization
 or coinductive markers; those markers grant no general implementation or cycle
