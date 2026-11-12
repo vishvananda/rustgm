@@ -105,10 +105,12 @@ file140:3018. Postcheck1794451995494437060 verifies722 original hashes,375 opens
 six configuration bindings, all3907 current/immutable Rust hashes and the unchanged
 profile/limits. ProgressSHA8bbdcf63f52c70ff87547e5a4b0c664d3319d71ab5658df44185134e2add06dc.
 The deadline remains an infrastructure failure. No original core, alloc or std
-artifact exists. Publish this checkpoint and start one full successor after a
-fresh active-full check; reduce the actual typed capture failure next. Keep
+artifact exists. Published8c231518e/sourcecf75. Full43145135573 is running on that exact head
+after a fresh no-active-full check; do not restart it for documentation descendants.
+Reduce the actual typed capture failure next. Keep
 stable5d until full qualification,6c for accepting comparisons and optimized21f
-for retained optimized work. Intermediate81 is absent.
+for retained optimized work. Intermediate81 is absent. Duplicate6c fixed-dev-fast was explicitly retired
+after publication; the identical test-fix-dev-fast baseline remains available.
 
 The [machine record](pa24-wrapped-callback-premises-evidence.json) binds raw
 observations under Bobj/parallel/by-ref-fold. All earlier pending requirements

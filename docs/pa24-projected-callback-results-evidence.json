@@ -7,7 +7,10 @@
     "tool_config_source_count": 51,
     "source_commit_binding": "d1980b3255cf607355b2a254dc83393463fb27b5",
     "immutable_binary": "B obj/parallel/array-chunks-next/fixed-dev-fast/rustgm",
-    "producer_json_sha256": "f4c46d9722d7d28d61576d0bcec5c0f89e65d1621ca183cd4e0c8c235e2c8c14"
+    "producer_json_sha256": "f4c46d9722d7d28d61576d0bcec5c0f89e65d1621ca183cd4e0c8c235e2c8c14",
+    "historical_fixed_executable_available": false,
+    "identical_accepting_baseline": "B obj/parallel/array-chunks-next/test-fix-dev-fast/rustgm",
+    "duplicate_retirement": "1794452534046951918 after successor8c231 publication; producer/raw retained"
   },
   "contracts": {
     "primary_total": 84,

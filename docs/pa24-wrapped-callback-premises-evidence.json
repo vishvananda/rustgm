@@ -349,7 +349,13 @@
     "repair": "four exact expected diagnostic changes; 22 declaration controls and2 public linking tests checked",
     "raw_log": "obj/parallel/array-chunks-next/full-ci-43138039057.log"
   },
-  "current_full_ci": "pending publication and fresh no-active-full check",
+  "current_full_ci": {
+    "run": 43145135573,
+    "head": "8c231518e8660384df66ff7495ea3c741b4bc331",
+    "semantic_source": "cf75c3f61e718dfcb0878f71a69577ecd7dbb0b5",
+    "state": "running; fast and lint/harness/host graph passed; release/course running",
+    "do_not_restart_for_documentation_descendants": true
+  },
   "original_core": {
     "result": {
       "infrastructure_failure": true,
@@ -642,5 +648,12 @@
     "candidate_sha256": "e8ca58dbc0bc0baab5dbf5c883dffd389d85a213f768445b6ff77d8e5747820f",
     "path": "obj/parallel/by-ref-fold/measure",
     "exclusive": true
+  },
+  "retired_duplicate_baseline": {
+    "path": "obj/parallel/array-chunks-next/fixed-dev-fast/rustgm",
+    "executable_absent": true,
+    "same_sha256_available_at": "obj/parallel/array-chunks-next/test-fix-dev-fast/rustgm",
+    "cleanup": "1794452534046951918",
+    "receipt": "obj/parallel/by-ref-fold/retired-duplicate.json"
   }
 }

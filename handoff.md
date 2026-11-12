@@ -46,8 +46,12 @@ reached6cbodies. Firstfilter_try_fold140:3088,line86, typedcaptureuseunsupported
 attemptedfn4600/body140:3018. Postcheck1794451995494437060 verifies722/375/six/
 3907/current+immutable/profile/limits. ProgressSHA8bbdcf63f52c70ff87547e5a4b0c664d3319d71ab5658df44185134e2add06dc.
 Partialcounts NOTthroughput/fullcensus. No core/alloc/stdartifact.
-NEXT: publish+ONEfullafterfreshnoactivefullcheck, thenreduceactualfilter typed
-capture, ordinaryPA24/sourcePA31. No timeout/limitextension. Keep5d fullqualifiedbaseline,6c accepting
+Published8c231518e/sourcecf75; FULL43145135573 runningEXACT8c231 afterfresh
+noactivefullcheck. Fast/lint/harness/hostgraphPASS; release/course running. Never
+restart for documentation descendants. Duplicatefixed6c executable retired
+1794452534046951918; identicaltest-fix6c baseline stillavailable, producer/rawkept.
+NEXT: reduce actualfilter typedcapture at try{acc}, ordinaryPA24/sourcePA31.
+Collector::visit lacks Kind::TryBlock {body,gate}. No timeout/limitextension. Keep5d fullqualifiedbaseline,6c accepting
 comparison andoptimized21f; intermediate81absent. Preserve every older requirement.
 Singleworker/no newtrees/no storage/backend/limits changes; goalACTIVE.
 

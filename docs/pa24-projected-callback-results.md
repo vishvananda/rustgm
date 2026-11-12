@@ -87,7 +87,9 @@ qualified foundations.
 ## Original core and publication
 
 Immutable CLI6c085307 at Bobj/parallel/array-chunks-next/fixed-dev-fast binds clean
-sourced1980b325, an empty tracked patch and3907 Rust hashes. Thirty exclusive
+sourced1980b325, an empty tracked patch and3907 Rust hashes. That historical
+fixed-dev-fast executable is retired; identical6c bytes remain available at
+Bobj/parallel/array-chunks-next/test-fix-dev-fast. Thirty exclusive
 A/A+twoABBA observations retain complete byte equality versus5d43 on ordinary
 import, an explicit projected-input constructor and actual priority LowIR. Paired
 wall ratios.998/.966/.960, CPU.993/.965/.961 and A/Awall.874/.914/.869 are retained;
