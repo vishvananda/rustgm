@@ -11,8 +11,10 @@ Exploratory pin aec1ea8c clears fold 5290, with no new reached failure. The
 unchanged 120s observer ends at 120.860s with 44 records, 15,680 attempts and
 last item 11021, x86/avx512f.rs:223. The first remaining failure is count 5712
 at iterator.rs:229, behind the diagnostic formatting fence, followed by max,
-min, max_by_key and min_by_key. The clean pin and its observation are pending.
-No core artifact exists.
+min, max_by_key and min_by_key. Clean pin 3a1a6772 (source bcbafa25a)
+confirms it: its unchanged observer ends at 120.882s with 43 records, 15,502
+attempts and last item 10751, x86/avx2.rs:2314. Its measurement supports no
+speed claim either way. No core artifact exists.
 
 The [source Copy capture checkpoint](pa24-source-copy-captures.md) classifies a
 source library's closure captures with the library's own `Copy` trait when

@@ -116,8 +116,30 @@ behind the diagnostic formatting fence. `max`, `min`, `max_by_key` and
 `min_by_key` follow with the same text, and `last` 5713 needs a scoped
 continuation for source const callable conditional obligations.
 
-A clean pin, its unchanged observation with the postcheck, and measurement
-follow publication.
+**Clean pin.** Pin 3a1a6772 is built from clean source bcbafa25a, with 3912
+Rust hashes and an empty patch
+(`obj/parallel/zip-specialization/candidate-dev-fast`).
+Formatting and the test files changed the sources after the exploratory build,
+so it is not byte-identical to aec1ea8c. Its unchanged observation ends at its
+deadline after 120.882s, with 43 partial records and 15,502 attempts. The last
+item is 10751, x86/avx2.rs:2314. Against clean ed7d5ed7 it clears `fold` 5290,
+with no new failure among previously passing reached bodies, and the first
+remaining failure is again `count` 5712. The postcheck verifies all 722 source
+hashes, 375 opens, six configuration bindings, unchanged immutable bindings and
+the 3912 head blobs. The progress SHA is
+`925a7e486f7abc20c747ac9c36af9348fe4cd6ae1358e65a204efe1c3dc86598`.
+
+**Measurement.** Sixty exclusive A/A plus ABBA accepting observations against
+ed7d5ed7 preserve complete outputs. The controls are an ordinary import, an
+ordinary `min_specialization` default method (PA19
+`default-methods/trait-blanket`), source-core reference equality, a source Copy
+capture (`source-copy-captures/inner`), and the `qualified` and `default-body`
+cases, which both pins accept. Paired wall ratios are
+0.973/0.960/0.980/1.021/1.011/0.962, against A/A
+0.724/0.957/0.976/0.952/0.972/1.063, at 10–442 ms. The 10 ms import control's
+A/A shows the timer noise at that size. External load stayed near a load
+average of 9. No optimized, neutrality or original-core speed is claimed; the
+bounded-work test above qualifies the work.
 
 Partial counts make no throughput claim, and this is neither a complete census
 nor a core artifact.

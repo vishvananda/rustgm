@@ -165,9 +165,11 @@ the passing receipts, not those attempts, qualify the current implementation.
   - A focused run selecting the private winnowing test exhausted its budget in
     a cold private Clippy build. The existing specialization-selection controls
     pass through the CLI instead, and full CI runs the private test.
-- Clean pin `obj/parallel/repeat-copy/candidate-dev-fast` (ed7d5ed7, source
-  a5fdccff7) passed its observation (41 records) and postcheck. It is the
-  comparison baseline until this checkpoint's clean pin passes.
+- Clean pin `obj/parallel/zip-specialization/candidate-dev-fast` (3a1a6772,
+  source bcbafa25a) passed its observation (43 records), postcheck and
+  measurement against ed7d5ed7. It is the comparison baseline. The ed7d5ed7,
+  e18b4674, aec1ea8c and 12358002 pins are retired; their producer evidence,
+  observations and measurements remain.
 
 **2026-11-12 source Copy capture update (supersedes the blocks below):**
 

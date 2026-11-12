@@ -112,8 +112,9 @@ The [specialized trait input checkpoint](docs/pa20-specialized-trait-inputs.md)
 lets specialization order proved impl candidates whose inferred trait inputs
 agree, as core's `ZipImpl` impls do. Nine declared source-core reductions agree
 with rustc. An exploratory observation clears zip fold; the first remaining
-failure is iterator count, behind the diagnostic formatting fence. The clean
-pin, its observation and measurement are pending.
+failure is iterator count, behind the diagnostic formatting fence. Clean pin
+3a1a6772 (source bcbafa25a) confirms this with 43 records, and its measurement
+supports no speed claim either way.
 
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage
