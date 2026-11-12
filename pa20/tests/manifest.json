@@ -26538,6 +26538,156 @@
         "default_lints": true
       },
       "maintainer_origin": "dev/tests/associated_declarations.rs"
+    },
+    {
+      "path": "tests/spec/premise-inputs/direct.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "7e1891b992112f082778a68be26feec3a4338dcb467077500949d2800e4c3524",
+      "input": "file",
+      "features": [
+        "pa20.selection",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/forwarded_rhs.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/premise-inputs/double-reference.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "29760d005e60edd3cbb528b41029fafd5b80e417162c5653985a133074ce875c",
+      "input": "file",
+      "features": [
+        "pa20.selection",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/forwarded_rhs.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/premise-inputs/method.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "275d89d2734a6148d3d0446cd7db544e8db7993421bd6db5e1fcf30987e6d3bc",
+      "input": "file",
+      "features": [
+        "pa20.selection",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/forwarded_rhs.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/premise-inputs/impl-forwarding.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "90988731b5b7d835a25994b4bc9fcc54e56dafa02937a2b0ab22e4a7731677a5",
+      "input": "file",
+      "features": [
+        "pa20.selection",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/forwarded_rhs.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/premise-inputs/qualified.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "fca5a146d39c37d1289cea838b8bfab7828cb5c71496573ff54360263bce739b",
+      "input": "file",
+      "features": [
+        "pa20.selection",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/forwarded_rhs.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/premise-inputs/annotated.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "e371dae29abf463b799fe6854230af674c70351edb1aa9e2b78f77925ba2a3cf",
+      "input": "file",
+      "features": [
+        "pa20.selection",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/forwarded_rhs.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/premise-inputs/missing.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "b7e9cd53f4a8696bf5da469724e6e02e58d63f312029d98be7d9ad834aab25f3",
+      "input": "file",
+      "features": [
+        "pa20.selection",
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/associated_declarations/forwarded_rhs.rs"
     }
   ]
 }

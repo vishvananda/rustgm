@@ -1,0 +1,9 @@
+pa31/tests/spec/premise-inputs/forwarding.rs	0
+pa31/tests/spec/premise-inputs/inherent.rs	0
+pa31/tests/spec/premise-inputs/other-trait.rs	0
+pa31/tests/spec/premise-inputs/free-deref.rs	0
+pa31/tests/spec/premise-inputs/free-method.rs	0
+pa31/tests/spec/premise-inputs/other-coerces.rs	0
+pa31/tests/spec/premise-inputs/qualified.rs	0
+pa31/tests/spec/premise-inputs/coerce-return.rs	0
+pa31/tests/spec/premise-inputs/missing.rs	1

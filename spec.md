@@ -5804,6 +5804,15 @@ opaque result from the impl header itself still waits for normalization.
 Controls are in the
 [rigid candidate header checkpoint](docs/pa20-rigid-candidate-headers.md).
 
+A caller premise that selects an inferred trait input, such as the `Rhs` of
+`X::Item::e(a, b)` under `X::Item: E<Y::Item>`, binds it to the premise's own
+projection after the call's inputs were instantiated. That projection has no
+head until its ordinary normalizer runs. An early argument expectation treats it
+as unknown. A reference coercion normalizes that referent on demand before
+choosing dereferences. Never infer anything from the projection's result, and
+leave every other input to its existing owner. Controls are in the
+[premise input checkpoint](docs/pa20-premise-inputs.md).
+
 A by-value use of a captured place keeps the closure callable by reference when
 the captured type is Copy. Derive selections cannot see a source library's own
 `impl Copy`, such as core's `NonZero<T>`. In a source library, a captured type

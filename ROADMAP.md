@@ -151,6 +151,14 @@ graded PA24 outcomes agree with rustc. An exploratory observation clears that
 body; the first remaining failure is `Pin`'s `PartialEq`/`PartialOrd`
 forwarding.
 
+The [premise input checkpoint](docs/pa20-premise-inputs.md) lets a caller
+premise select a path call's inferred `Rhs` as its own projection. The early
+argument expectation treats that projection as unknown, and reference coercion
+normalizes it on demand, as core's `Pin` comparison forwarding needs. Seven
+graded PA20 outcomes and nine source-core reductions agree with rustc. An
+exploratory observation clears the seven forwarding bodies; the first remaining
+failure is `Result::cloned`.
+
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage
 limit controls, pass text, independent Rust and native checks with frozen a08ab1a4.

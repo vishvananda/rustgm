@@ -1,5 +1,20 @@
 # Library build blocker tracker
 
+The [premise input checkpoint](pa20-premise-inputs.md) lets a caller premise
+select a path call's inferred `Rhs` as its own projection. Core's `Pin`
+comparison forwarding calls `Ptr::Target::eq(self, other)` under
+`Ptr::Target: PartialEq<Q::Target>`. The early argument expectation and the
+`&Pin<Q>` deref coercion then read the projection's head before any normalizer
+owned it. Seven graded PA20 outcomes, nine source-core reductions and use-linear
+work qualify the fix. Two selection-time designs were rejected: they regressed
+`array::from_fn`, `GenericShunt::try_fold` and `try_find`'s `check`.
+
+Exploratory pin b41f1792 clears `eq`, `ne`, `partial_cmp`, `lt`, `le`, `gt` and
+`ge` 6456–6464, with no new reached failure. The unchanged 120s observer ends at
+120.886s with 20 records, 15,378 attempts and last item 10627, x86/avx2.rs:67.
+The first remaining failure is `Result::cloned` 6721 at result.rs:1795
+("invalid method trait selection"). No core artifact exists.
+
 The [let-condition capture checkpoint](pa24-let-condition-captures.md) lets a
 closure consume a computed `if let` or `while let` scrutinee as a value use,
 like a computed `match`. Core's read_radix_max_digits loops with `while let`

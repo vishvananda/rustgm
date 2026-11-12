@@ -132,5 +132,18 @@ bodies 6456–6464 at pin.rs:1108, which stop at "associated type projection
 requires normalization". Next comes `cloned` 6721 ("invalid method trait
 selection").
 
+**Clean pin.** Pin 59a51ffa is built from clean source 9663144cf, with 3916
+Rust hashes and an empty patch (`obj/parallel/radix-captures/candidate-dev-fast`).
+Only test and documentation files changed after the exploratory build, so it is
+byte-identical to wip1 and wip2. Its unchanged observation ends at its deadline
+after 121.160s, with 24 partial records and 14,894 attempts. The last item is
+9964, x86/sse2.rs:487. Against clean ead8009c it clears
+`read_radix_max_digits` 6024, with no new failure among previously passing
+reached bodies, and the first remaining failure is `Pin`'s `eq` 6456. The
+postcheck verifies all 722 source hashes, 375 opens, six configuration
+bindings, unchanged immutable bindings and the 3916 head blobs. The progress
+SHA is `4c3986b6ad744821b33eb671416ffcd3e2cf55255de32418d742342246b4187b`.
+The measurement against ead8009c is pending.
+
 Partial counts make no throughput claim, and this is neither a complete census
 nor a core artifact.

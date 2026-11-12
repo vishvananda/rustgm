@@ -263,6 +263,7 @@ impl Checker<'_> {
             ));
         }
         let target = self.child(node, expected, 0)?;
+        self.settle_premise_projection(node, target)?;
         let mut source = self.child(node, actual, 0)?;
         let mut dereferences = 1;
         // An unknown expected referent is inferred from the first candidate.
@@ -348,6 +349,18 @@ impl Checker<'_> {
             }),
             pending,
         ))
+    }
+    /// A selected caller premise can bind an inferred input, such as a
+    /// comparison's `Rhs`, to the premise's own projection after the call's
+    /// inputs were instantiated. Normalize that referent on demand before the
+    /// conversion reads its head; any other head is left to its owner.
+    fn settle_premise_projection(&mut self, node: NodeId, target: TermId) -> Result<(), Error> {
+        if self.state.infer.head(&self.facts.types, target)
+            == Err(crate::types::infer::Error::Normalization)
+        {
+            self.defer_normalization(node, crate::types::lifetime_proof::ScopeId::ROOT, target)?;
+        }
+        Ok(())
     }
     fn shared_identity_adjustment(
         &mut self,

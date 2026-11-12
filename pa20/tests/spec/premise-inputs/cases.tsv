@@ -1,0 +1,7 @@
+pa20/tests/spec/premise-inputs/direct.rs	0
+pa20/tests/spec/premise-inputs/double-reference.rs	0
+pa20/tests/spec/premise-inputs/method.rs	0
+pa20/tests/spec/premise-inputs/impl-forwarding.rs	0
+pa20/tests/spec/premise-inputs/qualified.rs	0
+pa20/tests/spec/premise-inputs/annotated.rs	0
+pa20/tests/spec/premise-inputs/missing.rs	1

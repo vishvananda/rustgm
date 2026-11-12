@@ -149,6 +149,25 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-12 premise input update (supersedes the blocks below):**
+
+- The Pin PartialEq/PartialOrd forwarding blocker (6456–6464) is fixed
+  ([evidence](docs/pa20-premise-inputs.md)). A premise-selected `Rhs` projection
+  is now unknown to the early argument expectation, and reference coercion
+  normalizes it on demand.
+  - Seven graded PA20 cases are in `pa20/tests/spec/premise-inputs`, with nine
+    source-core reductions in `pa31/tests/spec/premise-inputs`. The history is
+    in `obj/parallel/pin-forwarding/core/declared.json` and
+    `obj/parallel/pin-forwarding/ordinary/declared.json`.
+  - Exploratory pin `obj/parallel/pin-forwarding/wip5-dev-fast` (b41f1792)
+    clears all seven. The next first failure is `Result::cloned` 6721 at
+    result.rs:1795 ("invalid method trait selection").
+  - Rejected selection-time designs (wip3, wip4) regressed core bodies; their
+    comparisons remain in `obj/parallel/pin-forwarding/`.
+- Let-condition clean pin `obj/parallel/radix-captures/candidate-dev-fast`
+  (59a51ffa, source 9663144cf) passed its observation (24 records) and
+  postcheck. Its measurement against ead8009c is pending.
+
 **2026-11-12 let-condition capture update (supersedes the blocks below):**
 
 - The read_radix_max_digits 6024 blocker is fixed

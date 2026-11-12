@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "declared": "2026-11-12, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run (obj/parallel/pin-forwarding/core/declared.json, batches 1, 2, 4 and 5). The prefix is pa31/tests/spec/source-div/foundation.rs, with a reduced Deref, Pin and comparison trait added per case.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "cases": {
+  "forwarding.rs": {
+   "sha256": "b68ee4801b09416c7db7ccf2f8a63de780b433c9dac091bf9fe453aec5c7bb02",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "local-trait"
+  },
+  "inherent.rs": {
+   "sha256": "af76f1c339478b71fe639347b13679429656f990bd5ae54a482c0e6a08390b53",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "in-inherent"
+  },
+  "other-trait.rs": {
+   "sha256": "974d69fe49d501ce99d61ec4dc48b9561cbae0c2cf60842da9638746cc7d6884",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "in-other-trait"
+  },
+  "free-deref.rs": {
+   "sha256": "ea22aa0bb1bf994f1797b2397ec4b9632015b3f9360e09f99d7f957f9b664b9d",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "free-deref-other"
+  },
+  "free-method.rs": {
+   "sha256": "beeb8b64fd68efb271d8ea565036577db7b73110e77a91af4fd865c2f1e51ff9",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "free-deref-method"
+  },
+  "other-coerces.rs": {
+   "sha256": "4de85a5b933bcb0e4d95a85dae45ee6c0a513a6d6f76e1dc48b94475f1eebfcf",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "lt-self-explicit"
+  },
+  "qualified.rs": {
+   "sha256": "86047bf4e6e10074c9b28c5805bdda11db3ea0cc4455d3abcad63eb7dc8792fd",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "lt-qualified"
+  },
+  "coerce-return.rs": {
+   "sha256": "8d633f005c8a961d3a8c6952c443a2b7c572354080afe95377f669f2403a2286",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "coerce-return"
+  },
+  "missing.rs": {
+   "sha256": "a7a76dcdad8f776f8809c8d71cbf125658e4080e293b227127cc990f4e701b0a",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "missing"
+  }
+ }
+}

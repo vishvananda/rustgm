@@ -970,3 +970,11 @@ such as `Self::Item`. Six positives (`Ord::cmp`, core's local `compare` through
 rejects (E0277), and a concrete item or one item for two projections rejects
 (E0631). A maintainer integration test checks them through the CLI. There is no
 graded manifest.
+
+`spec/premise-inputs/` freezes nine declared no_core reductions of core's `Pin`
+comparison forwarding. A caller premise selects the inferred `Rhs` of
+`Ptr::Target::e(self, other)`, and the `&Pin<Q>` argument deref-coerces to the
+premise's `&Q::Target`. Six positives (core's impl, inherent and other-trait
+callers, free functions over `&**b`, and an `Rhs`-only coercion) and two controls
+accept. Dropping the premise rejects (E0599). A maintainer integration test
+checks them through the CLI. There is no graded manifest.

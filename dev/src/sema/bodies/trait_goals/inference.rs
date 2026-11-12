@@ -249,9 +249,12 @@ impl Checker<'_> {
                 self.state.trait_goals = Some(pending);
                 return Ok(Some(dependency));
             }
+            // A selected premise may bind the frontier to its own projection,
+            // which no owner has normalized yet: no head is known, and the
+            // argument's ordinary check and coercion remain required.
             if pending.current.is_none()
                 && let Some(expected) = expected
-                && self.head(call, expected)?.is_some()
+                && self.contextual_head(call, expected)?.is_some()
             {
                 break;
             }

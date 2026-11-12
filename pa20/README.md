@@ -281,3 +281,9 @@ The [rigid candidate header checkpoint](../docs/pa20-rigid-candidate-headers.md)
 adds five reviewed outcomes. In each, a trait implementation header would need
 the goal's rigid associated item to equal a parameter or a concrete head. Like
 rustc, selection refutes that header instead of keeping it ambiguous.
+
+The [premise input checkpoint](../docs/pa20-premise-inputs.md) adds seven
+reviewed executable outcomes. A caller premise selects a path call's inferred
+`Rhs` and binds it to the premise's own projection, as in core's `Pin`
+comparison forwarding. The argument's expectation and reference coercion still
+succeed. A premise naming another `Rhs` rejects.
