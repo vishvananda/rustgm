@@ -49,8 +49,9 @@ global cache, backend change or compiler-limit change is introduced.
 Forty-two additional independently checked inputs cover those four regressions,
 nested/free helpers, parameter order, projected buffers, explicit arguments, paid
 parents, wrong results/owners and shared-input scaling. The final full API checks
-pass every supported original and added outcome. This reduced evidence still
-requires confirmation against the original bodies with the new immutable compiler.
+pass every supported original and added outcome. The new immutable original observer also reaches all four bodies without those
+failure records; the bounded comparison finds no new failures among previously
+passing reached baseline bodies.
 
 ## Qualification
 
@@ -85,21 +86,34 @@ qualified foundations.
 
 ## Original core and publication
 
-Current managed CLI6c085307 binds3907 Rust files and51 tool/configuration files.
-Immutable freeze, calibrated accepting comparison and the unchanged120s original
-observer remain next. The preceding observer ended121.394386s with111 partial
-records/13,181 item attempts, last function6830,file199:55490 in sync/atomic.rs.
-Its first remaining failure was ByRefSized::fold, by_ref_sized.rs134:1322,line45,
+Immutable CLI6c085307 at Bobj/parallel/array-chunks-next/fixed-dev-fast binds clean
+sourced1980b325, an empty tracked patch and3907 Rust hashes. Thirty exclusive
+A/A+twoABBA observations retain complete byte equality versus5d43 on ordinary
+import, an explicit projected-input constructor and actual priority LowIR. Paired
+wall ratios.998/.966/.960, CPU.993/.965/.961 and A/Awall.874/.914/.869 are retained;
+these small noisy observations establish no optimized, neutrality or core-speed claim.
+
+The unchanged120s original observer ends121.415000s with111 partial failure records
+and13,562 item attempts, last function7515,file220:6377,line168 in
+slice/sort/select.rs. It reaches all five previous ArrayChunks failures and the
+four regressions above without their failure records. Twelve previous failure
+records are absent among reached functions; no new failure is found among
+previously passing reached baseline bodies. These observations do not form a
+complete census or comparable throughput measurement.
+
+First remaining is ByRefSized::fold, by_ref_sized.rs134:1322,line45,
 `I::try_fold(self.0,init,NeverShortCircuit::wrap_mut_2(f)).0`; rfold remains paired.
-Postverification binds722 source hashes/375 opens/six configuration sources,
-immutable/current3907 Rust hashes/profile/limits. Its progress hash is
-f84f0088ea8f6b82dcabc059e1e20ea6ec76a9f601cfcfdb57e9e765989ab2fd.
-The deadline is an infrastructure failure, partial counts are not throughput, and
-no verified original core, alloc or std artifact exists.
+The deadline is an infrastructure failure. Postcheck1794446887102513389 verifies
+all722 source hashes/375 opens/six configuration bindings/current and immutable
+3907 compiler Rust hashes/profile/limits. ProgressSHA
+5c84a0a0e14f8553d7d7d3ecb665f84aa245c2b6a047e429c09348919a7dce42.
+No verified original core, alloc or std artifact exists. Reduce the actual wrapped
+try_fold result before its tuple-field consumer next; broader adapter failures
+remain separate.
 
 Prior fullCI43081009696 passed every stage on exact2c13e1cff/source5cd41810b.
-The repaired semantic successor needs full CI after original-source verification
-and publication. Keep immutable5d43 for accepting comparisons, local81 for the
+The repaired semantic successor needs full CI after publication and a fresh
+check for active full workflows. Keep immutable5d43 for accepting comparisons, local81 for the
 regression observation, and optimized21f for pending optimized qualification.
 Retain every earlier paid-alias, projected-premise, symbolic-index, depth128,
 factory, tuple, bootstrap, import, transport and optimized requirement in handoff.md.

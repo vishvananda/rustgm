@@ -1,20 +1,23 @@
 # Library build blocker tracker
 
-The current [projected callback-result checkpoint](pa24-projected-callback-results.md)
-qualifies83 complete outcomes from84 independent contracts, including the actual
-array payload and reduced repairs for four regressions exposed by original core.
-Public18/130.45s, four native groups/ten programs, six related regular controls,
-35 PA24 complete text outcomes/11 old controls and two width/noise families pass.
-The ordinary native artifact, eight override contrasts and two exact private
-invariants remain required. New immutable freeze/original-source verification is
-next; no original core, alloc or std artifact exists.
+The current [projected callback-result checkpoint](pa24-projected-callback-results.md),
+sourced1980b325/immutableCLI6c085307, reaches all five prior ArrayChunks failure
+bodies and four observed regressions without their failure records. Public18,
+83 complete outcomes from84 independent contracts, four native groups/ten programs,
+35 PA24 text outcomes/11 old controls, two width/noise families and upstream/harness
+pass. The ordinary native artifact, eight override contrasts and two exact private
+invariants remain required; no whole assignment is newly activated.
 
-The intermediate local81 observer reaches all five prior ArrayChunks failures
-without file133 failure records; first nowByRefSized::fold134:1322,line45. It also
-exposed Chain::last, FlattenCompat::last, MapWindows::next_window and Option::into_flat_iter
-regressions. Their reduced repairs pass; the next unchanged120s observer must
-confirm the original bodies. Prior clone full43081009696 PASSED ALL stages on
-exact2c13e1cff/source5cd41810b. This entry supersedes older frontier/workflow text.
+The unchanged120s observer still FAILS deadline121.415000s:111partialrecords/
+13,562itemattempts through function7515,slice/sort/select.rs220:6377,line168.
+First remaining is ByRefSized::fold134:1322,line45,
+I::try_fold(self.0,init,NeverShortCircuit::wrap_mut_2(f)).0, with pairedrfold.
+No new failures occur among previously passing reached baseline bodies. All722/
+375opens/sixbindings/current+immutable3907/profile/limits verify unchanged.
+No complete census, throughput or original core/alloc/std artifact is claimed.
+Prior clone full43081009696 PASSED ALL stages on exact2c13e1cff/source5cd41810b;
+current full CI awaits publication/fresh no-active-full check. This entry supersedes
+older frontier/workflow text. Reduce the actual wrapped try_fold result next.
 
 [Callback formation versus invocation](pa25-callback-formation.md),source5798bd7f1/
 CLI05cc3029, clears the reached LazyCell<T>::default failure. Existing typed bounds

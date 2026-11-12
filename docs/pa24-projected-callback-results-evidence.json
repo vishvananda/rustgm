@@ -1,12 +1,13 @@
 {
   "schema": 1,
-  "state": "Reduced repairs for ArrayChunks and four observed original-source regressions qualify; new immutable original-source verification and publication pending. No original artifact.",
+  "state": "Qualified repaired callback checkpoint; unchanged original probe reaches ArrayChunks and all four regression bodies without their failure records. First remaining ByRefSized::fold; incomplete census, no original artifact.",
   "compiler": {
     "cli_sha256": "6c0853071ccf7675c2f6c919eea99414c901f874ccb925279da1e0cc0defa620",
     "rust_source_count": 3907,
     "tool_config_source_count": 51,
-    "source_commit_binding": null,
-    "immutable_binary": null
+    "source_commit_binding": "d1980b3255cf607355b2a254dc83393463fb27b5",
+    "immutable_binary": "B obj/parallel/array-chunks-next/fixed-dev-fast/rustgm",
+    "producer_json_sha256": "f4c46d9722d7d28d61576d0bcec5c0f89e65d1621ca183cd4e0c8c235e2c8c14"
   },
   "contracts": {
     "primary_total": 84,
@@ -381,47 +382,44 @@
     "regression_repair": "Shared scoped pending-pair comparison, signature inputs only for unresolved projections, one recollected normalization plan and exact selected function identity; all84 frozen outcomes retained."
   },
   "calibrated_comparison": {
-    "state": "Pending repaired immutable compiler; preceding81 comparison historical",
-    "preceding": {
-      "rows": 30,
-      "complete_output_equality": true,
-      "summary": {
-        "import-control": {
-          "seconds": {
-            "aa_ratio": 0.942190755818382,
-            "paired_candidate_over_base": 1.0467260096720554
-          },
-          "cpu_seconds": {
-            "aa_ratio": 0.937921051166416,
-            "paired_candidate_over_base": 1.039533857723687
-          }
+    "rows": 30,
+    "complete_output_equality": true,
+    "summary": {
+      "import-control": {
+        "seconds": {
+          "aa_ratio": 0.8735605274760653,
+          "paired_candidate_over_base": 0.9977963834642619
         },
-        "explicit-constructor": {
-          "seconds": {
-            "aa_ratio": 0.990965333298603,
-            "paired_candidate_over_base": 0.9715573994365748
-          },
-          "cpu_seconds": {
-            "aa_ratio": 0.9912367537040944,
-            "paired_candidate_over_base": 0.9714634774621874
-          }
-        },
-        "priority-native": {
-          "seconds": {
-            "aa_ratio": 1.0096665816056125,
-            "paired_candidate_over_base": 1.0010187070424152
-          },
-          "cpu_seconds": {
-            "aa_ratio": 1.008442145789367,
-            "paired_candidate_over_base": 0.9981110338262961
-          }
+        "cpu_seconds": {
+          "aa_ratio": 0.8719746446407993,
+          "paired_candidate_over_base": 0.9933538356695659
         }
       },
-      "no_optimized_or_core_speed_claim": true,
-      "baseline_cli_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
-      "path": "obj/parallel/array-chunks-next/measure",
-      "exclusive": true
-    }
+      "explicit-constructor": {
+        "seconds": {
+          "aa_ratio": 0.9138924626107022,
+          "paired_candidate_over_base": 0.9660982346528961
+        },
+        "cpu_seconds": {
+          "aa_ratio": 0.9109727185874532,
+          "paired_candidate_over_base": 0.9650498497804919
+        }
+      },
+      "priority-native": {
+        "seconds": {
+          "aa_ratio": 0.8688854036218449,
+          "paired_candidate_over_base": 0.9603339688953205
+        },
+        "cpu_seconds": {
+          "aa_ratio": 0.8690003854263512,
+          "paired_candidate_over_base": 0.9614385287200004
+        }
+      }
+    },
+    "no_optimized_or_core_speed_claim": true,
+    "baseline_cli_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+    "exclusive": true,
+    "path": "obj/parallel/array-chunks-next/measure-fixed"
   },
   "prior_full_ci": {
     "run": 43081009696,
@@ -429,7 +427,7 @@
     "source": "5cd41810bfa18d71e936bfed53c9a0422580e83f",
     "state": "all stages passed"
   },
-  "current_full_ci": "Pending repaired original-source verification and publication",
+  "current_full_ci": "Pending publication and a fresh check for active full workflows.",
   "unchanged": [
     "third-party source bytes/checksums",
     "backend17b024f69",
@@ -486,15 +484,107 @@
     "artifact": false
   },
   "original_core": {
-    "state": "Repaired compiler not yet observed; no original artifact",
-    "last_first_failure": "ByRefSized::fold file134:1322 line45",
-    "observer_seconds": 120,
-    "required_regression_body_rechecks": [
-      "Chain::last135:4953",
-      "FlattenCompat::last142:17747",
-      "MapWindows::next_window148:3241",
-      "Option::into_flat_iter182:73756"
+    "infrastructure_failure": true,
+    "classification": "infrastructure/setup failure",
+    "observer_deadline_seconds": 120,
+    "progress_requested": true,
+    "lint_cap": "allow",
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "expected_cli_sha256": "6c0853071ccf7675c2f6c919eea99414c901f874ccb925279da1e0cc0defa620",
+    "expected_cli_source": "explicit caller input",
+    "error": "original-core observer deadline",
+    "partial_progress": {
+      "analysis_only": true,
+      "complete_census": false,
+      "records": 111,
+      "last_item": "item\tfunction\t7515\tfile 220:6377\tnode 634"
+    },
+    "total_seconds": 121.41500035102945,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "whole-core.openat": "819d275b1cc145d4637978d2d091305731daae45118d99051b323f3048411c1a",
+      "progress.tsv": "5c84a0a0e14f8553d7d7d3ecb665f84aa245c2b6a047e429c09348919a7dce42"
+    },
+    "source_hashes_verified": 722,
+    "opened_sources_verified": 375,
+    "config_bindings_verified": 6,
+    "compiler_Rust_bindings_verified": 3907,
+    "item_attempts": 13562,
+    "last_item_source": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/slice/sort/select.rs",
+    "last_item_line": 168,
+    "first_failure": "record\t1\tbodies\tfailed\tfunction `fold`\tfile 134:1322\t-\tfield access requires a known tuple or struct type",
+    "verified_original_bodies": [
+      "item\tfunction\t4394\tfile 133:2216\tnode 161",
+      "item\tfunction\t4397\tfile 133:2695\tnode 278",
+      "item\tfunction\t4400\tfile 133:3607\tnode 356",
+      "item\tfunction\t4401\tfile 133:3850\tnode 432",
+      "item\tfunction\t4403\tfile 133:4795\tnode 493",
+      "item\tfunction\t4450\tfile 135:4894\tnode 555",
+      "item\tfunction\t4739\tfile 142:17593\tnode 2529",
+      "item\tfunction\t4976\tfile 148:2530\tnode 203",
+      "item\tfunction\t6161\tfile 182:73724\tnode 1561"
     ],
-    "retain_ArrayChunks_body_verification": true
+    "previous_failures_absent_when_reached": [
+      {
+        "item": "item\tfunction\t4394\tfile 133:2216\tnode 161",
+        "record": "record\t1\tbodies\tfailed\tfunction `next`\tfile 133:2226\t-\treceiver has no inherent nominal method"
+      },
+      {
+        "item": "item\tfunction\t4397\tfile 133:2695\tnode 278",
+        "record": "record\t2\tbodies\tfailed\tfunction `try_fold`\tfile 133:2825\t-\tassociated type projection requires normalization"
+      },
+      {
+        "item": "item\tfunction\t4400\tfile 133:3607\tnode 356",
+        "record": "record\t3\tbodies\tfailed\tfunction `next_back`\tfile 133:3644\t-\tassociated type projection requires normalization"
+      },
+      {
+        "item": "item\tfunction\t4401\tfile 133:3850\tnode 432",
+        "record": "record\t4\tbodies\tfailed\tfunction `try_rfold`\tfile 133:4479\t-\tassociated type projection requires normalization"
+      },
+      {
+        "item": "item\tfunction\t4403\tfile 133:4795\tnode 493",
+        "record": "record\t5\tbodies\tfailed\tfunction `next_back_remainder`\tfile 133:5382\t-\tassociated type projection requires normalization"
+      },
+      {
+        "item": "item\tfunction\t4729\tfile 142:14496\tnode 2086",
+        "record": "record\t30\tbodies\tfailed\tfunction `next`\tfile 142:14715\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t4792\tfile 142:25881\tnode 3672",
+        "record": "record\t39\tbodies\tfailed\tfunction `advance_by`\tfile 142:25938\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: diagnostic nested trait path formatting is not implemented"
+      },
+      {
+        "item": "item\tfunction\t4793\tfile 142:26155\tnode 3683",
+        "record": "record\t40\tbodies\tfailed\tfunction `count`\tfile 142:26165\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: diagnostic formatting for this typed source shape is not implemented"
+      },
+      {
+        "item": "item\tfunction\t4794\tfile 142:26266\tnode 3699",
+        "record": "record\t41\tbodies\tfailed\tfunction `last`\tfile 142:26276\t-\tassociated type requires an unambiguous validated implementation"
+      },
+      {
+        "item": "item\tfunction\t4799\tfile 142:27489\tnode 3892",
+        "record": "record\t44\tbodies\tfailed\tfunction `advance_back_by`\tfile 142:27546\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: diagnostic nested trait path formatting is not implemented"
+      },
+      {
+        "item": "item\tfunction\t4845\tfile 143:8452\tnode 903",
+        "record": "record\t45\tbodies\tfailed\tfunction `next`\tfile 143:8462\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t5348\tfile 132:6729\tnode 388",
+        "record": "record\t68\tbodies\tfailed\tfunction `next`\tfile 132:6739\t-\treceiver has no inherent nominal method"
+      }
+    ],
+    "new_failures_in_previously_passing_reached_baseline_bodies": [],
+    "comparison": "obj/parallel/array-chunks-next/fixed-original-comparison.json",
+    "comparison_sha256": "5776cf609733a9a007de8b6ce7bb0bb873d57d087fbd890b19b5c96e9a6d63a1",
+    "postcheck_cleanup": "1794446887102513389",
+    "complete_census": false,
+    "artifact": false,
+    "partial_counts_are_not_throughput": true
   }
 }

@@ -38,22 +38,26 @@ new18library checks include14declared emptyobjects/no runtimecomparison. PA24roo
 Two exact private invariants remain pendingCI after fixed-budget combinedcompile
 1794438008438968646 timedout before execution; no retry/limitraise.
 
-Last original120s local81 observer ends121.394386s:111partialrecords/13181itemattempts,
-lastfn6830 atomic.rs199:55490; all5ArrayChunks reached withno133record, firstnow
-ByRefSized::fold134:1322,line45, wrap_mut_2(f)).0; pairedrfold. Postcheck
-1794442029381975565 verifies722/375/six/current+immutable3907/profile/limits.
-ProgressSHAf84f0088ea8f6b82dcabc059e1e20ea6ec76a9f601cfcfdb57e9e765989ab2fd.
-This observer hasknown4regressions; latestrepair MUSTverifyoriginalbodiesagain.
+Latestclean sourceD1980b3255cf607355b2a254dc83393463fb27b5 andimmutablefixed-dev-fast
+CLI6c085307 bind3907Rust/empty patch. 30exclusive A/A+twoABBA observationsmatch
+completeoutputs vs5d43; wall.998/.966/.960, CPU.993/.965/.961, AA.874/.914/.869;
+nooptimized/neutrality/core-speedclaim. Old81candidate retainsknownregressions.
 
-Finalupstream128/Reference126/harness315/468roots13bins/44-stage layout PASS;
-all48Fnsourceprefixes/nativeFreeze/drop_gluebytes verified.
-NEXT: coherentcleanrepaircommit;
-freeze label fixed-dev-fast3907Rust (candidate-dev-fast isold81knownregressions);
-exclusive A/A+twoABBA accepting controls vs5d43; exact120s original usingNEWpin and
-fresh outputroot, postverify722/375/six/3907/profile/limits; explicitly recheck4new
-regressions andallArrayChunks reached before clearance claims. Map actualfirst
-failure, publish afterqualification, ONEsemanticfullCIafterfreshnoactive-fullcheck.
-Prior full43081009696 ALLPASSED exact2c13e1cff/source5cd41810b; no docs restart.
+EXACT120s original6c observer ends121.415000s,111partialrecords/13562itemattempts,
+lastfn7515 slice/sort/select.rs220:6377,line168. All5ArrayChunks and4regression
+bodiesreachedwithoutfailure records; no newfailures amongpreviouslypassingreached
+baselinebodies.12priorfailure recordsabsentwhenreached. FirststillByRefSized::fold
+134:1322,line45, I::try_fold(self.0,init,NeverShortCircuit::wrap_mut_2(f)).0;
+pairedrfold134:2256. Postcheck1794446887102513389 verifies722/375/six/current+
+immutable3907/profile/limits. ProgressSHA
+5c84a0a0e14f8553d7d7d3ecb665f84aa245c2b6a047e429c09348919a7dce42.
+No completecensus/originalartifact, partialcountsNOTthroughput. Rawfixed-original/
+andfixed-original-comparison.json. No rerunmerelyforlongerprefix/limitextension.
+
+NEXT: publishqualifiedsource+evidence, ONEfullCIafterfreshnoactivefullcheck;
+thenreduceactualByRefSized wrappedtry_fold outputbefore.0consumer, ordinaryPA24+
+sourcePA31 first. Otheradapterprojection/closurefailures separate. Prior full
+43081009696 ALLPASSED exact2c13e1cff/source5cd41810b, no docsrestart.
 Main/originstill537a86863; BHEADf7e9local. Keep5d43/81/optimized21fpins untilqualified
 replacement publication/comparison; optimized21f remains required. Singleworker/no
 newtrees. Allpaid-alias/projected-premise/symbolic-index/depth128/factory/tuple/
