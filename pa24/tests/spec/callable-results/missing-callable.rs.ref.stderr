@@ -1,1 +1,1 @@
-ERROR: file 0: 124: field access requires a known tuple or struct type
+ERROR: file 0: 124: associated type requires an unambiguous validated implementation

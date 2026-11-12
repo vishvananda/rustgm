@@ -105,8 +105,11 @@ file140:3018. Postcheck1794451995494437060 verifies722 original hashes,375 opens
 six configuration bindings, all3907 current/immutable Rust hashes and the unchanged
 profile/limits. ProgressSHA8bbdcf63f52c70ff87547e5a4b0c664d3319d71ab5658df44185134e2add06dc.
 The deadline remains an infrastructure failure. No original core, alloc or std
-artifact exists. Published8c231518e/sourcecf75. Full43145135573 is running on that exact head
-after a fresh no-active-full check; do not restart it for documentation descendants.
+artifact exists. Published8c231518e/sourcecf75. Full43145135573 passed all Rust regular tests
+(3065private/285linking), then failed16 existing PA24 byte contracts. The
+[try-capture checkpoint](pa24-try-captures.md) independently reviews and updates
+those exact contracts without changing inputs or acceptance outcomes. Later CI
+stages were skipped; full successor qualification remains required.
 Reduce the actual typed capture failure next. Keep
 stable5d until full qualification,6c for accepting comparisons and optimized21f
 for retained optimized work. Intermediate81 is absent. Duplicate6c fixed-dev-fast was explicitly retired

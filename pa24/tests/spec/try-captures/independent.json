@@ -1,0 +1,637 @@
+{
+  "schema": 1,
+  "objects": [
+    {
+      "owner": "pa24",
+      "name": "literal",
+      "path": "obj/parallel/filter-try-capture/inputs2/pa24-literal.rs",
+      "sha256": "55ea536404edac2eb8ef263e64dafcae7bb130d6190bf5490827adea5e1fbb29",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-literal.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/0.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-literal.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 59: source Try requires its actual provider catalog\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "source_utf8": "#![feature(try_blocks)]\nfn make()->impl Fn()->Option<u8>{||try{7}}\n",
+      "serialized_in": "pa24/tests/spec/try-captures/pending.json",
+      "qualification": "Required ordinary language contract; current ordinary bootstrap lacks the actual Try provider or try_trait_v2 feature binding. No error is qualified as its language outcome."
+    },
+    {
+      "owner": "pa24",
+      "name": "argument",
+      "path": "obj/parallel/filter-try-capture/inputs2/pa24-argument.rs",
+      "sha256": "870c4a9cc6cbee37e20c46c4ef1346b6dcf98c7b3ea6d49df6ec7b01c3e4b6b1",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-argument.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/1.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-argument.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 66: source Try requires its actual provider catalog\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "source_utf8": "#![feature(try_blocks)]\nfn make()->impl Fn(u8)->Option<u8>{|value|try{value}}\n",
+      "serialized_in": "pa24/tests/spec/try-captures/pending.json",
+      "qualification": "Required ordinary language contract; current ordinary bootstrap lacks the actual Try provider or try_trait_v2 feature binding. No error is qualified as its language outcome."
+    },
+    {
+      "owner": "pa24",
+      "name": "copied-capture",
+      "path": "obj/parallel/filter-try-capture/inputs2/pa24-copied-capture.rs",
+      "sha256": "c29488ac6935a2b8ee484a550270055201c2c687912e255f2c821df36edb03de",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-copied-capture.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/2.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-copied-capture.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 71: source Try requires its actual provider catalog\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "source_utf8": "#![feature(try_blocks)]\nfn make(value:u8)->impl Fn()->Option<u8>{move||try{value}}\n",
+      "serialized_in": "pa24/tests/spec/try-captures/pending.json",
+      "qualification": "Required ordinary language contract; current ordinary bootstrap lacks the actual Try provider or try_trait_v2 feature binding. No error is qualified as its language outcome."
+    },
+    {
+      "owner": "pa24",
+      "name": "owned-capture",
+      "path": "obj/parallel/filter-try-capture/inputs2/pa24-owned-capture.rs",
+      "sha256": "b9725c74e6daf35785e1f594bd86ebee4e865c1ff39d6f5875625145df563a8e",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-owned-capture.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/3.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-owned-capture.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 98: source Try requires its actual provider catalog\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "source_utf8": "#![feature(try_blocks)]\nstruct Owned(u8);fn make(value:Owned)->impl FnOnce()->Option<Owned>{move||try{value}}\n",
+      "serialized_in": "pa24/tests/spec/try-captures/pending.json",
+      "qualification": "Required ordinary language contract; current ordinary bootstrap lacks the actual Try provider or try_trait_v2 feature binding. No error is qualified as its language outcome."
+    },
+    {
+      "owner": "pa24",
+      "name": "mutable-capture",
+      "path": "obj/parallel/filter-try-capture/inputs2/pa24-mutable-capture.rs",
+      "sha256": "a11f7260a98c5e507786e99a988448cd20aaea7a6023a3180298c3518598d457",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-mutable-capture.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/4.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-mutable-capture.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 89: source Try requires its actual provider catalog\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "source_utf8": "#![feature(try_blocks)]\nfn make<'a>(value:&'a mut u8)->impl FnMut()->Option<u8>+'a{move||try{*value=7;*value}}\n",
+      "serialized_in": "pa24/tests/spec/try-captures/pending.json",
+      "qualification": "Required ordinary language contract; current ordinary bootstrap lacks the actual Try provider or try_trait_v2 feature binding. No error is qualified as its language outcome."
+    },
+    {
+      "owner": "pa24",
+      "name": "question",
+      "path": "obj/parallel/filter-try-capture/inputs2/pa24-question.rs",
+      "sha256": "e3bad2a37dc818108514c3d596dd01915de0f2887e71517b4b392e3ea8484978",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-question.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/5.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-question.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 74: source Try requires its actual provider catalog\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "source_utf8": "#![feature(try_blocks)]\nfn make()->impl Fn(Option<u8>)->Option<u8>{|value|try{value?}}\n",
+      "serialized_in": "pa24/tests/spec/try-captures/pending.json",
+      "qualification": "Required ordinary language contract; current ordinary bootstrap lacks the actual Try provider or try_trait_v2 feature binding. No error is qualified as its language outcome."
+    },
+    {
+      "owner": "pa24",
+      "name": "filter-helper",
+      "path": "obj/parallel/filter-try-capture/inputs2/pa24-filter-helper.rs",
+      "sha256": "fc9163fb204727144da10267a4254e5f6806ec6146b3de9711f6b01719b6fa11",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-filter-helper.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/6.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-filter-helper.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 56: unresolved type name\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "source_utf8": "#![feature(try_blocks,try_trait_v2)]\nfn make<'a,T,Acc,R:std::ops::Try<Output=Acc>>(predicate:&'a mut impl FnMut(&T)->bool,mut fold:impl FnMut(Acc,T)->R+'a)->impl FnMut(Acc,T)->R+'a{move|acc,item|if predicate(&item){fold(acc,item)}else{try{acc}}}\n",
+      "serialized_in": "pa24/tests/spec/try-captures/pending.json",
+      "qualification": "Required ordinary language contract; current ordinary bootstrap lacks the actual Try provider or try_trait_v2 feature binding. No error is qualified as its language outcome."
+    },
+    {
+      "owner": "pa24",
+      "name": "nested",
+      "path": "obj/parallel/filter-try-capture/inputs2/pa24-nested.rs",
+      "sha256": "d916e71e67b3f632ea6abec62b786cd514ebe7d0bc2b3bc3be6932059b68bb80",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-nested.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/7.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-nested.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 67: source Try requires its actual provider catalog\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "source_utf8": "#![feature(try_blocks)]\nfn make()->impl Fn()->Option<Option<u8>>{||try{let inner:Option<u8>=try{7};inner}}\n",
+      "serialized_in": "pa24/tests/spec/try-captures/pending.json",
+      "qualification": "Required ordinary language contract; current ordinary bootstrap lacks the actual Try provider or try_trait_v2 feature binding. No error is qualified as its language outcome."
+    },
+    {
+      "owner": "pa24",
+      "name": "wrong-output",
+      "path": "obj/parallel/filter-try-capture/inputs2/pa24-wrong-output.rs",
+      "sha256": "770f97000f129f67f0c03dcaaf765020c5a837fabb1fd038cf70736d738bac92",
+      "expected_rust_object_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "rustc": {
+        "status": 1,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-wrong-output.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/8.o"
+        ],
+        "diagnostic": "error[E0271]: type mismatch resolving `<Option<bool> as Try>::Output == u8`\n --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-wrong-output.rs:2:42\n  |\n2 | fn make()->impl Fn()->Option<bool>{||try{7u8}}\n  |                                          ^^^ expected `u8`, found `bool`\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0271`.\n"
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-wrong-output.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 61: source Try requires its actual provider catalog\n"
+      },
+      "exit_status": 1,
+      "candidate_complete_prepared_root_qualified": false,
+      "source_utf8": "#![feature(try_blocks)]\nfn make()->impl Fn()->Option<bool>{||try{7u8}}\n",
+      "serialized_in": "pa24/tests/spec/try-captures/pending.json",
+      "qualification": "Required ordinary language contract; current ordinary bootstrap lacks the actual Try provider or try_trait_v2 feature binding. No error is qualified as its language outcome."
+    },
+    {
+      "owner": "pa24",
+      "name": "missing-gate",
+      "path": "obj/parallel/filter-try-capture/inputs2/pa24-missing-gate.rs",
+      "sha256": "75e2ffe708686fd76f96f2c0389781329d9fe11ec14ee6167f50f36e54a03183",
+      "expected_rust_object_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "rustc": {
+        "status": 1,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-missing-gate.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/9.o"
+        ],
+        "diagnostic": "error[E0658]: `try` expression is experimental\n --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-missing-gate.rs:1:36\n  |\n1 | fn make()->impl Fn()->Option<u8>{||try{7}}\n  |                                    ^^^^^^\n  |\n  = note: see issue #154391 <https://github.com/rust-lang/rust/issues/154391> for more information\n  = help: add `#![feature(try_blocks)]` to the crate attributes to enable\n  = note: this compiler was built on 2026-08-18; consider upgrading it if it is out of date\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0658`.\n"
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-missing-gate.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 35: try block requires try_blocks or its actual expression allowance\n"
+      },
+      "exit_status": 1,
+      "candidate_complete_prepared_root_qualified": false,
+      "source_utf8": "fn make()->impl Fn()->Option<u8>{||try{7}}\n",
+      "serialized_in": "pa24/tests/spec/try-captures/pending.json",
+      "qualification": "Required ordinary language contract; current ordinary bootstrap lacks the actual Try provider or try_trait_v2 feature binding. No error is qualified as its language outcome."
+    },
+    {
+      "owner": "pa24",
+      "name": "closure-boundary",
+      "path": "obj/parallel/filter-try-capture/inputs2/pa24-closure-boundary.rs",
+      "sha256": "a5c8aa4749371a16626a69acedc9cebdf49e06e9ead879cce5970f7a4fb4d093",
+      "expected_rust_object_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "rustc": {
+        "status": 1,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-closure-boundary.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/10.o"
+        ],
+        "diagnostic": "error[E0277]: the `?` operator can only be used in a closure that returns `Result` or `Option` (or another type that implements `FromResidual`)\n --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-closure-boundary.rs:2:61\n  |\n2 | fn code()->Option<u8>{try{let c=||->u8{Option::<u8>::Some(7)?};c()}}\n  |                                 ------                      ^ cannot use the `?` operator in a closure that returns `u8`\n  |                                 |\n  |                                 this function should return `Result` or `Option` to accept `?`\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0277`.\n"
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-closure-boundary.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 46: source Try requires its actual provider catalog\n"
+      },
+      "exit_status": 1,
+      "candidate_complete_prepared_root_qualified": false,
+      "source_utf8": "#![feature(try_blocks)]\nfn code()->Option<u8>{try{let c=||->u8{Option::<u8>::Some(7)?};c()}}\n",
+      "serialized_in": "pa24/tests/spec/try-captures/pending.json",
+      "qualification": "Required ordinary language contract; current ordinary bootstrap lacks the actual Try provider or try_trait_v2 feature binding. No error is qualified as its language outcome."
+    },
+    {
+      "owner": "pa24",
+      "name": "repeat-once",
+      "path": "obj/parallel/filter-try-capture/inputs2/pa24-repeat-once.rs",
+      "sha256": "9f6cd344bbfd3dc160fb4fb13acc1d74191d0e4d7f604e3fd65331ea038c4e8b",
+      "expected_rust_object_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "rustc": {
+        "status": 1,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-repeat-once.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/11.o"
+        ],
+        "diagnostic": "error[E0382]: use of moved value: `run`\n --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-repeat-once.rs:2:107\n  |\n2 | struct Owned(u8);fn code(){let value=Owned(7);let run=move||->Option<Owned>{try{value}};let _=run();let _=run();}\n  |                                                                                               -----       ^^^ value used here after move\n  |                                                                                               |\n  |                                                                                               `run` moved due to this call\n  |\nnote: closure cannot be invoked more than once because it moves the variable `value` out of its environment\n --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-repeat-once.rs:2:81\n  |\n2 | struct Owned(u8);fn code(){let value=Owned(7);let run=move||->Option<Owned>{try{value}};let _=run();let _=run();}\n  |                                                                                 ^^^^^\nnote: this value implements `FnOnce`, which causes it to be moved when called\n --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-repeat-once.rs:2:95\n  |\n2 | struct Owned(u8);fn code(){let value=Owned(7);let run=move||->Option<Owned>{try{value}};let _=run();let _=run();}\n  |                                                                                               ^^^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0382`.\n"
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa24-repeat-once.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 100: source Try requires its actual provider catalog\n"
+      },
+      "exit_status": 1,
+      "candidate_complete_prepared_root_qualified": false,
+      "source_utf8": "#![feature(try_blocks)]\nstruct Owned(u8);fn code(){let value=Owned(7);let run=move||->Option<Owned>{try{value}};let _=run();let _=run();}\n",
+      "serialized_in": "pa24/tests/spec/try-captures/pending.json",
+      "qualification": "Required ordinary language contract; current ordinary bootstrap lacks the actual Try provider or try_trait_v2 feature binding. No error is qualified as its language outcome."
+    },
+    {
+      "owner": "pa24",
+      "name": "wildcard-owned",
+      "path": "obj/parallel/filter-try-capture/more-inputs/pa24-wildcard-owned.rs",
+      "sha256": "b1543ddc92f98be5557f20895eee83354879f45303cf815fbfd23430ba36414c",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture_extra",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa24-wildcard-owned.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-observations/0.o"
+        ],
+        "diagnostic": ""
+      },
+      "candidate": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/rust/dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa24-wildcard-owned.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 104: source Try requires its actual provider catalog\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false,
+      "source_utf8": "#![feature(try_blocks)]\nstruct Owned(u8);fn make(value:Owned)->impl FnOnce(){move||{let _:Option<Owned>=try{value};}}\n",
+      "serialized_in": "pa24/tests/spec/try-captures/pending.json",
+      "qualification": "Required ordinary contract, not a qualified language rejection at the missing Try provider."
+    },
+    {
+      "owner": "pa24",
+      "name": "repeat-wildcard",
+      "path": "obj/parallel/filter-try-capture/more-inputs/pa24-repeat-wildcard.rs",
+      "sha256": "5129e07b3aa438f38cb61314261bc893960f8d87485266ca629b20931e771427",
+      "expected_rust_object_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "rustc": {
+        "status": 1,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture_extra",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa24-repeat-wildcard.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-observations/1.o"
+        ],
+        "diagnostic": "error[E0382]: use of moved value: `run`\n --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa24-repeat-wildcard.rs:2:101\n  |\n2 | struct Owned(u8);fn code(){let value=Owned(7);let run=move||{let _:Option<Owned>=try{value};};run();run();}\n  |                                                                                               ----- ^^^ value used here after move\n  |                                                                                               |\n  |                                                                                               `run` moved due to this call\n  |\nnote: closure cannot be invoked more than once because it moves the variable `value` out of its environment\n --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa24-repeat-wildcard.rs:2:86\n  |\n2 | struct Owned(u8);fn code(){let value=Owned(7);let run=move||{let _:Option<Owned>=try{value};};run();run();}\n  |                                                                                      ^^^^^\nnote: this value implements `FnOnce`, which causes it to be moved when called\n --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa24-repeat-wildcard.rs:2:95\n  |\n2 | struct Owned(u8);fn code(){let value=Owned(7);let run=move||{let _:Option<Owned>=try{value};};run();run();}\n  |                                                                                               ^^^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0382`.\n"
+      },
+      "candidate": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/rust/dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa24-repeat-wildcard.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 105: source Try requires its actual provider catalog\n"
+      },
+      "exit_status": 1,
+      "candidate_complete_prepared_root_qualified": false,
+      "source_utf8": "#![feature(try_blocks)]\nstruct Owned(u8);fn code(){let value=Owned(7);let run=move||{let _:Option<Owned>=try{value};};run();run();}\n",
+      "serialized_in": "pa24/tests/spec/try-captures/pending.json",
+      "qualification": "Required ordinary contract, not a qualified language rejection at the missing Try provider."
+    }
+  ],
+  "raw": "obj/parallel/filter-try-capture/baseline2/observations.json",
+  "state": "36 independent contracts across the packets:21 actual-source complete outcomes qualify,15 ordinary contracts retain required completion. No assignment activation."
+}

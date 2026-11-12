@@ -5734,6 +5734,14 @@ once and prove every new occurrence. Already resolved projected inputs normalize
 before this inference. Committing a selected function item may use those independent
 equations, then requires exact complete canonical identity for any blocked result.
 
+Closure capture collection visits a try block's body as a value use: its
+from_output operation consumes the tail even when the completed result is
+subsequently discarded by a wildcard. Reuse the ordinary iterative use walker;
+keep feature authority, source protocol, nested-closure target and complete
+ownership proof with their existing consumers. Type inspection alone does not
+qualify moves. The [try-capture checkpoint](docs/pa24-try-captures.md) records
+actual source execution, Fn/FnMut/FnOnce and bounded field/work controls.
+
 A canonical caller premise may bind an inference hole to its complete projected
 input type. Use the shared scoped worklist; collect comparisons between projection
 results for exact identity or the existing certified-normal-premise relation.

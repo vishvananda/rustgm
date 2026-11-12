@@ -1,0 +1,1084 @@
+{
+  "schema": 1,
+  "owner": "pa31",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": 2024,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0
+  },
+  "outcomes_declared_before_execution": true,
+  "origin": "Pinned core iter/adapters/filter.rs:86, capturing closure else try{acc}",
+  "source_foundation": "Exact source-protocol.rs prefix plus qualified actual Freeze declaration; initial missing-Freeze hypothesis retained under obj.",
+  "state": "36 independent contracts across the packets:21 actual-source complete outcomes qualify,15 ordinary contracts retain required completion. No assignment activation.",
+  "inputs": [
+    {
+      "owner": "pa31",
+      "name": "literal",
+      "path": "pa31/tests/spec/try-captures/literal.rs",
+      "sha256": "7c466031b391362f0a147ba8555e2dad30233d64f872eb587b02b741c5cdf631",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-literal.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/12.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 0,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@try_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "try_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-literal.rs"
+        ],
+        "diagnostic": ""
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete outcome qualified by receipt1794455612137610151 and actual-source native/scaling review."
+    },
+    {
+      "owner": "pa31",
+      "name": "argument",
+      "path": "pa31/tests/spec/try-captures/argument.rs",
+      "sha256": "86293a2ba1758ced1992123673127cfd8f9fcb3ee9bc9ea2acf23fd33950ca85",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-argument.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/13.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 0,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@try_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "try_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-argument.rs"
+        ],
+        "diagnostic": ""
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete outcome qualified by receipt1794455612137610151 and actual-source native/scaling review."
+    },
+    {
+      "owner": "pa31",
+      "name": "copied-capture",
+      "path": "pa31/tests/spec/try-captures/copied-capture.rs",
+      "sha256": "979ba9bd1efb51531dd50f0e82cc18fb1450d16972c3f44f53da99947e10af72",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-copied-capture.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/14.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@try_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "try_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-copied-capture.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 2994: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete outcome qualified by receipt1794455612137610151 and actual-source native/scaling review."
+    },
+    {
+      "owner": "pa31",
+      "name": "owned-capture",
+      "path": "pa31/tests/spec/try-captures/owned-capture.rs",
+      "sha256": "23fd22379918a0ef6083ad222dbdc167d3cb86d35a67dbd7e0b9fbdb4cbec088",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-owned-capture.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/15.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@try_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "try_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-owned-capture.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3021: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete outcome qualified by receipt1794455612137610151 and actual-source native/scaling review."
+    },
+    {
+      "owner": "pa31",
+      "name": "mutable-capture",
+      "path": "pa31/tests/spec/try-captures/mutable-capture.rs",
+      "sha256": "e6ef4fd4db733dcbf20256f7db82a1bdaf3cc8cf3537621bd311300ae194b044",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-mutable-capture.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/16.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@try_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "try_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-mutable-capture.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3012: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete outcome qualified by receipt1794455612137610151 and actual-source native/scaling review."
+    },
+    {
+      "owner": "pa31",
+      "name": "question",
+      "path": "pa31/tests/spec/try-captures/question.rs",
+      "sha256": "2e300a8474dc39f6d40dcc513f33f08841848a8448724218bb71d62826f928b1",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-question.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/17.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 0,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@try_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "try_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-question.rs"
+        ],
+        "diagnostic": ""
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete outcome qualified by receipt1794455612137610151 and actual-source native/scaling review."
+    },
+    {
+      "owner": "pa31",
+      "name": "filter-helper",
+      "path": "pa31/tests/spec/try-captures/filter-helper.rs",
+      "sha256": "4635c659e96a6662c6112a559a086bc27a302072dc941ca64d54c3ed590dd856",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-filter-helper.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/18.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@try_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "try_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-filter-helper.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3134: this typed capture use is not implemented\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete outcome qualified by receipt1794455612137610151 and actual-source native/scaling review."
+    },
+    {
+      "owner": "pa31",
+      "name": "nested",
+      "path": "pa31/tests/spec/try-captures/nested.rs",
+      "sha256": "6c0b3d269dd73e78c828e109c2363be58778542f9d6a9fb400363eb8bae02435",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-nested.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/19.o"
+        ],
+        "diagnostic": ""
+      },
+      "baseline": {
+        "status": 0,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@try_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "try_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-nested.rs"
+        ],
+        "diagnostic": ""
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete outcome qualified by receipt1794455612137610151 and actual-source native/scaling review."
+    },
+    {
+      "owner": "pa31",
+      "name": "wrong-output",
+      "path": "pa31/tests/spec/try-captures/wrong-output.rs",
+      "sha256": "7774a7b2d21c9a99ca76ca1644c85f21c5d7ff27667aaac3907d64d074806514",
+      "expected_rust_object_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "rustc": {
+        "status": 1,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-wrong-output.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/20.o"
+        ],
+        "diagnostic": "error[E0271]: type mismatch resolving `<Outcome<bool> as Try>::Output == u8`\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-wrong-output.rs:54:43\n   |\n54 | fn make()->impl Fn()->Outcome<bool>{||try{7u8}}\n   |                                           ^^^ type mismatch resolving `<Outcome<bool> as Try>::Output == u8`\n   |\nnote: expected this to be `u8`\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-wrong-output.rs:41:17\n   |\n41 |     type Output=T;type Residual=Short;\n   |                 ^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0271`.\n"
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@try_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "try_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-wrong-output.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 2987: incompatible types\n"
+      },
+      "exit_status": 1,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete outcome qualified by receipt1794455612137610151 and actual-source native/scaling review."
+    },
+    {
+      "owner": "pa31",
+      "name": "missing-gate",
+      "path": "pa31/tests/spec/try-captures/missing-gate.rs",
+      "sha256": "0c7f0ed5977f1db779fac219e678ef9b545789fbb0567891575e5e67fc9a4447",
+      "expected_rust_object_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "rustc": {
+        "status": 1,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-missing-gate.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/21.o"
+        ],
+        "diagnostic": "error[E0658]: `try` expression is experimental\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-missing-gate.rs:53:37\n   |\n53 | fn make()->impl Fn()->Outcome<u8>{||try{7}}\n   |                                     ^^^^^^\n   |\n   = note: see issue #154391 <https://github.com/rust-lang/rust/issues/154391> for more information\n   = help: add `#![feature(try_blocks)]` to the crate attributes to enable\n   = note: this compiler was built on 2026-08-18; consider upgrading it if it is out of date\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0658`.\n"
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@try_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "try_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-missing-gate.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 2958: try block requires try_blocks or its actual expression allowance\n"
+      },
+      "exit_status": 1,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete outcome qualified by receipt1794455612137610151 and actual-source native/scaling review."
+    },
+    {
+      "owner": "pa31",
+      "name": "closure-boundary",
+      "path": "pa31/tests/spec/try-captures/closure-boundary.rs",
+      "sha256": "c297423678f6d37913a88358311dcbd0012958d8e3cbda3e41af36c97c464b3e",
+      "expected_rust_object_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "rustc": {
+        "status": 1,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-closure-boundary.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/22.o"
+        ],
+        "diagnostic": "error[E0277]: `?` couldn't convert the error: `u8: FromResidual<Short>` is not satisfied\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-closure-boundary.rs:54:64\n   |\n54 | fn code()->Outcome<u8>{try{let c=||->u8{Outcome::<u8>::Value(7)?};c()}}\n   |                                                                ^ the trait `FromResidual<Short>` is not implemented for `u8`\n   |\nnote: `Short` needs to implement `Into<u8>`\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-closure-boundary.rs:37:1\n   |\n37 | pub enum Short{Error(u8)}\n   | ^^^^^^^^^^^^^^\n   = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait\nhelp: the trait `FromResidual<Short>` is implemented for `Outcome<T>`\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-closure-boundary.rs:39:1\n   |\n39 | impl<T> FromResidual<Short> for Outcome<T>{fn from_residual(_value:Short)->Self{Outcome::Error(23)}}\n   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0277`.\n"
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@try_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "try_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-closure-boundary.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 2986: trait obligation requires an unambiguous matching assumption or implementation\n"
+      },
+      "exit_status": 1,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete outcome qualified by receipt1794455612137610151 and actual-source native/scaling review."
+    },
+    {
+      "owner": "pa31",
+      "name": "repeat-once",
+      "path": "pa31/tests/spec/try-captures/repeat-once.rs",
+      "sha256": "6f5d66ba73aac092f5e5b6ed9bb006ecb9a0bf56c13eeecf0f3fbd5107930d38",
+      "expected_rust_object_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "rustc": {
+        "status": 1,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-repeat-once.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/baseline2/23.o"
+        ],
+        "diagnostic": "error[E0382]: use of moved value: `run`\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-repeat-once.rs:54:108\n   |\n54 | struct Owned(u8);fn code(){let value=Owned(7);let run=move||->Outcome<Owned>{try{value}};let _=run();let _=run();}\n   |                                                                                                -----       ^^^ value used here after move\n   |                                                                                                |\n   |                                                                                                `run` moved due to this call\n   |\nnote: closure cannot be invoked more than once because it moves the variable `value` out of its environment\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-repeat-once.rs:54:82\n   |\n54 | struct Owned(u8);fn code(){let value=Owned(7);let run=move||->Outcome<Owned>{try{value}};let _=run();let _=run();}\n   |                                                                                  ^^^^^\nnote: this value implements `FnOnce`, which causes it to be moved when called\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-repeat-once.rs:54:96\n   |\n54 | struct Owned(u8);fn code(){let value=Owned(7);let run=move||->Outcome<Owned>{try{value}};let _=run();let _=run();}\n   |                                                                                                ^^^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0382`.\n"
+      },
+      "baseline": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@try_capture",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "try_capture",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/inputs2/pa31-repeat-once.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 3023: this typed capture use is not implemented\n"
+      },
+      "exit_status": 1,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Type inspection defers ownership; complete checking rejects the moved closure, as independently required.",
+      "type_inspection_status": 0,
+      "complete_status": 1
+    },
+    {
+      "owner": "pa31",
+      "name": "wildcard-owned",
+      "path": "pa31/tests/spec/try-captures/wildcard-owned.rs",
+      "sha256": "499cd8c7f1650e0a4191138f1e309968accc9cea3183c2350ee0b3344b7a94c4",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture_extra",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa31-wildcard-owned.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-observations/2.o"
+        ],
+        "diagnostic": ""
+      },
+      "candidate": {
+        "status": 0,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/rust/dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@try_capture_extra",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "try_capture_extra",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa31-wildcard-owned.rs"
+        ],
+        "diagnostic": ""
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete outcome qualified by receipt1794455612137610151 and actual-source native/scaling review."
+    },
+    {
+      "owner": "pa31",
+      "name": "repeat-wildcard",
+      "path": "pa31/tests/spec/try-captures/repeat-wildcard.rs",
+      "sha256": "98d52f95756b6201f232c145ff1482c568047831e939b336ce14c92ad3ecf1cd",
+      "expected_rust_object_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "rustc": {
+        "status": 1,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture_extra",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa31-repeat-wildcard.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-observations/3.o"
+        ],
+        "diagnostic": "error[E0382]: use of moved value: `run`\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa31-repeat-wildcard.rs:65:102\n   |\n65 | struct Owned(u8);fn code(){let value=Owned(7);let run=move||{let _:Outcome<Owned>=try{value};};run();run();}\n   |                                                                                                ----- ^^^ value used here after move\n   |                                                                                                |\n   |                                                                                                `run` moved due to this call\n   |\nnote: closure cannot be invoked more than once because it moves the variable `value` out of its environment\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa31-repeat-wildcard.rs:65:87\n   |\n65 | struct Owned(u8);fn code(){let value=Owned(7);let run=move||{let _:Outcome<Owned>=try{value};};run();run();}\n   |                                                                                       ^^^^^\nnote: this value implements `FnOnce`, which causes it to be moved when called\n  --> /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa31-repeat-wildcard.rs:65:96\n   |\n65 | struct Owned(u8);fn code(){let value=Owned(7);let run=move||{let _:Outcome<Owned>=try{value};};run();run();}\n   |                                                                                                ^^^\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0382`.\n"
+      },
+      "candidate": {
+        "status": 0,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/rust/dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@try_capture_extra",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "try_capture_extra",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa31-repeat-wildcard.rs"
+        ],
+        "diagnostic": ""
+      },
+      "exit_status": 1,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Type inspection defers ownership; complete checking rejects the moved closure, as independently required.",
+      "type_inspection_status": 0,
+      "complete_status": 1
+    },
+    {
+      "owner": "pa31",
+      "name": "width-8-noise-0",
+      "path": "pa31/tests/spec/try-captures/width-8-noise-0.rs",
+      "sha256": "87a523fc25600b7fdf22758fad45da7c9a6174efc10cc53ee0b2bd99c5c38625",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "width": 8,
+      "noise": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture_extra",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa31-width-8-noise-0.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-observations/4.o"
+        ],
+        "diagnostic": ""
+      },
+      "candidate": {
+        "status": 0,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/rust/dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@try_capture_extra",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "try_capture_extra",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa31-width-8-noise-0.rs"
+        ],
+        "diagnostic": ""
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete outcome qualified by receipt1794455612137610151 and actual-source native/scaling review."
+    },
+    {
+      "owner": "pa31",
+      "name": "width-8-noise-128",
+      "path": "pa31/tests/spec/try-captures/width-8-noise-128.rs",
+      "sha256": "686cf6cacea787c9e82a689c0463845537ea6134a858cd0b1ab56d76cf2c23df",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "width": 8,
+      "noise": 128,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture_extra",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa31-width-8-noise-128.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-observations/5.o"
+        ],
+        "diagnostic": ""
+      },
+      "candidate": {
+        "status": 0,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/rust/dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@try_capture_extra",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "try_capture_extra",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa31-width-8-noise-128.rs"
+        ],
+        "diagnostic": ""
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete outcome qualified by receipt1794455612137610151 and actual-source native/scaling review."
+    },
+    {
+      "owner": "pa31",
+      "name": "width-32-noise-0",
+      "path": "pa31/tests/spec/try-captures/width-32-noise-0.rs",
+      "sha256": "e0a171ebe6fcc50050c6dbe8987e43d81df8982cdc073c9e81dcf5233498aed4",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "width": 32,
+      "noise": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture_extra",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa31-width-32-noise-0.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-observations/6.o"
+        ],
+        "diagnostic": ""
+      },
+      "candidate": {
+        "status": 0,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/rust/dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@try_capture_extra",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "try_capture_extra",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa31-width-32-noise-0.rs"
+        ],
+        "diagnostic": ""
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete outcome qualified by receipt1794455612137610151 and actual-source native/scaling review."
+    },
+    {
+      "owner": "pa31",
+      "name": "width-32-noise-128",
+      "path": "pa31/tests/spec/try-captures/width-32-noise-128.rs",
+      "sha256": "244a4c4de2a963fb6bba15e709006cbf55c6e0187050f4c3f2fea3b063eb5cf7",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "width": 32,
+      "noise": 128,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture_extra",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa31-width-32-noise-128.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-observations/7.o"
+        ],
+        "diagnostic": ""
+      },
+      "candidate": {
+        "status": 0,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/rust/dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@try_capture_extra",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "try_capture_extra",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa31-width-32-noise-128.rs"
+        ],
+        "diagnostic": ""
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete outcome qualified by receipt1794455612137610151 and actual-source native/scaling review."
+    },
+    {
+      "owner": "pa31",
+      "name": "width-128-noise-0",
+      "path": "pa31/tests/spec/try-captures/width-128-noise-0.rs",
+      "sha256": "437699e7b4c60301fede1445844b8104505dfe96619a8a4920e07905fd9a758e",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "width": 128,
+      "noise": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture_extra",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa31-width-128-noise-0.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-observations/8.o"
+        ],
+        "diagnostic": ""
+      },
+      "candidate": {
+        "status": 0,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/rust/dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@try_capture_extra",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "try_capture_extra",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa31-width-128-noise-0.rs"
+        ],
+        "diagnostic": ""
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete outcome qualified by receipt1794455612137610151 and actual-source native/scaling review."
+    },
+    {
+      "owner": "pa31",
+      "name": "width-128-noise-128",
+      "path": "pa31/tests/spec/try-captures/width-128-noise-128.rs",
+      "sha256": "be5e7955e90cc3b7102f39e00506abdc92181ab4062c8451bc0d73c45cfcbe68",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "width": 128,
+      "noise": 128,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture_extra",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa31-width-128-noise-128.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-observations/9.o"
+        ],
+        "diagnostic": ""
+      },
+      "candidate": {
+        "status": 0,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/rust/dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@try_capture_extra",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "try_capture_extra",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa31-width-128-noise-128.rs"
+        ],
+        "diagnostic": ""
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete outcome qualified by receipt1794455612137610151 and actual-source native/scaling review."
+    },
+    {
+      "owner": "pa31",
+      "name": "native-captured-protocol",
+      "path": "pa31/tests/spec/try-captures/native-captured-protocol.rs",
+      "sha256": "ead4b43aa993cd39837e77d935e2865f5df7743c26e6fb2d2c9cb62d88f11ff8",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "observer_path": "pa31/tests/spec/try-captures/observer.c",
+      "observer_sha256": "f97703e6a1b73e303917835d3f968d270ebf476075e587c3f4c05dd8552c72c3",
+      "expected_runtime_stdout": "try-capture 7 43 23 123\n",
+      "required_native_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture_extra",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa31-native-captured-protocol.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-observations/11.o"
+        ],
+        "diagnostic": ""
+      },
+      "link": {
+        "command": [
+          "cc",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/observer.c",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-observations/11.o",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-observations/11.execute"
+        ],
+        "status": 0
+      },
+      "independent_native": {
+        "status": 0,
+        "stdout": "try-capture 7 43 23 123\n",
+        "stderr": ""
+      },
+      "candidate": {
+        "status": 0,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/rust/dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "--source-core",
+          "minicore@try_capture_extra",
+          "--crate-name",
+          "minicore",
+          "--crate-disambiguator",
+          "try_capture_extra",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa31-native-captured-protocol.rs"
+        ],
+        "diagnostic": ""
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": true,
+      "qualification": "Complete outcome qualified by receipt1794455612137610151 and actual-source native/scaling review.",
+      "candidate_native_qualified": true,
+      "candidate_native_stdout": "try-capture 7 43 23 123\n"
+    }
+  ]
+}

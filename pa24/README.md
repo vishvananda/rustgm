@@ -24,6 +24,9 @@ LowIR instances.
   truncation, wildcard/rest patterns and discriminant reads. Indexing and
   subslicing capture the containing array or slice. Unused places do not gain
   reads, moves or loans merely because they occur in a pattern.
+  A wildcard discarding a computed value still evaluates that expression's
+  operands. A try block consumes its tail through the actual source protocol;
+  a discarded result must not hide an owned capture's move.
 - Build the actual environment layout, moves and destruction from its stored
   captures. Derive applicable Copy, Clone and auto-trait obligations from those
   fields and their permissions. Preserve partial moves and independent field
@@ -145,3 +148,8 @@ closure capture field proofs and typed-wildcard reborrow evaluation. Existing
 caller assumptions, source traits, lifetime debts and const/safety checks remain
 required. Contract intrinsic/runtime transformations, imported body/value/API
 transport and complete assignment publication remain outstanding.
+
+The [try-capture checkpoint](../docs/pa24-try-captures.md) retains fourteen
+ordinary contracts as serialized requirements while the actual source forms
+qualify under PA31. It preserves complete ownership checking and one-field
+scaling; no ordinary Try-provider fence is counted as a language outcome.

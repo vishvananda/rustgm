@@ -353,8 +353,14 @@
     "run": 43145135573,
     "head": "8c231518e8660384df66ff7495ea3c741b4bc331",
     "semantic_source": "cf75c3f61e718dfcb0878f71a69577ecd7dbb0b5",
-    "state": "running; fast and lint/harness/host graph passed; release/course running",
-    "do_not_restart_for_documentation_descendants": true
+    "state": "failed PA24 text626/642 after all Rust regular tests pass",
+    "private_passed": 3065,
+    "private_failed": 0,
+    "private_ignored": 3,
+    "linking_passed": 285,
+    "linking_failed": 0,
+    "later_stages": "skipped",
+    "repair": "16 independently reviewed exact text updates, see docs/pa24-try-captures-evidence.json"
   },
   "original_core": {
     "result": {

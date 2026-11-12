@@ -1,5 +1,19 @@
 # Library build blocker tracker
 
+Current [try-capture checkpoint](pa24-try-captures.md), CLI67f146ab, qualifies
+21 complete source outcomes from36 independent contracts, with15 ordinary
+contracts still required. Actual source native7/43/23/123 and the old ByRef control
+execute; one-field scaling/noise and move/feature/target opponents pass. The only
+production change adds TryBlock to existing value-use body traversal.
+
+Preceding full43145135573 passes every Rust regular test (3065private/285linking),
+then fails16 PA24 text contracts. Those16 reviewed updates preserve source bytes
+and outcomes:13 earlier diagnostics and3 provably identical pointer-return spills,
+independently checked with16 Rust outcomes and3 actual native comparisons before
+normal generation. All other reference hashes remain unchanged. New original67
+observation and full successor remain pending; last e8 firstfailsfilter_try_fold
+140:3088 attry{acc}. No original core/alloc/std artifact exists.
+
 Current [wrapped callback-premise checkpoint](pa24-wrapped-callback-premises.md),
 sourcecf75c3f61/immutableCLIe8ca58db, reaches ByRefSized fold/rfold and all nine
 previous ArrayChunks/regression bodies without their failure records. The unchanged

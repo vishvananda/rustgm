@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "owner": "pa30",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": 2024,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0
+  },
+  "outcomes_declared_before_execution": true,
+  "state": "36 independent contracts across the packets:21 actual-source complete outcomes qualify,15 ordinary contracts retain required completion. No assignment activation.",
+  "inputs": [
+    {
+      "owner": "pa30",
+      "name": "native-captured-protocol",
+      "path": "pa30/tests/spec/try-captures/native-captured-protocol.rs",
+      "sha256": "9bcaff4d9e3638263bf9ce9565279bd3ae5a4b9351774251d12a0da8a8b58182",
+      "expected_rust_object_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "observer_path": "pa30/tests/spec/try-captures/observer.c",
+      "observer_sha256": "f97703e6a1b73e303917835d3f968d270ebf476075e587c3f4c05dd8552c72c3",
+      "expected_runtime_stdout": "try-capture 7 43 23 123\n",
+      "required_native_status": 0,
+      "rustc": {
+        "status": 0,
+        "command": [
+          "rustc",
+          "+1.98.0",
+          "--edition=2024",
+          "--crate-type=lib",
+          "--crate-name",
+          "try_capture_extra",
+          "--emit=obj",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=no",
+          "-Copt-level=0",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa30-native-captured-protocol.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-observations/10.o"
+        ],
+        "diagnostic": ""
+      },
+      "link": {
+        "command": [
+          "cc",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/observer.c",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-observations/10.o",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-observations/10.execute"
+        ],
+        "status": 0
+      },
+      "independent_native": {
+        "status": 0,
+        "stdout": "try-capture 7 43 23 123\n",
+        "stderr": ""
+      },
+      "candidate": {
+        "status": 1,
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/rust/dev-fast/rustgm",
+          "--emit-types",
+          "--edition=2024",
+          "--cap-lints=allow",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/filter-try-capture/more-inputs/pa30-native-captured-protocol.rs"
+        ],
+        "diagnostic": "ERROR: file 0: 74: unresolved import\n"
+      },
+      "exit_status": 0,
+      "candidate_complete_prepared_root_qualified": false
+    }
+  ]
+}

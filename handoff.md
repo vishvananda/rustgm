@@ -5,7 +5,40 @@ one worker: do not spawn agents or create worktrees. Use existing B
 `/mnt/vizier/rustgm-scratch/rustgm-pa26-work`; main is Git-only. Goal: original
 core, then alloc/std. No original library artifact exists.
 
-## Current checkpoint — wrapped fold premises, original observation next
+## Current checkpoint — try-block captures, original observation next
+
+[Checkpoint](docs/pa24-try-captures.md): productionONEline shares existing
+Loop/TryBlock value-use traversal. No newengine/field/permission/backend/storage/
+limit. CLI67f146ab1d137041423db053336ea8a4724269bb413dfdf97367ffceb108791e.
+36independent Rust outcomes26accept10reject:PA24serialized14,PA30native1,
+PA31source21. Source21completePASS; ordinary15remainREQUIRED atprovider/import
+fences, includingtheirpositive/negativecontracts. RootPA24still642; no neworacles/
+activation. CopyFn/mutableFnMut/ownedFnOnce retainoneactualfield. Typeinspection0
+forrepeat-once/wildcard isNOTfalseaccept:completeownershiprejects1 asrequired.
+Initialpublic1794453757639414841 PASS3/97.97s; final1794455612137610151
+PASS3exact2targets43.27s fullfmt/audit/selectedstrictClippy. Native2groups2programs
+PASS,newactualsource7/43/23/123matchesindependentordinary/sourceRust/C; oldByRef
+23/1234controlPASS. Width8/32/128 inference5227/16411/61147,traits37/133/517,
+canonical1400/1640/2600;onefield/noise128zero. Reviewfilter-try-capture/review/.
+
+PrecedingFULL43145135573 exact8c231/sourcecf75 TERMINALFAILURE: ALLRustregular
+PASS,private3065PASS0fail3ignored,linking285PASS. PA24text626/642 (13earliernegative
+diagnostics+3equivalentptrreturnspills), laterstagesSKIPPED. All16inputbytes/status
+outcomes fixed; allalreadychangedin6c. Exact3spillSSAequivalence toold5dIR proved;
+pinnedRust16+actualRust/CPPnative3checked BEFOREnormalreferencegeneration.
+Newbatch1794454815232195184-c67d8ff46d63.json;28096otherreferencehashes/baseJSON
+unchanged. Rawby-ref-fold/ci-reference-review2/passed.json. No blindbless/inversion.
+
+Upstream/harness/tidy allPASS;28145currentreferencehashesunchanged.
+NEXT: semanticcommit/freeze exact67; immutable accepting
+comparison; NEWunchanged120s original+postcheck. Lastoriginale8 firstfilter_try_fold
+140:3088 line86 attry{acc}. No core/alloc/stdartifact. Publish+ONEfullafterfresh
+noactivefullcheck. Currentfull431451isFAILED, no activefull known (refreshbefore
+newdispatch). Keepstable5d/currente8/optimized21f untilreplacementpublication/
+comparison/fullqualification asapplicable; duplicate6c fixed-dev-fast/81ABSENT,
+identicaltest-fix6c stillavailable. Preserveallolderrequirements. Singleworker.
+
+## Preceding checkpoint — wrapped fold premises
 
 [Checkpoint/evidence](docs/pa24-wrapped-callback-premises.md): production2files
 reuse scoped comparison to bind complete canonical projected inputs; blocked

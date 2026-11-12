@@ -222,3 +222,31 @@ fn source_wrapped_callback_results_execute_once() -> TestResult {
         "by-ref-fold 23 1234\n",
     )
 }
+
+#[test]
+fn source_try_captures_prepare_actual_protocol_and_owned_environments() -> TestResult {
+    callback_result_program(
+        "try-captures/native-captured-protocol",
+        "try_capture_execution",
+    )
+    .map(|_| ())
+}
+
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn source_try_captures_execute_actual_value_output_and_residual_calls() -> TestResult {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let out = root.join("obj/parallel/filter-try-capture/native");
+    std::fs::create_dir_all(&out)?;
+    crate::ffi_program::check(
+        &root,
+        &out,
+        "pa31",
+        &callback_result_program(
+            "try-captures/native-captured-protocol",
+            "try_capture_execution",
+        )?,
+        &crate::resolve::fixture("pa30/tests/spec/try-captures/observer.c")?,
+        "try-capture 7 43 23 123\n",
+    )
+}

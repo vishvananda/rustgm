@@ -1,0 +1,170 @@
+{
+  "schema": 1,
+  "state": "locally qualified; immutable original observation and full successor pending",
+  "compiler": {
+    "sha256": "67f146ab1d137041423db053336ea8a4724269bb413dfdf97367ffceb108791e",
+    "production_change": "sema/bodies/closures/uses.rs shares existing value-use traversal for Loop and TryBlock bodies",
+    "source_commit": "pending clean source checkpoint/pin"
+  },
+  "contracts": {
+    "independent": 36,
+    "accept": 26,
+    "reject": 10,
+    "source_complete": 21,
+    "ordinary_required": 15,
+    "owner_counts": {
+      "pa24_serialized": 14,
+      "pa30_native": 1,
+      "pa31_source": 21
+    },
+    "new_course_cases": 0,
+    "assignment_activation": false
+  },
+  "qualification": {
+    "initial_receipt": "1794453757639414841",
+    "initial_exact_tests": 3,
+    "initial_seconds": 97.97,
+    "public_receipt": "1794455612137610151",
+    "public_exact_tests": 3,
+    "public_targets": 2,
+    "public_seconds": 43.27,
+    "format_architecture_selected_strict_clippy": "passed",
+    "review": "obj/parallel/filter-try-capture/review/passed.json",
+    "native_groups": 2,
+    "actual_programs": 2,
+    "source_native_stdout": "try-capture 7 43 23 123\n",
+    "independent_native": "both ordinary and source Rust/C match the declared output",
+    "prior_control_native_stdout": "by-ref-fold 23 1234\n",
+    "stored_fields_all_scaling_cases": 1,
+    "type_inspection_is_not_complete_ownership_checking": true,
+    "upstream_harness_tidy": {
+      "state": "passed",
+      "receipt": "obj/parallel/filter-try-capture/upstream-review/receipt.json",
+      "steps": [
+        {
+          "name": "upstream",
+          "command": [
+            "make",
+            "test-upstream"
+          ],
+          "status": 0,
+          "seconds": 0.3100772720063105
+        },
+        {
+          "name": "harness",
+          "command": [
+            "make",
+            "test-harness"
+          ],
+          "status": 0,
+          "seconds": 27.56997724098619
+        },
+        {
+          "name": "tidy",
+          "command": [
+            "make",
+            "tidy"
+          ],
+          "status": 0,
+          "seconds": 18.860593558987603
+        }
+      ],
+      "reference_hashes_unchanged": 28145
+    }
+  },
+  "work": [
+    {
+      "width": 8,
+      "noise": 0,
+      "work": [
+        5227,
+        37,
+        1400
+      ],
+      "stored_fields": 1
+    },
+    {
+      "width": 8,
+      "noise": 128,
+      "work": [
+        5227,
+        37,
+        1400
+      ],
+      "stored_fields": 1
+    },
+    {
+      "width": 32,
+      "noise": 0,
+      "work": [
+        16411,
+        133,
+        1640
+      ],
+      "stored_fields": 1
+    },
+    {
+      "width": 32,
+      "noise": 128,
+      "work": [
+        16411,
+        133,
+        1640
+      ],
+      "stored_fields": 1
+    },
+    {
+      "width": 128,
+      "noise": 0,
+      "work": [
+        61147,
+        517,
+        2600
+      ],
+      "stored_fields": 1
+    },
+    {
+      "width": 128,
+      "noise": 128,
+      "work": [
+        61147,
+        517,
+        2600
+      ],
+      "stored_fields": 1
+    }
+  ],
+  "ci_reference_repair": {
+    "rust_checks": 16,
+    "actual_runtime_comparisons": 3,
+    "pointer_spills_proved_identical": 3,
+    "new_reference_batch": "pa24/reference-batches/1794454815232195184-c67d8ff46d63.json",
+    "new_reference_batch_sha256": "c67d8ff46d63d77ab8291c9a53c0ba86248aeb2bcdf363f3fb635834d1f5c8de",
+    "all_other_reference_hashes_unchanged": 28096,
+    "base_reference_json_unchanged": true,
+    "input_bytes_and_outcomes_unchanged": true
+  },
+  "preceding_full_ci": {
+    "run": 43145135573,
+    "head": "8c231518e8660384df66ff7495ea3c741b4bc331",
+    "source": "cf75c3f61e718dfcb0878f71a69577ecd7dbb0b5",
+    "state": "all Rust regular tests pass; PA24 text626/642 because16 bytes contracts differ; later stages skipped",
+    "private_passed": 3065,
+    "private_failed": 0,
+    "private_ignored": 3,
+    "linking_passed": 285,
+    "linking_failed": 0,
+    "reference_repair": "all16 differences already present in preceding6c; no input/acceptance outcome changes; independent pre-generation review and exact normal reference generation complete"
+  },
+  "original_core": "No new67 observation yet; last e8 first failure filter_try_fold140:3088 at try{acc}; original core/alloc/std artifacts absent.",
+  "current_full_ci": "pending publication and fresh no-active-full check",
+  "unchanged": [
+    "backend contract/bridge",
+    "storage/resource policy",
+    "source archive and six configuration pins",
+    "compiler limits",
+    "assignment activation",
+    "all fixture input bytes for16 text updates"
+  ],
+  "raw_evidence_root": "obj/parallel/filter-try-capture"
+}

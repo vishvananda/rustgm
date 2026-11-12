@@ -20,6 +20,7 @@ function @rg.17.i3(%p0 : ptr) -> ptr {
   slot $s0 : ptr
   slot $s1 : obj<8x8>
   slot $s2 : obj<8x8>
+  slot $s3 : ptr
   block ^b0:
     store ptr %p0, $s0
     %t0 = load ptr $s0
@@ -29,7 +30,9 @@ function @rg.17.i3(%p0 : ptr) -> ptr {
     copyobj 8x8 %t1, %t2
     %t3 = addr $s1
     %t4 = call ptr @rg.15.i4(%t3)
-    return ptr %t4
+    store ptr %t4, $s3
+    %t5 = load ptr $s3
+    return ptr %t5
 }
 function @rg.13(%p0 : i1) -> void {
   slot $s0 : i1

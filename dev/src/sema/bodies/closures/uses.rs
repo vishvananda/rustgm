@@ -449,7 +449,7 @@ impl Collector<'_> {
                 self.push(then, Use::Value);
                 self.push(condition, Use::Value);
             }
-            Kind::Loop { body } => self.push(body, Use::Value),
+            Kind::Loop { body } | Kind::TryBlock { body, .. } => self.push(body, Use::Value),
             Kind::While { condition, body } => {
                 self.push(body, Use::Value);
                 self.push(condition, Use::Value);
