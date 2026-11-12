@@ -164,6 +164,10 @@ the passing receipts, not those attempts, qualify the current implementation.
     result.rs:1795 ("invalid method trait selection").
   - Rejected selection-time designs (wip3, wip4) regressed core bodies; their
     comparisons remain in `obj/parallel/pin-forwarding/`.
+- Premise input clean pin `obj/parallel/pin-forwarding/candidate-dev-fast`
+  (b41f1792, source 9e4103767) passed its observation (14 records under load
+  13–17, all seven cleared, no regressions) and postcheck. Its measurement
+  against 59a51ffa is pending.
 - Let-condition clean pin `obj/parallel/radix-captures/candidate-dev-fast`
   (59a51ffa, source 9663144cf) passed its observation (24 records) and
   postcheck. Its measurement against ead8009c is pending.

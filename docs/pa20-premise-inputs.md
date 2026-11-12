@@ -169,5 +169,19 @@ result.rs:1795 ("invalid method trait selection"). Its `t.clone()` on `&mut T`
 meets core's negative `impl !Clone for &mut T` before autoderef reaches
 `T: Clone`.
 
+**Clean pin.** Pin b41f1792 is built from clean source 9e4103767, with 3917
+Rust hashes and an empty patch (`obj/parallel/pin-forwarding/candidate-dev-fast`).
+Only test and documentation files changed after the exploratory build, so it is
+byte-identical to wip5 and wip6. Its unchanged observation ends at its deadline
+after 121.034s, with 14 partial records and 14,292 attempts. The last item is
+8825, str/pattern.rs:711. External load was 13–17 during the run, so it reached
+fewer items than wip5. Against clean 59a51ffa it clears all seven forwarding
+bodies, 6456–6464, with no new failure among previously passing reached bodies,
+and the first remaining failure is `cloned` 6721. The postcheck verifies all
+722 source hashes, 375 opens, six configuration bindings, unchanged immutable
+bindings and the 3917 head blobs. The progress SHA is
+`29f17ed84f57aca777bf34445512d5a59d4fd061dd6f4fb3b426cd1069a6df9d`. The
+measurement against 59a51ffa is pending.
+
 Partial counts make no throughput claim, and this is neither a complete census
 nor a core artifact.
