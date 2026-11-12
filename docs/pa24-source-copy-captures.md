@@ -231,5 +231,26 @@ bodies, 7054 and 7056. All of them repeat `MaybeUninit`. No new failure appears
 among previously passing reached bodies. The first remaining failure is still
 `fold` 5290 at zip.rs:275.
 
-A clean pin, its unchanged observation with the postcheck, and measurement
-follow publication.
+**Clean pin.** Clean published source a5fdccff7 freezes CLI
+`ed7d5ed7d238a2b3f704a40d9a12701baa5e21ba7950ba560df16ca5799f4753`, with 3911
+Rust hashes and an empty patch (`obj/parallel/repeat-copy/candidate-dev-fast`).
+Formatting moved source lines after the exploratory build, so it is not
+byte-identical to e18b4674. A first unchanged observation starved when external
+load rose to a load average near 41. It reached item 5021 with no records and
+is kept only as `original-clean-loaded-1/NOT-EVIDENCE.md`. The rerun ends at
+its deadline after 120.870s, with 41 partial records and 15,245 attempts. The
+last item is 10458, x86/avx.rs:1065. Against clean 12358002 it clears the same
+seven repeat bodies, with no new failure among previously passing reached
+bodies. The postcheck verifies all 722 source hashes, 375 opens, six
+configuration bindings, unchanged immutable bindings and the 3911 head blobs.
+The progress SHA is
+`1b73fe9ca4d56df3836062f3281612df51a61e5665a8a79cffd5fd8043ffa35f`.
+
+**Measurement.** Sixty exclusive A/A plus ABBA accepting observations against
+12358002 preserve complete outputs. The controls are the five capture controls
+above plus an ordinary shared-reference repeat (PA18
+`functions/accept-repeat-shared`). Paired wall ratios are
+0.894/0.987/0.985/0.894/0.894/1.082, against A/A
+0.951/1.032/0.989/0.979/0.967/1.060, at 19–593 ms. External load rose to a
+load average near 30 as the run ended. No optimized, neutrality or
+original-core speed is claimed.
