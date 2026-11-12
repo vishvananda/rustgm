@@ -149,6 +149,23 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-12 closure creator requirement update (supersedes the blocks below):**
+
+- The array length update's recorded lowering gap is fixed
+  ([evidence](docs/pa31-closure-creator-requirements.md)):
+  - A closure whose signature inputs mention creator regions bridges them.
+  - A closure assumes its creator's implied bounds.
+  - Eleven reductions are in `pa31/tests/spec/closure-creator-requirements`.
+    Declared batches 3-6, the diagnostics and the native probes are in
+    `obj/parallel/array-pattern/`.
+- It also fixes a regression pushed in e3af1168c: annotated elided closure
+  input lifetimes had become ports. Two `source_closures::specializations`
+  tests failed on dbeadba6 and pass again.
+- Remaining recorded closure gaps:
+  - generic instantiation of unannotated closures with private input ports
+    (`generic-match`);
+  - the two const closure lowering paths.
+
 **2026-11-12 array length pattern update (supersedes the blocks below):**
 
 - The `is_sorted_by` 8380 "array pattern requires a known fixed-array type"

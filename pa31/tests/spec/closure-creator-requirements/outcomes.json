@@ -1,0 +1,120 @@
+{
+ "schema": 1,
+ "declared": "2026-11-12, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run of each file (obj/parallel/array-pattern/core/declared.json, batches 3-6). Each case's first line records its prefix.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "base": "clean pin wip1 (6043c8da, the array length pattern change on c96d23ffa); clean candidates dbeadba6 and 22902d20 fail captured-call the same way",
+ "declaration_agreement": "11/11 declarations agree with rustc. where-unimplied was declared to exercise a closure requirement the creator cannot prove; rustc and RustGM both reject it earlier, at the where clause (E0309), so it does not reach the closure.",
+ "cases": {
+  "captured-call.rs": {
+   "sha256": "2ca685aec4eb7756bd4403c30ff3d4e6b20e8c299abbc620d0d5c11a1f5576e1",
+   "probe": "d-ident",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "diagnostic: no pattern; the closure passes its &'a T parameter to a captured FnMut(&'a T, &'a T)",
+   "batch": 4,
+   "rustgm_base_wip1": "accept at typing; prepared lowering: required lifetime does not outlive its target",
+   "rustgm": "accept at typing and prepared lowering"
+  },
+  "captured-call-fn.rs": {
+   "sha256": "71479335ca2c0b2ef954c57f42ef8a23dea83b1aa2b89b42bd08f0c43a444191",
+   "probe": "d-ident-fn",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "diagnostic: as d-ident with a function item instead of a captured FnMut",
+   "batch": 4,
+   "rustgm_base_wip1": "accept at typing and prepared lowering",
+   "rustgm": "accept at typing and prepared lowering"
+  },
+  "tuple-pattern.rs": {
+   "sha256": "81fc083aec598c2986a7acfe6367a201997882e97f17429c0b6946f25696d1e4",
+   "probe": "d-tuple",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "diagnostic: a tuple pattern in a closure parameter with an expected &'a (T, T)",
+   "batch": 4,
+   "rustgm_base_wip1": "accept at typing; prepared lowering: required lifetime does not outlive its target",
+   "rustgm": "accept at typing and prepared lowering"
+  },
+  "declared-outlives.rs": {
+   "sha256": "a1675fbcb47be7a1a2b7d37ca07d4321868f0498737484d3e8f3094cbb5d2506",
+   "probe": "d-where",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "diagnostic: d-ident with an explicit T: 'a bound on h",
+   "batch": 5,
+   "rustgm_base_wip1": "accept at typing; prepared lowering: required lifetime does not outlive its target",
+   "rustgm": "accept at typing and prepared lowering"
+  },
+  "concrete-u8.rs": {
+   "sha256": "02d710fdc72373b2697bdfd2bfd19c474d70f0e9bf55713e9018c0acfe679b51",
+   "probe": "d-u8",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "diagnostic: d-ident with u8 in place of T",
+   "batch": 5,
+   "rustgm_base_wip1": "accept at typing; prepared lowering: required lifetime does not outlive its target",
+   "rustgm": "accept at typing and prepared lowering"
+  },
+  "array-pattern.rs": {
+   "sha256": "6593a9046083b6d1c6b7d27c20060f19279d855a45b965685309424ee3b8a506",
+   "probe": "closure-ergonomic",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "control: a closure with a known-length expected &'a [T; 2] input binds a, b: &'a T",
+   "batch": 3,
+   "rustgm_base_wip1": "accept at typing; prepared lowering: required lifetime does not outlive its target",
+   "rustgm": "accept at typing and prepared lowering"
+  },
+  "nested-closures.rs": {
+   "sha256": "fc5e2c033e91044bad5e8a3eb7edbbb847f1cd388dc36e4c9a769a49c52c628a",
+   "probe": "p-implied-nested",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "control: d-ident's requirement through two nested closures",
+   "batch": 6,
+   "rustgm_base_wip1": "accept at typing; prepared lowering: required lifetime does not outlive its target",
+   "rustgm": "accept at typing and prepared lowering"
+  },
+  "declared-static.rs": {
+   "sha256": "71f33c4548b81b2c708ddd37be2aad83555538edb7648ecbe9cff05af3d0fe44",
+   "probe": "p-type-static",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "control: as n-type-static with T: 'static declared on the caller",
+   "batch": 6,
+   "rustgm_base_wip1": "accept at typing and prepared lowering",
+   "rustgm": "accept at typing and prepared lowering"
+  },
+  "static-region.rs": {
+   "sha256": "021116ad137de6de66a0637a25c9ded2bd0ce7aa2557571b4c167341948dbf90",
+   "probe": "n-static",
+   "declared": 1,
+   "rustc": "reject E0521",
+   "form": "negative: the closure needs the callee region to be 'static, and the caller passes &'a u8 (lifetime may not live long enough)",
+   "batch": 6,
+   "rustgm_base_wip1": "accept at typing; prepared lowering: required lifetime does not outlive its target",
+   "rustgm": "accept at typing; prepared lowering: required lifetime does not outlive its target"
+  },
+  "static-type.rs": {
+   "sha256": "fcc74c9b0cff441efa85b731372d5028c780b448623a90455bd5a50088a4b966",
+   "probe": "n-type-static",
+   "declared": 1,
+   "rustc": "reject E0310",
+   "form": "negative: E0310 expected; the closure needs T: 'static, which the caller does not imply",
+   "batch": 6,
+   "rustgm_base_wip1": "accept at typing; prepared lowering: required lifetime does not outlive its target",
+   "rustgm": "accept at typing; prepared lowering: required lifetime does not outlive its target"
+  },
+  "where-unimplied.rs": {
+   "sha256": "4d6d0c791bae9ddaf64a35e3f7d96b6fee456f4510bb6cdbf2eb4f6251856e1b",
+   "probe": "n-escape",
+   "declared": 1,
+   "rustc": "reject E0309",
+   "form": "negative: the closure needs the callee region to outlive 'a, but the caller passes &'b T with no 'b: 'a (lifetime may not live long enough)",
+   "batch": 6,
+   "rustgm_base_wip1": "reject at typing: trait argument lifetime requirement is not satisfied",
+   "rustgm": "reject at typing: trait argument lifetime requirement is not satisfied"
+  }
+ }
+}

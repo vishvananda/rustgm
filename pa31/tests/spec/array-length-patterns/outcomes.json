@@ -25,7 +25,7 @@
    "form": "core form: array_windows(v).all(|[a, b]| compare(a, b)) with Windows<'a, T, N>",
    "batch": 1,
    "rustgm_base_dbeadba6": "reject: array pattern requires a known fixed-array type",
-   "rustgm": "accept at typing; prepared lowering: required lifetime does not outlive its target"
+   "rustgm": "accept at typing and prepared lowering (after closure creator requirements)"
   },
   "core-form-known.rs": {
    "sha256": "18bd9f4b64157ddce8a6e2c9a4f82c1864e3c79df9d5f2eb109572261de68bf9",
@@ -35,7 +35,7 @@
    "form": "control: core form with array_windows::<T, 2>, so the length is known before the closure",
    "batch": 3,
    "rustgm_base_dbeadba6": "accept at typing; prepared lowering: required lifetime does not outlive its target",
-   "rustgm": "accept at typing; prepared lowering: required lifetime does not outlive its target"
+   "rustgm": "accept at typing and prepared lowering (after closure creator requirements)"
   },
   "by-value.rs": {
    "sha256": "70cbbcd8c2e107cff89cf185f577be83db2ee51793bdb3e0084cd765942759bb",
@@ -138,12 +138,12 @@
    "rustgm": "reject: array pattern requires a known fixed-array type"
   }
  },
- "lowering_gaps": "core-form and core-form-known type and stop in prepared lowering with required lifetime does not outlive its target, with an inferred or a known length. The closure's parameter region comes from the callee's instantiated lifetime, and its body passes the parameter to a captured FnMut(&'a T, &'a T). The base dbeadba6 and 22902d20 fail the same way without any array pattern (d-ident), and a function item instead of the captured FnMut lowers (d-ident-fn).",
+ "lowering_gaps": "None. core-form and core-form-known stopped in prepared lowering with required lifetime does not outlive its target until the closure creator requirement change (pa31/tests/spec/closure-creator-requirements): the closure's parameter region comes from the callee's instantiated lifetime, and its body passes the parameter to a captured FnMut(&'a T, &'a T).",
  "not_graded": {
-  "closure-ergonomic": "a known-length closure take(w, |[a, b]| compare(a, b)): rustc accepts; types, lowering lifetime gap as core-form-known",
-  "d-tuple": "a tuple pattern in the closure parameter: rustc accepts; types, same lowering lifetime gap",
-  "d-ident": "take1(x, |a| compare(a, a)) without a pattern: rustc accepts; types, same lowering lifetime gap on dbeadba6, 22902d20 and wip1",
-  "d-ident-fn": "as d-ident with a function item cmp: rustc accepts; types and lowers",
+  "closure-ergonomic": "a known-length closure take(w, |[a, b]| compare(a, b)): rustc accepts; graded as closure-creator-requirements/array-pattern",
+  "d-tuple": "a tuple pattern in the closure parameter: rustc accepts; graded as closure-creator-requirements/tuple-pattern",
+  "d-ident": "take1(x, |a| compare(a, a)) without a pattern: rustc accepts; graded as closure-creator-requirements/captured-call",
+  "d-ident-fn": "as d-ident with a function item cmp: rustc accepts; graded as closure-creator-requirements/captured-call-fn",
   "d-let-in-closure": "let [a, b] = p inside the closure body: rustc accepts; typing stops at compound capture patterns are not implemented",
   "diagnostic lowering": "obj/parallel/array-pattern/diag copies append fn main() {} so the CLI's LowIR path runs prepared lowering"
  }

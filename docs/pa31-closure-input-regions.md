@@ -69,6 +69,17 @@ Tradeoffs:
   by `deferred-receiver`. A closure's method call on an unannotated parameter
   (`method-unknown2`) previously failed only through the export error.
 
+**Regression (fixed in the
+[closure creator requirement checkpoint](pa31-closure-creator-requirements.md)):**
+
+- This change also made the elided lifetime of an annotated parameter, as in
+  `|x: &T|`, a port. That lifetime belongs to the closure's own binder.
+  Instantiating a generic creator then failed in two existing tests, which the
+  focused qualification below did not select:
+  - `source_closures::specializations::generic_closure_programs_have_checked_specializations`;
+  - `inherited_lifetime_frames_keep_late_closure_inputs_distinct`.
+- Annotated regions are no longer ports.
+
 ## Contract
 
 **PA31** (`pa31/tests/spec/closure-input-regions/`, thirteen source-core

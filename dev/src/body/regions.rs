@@ -4,6 +4,7 @@ mod allocation;
 mod anonymous;
 mod builtins;
 mod clause_terms;
+mod creator;
 mod incremental;
 mod proof;
 use super::ir::{BodyOrigin, NodeKey, ProofSite};
@@ -125,6 +126,7 @@ pub struct Contracts<'a> {
 pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
     let mut bodies = Vec::new();
     let mut index = HashMap::default();
+    let mut creators = creator::Creators::default();
     for function in &facts.functions {
         if let Some(source) = function.body {
             index.insert(source, bodies.len());
@@ -138,7 +140,7 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
         {
             return Err("duplicate closure lifetime owner");
         }
-        bodies.push(closure_contract(facts, closure)?);
+        bodies.push(closure_contract(facts, closure, &mut creators)?);
     }
     for initializer in &facts.initializers {
         index.insert(initializer.semantic_source(), bodies.len());
@@ -298,6 +300,7 @@ fn function_contract(
 fn closure_contract(
     facts: &Declarations,
     closure: &crate::sema::closures::Body,
+    creators: &mut creator::Creators,
 ) -> Result<Contract, &'static str> {
     let signature = closure
         .execution
@@ -317,6 +320,18 @@ fn closure_contract(
         .and_then(|owner| facts.lifetimes.functions.get(&owner))
     {
         contract.assumptions.clone_from(&scheme.bounds);
+    }
+    if let Some(owner) = closure.owner
+        && closure.inherited
+            >= facts
+                .lifetimes
+                .functions
+                .get(&owner)
+                .map_or(0, |scheme| scheme.total)
+        && let Some(implied) = creators.implied(facts, owner)?
+    {
+        contract.assumptions.extend_from_slice(&implied.regions);
+        contract.type_assumptions.extend_from_slice(&implied.types);
     }
     Ok(contract)
 }

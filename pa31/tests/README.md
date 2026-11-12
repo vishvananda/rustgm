@@ -1059,4 +1059,16 @@ first-arm length (E0527) and a const parameter length (E0308). Core's form and
 its known-length control type and stop at an existing closure lifetime gap in
 prepared lowering. A maintainer integration test checks them through the CLI
 and prepared lowering, and an ignored native test runs four ordinary-mode
+programs. There is no graded manifest. With the closure creator requirement
+change, core's form and its control also lower.
+
+`spec/closure-creator-requirements/` freezes eleven declared no_core
+reductions of the prepared-lowering failure of core's `is_sorted_by` closure.
+That closure passes a parameter whose region comes from the callee to a
+captured `FnMut(&'a T, &'a T)`. Plain, tuple, array and nested closure forms
+accept, along with explicit-bound, concrete and `'static` controls. Prepared
+lowering rejects a closure needing the callee region to be `'static` (E0521)
+and one needing `T: 'static` (E0310). Typing rejects an unimplied where clause
+(E0309). A maintainer integration test checks them through the CLI and
+prepared lowering, and an ignored native test runs four ordinary-mode
 programs. There is no graded manifest.

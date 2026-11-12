@@ -9,6 +9,8 @@ pub(in crate::sema::bodies) struct Interface {
     inherited: usize,
     contextual: Option<u32>,
     pub(in crate::sema::bodies) outputs: Option<Box<super::super::nested::output::Ports>>,
+    /// The signature's inputs mention a region imported from the parent.
+    pub(in crate::sema::bodies) imported_inputs: bool,
 }
 impl Interface {
     /// The receiver's public callable has its own binder. Only declared callable
@@ -81,7 +83,12 @@ impl Interface {
             inherited: enclosing.len(),
             contextual,
             outputs: None,
+            imported_inputs: false,
         })
+    }
+    /// An annotated elided input lifetime belongs to this closure's own binder.
+    pub fn is_annotation(&self, region: RegionId) -> bool {
+        self.annotations.contains(&region)
     }
     pub fn count(&self) -> Result<u32, &'static str> {
         u32::try_from(self.opening.universal_count()).map_err(|_| "too many closure lifetimes")

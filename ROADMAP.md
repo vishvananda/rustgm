@@ -214,8 +214,15 @@ recorded gaps.
 The [array length pattern checkpoint](docs/pa31-array-length-patterns.md) lets
 an array pattern without a rest fix an inferred array length, as core's
 `is_sorted_by` closure `|[a, b]| compare(a, b)` fixes `array_windows`'s `N`.
-Thirteen source-core reductions agree with rustc. An existing closure lifetime
-gap stops prepared lowering of core's form and is recorded.
+Thirteen source-core reductions agree with rustc.
+
+The [closure creator requirement checkpoint](docs/pa31-closure-creator-requirements.md)
+lets core's `is_sorted_by` form lower. A closure passes a callee-region
+parameter to a captured `FnMut(&'a T, &'a T)`. Its region requirements on
+creator regions become creator obligations, and it assumes its creator's
+implied bounds. Eleven source-core reductions agree with rustc. The checkpoint
+also fixes a generic instantiation regression from the closure input region
+change.
 
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage

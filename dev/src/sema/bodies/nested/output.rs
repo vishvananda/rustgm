@@ -15,6 +15,9 @@ use crate::{
     },
 };
 
+/// Each port's private region and, when imported, its existing parent region.
+type PortRegions = Vec<(RegionId, Option<RegionId>)>;
+
 pub(in crate::sema::bodies) struct Ports {
     pub pairs: HashMap<RegionId, RegionId>,
     parent: NodeKey,
@@ -83,13 +86,15 @@ impl Checker<'_> {
     /// external to its body. A region that an unannotated parameter gains inside
     /// the body becomes a port, as a private result region does, so the body's
     /// requirements on it reach the parent. Imported input regions keep their
-    /// existing identity.
+    /// existing identity, and whether any input mentions one. An annotated
+    /// elided input lifetime stays in the closure's own binder, as rustc makes
+    /// it late-bound.
     fn nested_port_regions(
         &mut self,
         interface: &Interface,
         parent: NodeKey,
         signature: Option<TermId>,
-    ) -> Result<Vec<(RegionId, Option<RegionId>)>, Error> {
+    ) -> Result<(PortRegions, bool), Error> {
         let source = self.state.body;
         let result = self
             .state
@@ -141,6 +146,9 @@ impl Checker<'_> {
                             && !matches!(fact.origin, BodyRegionOrigin::UniversalAlias)
                     })
         };
+        let imported_inputs = inputs
+            .observed_regions()
+            .any(|region| imported.contains_key(&region));
         let mut regions: Vec<_> = observe
             .observed_regions()
             .filter_map(|region| {
@@ -153,14 +161,18 @@ impl Checker<'_> {
         regions.extend(
             inputs
                 .observed_regions()
-                .filter(|region| !imported.contains_key(region) && private(*region))
+                .filter(|region| {
+                    !imported.contains_key(region)
+                        && !interface.is_annotation(*region)
+                        && private(*region)
+                })
                 .map(|region| (region, None)),
         );
         regions.sort_unstable_by_key(|(region, _)| region.0);
         regions.dedup_by_key(|(region, _)| region.0);
         self.facts.body_work.canonical_steps +=
             observe.steps + inputs.steps + interface.opening.universal_count();
-        Ok(regions)
+        Ok((regions, imported_inputs))
     }
 
     pub(in crate::sema::bodies) fn prepare_nested_output(
@@ -170,7 +182,8 @@ impl Checker<'_> {
         signature: Option<TermId>,
     ) -> Result<(), Error> {
         let source = self.state.body;
-        let regions = self.nested_port_regions(interface, parent, signature)?;
+        let (regions, imported_inputs) = self.nested_port_regions(interface, parent, signature)?;
+        interface.imported_inputs |= imported_inputs;
         for (private, caller) in regions {
             if interface
                 .outputs
@@ -213,45 +226,58 @@ impl Checker<'_> {
         self.prepare_universals(source.node)
     }
 
+    /// A closure's captured inputs whose formation the parent must prove.
+    fn closure_formation(&mut self, source: NodeKey) -> Result<Option<Formation>, Error> {
+        Ok(
+            if let Some(closure) = self.facts.closures.get(source)
+                && let Some(environment) = self.facts.closures.environment(closure.identity)
+            {
+                let (inputs, work) = environment
+                    .formation_inputs()
+                    .map_err(|e| self.error(source.node, e))?;
+                self.facts.body_work.canonical_steps += work;
+                let mut queries = crate::types::outlives::Queries::new(
+                    &self.facts.types,
+                    &self.facts.lifetimes.nominal_requirements,
+                    &self.facts.lifetimes.callables,
+                );
+                let inputs: Vec<_> = inputs
+                    .into_iter()
+                    .filter(|input| {
+                        !queries
+                            .symbolic_requirements(input.child)
+                            .is_ok_and(|requirements| {
+                                requirements.scalars.regions.is_empty()
+                                    && requirements.scalars.parameters.is_empty()
+                                    && requirements.projections.is_empty()
+                            })
+                    })
+                    .collect();
+                (!inputs.is_empty()).then(|| Formation {
+                    identity: closure.identity,
+                    inputs: inputs.into_boxed_slice(),
+                })
+            } else {
+                None
+            },
+        )
+    }
+
+    /// A closure links to its parent when it has output ports, captured
+    /// formation or captured input conditions, or when its signature inputs
+    /// mention parent regions. rustc makes every free region of a closure
+    /// signature external to its body: requirements between such regions that
+    /// the body cannot prove become the creator's obligations.
     pub(in crate::sema::bodies) fn publish_nested_output(
         &mut self,
         interface: &Interface,
         parent: NodeKey,
     ) -> Result<(), Error> {
         let source = self.state.body;
-        let formation = if let Some(closure) = self.facts.closures.get(source)
-            && let Some(environment) = self.facts.closures.environment(closure.identity)
-        {
-            let (inputs, work) = environment
-                .formation_inputs()
-                .map_err(|e| self.error(source.node, e))?;
-            self.facts.body_work.canonical_steps += work;
-            let mut queries = crate::types::outlives::Queries::new(
-                &self.facts.types,
-                &self.facts.lifetimes.nominal_requirements,
-                &self.facts.lifetimes.callables,
-            );
-            let inputs: Vec<_> = inputs
-                .into_iter()
-                .filter(|input| {
-                    !queries
-                        .symbolic_requirements(input.child)
-                        .is_ok_and(|requirements| {
-                            requirements.scalars.regions.is_empty()
-                                && requirements.scalars.parameters.is_empty()
-                                && requirements.projections.is_empty()
-                        })
-                })
-                .collect();
-            (!inputs.is_empty()).then(|| Formation {
-                identity: closure.identity,
-                inputs: inputs.into_boxed_slice(),
-            })
-        } else {
-            None
-        };
+        let formation = self.closure_formation(source)?;
         let captured = self.capture_input_ports(source, interface.outputs.is_none())?;
-        if interface.outputs.is_none() && formation.is_none() && captured.is_empty() {
+        let imported = interface.imported_inputs;
+        if interface.outputs.is_none() && formation.is_none() && captured.is_empty() && !imported {
             return Ok(());
         }
         let parent_body = parent;
@@ -274,7 +300,7 @@ impl Checker<'_> {
         for (parent, slot) in interface
             .opening
             .universal_pairs()
-            .filter(|(_, slot)| !outputs.is_empty() || captured.contains(*slot))
+            .filter(|(_, slot)| !outputs.is_empty() || imported || captured.contains(*slot))
         {
             // Public quantified inputs belong to this closure's callable binder,
             // even when the public result can mention them. They are not parent
@@ -282,8 +308,17 @@ impl Checker<'_> {
             if parent.bound_parts().is_some() || closing.region(slot, 0).is_err() {
                 continue;
             }
-            if outputs.is_empty() {
+            if outputs.is_empty() && captured.contains(slot) {
                 self.validate_capture_input_parent(source, parent, parent_body)?;
+            } else if outputs.is_empty()
+                && self
+                    .facts
+                    .body_regions
+                    .get(parent_body, parent)
+                    .is_none_or(|fact| fact.body != parent_body)
+            {
+                // Only the parent's own regions are its proof identities.
+                continue;
             }
             let (_, slot) = slot
                 .bound_parts()

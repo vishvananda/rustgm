@@ -15,12 +15,6 @@ const REJECTED: [(&str, &str); 4] = [
     ("match-two-lengths.rs", DISAGREES),
     ("generic-len.rs", UNKNOWN),
 ];
-/// rustc accepts these, and they type here, but prepared lowering stops at
-/// the closure's call of a captured `FnMut(&'a T, &'a T)` with its parameter,
-/// whose region comes from the callee's lifetime, with or without length
-/// inference (the base fails the same way without an array pattern).
-const LOWERING_GAPS: [&str; 2] = ["core-form.rs", "core-form-known.rs"];
-const CAPTURED_CALL: &str = "required lifetime does not outlive its target";
 
 fn program(source: &str) -> Result<rustgm::lowir::program::Program> {
     let report = crate::resolve::source_provider(source, "patterns")?;
@@ -87,14 +81,10 @@ fn array_patterns_fix_inferred_lengths_like_rustc() -> Result {
         } else {
             Some(stderr)
         };
-        let gap = LOWERING_GAPS
-            .iter()
-            .any(|name| path.ends_with(&format!("/{name}")));
         let matches = match (&outcome, reason) {
-            (None, None) => accepted && !gap,
-            (Some(message), None) => accepted && types && gap && message.contains(CAPTURED_CALL),
+            (None, None) => accepted,
             (Some(message), Some(reason)) => !accepted && !types && message.contains(reason),
-            (None, Some(_)) => false,
+            _ => false,
         };
         if !matches {
             failures.push(format!("{path}: types={types} {outcome:?}"));

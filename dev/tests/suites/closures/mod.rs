@@ -50,6 +50,8 @@ pub(crate) mod semantic;
 #[path = "../../source_closures.rs"]
 mod source_closures;
 
+#[path = "../../creator_requirements.rs"]
+mod creator_requirements;
 #[path = "../../postponed_casts.rs"]
 mod postponed_casts;
 #[path = "../../unannotated_closure_inputs.rs"]

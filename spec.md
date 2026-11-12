@@ -1351,6 +1351,16 @@ with `[T; n]` for the pattern's `n` elements. A rest with an unknown length and
 a const parameter length fail closed. See the
 [array length pattern checkpoint](docs/pa31-array-length-patterns.md).
 
+A closure whose signature inputs mention regions imported from its creator
+bridges every creator-owned universal. Requirements between those regions that
+the body cannot prove become creator obligations, as rustc's closure
+requirements do. A closure also assumes the lifetime requirements implied by
+its creator's signature, but not projection requirements. rustc instead
+propagates a type-outlives requirement to the creator, which proves it with the
+same implied bounds. An annotated elided parameter lifetime stays in the
+closure's own binder. See the
+[closure creator requirement checkpoint](docs/pa31-closure-creator-requirements.md).
+
 The bounded sizing profile requires actual sizing identities, complete headers
 and deny-explicit-impl restrictions before retaining fundamental, specialization
 or coinductive markers; those markers grant no general implementation or cycle

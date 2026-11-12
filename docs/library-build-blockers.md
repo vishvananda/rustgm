@@ -1,5 +1,15 @@
 # Library build blocker tracker
 
+The [closure creator requirement checkpoint](pa31-closure-creator-requirements.md)
+fixes that gap. A closure whose signature inputs mention creator regions now
+bridges them, so its unproved region requirements become creator obligations.
+It also assumes its creator's implied bounds, such as `T: 'a` from
+`x: &'a T`. Eleven source-core reductions, four native programs and
+call-linear work qualify the fix. Core's `is_sorted_by` form lowers. The change
+also fixes a regression from the closure input region checkpoint:
+instantiating a generic creator of a closure with an annotated elided
+parameter lifetime failed.
+
 The [array length pattern checkpoint](pa31-array-length-patterns.md) fixes
 "array pattern requires a known fixed-array type" in core's `is_sorted_by` 8380
 (`slice/mod.rs:4782`). Its closure `|[a, b]| compare(a, b)` is the only thing

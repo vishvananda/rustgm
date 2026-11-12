@@ -1,0 +1,11 @@
+pa31/tests/spec/closure-creator-requirements/captured-call.rs	0
+pa31/tests/spec/closure-creator-requirements/captured-call-fn.rs	0
+pa31/tests/spec/closure-creator-requirements/tuple-pattern.rs	0
+pa31/tests/spec/closure-creator-requirements/declared-outlives.rs	0
+pa31/tests/spec/closure-creator-requirements/concrete-u8.rs	0
+pa31/tests/spec/closure-creator-requirements/array-pattern.rs	0
+pa31/tests/spec/closure-creator-requirements/nested-closures.rs	0
+pa31/tests/spec/closure-creator-requirements/declared-static.rs	0
+pa31/tests/spec/closure-creator-requirements/static-region.rs	1
+pa31/tests/spec/closure-creator-requirements/static-type.rs	1
+pa31/tests/spec/closure-creator-requirements/where-unimplied.rs	1

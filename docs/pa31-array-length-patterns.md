@@ -42,17 +42,17 @@ Tradeoffs:
 
 - `generic-len` rejects with "array pattern requires a known fixed-array type".
   rustc reports a mismatched type (E0308). Both reject.
-- `core-form` and its known-length control `core-form-known` type, but
-  prepared lowering rejects them with "required lifetime does not outlive its
-  target". The closure's parameter region comes from the callee's instantiated
-  lifetime. Its body passes the parameter to a captured
+- `core-form` and its known-length control `core-form-known` first typed and
+  then stopped in prepared lowering with "required lifetime does not outlive
+  its target". The closure's parameter region comes from the callee's
+  instantiated lifetime. Its body passes the parameter to a captured
   `FnMut(&'a T, &'a T)`.
-  - This predates the change. The base and the earlier 22902d20 fail the same
+  - This predated the change. The base and the earlier 22902d20 failed the same
     way without any array pattern (`d-ident`).
   - With a function item in place of the captured `FnMut` (`d-ident-fn`), the
-    case lowers.
-  - Core's census checks typing, so this gap limits the later core build, not
-    the census.
+    case lowered.
+  - The [closure creator requirement change](pa31-closure-creator-requirements.md)
+    fixes it, and both cases now lower.
 - `let [a, b] = p` inside a closure body stops at "compound capture patterns
   are not implemented" (`d-let-in-closure`). That gap is separate and predates
   this change.
@@ -65,8 +65,8 @@ reductions). All declarations agree with rustc 1.98.0 (`outcomes.json`).
 | Case | Form | Rust | RustGM |
 | --- | --- | --- | --- |
 | `infer-len` | `call(\|[a, b]\| *b)` with `FnMut(&[u8; N])` | accept | accept |
-| `core-form` | core's `array_windows(v).all(\|[a, b]\| compare(a, b))` | accept | types; lowering lifetime gap |
-| `core-form-known` | the same with `array_windows::<T, 2>` | accept | types; lowering lifetime gap |
+| `core-form` | core's `array_windows(v).all(\|[a, b]\| compare(a, b))` | accept | accept |
+| `core-form-known` | the same with `array_windows::<T, 2>` | accept | accept |
 | `by-value` | `call2(\|[a, b, c]\| c)` with `FnMut([u8; N])` | accept | accept |
 | `let-infer` | `let [a, b] = make()` | accept | accept |
 | `ref-pattern` | `call(\|&[a, b]\| b)` | accept | accept |
@@ -97,7 +97,10 @@ and patterns suites and the CLI, plus four exact tests:
 - the two new tests in `dev/tests/array_length_patterns.rs`. The first runs the
   packet's typing through the CLI and prepared lowering for every case that
   types. It requires the exact typing reason for each rejection and the exact
-  lowering reason for the two gaps. The second checks bounded work.
+  lowering reason for the two gaps. The second checks bounded work. Since the
+  [closure creator requirement change](pa31-closure-creator-requirements.md),
+  the first requires every accepted case to lower; that checkpoint's receipts
+  qualify it.
 - `patterns::array_patterns_keep_huge_rest_storage_sparse` and
   `product_errors_and_move_conflicts_match_rustc`, for existing array patterns.
 

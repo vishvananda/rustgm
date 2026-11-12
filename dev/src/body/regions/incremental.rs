@@ -21,6 +21,7 @@ pub struct Collector {
     cursor: Cursor,
     pending: HashMap<NodeKey, Bucket>,
     completed: HashMap<NodeKey, Contract>,
+    creators: super::creator::Creators,
 }
 impl Collector {
     pub(crate) fn expression(
@@ -50,7 +51,7 @@ impl Collector {
         closure: &crate::sema::closures::Body,
     ) -> Result<Contract, &'static str> {
         self.update(facts)?;
-        let mut contract = super::closure_contract(facts, closure)?;
+        let mut contract = super::closure_contract(facts, closure, &mut self.creators)?;
         self.populate(facts, &mut contract)?;
         Ok(contract)
     }
@@ -127,7 +128,7 @@ impl Collector {
             }
         }
         for closure in facts.closures.all() {
-            let mut contract = super::closure_contract(facts, closure)?;
+            let mut contract = super::closure_contract(facts, closure, &mut self.creators)?;
             self.populate(facts, &mut contract)?;
             if index
                 .insert(closure.semantic_source(), bodies.len())
