@@ -1,5 +1,24 @@
 # Library build blocker tracker
 
+The [comparison right operand checkpoint](pa31-comparison-rhs.md) follows
+rustc's `check_overloaded_binop`. A source comparison's `Rhs` gets a fresh
+variable, the comparison's own goals are selected, and only then does the
+right operand coerce to `Rhs`. Two raw pointers then relate as builtin scalars.
+Core's `small_sort_network` compares `region.as_ptr()` (`*const T`) with
+`v_base` (`*mut T`), and its only impl fixes `Rhs = *const T`. Twelve
+source-core reductions, a three-file per-body control and call-linear work
+qualify the fix.
+
+Exploratory pin wip1 (a150d249) failed the previously passing
+`digits_to_dec_str` 695 (num/imp/flt2dec/mod.rs:233). The coerced operand
+table was not cleared per body, and node identities are file-local. Pin wip2
+(00a18645) clears the table. It clears `small_sort_network` 7571, with no
+new failure in a previously passing reached body. The unchanged 120s observer
+makes 14,960 attempts and reaches item 10031 (core_arch x86/sse2.rs:1532) at
+load 7, with 11 records. The first remaining failure is
+`bidirectional_merge` 7581 at slice/sort/shared/smallsort.rs:812 ("assignment
+requires a place", a destructuring assignment). No core artifact exists.
+
 The [pinned method call checkpoint](pa43-pinned-method-calls.md) lets a source
 method call find an inherent method declared with a smart receiver through the
 legacy LegacyReceiver/Deref chain. Core's `SyncView::poll` and `resume` call

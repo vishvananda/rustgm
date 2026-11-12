@@ -1,5 +1,5 @@
 //! Equality syntax retains canonical member selection and two independent shared borrows.
-use super::{Checker, Constructor, Error, NodeId, TermId, Type};
+use super::{Checker, Constructor, Dependency, Error, NodeId, TermId, Type, Work};
 use crate::{
     support::comparisons::Method,
     types::{
@@ -229,10 +229,22 @@ impl Checker<'_> {
             method,
         )?;
         let subject = self.term(left)?;
-        let right_type = self.term(right)?;
-        if let crate::syntax::ast::Kind::Binary { op, .. } = self.kind(node) {
-            self.builtin_binary(node, op, subject, right_type)?;
-        }
+        let actual_right = self.term(right)?;
+        // rustc's `check_overloaded_binop` gives `Rhs` a fresh variable, selects
+        // `Self: PartialEq<Rhs>` where it can and then coerces the right operand.
+        // Two primitive scalars are unified first, so their coercion is an identity.
+        let right_type = if self.builtin_comparison(node, subject, actual_right)? {
+            actual_right
+        } else {
+            let rhs = self.variable(node, super::Domain::Any)?;
+            self.state.coerced_operands.insert(node, rhs);
+            self.state.work.push(Work::CoerceOperatorRhs {
+                node,
+                operand: right,
+                expected: rhs,
+            });
+            rhs
+        };
         self.state.call_types.obligations.push((
             node,
             Predicate::trait_application(
@@ -272,6 +284,43 @@ impl Checker<'_> {
         self.state.alignment.borrows.push((node, right));
         self.state.calls.push((node, signature));
         self.child(node, signature, 2)
+    }
+    /// After this comparison's own goals have been selected where possible,
+    /// its right operand coerces to `Rhs`. Two raw pointers are then builtin
+    /// scalar operands, so the coerced right type must equal the left
+    /// (`enforce_builtin_binop_types`).
+    pub(super) fn coerce_operator_rhs(
+        &mut self,
+        node: NodeId,
+        operand: NodeId,
+        expected: TermId,
+    ) -> Result<Option<Dependency>, Error> {
+        if let Some(dependency) = self.refine_call_inputs(node, expected)? {
+            return Ok(Some(dependency));
+        }
+        self.coerce(operand, expected)?;
+        let crate::syntax::ast::Kind::Binary { left, .. } = self.kind(node) else {
+            return Err(self.error(node, "invalid comparison operand continuation"));
+        };
+        let subject = self.term(left)?;
+        if let (Some(left), Some(right)) = (
+            self.raw_pointer_operand(node, subject)?,
+            self.raw_pointer_operand(node, expected)?,
+        ) {
+            self.equate(node, left, right)?;
+        }
+        Ok(None)
+    }
+    /// One shared reference layer is peeled, as rustc's builtin rule does.
+    fn raw_pointer_operand(&mut self, node: NodeId, term: TermId) -> Result<Option<TermId>, Error> {
+        let (term, head) = match self.settled_head(node, term)? {
+            Some(Constructor::Reference { mutable: false, .. }) => {
+                let referent = self.child(node, term, 0)?;
+                (referent, self.settled_head(node, referent)?)
+            }
+            head => (term, head),
+        };
+        Ok(matches!(head, Some(Constructor::Pointer { .. })).then_some(term))
     }
     pub(super) fn operand_borrow(
         &mut self,

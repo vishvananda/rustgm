@@ -29,11 +29,10 @@ impl Checker<'_> {
     /// rustc's builtin binary rule (`is_builtin_binop` and
     /// `enforce_builtin_binop_types`). When neither operand is an unknown type
     /// and, under one shared reference, both are integral or both floating
-    /// (bitwise operators also accept two bools, comparisons any two primitive
-    /// scalars), the operand types are unified before any implementation is
-    /// selected. Shifts relate only their result to the left operand. Returns
-    /// the builtin result type for arithmetic, bitwise and shift operators.
-    /// Raw and function pointer comparisons keep ordinary trait selection.
+    /// (bitwise operators also accept two bools), the operand types are unified
+    /// before any implementation is selected. Shifts relate only their result
+    /// to the left operand. Returns the builtin result type for arithmetic,
+    /// bitwise and shift operators. Comparisons use [`Self::builtin_comparison`].
     pub(in crate::sema::bodies) fn builtin_binary(
         &mut self,
         node: NodeId,
@@ -62,18 +61,35 @@ impl Checker<'_> {
                 let bitwise = numeric || (a == Operand::Bool && b == Operand::Bool);
                 (bitwise, bitwise)
             }
-            Punctuation::EqualEqual
-            | Punctuation::BangEqual
-            | Punctuation::Less
-            | Punctuation::LessEqual
-            | Punctuation::Greater
-            | Punctuation::GreaterEqual => (a != Operand::Other && b != Operand::Other, false),
             _ => (false, false),
         };
         if unify {
             self.equate(node, left, right)?;
         }
         Ok(result.then_some(left))
+    }
+    /// rustc's builtin rule for a comparison of two primitive scalars (under
+    /// one shared reference): their types are unified before any
+    /// implementation is selected. Returns whether it applied. rustc also
+    /// treats raw pointers as builtin scalars, but relates them only after
+    /// the right operand's coercion (`coerce_operator_rhs`).
+    pub(in crate::sema::bodies) fn builtin_comparison(
+        &mut self,
+        node: NodeId,
+        left: TermId,
+        right: TermId,
+    ) -> Result<bool, Error> {
+        let (Some((left, a)), Some((right, b))) = (
+            self.builtin_operand(node, left)?,
+            self.builtin_operand(node, right)?,
+        ) else {
+            return Ok(false);
+        };
+        if a == Operand::Other || b == Operand::Other {
+            return Ok(false);
+        }
+        self.equate(node, left, right)?;
+        Ok(true)
     }
     /// One shared reference layer is peeled; general unknowns are not builtin.
     fn builtin_operand(
@@ -284,11 +300,16 @@ impl Checker<'_> {
         ) {
             return Ok(false);
         }
+        // A coerced right operand is compared at its coerced type.
+        let right = match self.state.coerced_operands.get(&node) {
+            Some(&coerced) => coerced,
+            None => self.term(right)?,
+        };
         self.source_scalar_comparison(
             node,
             op,
             solved.types[self.term(left)?.0 as usize],
-            solved.types[self.term(right)?.0 as usize],
+            solved.types[right.0 as usize],
             solved.types[self.term(node)?.0 as usize],
         )
     }

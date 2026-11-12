@@ -1,6 +1,8 @@
 //! Raw pointer conversions preserve pointee variance and erase only outer loans.
 use crate::native_references as native;
 use crate::source_cases as source;
+#[path = "pointer_coercions/comparison_rhs.rs"]
+mod comparison_rhs;
 
 const CASES: &[(&str, bool, &str)] = &[
     ("shared-const", true, "fn f(x:&u8)->*const u8{x}"),

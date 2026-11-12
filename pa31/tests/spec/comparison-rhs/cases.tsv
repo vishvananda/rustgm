@@ -1,0 +1,12 @@
+pa31/tests/spec/comparison-rhs/core-network.rs	0
+pa31/tests/spec/comparison-rhs/const-ne-mut.rs	0
+pa31/tests/spec/comparison-rhs/const-eq-mut.rs	0
+pa31/tests/spec/comparison-rhs/concrete.rs	0
+pa31/tests/spec/comparison-rhs/fresh-rhs.rs	0
+pa31/tests/spec/comparison-rhs/ref-rhs.rs	0
+pa31/tests/spec/comparison-rhs/mut-ref-rhs.rs	0
+pa31/tests/spec/comparison-rhs/same-const.rs	0
+pa31/tests/spec/comparison-rhs/nominal.rs	0
+pa31/tests/spec/comparison-rhs/mut-eq-const.rs	1
+pa31/tests/spec/comparison-rhs/premise-rhs.rs	1
+pa31/tests/spec/comparison-rhs/ambiguous-user.rs	1

@@ -361,5 +361,7 @@ impl Checker<'_> {
         self.state.calls.clear();
         self.state.assignments.clear();
         self.state.breaks.clear();
+        // Node identities are file-local, so a later body can reuse this key.
+        self.state.coerced_operands.clear();
     }
 }

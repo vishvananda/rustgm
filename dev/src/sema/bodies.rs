@@ -275,6 +275,12 @@ enum Work {
         argument: NodeId,
         parameter: u32,
     },
+    /// A source comparison's right operand, after its `Rhs` selection.
+    CoerceOperatorRhs {
+        node: NodeId,
+        operand: NodeId,
+        expected: TermId,
+    },
     MethodArguments(NodeId, Option<Box<std::vec::IntoIter<DefId>>>),
     AssignmentValue(NodeId),
     ForIterator(NodeId),
@@ -363,6 +369,8 @@ pub(super) struct State {
     discarded_adjustments: crate::support::hash::HashMap<usize, (TermId, TermId)>,
     calls: Vec<(NodeId, TermId)>,
     pending_indexes: crate::support::hash::HashMap<NodeId, TermId>,
+    /// Source comparisons whose right operand coerces to its selected `Rhs`.
+    coerced_operands: crate::support::hash::HashMap<NodeId, TermId>,
     call_types: Box<calls::CallTypes>,
     parameter_copies: Option<crate::types::copy::Copies>,
     parameter_shapes: Option<crate::types::parameters::shape::Shapes>,
@@ -463,6 +471,7 @@ impl State {
             discarded_adjustments: crate::support::hash::HashMap::default(),
             calls: Vec::new(),
             pending_indexes: crate::support::hash::HashMap::default(),
+            coerced_operands: crate::support::hash::HashMap::default(),
             call_types: scratch.call_types.unwrap_or_default(),
             parameter_copies: None,
             parameter_shapes: None,
@@ -978,18 +987,14 @@ impl Checker<'_> {
                     pattern,
                     term,
                     value,
-                } => {
-                    if let Some(value) = value {
-                        self.coerce(value, term)?;
-                    }
-                    self.binding(pattern, term, value)?;
-                }
+                } => self.bind_pattern_value(pattern, term, value)?,
                 Work::Enter(node, expected) if self.active(node) => self.enter(node, expected)?,
                 Work::Enter(..) => {}
                 Work::CoerceElement(node, expected) => self.coerce(node, expected)?,
                 work @ (Work::PrepareBorrowOperand { .. }
                 | Work::PrepareCallArgument { .. }
-                | Work::CoerceCallArgument { .. }) => {
+                | Work::CoerceCallArgument { .. }
+                | Work::CoerceOperatorRhs { .. }) => {
                     if let Some(dependency) = self.resume_operand_work(work)? {
                         return Ok(Some(dependency));
                     }
@@ -1028,6 +1033,18 @@ impl Checker<'_> {
         }
         self.finish(self.state.body.node)
     }
+    /// A pattern's initializer coerces to the pattern type before binding.
+    fn bind_pattern_value(
+        &mut self,
+        pattern: NodeId,
+        term: TermId,
+        value: Option<NodeId>,
+    ) -> Result<(), Error> {
+        if let Some(value) = value {
+            self.coerce(value, term)?;
+        }
+        self.binding(pattern, term, value)
+    }
     /// Declaration waits retain the exact operand continuation, before evaluation.
     fn resume_operand_work(&mut self, work: Work) -> Result<Option<Dependency>, Error> {
         let dependency = match &work {
@@ -1046,6 +1063,11 @@ impl Checker<'_> {
                 argument,
                 parameter,
             } => self.coerce_call_argument(*call, *argument, *parameter)?,
+            Work::CoerceOperatorRhs {
+                node,
+                operand,
+                expected,
+            } => self.coerce_operator_rhs(*node, *operand, *expected)?,
             _ => return Err(self.error(self.state.body.node, "invalid operand continuation")),
         };
         if dependency.is_some() {

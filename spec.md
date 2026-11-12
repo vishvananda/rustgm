@@ -1306,6 +1306,15 @@ the caller's bound lifetimes into fresh regions beyond the body frontier. It
 grants no adjustment, loan or region evidence. Other method names skip the
 chain. See the [pinned method call checkpoint](docs/pa43-pinned-method-calls.md).
 
+A source comparison whose operands are not two primitive scalars gives
+`Rhs` a fresh variable, as rustc's `check_overloaded_binop` does. It refines
+its own `Self: PartialEq<Rhs>` (or `PartialOrd`) goals where it can, and only
+then coerces the right operand to `Rhs`. Core's `*const T != *mut T` thus
+compares two `*const T`. Two raw pointer operands, under one shared reference,
+are then builtin scalars, so the coerced right type must equal the left. The
+coerced comparison stays a primitive operation. See the
+[comparison right operand checkpoint](docs/pa31-comparison-rhs.md).
+
 The bounded sizing profile requires actual sizing identities, complete headers
 and deny-explicit-impl restrictions before retaining fundamental, specialization
 or coinductive markers; those markers grant no general implementation or cycle

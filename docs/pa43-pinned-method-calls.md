@@ -104,6 +104,12 @@ and inference suites and the CLI, plus nine exact tests:
 `make test-upstream` verifies the pinned upstream fixtures. No graded case or
 reference is added, and no planned assignment is activated.
 
+A later private-harness build found that this unboxed name set had grown
+`Declarations` past its pinned size (7,200 against 7,168 bytes). The set is
+now a cold boxed option, and `DECLARATIONS_SIZE` names its one pointer. The
+[comparison right operand](pa31-comparison-rhs.md) receipt re-runs this
+packet and its bounded work with the boxed set.
+
 Bounded work (`obj/parallel/sync-view/scaling-raw.txt`), for 8/32/128 free
 functions calling `p.as_pin_mut()` on `Pin<&mut SyncView<T>>`:
 

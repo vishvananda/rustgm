@@ -182,6 +182,14 @@ core's `SyncView::poll` needs. Twelve source-core reductions agree with rustc.
 An exploratory observation clears `poll` and `resume`; the first remaining
 failure is `small_sort_network`.
 
+The [comparison right operand checkpoint](docs/pa31-comparison-rhs.md) gives a
+source comparison's `Rhs` a fresh variable, selects the comparison's goals and
+then coerces the right operand, as rustc does. Core's `small_sort_network`
+needs this for `*const T != *mut T`. Twelve source-core reductions and a
+three-file per-body control agree with rustc. An exploratory observation
+clears `small_sort_network`; the first remaining failure is
+`bidirectional_merge` (destructuring assignment).
+
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage
 limit controls, pass text, independent Rust and native checks with frozen a08ab1a4.

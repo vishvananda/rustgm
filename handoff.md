@@ -149,6 +149,30 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-12 comparison right operand update (supersedes the blocks below):**
+
+- The `small_sort_network` 7571 blocker is fixed
+  ([evidence](docs/pa31-comparison-rhs.md)). A source comparison gives `Rhs` a
+  fresh variable, refines its own goals and then coerces the right operand.
+  Two raw pointers then relate as builtin scalars.
+  - Twelve reductions and the three-file `stale-node` control are in
+    `pa31/tests/spec/comparison-rhs`. The declarations, including two malformed
+    batches and one wrong declaration, are in
+    `obj/parallel/pointer-rhs/core/declared.json` and `regress/declared.json`.
+  - Exploratory pin `obj/parallel/pointer-rhs/wip2-dev-fast` (00a18645) clears
+    7571. The next first failure is `bidirectional_merge` 7581 at
+    smallsort.rs:812, a destructuring assignment. Its probes are declared
+    in `obj/parallel/assignee/core/declared.json` (16/16 agree with rustc),
+    and its design notes are in `obj/parallel/assignee/design.md`.
+  - `rustgm-pa29-work` was removed. The pinned original core inputs are now at
+    `obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea`
+    in B, copied from `/home/vishvananda/rustgm-sources` and verified against
+    the manifest.
+  - f2cb90629 grew `Declarations` to 7,200 bytes. The separate commit boxing the
+    smart receiver name set restores 7,168.
+  - The clean pins for this and the previous two commits, and the pending
+    measurements, are not run.
+
 **2026-11-12 pinned method call update (supersedes the blocks below):**
 
 - The `SyncView::poll` 6928 and `resume` 6932 blocker is fixed
@@ -485,8 +509,8 @@ oracles and release checks; their implementation evidence already exists.
    implementation publishes and a fresh no-active-full check. Do not dispatch or
    restart a full workflow for this handoff-only documentation.
 
-Original archive:
-`/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea`.
+Original archive (moved 2026-11-12; `rustgm-pa29-work` was removed):
+`/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea`.
 Manifest in B: `obj/parallel/census-progress/original-manifest.json`.
 Prior observer/postcheck/compare scripts in `obj/parallel/filter-map-captures/`
 are templates, not ready-made WIP observations; change their candidate bindings

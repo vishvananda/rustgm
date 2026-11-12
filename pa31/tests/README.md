@@ -1000,3 +1000,15 @@ So do three bodies whose `where *mut T: AtomicPrimitive` keeps the projection
 rigid, including a sibling of `new` and a nested `Outer<T>` (E0512). The same
 premise rejects a value of the projection (E0308). A maintainer integration
 test checks them through the CLI. There is no graded manifest.
+
+`spec/comparison-rhs/` freezes twelve declared no_core reductions of core's
+`small_sort_network`, whose `region.as_ptr() != v_base` compares a `*const T`
+with a `*mut T`. The right operand coerces to the `Rhs` that selection fixed.
+Seven positives accept: core's form, `!=` and `==` between `*const` and `*mut`
+(generic and concrete), a callee's `*mut U` inferred through the coercion, and
+shared and mutable references. Two controls also accept. `*mut T` on the left
+rejects a `*const T` (E0308). So does a where clause that selects `Rhs = *mut
+T`, under the builtin pointer rule (E0308). A second `PartialEq` impl for
+`*const u8` leaves `Rhs` ambiguous (E0308, E0277). A maintainer integration
+test checks them through the CLI and lowers each positive. There is no graded
+manifest.
