@@ -73,8 +73,8 @@ complete API outcomes from 27 independent contracts, 15 new PA24 text outcomes
 and observer-linked native 7/9/1234. One borrowed-receiver executable stays
 required at the existing opaque-storage gate. An exploratory observation clears
 iter_try_fold, iter_try_rfold and four try_fold/try_rfold callers. The first
-remaining failure is map_while try_fold's method candidate graph. A clean pin and
-the full successor are pending.
+remaining failure is map_while try_fold's method candidate graph. Clean pin
+0665938a confirms this; the full successor is pending.
 
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage

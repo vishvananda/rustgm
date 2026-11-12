@@ -7,15 +7,16 @@ from 27 independent contracts and 15 reviewed ordinary text contracts, plus
 observer-linked native 7/9/1234. One borrowed-receiver executable stays required
 at the existing opaque-storage gate.
 
-An exploratory pin built from the same compiler source clears iter_try_fold 4720,
-iter_try_rfold 4725, try_fold 4731/4790 and try_rfold 4743/4797, with no new
-reached failure. The unchanged 120s observer ends at 121.214s with 19 records,
-12,827 attempts and last item 6109, socket_addr.rs:673. The first remaining
-failure is try_fold 4961/file 147:1713 at map_while.rs:62: "invalid method
-candidate inference graph". Of the 19 records, six are candidate graphs, seven
-are unimplemented trait-path or source-shape diagnostic formatting and two are
-quantified body requirements. The clean pin observation is pending. No core
-artifact exists.
+Clean 0af99f4a6/frozen 0665938a clears iter_try_fold 4720, iter_try_rfold 4725,
+try_fold 4731/4790 and try_rfold 4743/4797, with no new reached failure. The
+unchanged 120s observer ends at 121.207s with 55 records, 14,206 attempts and
+last item 8679, str/traits.rs:374. All 722/375/six/3907 bindings verify. The
+first remaining failure is try_fold 4961/file 147:1768 at map_while.rs:62:
+"invalid method candidate inference graph". Six adapter try_fold/try_rfold bodies
+share it at `.into_try()`, whose receiver selects
+`impl<R: Try> ControlFlow<R, R::Output>`. Of the 55 records, 10 are scoped const
+continuations, 7 repeat-element Copy, 7 projection normalization, 6 candidate
+graphs and 7 unimplemented diagnostic formatting. No core artifact exists.
 
 The [helper return-input checkpoint](pa24-flatten-helper-inputs.md) locally
 qualifies46 complete API outcomes from52 independent contracts, actual

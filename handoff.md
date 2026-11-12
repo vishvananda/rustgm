@@ -164,8 +164,10 @@ the passing receipts, not those attempts, qualify the current implementation.
   and four try_fold/try_rfold callers.
 - The next core blocker is try_fold 4961 at map_while.rs:62: "invalid method
   candidate inference graph".
-- Still pending: a clean pin, measurement, an unchanged clean-pin observation
-  with its postcheck, and a full successor.
+- Clean pin `obj/parallel/try-helper-outputs/candidate-dev-fast` (0665938a,
+  `.keep-artifacts`, source 0af99f4a6) has passed measurement and the unchanged
+  original observation with its postcheck. It supersedes a08ab1a4 as the
+  comparison baseline. Full 43188445172 runs on 0af99f4a6.
 
 **2026-11-12 update:** steps1–6 are complete; the checkpoint is ee8c11abb
 ([evidence](docs/pa24-flatten-helper-inputs.md)). Immutable pin

@@ -91,24 +91,47 @@ Generation adds 15 reviewed triples and the batch
 cases (501 accept/198 reject) and 100 object controls. No planned assignment is
 activated. Upstream verification, the maintainer harness and layout checks pass.
 
-## Core progress (exploratory)
+## Clean pin and core progress
 
-Pin 0665938a was built from this checkpoint's exact compiler source, but from a
-dirty tree, so it is labelled exploratory. The unchanged 120s observer ends at
-its deadline after 121.214s, with 19 partial records and 12,827 attempts. The
-last item is 6109, net/socket_addr.rs:673.
+Clean published source 0af99f4a6 freezes CLI
+`0665938a6c2cab3a0cead8b7f1f128ab161c42fa32df8a349374b790ddacec23`, with 3907
+Rust hashes and an empty patch (`obj/parallel/try-helper-outputs/candidate-dev-fast`).
+It is byte-identical to the earlier exploratory wip2 binary built from the same
+compiler source.
 
-It clears iter_try_fold 4720, iter_try_rfold 4725, try_fold 4731/4790 and
-try_rfold 4743/4797. No new failure appears among previously passing reached
-bodies.
+**Measurement.** Forty exclusive A/A plus ABBA accepting observations against
+a08ab1a4 preserve complete outputs. The controls are an ordinary import, the
+method-priority LowIR graph, and the explicit entry-free and exported helper-output
+libraries. Paired wall ratios are 1.061/1.080/1.033/0.996, against A/A
+1.117/0.902/1.002/1.168, at 18–73 ms per run. That is within process noise, so
+no optimized, neutrality or original-core speed is claimed. The actual-source
+packet is API-qualified and outside the CLI source profile, so it is not a
+measurement control.
 
-The first remaining failure is try_fold 4961 (file 147:1713, map_while.rs:62):
-"invalid method candidate inference graph". Of the 19 records, six are candidate
-graphs, seven are unimplemented diagnostic formatting for trait paths or source
-shapes, and two are quantified body requirements.
+**Original core.** The unchanged 120s observer ends at its deadline after
+121.207s, with 55 partial records and 14,206 attempts. The last item is 8679,
+str/traits.rs:374. Against a08ab1a4 it clears iter_try_fold 4720, iter_try_rfold
+4725, try_fold 4731/4790 and try_rfold 4743/4797. No new failure appears among
+previously passing reached bodies.
 
-Host load varied, so partial counts make no throughput claim. This is neither a
-complete census nor a core artifact.
+The postcheck verifies all 722 source hashes, 375 opens, six configuration
+bindings, 3907 current and immutable compiler hashes, and unchanged profile and
+limits. The progress SHA is
+`ea6dd657c7f5bc51cd24594d75e094a3cd69402a0d8e328f14e910ef594a2bc6`.
 
-A clean pin, A/A plus ABBA measurement against a08ab1a4, an unchanged
-clean-pin observation with its postcheck, and a full CI successor are pending.
+The first remaining failure is try_fold 4961 (file 147:1768, map_while.rs:62):
+"invalid method candidate inference graph". Of the 55 records:
+
+| Count | Cause |
+| --- | --- |
+| 10 | scoped const continuations |
+| 7 | repeat-element Copy |
+| 7 | projection normalization |
+| 6 | method candidate graphs |
+| 7 | unimplemented diagnostic formatting |
+
+The 14,206 attempts are fewer than a08's 14,659, under different host load,
+while the previously failing bodies now check completely. Partial counts make no
+throughput claim, and this is neither a complete census nor a core artifact.
+
+Full CI successor 43188445172 runs on 0af99f4a6.
