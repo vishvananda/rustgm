@@ -5770,6 +5770,17 @@ whose type is a pending associated result, such as a `?` output, is not yet
 definitely Never, so use its contextual head. Controls are in the
 [helper output checkpoint](docs/pa24-flatten-helper-outputs.md).
 
+A method candidate whose implementation header contains a projection, such as
+`impl<R: Try> ControlFlow<R, R::Output>`, is normalized as rustc's probe does.
+Relate its independent structure to the receiver, and turn each postponed
+associated-result leaf into a projection-equality condition. The existing
+method trait selection proves that condition under the caller's assumptions.
+Never compare an unnormalized projection structurally. Projection-free headers
+keep their shape relation. The selected owner binding registers the header's
+projection occurrences with the body normalizer before relating it to the
+prefix. Controls are in the
+[projected inherent header checkpoint](docs/pa20-projected-inherent-headers.md).
+
 A canonical caller premise may bind an inference hole to its complete projected
 input type. Use the shared scoped worklist; collect comparisons between projection
 results for exact identity or the existing certified-normal-premise relation.

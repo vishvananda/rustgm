@@ -1,5 +1,21 @@
 # Library build blocker tracker
 
+The [projected inherent header checkpoint](pa20-projected-inherent-headers.md)
+normalizes a method candidate's projected implementation header, such as
+`impl<R: Try> ControlFlow<R, R::Output>`, into projection-equality conditions,
+and relates the selected header through the body normalizer. Nine new PA20 text
+outcomes, seven native positives and call-linear selection work qualify it. One
+unbound-output rejection stays required for its cause.
+
+Exploratory pin 789ed468 clears try_fold 4961/5066/5196/5247/5350 and try_rfold
+5092, with no new reached failure. The unchanged 120s observer ends at 121.162s
+with 50 records, 14,545 attempts and last item 9248, unicode_data.rs:919. The
+first remaining failure is next_if_eq 5023 at peekable.rs:318: an unresolved
+trait obligation behind the "typed source shape" diagnostic formatting fence.
+Next are first_size/other_size (quantified body requirements) and fold
+157:7745 (unresolved call inputs). The clean pin observation is pending. No core
+artifact exists.
+
 The [helper return-output checkpoint](pa24-flatten-helper-outputs.md) publishes
 declared opaque inputs as partial progress, then exposes the unique declared
 callable output by forward normalization. It qualifies 26 complete API outcomes

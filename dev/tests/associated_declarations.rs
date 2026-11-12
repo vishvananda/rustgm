@@ -1275,6 +1275,8 @@ mod elision;
 mod argument_expectations;
 #[path = "associated_declarations/cast_receivers.rs"]
 mod cast_receivers;
+#[path = "associated_declarations/normalized_inherent_headers.rs"]
+mod normalized_inherent_headers;
 #[path = "associated_declarations/prefix_members.rs"]
 mod prefix_members;
 

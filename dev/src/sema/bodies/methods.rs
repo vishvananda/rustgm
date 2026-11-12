@@ -29,6 +29,9 @@ impl Checker<'_> {
             .schema(implementation)
             .ok_or_else(|| self.error(node, "missing selected impl schema"))?;
         let target = schema.self_type;
+        // A projected implementation header relates through the body's
+        // normalizer, as an annotated projection does, never structurally.
+        let projected = self.facts.types.contains_projections(target) == Some(true);
         let captures = schema.captures as usize;
         let mut regions = Vec::with_capacity(captures);
         for argument in arguments.iter().take(captures) {
@@ -48,6 +51,9 @@ impl Checker<'_> {
             .infer
             .instantiate(&mut self.facts.types, target, bindings)
             .map_err(|e| self.error(node, e))?;
+        if projected {
+            self.defer_normalization(node, crate::types::lifetime_proof::ScopeId::ROOT, target)?;
+        }
         if let Some((_, prefix)) = dot {
             let prefix = self.alias_argument(node, prefix)?;
             return self.equate(node, target, prefix);

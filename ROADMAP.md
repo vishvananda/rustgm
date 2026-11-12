@@ -76,6 +76,14 @@ iter_try_fold, iter_try_rfold and four try_fold/try_rfold callers. The first
 remaining failure is map_while try_fold's method candidate graph. Clean pin
 0665938a confirms this; the full successor is pending.
 
+The [projected inherent header checkpoint](docs/pa20-projected-inherent-headers.md)
+normalizes method candidate headers such as `ControlFlow<R, R::Output>` into
+projection-equality conditions. It has nine new PA20 text outcomes and seven
+native positives. One unbound-output rejection stays required for its cause. An
+exploratory observation clears the six adapter `.into_try()` bodies. The first
+remaining failure is next_if_eq behind a diagnostic-formatting fence. A clean
+pin and the full successor are pending.
+
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage
 limit controls, pass text, independent Rust and native checks with frozen a08ab1a4.

@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "required_contracts": [
+    {
+      "owner": "pa20",
+      "name": "unbound",
+      "sha256": "9d03d785382dc9a4adb37de0b2c09cf709019ca0fd2ffc92b7fd2ee812282549",
+      "source": "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\ntrait Try{type Output;fn from_output(o:Self::Output)->Self;}\nenum Flow<B,C>{Continue(C),Break(B)}\nimpl<R:Try> Flow<R,R::Output>{fn into_try(self)->R{match self{Flow::Continue(v)=>R::from_output(v),Flow::Break(v)=>v}}fn proceeds(&self)->bool{match self{Flow::Continue(_)=>true,Flow::Break(_)=>false}}}\nstruct Num(u8);impl Try for Num{type Output=u8;fn from_output(o:u8)->Self{Num(o+1)}}\nfn code<A,R:Try>(c:Flow<R,A>)->R{c.into_try()}\nfn main(){let _=code(Flow::<Num,u8>::Continue(1));}\n",
+      "frozen_plan_input": "obj/parallel/candidate-graph/packet/unbound.rs",
+      "kind": "rejection-cause",
+      "expected_rust_status": 1,
+      "rust_status": 1,
+      "rust_diagnostic": "E0599: method exists but its trait bounds were not satisfied",
+      "required_rustgm_status": 1,
+      "observed_candidate_status": 1,
+      "observed_candidate_diagnostic": "ERROR: file 0: 483: associated type projection requires normalization\n",
+      "requirement": "candidate refutation: `<R as Try>::Output == A` under a bare `R: Try` stays Deferred in method selection, so the generic body normalizer rejects instead; outcome agrees, cause is not qualified"
+    }
+  ]
+}

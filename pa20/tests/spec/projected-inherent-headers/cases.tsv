@@ -1,0 +1,9 @@
+pa20/tests/spec/projected-inherent-headers/assoc.rs	0
+pa20/tests/spec/projected-inherent-headers/bound.rs	0
+pa20/tests/spec/projected-inherent-headers/concrete.rs	0
+pa20/tests/spec/projected-inherent-headers/explicit-path.rs	0
+pa20/tests/spec/projected-inherent-headers/inferred-path.rs	0
+pa20/tests/spec/projected-inherent-headers/call-result.rs	0
+pa20/tests/spec/projected-inherent-headers/by-ref.rs	0
+pa20/tests/spec/projected-inherent-headers/concrete-mismatch.rs	1
+pa20/tests/spec/projected-inherent-headers/missing-try.rs	1

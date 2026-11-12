@@ -191,6 +191,38 @@ impl Context {
         Ok(Outcome::Pending(id))
     }
 
+    /// Constrain independent shape structure and return each postponed
+    /// associated-result comparison as a projection-equality goal. Nothing is
+    /// registered for resumption: the caller proves every returned goal, as a
+    /// method candidate proves its normalized implementation header.
+    ///
+    /// # Errors
+    /// Rejects ordinary mismatches, non-projection associated results, invalid
+    /// identities and exhausted inference work.
+    pub fn equate_shape_goals(
+        &mut self,
+        store: &Store,
+        left: TermId,
+        right: TermId,
+    ) -> Result<Vec<super::predicates::Predicate>, Error> {
+        let mut blocked = Vec::new();
+        self.unify(store, left, right, false, Some(&mut blocked))?;
+        self.account_work(blocked.len())?;
+        blocked
+            .into_iter()
+            .map(|(left, right)| {
+                let (subject, result) = if self.projection_item(store, left)?.is_some() {
+                    (left, right)
+                } else if self.projection_item(store, right)?.is_some() {
+                    (right, left)
+                } else {
+                    return Err(Error::Normalization);
+                };
+                Ok(super::predicates::Predicate::equality(subject, result))
+            })
+            .collect()
+    }
+
     fn block_equation(
         &mut self,
         store: &Store,

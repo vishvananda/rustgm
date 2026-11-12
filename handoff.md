@@ -168,6 +168,17 @@ the passing receipts, not those attempts, qualify the current implementation.
   `.keep-artifacts`, source 0af99f4a6) has passed measurement and the unchanged
   original observation with its postcheck. It supersedes a08ab1a4 as the
   comparison baseline. Full 43188445172 runs on 0af99f4a6.
+- The next blocker, the six adapter `.into_try()` bodies on
+  `impl<R: Try> ControlFlow<R, R::Output>`, is fixed and published
+  ([evidence](docs/pa20-projected-inherent-headers.md)). Method applicability
+  turns projected header leaves into projection-equality conditions, and owner
+  binding defers the header to the body normalizer. Nine PA20 triples are
+  generated, and all 28,333 prior hashes are unchanged.
+  - Exploratory pin `obj/parallel/candidate-graph/wip3-dev-fast` clears all six
+    bodies. The next first failure is next_if_eq 5023 at peekable.rs:318, a
+    diagnostic-formatting fence.
+  - The `unbound` rejection-cause contract is in that packet's pending.json.
+  - Pending: a clean pin, observation, measurement and a full successor.
 
 **2026-11-12 update:** steps1–6 are complete; the checkpoint is ee8c11abb
 ([evidence](docs/pa24-flatten-helper-inputs.md)). Immutable pin

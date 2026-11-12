@@ -271,3 +271,8 @@ PA25 extends constant evaluation with const functions and general statements.
 Library/crate metadata and the Cargo ecosystem remain later work. The maintainer
 journal in `docs/pa18-pa21-buildout.md` records earlier implementation checkpoints;
 those historical planned-stage statements describe their original checkpoints.
+
+The [projected inherent header checkpoint](../docs/pa20-projected-inherent-headers.md)
+adds nine reviewed outcomes for method candidates whose implementation header
+contains a projection. An unbound-output rejection remains an explicit
+requirement until method selection refutes the candidate itself.

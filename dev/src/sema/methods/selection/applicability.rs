@@ -69,6 +69,10 @@ pub(super) fn prepare(
         .self_type;
     let subject = target;
     let target = receiver.as_ref().map_or(target, |r| r.ty);
+    // A projected implementation header is normalized as rustc's probe does:
+    // each associated-result leaf becomes a projection-equality condition.
+    let projected = |ty| facts.types.contains_projections(ty) == Some(true);
+    let (subject_projected, target_projected) = (projected(subject), projected(target));
     let ids = if facts.associated.trait_owner(owner).is_some()
         || facts.associated.operation(owner).is_some()
         || facts.associated.comparison(owner).is_some()
@@ -106,20 +110,31 @@ pub(super) fn prepare(
     let target = context
         .instantiate_with(&mut facts.types, target, &mut substitution)
         .map_err(inference)?;
+    let mut header = Vec::new();
     if let Some(actual) = receiver.and_then(|r| r.subject) {
         let subject = context
             .instantiate_with(&mut facts.types, subject, &mut substitution)
             .map_err(inference)?;
-        match context.equate_shape(&facts.types, subject, actual) {
-            Ok(()) => {}
-            Err(infer::Error::Mismatch | infer::Error::Occurs) => return Ok(None),
-            Err(error) => return Err(inference(error)),
+        if !relate_header(
+            facts,
+            context,
+            subject,
+            actual,
+            subject_projected,
+            &mut header,
+        )? {
+            return Ok(None);
         }
     }
-    match context.equate_shape(&facts.types, target, prefix) {
-        Ok(()) => {}
-        Err(infer::Error::Mismatch | infer::Error::Occurs) => return Ok(None),
-        Err(e) => return Err(inference(e)),
+    if !relate_header(
+        facts,
+        context,
+        target,
+        prefix,
+        target_projected,
+        &mut header,
+    )? {
+        return Ok(None);
     }
     let Some(mut conditions) = declaration_conditions(
         facts,
@@ -135,10 +150,38 @@ pub(super) fn prepare(
     else {
         return Ok(None);
     };
+    conditions
+        .traits
+        .extend(header.into_iter().map(super::lookup_goals::Goal::ordinary));
     if !builtin_requirements(facts, context, &mut conditions, caller.environment)? {
         return Ok(None);
     }
     Ok(Some(conditions))
+}
+
+/// Relate an instantiated candidate header to its actual shape. A projected
+/// header postpones each associated-result leaf as a condition for selection,
+/// rather than comparing an unnormalized projection structurally.
+fn relate_header(
+    facts: &Declarations,
+    context: &mut Context,
+    header: TermId,
+    actual: TermId,
+    projected: bool,
+    goals: &mut Vec<infer::predicates::Predicate>,
+) -> Result<bool, &'static str> {
+    let related = if projected {
+        context
+            .equate_shape_goals(&facts.types, header, actual)
+            .map(|postponed| goals.extend(postponed))
+    } else {
+        context.equate_shape(&facts.types, header, actual)
+    };
+    match related {
+        Ok(()) => Ok(true),
+        Err(infer::Error::Mismatch | infer::Error::Occurs) => Ok(false),
+        Err(error) => Err(inference(error)),
+    }
 }
 
 fn declaration_conditions(
