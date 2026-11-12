@@ -77,13 +77,30 @@ reference is hand-edited. Upstream, maintainer harness and cleanup checks pass,
 with28,145 current reference hashes preserved. Receipts and the new batch are
 in the machine record.
 
-Current CLI67f146ab1d137041423db053336ea8a4724269bb413dfdf97367ffceb108791e
-has this local evidence; a new immutable original observer has not run yet.
-The preceding e8 observer first failed filter_try_fold at its unchanged120s
-deadline. No original core, alloc or std artifact exists. Freeze this checkpoint,
-compare immutable accepting controls, then run the unchanged observer and verify
-all source/configuration bindings. Full successor qualification remains required.
-Retain all earlier pending requirements, stable5d until full success and optimized21f.
+Clean source `c388b27099c03f75e01adf830346fe3c2a04e3f6` freezes CLI67f146ab with3907 Rust
+hashes and an empty tracked patch. Thirty exclusive A/A plus two ABBA accepting
+observations retain complete output equality against preceding e8. Wall ratios
+are1.272/.959/1.082; CPU1.124/1.043/1.095; A/A wall1.071/.952/.928.
+These short controls retain slower/noisy observations without claiming optimized
+speed, neutrality or core throughput. Raw measurements and frozen inputs remain.
+
+The unchanged120s original observer ends at its deadline after121.087482s,
+with78 partial records and14,320 item attempts. It reaches filter_try_fold4600
+at140:3018 with no failure record, alongside all eleven earlier required bodies.
+Two preceding failure records are absent when reached; no new failure appears
+among previously passing reached e8 bodies. The first remaining failure is
+filter_map_fold4634, body141:1230/error141:1253, filter_map.rs:39 at match.
+The last attempted body is8892, str/pattern.rs239:68090,line1816. Partial counts
+are neither a full census nor throughput evidence. Postcheck verifies all722
+source hashes,375 opens, six configuration bindings,3907 current/immutable Rust
+hashes and unchanged profile/limits; progressSHA5f7da4e31911e13155c609d3ad4069120d7e1deadab565920678ec1ef44ba52d.
+
+No original core, alloc or std artifact exists. The next reduction owns match
+inside closures, using actual typed pattern operations to distinguish discriminant
+reads from payload moves. Full successor qualification remains required after
+publication and a fresh no-active-full check. Retain all earlier requirements,
+stable5d until full success and optimized21f. Preceding e8 remains the recorded
+comparison baseline; retire its executable only after this replacement publishes.
 
 The [machine record](pa24-try-captures-evidence.json) binds raw evidence under
 Bobj/parallel/filter-try-capture and the preceding CI-reference-review directory.

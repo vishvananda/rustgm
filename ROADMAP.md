@@ -47,7 +47,9 @@ The [try-capture checkpoint](docs/pa24-try-captures.md) adds value-use traversal
 for captured try blocks,21 complete source outcomes, actual native7/43/23/123 and
 one-field scaling. Fifteen ordinary contracts and all earlier requirements remain
 open. Preceding CI's16 existing text contracts are independently reviewed and
-updated without changing input or acceptance outcomes. No original artifact yet.
+updated without changing input or acceptance outcomes. The unchanged original
+observer clears filter_try_fold and first reaches filter_map_fold at its match
+expression. All pinned inputs/configuration/limits verify; no original artifact yet.
 
 | PA | Assignment | Status |
 | --- | --- | --- |

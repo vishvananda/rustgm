@@ -10,9 +10,18 @@ Preceding full43145135573 passes every Rust regular test (3065private/285linking
 then fails16 PA24 text contracts. Those16 reviewed updates preserve source bytes
 and outcomes:13 earlier diagnostics and3 provably identical pointer-return spills,
 independently checked with16 Rust outcomes and3 actual native comparisons before
-normal generation. All other reference hashes remain unchanged. New original67
-observation and full successor remain pending; last e8 firstfailsfilter_try_fold
-140:3088 attry{acc}. No original core/alloc/std artifact exists.
+normal generation. All other reference hashes remain unchanged.
+
+Clean sourcec388b2709/immutable67 clears filter_try_fold4600/body140:3018 and all
+11 earlier required bodies. Unchanged120s observer still ends deadline121.087482s,
+78 partial records/14,320 attempts, last8892 str/pattern.rs:1816. Two preceding
+failure records are absent when reached; no new failure occurs among previously
+passing reached e8 bodies. First remaining is filter_map_fold4634/body141:1230,
+error141:1253,line39 at match. All722/375opens/six/current+immutable3907/profile/
+limits verify unchanged. No complete census, throughput or core/alloc/std artifact.
+Thirty immutable exclusive accepting observations preserve complete outputs and
+retain noisy timings. Full successor remains pending publication/fresh active check.
+Next: reduce typed Match capture uses without turning discriminant reads into moves.
 
 Current [wrapped callback-premise checkpoint](pa24-wrapped-callback-premises.md),
 sourcecf75c3f61/immutableCLIe8ca58db, reaches ByRefSized fold/rfold and all nine

@@ -1,10 +1,11 @@
 {
   "schema": 1,
-  "state": "locally qualified; immutable original observation and full successor pending",
+  "state": "locally qualified; pinned original reaches repaired filter_try_fold; full successor pending",
   "compiler": {
     "sha256": "67f146ab1d137041423db053336ea8a4724269bb413dfdf97367ffceb108791e",
     "production_change": "sema/bodies/closures/uses.rs shares existing value-use traversal for Loop and TryBlock bodies",
-    "source_commit": "pending clean source checkpoint/pin"
+    "source_commit": "c388b27099c03f75e01adf830346fe3c2a04e3f6",
+    "producer": "obj/parallel/filter-try-capture/candidate-dev-fast/producer.json"
   },
   "contracts": {
     "independent": 36,
@@ -156,7 +157,56 @@
     "linking_failed": 0,
     "reference_repair": "all16 differences already present in preceding6c; no input/acceptance outcome changes; independent pre-generation review and exact normal reference generation complete"
   },
-  "original_core": "No new67 observation yet; last e8 first failure filter_try_fold140:3088 at try{acc}; original core/alloc/std artifacts absent.",
+  "original_core": {
+    "item_attempts": 14320,
+    "records": 78,
+    "verified_required_bodies": [
+      "item\tfunction\t4394\tfile 133:2216\tnode 161",
+      "item\tfunction\t4397\tfile 133:2695\tnode 278",
+      "item\tfunction\t4400\tfile 133:3607\tnode 356",
+      "item\tfunction\t4401\tfile 133:3850\tnode 432",
+      "item\tfunction\t4403\tfile 133:4795\tnode 493",
+      "item\tfunction\t4429\tfile 134:1245\tnode 153",
+      "item\tfunction\t4435\tfile 134:2178\tnode 310",
+      "item\tfunction\t4450\tfile 135:4894\tnode 555",
+      "item\tfunction\t4600\tfile 140:3018\tnode 398",
+      "item\tfunction\t4739\tfile 142:17593\tnode 2529",
+      "item\tfunction\t4976\tfile 148:2530\tnode 203",
+      "item\tfunction\t6161\tfile 182:73724\tnode 1561"
+    ],
+    "new_failures_in_previously_passing_reached_baseline_bodies": [],
+    "previous_failures_absent_when_reached": [
+      {
+        "item": "item\tfunction\t4600\tfile 140:3018\tnode 398",
+        "record": "record\t1\tbodies\tfailed\tfunction `filter_try_fold`\tfile 140:3088\t-\tthis typed capture use is not implemented"
+      },
+      {
+        "item": "item\tfunction\t5248\tfile 156:2310\tnode 349",
+        "record": "record\t28\tbodies\tfailed\tfunction `check`\tfile 156:2521\t-\tthis typed capture use is not implemented"
+      }
+    ],
+    "first_failure": {
+      "item": "item\tfunction\t4634\tfile 141:1230\tnode 181",
+      "record": "record\t1\tbodies\tfailed\tfunction `filter_map_fold`\tfile 141:1253\t-\tthis typed capture use is not implemented",
+      "source": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/iter/adapters/filter_map.rs",
+      "line": 39
+    },
+    "last_item_source": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/str/pattern.rs",
+    "last_item_line": 1816,
+    "progress_sha256": "5f7da4e31911e13155c609d3ad4069120d7e1deadab565920678ec1ef44ba52d",
+    "complete_census": false,
+    "artifact": false,
+    "partial_counts_are_not_throughput": true,
+    "seconds": 121.08748242491856,
+    "deadline_seconds": 120,
+    "classification": "infrastructure/setup failure",
+    "source_hashes": 722,
+    "opened_sources": 375,
+    "config_bindings": 6,
+    "compiler_rust_hashes": 3907,
+    "all_bindings_profile_limits_unchanged": true,
+    "postcheck_cleanup": "1794457237662345758"
+  },
   "current_full_ci": "pending publication and fresh no-active-full check",
   "unchanged": [
     "backend contract/bridge",
@@ -166,5 +216,44 @@
     "assignment activation",
     "all fixture input bytes for16 text updates"
   ],
-  "raw_evidence_root": "obj/parallel/filter-try-capture"
+  "raw_evidence_root": "obj/parallel/filter-try-capture",
+  "comparison": {
+    "rows": 30,
+    "complete_output_equality": true,
+    "summary": {
+      "import-control": {
+        "seconds": {
+          "aa_ratio": 1.071259267270235,
+          "paired_candidate_over_base": 1.2719143875484888
+        },
+        "cpu_seconds": {
+          "aa_ratio": 0.9983269198594611,
+          "paired_candidate_over_base": 1.1238981654451508
+        }
+      },
+      "literal": {
+        "seconds": {
+          "aa_ratio": 0.9517921316373956,
+          "paired_candidate_over_base": 0.9594991886102389
+        },
+        "cpu_seconds": {
+          "aa_ratio": 0.9803285165951675,
+          "paired_candidate_over_base": 1.0429081430679747
+        }
+      },
+      "priority-native": {
+        "seconds": {
+          "aa_ratio": 0.9275177902018861,
+          "paired_candidate_over_base": 1.08182200013328
+        },
+        "cpu_seconds": {
+          "aa_ratio": 0.9259249453967835,
+          "paired_candidate_over_base": 1.09492650682945
+        }
+      }
+    },
+    "no_optimized_or_core_speed_claim": true,
+    "raw": "obj/parallel/filter-try-capture/measure",
+    "cleanup_receipt": "1794457080845557449"
+  }
 }

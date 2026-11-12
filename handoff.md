@@ -5,7 +5,7 @@ one worker: do not spawn agents or create worktrees. Use existing B
 `/mnt/vizier/rustgm-scratch/rustgm-pa26-work`; main is Git-only. Goal: original
 core, then alloc/std. No original library artifact exists.
 
-## Current checkpoint — try-block captures, original observation next
+## Current checkpoint — try-block captures clear filter_try_fold
 
 [Checkpoint](docs/pa24-try-captures.md): productionONEline shares existing
 Loop/TryBlock value-use traversal. No newengine/field/permission/backend/storage/
@@ -30,13 +30,23 @@ Newbatch1794454815232195184-c67d8ff46d63.json;28096otherreferencehashes/baseJSON
 unchanged. Rawby-ref-fold/ci-reference-review2/passed.json. No blindbless/inversion.
 
 Upstream/harness/tidy allPASS;28145currentreferencehashesunchanged.
-NEXT: semanticcommit/freeze exact67; immutable accepting
-comparison; NEWunchanged120s original+postcheck. Lastoriginale8 firstfilter_try_fold
-140:3088 line86 attry{acc}. No core/alloc/stdartifact. Publish+ONEfullafterfresh
-noactivefullcheck. Currentfull431451isFAILED, no activefull known (refreshbefore
-newdispatch). Keepstable5d/currente8/optimized21f untilreplacementpublication/
-comparison/fullqualification asapplicable; duplicate6c fixed-dev-fast/81ABSENT,
-identicaltest-fix6c stillavailable. Preserveallolderrequirements. Singleworker.
+Source c388b27099c03f75e01adf830346fe3c2a04e3f6 freezes exact67 with3907
+Rust hashes/empty patch. Thirty exclusive A/A+twoABBA controls retain complete
+output equality vs e8; slower/noisy ratios preserved, no optimized/core-speed claim.
+UNCHANGED120s original ends deadline121.087482s,78partialrecords/14320attempts,
+lastfn8892,str/pattern.rs239:68090,line1816. Filter_try_fold4600/body140:3018 and
+all11 earlier required bodies reached without failure records. Two old records
+absent when reached; no new failures among previously passing reached e8 bodies.
+First filter_map_fold4634,body141:1230/error141:1253,line39 at match in
+iter/adapters/filter_map.rs. Postcheck1794457237662345758 verifies722/375/six/
+3907/current+immutable/profile/limits unchanged. ProgressSHA
+5f7da4e31911e13155c609d3ad4069120d7e1deadab565920678ec1ef44ba52d.
+No complete census/throughput/original artifact. NEXT: publish+ONEfull after fresh
+no-active-full check, reduce actual Match capture use through selected pattern
+facts (discriminant reads differ from moves). Keep stable5d/optimized21f/current67;
+e8 comparison pin eligible for retirement after publication. Duplicate6c
+fixed-dev-fast/81 ABSENT; identicaltest-fix6c remains. All older requirements stay.
+Single worker, no new tree, backend/storage/limits unchanged.
 
 ## Preceding checkpoint — wrapped fold premises
 
