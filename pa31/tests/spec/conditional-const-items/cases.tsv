@@ -1,0 +1,11 @@
+pa31/tests/spec/conditional-const-items/last.rs	0
+pa31/tests/spec/conditional-const-items/last-call.rs	0
+pa31/tests/spec/conditional-const-items/nested-item.rs	0
+pa31/tests/spec/conditional-const-items/default-item.rs	0
+pa31/tests/spec/conditional-const-items/deref-item.rs	0
+pa31/tests/spec/conditional-const-items/default-impl.rs	0
+pa31/tests/spec/conditional-const-items/ordinary-item.rs	0
+pa31/tests/spec/conditional-const-items/last-missing.rs	1
+pa31/tests/spec/conditional-const-items/default-missing.rs	1
+pa31/tests/spec/conditional-const-items/default-nonconst-impl.rs	1
+pa31/tests/spec/conditional-const-items/nonconst-item.rs	1

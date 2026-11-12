@@ -149,6 +149,23 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-12 conditional const item update (supersedes the blocks below):**
+
+- The last 5713 blocker and nine other scoped-continuation bodies are fixed
+  ([evidence](docs/pa25-conditional-const-items.md)). A conditional const fn
+  item or a const trait member's item now proves its substituted const
+  conditions in the caller.
+  - Eleven declared reductions are in `pa31/tests/spec/conditional-const-items`,
+    and the history is in `obj/parallel/item-conditions/core/declared.json`.
+  - Exploratory pin `obj/parallel/item-conditions/wip2-dev-fast` (87a8fc14)
+    clears all ten. The next first failure is max at iterator.rs:3255, then
+    min/max_by_key/min_by_key (function items passed to an ordinary `FnMut`
+    bound, behind the nested trait path formatting fence).
+- Full CI 43216665164 passed on 8cff15463, covering bcbafa25a and its private
+  winnowing test.
+- Clean pin `obj/parallel/count-fold/candidate-dev-fast` (eacd5629) remains the
+  comparison baseline until this checkpoint's clean pin passes.
+
 **2026-11-12 default const closure update (supersedes the blocks below):**
 
 - The count 5712 blocker is fixed

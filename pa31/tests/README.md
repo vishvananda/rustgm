@@ -952,3 +952,12 @@ library function and a root `main` and a `[const] Clone` premise, and an
 ordinary control accept. A non-const closure and a clone under only `Clone`
 reject (E0277). A maintainer integration test checks them through the CLI.
 There is no graded manifest.
+
+`spec/conditional-const-items/` freezes eleven declared no_core reductions of
+core's `Iterator::last`, `Option::as_deref` and `get_or_insert_default`. A
+conditional const fn item, or a const trait member's item, must meet a
+`[const]` callable bound through its substituted const conditions. Six
+positives (a nested conditional fn, `T::default`, `Deref::deref` and a const
+impl member) and an unconditional control accept. Four items with an unmet
+condition reject (E0277). A maintainer integration test checks them through
+the CLI. There is no graded manifest.

@@ -1,5 +1,21 @@
 # Library build blocker tracker
 
+The [conditional const item checkpoint](pa25-conditional-const-items.md) lets
+a conditional const fn item, or a const trait member's item, meet a `[const]`
+callable bound through its substituted const conditions: the item's `[const]`
+predicates and a member's `Self: [const] Trait`. Ten core bodies passed such
+items and stopped at the scoped-continuation fence. Eleven declared source-core
+reductions and use-linear work qualify it.
+
+Exploratory pin 87a8fc14 clears last 5713, Option and Result as_deref and
+as_deref_mut, get_or_insert_default and the four slice chaining bodies, with no
+new reached failure. The unchanged 120s observer ends at 121.005s with 29
+records, 15,102 attempts and last item 10217, x86/ssse3.rs:228. The first
+remaining failure is max at iterator.rs:3255, then min, max_by_key and
+min_by_key: function items passed to an ordinary `FnMut` bound, behind the
+nested trait path formatting fence. The clean pin and its observation are
+pending. No core artifact exists.
+
 The [default const closure checkpoint](pa25-default-const-closures.md) lets a
 const closure defined in a const trait's default body meet a `[const]` callable
 bound through that body's `Self: [const] Trait` premise. Core's

@@ -402,6 +402,8 @@ mod polymorphic;
 #[path = "source_closures/specializations.rs"]
 mod specializations;
 
+#[path = "source_closures/conditioned_items.rs"]
+mod conditioned_items;
 #[path = "source_closures/defaulted_const_closures.rs"]
 mod defaulted_const_closures;
 #[path = "source_closures/identity.rs"]

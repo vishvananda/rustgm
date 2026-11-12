@@ -183,6 +183,12 @@ fn function_item(
             )
         })
     {
+        if facts.nonconst_trait_member(definition)? {
+            return Ok(Eligibility::Rejected);
+        }
+        if template_pending(facts, definition, item) {
+            return Ok(Eligibility::Pending);
+        }
         return Ok(Eligibility::Unpaid(instance));
     }
     if !facts.is_const_function(definition) {
@@ -200,14 +206,7 @@ fn function_item(
     let Some(effect) = catalog.prepared_call_effect(definition)? else {
         return Ok(Eligibility::Pending);
     };
-    if facts.lifetimes.callables.get(item).is_none()
-        && (facts.generics.has_parameters(definition)
-            || facts
-                .lifetimes
-                .functions
-                .get(&definition)
-                .is_some_and(|scheme| scheme.captures != 0 || !scheme.early.is_empty()))
-    {
+    if template_pending(facts, definition, item) {
         return Ok(Eligibility::Pending);
     }
     if let Some(boundary) = validate_signature(facts, context, instance)? {
@@ -217,6 +216,17 @@ fn function_item(
         CallEffect::Ordinary => Eligibility::Allowed,
         CallEffect::Conditional => Eligibility::Unpaid(instance),
     })
+}
+
+/// A generic callable's substituted contract needs its published template.
+fn template_pending(facts: &Declarations, definition: DefId, item: crate::types::ItemId) -> bool {
+    facts.lifetimes.callables.get(item).is_none()
+        && (facts.generics.has_parameters(definition)
+            || facts
+                .lifetimes
+                .functions
+                .get(&definition)
+                .is_some_and(|scheme| scheme.captures != 0 || !scheme.early.is_empty()))
 }
 
 fn validate_signature(

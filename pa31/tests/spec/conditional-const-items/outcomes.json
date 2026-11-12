@@ -1,0 +1,74 @@
+{
+ "schema": 1,
+ "declared": "2026-11-12, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run (obj/parallel/item-conditions/core/declared.json, batch 1). The prefix is the default-const-closures count.rs prefix, with Default and Deref const traits added per case.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "cases": {
+  "last.rs": {
+   "sha256": "8f5a0660f704edc8fc9aa4c6fc7b12d8e55d93344b4b301510dd0a77141534f7",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "last"
+  },
+  "last-call.rs": {
+   "sha256": "56642602513fc993fef71ee83a99b041d968249753c83017b19e85cf6e91ae85",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "last-call"
+  },
+  "nested-item.rs": {
+   "sha256": "f8915cde89e97cf3f27825b0cfb5b131eb44f4980550fa397381b727135fe07f",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "nested-item"
+  },
+  "default-item.rs": {
+   "sha256": "3a4fe57881026c6395ea776891a19245d114a777afa6b6c9c07d03422e82f9c4",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "default-item"
+  },
+  "deref-item.rs": {
+   "sha256": "87df129fa31f3e43ab45923792c5334d151534d55ff19646f4f12b872b61ab28",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "deref-item"
+  },
+  "default-impl.rs": {
+   "sha256": "f4cbd8de7656f3fecddb01fa1bf40fccba4c89b4bd71173cc460bf6bead312aa",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "default-impl"
+  },
+  "ordinary-item.rs": {
+   "sha256": "e35c001e0672c908133980dcbc1897d68a2f5b421a348b8e340857920e41cfbc",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "ordinary-item"
+  },
+  "last-missing.rs": {
+   "sha256": "0fcf387c73090ba020c82c9515487e4d1621659c999b1e289f45a03b4ab3b365",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "last-missing"
+  },
+  "default-missing.rs": {
+   "sha256": "ce1faf52fb20900c2effee50b2591fc64b45a7a57e12bb5b4361538e9403089f",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "default-missing"
+  },
+  "default-nonconst-impl.rs": {
+   "sha256": "acde76fb949bc5b4d8a54cade4d17be46d18e770214b5cffd50f1b163c8d8020",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "default-nonconst-impl"
+  },
+  "nonconst-item.rs": {
+   "sha256": "35ab90c202fe08888dab195f9fcb2f985cd14c887e663043a5ac61d2dd62416f",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "nonconst-item"
+  }
+ }
+}

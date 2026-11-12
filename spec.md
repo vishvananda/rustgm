@@ -5817,9 +5817,16 @@ through that body's `Self: [const] Trait` premise. It meets a `[const]` callable
 bound through its defining contract: the trait premise and the owner's `[const]`
 predicates, proved under the caller's assumptions. A non-const closure in that
 body still fails the bound. A const trait member publishes no const-fn call
-effect, so eligibility may not wait for one. Const fn items in the same body
-keep their separate scoped-continuation fence. Controls are in the
+effect, so eligibility may not wait for one. Controls are in the
 [default const closure checkpoint](docs/pa25-default-const-closures.md).
+
+A const fn item whose own predicates include `[const]` bounds, or a member of a
+const trait, meets a `[const]` callable bound only when the caller proves its
+conditions. Those are the item's `[const]` predicates and, for a trait member,
+the trait's `Self: [const] Trait`, bound through the item's callable template,
+which includes a member's `Self`. A `#[rustc_non_const_trait_method]` member is
+rejected. Controls are in the
+[conditional const item checkpoint](docs/pa25-conditional-const-items.md).
 
 A canonical caller premise may bind an inference hole to its complete projected
 input type. Use the shared scoped worklist; collect comparisons between projection

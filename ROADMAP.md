@@ -125,6 +125,14 @@ iterator `last`, which needs a scoped continuation for a const fn item. Clean
 pin eacd5629 (source a468bcc0b) confirms this with 36 records, and its
 measurement supports no speed claim either way.
 
+The [conditional const item checkpoint](docs/pa25-conditional-const-items.md)
+lets a conditional const fn item, or a const trait member's item, meet a
+`[const]` callable bound through its substituted const conditions, as core's
+`last`, `as_deref` and `get_or_insert_default` need. Eleven declared
+source-core reductions agree with rustc. An exploratory observation clears ten
+core bodies; the first remaining failure is iterator `max`. The clean pin, its
+observation and measurement are pending.
+
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage
 limit controls, pass text, independent Rust and native checks with frozen a08ab1a4.

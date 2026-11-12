@@ -293,10 +293,7 @@ impl Search<'_> {
                 ) {
                     return Err("unpaid const callable lost its complete function item".into());
                 }
-                return Err(
-                    "source const callable conditional obligations require a scoped continuation"
-                        .into(),
-                );
+                return self.begin_scoped_callable(facts, frame, instance);
             }
             callables::Eligibility::Closure(instance) => {
                 return self.begin_scoped_callable(facts, frame, instance);
