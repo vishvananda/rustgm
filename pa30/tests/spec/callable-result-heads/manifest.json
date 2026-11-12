@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "owner": "pa30",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": 2024,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0
+  },
+  "state": "Complete API outcomes qualified; ordinary native remains required behind preexisting bootstrap conformance; assignment status unchanged.",
+  "inputs": [
+    {
+      "path": "pa30/tests/spec/callable-result-heads/native-order.rs",
+      "sha256": "952b841e7e3f31cad4077cd9f5de1be4a1257a6e4afff653eae145efd88700e7",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Required positive pending bootstrap conformance; no candidate artifact or language rejection qualified.",
+      "independent_native": {
+        "status": 0,
+        "stdout": "callable-result 23 12\n",
+        "stderr": "",
+        "command": [
+          "cc",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/array-chunks-next/additional-input-plan/observer.c",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/array-chunks-next/additional-independent3/6.o",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/array-chunks-next/additional-independent3/6.native"
+        ],
+        "observer": "pa30/tests/spec/callable-result-heads/observer.c"
+      },
+      "required_native_status": 0,
+      "candidate_native_qualified": false,
+      "candidate_types_status": 1,
+      "candidate_complete_prepared_root_qualified": false
+    }
+  ],
+  "outcomes_declared_before_execution": true,
+  "baseline_compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+  "auxiliaries": [
+    {
+      "path": "pa30/tests/spec/callable-result-heads/observer.c",
+      "sha256": "fece56a070c3c7d728751178d8f696cd06b32f4a7d3c9d38592fac958afe7262"
+    }
+  ],
+  "candidate_evidence": "docs/pa24-projected-callback-results-evidence.json",
+  "candidate_cli_sha256": "81a3c69379d7885ad5df8dd5f40ec43c8c5b03d3216842d7847c03198796012c"
+}

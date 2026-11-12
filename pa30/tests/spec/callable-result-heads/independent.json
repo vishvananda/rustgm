@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "owner": "pa30",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": 2024,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0
+  },
+  "state": "Independent contracts frozen; complete candidate qualification pending; assignment remains planned",
+  "objects": [
+    {
+      "path": "pa30/tests/spec/callable-result-heads/native-order.rs",
+      "sha256": "952b841e7e3f31cad4077cd9f5de1be4a1257a6e4afff653eae145efd88700e7",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Pending complete prepared-root outcome; preserve actual formation, distinct projected owners and lifetime proof.",
+      "independent_native": {
+        "status": 0,
+        "stdout": "callable-result 23 12\n",
+        "stderr": "",
+        "command": [
+          "cc",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/array-chunks-next/additional-input-plan/observer.c",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/array-chunks-next/additional-independent3/6.o",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/array-chunks-next/additional-independent3/6.native"
+        ],
+        "observer": "pa30/tests/spec/callable-result-heads/observer.c"
+      },
+      "required_native_status": 0,
+      "candidate_native_qualified": false
+    }
+  ],
+  "outcomes_declared_before_execution": true,
+  "baseline_compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+  "snapshot_role": "Frozen independent outcomes; initial candidate_qualification fields are historical. See manifest.json and checkpoint evidence for current candidate qualification."
+}

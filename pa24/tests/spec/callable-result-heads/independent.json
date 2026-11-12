@@ -1,0 +1,173 @@
+{
+  "schema": 1,
+  "profile": {
+    "rust": "1.98.0",
+    "edition": 2024,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0
+  },
+  "outcomes_declared_before_execution": true,
+  "baseline_compiler_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+  "objects": [
+    {
+      "path": "pa24/tests/spec/callable-result-heads/chain.rs",
+      "sha256": "06d80ede1432fef745fb0fb5efc0105ac9841b19bdcfe7cbe11276ede57329f5",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Pending; do not invert valid positives or count incomplete receiver shape as language rejection."
+    },
+    {
+      "path": "pa24/tests/spec/callable-result-heads/split.rs",
+      "sha256": "ee32a2db0141e40feb89105277414fc0d7b33ee6fbe60293076729ef68d81320",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Pending; do not invert valid positives or count incomplete receiver shape as language rejection."
+    },
+    {
+      "path": "pa24/tests/spec/callable-result-heads/annotated.rs",
+      "sha256": "b56f08d6e28ff2b72956817a01a4493599942af212d4502cda8c6fe6f02c973d",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Pending; do not invert valid positives or count incomplete receiver shape as language rejection."
+    },
+    {
+      "path": "pa24/tests/spec/callable-result-heads/qualified.rs",
+      "sha256": "4f6f931a593d20720b9455f884fad4d69682d9d72ddf9010bcd74059b2cf73ad",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Pending; do not invert valid positives or count incomplete receiver shape as language rejection."
+    },
+    {
+      "path": "pa24/tests/spec/callable-result-heads/explicit-constructor.rs",
+      "sha256": "bb690accf459e100bd06f19de54f9c1d2387f54a6d944de1a8e77ae0ec278c33",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 0,
+      "candidate_qualification": "Pending; do not invert valid positives or count incomplete receiver shape as language rejection."
+    },
+    {
+      "path": "pa24/tests/spec/callable-result-heads/closure.rs",
+      "sha256": "74a4cab0a54bbae1fa05c351bf5dcb5f9833ba5bf19669f84a8a4c896ee49fa0",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Pending; do not invert valid positives or count incomplete receiver shape as language rejection."
+    },
+    {
+      "path": "pa24/tests/spec/callable-result-heads/known-item.rs",
+      "sha256": "0f38eea4ae6bd6eb179de2677158dd17ecb6312b342b0c8c0a833f9bb35596fd",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Pending; do not invert valid positives or count incomplete receiver shape as language rejection."
+    },
+    {
+      "path": "pa24/tests/spec/callable-result-heads/wrong-output-reject.rs",
+      "sha256": "d60734ba8aa8538f9a67b4e67ed826b6f3c7291d18f582a463b93680b42789c7",
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Pending; do not invert valid positives or count incomplete receiver shape as language rejection."
+    },
+    {
+      "path": "pa24/tests/spec/callable-result-heads/wrong-item-reject.rs",
+      "sha256": "6b61d6e9c4cdb1041bb5dd6b6122f3baf3ac83e18bf16e8d972cbbaf59a57b32",
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Pending; do not invert valid positives or count incomplete receiver shape as language rejection."
+    },
+    {
+      "path": "pa24/tests/spec/callable-result-heads/literal-call-input.rs",
+      "sha256": "82cf0d6de535fe135bf946c3ef9de58e39d977474aec7e76409cd835f67b5129",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 0,
+      "candidate_qualification": "Pending complete prepared-root validation; accepting baseline literal/plain-parameter contrasts."
+    },
+    {
+      "path": "pa24/tests/spec/callable-result-heads/parameter-call-input.rs",
+      "sha256": "9e10eae1ace53d17fed1b9673a28660eca61ca6ad1ea425d5fbeaf9bb40bb3ca",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 0,
+      "candidate_qualification": "Pending complete prepared-root validation; accepting baseline literal/plain-parameter contrasts."
+    },
+    {
+      "path": "pa24/tests/spec/callable-result-heads/higher-ranked-input.rs",
+      "sha256": "74784e5b8a539e797d62bcbea9e3bdbdb2dd54aa1ce62d7a47e3e81063f29c1a",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 0,
+      "baseline_lowir_status": 0,
+      "baseline_lowir_diagnostic": "",
+      "candidate_qualification": "Pending complete prepared-root check. Nonempty input binder remains scoped; static-only item must fail actual lifetime proof."
+    },
+    {
+      "path": "pa24/tests/spec/callable-result-heads/static-input-reject.rs",
+      "sha256": "ea6d0e0fa3aa518621f7d4fa12ef3fefd77ebb8ac61120159a14befaf0983ce0",
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "baseline_types_status": 0,
+      "baseline_lowir_status": 1,
+      "baseline_lowir_diagnostic": "ERROR: file 0: 530: required lifetime does not outlive its target\n",
+      "candidate_qualification": "Pending complete prepared-root check. Nonempty input binder remains scoped; static-only item must fail actual lifetime proof."
+    },
+    {
+      "path": "pa24/tests/spec/callable-result-heads/different-projection-reject.rs",
+      "sha256": "6b0a6f989a1679bba272f5cd594c2f96e2244cdc27464c889db83d6fa8c04550",
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Pending complete prepared-root outcome; preserve actual formation, distinct projected owners and lifetime proof."
+    },
+    {
+      "path": "pa24/tests/spec/callable-result-heads/equal-projections.rs",
+      "sha256": "f8110f7d1cad574999f26f731097ccf3e1b01eb984ca6f01379ad42c081b56ff",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Pending complete prepared-root outcome; preserve actual formation, distinct projected owners and lifetime proof."
+    },
+    {
+      "path": "pa24/tests/spec/callable-result-heads/missing-parent-reject.rs",
+      "sha256": "745e9dfef79fb9df7113fe504afb726a58103532e88e3cfb8d1b43862254d3da",
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Pending complete prepared-root outcome; preserve actual formation, distinct projected owners and lifetime proof."
+    },
+    {
+      "path": "pa24/tests/spec/callable-result-heads/array-item.rs",
+      "sha256": "8640511cdb22b075c5a2e003bb8c19086b2929c5deff600c7ae42235e02540d9",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Required actual const-generic array Item result; candidate full prepared roots pending."
+    }
+  ],
+  "snapshot_role": "Frozen independent outcomes; initial candidate_qualification fields are historical. See manifest.json and checkpoint evidence for current candidate qualification."
+}

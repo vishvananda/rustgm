@@ -30,6 +30,13 @@ keep-going census of original core, and develop branching body transport and
 the alloc/std build lanes in parallel. The backend stays frozen. Assignment
 requirements and status are unchanged.
 
+The [projected callback-result checkpoint](docs/pa24-projected-callback-results.md)
+qualifies41 complete outcomes from42 frozen ordinary/source/native contracts,
+including actual projected array payloads, nonempty lifetime proof and source
+native order23/12. One ordinary native artifact and eight override contrasts
+remain required. This finite checkpoint does not activate a planned assignment
+or establish an original core artifact; the bounded original probe is next.
+
 | PA | Assignment | Status |
 | --- | --- | --- |
 | [1](pa1/README.md) | Source and tokens | implemented-draft |

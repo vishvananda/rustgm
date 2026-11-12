@@ -1,0 +1,312 @@
+{
+  "schema": 1,
+  "owner": "pa31",
+  "state": "Complete API outcomes qualified; ordinary native remains required behind preexisting bootstrap conformance; assignment status unchanged.",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": 2024,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0
+  },
+  "inputs": [
+    {
+      "path": "pa31/tests/spec/callable-result-heads/chain.rs",
+      "sha256": "603346f702941a783b3c88e91cb148d17664f381e5ce8e4d20e08a8c18b0cd7e",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 0,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/split.rs",
+      "sha256": "46ee5e2f40fe6e8c7fab93895a82a926e834626a256ba9b193d0b5607aa331a0",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 0,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/annotated.rs",
+      "sha256": "6f54d58d4d4a15f0921ffcfb418f2dd544487ddcf51f03687da7d8b192deffd3",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 0,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/qualified.rs",
+      "sha256": "af291e518014422ec0c79be0876ba7e758420f7d4ed75eafb566db490000bebb",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 0,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/explicit-constructor.rs",
+      "sha256": "8f31adb2fcc716bd7e1a77fb4e7052185088e921b5cc0d0c246620b3cbd7ad22",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 0,
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 0,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/closure.rs",
+      "sha256": "54ba3a72fd204865733e2176f292ac42238006a7b5439ac7bc2fbb5e6bb21740",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 0,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/known-item.rs",
+      "sha256": "7160e46812eb31e47b4dd67a791d77cf520cafa93b7d231aab9d911862677617",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 0,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/wrong-output-reject.rs",
+      "sha256": "310f3bbc512d0fc8114d6f7296aa7f234edc061d50c26e513cd47632ac3cf533",
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 1,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/wrong-item-reject.rs",
+      "sha256": "220d95deb59bda6e265c46d5dcc9187e0385dfeb5ff3746ed76c6a6e35221d1f",
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 1,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/literal-call-input.rs",
+      "sha256": "d5e243dcb34dfc506b5e382fa4201f9326aa75fdcef3403be385ef962d1ea197",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 0,
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 0,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/parameter-call-input.rs",
+      "sha256": "48d6e3d5fc63b934f6de33638f2820243804b34055ddba53433b0257df16de1d",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 0,
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 0,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/higher-ranked-input.rs",
+      "sha256": "3e5dfac489d9d55ea032ec9a62845a0fa79dc278499c21acfabef8a2e6442b6f",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 0,
+      "baseline_lowir_status": 1,
+      "baseline_lowir_diagnostic": "ERROR: input: general fundamental policy requires authenticated trait/nominal metadata transport\n",
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 0,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/static-input-reject.rs",
+      "sha256": "2c712eb9cf9978c2e209ef031c065a366c93c84bd2f1fc52b85b09395837f3cc",
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "baseline_types_status": 0,
+      "baseline_lowir_status": 1,
+      "baseline_lowir_diagnostic": "ERROR: file 0: 6682: required lifetime does not outlive its target\n",
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 0,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/width-8-noise-0.rs",
+      "sha256": "d00050caaec1fcfe4fa1ea3862e0837b78a9776183489b33032d2c73671fc211",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "width": 8,
+      "noise": 0,
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 0,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/width-8-noise-128.rs",
+      "sha256": "50ea3b843ce6719c51955184596ffa3994b81af871669a0626b1c326ffb8a6b2",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "width": 8,
+      "noise": 128,
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 0,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/width-32-noise-0.rs",
+      "sha256": "f9ba6c2317c3af874e53866a75d40a7bc3240aac6c270d1a0b1093c566cac48b",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "width": 32,
+      "noise": 0,
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 0,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/width-32-noise-128.rs",
+      "sha256": "3fd988c12d6f3799d9d179ac309cee139b6270cf559ecda119f1c9d6f86d26f0",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "width": 32,
+      "noise": 128,
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 0,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/width-128-noise-0.rs",
+      "sha256": "a5faf8880ab8dfe2e80c7d399df5fbc06b712933428a12d9bca5eaae0678c357",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "width": 128,
+      "noise": 0,
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 0,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/width-128-noise-128.rs",
+      "sha256": "df72f7aa05f8bb875bd8c87db45d15b19ee12414e6f75a8440a69bd43610f8ea",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "width": 128,
+      "noise": 128,
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 0,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/different-projection-reject.rs",
+      "sha256": "dc544f9dc1fcaefed2e852995a87f16c3e866a095fb119ed08ae87d5141e0683",
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 1,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/equal-projections.rs",
+      "sha256": "78b5a2356cb5fe3830a9852ec198b998b1aed9060da821ea14399bc5e08cd25a",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 0,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/missing-parent-reject.rs",
+      "sha256": "97d17d35381c77bde5ba447e89f62d95681831ca764321e48be0cf163f453710",
+      "rustc_object_status": 1,
+      "exit_status": 1,
+      "required_complete_prepared_root_status": 1,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 1,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/native-order.rs",
+      "sha256": "39193fcdabda5d1ff34ddca856c61c8bcd4c12f3a3398c5224456b5551816743",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "independent_native": {
+        "status": 0,
+        "stdout": "callable-result 23 12\n",
+        "stderr": "",
+        "command": [
+          "cc",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/array-chunks-next/additional-input-plan/observer.c",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/array-chunks-next/additional-independent4/7.o",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/array-chunks-next/additional-independent4/7.native"
+        ],
+        "observer": "pa30/tests/spec/callable-result-heads/observer.c"
+      },
+      "required_native_status": 0,
+      "candidate_native_qualified": true,
+      "candidate_types_status": 0,
+      "candidate_complete_prepared_root_qualified": true
+    },
+    {
+      "path": "pa31/tests/spec/callable-result-heads/array-item.rs",
+      "sha256": "0a1d8814e41aab7fa7a937d2280c7989b00e98347d7737e4d2b87348a3277646",
+      "rustc_object_status": 0,
+      "exit_status": 0,
+      "required_complete_prepared_root_status": 0,
+      "baseline_types_status": 1,
+      "candidate_qualification": "Declared complete prepared-root outcome qualified by receipt1794441287845235154; full lifetime proof retained.",
+      "candidate_types_status": 0,
+      "candidate_complete_prepared_root_qualified": true
+    }
+  ],
+  "auxiliaries": [
+    {
+      "path": "pa30/tests/spec/callable-result-heads/observer.c",
+      "sha256": "fece56a070c3c7d728751178d8f696cd06b32f4a7d3c9d38592fac958afe7262"
+    }
+  ],
+  "candidate_evidence": "docs/pa24-projected-callback-results-evidence.json",
+  "candidate_cli_sha256": "81a3c69379d7885ad5df8dd5f40ec43c8c5b03d3216842d7847c03198796012c"
+}

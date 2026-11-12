@@ -22,12 +22,12 @@ impl Frame {
         source: &mut Context,
     ) -> Result<(), String> {
         self.inputs
-            .refresh(&facts.types, source)
+            .refresh(&mut facts.types, source)
             .map_err(inference)?;
         if let Some(trial) = &mut self.trial {
             trial
                 .inputs
-                .refresh(&facts.types, &mut self.inputs.context)
+                .refresh(&mut facts.types, &mut self.inputs.context)
                 .map_err(inference)?;
         }
         Ok(())

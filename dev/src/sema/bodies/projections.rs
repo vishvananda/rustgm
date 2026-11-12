@@ -308,8 +308,9 @@ impl Checker<'_> {
         Ok(())
     }
     /// A checked body's rigid opaque result must satisfy its actual equality.
-    /// Completed outer heads distinguish that rejection from a raw operation
-    /// still awaiting normalization. This diagnostic grants no relation or
+    /// Completed projection leaves distinguish that rejection from a raw
+    /// operation still awaiting normalization, including inside aggregates.
+    /// This diagnostic grants no relation or
     /// reusable negative evidence to implementation/coherence queries.
     pub(super) fn equation_error(
         &mut self,
@@ -320,17 +321,27 @@ impl Checker<'_> {
     ) -> Error {
         use crate::types::infer::{Constructor, Error as InferError};
         if error == InferError::Normalization {
-            let heads = [left, right].map(|term| self.state.infer.head(&self.facts.types, term));
-            for head in heads {
-                if let Err(error) = head {
-                    return self.error(node, error);
+            let mut opaque = false;
+            for term in [left, right] {
+                let roots = self.state.infer.normalization_roots(
+                    &self.facts.types,
+                    term,
+                    ScopeId::ROOT,
+                    |scope, _| Ok(scope),
+                );
+                let roots = match roots {
+                    Ok(roots) => roots,
+                    Err(error) => return self.error(node, error),
+                };
+                for (_, root) in roots {
+                    match self.state.infer.head(&self.facts.types, root) {
+                        Ok(Some(Constructor::Projection(_))) => opaque = true,
+                        Ok(_) => {}
+                        Err(error) => return self.error(node, error),
+                    }
                 }
             }
-            if heads.iter().all(|head| matches!(head, Ok(Some(_))))
-                && heads
-                    .iter()
-                    .any(|head| matches!(head, Ok(Some(Constructor::Projection(_)))))
-            {
+            if opaque {
                 return self.error(
                     node,
                     "body types require a provable associated-result equality",

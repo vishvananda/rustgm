@@ -220,7 +220,7 @@ fn refinement_round_trips_propagate_loss_before_source_recommit() -> TestResult 
             &mut source,
             &mut crate::types::substitute::Bound::new(Vec::new()),
         )?;
-        query.refresh(&store, &mut source)?;
+        query.refresh(&mut store, &mut source)?;
         assert_eq!(source.slot_class(slots[0])?, Class::Mixed);
     }
     Ok(())

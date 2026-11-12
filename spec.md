@@ -5717,6 +5717,15 @@ field cannot invent an arity; check its index against the actual selected tuple.
 The [PA24 callable-result checkpoint](docs/pa24-callable-results.md) records the
 earliest reductions, independent outcomes and candidate qualification.
 
+For projected callback inputs, exact complete canonical input identity may supply
+signature equations after normalization waits. It grants no inverse projection
+inference or trait/lifetime proof. Retain the original suspended query while an
+input-preserving symbolic result template supplies receiver shape; an unfinished
+candidate header prevents uniqueness. Refresh must reconcile every remaining
+input pair, and discard unfinished resolution scratch after an unresolved walk.
+The [projected callback checkpoint](docs/pa24-projected-callback-results.md)
+records ordinary PA24, native PA30 and actual-source PA31 reductions.
+
 An exact declared callable Output premise may retain the checked source closure's
 necessary lifetime conditions. Validate the premise first and match the complete
 substituted Self using the same typed matcher as body entry selection. Normalize

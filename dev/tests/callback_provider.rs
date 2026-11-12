@@ -128,3 +128,60 @@ fn source_runtime_selector_native_results_and_single_evaluation_match_rust() -> 
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())
 }
+
+fn projected_result_program() -> TestResult<rustgm::lowir::program::Program> {
+    let text = crate::resolve::fixture("pa31/tests/spec/callable-result-heads/native-order.rs")?;
+    let mut config = rustgm::expand::config::Config::default();
+    config.set_lint_cap(rustgm::support::diagnostics::LintCap::Allow);
+    let report =
+        crate::resolve::source_provider_config(&text, "projected_callback_execution", &config)?;
+    let rustgm::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = rustgm::pipeline::analyze_source(&report)?;
+    let exports = facts
+        .functions
+        .iter()
+        .filter(|f| {
+            report
+                .package
+                .names
+                .get(report.resolution.definitions[f.definition.0 as usize].name)
+                == "code"
+        })
+        .map(|f| f.definition)
+        .collect::<Vec<_>>();
+    assert_eq!(exports.len(), 1);
+    Ok(rustgm::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        rustgm::lower::Roots {
+            entry: None,
+            exports: &exports,
+        },
+        prepared,
+    )?)
+}
+
+// The ordinary companion remains required in PA30's manifest. Its preexisting
+// bootstrap conformance failure does not qualify a rejection or an artifact.
+#[test]
+fn source_projected_callback_results_prepare_actual_exported_calls() -> TestResult {
+    projected_result_program().map(|_| ())
+}
+
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn source_projected_callback_results_execute_once() -> TestResult {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let out = root.join("obj/parallel/array-chunks-next/native");
+    std::fs::create_dir_all(&out)?;
+    crate::ffi_program::check(
+        &root,
+        &out,
+        "pa31",
+        &projected_result_program()?,
+        &crate::resolve::fixture("pa30/tests/spec/callable-result-heads/observer.c")?,
+        "callable-result 23 12\n",
+    )
+}

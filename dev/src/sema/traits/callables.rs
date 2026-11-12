@@ -121,7 +121,19 @@ pub(in crate::sema) fn match_signature_as(
         children.push(context.child(&facts.types, tuple, index as usize)?);
     }
     let inputs = context.construct(Constructor::Tuple, &children)?;
-    context.equate_scoped_terms(&facts.types, inputs, *arguments)?;
+    match context.equate_scoped_terms(&facts.types, inputs, *arguments) {
+        Err(infer::Error::Normalization) => {
+            // Identical complete input types need no reverse projection inference.
+            // This supplies signature equations only; the original operation's
+            // formation, trait and lifetime proofs still have to finish.
+            if context.resolved(&mut facts.types, inputs)?
+                != context.resolved(&mut facts.types, *arguments)?
+            {
+                return Err(infer::Error::Normalization);
+            }
+        }
+        result => result?,
+    }
     Ok(Matched {
         output: context.child(&facts.types, tuple, parameters as usize)?,
         regions: first..end,

@@ -687,10 +687,25 @@ impl Checker<'_> {
                 crate::types::infer::deferred::Relation::Shape,
             );
         }
-        self.state
+        let result = self
+            .state
             .infer
-            .equate_shape(&self.facts.types, left, right)
-            .map_err(|e| self.equation_error(node, left, right, e))
+            .equate_shape(&self.facts.types, left, right);
+        if result == Err(crate::types::infer::Error::Normalization) {
+            // A binder fold can introduce fresh projection occurrences after
+            // earlier queries finished. These occurrences need their own proof.
+            self.defer_normalization(node, crate::types::lifetime_proof::ScopeId::ROOT, left)?;
+            self.defer_normalization(node, crate::types::lifetime_proof::ScopeId::ROOT, right)?;
+            if self.state.projections.active() {
+                return self.deferred_equation(
+                    node,
+                    left,
+                    right,
+                    crate::types::infer::deferred::Relation::Shape,
+                );
+            }
+        }
+        result.map_err(|e| self.equation_error(node, left, right, e))
     }
     fn head(&mut self, node: NodeId, term: TermId) -> Result<Option<Constructor>, Error> {
         self.advance_projections(node)?;

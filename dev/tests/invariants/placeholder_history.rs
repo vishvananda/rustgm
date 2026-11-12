@@ -308,7 +308,7 @@ fn source_loss_refreshes_a_previously_imported_and_now_assigned_placeholder() ->
     source.equate(&store, slots[0], value)?;
     let external = source.variable(Domain::Any)?;
     source.equate(&store, slots[0], external)?;
-    query.refresh(&store, &mut source)?;
+    query.refresh(&mut store, &mut source)?;
     assert_eq!(query.context.slot_class(copied)?, Class::Mixed);
     Ok(())
 }

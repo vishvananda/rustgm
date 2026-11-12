@@ -14,6 +14,8 @@ use crate::{
     },
 };
 
+use std::ops::ControlFlow;
+
 struct Application {
     result: ResultId,
     predicate: crate::types::infer::predicates::Predicate,
@@ -108,7 +110,13 @@ pub(in crate::sema) fn symbolic_result(
     }
     let mut selected = None;
     for owner in owners {
-        if let Some(candidate) = Candidate::new(facts, source, root, owner, caller.first_region)? {
+        let ControlFlow::Continue(candidate) =
+            Candidate::new(facts, source, root, owner, caller.first_region)?
+        else {
+            // An unfinished header can still match; it prevents uniqueness.
+            return Ok(None);
+        };
+        if let Some(candidate) = candidate {
             if selected.is_some() {
                 return Ok(None);
             }
@@ -133,7 +141,7 @@ impl Candidate {
         root: TermId,
         owner: DefId,
         first: u32,
-    ) -> Result<Option<Self>, String> {
+    ) -> Result<ControlFlow<(), Option<Self>>, String> {
         let (mut probe, roots) = Probe::new(&facts.types, source, &[root]).map_err(inference)?;
         let mut fold = Bound::open_regions(first)?;
         let root = probe
@@ -168,13 +176,14 @@ impl Candidate {
             .account_work(probe.context().steps)
             .map_err(inference)?;
         match compatible {
-            Ok(()) => Ok(Some(Self {
+            Ok(()) => Ok(ControlFlow::Continue(Some(Self {
                 probe,
                 instance,
                 arguments: application.arguments,
                 proof,
-            })),
-            Err(Error::Mismatch | Error::Occurs) => Ok(None),
+            }))),
+            Err(Error::Mismatch | Error::Occurs) => Ok(ControlFlow::Continue(None)),
+            Err(Error::Normalization | Error::Unresolved) => Ok(ControlFlow::Break(())),
             Err(error) => Err(inference(error)),
         }
     }

@@ -276,9 +276,9 @@ impl Checker<'_> {
             .map_err(|e| self.error(node, e))?;
         let selected = match selected.map_err(|e| self.error(node, e))? {
             Attempt::Selected(selected) => selected,
-            Attempt::NestedInputs => return Ok(Progress::AwaitInputs),
-            Attempt::Retry(inputs) => {
-                if let Some(inputs) = inputs
+            attempt => {
+                let nested = matches!(attempt, Attempt::NestedInputs);
+                if let Attempt::Retry(Some(inputs)) = attempt
                     && inputs
                         .commit(self.facts, &mut self.state.infer, term, &counts)
                         .map_err(|e| self.error(node, e))?
@@ -294,7 +294,11 @@ impl Checker<'_> {
                 {
                     return Ok(Progress::Symbolic(result));
                 }
-                return Ok(Progress::AwaitChange);
+                return Ok(if nested {
+                    Progress::AwaitInputs
+                } else {
+                    Progress::AwaitChange
+                });
             }
         };
         let original = self

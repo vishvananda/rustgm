@@ -1,5 +1,20 @@
 # Library build blocker tracker
 
+The current [projected callback-result checkpoint](pa24-projected-callback-results.md)
+qualifies the reduced ArrayChunks::next chain with its actual `[I::Item; N]`
+payload, full lifetime/projection proof and real source native execution23/12.
+Public10, four native groups/ten programs, six related regular groups, unchanged
+17 new and11 old text outputs and bounded width/noise checks pass. The ordinary
+native positive and eight override contrasts remain required; two exact private
+invariants await full CI after a fixed-budget compile timeout. Original-body
+clearance awaits the unchanged120s observer. No original library artifact exists.
+
+The prior clone checkpoint5cd41810b/CLI5d43 reached actual RefCell::clone and later
+cell bodies without file112 failure records; first remaining was ArrayChunks::next,
+file133:2226,line66. Full43081009696 PASSED ALL stages on exact2c13e1cff/source5cd.
+This current entry supersedes earlier frontier and workflow statuses below.
+
+
 [Source reference coercions](pa26-borrow-coercions.md),source7c7b1b132 plus diagnostic
 successor6556387ca/CLI0912e08f, clear the reached original RefCell::replace and
 clone_from failure records. Both real bodies are reached on unchanged722 inputs,

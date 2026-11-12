@@ -126,7 +126,7 @@ impl Refinement {
     /// No source equations are changed. A failed reconciliation discards the query.
     /// # Errors
     /// Rejects contradictory inputs, invalid identities and exhausted work.
-    pub fn refresh(&mut self, store: &Store, source: &mut Context) -> Result<(), Error> {
+    pub fn refresh(&mut self, store: &mut Store, source: &mut Context) -> Result<(), Error> {
         if self
             .inputs
             .as_ref()
@@ -144,7 +144,42 @@ impl Refinement {
             &mut Import::default(),
         )?;
         let pairs: Vec<_> = self.roots(true).into_iter().zip(incoming).collect();
-        self.context.equate_input_pairs(store, &pairs)
+        let result = self.context.equate_input_pairs(store, &pairs);
+        if result != Err(Error::Normalization) {
+            return result;
+        }
+        // Reimporting a completed projection may copy its term identity. Exact
+        // canonical identity needs no inverse inference or normalization proof.
+        // Keep every other pair, including consts, regions and callable scopes.
+        let mut remaining = Vec::new();
+        let mut resolution = super::resolve::Resolution::default();
+        for (left, right) in pairs {
+            if let (Argument::Type(a), Argument::Type(b)) = (left, right)
+                && self.context.projection_item(store, a)?.is_some()
+                && self.context.projection_item(store, b)?.is_some()
+            {
+                let identical = self
+                    .context
+                    .resolve_with(store, a, &mut resolution)
+                    .and_then(|a| {
+                        self.context
+                            .resolve_with(store, b, &mut resolution)
+                            .map(|b| a == b)
+                    });
+                match identical {
+                    Ok(true) => continue,
+                    Ok(false) => {}
+                    Err(Error::Unresolved) => {
+                        // An aborted traversal retains unfinished work. It must
+                        // not be resumed while comparing a different root.
+                        resolution = super::resolve::Resolution::default();
+                    }
+                    Err(error) => return Err(error),
+                }
+            }
+            remaining.push((left, right));
+        }
+        self.context.equate_input_pairs(store, &remaining)
     }
 
     /// Close all exported lifetime identities, then reconcile with current inputs

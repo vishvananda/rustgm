@@ -525,6 +525,7 @@ impl Checker<'_> {
         // Equivalent requirements under this one call substitution need one proof.
         // Keep declaration clauses intact and retain the first clause's own binder.
         let mut quantified = crate::support::hash::HashSet::default();
+        let mut lowering = None;
         for predicate in predicates {
             let copied = self
                 .facts
@@ -564,6 +565,7 @@ impl Checker<'_> {
                     continue;
                 }
             }
+            let clause = self.lower_empty_call_binder(node, clause, &mut lowering)?;
             self.instantiate_bound_obligation(
                 node,
                 clause,
@@ -664,6 +666,26 @@ impl Checker<'_> {
         };
         self.state.runtime_callee.set(Some((key.0, key.1, runtime)));
         Ok(runtime)
+    }
+
+    /// Empty callable binders use ordinary call input normalization, as they
+    /// already do for impl conditions. Nonempty binders retain their own scopes.
+    fn lower_empty_call_binder(
+        &mut self,
+        node: NodeId,
+        clause: crate::types::parameters::clauses::Clause,
+        lowering: &mut Option<substitute::Bound>,
+    ) -> Result<crate::types::parameters::clauses::Clause, Error> {
+        let before = lowering.as_ref().map_or(0, |lowering| lowering.steps);
+        let clause =
+            crate::sema::traits::selection::vacuous(&mut self.facts.types, lowering, clause)
+                .map_err(|e| self.error(node, e))?;
+        let after = lowering.as_ref().map_or(0, |lowering| lowering.steps);
+        self.state
+            .infer
+            .account_work(after.saturating_sub(before))
+            .map_err(|e| self.error(node, e))?;
+        Ok(clause)
     }
 
     pub(super) fn instantiate_bound_obligation(
