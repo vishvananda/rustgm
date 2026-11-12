@@ -10,7 +10,7 @@
     "opt_level": 0
   },
   "outcomes_declared_before_execution": true,
-  "state": "49 independent outcomes41accept8reject. Forty complete API outcomes qualify;9 entire positive outcomes and the public-helper native metadata artifact remain required. No assignment activation.",
+  "state": "49 independent outcomes41accept8reject. Forty-two complete API outcomes qualify;7 entire positive outcomes and the public-helper native metadata artifact remain required. No assignment activation.",
   "origin": "Original filter_map_fold4634 body141:1230/error141:1253 line39, plus actual try_fold and capture precision contrasts",
   "inputs": [
     {
@@ -672,9 +672,9 @@
         "diagnostic": "ERROR: file 0: 3449: this typed capture use is not implemented\n"
       },
       "exit_status": 0,
-      "candidate_complete_prepared_root_qualified": false,
+      "candidate_complete_prepared_root_qualified": true,
       "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-discriminant-only.rs",
-      "qualification": "Independent outcome established; complete candidate result pending."
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome since the closure capture pattern checkpoint (docs/pa31-closure-capture-patterns.md). Native and course-text artifact boundaries remain separately recorded."
     },
     {
       "owner": "pa31",
@@ -825,9 +825,9 @@
         "diagnostic": "ERROR: file 0: 3442: this typed capture use is not implemented\n"
       },
       "exit_status": 0,
-      "candidate_complete_prepared_root_qualified": false,
+      "candidate_complete_prepared_root_qualified": true,
       "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-borrow-binding.rs",
-      "qualification": "Independent outcome established; complete candidate result pending."
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome since the closure capture pattern checkpoint (docs/pa31-closure-capture-patterns.md). Native and course-text artifact boundaries remain separately recorded."
     },
     {
       "owner": "pa31",

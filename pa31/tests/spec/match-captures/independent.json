@@ -668,9 +668,9 @@
         "diagnostic": "ERROR: file 0: 3449: this typed capture use is not implemented\n"
       },
       "exit_status": 0,
-      "candidate_complete_prepared_root_qualified": false,
+      "candidate_complete_prepared_root_qualified": true,
       "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-discriminant-only.rs",
-      "qualification": "Independent outcome established; complete candidate result pending."
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome since the closure capture pattern checkpoint (docs/pa31-closure-capture-patterns.md). Native and course-text artifact boundaries remain separately recorded."
     },
     {
       "owner": "pa31",
@@ -821,9 +821,9 @@
         "diagnostic": "ERROR: file 0: 3442: this typed capture use is not implemented\n"
       },
       "exit_status": 0,
-      "candidate_complete_prepared_root_qualified": false,
+      "candidate_complete_prepared_root_qualified": true,
       "frozen_plan_input": "obj/parallel/filter-map-captures/inputs2/pa31-borrow-binding.rs",
-      "qualification": "Independent outcome established; complete candidate result pending."
+      "qualification": "Complete API body/capture/ownership result matches its independently declared outcome since the closure capture pattern checkpoint (docs/pa31-closure-capture-patterns.md). Native and course-text artifact boundaries remain separately recorded."
     },
     {
       "owner": "pa31",

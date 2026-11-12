@@ -1361,6 +1361,24 @@ same implied bounds. An annotated elided parameter lifetime stays in the
 closure's own binder. See the
 [closure creator requirement checkpoint](docs/pa31-closure-creator-requirements.md).
 
+A `match`, `if let`, `while let`, let-else or `let` whose value is a captured
+place walks its selected patterns, as rustc's capture analysis does. These
+patterns use the place shared:
+
+- a multi-variant enum variant test;
+- a literal or range test;
+- a slice length test;
+- a `ref` binding.
+
+A `ref mut` binding borrows the place mutably. A by-value binding copies it when
+the binding's type is Copy, and otherwise moves it. A use below an enum variant
+or an index projection captures the scrutinee place. A use below a field
+projection or a dereference would capture a more precise place and fails
+closed. That does not apply in a whole-variable edition, or to a `move`
+closure's leading dereferences. A scrutinee that no pattern uses is only
+mentioned. A compound `let` pattern on a computed value consumes the value. See
+the [closure capture pattern checkpoint](docs/pa31-closure-capture-patterns.md).
+
 The bounded sizing profile requires actual sizing identities, complete headers
 and deny-explicit-impl restrictions before retaining fundamental, specialization
 or coinductive markers; those markers grant no general implementation or cycle
@@ -5839,13 +5857,14 @@ actual source execution, Fn/FnMut/FnOnce and bounded field/work controls.
 A computed match inside a closure consumes its selected scrutinee, guard and
 arm expression facts through the existing capture-use walker. Reuse the typed
 match decision, preserving actual callable receiver use and complete ownership.
-A captured-place scrutinee requires separate selected pattern operations;
+A captured-place scrutinee uses its selected pattern operations instead;
 discriminant reads, wildcards and independent fields must not become blanket
-value moves. Required controls remain in the [match capture checkpoint](docs/pa24-match-captures.md).
+value moves (see the closure capture pattern rule). Required controls remain in
+the [match capture checkpoint](docs/pa24-match-captures.md).
 
 A computed `if let` or `while let` scrutinee inside a closure is consumed as a
 value use through the same walker; its pattern bindings are closure locals. A
-captured-place scrutinee keeps the explicit matched-place boundary above. Controls
+captured-place scrutinee uses its selected patterns, as for a `match`. Controls
 are in the [let-condition capture checkpoint](docs/pa24-let-condition-captures.md).
 
 A helper returning an opaque callable may receive its inputs from the caller's

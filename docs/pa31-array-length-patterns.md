@@ -53,9 +53,10 @@ Tradeoffs:
     case lowered.
   - The [closure creator requirement change](pa31-closure-creator-requirements.md)
     fixes it, and both cases now lower.
-- `let [a, b] = p` inside a closure body stops at "compound capture patterns
-  are not implemented" (`d-let-in-closure`). That gap is separate and predates
-  this change.
+- `let [a, b] = p` inside a closure body stopped at "compound capture patterns
+  are not implemented" (`d-let-in-closure`). That gap was separate and predated
+  this change. The [closure capture pattern change](pa31-closure-capture-patterns.md)
+  fixes it.
 
 ## Contract
 

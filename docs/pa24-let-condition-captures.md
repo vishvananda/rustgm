@@ -36,7 +36,11 @@ Tradeoffs:
 
 - A captured-place scrutinee still rejects valid Rust, at the same explicit
   boundary as a computed `match` over a captured place. Core's reached bodies
-  have computed scrutinees.
+  have computed scrutinees. The
+  [closure capture pattern checkpoint](pa31-closure-capture-patterns.md) later
+  removes this boundary. The boundary test is now
+  `captured_place_let_scrutinees_lower`, which requires both captured-place
+  forms to lower.
 - `if-let-fn-mutation` rejects with the generic unambiguous-obligation text at
   the call, where rustc reports E0594. `while-let-moved` rejects at the second
   read ("local may be uninitialized or moved at this read"), where rustc reports
@@ -70,7 +74,8 @@ run of each file; the RustGM outcomes are observations.
 | `if-let-fn-mutation` | an `Fn` closure assigning its capture | E0594 | reject |
 
 The maintainer test (`dev/tests/source_closures/let_conditions.rs`) also
-asserts both captured-place forms at the explicit boundary.
+asserted both captured-place forms at the explicit boundary. Since the closure
+capture pattern checkpoint, it requires them to lower.
 
 ## Qualification
 

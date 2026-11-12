@@ -52,6 +52,8 @@ mod source_closures;
 
 #[path = "../../creator_requirements.rs"]
 mod creator_requirements;
+#[path = "../../matched_captures.rs"]
+mod matched_captures;
 #[path = "../../postponed_casts.rs"]
 mod postponed_casts;
 #[path = "../../unannotated_closure_inputs.rs"]

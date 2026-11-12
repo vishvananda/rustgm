@@ -144,7 +144,7 @@
   "d-tuple": "a tuple pattern in the closure parameter: rustc accepts; graded as closure-creator-requirements/tuple-pattern",
   "d-ident": "take1(x, |a| compare(a, a)) without a pattern: rustc accepts; graded as closure-creator-requirements/captured-call",
   "d-ident-fn": "as d-ident with a function item cmp: rustc accepts; graded as closure-creator-requirements/captured-call-fn",
-  "d-let-in-closure": "let [a, b] = p inside the closure body: rustc accepts; typing stops at compound capture patterns are not implemented",
+  "d-let-in-closure": "let [a, b] = p inside the closure body: rustc accepts; typing stops at compound capture patterns are not implemented until the closure capture pattern change (pa31/tests/spec/closure-capture-patterns), which consumes a computed compound let value",
   "diagnostic lowering": "obj/parallel/array-pattern/diag copies append fn main() {} so the CLI's LowIR path runs prepared lowering"
  }
 }

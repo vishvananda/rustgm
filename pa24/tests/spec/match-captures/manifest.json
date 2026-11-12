@@ -10,7 +10,7 @@
     "opt_level": 0
   },
   "outcomes_declared_before_execution": true,
-  "state": "49 independent outcomes41accept8reject. Forty complete API outcomes qualify;9 entire positive outcomes and the public-helper native metadata artifact remain required. No assignment activation.",
+  "state": "49 independent outcomes41accept8reject. Forty-two complete API outcomes qualify;7 entire positive outcomes and the public-helper native metadata artifact remain required. No assignment activation.",
   "origin": "Original filter_map_fold4634 body141:1230/error141:1253 line39, plus actual try_fold and capture precision contrasts",
   "inputs": [
     {

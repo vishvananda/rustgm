@@ -1072,3 +1072,20 @@ and one needing `T: 'static` (E0310). Typing rejects an unimplied where clause
 (E0309). A maintainer integration test checks them through the CLI and
 prepared lowering, and an ignored native test runs four ordinary-mode
 programs. There is no graded manifest.
+
+`spec/closure-capture-patterns/` freezes twenty-nine declared no_core
+reductions of core's `fmt_decimal` closure, which tests a captured `Option`
+with `if let`.
+
+- Accepted forms: `match`, `if let`, `while let`, let-else, `let`, guard, or,
+  `@` and nested patterns. They include copied, moved and `ref mut` payloads,
+  nested and `move` closures, and two edition-2018 whole-variable forms.
+- Rejected by prepared lowering: borrow conflicts (E0382, E0502, E0505).
+- Recorded gaps, which rustc accepts:
+  - an uncaptured wildcard scrutinee stops in prepared lowering;
+  - a precise tuple-field capture fails closed at typing;
+  - so does a captured reference's referent.
+
+A maintainer integration test checks them through the CLI and prepared
+lowering, in each case's edition. An ignored native test runs six
+ordinary-mode programs. There is no graded manifest.

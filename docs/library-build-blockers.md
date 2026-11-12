@@ -1,5 +1,20 @@
 # Library build blocker tracker
 
+The [closure capture pattern checkpoint](pa31-closure-capture-patterns.md)
+fixes "capture patterns for a matched place are not implemented" in core's
+`Duration` `fmt_decimal` 9097 (`time.rs:1493`). Its closure tests
+`if let Some(integer_part) = integer_part` on a captured `Option<u64>`. A
+pattern matched against a captured place now reads, copies, moves or borrows
+it, as rustc's capture analysis does. A compound `let` on a computed value no
+longer stops at "compound capture patterns are not implemented". Twenty-nine
+source-core reductions, six native programs and function-linear work qualify
+the fix. Recorded gaps remain:
+
+- an uncaptured wildcard scrutinee has no place in prepared lowering;
+- a capture more precise than the matched place, a tuple or struct field or a
+  captured reference's referent, fails closed with "precise capture patterns
+  are not implemented".
+
 The [closure creator requirement checkpoint](pa31-closure-creator-requirements.md)
 fixes that gap. A closure whose signature inputs mention creator regions now
 bridges them, so its unproved region requirements become creator obligations.

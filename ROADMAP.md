@@ -224,6 +224,15 @@ implied bounds. Eleven source-core reductions agree with rustc. The checkpoint
 also fixes a generic instantiation regression from the closure input region
 change.
 
+The [closure capture pattern checkpoint](docs/pa31-closure-capture-patterns.md)
+lets a closure match a captured place, as core's `fmt_decimal` closure tests
+`if let Some(integer_part) = integer_part`. Its selected patterns read, copy,
+move or borrow the place. Uses below an enum variant or an index capture the
+whole place, and a more precise capture fails closed. Twenty-nine source-core
+reductions agree with rustc, and two PA31 match-capture positives qualify. An
+uncaptured scrutinee's lowering and precise field and referent captures remain
+recorded gaps.
+
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage
 limit controls, pass text, independent Rust and native checks with frozen a08ab1a4.

@@ -14,7 +14,6 @@ const REJECTED: &[(&str, &str)] = &[
         "trait obligation requires an unambiguous matching assumption or implementation",
     ),
 ];
-const MATCHED_PLACE: &str = "capture patterns for a matched place are not implemented";
 
 fn lower(source: &str) -> std::result::Result<(), String> {
     let (mut report, mut facts) = crate::semantic::analyze(source)?;
@@ -63,10 +62,10 @@ fn let_condition_captures_lower_like_rustc() -> Result {
     Ok(())
 }
 
-/// A scrutinee that is itself a captured place still needs selected pattern
-/// operations, as for a computed match; valid Rust stops at that boundary.
+/// A scrutinee that is itself a captured place is used as its pattern
+/// requires (`docs/pa31-closure-capture-patterns.md`), so valid Rust lowers.
 #[test]
-fn captured_place_let_scrutinees_stay_explicit() -> Result {
+fn captured_place_let_scrutinees_lower() -> Result {
     for (name, source) in [
         (
             "if-let-captured-place",
@@ -78,10 +77,9 @@ fn captured_place_let_scrutinees_stay_explicit() -> Result {
         ),
     ] {
         crate::qualify::qualify(name, source, true)?;
-        let error = lower(source)
-            .err()
-            .ok_or("captured-place scrutinee lowered")?;
-        assert!(error.contains(MATCHED_PLACE), "{name}: {error}");
+        if let Err(error) = lower(source) {
+            return Err(format!("{name}: {error}").into());
+        }
     }
     Ok(())
 }

@@ -1,4 +1,5 @@
 //! Capture requirements consume typed places and the actual expression use context.
+mod matched;
 mod nested;
 mod receivers;
 use super::{Checker, Domain, Error, Kind, NodeId, TermId, places::Places};
@@ -387,30 +388,11 @@ impl Collector<'_> {
                 otherwise,
                 ..
             } => {
-                let mut pattern = pattern;
-                while let Kind::Group(inner) | Kind::Attributed { value: inner, .. } =
-                    checker.kind(pattern)
-                {
-                    pattern = inner;
-                }
-                let usage = match checker.kind(pattern) {
-                    Kind::Wildcard => Use::Mention,
-                    Kind::Binding {
-                        by_ref: false,
-                        subpattern: None,
-                        ..
-                    } => Use::Value,
-                    _ => {
-                        return Err(
-                            checker.error(pattern, "compound capture patterns are not implemented")
-                        );
-                    }
-                };
                 if let Some(otherwise) = otherwise {
                     self.push(otherwise, Use::Value);
                 }
                 if let Some(value) = value {
-                    self.push(value, usage);
+                    self.let_value(checker, pattern, value)?;
                 }
             }
             Kind::Call { callee, arguments } => {
@@ -464,12 +446,6 @@ impl Collector<'_> {
                 self.push(condition, Use::Value);
             }
             Kind::Match { value, .. } => {
-                if self.places.get(checker, value)?.is_some() {
-                    return Err(checker.error(
-                        value,
-                        "capture patterns for a matched place are not implemented",
-                    ));
-                }
                 let id = *checker
                     .facts
                     .patterns
@@ -477,25 +453,29 @@ impl Collector<'_> {
                     .get(&checker.key(node))
                     .ok_or_else(|| checker.error(node, "missing capture match selection"))?;
                 let decision = &checker.facts.patterns.decisions[id as usize];
+                let mut roots = Vec::new();
                 for index in (decision.start..decision.end).rev() {
                     let arm = checker.facts.patterns.arms[index as usize];
                     self.push(arm.value.node, Use::Value);
                     if let Some(guard) = arm.guard {
                         self.push(guard.node, Use::Value);
                     }
+                    roots.extend(arm.pattern);
                 }
-                self.push(value, Use::Value);
+                roots.reverse();
+                self.scrutinee(checker, value, &roots)?;
             }
             // A computed `if let`/`while let` scrutinee is consumed like a
             // computed match's; its bindings are local to the closure body.
             Kind::LetCondition { value, .. } => {
-                if self.places.get(checker, value)?.is_some() {
-                    return Err(checker.error(
-                        value,
-                        "capture patterns for a matched place are not implemented",
-                    ));
-                }
-                self.push(value, Use::Value);
+                let pattern = checker
+                    .facts
+                    .patterns
+                    .conditions
+                    .get(&checker.key(node))
+                    .ok_or_else(|| checker.error(node, "missing capture condition pattern"))?
+                    .pattern;
+                self.scrutinee(checker, value, &[pattern])?;
             }
             Kind::Loop { body } | Kind::TryBlock { body, .. } => self.push(body, Use::Value),
             Kind::While { condition, body } => {
@@ -518,6 +498,47 @@ impl Collector<'_> {
             Kind::Closure { .. } => self.nested(checker, node)?,
             _ => return Err(checker.error(node, "this typed capture use is not implemented")),
         }
+        Ok(())
+    }
+    /// A computed scrutinee is consumed and its bindings are local; a captured
+    /// place is used as its patterns require.
+    fn scrutinee(
+        &mut self,
+        checker: &mut Checker<'_>,
+        value: NodeId,
+        roots: &[crate::sema::patterns::PatternId],
+    ) -> Result<(), Error> {
+        if self.places.get(checker, value)?.is_some() {
+            self.pattern_uses(checker, value, roots)
+        } else {
+            self.push(value, Use::Value);
+            Ok(())
+        }
+    }
+    fn let_value(
+        &mut self,
+        checker: &mut Checker<'_>,
+        pattern: NodeId,
+        value: NodeId,
+    ) -> Result<(), Error> {
+        if let Some(&root) = checker.facts.patterns.roots.get(&checker.key(pattern)) {
+            return self.scrutinee(checker, value, &[root]);
+        }
+        let mut simple = pattern;
+        while let Kind::Group(inner) | Kind::Attributed { value: inner, .. } = checker.kind(simple)
+        {
+            simple = inner;
+        }
+        let usage = match checker.kind(simple) {
+            Kind::Wildcard => Use::Mention,
+            Kind::Binding {
+                by_ref: false,
+                subpattern: None,
+                ..
+            } => Use::Value,
+            _ => return Err(checker.error(pattern, "missing capture pattern selection")),
+        };
+        self.push(value, usage);
         Ok(())
     }
 }

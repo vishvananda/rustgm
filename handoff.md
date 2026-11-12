@@ -149,6 +149,23 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-12 closure capture pattern update (supersedes the blocks below):**
+
+- The `fmt_decimal` 9097 "capture patterns for a matched place are not
+  implemented" failure has a typing fix
+  ([evidence](docs/pa31-closure-capture-patterns.md)):
+  - A captured-place scrutinee walks its selected patterns.
+  - A compound `let` on a computed value consumes it.
+  - Twenty-nine reductions are in `pa31/tests/spec/closure-capture-patterns`.
+    The three declared batches, the diagnostics and the PA24 pending checks
+    are in `obj/parallel/capture-match/`.
+- The PA31 match-capture positives `discriminant-only` and `borrow-binding`
+  now qualify; `pending.json` keeps `wildcard-place` and `copy-field`.
+- Remaining recorded capture gaps:
+  - lowering an uncaptured scrutinee (`wildcard`, `wildcard-place`);
+  - precise field and referent captures (`let-tuple-precise`,
+    `ref-scrutinee`, `copy-field`).
+
 **2026-11-12 closure creator requirement update (supersedes the blocks below):**
 
 - The array length update's recorded lowering gap is fixed

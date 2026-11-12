@@ -25,6 +25,15 @@ hits the existing scalar metadata boundary. Its bytes remain serialized; a
 separately declared private-helper variant isolates Match and completes the CLI.
 No valid source is reclassified as a language rejection.
 
+The [closure capture pattern checkpoint](pa31-closure-capture-patterns.md) later
+walks the selected patterns of a captured-place scrutinee. The PA31 owner's
+`discriminant-only` and `borrow-binding` now qualify, so forty-two outcomes
+qualify and seven remain required. `wildcard-place` stops at prepared lowering's
+missing place for an uncaptured scrutinee. `copy-field` fails closed at
+"precise capture patterns are not implemented". The PA24 owner's
+`discriminant-only` and `borrow-binding` are recorded inputs, not fixtures. On
+that checkpoint's exploratory pin, both type and lower.
+
 Focused receipt1794457800427825291 passes four exact tests/two targets in129.39s;
 the private-helper follow-up1794458273040726694 passes its affected test in31.93s.
 Both include full formatting, architecture and strict selected production/CLI/

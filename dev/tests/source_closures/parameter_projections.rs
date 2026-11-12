@@ -287,8 +287,13 @@ fn computed_matches_collect_callback_guard_and_arm_uses() -> Result {
             ("repeat-owned", false),
             ("repeat-wildcard", false),
             ("try-fold", true),
+            ("discriminant-only", true),
+            ("borrow-binding", true),
         ] {
-            if owner == "pa24" && name == "try-fold" {
+            // PA24's captured-place contrasts are recorded inputs, not fixtures.
+            if owner == "pa24"
+                && matches!(name, "try-fold" | "discriminant-only" | "borrow-binding")
+            {
                 continue;
             }
             let text = source::fixture(&format!("{owner}/tests/spec/match-captures/{name}.rs"))?;
