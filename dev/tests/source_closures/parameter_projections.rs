@@ -24,72 +24,132 @@ fn match_capture_analysis(
     Ok((report, analysis))
 }
 
+/// Complete prepared-root outcomes; infrastructure failures never count as rejections.
+fn prepared_root_failures(
+    packet: &str,
+    owner: &str,
+    cases: &[(&str, bool)],
+) -> Result<Vec<String>> {
+    let mut failures = Vec::new();
+    for &(name, valid) in cases {
+        let text = source::fixture(&format!("{owner}/tests/spec/{packet}/{name}.rs"))?;
+        let checked = (|| -> Result {
+            let (
+                report,
+                rustgm::pipeline::Analysis {
+                    mut facts,
+                    prepared,
+                },
+            ) = match_capture_analysis(owner, &text)?;
+            rustgm::lower::instances::build_roots_prepared(
+                &report,
+                &mut facts,
+                rustgm::lower::Roots {
+                    entry: None,
+                    exports: &[],
+                },
+                prepared,
+            )?;
+            Ok(())
+        })();
+        let error = checked.err().map(|error| error.to_string());
+        let invalid = error.as_ref().is_some_and(|error| {
+            [
+                "not implemented",
+                "exhausted",
+                "budget",
+                "lost its",
+                "invalid canonical",
+                "invalid method",
+            ]
+            .iter()
+            .any(|message| error.contains(message))
+                || name.starts_with("escaping-helper")
+                    && !error.contains("outlive")
+                    && !error.contains("hidden lifetime")
+        });
+        println!("{owner}/{packet}/{name}: {error:?}");
+        if error.is_none() != valid || invalid {
+            failures.push(format!("{owner}/{packet}/{name}: {error:?}"));
+        }
+    }
+    Ok(failures)
+}
+
 #[test]
 fn helper_return_inputs_use_declared_bounds_without_inverse_projection_inference() -> Result {
     let mut failures = Vec::new();
     for owner in ["pa24", "pa31"] {
-        for (name, valid) in [
-            ("direct", true),
-            ("explicit", true),
-            ("named", true),
-            ("named-explicit", true),
-            ("free-applier", true),
-            ("inline-control", true),
-            ("shared-output-inferred", true),
-            ("shared-output-explicit", true),
-            ("wrong-helper-input", false),
-            ("wrong-helper-result", false),
-            ("unconstrained-helper", false),
-            ("unconstrained-one-implementation", false),
-            ("unconstrained-two-implementations", false),
-            ("escaping-helper-explicit", false),
-            ("borrowed-return-explicit", true),
-            ("mutable-is-not-shared", false),
-        ] {
-            let text = source::fixture(&format!(
-                "{owner}/tests/spec/flatten-helper-inputs/{name}.rs"
-            ))?;
-            let checked = (|| -> Result {
-                let (
-                    report,
-                    rustgm::pipeline::Analysis {
-                        mut facts,
-                        prepared,
-                    },
-                ) = match_capture_analysis(owner, &text)?;
-                rustgm::lower::instances::build_roots_prepared(
-                    &report,
-                    &mut facts,
-                    rustgm::lower::Roots {
-                        entry: None,
-                        exports: &[],
-                    },
-                    prepared,
-                )?;
-                Ok(())
-            })();
-            let error = checked.err().map(|error| error.to_string());
-            let invalid = error.as_ref().is_some_and(|error| {
-                [
-                    "not implemented",
-                    "exhausted",
-                    "budget",
-                    "lost its",
-                    "invalid canonical",
-                    "invalid method",
-                ]
-                .iter()
-                .any(|message| error.contains(message))
-                    || name.starts_with("escaping-helper")
-                        && !error.contains("outlive")
-                        && !error.contains("hidden lifetime")
-            });
-            println!("{owner}/{name}: {error:?}");
-            if error.is_none() != valid || invalid {
-                failures.push(format!("{owner}/{name}: {error:?}"));
-            }
-        }
+        failures.extend(prepared_root_failures(
+            "flatten-helper-inputs",
+            owner,
+            &[
+                ("direct", true),
+                ("explicit", true),
+                ("named", true),
+                ("named-explicit", true),
+                ("free-applier", true),
+                ("inline-control", true),
+                ("shared-output-inferred", true),
+                ("shared-output-explicit", true),
+                ("wrong-helper-input", false),
+                ("wrong-helper-result", false),
+                ("unconstrained-helper", false),
+                ("unconstrained-one-implementation", false),
+                ("unconstrained-two-implementations", false),
+                ("escaping-helper-explicit", false),
+                ("borrowed-return-explicit", true),
+                ("mutable-is-not-shared", false),
+            ],
+        )?);
     }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
+/// A helper capture that occurs only in its opaque callable output is exposed
+/// after the declared inputs settle, including through a pending `?` output;
+/// wrong, unconstrained or unbounded outputs still reject.
+#[test]
+fn helper_return_outputs_follow_declared_results_after_inputs_settle() -> Result {
+    let mut failures = prepared_root_failures(
+        "flatten-helper-outputs",
+        "pa24",
+        &[
+            ("direct", true),
+            ("named", true),
+            ("explicit", true),
+            ("front-only", true),
+            ("fold-only", true),
+            ("output-only", true),
+            ("turbofish-output", true),
+            ("try-bound", true),
+            ("unconsumed-direct", true),
+            ("native-value", true),
+            ("native-value-explicit", true),
+            ("wrong-output", false),
+            ("wrong-input", false),
+            ("unconstrained-output", false),
+            ("unsatisfied-output-bound", false),
+        ],
+    )?;
+    failures.extend(prepared_root_failures(
+        "flatten-helper-outputs",
+        "pa31",
+        &[
+            ("direct", true),
+            ("output-only", true),
+            ("try-bound", true),
+            ("question-direct", true),
+            ("question-split", true),
+            ("question-statement", true),
+            ("question-turbofish", true),
+            ("question-explicit", true),
+            ("wrong-output", false),
+            ("unconstrained-output", false),
+            ("question-wrong-output", false),
+        ],
+    )?);
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())
 }

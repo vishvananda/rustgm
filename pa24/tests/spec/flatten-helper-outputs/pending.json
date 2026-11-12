@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "required_contracts": [
+    {
+      "owner": "pa24",
+      "name": "run",
+      "sha256": "e0adfde1c9a0e3abb386e47f3a840640f62f889ce3454f1dcd6263425ff8f502",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/inputs/pa24-run.rs",
+      "expected_rust_status": 0,
+      "rust_status": 0,
+      "reason": "executable: inferred helper output u16 flows through the parent result; front receives Cell(10)",
+      "kind": "executable",
+      "required_rustgm_status": 0,
+      "observed_candidate_status": 1,
+      "observed_candidate_diagnostic": "ERROR: file 0: 954: opaque storage requires a checked defining type\n",
+      "blocker": "pre-existing borrowed-receiver opaque storage: the explicit and concrete-output twins, and the baseline, fail identically (run-variants/, native-inputs/diag-*)"
+    }
+  ]
+}

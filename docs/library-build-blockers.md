@@ -1,5 +1,22 @@
 # Library build blocker tracker
 
+The [helper return-output checkpoint](pa24-flatten-helper-outputs.md) publishes
+declared opaque inputs as partial progress, then exposes the unique declared
+callable output by forward normalization. It qualifies 26 complete API outcomes
+from 27 independent contracts and 15 reviewed ordinary text contracts, plus
+observer-linked native 7/9/1234. One borrowed-receiver executable stays required
+at the existing opaque-storage gate.
+
+An exploratory pin built from the same compiler source clears iter_try_fold 4720,
+iter_try_rfold 4725, try_fold 4731/4790 and try_rfold 4743/4797, with no new
+reached failure. The unchanged 120s observer ends at 121.214s with 19 records,
+12,827 attempts and last item 6109, socket_addr.rs:673. The first remaining
+failure is try_fold 4961/file 147:1713 at map_while.rs:62: "invalid method
+candidate inference graph". Of the 19 records, six are candidate graphs, seven
+are unimplemented trait-path or source-shape diagnostic formatting and two are
+quantified body requirements. The clean pin observation is pending. No core
+artifact exists.
+
 The [helper return-input checkpoint](pa24-flatten-helper-inputs.md) locally
 qualifies46 complete API outcomes from52 independent contracts, actual
 ordinary/source native7/9/1234,23 reviewed ordinary text contracts and

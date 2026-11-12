@@ -6,4 +6,6 @@ pub(super) enum Pending {
     Forward(super::forwarding::Pending),
     Unsize(super::unsizing::Pending),
     Components(super::component_markers::Pending),
+    /// Published declared opaque inputs; the frame restarts its selection.
+    Declared,
 }

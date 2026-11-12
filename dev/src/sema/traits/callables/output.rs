@@ -42,22 +42,37 @@ fn expose(
     proof
         .equalities
         .sort_unstable_by_key(|&(free, original)| (free.0, original.0));
-    let matched = match match_signature(
+    let output = match match_signature(
         facts,
         probe.context(),
         &application.predicate,
         proof.regions.end,
     ) {
-        Ok(matched) => matched,
-        Err(
-            infer::Error::Unresolved
-            | infer::Error::Mismatch
-            | infer::Error::Occurs
-            | infer::Error::Normalization,
-        ) => return Ok(None),
+        Ok(matched) => {
+            proof.regions.end = matched.regions.end;
+            matched.output
+        }
+        // A declared opaque callable has no signature. Its unique published
+        // output equation is forward normalization over settled inputs only.
+        Err(infer::Error::Mismatch) => {
+            let Some((output, regions)) = crate::sema::traits::results::infer_output(
+                facts,
+                probe.context(),
+                &application.predicate,
+                application.item,
+                proof.regions.end,
+            )?
+            else {
+                return Ok(None);
+            };
+            proof.regions.end = regions.end;
+            output
+        }
+        Err(infer::Error::Unresolved | infer::Error::Occurs | infer::Error::Normalization) => {
+            return Ok(None);
+        }
         Err(e) => return Err(error(e)),
     };
-    proof.regions.end = matched.regions.end;
     if !probe.preserves_inputs(source).map_err(error)? {
         return Ok(None);
     }
@@ -67,7 +82,7 @@ fn expose(
     let mut restoration = proof.restoration()?;
     let output = probe
         .context()
-        .map_regions(&mut facts.types, matched.output, &mut restoration)
+        .map_regions(&mut facts.types, output, &mut restoration)
         .map_err(error)?;
     Ok(probe
         .export(&facts.types, source, output)

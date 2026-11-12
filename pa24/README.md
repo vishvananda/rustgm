@@ -163,3 +163,8 @@ The [helper return-input checkpoint](../docs/pa24-flatten-helper-inputs.md) adds
 twenty-three reviewed ordinary outcomes and actual ordinary/source execution.
 Implicit return-opaque input context and two impl where-clause native inputs
 remain explicit positive requirements; no associated result is inverted.
+
+The [helper return-output checkpoint](../docs/pa24-flatten-helper-outputs.md) adds
+fifteen reviewed ordinary outcomes. Two of them are an observer-linked native
+export and its explicit twin. A borrowed-receiver executable remains an explicit
+positive requirement at the existing opaque-storage gate.

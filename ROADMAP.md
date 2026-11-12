@@ -65,12 +65,22 @@ opaque helper callable inputs through published bounds:46 complete API outcomes
 from52 independent contracts,23 new PA24 text outcomes, actual ordinary/source
 native7/9/1234 and call-linear bounded work. Six entire contracts remain required.
 The unchanged original observer clears iter_fold and its five fold/rfold siblings;
-first remaining is iter_try_fold's projected helper input. Full successor pending.
+first remaining is iter_try_fold's projected helper input. Full 43171710575 passed.
+
+The [helper return-output checkpoint](docs/pa24-flatten-helper-outputs.md) exposes
+opaque helper callable outputs after their declared inputs settle. It covers 26
+complete API outcomes from 27 independent contracts, 15 new PA24 text outcomes
+and observer-linked native 7/9/1234. One borrowed-receiver executable stays
+required at the existing opaque-storage gate. An exploratory observation clears
+iter_try_fold, iter_try_rfold and four try_fold/try_rfold callers. The first
+remaining failure is map_while try_fold's method candidate graph. A clean pin and
+the full successor are pending.
 
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage
 limit controls, pass text, independent Rust and native checks with frozen a08ab1a4.
-PA25 and every other parent assignment remain planned.
+Full 43177635950 passed on its release documentation commit. PA25 and every other
+parent assignment remain planned.
 
 | PA | Assignment | Status |
 | --- | --- | --- |

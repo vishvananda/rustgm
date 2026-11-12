@@ -149,6 +149,24 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-12 later update (supersedes the blocks below):**
+
+- Full 43177635950 passed every stage on main 774fd9dfe, which qualifies the
+  const-machine release.
+- The iter_try_fold helper-output fix is implemented and published on main
+  ([evidence](docs/pa24-flatten-helper-outputs.md)). It covers 26 complete API
+  outcomes from 27 declared contracts. Fifteen new PA24 triples are reviewed and
+  generated.
+- One borrowed-receiver executable stays required at the existing
+  opaque-storage gate.
+- Exploratory pin `obj/parallel/try-helper-outputs/wip2-dev-fast` (0665938a) is
+  built from identical compiler source. It clears iter_try_fold and iter_try_rfold
+  and four try_fold/try_rfold callers.
+- The next core blocker is try_fold 4961 at map_while.rs:62: "invalid method
+  candidate inference graph".
+- Still pending: a clean pin, measurement, an unchanged clean-pin observation
+  with its postcheck, and a full successor.
+
 **2026-11-12 update:** steps1–6 are complete; the checkpoint is ee8c11abb
 ([evidence](docs/pa24-flatten-helper-inputs.md)). Immutable pin
 `obj/parallel/flatten-helper-inputs/candidate-dev-fast` (a08ab1a4, `.keep-artifacts`)

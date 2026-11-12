@@ -1,0 +1,127 @@
+{
+  "schema": 1,
+  "owner": "pa31",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": 2024,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0
+  },
+  "state": "11 independent outcomes 8accept/3reject declared before execution.",
+  "outcomes_declared_before_execution": true,
+  "origin": "Original FlattenCompat::iter_try_fold4720 flatten.rs:431 self.iter.try_fold(acc, flatten(&mut self.frontiter, &mut fold))",
+  "inputs": [
+    {
+      "owner": "pa31",
+      "name": "direct",
+      "sha256": "ea2dafa3826ecc489093ad0d89bd7ef78e3f2d47ba267ab4a7cf374def544397",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/inputs/pa31-direct.rs",
+      "expected_rust_status": 0,
+      "rust_status": 0,
+      "reason": "core iter_try_fold shape: helper R occurs in the opaque output and the fold argument output only (actual source protocol prelude)",
+      "path": "pa31/tests/spec/flatten-helper-outputs/direct.rs"
+    },
+    {
+      "owner": "pa31",
+      "name": "output-only",
+      "sha256": "9a91f66e621e89d8e8682ece787e75f6ab07f50d304a8fc646e1bf92cef04171",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/inputs/pa31-output-only.rs",
+      "expected_rust_status": 0,
+      "rust_status": 0,
+      "reason": "no projected input; R occurs only in the opaque output (actual source protocol prelude)",
+      "path": "pa31/tests/spec/flatten-helper-outputs/output-only.rs"
+    },
+    {
+      "owner": "pa31",
+      "name": "wrong-output",
+      "sha256": "08046e5a1a5d1dd588e01c1450766dd8cfe8c8cc32d50fcc154f40a6b9cc2ed0",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/inputs/pa31-wrong-output.rs",
+      "expected_rust_status": 1,
+      "rust_status": 1,
+      "reason": "helper declares output u8 where the parent requires generic R (E0271/E0308) (actual source protocol prelude)",
+      "path": "pa31/tests/spec/flatten-helper-outputs/wrong-output.rs"
+    },
+    {
+      "owner": "pa31",
+      "name": "unconstrained-output",
+      "sha256": "3adf092c186b90a1f312df5a502b0de6fae07efd969b28eaa2c6ab27f2f87ff7",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/inputs/pa31-unconstrained-output.rs",
+      "expected_rust_status": 1,
+      "rust_status": 1,
+      "reason": "output-only capture has no constraint (E0282); no default or guess (actual source protocol prelude)",
+      "path": "pa31/tests/spec/flatten-helper-outputs/unconstrained-output.rs"
+    },
+    {
+      "owner": "pa31",
+      "name": "try-bound",
+      "sha256": "945890ca7d962e9a71870fb5f49e739e2fe3ef6b12fce994dde19137ccaf61a3",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/inputs/pa31-try-bound.rs",
+      "expected_rust_status": 0,
+      "rust_status": 0,
+      "reason": "core R:Try<Output=Acc> through the source lang Try protocol",
+      "path": "pa31/tests/spec/flatten-helper-outputs/try-bound.rs"
+    },
+    {
+      "owner": "pa31",
+      "name": "question-direct",
+      "sha256": "dc4228dbefe39cb7041771cf8c31e5a0dd3aaacc84ad3ca32f682996833b55aa",
+      "path": "pa31/tests/spec/flatten-helper-outputs/question-direct.rs",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/reduce/question-direct.rs",
+      "expected_rust_status": 0,
+      "rust_status": 0,
+      "reason": "iter_try_fold4720 flatten.rs:431 reduction: ? consumer or unconsumed result"
+    },
+    {
+      "owner": "pa31",
+      "name": "question-split",
+      "sha256": "44791f1ea71aac55020f0d68bbb8521d1f043b1871e113907438146374518367",
+      "path": "pa31/tests/spec/flatten-helper-outputs/question-split.rs",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/reduce/question-split.rs",
+      "expected_rust_status": 0,
+      "rust_status": 0,
+      "reason": "iter_try_fold4720 flatten.rs:431 reduction: ? consumer or unconsumed result"
+    },
+    {
+      "owner": "pa31",
+      "name": "question-statement",
+      "sha256": "bd2f473529908902bb39ec546b3098084ae1c35e0a2d7ff61af4a014ee67c930",
+      "path": "pa31/tests/spec/flatten-helper-outputs/question-statement.rs",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/reduce/question-statement.rs",
+      "expected_rust_status": 0,
+      "rust_status": 0,
+      "reason": "iter_try_fold4720 flatten.rs:431 reduction: ? consumer or unconsumed result"
+    },
+    {
+      "owner": "pa31",
+      "name": "question-turbofish",
+      "sha256": "c2ac8a09a4d18594792b2ec8c4637d219e14e4af4c19e8489e3274db4c8219f8",
+      "path": "pa31/tests/spec/flatten-helper-outputs/question-turbofish.rs",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/reduce/question-turbofish.rs",
+      "expected_rust_status": 0,
+      "rust_status": 0,
+      "reason": "iter_try_fold4720 flatten.rs:431 reduction: ? consumer or unconsumed result"
+    },
+    {
+      "owner": "pa31",
+      "name": "question-explicit",
+      "sha256": "a26fde5a0617e80cdf7d31b59a3ec674faef5d0eb62d5f2242f7d5e20df7d2d2",
+      "path": "pa31/tests/spec/flatten-helper-outputs/question-explicit.rs",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/reduce/question-explicit.rs",
+      "expected_rust_status": 0,
+      "rust_status": 0,
+      "reason": "iter_try_fold4720 flatten.rs:431 reduction: ? consumer or unconsumed result"
+    },
+    {
+      "owner": "pa31",
+      "name": "question-wrong-output",
+      "sha256": "27336aa27664f45eda53230c095d4a4d1488d5bfd740c0769c686f132bfbdd4a",
+      "path": "pa31/tests/spec/flatten-helper-outputs/question-wrong-output.rs",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/reduce/question-wrong-output.rs",
+      "expected_rust_status": 1,
+      "rust_status": 1,
+      "reason": "? output B assigned to u8 (E0308)"
+    }
+  ]
+}

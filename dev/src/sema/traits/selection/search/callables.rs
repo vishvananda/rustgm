@@ -101,14 +101,14 @@ impl Search<'_> {
             return Ok(false);
         }
         let first = frame.available_region().max(self.query.allocations.floor());
-        if let Some(regions) = crate::sema::traits::results::infer_inputs(
+        if let Some(inputs) = crate::sema::traits::results::infer_inputs(
             facts,
             &mut frame.inputs.context,
             &frame.goal,
             first,
         )? {
-            self.query.allocations.record(regions.end);
-            self.query.reserve(frame.scope, regions)?;
+            self.query.allocations.record(inputs.regions.end);
+            self.query.reserve(frame.scope, inputs.regions)?;
             return Ok(true);
         }
         match callables::match_signature(facts, &mut frame.inputs.context, &frame.goal, first) {
@@ -125,6 +125,56 @@ impl Search<'_> {
             Err(error) => return Err(inference(error)),
         }
         Ok(true)
+    }
+
+    /// A declared opaque callable can refine its capture inputs while an
+    /// output-only capture is still unknown. Publish those equations as partial
+    /// progress, then restart the frame: it still proves the complete bound
+    /// through the declaration once the caller's graph settles that capture.
+    pub(super) fn infer_opaque_inputs(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &mut Frame,
+    ) -> Result<Option<Action>, String> {
+        if !self.query.refining {
+            return Ok(None);
+        }
+        let Some((item, _)) = frame.goal.trait_arguments() else {
+            return Ok(None);
+        };
+        if facts.associated.callable(DefId(item.0)).is_none() {
+            return Ok(None);
+        }
+        let first = frame.available_region().max(self.query.allocations.floor());
+        let Some(inputs) = crate::sema::traits::results::infer_inputs(
+            facts,
+            &mut frame.inputs.context,
+            &frame.goal,
+            first,
+        )?
+        else {
+            return Ok(None);
+        };
+        self.query.allocations.record(inputs.regions.end);
+        self.query.reserve(frame.scope, inputs.regions)?;
+        if !inputs.refined
+            || frame.inference == super::frames::Inference::Disabled
+            || frame.scope != self.query.input_scope()
+            || frame.normalizing()
+        {
+            return Ok(None);
+        }
+        match frame
+            .inputs
+            .context
+            .resolved(&mut facts.types, frame.goal.subject())
+        {
+            Ok(_) => return Ok(None),
+            Err(infer::Error::Unresolved) => {}
+            Err(error) => return Err(inference(error)),
+        }
+        frame.language = Some(Box::new(Pending::Declared));
+        Ok(Some(Action::Yield))
     }
 
     pub(super) fn start_callable(
@@ -202,6 +252,10 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Action, String> {
+        if matches!(frame.language.as_deref(), Some(Pending::Declared)) {
+            frame.language = None;
+            return self.start(facts, frame);
+        }
         if matches!(frame.language.as_deref(), Some(Pending::Async(_))) {
             return self.complete_async_callable(facts, frame);
         }

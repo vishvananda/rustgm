@@ -1,0 +1,177 @@
+{
+  "schema": 1,
+  "owner": "pa24",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": 2024,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "opt_level": 0
+  },
+  "state": "15 independent outcomes 11accept/4reject declared before execution.",
+  "outcomes_declared_before_execution": true,
+  "origin": "Original FlattenCompat::iter_try_fold4720 flatten.rs:431 self.iter.try_fold(acc, flatten(&mut self.frontiter, &mut fold))",
+  "inputs": [
+    {
+      "owner": "pa24",
+      "name": "direct",
+      "sha256": "9c1aa81ff4a8256ec1ef5795d04e8d2f3900eb50acfe50460b210540c4cd6cb4",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/inputs/pa24-direct.rs",
+      "expected_rust_status": 0,
+      "rust_status": 0,
+      "reason": "core iter_try_fold shape: helper R occurs in the opaque output and the fold argument output only",
+      "path": "pa24/tests/spec/flatten-helper-outputs/direct.rs"
+    },
+    {
+      "owner": "pa24",
+      "name": "named",
+      "sha256": "ab9874b27c3024dcb8789ec06bf2db6daea78ef728aa0a41e1893b9c380eb56d",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/inputs/pa24-named.rs",
+      "expected_rust_status": 0,
+      "rust_status": 0,
+      "reason": "named helper result before the parent call",
+      "path": "pa24/tests/spec/flatten-helper-outputs/named.rs"
+    },
+    {
+      "owner": "pa24",
+      "name": "explicit",
+      "sha256": "cfdc376aebcb29367000cdab4e5e2e4866c2717465c3ac636e0b88f62209e04b",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/inputs/pa24-explicit.rs",
+      "expected_rust_status": 0,
+      "rust_status": 0,
+      "reason": "explicit helper generics control",
+      "path": "pa24/tests/spec/flatten-helper-outputs/explicit.rs"
+    },
+    {
+      "owner": "pa24",
+      "name": "front-only",
+      "sha256": "58859a7fa349bc42864864d18a767dcf69fc60bc36b50346a66c5c4fdbb29770",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/inputs/pa24-front-only.rs",
+      "expected_rust_status": 0,
+      "rust_status": 0,
+      "reason": "R occurs only in the opaque output; T only through a projection",
+      "path": "pa24/tests/spec/flatten-helper-outputs/front-only.rs"
+    },
+    {
+      "owner": "pa24",
+      "name": "fold-only",
+      "sha256": "733ba113aef6340f8675541c1e568bd7d5905a3edaafafbe954e255b2c21c738",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/inputs/pa24-fold-only.rs",
+      "expected_rust_status": 0,
+      "rust_status": 0,
+      "reason": "fold argument only; its output needs settled T",
+      "path": "pa24/tests/spec/flatten-helper-outputs/fold-only.rs"
+    },
+    {
+      "owner": "pa24",
+      "name": "output-only",
+      "sha256": "b5c73ba9b566138945f5b8e1fb4effdb6a9c29f6adb244871db3fb6ebbf5e408",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/inputs/pa24-output-only.rs",
+      "expected_rust_status": 0,
+      "rust_status": 0,
+      "reason": "no projected input; R occurs only in the opaque output",
+      "path": "pa24/tests/spec/flatten-helper-outputs/output-only.rs"
+    },
+    {
+      "owner": "pa24",
+      "name": "turbofish-output",
+      "sha256": "9715e77b28aec68b13701052aa027a5bdf32c474a582c4a726f61ba8e4dba7c0",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/inputs/pa24-turbofish-output.rs",
+      "expected_rust_status": 0,
+      "rust_status": 0,
+      "reason": "parent R explicit, helper R inferred",
+      "path": "pa24/tests/spec/flatten-helper-outputs/turbofish-output.rs"
+    },
+    {
+      "owner": "pa24",
+      "name": "try-bound",
+      "sha256": "2a85f4bd711a44a5ff0cae23ba51abc3b0d206fd11f6d432652b817e674a4c5f",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/inputs/pa24-try-bound.rs",
+      "expected_rust_status": 0,
+      "rust_status": 0,
+      "reason": "core R:Try<Output=Acc> bounds on the parent and helper",
+      "path": "pa24/tests/spec/flatten-helper-outputs/try-bound.rs"
+    },
+    {
+      "owner": "pa24",
+      "name": "wrong-output",
+      "sha256": "d899bf957d490fdfbb193c29a269d9cd351ff354d80b2f127f34edf2aef92243",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/inputs/pa24-wrong-output.rs",
+      "expected_rust_status": 1,
+      "rust_status": 1,
+      "reason": "helper declares output u8 where the parent requires generic R (E0271/E0308)",
+      "path": "pa24/tests/spec/flatten-helper-outputs/wrong-output.rs"
+    },
+    {
+      "owner": "pa24",
+      "name": "wrong-input",
+      "sha256": "b5b6c631b77111bb479ff98b6139686aeb09b6066fee12ee61c8afbbefb5cee8",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/inputs/pa24-wrong-input.rs",
+      "expected_rust_status": 1,
+      "rust_status": 1,
+      "reason": "declared callable input u16 cannot equal rigid I::Item",
+      "path": "pa24/tests/spec/flatten-helper-outputs/wrong-input.rs"
+    },
+    {
+      "owner": "pa24",
+      "name": "unconstrained-output",
+      "sha256": "5df5a358d4af0ef07e5dbfbbbe2a0ab8805c9e49284a3009d59cc6462e7b5334",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/inputs/pa24-unconstrained-output.rs",
+      "expected_rust_status": 1,
+      "rust_status": 1,
+      "reason": "output-only capture has no constraint (E0282); no default or guess",
+      "path": "pa24/tests/spec/flatten-helper-outputs/unconstrained-output.rs"
+    },
+    {
+      "owner": "pa24",
+      "name": "unsatisfied-output-bound",
+      "sha256": "b545dae770e961bd67b862f55910533511c0c3e35db1a04d131ec50dda217587",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/inputs/pa24-unsatisfied-output-bound.rs",
+      "expected_rust_status": 1,
+      "rust_status": 1,
+      "reason": "inferred R lacks the helper bound R:Try<Output=B> (E0277)",
+      "path": "pa24/tests/spec/flatten-helper-outputs/unsatisfied-output-bound.rs"
+    },
+    {
+      "owner": "pa24",
+      "name": "unconsumed-direct",
+      "sha256": "84178516d774d754e26429558ea7227511d1ebf57590da26ba2ecabab2e9ec84",
+      "path": "pa24/tests/spec/flatten-helper-outputs/unconsumed-direct.rs",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/reduce/unconsumed-direct.rs",
+      "expected_rust_status": 0,
+      "rust_status": 0,
+      "reason": "iter_try_fold4720 flatten.rs:431 reduction: ? consumer or unconsumed result"
+    },
+    {
+      "owner": "pa24",
+      "name": "native-value",
+      "sha256": "7c557ce51aacf27ee0214ae39251bb3f19f2e469a2af7fccbe670120a640c5a8",
+      "path": "pa24/tests/spec/flatten-helper-outputs/native-value.rs",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/native-inputs/native-value.rs",
+      "expected_rust_status": 0,
+      "rust_status": 0,
+      "expected_runtime_stdout": "flatten-output 7 9 1234\n",
+      "independent_native": [
+        0,
+        "flatten-output 7 9 1234\n"
+      ],
+      "reason": "observer-linked export; helper output-only R resolves to u16 and u8 at two calls"
+    },
+    {
+      "owner": "pa24",
+      "name": "native-value-explicit",
+      "sha256": "c1ca9b0bca6bb901e45d11eb25d5c8cffbe49d1112c28de5119e562b22190c6e",
+      "path": "pa24/tests/spec/flatten-helper-outputs/native-value-explicit.rs",
+      "frozen_plan_input": "obj/parallel/try-helper-outputs/native-inputs/native-value-explicit.rs",
+      "expected_rust_status": 0,
+      "rust_status": 0,
+      "expected_runtime_stdout": "flatten-output 7 9 1234\n",
+      "independent_native": [
+        0,
+        "flatten-output 7 9 1234\n"
+      ],
+      "reason": "observer-linked export; helper output-only R resolves to u16 and u8 at two calls (explicit twin)"
+    }
+  ]
+}

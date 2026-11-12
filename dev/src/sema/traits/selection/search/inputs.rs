@@ -56,7 +56,9 @@ impl Search<'_> {
             .head(&facts.types, frame.goal.subject())
         {
             Ok(Some(infer::Constructor::Opaque(..))) => {
-                self.infer_callable_inputs(facts, frame)?;
+                if let Some(action) = self.infer_opaque_inputs(facts, frame)? {
+                    return Ok(Some(action));
+                }
             }
             Ok(_) | Err(infer::Error::Normalization | infer::Error::Unresolved) => {}
             Err(error) => return Err(inference(error)),

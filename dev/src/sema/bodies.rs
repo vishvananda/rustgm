@@ -1771,7 +1771,7 @@ impl Checker<'_> {
             Kind::EmptyStatement | Kind::Item(_) => self.known(node, TypeId::UNIT),
             Kind::Statement(value) => {
                 let term = self.term(value)?;
-                let never = self.head(node, term)? == Some(Constructor::Never);
+                let never = self.contextual_head(node, term)? == Some(Constructor::Never);
                 self.known(node, if never { TypeId::NEVER } else { TypeId::UNIT })
             }
             Kind::Let {
@@ -2681,7 +2681,8 @@ impl Checker<'_> {
             self.coerce(right, a)?;
         }
         self.state.assignments.push((node, target, operator));
-        let never = self.head(node, b)? == Some(Constructor::Never);
+        // A pending associated result, such as a `?` output, is not yet definitely Never.
+        let never = self.contextual_head(node, b)? == Some(Constructor::Never);
         self.known(node, if never { TypeId::NEVER } else { TypeId::UNIT })
     }
     fn validate_assignments(&mut self) -> Result<(), Error> {

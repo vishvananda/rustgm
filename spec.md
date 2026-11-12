@@ -5759,6 +5759,17 @@ cache unresolved caller terms; the original selector still proves the complete
 trait, formation and lifetime requirements. Pending controls are in the
 [helper input checkpoint](docs/pa24-flatten-helper-inputs.md).
 
+A declared opaque callable may refine its capture inputs while a capture that
+occurs only in its output is still unknown. Publish those input equations as
+partial selection progress and restart the frame. The restarted query still
+proves the complete bound. The callable Output is then the opaque's unique
+published output equation, instantiated over its inferred captures and related
+through the existing Probe after the inputs. This is forward normalization
+through the declaration; never invert the output. A statement or assignment
+whose type is a pending associated result, such as a `?` output, is not yet
+definitely Never, so use its contextual head. Controls are in the
+[helper output checkpoint](docs/pa24-flatten-helper-outputs.md).
+
 A canonical caller premise may bind an inference hole to its complete projected
 input type. Use the shared scoped worklist; collect comparisons between projection
 results for exact identity or the existing certified-normal-premise relation.
