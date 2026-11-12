@@ -155,8 +155,12 @@ the passing receipts, not those attempts, qualify the current implementation.
 supersedes623 as the comparison baseline. The unchanged original observer clears
 iter_fold; first remaining is iter_try_fold4720 flatten.rs:431 (projected helper
 input `&mut Option<T::IntoIter>` needs T from the parent callable bound before
-normalizing). Step7 published 0e74298f1 and dispatched full 43171710575. The text
-below describes the pre-commit state and is retained as history.
+normalizing). Step7 published 0e74298f1; **full 43171710575 passed every stage**
+(48m03s), qualifying a08ab1a4. The superseded 623 pin was retired and pruned
+(producer/raw evidence remain). Successor full 43177635950 was dispatched at
+07:45Z for the const-machine release (main 774fd9dfe); check it first, and do not
+dispatch another while it runs. The text below describes the pre-commit state and
+is retained as history.
 
 **Next core blocker (diagnosed, not implemented):** iter_try_fold4720. Reductions
 with declared Rust-valid outcomes are in `obj/parallel/try-helper-inputs/`
