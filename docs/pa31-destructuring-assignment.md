@@ -143,5 +143,15 @@ exclusively from load 22, which rose to 51 under external work. The census
   followed by `partial_compare` 7660 and `compare` 7676 (invalid inference
   identity) and by `as_slice` 7874 and `next_back` 7900 (incompatible types).
 
-Not yet run: a clean candidate pin from the committed tree, and its
-observation. Exploratory observations are not candidate evidence.
+Clean candidate `obj/parallel/assignee/candidate-dev-fast` (83906f0ac, no
+patch) builds the same binary, 2ddb3a67. The unchanged 120s observer ran it
+exclusively from load 22. Its census, `original-candidate-comparison.txt`,
+compares it with the same clean comparison candidate:
+
+- `bidirectional_merge` 7581 is reached and passes. No previously passing
+  reached body fails.
+- 13,842 item attempts and 5 records. The run ends at item 8060
+  (`slice/iter.rs:1951`). The shorter reach comes from load, not a failure.
+- The first failure and the four after it are the same as wip2's:
+  `as_underlying` 7631, `partial_compare` 7660, `compare` 7676, `as_slice`
+  7874 and `next_back` 7900.

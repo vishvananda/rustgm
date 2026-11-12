@@ -194,7 +194,7 @@ The [destructuring assignment checkpoint](docs/pa31-destructuring-assignment.md)
 assigns tuple and `_` assignees leaf by leaf, as rustc's desugaring does. Core's
 `bidirectional_merge` needs this for `(left, right, dst) = merge_up(...)`.
 Seventeen source-core reductions agree with rustc. Rest, array, struct and
-tuple struct assignees fail closed. An exploratory observation clears
+tuple struct assignees fail closed. A clean candidate observation clears
 `bidirectional_merge`; the first remaining failure is `as_underlying`.
 
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first

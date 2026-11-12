@@ -14,7 +14,9 @@ failure in a previously passing reached body. The unchanged 120s observer
 makes 14,027 attempts and reaches item 8360 (slice/mod.rs:3725), with load
 rising from 22 to 51, and records 5 failures. The first remaining failure is
 `as_underlying` 7631 at slice/cmp.rs:52 ("source transmute requires equal
-source and destination sizes"). No core artifact exists.
+source and destination sizes"). The clean candidate from 83906f0ac (the same
+binary) agrees: 13,842 attempts from load 22, ending at item 8060
+(slice/iter.rs:1951), with the same 5 records. No core artifact exists.
 
 The [comparison right operand checkpoint](pa31-comparison-rhs.md) follows
 rustc's `check_overloaded_binop`. A source comparison's `Rhs` gets a fresh

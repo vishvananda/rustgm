@@ -159,11 +159,13 @@ the passing receipts, not those attempts, qualify the current implementation.
     The five declared batches, three malformed probes and six recorded gaps
     (rest, array, struct, struct rest, tuple struct and per-leaf coercion) are
     in `obj/parallel/assignee/core/declared.json`.
-  - Exploratory pin `obj/parallel/assignee/wip2-dev-fast` (2ddb3a67) clears
-    7581. The next first failure is `as_underlying` 7631 at slice/cmp.rs:52
-    (source transmute size).
-  - The clean pin for this commit, and the pending let-condition and
-    premise-input measurements, are not run.
+  - Exploratory pin wip2 (2ddb3a67) clears 7581. So does the clean candidate
+    `obj/parallel/assignee/candidate-dev-fast` (83906f0ac, the same binary
+    2ddb3a67), observed from load 22. No previously passing body fails. The
+    next first failure is `as_underlying` 7631 at slice/cmp.rs:52 (source
+    transmute size). The wip pins are retired, and the candidate is the next
+    comparison base.
+  - The pending let-condition and premise-input measurements are not run.
 
 **2026-11-12 comparison right operand update (supersedes the blocks below):**
 
