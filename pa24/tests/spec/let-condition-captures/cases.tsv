@@ -1,0 +1,7 @@
+pa24/tests/spec/let-condition-captures/while-let-digits.rs	0
+pa24/tests/spec/let-condition-captures/if-let-copy.rs	0
+pa24/tests/spec/let-condition-captures/while-let-mutable.rs	0
+pa24/tests/spec/let-condition-captures/while-let-owned.rs	0
+pa24/tests/spec/let-condition-captures/if-let-nested-closure.rs	0
+pa24/tests/spec/let-condition-captures/while-let-moved.rs	1
+pa24/tests/spec/let-condition-captures/if-let-fn-mutation.rs	1

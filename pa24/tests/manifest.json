@@ -13707,6 +13707,138 @@
         "default_lints": true
       },
       "maintainer_origin": "dev/tests/abstract_callable_inputs.rs"
+    },
+    {
+      "path": "tests/spec/let-condition-captures/while-let-digits.rs",
+      "source_sha256": "960ff480f55e7099bb6a45cf69e7ddf50cc7fcc50f3dc769d0bdfeac7c437d5e",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/source_closures/let_conditions.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/let-condition-captures/if-let-copy.rs",
+      "source_sha256": "b42d37692b1dd06e13887c35b9c0623d0df7b279739a330a05b78805b8496e48",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/source_closures/let_conditions.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/let-condition-captures/while-let-mutable.rs",
+      "source_sha256": "95ff01645da055a5a64cd98d134827496170fd5551a028f9a7f92c546e2dbc48",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/source_closures/let_conditions.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/let-condition-captures/while-let-owned.rs",
+      "source_sha256": "4884dc0597c5cbfb94ac2081365ee70645acb28de090d60799f2f3bbeb70d027",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/source_closures/let_conditions.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/let-condition-captures/if-let-nested-closure.rs",
+      "source_sha256": "b48c15d6c1f6eca803308ddc7920d0854139a3afb22c245651cb321cd687eb35",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/source_closures/let_conditions.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/let-condition-captures/while-let-moved.rs",
+      "source_sha256": "9cb50d146da1c5e235bf9d98ab4b0bea4722df02dd9a55ee50698fe5677491ae",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/source_closures/let_conditions.rs"
+    },
+    {
+      "path": "tests/spec/let-condition-captures/if-let-fn-mutation.rs",
+      "source_sha256": "b972be37de5b8927c2833f4f37b38bb81bfe43e63d13f69877a9d7888fc5aa09",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/source_closures/let_conditions.rs"
     }
   ]
 }

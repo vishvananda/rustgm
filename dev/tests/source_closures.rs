@@ -410,6 +410,8 @@ mod defaulted_const_closures;
 mod identity;
 #[path = "source_closures/implemented_copies.rs"]
 mod implemented_copies;
+#[path = "source_closures/let_conditions.rs"]
+mod let_conditions;
 
 #[path = "source_closures/captures.rs"]
 mod captures;

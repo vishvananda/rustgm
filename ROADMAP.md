@@ -144,6 +144,13 @@ source-core reductions agree with rustc. An exploratory observation clears
 `read_radix_max_digits`. Clean pin ead8009c (source a7ce2784a) confirms this
 with 20 records, and its measurement supports no speed claim either way.
 
+The [let-condition capture checkpoint](docs/pa24-let-condition-captures.md)
+lets a closure consume a computed `if let` or `while let` scrutinee through the
+existing capture-use walker, as core's `read_radix_max_digits` needs. Seven
+graded PA24 outcomes agree with rustc. An exploratory observation clears that
+body; the first remaining failure is `Pin`'s `PartialEq`/`PartialOrd`
+forwarding.
+
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage
 limit controls, pass text, independent Rust and native checks with frozen a08ab1a4.

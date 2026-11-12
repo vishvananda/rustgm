@@ -477,6 +477,17 @@ impl Collector<'_> {
                 }
                 self.push(value, Use::Value);
             }
+            // A computed `if let`/`while let` scrutinee is consumed like a
+            // computed match's; its bindings are local to the closure body.
+            Kind::LetCondition { value, .. } => {
+                if self.places.get(checker, value)?.is_some() {
+                    return Err(checker.error(
+                        value,
+                        "capture patterns for a matched place are not implemented",
+                    ));
+                }
+                self.push(value, Use::Value);
+            }
             Kind::Loop { body } | Kind::TryBlock { body, .. } => self.push(body, Use::Value),
             Kind::While { condition, body } => {
                 self.push(body, Use::Value);

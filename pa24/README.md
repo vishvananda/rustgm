@@ -178,3 +178,9 @@ The [abstract callable input checkpoint](../docs/pa24-abstract-callable-inputs.m
 adds nine reviewed ordinary outcomes. Seven executable positives pass a function
 item, such as a trait member path or `Ord::cmp`, for an `I::Item` callable input.
 A concrete item and one item for two projections reject.
+
+The [let-condition capture checkpoint](../docs/pa24-let-condition-captures.md)
+adds seven reviewed ordinary outcomes. Five executable positives consume a
+computed `if let` or `while let` scrutinee inside a capturing closure, as core's
+`read_radix_max_digits` does. A capture moved in every iteration and an `Fn`
+closure assigning its capture reject.

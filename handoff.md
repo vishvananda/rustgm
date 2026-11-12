@@ -149,6 +149,23 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-12 let-condition capture update (supersedes the blocks below):**
+
+- The read_radix_max_digits 6024 blocker is fixed
+  ([evidence](docs/pa24-let-condition-captures.md)). The closure capture-use
+  walker now consumes a computed `if let`/`while let` scrutinee as a value use.
+  - Seven graded PA24 cases are in `pa24/tests/spec/let-condition-captures`
+    (batch `1794496092470575797-dabcfb1a5f10`). The history is in
+    `obj/parallel/radix-captures/core/declared.json`, and diagnostic probes are
+    in `obj/parallel/radix-captures/probes/`.
+  - Exploratory pin `obj/parallel/radix-captures/wip2-dev-fast` (59a51ffa)
+    clears it. The next first failure is Pin's PartialEq/PartialOrd forwarding
+    (projection normalization), then `cloned` 6721.
+  - Ordinary mode rejects `Option<u32> == Option<u32>`, which rustc accepts
+    (`obj/parallel/radix-captures/core/eq-probe`). This is recorded, not fixed.
+- The clean pin, its observation and measurement against ead8009c follow this
+  commit.
+
 **2026-11-12 abstract callable input update (supersedes the blocks below):**
 
 - The max/min/max_by_key/min_by_key blocker is fixed

@@ -1,5 +1,20 @@
 # Library build blocker tracker
 
+The [let-condition capture checkpoint](pa24-let-condition-captures.md) lets a
+closure consume a computed `if let` or `while let` scrutinee as a value use,
+like a computed `match`. Core's read_radix_max_digits loops with `while let`
+inside a closure that copies its captures, and the capture-use walker had no
+arm for the condition. Seven graded PA24 outcomes and closure-linear work
+qualify the fix. A captured-place scrutinee keeps the explicit matched-place
+boundary.
+
+Exploratory pin 59a51ffa clears read_radix_max_digits 6024, with no new reached
+failure. The unchanged 120s observer ends at 121.138s with 22 records, 14,470
+attempts and last item 9102, time.rs:1772. The first remaining failure is
+`Pin`'s `PartialEq`/`PartialOrd` forwarding bodies 6456–6464 at pin.rs:1108
+("associated type projection requires normalization"), then `cloned` 6721
+("invalid method trait selection"). No core artifact exists.
+
 The [abstract callable input checkpoint](pa24-abstract-callable-inputs.md) lets
 a function item whose inputs are inferred only through a callable bound meet an
 abstract projection input such as `Self::Item`. Core's `max`, `min`,

@@ -5757,6 +5757,11 @@ A captured-place scrutinee requires separate selected pattern operations;
 discriminant reads, wildcards and independent fields must not become blanket
 value moves. Required controls remain in the [match capture checkpoint](docs/pa24-match-captures.md).
 
+A computed `if let` or `while let` scrutinee inside a closure is consumed as a
+value use through the same walker; its pattern bindings are closure locals. A
+captured-place scrutinee keeps the explicit matched-place boundary above. Controls
+are in the [let-condition capture checkpoint](docs/pa24-let-condition-captures.md).
+
 A helper returning an opaque callable may receive its inputs from the caller's
 required callable bound. Map the opaque type's formal type, const and lifetime
 captures into the owning inference graph as an ephemeral result; reuse indexed
