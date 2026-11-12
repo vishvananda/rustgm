@@ -165,9 +165,11 @@ the passing receipts, not those attempts, qualify the current implementation.
   - Recorded limitations: source-core mode accepts a const closure's
     non-const call (`count-nonconst-call`, deferred defining const checks), and
     LowIR of `fold`'s `[const] FnMut` call fails for any argument.
-- Clean pin `obj/parallel/zip-specialization/candidate-dev-fast` (3a1a6772,
-  source bcbafa25a) remains the comparison baseline until this checkpoint's
-  clean pin passes. Full CI 43216665164 was dispatched on 8cff15463.
+- Clean pin `obj/parallel/count-fold/candidate-dev-fast` (eacd5629, source
+  a468bcc0b) passed its observation (36 records), postcheck and measurement
+  against 3a1a6772. It is the comparison baseline. The 3a1a6772 pin and the
+  byte-identical count-fold wip1 are retired; their evidence remains. Full CI
+  43216665164 was dispatched on 8cff15463.
 
 **2026-11-12 specialized trait input update (supersedes the blocks below):**
 

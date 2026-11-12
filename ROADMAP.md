@@ -121,8 +121,9 @@ lets a const closure defined in a const trait's default body meet a `[const]`
 callable bound through that body's `Self: [const] Trait` premise, as core's
 `Iterator::count` needs. Ten declared source-core reductions agree with rustc.
 An exploratory observation clears count; the first remaining failure is
-iterator `last`, which needs a scoped continuation for a const fn item. The
-clean pin, its observation and measurement are pending.
+iterator `last`, which needs a scoped continuation for a const fn item. Clean
+pin eacd5629 (source a468bcc0b) confirms this with 36 records, and its
+measurement supports no speed claim either way.
 
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage

@@ -133,8 +133,33 @@ scoped continuation for source const callable conditional obligations. `max`,
 fence. They pass function items (`Ord::cmp`, a local `compare`) to `max_by`'s
 ordinary `FnMut` bound, a separate cause.
 
-A clean pin, its unchanged observation with the postcheck, and measurement
-follow publication.
+**Clean pin.** Pin eacd5629 is built from clean source a468bcc0b, with 3913
+Rust hashes and an empty patch (`obj/parallel/count-fold/candidate-dev-fast`).
+Only test and fixture files changed after the exploratory build, so it is
+byte-identical to wip1. Its unchanged observation ends at its deadline after
+120.867s, with 36 partial records and 14,320 attempts. The last item is 8892,
+str/pattern.rs:1816. Against clean 3a1a6772 it clears `count` 5712, with no new
+failure among previously passing reached bodies, and the first remaining
+failure is `last` 5713. The postcheck verifies all 722 source hashes, 375
+opens, six configuration bindings, unchanged immutable bindings and the 3913
+head blobs. The progress SHA is
+`a0be02d133ddc057e01ae550afe5e8dbbf6784337e1f54ac140b286516bd39b1`.
+
+Both eacd5629 observations reached fewer items than 3a1a6772's 15,502. Two
+further unchanged observations, one per pin, sampled `progress.tsv` every half
+second (`obj/parallel/count-fold/timing-*.txt`). They reverse the order:
+eacd5629 reaches 15,220 items and 3a1a6772 13,808. Their first items arrive
+after 54.7s and 57.7s of declaration preparation, and both stall 7–9s at
+implementation 44720. The partial counts vary between runs by more than the
+pins differ, and show no slowdown attributable to the change.
+
+**Measurement.** Sixty exclusive A/A plus ABBA accepting observations against
+3a1a6772 preserve complete outputs. The controls are the six specialized trait
+input controls, with `count-plain` from this packet in place of `default-body`.
+Paired wall ratios are 0.961/1.055/1.122/1.032/0.990/1.013, against A/A
+0.848/0.840/1.049/1.061/0.973/1.003, at 10–654 ms. External load stayed near a
+load average of 11. No optimized, neutrality or original-core speed is claimed;
+the bounded-work test above qualifies the work.
 
 Partial counts make no throughput claim, and this is neither a complete census
 nor a core artifact.

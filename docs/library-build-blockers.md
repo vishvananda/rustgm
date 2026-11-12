@@ -14,8 +14,12 @@ records, 14,291 attempts and last item 8823, str/pattern.rs:691. The first
 remaining failure is last 5713 at iterator.rs:271, which needs a scoped
 continuation for source const callable conditional obligations. max, min,
 max_by_key and min_by_key keep the nested trait path formatting fence for a
-separate cause: function items passed to an ordinary `FnMut` bound. The clean
-pin and its observation are pending. No core artifact exists.
+separate cause: function items passed to an ordinary `FnMut` bound. Clean pin
+eacd5629 (source a468bcc0b) confirms it: its unchanged observer ends at
+120.867s with 36 records, 14,320 attempts and last item 8892,
+str/pattern.rs:1816. Sampled timing observations attribute the lower partial
+counts to run-to-run variance. Its measurement supports no speed claim either
+way. No core artifact exists.
 
 The [specialized trait input checkpoint](pa20-specialized-trait-inputs.md)
 lets specialization order two proved impl candidates of a goal with inference
