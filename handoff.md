@@ -149,11 +149,14 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
-**2026-11-12 update:** steps1–4 are complete and committed as the helper-input
-checkpoint ([evidence](docs/pa24-flatten-helper-inputs.md)). Twenty-three reviewed
-PA24 triples are generated; all prior PA1–PA24 references reproduce; upstream and
-harness pass. Two shared-output fixtures were revised before publication because
-Rust code-generates their non-generic private impl methods. Steps5–7 follow.
+**2026-11-12 update:** steps1–6 are complete; the checkpoint is ee8c11abb
+([evidence](docs/pa24-flatten-helper-inputs.md)). Immutable pin
+`obj/parallel/flatten-helper-inputs/candidate-dev-fast` (a08ab1a4, `.keep-artifacts`)
+supersedes623 as the comparison baseline. The unchanged original observer clears
+iter_fold; first remaining is iter_try_fold4720 flatten.rs:431 (projected helper
+input `&mut Option<T::IntoIter>` needs T from the parent callable bound before
+normalizing). Step7 publishes this and dispatches one full successor. The text
+below describes the pre-commit state and is retained as history.
 
 1. Inspect B's Git state and `handoff-state.json`; preserve the existing changes.
    The compiler and fixtures have not been committed or pushed.

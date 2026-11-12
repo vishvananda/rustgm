@@ -4,8 +4,15 @@ The [helper return-input checkpoint](pa24-flatten-helper-inputs.md) locally
 qualifies46 complete API outcomes from52 independent contracts, actual
 ordinary/source native7/9/1234,23 reviewed ordinary text contracts and
 call-linear bounded work for FlattenCompat::iter_fold's nested helper call. Six
-entire contracts stay required. Clean freeze and a new unchanged original
-observer are next; no original core/alloc/std artifact. Earlier snapshots follow.
+entire contracts stay required. Clean ee8c11abb/frozen a08ab1a4 clears iter_fold,
+iter_rfold and four fold/rfold callers with no new reached failure. The unchanged
+120s observer ends at121.213146s,62 records/14,659 attempts, last9491
+alloc/mod.rs:281. First remaining iter_try_fold4720/error142:11801 flatten.rs:431:
+associated projection normalization for helper input `&mut Option<T::IntoIter>`.
+iter_try_rfold repeats it; four try_fold/try_rfold callers report unresolved inputs
+and six try_fold bodies an invalid method candidate graph. Of62 records,13 are
+unresolved obligations,10 scoped const continuations,9 projection normalization,
+7 repeat-element Copy and6 candidate graphs. No core artifact. Earlier snapshots follow.
 
 The [computed-match capture checkpoint](pa24-match-captures.md), CLI623ff5bc,
 locally qualifies40 complete API outcomes from49 independent contracts, actual

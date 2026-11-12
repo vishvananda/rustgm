@@ -64,7 +64,8 @@ The [helper return-input checkpoint](docs/pa24-flatten-helper-inputs.md) relates
 opaque helper callable inputs through published bounds:46 complete API outcomes
 from52 independent contracts,23 new PA24 text outcomes, actual ordinary/source
 native7/9/1234 and call-linear bounded work. Six entire contracts remain required.
-Immutable original observation and full successor qualification are pending.
+The unchanged original observer clears iter_fold and its five fold/rfold siblings;
+first remaining is iter_try_fold's projected helper input. Full successor pending.
 
 | PA | Assignment | Status |
 | --- | --- | --- |

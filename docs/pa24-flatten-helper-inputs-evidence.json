@@ -1,13 +1,16 @@
 {
  "schema": 1,
- "state": "locally qualified before clean freeze; immutable original observation and full successor pending",
+ "state": "clean frozen candidate clears FlattenCompat::iter_fold on pinned original; first remaining iter_try_fold; full successor pending",
  "compiler": {
   "managed_development_cli_sha256": "a08ab1a46475334d493514fa30ce2d2717f8c8aa6a382638f0239ce68221499b",
   "production_change": "Opaque helper results map formal captures into the owning inference graph; one compatible declared callable clause supplies input equations through the existing Probe before projection readiness",
   "base_commit": "a152f3be5255b524639e3405df3c3820321c8939",
   "new_engine_or_cache_fields": false,
   "compiler_rust_hashes": 3907,
-  "immutable_pin": "pending clean checkpoint commit"
+  "sha256": "a08ab1a46475334d493514fa30ce2d2717f8c8aa6a382638f0239ce68221499b",
+  "source_commit": "ee8c11abbdcc0105c2ccc8bf742384ba6dbcf0fe",
+  "producer": "obj/parallel/flatten-helper-inputs/candidate-dev-fast/producer.json",
+  "empty_tracked_patch": true
  },
  "contracts": {
   "independent": 52,
@@ -209,5 +212,96 @@
   "codegen_only": 5,
   "object_controls": 89,
   "declared_empty_objects": 77
+ },
+ "measurement": {
+  "plan": "obj/parallel/flatten-helper-inputs/measure2/plan.json",
+  "result": "obj/parallel/flatten-helper-inputs/measure2/passed.json",
+  "rows": 40,
+  "complete_output_equality": true,
+  "summary": {
+   "import-control": {
+    "seconds": {
+     "aa_ratio": 0.9330482910733611,
+     "paired_candidate_over_base": 1.1377114451451744
+    },
+    "cpu_seconds": {
+     "aa_ratio": 0.9334664891256107,
+     "paired_candidate_over_base": 1.13804947119052
+    }
+   },
+   "literal": {
+    "seconds": {
+     "aa_ratio": 1.222964497763394,
+     "paired_candidate_over_base": 1.034750687087189
+    },
+    "cpu_seconds": {
+     "aa_ratio": 1.2255615776413744,
+     "paired_candidate_over_base": 1.0361585917892255
+    }
+   },
+   "priority-native": {
+    "seconds": {
+     "aa_ratio": 1.0086656231781195,
+     "paired_candidate_over_base": 0.9772774312294438
+    },
+    "cpu_seconds": {
+     "aa_ratio": 1.0083697716531934,
+     "paired_candidate_over_base": 0.9755702615171521
+    }
+   },
+   "explicit": {
+    "seconds": {
+     "aa_ratio": 1.0009574967135613,
+     "paired_candidate_over_base": 0.9890564162619432
+    },
+    "cpu_seconds": {
+     "aa_ratio": 0.9994252423126139,
+     "paired_candidate_over_base": 0.9887557894333474
+    }
+   }
+  },
+  "first_attempt": "obj/parallel/flatten-helper-inputs/measure",
+  "first_attempt_stop": "explicit helper --emit-types output differs by one interned opaque instance",
+  "no_optimized_or_core_speed_claim": true
+ },
+ "original": {
+  "raw": "obj/parallel/flatten-helper-inputs/original",
+  "comparison": "obj/parallel/flatten-helper-inputs/original-comparison.json",
+  "total_seconds": 121.21314598002937,
+  "deadline_seconds": 120,
+  "records": 62,
+  "item_attempts": 14659,
+  "last_item": "item\tfunction\t9491\tfile 257:13060\tnode 259",
+  "last_item_line": 281,
+  "iter_fold_4718": {
+   "reached": true,
+   "failed": false,
+   "item": "item\tfunction\t4718\tfile 142:10360\tnode 1531",
+   "records": []
+  },
+  "previous_failures_absent_when_reached": [
+   "record\t1\tbodies\tfailed\tfunction `iter_fold`\tfile 142:10701\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved",
+   "record\t3\tbodies\tfailed\tfunction `iter_rfold`\tfile 142:12854\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved",
+   "record\t6\tbodies\tfailed\tfunction `fold`\tfile 142:16590\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved",
+   "record\t8\tbodies\tfailed\tfunction `rfold`\tfile 142:19353\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved",
+   "record\t10\tbodies\tfailed\tfunction `fold`\tfile 142:25751\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved",
+   "record\t12\tbodies\tfailed\tfunction `rfold`\tfile 142:27353\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+  ],
+  "new_failures_in_previously_passing_reached_bodies": 0,
+  "first_failure": {
+   "item": "item\tfunction\t4720\tfile 142:11329\tnode 1698",
+   "record": "record\t1\tbodies\tfailed\tfunction `iter_try_fold`\tfile 142:11801\t-\tassociated type projection requires normalization",
+   "source": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/iter/adapters/flatten.rs",
+   "line": 431
+  },
+  "progress_sha256": "9eb0304af922a286599a69f0622e69663091bc45afaed7dac1c7ec8feda3d9ee",
+  "postcheck": {
+   "source_hashes": 722,
+   "opened": 375,
+   "config_bindings": 6,
+   "rust_hashes": 3907
+  },
+  "complete_census": false,
+  "artifact": false
  }
 }

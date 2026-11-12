@@ -28,7 +28,8 @@ lifetime rejection. Explicit twins pass and reject with an actual hidden-lifetim
 error. Two ordinary native inputs with nominal or `Self::Item` impl where-clauses
 stop at the existing callable-output conformance gate before the helper call.
 Their bytes remain serialized positives in the packet's pending.json. No valid
-source is reclassified as a language rejection.
+source is reclassified as a language rejection. The 623 baseline wrongly accepted
+the explicit escaping-borrow twin; the candidate rejects it, agreeing with Rust.
 
 Focused receipt1794465771008351229 passes three exact tests/three targets in
 33.57s with full formatting, architecture and strict selected production/CLI/
@@ -66,5 +67,31 @@ outcomes were declared before execution; Rust and both CLI/CPPGM objects are the
 empty, and the 623 baseline rejects the inferred form. PA31 counterparts are unchanged.
 
 Upstream, maintainer harness and layout checks pass.
+
+Clean sourceee8c11abb freezes CLIa08ab1a4 with3907 Rust hashes and an empty
+tracked patch. Forty exclusive A/A plus ABBA accepting observations preserve
+complete outputs against preceding623 for the import, capture-free source try,
+priority-graph and explicit-helper library LowIR controls. Wall ratios
+1.138/1.035/.977/.989 (CPU1.138/1.036/.976/.989) against A/A.933/1.223/1.009/1.001
+are dominated by20-70ms process noise; no optimized speed, neutrality or
+original-core throughput is claimed. A first attempt stopped on its own
+output-equality guard: explicit helper type inspection gains one interned opaque
+instance before existing entries, shifting later identities. Acceptance and all
+published references are unchanged; that attempt's raw outputs are retained.
+
+The unchanged120s original observer ends at its deadline after121.213146s with
+62 partial records and14,659 attempts; last9491, alloc/mod.rs257:13060, line281.
+FlattenCompat::iter_fold4718/body142:10360 is reached without a record, as are
+iter_rfold and the four Flatten/FlatMap fold/rfold callers, alongside all fifteen
+earlier required bodies. No new failure appears among previously passing reached
+bodies. The first remaining is iter_try_fold4720/body142:11329, error142:11801,
+flatten.rs:431: an associated type projection requires normalization at
+`self.iter.try_fold(acc, flatten(&mut self.frontiter, &mut fold))?`. The helper's
+first input `&mut Option<T::IntoIter>` must wait for T from the parent callable
+bound before normalizing through `I::Item: IntoIterator<IntoIter = U>`.
+Postcheck verifies722 source hashes,375 opens, six configuration bindings,3907
+current/immutable Rust hashes and unchanged profile/limits. ProgressSHA
+9eb0304af922a286599a69f0622e69663091bc45afaed7dac1c7ec8feda3d9ee.
+This is neither a complete census nor a core/alloc/std artifact.
 
 The [machine record](pa24-flatten-helper-inputs-evidence.json) binds the raw checkpoints.
