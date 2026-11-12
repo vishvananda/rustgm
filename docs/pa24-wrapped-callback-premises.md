@@ -82,14 +82,33 @@ complete fresh-process transport tests in59.61s, including strict selected lint.
 The private harness rerun and full successor remain for CI; its earlier fixed
 251s compilation timeout is not retried locally or converted into a pass.
 
-Current compiler SHAe8ca58dbc0bc0baab5dbf5c883dffd389d85a213f768445b6ff77d8e5747820f
-has the local evidence above. A new immutable original-core observation has not
-yet run. The last original6c observation still ends at its unchanged120s deadline;
-its first failure is ByRefSized::fold134:1322. No original core, alloc or std
-artifact exists. Freeze this checkpoint, compare accepting immutable controls,
-then repeat the unchanged observer and verify all original/configuration bindings.
-Keep stable5d until a full successor qualifies, current6c for comparison and
-optimized21f for its retained qualification. Intermediate81 is absent.
+Immutable CLIe8ca58dbc0bc0baab5dbf5c883dffd389d85a213f768445b6ff77d8e5747820f
+binds clean semantic source cf75c3f61e718dfcb0878f71a69577ecd7dbb0b5,3907 Rust
+hashes and an empty tracked patch. Thirty exclusive A/A+twoABBA accepting-control
+observations retain complete output equality versus6c. No accepting baseline
+exists for the newly accepted implicit forms; the width/noise controls measure
+that changed path. Raw noisy ratios remain in the machine record, without an
+optimized, neutrality or original-core speed claim.
+
+The unchanged120s original observation ends121.563414s with61 partial failure
+records and13,261 item attempts, last function6964,file203:1097,line44 in
+fmt/builders.rs. It reaches ByRefSized::fold4429/body134:1245 and
+rfold4435/body134:2178 without their failure records. The five previous ArrayChunks
+bodies and four earlier regressions are also reached without those records.
+Forty-four prior failure records are absent among reached bodies; no new failure
+occurs among previously passing reached6c bodies. These are incomplete observations,
+not a completed census or throughput measurement.
+
+First remaining is `filter_try_fold`, iter/adapters/filter.rs140:3088,line86,
+"this typed capture use is not implemented". Its attempted body is function4600,
+file140:3018. Postcheck1794451995494437060 verifies722 original hashes,375 opens,
+six configuration bindings, all3907 current/immutable Rust hashes and the unchanged
+profile/limits. ProgressSHA8bbdcf63f52c70ff87547e5a4b0c664d3319d71ab5658df44185134e2add06dc.
+The deadline remains an infrastructure failure. No original core, alloc or std
+artifact exists. Publish this checkpoint and start one full successor after a
+fresh active-full check; reduce the actual typed capture failure next. Keep
+stable5d until full qualification,6c for accepting comparisons and optimized21f
+for retained optimized work. Intermediate81 is absent.
 
 The [machine record](pa24-wrapped-callback-premises-evidence.json) binds raw
 observations under Bobj/parallel/by-ref-fold. All earlier pending requirements

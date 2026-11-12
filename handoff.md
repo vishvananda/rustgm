@@ -33,11 +33,21 @@ invariants BOTH PASS. Four expecteddiagnostics repaired (including2cases in the
 privatepacket); all22declarationcontrols/independentE0277/E0599 and2fresh-linktests
 checked. Privateharness rerun/fullsuccessor PENDINGCI; no blindretry251scompile.
 
-Upstream/harness/tidy all PASS; old reference hashes unchanged.
-NEXT: commit/freeze exactsource; immutable accepting A/A+
-ABBA; NEWUNCHANGED120s originalobserver+postcheck. No currentoriginalobservation
-ofe8yet; latest6c stillByRefSized::fold134:1322. No core/alloc/stdartifact. Then
-publish+ONEfullafterfreshnoactivefullcheck. Keep5d fullqualifiedbaseline,6c accepting
+Upstream128/Reference126/harness315/468roots13bins44stages/tidy all PASS.
+Sourcecf75c3f61e718dfcb0878f71a69577ecd7dbb0b5 committed clean; immutable
+by-ref-fold/candidate-dev-fast CLIe8 binds3907Rust/emptytrackedpatch. Thirty
+exclusive A/A+twoABBA accepting observations vs6c retain fulloutputequality;
+nooptimized/neutrality/core-speedclaim. Rawmeasure/ retains noise/slowervalues.
+UNCHANGED120s original ends121.563414s,61partialrecords/13261itemattempts,last
+fn6964/file203:1097,fmt/builders.rsline44. ByRef fold4429/body134:1245 andrfold
+4435/body134:2178 reachedwithNOrecords;5ArrayChunks+4regressions also clear.
+44oldfailure recordsabsentwhenreached; NOnewfailures amongpreviouslypassing
+reached6cbodies. Firstfilter_try_fold140:3088,line86, typedcaptureuseunsupported;
+attemptedfn4600/body140:3018. Postcheck1794451995494437060 verifies722/375/six/
+3907/current+immutable/profile/limits. ProgressSHA8bbdcf63f52c70ff87547e5a4b0c664d3319d71ab5658df44185134e2add06dc.
+Partialcounts NOTthroughput/fullcensus. No core/alloc/stdartifact.
+NEXT: publish+ONEfullafterfreshnoactivefullcheck, thenreduceactualfilter typed
+capture, ordinaryPA24/sourcePA31. No timeout/limitextension. Keep5d fullqualifiedbaseline,6c accepting
 comparison andoptimized21f; intermediate81absent. Preserve every older requirement.
 Singleworker/no newtrees/no storage/backend/limits changes; goalACTIVE.
 

@@ -1,10 +1,14 @@
 {
   "schema": 1,
-  "state": "locally qualified finite checkpoint; original observation and full successor pending",
+  "state": "Locally qualified checkpoint and unchanged original observation: ByRefSized fold/rfold reached without failure records; first remaining filter_try_fold typed capture; no original artifact.",
   "compiler": {
     "sha256": "e8ca58dbc0bc0baab5dbf5c883dffd389d85a213f768445b6ff77d8e5747820f",
     "raw_sources": "obj/parallel/by-ref-fold/review/passed.json",
-    "semantic_source_commit": "pending clean source checkpoint/pin"
+    "semantic_source_commit": "cf75c3f61e718dfcb0878f71a69577ecd7dbb0b5",
+    "immutable_binary": "B obj/parallel/by-ref-fold/candidate-dev-fast/rustgm",
+    "producer_json_sha256": "20145f7d380eb7cb4171f1b08e9f65e4649ad046d5a028c907f992ed1fe820e4",
+    "rust_source_bindings": 3907,
+    "tracked_patch_empty": true
   },
   "contracts": {
     "independent": 68,
@@ -346,7 +350,249 @@
     "raw_log": "obj/parallel/array-chunks-next/full-ci-43138039057.log"
   },
   "current_full_ci": "pending publication and fresh no-active-full check",
-  "original_core": "No new observation yet. Previous6c first failure ByRefSized::fold134:1322; original artifact absent.",
+  "original_core": {
+    "result": {
+      "infrastructure_failure": true,
+      "classification": "infrastructure/setup failure",
+      "observer_deadline_seconds": 120,
+      "progress_requested": true,
+      "lint_cap": "allow",
+      "source_contract_limits": {
+        "work": 14500624,
+        "attempted_bytes": 1073741824,
+        "retained_bytes": 67108864
+      },
+      "expected_cli_sha256": "e8ca58dbc0bc0baab5dbf5c883dffd389d85a213f768445b6ff77d8e5747820f",
+      "expected_cli_source": "explicit caller input",
+      "error": "original-core observer deadline",
+      "partial_progress": {
+        "analysis_only": true,
+        "complete_census": false,
+        "records": 61,
+        "last_item": "item\tfunction\t6964\tfile 203:1097\tnode 187"
+      },
+      "total_seconds": 121.5634144920623,
+      "raw_sha256": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "whole-core.openat": "0bbcef38b32d493dc8a3cc6401ada08f144c38a0d9b3daabb9ef6dd523de69af",
+        "progress.tsv": "8bbdcf63f52c70ff87547e5a4b0c664d3319d71ab5658df44185134e2add06dc"
+      }
+    },
+    "item_attempts": 13261,
+    "records": 61,
+    "verified_required_bodies": [
+      "item\tfunction\t4394\tfile 133:2216\tnode 161",
+      "item\tfunction\t4397\tfile 133:2695\tnode 278",
+      "item\tfunction\t4400\tfile 133:3607\tnode 356",
+      "item\tfunction\t4401\tfile 133:3850\tnode 432",
+      "item\tfunction\t4403\tfile 133:4795\tnode 493",
+      "item\tfunction\t4429\tfile 134:1245\tnode 153",
+      "item\tfunction\t4435\tfile 134:2178\tnode 310",
+      "item\tfunction\t4450\tfile 135:4894\tnode 555",
+      "item\tfunction\t4739\tfile 142:17593\tnode 2529",
+      "item\tfunction\t4976\tfile 148:2530\tnode 203",
+      "item\tfunction\t6161\tfile 182:73724\tnode 1561"
+    ],
+    "new_failures_in_previously_passing_reached_baseline_bodies": [],
+    "previous_failures_absent_when_reached": [
+      {
+        "item": "item\tfunction\t4429\tfile 134:1245\tnode 153",
+        "record": "record\t1\tbodies\tfailed\tfunction `fold`\tfile 134:1322\t-\tfield access requires a known tuple or struct type"
+      },
+      {
+        "item": "item\tfunction\t4435\tfile 134:2178\tnode 310",
+        "record": "record\t2\tbodies\tfailed\tfunction `rfold`\tfile 134:2256\t-\tfield access requires a known tuple or struct type"
+      },
+      {
+        "item": "item\tfunction\t4561\tfile 139:3273\tnode 308",
+        "record": "record\t3\tbodies\tfailed\tfunction `try_fold`\tfile 139:3680\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t4563\tfile 139:3878\tnode 390",
+        "record": "record\t4\tbodies\tfailed\tfunction `fold`\tfile 139:4266\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t4570\tfile 139:6077\tnode 654",
+        "record": "record\t5\tbodies\tfailed\tfunction `try_rfold`\tfile 139:6562\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t4572\tfile 139:6752\tnode 738",
+        "record": "record\t6\tbodies\tfailed\tfunction `rfold`\tfile 139:7238\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t4606\tfile 140:4727\tnode 584",
+        "record": "record\t8\tbodies\tfailed\tfunction `count`\tfile 140:4980\t-\tno applicable method for this receiver"
+      },
+      {
+        "item": "item\tfunction\t4608\tfile 140:5426\tnode 634",
+        "record": "record\t9\tbodies\tfailed\tfunction `try_fold`\tfile 140:5436\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t4609\tfile 140:5644\tnode 668",
+        "record": "record\t10\tbodies\tfailed\tfunction `fold`\tfile 140:5654\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t4612\tfile 140:6181\tnode 759",
+        "record": "record\t11\tbodies\tfailed\tfunction `try_rfold`\tfile 140:6191\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t4613\tfile 140:6401\tnode 793",
+        "record": "record\t12\tbodies\tfailed\tfunction `rfold`\tfile 140:6411\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t4644\tfile 141:4495\tnode 598",
+        "record": "record\t15\tbodies\tfailed\tfunction `try_fold`\tfile 141:4505\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t4645\tfile 141:4709\tnode 632",
+        "record": "record\t16\tbodies\tfailed\tfunction `fold`\tfile 141:4719\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t4647\tfile 141:5000\tnode 734",
+        "record": "record\t17\tbodies\tfailed\tfunction `next_back`\tfile 141:5319\t-\treceiver has no inherent nominal method"
+      },
+      {
+        "item": "item\tfunction\t4649\tfile 141:5575\tnode 784",
+        "record": "record\t19\tbodies\tfailed\tfunction `try_rfold`\tfile 141:5585\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t4650\tfile 141:5791\tnode 818",
+        "record": "record\t20\tbodies\tfailed\tfunction `rfold`\tfile 141:5801\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t4879\tfile 144:2262\tnode 375",
+        "record": "record\t35\tbodies\tfailed\tfunction `try_fold`\tfile 144:2272\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t4880\tfile 144:2473\tnode 409",
+        "record": "record\t36\tbodies\tfailed\tfunction `fold`\tfile 144:2483\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t4883\tfile 144:3023\tnode 501",
+        "record": "record\t37\tbodies\tfailed\tfunction `try_rfold`\tfile 144:3033\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t4884\tfile 144:3236\tnode 535",
+        "record": "record\t38\tbodies\tfailed\tfunction `rfold`\tfile 144:3246\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t4930\tfile 146:3479\tnode 334",
+        "record": "record\t39\tbodies\tfailed\tfunction `try_fold`\tfile 146:3489\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t4931\tfile 146:3657\tnode 367",
+        "record": "record\t40\tbodies\tfailed\tfunction `fold`\tfile 146:3667\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t4935\tfile 146:4469\tnode 481",
+        "record": "record\t41\tbodies\tfailed\tfunction `try_rfold`\tfile 146:4479\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t4936\tfile 146:4649\tnode 514",
+        "record": "record\t42\tbodies\tfailed\tfunction `rfold`\tfile 146:4659\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t5114\tfile 153:1314\tnode 226",
+        "record": "record\t48\tbodies\tfailed\tfunction `next`\tfile 153:1764\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t5222\tfile 155:7469\tnode 1037",
+        "record": "record\t52\tbodies\tfailed\tfunction `spec_fold`\tfile 155:7522\t-\tfield access requires a known tuple or struct type"
+      },
+      {
+        "item": "item\tfunction\t5223\tfile 155:7666\tnode 1112",
+        "record": "record\t53\tbodies\tfailed\tfunction `spec_for_each`\tfile 155:8190\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t5679\tfile 173:14591\tnode 345",
+        "record": "record\t58\tbodies\tfailed\tfunction `rfind`\tfile 173:14865\t-\treceiver has no inherent nominal method"
+      },
+      {
+        "item": "item\tfunction\t5730\tfile 175:30941\tnode 691",
+        "record": "record\t61\tbodies\tfailed\tfunction `for_each`\tfile 175:31080\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t5751\tfile 175:77498\tnode 1416",
+        "record": "record\t62\tbodies\tfailed\tfunction `partition`\tfile 175:78008\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t5758\tfile 175:87288\tnode 1754",
+        "record": "record\t63\tbodies\tfailed\tfunction `try_for_each`\tfile 175:87434\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t5763\tfile 175:97287\tnode 2047",
+        "record": "record\t64\tbodies\tfailed\tfunction `all`\tfile 175:97544\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t5765\tfile 175:98935\tnode 2130",
+        "record": "record\t65\tbodies\tfailed\tfunction `any`\tfile 175:99193\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t5767\tfile 175:101385\tnode 2216",
+        "record": "record\t66\tbodies\tfailed\tfunction `find`\tfile 175:101659\t-\treceiver has no inherent nominal method"
+      },
+      {
+        "item": "item\tfunction\t5769\tfile 175:102366\tnode 2308",
+        "record": "record\t67\tbodies\tfailed\tfunction `find_map`\tfile 175:102657\t-\treceiver has no inherent nominal method"
+      },
+      {
+        "item": "item\tfunction\t5771\tfile 175:104642\tnode 2492",
+        "record": "record\t69\tbodies\tfailed\tfunction `try_find`\tfile 175:105245\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t5773\tfile 175:107302\tnode 2596",
+        "record": "record\t71\tbodies\tfailed\tfunction `position`\tfile 175:107826\t-\treceiver has no inherent nominal method"
+      },
+      {
+        "item": "item\tfunction\t5775\tfile 175:109384\tnode 2691",
+        "record": "record\t72\tbodies\tfailed\tfunction `rposition`\tfile 175:109893\t-\treceiver has no inherent nominal method"
+      },
+      {
+        "item": "item\tfunction\t5782\tfile 175:113676\tnode 2927",
+        "record": "record\t76\tbodies\tfailed\tfunction `max_by`\tfile 175:113862\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t5787\tfile 175:115591\tnode 3111",
+        "record": "record\t78\tbodies\tfailed\tfunction `min_by`\tfile 175:115777\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t5798\tfile 175:126182\tnode 3505",
+        "record": "record\t79\tbodies\tfailed\tfunction `cmp_by`\tfile 175:126548\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t5801\tfile 175:129538\tnode 3678",
+        "record": "record\t81\tbodies\tfailed\tfunction `partial_cmp_by`\tfile 175:129942\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t5804\tfile 175:131286\tnode 3815",
+        "record": "record\t83\tbodies\tfailed\tfunction `eq_by`\tfile 175:131593\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      },
+      {
+        "item": "item\tfunction\t5823\tfile 175:141075\tnode 4505",
+        "record": "record\t85\tbodies\tfailed\tfunction `iter_compare`\tfile 175:141515\t-\ttrait obligation requires an unambiguous matching assumption or implementation; diagnostic contract: call inputs remain unresolved"
+      }
+    ],
+    "first_failure": {
+      "item": "item\tfunction\t4600\tfile 140:3018\tnode 398",
+      "record": "record\t1\tbodies\tfailed\tfunction `filter_try_fold`\tfile 140:3088\t-\tthis typed capture use is not implemented",
+      "source": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/iter/adapters/filter.rs",
+      "line": 86
+    },
+    "last_item_source": "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/fmt/builders.rs",
+    "last_item_line": 44,
+    "progress_sha256": "8bbdcf63f52c70ff87547e5a4b0c664d3319d71ab5658df44185134e2add06dc",
+    "complete_census": false,
+    "artifact": false,
+    "partial_counts_are_not_throughput": true,
+    "source_hashes_verified": 722,
+    "opened_sources_verified": 375,
+    "config_bindings_verified": 6,
+    "compiler_rust_bindings_verified": 3907,
+    "postcheck_cleanup": "1794451995494437060",
+    "comparison": "obj/parallel/by-ref-fold/original-comparison.json",
+    "comparison_sha256": "164f20704fd9e40187ea5be34bfa258b01bcd6f767e64b175a263fbd8624a9d1"
+  },
   "assignment_activation": false,
   "unchanged": [
     "backend contract and bridge",
@@ -355,5 +601,46 @@
     "compiler limits",
     "old references and checksum files"
   ],
-  "raw_evidence_root": "obj/parallel/by-ref-fold"
+  "raw_evidence_root": "obj/parallel/by-ref-fold",
+  "calibrated_comparison": {
+    "rows": 30,
+    "complete_output_equality": true,
+    "summary": {
+      "import-control": {
+        "seconds": {
+          "aa_ratio": 0.658121516665185,
+          "paired_candidate_over_base": 1.0173726441364193
+        },
+        "cpu_seconds": {
+          "aa_ratio": 0.6787137650304867,
+          "paired_candidate_over_base": 1.0166178289333148
+        }
+      },
+      "plain-explicit-factory": {
+        "seconds": {
+          "aa_ratio": 0.9676887453730841,
+          "paired_candidate_over_base": 1.0045531507304186
+        },
+        "cpu_seconds": {
+          "aa_ratio": 0.9676937640831451,
+          "paired_candidate_over_base": 1.004476370981325
+        }
+      },
+      "priority-native": {
+        "seconds": {
+          "aa_ratio": 1.1296774939619587,
+          "paired_candidate_over_base": 0.9192701515214757
+        },
+        "cpu_seconds": {
+          "aa_ratio": 1.1281718476215252,
+          "paired_candidate_over_base": 0.9189343561405917
+        }
+      }
+    },
+    "no_optimized_or_core_speed_claim": true,
+    "baseline_sha256": "6c0853071ccf7675c2f6c919eea99414c901f874ccb925279da1e0cc0defa620",
+    "candidate_sha256": "e8ca58dbc0bc0baab5dbf5c883dffd389d85a213f768445b6ff77d8e5747820f",
+    "path": "obj/parallel/by-ref-fold/measure",
+    "exclusive": true
+  }
 }

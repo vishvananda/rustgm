@@ -1,14 +1,22 @@
 # Library build blocker tracker
 
 Current [wrapped callback-premise checkpoint](pa24-wrapped-callback-premises.md),
-CLIe8ca58db, qualifies55 complete outcomes plus four source typing outcomes from68
-independent contracts. Source native order23/1234,26 new PA24 text cases, unchanged
-old outputs and bounded width/noise checks pass. Thirteen accepting artifacts
-remain required. Preceding full43138039057 fails only diagnostic expectations in
-one private and two linking tests; four exact expectations are repaired, with22
-CLI declaration controls and both linking tests checked. Full successor and the
-new unchanged120s original observation remain pending. Last original6c still first
-fails ByRefSized::fold134:1322. No original core/alloc/std artifact exists.
+sourcecf75c3f61/immutableCLIe8ca58db, reaches ByRefSized fold/rfold and all nine
+previous ArrayChunks/regression bodies without their failure records. The unchanged
+120s original observation ends121.563414s with61 partial records/13,261 attempts,
+lastfn6964,fmt/builders.rs203:1097,line44. No new failure occurs among previously
+passing reached6c bodies;44 prior records are absent when reached. First remaining:
+filter_try_fold, iter/adapters/filter.rs140:3088,line86, "this typed capture use is
+not implemented". All722/375opens/sixbindings/current+immutable3907/profile/limits
+verify unchanged. No complete census, throughput or original library artifact.
+
+Finite qualification:55 complete outcomes plus four source typing outcomes from68
+independent contracts; source native23/1234,26 new PA24 text cases, unchanged old
+outputs and bounded width/noise checks pass. Thirteen accepting artifacts remain
+required. Preceding full43138039057 fails diagnostic expectations in one private
+and two linking tests; four exact expectations are repaired, with22 CLI declaration
+controls and both linking tests checked. Publish once and start one full successor
+after a fresh active-full check; reduce the actual typed capture next.
 
 The current [projected callback-result checkpoint](pa24-projected-callback-results.md),
 sourced1980b325/immutableCLI6c085307, reaches all five prior ArrayChunks failure
