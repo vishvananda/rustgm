@@ -1025,3 +1025,15 @@ use of the moved right operand (E0382). A maintainer integration test checks
 them through the CLI and prepared lowering. Rest, array, struct and tuple
 struct assignees are recorded gaps, not graded cases. There is no graded
 manifest.
+
+`spec/branch-unsizing/` freezes fourteen declared no_core reductions of core's
+`Split::as_slice` (`if self.finished { &[] } else { &self.v }`) and
+`SplitInclusive::next_back` branches. With an expected `&[T]`, an empty array
+unsizes, `&&[T]` dereferences and two array lengths share the annotation.
+Without one, an earlier `&[_; N]` unsizes to a later `&[T]` in `if`, `match`
+and else-if chains, including after an earlier `&mut` array has become shared.
+Typing rejects two array lengths with no expectation, a shared array against a
+`&mut [T]`, and a `&&[T]` against an earlier array (E0308). A maintainer
+integration test checks them through the CLI and prepared lowering, and an
+ignored native test runs four ordinary-mode programs. There is no graded
+manifest.

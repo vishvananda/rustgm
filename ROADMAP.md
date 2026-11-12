@@ -197,6 +197,12 @@ Seventeen source-core reductions agree with rustc. Rest, array, struct and
 tuple struct assignees fail closed. A clean candidate observation clears
 `bidirectional_merge`; the first remaining failure is `as_underlying`.
 
+The [branch unsizing checkpoint](docs/pa31-branch-unsizing.md) gives `if` and
+`match` branches one reference type, as rustc's `CoerceMany` does. An expected
+`&[T]` is the common type. Without an expectation, an earlier `&[_; N]` unsizes
+to a later `&[T]`. Core's `Split::as_slice` and `SplitInclusive::next_back`
+need this. Fourteen source-core reductions agree with rustc.
+
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage
 limit controls, pass text, independent Rust and native checks with frozen a08ab1a4.

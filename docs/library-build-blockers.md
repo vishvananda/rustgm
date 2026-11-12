@@ -1,5 +1,16 @@
 # Library build blocker tracker
 
+The [branch unsizing checkpoint](pa31-branch-unsizing.md) gives `if` and
+`match` branches one reference type, as rustc's `CoerceMany` does. Core's
+`Split::as_slice` 7874 (`slice/iter.rs:427`) returns
+`if self.finished { &[] } else { &self.v }` as `&'a [T]`, and
+`SplitInclusive::next_back` 7900 (`slice/iter.rs:646`) binds the same choice
+with no annotation. An expected slice reference is now the common type. Without
+an expectation, an earlier array referent unsizes to a later slice referent.
+Fourteen source-core reductions, four native programs and call-linear work
+qualify the fix. Exploratory pin ac71236d recorded no failure in 13,606
+attempts, but stopped at item 7598 under load, before these bodies.
+
 The [destructuring assignment checkpoint](pa31-destructuring-assignment.md)
 implements tuple and `_` assignees. Core's `bidirectional_merge` assigns
 `(left, right, dst) = merge_up(left, right, dst, is_less)`, and core's integer

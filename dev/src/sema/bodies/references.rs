@@ -223,14 +223,34 @@ impl Checker<'_> {
             self.head(node, b)?,
             Some(Constructor::Reference { mutable: true, .. })
         );
-        let (actual, expected) = if ad > bd || (ad == bd && a_mutable && !b_mutable) {
-            (a, b)
-        } else {
-            (b, a)
-        };
+        // rustc first coerces the later operand to the earlier one. When that
+        // fails it coerces the earlier one to the later: an earlier array
+        // referent unsizes to a later slice of the same mutability.
+        let earlier_array =
+            ad == bd && a_mutable == b_mutable && self.array_slice_referents(node, a, b)?;
+        let (actual, expected) =
+            if ad > bd || (ad == bd && a_mutable && !b_mutable) || earlier_array {
+                (a, b)
+            } else {
+                (b, a)
+            };
         let (converted, _, _) = self.reference_conversion(node, actual, expected, false)?;
         self.callable_shape(node, converted, expected)?;
         self.inferred_regions(node, expected)
+    }
+    /// Whether `array` refers to an array and `slice` to a slice.
+    fn array_slice_referents(
+        &mut self,
+        node: NodeId,
+        array: TermId,
+        slice: TermId,
+    ) -> Result<bool, Error> {
+        let array = self.child(node, array, 0)?;
+        let slice = self.child(node, slice, 0)?;
+        Ok(matches!(
+            self.head(node, array)?,
+            Some(Constructor::Array(_) | Constructor::ArrayTerm(_) | Constructor::ArrayInfer(_))
+        ) && self.head(node, slice)? == Some(Constructor::Slice))
     }
     fn reference_conversion(
         &mut self,

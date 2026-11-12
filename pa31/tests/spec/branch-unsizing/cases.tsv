@@ -1,0 +1,14 @@
+pa31/tests/spec/branch-unsizing/core-as-slice.rs	0
+pa31/tests/spec/branch-unsizing/core-next-back.rs	0
+pa31/tests/spec/branch-unsizing/ret-expected.rs	0
+pa31/tests/spec/branch-unsizing/let-annotated.rs	0
+pa31/tests/spec/branch-unsizing/lub-later.rs	0
+pa31/tests/spec/branch-unsizing/lub-earlier.rs	0
+pa31/tests/spec/branch-unsizing/match-lub.rs	0
+pa31/tests/spec/branch-unsizing/three-arms.rs	0
+pa31/tests/spec/branch-unsizing/else-if.rs	0
+pa31/tests/spec/branch-unsizing/noop-earlier.rs	0
+pa31/tests/spec/branch-unsizing/adjusted-earlier.rs	0
+pa31/tests/spec/branch-unsizing/lub-arrays.rs	1
+pa31/tests/spec/branch-unsizing/mut-slice-later.rs	1
+pa31/tests/spec/branch-unsizing/lub-deref.rs	1

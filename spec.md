@@ -1325,6 +1325,15 @@ into it, from left to right. `_` and unread fields stay in the right
 operand's place. Rest, array, struct and tuple struct assignees fail closed.
 See the [destructuring assignment checkpoint](docs/pa31-destructuring-assignment.md).
 
+An `if` or `match` gives its branches one type, as rustc's `CoerceMany` does.
+An expected reference to a slice, a `dyn` type or a nominal storage tail is the
+common type, and each branch coerces to it. Without an expectation, branch
+types join in order. A later reference coerces to the earlier one, unless
+reference depth or mutability chooses the other direction. Between two
+references of the same depth and mutability, an earlier array referent unsizes
+to a later slice referent. Other earlier-to-later unsizings fail closed. See the
+[branch unsizing checkpoint](docs/pa31-branch-unsizing.md).
+
 The bounded sizing profile requires actual sizing identities, complete headers
 and deny-explicit-impl restrictions before retaining fundamental, specialization
 or coinductive markers; those markers grant no general implementation or cycle

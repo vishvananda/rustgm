@@ -42,7 +42,8 @@ impl Pending {
 
 impl Checker<'_> {
     /// A declared DST result is the common type before joining differently
-    /// sized branch operands. Ordinary joins retain their existing inference.
+    /// sized branch operands, as rustc coerces each branch to a known
+    /// expectation. Ordinary joins retain their existing inference.
     pub(super) fn contextual_unsizing_result(
         &mut self,
         node: NodeId,
@@ -57,17 +58,16 @@ impl Checker<'_> {
             return Ok(Some(expected));
         }
         let mut term = self.child(node, expected, 0)?;
-        let mut nominal = false;
         loop {
             self.state.reference_steps += 1;
             if self.state.reference_steps > 1_000_000 {
                 return Err(self.error(node, "unsizing context work budget exceeded"));
             }
             match self.head(node, term)? {
-                Some(Constructor::Dynamic { .. }) => return Ok(Some(expected)),
-                Some(Constructor::Slice) => return Ok(nominal.then_some(expected)),
+                Some(Constructor::Dynamic { .. } | Constructor::Slice) => {
+                    return Ok(Some(expected));
+                }
                 Some(Constructor::Adt(item, _) | Constructor::AdtArgs(item, _)) => {
-                    nominal = true;
                     let slot = self
                         .facts
                         .unsizing_rules

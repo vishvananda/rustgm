@@ -5,6 +5,8 @@ mod aggregate_bounds;
 mod aggregate_layouts;
 #[path = "../../borrowed_receivers.rs"]
 mod borrowed_receivers;
+#[path = "../../branch_unsizing.rs"]
+mod branch_unsizing;
 #[path = "../../combined_frontend.rs"]
 mod combined_frontend;
 #[path = "../../constructor_promotions.rs"]

@@ -1,0 +1,136 @@
+{
+ "schema": 1,
+ "declared": "2026-11-12, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run of each batch (obj/parallel/branch-unsize/core/declared.json, batches 1-3). Each case's first line records its prefix.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "base": "clean candidate 2ddb3a67 (83906f0ac)",
+ "declaration_agreement": "13/14 declared outcomes agree with rustc; adjusted-earlier.rs was declared reject (E0308) and rustc accepts it. Its rustc outcome is the oracle.",
+ "cases": {
+  "core-as-slice.rs": {
+   "sha256": "63880ed7c0359212168cb4803a6265f9881d0e77dcdb17e8e16c830191c79051",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "core form: if s.finished { &[] } else { &s.v } returns &'a [T]; &[] unsizes and &s.v derefs to the expected type",
+   "batch": 1,
+   "rustgm_base": "reject: 16492: incompatible types",
+   "rustgm_exploratory_ac71236d": "accept"
+  },
+  "core-next-back.rs": {
+   "sha256": "8079df60204d434b54f35da8393f51f7f75ed3af58fcf9e3818fa05a7bf41398",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "core form: let remainder = if e { &[] } else { tail(v) } with tail returning &'a [T]",
+   "batch": 1,
+   "rustgm_base": "reject: 16500: incompatible types",
+   "rustgm_exploratory_ac71236d": "accept"
+  },
+  "ret-expected.rs": {
+   "sha256": "30a9fc5abbd412ffebee47762a6febefdfcfc119f505f7d6a8c4a82df2737948",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "if c { &[] } else { v } with an expected &'a [T]",
+   "batch": 1,
+   "rustgm_base": "reject: 16424: incompatible types",
+   "rustgm_exploratory_ac71236d": "accept"
+  },
+  "let-annotated.rs": {
+   "sha256": "291240f5ea3eab25f3add154e3f82eef824a3d118eb6fb121cce08803e6d0361",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "let r: &[u8] = if c { &[1] } else { &[1, 2] }; both arrays unsize to the annotation",
+   "batch": 2,
+   "rustgm_base": "reject: 16415: incompatible types",
+   "rustgm_exploratory_ac71236d": "accept"
+  },
+  "lub-later.rs": {
+   "sha256": "605a559c89e55eaeb175648b342a927e9d869d8383f7319fe004baf728c1a817",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "let r = if c { &[] } else { v }; no expected type, so the earlier &[_; 0] branch unsizes to the later &[T]",
+   "batch": 1,
+   "rustgm_base": "reject: 16432: incompatible types",
+   "rustgm_exploratory_ac71236d": "accept"
+  },
+  "lub-earlier.rs": {
+   "sha256": "bd9acb66190ec2c1070f77182d364178b5f0bbe3a654579552a2041d1ad89667",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "let r = if c { v } else { &[] }; the later &[_; 0] coerces to the merged &[T]",
+   "batch": 1,
+   "rustgm_base": "accept",
+   "rustgm_exploratory_ac71236d": "accept"
+  },
+  "match-lub.rs": {
+   "sha256": "e71bee21028a09061304f8c77afb6e82df3cbc3defe0e35f11a132e0bb25f1d2",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "let r = match k { 0 => &[], _ => v }",
+   "batch": 1,
+   "rustgm_base": "reject: 16430: incompatible types",
+   "rustgm_exploratory_ac71236d": "accept"
+  },
+  "three-arms.rs": {
+   "sha256": "0f89642a22294711f8cc3846e7c5acc9034d38f31da54dd0a0411aa086263b1e",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "let r = match k { 0 => &[], 1 => v, _ => &[] }",
+   "batch": 2,
+   "rustgm_base": "reject: 16430: incompatible types",
+   "rustgm_exploratory_ac71236d": "accept"
+  },
+  "else-if.rs": {
+   "sha256": "8b84641120899a788164e6ec38680d6a0d7cf561040b025b4d9cd5ce0534651f",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "let r = if a { &[] } else if b { v } else { &[] }",
+   "batch": 2,
+   "rustgm_base": "reject: 16441: incompatible types",
+   "rustgm_exploratory_ac71236d": "accept"
+  },
+  "lub-arrays.rs": {
+   "sha256": "707ab09e754b7a756fbcc7af6f34d2587e5271c7cb7ef6d0bca05d394498adc4",
+   "declared": 1,
+   "rustc": "reject E0308",
+   "form": "E0308 expected: let r = if c { &[1u8] } else { &[1u8, 2] }; two array lengths have no least upper bound",
+   "batch": 1,
+   "rustgm_base": "reject: 16408: incompatible types",
+   "rustgm_exploratory_ac71236d": "reject at types: incompatible types"
+  },
+  "mut-slice-later.rs": {
+   "sha256": "9a035ff3473c76d13683975f6f4566505fc21ec96bbc6c57e57de672181bdd71",
+   "declared": 1,
+   "rustc": "reject E0308",
+   "form": "E0308 expected: let r = if c { &[] } else { v } with v: &mut [T]; neither direction coerces",
+   "batch": 2,
+   "rustgm_base": "reject: 16431: incompatible types",
+   "rustgm_exploratory_ac71236d": "reject at types: incompatible types"
+  },
+  "lub-deref.rs": {
+   "sha256": "1441bd0713391ff18778eda85a5a6860ea40f088f99c2e0142af5b32fba9bd5d",
+   "declared": 1,
+   "rustc": "reject E0308",
+   "form": "E0308 expected: let r = if c { &[] } else { &v } with v: &[T]; without an expectation &&[T] does not deref to the earlier type",
+   "batch": 2,
+   "rustgm_base": "reject: 16427: incompatible types",
+   "rustgm_exploratory_ac71236d": "reject at types: incompatible types"
+  },
+  "adjusted-earlier.rs": {
+   "sha256": "242086c7cc0b092fdfe2ce848a6d36ad3f420f0910965c2e24f64c957fa8bd9a",
+   "declared": 1,
+   "rustc": "accept",
+   "form": "E0308 expected: match k { 0 => &mut [1u8, 2], 1 => &[3u8, 4], _ => v }; arm 0 already took a &mut-to-& adjustment, so rustc will not coerce the earlier arms to the later &[u8]",
+   "batch": 3,
+   "rustgm_base": "reject: 16423: incompatible types",
+   "rustgm_exploratory_ac71236d": "accept"
+  },
+  "noop-earlier.rs": {
+   "sha256": "3a8db07ec2bc8bfb5fbc1513c259e1174e676ab9d3d74b7b6253345b0b99f6f1",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "control: match k { 0 => &[1u8, 2], 1 => &[3u8, 4], _ => v }; the earlier arms took no adjustment",
+   "batch": 3,
+   "rustgm_base": "reject: 16423: incompatible types",
+   "rustgm_exploratory_ac71236d": "accept"
+  }
+ }
+}

@@ -149,6 +149,21 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-12 branch unsizing update (supersedes the blocks below):**
+
+- The `as_slice` 7874 and `next_back` 7900 "incompatible types" failures have
+  a fix ([evidence](docs/pa31-branch-unsizing.md)). An expected `&[T]` is a
+  branch's common type, and an earlier `&[_; N]` unsizes to a later `&[T]`.
+  - Fourteen reductions are in `pa31/tests/spec/branch-unsizing`. The three
+    declared batches, including one wrong declaration (`adjusted-earlier`),
+    are in `obj/parallel/branch-unsize/core/declared.json`.
+  - Exploratory pin `obj/parallel/branch-unsize/wip1-dev-fast` (ac71236d)
+    recorded no failure in 13,606 attempts. It stopped at item 7598, before
+    7631, so core's two bodies are not yet observed.
+  - Remaining known core failures before them: `as_underlying` 7631 (bool
+    niche for `transmute::<ControlFlow<bool>, u8>`), and `partial_compare` 7660
+    and `compare` 7676 (const closures, "invalid inference identity").
+
 **2026-11-12 destructuring assignment update (supersedes the blocks below):**
 
 - The `bidirectional_merge` 7581 blocker is fixed
