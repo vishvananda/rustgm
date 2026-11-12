@@ -119,7 +119,7 @@
       "owner": "pa25",
       "title": "Typed constant machine and inspection",
       "implementation": "implemented",
-      "publication": "unpublished",
+      "publication": "released",
       "depends_on": [],
       "scope": "Ordinary const eligibility, bounded typed CFG execution and deterministic inspection for implemented closed values/queries. Open queries, symbolic memory and const closures have separate units.",
       "requirements": [
@@ -139,7 +139,8 @@
         "docs/pa25-selected-initializers.md",
         "docs/pa25-source-computation.md"
       ],
-      "manifest": "pa25/tests/units/const-machine.json"
+      "manifest": "pa25/tests/units/const-machine.json",
+      "release_evidence": "docs/pa25-const-machine-release.md"
     },
     {
       "id": "runtime-memory",

@@ -1,6 +1,7 @@
 # PA25 typed constant machine course corpus
 
-The const-machine component remains **unpublished**, and PA25 remains planned.
+The const-machine component is **released** ([release record](pa25-const-machine-release.md)),
+with four added limit controls; PA25 remains planned.
 Its complete declared candidate corpus is in
 [tests/units/const-machine.json](../pa25/tests/units/const-machine.json).
 This publishes a reviewable test contract; it does not release the component or

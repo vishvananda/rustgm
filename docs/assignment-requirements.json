@@ -26,7 +26,7 @@
         "docs/pa25-constants-view.md",
         "docs/pa25-anonymous-specialization.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "const-machine component released (docs/pa25-const-machine-release.md); whole PA25 unpublished",
       "units": [
         "const-machine"
       ]
@@ -49,7 +49,7 @@
       "evidence": [
         "docs/pa25-initializer-validation.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "const-machine component released (docs/pa25-const-machine-release.md); whole PA25 unpublished",
       "units": [
         "const-machine"
       ]
@@ -75,7 +75,7 @@
         "docs/pa25-selected-initializers.md",
         "docs/pa25-source-computation.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "finite const-machine profile released; open/conditional contracts unpublished under const-callables",
       "units": [
         "const-machine",
         "const-callables"
@@ -101,7 +101,7 @@
         "docs/pa25-pattern-readiness.md",
         "docs/pa25-rigid-patterns.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "finite const-machine profile released; open/conditional contracts unpublished under const-callables",
       "units": [
         "const-machine",
         "const-callables"
@@ -237,7 +237,7 @@
       "contract": "Deterministic constants inspection/count view",
       "implementation": "implemented_component",
       "implemented": "Entry-free checked graph, stable display identity/order, counts and explicit errors; qualified inspection controls",
-      "remaining": "Released complete manifest, references and assignment publication still absent",
+      "remaining": "Whole-PA25 assignment publication still absent",
       "source": [
         "dev/src/lower/constant_view"
       ],
@@ -248,7 +248,7 @@
       "evidence": [
         "docs/pa25-constants-view.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "const-machine component released (docs/pa25-const-machine-release.md); whole PA25 unpublished",
       "units": [
         "const-machine"
       ]

@@ -2242,6 +2242,86 @@
       "environment": {
         "RUSTC_BOOTSTRAP": "1"
       }
+    },
+    {
+      "path": "tests/spec/const-machine/limits/frames-unbounded.rs",
+      "source_sha256": "d7cd2c3710df40c50706988d9ea430b6787358d4c7141fbdc763f833c88e996a",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/limits/steps-bounded.rs",
+      "source_sha256": "59d7e6f7521c30bc41137a5e5aa3e4f800a58e843840735a4297eeb7571f7bc7",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/limits/frames-bounded.rs",
+      "source_sha256": "a6352563340b02cd7638b30ec15eff9df58dd10b4c0d3f17d9f414826f6a0682",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/limits/storage-bounded.rs",
+      "source_sha256": "e4803707e4ee3cd27cf23e4289f9dcda6fd0a049e9d74f01807449a92482d86b",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }

@@ -155,8 +155,15 @@ the passing receipts, not those attempts, qualify the current implementation.
 supersedes623 as the comparison baseline. The unchanged original observer clears
 iter_fold; first remaining is iter_try_fold4720 flatten.rs:431 (projected helper
 input `&mut Option<T::IntoIter>` needs T from the parent callable bound before
-normalizing). Step7 publishes this and dispatches one full successor. The text
+normalizing). Step7 published 0e74298f1 and dispatched full 43171710575. The text
 below describes the pre-commit state and is retained as history.
+
+**PA close-out:** const-machine is now **released**
+([record](docs/pa25-const-machine-release.md)); it is the plan's first component
+release. Its full-CI qualification is the successor after 43171710575, on the release
+commit. Next candidates follow docs/assignment-order.md: operator-kernel, then
+unsafe-places, c-abi and declarations. Each needs a declared unit manifest, reviewed
+oracles and release checks; their implementation evidence already exists.
 
 1. Inspect B's Git state and `handoff-state.json`; preserve the existing changes.
    The compiler and fixtures have not been committed or pushed.

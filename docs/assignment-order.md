@@ -125,7 +125,7 @@ scope, predecessor IDs and executable exit are in assignment-plan.json.
 | 3 | PA27 | Unsafe permission and native places (`unsafe-places`) | implemented | unpublished |
 | 4 | PA30 | Local C ABI and linkage (`c-abi`) | implemented | unpublished |
 | 5 | PA31 | Local compiler declarations and attribute authority (`source-declarations`) | partial | unpublished |
-| 6 | PA25 | Typed constant machine and inspection (`const-machine`) | implemented | unpublished |
+| 6 | PA25 | Typed constant machine and inspection (`const-machine`) | implemented | released |
 | 7 | PA28 | Runtime memory and scalar volatile kernels (`runtime-memory`) | implemented | unpublished |
 | 8 | PA28 | Core AtomicU32 protocol (`atomic-u32`) | implemented | unpublished |
 | 9 | PA26 | Core iteration and residual protocols (`iteration-kernel`) | implemented | unpublished |

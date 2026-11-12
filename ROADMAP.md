@@ -67,6 +67,11 @@ native7/9/1234 and call-linear bounded work. Six entire contracts remain require
 The unchanged original observer clears iter_fold and its five fold/rfold siblings;
 first remaining is iter_try_fold's projected helper input. Full successor pending.
 
+The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
+released work unit: 113 declared outcomes, including four new recursion/work/storage
+limit controls, pass text, independent Rust and native checks with frozen a08ab1a4.
+PA25 and every other parent assignment remain planned.
+
 | PA | Assignment | Status |
 | --- | --- | --- |
 | [1](pa1/README.md) | Source and tokens | implemented-draft |

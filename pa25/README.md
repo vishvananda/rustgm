@@ -65,7 +65,7 @@ Do not introduce rendered text as transport between compiler phases.
 
 ## Tool surface
 
-The unpublished [typed constant machine component](../docs/pa25-const-machine-course.md)
+The released [typed constant machine component](../docs/pa25-const-machine-release.md)
 now declares its own source/inspection/native corpus independently of whole-PA
 activation. Its explicit manifest is tests/units/const-machine.json; the parent
 assignment and all remaining requirements retain their planned status.
