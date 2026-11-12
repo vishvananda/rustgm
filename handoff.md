@@ -158,6 +158,27 @@ input `&mut Option<T::IntoIter>` needs T from the parent callable bound before
 normalizing). Step7 published 0e74298f1 and dispatched full 43171710575. The text
 below describes the pre-commit state and is retained as history.
 
+**Next core blocker (diagnosed, not implemented):** iter_try_fold4720. Reductions
+with declared Rust-valid outcomes are in `obj/parallel/try-helper-inputs/`
+(`findings.md`, `declared*.json`, `inputs2-4`). Even without any projected input,
+the helper fails whenever its own generic R occurs only in the opaque callable
+output (`impl FnMut(B,T)->R`); a concrete output or explicit helper arguments pass.
+`callables/output.rs::symbolic` exposes `<X as FnOnce<A>>::Output` only through
+`match_signature`, which needs a closure/fn signature and returns Mismatch for a
+declared opaque. `search/result_bounds.rs::derive_result` then sees an unresolved
+subject. Planned fix: an output counterpart to `results/opaque_bounds.rs::infer_inputs`
+using the unique indexed `templates.equalities(callable_output)` clause and the same
+InferredCaptures mapping, returning the declared output term so `symbolic` exposes
+it. This is forward normalization through the declaration, not inversion; the
+selector still proves the full bound. Then re-observe flatten.rs:431.
+An uncommitted experiment of exactly that (`infer-output-experiment.patch`, with
+TRACE prints) reaches `symbolic` and finds the unique Output clause. But relating it
+binds the helper's T, so `preserves_inputs` correctly refuses. The trait path then
+binds T, yet the goal stays Deferred on the output-only capture. The real fix must
+either export a Deferred trait decision's input equations so the output projection
+retries with settled inputs, or carry the caller's required output into
+`infer_inputs`. Sources were restored, and the managed CLI was rebuilt to exactly a08ab1a4.
+
 **PA close-out:** const-machine is now **released**
 ([record](docs/pa25-const-machine-release.md)); it is the plan's first component
 release. Its full-CI qualification is the successor after 43171710575, on the release
