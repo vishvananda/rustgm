@@ -149,6 +149,23 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-12 pinned method call update (supersedes the blocks below):**
+
+- The `SyncView::poll` 6928 and `resume` 6932 blocker is fixed
+  ([evidence](docs/pa43-pinned-method-calls.md)). Without the receiver
+  features, a source method call now discovers inherent owners along the
+  LegacyReceiver/Deref chain for names declared with smart receivers. The
+  chain's proof opens the caller's bound lifetimes.
+  - Twelve source-core reductions are in
+    `pa43/tests/spec/pinned-method-calls`. The history, including one
+    malformed declaration and the rejected wip1, is in
+    `obj/parallel/sync-view/core/declared.json`.
+  - Exploratory pin `obj/parallel/sync-view/wip2-dev-fast` (697c5c17) clears
+    both. The next first failure is `small_sort_network` 7571 at
+    slice/sort/shared/smallsort.rs:355 ("can't compare `*const T` with `*mut T`").
+  - The clean pins for this and the previous commit, and the pending
+    measurements, are not run.
+
 **2026-11-12 parameterized storage update (supersedes the blocks below):**
 
 - The `AtomicPtr::new` 6835 and `into_inner` 6842 blocker is fixed

@@ -175,6 +175,13 @@ closed boundary. Fifteen source-core reductions agree with rustc. An
 exploratory observation clears `new` and `into_inner`; the first remaining
 failure is `SyncView::poll`.
 
+The [pinned method call checkpoint](docs/pa43-pinned-method-calls.md) lets a
+source method call find an inherent method declared with a smart receiver such
+as `self: Pin<&mut Self>` through the legacy LegacyReceiver/Deref chain, as
+core's `SyncView::poll` needs. Twelve source-core reductions agree with rustc.
+An exploratory observation clears `poll` and `resume`; the first remaining
+failure is `small_sort_network`.
+
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage
 limit controls, pass text, independent Rust and native checks with frozen a08ab1a4.

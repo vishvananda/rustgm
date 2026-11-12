@@ -1,5 +1,7 @@
 //! Actual source receiver chains require both dereference and legacy permission.
 use crate::resolve as test_source;
+#[path = "smart_receivers/pinned_calls.rs"]
+mod pinned_calls;
 use rustgm::{lower, pipeline};
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 fn program(source: &str) -> TestResult<rustgm::lowir::program::Program> {

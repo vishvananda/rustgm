@@ -1,0 +1,12 @@
+pa43/tests/spec/pinned-method-calls/core-poll.rs	0
+pa43/tests/spec/pinned-method-calls/core-resume.rs	0
+pa43/tests/spec/pinned-method-calls/sized-poll.rs	0
+pa43/tests/spec/pinned-method-calls/free-generic.rs	0
+pa43/tests/spec/pinned-method-calls/free-concrete.rs	0
+pa43/tests/spec/pinned-method-calls/pin-ref.rs	0
+pa43/tests/spec/pinned-method-calls/shared-pin-named.rs	0
+pa43/tests/spec/pinned-method-calls/path-call.rs	0
+pa43/tests/spec/pinned-method-calls/mut-receiver.rs	0
+pa43/tests/spec/pinned-method-calls/missing.rs	1
+pa43/tests/spec/pinned-method-calls/unpinned.rs	1
+pa43/tests/spec/pinned-method-calls/two-owners.rs	1

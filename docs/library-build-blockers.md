@@ -1,5 +1,20 @@
 # Library build blocker tracker
 
+The [pinned method call checkpoint](pa43-pinned-method-calls.md) lets a source
+method call find an inherent method declared with a smart receiver through the
+legacy LegacyReceiver/Deref chain. Core's `SyncView::poll` and `resume` call
+`self.as_pin_mut()`, declared `self: Pin<&mut Self>`, on `Pin<&mut
+SyncView<T>>`. That chain ran only under `arbitrary_self_types`, and its proof
+misread the body's bound lifetimes. Twelve source-core reductions and
+call-linear work qualify the fix.
+
+Exploratory pin 697c5c17 clears `poll` 6928 and `resume` 6932, with no new
+reached failure. The unchanged 120s observer ends at 121.111s with 7 records,
+13,875 attempts and last item 8127, slice/iter.rs:2414, under external load of
+18–23. The first remaining failure is `small_sort_network` 7571 at
+slice/sort/shared/smallsort.rs:355 ("can't compare `*const T` with `*mut T`").
+No core artifact exists.
+
 The [parameterized storage checkpoint](pa31-parameterized-storage.md)
 normalizes a parameterized nominal's projected fields for a generic transmute,
 in a premise-free session. Core's `AtomicPtr::new` and `into_inner` transmute

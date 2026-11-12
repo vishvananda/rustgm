@@ -1,0 +1,123 @@
+{
+ "schema": 1,
+ "declared": "2026-11-12, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run (obj/parallel/sync-view/core/declared.json, batches 1-3). Each case's first line records its prefix: pa31/tests/spec/source-div/foundation.rs through its Deref trait, followed by a reduced Pin, LegacyReceiver and core/sync/sync_view.rs SyncView.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "cases": {
+  "core-poll.rs": {
+   "sha256": "bf0438a2db25f1525305bc38aea298fbb4520c3832670b01f41e2c670fa3fd18",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "core form: impl<T: Fut + ?Sized> Fut for SyncView<T> polls self.as_pin_mut()",
+   "batch": 1,
+   "rustgm_a202701f": 1,
+   "rustgm_exploratory_697c5c17": 0
+  },
+  "core-resume.rs": {
+   "sha256": "c43c818ef37fed7400a5098b69c19749e9855d286732dd5c87dda4b2bd14bc73",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "core form: G::resume(self.as_pin_mut(), arg) under G: Co<R> + ?Sized",
+   "batch": 1,
+   "rustgm_a202701f": 1,
+   "rustgm_exploratory_697c5c17": 0
+  },
+  "sized-poll.rs": {
+   "sha256": "5dd3c14554fc88ec9a5bdf3cc8af960db5c74b67a9ec6173d14ba66ec1111eca",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "the core form with a Sized inherent impl and T: Fut",
+   "batch": 1,
+   "rustgm_a202701f": 1,
+   "rustgm_exploratory_697c5c17": 0
+  },
+  "free-generic.rs": {
+   "sha256": "ac626057d8d51536da64803fe76e99097060b6a00699fe28971f7ed463cafc2b",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "a free function calls p.as_pin_mut() on Pin<&mut SyncView<T>> with T: ?Sized",
+   "batch": 1,
+   "rustgm_a202701f": 1,
+   "rustgm_exploratory_697c5c17": 0
+  },
+  "free-concrete.rs": {
+   "sha256": "914137a8f574e167946183324f51defac396fec4154b2a67873554d270896bbf",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "the same call on Pin<&mut SyncView<u8>>",
+   "batch": 1,
+   "rustgm_a202701f": 1,
+   "rustgm_exploratory_697c5c17": 0
+  },
+  "pin-ref.rs": {
+   "sha256": "86f603c00a49639ab6e36bd5074d5e43f047afdc3ebd9ae956d9e4d5210b5076",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "a Pin<&Self> receiver called on Pin<&SyncView<T>>",
+   "batch": 2,
+   "rustgm_a202701f": 1,
+   "rustgm_exploratory_697c5c17": 0
+  },
+  "shared-pin-named.rs": {
+   "sha256": "aae6c446aacd637e6c6a94076d56aba3a3c06ad8c55399ce8bdf91b9a8ceaeb4",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "shared-through-pin with the output lifetime named: a &self SyncView method reached through Pin's Deref beside the smart as_pin_mut",
+   "batch": 3,
+   "rustgm_a202701f": 0,
+   "rustgm_exploratory_697c5c17": 0
+  },
+  "path-call.rs": {
+   "sha256": "b30ea4e7627ca1abb8b824ba3ed9f7446e0cbfacd87643798842d9925cddf2de",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "control: the path call SyncView::as_pin_mut(p)",
+   "batch": 1,
+   "rustgm_a202701f": 0,
+   "rustgm_exploratory_697c5c17": 0
+  },
+  "mut-receiver.rs": {
+   "sha256": "5268d7b290daca26ff69749120f0c2e99f5ac8de4a95e7429073bfb0ea375226",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "control: an inherent &mut self method called on &mut SyncView<T>",
+   "batch": 1,
+   "rustgm_a202701f": 0,
+   "rustgm_exploratory_697c5c17": 0
+  },
+  "missing.rs": {
+   "sha256": "6d107a9dd3c70f834a561426ebb69251845485967c469bb958867d6e98f58a78",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "E0599",
+   "form": "E0599 expected: no method as_pin_ref exists",
+   "batch": 1,
+   "rustgm_a202701f": 1,
+   "rustgm_exploratory_697c5c17": 1
+  },
+  "unpinned.rs": {
+   "sha256": "49c976d6ca9539167f4b922b88cea5f6be4944c81a0bc73a6e506d96d07bb0ac",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "E0599",
+   "form": "E0599 expected: a Pin<&mut Self> method called on &mut SyncView<T> is not found",
+   "batch": 1,
+   "rustgm_a202701f": 1,
+   "rustgm_exploratory_697c5c17": 1
+  },
+  "two-owners.rs": {
+   "sha256": "f711f73f50761a394aefc8d617c0747f32df9185386d09e8d2612e0e5e280036",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "E0034",
+   "form": "E0034 expected: Pin and SyncView both declare a by-value Pin<&mut _> method of the same name, applicable at the first step",
+   "batch": 2,
+   "rustgm_a202701f": 1,
+   "rustgm_exploratory_697c5c17": 1
+  }
+ },
+ "excluded": {
+  "shared-through-pin.rs": "declared accept, but rustc rejects it with E0106 (ambiguous elided output lifetime); a declaration error, superseded by shared-pin-named.rs"
+ },
+ "rustgm_observations": "Exploratory CLI status before qualification (obj/parallel/sync-view/core/batch1.txt, batch1-wip2.txt, batch2.txt, batch3.txt). a202701f rejects all seven method-call positives with \"no applicable inherent method for this receiver\" and two-owners.rs with \"incompatible types\"; 697c5c17 (wip2) agrees 12/12. wip1 (e8653b43) reached discovery but failed every pinned call with \"missing lifetime argument\"."
+}

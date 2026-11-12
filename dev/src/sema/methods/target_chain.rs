@@ -27,20 +27,37 @@ pub(super) fn collect(
     found: &mut Found,
 ) -> Result<(), Error> {
     let level = arbitrary_self::level(report, key)?;
-    if level == Level::Legacy {
+    // Without the receiver features, rustc still assembles inherent members
+    // from each Deref step and matches their declared receiver against the
+    // outer one. Only a smart receiver can match there, and its owner follows
+    // genuine LegacyReceiver/Deref evidence.
+    if level == Level::Legacy
+        && (facts.source_bindings.is_none() || !facts.methods.smart_names.contains(&name))
+    {
         return Ok(());
     }
     let error = |message| Declarations::error(report, key, message);
-    let mut current = match context.resolved(&mut facts.types, term) {
+    let current = match context.resolved(&mut facts.types, term) {
         Ok(ty) => ty,
         Err(infer::Error::Unresolved) => return Ok(()),
         Err(e) => return Err(error(selection::inference(e))),
     };
+    // A body's receiver keeps the caller's lifetimes bound, which an
+    // implementation header would read as its own. Discovery opens them into
+    // fresh regions beyond the body frontier; none leaves this probe.
+    let mut opening = crate::types::substitute::Bound::open_regions(
+        facts.body_regions.probe_frontier().map_err(error)?,
+    )
+    .map_err(error)?;
+    let mut current = opening.apply(&mut facts.types, current).map_err(error)?;
+    let first = opening
+        .next_region()
+        .ok_or_else(|| error("receiver discovery lost its opened regions"))?;
     let mut visited = HashSet::default();
     // Discovery may select actual implementation headers. The unscoped proof
     // constructor only checks caller premises; it cannot traverse such headers.
     // No resulting region evidence authorizes a call or executable adjustment.
-    let mut proof = Proof::for_declaration(caller.environment.cloned(), 0, 1);
+    let mut proof = Proof::for_declaration(caller.environment.cloned(), 0, first);
     loop {
         if visited.contains(&current) {
             break;
@@ -79,7 +96,11 @@ pub(super) fn collect(
         };
         current = next;
     }
-    selection::account_probe(facts, proof.trait_selection_steps()).map_err(error)?;
+    selection::account_probe(
+        facts,
+        proof.trait_selection_steps().saturating_add(opening.steps),
+    )
+    .map_err(error)?;
     found.members.sort_unstable_by_key(|member| member.0);
     found.members.dedup();
     Ok(())

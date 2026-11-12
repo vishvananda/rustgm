@@ -1297,6 +1297,15 @@ when its transmuted storage reads those fields. This holds even after another
 body has published that form. See the
 [parameterized storage checkpoint](docs/pa31-parameterized-storage.md).
 
+Without the receiver features, a source method call still discovers inherent
+owners along the receiver's genuine LegacyReceiver/Deref chain when some
+inherent method of that name declares a validated smart receiver, such as
+core's `SyncView::as_pin_mut(self: Pin<&mut Self>)`. Matching uses the
+original outer receiver, as with the feature chains. The chain's proof opens
+the caller's bound lifetimes into fresh regions beyond the body frontier. It
+grants no adjustment, loan or region evidence. Other method names skip the
+chain. See the [pinned method call checkpoint](docs/pa43-pinned-method-calls.md).
+
 The bounded sizing profile requires actual sizing identities, complete headers
 and deny-explicit-impl restrictions before retaining fundamental, specialization
 or coinductive markers; those markers grant no general implementation or cycle

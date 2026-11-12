@@ -43,6 +43,29 @@ impl Checker<'_> {
         };
         if receiver.base != target && self.facts.source_bindings.is_some() {
             receiver.base = self.validate_smart_receiver(function, key, receiver.base, target)?;
+            let inherent = self
+                .facts
+                .associated
+                .owner(function.definition)
+                .and_then(|owner| self.facts.associated.get(owner))
+                .is_some_and(|owner| {
+                    matches!(
+                        owner.kind,
+                        OwnerKind::Impl {
+                            trait_type: None,
+                            ..
+                        }
+                    )
+                });
+            if let Some(definition) = self
+                .report
+                .resolution
+                .definitions
+                .get(function.definition.0 as usize)
+                .filter(|_| inherent)
+            {
+                self.facts.methods.smart_names.insert(definition.name);
+            }
         }
         if receiver.base != target {
             self.validate_distinct_receiver(function, key, receiver.base, target)?;
