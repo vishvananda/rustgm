@@ -5798,8 +5798,10 @@ that derives leave non-Copy is classified by selecting the library's `Copy`
 language trait under the body's assumptions. Like rustc's copy-modulo-regions
 query, this only classifies the capture. It retains no evidence or region
 equality, and absent or pending proof keeps the use a move. The body's source
-Copy requirements prove every actual copy again. Controls are in the
-[source Copy capture checkpoint](docs/pa24-source-copy-captures.md).
+Copy requirements prove every actual copy again. A repeated non-constant array
+operand uses the same classification for sema's early acceptance; the body's
+source Copy requirement for the repeat still proves the obligation. Controls
+are in the [source Copy capture checkpoint](docs/pa24-source-copy-captures.md).
 
 A canonical caller premise may bind an inference hole to its complete projected
 input type. Use the shared scoped worklist; collect comparisons between projection

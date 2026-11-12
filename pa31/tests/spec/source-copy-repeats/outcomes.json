@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "declared": "2026-11-12, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run (obj/parallel/repeat-copy/core/declared.json). The prefix is the source-copy-captures prefix, whose prelude history is in obj/parallel/step-size/core/declared.json.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "cases": {
+  "manual.rs": {
+   "sha256": "0d34a17b75f9d6e057e315ed4676a908e5fac92fd8287a092d6b9785b64e750a",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "manual"
+  },
+  "nonzero.rs": {
+   "sha256": "1c9baf669da903f7af982ce5fbad37cfad6d025584945f5c7e3740649ae86b63",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "nonzero"
+  },
+  "conditional.rs": {
+   "sha256": "1161b926b18befa9081e54fe5b83f5ae103ed52a2fe4901e17aa55b14bc59380",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "conditional"
+  },
+  "parameter-premise.rs": {
+   "sha256": "43a706d76c2e100897b4d393cab12027ec1ccae506d6103701619f7fd66d6b87",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "parameter-premise"
+  },
+  "const-length.rs": {
+   "sha256": "f325bcb38ffb3d828414ecbc09e7114fbc41ca72a7882b96dddbd66dc195cac7",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "const-length"
+  },
+  "call-length.rs": {
+   "sha256": "0ab90dd297cbe7d817eae31574de87cd8c562f8aec3d9a1f902bda027df7d2a7",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "call-length"
+  },
+  "length-one.rs": {
+   "sha256": "5f70646403bdf1d133b131df364c534c2817023aa65ac2fbe6975440253348eb",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "length-one"
+  },
+  "clone-only.rs": {
+   "sha256": "62d67fa875a78621b81824891e5250bf5bdc515069ee80891cf86b381d983ee3",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "clone-only"
+  },
+  "clone-premise.rs": {
+   "sha256": "742d65e987372ba7bf1b7767564f9aceeaae2416ac7dc05154186978e857c17f",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "clone-premise"
+  }
+ }
+}

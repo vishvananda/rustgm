@@ -1,0 +1,9 @@
+pa31/tests/spec/source-copy-repeats/manual.rs	0
+pa31/tests/spec/source-copy-repeats/nonzero.rs	0
+pa31/tests/spec/source-copy-repeats/conditional.rs	0
+pa31/tests/spec/source-copy-repeats/parameter-premise.rs	0
+pa31/tests/spec/source-copy-repeats/const-length.rs	0
+pa31/tests/spec/source-copy-repeats/call-length.rs	0
+pa31/tests/spec/source-copy-repeats/length-one.rs	0
+pa31/tests/spec/source-copy-repeats/clone-only.rs	1
+pa31/tests/spec/source-copy-repeats/clone-premise.rs	1

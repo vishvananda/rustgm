@@ -14,8 +14,14 @@ remaining failure is fold 5290 at zip.rs:275 (unresolved call inputs). Later,
 Copy, probably the same derive-only query in array repetition. Clean pin
 12358002 (source d0e926179) is byte-identical. Its unchanged observer ends at
 120.908s with 46 records, 14,613 attempts and last item 9415, task/wake.rs:681.
-It clears both bodies and adds no reached failure; the postcheck passes. No core
-artifact exists.
+It clears both bodies and adds no reached failure; the postcheck passes.
+
+The same source Copy probe now accepts a repeated array operand that is Copy
+only through a source impl, with nine declared reductions. Exploratory pin
+e18b4674 clears `DisplayBuffer::new` 5862, the four `float_to_*_common`
+helpers 7025–7029 and `fmt` 7054/7056, all repeating `MaybeUninit`, with no new
+reached failure. The first remaining failure is still fold 5290. The clean pin
+is pending. No core artifact exists.
 
 The [rigid candidate header checkpoint](pa20-rigid-candidate-headers.md)
 refutes a trait implementation header that would need a goal's rigid

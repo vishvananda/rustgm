@@ -1,4 +1,4 @@
-# Source Copy captures
+# Source Copy captures and repeats
 
 Pinned core's `StepBy` helpers `first_size` 5171 and `other_size` 5172
 (`step_by.rs:232/237`) failed with "quantified body requirement needs a
@@ -170,3 +170,66 @@ is likely the same derive-only query in array repetition.
 
 Partial counts make no throughput claim, and this is neither a complete census
 nor a core artifact.
+
+## Repeat operands
+
+The same derive-only query rejected `[x; N]` with N > 1 in sema
+(`aggregates.rs` `validate_repeat`) when `x` is Copy only through a source
+`impl Copy`. Core's `DisplayBuffer::new` 5862 (net/display_buffer.rs:14)
+repeats `MaybeUninit::uninit()` for a const generic `SIZE` and failed with
+"repeated array element must implement Copy". The body already reads each
+repeat operand's source Copy requirement (`copy_requirements.rs` `Repeat`), so
+only sema disagreed.
+
+- **Shared probe.** The selection above is now `Checker::source_copy_probe` in
+  `sema/bodies/bounds.rs`, beside the body's source Copy context. Capture
+  classification and `validate_repeat` both call it. A repeat whose element
+  the derives leave non-Copy now asks the probe for the element's `known` term.
+  A proved selection accepts. Anything else keeps the existing rejection.
+- rustc registers `Copy` for a repeated non-constant operand as an obligation.
+  Here the probe only decides early acceptance. The body's source Copy
+  requirement proves the obligation again with its debts, and it rejects with
+  the same message if that proof fails.
+
+Nine declared reductions, `pa31/tests/spec/source-copy-repeats/`, share the
+capture prefix (`obj/parallel/repeat-copy/core/declared.json`) and pass rustc
+1.98.0 9/9 (`outcomes.json`).
+
+| Case | Form | Rust | 12358002 |
+| --- | --- | --- | --- |
+| `manual` | `[UsizeInner(1); 4]` | accept | reject |
+| `nonzero` | `[s; 3]` for `s: NonZero<usize>` | accept | reject |
+| `conditional` | `[G(1usize); 3]` with `impl<T: Copy> Copy for G<T>` | accept | reject |
+| `parameter-premise` | `[x; 3]` for `x: G<T>` under `T: Copy` | accept | reject |
+| `const-length` | `[UsizeInner(0); N]` in a const fn, as `DisplayBuffer::new` | accept | reject |
+| `call-length` | `const-length` called from `main`, LowIR | accept | reject |
+| `length-one` | `[Owned(1); 1]`, no Copy needed | accept | accept |
+| `clone-only` | `[Owned(1); 3]` | E0277 | reject |
+| `clone-premise` | `[x; 3]` for `x: G<T>` under only `T: Clone` | E0277 | reject |
+
+Focused receipt 1794483519530720203 passes in 113.4s. It covers formatting, the
+architecture audit, strict Clippy for the closures, frontend and ownership suites
+and the CLI, PA18's complete text oracle with the dev-fast CLI, and six exact
+tests: both packet CLI tests, the two-form scaling test, the source capture-mode
+test, ordinary generic cleanup (including the ordinary non-Copy repeat
+rejection), and source-core callback formation.
+
+Bounded work for 8/32/128 repeat functions
+(`obj/parallel/repeat-copy/scaling-work.txt`) is 29702/30974/36062 inference,
+6054/6126/6414 canonical and 375 trait selections throughout, about 53
+inference and 3 canonical steps per repeat. The 128 unrelated Copy types again
+add a constant 384 inference and 3124 canonical steps.
+
+**Exploratory observation.** Pin `obj/parallel/repeat-copy/wip1-dev-fast`
+(e18b4674) carries the change before the test and fixture work. The unchanged
+120s observer ends at its deadline after 121.012s, with 39 partial records and
+14,578 attempts. The last item is 9351, task/poll.rs:148. Against clean
+12358002 it clears seven repeat bodies: `DisplayBuffer::new` 5862,
+`float_to_decimal_common_exact`/`_shortest` and
+`float_to_exponential_common_exact`/`_shortest` 7025–7029, and two `fmt`
+bodies, 7054 and 7056. All of them repeat `MaybeUninit`. No new failure appears
+among previously passing reached bodies. The first remaining failure is still
+`fold` 5290 at zip.rs:275.
+
+A clean pin, its unchanged observation with the postcheck, and measurement
+follow publication.

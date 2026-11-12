@@ -248,22 +248,33 @@ impl Checker<'_> {
         if constant {
             self.facts.constant_repeats.insert(self.key(node));
         }
-        if repeats
-            && !constant
-            && !self
+        if !repeats || constant {
+            return Ok(());
+        }
+        let mut copy = self
+            .state
+            .parameter_copies
+            .as_mut()
+            .unwrap_or(&mut self.facts.copies)
+            .demand(
+                &self.facts.types,
+                &self.facts.aggregates,
+                &self.facts.derives,
+                element,
+            )
+            .map_err(|e| self.error(node, e))?
+            .copy;
+        if !copy && self.facts.source_bindings.is_some() {
+            // The body's source Copy requirement for this repeat proves the
+            // selected implementation again, with its debts.
+            let term = self
                 .state
-                .parameter_copies
-                .as_mut()
-                .unwrap_or(&mut self.facts.copies)
-                .demand(
-                    &self.facts.types,
-                    &self.facts.aggregates,
-                    &self.facts.derives,
-                    element,
-                )
-                .map_err(|e| self.error(node, e))?
-                .copy
-        {
+                .infer
+                .known(&self.facts.types, element)
+                .map_err(|e| self.error(node, e))?;
+            copy = self.source_copy_probe(node, term)?;
+        }
+        if !copy {
             return Err(self.error(node, "repeated array element must implement Copy"));
         }
         Ok(())

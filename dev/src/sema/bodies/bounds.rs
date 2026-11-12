@@ -4,6 +4,7 @@ mod permissions;
 mod universal;
 mod unretained_scopes;
 use super::{Checker, DefId, Error, NodeId, TypeId};
+use crate::sema::traits::selection::{self, Caller, Selection};
 use crate::types::{
     Kind,
     infer::arguments::Argument,
@@ -232,6 +233,65 @@ impl Checker<'_> {
             },
         ));
         Ok(())
+    }
+    /// Derive selections cannot see a source `impl Copy`, so a source library
+    /// classifies a type the derives leave non-Copy with its own `Copy` trait.
+    /// Like rustc's copy-modulo-regions query, this only classifies a capture
+    /// or repeat operand. It retains no evidence or region equality. The
+    /// body's source Copy requirements prove every actual copy and repeat
+    /// again, with all their debts.
+    pub(super) fn source_copy_probe(
+        &mut self,
+        node: NodeId,
+        term: crate::types::infer::TermId,
+    ) -> Result<bool, Error> {
+        let Some(declaration) = crate::sema::compiler_items::copy_declaration(self.facts)
+            .map_err(|e| self.error(node, e))?
+        else {
+            return Ok(false);
+        };
+        let item = crate::types::ItemId(declaration.0);
+        let assumptions = self.trait_assumptions(node)?.unwrap_or_default();
+        if !selection::may_have_subject(
+            self.facts,
+            &mut self.state.infer,
+            item,
+            term,
+            Some(&assumptions),
+        )
+        .map_err(|e| self.error(node, e))?
+        {
+            return Ok(false);
+        }
+        let environment = self.trait_query_environment(node)?;
+        let first_region = self.trait_region_start(node)?;
+        let equalities = self.state.infer.region_equalities.len();
+        let goal =
+            crate::types::infer::predicates::Predicate::trait_application(term, item, Vec::new());
+        let selected = selection::select_available(
+            self.facts,
+            &mut self.state.infer,
+            &goal,
+            Caller {
+                assumptions: &assumptions,
+                environment: environment.as_ref(),
+                first_region,
+                retain_sized: false,
+                nesting: selection::Nesting::ROOT,
+                placeholders: None,
+            },
+            self.availability,
+        )
+        .map_err(|e| self.error(node, e))?;
+        self.state.infer.region_equalities.truncate(equalities);
+        match selected {
+            Selection::Proven(_) => Ok(true),
+            Selection::Absent | Selection::Deferred => Ok(false),
+            Selection::Refuted(refutation) => {
+                refutation.reject().map_err(|e| self.error(node, e))?;
+                Ok(false)
+            }
+        }
     }
     pub(super) fn body_shape(&mut self, node: NodeId, ty: TypeId) -> Result<Properties, Error> {
         if self.facts.types.contains_projected_sizes(ty) == Some(true) {

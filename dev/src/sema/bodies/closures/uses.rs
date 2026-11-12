@@ -9,7 +9,6 @@ use crate::{
         closures::captures::{Mode, PathId, Plan},
         closures::{AccessKind, AdjustedAccess},
         scalar,
-        traits::selection,
     },
     support::call_traits::CallTrait,
     syntax::ast::{List, Unary},
@@ -203,60 +202,7 @@ impl Checker<'_> {
         if derived || self.facts.source_bindings.is_none() {
             return Ok(derived);
         }
-        self.source_capture_copy(node, term)
-    }
-    /// Derive selections cannot see a source `impl Copy`, so a source library
-    /// classifies the remaining captures with its own `Copy` trait. Like
-    /// rustc's copy-modulo-regions query, this only classifies the capture.
-    /// It retains no evidence or region equality. The body's source Copy
-    /// requirements prove every actual copy again, with all their debts.
-    fn source_capture_copy(&mut self, node: NodeId, term: TermId) -> Result<bool, Error> {
-        let Some(declaration) = crate::sema::compiler_items::copy_declaration(self.facts)
-            .map_err(|e| self.error(node, e))?
-        else {
-            return Ok(false);
-        };
-        let item = crate::types::ItemId(declaration.0);
-        let assumptions = self.trait_assumptions(node)?.unwrap_or_default();
-        if !selection::may_have_subject(
-            self.facts,
-            &mut self.state.infer,
-            item,
-            term,
-            Some(&assumptions),
-        )
-        .map_err(|e| self.error(node, e))?
-        {
-            return Ok(false);
-        }
-        let environment = self.trait_query_environment(node)?;
-        let first_region = self.trait_region_start(node)?;
-        let equalities = self.state.infer.region_equalities.len();
-        let goal = infer::predicates::Predicate::trait_application(term, item, Vec::new());
-        let selected = selection::select_available(
-            self.facts,
-            &mut self.state.infer,
-            &goal,
-            selection::Caller {
-                assumptions: &assumptions,
-                environment: environment.as_ref(),
-                first_region,
-                retain_sized: false,
-                nesting: selection::Nesting::ROOT,
-                placeholders: None,
-            },
-            self.availability,
-        )
-        .map_err(|e| self.error(node, e))?;
-        self.state.infer.region_equalities.truncate(equalities);
-        match selected {
-            selection::Selection::Proven(_) => Ok(true),
-            selection::Selection::Absent | selection::Selection::Deferred => Ok(false),
-            selection::Selection::Refuted(refutation) => {
-                refutation.reject().map_err(|e| self.error(node, e))?;
-                Ok(false)
-            }
-        }
+        self.source_copy_probe(node, term)
     }
 }
 impl Collector<'_> {

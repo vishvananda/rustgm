@@ -928,3 +928,10 @@ two of them lower from a root `main`. Three captures that are not Copy reject
 (E0507). Each outcome was declared before its rustc 1.98.0 oracle. A
 maintainer integration test checks them through the CLI. There is no graded
 manifest.
+
+`spec/source-copy-repeats/` freezes nine declared no_core reductions of core's
+`DisplayBuffer::new` on the same prefix. A repeated operand that is Copy only
+through a source `impl Copy` is accepted, including a const generic length in a
+const fn, which also lowers from a root `main`. A length-one control accepts,
+and two Clone-only operands reject (E0277). The same maintainer test checks
+them through the CLI. There is no graded manifest.

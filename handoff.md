@@ -167,6 +167,10 @@ the passing receipts, not those attempts, qualify the current implementation.
   5290), the postcheck and an A/A plus ABBA measurement. It is now the
   comparison baseline. The 487e0881 and wip1 pins are retired; their producer
   evidence remains.
+- Follow-on: repeated array operands use the same probe
+  (`pa31/tests/spec/source-copy-repeats`, `obj/parallel/repeat-copy/`).
+  Exploratory pin e18b4674 clears `DisplayBuffer::new` 5862 and six
+  float-formatting bodies; the clean pin is pending.
 
 **2026-11-12 rigid-header update:**
 

@@ -101,7 +101,11 @@ closure in a source library copy a capture that is Copy only through a source
 declared source-core reductions agree with rustc. An exploratory observation
 clears first_size and other_size; the first remaining failure is zip fold, with
 unresolved call inputs. Clean pin 12358002 (source d0e926179) confirms this with
-46 records, and its measurement supports no speed claim either way.
+46 records, and its measurement supports no speed claim either way. The same
+probe now accepts a repeated array operand that is Copy only through a source
+impl. Nine declared reductions agree with rustc, and an exploratory observation
+clears `DisplayBuffer::new` and six float-formatting bodies that repeat
+`MaybeUninit`. Its clean pin is pending.
 
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage
