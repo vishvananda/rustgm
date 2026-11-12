@@ -122,8 +122,33 @@ The first remaining failure is `max` at iterator.rs:3255, followed by `min`,
 `compare`) to `max_by`'s ordinary `FnMut` bound, behind the nested trait path
 formatting fence.
 
-A clean pin, its unchanged observation with the postcheck, and measurement
-follow publication.
+**Clean pin.** Pin 716cbe11 is built from clean source be48c2501, with 3914
+Rust hashes and an empty patch (`obj/parallel/item-conditions/candidate-dev-fast`).
+Its source differs from wip2 only in the rustfmt wrapping of one match guard,
+so only source positions change its binary. Its unchanged observation ends at
+its deadline after 120.876s, with 32 partial records and 15,395 attempts. The
+last item is 10644, x86/avx2.rs:389. Against clean eacd5629 it clears all ten
+bodies above, with no new failure among previously passing reached bodies. The
+first remaining failure is `max` 5777 at iterator.rs:3255. The postcheck
+verifies all 722 source hashes, 375 opens, six configuration bindings,
+unchanged immutable bindings and the 3914 head blobs. The progress SHA is
+`9503a99e7dab28d68aa62dc8306b473aadc598dff04c92ad678c39e32c183d03`.
+
+**Measurement.** Seventy exclusive A/A plus ABBA accepting observations against
+eacd5629 preserve complete outputs. The controls are the previous checkpoint's
+six, plus `ordinary-item` from this packet. Paired wall ratios are
+1.038/1.252/1.196/1.023/1.010/1.010/1.028, against A/A
+0.908/1.570/0.933/0.912/1.049/0.915/0.951, at 9–672 ms.
+
+A recheck of the two widest families, with six ABBA blocks
+(`obj/parallel/item-conditions/measure-recheck/`), gives `parameter` 1.005
+(A/A 1.044). `trait-blanket` gives 1.093 (A/A 0.743), about 1 ms at 10 ms.
+User-space instruction counts (`instructions.txt`, three runs per pin) differ
+by 0.016% for `trait-blanket` and 0.003% for `parameter`. The remaining wall
+difference is therefore not work. `trait-blanket` is an ordinary program with
+no const callable bound. External load stayed near a load average of 6. No
+optimized, neutrality or original-core speed is claimed; the bounded-work test
+above qualifies the work.
 
 Partial counts make no throughput claim, and this is neither a complete census
 nor a core artifact.

@@ -13,8 +13,11 @@ new reached failure. The unchanged 120s observer ends at 121.005s with 29
 records, 15,102 attempts and last item 10217, x86/ssse3.rs:228. The first
 remaining failure is max at iterator.rs:3255, then min, max_by_key and
 min_by_key: function items passed to an ordinary `FnMut` bound, behind the
-nested trait path formatting fence. The clean pin and its observation are
-pending. No core artifact exists.
+nested trait path formatting fence. Clean pin 716cbe11 (source be48c2501)
+confirms it: its unchanged observer ends at 120.876s with 32 records, 15,395
+attempts and last item 10644, x86/avx2.rs:389. Its measurement supports no
+speed claim either way; instruction counts match within 0.02%. No core
+artifact exists.
 
 The [default const closure checkpoint](pa25-default-const-closures.md) lets a
 const closure defined in a const trait's default body meet a `[const]` callable

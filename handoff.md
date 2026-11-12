@@ -163,8 +163,10 @@ the passing receipts, not those attempts, qualify the current implementation.
     bound, behind the nested trait path formatting fence).
 - Full CI 43216665164 passed on 8cff15463, covering bcbafa25a and its private
   winnowing test.
-- Clean pin `obj/parallel/count-fold/candidate-dev-fast` (eacd5629) remains the
-  comparison baseline until this checkpoint's clean pin passes.
+- Clean pin `obj/parallel/item-conditions/candidate-dev-fast` (716cbe11, source
+  be48c2501) passed its observation (32 records), postcheck and measurement
+  against eacd5629. It is the comparison baseline. The eacd5629 pin and the
+  item-conditions wip1 and wip2 pins are retired; their evidence remains.
 
 **2026-11-12 default const closure update (supersedes the blocks below):**
 

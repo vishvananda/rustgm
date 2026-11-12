@@ -130,8 +130,9 @@ lets a conditional const fn item, or a const trait member's item, meet a
 `[const]` callable bound through its substituted const conditions, as core's
 `last`, `as_deref` and `get_or_insert_default` need. Eleven declared
 source-core reductions agree with rustc. An exploratory observation clears ten
-core bodies; the first remaining failure is iterator `max`. The clean pin, its
-observation and measurement are pending.
+core bodies; the first remaining failure is iterator `max`. Clean pin 716cbe11
+(source be48c2501) confirms this with 32 records, and its measurement supports
+no speed claim either way.
 
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage
