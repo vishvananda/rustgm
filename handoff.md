@@ -149,7 +149,24 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
-**2026-11-12 rigid-header update (supersedes the blocks below):**
+**2026-11-12 source Copy capture update (supersedes the blocks below):**
+
+- The first_size/other_size 5171/5172 blocker is fixed
+  ([evidence](docs/pa24-source-copy-captures.md)). Closure capture
+  classification now selects a source library's `Copy` trait when derives leave
+  a capture non-Copy. It is a probe: no evidence or region equality is
+  retained, and body Copy requirements still prove each copy.
+  - Twelve declared reductions are in `pa31/tests/spec/source-copy-captures`,
+    and the history is in `obj/parallel/step-size/core/declared.json`.
+  - Exploratory pin `obj/parallel/step-size/wip1-dev-fast` (12358002) clears
+    both bodies. The next first failure is fold 5290, zip.rs:275 (unresolved
+    call inputs). `DisplayBuffer::new` 5862 ("repeated array element must
+    implement Copy") likely shares the derive-only Copy cause.
+- The comparison baseline stays clean pin
+  `obj/parallel/peekable-eq/candidate-dev-fast` (487e0881) until this
+  checkpoint's clean pin passes its observation.
+
+**2026-11-12 rigid-header update:**
 
 - The next_if_eq 5023 blocker is fixed
   ([evidence](docs/pa20-rigid-candidate-headers.md)). Trait selection's impl
@@ -171,10 +188,6 @@ the passing receipts, not those attempts, qualify the current implementation.
   remains.
 - Full 43196757856 on dd7d8e9d3 passed. It covers the helper-output and
   projected-header checkpoints.
-- In progress: first_size/other_size 5171/5172. Closure capture classification
-  read Copy only from derives, so a captured source `impl Copy` value (core's
-  `NonZero<usize>`) made the closure FnOnce. Declared reductions and the
-  exploratory pin are in `obj/parallel/step-size/`.
 
 **2026-11-12 later update (supersedes the blocks below):**
 

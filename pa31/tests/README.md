@@ -918,3 +918,13 @@ premise rejects (E0277). Each outcome was declared before its rustc 1.98.0
 oracle. A maintainer integration test checks them through the CLI; the
 ordinary course forms are PA20's `rigid-candidate-headers`. There is no graded
 manifest.
+
+`spec/source-copy-captures/` freezes twelve declared no_core reductions of
+core's `StepBy` `first_size`/`other_size` on the `source-div` foundation prefix.
+A `move` closure that copies a captured `NonZero<usize>`, which is Copy only
+through a source `impl Copy`, must stay `Fn`. Nine positives cover returned,
+inner, conditional, `FnMut`, `F: Fn`-bound and parameter-premise captures, and
+two of them lower from a root `main`. Three captures that are not Copy reject
+(E0507). Each outcome was declared before its rustc 1.98.0 oracle. A
+maintainer integration test checks them through the CLI. There is no graded
+manifest.

@@ -1,0 +1,80 @@
+{
+ "schema": 1,
+ "declared": "2026-11-12, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run (obj/parallel/step-size/core/declared.json, batches 1-6). Earlier batches there record prelude drafts that rustc or RustGM rejected for unrelated reasons before any claim.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "cases": {
+  "other-size.rs": {
+   "sha256": "efeb3ef682ab9af27187c2bed30c7662c4c7470203b95feddc030facf79ccf7c",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "other-size"
+  },
+  "returned-copy.rs": {
+   "sha256": "b090a9c6763e8f2d3e2a9156d3a480a8168f923dd08ae5e79b950ef862febeaa",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "copy-capture"
+  },
+  "inner.rs": {
+   "sha256": "9c092d8e11fd2bd9960c1e65bc86b6a9f9e66b927cfa321df34e48c8a6c2923a",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "capture-inner"
+  },
+  "conditional.rs": {
+   "sha256": "31087283eecb0d6125d004764c5c31147d1760f637772a49028ef22ab96c5ea2",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "capture-generic"
+  },
+  "fn-mut.rs": {
+   "sha256": "18c28f122e6b872e89531ce5ae8fa6f56cc6a9a4386b1e703f2fc7873e32d668",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "capture-fnmut"
+  },
+  "fn-bound.rs": {
+   "sha256": "c61a419b337a083560276782a2ebbdae4d9e3a645396246517fbf3e85de80d0b",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "generic-fn-bound"
+  },
+  "parameter-premise.rs": {
+   "sha256": "8decf60053ae24cecc60d990c05017c35e10e64375fcf5efa86a5706ccd185ea",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "generic-param-copy"
+  },
+  "call-size.rs": {
+   "sha256": "19e5f16a0a6e78b3ec8eea6a5e71da1c5c50ca41d241d0a1a13222af61a7b477",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "call-size"
+  },
+  "call-bound.rs": {
+   "sha256": "d4191f09c47b8a55f714db09c40dab02ae861f19b2d01dd2f0f2f43591001a63",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "call-generic-bound"
+  },
+  "clone-only.rs": {
+   "sha256": "35ba8e514b892bd519dbc9a16b371b49c80a0df8bb6b557f1b1f1eb877a4225d",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "noncopy-capture"
+  },
+  "failed-condition.rs": {
+   "sha256": "a2386c95efd1617b384af021b7c3a4b149b8e115912097cee9a84846554dc7d3",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "generic-noncopy"
+  },
+  "clone-premise.rs": {
+   "sha256": "d28bf2ea2e9648f6030d1c1a128ec18e6b58bd4f540847fe8cb3a9085a9a5b0b",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "generic-param-clone"
+  }
+ }
+}

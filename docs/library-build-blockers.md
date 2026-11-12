@@ -1,5 +1,19 @@
 # Library build blocker tracker
 
+The [source Copy capture checkpoint](pa24-source-copy-captures.md) classifies a
+source library's closure captures with the library's own `Copy` trait when
+derives leave them non-Copy. Copying a captured `NonZero<usize>` made
+first_size and other_size's closures FnOnce. Twelve declared source-core
+reductions and capture-linear work qualify it.
+
+Exploratory pin 12358002 clears first_size 5171 and other_size 5172, with no
+new reached failure. The unchanged 120s observer ends at 121.049s with 45
+records, 14,240 attempts and last item 8723, str/traits.rs:700. The first
+remaining failure is fold 5290 at zip.rs:275 (unresolved call inputs). Later,
+`DisplayBuffer::new` 5862 rejects a repeated `MaybeUninit<u8>` element as not
+Copy, probably the same derive-only query in array repetition. The clean pin
+and its observation are pending. No core artifact exists.
+
 The [rigid candidate header checkpoint](pa20-rigid-candidate-headers.md)
 refutes a trait implementation header that would need a goal's rigid
 associated item to equal a parameter or another constructor. Core's

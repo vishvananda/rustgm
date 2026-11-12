@@ -404,6 +404,8 @@ mod specializations;
 
 #[path = "source_closures/identity.rs"]
 mod identity;
+#[path = "source_closures/implemented_copies.rs"]
+mod implemented_copies;
 
 #[path = "source_closures/captures.rs"]
 mod captures;

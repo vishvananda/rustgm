@@ -1,0 +1,12 @@
+pa31/tests/spec/source-copy-captures/other-size.rs	0
+pa31/tests/spec/source-copy-captures/returned-copy.rs	0
+pa31/tests/spec/source-copy-captures/inner.rs	0
+pa31/tests/spec/source-copy-captures/conditional.rs	0
+pa31/tests/spec/source-copy-captures/fn-mut.rs	0
+pa31/tests/spec/source-copy-captures/fn-bound.rs	0
+pa31/tests/spec/source-copy-captures/parameter-premise.rs	0
+pa31/tests/spec/source-copy-captures/call-size.rs	0
+pa31/tests/spec/source-copy-captures/call-bound.rs	0
+pa31/tests/spec/source-copy-captures/clone-only.rs	1
+pa31/tests/spec/source-copy-captures/failed-condition.rs	1
+pa31/tests/spec/source-copy-captures/clone-premise.rs	1

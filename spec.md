@@ -5791,6 +5791,16 @@ opaque result from the impl header itself still waits for normalization.
 Controls are in the
 [rigid candidate header checkpoint](docs/pa20-rigid-candidate-headers.md).
 
+A by-value use of a captured place keeps the closure callable by reference when
+the captured type is Copy. Derive selections cannot see a source library's own
+`impl Copy`, such as core's `NonZero<T>`. In a source library, a captured type
+that derives leave non-Copy is classified by selecting the library's `Copy`
+language trait under the body's assumptions. Like rustc's copy-modulo-regions
+query, this only classifies the capture. It retains no evidence or region
+equality, and absent or pending proof keeps the use a move. The body's source
+Copy requirements prove every actual copy again. Controls are in the
+[source Copy capture checkpoint](docs/pa24-source-copy-captures.md).
+
 A canonical caller premise may bind an inference hole to its complete projected
 input type. Use the shared scoped worklist; collect comparisons between projection
 results for exact identity or the existing certified-normal-premise relation.

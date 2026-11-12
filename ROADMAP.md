@@ -95,6 +95,14 @@ new reached failure, within its unchanged 120s observer (28 records). The first
 remaining failure is step_by first_size, a quantified body requirement. The
 measurement supports no speed claim either way.
 
+The [source Copy capture checkpoint](docs/pa24-source-copy-captures.md) lets a
+closure in a source library copy a capture that is Copy only through a source
+`impl Copy`, such as core's `NonZero<usize>`, so the closure stays `Fn`. Twelve
+declared source-core reductions agree with rustc. An exploratory observation
+clears first_size and other_size; the first remaining failure is zip fold, with
+unresolved call inputs. The clean pin, its observation and measurement are
+pending.
+
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage
 limit controls, pass text, independent Rust and native checks with frozen a08ab1a4.
