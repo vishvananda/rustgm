@@ -80,17 +80,69 @@ impl Definitions {
             .as_ref()
             .is_some_and(|instances| instances.has_projections(ty))
     }
-    /// Publish independently normalized concrete fields once. Raw substituted
-    /// fields remain the proof roots for every caller, including erased inputs.
+    /// Whether `ty`'s storage reads a parameterized nominal's projected fields
+    /// through instantiated nominal fields, tuples, arrays or captures. A
+    /// pointer ends the walk: its width never reads the pointee's fields.
+    /// # Errors
+    /// Fails on malformed identities, uninstantiated nominals or `limit`.
+    pub(crate) fn reads_parameterized_projections(
+        &self,
+        types: &Store,
+        ty: TypeId,
+        work: &mut usize,
+        limit: usize,
+    ) -> Result<bool, &'static str> {
+        use crate::types::Kind;
+        let mut pending = vec![ty];
+        let mut seen = crate::support::hash::HashSet::default();
+        while let Some(ty) = pending.pop() {
+            *work = work.saturating_add(1);
+            if *work > limit {
+                return Err("parameterized storage walk budget exceeded");
+            }
+            if types.contains_parameters(ty) != Some(true) || !seen.insert(ty) {
+                continue;
+            }
+            match types.kind(ty).ok_or("invalid parameterized storage type")? {
+                Kind::Adt(..) => {
+                    if self.has_projected_fields(ty) {
+                        return Ok(true);
+                    }
+                    for variant in self.raw_shape(types, ty)?.variants() {
+                        let fields = types
+                            .list(variant.fields)
+                            .ok_or("invalid parameterized storage fields")?;
+                        pending.extend_from_slice(fields);
+                    }
+                }
+                Kind::Tuple(list) => {
+                    let elements = types
+                        .list(list)
+                        .ok_or("invalid parameterized storage tuple")?;
+                    pending.extend_from_slice(elements);
+                }
+                Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } => {
+                    pending.push(element);
+                }
+                Kind::Pattern { base, .. } => pending.push(base),
+                Kind::Closure { environment, .. } => pending.push(environment),
+                _ => {}
+            }
+        }
+        Ok(false)
+    }
+    /// Publish independently normalized fields once. Raw substituted fields
+    /// remain the proof roots for every caller, including erased inputs. Only a
+    /// parameterized nominal's own premise-free normal form keeps parameters.
     pub(crate) fn complete_storage(
         &mut self,
         types: &Store,
         ty: TypeId,
         fields: Vec<ListId>,
     ) -> Result<(), &'static str> {
-        if types.contains_parameters(ty) != Some(false) {
-            return Err("normalized storage requires a concrete nominal identity");
-        }
+        let parameterized = types
+            .contains_parameters(ty)
+            .ok_or("normalized storage requires a valid nominal identity")?;
         let raw = self.raw_shape(types, ty)?;
         if raw.variants().len() != fields.len() {
             return Err("normalized storage changed variant coverage");
@@ -104,7 +156,7 @@ impl Definitions {
                 .ok_or("missing normalized storage fields")?;
             if original.len() != normalized.len()
                 || normalized.iter().any(|&field| {
-                    types.contains_parameters(field) != Some(false)
+                    (!parameterized && types.contains_parameters(field) != Some(false))
                         || types.contains_projections(field) != Some(false)
                 })
             {

@@ -15,6 +15,8 @@ pub(super) enum Recipe {
 #[derive(Default)]
 pub(crate) struct Registry {
     roots: HashMap<TypeId, RecipeId>,
+    /// Parameterized roots whose premise-free build completed their subtree.
+    premise_free: HashSet<TypeId>,
     fields: HashMap<TypeId, RecipeId>,
     pub(super) recipes: Vec<Recipe>,
     steps: usize,
@@ -95,11 +97,24 @@ impl Registry {
             _ => self.push(Recipe::Join(children)),
         }
     }
-    fn publish(&mut self, facts: &mut Declarations, finish: Finish) -> Result<(), &'static str> {
+    fn publish(
+        &mut self,
+        facts: &mut Declarations,
+        finish: Finish,
+        premise_free: bool,
+    ) -> Result<(), &'static str> {
         if let Some(fields) = finish.shape {
             facts
                 .aggregates
                 .complete_storage(&facts.types, finish.ty, fields)?;
+        }
+        // Each child finished first, so this subtree needs no premise-free
+        // re-entry.
+        if premise_free
+            && facts.types.contains_parameters(finish.ty) == Some(true)
+            && self.premise_free.insert(finish.ty)
+        {
+            self.retain(64)?;
         }
         // Another query may have completed this root while its field resolver
         // was suspended. Its stable recipe already names the same checked shape.
@@ -138,15 +153,34 @@ pub(super) enum Progress {
 }
 pub(super) struct Build {
     root: TypeId,
+    /// Parameterized nominals' projected fields normalize too, only in a
+    /// premise-free session.
+    premise_free: bool,
     started: bool,
     work: Vec<Work>,
     active: HashSet<TypeId>,
     reader: Option<(TypeId, Reader)>,
 }
+/// A published root needs no further traversal. An ordinary build publishes a
+/// parameterized root without normalizing its nested projected fields, so a
+/// premise-free build reuses one only after completing its subtree once.
+fn reusable(premise_free: bool, registry: &Registry, facts: &Declarations, ty: TypeId) -> bool {
+    registry.roots.contains_key(&ty)
+        && (!premise_free
+            || facts.types.contains_parameters(ty) != Some(true)
+            || registry.premise_free.contains(&ty))
+}
 impl Build {
     pub fn new(root: TypeId) -> Self {
+        Self::with(root, false)
+    }
+    pub fn premise_free(root: TypeId) -> Self {
+        Self::with(root, true)
+    }
+    fn with(root: TypeId, premise_free: bool) -> Self {
         Self {
             root,
+            premise_free,
             started: false,
             work: Vec::new(),
             active: HashSet::default(),
@@ -165,8 +199,11 @@ impl Build {
         registry: &mut Registry,
         facts: &mut Declarations,
     ) -> Result<Progress, &'static str> {
+        let premise_free = self.premise_free;
         if !self.started {
-            if let Some(&recipe) = registry.roots.get(&self.root) {
+            if let Some(&recipe) = registry.roots.get(&self.root)
+                && reusable(premise_free, registry, facts, self.root)
+            {
                 return Ok(Progress::Complete(recipe));
             }
             self.work.push(Work::Enter(self.root));
@@ -176,7 +213,7 @@ impl Build {
             if let Some((ty, reader)) = &mut self.reader {
                 // Finish an outstanding normalization before reusing interleaved
                 // structural publication; its caller evidence must not be dropped.
-                if !reader.pending() && registry.roots.contains_key(ty) {
+                if !reader.pending() && reusable(premise_free, registry, facts, *ty) {
                     self.active.remove(ty);
                     self.reader = None;
                     continue;
@@ -211,7 +248,7 @@ impl Build {
                 registry.charge(1)?;
                 match task {
                     Work::Enter(ty) => {
-                        if registry.roots.contains_key(&ty) {
+                        if reusable(premise_free, registry, facts, ty) {
                             continue;
                         }
                         if let Some(Kind::Adt(item, _)) = facts.types.kind(ty)
@@ -223,11 +260,11 @@ impl Build {
                         if !self.active.insert(ty) {
                             return Err("cycle in storage dependencies");
                         }
-                        self.reader = Some((ty, Reader::new(registry, facts, ty)?));
+                        self.reader = Some((ty, Reader::new(registry, facts, ty, premise_free)?));
                     }
                     Work::Finish(finish) => {
                         self.active.remove(&finish.ty);
-                        registry.publish(facts, finish)?;
+                        registry.publish(facts, finish, premise_free)?;
                     }
                 }
             }

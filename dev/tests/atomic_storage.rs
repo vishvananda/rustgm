@@ -2,6 +2,8 @@
 use crate::native_references as native;
 use crate::semantic;
 use crate::source_cases as source;
+#[path = "atomic_storage/parameterized_fields.rs"]
+mod parameterized_fields;
 const CASES: &[(&str, bool, &str)] = &[
     ("new", true, "spec/atomic-storage/new.rs"),
     ("alias-new", true, "spec/atomic-storage/alias-new.rs"),

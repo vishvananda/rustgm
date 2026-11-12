@@ -1,0 +1,15 @@
+pa31/tests/spec/parameterized-storage/ptr-new.rs	0
+pa31/tests/spec/parameterized-storage/ptr-into-inner.rs	0
+pa31/tests/spec/parameterized-storage/ptr-runtime.rs	0
+pa31/tests/spec/parameterized-storage/ptr-no-cell.rs	0
+pa31/tests/spec/parameterized-storage/ptr-direct.rs	0
+pa31/tests/spec/parameterized-storage/usize-new.rs	0
+pa31/tests/spec/parameterized-storage/unshadowed-value.rs	0
+pa31/tests/spec/parameterized-storage/nested-new.rs	0
+pa31/tests/spec/parameterized-storage/marker-premise.rs	0
+pa31/tests/spec/parameterized-storage/param-storage.rs	1
+pa31/tests/spec/parameterized-storage/size-mismatch.rs	1
+pa31/tests/spec/parameterized-storage/shadowed.rs	1
+pa31/tests/spec/parameterized-storage/shadowed-value.rs	1
+pa31/tests/spec/parameterized-storage/sibling-shadowed.rs	1
+pa31/tests/spec/parameterized-storage/nested-shadowed.rs	1

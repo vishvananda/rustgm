@@ -167,6 +167,14 @@ obligations keep the conditional boundary. Ten source-core reductions agree
 with rustc. An exploratory observation clears `Result::cloned`; the first
 remaining failure is `AtomicPtr::new`.
 
+The [parameterized storage checkpoint](docs/pa31-parameterized-storage.md)
+normalizes a parameterized nominal's projected fields for a generic transmute
+in a premise-free session, as core's `AtomicPtr::new` needs for
+`Atomic<*mut T>`. A body premise that could keep the projection rigid keeps the
+closed boundary. Fifteen source-core reductions agree with rustc. An
+exploratory observation clears `new` and `into_inner`; the first remaining
+failure is `SyncView::poll`.
+
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage
 limit controls, pass text, independent Rust and native checks with frozen a08ab1a4.

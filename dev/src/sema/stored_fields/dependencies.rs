@@ -15,6 +15,8 @@ struct Nominal {
     fields: Vec<TypeId>,
     normalized: Vec<ListId>,
     projected: bool,
+    /// A premise-free producer discharges this normal form itself.
+    parameterized: bool,
     pending: Option<TypeId>,
 }
 pub(super) struct Reader {
@@ -27,6 +29,7 @@ impl Reader {
         registry: &mut Registry,
         facts: &mut Declarations,
         ty: TypeId,
+        premise_free: bool,
     ) -> Result<Self, &'static str> {
         let mut reader = Self {
             edges: Dependencies::default(),
@@ -40,8 +43,9 @@ impl Reader {
         {
             Kind::Adt(_, arguments) => {
                 facts.aggregates.instantiate(&mut facts.types, ty)?;
-                let projected = facts.types.contains_parameters(ty) == Some(false)
-                    && facts.aggregates.has_projected_fields(ty);
+                let parameterized = facts.types.contains_parameters(ty) != Some(false);
+                let projected =
+                    (premise_free || !parameterized) && facts.aggregates.has_projected_fields(ty);
                 let lists = facts
                     .aggregates
                     .raw_shape(&facts.types, ty)?
@@ -56,6 +60,7 @@ impl Reader {
                     fields: Vec::new(),
                     normalized: Vec::new(),
                     projected,
+                    parameterized,
                     pending: None,
                 });
                 let arguments = facts
@@ -138,7 +143,9 @@ impl Reader {
         if facts.types.contains_projections(normal) != Some(false) {
             return Err("concrete storage retains an associated projection");
         }
-        if facts.types.contains_projections(raw) == Some(true) {
+        // No later caller replays a parameterized normal form: its
+        // premise-free producer already discharged that proof.
+        if facts.types.contains_projections(raw) == Some(true) && !nominal.parameterized {
             self.edges.fields.push((raw, normal));
         }
         nominal.fields.push(normal);

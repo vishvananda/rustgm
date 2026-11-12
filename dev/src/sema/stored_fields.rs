@@ -3,6 +3,7 @@ mod dependencies;
 mod graph;
 use super::{model::Declarations, projections::Concrete};
 use crate::support::hash::HashSet;
+use crate::types::lifetime_proof::{Obligations, ScopeId};
 use crate::types::{ItemId, TypeId};
 pub(crate) use graph::Registry;
 use graph::{Recipe, RecipeId};
@@ -32,8 +33,11 @@ pub(crate) enum Progress {
 }
 impl Query {
     pub fn new(root: TypeId) -> Self {
+        Self::with(graph::Build::new(root))
+    }
+    fn with(graph: graph::Build) -> Self {
         Self {
-            graph: Some(graph::Build::new(root)),
+            graph: Some(graph),
             work: Vec::new(),
             seen: HashSet::default(),
             field: None,
@@ -64,6 +68,42 @@ impl Query {
         }
         Ok(())
     }
+}
+/// A parameterized nominal's projected fields, as in core's `Atomic<*mut T>`,
+/// normalize in a premise-free session. The nominal's declared bounds hold
+/// wherever it is well formed, so a normal form that no caller premise selected
+/// holds in each such scope. This producer discharges its proof closed; a
+/// field that needs a caller premise stays an error. Its work, including a
+/// failed attempt's, is added to the caller's counter.
+pub(crate) fn prepare_premise_free(
+    facts: &mut Declarations,
+    root: TypeId,
+    work: &mut usize,
+) -> Result<(), String> {
+    let before = facts.stored_field_work().steps;
+    let mut proof = Obligations::new(facts.body_regions.probe_frontier()?);
+    let mut session = super::projections::concrete(&mut proof, ScopeId::ROOT)?;
+    let mut preparation = Preparation::default();
+    let result = preparation.prepare_query(
+        facts,
+        Query::with(graph::Build::premise_free(root)),
+        &mut session,
+    );
+    *work = work.saturating_add(
+        facts
+            .stored_field_work()
+            .steps
+            .saturating_sub(before)
+            .saturating_add(preparation.steps())
+            .saturating_add(session.nested_work()),
+    );
+    drop(session);
+    result?;
+    super::discharge::closed(
+        facts,
+        &proof,
+        "parameterized storage lifetime requirement is not satisfied",
+    )
 }
 impl Preparation {
     /// Work retained by this caller, including its own projection folds.
@@ -101,7 +141,14 @@ impl Preparation {
         root: TypeId,
         session: &mut Concrete<'_>,
     ) -> Result<(), &'static str> {
-        let mut query = Query::new(root);
+        self.prepare_query(facts, Query::new(root), session)
+    }
+    fn prepare_query(
+        &mut self,
+        facts: &mut Declarations,
+        mut query: Query,
+        session: &mut Concrete<'_>,
+    ) -> Result<(), &'static str> {
         loop {
             match self.advance(facts, &mut query)? {
                 Progress::Complete => return Ok(()),

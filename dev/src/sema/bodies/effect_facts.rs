@@ -351,6 +351,7 @@ impl Checker<'_> {
                 .map_err(|e| self.error(node, e))?;
             crate::sema::compiler_items::require_transmute_size(
                 self.facts,
+                self.state.method_environment.as_deref(),
                 selected.source,
                 selected.destination,
             )

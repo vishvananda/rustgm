@@ -1284,6 +1284,19 @@ work between each producer step, including failures, before advancing another
 child. Missing nominal field templates retain their declaration wait. See the
 [projected-layout checkpoint](docs/pa31-closed-projected-layout.md).
 
+A generic body's transmute of a parameterized nominal with projected field
+templates, such as core's `Atomic<*mut T>`, normalizes those fields in a
+premise-free session. Selection uses only validated implementations, and the
+proof is discharged closed. The published storage keeps parameters but no
+projection, and no caller replays its proof. A premise-free build re-enters a
+parameterized root that an ordinary build published, once, to reach nested
+fields. rustc prefers a body premise over an implementation and keeps such a
+projection rigid. So a body whose elaborated premises include a trait that
+declares associated types, or a quantified premise, keeps the closed boundary
+when its transmuted storage reads those fields. This holds even after another
+body has published that form. See the
+[parameterized storage checkpoint](docs/pa31-parameterized-storage.md).
+
 The bounded sizing profile requires actual sizing identities, complete headers
 and deny-explicit-impl restrictions before retaining fundamental, specialization
 or coinductive markers; those markers grant no general implementation or cycle

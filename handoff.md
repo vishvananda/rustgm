@@ -149,6 +149,23 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-12 parameterized storage update (supersedes the blocks below):**
+
+- The `AtomicPtr::new` 6835 and `into_inner` 6842 blocker is fixed
+  ([evidence](docs/pa31-parameterized-storage.md)). A generic transmute
+  normalizes a parameterized nominal's projected fields in a premise-free
+  session. A body premise of a trait with associated types keeps the closed
+  boundary, because rustc keeps that projection rigid.
+  - Fifteen source-core reductions are in
+    `pa31/tests/spec/parameterized-storage`. The history, including two
+    conservative rejections and the rejected wip1/wip2 designs, is in
+    `obj/parallel/atomic-storage/core/declared.json`.
+  - Exploratory pin `obj/parallel/atomic-storage/wip3-dev-fast` (a202701f)
+    clears both. The next first failure is `SyncView::poll` 6928 at
+    sync/sync_view.rs:296 ("no applicable inherent method for this receiver"):
+    an inherent `self: Pin<&mut Self>` method called on `Pin<&mut SyncView<T>>`.
+  - The clean pin for this commit and the pending measurements are not run.
+
 **2026-11-12 negative receiver update (supersedes the blocks below):**
 
 - The `Result<&mut T, E>::cloned` 6721 blocker is fixed

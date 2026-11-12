@@ -988,3 +988,15 @@ accept. Dropping the premise rejects (E0599), and an ordinary
 `need::<&mut u8>()` bound keeps its conditional-negative rejection (E0277). A
 maintainer integration test checks them through the CLI. There is no graded
 manifest.
+
+`spec/parameterized-storage/` freezes fifteen declared no_core reductions of
+core's `AtomicPtr::new` and `into_inner`. A transmute between `*mut T` and
+`Atomic<*mut T>` reads the field `<*mut T as AtomicPrimitive>::Storage`, which
+the implementation for `*mut T` normalizes without a caller premise. Six
+positives (core's two forms, a runtime transmute, a field without `UnsafeCell`,
+a nested `Outer<T>`, and a premise without associated types) and three controls
+accept. A parameter's own `Storage` and a sixteen-byte storage reject (E0512).
+So do three bodies whose `where *mut T: AtomicPrimitive` keeps the projection
+rigid, including a sibling of `new` and a nested `Outer<T>` (E0512). The same
+premise rejects a value of the projection (E0308). A maintainer integration
+test checks them through the CLI. There is no graded manifest.

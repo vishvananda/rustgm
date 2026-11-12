@@ -16,7 +16,7 @@ fn transmute_queries_keep_local_work_and_sticky_source_payment() -> Result {
         let source = TypeId::primitive(crate::types::Primitive::U32);
         let destination = TypeId::primitive(crate::types::Primitive::I32);
         let before = crate::sema::header_attributes::source_contract_costs(&facts).0;
-        require_equal(&mut facts, source, destination)?;
+        require_equal(&mut facts, None, source, destination)?;
         let observed = (
             facts.body_work.canonical_steps - prior,
             crate::sema::header_attributes::source_contract_costs(&facts).0 - before,
@@ -29,7 +29,7 @@ fn transmute_queries_keep_local_work_and_sticky_source_payment() -> Result {
         expected = Some(observed);
         let byte = TypeId::primitive(crate::types::Primitive::U8);
         assert!(
-            require_equal(&mut facts, byte, destination)
+            require_equal(&mut facts, None, byte, destination)
                 .is_err_and(|error| error.contains("equal source and destination sizes"))
         );
         assert!(
@@ -42,8 +42,8 @@ fn transmute_queries_keep_local_work_and_sticky_source_payment() -> Result {
         for _ in 0..2 {
             facts.body_work.canonical_steps = 0;
             assert_eq!(
-                require_equal(&mut facts, source, cold),
-                Err("source transmute query work exhausted")
+                require_equal(&mut facts, None, source, cold),
+                Err("source transmute query work exhausted".to_owned())
             );
             assert_eq!(facts.layouts.steps, steps);
             assert!(facts.layouts.get(cold).is_none());
@@ -59,7 +59,7 @@ fn local_transmute_limit_still_rejects_before_layout_mutation() -> Result {
     let steps = facts.layouts.steps;
     assert_eq!(
         size(&mut facts, ty, &mut work, &mut 0),
-        Err("source transmute layout work budget exceeded")
+        Err("source transmute layout work budget exceeded".to_owned())
     );
     assert!(facts.layouts.get(ty).is_none());
     assert_eq!(facts.layouts.steps, steps);

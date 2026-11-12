@@ -1,5 +1,22 @@
 # Library build blocker tracker
 
+The [parameterized storage checkpoint](pa31-parameterized-storage.md)
+normalizes a parameterized nominal's projected fields for a generic transmute,
+in a premise-free session. Core's `AtomicPtr::new` and `into_inner` transmute
+between `*mut T` and `Atomic<*mut T>`. That field,
+`<*mut T as AtomicPrimitive>::Storage`, normalizes through the implementation
+alone, but storage was normalized only for closed nominals. A body premise that
+could keep the projection rigid keeps the closed boundary. Fifteen source-core
+reductions and call-linear work qualify the fix.
+
+Exploratory pin a202701f clears `new` 6835 and `into_inner` 6842, with no new
+reached failure. The unchanged 120s observer ends at 121.219s with 11 records,
+14,180 attempts and last item 8635, str/iter.rs:1521, under external load of
+19–23. The first remaining failure is `SyncView::poll` 6928 at
+sync/sync_view.rs:296 ("no applicable inherent method for this receiver"),
+then `resume` 6932. Both call the inherent `as_pin_mut(self: Pin<&mut Self>)`
+on `Pin<&mut SyncView<T>>`. No core artifact exists.
+
 The [negative receiver checkpoint](pa31-negative-receivers.md) lets a method
 receiver step skip a trait requirement that a negative impl refutes. Core's
 `Result<&mut T, E>::cloned` calls `t.clone()` on `&mut T`. Its autoref step
