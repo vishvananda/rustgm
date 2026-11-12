@@ -37,8 +37,8 @@ pub struct Methods {
     pub(super) trait_names: HashSet<NameId>,
     /// Inherent method names whose validated source receiver wraps Self, as
     /// `self: Pin<&mut Self>` does. Only these discover owners through the
-    /// legacy receiver chain.
-    pub(super) smart_names: HashSet<NameId>,
+    /// legacy receiver chain. Cold: absent until such a receiver is validated.
+    pub(super) smart_names: Option<Box<HashSet<NameId>>>,
     /// Published owner members; frozen in resolver order after header preparation.
     pub(super) inherent: HashMap<(ItemId, NameId), Vec<DefId>>,
     pub(super) indices: HashMap<(ItemId, NameId), Candidates>,

@@ -64,7 +64,11 @@ impl Checker<'_> {
                 .get(function.definition.0 as usize)
                 .filter(|_| inherent)
             {
-                self.facts.methods.smart_names.insert(definition.name);
+                self.facts
+                    .methods
+                    .smart_names
+                    .get_or_insert_with(Box::default)
+                    .insert(definition.name);
             }
         }
         if receiver.base != target {

@@ -32,7 +32,12 @@ pub(super) fn collect(
     // outer one. Only a smart receiver can match there, and its owner follows
     // genuine LegacyReceiver/Deref evidence.
     if level == Level::Legacy
-        && (facts.source_bindings.is_none() || !facts.methods.smart_names.contains(&name))
+        && (facts.source_bindings.is_none()
+            || !facts
+                .methods
+                .smart_names
+                .as_ref()
+                .is_some_and(|names| names.contains(&name)))
     {
         return Ok(());
     }
