@@ -11,6 +11,7 @@ mod adjusted;
 #[path = "build/site_inputs.rs"]
 mod caller_sites;
 mod decisions;
+mod destructuring;
 mod drops;
 mod environments;
 mod for_loops;
@@ -354,6 +355,14 @@ enum Work {
         has_value: bool,
     },
     Place(NodeId),
+    /// A destructuring assignment, after its right operand's place.
+    Destructure(NodeId),
+    /// One leaf's store, after its place.
+    DestructureStore {
+        node: NodeId,
+        leaf: NodeId,
+        source: Option<Place>,
+    },
     AdjustedPlace {
         operand: NodeId,
         site: NodeId,
@@ -984,6 +993,10 @@ impl<'a> Builder<'a> {
                 }
             }
             Work::Place(node) => self.enter_place(node)?,
+            Work::Destructure(node) => self.destructure(node)?,
+            Work::DestructureStore { node, leaf, source } => {
+                self.destructure_store(node, leaf, source)?;
+            }
             Work::AdjustedPlace {
                 operand,
                 site,
@@ -1408,6 +1421,11 @@ impl<'a> Builder<'a> {
                             self.scratch.work.push(Work::Enter(right));
                             return Ok(());
                         }
+                        if self.fact(node)?.operation == Some(Operation::Destructure) {
+                            self.scratch.work.push(Work::Destructure(node));
+                            self.scratch.work.push(Work::Place(right));
+                            return Ok(());
+                        }
                         self.scratch.work.push(Work::Enter(right));
                         if !matches!(self.fact(node)?.operation, Some(Operation::Assign { .. })) {
                             self.scratch.work.push(Work::Enter(left));
@@ -1767,6 +1785,9 @@ impl<'a> Builder<'a> {
         Ok(())
     }
     fn binary(&mut self, node: NodeId, left: NodeId, right: NodeId) -> Result<ValueId, Error> {
+        if self.fact(node)?.operation == Some(Operation::Destructure) {
+            return self.unit(node);
+        }
         if let Some(value) = self.language_call(node, &[left, right])? {
             return Ok(value);
         }

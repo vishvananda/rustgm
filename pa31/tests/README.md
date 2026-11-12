@@ -1012,3 +1012,16 @@ T`, under the builtin pointer rule (E0308). A second `PartialEq` impl for
 `*const u8` leaves `Rhs` ambiguous (E0308, E0277). A maintainer integration
 test checks them through the CLI and lowers each positive. There is no graded
 manifest.
+
+`spec/destructuring-assignment/` freezes seventeen declared no_core reductions
+of core's `bidirectional_merge` assignment, `(left, right, dst) = merge_up(...)`.
+Eleven positives accept: core's form, a swap, nested and grouped tuples, `_`
+leaves and a whole `_`, field and dereference leaves, deferred initialization,
+non-Copy moves, `() = ()` and a closure that captures its leaves mutably. Typing
+rejects a literal leaf (E0070), a tuple of the wrong arity (E0308) and a compound
+destructuring assignment (E0067, E0368). Ownership rejects a second assignment
+to an immutable leaf (E0384), a move out of a shared reference (E0507) and a
+use of the moved right operand (E0382). A maintainer integration test checks
+them through the CLI and prepared lowering. Rest, array, struct and tuple
+struct assignees are recorded gaps, not graded cases. There is no graded
+manifest.

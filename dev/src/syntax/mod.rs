@@ -1,4 +1,5 @@
 //! Syntax consumes typed tokens. Retained trees belong to captured fragments.
+pub mod assignee;
 pub mod ast;
 pub mod attribute;
 pub(crate) mod compound;

@@ -30,7 +30,7 @@ impl Checker<'_> {
             .operation = Some(operation);
         Ok(())
     }
-    fn shape(
+    pub(super) fn shape(
         &mut self,
         node: NodeId,
         constructor: Constructor,

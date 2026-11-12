@@ -631,6 +631,7 @@ fn operation(value: Operation, out: &mut impl Write) -> io::Result<()> {
             "assign-place operator={operator:?} left={} right={}",
             left.0, right.0
         ),
+        Operation::Destructure => write!(out, "destructure"),
         Operation::Transfer { .. } => Err(io::Error::other("transfer belongs on node record")),
         Operation::Unary {
             operator,

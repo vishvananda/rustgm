@@ -361,6 +361,15 @@ impl Collector<'_> {
                     return Ok(());
                 }
                 self.push(right, Use::Value);
+                if op == crate::lex::token::Punctuation::Equal && checker.destructures(left) {
+                    // Only place leaves are written; `_` mentions nothing.
+                    for entry in checker.assignee_walk(left).iter().rev() {
+                        if entry.role == crate::syntax::assignee::Role::Place {
+                            self.push(entry.node, Use::Mutable);
+                        }
+                    }
+                    return Ok(());
+                }
                 self.push(
                     left,
                     if op == crate::lex::token::Punctuation::Equal

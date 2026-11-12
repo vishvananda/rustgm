@@ -1,0 +1,17 @@
+pa31/tests/spec/destructuring-assignment/core-merge.rs	0
+pa31/tests/spec/destructuring-assignment/swap.rs	0
+pa31/tests/spec/destructuring-assignment/nested.rs	0
+pa31/tests/spec/destructuring-assignment/wildcard-leaf.rs	0
+pa31/tests/spec/destructuring-assignment/place-leaves.rs	0
+pa31/tests/spec/destructuring-assignment/underscore.rs	0
+pa31/tests/spec/destructuring-assignment/deferred-init.rs	0
+pa31/tests/spec/destructuring-assignment/move-nominal.rs	0
+pa31/tests/spec/destructuring-assignment/group-leaf.rs	0
+pa31/tests/spec/destructuring-assignment/unit.rs	0
+pa31/tests/spec/destructuring-assignment/closure-capture.rs	0
+pa31/tests/spec/destructuring-assignment/immutable-leaf.rs	1
+pa31/tests/spec/destructuring-assignment/literal-leaf.rs	1
+pa31/tests/spec/destructuring-assignment/arity.rs	1
+pa31/tests/spec/destructuring-assignment/compound.rs	1
+pa31/tests/spec/destructuring-assignment/borrowed-source.rs	1
+pa31/tests/spec/destructuring-assignment/moved-source.rs	1

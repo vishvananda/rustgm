@@ -1,0 +1,171 @@
+{
+ "schema": 1,
+ "declared": "2026-11-12, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run (obj/parallel/assignee/core/declared.json, batches 1-4; three malformed fixtures are recorded there). Each case's first line records its prefix.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "base": "batch 1: exploratory a150d249; later batches: clean candidate 00a18645 (4af504787)",
+ "declaration_agreement": "17/17",
+ "not_graded": {
+  "rest-tuple": "(a, ..) = (1, 2u8, 3u8): rustc accepts; RustGM rejects \"rest assignees are not implemented\"",
+  "array": "[a, b] = [1, 2]: rustc accepts; RustGM rejects \"assignment requires a place\"",
+  "struct": "S { x: a, y: b } = s: rustc accepts; RustGM rejects \"assignment requires a place\"",
+  "struct-rest": "S { x: a, .. } = s: rustc accepts; RustGM fails to parse (\"expected expression\")",
+  "tuple-struct": "P(a, b) = p: rustc accepts; RustGM rejects \"assignment requires a place\""
+ },
+ "cases": {
+  "core-merge.rs": {
+   "sha256": "63fb087fd4430ab0d073caa06a6ce0efe84f16290b2c2eea760b08a94ee931cb",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "core form: (left, right, dst) = merge_up(left, right, dst) on raw pointers inside a for-free loop",
+   "batch": 1,
+   "rustgm_base": "reject: 18248: assignment requires a place",
+   "rustgm_exploratory_2ddb3a67": "accept"
+  },
+  "swap.rs": {
+   "sha256": "1aef28cdbca1d9b7c6cb335b4fdb79e76156e646297bff72186e70cbdd3f62b2",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "(a, b) = (b, a) on u8 locals; the right tuple is built before either store",
+   "batch": 1,
+   "rustgm_base": "reject: 18038: assignment requires a place",
+   "rustgm_exploratory_2ddb3a67": "accept"
+  },
+  "nested.rs": {
+   "sha256": "12ac77fe89c443d3366cb2c4c33338f598d4f1fc9510dc4471bc84f39905623e",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "((a, b), c) = ((1, 2), 3)",
+   "batch": 1,
+   "rustgm_base": "reject: 18083: assignment requires a place",
+   "rustgm_exploratory_2ddb3a67": "accept"
+  },
+  "wildcard-leaf.rs": {
+   "sha256": "fcb62d88ae26d1e1112a7c499b3ede68bd8d45839b666ccc7cf93b681487e57c",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "(a, _) = (1, 2)",
+   "batch": 1,
+   "rustgm_base": "reject: 18043: body construct requires later semantic implementation",
+   "rustgm_exploratory_2ddb3a67": "accept"
+  },
+  "place-leaves.rs": {
+   "sha256": "16d7aa7893ff339cf13a00c2314ea31ba6b3b202b7412be5762e58eb5f806ee4",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "(s.x, *r) = (1, 2) with a field leaf and a dereferenced &mut u8 leaf",
+   "batch": 1,
+   "rustgm_base": "reject: 18062: assignment requires a place",
+   "rustgm_exploratory_2ddb3a67": "accept"
+  },
+  "underscore.rs": {
+   "sha256": "9d3f3c6159fdc8e86df12418a951528de569a1773e7279f0af975eef695f068b",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "_ = f();",
+   "batch": 1,
+   "rustgm_base": "reject: 18036: body construct requires later semantic implementation",
+   "rustgm_exploratory_2ddb3a67": "accept"
+  },
+  "deferred-init.rs": {
+   "sha256": "fed35982835d3f4ece489cbaf47edc1afe715690e82012351b8bf4e0609210af",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "let a: u8; let b: u8; (a, b) = (1, 2); then reads a",
+   "batch": 1,
+   "rustgm_base": "reject: 18052: assignment requires a place",
+   "rustgm_exploratory_2ddb3a67": "accept"
+  },
+  "move-nominal.rs": {
+   "sha256": "9c7b78a065ac1a96438c3fa1fa789664433cd163c6d9a06bb76917f1e741e617",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "(x, y) = (s, t) moves two non-Copy nominals into initialized locals, dropping their old values",
+   "batch": 2,
+   "rustgm_base": "reject: 18080: assignment requires a place",
+   "rustgm_exploratory_2ddb3a67": "accept"
+  },
+  "group-leaf.rs": {
+   "sha256": "baac46a8c8eef10c0551740f0ea9966196be1e52d6f5af54ee52886c37880b7a",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "((a), (b)) = (1, 2): grouped leaves",
+   "batch": 2,
+   "rustgm_base": "reject: 18061: assignment requires a place",
+   "rustgm_exploratory_2ddb3a67": "accept"
+  },
+  "unit.rs": {
+   "sha256": "4d87cdf23e338c153a118b78056673e1e2e03205fd50c76765c612d38a932fb3",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "() = () assigns nothing",
+   "batch": 2,
+   "rustgm_base": "reject: 18012: assignment requires a place",
+   "rustgm_exploratory_2ddb3a67": "accept"
+  },
+  "closure-capture.rs": {
+   "sha256": "f66f8b6a55007eba78d995a7602873c22ea61d545acc106dac4f2d623cec85e0",
+   "declared": 0,
+   "rustc": "accept",
+   "form": "closure-capture-v2 plus core/marker.rs Freeze and the auto_traits feature",
+   "batch": 4,
+   "rustgm_base": "reject: 6596: assignment requires a place",
+   "rustgm_exploratory_2ddb3a67": "accept",
+   "probe": "closure-capture-v3"
+  },
+  "immutable-leaf.rs": {
+   "sha256": "ea752873e14d1f667b92392dff95cf557c0854cdd57bcc2762619c2a2d11944b",
+   "declared": 1,
+   "rustc": "reject E0384",
+   "form": "E0384 expected: let a = 1; (a, b) = (2, 3) assigns an initialized immutable local",
+   "batch": 1,
+   "rustgm_base": "reject: 18055: assignment requires a place",
+   "rustgm_exploratory_2ddb3a67": "reject at ownership"
+  },
+  "literal-leaf.rs": {
+   "sha256": "53a269ebdf5e80717b0f8777826633790bd07951a2824013f51bb2dc12cfbc06",
+   "declared": 1,
+   "rustc": "reject E0070",
+   "form": "E0070 expected: (1, b) = (2, 3) has a non-place leaf",
+   "batch": 1,
+   "rustgm_base": "reject: 18032: assignment requires a place",
+   "rustgm_exploratory_2ddb3a67": "reject at types"
+  },
+  "arity.rs": {
+   "sha256": "7a65a1dd6bf2500aa835156023da2e04524de308e3d5ea934ab7c7b6f5e6eba4",
+   "declared": 1,
+   "rustc": "reject E0308",
+   "form": "E0308 expected: (a, b) = (1, 2, 3)",
+   "batch": 1,
+   "rustgm_base": "reject: 18064: incompatible types",
+   "rustgm_exploratory_2ddb3a67": "reject at types"
+  },
+  "compound.rs": {
+   "sha256": "2f4ef16397533061e0b8c9dcdcaaf7d4df61ce3b526b1f1047ea37fae455d0dc",
+   "declared": 1,
+   "rustc": "reject E0067, E0368",
+   "form": "E0067 or E0368 expected: (a, b) += (1, 2) cannot destructure",
+   "batch": 1,
+   "rustgm_base": "reject: 18058: assignment requires a place",
+   "rustgm_exploratory_2ddb3a67": "reject at types"
+  },
+  "borrowed-source.rs": {
+   "sha256": "42e2bb7f37a6dd9a41ec9e20daef12178fc4c14de1a3b5314030fd8e7588410d",
+   "declared": 1,
+   "rustc": "reject E0507",
+   "form": "E0507 expected: (x, y) = *r moves non-Copy fields out of a shared reference",
+   "batch": 2,
+   "rustgm_base": "reject: 18078: assignment requires a place",
+   "rustgm_exploratory_2ddb3a67": "reject at ownership"
+  },
+  "moved-source.rs": {
+   "sha256": "b819cef902b60ad1dcd05b1f974253441d031f38d0596f6ce54708e7d57ce429",
+   "declared": 1,
+   "rustc": "reject E0382",
+   "form": "E0382 expected: p is used after (x, y) = p moved both fields",
+   "batch": 2,
+   "rustgm_base": "reject: 18084: assignment requires a place",
+   "rustgm_exploratory_2ddb3a67": "reject at ownership"
+  }
+ }
+}

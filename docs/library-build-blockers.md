@@ -1,5 +1,21 @@
 # Library build blocker tracker
 
+The [destructuring assignment checkpoint](pa31-destructuring-assignment.md)
+implements tuple and `_` assignees. Core's `bidirectional_merge` assigns
+`(left, right, dst) = merge_up(left, right, dst, is_less)`, and core's integer
+`pow` bodies assign `(acc, tmp_overflow) = acc.overflowing_mul(base)`. Every
+assignment required a place on its left. Shells now take the tuple of their
+leaves' types. The right operand is evaluated into a place, and each field is
+stored to its leaf from left to right. Seventeen source-core reductions,
+including three ownership negatives, and call-linear work qualify the fix.
+
+Exploratory pin 2ddb3a67 clears `bidirectional_merge` 7581, with no new
+failure in a previously passing reached body. The unchanged 120s observer
+makes 14,027 attempts and reaches item 8360 (slice/mod.rs:3725), with load
+rising from 22 to 51, and records 5 failures. The first remaining failure is
+`as_underlying` 7631 at slice/cmp.rs:52 ("source transmute requires equal
+source and destination sizes"). No core artifact exists.
+
 The [comparison right operand checkpoint](pa31-comparison-rhs.md) follows
 rustc's `check_overloaded_binop`. A source comparison's `Rhs` gets a fresh
 variable, the comparison's own goals are selected, and only then does the

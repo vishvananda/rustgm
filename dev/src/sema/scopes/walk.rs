@@ -208,6 +208,8 @@ impl Walker<'_> {
             | Syntax::PatternEndpoint { .. }
             | Syntax::Continue(_)
             | Syntax::EmptyStatement
+            // A destructuring assignment's `_` assignee has no operands.
+            | Syntax::Wildcard
             | Syntax::Item(_) => {}
             _ => return Err(self.error(node, "unsupported expression in temporary scopes")),
         }

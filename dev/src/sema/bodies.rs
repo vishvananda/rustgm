@@ -4,6 +4,7 @@ mod alignment;
 mod always_calls;
 mod annotations;
 mod api_stability;
+mod assignees;
 mod atomic_ordering;
 mod bounds;
 mod callee_inputs;
@@ -283,6 +284,10 @@ enum Work {
     },
     MethodArguments(NodeId, Option<Box<std::vec::IntoIter<DefId>>>),
     AssignmentValue(NodeId),
+    /// One node of a destructuring assignment's left operand.
+    Assignee(NodeId),
+    /// A tuple or group assignee, after its elements.
+    AssigneeShell(NodeId),
     ForIterator(NodeId),
     ForPattern(NodeId, TermId),
     CollectClosure(Option<pointer_casts::QueuedCasts>),
@@ -1011,13 +1016,9 @@ impl Checker<'_> {
                     }
                 }
                 Work::ForPattern(node, item) => self.pattern(node, item, true)?,
-                Work::AssignmentValue(node) => {
-                    let Kind::Binary { left, right, .. } = self.kind(node) else {
-                        return Err(self.error(node, "invalid assignment work"));
-                    };
-                    let expected = self.term(left)?;
-                    self.state.work.push(Work::Enter(right, Some(expected)));
-                }
+                Work::AssignmentValue(node) => self.assignment_value(node)?,
+                Work::Assignee(node) => self.enter_assignee(node)?,
+                Work::AssigneeShell(node) => self.finish_assignee(node)?,
                 Work::Exit(node) => {
                     if let Some(dependency) = self.complete_body_expression(node)? {
                         return Ok(Some(dependency));
@@ -1032,6 +1033,15 @@ impl Checker<'_> {
             }
         }
         self.finish(self.state.body.node)
+    }
+    /// An assignment's right operand is checked against its left operand's type.
+    fn assignment_value(&mut self, node: NodeId) -> Result<(), Error> {
+        let Kind::Binary { left, right, .. } = self.kind(node) else {
+            return Err(self.error(node, "invalid assignment work"));
+        };
+        let expected = self.term(left)?;
+        self.state.work.push(Work::Enter(right, Some(expected)));
+        Ok(())
     }
     /// A pattern's initializer coerces to the pattern type before binding.
     fn bind_pattern_value(
@@ -1594,6 +1604,15 @@ impl Checker<'_> {
                 self.state
                     .work
                     .extend(value.map(|n| Work::Enter(n, Some(result))));
+                return Ok(());
+            }
+            Kind::Binary {
+                op: Op::Equal,
+                left,
+                ..
+            } if self.destructures(left) => {
+                self.state.work.push(Work::AssignmentValue(node));
+                self.state.work.push(Work::Assignee(left));
                 return Ok(());
             }
             Kind::Binary {
@@ -2676,6 +2695,9 @@ impl Checker<'_> {
     ) -> Result<TermId, Error> {
         let a = self.term(left)?;
         let b = self.term(right)?;
+        if op == Op::Equal && self.destructures(left) {
+            return self.destructuring_assignment(node, a, left, right);
+        }
         while let Kind::Group(inner) | Kind::Attributed { value: inner, .. } = self.kind(left) {
             left = inner;
         }
@@ -2712,6 +2734,16 @@ impl Checker<'_> {
             let Kind::Binary { left, right, .. } = self.kind(*node) else {
                 return Err(self.error(*node, "invalid assignment syntax"));
             };
+            let key = self.key(*node);
+            if operator.is_none() && self.destructures(left) {
+                self.facts
+                    .node_mut(key)
+                    .ok_or_else(|| {
+                        Declarations::error(self.report, key, "invalid assignment node")
+                    })?
+                    .operation = Some(Operation::Destructure);
+                continue;
+            }
             if self.facts.source_bindings.is_some()
                 && operator.is_some()
                 && !self.erased_source_assignment(*node)?
@@ -2737,7 +2769,6 @@ impl Checker<'_> {
                     right: self.ty(right)?,
                 }
             };
-            let key = self.key(*node);
             self.facts
                 .node_mut(key)
                 .ok_or_else(|| Declarations::error(self.report, key, "invalid assignment node"))?

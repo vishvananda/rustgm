@@ -31,6 +31,8 @@ mod destructor_loans;
 mod destructor_readiness;
 #[path = "../../destructor_regions.rs"]
 mod destructor_regions;
+#[path = "../../destructuring_assignments.rs"]
+mod destructuring_assignments;
 #[path = "../../drop_array_partitions.rs"]
 mod drop_array_partitions;
 #[path = "../../drop_field_moves.rs"]

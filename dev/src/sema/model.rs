@@ -72,6 +72,9 @@ pub enum Operation {
         left: TypeId,
         right: TypeId,
     },
+    /// `assignee = value` with a tuple or `_` assignee: the value is stored to
+    /// each place leaf from left to right (`crate::syntax::assignee`).
+    Destructure,
     /// A break or continue target is in the same source unit as the transfer.
     Transfer {
         target: NodeId,

@@ -1315,6 +1315,16 @@ are then builtin scalars, so the coerced right type must equal the left. The
 coerced comparison stays a primitive operation. See the
 [comparison right operand checkpoint](docs/pa31-comparison-rhs.md).
 
+A destructuring assignment `assignee = value`, with a tuple or `_` assignee, is
+rustc's `{ let <pattern> = value; leaf = binding; ... }`. Tuple shells take the
+tuple of their elements' types, `_` takes a fresh variable, and every other
+element is a place leaf that must be assignable as `leaf = value` is. The
+right operand coerces to the assembled type and is evaluated into a place
+first. Each leaf's place is then evaluated, and its field moved or copied
+into it, from left to right. `_` and unread fields stay in the right
+operand's place. Rest, array, struct and tuple struct assignees fail closed.
+See the [destructuring assignment checkpoint](docs/pa31-destructuring-assignment.md).
+
 The bounded sizing profile requires actual sizing identities, complete headers
 and deny-explicit-impl restrictions before retaining fundamental, specialization
 or coinductive markers; those markers grant no general implementation or cycle
