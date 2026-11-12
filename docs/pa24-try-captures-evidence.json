@@ -211,7 +211,8 @@
     "run": 43154313816,
     "head": "01e7013ebf3b2dea2153fe87661a502805360d59",
     "source": "c388b27099c03f75e01adf830346fe3c2a04e3f6",
-    "state": "running release/course; fast/lint/architecture/harness/host graph passed; later stages pending"
+    "status": "terminal failure; all Rust regular tests pass, PA21 text864/867,PA24 text642/642; later native/debug/independent skipped",
+    "review": "docs/pa21-empty-binder-ci-review.md"
   },
   "unchanged": [
     "backend contract/bridge",

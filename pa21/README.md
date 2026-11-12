@@ -203,3 +203,7 @@ validation review together. Run every active earlier stage, strict lint, audits,
 harness, upstream/backend checks, independent source/native checks and affected
 scaling measurements. PA22 and later stages continue to fail explicitly until
 released. Student export remains a later operation; this repository owns the full solution.
+
+The [empty-binder inspection review](../docs/pa21-empty-binder-ci-review.md)
+records the current zero-lifetime proof representation, unchanged complete
+Copy/equality/lifetime obligations, and independently checked reference updates.

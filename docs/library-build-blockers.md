@@ -12,8 +12,10 @@ no new failure occurs among previously passing reached67 bodies. First remaining
 FlattenCompat::iter_fold4718/body142:10360,error142:10701,line398 at
 self.iter.fold(acc,flatten(&mut fold)). All722/375/six/current+immutable3907/
 profile/limits verify unchanged. No complete census, throughput or original artifact.
-Full43154313816 on preceding01e7013/sourcec388 remains running; do not restart it
-for this descendant. Next reduce the actual nested helper's callable input
+Full43154313816 on preceding01e7013/sourcec388 finishes with all Rust regular
+tests and PA24 text passing; three PA21 inspection contracts differ. Their
+[independent review](pa21-empty-binder-ci-review.md) preserves source/outcomes
+and qualifies exact normal reference updates before a full successor. Next reduce the actual nested helper's callable input
 correlation; keep projection inference directional. Earlier snapshots follow.
 
 Current [try-capture checkpoint](pa24-try-captures.md), CLI67f146ab, qualifies

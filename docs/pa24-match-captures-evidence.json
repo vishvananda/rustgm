@@ -237,7 +237,8 @@
     "run": 43154313816,
     "head": "01e7013ebf3b2dea2153fe87661a502805360d59",
     "source": "c388b27099c03f75e01adf830346fe3c2a04e3f6",
-    "status": "running release/course; fast, lint/architecture/harness and independent host graph passed; later stages pending; do not restart for docs/new descendants"
+    "status": "terminal failure; all Rust regular tests pass, PA21 text864/867,PA24 text642/642; later native/debug/independent skipped",
+    "review": "docs/pa21-empty-binder-ci-review.md"
   },
   "original_core": {
     "item_attempts": 14018,
@@ -374,5 +375,6 @@
     "no_optimized_or_core_speed_claim": true,
     "raw": "obj/parallel/filter-map-captures/measure",
     "cleanup": "1794458685894771241"
-  }
+  },
+  "current_full_ci": "pending reviewed PA21 reference publication and fresh no-active-full check"
 }

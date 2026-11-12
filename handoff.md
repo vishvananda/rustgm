@@ -41,10 +41,19 @@ self.iter.fold(acc,flatten(&mut fold)), callinputsremainunresolved. Postcheck
 1794458868356791540 verifies722/375/six/current+immutable3907/profile/limits.
 ProgressSHA18a7eb53a2f813bc461bf482b21a203ce219cb0bc58e77adb38889ee0f4b991d.
 No completecensus/throughput/core/alloc/stdartifact. NEXT: publishobservations,
-refreshfullstatus/noactivecheck (doNOTstartanotherfullwhile43154313816active),
+refreshfullstatus/noactivecheck afterreviewedreferencefollowup,
 reduceactualnestedflatten return-callableinputTcorrelation ordinaryPA24/sourcePA31.
-Full43154313816 RUNNING EXACT01e7013/sourcec388;fast/lint/architecture/harness/
-hostgraphPASS,release/courseinprogress,laterpending. Stable5d/current623/optimized21f
+Full43154313816 TERMINALFAILURE EXACT01e7013/sourcec388: ALLRustregularPASS,
+3065private0fail3ignored/linking285PASS. PA24text642/642; PA21text864/867 on3
+inspection-onlyempty-binderproofrecords. Laternative/debug/independentSKIPPED.
+[Review](docs/pa21-empty-binder-ci-review.md) verifies3originalbytes equalstable5d,
+old5d matchesoldrefs, preceding67==current623 ALL3newoutputs. FouractualRust/CPP
+runtimecomparisons+6intendednegativecompleteoutcomesPASS; nonemptybinderinspection
+unchanged. Normal3tripleupdate/newbatch1794459158288820141-c8391c81a081,
+28194otherreferencehashes/baseJSONunchanged. No compiler/input/outcomechanges.
+Original623evidenceREUSED; no observerrerun forrefs/docs. NEXT publishreviewed
+referencefollowup+ONEfull afterfreshnoactivecheck, thenreduceactualflatteninput.
+Stable5d/current623/optimized21f
 retained; preceding67pineligibleforretirementAFTERpublication+comparison. e8ABSENT
 cleanup1794457333921746162, producer/rawkept. Allolderrequirements preserved.
 Singleworker/no newtrees/backend/storage/limitsfixed.

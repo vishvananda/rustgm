@@ -56,8 +56,4 @@ def 43 type=27 name="p" source=0:16
 parameter owner=13 binding=34 argument=type:21 default=-
 predicate owner=13 source=0:9 forall=0
 quantifier 0 regions=0 subject=21 bound=copy
-proof 0 body=0:30 source=0:17 pending
-proof-scope proof=0 scope=1 parent=0 regions=0 depth=1
-proof-block proof=0 index=0 scope=0 aliases=false source=0 start=1 end=1
-proof-block proof=0 index=1 scope=1 aliases=false source=0 start=1 end=1
-eof owners=0 members=0 parameters=1 predicates=1 impls=0 calls=0 paths=0 impl-uses=0 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0 quantifiers=1 families=0 family-bounds=0 family-regions=0 opaques=0 opaque-bounds=0 hidden-types=0 opaque-body-results=0 opaque-implementations=0 proofs=1 proof-scopes=1 proof-blocks=2 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0
+eof owners=0 members=0 parameters=1 predicates=1 impls=0 calls=0 paths=0 impl-uses=0 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0 quantifiers=1 families=0 family-bounds=0 family-regions=0 opaques=0 opaque-bounds=0 hidden-types=0 opaque-body-results=0 opaque-implementations=0 proofs=0 proof-scopes=0 proof-blocks=0 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0

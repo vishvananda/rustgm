@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "state": "passed reviewed normal reference update",
+  "cases": [
+    {
+      "path": "tests/spec/binders/higher-ranked-source/cases/semantics/empty-trait-quantifier.rs",
+      "input_bytes_equal_fully_qualified_baseline": true,
+      "previous_and_current_identical": true,
+      "old_and_new_complete_outputs_saved": true
+    },
+    {
+      "path": "tests/spec/binders/higher-ranked-source/cases/semantics/empty-where-quantifier.rs",
+      "input_bytes_equal_fully_qualified_baseline": true,
+      "previous_and_current_identical": true,
+      "old_and_new_complete_outputs_saved": true
+    },
+    {
+      "path": "tests/spec/contracts/equalities/cases/semantics/equality-empty-binder.rs",
+      "input_bytes_equal_fully_qualified_baseline": true,
+      "previous_and_current_identical": true,
+      "old_and_new_complete_outputs_saved": true
+    }
+  ],
+  "current_sha256": "623ff5bc248b5f8d722ade9e71cf2ed486328cc6b2271fa8a46b1aef3b220204",
+  "previous_sha256": "67f146ab1d137041423db053336ea8a4724269bb413dfdf97367ffceb108791e",
+  "baseline_sha256": "5d434e3a2eee340faa9172c9e70d6af18b63ecfe4d8251fcaa90451be728ee8c",
+  "actual_positive_runtime_comparisons": 4,
+  "intended_negative_outcomes": 6,
+  "nonempty_binder_semantics_unchanged": true,
+  "new_batch": "pa21/reference-batches/1794459158288820141-c8391c81a081.json",
+  "new_batch_sha256": "c8391c81a0816b0954be13f8275817c0667c41be5dbdb374328c3cb1db12b3d9",
+  "all_other_reference_hashes_unchanged": 28194,
+  "source_bytes_and_outcomes_unchanged": true,
+  "full_ci": {
+    "run": 43154313816,
+    "head": "01e7013ebf3b2dea2153fe87661a502805360d59",
+    "source": "c388b27099c03f75e01adf830346fe3c2a04e3f6",
+    "status": "terminal failure; all Rust regular tests pass; PA21 text864/867,PA24 text642/642; later native/debug/independent stages skipped"
+  },
+  "production_source_changed": false,
+  "fixture_inputs_changed": false,
+  "original_observation_reused": "source08794/frozen623 unchanged; no new probe for references/docs",
+  "raw": "obj/parallel/pa21-empty-binder-ci",
+  "harness": "passed:315 harness tests,468 integration roots/13 binaries, layout checks"
+}

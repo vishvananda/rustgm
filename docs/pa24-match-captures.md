@@ -84,9 +84,11 @@ This is neither a complete census nor a core/alloc/std artifact. Next reduce the
 actual generic helper and returned-callable input correlation without inferring
 an associated projection's inputs from its result.
 
-Full43154313816 remains active on exact01e7013/sourcec388: fast, lint/architecture/
-harness and host graph pass; release/course is running and later stages remain
-pending. Do not restart it for this descendant. Preserve all older requirements,
+Full43154313816 finishes with every Rust regular test passing and PA24 text642/
+642, but three PA21 inspection references differ (864/867). Later CI stages are
+skipped. The [independent empty-binder review](pa21-empty-binder-ci-review.md)
+checks the preserved semantics before normal scoped reference updates. Full
+successor qualification is pending publication and a fresh no-active-full check. Preserve all older requirements,
 stable5d until full success and optimized21f. Preceding e8 has been retired after
 publication and comparison; its producer/raw evidence remain, its executable is absent.
 
