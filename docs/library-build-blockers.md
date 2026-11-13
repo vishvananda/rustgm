@@ -1,22 +1,29 @@
 # Library build blocker tracker
 
-Release candidate9 (`obj/parallel/capture-match/candidate9-release`, clean
-99a409d03, CLI 4f989cae) carries every fix below. The unchanged 120s observer
-ran it exclusively from load 11.9. It reached the end of the body pass in
-22.4s, with all 42,310 declarations passing, 35,120 item attempts, and 5
-failed and 13 blocked bodies, against candidate8's 8 and 13. Every record is
-a candidate8 record, so no previously passing body failed. The three
-portable-simd projection normalizations pass. The completion pass was not
-run. The remaining failures:
+Release candidate10 (`obj/parallel/capture-match/candidate10-release`, clean
+534f3cc67, CLI 070d8da9) carries every fix below. The unchanged 120s observer
+ran it exclusively from load 11.4. It reached the end of the body pass in
+23.1s, with all 42,310 declarations passing, 35,120 item attempts, 25,850
+checked bodies, and 4 failed and 4 blocked bodies, against candidate9's 5
+and 13. Every record is a candidate9 record, so no previously passing body
+failed. `core_simd`'s `div` 36996 and the nine `div` and `rem` bodies it
+blocked pass. The completion pass was not run. The remaining failures:
 
 - `as_underlying` 7631 (`slice/cmp.rs:52`), "source transmute requires equal
-  source and destination sizes", the bool niche of `ControlFlow<bool>`;
+  source and destination sizes". `ControlFlow<bool>` needs `bool`'s niche
+  for `Continue(())`;
 - 2 closure lifetimes, `into_searcher` 26791 and `is_contained_in` 26792
   (`str/pattern.rs:956`), which block four more;
-- `core_simd` `div` 36996 (`ops.rs:139`), a trait obligation, which blocks
-  nine more, fixed after candidate9 by the global clause premises checkpoint
-  below;
-- `repr_bitpacked.rs:300`'s const `_` 25396, "incompatible types".
+- `repr_bitpacked.rs:350`'s `static_assert!(@usize_eq: size_of::<Result<(),
+  Repr>>(), 8)`, const `_` 25396 at its macro's `const _: [(); $lhs] = [();
+  $rhs];` (line 300), "incompatible types". `Repr` wraps `NonNull<()>`, and
+  rustc places `Ok(())` in its null niche.
+
+Both layout failures need a niche for an enum whose other variant is
+zero-sized but not fieldless. Source nullable eligibility now requires a
+fieldless variant beside one single-field variant. 7631 also needs a scalar
+niche other than zero. `spec.md` lists general scalar and multifield niches
+as remaining work.
 
 No core artifact exists. A core build would also stop at the initial
 assembly profile for the ymm, zmm and kreg bodies.

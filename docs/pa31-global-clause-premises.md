@@ -197,3 +197,14 @@ Each quadrupling of the function count multiplies every measure by at most
 `make test-upstream` is not rerun: no upstream fixture changed. No graded case
 or reference is added, and no planned assignment is activated. Full release
 regular and native tests are left to scheduled CI.
+
+## Core progress
+
+Release candidate10 (`obj/parallel/capture-match/candidate10-release`, clean
+534f3cc67, CLI 070d8da9) carries this change. The unchanged 120s observer ran
+it exclusively from load 11.4. It reached the end of the body pass in 23.1s,
+with all 35,120 item attempts, 25,850 checked bodies, and 4 failed and 4
+blocked bodies, against candidate9's 5 and 13. `div` 36996 and the nine `div`
+and `rem` bodies it blocked pass. Every candidate10 record is a candidate9
+record, so no previously passing body failed
+(`obj/parallel/capture-match/original-candidate10-comparison.json`).

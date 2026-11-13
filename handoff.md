@@ -149,6 +149,23 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-13 release candidate10 observation (supersedes the blocks below):**
+
+- Candidate10 (`obj/parallel/capture-match/candidate10-release`, clean
+  534f3cc67, CLI 070d8da9) reached the end of the body pass in 23.1s under the
+  unchanged 120s observer, run exclusively from load 11.4. It had 4 failed and
+  4 blocked bodies, against candidate9's 5 and 13, and no new failure
+  ([tracker](docs/library-build-blockers.md)). `div` 36996 and the nine
+  `div` and `rem` bodies it blocked pass.
+- Candidate10 is now the only release pin. The candidate9 binary and the
+  frozen `cli-wip` were retired and pruned. Their observations remain.
+- Next: the two layout failures share one gap. `Result<(), Repr>` (25396)
+  and `ControlFlow<bool>` (7631) each pair a zero-sized but not fieldless
+  variant with a niche carrier. Source nullable eligibility requires a
+  fieldless variant, its item policy fixes the variant orientation, and the
+  carriers are zero-niche only. 7631 also needs `bool`'s niche value 2.
+  PA27 owns the `str/pattern.rs:956` closure lifetimes.
+
 **2026-11-13 global clause premises update (supersedes the blocks below):**
 
 - portable-simd's `div` 36996 (`ops.rs:139`) now types
