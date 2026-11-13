@@ -168,4 +168,19 @@ Its 31 private-field records:
 - `eq`: `char/convert.rs:317`, `ffi/c_str.rs:158`, `net/parser.rs:486`,
   `wtf8.rs:36` and `marker/variance.rs:107`.
 
-No core observation of this change has run yet.
+Release candidate4 (`obj/parallel/capture-match/candidate4-release`,
+82013883, clean 28c5f9780) carries this change. The unchanged 120s observer
+ran it exclusively from load 8.4. It reached the end of the body pass in
+24.5s:
+
+- 42,310 declarations checked, none failed;
+- 25,804 bodies checked, 30 failed and 24 blocked;
+- 44 of candidate3's records cleared, and no previously passing body failed.
+
+30 of the 31 private-field bodies pass. The derived `eq` of
+`marker/variance.rs:107`'s `PhantomCovariantLifetime<'a>` now types its field
+and stops later, at "cannot lower a captured local lifetime". Every other
+candidate4 failure is one of candidate3's 29 other failures. The progress
+SHA-256 is
+`12813583a3d9159cfd029e61c0ea6fddf4886d8f6b825ac28249fc7d3f08192a`, and the
+comparison is `obj/parallel/capture-match/original-candidate4-comparison.txt`.

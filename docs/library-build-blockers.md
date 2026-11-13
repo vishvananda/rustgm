@@ -6,8 +6,11 @@ fixes "aggregate field is private" in 31 derived core bodies, 26 `fmt` and 5
 `array/mod.rs:182`'s `TryFromSliceError(())`. The derive spelled the index of
 `self.0` in the derive's own context, so privacy was checked from the macro's
 module. The index is now anchored on its field, as rustc spans it. Seventeen
-source-core reductions and struct-linear work qualify the fix. No core
-observation of it has run yet.
+source-core reductions and struct-linear work qualify the fix. Release
+candidate4 (82013883, 28c5f9780) reached the end of the body pass in 24.5s,
+with 30 failed and 24 blocked bodies. 30 of the 31 bodies pass, and 44 of
+candidate3's records cleared. The derived `eq` of `marker/variance.rs:107` now
+stops later, at "cannot lower a captured local lifetime".
 
 Release candidate3 (8d56d3e0, fc41ecb7c) was the first core observation with
 a release pin. The unchanged 120s observer reached the end of the body pass in
@@ -15,7 +18,7 @@ a release pin. The unchanged 120s observer reached the end of the body pass in
 bodies failed and 38 were blocked, so the completion pass was not run.
 10511-10513 and 10805 pass. The remaining failure groups:
 
-- 31 derived private-field bodies, fixed above;
+- 31 derived private-field bodies, fixed above except `variance.rs:107`;
 - 11 `zmm_reg`/`kreg` and 2 avx512fp16 `xmm_reg` assembly bodies;
 - 5 trait obligations: `array_chunks` and `peekable` `clone`, `intersperse`
   `fmt`, slice iterator `default` and `core_simd` division;

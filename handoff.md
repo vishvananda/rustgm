@@ -157,7 +157,16 @@ the passing receipts, not those attempts, qualify the current implementation.
   - Seventeen reductions are in `pa31/tests/spec/derive-field-privacy`.
   - The four declared batches, the oracle stderr and the scaling rows are in
     `obj/parallel/derive-privacy/`.
-- Next: a release pin of this change and a core re-observation.
+- Release candidate4 (`obj/parallel/capture-match/candidate4-release`,
+  82013883, clean 28c5f9780) reached the end of the body pass in 24.5s under
+  the unchanged 120s observer. 25,804 bodies were checked, with 30 failed and
+  24 blocked. 30 of the 31 bodies pass, 44 of candidate3's records cleared,
+  and no previously passing body failed.
+  - `marker/variance.rs:107`'s derived `eq` now stops at "cannot lower a
+    captured local lifetime".
+  - The census is `obj/parallel/capture-match/original-candidate4/`.
+- Next: `fmt/num.rs:145`/`:166`, whose cfg-removed trailing block leaves
+  typing without the block's tail (`obj/parallel/cfg-tail/`).
 
 **2026-11-13 release candidate observation (supersedes the blocks below):**
 
