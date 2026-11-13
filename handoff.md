@@ -149,6 +149,23 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-13 release candidate9 observation (supersedes the blocks below):**
+
+- Candidate9 (`obj/parallel/capture-match/candidate9-release`, clean
+  99a409d03, CLI 4f989cae) reached the end of the body pass in 22.4s under the
+  unchanged 120s observer, run exclusively from load 11.9. It had 5 failed and
+  13 blocked bodies, against candidate8's 8 and 13, and no new failure
+  ([tracker](docs/library-build-blockers.md)). The three portable-simd
+  normalizations pass.
+- Candidate9 is now the only release pin. The candidate8 binary was retired
+  and pruned. Its observation remains.
+- In progress: `ops.rs:139` `div`. Batches in `obj/parallel/simd-divrem/`
+  reproduce it. `impl Div for Simd<i8, N> where i8: SimdElement` fails at
+  `self.simd_eq(Simd::splat(<i8>::MIN))`; the same guard passes in a free
+  function and for `u8`. The suspected cause is the global caller clause
+  `i8: SimdElement` competing with its impl. Batch 3 is declared and not yet
+  run.
+
 **2026-11-13 body projection normalization update (supersedes the blocks below):**
 
 - portable-simd's `first_set` 17766 and `try_from` 17943 and 17946 now type

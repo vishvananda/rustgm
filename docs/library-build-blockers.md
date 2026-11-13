@@ -1,20 +1,16 @@
 # Library build blocker tracker
 
-Release candidate8 (`obj/parallel/capture-match/candidate8-release`, clean
-53667da5b, CLI ae92eca9) carries every fix below. The unchanged 120s observer
-ran it exclusively from load 9.5. It reached the end of the body pass in
-23.0s, with all 42,310 declarations passing, 35,120 item attempts, and 8
-failed and 13 blocked bodies, against candidate6's 27 and 14. Every record is
-a candidate6 record, so no previously passing body failed. The thirteen
-AVX-512 bodies, both slice iterator `default` bodies and the five derived
-bodies pass. The completion pass was not run. The remaining failures:
+Release candidate9 (`obj/parallel/capture-match/candidate9-release`, clean
+99a409d03, CLI 4f989cae) carries every fix below. The unchanged 120s observer
+ran it exclusively from load 11.9. It reached the end of the body pass in
+22.4s, with all 42,310 declarations passing, 35,120 item attempts, and 5
+failed and 13 blocked bodies, against candidate8's 8 and 13. Every record is
+a candidate8 record, so no previously passing body failed. The three
+portable-simd projection normalizations pass. The completion pass was not
+run. The remaining failures:
 
 - `as_underlying` 7631 (`slice/cmp.rs:52`), "source transmute requires equal
   source and destination sizes", the bool niche of `ControlFlow<bool>`;
-- 3 portable-simd "associated type projection requires normalization":
-  `first_set` 17766 (`masks.rs:395`) and `try_from` 17943 and 17946
-  (`vector.rs:1045`, `:1057`), fixed after candidate8 by the body projection
-  normalization checkpoint below;
 - 2 closure lifetimes, `into_searcher` 26791 and `is_contained_in` 26792
   (`str/pattern.rs:956`), which block four more;
 - `core_simd` `div` 36996 (`ops.rs:139`), a trait obligation, which blocks
@@ -25,7 +21,8 @@ No core artifact exists. A core build would also stop at the initial
 assembly profile for the ymm, zmm and kreg bodies.
 
 The [body projection normalization checkpoint](pa31-body-projection-normalization.md)
-fixes portable-simd's `first_set` 17766 and `try_from` 17943 and 17946.
+fixes portable-simd's `first_set` 17766 and `try_from` 17943 and 17946,
+which candidate9 passes.
 `first_set`'s `let min_index: T::Unsigned` resolved to a known projection
 that no body normalization covered, because no signature names the type. Such
 an annotation is now registered for body normalization, as a qualified path

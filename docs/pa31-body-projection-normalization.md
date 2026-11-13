@@ -216,4 +216,11 @@ native tests, including PA24's accept/reject integration tests for
 
 ## Core progress
 
-No core observation of this change has run yet.
+Release candidate9 (`obj/parallel/capture-match/candidate9-release`, clean
+99a409d03, CLI 4f989cae) carries this change. The unchanged 120s observer ran
+it exclusively from load 11.9. It reached the end of the body pass in 22.4s,
+with all 35,120 item attempts, 25,840 checked bodies, and 5 failed and 13
+blocked bodies, against candidate8's 8 and 13. `first_set` 17766 and
+`try_from` 17943 and 17946 pass. Every candidate9 record is a candidate8
+record, so no previously passing body failed
+(`obj/parallel/capture-match/original-candidate9-comparison.json`).
