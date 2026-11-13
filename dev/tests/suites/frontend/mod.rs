@@ -117,6 +117,8 @@ mod macro_rules;
 mod macro_session;
 #[path = "../../macro_transcription.rs"]
 mod macro_transcription;
+#[path = "../../matchability.rs"]
+mod matchability;
 #[path = "../../modular_primitives.rs"]
 mod modular_primitives;
 #[path = "../../modules.rs"]

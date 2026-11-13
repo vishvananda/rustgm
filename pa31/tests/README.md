@@ -1245,3 +1245,5 @@ reference/closure input contracts and their lifetime opponents. See its manifest
 and README; qualification is recorded with the implementation checkpoint.
 
 The [inferred-input repair](../../docs/pa24-inferred-inputs.md) records the new packet contracts, declared outcomes, focused/native evidence and remaining qualification.
+
+- [Structural constant patterns](spec/structural-constant-patterns/README.md):19 actual-source outcomes (one initial rejection prediction corrected to required acceptance); prepared/native qualification is recorded in [the checkpoint](../../docs/pa31-structural-patterns.md).

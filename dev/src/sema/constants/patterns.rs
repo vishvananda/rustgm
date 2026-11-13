@@ -18,6 +18,7 @@ struct Expansion<'a> {
     references: HashMap<(super::references::Pointer, TypeId), PatternId>,
     texts: HashMap<(crate::sema::text::Id, TypeId), PatternId>,
     remaining: u64,
+    source_traits: bool,
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 enum ProductKey {
@@ -36,6 +37,7 @@ pub(super) fn expand(
     facts: &mut Declarations,
     root: PatternId,
     value: Value,
+    mut dispatch: Option<&mut crate::sema::dispatch::Dispatcher>,
 ) -> Result<(), Error> {
     let source = facts.patterns.nodes[root.0 as usize].source;
     let error = |message| Declarations::error(report, source, message);
@@ -50,30 +52,35 @@ pub(super) fn expand(
         references: HashMap::default(),
         texts: HashMap::default(),
         remaining: 1_000_000,
+        source_traits: dispatch.is_some(),
     };
     let facts = &mut *expansion.facts;
-    let equality = facts
-        .equality
-        .demand_with_copy(
-            &facts.types,
-            &facts.aggregates,
-            &facts.equality_derives,
-            ty,
-            |ty| {
-                facts
-                    .copies
-                    .demand(&facts.types, &facts.aggregates, &facts.derives, ty)
-                    .map(|p| p.copy)
-            },
-        )
-        .map_err(error)?;
-    if !equality.partial_eq {
-        return Err(error("constant pattern type must implement PartialEq"));
+    if let Some(dispatch) = dispatch.as_deref_mut() {
+        super::structural_patterns::equality(report, facts, dispatch, source, ty)?;
+    } else {
+        let equality = facts
+            .equality
+            .demand_with_copy(
+                &facts.types,
+                &facts.aggregates,
+                &facts.equality_derives,
+                ty,
+                |ty| {
+                    facts
+                        .copies
+                        .demand(&facts.types, &facts.aggregates, &facts.derives, ty)
+                        .map(|p| p.copy)
+                },
+            )
+            .map_err(error)?;
+        if !equality.partial_eq {
+            return Err(error("constant pattern type must implement PartialEq"));
+        }
     }
     if let Some(product) = product_key(value) {
         expansion.products.insert((product, ty), root);
     }
-    expansion.drain().map_err(error)
+    expansion.drain(report, dispatch)
 }
 impl Expansion<'_> {
     fn charge(&mut self, count: u64) -> Result<(), &'static str> {
@@ -83,88 +90,102 @@ impl Expansion<'_> {
             .ok_or("constant pattern expansion work budget exceeded")?;
         Ok(())
     }
-    fn drain(&mut self) -> Result<(), &'static str> {
+    fn drain(
+        &mut self,
+        report: &Report,
+        mut dispatch: Option<&mut crate::sema::dispatch::Dispatcher>,
+    ) -> Result<(), Error> {
         while let Some((id, value)) = self.work.pop() {
-            self.charge(1)?;
+            let source = self.source;
+            let error = |message| Declarations::error(report, source, message);
+            self.charge(1).map_err(error)?;
             let ty = self.facts.patterns.nodes[id.0 as usize]
                 .ty
-                .ok_or("missing constant pattern input type")?;
-            let value = self.literal_pointer(ty, value)?;
-            let kind = match (self.facts.types.kind(ty), value) {
-                (
-                    Some(Type::Reference {
-                        mutable: false,
-                        referent,
-                        ..
-                    }),
-                    Value::Text(_) | Value::Bytes(_),
-                ) => {
-                    let pattern = self.select(referent, value)?;
-                    Kind::Dereference {
-                        mutable: false,
-                        implicit: false,
-                        pattern,
-                    }
-                }
-                (
-                    Some(Type::Reference {
-                        mutable: false,
-                        referent,
-                        ..
-                    }),
-                    Value::Reference(_),
-                ) => {
-                    let value = self
-                        .facts
-                        .constant_references
-                        .get(value)?
-                        .value
-                        .ok_or("constant pattern requires completed location contents")?;
-                    let pattern = self.select(referent, value)?;
-                    Kind::Dereference {
-                        mutable: false,
-                        implicit: false,
-                        pattern,
-                    }
-                }
-                (Some(Type::Primitive(Primitive::Str)), Value::Text(text)) => Kind::Text(text),
-                (Some(Type::Array { .. } | Type::Slice(_)), Value::Bytes(text)) => {
-                    self.bytes(ty, text)?
-                }
-                (Some(Type::Primitive(primitive)), Value::Scalar(value)) => {
-                    let domain = Domain::new(primitive)
-                        .ok_or("constant pattern requires structural equality")?;
-                    let rank = domain.rank(value, false)?;
-                    let range = RangeId(
-                        u32::try_from(self.facts.patterns.ranges.len())
-                            .map_err(|_| "too many constant pattern ranges")?,
-                    );
-                    self.facts.patterns.ranges.push(Interval {
-                        lower: rank,
-                        upper: rank,
-                    });
-                    Kind::Range(range)
-                }
-                (
-                    Some(Type::Tuple(_) | Type::Array { .. } | Type::Slice(_) | Type::Adt(..)),
-                    value @ (Value::Product(_) | Value::Canonical(_)),
-                ) => self.product(ty, value)?,
-                (Some(Type::Adt(..)), Value::Variant(variant)) => {
-                    if self.nominal(ty, variant)? != 0 {
-                        return Err("fieldless constant has constructor fields");
-                    }
-                    let start = u32::try_from(self.facts.patterns.fields.len())
-                        .map_err(|_| "too many constant pattern fields")?;
-                    Kind::Product {
-                        variant: Some(variant),
-                        fields: Fields { start, end: start },
-                    }
-                }
-                _ => return Err("constant pattern requires supported structural equality"),
-            };
+                .ok_or_else(|| error("missing constant pattern input type"))?;
+            if matches!(self.facts.types.kind(ty), Some(Type::Adt(..)))
+                && let Some(dispatch) = dispatch.as_deref_mut()
+            {
+                super::structural_patterns::nominal(report, self.facts, dispatch, source, ty)?;
+            }
+            let value = self.literal_pointer(ty, value).map_err(error)?;
+            let kind = self.kind(ty, value).map_err(error)?;
             self.facts.patterns.nodes[id.0 as usize].kind = kind;
         }
         Ok(())
+    }
+    fn kind(&mut self, ty: TypeId, value: Value) -> Result<Kind, &'static str> {
+        Ok(match (self.facts.types.kind(ty), value) {
+            (
+                Some(Type::Reference {
+                    mutable: false,
+                    referent,
+                    ..
+                }),
+                Value::Text(_) | Value::Bytes(_),
+            ) => {
+                let pattern = self.select(referent, value)?;
+                Kind::Dereference {
+                    mutable: false,
+                    implicit: false,
+                    pattern,
+                }
+            }
+            (
+                Some(Type::Reference {
+                    mutable: false,
+                    referent,
+                    ..
+                }),
+                Value::Reference(_),
+            ) => {
+                let value = self
+                    .facts
+                    .constant_references
+                    .get(value)?
+                    .value
+                    .ok_or("constant pattern requires completed location contents")?;
+                let pattern = self.select(referent, value)?;
+                Kind::Dereference {
+                    mutable: false,
+                    implicit: false,
+                    pattern,
+                }
+            }
+            (Some(Type::Primitive(Primitive::Str)), Value::Text(text)) => Kind::Text(text),
+            (Some(Type::Array { .. } | Type::Slice(_)), Value::Bytes(text)) => {
+                self.bytes(ty, text)?
+            }
+            (Some(Type::Primitive(primitive)), Value::Scalar(value)) => {
+                let domain = Domain::new(primitive)
+                    .ok_or("constant pattern requires structural equality")?;
+                let rank = domain.rank(value, false)?;
+                let range = RangeId(
+                    u32::try_from(self.facts.patterns.ranges.len())
+                        .map_err(|_| "too many constant pattern ranges")?,
+                );
+                self.facts.patterns.ranges.push(Interval {
+                    lower: rank,
+                    upper: rank,
+                });
+                Kind::Range(range)
+            }
+            (
+                Some(Type::Tuple(_) | Type::Array { .. } | Type::Slice(_) | Type::Adt(..)),
+                value @ (Value::Product(_) | Value::Canonical(_)),
+            ) => self.product(ty, value)?,
+            (Some(Type::Adt(..)), Value::Variant(variant)) => {
+                if self.nominal(ty, variant)? != 0 {
+                    return Err("fieldless constant has constructor fields");
+                }
+                let start = u32::try_from(self.facts.patterns.fields.len())
+                    .map_err(|_| "too many constant pattern fields")?;
+                Kind::Product {
+                    variant: Some(variant),
+                    fields: Fields { start, end: start },
+                }
+            }
+            _ => return Err("constant pattern requires supported structural equality"),
+        })
     }
     fn product(&mut self, ty: TypeId, value: Value) -> Result<Kind, &'static str> {
         let (length, variant) = match Reader::new(self.facts).view(Constant(value))? {
@@ -279,11 +300,12 @@ impl Expansion<'_> {
         if item != member.owner {
             return Err("constant constructor differs from its type");
         }
-        if !self
-            .facts
-            .equality_derives
-            .get(&item)
-            .is_some_and(|p| p.partial_eq)
+        if !self.source_traits
+            && !self
+                .facts
+                .equality_derives
+                .get(&item)
+                .is_some_and(|p| p.partial_eq)
         {
             return Err("nominal constant patterns require derived PartialEq");
         }

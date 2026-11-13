@@ -116,7 +116,7 @@ impl Catalog {
     }
 }
 
-const TRAIT_ROLES: [LangItem; 40] = [
+const TRAIT_ROLES: [LangItem; 41] = [
     LangItem::Clone,
     LangItem::Copy,
     LangItem::UseCloned,
@@ -141,6 +141,7 @@ const TRAIT_ROLES: [LangItem; 40] = [
     LangItem::Unpin,
     LangItem::UnsafeUnpin,
     LangItem::ConstParamTy,
+    LangItem::StructuralPartialEq,
     LangItem::From,
     LangItem::BikeshedGuaranteedNoDrop,
     LangItem::TransmuteTrait,
@@ -213,6 +214,10 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
                 &header,
                 &mut complete.roles,
             )?,
+            LangItem::StructuralPartialEq => {
+                parameter_types::structural_header(facts, &header)
+                    .map_err(|message| Declarations::error(report, declaration.origin, message))?;
+            }
             LangItem::Clone | LangItem::Copy | LangItem::LegacyReceiver => copying::validate(
                 report,
                 facts,

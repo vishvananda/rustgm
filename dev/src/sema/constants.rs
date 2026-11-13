@@ -31,6 +31,7 @@ pub(super) mod references;
 mod scope_frames;
 mod scope_progress;
 mod scope_requests;
+mod structural_patterns;
 mod suspension;
 pub(super) use suspension::Continuation as ArgumentContinuation;
 pub(super) use suspension::Dependency as ArgumentDependency;

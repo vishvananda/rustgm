@@ -112,7 +112,29 @@ impl Queries<'_> {
     ) -> Result<(), Error> {
         if let Some(pattern) = pattern {
             self.complete_pattern(key, value)?;
-            return super::patterns::expand(self.report, self.typing.facts, pattern, value);
+            let source_traits = self.report.package.uses_source_bindings()
+                && !matches!(
+                    self.typing.facts.patterns.nodes[pattern.0 as usize]
+                        .ty
+                        .and_then(|ty| self.typing.facts.types.kind(ty)),
+                    Some(super::Type::Primitive(_))
+                );
+            if source_traits {
+                self.prepare_pattern_dispatch(key)?;
+            }
+            super::patterns::expand(
+                self.report,
+                self.typing.facts,
+                pattern,
+                value,
+                if source_traits {
+                    self.pattern_dispatch.as_mut()
+                } else {
+                    None
+                },
+            )?;
+            self.reserve_pattern_dispatch()?;
+            return self.check_pattern_storage(0);
         }
         let value = value
             .scalar()
@@ -129,6 +151,33 @@ impl Queries<'_> {
             })?
             .scalar = Some(value);
         Ok(())
+    }
+    pub(super) fn prepare_pattern_dispatch(&mut self, key: NodeKey) -> Result<(), Error> {
+        if self.pattern_dispatch.is_some() {
+            return Ok(());
+        }
+        let scope = self.pattern_scope.ok_or_else(|| {
+            self.error(
+                Query::Node(key),
+                "source pattern lacks its original caller scope",
+            )
+        })?;
+        let first = self
+            .typing
+            .facts
+            .body_regions
+            .frontier(scope.body)
+            .map_err(|_| self.error(Query::Node(key), "pattern dispatch region overflow"))?;
+        self.pattern_dispatch = Some(
+            crate::sema::dispatch::Dispatcher::pattern(
+                self.typing.facts,
+                scope.binders,
+                first,
+                scope.owner,
+            )
+            .map_err(|error| self.error(Query::Node(key), error))?,
+        );
+        self.reserve_pattern_dispatch()
     }
     pub(super) fn next_pattern_request(&mut self, id: FrameId) -> Result<(), Error> {
         self.resume_pattern_dispatch()?;

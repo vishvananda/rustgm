@@ -427,3 +427,10 @@ LIB192 to an unlocated shared work-budget guard193. Four private,23 regular and
 six native controls pass on the same compiler snapshot; no limit/source change
 or original artifact is claimed. Assignment status is unchanged. Root handoff.md
 records the user-requested pause and exact restart boundary.
+
+The [source structural-pattern checkpoint](docs/pa31-structural-patterns.md)
+qualifies19 prepared source outcomes and a three-export native observer, with
+actual trait identities, value-specific variants and name-token API allowances.
+It reduces candidate13's Alignment failure; a successor original-core observation
+is still due. Ordinary controls and empty-list positives remain explicit
+requirements. No original library artifact or whole-PA release is implied.

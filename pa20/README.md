@@ -287,3 +287,8 @@ reviewed executable outcomes. A caller premise selects a path call's inferred
 `Rhs` and binds it to the premise's own projection, as in core's `Pin`
 comparison forwarding. The argument's expectation and reference coercion still
 succeed. A premise naming another `Rhs` rejects.
+
+The [structural-pattern controls](tests/spec/structural-pattern-controls/README.md)
+retain four ordinary sources and required outcomes in a serialized manifest.
+Handwritten standard-trait implementation and inactive-variant qualification
+remain required; actual source counterparts are qualified in PA31.

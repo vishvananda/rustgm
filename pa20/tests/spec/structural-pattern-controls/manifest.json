@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "profile": {
+    "rustc": "1.98.0 (88d9e12ae)",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": true
+  },
+  "state": "Serialized independently frozen requirements, following late-method-properties/pending.json. Not passing/activated course cases; expected positive outcomes remain required.",
+  "cases": {
+    "ordinary-derived.rs": {
+      "accepted": true,
+      "sha256": "c1ee287c06fcb6c88dc87691cedcdf916b4673af2c6d780ef5709500ed75c584",
+      "expected": "accept",
+      "independent_rustc": "accept",
+      "baseline_rustgm": "accept",
+      "state": "baseline control",
+      "source_utf8": "\n#[derive(PartialEq,Eq)]struct Token(u8);const C:Token=Token(7);fn probe(x:Token)->bool{match x{C=>true,_=>false}}\nfn main(){}\n"
+    },
+    "ordinary-manual.rs": {
+      "accepted": false,
+      "sha256": "49f72ad6f0eb3dcfd971f2345536e36c5f997af37ab292e7eb7bd21a552cd99e",
+      "expected": "reject",
+      "independent_rustc": "reject",
+      "baseline_rustgm": "reject",
+      "state": "requires ordinary standard-trait implementation/structural pattern qualification; not activated",
+      "source_utf8": "\nstruct Token(u8);impl PartialEq for Token{fn eq(&self,_:&Self)->bool{true}}const C:Token=Token(7);fn probe(x:Token)->bool{match x{C=>true,_=>false}}\nfn main(){}\n"
+    },
+    "ordinary-inactive-field.rs": {
+      "accepted": true,
+      "sha256": "7769b63f26efd842504a24766f67c05e68f098ab0821c73e35af7b846972ac83",
+      "expected": "accept",
+      "independent_rustc": "accept",
+      "baseline_rustgm": "reject",
+      "state": "requires ordinary standard-trait implementation/structural pattern qualification; not activated",
+      "source_utf8": "\nstruct Token(u8);impl PartialEq for Token{fn eq(&self,_:&Self)->bool{true}}#[derive(PartialEq)]enum E{Good(u8),Bad(Token)}const C:E=E::Good(7);fn probe(x:E)->bool{match x{C=>true,_=>false}}\nfn main(){}\n"
+    },
+    "ordinary-active-field.rs": {
+      "accepted": false,
+      "sha256": "dddfa404d081cc7b14141bccebe6701c8c7717c093ca74662bea3b93b86f2d9d",
+      "expected": "reject",
+      "independent_rustc": "reject",
+      "baseline_rustgm": "reject",
+      "state": "requires ordinary standard-trait implementation/structural pattern qualification; not activated",
+      "source_utf8": "\nstruct Token(u8);impl PartialEq for Token{fn eq(&self,_:&Self)->bool{true}}#[derive(PartialEq)]enum E{Good(u8),Bad(Token)}const C:E=E::Bad(Token(7));fn probe(x:E)->bool{match x{C=>true,_=>false}}\nfn main(){}\n"
+    }
+  }
+}

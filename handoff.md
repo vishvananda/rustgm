@@ -93,6 +93,65 @@ known full-CI proof/scaling failures coherently. Appropriate ordinary reductions
 belong in their earliest owning PA; actual core/language-item reductions in PA31.
 No original library artifact or planned whole assignment is complete.
 
+## Current B continuation: structural constant patterns
+
+B has an uncommitted qualified source-pattern repair. Candidate13 remains the
+last original-core observation; no successor core run/artifact exists yet.
+See [the checkpoint](docs/pa31-structural-patterns.md) for the exact contract.
+
+Source admission now uses actual PartialEq/StructuralPartialEq, visits only
+selected variant fields, and checks applicability modulo regions. This classifier
+grants no trait/call evidence; private witnesses become allocator gaps, preserving
+actual constant/initializer/borrow proof. One predicted lifetime rejection was
+disproved by Rust and corrected to a required positive, with history retained.
+Actual type-bound opponents remain enforced. Standalone structural headers use
+the existing cold role ledger. Local derive lists retain their real API policy;
+the actual name token distinguishes literal allowance from captured meta input.
+A temporary per-owner index is prepaid and built once, without dense record growth.
+
+19 source outcomes (12 accept/7 reject), full prepared originals, and three actual
+native exports pass. Outputs match independent Rust/C:1 0 1 0 1 0 0. Public receipt
+1794594933591102663 passes7 exact existing/new controls;1794595182597516639 passes
+final2 source/scaling controls;1794595309828174033 passes finalnative. Strict
+selected/CLI Clippy, format/audit, upstream128+126,315harness,487roots/13binaries,
+44-stage/component layout pass. No reference changed. Source/classifier widths
+8/32/128 give inference5024/6752/13664, canonical4047/8055/24087 and actual trait
+queries16/64/256; hash-checked replay is under structural-constant-patterns/.
+
+Owning PA31 packet has all19 byte-bound inputs/C observer. PA20's four ordinary
+controls are serialized in their own manifest, following pending-input precedent;
+no orphan .rs or expected-positive inversion. Empty derive-list benchmark input
+is independently accepted at8 but baseline-rejected by the existing vocabulary
+introduction/edition guard; larger widths/current candidate are unrun. All bytes
+and required positives remain serialized in PA31's pending_inputs, not counted.
+
+Immutable exploratory wippattern2-dev-fast (3948 source hashes/dirty patch) is
+CLI56485edcef6d8823074fd1a0cd153d0409282bd3bce9077a7e649174d4e0b1a1.
+Wippattern1=753f5cd6 is older, with a known captured-attribute gate bug; do not use
+it as the final candidate. Pin.py now asserts3948, for the two real new Rust files.
+All four nonempty paired-derive8/32/128+ordinary measurement inputs independently
+accept and have byte-identical outputs between wipclosure5 and wippattern2.
+A/A+ABBA timings await load14/20; last actual host load42.88/57.73. Keep both
+comparison binaries until observation, and retain12/13 release baselines.
+Raw failed setups/fastchecks and pin patches remain under
+obj/parallel/structural-constant-patterns/; no temporary trace code exists.
+
+Next finish calibrated observations when admitted, publish the source checkpoint,
+repair known predecessor CI failures and build a clean release at a coherent
+checkpoint before the unchanged120s full original observer. Avoid unoptimized
+full-core timeout repeats; no compiler/profile/limit/upstream-byte change is
+permitted. Then continue to an actual core artifact, not merely a clean census.
+
+CI investigation (not yet changed or verified): dd984cad9 now gives original
+closures their creator signature's implied b:a premise. That may make seals.rs's
+old "unpaid" fixture already paid. Preserve the opponent by explicitly removing
+only the exact exported relation for the manual and Declared comparison, and
+assert absence; do not weaken proof or waive failure. The GAT scaling failure
+appears to involve implementation-only normalization children skipping completed
+parent proof lookup. Preserve Sources/Scope/positive-source distinctions; keep
+the5x scaling guard. Five stale layout tests and the Const->Conditional matrix
+also remain, as listed above. No new private tests have executed locally.
+
 ## Historical private-port draft (superseded by resumed checkpoint)
 
 Published compiler source remains8950ad99c; later commits record documentation.

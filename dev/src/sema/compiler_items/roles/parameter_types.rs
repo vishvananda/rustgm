@@ -42,26 +42,30 @@ pub(super) fn validate(
         ));
     }
     let marker = Trait::source(report, facts, structural).map_err(error)?;
-    marker
-        .profile(
-            &facts.types,
-            Flags {
-                unsafe_: false,
-                constant: false,
-                auto_: false,
-            },
-            0,
-        )
-        .map_err(error)?;
-    if marker.written.supertraits != 0 || !marker.members.is_empty() {
-        return Err(error(
-            "ConstParamTy requires its actual empty StructuralPartialEq trait",
-        ));
-    }
+    structural_header(facts, &marker).map_err(error)?;
     Trait::source(report, facts, eq)
         .map_err(error)?
         .validate_self(&facts.types)
         .map_err(error)?;
     complete.insert(LangItem::StructuralPartialEq);
+    Ok(())
+}
+
+pub(super) fn structural_header(
+    facts: &Declarations,
+    marker: &Trait<'_>,
+) -> Result<(), &'static str> {
+    marker.profile(
+        &facts.types,
+        Flags {
+            unsafe_: false,
+            constant: false,
+            auto_: false,
+        },
+        0,
+    )?;
+    if marker.written.supertraits != 0 || !marker.members.is_empty() {
+        return Err("source StructuralPartialEq requires its actual empty trait");
+    }
     Ok(())
 }

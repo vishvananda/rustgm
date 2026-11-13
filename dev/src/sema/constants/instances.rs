@@ -331,7 +331,7 @@ impl Queries<'_> {
         instance = self
             .canonical_pattern_input(instance)
             .map_err(|e| self.error(Query::Node(key), e))?;
-        if let Some(scope) = self.pattern_scope {
+        if self.pattern_scope.is_some() {
             // Inherent values already retain their owner bounds from inference.
             // With no associated dependencies there is no implementation to select.
             if self
@@ -348,25 +348,7 @@ impl Queries<'_> {
             {
                 return Ok(instance);
             }
-            if self.pattern_dispatch.is_none() {
-                let first = self
-                    .typing
-                    .facts
-                    .body_regions
-                    .frontier(scope.body)
-                    .map_err(|_| {
-                        self.error(Query::Node(key), "pattern dispatch region overflow")
-                    })?;
-                self.pattern_dispatch = Some(
-                    crate::sema::dispatch::Dispatcher::pattern(
-                        self.typing.facts,
-                        scope.binders,
-                        first,
-                        scope.owner,
-                    )
-                    .map_err(|e| self.error(Query::Node(key), e))?,
-                );
-            }
+            self.prepare_pattern_dispatch(key)?;
             if let Some(dispatch) = &mut self.pattern_dispatch {
                 return dispatch
                     .constant(self.typing.facts, instance)

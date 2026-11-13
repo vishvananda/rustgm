@@ -773,3 +773,9 @@ prove complete original-module typing, generated coroutine execution or a librar
 artifact. Preserve the remaining source/runtime/transport requirements above.
 
 The [source Deref/Clone checkpoint](../docs/pa26-deref-clone.md) fixes proof ownership at shared call sites and retains all ordinary, source and native contracts in `tests/spec/deref-clone/manifest.json`. This remains a finite development checkpoint; the whole assignment is planned.
+
+The [structural-pattern checkpoint](../docs/pa31-structural-patterns.md) qualifies
+actual equality/marker classification modulo regions, value-specific enum fields
+and local derive API allowances, with19 source outcomes and three native exports.
+The Alignment reduction passes; unchanged original-core observation, imported
+transport and the ordinary/empty-list requirements remain open.

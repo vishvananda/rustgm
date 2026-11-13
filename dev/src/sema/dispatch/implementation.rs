@@ -69,6 +69,23 @@ pub(super) fn select_source_using(
 }
 
 impl super::Dispatcher {
+    /// Structural pattern eligibility checks trait applicability modulo regions,
+    /// as the pinned language profile requires. It grants no trait/call evidence.
+    /// Retire private witnesses without assuming their lifetime constraints;
+    /// the value query and ordinary pattern borrows keep their separate proofs.
+    pub(in crate::sema) fn pattern_implements_modulo_regions(
+        &mut self,
+        facts: &mut Declarations,
+        predicate: Predicate,
+    ) -> Result<(), String> {
+        let evidence = self
+            .source_evidence(facts, predicate, None)
+            .map_err(super::Failure::message)?;
+        self.obligations
+            .resume_at(evidence.proof.regions.end)
+            .map_err(Into::into)
+    }
+
     /// Reuse the same caller opening and normalization for every actual source selection.
     pub(super) fn source_evidence(
         &mut self,

@@ -1,3 +1,10 @@
+Current original evidence is candidate13: all42310 declarations and25858 bodies,
+with no failed/blocked functions. Actual26791–26796 clear; one crate error stops
+Alignment's constant pattern at alignment.rs29. Completion remains0 and no core
+artifact exists. B's [source structural-pattern repair](pa31-structural-patterns.md)
+passes its19 prepared/native reductions; a clean successor observer is pending.
+The historical candidate12 detail below is superseded by this paragraph.
+
 # Library build blocker tracker
 
 Release candidate12 (`obj/parallel/capture-match/candidate12-release`, clean

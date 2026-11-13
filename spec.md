@@ -8189,3 +8189,14 @@ published-type deduplication: equal types do not imply equal place authority.
 Imported by-value contracts retain mandatory Sized goals until genuine
 permission, metadata ABI and ownership proof are transported. A source feature
 request cannot authorize a borrowed-reference substitute for an owned DST.
+
+Source constant-pattern admission consumes actual PartialEq and value-specific
+StructuralPartialEq identities, independently of bootstrap derive properties.
+Query applicability modulo regions as the pinned language profile requires;
+publish no trait or call evidence from that classifier. Retire private witnesses
+without assuming their debts, and preserve the value query's permission and
+ordinary pattern-borrow proofs. Visit only the selected variant's fields.
+Consuming a source derive list retains its actual completed API policy and the
+name token's feature context; a literal wrapper cannot authorize a captured
+attribute path. The [structural-pattern checkpoint](docs/pa31-structural-patterns.md)
+records finite source/native controls and the remaining transport/ordinary gaps.

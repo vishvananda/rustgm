@@ -1139,3 +1139,10 @@ public/body signature identity, missing Copy and lifetime opponents, and8/32/128
 source marker work accompany the existing closure/refinement controls. Scoped
 reference generation preserves all existing triples; private/full/original-core
 qualification is tracked separately in the checkpoint.
+
+The [source structural-pattern packet](docs/pa31-structural-patterns.md) adds19
+independently checked source outcomes (one initial rejection prediction corrected
+to required acceptance), actual native matching and8/32/128 trait-query controls.
+`matchability.rs` is registered once in frontend. Source API allowances distinguish
+literal and captured attribute names. Ordinary/empty-list requirements remain
+serialized; no active reference is generated or changed.
