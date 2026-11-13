@@ -78,6 +78,24 @@
    "expected": "accept",
    "native_stdout": "7\n",
    "original_declaration": "Frozen before first execution. Complete implied-bound formation inside an anonymous body with scalar result; distinct required borrowed-result native remains in this manifest."
+  },
+  "late-parameter": {
+   "sha256": "60fdd731a6ededf790ac0884b6a83bbcb2118d6d21906365da1dd1105fbc6973",
+   "expected": "accept",
+   "original_declaration": "late-signatures/declaration.json, frozen before first execution",
+   "independent_rustc": "accept",
+   "baseline17_type_status": 1,
+   "baseline17_cause": "required lifetime does not outlive its target",
+   "current": "complete prepared acceptance; receipt1794609319805878213"
+  },
+  "late-result": {
+   "sha256": "0cf50dee0597346167a2efbe856b96bea626b8e6f408597a6ee2f6302b5ffc58",
+   "expected": "accept",
+   "original_declaration": "late-signatures/declaration.json, frozen before first execution",
+   "independent_rustc": "accept",
+   "baseline17_type_status": 1,
+   "baseline17_cause": "required lifetime does not outlive its target",
+   "current": "complete prepared acceptance; receipt1794609319805878213"
   }
  },
  "observers": {
@@ -92,12 +110,12 @@
   }
  },
  "attribution": "authored ordinary controls; no source-library roles",
- "qualification_contract": "Eleven selected complete outcomes and scalar native7 per packet. The twelfth, original native.rs borrowed-result artifact remains a required positive. Its first complete gate exposed missing output transport; reproof then retains an unclosed result-lifetime mapping. No input or positive is removed/inverted.",
+ "qualification_contract": "Thirteen selected complete outcomes; the fourteenth, original native.rs borrowed-result artifact remains a required positive. All expectations frozen before execution; new late-header positives independently accept and fail release17.",
  "pending": [
   "native.rs: complete borrowed-result runtime consumer requires exact enclosing lifetime/result transport. Rust/C7 passes."
  ],
  "qualification": {
-  "selected_complete_outcomes": "all eleven pass; fast3 plus current-source regular-replay",
+  "selected_complete_outcomes": "all thirteen pass; receipt1794609319805878213",
   "batch_contracts": "fast4 1794607901095329290; ordinary templates and promotion prepared before proof",
   "scalar_native": "actual Rust/C oracle6 and hash-checked RustGM/C native-replay print 7",
   "scaling": {
@@ -122,6 +140,7 @@
     128
    ]
   },
-  "upstream_harness": "315 harness, 488 roots, 44 stages, 1 unit, 128 upstream, 126 Reference pass"
+  "upstream_harness": "315 harness, 488 roots, 44 stages, 1 unit, 128 upstream, 126 Reference pass",
+  "creator_cache": "actual early function signature demands; four Rust positives reject on release17 and accept after indexed live-header lookup"
  }
 }

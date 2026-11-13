@@ -5,14 +5,14 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
-Latest continuation: release16 on2b2332577 clears the initializer-scope failure;
-the next original completion error is slice/iter.rs's anonymous lifetime proof.
-Full43509700804 passed all stages on that exact checkpoint. The following
-implied-bound repair qualifies22 selected complete outcomes, batch contracts,
-two scalar native programs and linear owner work. Two independently accepting
-borrowed-result native consumers remain explicitly required. See the final
-"Release16 original observation and implied-bound continuation" section first.
-Freeze clean candidate17 next; no original observation of this repair yet.
+Latest continuation: d1e15f2ad is published/main. Clean release17 still fails the
+original next_chunk anonymous proof. GDB17b proves creator owner26576 is absent
+from the early signature snapshot. The current indexed-lookup repair qualifies
+26 selected complete outcomes and closure controls; new actual-header-order
+reductions independently reproduce all four missing-bound failures on release17.
+Two accepting borrowed-result native consumers stay explicitly required. Read
+the final "Release17 and late creator publication" section first. Freeze the
+next clean candidate after the current cache-native replay/fixture checks.
 
 ## Workspace and authorization
 
@@ -340,3 +340,56 @@ tasks256, cap16GiB. The harness's printed "three slots" is a temporary test
 controller, not the actual configuration. make tidy is the current cleanup;
 no release17/compiler freeze exists yet. Pin.py now asserts3950 for the new
 anon_borrows/implied.rs test submodule. Do not remove it to meet an old count.
+
+## Release17 and late creator publication
+
+Published d1e15f2ad20c991eb0f0b4dfcfea359d204d6375 is clean main/B/origin before
+this cache repair. Manual full43517843369 is running that exact source; fast/lint/
+architecture/harness pass, release/course running. Do not cancel or duplicate it.
+Full43509700804 on2b remains the latest fully green checkpoint.
+
+Clean candidate17-release:3950 Rust sources, empty patch,7m58s build, CLI SHA
+f962818c1b6e295f5cfb0b16c3d2e208f439665d13278a8e578f1bb02eee5c69.
+Unchanged120s diagnostic still checks42310 declarations/25858 bodies and35120
+item attempts with no failed/blocked functions, then the SAME completion lifetime
+error at227:103636. Completion0; no artifact. The stage-aware postcheck passes
+722hashes/375opens/sixpins/current producer/limits and reports the previous site
+is NOT absent.25.5293s above the load gate is not a speed comparison.
+
+debug17a raw entry registers plus the unchanged expanded diagnostic identify
+actual NodeKey227:9558 (register9559 is the NonZero representation). It is the
+first Iter::next_chunk `[const { MaybeUninit::<&'a T>::uninit() }; N]` block.
+debug17b breaks Creators::implied under that exact anonymous owner: owner26576
+enters anonymous::header, then hits the actual `return Ok(None)` missing-signature
+branch. The expanded resolution confirms definition26576 at227:9596 next_chunk.
+Original expanded output is a diagnostic only (235MiB), not a library artifact.
+
+Six earlier nominal-field/named header constants all accept and do not reproduce.
+Four actual early function-signature parameter/result array lengths DO reproduce:
+all Rust accept, all release17 reject the later method's implied bound. Raw
+late-signatures/declaration.json froze outcomes before execution. They are now
+late-parameter.rs/late-result.rs in both PA25/PA31 packets, with hashes and unchanged
+positive outcomes. Packet now14 independent outcomes (10accept/4reject),13 selected
+complete outcomes and one original borrowed-result native artifact still required.
+
+The fix removes Creators.signatures' whole-function snapshot. Each call looks up
+its owner's current function_indices row, excludes bodyless/authored-async owners
+as before, and caches only successfully computed implied requirements. Missing
+owners can appear later. No new dense field or whole-fact scan is introduced.
+fast5-cache receipt1794609319805878213 passes7 exact tests in134.87s: all26 selected
+outcomes, batch contracts, owner scaling, old anonymous source/bootstrap and two
+actual const-closure execution/lifetime-opponent controls. Strict selected/CLI
+Clippy, fullfmt/audit/metadata pass. Cache-native-replay PASSES all three native
+test groups (both scalar programs, earlier source/bootstrap programs) and exact
+66n/10n/n scaling against the current source map and harness hash. Source count
+remains3950. Fresh test-upstream passes128+126, and make tidy completed with
+record1794609565853113627. No live local build/test/debug process remains before
+freezing the next compiler. Actual controller remains2slots/150GiB/16GiB cap.
+
+Actual original observation of this cache repair and immutable paired timing are
+pending. Frozen measure-inputs remain independently accepted; do not weaken the
+14/20 load gate or change original120s/722/profile/limits to claim progress.
+core-artifact.py is prepared for a genuine module-bodies-v13 metadata/LowIR attempt
+only AFTER original completion clears; it has never been executed. No original
+library artifact or whole planned PA exists. Both borrowed-result runtime positives
+and all standing requirements remain required.

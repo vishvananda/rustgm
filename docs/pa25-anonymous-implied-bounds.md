@@ -60,3 +60,32 @@ same-profile timings remain pending behind the unchanged14/20 load gate.
 Raw evidence is under inline-region-arrays/. No new original-core observation
 of this repair or original artifact is claimed. Whole PA25 and PA31 remain planned;
 the existing113-case PA25 component is unchanged.
+
+## Late creator publication
+
+Clean release17 on d1e15f2ad retains the same original completion failure.
+Its postchecked120s diagnostic still has42310 declarations/25858 bodies,
+35120 item attempts and no failed/blocked functions. All722 original hashes,
+375 opens, six pins and compiler limits remain unchanged. No original artifact
+or complete analysis is claimed.
+
+The debug17b trace identifies the exact first Iter::next_chunk anonymous body,
+NodeKey227:9558, and shows creator26576 missing from the early signature snapshot.
+Four smaller function-signature array lengths reproduce the ordering: an earlier
+constant demand warms the nested-bound cache before later headers are published.
+All four accept in Rust and fail release17. Nominal-field completion controls
+accept; they do not exercise the same early publication order.
+
+Creator lookup now uses the existing declaration index on each request and keeps
+only computed implied requirements in its cache. It preserves bodyless/async
+exclusion and does not cache missing owners or scan the whole function inventory.
+The packets retain14 independent outcomes each;13 selected complete outcomes
+pass, with the original borrowed-result native consumer still required.
+Receipt1794609319805878213 passes seven exact tests, including actual captured
+const-closure values and lifetime opponents, plus strict selected/CLI Clippy,
+full formatting and architecture audit in134.87s. New original verification
+and paired immutable timings remain pending.
+
+The current-source/harness-hash checked cache-native replay passes both scalar
+programs and all earlier anonymous native controls; owner counters remain66n/10n/n.
+Fresh128+126 upstream checks pass. No backend contract or original source changes.

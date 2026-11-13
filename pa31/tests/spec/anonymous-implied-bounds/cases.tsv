@@ -9,3 +9,5 @@ pa31/tests/spec/anonymous-implied-bounds/local-escape.rs	1	required
 pa31/tests/spec/anonymous-implied-bounds/unpaid-static.rs	1	required
 pa31/tests/spec/anonymous-implied-bounds/unrelated-regions.rs	1	required
 pa31/tests/spec/anonymous-implied-bounds/scalar-native.rs	0	-
+pa31/tests/spec/anonymous-implied-bounds/late-parameter.rs	0	-
+pa31/tests/spec/anonymous-implied-bounds/late-result.rs	0	-

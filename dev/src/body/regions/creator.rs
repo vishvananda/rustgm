@@ -27,11 +27,9 @@ pub(super) struct Implied {
     pub types: Vec<Clause>,
 }
 
-/// Creator signatures by definition, with each signature's requirements
-/// computed once for all of its nested bodies.
+/// Each creator's implied requirements are computed once for its nested bodies.
 #[derive(Default)]
 pub(super) struct Creators {
-    signatures: Option<HashMap<DefId, TypeId>>,
     implied: HashMap<DefId, Implied>,
 }
 impl Creators {
@@ -42,22 +40,19 @@ impl Creators {
         facts: &Declarations,
         owner: DefId,
     ) -> Result<Option<&Implied>, &'static str> {
-        if self.signatures.is_none() {
-            let mut signatures = HashMap::default();
-            for function in &facts.functions {
-                if function.body.is_some() && facts.authored_async_body(function)?.is_none() {
-                    signatures.insert(function.definition, function.signature);
-                }
-            }
-            self.signatures = Some(signatures);
-        }
-        let Some(&signature) = self
-            .signatures
-            .as_ref()
-            .and_then(|signatures| signatures.get(&owner))
+        // Constant demands can precede later declaration publication. Look up
+        // the current indexed header; a missing owner is not a cached absence.
+        let Some(function) = facts
+            .function_indices
+            .get(&owner)
+            .and_then(|&index| facts.functions.get(index))
         else {
             return Ok(None);
         };
+        if function.body.is_none() || facts.authored_async_body(function)?.is_some() {
+            return Ok(None);
+        }
+        let signature = function.signature;
         Ok(Some(match self.implied.entry(owner) {
             Entry::Occupied(entry) => entry.into_mut(),
             Entry::Vacant(entry) => entry.insert(compute(facts, signature)?),
