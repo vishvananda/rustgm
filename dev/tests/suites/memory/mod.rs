@@ -145,3 +145,6 @@ mod hidden_values;
 
 #[path = "../../string_words.rs"]
 mod string_words;
+
+#[path = "../../zero_sized_niche_companions.rs"]
+mod zero_sized_niche_companions;

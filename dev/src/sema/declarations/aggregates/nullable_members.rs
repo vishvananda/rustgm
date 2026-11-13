@@ -3,7 +3,7 @@ use super::{Checker, DefId, Error, ItemId, NodeKey, Primitive, Type, TypeId};
 use crate::{
     support::bindings::LangItem,
     types::{
-        aggregate::{NullableEnum, Representation},
+        aggregate::{Companion, NullableEnum, Representation},
         arguments::Argument,
         parameters::ParameterKind,
     },
@@ -46,11 +46,12 @@ impl Checker<'_> {
             };
         }
         let storage_limit = self.reserve_nullable_policy()?;
-        let (empty, payload) = if option.is_some() {
+        let (empty, payload, companion) = if option.is_some() {
             let parameter = self.option_formal(item, key)?;
             (
                 self.option_variant(item, key, LangItem::OptionNone, None)?,
                 self.option_variant(item, key, LangItem::OptionSome, Some(parameter))?,
+                Companion::Fieldless,
             )
         } else {
             let Some(variants) = self.nullable_shape_variants(item, key)? else {
@@ -58,6 +59,9 @@ impl Checker<'_> {
             };
             variants
         };
+        // A zero-sized companion keeps the ordinary tag when it falls back,
+        // so only its niche-filled instantiations change layout.
+        let fallback_tag = (companion == Companion::Fieldless).then_some(Primitive::U8);
         self.facts
             .aggregates
             .register_nullable_enum(
@@ -67,19 +71,21 @@ impl Checker<'_> {
                     empty,
                     payload,
                     field: 0,
-                    fallback_tag: Some(Primitive::U8),
+                    fallback_tag,
+                    companion,
                 },
                 Some(storage_limit),
             )
             .map_err(|error| self.error(key, error))
     }
     /// Actual empty/single-field storage needs no Option identity to use a niche.
+    /// Two single-field variants may niche-fill where one field is zero-sized.
     /// This grants no variant, trait or API permission.
     fn nullable_shape_variants(
         &self,
         item: ItemId,
         key: NodeKey,
-    ) -> Result<Option<(u32, u32)>, Error> {
+    ) -> Result<Option<(u32, u32, Companion)>, Error> {
         let shape = self.facts.aggregates.get(item).ok_or_else(|| {
             self.error(
                 key,
@@ -97,8 +103,9 @@ impl Checker<'_> {
                 .ok_or_else(|| self.error(key, "source nullable enum lost its actual fields"))
         };
         Ok(match (arity(first)?, arity(second)?) {
-            (0, 1) => Some((0, 1)),
-            (1, 0) => Some((1, 0)),
+            (0, 1) => Some((0, 1, Companion::Fieldless)),
+            (1, 0) => Some((1, 0, Companion::Fieldless)),
+            (1, 1) => Some((0, 1, Companion::ZeroSized)),
             _ => None,
         })
     }

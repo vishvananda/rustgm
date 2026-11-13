@@ -142,7 +142,8 @@ impl Context<'_> {
                 }
                 if let Some(niche) = self.layouts.niche(&layout)? {
                     let ordinal = self.constant_variant(value)?;
-                    if ordinal == niche.empty as usize && length == 0 {
+                    // A zero-sized companion's one field writes no bytes.
+                    if ordinal == niche.empty as usize && length <= 1 {
                         init.work.push(Work::Bits {
                             offset: offset + niche.offset,
                             bytes: niche.carrier.bytes(),

@@ -4,7 +4,7 @@ use super::{Carrier, Layout, Layouts, Range, Shape, Variant, index};
 use crate::support::hash::HashMap;
 use crate::types::{
     Kind, Store, TypeId,
-    aggregate::{Definitions, NullableEnum, Representation, SharedMutation},
+    aggregate::{Companion, Definitions, NullableEnum, Representation, SharedMutation},
 };
 #[cfg(test)]
 #[path = "../../../tests/invariants/nullable_layout.rs"]
@@ -20,6 +20,13 @@ pub struct Niche {
     pub carrier: Carrier,
     pub ty: TypeId,
     pub offset: u64,
+}
+/// One instantiation's niche orientation and its payload carrier.
+struct Oriented {
+    empty: u32,
+    payload: u32,
+    ty: TypeId,
+    carrier: Carrier,
 }
 pub(super) struct Budget {
     remaining: usize,
@@ -300,23 +307,16 @@ impl Layouts {
         policy: NullableEnum,
         budget: &mut Budget,
     ) -> Result<Option<Layout>, &'static str> {
-        let payload = shape
-            .variant(policy.payload as usize)
-            .ok_or("missing nullable payload layout")?;
-        let [ty] = types
-            .list(payload.fields)
-            .ok_or("missing nullable payload fields")?
+        let Some(Oriented {
+            empty,
+            payload,
+            ty,
+            carrier,
+        }) = self.orientation(types, definitions, shape, policy, budget)?
         else {
-            return Err("nullable payload differs from canonical field count");
+            return Ok(None);
         };
-        let carrier = match self.nullable_carrier(types, definitions, *ty, budget)? {
-            Answer::Carrier(carrier) => carrier,
-            Answer::Absent => return Ok(None),
-            Answer::WiderScalar => {
-                return Err("scalar pattern enum niches require their complete ABI profile");
-            }
-        };
-        let layout = *self.get(*ty).ok_or("missing nullable payload storage")?;
+        let layout = *self.get(ty).ok_or("missing nullable payload storage")?;
         if (carrier.is_pointer() && (!matches!(layout.size, 8 | 16) || layout.align != 8))
             || (!carrier.is_pointer()
                 && (layout.size != carrier.bytes() || u64::from(layout.align) != carrier.bytes()))
@@ -366,11 +366,11 @@ impl Layouts {
         let encoding = NicheId(index(table.records.len())?);
         table.records.push(Niche {
             owner,
-            empty: policy.empty,
-            payload: policy.payload,
+            empty,
+            payload,
             field: policy.field,
             carrier,
-            ty: *ty,
+            ty,
             offset: 0,
         });
         Ok(Some(Layout {
@@ -406,6 +406,79 @@ impl Layouts {
             definitions.packing_checked(),
             policy.and_then(|p| p.fallback_tag),
         )
+    }
+    /// The instantiation's empty and payload variants with the payload's
+    /// carrier. A zero-sized companion policy tries its declared orientation,
+    /// then the reverse; the empty variant's one field must then be zero-sized
+    /// and no more aligned than the payload, so it fits beside the niche.
+    fn orientation(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        shape: crate::types::aggregate::Shape<'_>,
+        policy: NullableEnum,
+        budget: &mut Budget,
+    ) -> Result<Option<Oriented>, &'static str> {
+        let reverse =
+            (policy.companion == Companion::ZeroSized).then_some((policy.payload, policy.empty));
+        for (empty, payload) in std::iter::once((policy.empty, policy.payload)).chain(reverse) {
+            let variant = shape
+                .variant(payload as usize)
+                .ok_or("missing nullable payload layout")?;
+            let [ty] = *types
+                .list(variant.fields)
+                .ok_or("missing nullable payload fields")?
+            else {
+                return Err("nullable payload differs from canonical field count");
+            };
+            if policy.companion == Companion::ZeroSized
+                && !self.fits_beside(types, shape, empty, ty)?
+            {
+                continue;
+            }
+            match self.nullable_carrier(types, definitions, ty, budget)? {
+                Answer::Carrier(carrier) => {
+                    return Ok(Some(Oriented {
+                        empty,
+                        payload,
+                        ty,
+                        carrier,
+                    }));
+                }
+                Answer::Absent => {}
+                Answer::WiderScalar => {
+                    return Err("scalar pattern enum niches require their complete ABI profile");
+                }
+            }
+        }
+        Ok(None)
+    }
+    /// Whether `empty`'s fields are zero-sized and no more aligned than `payload`.
+    fn fits_beside(
+        &self,
+        types: &Store,
+        shape: crate::types::aggregate::Shape<'_>,
+        empty: u32,
+        payload: TypeId,
+    ) -> Result<bool, &'static str> {
+        let variant = shape
+            .variant(empty as usize)
+            .ok_or("missing nullable companion layout")?;
+        let fields = types
+            .list(variant.fields)
+            .ok_or("missing nullable companion fields")?;
+        let payload = self
+            .get(payload)
+            .ok_or("missing nullable payload storage")?;
+        for &field in fields {
+            let layout = self
+                .get(field)
+                .ok_or("missing nullable companion storage")?;
+            if layout.size != 0 || layout.align > payload.align {
+                return Ok(false);
+            }
+        }
+        Ok(true)
     }
     pub(super) fn niche_mark(&self) -> usize {
         self.niches.as_ref().map_or(0, |n| n.records.len())

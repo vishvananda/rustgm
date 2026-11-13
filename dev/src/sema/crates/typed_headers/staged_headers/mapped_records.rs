@@ -11,7 +11,7 @@ use crate::{
     syntax::item::Shape,
     types::{
         ItemId,
-        aggregate::{self, ImportedEnum, NullableEnum, PreparedShapes},
+        aggregate::{self, Companion, ImportedEnum, NullableEnum, PreparedShapes},
     },
 };
 pub(super) struct Prepared {
@@ -320,7 +320,8 @@ fn interned(facts: &mut Declarations, budget: &mut Headers, spelling: &str) -> R
     ))
 }
 /// The provider's source nullable rule, re-derived from the validated header:
-/// default representation and one empty plus one single-field variant. Their
+/// default representation and one empty plus one single-field variant, or two
+/// single-field variants, whose layout chooses a zero-sized companion. Their
 /// discriminants are implicit: validation rejects explicit data discriminants
 /// without an integer tag.
 fn nullable(variants: &[s::VariantHeader], tagged: bool) -> Option<NullableEnum> {
@@ -331,16 +332,18 @@ fn nullable(variants: &[s::VariantHeader], tagged: bool) -> Option<NullableEnum>
         return None;
     }
     let arity = |row: &s::VariantHeader| row.fields.end.saturating_sub(row.fields.start);
-    let (empty, payload) = match (arity(first), arity(second)) {
-        (0, 1) => (0, 1),
-        (1, 0) => (1, 0),
+    let (empty, payload, companion) = match (arity(first), arity(second)) {
+        (0, 1) => (0, 1, Companion::Fieldless),
+        (1, 0) => (1, 0, Companion::Fieldless),
+        (1, 1) => (0, 1, Companion::ZeroSized),
         _ => return None,
     };
     Some(NullableEnum {
         empty,
         payload,
         field: 0,
-        fallback_tag: Some(crate::types::Primitive::U8),
+        fallback_tag: (companion == Companion::Fieldless).then_some(crate::types::Primitive::U8),
+        companion,
     })
 }
 

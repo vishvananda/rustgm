@@ -1,0 +1,11 @@
+pa31/tests/spec/zero-sized-niche-companions/result-unit-repr.rs	0
+pa31/tests/spec/zero-sized-niche-companions/result-unit-nonnull.rs	0
+pa31/tests/spec/zero-sized-niche-companions/result-repr-unit.rs	0
+pa31/tests/spec/zero-sized-niche-companions/result-phantom-nonnull.rs	0
+pa31/tests/spec/zero-sized-niche-companions/result-unit-reference.rs	0
+pa31/tests/spec/zero-sized-niche-companions/result-aligned-zst.rs	0
+pa31/tests/spec/zero-sized-niche-companions/result-unit-match.rs	0
+pa31/tests/spec/zero-sized-niche-companions/result-unit-transmute.rs	0
+pa31/tests/spec/zero-sized-niche-companions/option-repr.rs	0
+pa31/tests/spec/zero-sized-niche-companions/result-usize-repr.rs	0
+pa31/tests/spec/zero-sized-niche-companions/result-unit-repr-wrong.rs	incompatible types	[0u8;16];

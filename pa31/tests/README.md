@@ -2,6 +2,14 @@
 
 Planned: no graded manifest or generated reference outputs yet.
 
+`spec/zero-sized-niche-companions/` retains eleven independently declared source
+layout outcomes for core's `Result<(), Repr>` assertion: unit, PhantomData and
+aligned zero-sized fields share an existing carrier in either variant order.
+CLI typing, const matching/transmute, prepared lowering and scalar/out-pointer
+ABI checks pass; tagged and Option controls remain. See the
+[checkpoint](../../docs/pa31-zero-sized-niche-companions.md) for exact qualification
+and remaining bool/general-niche work.
+
 `spec/field-source/` retains the complete pinned Field module and sixteen
 independently frozen no_core header/consumer controls, each checked in metadata
 and object modes. Actual original headers, unused alternatives, unrelated trait

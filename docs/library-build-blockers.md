@@ -19,6 +19,11 @@ blocked pass. The completion pass was not run. The remaining failures:
   $rhs];` (line 300), "incompatible types". `Repr` wraps `NonNull<()>`, and
   rustc places `Ok(())` in its null niche.
 
+The [zero-sized niche companion checkpoint](pa31-zero-sized-niche-companions.md)
+now passes eleven reduced contracts and the focused layout/ABI controls for
+25396. Its original-core observation is pending; candidate10 remains the last
+verified census. The bool carrier required by 7631 is still separate work.
+
 Both layout failures need a niche for an enum whose other variant is
 zero-sized but not fieldless. Source nullable eligibility now requires a
 fieldless variant beside one single-field variant. 7631 also needs a scalar

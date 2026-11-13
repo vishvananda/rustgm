@@ -6,7 +6,7 @@ pub mod finiteness;
 mod instances;
 mod metadata;
 mod nullable;
-pub(crate) use nullable::NullableEnum;
+pub(crate) use nullable::{Companion, NullableEnum};
 mod lane_limits;
 mod packing;
 mod phantom;

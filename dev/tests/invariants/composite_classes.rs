@@ -246,6 +246,7 @@ fn retained_wide_pointer_niches_keep_the_existing_c_object_classes() -> TestResu
             payload: 1,
             field: 0,
             fallback_tag: None,
+            companion: aggregate::Companion::Fieldless,
         },
         None,
     )?;

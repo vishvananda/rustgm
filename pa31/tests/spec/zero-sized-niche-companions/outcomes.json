@@ -1,0 +1,97 @@
+{
+ "schema": 1,
+ "declared": "2026-11-13, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run (obj/parallel/zst-niche/declared.json, batch 5). Batches 1 to 4 had malformed prefixes (an unknown pattern_type_macro feature, the legacy_receiver and destruct lang items, clone_fn, and RustGM's pinned Destruct: PointeeSized); each is recorded. Every declaration agrees with rustc.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --target=x86_64-unknown-linux-gnu --crate-type=lib --emit=metadata -Cpanic=abort --cap-lints=allow",
+ "base": "release candidate10 (534f3cc67, CLI 070d8da9)",
+ "cases": {
+  "result-unit-repr.rs": {
+   "sha256": "07cbfab4150cf684a74d1c952feab264f4e4453637b39dd58e7c00e6f120de2f",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 5,
+   "base_candidate10": "ERROR: file 0: 1767: incompatible types",
+   "rustgm": 0
+  },
+  "result-unit-nonnull.rs": {
+   "sha256": "9046ff7df2e0200dad25b701c765451d6c0acc42b965bfa49bd7f13481c9ee28",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 5,
+   "base_candidate10": "ERROR: file 0: 1774: incompatible types",
+   "rustgm": 0
+  },
+  "result-repr-unit.rs": {
+   "sha256": "2fe6e5ca035d2b786b96c10637808a6353fd31d157103266f16dd3e274742303",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 5,
+   "base_candidate10": "ERROR: file 0: 1767: incompatible types",
+   "rustgm": 0
+  },
+  "result-phantom-nonnull.rs": {
+   "sha256": "f11c9293dc8794c9a4f199c3bee2678383f25d5c4dfc0d494f4e124524997a1a",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 5,
+   "base_candidate10": "ERROR: file 0: 1787: incompatible types",
+   "rustgm": 0
+  },
+  "result-unit-reference.rs": {
+   "sha256": "06c54adda8736c446c82bf1750ca76258cdf76cd742f2f04540176a8bc5c61c1",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 5,
+   "base_candidate10": "ERROR: file 0: 1774: incompatible types",
+   "rustgm": 0
+  },
+  "result-aligned-zst.rs": {
+   "sha256": "a50622edd438646e9d2d605b221950edbc85efc4ce69a83c722c9988ed515cdd",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 5,
+   "base_candidate10": "ERROR: file 0: 1779: incompatible types",
+   "rustgm": 0
+  },
+  "result-unit-match.rs": {
+   "sha256": "921e194b5009f94b7bd20eb71c844a906fd2144973ee13331f2b503191bd6061",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 5,
+   "base_candidate10": 0,
+   "rustgm": 0
+  },
+  "result-unit-transmute.rs": {
+   "sha256": "cf804fc29b5c37584c452c33f4253f7188ac0071c7ebdaa873ed78bf4e827dea",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 5,
+   "base_candidate10": "ERROR: file 0: 1779: source transmute requires equal source and destination sizes",
+   "rustgm": 0
+  },
+  "option-repr.rs": {
+   "sha256": "d87f359b91f85094cb8a62bcebd8f484d3b1817e8b78cf3284e0a45ac0a1d0a4",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 5,
+   "base_candidate10": 0,
+   "rustgm": 0
+  },
+  "result-usize-repr.rs": {
+   "sha256": "73029033d112069d9a67c57f33123f4b35e13f42d500eb3bc6b0d894b28e22cd",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 5,
+   "base_candidate10": 0,
+   "rustgm": 0
+  },
+  "result-unit-repr-wrong.rs": {
+   "sha256": "56808985ce76eb9b7b5d31b0973c6c089699a78b739c1d357a7a28f7464560a0",
+   "declared": "E0308",
+   "rustc": "E0308",
+   "batch": 5,
+   "base_candidate10": 0,
+   "rustgm": "ERROR: file 0: 1767: incompatible types"
+  }
+ }
+}

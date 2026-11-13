@@ -468,7 +468,8 @@ impl Lower<'_, '_, '_> {
         }
         if let Some(niche) = self.context.layouts.niche(&layout)?.copied() {
             let count = self.body.arguments(fields).len();
-            if ordinal == niche.empty && count == 0 {
+            // A zero-sized companion's one field is written below and stores nothing.
+            if ordinal == niche.empty && count <= 1 {
                 let ty = super::super::context::representation(
                     self.context.types,
                     niche.carrier.leaf(),

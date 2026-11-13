@@ -7,6 +7,26 @@ pub(crate) struct NullableEnum {
     pub payload: u32,
     pub field: u32,
     pub fallback_tag: Option<crate::types::Primitive>,
+    pub companion: Companion,
+}
+/// What the variant beside the niche carrier may hold.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Companion {
+    /// `empty` has no fields, as `None` has none.
+    Fieldless,
+    /// Both variants have one field. At each instantiation the variant whose
+    /// field is zero-sized is empty and the other carries the niche, as rustc
+    /// niche-fills `Result<(), NonNull<T>>` and `Result<NonNull<T>, ()>`. With
+    /// neither, the enum keeps its tagged layout.
+    ZeroSized,
+}
+impl NullableEnum {
+    /// Whether `empty` and `payload` are a layout orientation this policy admits.
+    pub(crate) fn admits(self, empty: u32, payload: u32) -> bool {
+        (empty, payload) == (self.empty, self.payload)
+            || (self.companion == Companion::ZeroSized
+                && (payload, empty) == (self.empty, self.payload))
+    }
 }
 pub(super) type Policies = HashMap<ItemId, NullableEnum>;
 impl Definitions {
@@ -64,9 +84,13 @@ impl Definitions {
         let payload = variants
             .get(policy.payload as usize)
             .ok_or("missing nullable payload variant")?;
+        let empty_fields = match policy.companion {
+            Companion::Fieldless => 0,
+            Companion::ZeroSized => 1,
+        };
         if types
             .list(empty.fields)
-            .is_none_or(|fields| !fields.is_empty())
+            .is_none_or(|fields| fields.len() != empty_fields)
             || types
                 .list(payload.fields)
                 .is_none_or(|fields| fields.len() != 1)

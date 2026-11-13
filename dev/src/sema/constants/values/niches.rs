@@ -3,7 +3,7 @@ use super::{Reader, footprints::ProjectionLayout};
 use crate::{
     abi::layout::Niche,
     sema::members::{FieldId, VariantId},
-    types::{Kind, TypeId},
+    types::{Kind, TypeId, aggregate::Companion},
 };
 #[cfg(test)]
 #[path = "../../../../tests/invariants/nullable_storage.rs"]
@@ -34,8 +34,7 @@ impl<'a> Reader<'a> {
             .niche(layout)?
             .ok_or("missing nullable storage encoding")?;
         if encoding.owner != ty
-            || encoding.empty != policy.empty
-            || encoding.payload != policy.payload
+            || !policy.admits(encoding.empty, encoding.payload)
             || encoding.field != policy.field
             || encoding.offset != 0
             || (encoding.carrier.is_pointer()
@@ -55,15 +54,28 @@ impl<'a> Reader<'a> {
             return Err("nullable storage has a different variant count");
         }
         let empty = *identities
-            .get(policy.empty as usize)
+            .get(encoding.empty as usize)
             .ok_or("missing nullable empty identity")?;
         let payload = *identities
-            .get(policy.payload as usize)
+            .get(encoding.payload as usize)
             .ok_or("missing nullable payload identity")?;
         let (empty_fields, empty_offsets) = self.enum_variant_fields(ty, empty)?;
         let (fields, offsets) = self.enum_variant_fields(ty, payload)?;
-        if !empty_fields.is_empty()
-            || !empty_offsets.is_empty()
+        // A zero-sized companion's one field shares the carrier's address.
+        let companion = match policy.companion {
+            Companion::Fieldless => 0,
+            Companion::ZeroSized => 1,
+        };
+        if empty_fields.len() != companion
+            || empty_offsets
+                .iter()
+                .any(|&offset| offset != encoding.offset)
+            || empty_fields.iter().any(|&field| {
+                self.facts
+                    .layouts
+                    .get(field)
+                    .is_none_or(|companion| companion.size != 0)
+            })
             || fields != [encoding.ty]
             || offsets != [encoding.offset]
         {

@@ -57,7 +57,8 @@ impl Context<'_> {
             return Ok(false);
         };
         let ordinal = self.constant_variant(value)?;
-        if ordinal == niche.empty as usize && length == 0 {
+        // A zero-sized companion's one field adds no bytes beside the null word.
+        if ordinal == niche.empty as usize && length <= 1 {
             return Ok(true);
         }
         if ordinal != niche.payload as usize || length != 1 {

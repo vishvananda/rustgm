@@ -64,6 +64,7 @@ fn nullable(
                 payload: 0,
                 field: 0,
                 fallback_tag: None,
+                companion: crate::types::aggregate::Companion::Fieldless,
             },
             None,
         )?;
@@ -85,6 +86,7 @@ fn typed_fallback_tag_changes_only_the_registered_physical_profile() -> Result<(
             payload: 0,
             field: 0,
             fallback_tag: Some(crate::types::Primitive::U8),
+            companion: crate::types::aggregate::Companion::Fieldless,
         },
         None,
     )?;

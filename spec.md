@@ -1864,7 +1864,14 @@ storage query, writable-global, promotion and niche consumers; do not infer
 Copy, Sync, Freeze or destruction policy from the role. Ordinary shared and
 mutable reference loans retain their proofs. Source-mode empty/single-field
 Rust enums publish physical nullable eligibility from their actual field groups,
-independently of Option identity, before stable layout queries. Reuse the
+independently of Option identity, before stable layout queries. Two single-field
+variants may also qualify when one field is zero-sized and no more aligned than
+the other's existing carrier. Select the orientation per instantiation, trying
+the declared order before its reverse; retain the actual variant identities.
+An ineligible two-field instance keeps its existing tag layout. Re-derive the
+same rule from validated imported field groups, without transporting policy bytes.
+See the [zero-sized companion checkpoint](docs/pa31-zero-sized-niche-companions.md).
+Reuse the
 canonical carrier cache, block carriers through interior storage and preserve
 explicit representations and the separately selected historical course profile.
 General scalar/multifield niches and authenticated interior policy transport
