@@ -158,8 +158,15 @@ the passing receipts, not those attempts, qualify the current implementation.
   - Sixteen reductions are in `pa31/tests/spec/configured-tails`.
   - The four declared batches, the oracle stderr and the scaling rows are in
     `obj/parallel/cfg-tail/`.
-- Next: a release pin and a core re-observation, since the `()` rule applies
-  to every body.
+- Release candidate5 (`obj/parallel/capture-match/candidate5-release`,
+  d4c52a18, clean 8d185ef39) reached the end of the body pass in 26.3s under
+  the unchanged 120s observer. 25,814 bodies were checked, with 28 failed and
+  16 blocked. Both bodies and the eight they blocked pass, and no previously
+  passing body failed, so the `()` rule rejects no core body.
+- Next: `marker/variance.rs:107` "cannot lower a captured local lifetime".
+  `==` on an operand whose type carries a body lifetime fails, as in
+  `Wrap<&'a ()>`; the `PartialEq::eq` path call passes. The declared batches
+  are in `obj/parallel/variance-eq/core/`.
 
 **2026-11-13 derived tuple field privacy update (supersedes the blocks below):**
 

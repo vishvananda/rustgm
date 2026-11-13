@@ -7,8 +7,10 @@ removed tail in place, and the parser had not recorded which statements lacked
 a semicolon. The last enabled statement without one now becomes the tail, as
 in rustc. Such a statement elsewhere must have type `()`, so three programs
 the base accepted are now rejected, as rustc rejects them. Sixteen source-core
-reductions and function-linear work qualify the fix. No core observation of
-it has run yet.
+reductions and function-linear work qualify the fix. Release candidate5
+(d4c52a18, 8d185ef39) reached the end of the body pass in 26.3s, with 28
+failed and 16 blocked bodies. Both bodies and the eight they blocked pass, and
+no previously passing body failed.
 
 The [derived tuple field privacy checkpoint](pa31-derive-field-privacy.md)
 fixes "aggregate field is private" in 31 derived core bodies, 26 `fmt` and 5

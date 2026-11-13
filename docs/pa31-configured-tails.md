@@ -163,4 +163,17 @@ selection, linear across widths.
 
 ## Core progress
 
-No core observation of this change has run yet.
+Release candidate5 (`obj/parallel/capture-match/candidate5-release`,
+d4c52a18, clean 8d185ef39) carries this change. The unchanged 120s observer
+ran it exclusively from load 10.1. It reached the end of the body pass in
+26.3s:
+
+- 42,310 declarations checked, none failed;
+- 25,814 bodies checked, 28 failed and 16 blocked;
+- 10 of candidate4's records cleared: the `fmt/num.rs:145` and `:166`
+  failures and the eight bodies they blocked. No previously passing body
+  failed, so the `()` rule rejects no core body.
+
+Every other candidate5 failure is one of candidate4's. The progress SHA-256 is
+`ef47f48f070256a175241b7872e23723e58a1c7bc029fd62b2d2da395db8a498`, and the
+comparison is `obj/parallel/capture-match/original-candidate5-comparison.txt`.
