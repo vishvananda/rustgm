@@ -1,6 +1,6 @@
 # RustGM handoff — 2026-11-13
 
-The active goal is to compile the pinned original core, then alloc/std, completing
+The goal is to compile the pinned original core, then alloc/std, completing
 and releasing assignment components as their contracts qualify. Continue as one
 worker. **No original library artifact exists yet.** Part A's zero-sized niche
 companion change is published and clears core's actual `Result<(), Repr>` size
@@ -42,7 +42,7 @@ there still holds (see [Standing requirements](#standing-requirements)).
 
 ## Current continuation: borrowed closure inputs (uncommitted)
 
-HEAD814f17db3 remains the last published documentation over source8950ad99c.
+Published compiler source remains8950ad99c; later commits record documentation.
 B now has six modified compiler files carrying a
 **prototype**; no implementation from this continuation has been committed.
 `obj/parallel/closure-return-inputs/private-port-wip.patch` and
@@ -106,7 +106,7 @@ input/creator/lifetime proof controls, before a new clean pin and unchanged120s
 remain required; no new core artifact is implied by this draft.
 
 Storage currently prevents validation: the shared volume fell below the unchanged
-150GiB reserve (about147GiB free). Other project builds are consuming it. The
+150GiB reserve (about143GiB free on the third recheck). Other project builds are consuming it. The
 user has an asynchronous request to free about10GiB elsewhere. `make tidy`
 (1794566729541174850) and `make tidy-build` (1794566809851110788) completed; the
 rebuildable Cargo cache is gone, both current immutable pins remain. Resource
@@ -114,7 +114,11 @@ admission refused the subsequent build-only attempts, including smaller actual
 absolute caps, before Cargo; **wipclosure2 does not exist**. The guarded archive
 attempt was also refused before mutation, so no closed root was archived by it.
 Do not lower the reserve or touch another checkout. Resume checks after headroom
-returns. The goal stays active; no user pause or completion was requested.
+returns. After the same storage barrier persisted for three consecutive goal turns, the
+goal was marked **blocked** through update_goal. No original core artifact exists
+and no PA is newly complete. There is no live RustGM process to wait on. The
+required external change is roughly15GiB of shared-volume headroom; then the user
+can resume the goal. The objective and preserved uncommitted work are unchanged.
 
 ## Core census
 
