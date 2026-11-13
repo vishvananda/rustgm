@@ -252,8 +252,9 @@ checker rejects them.
 The [bool niche checkpoint](docs/pa31-bool-niches.md) uses byte2 for a source
 enum's companion beside bool, through CTFE, runtime matching, cleanup and static
 initialization. Twenty-one active source outcomes, three new native observers
-and private course/source cache isolation qualify it; the next original-core
-observation remains pending. Additional unused values of an already niche-encoded
+and private course/source cache isolation qualify it. Candidate12 clears actual
+core `as_underlying`7631; only two closure lifetime failures and their four blocked
+methods remain in the census. Additional unused values of an already niche-encoded
 enum remain a required positive, and course layouts keep their existing profile.
 
 The [zero-sized niche companion checkpoint](docs/pa31-zero-sized-niche-companions.md)

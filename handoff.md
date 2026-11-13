@@ -4,9 +4,9 @@ The active goal is to compile the pinned original core, then alloc/std, completi
 and releasing assignment components as their contracts qualify. Continue as one
 worker. **No original library artifact exists yet.** Part A's zero-sized niche
 companion change is published and clears core's actual `Result<(), Repr>` size
-assertion. The last census has three failed and four blocked bodies. Bool's nonzero niche
-now passes focused/API/native/course checks and awaits candidate12 observation;
-next is the borrowed closure output-lifetime model.
+assertion. Candidate12 clears bool's nonzero niche in actual core. The last census now has
+two borrowed-closure lifetime failures and four blocked bodies; that lifetime
+model is next.
 
 This supersedes earlier stop instructions. Historical checkpoints and retained
 requirements are in Git (`git show 03003a86f:handoff.md`); every retained requirement
@@ -32,10 +32,9 @@ there still holds (see [Standing requirements](#standing-requirements)).
   three native observers and one required nested-niche positive in pending.json.
   Independent Rust22/22, API21/21,18 private controls and current native programs
   pass. Full9307 course references are unchanged. No new oracle is generated.
-- Freeze clean candidate12 from this implementation checkpoint, then observe it
-  exclusively against11 with the unchanged120s window and normal postcheck.
-  The old exploratory WIP has a test-only hash difference; it is not a replacement
-  for the clean release producer.
+- Clean source8950ad99c freezes candidate12, CLIbca8b9e1,3945 source hashes and
+  an empty patch. Original observation/postcheck/comparison and48 exclusive
+  A/A+ABBA controls pass; actual7631 clears with no reached-body regression.
 - Commits use the repository's single-line subject with no trailers.
 - The backend stays pinned at v3 (17b024f69). Don't modify the C++ or v5rust
   checkouts or other checkouts' outputs. Work as one worker, with no new
@@ -43,29 +42,27 @@ there still holds (see [Standing requirements](#standing-requirements)).
 
 ## Core census
 
-Release candidate11 (`obj/parallel/capture-match/candidate11-release`, clean
-34a28702e, CLI58d7312a) is the current observation. The unchanged120s observer
-runs exclusively after load admission and finishes its body pass in24.56s:
+Release candidate12 (`obj/parallel/capture-match/candidate12-release`, clean
+8950ad99c, CLIbca8b9e1) is the current observation. The unchanged120s observer
+runs exclusively after load admission and finishes its body pass in23.29s:
 
-- all42,310 declarations pass;
-- 35,120 item attempts check25,851 bodies;
-- three failed and four blocked bodies remain, against candidate10's four/four;
-- actual initializer25396, `io/error/repr_bitpacked.rs:350`'s
-  `size_of::<Result<(), Repr>>() == 8`, clears;
+- all42310 declarations pass;
+- 35120 item attempts check25852 bodies;
+- two failures and four blocked bodies remain, against candidate11's three/four;
+- actual7631 (`ControlFlow<bool>` transmute), plus previously cleared25396
+  (`Result<(), Repr>` size assertion), pass;
 - no previously passing body fails; postcheck verifies722 sources,375 opens,
   six configuration bindings,3945 compiler sources and unchanged limits/profile.
 
-The remaining failures:
+The remaining failures are into_searcher26791 and is_contained_in26792 at
+str/pattern.rs:956, both "closure result retains an input-only or local lifetime".
+They block26793–26796. Raw observation/comparison/postcheck is in
+`obj/parallel/capture-match/original-candidate12*`.
 
-| Body | Site | Failure | Next |
-| --- | --- | --- | --- |
-| `as_underlying`7631 | `slice/cmp.rs:52`, `transmute::<ControlFlow<bool>, u8>` | unequal sizes | bool implementation qualified; observe candidate12 |
-| `into_searcher`26791, `is_contained_in`26792, blocking26793–26796 | `str/pattern.rs:956` | closure result retains an input-only or local lifetime | PA27 closure output-lifetime model |
-
-Raw observer, comparison and postcheck are in
-`obj/parallel/capture-match/original-candidate11*`.
-The completion pass was not run. A core build also needs a backend contract for
-ymm, zmm and kreg bodies beyond the initial assembly profile of v3.
+The completion pass was not run. A core build also needs backend support beyond
+v3's initial assembly profile for ymm, zmm and kreg, and full original metadata,
+provided-body and native consumer qualification. Passing the census will not
+itself complete the original-core build or PA32.
 
 ## Completed: zero-sized niche companions (part A)
 
@@ -89,7 +86,7 @@ unsupported-profile error, alignment may not increase, and the declared orientat
 is tried first. Course eligibility is unchanged. Raw evidence is
 `obj/parallel/zst-niche/`; the actual core assertion is now verified clear.
 
-## Qualified: bool niche (part B), original observation pending
+## Completed: bool niche (part B)
 
 [Implementation and qualification](docs/pa31-bool-niches.md). `Carrier::Boolean`
 provides empty_bits=2 and byte storage. An explicit bool_niche flag admits it
@@ -114,15 +111,24 @@ packet manifest. pending.json retains the Rust-positive second unused-value
 contract; f042c27d still rejects it at its size assertion. No unsupported positive
 is inverted and PA31 stays planned.
 
-Next, freeze candidate12 and repeat original observation/postcheck/comparison.
-Expect7631 to clear, but retain11 as the last authoritative census until verified.
-Then reduce actual26791/26792 at str/pattern.rs:956. Eleven frozen ordinary
-controls and their Rust/baseline11 observations are under
-`obj/parallel/closure-return-inputs/`. Inferred immediate/named/reference identity
-closures reproduce the output-lifetime error; annotated/contextual twins pass
-at typing. The first LowIR probe omitted --crate-type=lib and is not prepared
-body qualification. `check-ordinary1-library.py` is the corrected unrun probe.
-Capture actual typed region/binder coordinates before changing the shared model.
+Candidate12's clean source8950ad99c/CLIbca8b9e1 clears actual7631. Its
+postcheck and reached-body comparison pass, as do48 immutable A/A+ABBA
+observations with complete output equality. Short timings make no speed claim.
+
+Next reduce actual26791/26792. Eleven frozen ordinary controls and their
+independent Rust/baseline11 observations are in `obj/parallel/closure-return-inputs/`.
+Inferred immediate/named/reference identity closures reproduce the output-lifetime
+error; annotated/contextual twins pass typing. The first LowIR probe omitted main, and the library retry supplied artifact
+flags to a typing view, producing usage status2; neither qualifies prepared
+bodies. ordinary2-observed/results.json now uses executable consumers: independent
+Rust accepts/runs eight positives and rejects three opponents. Baseline12 rejects
+five inferred positives at typing; three annotated/contextual twins lower. All
+three intended negatives reject in typing or prepared lowering, including the
+static escape and annotated-elided input. Keep those phase distinctions.
+Capture bounded typed graphs, exact binder coordinates, opening/closing maps and
+region equalities before changing the shared kernel.
+Do not relax all output lifetimes: annotated elided returns and local/static
+escapes must still reject. Remove temporary trace code before qualification.
 
 A separate source-layout deviation remains: repr(Rust)'s fallback I64 tag differs
 from Rust's smallest fitting tag. Result<(),()> is8 versus1, and ControlFlow<u8>
@@ -153,15 +159,15 @@ required; course outputs must not be moved without a reviewed contract.
 
 ## Pins, artifacts and storage
 
-- `obj/parallel/capture-match/candidate11-release` is the current comparison pin.
+- `obj/parallel/capture-match/candidate12-release` is the current comparison pin.
 - Candidate10 and wipniche1/2 were retired after publication of11; cleanup
  1794560721836625856. Their producer/raw files remain, their binaries are absent.
-- `wipbool1-dev-fast` retains exploratory CLIf042c27d, with a tracked patch and a
-  pre-strengthening test hash. Current managed CLI is byte-identical. Retire that
-  exploratory pin after candidate12 qualifies.
+- After publishing this observation, retire superseded candidate11-release and
+  wipbool1-dev-fast with scoped cleanup. Retain their producers and observations.
+  Current managed dev-fast CLI is f042c27d; use candidate12 for new comparisons.
 - Pin.py asserts3945 development Rust files. No new compiler .rs file is added
   by part B; update the count only for actual new files, never by dropping tests.
-- Free space is about177GiB. Controller2jobs/150GiB reserve/CPU800%/RAM12GiB/
+- Free space is about166GiB; monitor the unchanged reserve carefully. Controller2jobs/150GiB reserve/CPU800%/RAM12GiB/
  256tasks and the16GiB output cap remain unchanged. Storage's40GiB local default
   does not reduce that shared reserve. Check free space before every batch.
 
@@ -193,7 +199,7 @@ required; course outputs must not be moved without a reviewed contract.
   independent review and then scoped `course.py STAGE --bless --case PATH`.
 - Core observation:
   1. Pin a clean head with `pin.py candidateN release`.
-  2. Derive the observer with `sed 's/candidate11/candidateN/g' observe-original-candidate11.py`.
+  2. Derive the observer with `sed 's/candidate12/candidateN/g' observe-original-candidate12.py`.
   3. Wait with `wait-load2.py 14 20 21600`, then run
      `scripts/resources.py run --exclusive … --prune-under obj/parallel/capture-match/original-candidateN -- python3 obj/parallel/capture-match/observe-original-candidateN.py`.
   4. Compare with `compare-original.py candidateN obj/parallel/capture-match/original-candidate(N-1)`.

@@ -1,26 +1,23 @@
 # Library build blocker tracker
 
-Release candidate11 (`obj/parallel/capture-match/candidate11-release`, clean
-34a28702e, CLI58d7312a) carries the source zero-sized companion fix. The unchanged
-120s observer runs exclusively after load admission, finishing its body pass in
-24.56s. All42,310 declarations pass;35,120 item attempts check25,851 bodies, with
-three failed and four blocked bodies remaining, against candidate10's four/four.
-Actual initializer25396, `repr_bitpacked.rs:350`'s size assertion, clears. No
-previously passing body fails. Postcheck verifies722 sources,375 opens, six pins,
-3945 compiler sources and unchanged limits/profile. The completion pass was not
-run. The remaining failures:
+Release candidate12 (`obj/parallel/capture-match/candidate12-release`, clean
+8950ad99c, CLIbca8b9e1) carries the source bool niche fix. The unchanged120s
+observer runs exclusively after load admission and finishes its body pass in
+23.29s. All42310 declarations pass;35120 item attempts check25852 bodies, with
+two failures and four blocked bodies remaining, against candidate11's three/four.
+Actual `as_underlying`7631 (`slice/cmp.rs:52`) clears, alongside already cleared
+initializer25396. No previously passing body fails. Postcheck verifies722 sources,
+375 opens, six pins,3945 compiler sources and unchanged profile/limits.
 
-- `as_underlying` 7631 (`slice/cmp.rs:52`), "source transmute requires equal
-  source and destination sizes". `ControlFlow<bool>` needs `bool`'s niche
-  for `Continue(())`;
-- 2 closure lifetimes, `into_searcher` 26791 and `is_contained_in` 26792
-  (`str/pattern.rs:956`), which block four more;
-The [bool niche checkpoint](pa31-bool-niches.md) now qualifies21 source outcomes,
-three native observers and18 private controls, with all9307 course outputs
-unchanged. Actual7631 still needs candidate12 observation; candidate11 remains the
-last verified census until then. Source bool's companion uses byte2 throughout
-CTFE, runtime matching, cleanup and static initialization. The course policy is
-unchanged, and an additional unused-value nesting positive remains required.
+The two remaining failures are `into_searcher`26791 and `is_contained_in`26792
+at str/pattern.rs:956: an inferred closure result retains an input-only or local
+lifetime. They block26793–26796. The completion pass was not run.
+
+The [bool niche checkpoint](pa31-bool-niches.md) qualifies21 source outcomes,
+three native observers,18 private controls and48 calibrated output-equal
+observations, with all9307 course outputs unchanged. Source bool's companion
+uses byte2 through CTFE, runtime matching, cleanup and static initialization.
+The course policy is unchanged; further unused-value nesting remains required.
 
 The [zero-sized niche companion checkpoint](pa31-zero-sized-niche-companions.md)
 qualifies eleven source contracts,15 private/10 integration controls, all9307

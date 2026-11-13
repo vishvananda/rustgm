@@ -96,6 +96,23 @@ with identical existing references and no generation. Upstream verification,
 315 Python tests,485 integration roots and44-stage assignment layout pass;
 upstream was repeated after strengthening the authored fixture. The retained
 nested-niche positive still rejects with incompatible types under this CLI;
-its Rust-positive contract remains required. A clean candidate12 original-core
-observation remains pending at this checkpoint.
+its Rust-positive contract remains required.
+
+Clean source8950ad99c freezes release candidate12, CLI
+`bca8b9e1a83122a0441f95d6a4b7cca3fa95eb93ef418122234316132cdf466b`, with3945
+Rust hashes and an empty patch. The unchanged120s original observer runs
+exclusively after load admission and finishes its body pass in23.29s. Actual
+`as_underlying`7631 clears. All42310 declarations pass;35120 item attempts check
+25852 bodies, with two failures and four blocked bodies remaining, all in the
+borrowed-closure pattern methods. No previously passing body fails. Postcheck
+verifies722 source hashes,375 opened sources, six configuration bindings, all
+compiler sources and unchanged profile/limits. The completion pass is not run.
+
+Forty-eight exclusive observations compare immutable release11/12 on frozen
+accepting widths8/32/128 and an ordinary control, using A/A calibration and two
+ABBA blocks. Complete outputs agree. Wall ratios are1.009/1.030/.937/.918,
+against A/A.956/1.012/1.102/.914; CPU ratios are1.009/1.034/.937/.900. Short
+process timings make no speedup, neutrality or whole-core throughput claim.
+Raw observations remain under `obj/parallel/zst-niche/measure-b/` and
+`obj/parallel/capture-match/original-candidate12*`.
 No whole-library artifact or full assignment release is inferred.
