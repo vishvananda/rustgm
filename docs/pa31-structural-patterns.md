@@ -3,8 +3,9 @@
 The source pattern checker now consumes actual `PartialEq` and
 `StructuralPartialEq` identities instead of the bootstrap derive-property table.
 This qualifies19 source outcomes (12 accepting, seven rejecting), with three
-actual Rust/C exports. It reduces candidate13's Alignment failure; an unchanged
-successor original-core observation is still due. No original library artifact
+actual Rust/C exports. Clean release15 clears candidate13's Alignment failure in an unchanged
+original-core diagnostic census. Its next error is completion of a generic
+inline-constant template; no original library artifact
 or whole-PA completion is claimed.
 
 ## Contract
@@ -65,17 +66,29 @@ At8/32/128 constants, inference is5024/6752/13664 (72n+4448), canonical work is
 4047/8055/24087 (167n+2711), and actual trait queries are16/64/256 (2n).
 These are bounded-work observations, not timings.
 
-Exploratory wippattern2-dev-fast binds3948 compiler sources and its dirty patch;
-CLI SHA25656485edcef6d8823074fd1a0cd153d0409282bd3bce9077a7e649174d4e0b1a1.
-Frozen nonempty paired-derive controls at8/32/128 and an ordinary control agree
-with Rust and preserve complete outputs against same-profile wipclosure5.
-Calibrated A/A+ABBA observations await the unchanged load gate: the last host
-load was42.88/57.73, above14/20. Their raw declarations are under
-obj/parallel/structural-constant-patterns/measure-inputs/.
+Clean candidate14-dev-fast binds source864ad9c6c,3948 compiler sources and an
+empty patch; CLI SHA25656485edcef6d8823074fd1a0cd153d0409282bd3bce9077a7e649174d4e0b1a1.
+All48 frozen A/A+two-ABBA observations against same-profile wipclosure5 preserve
+complete outputs at widths8/32/128 plus an ordinary control. Load starts13.15/18.58
+and ends12.84/18.24, within the unchanged14/20 gate. Tiny noisy observations make
+no speed claim. Raw data: obj/parallel/structural-constant-patterns/measure-candidate14/.
+
+Clean candidate15-release binds2072521b8,3948 sources and an empty patch;
+CLI700e4cb31ba1360f694ac6806b7e24b88fc2b814d6dedeee9de518c2c0d902b0.
+Its120s full diagnostic census clears Alignment and reaches completion with no
+function failure:42310 declarations and25858 bodies checked. All722 sources,
+375 opens, six configuration pins, current/producer sources and unchanged limits
+verify. Host load was above14/20, so this is semantic diagnostic evidence and no
+controlled timing comparison. The new record is mem/mod.rs1421's SIZE initializer,
+reached by promotion of an anonymous template: "source computation requires its
+current initializer scope". Completion remains0; no original artifact exists.
 
 The earlier empty derive-list scaling input is a valid required positive but
 hits the baseline's source-vocabulary introduction/edition failure. Its bytes,
-hashes and unrun larger widths remain serialized in the packet manifest. It is
-not counted as passing or silently dropped. Private/full successor CI, the known
-predecessor eight private failures, clean release/core observation and original
-library artifacts remain required.
+hashes remain serialized in the packet manifest. Fresh Rust accepts8 and32;
+128 reaches Rust's default macro recursion limit, a retained setup failure.
+Release15 rejects8/32 at the existing vocabulary introduction/edition guard.
+None is counted as passing. Full43492592267 executes the eight predecessor
+repairs successfully, then finds the nonstaged derive inventory regression and
+one stale private diagnostic; see the CI repair checkpoint. Full successor,
+controlled original observation and original library artifacts remain required.

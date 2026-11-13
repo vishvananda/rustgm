@@ -226,10 +226,15 @@ fn local_derive_feature<'a>(
     if actual.node != Some(source) || actual.name != definition.name {
         return Err(error("source derive changed its canonical declaration"));
     }
-    let policy = report
+    let Some(library) = report
         .package
         .library_policy()
-        .and_then(crate::resolve::stability::Library::inventory)
+        .filter(|library| library.is_staged())
+    else {
+        return Ok(None);
+    };
+    let policy = library
+        .inventory()
         .ok_or_else(|| error("source derive lacks its completed API inventory"))?
         .local_declaration(*id)
         .map_err(error)?;

@@ -47,3 +47,24 @@ the pre-existing literal-pointer tests: the new Expansion mode and drain inputs
 were not supplied. Their adapter now keeps its actual Report and uses the
 bootstrap mode. Production behavior and every assertion remain unchanged. This
 run executed none of the repaired private controls; a successor is required.
+
+Full successor43492592267 on exact2072521b8 executed3071 passing private tests,
+with two failures and three ignored. All eight predecessor repairs pass, including
+the unchanged parent-GAT scaling bound and the source-seal opponent. The three
+borrowed-input/source-Copy private opponents also pass. Twelve public targets
+pass; frontend fails its MaybeUninit packet, sharing one private failure's cause.
+Course/native/debug/independent successor stages did not run.
+
+The local derive check required a staged API inventory even for a provider that
+never enabled staged_api. It now validates the actual canonical macro identity,
+then asks only staged libraries for that inventory. A staged provider still fails
+if its inventory is missing. Public receipt1794599635678273601 passes three exact
+MaybeUninit, structural-pattern and scaling tests, with strict production/CLI
+Clippy, formatting and architecture checks (176.29s).
+
+The remaining private failure is an earlier precise diagnostic after ba6e731e2:
+changed public/execution signatures and full instance identities fail in the
+selected-callable guard, before the subsequent Copy-environment check. The fixture
+now expects those exact guards, including a missing execution owner's distinct
+error. All mutations, rejection assertions and work charges remain. That private
+adapter still awaits successor execution; no new local cold link is attempted.

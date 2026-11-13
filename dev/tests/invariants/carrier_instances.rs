@@ -116,8 +116,8 @@ fn opponents(
             _ => *execution = None,
         }
         let expected = match change {
-            0 | 3 => "alias materialization changed its selected public signature",
-            _ => "instance Copy scope belongs to another materialization or environment",
+            3 => "alias materialization requires its actual callable owner",
+            _ => "alias materialization changed its selected public signature",
         };
         rejected_reason(
             facts,

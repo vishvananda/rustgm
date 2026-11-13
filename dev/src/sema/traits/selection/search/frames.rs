@@ -66,7 +66,8 @@ pub(super) enum Sources {
     All,
     /// A normalizer's concrete premise tries implementations before caller
     /// clauses, as rustc discards a global where clause in favor of an impl.
-    /// Such a frame neither reuses nor records a cached decision for its goal.
+    /// It may reuse a completed positive implementation in this same scope,
+    /// but never records its own decision or reuses caller-only answers.
     Implementations,
 }
 
