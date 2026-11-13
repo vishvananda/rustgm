@@ -60,8 +60,11 @@ predicate owner=13 source=0:2 subject=21 bound=trait:13 arguments=[region:bound:
 predicate owner=16 source=0:10 forall=0
 region-var region:1 body=0:17 source=0:15 origin=annotation pending
 region-var region:2 body=0:17 source=0:15 origin=inference pending
+region-var region:3 body=0:17 source=0:15 origin=inference pending
 region-equal body=0:17 left=region:1 right=region:1
 region-equal body=0:17 left=region:1 right=region:2
+region-equal body=0:17 left=region:1 right=region:1
+region-equal body=0:17 left=region:1 right=region:3
 associated-type def=15 type=22
 result-contract def=15 projection=22
 result-bound def=15 index=0 subject=22 bound=sized

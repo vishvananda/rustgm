@@ -1121,6 +1121,21 @@ A maintainer integration test checks typing through the CLI, each rejection's
 site and prepared lowering for every accepted case. There is no graded
 manifest or native test.
 
+`spec/body-projection-normalization/` freezes seventeen declared no_core
+reductions of portable-simd's `first_set`, whose `let min_index: T::Unsigned`
+no signature names, and `TryFrom<&[T]>` for `Simd`, whose
+`slice.try_into()?` coerces a pending projected error type.
+
+- Accepted forms: core's masks sequence and four narrower masks forms, core's
+  two `try_from` forms, a `let` annotation and a concrete slice, and four
+  controls.
+- Rejected forms: a missing method (E0599), a wrong result (E0308), an
+  unbounded projection (E0277) and an unconvertible `?` error (E0271).
+
+A maintainer integration test checks typing through the CLI, each rejection's
+site and prepared lowering for every accepted case. There is no graded
+manifest or native test.
+
 `spec/derive-projection-bounds/` freezes sixteen declared no_core reductions
 of core's derived `Clone` and `Debug` of `Peekable`, `ArrayChunks` and
 `Intersperse`, whose field types name `I::Item`.

@@ -234,6 +234,15 @@ impl Host for Prefix<'_> {
             "method prefix requires completed projection normalization",
         ))
     }
+    /// An isolated prefix keeps a resolved projection type as resolved.
+    fn resolved_projection(
+        &mut self,
+        _: NodeKey,
+        _: crate::types::lifetime_proof::ScopeId,
+        _: TermId,
+    ) -> Result<(), Error> {
+        Ok(())
+    }
 }
 
 #[derive(Default)]

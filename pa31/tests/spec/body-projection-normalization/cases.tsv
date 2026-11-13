@@ -1,0 +1,17 @@
+pa31/tests/spec/body-projection-normalization/masks-core-form.rs	0
+pa31/tests/spec/body-projection-normalization/masks-cast-reduce-transmute.rs	0
+pa31/tests/spec/body-projection-normalization/masks-one-let-transmute.rs	0
+pa31/tests/spec/body-projection-normalization/masks-body-only-direct.rs	0
+pa31/tests/spec/body-projection-normalization/masks-body-only-qualified.rs	0
+pa31/tests/spec/body-projection-normalization/masks-signature-control.rs	0
+pa31/tests/spec/body-projection-normalization/masks-reduce-to-usize.rs	no applicable method for this receiver	r.to_usize()
+pa31/tests/spec/body-projection-normalization/masks-wrong-output.rs	body types require a provable associated-result equality	v)}
+pa31/tests/spec/body-projection-normalization/masks-unbounded-projection.rs	associated type requires an unambiguous implementation	<T as Sealed>::Unsigned)-><T as Sealed>
+pa31/tests/spec/body-projection-normalization/try-core-form.rs	0
+pa31/tests/spec/body-projection-normalization/try-mut-form.rs	0
+pa31/tests/spec/body-projection-normalization/try-let-annotated.rs	0
+pa31/tests/spec/body-projection-normalization/try-concrete-slice.rs	0
+pa31/tests/spec/body-projection-normalization/try-explicit-match.rs	0
+pa31/tests/spec/body-projection-normalization/try-direct-try-from.rs	0
+pa31/tests/spec/body-projection-normalization/try-projection-type.rs	0
+pa31/tests/spec/body-projection-normalization/try-wrong-error.rs	trait obligation requires an unambiguous matching assumption or implementation	slice.try_into()?;Ok(array)}

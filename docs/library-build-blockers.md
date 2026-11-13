@@ -13,7 +13,8 @@ bodies pass. The completion pass was not run. The remaining failures:
   source and destination sizes", the bool niche of `ControlFlow<bool>`;
 - 3 portable-simd "associated type projection requires normalization":
   `first_set` 17766 (`masks.rs:395`) and `try_from` 17943 and 17946
-  (`vector.rs:1045`, `:1057`);
+  (`vector.rs:1045`, `:1057`), fixed after candidate8 by the body projection
+  normalization checkpoint below;
 - 2 closure lifetimes, `into_searcher` 26791 and `is_contained_in` 26792
   (`str/pattern.rs:956`), which block four more;
 - `core_simd` `div` 36996 (`ops.rs:139`), a trait obligation, which blocks
@@ -22,6 +23,16 @@ bodies pass. The completion pass was not run. The remaining failures:
 
 No core artifact exists. A core build would also stop at the initial
 assembly profile for the ymm, zmm and kreg bodies.
+
+The [body projection normalization checkpoint](pa31-body-projection-normalization.md)
+fixes portable-simd's `first_set` 17766 and `try_from` 17943 and 17946.
+`first_set`'s `let min_index: T::Unsigned` resolved to a known projection
+that no body normalization covered, because no signature names the type. Such
+an annotation is now registered for body normalization, as a qualified path
+already was. `slice.try_into()?` freshened a call result whose nested
+`<&[T] as TryInto<[T; N]>>::Error` was still pending. A nested pending
+projection is now related by equality unchanged, as a projection head
+already was. Seventeen source-core reductions qualify both changes.
 
 The [blanket candidate winnowing checkpoint](pa31-blanket-candidate-winnowing.md)
 fixes `slice/iter/macros.rs:494`'s `default` for `Iter`, which candidate6

@@ -149,6 +149,29 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-13 body projection normalization update (supersedes the blocks below):**
+
+- portable-simd's `first_set` 17766 and `try_from` 17943 and 17946 now type
+  ([evidence](docs/pa31-body-projection-normalization.md)). A resolved body
+  annotation that names a projection is registered for body normalization,
+  and a coercion into an unresolved expected type relates a nested pending
+  projection by equality.
+  - Seventeen cases are in `pa31/tests/spec/body-projection-normalization`.
+    The ten declared batches, two of them malformed, the oracle stderr, the
+    candidate8 base runs and the gdb traces are in
+    `obj/parallel/simd-normalization/`.
+  - Six references changed and were independently reviewed: five inspection
+    dumps in PA20 and PA21 gain the query's region records, and PA24's
+    `unconstrained-output` now rejects with "type annotations needed"
+    (E0282). The diffs, the equivalence check and the candidate8 base runs
+    are in `obj/parallel/simd-normalization/reference-review/`.
+  - Focused receipt 1794553083123832053 passes with full PA10, PA20, PA21 and
+    PA24 text.
+- Next: release candidate9 and an exclusive core re-observation against
+  candidate8, then retire the candidate8 pin. Then `repr_bitpacked.rs:300`,
+  `ops.rs:139` `div`, the 7631 bool-niche transmute and
+  `str/pattern.rs:956`'s closure lifetimes.
+
 **2026-11-13 release candidate8 observation (supersedes the blocks below):**
 
 - Candidate8 (`obj/parallel/capture-match/candidate8-release`, clean

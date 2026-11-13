@@ -68,6 +68,14 @@ impl Host for Checker<'_> {
     ) -> Result<(), Error> {
         self.defer_normalization(key.node, scope, term)
     }
+    fn resolved_projection(
+        &mut self,
+        key: NodeKey,
+        scope: crate::types::lifetime_proof::ScopeId,
+        term: TermId,
+    ) -> Result<(), Error> {
+        self.defer_normalization(key.node, scope, term)
+    }
     fn child(&mut self, key: NodeKey) {
         self.state.annotation_children.insert(key.node);
     }

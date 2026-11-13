@@ -182,6 +182,17 @@ impl Checker<'_> {
     }
 
     pub(super) fn inferred_regions(&mut self, node: NodeId, term: TermId) -> Result<TermId, Error> {
+        self.try_inferred_regions(node, term)?
+            .map_err(|error| self.error(node, error))
+    }
+
+    /// As `inferred_regions`, returning a freshening failure to the caller.
+    /// No body regions are reserved for a failed walk.
+    pub(super) fn try_inferred_regions(
+        &mut self,
+        node: NodeId,
+        term: TermId,
+    ) -> Result<Result<TermId, crate::types::infer::Error>, Error> {
         let first = self
             .facts
             .body_regions
@@ -215,8 +226,11 @@ impl Checker<'_> {
                 term,
                 first,
             )
-        }
-        .map_err(|e| self.error(node, e))?;
+        };
+        let fresh = match fresh {
+            Ok(fresh) => fresh,
+            Err(error) => return Ok(Err(error)),
+        };
         let region = BodyRegion {
             body: self.state.body,
             source: self.key(node),
@@ -233,7 +247,7 @@ impl Checker<'_> {
                 fresh.term,
             )?;
         }
-        Ok(fresh.term)
+        Ok(Ok(fresh.term))
     }
     pub(super) fn nominal_type(
         &mut self,

@@ -1,0 +1,164 @@
+{
+ "schema": 1,
+ "declared": "2026-11-13, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run (obj/parallel/simd-normalization/declared.json, batches 2, 4, 7, 8 and 10). Batch 1 lacked an array Copy impl and batch 9 the actual try protocol; both are recorded as malformed. Two declarations disagree with rustc, as recorded per case.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --target=x86_64-unknown-linux-gnu --crate-type=lib --emit=metadata -Cpanic=abort --cap-lints=allow",
+ "base": "release candidate8 (53667da5b, CLI ae92eca9)",
+ "cases": {
+  "masks-core-form.rs": {
+   "sha256": "76edf673b75e8e6a3cf305cc77b400760f632016e99eede290009bfdd97d6f01",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 2,
+   "probe": "core-form",
+   "base_candidate8": "ERROR: file 0: 2725: associated type projection requires normalization",
+   "rustgm": 0
+  },
+  "masks-cast-reduce-transmute.rs": {
+   "sha256": "8818ac3f1cbc452b9d0978dab1561359d4916f46831e590f1c60f09ef36fdab2",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 4,
+   "probe": "reduce-transmute",
+   "base_candidate8": "ERROR: file 0: 2602: associated type projection requires normalization",
+   "rustgm": 0
+  },
+  "masks-one-let-transmute.rs": {
+   "sha256": "1e7605f1397c8b8819b454658dd9b481b939e25c6b8ba517ed99e524d61d901c",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 7,
+   "probe": "one-let-transmute",
+   "base_candidate8": "ERROR: file 0: 2565: associated type projection requires normalization",
+   "rustgm": 0
+  },
+  "masks-body-only-direct.rs": {
+   "sha256": "d0ee23706ed59fdbcc9de37964ca303bcdd4b1e0b9a383cd1e86286234fc9e9f",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 8,
+   "probe": "body-only-direct",
+   "base_candidate8": "ERROR: file 0: 2492: associated type projection requires normalization",
+   "rustgm": 0
+  },
+  "masks-body-only-qualified.rs": {
+   "sha256": "12ee1e29704df6da118e7f7b797151862095fe7f72bb127a45b92fee5cdff855",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 8,
+   "probe": "body-only-qualified-supertrait",
+   "base_candidate8": "ERROR: file 0: 2509: associated type projection requires normalization",
+   "rustgm": 0
+  },
+  "masks-signature-control.rs": {
+   "sha256": "2840139419662defe86b25b330c5c28e125f6620668e0879ec9a17e96775f9e4",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 8,
+   "probe": "signature-supertrait",
+   "base_candidate8": 0,
+   "rustgm": 0
+  },
+  "masks-reduce-to-usize.rs": {
+   "sha256": "a872984a863b57ab524f3fced8db0b80f005cbce2cd9e26124761aa3e367e432",
+   "declared": 0,
+   "rustc": "E0599",
+   "batch": 4,
+   "probe": "reduce-to-usize",
+   "base_candidate8": "ERROR: file 0: 2606: associated type projection requires normalization",
+   "rustgm": "ERROR: file 0: 2619: no applicable method for this receiver",
+   "misprediction": "declared accept, rustc E0599"
+  },
+  "masks-wrong-output.rs": {
+   "sha256": "a9fd47f67066781892c4a757cbdffb6d397702d051a0857ac4d5200a4b95b823",
+   "declared": "E0308",
+   "rustc": "E0308",
+   "batch": 2,
+   "probe": "wrong-output",
+   "base_candidate8": "ERROR: file 0: 2513: body types require a provable associated-result equality",
+   "rustgm": "ERROR: file 0: 2513: body types require a provable associated-result equality"
+  },
+  "masks-unbounded-projection.rs": {
+   "sha256": "f5f2004e4d77d036f98aa2c49741fd6caa88d629b10a1fa5f88feb68c476c977",
+   "declared": "E0277",
+   "rustc": "E0277",
+   "batch": 2,
+   "probe": "unbounded-projection",
+   "base_candidate8": "ERROR: file 0: 2436: associated type requires an unambiguous implementation",
+   "rustgm": "ERROR: file 0: 2436: associated type requires an unambiguous implementation"
+  },
+  "try-core-form.rs": {
+   "sha256": "047b215f6cecf2cc4925b23a15a4778a48e3fa24fb43b100acb7f98e6ac7a0c8",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 10,
+   "probe": "core-form",
+   "base_candidate8": "ERROR: file 0: 4038: associated type projection requires normalization",
+   "rustgm": 0
+  },
+  "try-mut-form.rs": {
+   "sha256": "059fb2b06ff325868e1f7af0ba7bd07f965df6be038521293d4dd2a0ae8b9749",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 10,
+   "probe": "mut-form",
+   "base_candidate8": "ERROR: file 0: 4046: associated type projection requires normalization",
+   "rustgm": 0
+  },
+  "try-let-annotated.rs": {
+   "sha256": "a0a3833015b3c1411cad82196cdc1a3eb8297e160632e89fa10f2f407946e0f8",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 10,
+   "probe": "let-annotated",
+   "base_candidate8": "ERROR: file 0: 4034: associated type projection requires normalization",
+   "rustgm": 0
+  },
+  "try-concrete-slice.rs": {
+   "sha256": "cb831e615857925ba97f154223635ed48a07d23c162b5158487b45746b65af98",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 10,
+   "probe": "concrete-slice",
+   "base_candidate8": "ERROR: file 0: 3920: associated type projection requires normalization",
+   "rustgm": 0
+  },
+  "try-explicit-match.rs": {
+   "sha256": "28eadc0e89f6c61eaa955eadfb22b525b6603a94ef675ef26846af9a0bd1448a",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 10,
+   "probe": "explicit-match",
+   "base_candidate8": 0,
+   "rustgm": 0
+  },
+  "try-direct-try-from.rs": {
+   "sha256": "f95713946613a49967d7cd70d0a8aa4933d5bfc325c68f07f71fadbbc97bf475",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 10,
+   "probe": "direct-try-from",
+   "base_candidate8": 0,
+   "rustgm": 0
+  },
+  "try-projection-type.rs": {
+   "sha256": "6e08d83e94fed67244066191a7fb4b98d7fd0ad0375c526cffa796a3ffa46ce9",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 10,
+   "probe": "projection-type",
+   "base_candidate8": 0,
+   "rustgm": 0
+  },
+  "try-wrong-error.rs": {
+   "sha256": "10898e76e1f2153e541d9e9d69aa0536896b5e0a07e31bd3df76a84a25a9339e",
+   "declared": "E0277",
+   "rustc": "E0271",
+   "batch": 10,
+   "probe": "wrong-error",
+   "base_candidate8": "ERROR: file 0: 3933: associated type projection requires normalization",
+   "rustgm": "ERROR: file 0: 3933: trait obligation requires an unambiguous matching assumption or implementation",
+   "misprediction": "declared E0277, rustc E0271"
+  }
+ }
+}

@@ -249,6 +249,15 @@ too. Fifteen source-core reductions agree with rustc. Premises for another
 lifetime now fail prepared lowering's lifetime proof, as rustc's borrow
 checker rejects them.
 
+The [body projection normalization checkpoint](docs/pa31-body-projection-normalization.md)
+registers a resolved body annotation that names a projection, such as
+`T::Unsigned`, for body normalization, as a qualified path already was. A
+coercion into an unresolved expected type now relates an actual type with a
+nested pending projection by equality, as it relates a projection head.
+portable-simd's `first_set` and both `TryFrom<&[T]>` bodies for `Simd` need
+them. Seventeen source-core reductions agree with rustc, including four
+rejections.
+
 The [blanket candidate winnowing checkpoint](docs/pa31-blanket-candidate-winnowing.md)
 discards, as rustc's winnowing does, each compatible impl whose trait
 condition has no candidate before a projection's symbolic result is exposed.

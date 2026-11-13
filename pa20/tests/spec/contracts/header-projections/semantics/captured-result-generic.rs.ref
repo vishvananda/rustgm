@@ -51,17 +51,18 @@ type 48 reference mutable=false region=region:1 referent=11
 type 49 reference mutable=false region=region:2 referent=11
 type 50 projection def=17 self=36 trait=15 arguments=[region:region:2] family arguments=[]
 type 51 projection def=17 self=36 trait=15 arguments=[region:region:3] family arguments=[]
-type 52 function binders=0 parameters=[50] result=11 unsafe=false
-type 53 projection def=17 self=36 trait=15 arguments=[region:static] family arguments=[]
-type 54 function-item def=20 signature=52 arguments=[type:50]
-type 55 function binders=0 parameters=[38] result=11 unsafe=false
-type 56 function-item def=25 signature=55 regions=[region:1]
-type 57 projection def=17 self=11 trait=15 arguments=[region:region:1] family arguments=[]
-type 58 reference mutable=false region=region:3 referent=11
-type 59 function binders=0 parameters=[48] result=11 unsafe=false
-type 60 function-item def=25 signature=59 arguments=[region:region:1,type:11]
-type 61 reference mutable=false region=region:4 referent=11
-type 62 reference mutable=false region=region:5 referent=11
+type 52 projection def=17 self=36 trait=15 arguments=[region:region:4] family arguments=[]
+type 53 function binders=0 parameters=[50] result=11 unsafe=false
+type 54 projection def=17 self=36 trait=15 arguments=[region:static] family arguments=[]
+type 55 function-item def=20 signature=53 arguments=[type:50]
+type 56 function binders=0 parameters=[38] result=11 unsafe=false
+type 57 function-item def=25 signature=56 regions=[region:1]
+type 58 projection def=17 self=11 trait=15 arguments=[region:region:1] family arguments=[]
+type 59 reference mutable=false region=region:3 referent=11
+type 60 function binders=0 parameters=[48] result=11 unsafe=false
+type 61 function-item def=25 signature=60 arguments=[region:region:1,type:11]
+type 62 reference mutable=false region=region:4 referent=11
+type 63 reference mutable=false region=region:5 referent=11
 def 13 type=27 name="check" source=0:13
 def 14 type=29 name="fail" source=0:22
 def 16 type=21 name="Self" source=0:31
@@ -127,6 +128,7 @@ implementation-use source=0:93 owner=23 arguments=[region:region:6]
 region-var region:1 body=0:84 source=0:78 origin=inference pending
 region-var region:2 body=0:84 source=0:84 origin=universal-alias pending
 region-var region:3 body=0:84 source=0:74 origin=inference pending
+region-var region:4 body=0:84 source=0:78 origin=inference pending
 region-var region:1 body=0:101 source=0:93 origin=item-argument pending
 region-var region:2 body=0:101 source=0:93 origin=quantified-proof pending
 region-var region:3 body=0:101 source=0:93 origin=inference pending
@@ -136,6 +138,7 @@ region-var region:6 body=0:101 source=0:93 origin=inference pending
 region-equal body=0:84 left=region:1 right=bound:0:0
 region-equal body=0:84 left=region:3 right=bound:0:0
 region-equal body=0:84 left=region:2 right=region:2
+region-equal body=0:84 left=region:4 right=bound:0:0
 region-equal body=0:84 left=region:2 right=region:2
 region-equal body=0:84 left=region:2 right=region:2
 region-equal body=0:84 left=region:2 right=region:2
@@ -144,8 +147,8 @@ region-equal body=0:101 left=region:1 right=region:1
 region-equal body=0:101 left=region:1 right=region:3
 region-equal body=0:101 left=region:1 right=region:6
 region-coercion body=0:84 source=0:82 actual=37 expected=50 kind=same-shape pending
-region-coercion body=0:101 source=0:95 actual=61 expected=48 kind=reborrow pending
-region-coercion body=0:101 source=0:95 actual=62 expected=48 kind=same-shape pending
+region-coercion body=0:101 source=0:95 actual=62 expected=48 kind=reborrow pending
+region-coercion body=0:101 source=0:95 actual=63 expected=48 kind=same-shape pending
 associated-type def=17 type=23
 result-contract def=17 projection=23
 result-bound def=17 index=0 subject=23 bound=sized

@@ -36,6 +36,15 @@ pub(super) trait Host {
         fields: &Fields,
     ) -> Result<(), Error>;
     fn normalization(&mut self, key: NodeKey, scope: ScopeId, term: TermId) -> Result<(), Error>;
+    /// A resolved declaration type that still names a projection, such as a
+    /// shorthand `T::Assoc`, reaches inference as a known type. A host that
+    /// normalizes qualified paths normalizes it too.
+    fn resolved_projection(
+        &mut self,
+        key: NodeKey,
+        scope: ScopeId,
+        term: TermId,
+    ) -> Result<(), Error>;
     fn pending_normalization(&self) -> bool;
 }
 
@@ -52,7 +61,7 @@ impl Scratch {
                 continue;
             }
             let term = if let Some(ty) = host.facts().node(key).and_then(|f| f.ty) {
-                known(host, key, ty)?
+                resolved(host, key, scope, ty)?
             } else if finish {
                 self.finish(host, key, scope)?
             } else {
@@ -183,7 +192,7 @@ impl Scratch {
                 };
                 let ty = host.facts().definitions[id.0 as usize]
                     .ok_or_else(|| error(host, key, "missing resolved annotation type"))?;
-                return known(host, key, ty);
+                return resolved(host, key, scope, ty);
             }
             Kind::Type { flavor, elements } => {
                 self.children.clear();
@@ -296,6 +305,21 @@ fn term(host: &impl Host, key: NodeKey) -> Result<TermId, Error> {
     host.cached(key)
         .ok_or_else(|| error(host, key, "missing annotation constraint"))
 }
+/// A resolved declaration type, with any projection it names handed to the host.
+fn resolved(
+    host: &mut impl Host,
+    key: NodeKey,
+    scope: ScopeId,
+    ty: TypeId,
+) -> Result<TermId, Error> {
+    let projected = host.facts().types.contains_projections(ty) == Some(true);
+    let term = known(host, key, ty)?;
+    if projected {
+        host.resolved_projection(key, scope, term)?;
+    }
+    Ok(term)
+}
+
 fn known(host: &mut impl Host, key: NodeKey, ty: TypeId) -> Result<TermId, Error> {
     let (facts, infer) = host.inference();
     infer

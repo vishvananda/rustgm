@@ -2142,7 +2142,14 @@ impl Checker<'_> {
         expected_head: Option<Constructor>,
     ) -> Result<(), Error> {
         let inferred = if expected_head.is_none() {
-            self.inferred_regions(source, actual)?
+            match self.try_inferred_regions(source, actual)? {
+                Ok(inferred) => inferred,
+                // A nested projection has no exposed reference shape until it
+                // is normalized, so the type is related by equality unchanged,
+                // as a projection head is in `coerce_one`.
+                Err(crate::types::infer::Error::Normalization) => actual,
+                Err(error) => return Err(self.error(source, error)),
+            }
         } else {
             actual
         };

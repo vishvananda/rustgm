@@ -5848,6 +5848,16 @@ query must not intern partial shapes or freeze answers across later bindings.
 Register projections in
 instantiated generic signatures and nominal fields in their resulting scopes;
 an earlier query for the input argument does not cover a substituted occurrence.
+A body annotation resolved to a declaration type that still names a
+projection, such as a shorthand `T::Assoc`, registers the same body
+normalization as a qualified path. An earlier normalization of the same type
+by a signature does not cover it. An isolated method prefix keeps the resolved
+type. When a coercion binds an actual type to an unresolved expected type, and
+a projection nested in the actual type has not normalized yet, the type is
+related by equality without fresh regions, as a projection head already is. A
+future normal form can complete that equality, but cannot supply a conversion
+missing at the source point. See the
+[body projection normalization checkpoint](docs/pa31-body-projection-normalization.md).
 
 Retain actual callable scope kinds through partial annotations, normalization,
 proof copying and grafting. Callable-local family input conditions defer under

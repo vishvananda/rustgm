@@ -65,5 +65,7 @@ mod signature_projection_environments;
 mod stored_projected_callables;
 #[path = "../../stored_projections.rs"]
 mod stored_projections;
+#[path = "../../unnormalized_body_projections.rs"]
+mod unnormalized_body_projections;
 #[path = "../../unreduced_annotations.rs"]
 mod unreduced_annotations;
