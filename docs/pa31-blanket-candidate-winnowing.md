@@ -211,5 +211,13 @@ let one = _mm512_set1_epi16(
 Each `?int << ?int` projection had a compatible header for every integer `Shl`
 impl, and each symbolic result query instantiated all of them. The bounded
 scan fixes this. `unconditional_family_scan_stops_at_the_second_header` reproduces the
-growth: without the bound it fails at 128 impls. No core observation of the
-bounded form has run yet.
+growth: without the bound it fails at 128 impls.
+
+Release candidate8 (`obj/parallel/capture-match/candidate8-release`, clean
+53667da5b, CLI ae92eca9) carries the bounded scan, the derived field path
+bounds and the AVX-512 operands. The unchanged 120s observer ran it
+exclusively from load 9.5. It reached the end of the body pass in 23.0s, with
+all 35,120 item attempts, 8 failed and 13 blocked bodies, against
+candidate6's 27 and 14. Every candidate8 record is a candidate6 record, so no
+previously passing body failed. `_mm512_movm_epi16` 14975 passes. The `Iter` `default` 26599 and the `IterMut` `default` 26633 it
+blocked both pass.

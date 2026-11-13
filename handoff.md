@@ -149,6 +149,22 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-13 release candidate8 observation (supersedes the blocks below):**
+
+- Candidate8 (`obj/parallel/capture-match/candidate8-release`, clean
+  53667da5b, CLI ae92eca9) reached the end of the body pass in 23.0s under the
+  unchanged 120s observer, run exclusively from load 9.5. It had 8 failed and
+  13 blocked bodies, against candidate6's 27 and 14, and no new failure
+  ([tracker](docs/library-build-blockers.md)). The comparison is
+  `obj/parallel/capture-match/original-candidate8-comparison.json`. Its 15
+  cleared records omit the five renumbered derived bodies, which pass.
+- Candidate8 is now the only release pin. The candidate6 and candidate7
+  binaries were retired and pruned. Their observations remain.
+- Next groups, smallest first: the three portable-simd projection
+  normalizations, `repr_bitpacked.rs:300`, `ops.rs:139` `div`, the 7631
+  bool-niche transmute and `str/pattern.rs:956`'s closure lifetimes. PA27
+  owns the closure output-lifetime model.
+
 **2026-11-13 winnowing scan bound and AVX-512 operand update (supersedes the blocks below):**
 
 - Release candidate7 (clean 8f4e2f737) regressed: its census ended at item

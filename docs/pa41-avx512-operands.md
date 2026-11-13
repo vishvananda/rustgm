@@ -169,4 +169,12 @@ passes. No separate scaling run is added.
 
 ## Core progress
 
-No core observation of this change has run yet.
+Release candidate8 (`obj/parallel/capture-match/candidate8-release`, clean
+53667da5b, CLI ae92eca9) carries the bounded scan, the derived field path
+bounds and the AVX-512 operands. The unchanged 120s observer ran it
+exclusively from load 9.5. It reached the end of the body pass in 23.0s, with
+all 35,120 item attempts, 8 failed and 13 blocked bodies, against
+candidate6's 27 and 14. Every candidate8 record is a candidate6 record, so no
+previously passing body failed. `_mm512_movm_epi16` 14975 passes. All thirteen AVX-512 bodies, 12882-12885, 13314-13317, 13342,
+13343, 16243, 16244 and 16255, pass typing. A core build would still stop
+at the initial assembly profile for them.

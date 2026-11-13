@@ -1,5 +1,28 @@
 # Library build blocker tracker
 
+Release candidate8 (`obj/parallel/capture-match/candidate8-release`, clean
+53667da5b, CLI ae92eca9) carries every fix below. The unchanged 120s observer
+ran it exclusively from load 9.5. It reached the end of the body pass in
+23.0s, with all 42,310 declarations passing, 35,120 item attempts, and 8
+failed and 13 blocked bodies, against candidate6's 27 and 14. Every record is
+a candidate6 record, so no previously passing body failed. The thirteen
+AVX-512 bodies, both slice iterator `default` bodies and the five derived
+bodies pass. The completion pass was not run. The remaining failures:
+
+- `as_underlying` 7631 (`slice/cmp.rs:52`), "source transmute requires equal
+  source and destination sizes", the bool niche of `ControlFlow<bool>`;
+- 3 portable-simd "associated type projection requires normalization":
+  `first_set` 17766 (`masks.rs:395`) and `try_from` 17943 and 17946
+  (`vector.rs:1045`, `:1057`);
+- 2 closure lifetimes, `into_searcher` 26791 and `is_contained_in` 26792
+  (`str/pattern.rs:956`), which block four more;
+- `core_simd` `div` 36996 (`ops.rs:139`), a trait obligation, which blocks
+  nine more;
+- `repr_bitpacked.rs:300`'s const `_` 25396, "incompatible types".
+
+No core artifact exists. A core build would also stop at the initial
+assembly profile for the ymm, zmm and kreg bodies.
+
 The [blanket candidate winnowing checkpoint](pa31-blanket-candidate-winnowing.md)
 fixes `slice/iter/macros.rs:494`'s `default` for `Iter`, which candidate6
 fails, and for `IterMut`, which it blocks. `(&[]).into_iter()` needs
@@ -14,8 +37,8 @@ instantiated every compatible header. Its census ended at item 14975,
 budget exceeded", after 18,997 item attempts against candidate6's 35,120.
 Every integer `Shl` header was compatible with each `?int << ?int`. The scan
 now stops at the second compatible unconditional header, and an impl-family
-test reproduces the growth without that bound. No core observation of the
-bounded form has run yet.
+test reproduces the growth without that bound. Candidate8 passes both
+`default` bodies and 14975.
 
 The [AVX-512 operand checkpoint](pa41-avx512-operands.md) fixes the thirteen
 `core_arch` AVX-512 typing failures: `x86/avx512f.rs`'s ten `zmm_reg` and
@@ -26,7 +49,7 @@ table admits them under `avx512f`, with `avx512bw` for 32- and 64-bit masks,
 and vector widths count `f16` lanes. The initial assembly profile still
 rejects both classes before native lowering and export, so the core build
 stops there until a backend contract for them exists. Twenty-six cases
-qualify it. No core observation of it has run yet.
+qualify it. Candidate8 passes all thirteen bodies' typing.
 
 The [derived field path bound checkpoint](pa31-derive-projection-bounds.md)
 fixes the five derived bodies of core's `Peekable` (`clone`, `fmt`),
@@ -36,8 +59,8 @@ path that begins with a type parameter is now bounded by the derived trait,
 after the written predicates, as rustc's `find_type_parameters` bounds it.
 Sixteen source-core reductions and field-linear work qualify the fix. One
 recorded prepared lowering gap, which a manual impl shares, is an impl
-instance reading a projected field of a struct with a lifetime parameter. No
-core observation of it has run yet.
+instance reading a projected field of a struct with a lifetime parameter.
+Candidate8 passes all five bodies.
 
 The [comparison body lifetime checkpoint](pa31-comparison-body-lifetimes.md)
 fixes "cannot lower a captured local lifetime" in `marker/variance.rs:107`'s

@@ -193,4 +193,16 @@ canonical work, linear across widths.
 Release candidate7 (clean 8f4e2f737) carried this change. Its census ended at
 item 14975 on a work budget regression from the first form of
 [blanket candidate winnowing](pa31-blanket-candidate-winnowing.md), before
-the derived bodies (33847-33913). No observation has reached them yet.
+the derived bodies (33847-33913).
+
+Release candidate8 (`obj/parallel/capture-match/candidate8-release`, clean
+53667da5b, CLI ae92eca9) carries the bounded scan, the derived field path
+bounds and the AVX-512 operands. The unchanged 120s observer ran it
+exclusively from load 9.5. It reached the end of the body pass in 23.0s, with
+all 35,120 item attempts, 8 failed and 13 blocked bodies, against
+candidate6's 27 and 14. Every candidate8 record is a candidate6 record, so no
+previously passing body failed. `_mm512_movm_epi16` 14975 passes. The five derived bodies, `ArrayChunks` `clone` 33847 and `fmt`
+33849, `Intersperse` `fmt` 33902 and `Peekable` `clone` 33911 and `fmt`
+33913, are reached at their candidate6 items and offsets, and none has a
+record. `compare-original.py` matches exact progress lines, and the derive's
+new bounds renumber these bodies' nodes, so its 15 cleared records omit them.
