@@ -108,3 +108,10 @@ open. The [MaybeUninit native checkpoint](../docs/pa31-maybe-uninit-native-check
 qualifies the local source constant/native profile; general validity/runtime and
 imported requirements remain. Original core currently reaches genuine
 TransmuteFrom and its structured Assume const argument.
+
+The [anonymous associated-borrow checkpoint](../docs/pa25-anonymous-associated-borrows.md)
+qualifies five ordinary outcomes and three real native programs; actual source
+layout counterparts stay in PA31. Original generic inline values retain their
+caller and selected instances, while two complete source consumers remain
+explicit requirements. This does not extend the released const-machine component
+or complete the whole assignment.

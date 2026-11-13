@@ -205,3 +205,50 @@ in `git show 2072521b8:handoff.md` remain binding, including:
 Earlier bool/ZST/closure/reference/scaling inputs and unclosed positives remain in
 owning packets and checkpoint docs. No frontend/body/library substitution is
 permitted and no original-core artifact or whole planned PA is complete.
+
+## Resumed after filesystem recovery: anonymous associated borrows
+
+The temporary Btrfs read-only barrier was externally recovered; the volume is rw
+and all28 original modified/fixture files matched the verified recovery archive.
+No restoration or filesystem repair was performed by this worker. The archive
+under main/obj/parallel/recovery-readonly-vizier-20261113T204218Z remains historical,
+not a replacement for this newer state. Builds continue only in B.
+
+Full43499374010 PASSED EVERY STAGE on exactc4d76b6af, including3073 private tests
+in both release and debug, all public/course/native/independent and113-case PA25.
+It is the latest fully green published baseline. It does not qualify the later
+anonymous repair. No new manual full successor has been dispatched for that repair.
+
+[Current checkpoint](docs/pa25-anonymous-associated-borrows.md) qualifies21 complete
+prepared outcomes (five PA25 ordinary and16 PA31 source), one additional projected
+source original, three ordinary native programs printing7 and a five-export actual
+source observer printing4 8 4 4 8. All independently declared outcomes agree with
+Rust. Both native tests and exact counters pass a hash-checked current-source/
+harness replay. Public1794603811953549205 passes6 exact tests plus strict selected/
+CLI Clippy, full fmt/audit,136.28s. All315 harness/488 roots/44-stage layout/
+128+126 upstream checks now pass; no reference changes or backend contract change.
+
+Inference3521/6545/18641 and canonical4473/6585/15033 at8/32/128 are linear;
+original anonymous templates exactly8/32/128. All exact scaling inputs accept in
+Rust. Frozen unborrowed inline controls plus arithmetic are under
+initializer-completion/measure-inputs, declared before first compiler execution
+for same-profile A/A+ABBA. Measurement itself is pending. Source packet retains
+both required complete consumers (projected normalization and concrete inline
+source promotion), never inverted. Ordinary inputs are now installed in PA25;
+bootstrap3 accept/2 reject and all three actual natives pass.
+
+Implementation uses the registered DeferredTemplate state, restores the lent
+executor on every outcome, limits active anonymous service deferral to actual
+source mode, and resolves closed expression implementations before promotion.
+No new dense records, trait evidence, body substitution or compiler limit. The
+original initializer-scope error is reduced and repaired locally; actual core
+has NOT yet been observed with this code. There is no candidate16 yet.
+
+Pin.py now asserts3949 for the real anon_borrows.rs integration root. After
+publication, freeze one clean release16 and run the unchanged120s full original
+observer/postcheck. Keep all722 sources,375 opens, six pins and compiler limits.
+If host14/20 load prevents controlled observation, a separately labelled semantic
+diagnostic may identify the next blocker; no controlled speed claim. Then continue
+to actual original metadata/LowIR/native artifacts. No original artifact exists
+and no whole planned assignment is complete. Source tree must stay frozen during
+pinning/measurement. New full successor qualification remains required.

@@ -1,0 +1,16 @@
+pa31/tests/spec/anonymous-associated-borrows/closed-size.rs	0	-
+pa31/tests/spec/anonymous-associated-borrows/generic-size.rs	0	-
+pa31/tests/spec/anonymous-associated-borrows/inline-size.rs	0	-
+pa31/tests/spec/anonymous-associated-borrows/nested-inline-size.rs	0	-
+pa31/tests/spec/anonymous-associated-borrows/inline-function-call.rs	0	-
+pa31/tests/spec/anonymous-associated-borrows/default-inline.rs	0	-
+pa31/tests/spec/anonymous-associated-borrows/self-inline.rs	0	-
+pa31/tests/spec/anonymous-associated-borrows/unsized-denied.rs	1	trait obligation
+pa31/tests/spec/anonymous-associated-borrows/runtime-denied.rs	1	non-const calls
+pa31/tests/spec/anonymous-associated-borrows/borrowed-inline-size.rs	0	-
+pa31/tests/spec/anonymous-associated-borrows/borrowed-function-control.rs	0	-
+pa31/tests/spec/anonymous-associated-borrows/borrowed-const-call.rs	0	-
+pa31/tests/spec/anonymous-associated-borrows/borrowed-tuple.rs	0	-
+pa31/tests/spec/anonymous-associated-borrows/borrowed-bound-denied.rs	1	trait obligation
+pa31/tests/spec/anonymous-associated-borrows/borrowed-runtime-denied.rs	1	non-const calls
+pa31/tests/spec/anonymous-associated-borrows/borrowed-associated.rs	0	-

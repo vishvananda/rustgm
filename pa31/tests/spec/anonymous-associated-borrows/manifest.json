@@ -1,0 +1,203 @@
+{
+ "schema": 1,
+ "profile": {
+  "rustc": "1.98.0 (88d9e12ae)",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true
+ },
+ "declaration": "source1/source2 exact raw declarations frozen before first compiler run. Headers retain source-div/size-only.rs attribution and original Rust excerpts; consumers are authored. Native program and C observer declared before their first execution.",
+ "cases": {
+  "closed-size": {
+   "sha256": "8df4cf635ed87699a71872d780cd771adbb172b28889b330c535166e89f64a3c",
+   "expected": "accept",
+   "native_value": 4,
+   "independent_rustc": "accept",
+   "baseline15_status": 0,
+   "current": "declared for prepared qualification"
+  },
+  "generic-size": {
+   "sha256": "62d354227f31763515c696962b03c8f55443badfba6d78675907e62db4225e23",
+   "expected": "accept",
+   "native_value": 4,
+   "independent_rustc": "accept",
+   "baseline15_status": 0,
+   "current": "declared for prepared qualification"
+  },
+  "inline-size": {
+   "sha256": "94e3d0365c4ccb07edf9dcc3edec56d132b5a9b0a508d3269cc3df633d6bbddb",
+   "expected": "accept",
+   "native_value": 4,
+   "independent_rustc": "accept",
+   "baseline15_status": 0,
+   "current": "declared for prepared qualification"
+  },
+  "nested-inline-size": {
+   "sha256": "6f2e88cd628d08dfcb3514411ed5bb4a1d3440bb42a671de7b847e7860c1c848",
+   "expected": "accept",
+   "native_value": 4,
+   "independent_rustc": "accept",
+   "baseline15_status": 0,
+   "current": "declared for prepared qualification"
+  },
+  "inline-function-call": {
+   "sha256": "599993771db00192cc00714a4c8c54e72495478ebad10b0eb8803fe7d424d738",
+   "expected": "accept",
+   "native_value": 4,
+   "independent_rustc": "accept",
+   "baseline15_status": 0,
+   "current": "declared for prepared qualification"
+  },
+  "projected-inline": {
+   "sha256": "f758971dbc541e38b8c0d363b523395c62712906f16aa39b1df37a6cba99cbb8",
+   "expected": "accept",
+   "native_value": 4,
+   "independent_rustc": "accept",
+   "baseline15_status": 0,
+   "current": "source pipeline acceptance; complete consumer still required"
+  },
+  "default-inline": {
+   "sha256": "67fcec21fd7bea9c02dc5810d4c24d8517dab1cd5969df2b2192241eb7179ecb",
+   "expected": "accept",
+   "native_value": 4,
+   "independent_rustc": "accept",
+   "baseline15_status": 0,
+   "current": "declared for prepared qualification"
+  },
+  "self-inline": {
+   "sha256": "54a198e947b6dbd85ffb86f0f39d4f3691e77297b9ccd9a79a7327b7029cd9fd",
+   "expected": "accept",
+   "native_value": 4,
+   "independent_rustc": "accept",
+   "baseline15_status": 0,
+   "current": "declared for prepared qualification"
+  },
+  "unsized-denied": {
+   "sha256": "e0653e8a172d22f8b76606fef5e0cc006aba3e3b3f00404e23c6edeedeaf181e",
+   "expected": "reject",
+   "native_value": null,
+   "independent_rustc": "reject",
+   "baseline15_status": 1,
+   "current": "declared for prepared qualification"
+  },
+  "runtime-denied": {
+   "sha256": "c39727df98394c306b35eaa3a2ee8eced962661131dd493dbbc10c635fb51746",
+   "expected": "reject",
+   "native_value": null,
+   "independent_rustc": "reject",
+   "baseline15_status": 1,
+   "current": "declared for prepared qualification"
+  },
+  "borrowed-inline-size": {
+   "sha256": "cbc93392ba0f81240c763839c2b05d4548f869d4fce9a4dd766f105eaa92bad1",
+   "expected": "accept",
+   "native_value": 4,
+   "independent_rustc": "accept",
+   "baseline15_status": 1,
+   "current": "declared for prepared qualification"
+  },
+  "borrowed-concrete-control": {
+   "sha256": "3f1d055f3f3a9a8c639307d7ad2b379b1c19ce62b28f4b36ca31b853943b00a1",
+   "expected": "accept",
+   "native_value": 4,
+   "independent_rustc": "accept",
+   "baseline15_status": 1,
+   "current": "required pending"
+  },
+  "borrowed-function-control": {
+   "sha256": "3ea8ab75a4e9983822cc817d0efe392ab3165b4c507ea47cfbf38f42d2184c04",
+   "expected": "accept",
+   "native_value": 4,
+   "independent_rustc": "accept",
+   "baseline15_status": 0,
+   "current": "declared for prepared qualification"
+  },
+  "borrowed-const-call": {
+   "sha256": "3d00fa4cd89527b02f2d89747924892150cffc6dd1e88e910e22d87954d380af",
+   "expected": "accept",
+   "native_value": 4,
+   "independent_rustc": "accept",
+   "baseline15_status": 1,
+   "current": "declared for prepared qualification"
+  },
+  "borrowed-tuple": {
+   "sha256": "8e022ea19d823f8286bffafe738829b2869b8267996100f419b270fbe73126f3",
+   "expected": "accept",
+   "native_value": 4,
+   "independent_rustc": "accept",
+   "baseline15_status": 1,
+   "current": "declared for prepared qualification"
+  },
+  "borrowed-associated": {
+   "sha256": "f2faccf5d971121f163f956f4ab1cff55a7b1788a7a07812b1a8747495f94ad6",
+   "expected": "accept",
+   "native_value": 7,
+   "independent_rustc": "accept",
+   "baseline15_status": 1,
+   "current": "prepared candidate outcome passed in exhaustive fast3 run; retained in selected16"
+  },
+  "borrowed-bound-denied": {
+   "sha256": "e69eaff3ff8c01cf39a85ff0c4529a104b617ac96bf5d4512517f72f367451c2",
+   "expected": "reject",
+   "native_value": null,
+   "independent_rustc": "reject",
+   "baseline15_status": 1,
+   "current": "declared for prepared qualification"
+  },
+  "borrowed-runtime-denied": {
+   "sha256": "d2c15457b00a06b28ac7e4895018fff87b0af45899af79457fb43b409fe86d9e",
+   "expected": "reject",
+   "native_value": null,
+   "independent_rustc": "reject",
+   "baseline15_status": 1,
+   "current": "declared for prepared qualification"
+  },
+  "native": {
+   "sha256": "120ad777a02b27ef113941f1d2d9a1664a0dece0ab47f3ac6aeba99d7e3474c4",
+   "expected": "accept",
+   "independent_rustc": "actual Rust/C executable prints 4 8 4 4 8; native-oracle1",
+   "current": "five actual RustGM/C exports print 4 8 4 4 8; final-replay verified current source and harness hashes"
+  }
+ },
+ "observers": {
+  "observer.c": {
+   "sha256": "7dabde467d65728683fc2d9833ca4e9e353c07aa75c4fd4a701ed64f4dc88d03",
+   "expected_stdout": "4 8 4 4 8\n"
+  }
+ },
+ "pending": [
+  "projected-inline: source pipeline accepts; complete projected-layout consumer still requires concrete argument normalization (baseline15 and candidate both fail).",
+  "borrowed-concrete-control: required positive; closed anonymous promotion still needs dependency completion; baseline reentrant error becomes explicit deferred-promotion boundary."
+ ],
+ "scaling": {
+  "owners": [
+   8,
+   32,
+   128
+  ],
+  "expected": "bounded linear original-template promotion work",
+  "inference": [
+   3521,
+   6545,
+   18641
+  ],
+  "canonical": [
+   4473,
+   6585,
+   15033
+  ],
+  "original_anonymous_templates": [
+   8,
+   32,
+   128
+  ],
+  "independent_rustc": "all three exact borrowed and unborrowed families accept"
+ },
+ "qualification_contract": "16 complete prepared consumers plus projected original source-pipeline acceptance; two independently accepted complete consumers remain explicitly required. The first exhaustive18-consumer gate failed on these two; raw evidence retained, no positive inverted.",
+ "receipts": [
+  "1794603811953549205",
+  "final-replay",
+  "scaling-oracle"
+ ]
+}

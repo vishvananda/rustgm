@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "profile": {
+  "rustc": "1.98.0 (88d9e12ae)",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true
+ },
+ "declaration": "Frozen before first compiler execution; prepared during filesystem recovery. Intended owning PA25; not installed in a PA yet. No positive may be inverted. These are ordinary controls for the anonymous-template repair and the no-executor deferral boundary.",
+ "cases": {
+  "generic-inline": {
+   "expected": "accept",
+   "sha256": "357878876a2daee65f79edfaf1ba751ecf215567791a032eaec19409bd495ede",
+   "native_stdout": "7\n",
+   "oracle": "actual Rust/C program prints 7",
+   "candidate": "complete prepared outcome; receipt1794603811953549205",
+   "baseline15_status": 1
+  },
+  "const-call": {
+   "expected": "accept",
+   "sha256": "66abb6ed0f1ece3c8a5d94c181b500a5cf36bf125b70dbff439186f6204e7f03",
+   "native_stdout": "7\n",
+   "oracle": "actual Rust/C program prints 7",
+   "candidate": "complete prepared outcome; receipt1794603811953549205",
+   "baseline15_status": 1
+  },
+  "concrete-inline": {
+   "expected": "accept",
+   "sha256": "8b290843f5a60ceadaa745faa3504d530cb06d2f7a75ed3cd85ef08bd7c851e5",
+   "native_stdout": "7\n",
+   "oracle": "actual Rust/C program prints 7",
+   "candidate": "complete prepared outcome; receipt1794603811953549205",
+   "baseline15_status": 1
+  },
+  "bound-denied": {
+   "expected": "reject",
+   "sha256": "a390dd888f0361316d02a841d7aae3ac80ec1a73a7c83400d27e813ba82f68f5",
+   "native_stdout": null,
+   "oracle": "independently rejects",
+   "candidate": "complete prepared outcome; receipt1794603811953549205",
+   "baseline15_status": 1
+  },
+  "runtime-denied": {
+   "expected": "reject",
+   "sha256": "a6644e2da4d2d044c24f9a6af87c4d1e353eae434a30335a7f75e922bdb8e92a",
+   "native_stdout": null,
+   "oracle": "independently rejects",
+   "candidate": "complete prepared outcome; receipt1794603811953549205",
+   "baseline15_status": 1
+  }
+ },
+ "observers": {
+  "observer.c": {
+   "sha256": "d0bb0f65b436227fe24ada8e1ad4641e55a60d24de4628108cc3cd91fa8988b8",
+   "expected_stdout": "7\n"
+  }
+ },
+ "component": "ordinary inline-constant borrow controls; outside the released const-machine manifest",
+ "native": "all three actual RustGM/C programs print 7; final-replay"
+}

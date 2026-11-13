@@ -157,35 +157,7 @@ impl Engine<'_, '_> {
                     .map_err(Error::Constant)?
             }
             Rvalue::AssociatedConstant(instance) => {
-                if self.body.instance.is_none()
-                    && match self.body.owner {
-                        crate::body::ir::Owner::AsyncBody { .. } => {
-                            let facts = self.evaluator.facts();
-                            facts.generics.has_parameters(
-                                crate::body::coroutines::original(facts, self.body)
-                                    .map_err(Error::from)?,
-                            )
-                        }
-                        crate::body::ir::Owner::Function { definition, .. } => {
-                            self.evaluator.facts().generics.has_parameters(definition)
-                        }
-                        crate::body::ir::Owner::Initializer { definition, .. } => {
-                            self.evaluator
-                                .facts()
-                                .associated
-                                .owner(definition)
-                                .is_some()
-                                || self.evaluator.facts().generics.has_parameters(definition)
-                        }
-                        crate::body::ir::Owner::AnonymousConstant
-                        | crate::body::ir::Owner::AsyncApplication { .. }
-                        | crate::body::ir::Owner::FutureEntry { .. }
-                        | crate::body::ir::Owner::ClosureAdapter { .. }
-                        | crate::body::ir::Owner::AnonymousInstance(_)
-                        | crate::body::ir::Owner::InitializerInstance { .. }
-                        | crate::body::ir::Owner::Closure { .. } => false,
-                    }
-                {
+                if self.associated_value_deferred()? {
                     return Ok(Some(Evaluated::Deferred));
                 }
                 self.evaluator
@@ -202,6 +174,48 @@ impl Engine<'_, '_> {
             _ => return Ok(None),
         };
         Ok(Some(Evaluated::Constant(value)))
+    }
+    /// Originals keep their generic caller; active anonymous preparation lends
+    /// dependent value requests back to the normal constant execution worklist.
+    fn associated_value_deferred(&self) -> Result<bool, Error> {
+        use crate::body::ir::Owner;
+        let facts = self.evaluator.facts();
+        if self.evaluator.requires_source_catalog()
+            && facts.constant_executor.is_none()
+            && matches!(
+                self.body.owner,
+                Owner::AnonymousConstant | Owner::AnonymousInstance(_)
+            )
+        {
+            return Ok(true);
+        }
+        if self.body.instance.is_some() {
+            return Ok(false);
+        }
+        Ok(match self.body.owner {
+            Owner::AsyncBody { .. } => facts.generics.has_parameters(
+                crate::body::coroutines::original(facts, self.body).map_err(Error::from)?,
+            ),
+            Owner::Function { definition, .. } => facts.generics.has_parameters(definition),
+            Owner::Initializer { definition, .. } => {
+                facts.associated.owner(definition).is_some()
+                    || facts.generics.has_parameters(definition)
+            }
+            Owner::AnonymousConstant => self
+                .body
+                .source
+                .source()
+                .and_then(|source| facts.inline_constants.as_deref()?.get(source))
+                .is_some_and(|body| {
+                    body.evaluation == crate::sema::inline_constants::Evaluation::DeferredTemplate
+                }),
+            Owner::AsyncApplication { .. }
+            | Owner::FutureEntry { .. }
+            | Owner::ClosureAdapter { .. }
+            | Owner::AnonymousInstance(_)
+            | Owner::InitializerInstance { .. }
+            | Owner::Closure { .. } => false,
+        })
     }
     fn reify_value(&mut self, operand: ValueId) -> Result<Option<Evaluated>, Error> {
         let Some(value) = self.ready(Key::Value(operand))? else {

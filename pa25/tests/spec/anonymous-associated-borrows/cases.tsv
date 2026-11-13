@@ -1,0 +1,5 @@
+pa25/tests/spec/anonymous-associated-borrows/generic-inline.rs	0	-
+pa25/tests/spec/anonymous-associated-borrows/const-call.rs	0	-
+pa25/tests/spec/anonymous-associated-borrows/concrete-inline.rs	0	-
+pa25/tests/spec/anonymous-associated-borrows/bound-denied.rs	1	trait obligation
+pa25/tests/spec/anonymous-associated-borrows/runtime-denied.rs	1	non-const calls

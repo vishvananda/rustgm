@@ -1,4 +1,6 @@
 //! Maintainer integration suites for frontend.
+#[path = "../../anon_borrows.rs"]
+mod anon_borrows;
 #[path = "../../applicable_contracts.rs"]
 mod applicable_contracts;
 #[path = "../../arbitrary_methods.rs"]

@@ -166,6 +166,12 @@ impl Engine {
             result,
             Arc::clone(&environment),
         )?;
+        let mut contract = self
+            .contracts
+            .expression(facts, source)
+            .map_err(|e| report.body_error(source, e))?;
+        body::dispatch::resolve(facts, &mut body, &mut contract)
+            .map_err(|e| report.body_error(source, e))?;
         body::promote::instance_reusing(
             report,
             facts,
@@ -173,12 +179,6 @@ impl Engine {
             &destruction,
             &mut self.promotions,
         )?;
-        let mut contract = self
-            .contracts
-            .expression(facts, source)
-            .map_err(|e| report.body_error(source, e))?;
-        body::dispatch::resolve(facts, &mut body, &mut contract)
-            .map_err(|e| report.body_error(source, e))?;
         let template = Template {
             body,
             destruction,

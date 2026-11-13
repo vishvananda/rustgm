@@ -44,6 +44,19 @@ impl Context {
         if count == 0 {
             return Ok(());
         }
+        // This engine owns the provider while it prepares original templates.
+        // Promotion leaves dependent values for the normal execution worklist.
+        let executor = facts.constant_executor.take();
+        let result = self.check_inline_roots(report, facts, count);
+        facts.constant_executor = executor;
+        result
+    }
+    fn check_inline_roots(
+        &self,
+        report: &Report,
+        facts: &mut Declarations,
+        count: usize,
+    ) -> Result<(), Error> {
         let mut engine = self.engine.try_borrow_mut().map_err(|_| {
             Error::at(
                 FileId(0),
