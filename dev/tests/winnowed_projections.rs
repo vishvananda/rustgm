@@ -128,3 +128,90 @@ fn winnowed_projection_work_tracks_uses() -> Result {
     }
     Ok(())
 }
+
+/// The integer types, for a family of unconditional `Shl` impls.
+const INTEGERS: [&str; 12] = [
+    "i8", "i16", "i32", "i64", "i128", "isize", "u8", "u16", "u32", "u64", "u128", "usize",
+];
+
+/// `uses` functions shaped like core's `_mm512_movm_epi16` argument, over the
+/// first `impls` integer `Shl` impls, `i16 << i32` first.
+fn family(impls: usize, uses: usize) -> std::result::Result<String, std::fmt::Error> {
+    let mut text = String::from(
+        "#![feature(no_core,lang_items,rustc_attrs)]#![no_core]\n\
+         #[lang=\"pointee_sized\"]pub trait PointeeSized{}\n\
+         #[lang=\"meta_sized\"]pub trait MetaSized:PointeeSized{}\n\
+         #[lang=\"sized\"]pub trait Sized:MetaSized{}\n\
+         #[lang=\"legacy_receiver\"]pub trait LegacyReceiver:PointeeSized{}\n\
+         impl<T:PointeeSized> LegacyReceiver for &T{}\n\
+         #[lang=\"clone\"]pub trait Clone:Sized{#[lang=\"clone_fn\"]fn clone(&self)->Self;}\n\
+         #[lang=\"copy\"]pub trait Copy:Clone{}\n\
+         #[lang=\"shl\"]pub trait Shl<Rhs=Self>{type Output;fn shl(self,rhs:Rhs)->Self::Output;}\n\
+         #[lang=\"bitor\"]pub trait BitOr<Rhs=Self>{type Output;fn bitor(self,rhs:Rhs)->Self::Output;}\n",
+    );
+    for integer in INTEGERS {
+        writeln!(
+            text,
+            "impl Clone for {integer}{{fn clone(&self)->Self{{*self}}}}impl Copy for {integer}{{}}\
+             impl BitOr for {integer}{{type Output={integer};fn bitor(self,rhs:{integer})->{integer}{{loop{{}}}}}}"
+        )?;
+    }
+    let pairs = INTEGERS
+        .iter()
+        .flat_map(|subject| INTEGERS.iter().map(move |rhs| (*subject, *rhs)));
+    let first = std::iter::once(("i16", "i32"));
+    for (subject, rhs) in first
+        .chain(pairs.filter(|pair| *pair != ("i16", "i32")))
+        .take(impls)
+    {
+        writeln!(
+            text,
+            "impl Shl<{rhs}> for {subject}{{type Output={subject};fn shl(self,rhs:{rhs})->{subject}{{loop{{}}}}}}"
+        )?;
+    }
+    for index in 0..uses {
+        writeln!(
+            text,
+            "pub fn mask{index}()->i16{{1<<15|1<<14|1<<13|1<<12|1<<11|1<<10|1<<9|1<<8}}"
+        )?;
+    }
+    Ok(text)
+}
+
+fn family_work(impls: usize, uses: usize) -> Result<[usize; 3]> {
+    let text = family(impls, uses)?;
+    let report = crate::resolve::source_provider(&text, "winnowed_projections")?;
+    let work = rustgm::pipeline::analyze_source(&report)?.facts.body_work;
+    Ok([
+        work.inference_steps,
+        work.canonical_steps,
+        work.trait_selections,
+    ])
+}
+
+/// Winnowing discards only conditional candidates, so a second unconditional
+/// compatible header ends the scan before the rest are instantiated. Canonical
+/// work and selections per `?int << ?int` use stay flat as the integer `Shl`
+/// family grows. Inference still grows, by about 23 steps per impl and
+/// operator, against about 197 without the bound, where 128 impls cost 5.4
+/// times 8.
+#[test]
+fn unconditional_family_scan_stops_at_the_second_header() -> Result {
+    let mut base: Option<[usize; 3]> = None;
+    for impls in [8, 32, 128] {
+        let empty = family_work(impls, 0)?;
+        let used = family_work(impls, 16)?;
+        let per_uses: [usize; 3] =
+            std::array::from_fn(|index| used[index].saturating_sub(empty[index]));
+        println!("unconditional family impls={impls} empty={empty:?} uses={per_uses:?}");
+        if let Some([inference, canonical, selections]) = base {
+            let bounds = [3 * inference, canonical + 512, selections + 512];
+            assert!(
+                std::iter::zip(per_uses, bounds).all(|(actual, bound)| actual <= bound),
+                "impls={impls}: {base:?}->{per_uses:?}"
+            );
+        }
+        base.get_or_insert(per_uses);
+    }
+    Ok(())
+}

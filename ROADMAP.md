@@ -255,7 +255,9 @@ condition has no candidate before a projection's symbolic result is exposed.
 Core's `(&[]).into_iter()` in `slice::Iter`'s `Default` needs it, because the
 blanket `IntoIterator` impl matches every header. Eleven source-core
 reductions agree with rustc, including a subject the blanket impl may still
-satisfy.
+satisfy. The scan still stops at the second compatible header without trait
+conditions, so a large unconditional family, such as core's integer `Shl`
+impls, costs no instantiation per further impl.
 
 The [derived field path bound checkpoint](docs/pa31-derive-projection-bounds.md)
 bounds each derived field type path that begins with a type parameter, such as

@@ -109,6 +109,7 @@ pub(in crate::sema) fn symbolic_result(
         return Ok(Some((result, Obligations::new(caller.first_region))));
     }
     let mut compatible = Vec::new();
+    let mut unconditional = false;
     for owner in owners {
         let ControlFlow::Continue(candidate) =
             Candidate::new(facts, source, root, owner, caller.first_region)?
@@ -116,7 +117,19 @@ pub(in crate::sema) fn symbolic_result(
             // An unfinished header can still match; it prevents uniqueness.
             return Ok(None);
         };
-        compatible.extend(candidate);
+        let Some(candidate) = candidate else {
+            continue;
+        };
+        // Winnowing discards only a candidate with a trait condition, so a
+        // second unconditional header already prevents uniqueness. A large
+        // family, such as every integer `Shl` impl for `?int`, stops here.
+        if !candidate.conditional() {
+            if unconditional {
+                return Ok(None);
+            }
+            unconditional = true;
+        }
+        compatible.push(candidate);
     }
     let Some(mut selected) = winnow(facts, source, caller, compatible)? else {
         return Ok(None);
@@ -155,6 +168,13 @@ fn winnow(
 }
 
 impl Candidate {
+    fn conditional(&self) -> bool {
+        self.instance
+            .goals
+            .iter()
+            .any(|goal| goal.trait_arguments().is_some())
+    }
+
     /// Whether the ordinary selector finds no candidate for one of this
     /// header's trait conditions. A deferred, pending, proven or refuted
     /// condition keeps the candidate.

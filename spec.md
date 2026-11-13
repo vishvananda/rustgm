@@ -3733,7 +3733,11 @@ discarded when the ordinary selector finds one of them absent. This mirrors
 rustc's winnowing, which discards a candidate whose nested obligation fails:
 `impl<I: Iterator> IntoIterator for I` competes with no impl for `&[?E; 0]`,
 since `&[?E; 0]: Iterator` has no candidate. A deferred, pending, proven or
-refuted condition keeps its candidate. See the
+refuted condition keeps its candidate. A candidate without trait conditions
+is never discarded, so the scan exposes nothing at the second compatible
+unconditional header, before instantiating the rest; a family of such impls,
+such as every integer `Shl` for `?int << ?int`, costs no instantiation per
+further impl. See the
 [blanket candidate winnowing checkpoint](docs/pa31-blanket-candidate-winnowing.md).
 For a unique compatible header, instantiate
 its associated definition with the same type/const bindings as its header and

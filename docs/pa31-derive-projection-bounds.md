@@ -190,4 +190,7 @@ canonical work, linear across widths.
 
 ## Core progress
 
-No core observation of this change has run yet.
+Release candidate7 (clean 8f4e2f737) carried this change. Its census ended at
+item 14975 on a work budget regression from the first form of
+[blanket candidate winnowing](pa31-blanket-candidate-winnowing.md), before
+the derived bodies (33847-33913). No observation has reached them yet.
