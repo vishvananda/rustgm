@@ -4912,6 +4912,14 @@ solver with independent cycle/cache state. Preserve the original projected query
 and commit its complete input equations separately from the normalized result.
 Result equations can determine output holes, never unrelated projection inputs.
 Undetermined inputs defer until other premises provide enough information.
+A normalizer's trait premise that is concrete, naming no parameter,
+projection, non-static free region or escaping binder, selects only
+implementations first, as rustc discards a global where clause when an impl
+applies. The caller's clauses are tried only when no implementation proves it,
+by reopening the same request once. Such an implementation-first frame neither
+reuses nor records a cached decision for its goal. Scoped callable requests and
+trait goals outside a normalizer keep the ordinary order. See the
+[global clause premises checkpoint](docs/pa31-global-clause-premises.md).
 
 A proved equality's result is installed as a normalization installs one. When
 its normal form is a rigid projection, as for core's

@@ -249,6 +249,14 @@ too. Fifteen source-core reductions agree with rustc. Premises for another
 lifetime now fail prepared lowering's lifetime proof, as rustc's borrow
 checker rejects them.
 
+The [global clause premises checkpoint](docs/pa31-global-clause-premises.md)
+selects a normalizer's concrete trait premise from implementations before the
+caller's clauses, as rustc discards a global where clause when an impl
+applies. portable-simd's integer `Div` and `Rem` impls declare
+`where i8: SimdElement`, and their guard's `select` needs
+`<i8 as SimdElement>::Mask` to normalize to `i8`. Twenty-five source-core
+reductions agree with rustc, including four rejections.
+
 The [body projection normalization checkpoint](docs/pa31-body-projection-normalization.md)
 registers a resolved body annotation that names a projection, such as
 `T::Unsigned`, for body normalization, as a qualified path already was. A

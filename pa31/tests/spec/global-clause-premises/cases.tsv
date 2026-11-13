@@ -1,0 +1,25 @@
+pa31/tests/spec/global-clause-premises/core-form.rs	0
+pa31/tests/spec/global-clause-premises/core-form-unsigned.rs	0
+pa31/tests/spec/global-clause-premises/select-splat-cast.rs	0
+pa31/tests/spec/global-clause-premises/select-splat-typed.rs	0
+pa31/tests/spec/global-clause-premises/select-false-first.rs	0
+pa31/tests/spec/global-clause-premises/select-ufcs.rs	0
+pa31/tests/spec/global-clause-premises/and-select.rs	0
+pa31/tests/spec/global-clause-premises/eq-any.rs	0
+pa31/tests/spec/global-clause-premises/select-mask-values.rs	0
+pa31/tests/spec/global-clause-premises/select-literal-fallback.rs	0
+pa31/tests/spec/global-clause-premises/select-wrong-element.rs	incompatible types	b)}
+pa31/tests/spec/global-clause-premises/select-non-mask.rs	no applicable method for this receiver	5u8.select
+pa31/tests/spec/global-clause-premises/core-form-no-where.rs	0
+pa31/tests/spec/global-clause-premises/global-where-guard.rs	0
+pa31/tests/spec/global-clause-premises/global-where-eq.rs	0
+pa31/tests/spec/global-clause-premises/global-where-eq-splat.rs	0
+pa31/tests/spec/global-clause-premises/global-where-projection.rs	0
+pa31/tests/spec/global-clause-premises/global-where-select.rs	0
+pa31/tests/spec/global-clause-premises/global-where-unsigned-mask.rs	0
+pa31/tests/spec/global-clause-premises/global-where-wrong-projection.rs	incompatible types	{0u16}
+pa31/tests/spec/global-clause-premises/global-clause-two-scalars.rs	0
+pa31/tests/spec/global-clause-premises/global-clause-let-annotation.rs	0
+pa31/tests/spec/global-clause-premises/global-clause-select-wrong-output.rs	incompatible types	{m.select
+pa31/tests/spec/global-clause-premises/global-clause-generic-companion.rs	0
+pa31/tests/spec/global-clause-premises/global-clause-nested-projection.rs	0

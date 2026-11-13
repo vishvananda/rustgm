@@ -56,6 +56,18 @@ pub(super) struct Frame {
     pub partial: Option<Box<Trial>>,
     pub inference: Inference,
     pub suspended_slot: Option<usize>,
+    pub sources: Sources,
+}
+
+/// The candidates a frame may select from.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) enum Sources {
+    /// Caller assumptions, then implementations.
+    All,
+    /// A normalizer's concrete premise tries implementations before caller
+    /// clauses, as rustc discards a global where clause in favor of an impl.
+    /// Such a frame neither reuses nor records a cached decision for its goal.
+    Implementations,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -145,6 +157,7 @@ impl Frame {
             partial: None,
             inference: Inference::Disabled,
             suspended_slot: None,
+            sources: Sources::All,
         })
     }
 }

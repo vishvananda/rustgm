@@ -14,11 +14,22 @@ run. The remaining failures:
 - 2 closure lifetimes, `into_searcher` 26791 and `is_contained_in` 26792
   (`str/pattern.rs:956`), which block four more;
 - `core_simd` `div` 36996 (`ops.rs:139`), a trait obligation, which blocks
-  nine more;
+  nine more, fixed after candidate9 by the global clause premises checkpoint
+  below;
 - `repr_bitpacked.rs:300`'s const `_` 25396, "incompatible types".
 
 No core artifact exists. A core build would also stop at the initial
 assembly profile for the ymm, zmm and kreg bodies.
+
+The [global clause premises checkpoint](pa31-global-clause-premises.md)
+fixes `core_simd`'s `div` 36996 (`ops.rs:139`). Its impl declares the global
+where clause `i8: SimdElement`, and the search proved the normalizer premise
+of `<i8 as SimdElement>::Mask` from that clause. A clause has no result
+equality, so the projection stayed symbolic and `MaskElement`'s
+`SimdElement<Mask = Self>` deferred forever. A concrete normalizer premise
+now selects implementations first, as rustc discards a global where clause
+when an impl applies, and falls back to the caller's clauses. Twenty-five
+source-core reductions qualify it.
 
 The [body projection normalization checkpoint](pa31-body-projection-normalization.md)
 fixes portable-simd's `first_set` 17766 and `try_from` 17943 and 17946,

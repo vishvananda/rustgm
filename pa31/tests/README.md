@@ -1136,6 +1136,21 @@ A maintainer integration test checks typing through the CLI, each rejection's
 site and prepared lowering for every accepted case. There is no graded
 manifest or native test.
 
+`spec/global-clause-premises/` freezes twenty-five declared no_core
+reductions of portable-simd's `int_divrem_guard` `Div` for `Simd<i8, N>`,
+whose global where clause `i8: SimdElement` names no parameter.
+
+- Accepted forms: core's guard for `i8`, for `u8`, for both in one library
+  and for `i8` without its clause; five of its parts under the clause, three
+  projections of `i8`'s mask and a generic companion bound; and eight
+  controls without the clause.
+- Rejected forms: a wrong splat element, a wrong projected result and a wrong
+  selected output (E0308), and `select` on `u8` (E0599).
+
+A maintainer integration test checks typing through the CLI, each rejection's
+site and prepared lowering for every accepted case. There is no graded
+manifest or native test.
+
 `spec/derive-projection-bounds/` freezes sixteen declared no_core reductions
 of core's derived `Clone` and `Debug` of `Peekable`, `ArrayChunks` and
 `Intersperse`, whose field types name `I::Item`.

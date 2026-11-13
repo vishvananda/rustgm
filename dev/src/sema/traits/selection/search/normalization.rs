@@ -27,6 +27,17 @@ pub(super) struct Normalization {
     pub scope: ScopeId,
     pub scoped: Option<Box<super::callable_queries::Scoped>>,
     inherited: Option<Box<ResultContinuation>>,
+    premise: Premise,
+}
+/// How the current request's trait premise is selected.
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
+enum Premise {
+    #[default]
+    Ordinary,
+    /// A concrete premise is open against implementations only.
+    Implementations,
+    /// No implementation proved the concrete premise; caller clauses may.
+    Clauses,
 }
 enum ResultContinuation {
     Inherited(ancestor_results::Inherited),
@@ -71,6 +82,7 @@ impl Normalization {
             scope: frame.scope,
             scoped: None,
             inherited: None,
+            premise: Premise::Ordinary,
         })
     }
 }
@@ -98,6 +110,23 @@ impl Frame {
             child.normalized_inputs = Some(super::frames::NormalizedInputs {
                 proof: normalization.proof,
             });
+            // rustc discards a global where clause when an impl applies, so a
+            // concrete premise's result comes from that impl. A caller clause
+            // proves it only after no implementation does.
+            if normalization.premise != Premise::Clauses
+                && normalization.scoped.is_none()
+                && self
+                    .inputs
+                    .context
+                    .resolved_predicate(&mut facts.types, &opened.goal)
+                    .ok()
+                    .map(|goal| goal.is_concrete(&facts.types))
+                    .transpose()?
+                    .unwrap_or(false)
+            {
+                child.sources = super::frames::Sources::Implementations;
+                normalization.premise = Premise::Implementations;
+            }
             if let Some(application) = opened.application.associated() {
                 child.prepare_formation(facts, application, opened.conditions.take())?;
             }
@@ -283,7 +312,14 @@ impl Search<'_> {
                 _ => Self::accept_inherited_result(equality, decision),
             };
         }
+        let premise = std::mem::take(&mut equality.premise);
         let Decision::Proven(node) = decision else {
+            if premise == Premise::Implementations {
+                // Retry the same request with caller clauses available.
+                equality.premise = Premise::Clauses;
+                equality.opened = None;
+                return Ok(());
+            }
             #[cfg(test)]
             super::copy_trace::record(|| {
                 format!(

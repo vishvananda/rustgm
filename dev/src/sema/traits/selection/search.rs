@@ -372,7 +372,9 @@ impl Search<'_> {
                     self.query.remember_auto(frame, goal, decision, automatic);
                 }
             }
-            Decision::Absent if frame.cycles == self.query.cycles => {
+            Decision::Absent
+                if frame.cycles == self.query.cycles && frame.sources == frames::Sources::All =>
+            {
                 // A cycle cutoff is relative to the active proof stack, not a
                 // negative fact. Neither it nor any ancestor may cache failure.
                 if let Some(goal) = frame.canonical {
@@ -486,7 +488,12 @@ impl Search<'_> {
                 self.complete_builtin(facts, frame)
             };
         }
-        let needs_normalization = match self.assume(facts, frame) {
+        let assumed = if frame.sources == frames::Sources::Implementations {
+            Ok(None)
+        } else {
+            self.assume(facts, frame)
+        };
+        let needs_normalization = match assumed {
             Ok(Some(Action::Complete(Decision::Deferred)))
                 if unsizing == Some(crate::support::bindings::LangItem::Unsize) =>
             {
@@ -685,12 +692,14 @@ impl Search<'_> {
                 {
                     frame.scope = self.query.input_scope();
                 }
-                if let Some(decision) = self.query.completed(frame.scope, goal) {
-                    self.query.reused |= matches!(decision, Decision::Proven(_));
-                    return Ok(Some(decision));
-                }
-                if let Some(decision) = self.query.reuse_completed(facts, frame, goal)? {
-                    return Ok(Some(decision));
+                if frame.sources == frames::Sources::All {
+                    if let Some(decision) = self.query.completed(frame.scope, goal) {
+                        self.query.reused |= matches!(decision, Decision::Proven(_));
+                        return Ok(Some(decision));
+                    }
+                    if let Some(decision) = self.query.reuse_completed(facts, frame, goal)? {
+                        return Ok(Some(decision));
+                    }
                 }
                 if matches!(
                     goal.bound,

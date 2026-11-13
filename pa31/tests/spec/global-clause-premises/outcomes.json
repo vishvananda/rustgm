@@ -1,0 +1,210 @@
+{
+ "schema": 1,
+ "declared": "2026-11-13, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run (obj/parallel/simd-divrem/declared.json, batches 3 and 4). Batch 1 lacked Neg impls for its negated literals and batch 2 the freeze lang item for its const fns; both are recorded as malformed. Every declaration agrees with rustc.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --target=x86_64-unknown-linux-gnu --crate-type=lib --emit=metadata -Cpanic=abort --cap-lints=allow",
+ "base": "release candidate9 (99a409d03, CLI 4f989cae)",
+ "rustgm_cli": "the committed source as dev-fast CLI sha256 a45a33a3ae6833419b975fd908057dba89bbdb4bfc849dd37cf2e2aa01b905a8",
+ "cases": {
+  "core-form.rs": {
+   "sha256": "bb269998f0d3911d73b64840b96570a1be6ffebe9f45194a8e57a4390896d18d",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 3,
+   "base_candidate9": "ERROR: file 0: 5915: trait obligation requires an unambiguous matching assumption or implementation",
+   "rustgm": 0
+  },
+  "core-form-unsigned.rs": {
+   "sha256": "98fb8b78516d5cef301d50952d718a891237f6fcba2d43bd6c136c48d23675f0",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 3,
+   "base_candidate9": 0,
+   "rustgm": 0
+  },
+  "select-splat-cast.rs": {
+   "sha256": "84bfd0ae30b043a13d7d2da66219bc9a0861459e3703cc58d5b456743beda648",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 3,
+   "base_candidate9": 0,
+   "rustgm": 0
+  },
+  "select-splat-typed.rs": {
+   "sha256": "e29730884040c015645d329c7ec1f2ce90f609e7c04d77de60e862777818218b",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 3,
+   "base_candidate9": 0,
+   "rustgm": 0
+  },
+  "select-false-first.rs": {
+   "sha256": "a022742bb85988da901e9ac7fc83d0f687f3ea2bf4b5ffa11d0bc243cf23b762",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 3,
+   "base_candidate9": 0,
+   "rustgm": 0
+  },
+  "select-ufcs.rs": {
+   "sha256": "71314e7f1ef0df818c4ec1a16a4a1daf3247a5077eaf35c429d47d006d0296e3",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 3,
+   "base_candidate9": 0,
+   "rustgm": 0
+  },
+  "and-select.rs": {
+   "sha256": "0b870d03bfa9c3b70610777b8fb4b8f945e7602095b71e88a3a6332f0d15b009",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 3,
+   "base_candidate9": 0,
+   "rustgm": 0
+  },
+  "eq-any.rs": {
+   "sha256": "c212837aba9ae4517fbf7c80ee18742d8f4058c561a0ec0f50b081452605e12c",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 3,
+   "base_candidate9": 0,
+   "rustgm": 0
+  },
+  "select-mask-values.rs": {
+   "sha256": "931967264a24c52d04e18896c155111c7ffae6c031e6c8537c04a9110323a8fc",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 3,
+   "base_candidate9": 0,
+   "rustgm": 0
+  },
+  "select-literal-fallback.rs": {
+   "sha256": "34704e07ef4ed1c0a45064119d66e7427e077d705b1fc3e78d21cb88b077a306",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 3,
+   "base_candidate9": 0,
+   "rustgm": 0
+  },
+  "select-wrong-element.rs": {
+   "sha256": "63e872789cfb7266b51d85b1c168101b81c4940b5bb55a45ff0598b336d4e3ee",
+   "declared": "E0308",
+   "rustc": "E0308",
+   "batch": 3,
+   "base_candidate9": "ERROR: file 0: 5707: incompatible types",
+   "rustgm": "ERROR: file 0: 5707: incompatible types"
+  },
+  "select-non-mask.rs": {
+   "sha256": "4811ffd03c025f86b97d73571524ea7ea8a0a20c405fea078dd313ead0899ef2",
+   "declared": "E0599",
+   "rustc": "E0599",
+   "batch": 3,
+   "base_candidate9": "ERROR: file 0: 5680: no applicable method for this receiver",
+   "rustgm": "ERROR: file 0: 5680: no applicable method for this receiver"
+  },
+  "core-form-no-where.rs": {
+   "sha256": "923560918eb334febc3a7b3004d28c10a7c66dd106eeceba08ce0fc1c53bdfec",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 3,
+   "base_candidate9": 0,
+   "rustgm": 0
+  },
+  "global-where-guard.rs": {
+   "sha256": "63e74f01df6885552bc1d058719163a2bf7620faa7ea2f1310279a81ec9aa7a5",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 3,
+   "base_candidate9": "ERROR: file 0: 5689: trait obligation requires an unambiguous matching assumption or implementation",
+   "rustgm": 0
+  },
+  "global-where-eq.rs": {
+   "sha256": "582242e5927dbdcc78adbc5c48d8f0870e7359c2d6cc61b6c3b73807af14433b",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 3,
+   "base_candidate9": 0,
+   "rustgm": 0
+  },
+  "global-where-eq-splat.rs": {
+   "sha256": "e939a5ef2909fb2e98eae79a0c55b1f584d2be5fd0d2a81a5b2c1556bafe5cf1",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 3,
+   "base_candidate9": 0,
+   "rustgm": 0
+  },
+  "global-where-projection.rs": {
+   "sha256": "4bf54e1a6472df7732037d28cd5ac2c571a66dba7045f7b2ec6519ea59677496",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 3,
+   "base_candidate9": 0,
+   "rustgm": 0
+  },
+  "global-where-select.rs": {
+   "sha256": "49757d9374e029b48b49893ecd44e64e9a8be6371a8f71ba71c53eb49d602e62",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 3,
+   "base_candidate9": "ERROR: file 0: 5688: trait obligation requires an unambiguous matching assumption or implementation",
+   "rustgm": 0
+  },
+  "global-where-unsigned-mask.rs": {
+   "sha256": "31106716ea066ea111aa529dfa6f011a61494df4e88940ea029342f692b3c542",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 3,
+   "base_candidate9": 0,
+   "rustgm": 0
+  },
+  "global-where-wrong-projection.rs": {
+   "sha256": "6948ada0ac0f9cd8c859b67c85d00730a47ff128ba3984e066bd62876fb0b238",
+   "declared": "E0308",
+   "rustc": "E0308",
+   "batch": 3,
+   "base_candidate9": "ERROR: file 0: 5666: incompatible types",
+   "rustgm": "ERROR: file 0: 5666: incompatible types"
+  },
+  "global-clause-two-scalars.rs": {
+   "sha256": "f7a546a7162264805e68670ed61e2ae200be137349a98f7444f0f1aacba3eeaa",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 4,
+   "base_candidate9": "ERROR: file 0: 5915: trait obligation requires an unambiguous matching assumption or implementation",
+   "rustgm": 0
+  },
+  "global-clause-let-annotation.rs": {
+   "sha256": "f99ae6c10992ab590c6bbdade31306695eb1aaa9e5c5ee3c3557e46905256463",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 4,
+   "base_candidate9": 0,
+   "rustgm": 0
+  },
+  "global-clause-select-wrong-output.rs": {
+   "sha256": "1bc7f61210566269574a7de3dd2c93e16786ef162dd782b6cd48d99934d8cf85",
+   "declared": "E0308",
+   "rustc": "E0308",
+   "batch": 4,
+   "base_candidate9": "ERROR: file 0: 5688: incompatible types",
+   "rustgm": "ERROR: file 0: 5688: incompatible types"
+  },
+  "global-clause-generic-companion.rs": {
+   "sha256": "9a06426cedea9f8bc1c62d37aae4924fc8ef52ce645dc3f452240a785f3ca156",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 4,
+   "base_candidate9": "ERROR: file 0: 5706: trait obligation requires an unambiguous matching assumption or implementation",
+   "rustgm": 0
+  },
+  "global-clause-nested-projection.rs": {
+   "sha256": "d5a394b89d5e298be5da8d11136313cb1da8211c3a29dd74e7496ed418614fe5",
+   "declared": 0,
+   "rustc": 0,
+   "batch": 4,
+   "base_candidate9": 0,
+   "rustgm": 0
+  }
+ }
+}

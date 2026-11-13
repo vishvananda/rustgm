@@ -149,6 +149,29 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-13 global clause premises update (supersedes the blocks below):**
+
+- portable-simd's `div` 36996 (`ops.rs:139`) now types
+  ([evidence](docs/pa31-global-clause-premises.md)). A normalizer's concrete
+  trait premise selects implementations first, as rustc discards a global
+  where clause when an impl applies (#50825). It falls back to the caller's
+  clauses only when no implementation proves it.
+  - Twenty-five cases are in `pa31/tests/spec/global-clause-premises`, all
+    agreeing with rustc. The four declared batches, two of them malformed,
+    the oracle stderr, the candidate9 base runs, the traces and the width
+    controls are in `obj/parallel/simd-divrem/`.
+  - Focused receipt 1794556164673085248 passes. The frozen CLI
+    (`obj/parallel/simd-divrem/cli-wip/`, a45a33a3) passes all 9,307 active
+    text cases. No reference changed.
+  - Implementation-first frames skip the goal cache. 256 clause-free
+    `select` copies exhaust the crate-wide source method selection budget
+    at function 222 instead of 229, a pre-existing budget that candidate9
+    already exhausts at 128 copies.
+- Next: release candidate10 and an exclusive core re-observation against
+  candidate9, then retire the candidate9 pin and `cli-wip`. Then
+  `repr_bitpacked.rs:300`, the 7631 bool-niche transmute and
+  `str/pattern.rs:956`'s closure lifetimes.
+
 **2026-11-13 release candidate9 observation (supersedes the blocks below):**
 
 - Candidate9 (`obj/parallel/capture-match/candidate9-release`, clean
