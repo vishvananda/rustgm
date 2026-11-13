@@ -1,7 +1,11 @@
 //! Anonymous bodies retain enclosing declaration bounds without acquiring a callable ABI.
-use super::{Contract, Declarations};
+use super::{Contract, Declarations, creator::Creators};
 /// Anonymous templates retain their enclosing parameter scope, without a callable ABI.
-pub(super) fn header(facts: &Declarations, contract: &mut Contract) -> Result<(), &'static str> {
+pub(super) fn header(
+    facts: &Declarations,
+    contract: &mut Contract,
+    creators: &mut Creators,
+) -> Result<(), &'static str> {
     let source = contract
         .source
         .source()
@@ -18,6 +22,12 @@ pub(super) fn header(facts: &Declarations, contract: &mut Contract) -> Result<()
             contract.type_assumptions = header.type_assumptions;
             if let Some(scheme) = facts.lifetimes.functions.get(&owner) {
                 contract.assumptions.extend_from_slice(&scheme.bounds);
+            }
+            if inline.universals >= facts.lifetimes.functions.get(&owner).map_or(0, |s| s.total)
+                && let Some(implied) = creators.implied(facts, owner)?
+            {
+                contract.assumptions.extend_from_slice(&implied.regions);
+                contract.type_assumptions.extend_from_slice(&implied.types);
             }
         }
     }

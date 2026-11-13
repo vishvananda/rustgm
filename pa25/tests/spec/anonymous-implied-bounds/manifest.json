@@ -1,0 +1,127 @@
+{
+ "schema": 1,
+ "profile": {
+  "rustc": "1.98.0 (88d9e12ae)",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort"
+ },
+ "declaration": "All outcomes and native output frozen before first compiler execution. Four original reduced positives were independently accepted in batch3; all eight original variants fail release16. No expected positive may be inverted. Original core debug16c anchors this at anonymous_needs_parent/check_original_child.",
+ "cases": {
+  "direct-inherent": {
+   "expected": "accept",
+   "original_declaration": "batch3/declaration.json before compiler execution",
+   "independent_rustc": "accept",
+   "baseline16_type_status": 1,
+   "sha256": "57aa5d03a5a6280615176005531ca387c87c12b5766516c6e4a3ebce52bbc556"
+  },
+  "direct-trait": {
+   "expected": "accept",
+   "original_declaration": "batch3/declaration.json before compiler execution",
+   "independent_rustc": "accept",
+   "baseline16_type_status": 1,
+   "sha256": "5c97c55dd31b322933fcacd1959c7f782bc3d1ab25c38c8e1277a4dc3a109a9b"
+  },
+  "macro-inherent": {
+   "expected": "accept",
+   "original_declaration": "batch3/declaration.json before compiler execution",
+   "independent_rustc": "accept",
+   "baseline16_type_status": 1,
+   "sha256": "26440c8b543d88af850de317fb44027c4b1e0f95d279217de7a3e59558e3432d"
+  },
+  "macro-trait": {
+   "expected": "accept",
+   "original_declaration": "batch3/declaration.json before compiler execution",
+   "independent_rustc": "accept",
+   "baseline16_type_status": 1,
+   "sha256": "bec41282dac07f6ea003fc1fabe7d2be77c42e64b4a382b8937cef37d91ed365"
+  },
+  "free-input": {
+   "expected": "accept",
+   "original_declaration": "this manifest frozen before first execution",
+   "sha256": "0979d82781b31adb67ff052195dfb4505f5c00d39ed0c2845ef1d8209a9ec62e"
+  },
+  "nested-input": {
+   "expected": "accept",
+   "original_declaration": "this manifest frozen before first execution",
+   "sha256": "0e77477ae8486dfadcda844b532902f79ab847c3a2be9b837a63360a7490f117"
+  },
+  "static-escape": {
+   "expected": "reject",
+   "original_declaration": "this manifest frozen before first execution",
+   "sha256": "e5aeace4acd93d2428c116fb13a16c3c59b9318dd40005af20ce1ca509b61481"
+  },
+  "local-escape": {
+   "expected": "reject",
+   "original_declaration": "this manifest frozen before first execution",
+   "sha256": "50adb9829e618febc2a551f344ddd1777aa3bd45e84b45893b3d4c22b237cfe1"
+  },
+  "unpaid-static": {
+   "expected": "reject",
+   "original_declaration": "this manifest frozen before first execution",
+   "sha256": "116d75ee061cf0019f738691c3614da67aa8a77260b28ecb7fb1f255c52e97c5"
+  },
+  "unrelated-regions": {
+   "expected": "reject",
+   "original_declaration": "this manifest frozen before first execution",
+   "sha256": "36898a737e79534adb61cc49e404658d67d483e3a090f0e8d7b987fd26451c52"
+  },
+  "native": {
+   "expected": "accept",
+   "native_stdout": "7\n",
+   "original_declaration": "this manifest frozen before first execution",
+   "sha256": "d06edde1f873148127296e20efc8b184bc1eef5b1b21895d250c29e1ca4f0387",
+   "current": "Required positive: independent Rust/C7 passes; complete RustGM specialized borrowed-result lifetime transport remains unclosed. Original expected outcome/bytes preserved."
+  },
+  "scalar-native": {
+   "sha256": "6439470652b2387ff51d38c0c3ec4fd9bdbe23137a625097e3681c0fbaf238f1",
+   "expected": "accept",
+   "native_stdout": "7\n",
+   "original_declaration": "Frozen before first execution. Complete implied-bound formation inside an anonymous body with scalar result; distinct required borrowed-result native remains in this manifest."
+  }
+ },
+ "observers": {
+  "observer.c": {
+   "sha256": "fcd75e88d4d95fa8af1a31fa01e1df7449b704659f4f8cec9fc41e40158ddcbc",
+   "expected_stdout": "7\n"
+  },
+  "scalar-observer.c": {
+   "sha256": "7876bf81c5fe859922efc22bc93af210556b767fc8b596731f4a728891943365",
+   "expected_stdout": "7\n",
+   "declaration": "Exact u8 return ABI frozen before first execution; prior scalar observer setup reused the original u32 declaration and failed with mismatched output in oracle5, which is retained."
+  }
+ },
+ "attribution": "authored ordinary controls; no source-library roles",
+ "qualification_contract": "Eleven selected complete outcomes and scalar native7 per packet. The twelfth, original native.rs borrowed-result artifact remains a required positive. Its first complete gate exposed missing output transport; reproof then retains an unclosed result-lifetime mapping. No input or positive is removed/inverted.",
+ "pending": [
+  "native.rs: complete borrowed-result runtime consumer requires exact enclosing lifetime/result transport. Rust/C7 passes."
+ ],
+ "qualification": {
+  "selected_complete_outcomes": "all eleven pass; fast3 plus current-source regular-replay",
+  "batch_contracts": "fast4 1794607901095329290; ordinary templates and promotion prepared before proof",
+  "scalar_native": "actual Rust/C oracle6 and hash-checked RustGM/C native-replay print 7",
+  "scaling": {
+   "owners": [
+    8,
+    32,
+    128
+   ],
+   "inference": [
+    528,
+    2112,
+    8448
+   ],
+   "canonical": [
+    80,
+    320,
+    1280
+   ],
+   "anonymous_templates": [
+    8,
+    32,
+    128
+   ]
+  },
+  "upstream_harness": "315 harness, 488 roots, 44 stages, 1 unit, 128 upstream, 126 Reference pass"
+ }
+}

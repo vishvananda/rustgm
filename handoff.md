@@ -5,6 +5,15 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
+Latest continuation: release16 on2b2332577 clears the initializer-scope failure;
+the next original completion error is slice/iter.rs's anonymous lifetime proof.
+Full43509700804 passed all stages on that exact checkpoint. The following
+implied-bound repair qualifies22 selected complete outcomes, batch contracts,
+two scalar native programs and linear owner work. Two independently accepting
+borrowed-result native consumers remain explicitly required. See the final
+"Release16 original observation and implied-bound continuation" section first.
+Freeze clean candidate17 next; no original observation of this repair yet.
+
 ## Workspace and authorization
 
 - Main `/home/vishvananda/rustgm` is Git-only; never build there.
@@ -18,7 +27,7 @@ the released113-case PA25 const-machine component stays separate.
   Historical details in `git show 2072521b8:handoff.md` are superseded where below
   differs. Never restore its superseded private-port prototype.
 
-## Current core evidence and next blocker
+## Previous core evidence: release15
 
 Clean **candidate15-release** freezes2072521b8,3948 Rust source hashes and an
 empty tracked patch. CLI SHA256
@@ -252,3 +261,82 @@ diagnostic may identify the next blocker; no controlled speed claim. Then contin
 to actual original metadata/LowIR/native artifacts. No original artifact exists
 and no whole planned assignment is complete. Source tree must stay frozen during
 pinning/measurement. New full successor qualification remains required.
+
+## Release16 original observation and implied-bound continuation
+
+This section supersedes the preceding pending-release16/CI statements.
+Full43509700804 PASSED EVERY STAGE on exact2b2332577, including release/debug,
+all native/independent checks and the113-case PA25 component. B/main/origin main
+were clean at that checkpoint. Only B builds; main remains Git-only. No agents.
+
+Clean release16 (3949 Rust sources, empty patch) SHA256
+edd069c6ae82b1ebe06f5bc06f4cd3819d577a496ab914471b0b91da9c8018b4
+was built once in7m28s as the coherent profiling checkpoint. The separately
+labelled unchanged120s original diagnostic checks42310 declarations/25858 bodies,
+35120 item attempts, no failed/blocked functions. The initializer-scope cause is
+gone; completion now fails with `required lifetime does not outlive its target`
+at file227:103636, slice/iter.rs EOF. Completion0; no analysis/artifact claim.
+Stage-aware postcheck verifies all722 upstream hashes,375 opens, six pins,
+producer/current hashes and unchanged work/attempted/retained limits. Raw:
+capture-match/original-candidate16-diagnostic/; scripts under initializer-completion/.
+The27.4384s observation ran above14/20 load and establishes no speed comparison.
+The pending A15release/B16release calibrated timing batch refused that same
+unchanged load gate before observations; no passing timing receipt exists.
+
+debug16c.gdb breaks the actual region error-conversion line and proves the stack
+is check_original_child -> anonymous_needs_parent -> retain_anonymous during
+complete_constants. The earlier Display breakpoint attempts did not intercept
+the optimized/inlined formatting; their logs remain, with no stack claim.
+
+inline-region-arrays/batch1 and batch2 contain20 accepted positive controls
+with explicit T:a; none reproduce. Four rejected programs' type views also
+accept because they do not perform complete ordinary-function borrow proof;
+that is not a claimed full acceptance. Batch3 removes the redundant explicit
+impl T:a while preserving the struct's declaration bound: all eight ordinary/
+source, direct/macro, inherent/trait forms accept in Rust and fail release16
+with the exact new core lifetime cause. This is the reduced missing implied
+receiver/input well-formedness assumption.
+
+The current implementation reuses regions::creator's existing implied-bound
+cache for original anonymous headers, gated by the inherited universal prefix.
+Both batch collect and incremental Collector pass that cache. No new dense
+field, callable ABI, projection permission, local lifetime or constant value.
+PA25/PA31 anonymous-implied-bounds each bind eleven complete outcomes (7accept,
+4reject), including free/nested inputs, static/local escapes, unpaid static
+type bounds and unrelated universal regions. All22 match Rust; both independent
+Rust/C programs print7. Actual source MaybeUninit methods and real existing
+panic_nounwind hook remain. Failed native consumer setup declarations and Rust
+diagnostics are retained in native-declaration-v1/v2/v3 and oracle1/2/3; corrected
+oracle4 passes, expectations never inverted. Focused RustGM qualification is in
+progress in inline-region-arrays/fast1.log at that point; the following supersedes
+that WIP statement. No new original observation of this repair yet.
+
+Selected complete qualification is now22 outcomes (7accept/4reject per packet).
+Each manifest additionally retains its twelfth, original native.rs borrowed-result
+consumer as an unclosed positive. Rust/C7 passes for those original programs.
+Callable anonymous results now use the existing requested-result transport and
+complete reproof; this qualifies scalar results but retains the borrowed result's
+unclosed enclosing-lifetime connection. No conditional debt is assumed. New
+scalar-native.rs companions and exact u8 scalar-observer.c both independently
+print7; original input/observer bytes remain in their manifests.
+
+fast3 passes six exact tests (all22 selected complete outcomes, owner scaling,
+earlier ordinary/source anonymous controls and MaybeUninit). The batch consumer
+needed the correct parameterized template CFG and promotion preparation; fast4
+1794607901095329290 passes it plus fullfmt/audit/selectedCLI strict Clippy in44.08s.
+The source/harness-hash checked native-replay passes both new scalar programs,
+all earlier anonymous source/bootstrap native programs and current scaling.
+Inference528/2112/8448=66n; canonical80/320/1280=10n; anonymous templates=n at
+8/32/128 owners. All four exact frozen timing inputs independently accept in Rust.
+All failed fast/oracle gates remain with their real diagnostics; no expected
+positive is inverted. Header/runtime borrowed-result work and original core
+artifacts remain required; no whole planned PA or additional component release.
+
+Current-source regular-replay also passes all five fast3 semantic controls
+against the fast4 source map and harness SHA03657c5bfdec93620e10294a6477ed1177ae31836378a17d685533538842f8ce.
+All315 harness/488roots/44stage+1unit/128upstream+126Reference checks pass in
+harness-upstream.log. Controller was rechecked:2slots/150GiB/CPU800%/RAM12GiB/
+tasks256, cap16GiB. The harness's printed "three slots" is a temporary test
+controller, not the actual configuration. make tidy is the current cleanup;
+no release17/compiler freeze exists yet. Pin.py now asserts3950 for the new
+anon_borrows/implied.rs test submodule. Do not remove it to meet an old count.

@@ -1,0 +1,11 @@
+pa31/tests/spec/anonymous-implied-bounds/direct-inherent.rs	0	-
+pa31/tests/spec/anonymous-implied-bounds/direct-trait.rs	0	-
+pa31/tests/spec/anonymous-implied-bounds/macro-inherent.rs	0	-
+pa31/tests/spec/anonymous-implied-bounds/macro-trait.rs	0	-
+pa31/tests/spec/anonymous-implied-bounds/free-input.rs	0	-
+pa31/tests/spec/anonymous-implied-bounds/nested-input.rs	0	-
+pa31/tests/spec/anonymous-implied-bounds/static-escape.rs	1	required
+pa31/tests/spec/anonymous-implied-bounds/local-escape.rs	1	required
+pa31/tests/spec/anonymous-implied-bounds/unpaid-static.rs	1	required
+pa31/tests/spec/anonymous-implied-bounds/unrelated-regions.rs	1	required
+pa31/tests/spec/anonymous-implied-bounds/scalar-native.rs	0	-

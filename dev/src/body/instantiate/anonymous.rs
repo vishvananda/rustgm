@@ -188,9 +188,8 @@ pub(crate) fn with_result(
     requested: crate::types::TypeId,
     original: &Contract,
 ) -> Result<super::initializers::SourceMaterialized, &'static str> {
-    if !matches!(instance.enclosing(), Context::SourceInitializer(_))
-        || (original.output.is_none()
-            && facts.types.needs_region_context(template.body.result) == Some(false))
+    if original.output.is_none()
+        && facts.types.needs_region_context(template.body.result) == Some(false)
     {
         return with_contract(facts, template, instance, original)
             .map(super::initializers::SourceMaterialized::plain);

@@ -2,6 +2,10 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
+The [anonymous implied-bound continuation](../docs/pa25-anonymous-implied-bounds.md)
+reduces the original slice iterator's anonymous lifetime failure with actual
+MaybeUninit source methods. Ordinary language counterparts belong to PA25.
+
 The [source callback packet](tests/spec/callback-formation/README.md) preserves
 actual callable-language declarations while separating initializer creation from
 const invocation. Ordinary minima stay in PA19/24/25; no library artifact or

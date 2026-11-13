@@ -1,10 +1,10 @@
-//! A closure assumes the lifetime requirements its creator's signature implies.
+//! Nested bodies assume the lifetime requirements their creator's signature implies.
 //!
 //! rustc propagates a closure's unproved type-outlives requirement, such as
 //! `T: 'a` from a captured `FnMut(&'a T)` call, to the creator, which proves
 //! it from its own signature's implied bounds. The creator always proves those
 //! bounds, so assuming them in the closure accepts the same programs. The
-//! closure's leading slots are its creator's universals in order, as its
+//! nested body's leading slots are its creator's universals in order, as its
 //! inherited explicit bounds already require.
 use crate::support::hash::HashMap;
 use crate::{
@@ -28,14 +28,14 @@ pub(super) struct Implied {
 }
 
 /// Creator signatures by definition, with each signature's requirements
-/// computed once for all of its closures.
+/// computed once for all of its nested bodies.
 #[derive(Default)]
 pub(super) struct Creators {
     signatures: Option<HashMap<DefId, TypeId>>,
     implied: HashMap<DefId, Implied>,
 }
 impl Creators {
-    /// Projection requirements are not assumed; a closure still proves them.
+    /// Projection requirements are not assumed; each nested body still proves them.
     /// An async creator's body has its own signature and contributes none.
     pub fn implied(
         &mut self,

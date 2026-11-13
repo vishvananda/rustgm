@@ -151,7 +151,7 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
             return Err("duplicate anonymous constant lifetime owner");
         }
         let mut contract = Contract::constant(source);
-        anonymous_header(facts, &mut contract)?;
+        anonymous_header(facts, &mut contract, &mut creators)?;
         bodies.push(contract);
     }
     constructors(facts, &mut bodies, &mut index)?;

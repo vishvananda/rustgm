@@ -2,6 +2,8 @@
 use crate::provider_traits::lower;
 use std::fmt::Write as _;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
+#[path = "anon_borrows/implied.rs"]
+mod implied;
 const PACKET: &str = "pa31/tests/spec/anonymous-associated-borrows";
 const ORDINARY: &str = "pa25/tests/spec/anonymous-associated-borrows";
 

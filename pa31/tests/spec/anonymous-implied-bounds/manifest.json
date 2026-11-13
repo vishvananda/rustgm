@@ -1,0 +1,128 @@
+{
+ "schema": 1,
+ "profile": {
+  "rustc": "1.98.0 (88d9e12ae)",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort"
+ },
+ "declaration": "All outcomes and native output frozen before first compiler execution. Four original reduced positives were independently accepted in batch3; all eight original variants fail release16. No expected positive may be inverted. Original core debug16c anchors this at anonymous_needs_parent/check_original_child.",
+ "cases": {
+  "direct-inherent": {
+   "expected": "accept",
+   "original_declaration": "batch3/declaration.json before compiler execution",
+   "independent_rustc": "accept",
+   "baseline16_type_status": 1,
+   "sha256": "955db44e344a65c6f57ad6b6c1aebd319ffcd80521e6da9180f4de799cb2f997"
+  },
+  "direct-trait": {
+   "expected": "accept",
+   "original_declaration": "batch3/declaration.json before compiler execution",
+   "independent_rustc": "accept",
+   "baseline16_type_status": 1,
+   "sha256": "1c5487f8995f5692c4350f2e9874a25980b634363cb60de493db7fd8dce018fa"
+  },
+  "macro-inherent": {
+   "expected": "accept",
+   "original_declaration": "batch3/declaration.json before compiler execution",
+   "independent_rustc": "accept",
+   "baseline16_type_status": 1,
+   "sha256": "b2ad2e68c49207391eb3b9373544ff0174fcff96e4e78e1865b56a1def878dfa"
+  },
+  "macro-trait": {
+   "expected": "accept",
+   "original_declaration": "batch3/declaration.json before compiler execution",
+   "independent_rustc": "accept",
+   "baseline16_type_status": 1,
+   "sha256": "cc5d626c0b4bb51aa808d93f388a3297c230f1eb93f74261b5bc0af0b62e95d5"
+  },
+  "free-input": {
+   "expected": "accept",
+   "original_declaration": "this manifest frozen before first execution",
+   "sha256": "10af7dfd78b1a3872845eafe36254fa3ac351a38bc5d4772d1d1354c7aa5d886"
+  },
+  "nested-input": {
+   "expected": "accept",
+   "original_declaration": "this manifest frozen before first execution",
+   "sha256": "295e22c742ac5fa3d543543600768529371fd56c1e23a41dc7bef2e6a5a0d246"
+  },
+  "static-escape": {
+   "expected": "reject",
+   "original_declaration": "this manifest frozen before first execution",
+   "sha256": "93c76fdba3518fc770e203845d83a62fd03367248dafdf722cc5fe5da2a9badf"
+  },
+  "local-escape": {
+   "expected": "reject",
+   "original_declaration": "this manifest frozen before first execution",
+   "sha256": "46856389ec6584ad80e790b7aa41c6479a13cf319a552827f5d1427a64595c1c"
+  },
+  "unpaid-static": {
+   "expected": "reject",
+   "original_declaration": "this manifest frozen before first execution",
+   "sha256": "ff650c44243412152bb8e8ca2c8e0a846afdbddf6bd09105e3c21c18af0579ca"
+  },
+  "unrelated-regions": {
+   "expected": "reject",
+   "original_declaration": "this manifest frozen before first execution",
+   "sha256": "3cfc8b58588fa1f571131182387dc57d5b2cf3f9311f446de33e5b3877b76514"
+  },
+  "native": {
+   "expected": "accept",
+   "native_stdout": "7\n",
+   "original_declaration": "this manifest frozen before first execution",
+   "sha256": "467f9b5f0b0c0d6872cc75f1e95b61c8aa7522479dee0711b9aeccf9f16ca394",
+   "redeclaration": "Native expectation remains accept/7. First source no_core consumer required undefined index/unsize lang roles; changed to exact input reference and array destructuring before first corrected run. Original failed bytes and Rust diagnostics retained in native-declaration-v1/oracle. Second corrected consumer uses u8, the exact seed whose Copy implementation is present; previous u32 lacked source Copy. Expectations remain accept/7 and failed bytes are retained in native-declaration-v2/oracle2. The real panic_nounwind source hook is copied exactly from source-maybe-uninit/native-values.rs, and C forwards its message to stderr/abort. Expectations remain accept/7; no runtime assertion is elided.",
+   "current": "Required positive: independent Rust/C7 passes; complete RustGM specialized borrowed-result lifetime transport remains unclosed. Original expected outcome/bytes preserved."
+  },
+  "scalar-native": {
+   "sha256": "405dcf8facc58f06389ed1b3a4b88863f1a9ed64bc605099b2ef0242c9a150cc",
+   "expected": "accept",
+   "native_stdout": "7\n",
+   "original_declaration": "Frozen before first execution. Complete implied-bound formation inside an anonymous body with scalar result; distinct required borrowed-result native remains in this manifest."
+  }
+ },
+ "observers": {
+  "observer.c": {
+   "sha256": "b34cd0c9c77f615f6b9a442021ac13ad3cc670c6990772992dc3704707b33c72",
+   "expected_stdout": "7\n"
+  },
+  "scalar-observer.c": {
+   "sha256": "7876bf81c5fe859922efc22bc93af210556b767fc8b596731f4a728891943365",
+   "expected_stdout": "7\n",
+   "declaration": "Exact u8 return ABI frozen before first execution; prior scalar observer setup reused the original u32 declaration and failed with mismatched output in oracle5, which is retained."
+  }
+ },
+ "attribution": "pa31/tests/spec/source-maybe-uninit/new-u8.rs exact attributed prefix",
+ "qualification_contract": "Eleven selected complete outcomes and scalar native7 per packet. The twelfth, original native.rs borrowed-result artifact remains a required positive. Its first complete gate exposed missing output transport; reproof then retains an unclosed result-lifetime mapping. No input or positive is removed/inverted.",
+ "pending": [
+  "native.rs: complete borrowed-result runtime consumer requires exact enclosing lifetime/result transport. Rust/C7 passes."
+ ],
+ "qualification": {
+  "selected_complete_outcomes": "all eleven pass; fast3 plus current-source regular-replay",
+  "batch_contracts": "fast4 1794607901095329290; ordinary templates and promotion prepared before proof",
+  "scalar_native": "actual Rust/C oracle6 and hash-checked RustGM/C native-replay print 7",
+  "scaling": {
+   "owners": [
+    8,
+    32,
+    128
+   ],
+   "inference": [
+    528,
+    2112,
+    8448
+   ],
+   "canonical": [
+    80,
+    320,
+    1280
+   ],
+   "anonymous_templates": [
+    8,
+    32,
+    128
+   ]
+  },
+  "upstream_harness": "315 harness, 488 roots, 44 stages, 1 unit, 128 upstream, 126 Reference pass"
+ }
+}

@@ -3,8 +3,12 @@
 Original generic inline constants keep associated values deferred until the
 actual caller supplies their instance. This repairs the reduced form of original
 core's completion failure at mem/mod.rs1421: promotion tried reading a generic
-SIZE default without the parked initializer caller. Actual core verification of
-this checkpoint remains pending; no original artifact or whole PA is complete.
+SIZE default without the parked initializer caller. The release16 original-core
+observation now clears that failure. The unchanged observer
+checks42310 declarations/25858 bodies with no failed function, then reaches an
+original anonymous-child lifetime proof in slice/iter.rs. See the
+[implied-bound continuation](pa25-anonymous-implied-bounds.md). No original
+artifact or whole PA is complete.
 
 Promotion uses the existing original-owner policies and the registered anonymous
 body's DeferredTemplate state. An anonymous original/instance being prepared by
@@ -45,8 +49,12 @@ All exact borrowed and unborrowed families independently accept in Rust.
 All315 Python harness tests,488 integration roots/13 binaries,44-stage layout,
 128 upstream fixtures and126 Reference files pass. No reference, upstream byte,
 backend contract or compiler limit changes. No dense type/body/syntax field grows.
-The paired immutable timing comparison and new original-core observation remain
-pending; work counters do not establish wall-clock performance.
+The paired immutable timing comparison remains pending behind its unchanged
+load gate; work counters do not establish wall-clock performance. The separately
+labelled release16 original diagnostic is postchecked against all722 source
+files,375 opens, six pins and the unchanged compiler limits. It is a semantic
+observation with no speed claim. Full43509700804 passed every stage on exact
+2b2332577, including release/debug private, native, independent and113-case PA25.
 
 Raw failed gates are retained: fast1 exposed a pre-existing projected artifact
 gap; native1 exposed general evaluation during active template promotion; fast2

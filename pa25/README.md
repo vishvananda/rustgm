@@ -2,6 +2,11 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
+The [anonymous implied-bound continuation](../docs/pa25-anonymous-implied-bounds.md)
+retains receiver/input well-formedness in original inline constants. Ordinary
+reductions live in PA25 and actual source-wrapper counterparts in PA31; all
+remaining assignment and original-library artifact requirements stay open.
+
 The [captured closure integration](../docs/parallel/captured-pointer-main-join.md)
 executes real checked shared/mutable/owned captures and reuses their originals
 through existing source components. Reached pointer guarantees use actual CTFE
