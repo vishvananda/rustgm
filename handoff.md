@@ -40,6 +40,82 @@ there still holds (see [Standing requirements](#standing-requirements)).
   checkouts or other checkouts' outputs. Work as one worker, with no new
   worktrees.
 
+## Current continuation: borrowed closure inputs (uncommitted)
+
+HEAD814f17db3 remains the last published documentation over source8950ad99c.
+B now has six modified compiler files carrying a
+**prototype**; no implementation from this continuation has been committed.
+`obj/parallel/closure-return-inputs/private-port-wip.patch` and
+`private-port-wip-state.json` preserve the full patch and current source hashes.
+Do not describe this prototype as qualified or as clearing original core.
+
+The bounded diagnostic traces establish a duplicate-universe import. In both
+actual26791/26792 and the ordinary `(|&s|s)(x)` reduction, a parent's canonical
+bound slot enters a closure input hole as a new child universal beside its
+existing inherited alias. The output closing map correctly refuses that new
+slot. This is an identity transport defect; keep the lifetime boundary check.
+
+The first actual fix adds nested-body scheduler presence to `shape_equation`'s
+existing alias preparation in `dev/src/sema/bodies.rs` (three added lines).
+Exploratory pin `wipclosure1-dev-fast/rustgm`, SHA5f9764341b069902d1e90bd92c3f70b5a3a9dc56fdc2fcf3d8e6d327608b2752,
+binds that patch alone against814f17db3 with3945 source hashes.
+Its `wip1-ordinary/results.json` checks the unchanged eleven executable ordinary2
+inputs: all eight positives type; seven lower. The generic pattern now reaches
+the already recorded private-input-port instantiation gap, "closure signature
+lifetime interface differs from its body". All three opponents still reject
+prepared lowering through ordinary lifetime proof. Typing alone accepts those
+opponents and does not constitute full body proof.
+
+The remaining five modified files draft the generic port repair. Noncapturing
+signatures with no public late binder match their instantiated body roots using
+the existing typed closure matcher. The inherited prefix must agree exactly;
+private slot connections, repeated-region equalities and projection debts enter
+the existing instance contract. Captured execution still requires its retained
+conditions. Argument substitution and signature normalization are shared with
+captured execution. This draft has **not compiled, run formatting/Clippy/audit,
+or run any regression**. Public late binders mixed with private ports remain a
+required case to investigate, rather than a solved contract.
+
+All temporary TEMPTRACE printing and selected-body scheduler edits were restored
+before the three-line fix. Trace1's unchanged120s full observer timed out before
+the affected bodies; trace2's explicitly filtered diagnostic reached both in
+87.94s. Filtering was diagnostic only, never full-census qualification. Its
+original source722/open375/config bindings remain unchanged. Trace1/2 pins are
+retired (cleanup1794566414828881647); their producers, patches and raw observations
+remain. Current original census is still candidate12, below.
+
+Inputs frozen before any run:
+
+- ordinary2: eleven executable programs, already independently accepted/run or
+  rejected by Rust1.98.0; wip1 results as above.
+- ordinary3: twelve additional generic/port/projection/nesting/opponent programs;
+  `declared-ordinary3.json` and exact `ordinary3/` bytes. **No oracle/candidate run.**
+- source1: thirteen actual-language-item source reductions, including original
+  `str/pattern.rs` macro structure and a scalar transposition with three real C
+  consumers. `declared-source1.json` binds every source and the C observer;
+  declared native stdout13/29/0 then13/13/1. **No oracle/candidate/native run.**
+
+These raw inputs have not yet been installed in an assignment. After independent
+qualification, ordinary reductions belong in PA24's manifest/references and
+actual language-item/core reductions in a PA31 packet manifest. Keep the original
+positive outcomes and failed setup history. Select both existing
+`source_closures::specializations::generic_closure_programs_have_checked_specializations`
+and `inherited_lifetime_frames_keep_late_closure_inputs_distinct`, plus existing
+input/creator/lifetime proof controls, before a new clean pin and unchanged120s
+**full** original observer. Actual source exports/native and bounded scaling
+remain required; no new core artifact is implied by this draft.
+
+Storage currently prevents validation: the shared volume fell below the unchanged
+150GiB reserve (about147GiB free). Other project builds are consuming it. The
+user has an asynchronous request to free about10GiB elsewhere. `make tidy`
+(1794566729541174850) and `make tidy-build` (1794566809851110788) completed; the
+rebuildable Cargo cache is gone, both current immutable pins remain. Resource
+admission refused the subsequent build-only attempts, including smaller actual
+absolute caps, before Cargo; **wipclosure2 does not exist**. The guarded archive
+attempt was also refused before mutation, so no closed root was archived by it.
+Do not lower the reserve or touch another checkout. Resume checks after headroom
+returns. The goal stays active; no user pause or completion was requested.
+
 ## Core census
 
 Release candidate12 (`obj/parallel/capture-match/candidate12-release`, clean
@@ -125,8 +201,8 @@ Rust accepts/runs eight positives and rejects three opponents. Baseline12 reject
 five inferred positives at typing; three annotated/contextual twins lower. All
 three intended negatives reject in typing or prepared lowering, including the
 static escape and annotated-elided input. Keep those phase distinctions.
-Capture bounded typed graphs, exact binder coordinates, opening/closing maps and
-region equalities before changing the shared kernel.
+The diagnostic capture and current draft are recorded above; do not repeat the
+selected-body trace as a full observation.
 Do not relax all output lifetimes: annotated elided returns and local/static
 escapes must still reject. Remove temporary trace code before qualification.
 
@@ -162,12 +238,13 @@ required; course outputs must not be moved without a reviewed contract.
 - `obj/parallel/capture-match/candidate12-release` is the current comparison pin.
 - Candidate10 and wipniche1/2 were retired after publication of11; cleanup
  1794560721836625856. Their producer/raw files remain, their binaries are absent.
-- After publishing this observation, retire superseded candidate11-release and
-  wipbool1-dev-fast with scoped cleanup. Retain their producers and observations.
-  Current managed dev-fast CLI is f042c27d; use candidate12 for new comparisons.
+- Candidate11-release and wipbool1-dev-fast were retired after publication of12;
+  cleanup1794564483313447992. Their producers and raw observations remain.
+  Wipclosure1-dev-fast is exploratory; candidate12 remains the qualified comparison.
+  The managed Cargo cache/CLI has since been retired for space; rebuild before use.
 - Pin.py asserts3945 development Rust files. No new compiler .rs file is added
   by part B; update the count only for actual new files, never by dropping tests.
-- Free space is about166GiB; monitor the unchanged reserve carefully. Controller2jobs/150GiB reserve/CPU800%/RAM12GiB/
+- Free space is now below150GiB; validation is refused until headroom returns. Controller2jobs/150GiB reserve/CPU800%/RAM12GiB/
  256tasks and the16GiB output cap remain unchanged. Storage's40GiB local default
   does not reduce that shared reserve. Check free space before every batch.
 
