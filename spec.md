@@ -1324,6 +1324,16 @@ are then builtin scalars, so the coerced right type must equal the left. The
 coerced comparison stays a primitive operation. See the
 [comparison right operand checkpoint](docs/pa31-comparison-rhs.md).
 
+Borrow checking renumbers each operand's regions, so that comparison's `Self`
+is the left operand's type with fresh regions. Its goal uses that `Self`, and
+the left borrow constrains it. A body lifetime parameter thus never reaches the
+`Rhs` selected beneath the method signature's binder. A right operand whose
+coercion to `Rhs` is an identity stays in its own type and is borrowed in it.
+The borrow is constrained to the `Rhs` parameter, as a receiver borrow is.
+Invariant operands with different lifetimes fail the prepared lowering
+lifetime proof, which rustc's borrow checker also rejects. See the
+[comparison body lifetime checkpoint](docs/pa31-comparison-body-lifetimes.md).
+
 A destructuring assignment `assignee = value`, with a tuple or `_` assignee, is
 rustc's `{ let <pattern> = value; leaf = binding; ... }`. Tuple shells take the
 tuple of their elements' types, `_` takes a fresh variable, and every other

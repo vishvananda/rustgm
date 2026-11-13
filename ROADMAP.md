@@ -249,6 +249,13 @@ too. Fifteen source-core reductions agree with rustc. Premises for another
 lifetime now fail prepared lowering's lifetime proof, as rustc's borrow
 checker rejects them.
 
+The [comparison body lifetime checkpoint](docs/pa31-comparison-body-lifetimes.md)
+gives a source comparison's `Self` fresh regions, so core's derived `eq` of
+`marker/variance.rs:107` no longer leaks a body lifetime into `Rhs`. An
+unconverted right operand is now borrowed in its own type. That also closes
+the `&T == &T` prepared lowering gap. Twenty-one source-core reductions
+qualify it, including two invariant rejections in the lifetime proof.
+
 The [configured block tail checkpoint](docs/pa31-configured-tails.md) makes a
 block whose written tail is configured out take its last enabled statement
 written without a semicolon as its tail, as core's `fmt/num.rs` `Display`

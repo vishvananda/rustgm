@@ -276,11 +276,13 @@ enum Work {
         argument: NodeId,
         parameter: u32,
     },
-    /// A source comparison's right operand, after its `Rhs` selection.
+    /// A source comparison's right operand, after its `Rhs` selection, and
+    /// the index of its right borrow.
     CoerceOperatorRhs {
         node: NodeId,
         operand: NodeId,
         expected: TermId,
+        borrow: usize,
     },
     MethodArguments(NodeId, Option<Box<std::vec::IntoIter<DefId>>>),
     AssignmentValue(NodeId),
@@ -1077,7 +1079,8 @@ impl Checker<'_> {
                 node,
                 operand,
                 expected,
-            } => self.coerce_operator_rhs(*node, *operand, *expected)?,
+                borrow,
+            } => self.coerce_operator_rhs(*node, *operand, *expected, *borrow)?,
             _ => return Err(self.error(self.state.body.node, "invalid operand continuation")),
         };
         if dependency.is_some() {

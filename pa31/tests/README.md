@@ -1099,11 +1099,28 @@ core's `simd.rs` `Simd` `eq`, which compares `[T; N]` under an always-const
   `const` premises, and three controls.
 - Rejected at typing: `const` from a `[const]` premise or an ordinary
   supertrait (E0277), and a `const` beside a `[const]` premise (E0284).
-- Recorded prepared lowering gaps, which the base shares: a trait member call
-  in a const body whose `Self` an impl proves, and an `&T == &T` comparison.
+- Recorded prepared lowering gap, which the base shares: a trait member call
+  in a const body whose `Self` an impl proves. The `&T == &T` gap closed with
+  the comparison body lifetime checkpoint, so `scalar-refs-op`, a const body,
+  now reaches the member gap.
 
 A maintainer integration test checks typing through the CLI and prepared
 lowering for every accepted case. There is no graded manifest or native test.
+
+`spec/comparison-body-lifetimes/` freezes twenty-one declared no_core
+reductions of core's derived `eq` of `marker/variance.rs:107`, whose operands
+carry a body lifetime.
+
+- Accepted forms: function and impl lifetimes, covariant operands with
+  unrelated lifetimes, invariant operands with one lifetime, `!=`, a value
+  right operand, two local borrows as places and as values, and four
+  controls.
+- Rejected in prepared lowering's lifetime proof ("lifetime may not live long
+  enough" in rustc): invariant operands with unrelated lifetimes, and with
+  `'static` against a local lifetime.
+
+A maintainer integration test checks typing through the CLI and prepared
+lowering for every case. There is no graded manifest or native test.
 
 `spec/configured-tails/` freezes sixteen declared no_core reductions of
 core's `fmt/num.rs` `Display` bodies, whose written tail is configured out.

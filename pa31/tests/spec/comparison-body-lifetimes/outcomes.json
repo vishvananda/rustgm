@@ -1,0 +1,155 @@
+{
+ "schema": 1,
+ "declared": "2026-11-13, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run (obj/parallel/variance-eq/core/declared.json, batches 2, 3, 4 and 6; batch 1 was malformed and batch 5 holds ungraded lifetime-proof diagnostics). Every declaration agrees with rustc.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --target=x86_64-unknown-linux-gnu --crate-type=lib --emit=metadata -Cpanic=abort --cap-lints=allow",
+ "cases": {
+  "core-form.rs": {
+   "sha256": "3cf713a23e487830fdfa23b1b538d022502be546b5f065da257b101ada36b266",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 2,
+   "probe": "v-core-form"
+  },
+  "plain-field.rs": {
+   "sha256": "bd0a2d5f10bf438ba5e10833150c567b412802c9277803f5d4734e6a7dec12f5",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 2,
+   "probe": "v-plain-field"
+  },
+  "manual-eq.rs": {
+   "sha256": "e05ca483a6d7cd3057ee33e57bd9ae18f515a3387bc7d260b8eb518f917187b8",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 2,
+   "probe": "v-manual-eq"
+  },
+  "static-lifetime.rs": {
+   "sha256": "c99fc062ca91b390df09f27ce036b5b1be9a598a0e187b002a5e53093cd7c870",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 2,
+   "probe": "v-static"
+  },
+  "contravariant.rs": {
+   "sha256": "9db48f804d28ef60690221220aa30ef59230c8fa746a59a05c89030de5f54bff",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 2,
+   "probe": "v-contravariant"
+  },
+  "sized-param.rs": {
+   "sha256": "b47dbb21668cd1d84e678fff142cd5defae869bbe41604b35fd1012be0d1376b",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 3,
+   "probe": "d-sized-param"
+  },
+  "deref-operands.rs": {
+   "sha256": "6c6c65a5dfe3144c5091bfa0d0ce6d3ff25f4c40b006852a586d5ccf1cb5aae9",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 3,
+   "probe": "d-free-fn"
+  },
+  "path-call.rs": {
+   "sha256": "8f9f5ab552c5b2ba535f01af2b990ab403598078a2cf7a27d6e60bb9888b64e1",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 3,
+   "probe": "d-path-call"
+  },
+  "scalar-field.rs": {
+   "sha256": "2a51ce813182262a0cf7f8e6c6687298e0cd72f78206bc88866fefe793317cbb",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 3,
+   "probe": "d-ref-u8-field"
+  },
+  "unit-wrap-field.rs": {
+   "sha256": "b338a2acd8332c4cf2f285508d5d30d6cdb606b6f7f54f42edfaa71c2c47e8be",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 3,
+   "probe": "d-unit-wrap-field"
+  },
+  "local-values.rs": {
+   "sha256": "4c03e480fef96fd9df4c351c74661956a1d3a515a01744a885a056c0e0fe10f8",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 3,
+   "probe": "d-local-values"
+  },
+  "unrelated-covariant.rs": {
+   "sha256": "4fc7a8b94cd36ebfb02fd0603c456002aa4468cb651ceddb053e3aef21648aac",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 4,
+   "probe": "v-unrelated-covariant"
+  },
+  "invariant-unrelated.rs": {
+   "sha256": "192aaade067a4cdd37dc0e88a5f15a807b12838ef8beb79bef7c09e68b86f6af",
+   "declared": 1,
+   "rustc_status": 1,
+   "batch": 4,
+   "probe": "v-invariant-unrelated"
+  },
+  "invariant-same.rs": {
+   "sha256": "d5b4ae62a3b3979b05af5c81722216230fe082edea0768565175d4a38f91ce86",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 4,
+   "probe": "v-invariant-same"
+  },
+  "ne-local.rs": {
+   "sha256": "35a0e500624d4384d43f8a8a12d11868b1e5fcda074aeac987c975ca22d4bcfd",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 4,
+   "probe": "v-ne-local"
+  },
+  "impl-lifetime-method.rs": {
+   "sha256": "f176d4b3f0d0aaa93750770c57ced74ece3e500b7d7114bf82eaae025a78cd5d",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 4,
+   "probe": "v-impl-lifetime-method"
+  },
+  "static-vs-local.rs": {
+   "sha256": "0b38913afd0e06aa92db012bc63097c384d108e618e572dd000e1a1c990ec38d",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 4,
+   "probe": "v-static-vs-local"
+  },
+  "invariant-static-vs-local.rs": {
+   "sha256": "db3c790a2d8025099ce244f59b20e35ad30e12784e1d8242eab2fbd4a0b3b716",
+   "declared": 1,
+   "rustc_status": 1,
+   "batch": 4,
+   "probe": "v-invariant-static-vs-local"
+  },
+  "local-borrows.rs": {
+   "sha256": "d2842fc0d9c80d8268dc6a460afa55a601b5dda49a1b2addc7c92286e1446a08",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 6,
+   "probe": "d-local-borrows"
+  },
+  "local-borrow-values.rs": {
+   "sha256": "eb934213f751eb9891e2a6fc3da10cd81eeafcc85e8f6ab9e3ef537c55b10fae",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 6,
+   "probe": "d-local-borrow-values"
+  },
+  "value-rhs.rs": {
+   "sha256": "5a612bd5e6c0fd63552211707c7a685f94520a5ed42938654855438bf89e1d98",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 6,
+   "probe": "d-universal-value-rhs"
+  }
+ }
+}

@@ -151,6 +151,8 @@ mod resolution;
 pub(crate) mod resolve;
 #[path = "../../resuming_sources.rs"]
 mod resuming_sources;
+#[path = "../../rhs_body_lifetimes.rs"]
+mod rhs_body_lifetimes;
 #[path = "../../selected_references.rs"]
 mod selected_references;
 #[path = "../../smart_receivers.rs"]

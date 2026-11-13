@@ -35,6 +35,9 @@ rustc lets a `const` clause satisfy a `const` or `[const]` goal, and a
     `const-impl-supertrait` and `maybe-supertrait` call a trait member in a
     const body whose `Self` an impl proves;
   - `scalar-refs-op` and `ordinary-fn-supertrait` compare two `&T` operands.
+    The comparison body lifetime checkpoint closed this gap later.
+    `ordinary-fn-supertrait` lowers, and `scalar-refs-op`, a const body,
+    reaches the first gap.
 
 Outcomes were declared before the frozen rustc 1.98.0 oracle and before any
 RustGM run of each file, and both are recorded in `outcomes.json`. All 18

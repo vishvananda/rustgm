@@ -22,20 +22,19 @@ const REJECTED: [(&str, &str); 5] = [
     ),
 ];
 const MEMBER: &str = "const function member lacks its current conditional trait premise";
-const RECEIVER: &str = "method borrow differs from selected receiver place";
 /// Recorded prepared lowering gaps of accepted cases, which the base shares.
 /// A const body's trait member call whose Self an impl proves, such as
-/// `[T; N]: [const] PartialEq`, needs a direct environment premise. A
-/// comparison of two `&T` operands disagrees on its receiver's region.
-const LOWERING: [(&str, &str); 8] = [
+/// `[T; N]: [const] PartialEq`, needs a direct environment premise. Since the
+/// comparison body lifetime checkpoint borrows a right operand in its own
+/// type, two `&T` operands reach that gap in a const body and lower elsewhere.
+const LOWERING: [(&str, &str); 7] = [
     ("core-form.rs", MEMBER),
     ("direct-call.rs", MEMBER),
     ("element-fn.rs", MEMBER),
     ("maybe-supertrait.rs", MEMBER),
     ("const-impl-supertrait.rs", MEMBER),
     ("concrete-use.rs", MEMBER),
-    ("scalar-refs-op.rs", RECEIVER),
-    ("ordinary-fn-supertrait.rs", RECEIVER),
+    ("scalar-refs-op.rs", MEMBER),
 ];
 
 fn program(source: &str) -> Result<rustgm::lowir::program::Program> {

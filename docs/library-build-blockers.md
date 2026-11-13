@@ -1,5 +1,15 @@
 # Library build blocker tracker
 
+The [comparison body lifetime checkpoint](pa31-comparison-body-lifetimes.md)
+fixes "cannot lower a captured local lifetime" in `marker/variance.rs:107`'s
+derived `eq`. A source comparison selected its `Rhs` from the left operand's
+own type, so a body lifetime parameter reached `Rhs` beneath the method
+signature's binder. `Self` now takes fresh regions, as borrow checking
+renumbers them. An unconverted right operand is now borrowed in its own type,
+which closes the `&T == &T` prepared lowering gap below. Twenty-one
+source-core reductions and function-linear work qualify the fix. No core
+observation of it has run yet.
+
 The [configured block tail checkpoint](pa31-configured-tails.md) fixes
 "missing body type constraint" in core's `fmt/num.rs:145` and `:166`
 `Display` bodies. Their written tail is configured out. Configuration left the
@@ -79,8 +89,11 @@ the later core build, and the base shares both:
 - a trait member call in a const body whose `Self` an impl proves, such as
   `[T; N]: [const] PartialEq`, stops prepared lowering at "const function
   member lacks its current conditional trait premise". Core's form stops here;
-- `a == b` on two `&T` operands stops prepared lowering at "method borrow
-  differs from selected receiver place".
+- `a == b` on two `&T` operands stopped prepared lowering at "method borrow
+  differs from selected receiver place". The
+  [comparison body lifetime checkpoint](pa31-comparison-body-lifetimes.md)
+  closes it: `ordinary-fn-supertrait` lowers, and `scalar-refs-op`, a const
+  body, reaches the first gap.
 
 The [closure capture pattern checkpoint](pa31-closure-capture-patterns.md)
 fixes "capture patterns for a matched place are not implemented" in core's

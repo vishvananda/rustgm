@@ -149,6 +149,21 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-13 comparison body lifetime update (supersedes the blocks below):**
+
+- `marker/variance.rs:107` "cannot lower a captured local lifetime" is fixed
+  ([evidence](docs/pa31-comparison-body-lifetimes.md)). A source comparison's
+  `Self` takes fresh regions, so no body lifetime reaches `Rhs`. An
+  unconverted right operand is borrowed in its own type.
+  - Twenty-one reductions are in `pa31/tests/spec/comparison-body-lifetimes`.
+  - The six declared batches, the oracle stderr, the lowering diagnostics and
+    the scaling rows are in `obj/parallel/variance-eq/`.
+  - The `&T == &T` prepared lowering gap of the always-const premise packet is
+    closed. `supertrait_const_premises`' gap table now lists `scalar-refs-op`
+    under the const member gap.
+- Next: a release pin and a core re-observation, since the change applies to
+  every source comparison.
+
 **2026-11-13 configured block tail update (supersedes the blocks below):**
 
 - `fmt/num.rs:145`/`:166` "missing body type constraint" is fixed
@@ -256,7 +271,8 @@ the passing receipts, not those attempts, qualify the current implementation.
   later core build of these bodies:
   - an impl-proved trait member call in a const body ("const function member
     lacks its current conditional trait premise");
-  - `&T == &T` ("method borrow differs from selected receiver place").
+  - `&T == &T` ("method borrow differs from selected receiver place"),
+    since closed by the comparison body lifetime checkpoint.
 
 **2026-11-12 closure capture pattern update (supersedes the blocks below):**
 

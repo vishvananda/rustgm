@@ -72,7 +72,10 @@ Tradeoffs:
     stops here.
   - `a == b` on two `&T` operands, even in an ordinary function, stops at
     "method borrow differs from selected receiver place": the operand and
-    receiver references carry different regions.
+    receiver references carry different regions. The
+    [comparison body lifetime checkpoint](pa31-comparison-body-lifetimes.md)
+    later closed this gap. `ordinary-fn-supertrait` lowers, and
+    `scalar-refs-op`, a const body, reaches the first gap.
 - RustGM's rejection messages differ from rustc's E0277 and E0284 text.
 
 ## Contract

@@ -233,8 +233,13 @@ impl Checker<'_> {
         // rustc's `check_overloaded_binop` gives `Rhs` a fresh variable, selects
         // `Self: PartialEq<Rhs>` where it can and then coerces the right operand.
         // Two primitive scalars are unified first, so their coercion is an identity.
-        let right_type = if self.builtin_comparison(node, subject, actual_right)? {
-            actual_right
+        // Otherwise `Self` is the left operand's type with fresh regions, which
+        // the left borrow constrains, as borrow checking renumbers each
+        // operand's regions. Selection solves `Rhs` beneath the method
+        // signature's binder, so neither may name a body lifetime parameter.
+        let builtin = self.builtin_comparison(node, subject, actual_right)?;
+        let (self_type, right_type) = if builtin {
+            (subject, actual_right)
         } else {
             let rhs = self.variable(node, super::Domain::Any)?;
             self.state.coerced_operands.insert(node, rhs);
@@ -242,13 +247,14 @@ impl Checker<'_> {
                 node,
                 operand: right,
                 expected: rhs,
+                borrow: self.state.call_types.comparison_borrows.len(),
             });
-            rhs
+            (self.inferred_regions(node, subject)?, rhs)
         };
         self.state.call_types.obligations.push((
             node,
             Predicate::trait_application(
-                subject,
+                self_type,
                 ItemId(selected.definition.0),
                 vec![Argument::Type(right_type)],
             ),
@@ -268,6 +274,10 @@ impl Checker<'_> {
         let signature = self.child(node, callable, 0)?;
         let signature = self.call_signature(node, signature)?;
         let receiver = self.child(node, signature, 0)?;
+        if !builtin {
+            let bound = self.child(node, receiver, 0)?;
+            self.shape_equation(node, self_type, bound)?;
+        }
         let actual = self.operand_borrow(node, subject, receiver, false)?;
         let pending =
             self.retain_language_borrow(node, left, selected.method, callable, subject, actual);
@@ -294,11 +304,14 @@ impl Checker<'_> {
         node: NodeId,
         operand: NodeId,
         expected: TermId,
+        borrow: usize,
     ) -> Result<Option<Dependency>, Error> {
         if let Some(dependency) = self.refine_call_inputs(node, expected)? {
             return Ok(Some(dependency));
         }
+        let mark = self.state.adjustments.len();
         self.coerce(operand, expected)?;
+        self.borrow_unconverted_rhs(node, operand, mark, borrow)?;
         let crate::syntax::ast::Kind::Binary { left, .. } = self.kind(node) else {
             return Err(self.error(node, "invalid comparison operand continuation"));
         };
@@ -310,6 +323,61 @@ impl Checker<'_> {
             self.equate(node, left, right)?;
         }
         Ok(None)
+    }
+    /// An identity coercion to `Rhs` leaves the right operand in its own type,
+    /// which can differ from `Rhs` in regions. The operand is then borrowed in
+    /// that type, and the borrow is related to the `Rhs` parameter as a
+    /// receiver borrow is. A converted operand keeps its borrow of `Rhs`.
+    fn borrow_unconverted_rhs(
+        &mut self,
+        node: NodeId,
+        operand: NodeId,
+        mark: usize,
+        borrow: usize,
+    ) -> Result<(), Error> {
+        let Some(index) = (mark..self.state.adjustments.len())
+            .rev()
+            .find(|&index| self.state.adjustments[index].node == operand)
+        else {
+            return Ok(());
+        };
+        let adjustment = &mut self.state.adjustments[index];
+        if adjustment.kind != super::AdjustmentKind::Equality
+            || adjustment.reset
+            || self.state.callable_adjustments.contains_key(&index)
+        {
+            return Ok(());
+        }
+        adjustment.expected = adjustment.actual;
+        let actual = adjustment.actual;
+        let previous = self
+            .state
+            .call_types
+            .comparison_borrows
+            .get(borrow)
+            .filter(|(site, ..)| *site == node)
+            .map(|&(_, previous, _)| previous)
+            .ok_or_else(|| self.error(node, "comparison lost its right operand borrow"))?;
+        let Some(Constructor::Reference {
+            mutable: false,
+            region,
+        }) = self.head(node, previous)?
+        else {
+            return Err(self.error(node, "comparison right borrow is not shared"));
+        };
+        let borrowed = self
+            .state
+            .infer
+            .construct(
+                Constructor::Reference {
+                    mutable: false,
+                    region,
+                },
+                &[actual],
+            )
+            .map_err(|e| self.error(node, e))?;
+        self.state.call_types.comparison_borrows[borrow].1 = borrowed;
+        Ok(())
     }
     /// One shared reference layer is peeled, as rustc's builtin rule does.
     fn raw_pointer_operand(&mut self, node: NodeId, term: TermId) -> Result<Option<TermId>, Error> {
