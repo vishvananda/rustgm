@@ -1107,6 +1107,24 @@ core's `simd.rs` `Simd` `eq`, which compares `[T; N]` under an always-const
 A maintainer integration test checks typing through the CLI and prepared
 lowering for every accepted case. There is no graded manifest or native test.
 
+`spec/derive-projection-bounds/` freezes sixteen declared no_core reductions
+of core's derived `Clone` and `Debug` of `Peekable`, `ArrayChunks` and
+`Intersperse`, whose field types name `I::Item`.
+
+- Accepted forms: core's four forms, a reference field, an enum variant field,
+  `Copy`, `PartialEq`, two parameters, an enum's `Default` without the bound,
+  and two controls.
+- Rejected forms: `<I as Iter>::Item`, which gets no predicate (E0277); two
+  uses whose `Item` lacks the derived trait (E0277), one refused only by the
+  predicate; and a type macro in a generic item's field.
+- Recorded prepared lowering gap, which a manual impl shares: an impl instance
+  reading a projected field of a struct with a lifetime parameter
+  (`reference-field`).
+
+A maintainer integration test checks typing through the CLI, each rejection's
+site and prepared lowering for every accepted case. There is no graded
+manifest or native test.
+
 `spec/comparison-body-lifetimes/` freezes twenty-one declared no_core
 reductions of core's derived `eq` of `marker/variance.rs:107`, whose operands
 carry a body lifetime.

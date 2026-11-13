@@ -8,6 +8,7 @@ mod derivation_contexts;
 mod image_storage;
 mod initialized_fields;
 mod parameter_admission;
+mod parametric_paths;
 mod payload_members;
 use super::{choice::Charge, delegation::Delegated, derive_types};
 use crate::{
@@ -60,6 +61,9 @@ struct Output<'a> {
     charge: &'a Charge<'a>,
     context: (SyntaxContextId, ExpansionId),
     edition: crate::support::edition::Edition,
+    /// The field type paths each derived impl bounds after its written
+    /// predicates.
+    projections: &'a [NodeId],
 }
 
 pub(crate) fn build(
@@ -69,6 +73,7 @@ pub(crate) fn build(
 ) -> Result<Delegated, LexError> {
     let inventory = active_members::collect(site, charge)?;
     let fields = &inventory.fields;
+    let projections = parametric_paths::collect(site, fields, charge)?;
     let copy = site.members[0].is_some();
     let clone = site.members[1].is_some();
     let mut output = Output {
@@ -78,6 +83,7 @@ pub(crate) fn build(
         charge,
         context: (SyntaxContextId::ROOT, ExpansionId(0)),
         edition: crate::support::edition::Edition::Rust2024,
+        projections: &projections,
     };
     if output.select(0) {
         output.header("crate::marker::Copy", false)?;
@@ -355,7 +361,7 @@ impl Output<'_> {
             .ok_or_else(|| error(self.site.original.start, "derived struct has no name"))?;
         self.spelling(name, false)?;
         self.generics(None)?;
-        self.where_predicates()
+        self.where_predicates(path)
     }
     fn field(&mut self, ty: NodeId) -> Result<(), LexError> {
         self.prepare_field()?;

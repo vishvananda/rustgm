@@ -28,10 +28,7 @@ impl Output<'_> {
                         error(parameter.name.start, "derived const formal lost its type")
                     })?)?;
                 }
-                let added = parameter.flavor == GenericFlavor::Type
-                    && path != "crate::marker::StructuralPartialEq"
-                    && !(path == "crate::default::Default"
-                        && matches!(self.site.item.kind, ItemKind::Enum { .. }));
+                let added = parameter.flavor == GenericFlavor::Type && self.adds_bound(path);
                 let bounded = parameter.bounds.start != parameter.bounds.end;
                 if added
                     && matches!(self.site.item.kind, ItemKind::Union { .. })
@@ -53,10 +50,7 @@ impl Output<'_> {
                         if bounded {
                             self.text("+")?;
                         }
-                        if self.site.const_ {
-                            self.text("[const]")?;
-                        }
-                        self.text(path)?;
+                        self.derived_bound(path)?;
                     }
                 }
             }
@@ -64,6 +58,25 @@ impl Output<'_> {
             self.text(",")?;
         }
         self.text(">")
+    }
+    /// rustc's derives bound every type parameter and projected field type,
+    /// except `StructuralPartialEq` and an enum's `Default`.
+    fn adds_bound(&self, path: &str) -> bool {
+        path != "crate::marker::StructuralPartialEq"
+            && !(path == "crate::default::Default"
+                && matches!(self.site.item.kind, ItemKind::Enum { .. }))
+    }
+    /// The derived trait, after `Copy` for a union's `Clone`.
+    fn derived_bound(&mut self, path: &str) -> Result<(), LexError> {
+        if matches!(self.site.item.kind, ItemKind::Union { .. })
+            && matches!(path, "crate::clone::Clone" | "crate::clone::TrivialClone")
+        {
+            self.text("crate::marker::Copy+")?;
+        }
+        if self.site.const_ {
+            self.text("[const]")?;
+        }
+        self.text(path)
     }
     fn bounds(&mut self, bounds: List) -> Result<(), LexError> {
         for (index, &node) in self.site.ast.list(bounds).iter().enumerate() {
@@ -115,9 +128,14 @@ impl Output<'_> {
             self.field(node)
         }
     }
-    pub(super) fn where_predicates(&mut self) -> Result<(), LexError> {
+    pub(super) fn where_predicates(&mut self, path: &str) -> Result<(), LexError> {
         let predicates = self.site.ast.list(self.site.item.where_clause);
-        if !predicates.is_empty() {
+        let projections = if self.adds_bound(path) {
+            self.projections
+        } else {
+            &[]
+        };
+        if !predicates.is_empty() || !projections.is_empty() {
             self.text("where")?;
         }
         for &node in predicates {
@@ -143,6 +161,14 @@ impl Output<'_> {
             self.constraint_type(ty)?;
             self.text(":")?;
             self.bounds(bounds)?;
+            self.text(",")?;
+        }
+        // rustc appends these after the written predicates, without merging.
+        for &ty in projections {
+            (self.charge)(1, 0)?;
+            self.field(ty)?;
+            self.text(":")?;
+            self.derived_bound(path)?;
             self.text(",")?;
         }
         Ok(())

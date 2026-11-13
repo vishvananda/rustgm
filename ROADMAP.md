@@ -249,6 +249,13 @@ too. Fifteen source-core reductions agree with rustc. Premises for another
 lifetime now fail prepared lowering's lifetime proof, as rustc's borrow
 checker rejects them.
 
+The [derived field path bound checkpoint](docs/pa31-derive-projection-bounds.md)
+bounds each derived field type path that begins with a type parameter, such as
+`I::Item`, by the derived trait, as rustc does. Core's derived `Clone` and
+`Debug` of `Peekable` and `ArrayChunks`, and `Debug` of `Intersperse`, need
+it. Sixteen source-core reductions agree with rustc, including a use that only
+the new predicate refuses and rustc's type macro rejection.
+
 The [comparison body lifetime checkpoint](docs/pa31-comparison-body-lifetimes.md)
 gives a source comparison's `Self` fresh regions, so core's derived `eq` of
 `marker/variance.rs:107` no longer leaks a body lifetime into `Rhs`. An

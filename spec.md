@@ -7607,6 +7607,17 @@ field. Field privacy is therefore checked from the module, or the
 definition. The index claims no copied bytes and grants no allowance. See the
 [derived tuple field privacy checkpoint](docs/pa31-derive-field-privacy.md).
 
+A derived impl of an item with type parameters also bounds each field type path
+whose first segment names one of them, unless the path is that parameter alone,
+as rustc's `find_type_parameters` does. Every such path in an active field's
+type, such as the `I::Item` of `Option<Option<I::Item>>`, gets `P: Trait`
+after the written predicates, once per occurrence. `Trait` is the bound the
+derive adds to its type parameters, so `StructuralPartialEq` and an enum's
+`Default` add none. A qualified path's own segments and constant expressions
+are not walked as field type paths. A type macro in such an item's field is
+rejected, as rustc rejects it. See the
+[derived field path bound checkpoint](docs/pa31-derive-projection-bounds.md).
+
 Version 5 of the macro envelope is written only when a table has a glob row;
 otherwise the version-1 to version-4 bytes are unchanged. It keeps the
 version-4 layout and adds kind 4, a glob re-export of a dependency's module

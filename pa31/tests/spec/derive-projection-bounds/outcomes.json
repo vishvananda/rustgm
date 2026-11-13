@@ -1,0 +1,124 @@
+{
+ "schema": 1,
+ "declared": "2026-11-13, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run (obj/parallel/derive-projections/core/declared.json, batches 1 and 2; batch 2 corrects two malformed batch 1 probes). Every declaration of these files agrees with rustc.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --target=x86_64-unknown-linux-gnu --crate-type=lib --emit=metadata -Cpanic=abort --cap-lints=allow",
+ "cases": {
+  "peekable-clone.rs": {
+   "sha256": "71e2983c10f53021d7a59f36a6740e61241d8d43ba1df098ac4695b90dda96e4",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 1,
+   "probe": "peekable-clone"
+  },
+  "peekable-debug.rs": {
+   "sha256": "19710d468034776f78ba782988cfef7ecec32f3863399806531e21d2ffd90fa0",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 1,
+   "probe": "peekable-debug"
+  },
+  "chunks-form.rs": {
+   "sha256": "5293eac9804d3aa692e41a27472c489e8b894d6e8ac6caf6aade9c725d93ec39",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 2,
+   "probe": "chunks-form"
+  },
+  "intersperse-form.rs": {
+   "sha256": "6d3e03f1cfbd2f00c0306dfc4c0d302981024f77d2429a39c24b443e8bb6e95d",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 1,
+   "probe": "intersperse-form"
+  },
+  "reference-field.rs": {
+   "sha256": "64eaa95bd610a8e0f6b14a481bb2cb5a5ad33ede5b4a5de92287f908512f983d",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 1,
+   "probe": "reference-field"
+  },
+  "enum-variant-field.rs": {
+   "sha256": "d4623a0b412eece141ab7c2b1902f9f4908e642daea54e9d24b5c7b1500b3406",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 1,
+   "probe": "enum-variant-field"
+  },
+  "copy-projection.rs": {
+   "sha256": "3f250135d0477067ce37c6b787a70e2897ca4dd91de127996a98a7fbd5fd7daf",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 1,
+   "probe": "copy-projection"
+  },
+  "partial-eq-projection.rs": {
+   "sha256": "49f94e68f25df2f6f624a50df7c2353a4b14542db63b56a95a3c0a8e57a9ef1e",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 2,
+   "probe": "partial-eq-projection"
+  },
+  "two-parameters.rs": {
+   "sha256": "f0441b157cd190cc21accd95af28836728c43528a762ec73c7b1dc23a6e508e1",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 1,
+   "probe": "two-parameters"
+  },
+  "sole-parameter.rs": {
+   "sha256": "84fa0b3062afd0f0a484c563498dde28b19f3d9178d85fd3bf76fa408bfdf027",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 1,
+   "probe": "sole-parameter"
+  },
+  "default-enum-skip.rs": {
+   "sha256": "b8ec1a3b909e6dc31fb9a876d400b7aec6c801afb9487e8521292997ede8ef62",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 1,
+   "probe": "default-enum-skip"
+  },
+  "type-macro-plain.rs": {
+   "sha256": "a84137dfcfbc4bcfb43a03705510a30cff2f649f760cf0197251ba096ed94c58",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 1,
+   "probe": "type-macro-plain"
+  },
+  "qualified-unbounded.rs": {
+   "sha256": "bf613f40fda37ac73ea303691f01d7dda29fd9031e3c3542388c08f5e768fb64",
+   "declared": 1,
+   "rustc_status": 1,
+   "batch": 1,
+   "probe": "qualified-unbounded",
+   "rustc_error": "error[E0277]: the trait bound `<I as Iter>::Item: Clone` is not satisfied"
+  },
+  "item-bound-required.rs": {
+   "sha256": "fa32b45f5b455517511ada8c260474bdf109fc31132fdaf2fa59aee22fc7d6bb",
+   "declared": 1,
+   "rustc_status": 1,
+   "batch": 1,
+   "probe": "item-bound-required",
+   "rustc_error": "error[E0277]: the trait bound `NoTrait: Clone` is not satisfied"
+  },
+  "unused-projection-bound.rs": {
+   "sha256": "95a36ea475df89c222964eba230cebcd8a10d8b37fc13b6fe0c4d093acffe8ca",
+   "declared": 1,
+   "rustc_status": 1,
+   "batch": 1,
+   "probe": "unused-projection-bound",
+   "rustc_error": "error[E0277]: the trait bound `NoTrait: Debug` is not satisfied"
+  },
+  "type-macro-generic.rs": {
+   "sha256": "205681d0e8b1521bbdace60f5d453196aa7d153b60e620edda31a847d4656e8f",
+   "declared": 1,
+   "rustc_status": 1,
+   "batch": 1,
+   "probe": "type-macro-generic",
+   "rustc_error": "error: `derive` cannot be used on items with type macros"
+  }
+ }
+}

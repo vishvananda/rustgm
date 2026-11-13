@@ -1,0 +1,16 @@
+pa31/tests/spec/derive-projection-bounds/peekable-clone.rs	0
+pa31/tests/spec/derive-projection-bounds/peekable-debug.rs	0
+pa31/tests/spec/derive-projection-bounds/chunks-form.rs	0
+pa31/tests/spec/derive-projection-bounds/intersperse-form.rs	0
+pa31/tests/spec/derive-projection-bounds/reference-field.rs	0
+pa31/tests/spec/derive-projection-bounds/enum-variant-field.rs	0
+pa31/tests/spec/derive-projection-bounds/copy-projection.rs	0
+pa31/tests/spec/derive-projection-bounds/partial-eq-projection.rs	0
+pa31/tests/spec/derive-projection-bounds/two-parameters.rs	0
+pa31/tests/spec/derive-projection-bounds/sole-parameter.rs	0
+pa31/tests/spec/derive-projection-bounds/default-enum-skip.rs	0
+pa31/tests/spec/derive-projection-bounds/type-macro-plain.rs	0
+pa31/tests/spec/derive-projection-bounds/qualified-unbounded.rs	trait obligation requires an unambiguous matching assumption or implementation	#[derive(Clone)]
+pa31/tests/spec/derive-projection-bounds/item-bound-required.rs	trait obligation requires an unambiguous matching assumption or implementation	Clone::clone(value)
+pa31/tests/spec/derive-projection-bounds/unused-projection-bound.rs	trait obligation requires an unambiguous matching assumption or implementation	fmt::Debug::fmt(value, f)
+pa31/tests/spec/derive-projection-bounds/type-macro-generic.rs	`derive` cannot be used on items with type macros	byte!()

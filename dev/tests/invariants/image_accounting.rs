@@ -61,6 +61,7 @@ fn spare_capacity_and_failed_growth_keep_attempts_and_unpublished_rows() -> Test
         charge: &charge,
         context: (SyntaxContextId::ROOT, ExpansionId(0)),
         edition: crate::support::edition::Edition::Rust2024,
+        projections: &[],
     };
     output.stream.source.reserve(128);
     output.stream.origins.reserve(8);
@@ -147,6 +148,7 @@ fn derive_text_roots_name_the_defining_crate_and_keep_other_words() -> TestResul
             charge: &charge,
             context: (context, introduction),
             edition: crate::support::edition::Edition::Rust2024,
+            projections: &[],
         };
         output
             .text("crate::clone::Clone for crated r#type")

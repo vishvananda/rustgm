@@ -149,6 +149,21 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-13 derived field path bound update (supersedes the blocks below):**
+
+- The `Peekable`, `ArrayChunks` and `Intersperse` derived body failures are
+  fixed ([evidence](docs/pa31-derive-projection-bounds.md)). A derived impl
+  bounds each field type path that begins with a type parameter, as rustc
+  does.
+  - Sixteen reductions are in `pa31/tests/spec/derive-projection-bounds`.
+  - The three declared batches, the oracle stderr, rustc's expansion of the
+    Intersperse form and the scaling rows are in
+    `obj/parallel/derive-projections/`.
+  - Recorded gap for the core build's later lowering stage: an impl instance
+    reading a projected field of a struct with a lifetime parameter
+    (`reference-field`, and a manual impl in batch 3).
+- Next: a release pin and a core re-observation.
+
 **2026-11-13 comparison body lifetime update (supersedes the blocks below):**
 
 - `marker/variance.rs:107` "cannot lower a captured local lifetime" is fixed

@@ -1,5 +1,16 @@
 # Library build blocker tracker
 
+The [derived field path bound checkpoint](pa31-derive-projection-bounds.md)
+fixes the five derived bodies of core's `Peekable` (`clone`, `fmt`),
+`ArrayChunks` (`clone`, `fmt`) and `Intersperse` (`fmt`). Their field types
+name `I::Item`, and the derive bounded only type parameters. Each field type
+path that begins with a type parameter is now bounded by the derived trait,
+after the written predicates, as rustc's `find_type_parameters` bounds it.
+Sixteen source-core reductions and field-linear work qualify the fix. One
+recorded prepared lowering gap, which a manual impl shares, is an impl
+instance reading a projected field of a struct with a lifetime parameter. No
+core observation of it has run yet.
+
 The [comparison body lifetime checkpoint](pa31-comparison-body-lifetimes.md)
 fixes "cannot lower a captured local lifetime" in `marker/variance.rs:107`'s
 derived `eq`. A source comparison selected its `Rhs` from the left operand's

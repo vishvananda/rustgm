@@ -37,6 +37,8 @@ mod ctfe_selector;
 mod declarative_macros;
 #[path = "../../deref_contracts.rs"]
 mod deref_contracts;
+#[path = "../../derived_field_bounds.rs"]
+mod derived_field_bounds;
 #[path = "../../edition_fragments.rs"]
 mod edition_fragments;
 #[path = "../../edition_origins.rs"]
