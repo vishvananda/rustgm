@@ -439,3 +439,50 @@ fn opened_clauses_carry_only_held_certified_sources() -> TestResult {
     assert!(body.has_normal_premises());
     Ok(())
 }
+
+/// A body that opens a `Clone` premise also opens its elaborated `Sized`
+/// source, which the declaration assumes as a shape rather than a trait
+/// premise. That source carries no certificate and keeps the certified
+/// premise's own. A `Sized` subject the declaration does not assume still
+/// withholds every certificate.
+#[test]
+fn opened_clauses_admit_assumed_sized_sources() -> TestResult {
+    use crate::types::parameters::{
+        clauses::Clause,
+        environment::{Abilities, Environment},
+    };
+    let mut fixture = Fixture::new()?;
+    let subject = fixture.parameter(0)?;
+    let other = fixture.parameter(1)?;
+    let mut parameters = Vec::new();
+    for ty in [subject, other] {
+        let Some(Kind::Parameter(parameter)) = fixture.store.kind(ty) else {
+            return Err("missing type parameter".into());
+        };
+        parameters.push((parameter, Abilities::default()));
+    }
+    let declared = fixture.searcher(subject, PREMISE)?;
+    let opened = fixture.searcher(subject, GOAL)?;
+    let premise = fixture.reverse(declared, PREMISE)?;
+    let sized = |ty| Canonical {
+        ty,
+        bound: Bound::Sized,
+    };
+    let mut declaration = Environment::new(&fixture.store, &parameters)?
+        .with_predicates(&fixture.store, &[premise, sized(declared)])?;
+    declaration.certify_normal_premises(&fixture.store, &[Clause::Predicate(premise)])?;
+    let image = Clause::Predicate(fixture.reverse(opened, GOAL)?);
+    let images = [image, Clause::Predicate(sized(opened))];
+    let sources = [
+        Clause::Predicate(premise),
+        Clause::Predicate(sized(declared)),
+    ];
+    assert_eq!(declaration.opened_certificates(&sources, &images)?, [image]);
+    let unassumed = [Clause::Predicate(premise), Clause::Predicate(sized(other))];
+    assert!(
+        declaration
+            .opened_certificates(&unassumed, &images)?
+            .is_empty()
+    );
+    Ok(())
+}

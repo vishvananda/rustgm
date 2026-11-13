@@ -1,0 +1,15 @@
+pa31/tests/spec/gat-region-premises/core-form.rs	0
+pa31/tests/spec/gat-region-premises/path-call.rs	0
+pa31/tests/spec/gat-region-premises/where-projection.rs	0
+pa31/tests/spec/gat-region-premises/local-value.rs	0
+pa31/tests/spec/gat-region-premises/missing-bound.rs	1
+pa31/tests/spec/gat-region-premises/other-lifetime.rs	1
+pa31/tests/spec/gat-region-premises/copy-premise.rs	0
+pa31/tests/spec/gat-region-premises/wrapper-chain.rs	0
+pa31/tests/spec/gat-region-premises/wrapper-missing-bound.rs	1
+pa31/tests/spec/gat-region-premises/static-use.rs	0
+pa31/tests/spec/gat-region-premises/static-premise.rs	1
+pa31/tests/spec/gat-region-premises/outlives-only.rs	1
+pa31/tests/spec/gat-region-premises/mutual-outlives.rs	0
+pa31/tests/spec/gat-region-premises/searcher-method.rs	0
+pa31/tests/spec/gat-region-premises/direct-field.rs	0

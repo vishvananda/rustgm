@@ -1389,6 +1389,14 @@ inputs stays ambiguous, as in rustc. A scoped equation between two
 requirements still compares effects exactly. See the
 [always-const premise checkpoint](docs/pa31-always-const-premises.md).
 
+A body that opens its declaration's lifetimes at universal aliases carries the
+declaration's certified projection premises. Every opened source must be one
+of the declaration's trait premises or a `Sized` subject it assumes, such as
+the `Sized` elaborated from a `Clone` premise. The opened
+`P: Pattern<Searcher<'a>: Clone>` premise thus relates a goal for the impl's
+fresh region invariantly, and the region equality goes to the lifetime proof.
+See the [GAT region premise checkpoint](docs/pa31-gat-region-premises.md).
+
 The bounded sizing profile requires actual sizing identities, complete headers
 and deny-explicit-impl restrictions before retaining fundamental, specialization
 or coinductive markers; those markers grant no general implementation or cycle

@@ -11,6 +11,8 @@ mod associated_type_declarations;
 mod deferred_alias_projections;
 #[path = "../../field_results.rs"]
 mod field_results;
+#[path = "../../gat_region_premises.rs"]
+mod gat_region_premises;
 #[path = "../../gat_values.rs"]
 mod gat_values;
 #[path = "../../inferred_alias_projections.rs"]

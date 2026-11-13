@@ -241,6 +241,14 @@ rejections and an E0284 ambiguity that the base accepted. Two pre-existing
 prepared lowering gaps are recorded: an impl-proved trait member call in a
 const body, and an `&T == &T` comparison's receiver region.
 
+The [GAT region premise checkpoint](docs/pa31-gat-region-premises.md) lets
+core's `SplitInclusive` `clone` 8624 prove `Searcher<'a>: Clone` for the
+`SplitInternal` impl's fresh region. A body opening its declaration's
+lifetimes kept no certificate when an elaborated `Sized` source was opened
+too. Fifteen source-core reductions agree with rustc. Premises for another
+lifetime now fail prepared lowering's lifetime proof, as rustc's borrow
+checker rejects them.
+
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage
 limit controls, pass text, independent Rust and native checks with frozen a08ab1a4.

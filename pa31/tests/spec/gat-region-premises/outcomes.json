@@ -1,0 +1,149 @@
+{
+ "schema": 1,
+ "declared": "2026-11-12 and 2026-11-13, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run (obj/parallel/pattern-clone/core/declared.json, batches 2 and 4; batch 1 was malformed and batch 3 was three ungraded diagnostics, all recorded there). Batch 4 was declared after the exploratory change was built and run on batches 2 and 3. Each case's first line records its prefix: pa31/tests/spec/default-const-closures/count.rs before its ZeroablePrimitive, followed by core/str/pattern.rs Pattern and core/str/iter.rs SplitInternal fragments.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "rustgm_argv": "rustgm --emit-types --edition=2024 --cap-lints=allow --source-core minicore@reduce --crate-name minicore --crate-disambiguator reduce",
+ "cases": {
+  "core-form.rs": {
+   "sha256": "ed69ef7c6acead56c667402d89173bad87ba4f53dd4f0e62c740f7feef01daa9",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "core's SplitInclusive Clone: a method call needing SplitInternal's associated-type-bound where clause",
+   "batch": 2,
+   "probe": "core-form-u8",
+   "rustgm_d901f562c_typing": 1
+  },
+  "path-call.rs": {
+   "sha256": "1114366c789e964f7a106bd48665bab2edd256a6398d245cb53a5b3affcc1948",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "the same requirement through a path call",
+   "batch": 2,
+   "probe": "path-call-u8",
+   "rustgm_d901f562c_typing": 1
+  },
+  "where-projection.rs": {
+   "sha256": "9a1dc573283f117715a3b22a687577c506b5c6d31f2475be53fda04288a236e5",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "the caller states the bound as a projection where clause",
+   "batch": 2,
+   "probe": "where-projection-u8",
+   "rustgm_d901f562c_typing": 1
+  },
+  "local-value.rs": {
+   "sha256": "bbaa6778d2f16139061b6d5f34b1d09d6baf8816b8eebcdb6260757656840583",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "a free function with the associated type bound clones a SplitInternal",
+   "batch": 2,
+   "probe": "local-value-u8",
+   "rustgm_d901f562c_typing": 1
+  },
+  "missing-bound.rs": {
+   "sha256": "dc6dc1353a702a956070b4fa5757a3140b0a352bae533740e23c0c27ccb28b64",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "E0599",
+   "form": "E0599 expected: SplitInternal's Clone needs P::Searcher<'a>: Clone, which the caller lacks",
+   "batch": 2,
+   "probe": "missing-bound-u8",
+   "rustgm_d901f562c_typing": 1
+  },
+  "other-lifetime.rs": {
+   "sha256": "7eeb8ead45562280050a395f9a61db239c7a4b318c331a1fb2bb77ead7186d58",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "lifetime may not live long enough",
+   "form": "E0599 expected: the assumption is for Searcher<'b>, not Searcher<'a>",
+   "batch": 2,
+   "probe": "other-lifetime-u8",
+   "rustgm_d901f562c_typing": 1
+  },
+  "copy-premise.rs": {
+   "sha256": "8e4e5a100cd82e72984af7f821e0b3563be21ad0b3dd09df38d23997e3ef8ff7",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "a Copy associated type bound elaborates the needed Clone",
+   "batch": 4,
+   "probe": "copy-premise",
+   "rustgm_d901f562c_typing": 1
+  },
+  "wrapper-chain.rs": {
+   "sha256": "974271886382ee19017721f12833a58ced45ce175837d80b2a8b5df87d4274f7",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "a second wrapper's Clone reaches SplitInternal's through SplitInclusive's",
+   "batch": 4,
+   "probe": "wrapper-chain",
+   "rustgm_d901f562c_typing": 1
+  },
+  "wrapper-missing-bound.rs": {
+   "sha256": "b0ffc267f6ef5462af16223a4e7e88a1ae39e7fd500f446750b38e9364c0e1e3",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "E0599",
+   "form": "E0599 expected: the wrapper lacks the associated type bound",
+   "batch": 4,
+   "probe": "wrapper-missing-bound",
+   "rustgm_d901f562c_typing": 1
+  },
+  "static-use.rs": {
+   "sha256": "0ddc2da81e808618b276c5cc13937acf8c58efcc61373aac8cdc8e8eb74be599",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "a 'static premise for a 'static split",
+   "batch": 4,
+   "probe": "static-use",
+   "rustgm_d901f562c_typing": 0
+  },
+  "static-premise.rs": {
+   "sha256": "fe8a99c3d34248e196b145e1a11f474941ca325ea86fd98f575f65a1bd7bc693",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "lifetime may not live long enough",
+   "form": "borrowck expected: the 'static premise needs 'a == 'static",
+   "batch": 4,
+   "probe": "static-premise",
+   "rustgm_d901f562c_typing": 0
+  },
+  "outlives-only.rs": {
+   "sha256": "6e042087dbcadc1d7b578b99ce08981d7e2893774250ca538f2dafaef607a3eb",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "lifetime may not live long enough",
+   "form": "borrowck expected: the invariant projection needs 'a == 'b, and only 'b: 'a holds",
+   "batch": 4,
+   "probe": "outlives-only",
+   "rustgm_d901f562c_typing": 1
+  },
+  "mutual-outlives.rs": {
+   "sha256": "ffc3d39de2e6bf9ac4c8b565b64dbf182295e0c275b52816f1f3e783cf4bd2a2",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "mutual outlives bounds make 'a and 'b equal",
+   "batch": 4,
+   "probe": "mutual-outlives",
+   "rustgm_d901f562c_typing": 1
+  },
+  "searcher-method.rs": {
+   "sha256": "b1666b22ca7bc76061b3163f1364e6ed7873978ca507a35e51e0932ab203f9a1",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "the GAT's own Searcher<'a> item bound at the field's region",
+   "batch": 4,
+   "probe": "searcher-method",
+   "rustgm_d901f562c_typing": 0
+  },
+  "direct-field.rs": {
+   "sha256": "496393928c7bb304ecb64b9b26cd02f14be61f95689ab60180a64486efb52390",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "control: the premise's region is the field's own",
+   "batch": 4,
+   "probe": "direct-field",
+   "rustgm_d901f562c_typing": 0
+  }
+ }
+}

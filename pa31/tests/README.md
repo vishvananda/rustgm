@@ -1104,3 +1104,18 @@ core's `simd.rs` `Simd` `eq`, which compares `[T; N]` under an always-const
 
 A maintainer integration test checks typing through the CLI and prepared
 lowering for every accepted case. There is no graded manifest or native test.
+
+`spec/gat-region-premises/` freezes fifteen declared no_core reductions of
+core's `SplitInclusive` `clone`, whose `SplitInternal` impl needs
+`Searcher<'a>: Clone` for a fresh region.
+
+- Accepted forms: core's form, a path call, a projection where clause, a free
+  function, a `Copy` bound, a second wrapper, mutual outlives bounds and three
+  controls.
+- Rejected at typing: a missing associated type bound (E0599).
+- Rejected by prepared lowering's lifetime proof: a premise for another
+  lifetime, which rustc's borrow checker rejects.
+
+A maintainer integration test checks typing through the CLI and prepared
+lowering for every case that types. There is no graded manifest or native
+test.

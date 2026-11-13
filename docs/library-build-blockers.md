@@ -1,5 +1,15 @@
 # Library build blocker tracker
 
+The [GAT region premise checkpoint](pa31-gat-region-premises.md) fixes "trait
+obligation requires an unambiguous matching assumption or implementation" in
+core's `SplitInclusive` `clone` 8624 (`str/iter.rs:1438`). `SplitInternal`'s
+`Clone` needs `<P as Pattern>::Searcher<'a>: Clone` for the impl's fresh
+`'a`. The method body's opened premise lost its normal-premise certificate
+because an elaborated `Sized` source was opened with it. It now keeps the
+certificate, so the projection's region becomes an equality for the lifetime
+proof, as in rustc. Fifteen source-core reductions and function-linear work
+qualify the fix. Core's form types and lowers.
+
 The [always-const premise checkpoint](pa31-always-const-premises.md) fixes
 "trait obligation requires an unambiguous matching assumption or
 implementation" in core's `core_arch` `simd.rs` `eq` bodies 9611 and 9643

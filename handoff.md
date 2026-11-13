@@ -149,6 +149,18 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-13 GAT region premise update (supersedes the blocks below):**
+
+- The `SplitInclusive` `clone` 8624 "unambiguous matching assumption" failure
+  is fixed ([evidence](docs/pa31-gat-region-premises.md)). An opened body
+  keeps its declaration's certified premises beside an assumed `Sized`
+  source.
+  - Fifteen reductions are in `pa31/tests/spec/gat-region-premises`.
+  - The four declared batches, the diagnostics, the debug traces and the
+    lowering runs are in `obj/parallel/pattern-clone/`.
+- Core's form types and lowers. Premises for another lifetime fail prepared
+  lowering's lifetime proof, where rustc's borrow checker rejects them.
+
 **2026-11-12 always-const premise update (supersedes the blocks below):**
 
 - The `simd.rs` `eq` 9611/9643 "unambiguous matching assumption" failure has a

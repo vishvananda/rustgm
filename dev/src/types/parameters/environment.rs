@@ -360,8 +360,10 @@ impl Environment {
     /// is `sources[i]` with its binder lifetimes replaced, as a body opens
     /// its declaration's binder clauses at its universal aliases: a
     /// lifetime-only substitution, so each certified source's image is
-    /// returned. A source that is not one of this environment's own trait
-    /// premises could add a fact it never had, and then none is returned.
+    /// returned. A source that is neither one of this environment's own trait
+    /// premises nor a `Sized` subject it assumes could add a fact it never
+    /// had, and then none is returned. An elaborated `Sized` source, as from
+    /// `Clone`'s supertrait, carries no certificate itself.
     /// # Errors
     /// Rejects images without sources.
     pub fn opened_certificates(
@@ -375,7 +377,17 @@ impl Environment {
         if sources.len() != images.len() {
             return Err("opened clauses lost their sources");
         }
-        if !sources.iter().all(|&source| traits.holds(source)) {
+        let held = |source: Clause| {
+            traits.holds(source)
+                || matches!(
+                    source,
+                    Clause::Predicate(Predicate {
+                        ty,
+                        bound: Bound::Sized,
+                    }) if self.assumes_sized(ty)
+                )
+        };
+        if !sources.iter().all(|&source| held(source)) {
             return Ok(Vec::new());
         }
         Ok(sources
