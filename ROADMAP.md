@@ -254,7 +254,8 @@ admits source enums with two single-field variants when one field is zero-sized
 and the other has an existing niche carrier. Eleven declared source cases match
 Rust, including reverse orientation, const matching and the incorrect-size
 opponent. Tagged fallbacks and the historical course profile remain unchanged;
-the original-core observation and bool's nonzero niche remain pending.
+candidate11 clears the actual core size assertion. Bool's nonzero niche and
+closure output lifetimes remain pending.
 
 The [global clause premises checkpoint](docs/pa31-global-clause-premises.md)
 selects a normalizer's concrete trait premise from implementations before the

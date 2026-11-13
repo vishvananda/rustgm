@@ -81,5 +81,26 @@ Frozen dev-fast CLI `52e35fa7` passes every active PA1–PA24 text case:
 9,307/9,307 in 74.46s, with no oracle generation or reference edits. The receipt
 also preserves unchanged hashes of all 18,614 stderr/exit sidecars. Upstream
 verification, all 315 Python harness tests, 485 integration-root registrations and
-the 44-stage assignment layout check pass. The clean candidate11 original-core
-observation is pending. No core census improvement is inferred from reductions.
+the 44-stage assignment layout check pass.
+
+Clean source `34a28702e` freezes release candidate11, CLI
+`58d7312a59bcceeecccd65fdcef163b535b0e94c5658d0cabbf31bb80fb45e51`,
+with 3,945 Rust source hashes and an empty patch. The unchanged 120s original
+observer runs exclusively after load admission and finishes its body pass in
+24.56s. Initializer25396, the actual `repr_bitpacked.rs:350` assertion, clears.
+All 42,310 declarations pass; 35,120 item attempts check 25,851 bodies, with three
+failures and four blocked bodies remaining. No previously passing body fails.
+The completion pass is not run and no original library artifact exists.
+Postcheck verifies all 722 input hashes, 375 opened sources, six configuration
+bindings, all compiler source hashes and unchanged limits/profile. Raw observation,
+comparison and postcheck are under `obj/parallel/capture-match/original-candidate11*`.
+
+Forty-eight exclusive accepting observations compare immutable release10/11:
+A/A calibration plus two ABBA blocks for widths8/32/128 and an ordinary control.
+Complete outputs agree. Wall ratios are 1.083/1.003/1.001/1.015, against A/A
+0.924/1.024/1.171/1.036; CPU ratios are 1.085/1.003/1.000/1.016. These short
+observations make no speedup, neutrality or whole-core throughput claim.
+Raw data and frozen inputs are in `obj/parallel/zst-niche/measure-a2/`. The first
+attempt used library emission and stopped on candidate10's existing source-header
+transport fence, before any candidate timing. It is retained separately; the
+qualified inputs instead have an empty main and identical executable output.

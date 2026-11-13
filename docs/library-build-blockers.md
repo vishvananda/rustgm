@@ -1,34 +1,27 @@
 # Library build blocker tracker
 
-Release candidate10 (`obj/parallel/capture-match/candidate10-release`, clean
-534f3cc67, CLI 070d8da9) carries every fix below. The unchanged 120s observer
-ran it exclusively from load 11.4. It reached the end of the body pass in
-23.1s, with all 42,310 declarations passing, 35,120 item attempts, 25,850
-checked bodies, and 4 failed and 4 blocked bodies, against candidate9's 5
-and 13. Every record is a candidate9 record, so no previously passing body
-failed. `core_simd`'s `div` 36996 and the nine `div` and `rem` bodies it
-blocked pass. The completion pass was not run. The remaining failures:
+Release candidate11 (`obj/parallel/capture-match/candidate11-release`, clean
+34a28702e, CLI58d7312a) carries the source zero-sized companion fix. The unchanged
+120s observer runs exclusively after load admission, finishing its body pass in
+24.56s. All42,310 declarations pass;35,120 item attempts check25,851 bodies, with
+three failed and four blocked bodies remaining, against candidate10's four/four.
+Actual initializer25396, `repr_bitpacked.rs:350`'s size assertion, clears. No
+previously passing body fails. Postcheck verifies722 sources,375 opens, six pins,
+3945 compiler sources and unchanged limits/profile. The completion pass was not
+run. The remaining failures:
 
 - `as_underlying` 7631 (`slice/cmp.rs:52`), "source transmute requires equal
   source and destination sizes". `ControlFlow<bool>` needs `bool`'s niche
   for `Continue(())`;
 - 2 closure lifetimes, `into_searcher` 26791 and `is_contained_in` 26792
   (`str/pattern.rs:956`), which block four more;
-- `repr_bitpacked.rs:350`'s `static_assert!(@usize_eq: size_of::<Result<(),
-  Repr>>(), 8)`, const `_` 25396 at its macro's `const _: [(); $lhs] = [();
-  $rhs];` (line 300), "incompatible types". `Repr` wraps `NonNull<()>`, and
-  rustc places `Ok(())` in its null niche.
-
 The [zero-sized niche companion checkpoint](pa31-zero-sized-niche-companions.md)
-now passes eleven reduced contracts and the focused layout/ABI controls for
-25396. Its original-core observation is pending; candidate10 remains the last
-verified census. The bool carrier required by 7631 is still separate work.
-
-Both layout failures need a niche for an enum whose other variant is
-zero-sized but not fieldless. Source nullable eligibility now requires a
-fieldless variant beside one single-field variant. 7631 also needs a scalar
-niche other than zero. `spec.md` lists general scalar and multifield niches
-as remaining work.
+qualifies eleven source contracts,15 private/10 integration controls, all9307
+active text cases and48 calibrated output-equal measurements. Source nullable
+eligibility now admits two single-field variants where one is zero-sized and
+no more aligned than an existing carrier. Bool's nonzero niche, needed by7631,
+remains separate work; general scalar/multifield niches and default tag reduction
+also remain required.
 
 No core artifact exists. A core build would also stop at the initial
 assembly profile for the ymm, zmm and kreg bodies.
