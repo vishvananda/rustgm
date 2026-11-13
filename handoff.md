@@ -159,12 +159,22 @@ the passing receipts, not those attempts, qualify the current implementation.
   normalizations pass.
 - Candidate9 is now the only release pin. The candidate8 binary was retired
   and pruned. Its observation remains.
-- In progress: `ops.rs:139` `div`. Batches in `obj/parallel/simd-divrem/`
-  reproduce it. `impl Div for Simd<i8, N> where i8: SimdElement` fails at
-  `self.simd_eq(Simd::splat(<i8>::MIN))`; the same guard passes in a free
-  function and for `u8`. The suspected cause is the global caller clause
-  `i8: SimdElement` competing with its impl. Batch 3 is declared and not yet
-  run.
+- In progress: `ops.rs:139` `div`. `obj/parallel/simd-divrem/` batch 3
+  (20 declared cases, all agreeing with rustc; batches 1 and 2 malformed)
+  reduces it to `m.select(Simd::splat(1 as _), b)` under the global caller
+  clause `where i8: SimdElement`.
+  - Diagnosis, from temporary traces in `trace/` (wipdiv1-5 dev-fast pins,
+    not committed): the call's `Mask<i8, N>: MetaSized` goal defers forever.
+    Inside its search, `<i8 as SimdElement>::Mask == i8`, from
+    `MaskElement: SimdElement<Mask = Self>`, defers at
+    `search/equalities.rs` `complete_equality`.
+  - The cause: `search/normalization.rs` `resolve_premise_result` proves the
+    premise `i8: SimdElement` from the caller clause, finds no written result
+    equality and returns a symbolic result.
+  - rustc drops a global where clause in favor of a matching impl (#50825).
+    The declaration normal form already retries a concrete requirement
+    "closed" against implementations (`nominals/traits/normal_form.rs`); the
+    body search lacks that retry.
 
 **2026-11-13 body projection normalization update (supersedes the blocks below):**
 
