@@ -25,37 +25,47 @@ pub(crate) fn execution_bindings(
     formal: Execution,
     actual: TypeId,
 ) -> Result<Bindings, &'static str> {
+    signature_bindings(types, formal.signature, formal.universals, actual, 0)
+        .map(|(bindings, _)| bindings)
+}
+pub(crate) fn signature_bindings(
+    types: &Store,
+    formal: TypeId,
+    universals: u32,
+    actual: TypeId,
+    public: u32,
+) -> Result<(Bindings, usize), &'static str> {
     let Some(Kind::Function {
         parameters: a,
         result: ar,
         bound_regions: ab,
         unsafe_: au,
         convention: av,
-    }) = types.kind(formal.signature)
+    }) = types.kind(formal)
     else {
         return Err("missing formal closure execution signature");
     };
     let Some(Kind::Function {
         parameters: b,
         result: br,
-        bound_regions: 0,
+        bound_regions: bb,
         unsafe_: bu,
         convention: bv,
     }) = types.kind(actual)
     else {
         return Err("missing selected closure execution signature");
     };
-    if ab != formal.universals || au != bu || av != bv {
+    if ab != universals || bb != public || au != bu || av != bv {
         return Err("closure execution binder or ABI differs from its contract");
     }
-    let mut matcher = Matcher::new(types, formal.universals, ar, br);
+    let mut matcher = Matcher::new(types, universals, ar, br);
     if !matcher
         .list(a, b, 0)
         .map_err(|_| "invalid closure execution parameter shape")?
     {
         return Err("closure execution parameter count differs");
     }
-    matcher.bindings()
+    matcher.bindings_counted()
 }
 pub(crate) fn instance(
     types: &Store,

@@ -29,10 +29,14 @@ pub(super) fn finish_owner(
                 signature.ok_or("async application requires its actual specialized contract")?;
         }
         Owner::Closure {
-            execution: Some(execution),
+            signature: public,
+            execution,
             ..
         } => {
-            *execution = signature.ok_or("captured execution requires its specialized contract")?;
+            let signature = signature.ok_or("closure requires its specialized contract")?;
+            if execution.is_some() || signature != *public {
+                *execution = Some(signature);
+            }
         }
         _ => {}
     }
@@ -269,6 +273,16 @@ pub(super) fn closure(
             connections.proof = formal.proof;
             inputs.connections = Some(connections);
         }
+        return Ok(inputs);
+    }
+    let Some(Kind::Function { bound_regions, .. }) = facts.types.kind(signature) else {
+        return Err("closure instance has no call signature");
+    };
+    if bound_regions != crate::sema::closures::actual::call_binders(facts, body)? {
+        return Err("closure instance changed its source call binder");
+    }
+    if body.universals.saturating_sub(body.inherited) > bound_regions {
+        super::closures::private_inputs(facts, instance, body, signature, &mut inputs)?;
         return Ok(inputs);
     }
     let expected = inherited_signature(&mut facts.types, body, &inputs.captures, signature)?;

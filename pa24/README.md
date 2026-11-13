@@ -5,6 +5,8 @@ byte oracles implement the contract below.
 Prerequisite: PA23. The common source profile is Rust 1.98.0, initially edition
 2024 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
 
+The [inferred-input repair](../docs/pa24-inferred-inputs.md) preserves creator aliases and generic private ports, with28 new ordinary regressions and source counterparts in PA31.
+
 ## Required implementation
 
 Extend PA23's callable and object machinery with anonymous closure types,

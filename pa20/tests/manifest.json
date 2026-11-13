@@ -26688,6 +26688,204 @@
         "default_lints": true
       },
       "maintainer_origin": "dev/tests/associated_declarations/forwarded_rhs.rs"
+    },
+    {
+      "path": "tests/spec/reference-tail-inference/direct-explicit-type.rs",
+      "source_sha256": "575ef19d76541ec8ef9f924bc51201da9ac2aa97bca4b03550bd6e4e55168e70",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa20.generic-call-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/reference-tail-inference/direct-known-depth.rs",
+      "source_sha256": "241de7501ef979d5cebdd63fed03cf07140e160e2447a4cb95a40cd82f09cc3f",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa20.generic-call-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/reference-tail-inference/direct-named-result.rs",
+      "source_sha256": "cb356face9f3b903267f53486e123951b55bd9b709431442509142f5fc66dc29",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa20.generic-call-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/reference-tail-inference/direct-partial-depth.rs",
+      "source_sha256": "ef7043363b85d102d390867705d68de6d7d127a3b5983c932cecabef9d41ac19",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa20.generic-call-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/reference-tail-inference/partial-array-tail.rs",
+      "source_sha256": "caccf4565c367732797306526448a29041b7d55ef8b03a3dfb0bc65064d1e4f1",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa20.generic-call-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/reference-tail-inference/partial-short-to-static.rs",
+      "source_sha256": "ba9542e32ec6eff03d1ee0f1a0c90e9927a01c2e44c743ac21658ebd8e29d33c",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa20.generic-call-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/reference-tail-inference/partial-tuple-tail.rs",
+      "source_sha256": "db74ef82a51e01bb37cd5cd80791c61c5687d5db217f32e501862f1aa5d5429e",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa20.generic-call-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/reference-tail-inference/partial-unknown-array.rs",
+      "source_sha256": "5f059d1aafe34178b39f702f49bc66627f7a424037924303e7e9c44614b9c3ef",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa20.generic-call-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/reference-tail-inference/partial-wrong-result.rs",
+      "source_sha256": "f722ab95987fbfff96b32d852173fbaf03f0b12bbadcf62e5babe4c30725e0b0",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa20.generic-call-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/reference-tail-inference/shared-to-mutable.rs",
+      "source_sha256": "b5c0938bac4fdbe212c79deae58e07aa872ffcf7f6e03d5aba520ab9c0efbb6c",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa20.generic-call-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir"
     }
   ]
 }

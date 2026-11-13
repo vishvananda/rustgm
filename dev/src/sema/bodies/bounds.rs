@@ -199,7 +199,7 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    fn prepare_source_copy_context(
+    pub(super) fn prepare_source_copy_context(
         &mut self,
         node: NodeId,
         environment: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,

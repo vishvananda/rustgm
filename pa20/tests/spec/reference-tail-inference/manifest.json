@@ -1,0 +1,83 @@
+{
+ "schema": 1,
+ "profile": {
+  "rustc": "1.98.0 (88d9e12ae)",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true
+ },
+ "declaration": "Exact bytes/outcomes frozen in obj/parallel/closure-return-inputs/declared-*.json before first Rust or RustGM run. Source1 native generation typo and ordinary4 ambiguous nested-reference elision are retained setup failures; corrected batches2 and5 were separately declared.",
+ "cases": {
+  "direct-partial-depth": {
+   "sha256": "ef7043363b85d102d390867705d68de6d7d127a3b5983c932cecabef9d41ac19",
+   "expected": "accept",
+   "declared_batch": "ordinary5",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "direct-named-result": {
+   "sha256": "cb356face9f3b903267f53486e123951b55bd9b709431442509142f5fc66dc29",
+   "expected": "accept",
+   "declared_batch": "ordinary5",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "direct-explicit-type": {
+   "sha256": "575ef19d76541ec8ef9f924bc51201da9ac2aa97bca4b03550bd6e4e55168e70",
+   "expected": "accept",
+   "declared_batch": "ordinary5",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "direct-known-depth": {
+   "sha256": "241de7501ef979d5cebdd63fed03cf07140e160e2447a4cb95a40cd82f09cc3f",
+   "expected": "accept",
+   "declared_batch": "ordinary5",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "partial-array-tail": {
+   "sha256": "caccf4565c367732797306526448a29041b7d55ef8b03a3dfb0bc65064d1e4f1",
+   "expected": "accept",
+   "declared_batch": "ordinary5",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "partial-tuple-tail": {
+   "sha256": "db74ef82a51e01bb37cd5cd80791c61c5687d5db217f32e501862f1aa5d5429e",
+   "expected": "accept",
+   "declared_batch": "ordinary5",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "partial-unknown-array": {
+   "sha256": "5f059d1aafe34178b39f702f49bc66627f7a424037924303e7e9c44614b9c3ef",
+   "expected": "accept",
+   "declared_batch": "ordinary5",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "shared-to-mutable": {
+   "sha256": "b5c0938bac4fdbe212c79deae58e07aa872ffcf7f6e03d5aba520ab9c0efbb6c",
+   "expected": "reject",
+   "declared_batch": "ordinary5",
+   "independent_rustc": "reject",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "partial-short-to-static": {
+   "sha256": "ba9542e32ec6eff03d1ee0f1a0c90e9927a01c2e44c743ac21658ebd8e29d33c",
+   "expected": "reject",
+   "declared_batch": "ordinary5",
+   "independent_rustc": "reject",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "partial-wrong-result": {
+   "sha256": "f722ab95987fbfff96b32d852173fbaf03f0b12bbadcf62e5babe4c30725e0b0",
+   "expected": "reject",
+   "declared_batch": "ordinary5",
+   "independent_rustc": "reject",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  }
+ }
+}

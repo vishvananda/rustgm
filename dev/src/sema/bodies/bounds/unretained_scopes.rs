@@ -5,7 +5,7 @@ use std::sync::Arc;
 const LIMIT: usize = 64 * 1024 * 1024;
 
 impl Checker<'_> {
-    pub(super) fn caller_declaration_environment(
+    pub(in crate::sema::bodies) fn caller_declaration_environment(
         &mut self,
         node: NodeId,
         owner: DefId,

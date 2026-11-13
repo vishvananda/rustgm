@@ -207,9 +207,12 @@ The [closure input region checkpoint](docs/pa31-closure-input-regions.md) lets a
 closure without an expected signature export parameter types that its body
 gave reference regions, as core's `partial_compare` and `compare` closures do.
 Those regions become output ports, so the body's lifetime requirements reach
-the enclosing body. Thirteen source-core reductions agree with rustc. Generic
-instantiation of such closures and two const closure lowering paths remain
-recorded gaps.
+the enclosing body. Thirteen source-core reductions agree with rustc. The
+[inferred-input repair](docs/pa24-inferred-inputs.md) adds typed noncapturing
+generic port instantiation, source proof transport and distinct marker witnesses,
+with75 PA20/24/31 outcomes and actual ordinary/source native consumers. Private
+and full successor qualification remain pending; two const closure lowering
+paths and original library artifacts retain their existing requirements.
 
 The [array length pattern checkpoint](docs/pa31-array-length-patterns.md) lets
 an array pattern without a rest fix an inferred array length, as core's

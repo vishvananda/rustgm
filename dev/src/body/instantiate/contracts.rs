@@ -165,14 +165,9 @@ fn prepare<const CAPTURES: bool>(
         super::closures::formation(&mut contract);
     }
     if inputs.connections.is_some() && matches!(premises, super::Premises::Declared) {
-        let crate::body::ir::BodyKey::Closure(identity) = original.key else {
-            return Err("captured instance has a different source owner");
-        };
-        let conditions = facts
-            .closures
-            .conditions(identity)
-            .ok_or("captured instance requires checked source execution conditions")?;
-        contract.assumptions.extend_from_slice(conditions);
+        contract
+            .assumptions
+            .extend_from_slice(super::closures::conditions(facts, original.key)?);
     }
     if let Some(pending) = &mut contract.builtins {
         let pending = std::sync::Arc::make_mut(pending);

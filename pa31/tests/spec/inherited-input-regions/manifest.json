@@ -1,0 +1,288 @@
+{
+ "schema": 1,
+ "profile": {
+  "rustc": "1.98.0 (88d9e12ae)",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true
+ },
+ "declaration": "Exact bytes/outcomes frozen in obj/parallel/closure-return-inputs/declared-*.json before first Rust or RustGM run. Source1 native generation typo and ordinary4 ambiguous nested-reference elision are retained setup failures; corrected batches2 and5 were separately declared.",
+ "cases": {
+  "immediate-pattern": {
+   "sha256": "7d03efd22f5635b5bad4468d97010891ed0afe96e93de24b3eff9a7b99370644",
+   "expected": "accept",
+   "declared_batch": "source1",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "named-pattern": {
+   "sha256": "9142f589563a9c9faecf491a4e164f03f4f5c6d9f465377f623719421d7d48d8",
+   "expected": "accept",
+   "declared_batch": "source1",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "immediate-identity": {
+   "sha256": "5affa912535bc3e62967ca171ee21caf1816e6592468015bad539f607eb32f83",
+   "expected": "accept",
+   "declared_batch": "source1",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "annotated-pattern": {
+   "sha256": "c79cbc86d8d260ae4158865894ec5b11900bee7c0144408fcb239b9795f1b9a2",
+   "expected": "accept",
+   "declared_batch": "source1",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "annotated-deref": {
+   "sha256": "5adcf81a75834145e25e0b20c508f7e75550c2d45e655936eedd908d52a9c844",
+   "expected": "accept",
+   "declared_batch": "source1",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "nested-return": {
+   "sha256": "d95b3aac0afc65ce32bfd28bf8c83558bf2cd8476b1f6f92f2520c9f840ce645",
+   "expected": "accept",
+   "declared_batch": "source1",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "generic-pattern": {
+   "sha256": "781cfc9096e1b1714468e9f49b2a42ecaefe7c937c82afb33eef2ddac0ba7738",
+   "expected": "accept",
+   "declared_batch": "source1",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "borrowed-to-static": {
+   "sha256": "104c1fcf5d544e5e0be37f40399a73fe4dc4c83c297062cef7482c35d7d3320d",
+   "expected": "reject",
+   "declared_batch": "source1",
+   "independent_rustc": "reject",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "local-escape": {
+   "sha256": "35644b7d7d99f7249f0d3d0042a97907c343d7e6d6b52fe2458a5f2065e6bc8a",
+   "expected": "reject",
+   "declared_batch": "source1",
+   "independent_rustc": "reject",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "annotated-elided-return": {
+   "sha256": "62a67daa346f64f3b4980780fc9bd6fddae557fcf1c4bf430b287544c0dd1de9",
+   "expected": "reject",
+   "declared_batch": "source1",
+   "independent_rustc": "reject",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "contextual": {
+   "sha256": "2ea42274e81a5fc2e15f358f48f62ae4cda2fbbe9ac1e250bf197ac06ccea081",
+   "expected": "accept",
+   "declared_batch": "source1",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "core-pattern-macro": {
+   "sha256": "380ece7691f731f4a9f776d234a19cbb713f9d41ef53de4f08212baaf086a2ae",
+   "expected": "accept",
+   "declared_batch": "source1",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "core-pattern-native": {
+   "sha256": "ad8865784b08d3211f2e6f4c32d234b38897c9e62c1e187c18d4b7f6931ab5ee",
+   "expected": "accept",
+   "declared_batch": "source2",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md",
+   "exports": [
+    "search_needle",
+    "search_haystack",
+    "contains"
+   ],
+   "stdout": "13 29 0 13 13 1\n"
+  },
+  "generic-identity": {
+   "sha256": "cc5b91d54e12a641b6c05e0ac8243ce04394140096cce4dce543318c22c8ac65",
+   "expected": "accept",
+   "declared_batch": "source3",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "generic-ref-argument": {
+   "sha256": "ebe647583688c11658c17ef430b34990a3ce0099cf4c20345bdb6eec8fdba83a",
+   "expected": "accept",
+   "declared_batch": "source3",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "generic-two-ports": {
+   "sha256": "3608e778dffb5a2ff05cd17562a15f1d44e703327a9ffc7d61b533bb0066e4a3",
+   "expected": "accept",
+   "declared_batch": "source3",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "generic-nested": {
+   "sha256": "11768c736ef82e4dcf3e52a29e8fa490826c3411e25e1f037167c73df0498a80",
+   "expected": "accept",
+   "declared_batch": "source3",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "generic-projected": {
+   "sha256": "f01802ae511e79e3ea31bb2990eda9dc65f841008df14f84ad953e4fbf923b3a",
+   "expected": "accept",
+   "declared_batch": "source3",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "generic-later-bound": {
+   "sha256": "2ebacdf3c17a4717cc22b57935f5df80086d0889de37cd3ac53b1ed3d0d68cee",
+   "expected": "accept",
+   "declared_batch": "source3",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "generic-mixed-binders": {
+   "sha256": "97961d93c84994b477ebd72a70e7e99c60c567b85a9ec1710ca14514479b678f",
+   "expected": "accept",
+   "declared_batch": "source3",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "generic-to-static": {
+   "sha256": "55df64d5b8d5aa532a91643a3a266034a1256134cf51c71bac29557933fff2cc",
+   "expected": "reject",
+   "declared_batch": "source3",
+   "independent_rustc": "reject",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "generic-local-escape": {
+   "sha256": "77ddff2080cf327f0c88e2ac6757422a138bd104f4aeff6aa7165a0689f3a183",
+   "expected": "reject",
+   "declared_batch": "source3",
+   "independent_rustc": "reject",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "generic-elided-escape": {
+   "sha256": "1c7bec23bc44c06eabd7fd0d27fdd5d4b5814fc44397fba54081bb7f93577740",
+   "expected": "reject",
+   "declared_batch": "source3",
+   "independent_rustc": "reject",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "generic-short-to-long": {
+   "sha256": "153364188b72769db0c2d4b5824bd191cad2e98b726921f82e1980c8a9240a6f",
+   "expected": "reject",
+   "declared_batch": "source3",
+   "independent_rustc": "reject",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "generic-late-and-private": {
+   "sha256": "e71aa7bd38bf0c7fb79f4d45ce519a82c56eb7bab4ba33db4257796a3095b1cb",
+   "expected": "accept",
+   "declared_batch": "source3",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "generic-native": {
+   "sha256": "8d9bc9036fa520b50777db4c16a4d79f76f6b6909ddd6401e61f2e83e2fcde8a",
+   "expected": "accept",
+   "declared_batch": "source3",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md",
+   "exports": [
+    "relay",
+    "ref_relay",
+    "mixed_relay"
+   ],
+   "stdout": "13 13 13 29 29 29\n"
+  },
+  "late-projected": {
+   "sha256": "6f5dee5304e5714024d0ac417397a94ba19f127641dcc861bb2a4ad7b028495b",
+   "expected": "accept",
+   "declared_batch": "source4",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "nested-public-binder": {
+   "sha256": "b6d947ea87fc33b0d2a96bf7ca79ad433b4022e0e330841b501458d90060a82e",
+   "expected": "accept",
+   "declared_batch": "source4",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "two-public-late-ports": {
+   "sha256": "f7d45ace95721d2963d7491f2d253508e1a66358cfd88576508ce277cf51e51d",
+   "expected": "accept",
+   "declared_batch": "source4",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "late-private-unrelated-result": {
+   "sha256": "59b1b49c20ae9a3882dfc1d91af0b6a7b947eafdcad9b43cfe948f9f44cd77d6",
+   "expected": "reject",
+   "declared_batch": "source4",
+   "independent_rustc": "reject",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "late-private-input-escape": {
+   "sha256": "dd0b702775f9fa1978b53a8db4fb029939fd6dafd97c69aa307f8f76b1202093",
+   "expected": "reject",
+   "declared_batch": "source4",
+   "independent_rustc": "reject",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "annotated-public-inputs": {
+   "sha256": "4fa81ce1c5bbbf54af58ed08788c21e0c94c2a7cc8a862480ba8f1a56bf83be7",
+   "expected": "accept",
+   "declared_batch": "source5-controls",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "direct-projected-reference": {
+   "sha256": "4f6ec8ef4a7896541e4145dd07ef111c9ddd7b6ea9ec62ea1a4d60905237c2f4",
+   "expected": "accept",
+   "declared_batch": "source5-controls",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "annotated-projected-reference": {
+   "sha256": "89b3868320d560453eb4c0748a19c4bf0cccd92f083c70936fb847cd87d3c776",
+   "expected": "accept",
+   "declared_batch": "source5-controls",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "creator-copy-bound": {
+   "sha256": "dd5dfd3279cc2f1af6470e0e42e5d20dcdbb9f6fbe7da7d1fc9a8d975774c1c5",
+   "expected": "accept",
+   "declared_batch": "source7-context",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "missing-copy-bound": {
+   "sha256": "87dd7f33907b335dcb20b0d78fc385e42f8b5f761b98f7bd64943db365b65f99",
+   "expected": "reject",
+   "declared_batch": "source7-context",
+   "independent_rustc": "reject",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  },
+  "creator-lifetime-trait": {
+   "sha256": "ef23aff568dae3cba8af36df79861d1a78ff1c502e522dd60ea71bc74b575b31",
+   "expected": "accept",
+   "declared_batch": "source6-context",
+   "independent_rustc": "accept",
+   "rustgm": "qualified expected prepared lowering outcome; focused/native evidence in docs/pa24-inferred-inputs.md"
+  }
+ },
+ "auxiliary": {
+  "core-pattern-native-observer.c": "40eacaf13930214de20dd765da44ee7bf657ea42e674225497210ccb0794829b",
+  "generic-native-observer.c": "5cd139aa5eb07d84eb279c2fbba0115fb1f87fa68883dd3f0aa0cb9d1f5397b9"
+ }
+}

@@ -13,6 +13,28 @@ pub(crate) struct Arguments {
     pub captures: Vec<RegionId>,
 }
 
+/// Instantiation changes arguments, never the source closure's public binder.
+pub(crate) fn call_binders(facts: &Declarations, source: Body) -> Result<u32, &'static str> {
+    let Some(Kind::Closure {
+        identity,
+        signature,
+        ..
+    }) = facts
+        .node(source.source)
+        .and_then(|node| node.ty)
+        .and_then(|ty| facts.types.kind(ty))
+    else {
+        return Err("closure source has no retained public type");
+    };
+    if identity != source.identity {
+        return Err("closure public type belongs to a different source");
+    }
+    let Some(Kind::Function { bound_regions, .. }) = facts.types.kind(signature) else {
+        return Err("closure source has no retained call binder");
+    };
+    Ok(bound_regions)
+}
+
 /// A defining closure can precede its enclosing opaque callable's template.
 /// This is the producer's declaration order, not executable or caller evidence.
 pub(crate) fn defining_parameters(
@@ -113,20 +135,43 @@ pub(crate) fn execution(
     if inputs.bindings.is_empty() {
         return Ok(execution);
     }
-    let mut regions = Bound::universals(execution.universals);
+    let (mut parameters, universals) = substitution(facts, &mut inputs, execution.universals)?;
+    execution.universals = universals;
+    execution.self_ty = parameters.apply(&mut facts.types, execution.self_ty)?;
+    execution.signature =
+        parameters.signature(&mut facts.types, execution.signature, execution.universals)?;
+    facts.body_work.canonical_steps += parameters.steps;
+    Ok(execution)
+}
+
+/// Retain every proof slot while substituting a noncapturing body's call roots.
+pub(crate) fn signature(
+    facts: &mut Declarations,
+    instance: Instance,
+    source: Body,
+) -> Result<(crate::types::TypeId, u32), &'static str> {
+    let mut inputs = arguments(facts, instance, source)?;
+    let (mut parameters, universals) = substitution(facts, &mut inputs, source.universals)?;
+    let signature = parameters.signature(&mut facts.types, source.signature, universals)?;
+    facts.body_work.canonical_steps += parameters.steps;
+    Ok((signature, universals))
+}
+
+fn substitution(
+    facts: &mut Declarations,
+    inputs: &mut Arguments,
+    universals: u32,
+) -> Result<(Bound, u32), &'static str> {
+    let mut regions = Bound::universals(universals);
     for (_, argument) in &mut inputs.bindings {
         *argument = regions.apply_argument(&mut facts.types, *argument)?;
     }
     let count = u32::try_from(regions.universal_count())
         .map_err(|_| "too many closure argument lifetimes")?;
-    execution.universals = execution
-        .universals
+    let universals = universals
         .checked_add(count)
         .ok_or("closure lifetime overflow")?;
-    let mut parameters = Bound::parameters(&facts.types, &inputs.bindings)?;
-    execution.self_ty = parameters.apply(&mut facts.types, execution.self_ty)?;
-    execution.signature =
-        parameters.signature(&mut facts.types, execution.signature, execution.universals)?;
-    facts.body_work.canonical_steps += regions.steps + parameters.steps;
-    Ok(execution)
+    let parameters = Bound::parameters(&facts.types, &inputs.bindings)?;
+    facts.body_work.canonical_steps += regions.steps;
+    Ok((parameters, universals))
 }

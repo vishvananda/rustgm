@@ -59,3 +59,9 @@ rejections. Associated outputs, opaque adapters, moves, borrowed results and
 quantified correlation retain their ordinary proof. Six width/noise cases
 exercise bounded work without scanning unrelated types. See the
 [checkpoint review](../../docs/pa24-callable-results.md).
+
+The `spec/inherited-input-regions/` packet freezes independently declared inferred
+reference/closure input contracts and their lifetime opponents. See its manifest
+and README; qualification is recorded with the implementation checkpoint.
+
+The [inferred-input repair](../../docs/pa24-inferred-inputs.md) records the new packet contracts, declared outcomes, focused/native evidence and remaining qualification.

@@ -213,8 +213,8 @@ impl Checker<'_> {
         a: TermId,
         b: TermId,
     ) -> Result<TermId, Error> {
-        let ad = self.reference_depth(node, a)?;
-        let bd = self.reference_depth(node, b)?;
+        let (ad, _) = self.reference_shape(node, a)?;
+        let (bd, _) = self.reference_shape(node, b)?;
         let a_mutable = matches!(
             self.head(node, a)?,
             Some(Constructor::Reference { mutable: true, .. })
@@ -286,14 +286,14 @@ impl Checker<'_> {
         self.settle_premise_projection(node, target)?;
         let mut source = self.child(node, actual, 0)?;
         let mut dereferences = 1;
-        // An unknown expected referent is inferred from the first candidate.
-        // Known nesting chooses built-in dereferences without trial unification.
+        // An unknown tail, including one beneath references, is inferred from
+        // the first candidate. Only a known tail fixes the target's depth.
         if source != target
             && let Some(target_head) = self.head(node, target)?
             && !matches!(target_head, Constructor::Dynamic { .. })
+            && let (target_depth, Some(_)) = self.reference_shape(node, target)?
         {
-            let source_depth = self.reference_depth(node, source)?;
-            let target_depth = self.reference_depth(node, target)?;
+            let (source_depth, _) = self.reference_shape(node, source)?;
             for _ in target_depth..source_depth {
                 source = self.child(node, source, 0)?;
                 dereferences += 1;
@@ -487,16 +487,22 @@ impl Checker<'_> {
         ));
         Ok(())
     }
-    fn reference_depth(&mut self, node: NodeId, mut term: TermId) -> Result<u32, Error> {
+    fn reference_shape(
+        &mut self,
+        node: NodeId,
+        mut term: TermId,
+    ) -> Result<(u32, Option<Constructor>), Error> {
         let mut count = 0;
-        while matches!(self.head(node, term)?, Some(Constructor::Reference { .. })) {
+        let mut head = self.head(node, term)?;
+        while matches!(head, Some(Constructor::Reference { .. })) {
             count += 1;
             if count > 1_000_000 {
                 return Err(self.error(node, "reference coercion work budget exceeded"));
             }
             term = self.child(node, term, 0)?;
+            head = self.head(node, term)?;
         }
-        Ok(count)
+        Ok((count, head))
     }
     pub(super) fn pattern_input_validity(&self, mut node: NodeId) -> Result<bool, Error> {
         for _ in 0..1_000_000 {

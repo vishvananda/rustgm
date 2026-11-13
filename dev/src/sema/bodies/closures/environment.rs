@@ -12,6 +12,48 @@ use crate::{
 };
 
 impl Checker<'_> {
+    /// Noncapturing reads retain creator premises without an independent body
+    /// trait goal. Captured execution has a separate receiver scope. Instances
+    /// discard this child-owned alias context and reprove their own reads.
+    pub(super) fn retain_closure_copy_context(
+        &mut self,
+        body: crate::sema::closures::Body,
+    ) -> Result<(), Error> {
+        let node = body.source.node;
+        if self.facts.source_bindings.is_none() || body.execution.is_some() {
+            return Ok(());
+        }
+        let Some(owner) = body.owner else {
+            return Ok(());
+        };
+        let Some(environment) = self.caller_declaration_environment(node, owner)? else {
+            return Ok(());
+        };
+        let inherited = self
+            .facts
+            .lifetimes
+            .functions
+            .get(&owner)
+            .map_or(0, |scheme| scheme.total);
+        if environment.body_aliases().is_some()
+            || (environment.requires_region_mapping() && body.inherited < inherited)
+        {
+            return Err(self.error(node, "closure Copy premises have a foreign lifetime scope"));
+        }
+        self.prepare_universals(node)?;
+        let aliases = self.state.call_types.universal_arguments();
+        let growth = environment
+            .body_alias_finish_bound(aliases.len())
+            .map_err(|e| self.error(node, e))?;
+        self.pay_closure_qualification(node, growth.work, growth.bytes)?;
+        let environment = environment
+            .as_ref()
+            .clone()
+            .with_body_aliases(aliases)
+            .map_err(|e| self.error(node, e))?;
+        self.prepare_source_copy_context(node, Some(std::sync::Arc::new(environment)))
+    }
+
     pub(super) fn collect_capture_environment(
         &mut self,
         entry: &mut Entry,

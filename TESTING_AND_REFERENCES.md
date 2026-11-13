@@ -1130,3 +1130,12 @@ non-LowIR selectors fail. A selected receipt records both its paths and the full
 eligible count, under a unique `obj/native/STAGE/selected/` directory; it never
 replaces complete-suite evidence. Full assignment releases still run the complete
 native contract. `--released-units` cannot be combined with case selection.
+
+The [inferred-input repair](docs/pa24-inferred-inputs.md) adds10 PA20 and28 PA24
+manifested LowIR triples, with independently declared outcomes and26 native
+executions, plus37 source PA31 counterparts and two actual Rust/C programs.
+`creator_inputs.rs` is registered once in frontend. Exact source prepared proof,
+public/body signature identity, missing Copy and lifetime opponents, and8/32/128
+source marker work accompany the existing closure/refinement controls. Scoped
+reference generation preserves all existing triples; private/full/original-core
+qualification is tracked separately in the checkpoint.

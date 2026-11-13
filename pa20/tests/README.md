@@ -77,3 +77,9 @@ The maintainer invariants additionally exercise solver budgets, completed proof
 reuse, failure-cache isolation, suspended-query ownership and linear work/storage
 bounds. These internal algorithm checks supplement the public language contract;
 work counters never appear in text oracles.
+
+The `spec/reference-tail-inference/` packet freezes independently declared inferred
+reference/closure input contracts and their lifetime opponents. See its manifest
+and README; qualification is recorded with the implementation checkpoint.
+
+The [inferred-input repair](../../docs/pa24-inferred-inputs.md) records the new packet contracts, declared outcomes, focused/native evidence and remaining qualification.

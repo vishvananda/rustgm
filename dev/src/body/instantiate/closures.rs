@@ -37,6 +37,28 @@ pub(super) fn formation(contract: &mut crate::body::regions::Contract) {
     contract.output = None;
 }
 
+/// Signature connections are identities. Captured execution alone can inherit
+/// conditions from the checked source seal, which must actually be present.
+pub(super) fn conditions(
+    facts: &Declarations,
+    key: crate::body::ir::BodyKey,
+) -> Result<&[crate::types::outlives::Pair], &'static str> {
+    let crate::body::ir::BodyKey::Closure(identity) = key else {
+        return Err("captured instance has a different source owner");
+    };
+    let source = facts
+        .closures
+        .identity(identity)
+        .ok_or("instance input connections have no closure source")?;
+    if source.execution.is_none() {
+        return Ok(&[]);
+    }
+    facts
+        .closures
+        .conditions(identity)
+        .ok_or("captured instance requires checked source execution conditions")
+}
+
 pub(super) fn arguments(
     facts: &Declarations,
     instance: Instance,
@@ -51,6 +73,86 @@ pub(super) fn arguments(
         comparison: None,
         connections: None,
     })
+}
+
+/// Private signature ports are connected by their selected typed roots, not by
+/// counting them as late call binders. The inherited prefix remains exact.
+pub(super) fn private_inputs(
+    facts: &mut Declarations,
+    instance: Instance,
+    source: Body,
+    actual: crate::types::TypeId,
+    inputs: &mut Inputs,
+) -> Result<(), &'static str> {
+    use crate::types::RegionId;
+    use crate::types::lifetime_proof::{Obligations, ScopeId};
+    let public = crate::sema::closures::actual::call_binders(facts, source)?;
+    let late_end = source
+        .inherited
+        .checked_add(public)
+        .ok_or("closure call binder overflow")?;
+    let (mut formal, universals) =
+        crate::sema::closures::actual::signature(facts, instance, source)?;
+    let mut proof = Obligations::new(1);
+    if facts.types.contains_projections(formal) == Some(true) {
+        let mut session = crate::sema::projections::concrete(&mut proof, ScopeId::ROOT)?;
+        formal = normalize_signature(facts, &mut session, formal)?;
+    }
+    let (bindings, steps) = crate::sema::closures::matching::signature_bindings(
+        &facts.types,
+        formal,
+        universals,
+        actual,
+        public,
+    )?;
+    facts.body_work.canonical_steps += steps + inputs.captures.len();
+    for (index, &capture) in inputs.captures.iter().enumerate() {
+        let index = u16::try_from(index).map_err(|_| "too many inherited closure lifetimes")?;
+        if let Some(&slot) = bindings.slots.get(&index)
+            && caller_region(slot)? != capture
+        {
+            return Err("closure signature differs from its inherited arguments");
+        }
+    }
+    let mut slots = Vec::with_capacity(bindings.slots.len());
+    for (slot, region) in bindings.slots {
+        if (source.inherited..late_end).contains(&u32::from(slot)) {
+            let late = u16::try_from(u32::from(slot) - source.inherited)
+                .map_err(|_| "too many closure call lifetimes")?;
+            if region != RegionId::bound(0, late)? {
+                return Err("closure public lifetime differs from its source binder");
+            }
+        } else {
+            slots.push((slot, caller_region(region)?));
+        }
+    }
+    facts.body_work.canonical_steps += slots.len();
+    slots.sort_unstable_by_key(|&(slot, _)| slot);
+    inputs.connections = Some(crate::body::invocation_entries::SourceBindings {
+        original: source.universals,
+        slots,
+        equalities: bindings
+            .equalities
+            .into_iter()
+            .map(|(a, b)| Ok((caller_region(a)?, caller_region(b)?)))
+            .collect::<Result<_, &'static str>>()?,
+        proof: (!proof.is_empty()).then_some(proof),
+    });
+    Ok(())
+}
+
+/// Actual signature roots retain their public binder. Private ports and
+/// inherited arguments must come from outside it, including beneath nesting.
+fn caller_region(region: crate::types::RegionId) -> Result<crate::types::RegionId, &'static str> {
+    let Some((depth, slot)) = region.bound_parts() else {
+        return Ok(region);
+    };
+    crate::types::RegionId::bound(
+        depth
+            .checked_sub(1)
+            .ok_or("private closure port captures a public input lifetime")?,
+        slot,
+    )
 }
 
 /// Parameter argument lifetimes are fresh slots after the entire source binder.
@@ -116,13 +218,26 @@ pub(crate) fn normalize(
     let (self_ty, steps) = session.normalize(facts, execution.self_ty)?;
     execution.self_ty = self_ty;
     facts.body_work.canonical_steps += steps;
+    execution.signature = normalize_signature(facts, &mut session, execution.signature)?;
+    Ok(Prepared {
+        execution,
+        proof: (!proof.is_empty()).then_some(proof),
+    })
+}
+
+/// These roots live inside an existing proof binder, unlike a nested callable.
+fn normalize_signature(
+    facts: &mut Declarations,
+    session: &mut crate::sema::projections::Concrete<'_>,
+    signature: crate::types::TypeId,
+) -> Result<crate::types::TypeId, &'static str> {
     let Some(Kind::Function {
         parameters,
         result,
         bound_regions,
         unsafe_,
         convention,
-    }) = facts.types.kind(execution.signature)
+    }) = facts.types.kind(signature)
     else {
         return Err("closure execution lacks its proof signature");
     };
@@ -142,16 +257,12 @@ pub(crate) fn normalize(
     let (result, steps) = session.normalize(facts, result)?;
     facts.body_work.canonical_steps += steps;
     let parameters = facts.types.intern_list(&normalized)?;
-    execution.signature = facts.types.intern(Kind::Function {
+    facts.types.intern(Kind::Function {
         parameters,
         result,
         bound_regions,
         unsafe_,
         convention,
-    })?;
-    Ok(Prepared {
-        execution,
-        proof: (!proof.is_empty()).then_some(proof),
     })
 }
 

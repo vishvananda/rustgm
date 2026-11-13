@@ -905,6 +905,18 @@ impl<'a> Context<'a> {
         };
         let signature = match (entry, execution) {
             (None, None) => signature,
+            (None, Some(execution))
+                if matches!(
+                    self.types.kind(ty),
+                    Some(Kind::Closure {
+                        environment: TypeId::UNIT,
+                        ..
+                    })
+                ) =>
+            {
+                self.entry_abi(signature, execution)?;
+                execution
+            }
             (Some(entry), Some(execution)) => {
                 self.entry_abi(entry, execution)?;
                 execution

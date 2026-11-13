@@ -77,25 +77,7 @@ impl Selected {
         }
         match self {
             Self::Callable(instance) => {
-                let Some(crate::types::Kind::FunctionItem {
-                    item, signature, ..
-                }) = facts.types.kind(instance.ty())
-                else {
-                    return Err("alias materialization requires a full function item");
-                };
-                if original.key != BodyKey::Declaration(crate::resolve::model::DefId(item.0))
-                    || signature != signatures.0
-                    || body.instance != Some(instance)
-                    || !matches!(
-                        body.owner,
-                        Owner::Function {
-                            execution: Some(_),
-                            ..
-                        }
-                    )
-                {
-                    return Err("alias materialization changed its selected public signature");
-                }
+                callable_body(facts, original, body, instance, signatures)?;
             }
             Self::AsyncBody(future) => {
                 let definition = facts.checked_future_definition(future)?;
@@ -119,6 +101,67 @@ impl Selected {
         }
         Ok(())
     }
+}
+
+/// The selected public identity and the specialized body interface are distinct.
+/// Both function and closure instances remain bound to their exact original.
+fn callable_body(
+    facts: &Declarations,
+    original: &Original,
+    body: &Body,
+    instance: Instance,
+    signatures: (TypeId, TypeId),
+) -> Result<(), &'static str> {
+    let (key, signature, owned) = match (facts.types.kind(instance.ty()), body.owner) {
+        (
+            Some(crate::types::Kind::FunctionItem {
+                item, signature, ..
+            }),
+            Owner::Function {
+                definition,
+                signature: public,
+                execution: Some(execution),
+            },
+        ) if definition.0 == item.0 => (
+            BodyKey::Declaration(definition),
+            signature,
+            (public, execution),
+        ),
+        (
+            Some(crate::types::Kind::Closure {
+                identity,
+                signature,
+                ..
+            }),
+            Owner::Closure {
+                identity: selected,
+                signature: public,
+                execution,
+            },
+        ) if identity == selected => {
+            let source = facts
+                .closures
+                .identity(identity)
+                .ok_or("instance scope lost its original closure")?;
+            if BodyOrigin::from(source.semantic_source()) != original.source {
+                return Err("instance scope changed its original closure source");
+            }
+            (
+                BodyKey::Closure(identity),
+                signature,
+                (public, execution.unwrap_or(public)),
+            )
+        }
+        _ => return Err("alias materialization requires its actual callable owner"),
+    };
+    if original.key != key
+        || signature != signatures.0
+        || owned != signatures
+        || body.instance != Some(instance)
+    {
+        return Err("alias materialization changed its selected public signature");
+    }
+    Ok(())
 }
 
 pub(super) fn owner(

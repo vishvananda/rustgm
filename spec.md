@@ -1359,10 +1359,16 @@ can give a parameter a reference type whose region the body creates, as in
 rustc's borrow checker makes every free region of a closure signature. It
 becomes an output port: the parent gets a fresh region, the body a universal
 slot, and the body's requirements on it become the parent's obligations.
-Imported input regions keep their identity. Instantiating such a closure inside
-an instantiated generic function fails closed until the port slots join the
-call binder that instantiation reconstructs. See the
-[closure input region checkpoint](docs/pa31-closure-input-regions.md).
+Imported input regions keep their existing creator alias identity. Generic
+noncapturing instances match complete typed roots: inherited arguments stay
+exact, public late slots stay rigid, and private input ports connect outside
+the public binder. Keep every repeated-region equality and projection debt in
+the instance proof. Public and body proof signatures retain separate identities
+and require physical ABI agreement. Noncapturing source originals retain their
+creator's declared trait context with child-owned aliases; instances reprove
+their own reads. Structural marker siblings allocate distinct proof witnesses.
+See the [closure input region checkpoint](docs/pa31-closure-input-regions.md) and
+[inferred-input repair](docs/pa24-inferred-inputs.md).
 
 An array pattern without a rest fixes an array length that is still an
 inference variable, as rustc's `check_array_pat_len` does: the array equates

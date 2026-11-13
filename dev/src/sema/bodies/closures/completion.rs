@@ -180,6 +180,7 @@ impl Checker<'_> {
             inherited,
             execution,
         };
+        self.retain_closure_copy_context(body)?;
         let growth = self.facts.closures.publication_growth();
         self.pay_closure_qualification(source, growth.work.saturating_add(1), growth.bytes)?;
         body.check_const_source(self.report)

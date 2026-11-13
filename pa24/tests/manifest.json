@@ -13839,6 +13839,558 @@
         "default_lints": true
       },
       "maintainer_origin": "dev/tests/source_closures/let_conditions.rs"
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/annotated-deref.rs",
+      "source_sha256": "dbbd36d53f3d468dfd43b4f0df0889fe8e4a4c2556840266836759678d5e460e",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/annotated-elided-return.rs",
+      "source_sha256": "ae26e1c55e3ac8e059779ce45767f3e95b4e286b35fe6b63d90d9e2e5e1a6781",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/annotated-pattern.rs",
+      "source_sha256": "66f7327e9240fe2ab1fd9074927a5ac6f2d347f5f4f2a40fcfbfef34e0ef109e",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/borrowed-to-static.rs",
+      "source_sha256": "ca46b62c4420fd5650f16b1b3c0c6004525549b1395a5852a4a232735fda582c",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/contextual.rs",
+      "source_sha256": "acc91a40231e15170e2216b36b5ee22b5473ee728d9b8f6bae4a8073ade7bec8",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/generic-elided-escape.rs",
+      "source_sha256": "ebe9419e5f3542f167c46c6822dad6a050626ee68c4b06d53f1fd29b6a19f4c0",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/generic-identity.rs",
+      "source_sha256": "94f3cae6fda47b67d4c7bc07f890347598273e35e910cb668cb76c45067f3a51",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/generic-late-and-private.rs",
+      "source_sha256": "46e91a769e82f3b4b216ca49771b8304fb46ed910f6e94285a1b4f962b2ca85b",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/generic-later-bound.rs",
+      "source_sha256": "e4ad31fd4304e76ef9e574fcd3de950d521a2c959f89e87fe3f54383fbece48d",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/generic-local-escape.rs",
+      "source_sha256": "015fd4f9ea05b2eb4ecbd17c9cc47347ea00745d477370d13a387d31147d0c2f",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/generic-mixed-binders.rs",
+      "source_sha256": "7516fafa81f57d1879362f6c78f14a852b43624e380f0c690d9786253ca0e362",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/generic-nested.rs",
+      "source_sha256": "e6c36b9cfc8d6c43271e0a72821442418490f339dde0de44bf34ba77ea0de291",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/generic-pattern.rs",
+      "source_sha256": "6db1f3cfa0388bfcf2753831323425f2199f17ecfd8e4a060c83bb8cea44d97c",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/generic-projected.rs",
+      "source_sha256": "05b73862013c0252a4832b3a4bcf05f434294c2489aefb1bd3de7437f1f02532",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/generic-ref-argument.rs",
+      "source_sha256": "ef94c4d2ff6e2a6667ee31b5f82c82c04569602cee144cf2d6db51a98f077917",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/generic-short-to-long.rs",
+      "source_sha256": "04307229cdfdcf8a6e0ed584e542b28d8461ed4fe06021668460f0630a191a26",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/generic-to-static.rs",
+      "source_sha256": "d172f09f8235f9f05ea63a22ab2d0dc5caec470f5f9ee733ceab635ca38c39b8",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/generic-two-ports.rs",
+      "source_sha256": "1d52fdc1a216fb51d5121e64c21b31c8e355cec8ddee8de41c50a7dda11d6448",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/immediate-identity.rs",
+      "source_sha256": "8dbe715e83cf4ac5e99f7c9ecd00fce30a42719fdd87bcf5408ca1fae1157b68",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/immediate-pattern.rs",
+      "source_sha256": "07f70c5714c444f9a92a719fc49dd8b5275aa88268a06fa6fd716e021aab7eb4",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/late-private-input-escape.rs",
+      "source_sha256": "f2ccb9dcb752b97002b37d78754cc370d627a02a288ae43d0172ae7270be45a5",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/late-private-unrelated-result.rs",
+      "source_sha256": "b706d07b8b0f99bd69d6baad52f9ee2e037d9ae85d6bb856381b8a55e7aa127f",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/late-projected.rs",
+      "source_sha256": "08fb90a3e10b67e814c3b0314997849aeaa82d6476efb7b7fa81f6ab2628df64",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/local-escape.rs",
+      "source_sha256": "1843f7fe13d1ac22bbc5aacb81c7eb0180e9e2f812fbeb2a4b65fd4abcbc2c4b",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/named-pattern.rs",
+      "source_sha256": "be9d87e878b99d7c0516fc4ec64658bd5b998eef0cff8759fb6784a9c12084ca",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/nested-public-binder.rs",
+      "source_sha256": "b00865366cad0ade3e4547a6daf8d55b405ba88a4d7f2278f63809d9c323ddbf",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/nested-return.rs",
+      "source_sha256": "b89f4a36370a46301a7fb39d258f195df8733246e9f319ec6d2dc84fc7a3589e",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/inherited-input-regions/two-public-late-ports.rs",
+      "source_sha256": "8c8d436cdc9752681b30eff3b755611ada61afe80a84b24a60a2886d780af675",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }

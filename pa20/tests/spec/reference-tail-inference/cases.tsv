@@ -1,0 +1,10 @@
+pa20/tests/spec/reference-tail-inference/direct-partial-depth.rs	0	-
+pa20/tests/spec/reference-tail-inference/direct-named-result.rs	0	-
+pa20/tests/spec/reference-tail-inference/direct-explicit-type.rs	0	-
+pa20/tests/spec/reference-tail-inference/direct-known-depth.rs	0	-
+pa20/tests/spec/reference-tail-inference/partial-array-tail.rs	0	-
+pa20/tests/spec/reference-tail-inference/partial-tuple-tail.rs	0	-
+pa20/tests/spec/reference-tail-inference/partial-unknown-array.rs	0	-
+pa20/tests/spec/reference-tail-inference/shared-to-mutable.rs	1	cannot coerce a shared reference to a mutable reference
+pa20/tests/spec/reference-tail-inference/partial-short-to-static.rs	1	required lifetime does not outlive its target
+pa20/tests/spec/reference-tail-inference/partial-wrong-result.rs	1	incompatible types

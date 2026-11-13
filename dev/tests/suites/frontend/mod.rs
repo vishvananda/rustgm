@@ -29,6 +29,8 @@ mod configured_tails;
 mod crate_expansion;
 #[path = "../../crate_syntax.rs"]
 mod crate_syntax;
+#[path = "../../creator_inputs.rs"]
+mod creator_inputs;
 #[path = "../../cstr_sources.rs"]
 mod cstr_sources;
 #[path = "../../ctfe_selector.rs"]

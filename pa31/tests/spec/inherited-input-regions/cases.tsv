@@ -1,0 +1,37 @@
+pa31/tests/spec/inherited-input-regions/immediate-pattern.rs	0	-
+pa31/tests/spec/inherited-input-regions/named-pattern.rs	0	-
+pa31/tests/spec/inherited-input-regions/immediate-identity.rs	0	-
+pa31/tests/spec/inherited-input-regions/annotated-pattern.rs	0	-
+pa31/tests/spec/inherited-input-regions/annotated-deref.rs	0	-
+pa31/tests/spec/inherited-input-regions/nested-return.rs	0	-
+pa31/tests/spec/inherited-input-regions/generic-pattern.rs	0	-
+pa31/tests/spec/inherited-input-regions/borrowed-to-static.rs	1	required lifetime does not outlive its target
+pa31/tests/spec/inherited-input-regions/local-escape.rs	1	required lifetime does not outlive its target
+pa31/tests/spec/inherited-input-regions/annotated-elided-return.rs	1	required lifetime does not outlive its target
+pa31/tests/spec/inherited-input-regions/contextual.rs	0	-
+pa31/tests/spec/inherited-input-regions/core-pattern-macro.rs	0	-
+pa31/tests/spec/inherited-input-regions/core-pattern-native.rs	0	-
+pa31/tests/spec/inherited-input-regions/generic-identity.rs	0	-
+pa31/tests/spec/inherited-input-regions/generic-ref-argument.rs	0	-
+pa31/tests/spec/inherited-input-regions/generic-two-ports.rs	0	-
+pa31/tests/spec/inherited-input-regions/generic-nested.rs	0	-
+pa31/tests/spec/inherited-input-regions/generic-projected.rs	0	-
+pa31/tests/spec/inherited-input-regions/generic-later-bound.rs	0	-
+pa31/tests/spec/inherited-input-regions/generic-mixed-binders.rs	0	-
+pa31/tests/spec/inherited-input-regions/generic-to-static.rs	1	required lifetime does not outlive its target
+pa31/tests/spec/inherited-input-regions/generic-local-escape.rs	1	required lifetime does not outlive its target
+pa31/tests/spec/inherited-input-regions/generic-elided-escape.rs	1	required lifetime does not outlive its target
+pa31/tests/spec/inherited-input-regions/generic-short-to-long.rs	1	required lifetime does not outlive its target
+pa31/tests/spec/inherited-input-regions/generic-late-and-private.rs	0	-
+pa31/tests/spec/inherited-input-regions/generic-native.rs	0	-
+pa31/tests/spec/inherited-input-regions/late-projected.rs	0	-
+pa31/tests/spec/inherited-input-regions/nested-public-binder.rs	0	-
+pa31/tests/spec/inherited-input-regions/two-public-late-ports.rs	0	-
+pa31/tests/spec/inherited-input-regions/late-private-unrelated-result.rs	1	required lifetime does not outlive its target
+pa31/tests/spec/inherited-input-regions/late-private-input-escape.rs	1	required lifetime does not outlive its target
+pa31/tests/spec/inherited-input-regions/annotated-public-inputs.rs	0	-
+pa31/tests/spec/inherited-input-regions/direct-projected-reference.rs	0	-
+pa31/tests/spec/inherited-input-regions/annotated-projected-reference.rs	0	-
+pa31/tests/spec/inherited-input-regions/creator-copy-bound.rs	0	-
+pa31/tests/spec/inherited-input-regions/missing-copy-bound.rs	1	non-Copy value out of a reference
+pa31/tests/spec/inherited-input-regions/creator-lifetime-trait.rs	0	-

@@ -14,6 +14,29 @@ pub(crate) struct Retained {
     index: premise_index::Retained,
 }
 impl Environment {
+    /// Attach an actual body's ledger while sharing declaration tables. Only
+    /// the existing regional table is cloned; capacity also bounds clone work.
+    pub(crate) fn body_alias_finish_bound(&self, count: usize) -> Result<Growth, &'static str> {
+        let mut growth = crate::types::relations::BodyAliases::construction_bound(count)?;
+        growth.bytes = growth
+            .bytes
+            .saturating_add(size_of::<Self>() + 2 * size_of::<usize>());
+        if count != 0 {
+            let old = self
+                .regions
+                .as_deref()
+                .map_or(0, |regions| regions.allocation().bytes);
+            growth.bytes = growth
+                .bytes
+                .saturating_add(old.saturating_mul(2))
+                .saturating_add(
+                    size_of::<crate::types::relations::RegionEqualities>() + 2 * size_of::<usize>(),
+                );
+            growth.work = growth.work.saturating_add(old).saturating_add(2);
+        }
+        Ok(growth)
+    }
+
     /// Cost only for an actual declaration without prior regional payload.
     /// Existing region tables, even empty ones, need their separately sized clone.
     pub(crate) fn neutral_alias_finish_bound(&self, count: usize) -> Result<Growth, &'static str> {

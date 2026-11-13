@@ -42,6 +42,7 @@ pub(super) struct Pending {
     stopped: Option<Decision>,
     suspended: Option<usize>,
     publish: bool,
+    pub(super) end: u32,
 }
 impl Pending {
     pub(super) fn retained_child(&self) -> Option<usize> {
@@ -152,6 +153,7 @@ impl Search<'_> {
             stopped: None,
             suspended: None,
             publish: false,
+            end: frame.available_region(),
         })));
         Ok(Action::Descend)
     }
@@ -206,6 +208,7 @@ impl Search<'_> {
                 .context
                 .equate_proved_predicate(&mut facts.types, goal, self.query.nodes[index].goal)
                 .map_err(inference)?;
+            pending.end = pending.end.max(self.query.nodes[index].end);
             pending.children.push(index);
             pending.cursor += 1;
         } else {

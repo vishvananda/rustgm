@@ -1239,3 +1239,9 @@ core's `SplitInclusive` `clone`, whose `SplitInternal` impl needs
 A maintainer integration test checks typing through the CLI and prepared
 lowering for every case that types. There is no graded manifest or native
 test.
+
+The `spec/inherited-input-regions/` packet freezes independently declared inferred
+reference/closure input contracts and their lifetime opponents. See its manifest
+and README; qualification is recorded with the implementation checkpoint.
+
+The [inferred-input repair](../../docs/pa24-inferred-inputs.md) records the new packet contracts, declared outcomes, focused/native evidence and remaining qualification.

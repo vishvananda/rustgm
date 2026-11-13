@@ -40,7 +40,100 @@ there still holds (see [Standing requirements](#standing-requirements)).
   checkouts or other checkouts' outputs. Work as one worker, with no new
   worktrees.
 
-## Current continuation: borrowed closure inputs (uncommitted)
+## Resumed after storage cleanup
+
+The user resumed the goal. Free space returned to236GiB, so the unchanged150GiB
+reserve admits validation again. B's old unbuilt private-port draft has advanced:
+exploratory wipclosure2 compiled, then wipclosure3 added mixed public/private
+binder handling, and wipclosure4 (CLI217d4c40,3945 source hashes) also fixes
+premature reference-depth selection when the expected tail is an inference hole.
+The current working tree includes a subsequent extraction of captured source-seal
+lookup into the existing closure instantiation module; it has no new clean pin.
+
+All38 ordinary declared outcomes now agree with Rust and lower as expected under
+prototype4. Baseline12 independently reproduces the reference-tail error without
+a closure.31 source cases independently agree with Rust, and every positive types;
+source prepared/native qualification is pending. Independent Rust/C native outputs
+are13/29/0 then13/13/1 for the actual-pattern transposition, and13/13/13 then29/29/29
+for generic, reference-type and mixed-binder consumers. Source1's native generation
+typo and ordinary4's ambiguous elision errors remain malformed setups; separately
+declared corrected batches2/5 retain the intended outcomes.
+
+New fixtures are installed byte-for-byte in PA20 `reference-tail-inference` (10),
+PA24 `inherited-input-regions` (28) and PA31's same-named packet (31). They have
+manifests and independent declarations, but **no new text references yet**. New
+maintainer root `creator_inputs.rs` is registered once in frontend; additional
+private tests in `uncaptured_debts.rs` oppose altered binders/captures and an
+unpaid specialized port debt. Development Rust source count is now3946.
+
+Focused public receipt1794581646861724074 passed metadata, formatting, architecture,
+selected strict Clippy, linking, existing closure controls, all38 ordinary outcomes
+and bounded specialization scaling; six independently valid source positives
+failed full preparation. Bounded diagnostics now explain those source failures:
+
+- Structural marker siblings reused one implementation lifetime witness. The
+  component frontier now retains its completed child high watermark, and the
+  shared frame allocator includes it. Receipt1794585529030256401 clears the five
+  original lifetime failures and reaches a later native instance contract check.
+- The inferred projected-reference closure had an empty Copy trait environment,
+  losing its creator's `T: Element` premise. Closure publication now retains the
+  actual canonical declaration environment with a complete child-owned alias
+  ledger; instance transport still discards/reproves it. Alias attachment uses
+  typed allocation bounds. Receipt1794586091472104663 clears that source positive.
+- Noncapturing generic instances can also have distinct public and body proof
+  signatures. The existing Owner execution signature now retains that distinction;
+  lowering checks ABI compatibility for an empty environment. Receipt6091 reaches
+  the final source-scope rejection, which only admitted function-item instances.
+  That source-scope check is now extended to exact closure identity, source and
+  both signatures, preserving its private authentication and arena/environment
+  checks. **This last change is awaiting focused results.**
+
+The final exact callable scope change passes public receipt1794586372014375955:
+31 exact tests across frontend/closures/ownership, all38 ordinary and31 source
+outcomes, exports and scaling. Native1794586605899163087 passes26 ordinary
+executables and both actual Rust/C consumers (six exports). The noncapturing
+creator context is explicitly scoped away from captured execution's separate
+receiver lifetime. Six extra independently checked source controls are installed
+in PA31, for37 source outcomes and75 total packet cases (53 accept/22 reject).
+Source6's unannotated dereference forms hit independent E0282; the separately
+declared source7 pattern forms preserve the positive and missing-Copy opponent.
+Receipt1794587214204194259 passes all37 source cases and existing actual captured
+callback, Copy/Clone and array controls. Native1794589096793583294 passes current
+source consumers and the existing captured-drop control.
+
+Source marker scaling passes8/32/128 in independent Rust and the full prepared
+pipeline (receipt1794587685884856582). Hash-checked replay records inference
+641/1625/5561, canonical2329/6193/21649. Inputs/raw counters are under
+`obj/parallel/closure-return-inputs/marker-scaling-counters.*`. These are bounded
+work observations, not calibrated timings.
+
+Exploratory immutable wipclosure5-dev-fast isCLI2c7bbb70,3946 source hashes,
+with its exact dirty patch; it is not a clean release pin. It generated only38
+new declared PA20/24 text triples in scoped reference batches. Content review
+shows positive LowIR/empty diagnostics and the declared negative diagnostics;
+all28,260 pre-existing sidecars are unchanged. Full active comparison now passes
+**9345/9345 across PA1–24**, plus the separate released PA25 unit113/113. The
+first command with `--released-units` only selected that113-case unit; the
+corrected24-stage run is in `full-active.log/summary.json`. No existing oracle was
+reblessed. Upstream,315 harness tests,486-root registration,44-stage/component
+layout all pass. See [the checkpoint](docs/pa24-inferred-inputs.md).
+
+No temporary diagnostics remain. New private tests oppose altered public and
+inherited slots, an unpaid lifetime debt, and changed source Copy instance/body
+signature/environment. Cold private lint/link attempts (trace4, its cache resume,
+private-final1) timed out without a harness. **No private tests have executed.**
+The final bounded quiet attempt `private-final2-quiet.log` also timed out at267s
+before linking (21 intended exact selections, no separate Cargo test/check).
+It started at host load6.93 with unchanged16GiB/150GiB guards. No private tests
+executed. Leave these checks to full CI; do not repeat cold local attempts.
+
+Immutable release calibration and a clean successor120s original core observer
+are still due. Candidate12 remains sole authoritative original-core evidence;
+no original library artifact exists. Private/full scheduled CI remains required.
+The spec/roadmap/checkpoint docs are updated; nothing in this continuation has
+yet been committed or pushed. Do not restore the historical draft below.
+
+## Historical private-port draft (superseded by resumed checkpoint)
 
 Published compiler source remains8950ad99c; later commits record documentation.
 B now has six modified compiler files carrying a
