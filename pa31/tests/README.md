@@ -1105,6 +1105,19 @@ core's `simd.rs` `Simd` `eq`, which compares `[T; N]` under an always-const
 A maintainer integration test checks typing through the CLI and prepared
 lowering for every accepted case. There is no graded manifest or native test.
 
+`spec/derive-field-privacy/` freezes seventeen declared no_core reductions of
+core's derived `PartialEq` and `Debug` impls on private tuple fields, such as
+`TryFromSliceError(())`.
+
+- Accepted forms: one, two and eleven fields, a nested module, mixed
+  visibility, a generic field, a `macro_rules` item, `Debug` alone and with
+  `PartialEq`, and three controls.
+- Rejected at typing: `.0` read from outside the module by a function and by
+  manual `PartialEq` and `Debug` impls (E0616).
+
+A maintainer integration test checks typing through the CLI and prepared
+lowering for every accepted case. There is no graded manifest or native test.
+
 `spec/gat-region-premises/` freezes fifteen declared no_core reductions of
 core's `SplitInclusive` `clone`, whose `SplitInternal` impl needs
 `Searcher<'a>: Clone` for a fresh region.

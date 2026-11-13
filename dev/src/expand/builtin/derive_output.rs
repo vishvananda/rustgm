@@ -91,12 +91,12 @@ pub(crate) fn build(
     }
     output.comparison_members(fields, &inventory.variants)?;
     output.parameter_marker()?;
-    output.finish(config)
+    output.finish(config, fields)
 }
 
 impl Output<'_> {
-    fn finish(self, config: &Config) -> Result<Delegated, LexError> {
-        self.validate_origins()?;
+    fn finish(self, config: &Config, fields: &[NodeId]) -> Result<Delegated, LexError> {
+        self.validate_origins(fields)?;
         self.prepare_parser()?;
         let splices: Vec<_> = self
             .fields
@@ -165,7 +165,7 @@ impl Output<'_> {
             syntax,
         })
     }
-    fn validate_origins(&self) -> Result<(), LexError> {
+    fn validate_origins(&self, fields: &[NodeId]) -> Result<(), LexError> {
         use crate::expand::stream::OriginKind;
         (self.charge)(self.stream.origins.len(), 0)?;
         for origin in &self.stream.origins {
@@ -198,6 +198,31 @@ impl Output<'_> {
                         return Err(error(
                             self.site.original.start,
                             "derived copied origin changed its actual bytes",
+                        ));
+                    }
+                }
+                OriginKind::Anchored => {
+                    (self.charge)(
+                        generated
+                            .len()
+                            .saturating_add(fields.len().checked_ilog2().unwrap_or(0) as usize),
+                        0,
+                    )?;
+                    let start = origin.original.span.start;
+                    let at = fields
+                        .partition_point(|&field| self.site.ast.node(field).span.start < start);
+                    if origin.context.is_some()
+                        || origin.introduction.0 != 0
+                        || origin.original.file != self.site.file
+                        || origin.original.span.end != start + 1
+                        || !crate::expand::stream::is_index(generated)
+                        || fields
+                            .get(at)
+                            .is_none_or(|&field| self.site.ast.node(field).span.start != start)
+                    {
+                        return Err(error(
+                            self.site.original.start,
+                            "derived field index lost its actual field",
                         ));
                     }
                 }
@@ -286,6 +311,30 @@ impl Output<'_> {
             end: span.end,
         })?;
         Ok(())
+    }
+    /// A tuple field index carries its field's hygiene, so field privacy is
+    /// checked where the item is declared rather than where the derive is.
+    fn index(&mut self, field: NodeId, index: usize) -> Result<(), LexError> {
+        let mut spelling = String::new();
+        (self.charge)(20, 20)?;
+        spelling
+            .try_reserve(20)
+            .map_err(|_| error(self.site.original.start, "derived index allocation failed"))?;
+        std::fmt::Write::write_fmt(&mut spelling, format_args!("{index}"))
+            .map_err(|_| error(self.site.original.start, "derived index formatting failed"))?;
+        self.prepare_image(spelling.len())?;
+        let span = self.stream.anchored_index(
+            &spelling,
+            Location {
+                file: self.site.file,
+                span: self.site.ast.node(field).span,
+            },
+        )?;
+        self.push_token(Token {
+            kind: TokenKind::Integer,
+            start: span.start,
+            end: span.end,
+        })
     }
     fn header(&mut self, path: &str, unsafe_: bool) -> Result<(), LexError> {
         self.text("#[automatically_derived]")?;

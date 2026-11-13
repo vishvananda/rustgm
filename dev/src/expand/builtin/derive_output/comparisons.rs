@@ -255,7 +255,7 @@ impl Output<'_> {
         if let Some(name) = name {
             self.spelling(name, false)
         } else {
-            self.text(&index.to_string())
+            self.index(field, index)
         }
     }
 }

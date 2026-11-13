@@ -115,6 +115,12 @@ pub(crate) fn at_counted(
         if let Some(context) = origin.context {
             return finish(context, captured, file, offset);
         }
+        if origin.kind == crate::expand::stream::OriginKind::Anchored {
+            // Every byte of a derived index takes its field's first byte.
+            file = origin.original.file;
+            offset = origin.original.span.start;
+            continue;
+        }
         charge(1, 1, 0).map_err(|message| Error::at(file, offset, message))?;
         let length = origin
             .original

@@ -1,0 +1,96 @@
+{
+ "schema": 1,
+ "declared": "2026-11-13, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run (obj/parallel/derive-privacy/core/declared.json, batches 2, 3 and 4; batch 1 and two batch 2/3 diagnostics were malformed).",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --target=x86_64-unknown-linux-gnu --crate-type=lib --emit=metadata -Cpanic=abort --cap-lints=allow",
+ "cases": {
+  "tuple-submodule.rs": {
+   "sha256": "35c42910eb3038219c95f37156b027b742a71d8ece76dda6f2cf913ae569594e",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "tuple-two-fields.rs": {
+   "sha256": "c69226f5fb697eb17cb9568d81e2741628fc652de131873cf3f5133bc3db389b",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "tuple-nested.rs": {
+   "sha256": "b9d5b1f84b7d81553a2ec683e7cc0a72d7dddef77d34aa1ae3a6e5613aebf4de",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "tuple-mixed-visibility.rs": {
+   "sha256": "429e37967b9d2e43ce22486b7b0d076b492c0af3d3c3ef35529981c6332231eb",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "tuple-generic.rs": {
+   "sha256": "cb2d6772853c44be6a57c5d873585a61836e4751a3ec568c91cde63d23c25c11",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "tuple-macro-defined.rs": {
+   "sha256": "32f54e0934970935414d27017c37ea7e544a7c85903396311706a41e000009d2",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "tuple-eleven-fields.rs": {
+   "sha256": "5d49dc9706a7a7799e5796e1d9eaa5a24fb63420c798b39045794562c36f236e",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "record-submodule.rs": {
+   "sha256": "c1056556f7f79a17e8ab6037d8e573fb5a61cd1b9ca784ee49408411c1d39269",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "tuple-root.rs": {
+   "sha256": "1e5ff9da5616bb3fe511cbd0cb1ec09afce477030e119eb6c4a4ea951644e6f3",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "outside-access.rs": {
+   "sha256": "c43d670fd59f35a91657fb801bbfdbd8de91ba6f0256b2643a875ecf15ba784e",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "error[E0616]: field `0` of struct `Token` is private"
+  },
+  "manual-impl-outside.rs": {
+   "sha256": "2ab39dc7d3de76a84c91c170273400ad95179f95bd66925dd6a93811a98d82ed",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "error[E0616]: field `0` of struct `Token` is private"
+  },
+  "debug-tuple-submodule.rs": {
+   "sha256": "5d3638f8b759ea11e682257c5b0ba24bcdc3de64495fa841eb6081c3315635ef",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "debug-unit-field.rs": {
+   "sha256": "65a77edff4d4f475d2b970fb00202300aa6f00c8cf8837d3314bba5855022ed8",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "debug-two-fields.rs": {
+   "sha256": "965da7b54c9a710e0e2db889dea5b5b59dd8c341e16c3d3f468d12f98f31b994",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "debug-eq-both.rs": {
+   "sha256": "7edce77ccb9a0e11efbdd3e256ce3d70eaead19e9f9d55975fca2ef309fb2b7b",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "debug-record-submodule.rs": {
+   "sha256": "1d2985d0b7d9ae1fdd4d2d89957ce165803d33f5562be7cf906313ea2f50d848",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "debug-outside-access.rs": {
+   "sha256": "26ac7e0d1cb557e141580063fed53b5035766f13584274c3f18314dd25769053",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "error[E0616]: field `0` of struct `Token` is private"
+  }
+ }
+}

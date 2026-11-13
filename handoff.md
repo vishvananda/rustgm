@@ -149,6 +149,33 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-13 derived tuple field privacy update (supersedes the blocks below):**
+
+- Core's 31 derived `fmt`/`eq` "aggregate field is private" failures have a
+  typing fix ([evidence](docs/pa31-derive-field-privacy.md)). A derived tuple
+  index is anchored on its field, so privacy is checked from the item's module.
+  - Seventeen reductions are in `pa31/tests/spec/derive-field-privacy`.
+  - The four declared batches, the oracle stderr and the scaling rows are in
+    `obj/parallel/derive-privacy/`.
+- Next: a release pin of this change and a core re-observation.
+
+**2026-11-13 release candidate observation (supersedes the blocks below):**
+
+- Release candidate3 (`obj/parallel/capture-match/candidate3-release`,
+  8d56d3e0, clean fc41ecb7c) ran under the unchanged 120s observer. It reached
+  the end of the body pass in 23.7s. 42,310 declarations were checked with no
+  failure. 25,760 bodies were checked, with 60 failed and 38 blocked. The
+  completion pass was not run.
+  - 10511-10513 and 10805 now pass. 7631 still fails.
+  - The census and comparison are
+    `obj/parallel/capture-match/original-candidate3/` and
+    `original-candidate3-comparison.txt`, and
+    `obj/parallel/capture-match/table.py` lists every record.
+- The dev-fast pins time out near item 10246 at the same window. Later census
+  runs use release pins, with the window and limits unchanged. Superseded
+  dev-fast pins for `capture-match` (candidate, candidate2),
+  `pin-forwarding`, `radix-captures` and `max-items` were retired.
+
 **2026-11-13 ymm operand update (supersedes the blocks below):**
 
 - Core's `_mm256_stream_*` 10511-10513 and `_mm256_stream_load_si256` 10805

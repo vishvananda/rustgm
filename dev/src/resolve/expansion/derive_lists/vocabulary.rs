@@ -1,6 +1,9 @@
 //! One selected interval replays vocabulary against its actual source members.
 use super::{Error, Invocation, Transaction};
-use crate::{expand::stream::OriginKind, resolve::expansion::Report};
+use crate::{
+    expand::stream::{Origin, OriginKind},
+    resolve::{expansion::Report, unit::Unit},
+};
 
 pub(super) fn require(
     report: &Report,
@@ -54,20 +57,11 @@ pub(super) fn require(
             .ok_or_else(failure)?;
         match origin.kind {
             OriginKind::Captured(_) => return Err(failure()),
-            OriginKind::Copied => {
+            OriginKind::Copied | OriginKind::Anchored => {
                 ledger
                     .charge((origin.generated.end - origin.generated.start) as usize, 0)
                     .map_err(|_| failure())?;
-                if origin.introduction.0 != 0
-                    || origin.context.is_some()
-                    || origin.original.file != entry.owner.file
-                    || unit
-                        .source
-                        .text()
-                        .get(origin.original.span.start as usize..origin.original.span.end as usize)
-                        .ok_or_else(failure)?
-                        != generated
-                {
+                if !owner_text(unit, entry, origin, generated) {
                     return Err(failure());
                 }
             }
@@ -101,4 +95,26 @@ pub(super) fn require(
         return Err(failure());
     }
     Ok(())
+}
+
+/// A copied range repeats the owner's bytes; an anchored tuple index names a
+/// field inside the owner. Neither carries a context or an introduction.
+fn owner_text(unit: &Unit, entry: &Transaction, origin: &Origin, generated: &str) -> bool {
+    let span = origin.original.span;
+    if origin.introduction.0 != 0
+        || origin.context.is_some()
+        || origin.original.file != entry.owner.file
+    {
+        return false;
+    }
+    if origin.kind == OriginKind::Anchored {
+        let owner = unit.configured.ast.node(entry.owner.node).span;
+        return span.start >= owner.start
+            && span.end <= owner.end
+            && crate::expand::stream::is_index(generated);
+    }
+    unit.source
+        .text()
+        .get(span.start as usize..span.end as usize)
+        == Some(generated)
 }

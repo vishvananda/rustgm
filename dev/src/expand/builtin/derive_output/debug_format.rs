@@ -142,7 +142,7 @@ impl Output<'_> {
                 if let Some(name) = self.actual_field(field)?.0 {
                     self.spelling(name, false)?;
                 } else {
-                    self.binding("", index)?;
+                    self.index(field, index)?;
                 }
                 Ok(())
             }

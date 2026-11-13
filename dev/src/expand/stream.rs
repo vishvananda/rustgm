@@ -31,6 +31,11 @@ pub enum OriginKind {
     /// A format capture retains the exact literal caller context. This is
     /// anchored generated spelling, not copied bytes or a feature allowance.
     Captured(Edition),
+    /// A derived tuple field index, as rustc's
+    /// `Ident::from_str_and_span(index, field.span)`: decimal spelling that
+    /// inherits the hygiene and edition of its field's first byte. It claims
+    /// no copied bytes and grants no allowance.
+    Anchored,
 }
 #[derive(Clone, Copy, Debug)]
 pub struct Origin {
@@ -326,6 +331,32 @@ impl Stream {
         self.source.push(' ');
         Ok(generated)
     }
+    /// A derived tuple field index anchored on its field's first byte.
+    pub(crate) fn anchored_index(
+        &mut self,
+        spelling: &str,
+        field: Location,
+    ) -> Result<Span, LexError> {
+        if field.span.start >= field.span.end || !is_index(spelling) {
+            return Err(error(
+                field.span.start,
+                "anchored spelling requires a decimal index and its field",
+            ));
+        }
+        let anchor = Location {
+            file: field.file,
+            span: Span {
+                start: field.span.start,
+                end: field.span.start + 1,
+            },
+        };
+        let span = self.image(spelling, anchor, None, ExpansionId(0))?;
+        self.origins
+            .last_mut()
+            .ok_or_else(|| error(field.span.start, "missing anchored origin"))?
+            .kind = OriginKind::Anchored;
+        Ok(span)
+    }
     /// An authenticated compiler-generated expansion supplies its actual selected
     /// source definition's edition. This data never grants macro allowances.
     pub(crate) fn synthetic_image(
@@ -530,3 +561,9 @@ fn captured_span(
 }
 
 const _: () = assert!(size_of::<Origin>() == 32);
+/// An unsuffixed decimal tuple index without a leading zero.
+pub(crate) fn is_index(spelling: &str) -> bool {
+    !spelling.is_empty()
+        && spelling.bytes().all(|byte| byte.is_ascii_digit())
+        && (spelling == "0" || !spelling.starts_with('0'))
+}

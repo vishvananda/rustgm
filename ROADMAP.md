@@ -249,6 +249,12 @@ too. Fifteen source-core reductions agree with rustc. Premises for another
 lifetime now fail prepared lowering's lifetime proof, as rustc's borrow
 checker rejects them.
 
+The [derived tuple field privacy checkpoint](docs/pa31-derive-field-privacy.md)
+anchors a derived tuple index on its field, as rustc spans it, so `self.0` in
+a derived impl is checked from the item's module. 31 derived core `fmt` and
+`eq` bodies on private tuple fields depend on it. Seventeen source-core
+reductions agree with rustc, including three E0616 outside accesses.
+
 The PA25 [const-machine component](docs/pa25-const-machine-release.md) is the first
 released work unit: 113 declared outcomes, including four new recursion/work/storage
 limit controls, pass text, independent Rust and native checks with frozen a08ab1a4.

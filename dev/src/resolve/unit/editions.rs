@@ -114,7 +114,12 @@ pub(crate) fn at<'a>(
             }
             return finish(edition, captured);
         }
-        location = copied(origin, span).map_err(|failure| LexError { offset, ..failure })?;
+        location = if origin.kind == OriginKind::Anchored {
+            // A derived index takes its field's first byte.
+            origin.original
+        } else {
+            copied(origin, span).map_err(|failure| LexError { offset, ..failure })?
+        };
     }
     Err(error(offset, "token edition origin chain exceeds 4096"))
 }

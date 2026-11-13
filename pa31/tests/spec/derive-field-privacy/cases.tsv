@@ -1,0 +1,17 @@
+pa31/tests/spec/derive-field-privacy/tuple-submodule.rs	0
+pa31/tests/spec/derive-field-privacy/tuple-two-fields.rs	0
+pa31/tests/spec/derive-field-privacy/tuple-nested.rs	0
+pa31/tests/spec/derive-field-privacy/tuple-mixed-visibility.rs	0
+pa31/tests/spec/derive-field-privacy/tuple-generic.rs	0
+pa31/tests/spec/derive-field-privacy/tuple-macro-defined.rs	0
+pa31/tests/spec/derive-field-privacy/tuple-eleven-fields.rs	0
+pa31/tests/spec/derive-field-privacy/record-submodule.rs	0
+pa31/tests/spec/derive-field-privacy/tuple-root.rs	0
+pa31/tests/spec/derive-field-privacy/debug-tuple-submodule.rs	0
+pa31/tests/spec/derive-field-privacy/debug-unit-field.rs	0
+pa31/tests/spec/derive-field-privacy/debug-two-fields.rs	0
+pa31/tests/spec/derive-field-privacy/debug-eq-both.rs	0
+pa31/tests/spec/derive-field-privacy/debug-record-submodule.rs	0
+pa31/tests/spec/derive-field-privacy/outside-access.rs	1
+pa31/tests/spec/derive-field-privacy/manual-impl-outside.rs	1
+pa31/tests/spec/derive-field-privacy/debug-outside-access.rs	1

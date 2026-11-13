@@ -165,6 +165,8 @@ mod temporary_editions;
 mod textual_scopes;
 #[path = "../../token_trees.rs"]
 mod token_trees;
+#[path = "../../tuple_index_privacy.rs"]
+mod tuple_index_privacy;
 
 #[path = "../../needs_drop_provider.rs"]
 mod needs_drop_provider;

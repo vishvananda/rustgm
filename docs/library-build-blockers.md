@@ -1,5 +1,30 @@
 # Library build blocker tracker
 
+The [derived tuple field privacy checkpoint](pa31-derive-field-privacy.md)
+fixes "aggregate field is private" in 31 derived core bodies, 26 `fmt` and 5
+`eq`, on tuple structs whose fields are private to their own module, such as
+`array/mod.rs:182`'s `TryFromSliceError(())`. The derive spelled the index of
+`self.0` in the derive's own context, so privacy was checked from the macro's
+module. The index is now anchored on its field, as rustc spans it. Seventeen
+source-core reductions and struct-linear work qualify the fix. No core
+observation of it has run yet.
+
+Release candidate3 (8d56d3e0, fc41ecb7c) was the first core observation with
+a release pin. The unchanged 120s observer reached the end of the body pass in
+23.7s, with all 42,310 declarations passing and 25,760 bodies checked. 60
+bodies failed and 38 were blocked, so the completion pass was not run.
+10511-10513 and 10805 pass. The remaining failure groups:
+
+- 31 derived private-field bodies, fixed above;
+- 11 `zmm_reg`/`kreg` and 2 avx512fp16 `xmm_reg` assembly bodies;
+- 5 trait obligations: `array_chunks` and `peekable` `clone`, `intersperse`
+  `fmt`, slice iterator `default` and `core_simd` division;
+- 3 portable-simd projection normalizations;
+- 2 conditional `Unsize` (`array_chunks` and `peekable` `fmt`);
+- 2 closure lifetimes (`str/pattern.rs:956`);
+- 2 "missing body type constraint" in `fmt/num.rs`;
+- `as_underlying` 7631's bool niche and `repr_bitpacked.rs:300`.
+
 The [ymm operand checkpoint](pa41-ymm-operands.md) fixes "assembly register
 class is not implemented for this target" while typing core's three `x86/avx.rs`
 stream stores, 10511-10513, and `x86/avx2.rs` `_mm256_stream_load_si256` 10805.

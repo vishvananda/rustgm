@@ -7581,6 +7581,12 @@ unstable imported row needs the same feature or allowance as a call of it,
 whether or not the row is called; a glob import is checked only at its module.
 Builtin derive output roots each `crate::` path at the defining crate's
 identity, as `$crate` does; an imported derive row does not yet run.
+A derived tuple field index, such as the `0` of `self.0`, takes the syntax
+context and edition of its field's first byte, as rustc spans it with the
+field. Field privacy is therefore checked from the module, or the
+`macro_rules` definition, that wrote the field, not from the derive's
+definition. The index claims no copied bytes and grants no allowance. See the
+[derived tuple field privacy checkpoint](docs/pa31-derive-field-privacy.md).
 
 Version 5 of the macro envelope is written only when a table has a glob row;
 otherwise the version-1 to version-4 bytes are unchanged. It keeps the
