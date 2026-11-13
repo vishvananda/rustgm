@@ -21,7 +21,9 @@ receives no XMM permission. SIMD values cannot enter a general register merely
 because their storage has a scalar-sized component. Since the
 [ymm operand checkpoint](pa41-ymm-operands.md), ymm operands type under `avx`
 and stop at the initial assembly profile, including the body-feature opponent.
-Zmm remains explicitly unsupported.
+Since the [AVX-512 operand checkpoint](pa41-avx512-operands.md), zmm and kreg
+operands type under `avx512f` and stop at the profile too, and lane widths
+count `f16` lanes.
 The pinned primary policy is
 [rustc_target's x86 assembly table](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_target/src/asm/x86.rs);
 preserve NOTICE.
@@ -153,14 +155,16 @@ profile`, with these forms:
 - `reg input other than a raw pointer`: integers, floats and function pointers
 - `reg_abcd operand`, `reg_byte operand`, `explicit register operand`
 - `ymm_reg operand`, added with the [ymm operand checkpoint](pa41-ymm-operands.md)
+- `zmm_reg operand` and `kreg operand`, added with the
+  [AVX-512 operand checkpoint](pa41-avx512-operands.md)
 - `xmm_reg input other than a 128-bit vector`: the 4- and 8-byte scalars that
   the frontend accepts in `xmm_reg`
 - `template modifier`
 - `comments other than #`: `/* */` and `//` outside a quoted string, added
   with B2 A's comment fence
 
-`const`, `sym` and `label` operands, zmm, kreg and the other unimplemented
-classes stay rejected earlier, at body construction or in the frontend.
+`const`, `sym` and `label` operands and the other unimplemented classes stay
+rejected earlier, at body construction or in the frontend.
 
 ### Module-body transport
 

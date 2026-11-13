@@ -121,6 +121,15 @@ impl FeatureSet {
     pub(crate) fn supports_ymm(self) -> bool {
         self.contains_named("avx")
     }
+    /// `zmm_reg` and `kreg` operands need `avx512f`, as in rustc's x86
+    /// register table.
+    pub(crate) fn supports_zmm(self) -> bool {
+        self.contains_named("avx512f")
+    }
+    /// A 32- or 64-bit `kreg` operand also needs `avx512bw`.
+    pub(crate) fn supports_wide_masks(self) -> bool {
+        self.contains_named("avx512bw")
+    }
     fn contains_named(self, name: &str) -> bool {
         named(name).is_some_and(|feature| self.0 & (1_u128 << feature.0) != 0)
     }

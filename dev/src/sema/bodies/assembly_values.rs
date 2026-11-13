@@ -5,6 +5,7 @@ use crate::{
     syntax::assembly::{self, Direction, Register},
     types::{Primitive, aggregate::SimdShape},
 };
+const INCOMPATIBLE: &str = "assembly operand type is incompatible with register class";
 impl Checker<'_> {
     pub(super) fn enter_assembly(
         &mut self,
@@ -113,6 +114,12 @@ impl Checker<'_> {
                     "assembly register class requires the avx target feature",
                 ));
             }
+            if matches!(class, Register::Zmm | Register::Kreg) && !available.supports_zmm() {
+                return Err(self.error(
+                    arg,
+                    "assembly register class requires the avx512f target feature",
+                ));
+            }
             if let Register::Explicit { base, xmm, .. } = class {
                 let late = matches!(direction, Direction::LateOut | Direction::InLateOut);
                 let reads = input.is_some();
@@ -139,7 +146,7 @@ impl Checker<'_> {
                 explicit.push((base, xmm, reads, writes, late));
             }
             for operand in [input, output].into_iter().flatten() {
-                self.assembly_type(operand, class)?;
+                self.assembly_type(operand, class, available)?;
             }
             classes.push(class);
         }
@@ -180,10 +187,11 @@ impl Checker<'_> {
                             b"lxer".contains(&modifier)
                         }
                         Register::Abcd => b"lhxer".contains(&modifier),
-                        Register::Byte => false,
-                        Register::Xmm | Register::Ymm | Register::Explicit { xmm: true, .. } => {
-                            b"xyz".contains(&modifier)
-                        }
+                        Register::Byte | Register::Kreg => false,
+                        Register::Xmm
+                        | Register::Ymm
+                        | Register::Zmm
+                        | Register::Explicit { xmm: true, .. } => b"xyz".contains(&modifier),
                     };
                     if !valid {
                         return Err(self.error(
@@ -196,7 +204,12 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    fn assembly_type(&self, node: NodeId, class: Register) -> Result<(), Error> {
+    fn assembly_type(
+        &self,
+        node: NodeId,
+        class: Register,
+        available: FeatureSet,
+    ) -> Result<(), Error> {
         let ty = self.ty(node)?;
         let (bytes, float, vector) = match self.facts.types.kind(ty) {
             Some(Type::Primitive(p)) => {
@@ -225,10 +238,13 @@ impl Checker<'_> {
                 (8, false, false)
             }
             Some(Type::Adt(..)) => {
-                if class == Register::Ymm {
-                    ymm_operand(&*self.facts, ty).map_err(|message| self.error(node, message))?;
-                } else {
-                    self.assembly_simd_type(node, ty)?;
+                match class {
+                    Register::Ymm => ymm_operand(&*self.facts, ty)
+                        .map_err(|message| self.error(node, message))?,
+                    Register::Zmm => zmm_operand(&*self.facts, ty)
+                        .map_err(|message| self.error(node, message))?,
+                    Register::Kreg => return Err(self.error(node, INCOMPATIBLE)),
+                    _ => self.assembly_simd_type(node, ty)?,
                 }
                 (16, false, true)
             }
@@ -247,17 +263,23 @@ impl Checker<'_> {
             Register::General | Register::Abcd | Register::Explicit { xmm: false, .. } => {
                 bytes >= 2 && !vector
             }
-            Register::Xmm | Register::Ymm | Register::Explicit { xmm: true, .. } => {
-                matches!(bytes, 4 | 8) || vector
+            Register::Xmm
+            | Register::Ymm
+            | Register::Zmm
+            | Register::Explicit { xmm: true, .. } => matches!(bytes, 4 | 8) || vector,
+            Register::Kreg if float || vector => false,
+            Register::Kreg if matches!(bytes, 4 | 8) && !available.supports_wide_masks() => {
+                return Err(self.error(
+                    node,
+                    "assembly kreg operand of 32 or 64 bits requires the avx512bw target feature",
+                ));
             }
+            Register::Kreg => true,
         };
         if valid {
             Ok(())
         } else {
-            Err(self.error(
-                node,
-                "assembly operand type is incompatible with register class",
-            ))
+            Err(self.error(node, INCOMPATIBLE))
         }
     }
     fn assembly_simd_type(&self, node: NodeId, ty: TypeId) -> Result<(), Error> {
@@ -285,7 +307,17 @@ fn ymm_operand(facts: &crate::sema::model::Declarations, ty: TypeId) -> Result<(
         Err("assembly ymm vector requires 128 or 256 bits of supported numeric lanes")
     }
 }
+/// A `zmm_reg` vector: 128, 256 or 512 bits of supported numeric lanes. No
+/// imported body carries one, since the initial assembly profile rejects it.
+fn zmm_operand(facts: &crate::sema::model::Declarations, ty: TypeId) -> Result<(), &'static str> {
+    if matches!(simd_bits(facts, ty)?, Some(128 | 256 | 512)) {
+        Ok(())
+    } else {
+        Err("assembly zmm vector requires 128, 256 or 512 bits of supported numeric lanes")
+    }
+}
 /// The width of a completed genuine vector, or `None` for unsupported lanes.
+/// `f16` lanes count, as rustc's `VecF16` types do.
 fn simd_bits(
     facts: &crate::sema::model::Declarations,
     ty: TypeId,
@@ -296,6 +328,7 @@ fn simd_bits(
     };
     let bits = match facts.types.kind(lane) {
         Some(Type::Primitive(p)) => match p {
+            Primitive::F16 => Some(16),
             Primitive::F32 => Some(32),
             Primitive::F64 => Some(64),
             _ => p

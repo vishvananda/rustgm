@@ -110,7 +110,12 @@ impl Lower<'_, '_, '_> {
                 };
                 self.pointer(snapshot)
             }
-            Register::Abcd | Register::Byte | Register::Ymm | Register::Explicit { .. } => {
+            Register::Abcd
+            | Register::Byte
+            | Register::Ymm
+            | Register::Zmm
+            | Register::Kreg
+            | Register::Explicit { .. } => {
                 Err(assembly::profile::class(register).unwrap_or(GENERAL))
             }
         }

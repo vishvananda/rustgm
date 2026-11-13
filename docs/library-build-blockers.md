@@ -8,7 +8,25 @@ fails, and for `IterMut`, which it blocks. `(&[]).into_iter()` needs
 result was exposed. When several headers are compatible, a candidate whose
 trait condition the ordinary selector finds absent is now discarded, as
 rustc's winnowing discards it. Eleven source-core reductions and linear work
-qualify the fix. No core observation of it has run yet.
+qualify the fix. Release candidate7 (8f4e2f737) carried its first form, which
+instantiated every compatible header. Its census ended at item 14975,
+`_mm512_movm_epi16` (`x86/avx512bw.rs:11065`), with "type constraint work
+budget exceeded", after 18,997 item attempts against candidate6's 35,120.
+Every integer `Shl` header was compatible with each `?int << ?int`. The scan
+now stops at the second compatible unconditional header, and an impl-family
+test reproduces the growth without that bound. No core observation of the
+bounded form has run yet.
+
+The [AVX-512 operand checkpoint](pa41-avx512-operands.md) fixes the thirteen
+`core_arch` AVX-512 typing failures: `x86/avx512f.rs`'s ten `zmm_reg` and
+`kreg` bodies (12882-12885, 13314-13317, 13342 and 13343), and
+`x86/avx512fp16.rs`'s `_mm_mask_load_sh` 16243, `_mm_maskz_load_sh` 16244 and
+`_mm_mask_store_sh` 16255. `zmm_reg` and `kreg` type as rustc's register
+table admits them under `avx512f`, with `avx512bw` for 32- and 64-bit masks,
+and vector widths count `f16` lanes. The initial assembly profile still
+rejects both classes before native lowering and export, so the core build
+stops there until a backend contract for them exists. Twenty-six cases
+qualify it. No core observation of it has run yet.
 
 The [derived field path bound checkpoint](pa31-derive-projection-bounds.md)
 fixes the five derived bodies of core's `Peekable` (`clone`, `fmt`),
@@ -79,7 +97,8 @@ stream stores, 10511-10513, and `x86/avx2.rs` `_mm256_stream_load_si256` 10805.
 `ymm_reg` now types as rustc's register table admits it under `avx`. The initial
 assembly profile still rejects it before native lowering and export, so the
 core build stops there until a 256-bit backend contract exists. Sixteen cases
-qualify it. `zmm_reg` and `kreg` (13 AVX-512 sites) remain unimplemented.
+qualify it. `zmm_reg` and `kreg` (13 AVX-512 sites) now type; see the AVX-512
+operand checkpoint above.
 
 Clean candidate2 (24b7ce91, e832ec039) carries every fix through the GAT
 region premise checkpoint. The unchanged 120s observer ran it exclusively from

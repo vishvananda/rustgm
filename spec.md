@@ -6313,6 +6313,15 @@ assembly profile rejects it before native lowering and module-body export
 so no imported body carries one. Explicit ymm registers stay rejected by name.
 See the [ymm operand checkpoint](docs/pa41-ymm-operands.md).
 
+A `zmm_reg` operand types under `avx512f` as a 32- or 64-bit integer or float
+scalar or a genuine vector of 128, 256 or 512 supported lane bits, with the
+`x`, `y` and `z` modifiers. A `kreg` operand types under `avx512f` as an 8- or
+16-bit integer, and under `avx512bw` also as a 32- or 64-bit integer or
+pointer. It takes no modifier. Vector lane widths count `f16` lanes, as rustc's
+`VecF16` types do. The initial assembly profile rejects both classes before
+native lowering and module-body export, so no imported body carries one. See
+the [AVX-512 operand checkpoint](docs/pa41-avx512-operands.md).
+
 Target-feature policy reuses the two declaration/function owners as typed rows,
 retaining declared safety, exact contributing source attributes/input trees and
 the canonical feature closure. Query authenticated rows without reparsing. A
@@ -7333,8 +7342,9 @@ on a function that had none, or an extra name) therefore widens that
 imported body's asm CPU check to the consumer's baseline plus the claimed
 closure. It is harmless while the initial assembly profile admits only
 register classes that need baseline features (`reg`, and `xmm_reg` with
-sse). Typing also admits `ymm_reg`, but the profile rejects it before export,
-so no imported body can use a forged `avx`. Any later item that lets the
+sse). Typing also admits `ymm_reg`, `zmm_reg` and `kreg`, but the profile
+rejects them before export, so no imported body can use a forged `avx` or
+`avx512f`. Any later item that lets the
 profile admit a register class needing a non-baseline feature (`ymm_reg`,
 `zmm_reg`, `kreg`) must revisit forged additions first: the inventory
 identity, or an authenticated feature set, must cover them. Rows without

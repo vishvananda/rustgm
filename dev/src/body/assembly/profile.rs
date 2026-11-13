@@ -4,7 +4,9 @@
 use super::{Instruction, Payload, Template};
 use crate::{
     body::ir::ValueId,
-    support::initial_assembly::{ABCD, BYTE, Comments, EXPLICIT, MODIFIER, OUTPUT, YMM, option},
+    support::initial_assembly::{
+        ABCD, BYTE, Comments, EXPLICIT, KREG, MODIFIER, OUTPUT, YMM, ZMM, option,
+    },
     syntax::assembly::Register,
 };
 
@@ -15,6 +17,8 @@ pub(crate) const fn class(register: Register) -> Option<&'static str> {
         Register::Byte => Some(BYTE),
         Register::Explicit { .. } => Some(EXPLICIT),
         Register::Ymm => Some(YMM),
+        Register::Zmm => Some(ZMM),
+        Register::Kreg => Some(KREG),
         Register::General | Register::Xmm => None,
     }
 }

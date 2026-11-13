@@ -1,6 +1,8 @@
 //! Source-owned asm retains typed effects while actual emission stays capability-checked.
 use crate::{body, syntax::ast::Kind};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
+#[path = "avx512_operands.rs"]
+mod avx512;
 #[path = "asm_lowering.rs"]
 mod lowering;
 #[path = "asm_vector_inputs.rs"]

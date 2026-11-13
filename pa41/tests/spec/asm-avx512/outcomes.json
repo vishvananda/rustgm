@@ -1,0 +1,175 @@
+{
+ "schema": 1,
+ "declared": "2026-11-13, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run (obj/parallel/asm-avx512/core/declared.json, batch 1). Every declaration agrees with rustc.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --target=x86_64-unknown-linux-gnu --crate-type=lib --emit=metadata -Cpanic=abort -Copt-level=0",
+ "cases": {
+  "stream-ps512.rs": {
+   "sha256": "52f6b94f596b37db4107cee78a5aa44f79fbf0556198ffe54c6c8b35595240b8",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "core's _mm512_stream_ps: a 512-bit f32 vector in zmm_reg under avx512f"
+  },
+  "mask-load-ss.rs": {
+   "sha256": "83b9ab401199cb88b5a9f7982c13e3f6d1f8f3114e70c70b9d10d7ca6f25a578",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "core's _mm_mask_load_ss: a u8 kreg mask and an inout 128-bit xmm_reg vector"
+  },
+  "mask-load-sh.rs": {
+   "sha256": "b5d36624c521c67f6d6cce5887720fb132a6a30994eac35832d1e7e8783a2258",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "core's _mm_mask_load_sh: an inout __m128h of eight f16 lanes in xmm_reg and a kreg mask under avx512fp16"
+  },
+  "mask-store-sh.rs": {
+   "sha256": "faf35bef049f2cfa530e6acb7cc5d3e1ed0069ef1ec684b33f5cd6219230caa9",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "core's _mm_mask_store_sh: a kreg mask and an __m128h input"
+  },
+  "zmm-i64x8.rs": {
+   "sha256": "dbda55ba7d4554396a84cd1eab7d82b4f7e24a87c88c89fb1775d1102e90295f",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "a 512-bit i64 vector in zmm_reg"
+  },
+  "zmm-i32x4.rs": {
+   "sha256": "09254c6541599f024815ac0cc594d43a6ddd87fdaf1de773ee5b2ec15d555a2a",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "a 128-bit vector in zmm_reg"
+  },
+  "zmm-f32x8.rs": {
+   "sha256": "4dd659ff038cdd6cd7f7253d6016e5c98310f9c26b81a2fa0201ebb9ea9e9e28",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "a 256-bit vector in zmm_reg"
+  },
+  "zmm-scalar-f64.rs": {
+   "sha256": "fa2dae93b9449d9e6d26a84112d76724e0586fce7c3f48867d2cf6e258deed8d",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "an f64 scalar in zmm_reg"
+  },
+  "zmm-modifier-y.rs": {
+   "sha256": "c3c8d01e42fa848b16cbb4ecf9b522c3f9cd1559971a7426b7cefcf5f0988382",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "the y modifier on zmm_reg"
+  },
+  "zmm-output.rs": {
+   "sha256": "02d25d154b6f93c06f7efb1c6f6d32f9a7f5115f2e3dfd71f5688dfcccf2ed40",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "a zmm_reg output"
+  },
+  "kreg-u16.rs": {
+   "sha256": "1402921e60cecfbd9b4c8f6a263779d3df3ed2341f3d44fd20dfecee5d04c2ec",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "a u16 kreg under avx512f"
+  },
+  "kreg-u64-bw.rs": {
+   "sha256": "1173a0417913b41b1911cae888ea60c0b1e60e815dd07cba00103c21ed029db9",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "a u64 kreg under avx512bw"
+  },
+  "kreg-fp16-implies.rs": {
+   "sha256": "cef7953819bd2dd6c2d3211a61ec1b5e96b4d0fb32de0185c4bc896fd1584e1e",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "a u8 kreg under avx512fp16, which implies avx512f"
+  },
+  "xmm-f16x8.rs": {
+   "sha256": "c04e9329975d6a6b12796a079e0a3b7de4329a8a390811c70acdaafb66e9be6c",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "eight f16 lanes in xmm_reg under sse"
+  },
+  "ymm-f16x16.rs": {
+   "sha256": "3f62a96ad3e6b87cf27744775977b6dc2b95a7818c3f9c4d587c7e14dab3436d",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "sixteen f16 lanes in ymm_reg under avx"
+  },
+  "zmm-no-avx512.rs": {
+   "sha256": "19f8659f24fac99b9f707536d635cf49708dad8ff826e56388ea3cb2c5ae308c",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "zmm_reg under avx2 only",
+   "rustc_error": "error: register class `zmm_reg` requires the `avx512f` target feature"
+  },
+  "kreg-no-avx512.rs": {
+   "sha256": "43e2c94dc487b553efdf695c5ff6d58ee714befb9ec38cd29826c8966c3c488f",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "kreg under avx2 only",
+   "rustc_error": "error: register class `kreg` requires at least one of the following target features: avx512bw, avx512f"
+  },
+  "kreg-u32-no-bw.rs": {
+   "sha256": "0aac68f08a63cf16b02b200d42203023e0d480701fe8fa212f2e1d5d7e79d593",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "a u32 kreg under avx512f without avx512bw",
+   "rustc_error": "error: `avx512bw` target feature is not enabled"
+  },
+  "kreg-f32.rs": {
+   "sha256": "3c85f5d10aa0d5c71cc0ac59f6884d743a1aba1d6d8e59df48ecca2a4b0f1626",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "an f32 kreg",
+   "rustc_error": "error: type `f32` cannot be used with this register class"
+  },
+  "kreg-vector.rs": {
+   "sha256": "5b8586691f2b400111cefc82211710b105cb3297b31d874ca8de0088989a7150",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "a vector kreg",
+   "rustc_error": "error: type `V` cannot be used with this register class"
+  },
+  "kreg-modifier.rs": {
+   "sha256": "cd7c66a4262fbc2ff29ff8a261191864bd26b8d268fafa1861e28fd99781d05c",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "the x modifier on kreg",
+   "rustc_error": "error: invalid asm template modifier `x` for this register class"
+  },
+  "zmm-wide.rs": {
+   "sha256": "69cf356a65c1c4de3ce464a47bc1b29091734d7a2c5439a8a73f56d15acd6ba5",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "a 1024-bit vector in zmm_reg",
+   "rustc_error": "error: type `V` cannot be used with this register class"
+  },
+  "zmm-short.rs": {
+   "sha256": "3792187eccaec1133dc59b69f7cdc188287787b29008f2549c74c1dacdd01f4e",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "a 64-bit vector in zmm_reg",
+   "rustc_error": "error: type `V` cannot be used with this register class"
+  },
+  "zmm-modifier-e.rs": {
+   "sha256": "b0289c01faafb03cd8cd0097ebd9656c728ee8ad3c598df21a3bade067c3d000",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "the e modifier on zmm_reg",
+   "rustc_error": "error: invalid asm template modifier `e` for this register class"
+  },
+  "zmm-scalar-u8.rs": {
+   "sha256": "e884262324d8a149c76eae3601b7936fe82588a4fa3fa359e11d1ae5884f679b",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "a u8 scalar in zmm_reg",
+   "rustc_error": "error: type `u8` cannot be used with this register class"
+  },
+  "xmm-f16x16.rs": {
+   "sha256": "8423ccec9b608642b63bfda27bac457dca4d3b241bd2f094ece08459118e0384",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "sixteen f16 lanes in xmm_reg",
+   "rustc_error": "error: type `V` cannot be used with this register class"
+  }
+ }
+}

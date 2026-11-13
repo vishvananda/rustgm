@@ -149,6 +149,26 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-13 winnowing scan bound and AVX-512 operand update (supersedes the blocks below):**
+
+- Release candidate7 (clean 8f4e2f737) regressed: its census ended at item
+  14975 `_mm512_movm_epi16` (`x86/avx512bw.rs:11065`) with "type constraint
+  work budget exceeded", after 18,997 item attempts against candidate6's
+  35,120. Winnowing instantiated every integer `Shl` header for each
+  `?int << ?int`. The scan now stops at the second compatible unconditional
+  header ([evidence](docs/pa31-blanket-candidate-winnowing.md)). Family rows
+  and the control rows are in `obj/parallel/array-into-iter/`.
+- Core's thirteen AVX-512 assembly bodies now type
+  ([evidence](docs/pa41-avx512-operands.md)). `zmm_reg` and `kreg` type
+  under `avx512f`, and vector widths count `f16` lanes. The initial assembly
+  profile rejects both classes before native lowering and export.
+  - Twenty-six cases are in `pa41/tests/spec/asm-avx512`. The declared batch,
+    with three mispredicted profile stops, and the oracle stderr are in
+    `obj/parallel/asm-avx512/core/`.
+- Next: release candidate8, covering both, and an exclusive core
+  re-observation against candidate6. Then retire the candidate6 and
+  candidate7 pins.
+
 **2026-11-13 blanket candidate winnowing update (supersedes the blocks below):**
 
 - The `slice/iter/macros.rs:494` `default` failure for `Iter`, and the

@@ -35,6 +35,12 @@ pub(crate) enum Register {
     /// `ymm_reg`, which needs `avx`. Only typing admits it; the initial
     /// assembly profile rejects it before lowering or export.
     Ymm,
+    /// `zmm_reg`, which needs `avx512f`. Only typing admits it; the initial
+    /// assembly profile rejects it before lowering or export.
+    Zmm,
+    /// `kreg`, an AVX-512 mask register, which needs `avx512f`, and
+    /// `avx512bw` for 32- and 64-bit operands. Only typing admits it.
+    Kreg,
     Explicit {
         base: u8,
         bytes: u8,
@@ -49,6 +55,8 @@ pub(crate) fn register(name: &str, explicit: bool) -> Result<Register, &'static 
             "reg_byte" => Ok(Register::Byte),
             "xmm_reg" => Ok(Register::Xmm),
             "ymm_reg" => Ok(Register::Ymm),
+            "zmm_reg" => Ok(Register::Zmm),
+            "kreg" => Ok(Register::Kreg),
             _ => Err("assembly register class is not implemented for this target"),
         };
     }
