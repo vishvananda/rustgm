@@ -1,0 +1,11 @@
+pa31/tests/spec/blanket-candidate-winnowing/core-form.rs	0
+pa31/tests/spec/blanket-candidate-winnowing/mut-form.rs	0
+pa31/tests/spec/blanket-candidate-winnowing/let-annotated.rs	0
+pa31/tests/spec/blanket-candidate-winnowing/path-call.rs	0
+pa31/tests/spec/blanket-candidate-winnowing/nominal-subject.rs	0
+pa31/tests/spec/blanket-candidate-winnowing/known-element.rs	0
+pa31/tests/spec/blanket-candidate-winnowing/slice-receiver.rs	0
+pa31/tests/spec/blanket-candidate-winnowing/iterator-subject.rs	0
+pa31/tests/spec/blanket-candidate-winnowing/unresolved-element.rs	trait obligation requires an unambiguous matching assumption or implementation	(&[]).into_iter()
+pa31/tests/spec/blanket-candidate-winnowing/wrong-target.rs	incompatible types	{ (&[]).into_iter() }
+pa31/tests/spec/blanket-candidate-winnowing/ambiguous-subject.rs	trait obligation requires an unambiguous matching assumption or implementation	wrap().into_iter()

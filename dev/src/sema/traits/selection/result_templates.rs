@@ -108,7 +108,7 @@ pub(in crate::sema) fn symbolic_result(
         )?;
         return Ok(Some((result, Obligations::new(caller.first_region))));
     }
-    let mut selected = None;
+    let mut compatible = Vec::new();
     for owner in owners {
         let ControlFlow::Continue(candidate) =
             Candidate::new(facts, source, root, owner, caller.first_region)?
@@ -116,14 +116,9 @@ pub(in crate::sema) fn symbolic_result(
             // An unfinished header can still match; it prevents uniqueness.
             return Ok(None);
         };
-        if let Some(candidate) = candidate {
-            if selected.is_some() {
-                return Ok(None);
-            }
-            selected = Some(candidate);
-        }
+        compatible.extend(candidate);
     }
-    let Some(mut selected) = selected else {
+    let Some(mut selected) = winnow(facts, source, caller, compatible)? else {
         return Ok(None);
     };
     let before = selected.probe.context().steps;
@@ -134,7 +129,70 @@ pub(in crate::sema) fn symbolic_result(
     Ok(result?.map(|term| (term, selected.proof)))
 }
 
+/// The one compatible candidate, as rustc's winnowing leaves it. With more
+/// than one, rustc evaluates each and discards those whose nested obligations
+/// fail: `impl<I: Iterator> IntoIterator for I` matches every subject's header,
+/// but not `&[?E; 0]`'s once `&[?E; 0]: Iterator` has no candidate. Here a
+/// candidate is discarded only when one of its trait conditions is absent.
+fn winnow(
+    facts: &mut Declarations,
+    source: &mut Context,
+    caller: &Caller<'_>,
+    compatible: Vec<Candidate>,
+) -> Result<Option<Candidate>, String> {
+    let mut remaining = None;
+    let several = compatible.len() > 1;
+    for mut candidate in compatible {
+        if several && candidate.condition_absent(facts, source, caller)? {
+            continue;
+        }
+        if remaining.is_some() {
+            return Ok(None);
+        }
+        remaining = Some(candidate);
+    }
+    Ok(remaining)
+}
+
 impl Candidate {
+    /// Whether the ordinary selector finds no candidate for one of this
+    /// header's trait conditions. A deferred, pending, proven or refuted
+    /// condition keeps the candidate.
+    fn condition_absent(
+        &mut self,
+        facts: &mut Declarations,
+        source: &mut Context,
+        caller: &Caller<'_>,
+    ) -> Result<bool, String> {
+        for goal in &self.instance.goals {
+            if goal.trait_arguments().is_none() {
+                continue;
+            }
+            let before = self.probe.context().steps;
+            let selection = super::select_available_checked(
+                facts,
+                self.probe.context(),
+                goal,
+                Caller {
+                    first_region: self.proof.regions.end,
+                    retain_sized: false,
+                    nesting: caller.nesting.nested(),
+                    ..*caller
+                },
+                Availability::Validated,
+            );
+            source
+                .account_work(self.probe.context().steps.saturating_sub(before))
+                .map_err(inference)?;
+            match selection {
+                Ok(super::Selection::Absent) => return Ok(true),
+                Ok(_) | Err(super::Failure::Pending(_) | super::Failure::Conditional(_)) => {}
+                Err(super::Failure::Invalid(message)) => return Err(message),
+            }
+        }
+        Ok(false)
+    }
+
     fn new(
         facts: &mut Declarations,
         source: &mut Context,

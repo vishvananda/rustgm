@@ -83,6 +83,8 @@ mod trait_bounds;
 mod trait_headers;
 #[path = "../../support/verified_regions.rs"]
 pub(crate) mod verified_regions;
+#[path = "../../winnowed_projections.rs"]
+mod winnowed_projections;
 #[path = "../../witness_sources.rs"]
 mod witness_sources;
 

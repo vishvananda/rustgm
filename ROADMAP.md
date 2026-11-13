@@ -249,6 +249,14 @@ too. Fifteen source-core reductions agree with rustc. Premises for another
 lifetime now fail prepared lowering's lifetime proof, as rustc's borrow
 checker rejects them.
 
+The [blanket candidate winnowing checkpoint](docs/pa31-blanket-candidate-winnowing.md)
+discards, as rustc's winnowing does, each compatible impl whose trait
+condition has no candidate before a projection's symbolic result is exposed.
+Core's `(&[]).into_iter()` in `slice::Iter`'s `Default` needs it, because the
+blanket `IntoIterator` impl matches every header. Eleven source-core
+reductions agree with rustc, including a subject the blanket impl may still
+satisfy.
+
 The [derived field path bound checkpoint](docs/pa31-derive-projection-bounds.md)
 bounds each derived field type path that begins with a type parameter, such as
 `I::Item`, by the derived trait, as rustc does. Core's derived `Clone` and

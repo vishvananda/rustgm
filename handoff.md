@@ -149,6 +149,19 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-13 blanket candidate winnowing update (supersedes the blocks below):**
+
+- The `slice/iter/macros.rs:494` `default` failure for `Iter`, and the
+  `IterMut` body it blocks, are fixed
+  ([evidence](docs/pa31-blanket-candidate-winnowing.md)). A projection's
+  symbolic result discards each compatible impl whose trait condition is
+  absent, so the blanket `IntoIterator` impl no longer hides the array impl.
+  - Eleven reductions are in `pa31/tests/spec/blanket-candidate-winnowing`.
+  - The four declared batches, the two trace outputs and the scaling rows are
+    in `obj/parallel/array-into-iter/`.
+- Next: release candidate7, covering this and the derived field path bounds,
+  and an exclusive core re-observation.
+
 **2026-11-13 derived field path bound update (supersedes the blocks below):**
 
 - The `Peekable`, `ArrayChunks` and `Intersperse` derived body failures are

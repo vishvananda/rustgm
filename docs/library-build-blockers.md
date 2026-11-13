@@ -1,5 +1,15 @@
 # Library build blocker tracker
 
+The [blanket candidate winnowing checkpoint](pa31-blanket-candidate-winnowing.md)
+fixes `slice/iter/macros.rs:494`'s `default` for `Iter`, which candidate6
+fails, and for `IterMut`, which it blocks. `(&[]).into_iter()` needs
+`<&[?E; 0] as IntoIterator>::IntoIter` to infer `?E`. The blanket
+`impl<I: Iterator> IntoIterator for I` header also matched, so no symbolic
+result was exposed. When several headers are compatible, a candidate whose
+trait condition the ordinary selector finds absent is now discarded, as
+rustc's winnowing discards it. Eleven source-core reductions and linear work
+qualify the fix. No core observation of it has run yet.
+
 The [derived field path bound checkpoint](pa31-derive-projection-bounds.md)
 fixes the five derived bodies of core's `Peekable` (`clone`, `fmt`),
 `ArrayChunks` (`clone`, `fmt`) and `Intersperse` (`fmt`). Their field types

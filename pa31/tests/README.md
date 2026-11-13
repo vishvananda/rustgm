@@ -1107,6 +1107,20 @@ core's `simd.rs` `Simd` `eq`, which compares `[T; N]` under an always-const
 A maintainer integration test checks typing through the CLI and prepared
 lowering for every accepted case. There is no graded manifest or native test.
 
+`spec/blanket-candidate-winnowing/` freezes eleven declared no_core reductions
+of core's `Default` for `slice::Iter` and `IterMut`, `(&[]).into_iter()`,
+whose subject `&[?E; 0]` matches the blanket `IntoIterator` impl's header.
+
+- Accepted forms: core's two forms, a `let` annotation, a path call, a
+  nominal subject and three controls.
+- Rejected forms: an element left unknown (E0282), a wrong result type
+  (E0308), and a subject for which the blanket candidate may still apply
+  (E0283).
+
+A maintainer integration test checks typing through the CLI, each rejection's
+site and prepared lowering for every accepted case. There is no graded
+manifest or native test.
+
 `spec/derive-projection-bounds/` freezes sixteen declared no_core reductions
 of core's derived `Clone` and `Debug` of `Peekable`, `ArrayChunks` and
 `Intersperse`, whose field types name `I::Item`.

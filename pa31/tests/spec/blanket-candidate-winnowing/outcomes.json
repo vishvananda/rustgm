@@ -1,0 +1,89 @@
+{
+ "schema": 1,
+ "declared": "2026-11-13, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run (obj/parallel/array-into-iter/core/declared.json, batches 2 and 4; batch 2 corrects batch 1's probes, which lacked the `copy` lang item). Every declaration of these files agrees with rustc.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --target=x86_64-unknown-linux-gnu --crate-type=lib --emit=metadata -Cpanic=abort --cap-lints=allow",
+ "cases": {
+  "core-form.rs": {
+   "sha256": "81e437c03be1844354502bab6f4b6813dfa09da5ba6a5d4e8737a0d0fef3ff98",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 2,
+   "probe": "core-form"
+  },
+  "mut-form.rs": {
+   "sha256": "3dc92a5cf2149aad758372a533c10cb8dd41b5369f2ac9594a30da9176cb98e0",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 2,
+   "probe": "mut-form"
+  },
+  "let-annotated.rs": {
+   "sha256": "b09e4dddfc4c19498a072a0f38e63b7ca6ab86c2697351817cb2b41782f095db",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 2,
+   "probe": "let-annotated"
+  },
+  "path-call.rs": {
+   "sha256": "bce4268f264551505c44b877c3bf14d3cec60f8501898d2b67d09604d87ccc30",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 2,
+   "probe": "path-call"
+  },
+  "nominal-subject.rs": {
+   "sha256": "b17550afd2ae5142ff57bf253593a3e547d7b01d8b6ccffdad2cede6bebade09",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 4,
+   "probe": "nominal-subject"
+  },
+  "known-element.rs": {
+   "sha256": "bdba23607c823fd08e2658459a4a5c822497ca07ba2b13e48ed7ed89e78b488d",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 2,
+   "probe": "known-element"
+  },
+  "slice-receiver.rs": {
+   "sha256": "79b8aa25280c5080120cbb3a82e580c49f16b75a2c55f523669b0a948ba774f5",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 2,
+   "probe": "slice-receiver"
+  },
+  "iterator-subject.rs": {
+   "sha256": "05eff56a959bd3be56b8e4cc5582f8ff22f8e92714395f8cb11c4c3bd350b5d7",
+   "declared": 0,
+   "rustc_status": 0,
+   "batch": 4,
+   "probe": "iterator-subject"
+  },
+  "unresolved-element.rs": {
+   "sha256": "82b9d8d47b23c3f19d5a6224cb87b430688d250be36ba24e26e84f02e5422b74",
+   "declared": 1,
+   "rustc_status": 1,
+   "batch": 2,
+   "probe": "unresolved-element",
+   "rustc_error": "error[E0282]: type annotations needed for `Iter<'_, _>`"
+  },
+  "wrong-target.rs": {
+   "sha256": "33696c98f499fbfe718740f95ddf4bee60d5b5336ddf492e966aa3085564092f",
+   "declared": 1,
+   "rustc_status": 1,
+   "batch": 2,
+   "probe": "wrong-target",
+   "rustc_error": "error[E0308]: mismatched types"
+  },
+  "ambiguous-subject.rs": {
+   "sha256": "07ea3bbc732d6972028185e7d3bfe15da2a316caf530ca01c36c7d1ed2e2cef9",
+   "declared": 1,
+   "rustc_status": 1,
+   "batch": 4,
+   "probe": "ambiguous-subject",
+   "rustc_error": "error[E0282]: type annotations needed",
+   "rustc_error_also": "error[E0283]: type annotations needed"
+  }
+ }
+}

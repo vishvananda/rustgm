@@ -3727,7 +3727,15 @@ complete proof; it must retain the original input and formation obligations.
 
 Before exposing a symbolic result, count every compatible validated header,
 including candidates whose equations would refine existing inputs. Result types
-cannot remove competing headers. For a unique compatible header, instantiate
+cannot remove competing headers. When more than one header is compatible, each
+candidate's trait conditions are selected in its probe, and a candidate is
+discarded when the ordinary selector finds one of them absent. This mirrors
+rustc's winnowing, which discards a candidate whose nested obligation fails:
+`impl<I: Iterator> IntoIterator for I` competes with no impl for `&[?E; 0]`,
+since `&[?E; 0]: Iterator` has no candidate. A deferred, pending, proven or
+refuted condition keeps its candidate. See the
+[blanket candidate winnowing checkpoint](docs/pa31-blanket-candidate-winnowing.md).
+For a unique compatible header, instantiate
 its associated definition with the same type/const bindings as its header and
 export only an input-preserving graph. Scoped variable equations intersect numeric
 domains in either argument order. They must not reject a numeric hole merely
