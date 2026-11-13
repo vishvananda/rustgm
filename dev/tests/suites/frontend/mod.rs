@@ -23,6 +23,8 @@ mod closureconst;
 mod coerce_validation_source;
 #[path = "../../coercion_provider.rs"]
 mod coercion_provider;
+#[path = "../../configured_tails.rs"]
+mod configured_tails;
 #[path = "../../crate_expansion.rs"]
 mod crate_expansion;
 #[path = "../../crate_syntax.rs"]

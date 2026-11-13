@@ -143,7 +143,7 @@ impl Walker<'_> {
             | Syntax::ConstClosure { closure: value, .. }
             | Syntax::Group(value)
             | Syntax::Attributed { value, .. }
-            | Syntax::Statement(value)
+            | Syntax::Statement { value, .. }
             | Syntax::Label { value, .. }
             | Syntax::Unary { operand: value, .. }
             | Syntax::Cast { value, .. }

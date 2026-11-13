@@ -348,7 +348,7 @@ impl<'a> Writer<'a> {
             | Kind::Field { .. }
             | Kind::Block { .. }
             | Kind::EmptyStatement
-            | Kind::Statement(_) => self.operand(view, node),
+            | Kind::Statement { .. } => self.operand(view, node),
             Kind::If { .. }
             | Kind::Loop { .. }
             | Kind::While { .. }

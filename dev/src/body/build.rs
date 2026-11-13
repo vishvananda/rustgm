@@ -1392,7 +1392,7 @@ impl<'a> Builder<'a> {
                     }
                     Kind::Unary { operand, .. }
                     | Kind::Group(operand)
-                    | Kind::Statement(operand)
+                    | Kind::Statement { value: operand, .. }
                     | Kind::Attributed { value: operand, .. }
                     | Kind::ConstClosure {
                         closure: operand, ..
@@ -1727,7 +1727,7 @@ impl<'a> Builder<'a> {
                 let value = self.path(node)?;
                 self.evaluate(node, ty, value)?
             }
-            Kind::EmptyStatement | Kind::Item(_) | Kind::Statement(_) => self.unit(node)?,
+            Kind::EmptyStatement | Kind::Item(_) | Kind::Statement { .. } => self.unit(node)?,
             Kind::Tuple(list) if list.start == list.end => self.unit(node)?,
             Kind::Let {
                 mut pattern, value, ..

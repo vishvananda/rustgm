@@ -135,6 +135,7 @@ pub fn configure_with_inputs<'s>(
     for literal in literals {
         interpret(source, &mut ast, &active, literal)?;
     }
+    promote_tails(&mut ast, &active, &pending.tails)?;
     Ok(ConfiguredCrate {
         ast,
         owners,
@@ -142,6 +143,97 @@ pub fn configure_with_inputs<'s>(
         effects,
         cfg_uses,
     })
+}
+
+/// As in rustc, a block whose written tail is configured out takes its last
+/// enabled statement as its tail when that statement is an expression written
+/// without a semicolon, and otherwise has none. The promoted statement becomes a
+/// transparent group around its value, keeping its attribute owner. The removed
+/// tail stays inactive after the statements, so every node keeps its parent and
+/// each subtree stays the contiguous ID range ending at its root.
+fn promote_tails<L>(
+    ast: &mut Syntax<L>,
+    active: &[bool],
+    blocks: &[NodeId],
+) -> Result<(), LexError> {
+    for &block in blocks {
+        let (Kind::Block {
+            statements,
+            tail: Some(tail),
+            ..
+        }
+        | Kind::Expansion {
+            children: statements,
+            tail: Some(tail),
+        }) = ast.nodes[block.get() as usize].kind
+        else {
+            continue;
+        };
+        if !active[block.get() as usize] || active[tail.get() as usize] {
+            continue;
+        }
+        let promoted = promoted_statement(ast, active, statements);
+        let span = ast.nodes[block.get() as usize].span;
+        let failure =
+            || crate::syntax::token_tree::error(span.start, "configured block tail overflow");
+        let first = statements.start as usize;
+        let length = statements.end as usize - first;
+        ast.edges.try_reserve(length + 1).map_err(|_| failure())?;
+        let start = u32::try_from(ast.edges.len()).map_err(|_| failure())?;
+        for index in first..first + length {
+            if promoted.is_none_or(|(at, ..)| at != index - first) {
+                let edge = ast.edges[index];
+                ast.edges.push(edge);
+            }
+        }
+        ast.edges.push(tail);
+        let end = u32::try_from(ast.edges.len()).map_err(|_| failure())?;
+        if let Some((_, _, statement, value)) = promoted {
+            ast.nodes[statement.get() as usize].kind = Kind::Group(value);
+        }
+        if let Kind::Block {
+            statements, tail, ..
+        }
+        | Kind::Expansion {
+            children: statements,
+            tail,
+        } = &mut ast.nodes[block.get() as usize].kind
+        {
+            *statements = crate::syntax::ast::List { start, end };
+            *tail = promoted.map(|(_, element, ..)| element);
+        }
+    }
+    Ok(())
+}
+
+/// The last enabled statement when it is an expression without a semicolon:
+/// its list position, list element, statement node and value. A braced macro
+/// statement is not promoted; its expansion supplies its own statements.
+fn promoted_statement<L>(
+    ast: &Syntax<L>,
+    active: &[bool],
+    statements: crate::syntax::ast::List,
+) -> Option<(usize, NodeId, NodeId, NodeId)> {
+    let list = ast.list(statements);
+    let at = list.iter().rposition(|node| active[node.get() as usize])?;
+    let element = list[at];
+    let statement = match ast.node(element).kind {
+        Kind::Attributed { value, .. } => value,
+        _ => element,
+    };
+    let Kind::Statement {
+        value,
+        semicolon: false,
+    } = ast.node(statement).kind
+    else {
+        return None;
+    };
+    let mut written = value;
+    while let Kind::Attributed { value, .. } = ast.node(written).kind {
+        written = value;
+    }
+    (!matches!(ast.node(written).kind, Kind::Macro { .. }))
+        .then_some((at, element, statement, value))
 }
 
 /// The first node created in `node`'s subtree: its smallest child's, recursively.

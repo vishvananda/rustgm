@@ -92,6 +92,15 @@ this rule; imported original bodies retain their own checked inference results.
 The [fallback checkpoint](docs/pa34-never-editions.md) records independent
 cross-edition macro and runtime trait-selection controls.
 
+A block has no tail separate from its statements, as in rustc. When
+configuration removes a written tail, the last enabled expression statement
+without a semicolon becomes the tail. A braced macro statement is never
+promoted. Without such a statement the block has no tail. Every other
+expression statement without a semicolon must have type `()`, which a
+diverging value coerces to. That includes an interpolated `$s:stmt`, since a
+`;` written after it is an empty statement. See the
+[configured block tail checkpoint](docs/pa31-configured-tails.md).
+
 For edition-sensitive explicit pattern modifiers, consume the parsed flags and
 the introducer's original token edition. A complete pattern can span captured
 syntax from multiple editions; do not require one edition for its full span.

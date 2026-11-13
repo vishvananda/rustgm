@@ -1,0 +1,93 @@
+{
+ "schema": 1,
+ "declared": "2026-11-13, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run (obj/parallel/cfg-tail/core/declared.json, batches 1 and 2; batches 3 and 4 were ungraded diagnostics). statement-fragment-semicolon was declared accept and rustc rejects it; rustc's outcome is used.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --target=x86_64-unknown-linux-gnu --crate-type=lib --emit=metadata -Cpanic=abort --cap-lints=allow",
+ "cases": {
+  "tail-cfg-out.rs": {
+   "sha256": "2a86cc7e3a8796cdecf2a5da22422b14bcbb7c118f19e0ba487c8183726e4750",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "tail-cfg-in.rs": {
+   "sha256": "3dc8f2bd22630d5dc9ae5005c3ed5b7596b35055acacf650878f84115265f1a0",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "three-blocks.rs": {
+   "sha256": "29e877ff6964e07416d7db15228186366f4058455c001c18bed268f0e851967b",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "let-value.rs": {
+   "sha256": "8647abad60b44218dc0e8bb8e167e6294a89eff68601bd893d8a9ebd8563efe7",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "method-form.rs": {
+   "sha256": "033ab1fb83902ee2b9e6370c601224797ac1e3ff41fb0e4a21af24bb9a7c9973",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "all-out-unit.rs": {
+   "sha256": "c3e9f0f665dab4131be44bae4e9fed348318d6fa7250a0cfcde6bf09bd1b7e73",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "semicolon-kept.rs": {
+   "sha256": "824ecce8131cda27b97f1c89c19f339ba7a08eeb1fae42c345468cc6baba2eb6",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "error[E0308]: mismatched types"
+  },
+  "both-kept.rs": {
+   "sha256": "bf157cf0c0fbb1af3b45984eebf754e5b20cd66d6c7d86ff321a253635c8572a",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "error[E0308]: mismatched types"
+  },
+  "macro-form.rs": {
+   "sha256": "1502e19c10147ededca004b5e4697345102b8d2339c2634867d750f67bfbb728",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "attributed-promoted.rs": {
+   "sha256": "861ce61d19b6ee875bb69b3f17d63f3f8525bb74efb38c8d21284a35159197d7",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "unsafe-block-promoted.rs": {
+   "sha256": "bb00b26704d741946cadff211831fcb321b0ba0eaa7ed8e2b68efd8c49574cc5",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "match-statement-unit.rs": {
+   "sha256": "418cb67c6682bbbc9420f624d3579f51e714d724092dd009873750beba420837",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "diverging-statement.rs": {
+   "sha256": "642adc4b5259802508366c74e89f6b03934eaaa7edad0ad4eaade21cd6e9eb7d",
+   "declared": 0,
+   "rustc_status": 0
+  },
+  "type-mismatch-promoted.rs": {
+   "sha256": "801c138eca9ed4caaad42ad96fa6f36e7d5a4fca9c476f06ae2b2f00f4cbcc73",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "error[E0308]: mismatched types"
+  },
+  "if-statement-nonunit.rs": {
+   "sha256": "491f3bf560a8a7e70899980808411b2a1611183504f87d6207928266b42d87c0",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "error[E0308]: mismatched types"
+  },
+  "statement-fragment-semicolon.rs": {
+   "sha256": "b76a3f25f481351a64f51a40ada7007ed7f2006c4f0057b2fe6df52f0f361689",
+   "declared": 0,
+   "rustc_status": 1,
+   "rustc_error": "error[E0308]: mismatched types"
+  }
+ }
+}

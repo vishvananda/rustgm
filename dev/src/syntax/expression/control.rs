@@ -72,7 +72,14 @@ impl Parser<'_, '_> {
                 tail,
             },
         )?;
+        self.record_tail(block, tail);
         self.attach(inner, block)
+    }
+    /// A tail with attributes may be configured out after parsing.
+    pub(super) fn record_tail(&mut self, node: NodeId, tail: Option<NodeId>) {
+        if tail.is_some_and(|tail| matches!(self.ast.node(tail).kind, Kind::Attributed { .. })) {
+            self.ast.pending.tails.push(node);
+        }
     }
 
     // Forced only without debug assertions: debug builds keep the call so
@@ -105,8 +112,11 @@ impl Parser<'_, '_> {
                 crate::syntax::item::AttributeRange::default()
             };
             let statement = if let Some(statement) = self.interpolated(&[F::Statement])? {
+                // As in rustc, an interpolated expression statement stays
+                // without a semicolon: a written `;` after it is an empty
+                // statement, so its `()` requirement remains.
                 if !self.eat(P::Semicolon)?
-                    && let Kind::Statement(value) = self.ast.node(statement).kind
+                    && let Kind::Statement { value, .. } = self.ast.node(statement).kind
                     && self.end_statements(close)?
                 {
                     tail = Some(self.attach(attrs, value)?);
@@ -138,7 +148,13 @@ impl Parser<'_, '_> {
                     if !opaque {
                         self.statement_macro(value);
                     }
-                    self.node(self.ast.node(value).span.start, Kind::Statement(value))?
+                    self.node(
+                        self.ast.node(value).span.start,
+                        Kind::Statement {
+                            value,
+                            semicolon: true,
+                        },
+                    )?
                 } else if self.end_statements(close)? {
                     if !opaque {
                         self.statement_tail_macro(value);
@@ -146,7 +162,13 @@ impl Parser<'_, '_> {
                     tail = Some(self.attach(attrs, value)?);
                     break;
                 } else if self.with_block(value) {
-                    self.node(self.ast.node(value).span.start, Kind::Statement(value))?
+                    self.node(
+                        self.ast.node(value).span.start,
+                        Kind::Statement {
+                            value,
+                            semicolon: false,
+                        },
+                    )?
                 } else {
                     return Err(self.error("expected semicolon or end of block")?);
                 }

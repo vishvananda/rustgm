@@ -192,6 +192,9 @@ pub fn append<L, M>(
         pending
             .literals
             .extend(source.pending.literals.iter().map(|n| bases.rebased(*n)));
+        pending
+            .tails
+            .extend(source.pending.tails.iter().map(|n| bases.rebased(*n)));
     }
     result.map(|()| NodeId::new(source.root.get() + bases.nodes))
 }
@@ -508,7 +511,7 @@ impl Bases {
                 }
             }
             Kind::Group(node)
-            | Kind::Statement(node)
+            | Kind::Statement { value: node, .. }
             | Kind::Unary { operand: node, .. }
             | Kind::Loop { body: node }
             | Kind::ReferencePattern { pattern: node, .. } => self.node(node),

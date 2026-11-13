@@ -1,5 +1,15 @@
 # Library build blocker tracker
 
+The [configured block tail checkpoint](pa31-configured-tails.md) fixes
+"missing body type constraint" in core's `fmt/num.rs:145` and `:166`
+`Display` bodies. Their written tail is configured out. Configuration left the
+removed tail in place, and the parser had not recorded which statements lacked
+a semicolon. The last enabled statement without one now becomes the tail, as
+in rustc. Such a statement elsewhere must have type `()`, so three programs
+the base accepted are now rejected, as rustc rejects them. Sixteen source-core
+reductions and function-linear work qualify the fix. No core observation of
+it has run yet.
+
 The [derived tuple field privacy checkpoint](pa31-derive-field-privacy.md)
 fixes "aggregate field is private" in 31 derived core bodies, 26 `fmt` and 5
 `eq`, on tuple structs whose fields are private to their own module, such as

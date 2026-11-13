@@ -249,6 +249,13 @@ too. Fifteen source-core reductions agree with rustc. Premises for another
 lifetime now fail prepared lowering's lifetime proof, as rustc's borrow
 checker rejects them.
 
+The [configured block tail checkpoint](docs/pa31-configured-tails.md) makes a
+block whose written tail is configured out take its last enabled statement
+written without a semicolon as its tail, as core's `fmt/num.rs` `Display`
+bodies need. Such a statement elsewhere must now have type `()`. Sixteen
+source-core reductions qualify it, including three rustc rejections the base
+accepted.
+
 The [derived tuple field privacy checkpoint](docs/pa31-derive-field-privacy.md)
 anchors a derived tuple index on its field, as rustc spans it, so `self.0` in
 a derived impl is checked from the item's module. 31 derived core `fmt` and

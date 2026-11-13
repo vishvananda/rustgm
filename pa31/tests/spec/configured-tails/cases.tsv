@@ -1,0 +1,16 @@
+pa31/tests/spec/configured-tails/tail-cfg-out.rs	0
+pa31/tests/spec/configured-tails/tail-cfg-in.rs	0
+pa31/tests/spec/configured-tails/three-blocks.rs	0
+pa31/tests/spec/configured-tails/let-value.rs	0
+pa31/tests/spec/configured-tails/method-form.rs	0
+pa31/tests/spec/configured-tails/all-out-unit.rs	0
+pa31/tests/spec/configured-tails/macro-form.rs	0
+pa31/tests/spec/configured-tails/attributed-promoted.rs	0
+pa31/tests/spec/configured-tails/unsafe-block-promoted.rs	0
+pa31/tests/spec/configured-tails/match-statement-unit.rs	0
+pa31/tests/spec/configured-tails/diverging-statement.rs	0
+pa31/tests/spec/configured-tails/semicolon-kept.rs	1
+pa31/tests/spec/configured-tails/both-kept.rs	1
+pa31/tests/spec/configured-tails/type-mismatch-promoted.rs	1
+pa31/tests/spec/configured-tails/if-statement-nonunit.rs	1
+pa31/tests/spec/configured-tails/statement-fragment-semicolon.rs	1

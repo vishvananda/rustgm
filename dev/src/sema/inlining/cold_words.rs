@@ -25,7 +25,7 @@ impl ColdState<'_> {
 
 fn body_target<L>(ast: &Syntax<L>, node: NodeId) -> Result<bool, &'static str> {
     let node = match ast.node(node).kind {
-        Kind::Statement(value) => value,
+        Kind::Statement { value, .. } => value,
         _ => node,
     };
     Ok(match ast.node(node).kind {

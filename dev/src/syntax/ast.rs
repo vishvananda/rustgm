@@ -309,7 +309,14 @@ pub enum Kind {
         gate: u32,
     },
     EmptyStatement,
-    Statement(NodeId),
+    /// An expression statement. `semicolon` is false for a block-like
+    /// expression written without one and for every interpolated statement
+    /// fragment, whose following `;` rustc parses as an empty statement. Such
+    /// a statement must have type `()` unless it is the tail.
+    Statement {
+        value: NodeId,
+        semicolon: bool,
+    },
     Let {
         pattern: NodeId,
         ty: Option<NodeId>,
@@ -426,6 +433,9 @@ pub struct Pending {
     pub owners: Vec<NodeId>,
     /// Every `DeferredLiteral` token node.
     pub literals: Vec<NodeId>,
+    /// Every block or statement expansion whose written tail is an attribute
+    /// owner, so configuration can replace a tail it removes.
+    pub tails: Vec<NodeId>,
 }
 
 #[derive(Debug)]

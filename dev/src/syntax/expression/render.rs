@@ -262,7 +262,7 @@ fn record<L>(source: &str, ast: &Syntax<L>, kind: Kind, output: &mut impl Write)
             Optional(tail)
         ),
         Kind::EmptyStatement => write!(output, "empty-statement"),
-        Kind::Statement(value) => write!(output, "statement {}", value.get()),
+        Kind::Statement { value, .. } => write!(output, "statement {}", value.get()),
         Kind::Let {
             pattern,
             ty,

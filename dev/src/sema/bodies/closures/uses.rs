@@ -323,7 +323,7 @@ impl Collector<'_> {
             | Kind::Attributed { value, .. }
             | Kind::ConstClosure { closure: value, .. }
             | Kind::Label { value, .. }
-            | Kind::Statement(value) => self.push(value, work.usage),
+            | Kind::Statement { value, .. } => self.push(value, work.usage),
             Kind::Name(..)
             | Kind::Path { .. }
             | Kind::Qualified { .. }

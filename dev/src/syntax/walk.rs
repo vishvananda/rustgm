@@ -90,7 +90,7 @@ impl<L> Syntax<L> {
             | Kind::Group(value)
             | Kind::TryBlock { body: value, .. }
             | Kind::ConstClosure { closure: value, .. }
-            | Kind::Statement(value)
+            | Kind::Statement { value, .. }
             | Kind::Unary { operand: value, .. }
             | Kind::Field { value, .. }
             | Kind::FieldInit { value, .. }

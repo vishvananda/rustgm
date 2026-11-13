@@ -144,7 +144,13 @@ impl Parser<'_, '_> {
         if !opaque {
             self.statement_macro(value);
         }
-        self.node(self.ast.node(value).span.start, Kind::Statement(value))
+        self.node(
+            self.ast.node(value).span.start,
+            Kind::Statement {
+                value,
+                semicolon: false,
+            },
+        )
     }
 }
 
@@ -365,7 +371,9 @@ pub fn parse_expansion_with_inputs<'s>(
         _ => return Err(super::error(0, "invalid expansion parser context")),
     };
     let start = tokens.first().map_or(0, |t| t.start);
-    parser.ast.root = parser.node(start, Kind::Expansion { children, tail })?;
+    let root = parser.node(start, Kind::Expansion { children, tail })?;
+    parser.record_tail(root, tail);
+    parser.ast.root = root;
     parser.ast.lookahead_high_water = parser.cursor.high_water;
     Ok(parser.ast)
 }

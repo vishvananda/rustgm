@@ -1105,6 +1105,19 @@ core's `simd.rs` `Simd` `eq`, which compares `[T; N]` under an always-const
 A maintainer integration test checks typing through the CLI and prepared
 lowering for every accepted case. There is no graded manifest or native test.
 
+`spec/configured-tails/` freezes sixteen declared no_core reductions of
+core's `fmt/num.rs` `Display` bodies, whose written tail is configured out.
+
+- Accepted forms: a removed tail after one or more enabled blocks, the shape
+  in a `let`, a method and a `macro_rules` impl, a second attribute, an
+  `unsafe` block, a unit function, and three controls.
+- Rejected at typing (E0308): a semicolon after the enabled block, two
+  non-unit blocks, a promoted `bool` block, a non-unit `if` statement and an
+  interpolated `$s;`.
+
+A maintainer integration test checks typing through the CLI and prepared
+lowering for every accepted case. There is no graded manifest or native test.
+
 `spec/derive-field-privacy/` freezes seventeen declared no_core reductions of
 core's derived `PartialEq` and `Debug` impls on private tuple fields, such as
 `TryFromSliceError(())`.

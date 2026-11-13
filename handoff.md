@@ -149,6 +149,18 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-13 configured block tail update (supersedes the blocks below):**
+
+- `fmt/num.rs:145`/`:166` "missing body type constraint" is fixed
+  ([evidence](docs/pa31-configured-tails.md)). A removed tail is replaced by
+  the last enabled statement without a semicolon, and such a statement
+  elsewhere must have type `()`.
+  - Sixteen reductions are in `pa31/tests/spec/configured-tails`.
+  - The four declared batches, the oracle stderr and the scaling rows are in
+    `obj/parallel/cfg-tail/`.
+- Next: a release pin and a core re-observation, since the `()` rule applies
+  to every body.
+
 **2026-11-13 derived tuple field privacy update (supersedes the blocks below):**
 
 - Core's 31 derived `fmt`/`eq` "aggregate field is private" failures have a

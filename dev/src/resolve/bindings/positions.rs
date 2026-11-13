@@ -33,7 +33,7 @@ pub(super) fn child<L>(
         | Kind::Label { .. }
         | Kind::TryBlock { .. }
         | Kind::ConstClosure { .. } => position,
-        Kind::Statement(_) | Kind::Block { .. } => Position::Statement,
+        Kind::Statement { .. } | Kind::Block { .. } => Position::Statement,
         Kind::Expansion { tail, .. } => {
             if tail == Some(child) {
                 position

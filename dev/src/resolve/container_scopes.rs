@@ -56,7 +56,7 @@ pub(super) fn block_has_items(
                     return false;
                 }
                 match ast.node(node).kind {
-                    Kind::Attributed { value, .. } | Kind::Statement(value) => node = value,
+                    Kind::Attributed { value, .. } | Kind::Statement { value, .. } => node = value,
                     Kind::Item(_)
                     | Kind::Macro {
                         context: MacroContext::Statements,

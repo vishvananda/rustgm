@@ -215,7 +215,11 @@ impl<'a> Writer<'a> {
                 }
             }
             Kind::EmptyStatement => self.text(";"),
-            Kind::Statement(value) => self.enqueue(&[view.statement().n(value), W(";")]),
+            Kind::Statement {
+                value,
+                semicolon: true,
+            } => self.enqueue(&[view.statement().n(value), W(";")]),
+            Kind::Statement { value, .. } => self.enqueue(&[view.statement().n(value)]),
             // Additional admitted grammar forms are supplied by their owning modules
             // before this staged writer can be selected by source Assert.
             _ => self.flow(view, node),

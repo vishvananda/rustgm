@@ -1810,7 +1810,23 @@ impl Checker<'_> {
             Kind::Field { value, name } => self.field(node, value, name),
             Kind::Index { value, index } => self.array_index(node, value, index),
             Kind::EmptyStatement | Kind::Item(_) => self.known(node, TypeId::UNIT),
-            Kind::Statement(value) => {
+            Kind::Statement { value, semicolon } => {
+                let mut written = value;
+                while let Kind::Attributed { value, .. } = self.kind(written) {
+                    written = value;
+                }
+                // As in rustc, a statement without a semicolon has type `()`,
+                // which a diverging value coerces to. A braced macro statement
+                // is checked by its expanded statements instead.
+                if !semicolon
+                    && !matches!(
+                        self.kind(written),
+                        Kind::Macro { .. } | Kind::Expansion { .. }
+                    )
+                {
+                    let unit = self.known(value, TypeId::UNIT)?;
+                    self.coerce(value, unit)?;
+                }
                 let term = self.term(value)?;
                 let never = self.contextual_head(node, term)? == Some(Constructor::Never);
                 self.known(node, if never { TypeId::NEVER } else { TypeId::UNIT })
@@ -2931,7 +2947,7 @@ impl Checker<'_> {
         // Keep only negated literal IDs; no per-function copy of the file's AST.
         for index in 0..self.state.touched.len() {
             let node = self.state.touched[index];
-            if let Kind::Statement(value) = self.kind(node) {
+            if let Kind::Statement { value, .. } = self.kind(node) {
                 self.validate_discarded_result(node, value)?;
                 continue;
             }

@@ -27,7 +27,7 @@ impl Checker<'_> {
                 | Kind::Group(value)
                 | Kind::Attributed { value, .. }
                 | Kind::Label { value, .. }
-                | Kind::Statement(value)
+                | Kind::Statement { value, .. }
                 | Kind::Cast { value, .. }
                 | Kind::Unary { operand: value, .. }
                 | Kind::Field { value, .. }

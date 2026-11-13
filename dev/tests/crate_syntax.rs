@@ -241,6 +241,71 @@ fn items_share_body_nodes_and_source_spans() -> Result<(), String> {
     Ok(())
 }
 
+/// A configured-out tail is replaced, as in rustc, by the last enabled
+/// statement written without a semicolon, or by none. The removed tail stays an
+/// inactive child after the statements, and children still precede owners.
+#[test]
+fn configured_out_tails_promote_the_last_unterminated_statement() -> Result<(), String> {
+    let cases = [
+        ("fn f()->u8{#[cfg(true)]{1} #[cfg(false)]{2}}", true),
+        (
+            "fn f()->u8{#[cfg(true)]{1} #[cfg(false)]{2} #[cfg(false)]{3}}",
+            true,
+        ),
+        ("fn f()->u8{#[cfg(true)]{1}; #[cfg(false)]{2}}", false),
+        ("fn f(){#[cfg(false)]{1} #[cfg(false)]{2}}", false),
+        ("fn f()->u8{#[cfg(false)]{1} #[cfg(true)]{2}}", false),
+    ];
+    let mut children = Vec::new();
+    for (source, promoted) in cases {
+        let report = crate_syntax::analyze(source, &Config::default())
+            .map_err(|error| format!("{error:?}"))?;
+        let ast = &report.ast;
+        let active = |node: NodeId| report.active[node.get() as usize];
+        let (statements, tail) = ast
+            .nodes
+            .iter()
+            .find_map(|node| match node.kind {
+                Kind::Block {
+                    statements, tail, ..
+                } if !ast.list(statements).is_empty() => Some((statements, tail)),
+                _ => None,
+            })
+            .ok_or("function body block")?;
+        let list = ast.list(statements);
+        let written_tail_enabled = source.ends_with("#[cfg(true)]{2}}");
+        if written_tail_enabled {
+            assert!(tail.is_some_and(active), "{source}");
+        } else {
+            let removed = *list.last().ok_or("removed tail")?;
+            assert!(!active(removed), "{source}");
+            assert!(matches!(ast.node(removed).kind, Kind::Attributed { .. }));
+            let promoted_tail = tail.map(|tail| ast.node(tail).kind);
+            match promoted_tail {
+                Some(Kind::Attributed { value, .. }) => {
+                    assert!(promoted, "{source}");
+                    assert!(matches!(ast.node(value).kind, Kind::Group(_)), "{source}");
+                }
+                None => assert!(!promoted, "{source}"),
+                Some(_) => return Err(format!("{source}: unexpected promoted tail")),
+            }
+            assert!(
+                list.iter()
+                    .filter(|&&node| active(node))
+                    .all(|&node| Some(node) != tail),
+                "{source}"
+            );
+        }
+        for index in 0..ast.nodes.len() {
+            let id = NodeId::new(u32::try_from(index).map_err(|e| e.to_string())?);
+            children.clear();
+            ast.push_children(id, &mut children);
+            assert!(children.iter().all(|child| child.get() < id.get()));
+        }
+    }
+    Ok(())
+}
+
 #[test]
 fn every_child_precedes_its_owner_in_typed_arenas() -> Result<(), String> {
     let sources = [
