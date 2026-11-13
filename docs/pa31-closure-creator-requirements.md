@@ -166,8 +166,14 @@ for all of its closures.
 
 ## Core progress
 
-Exploratory pin wip3 (593be571, `obj/parallel/array-pattern/wip3-dev-fast`)
-carries this change with the array length change. No core observation of it
-has run. Core's census checks typing, so this lowering change matters for the
-later core build. The annotation fix restores the instantiation behavior from
-before e3af1168c.
+Clean candidate2 (`obj/parallel/capture-match/candidate2-dev-fast`, 24b7ce91)
+is built from e832ec039 with an empty patch. The unchanged 120s observer ran it
+exclusively from load 11.8. It stopped at the deadline (121.07s) after 15,111
+item attempts, at item 10246 (core_arch `x86/sse41.rs:83`), with one record. It
+reached 8380, which passes. The census checks typing, so this lowering change
+matters for the later core build. No previously passing reached body failed.
+The only remaining failure is `as_underlying` 7631 (`slice/cmp.rs:52`, "source
+transmute requires equal source and destination sizes"). The census is
+incomplete, and no core artifact exists. The progress SHA-256 is
+`4e581b3b30081f4fb55d93357da98575d378cac076d65df3e0a0c65f3a229424`, and the
+comparison is `obj/parallel/capture-match/original-candidate2-comparison.json`.

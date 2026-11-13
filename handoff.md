@@ -149,6 +149,23 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-13 clean candidate observation (supersedes the blocks below):**
+
+- Clean candidate2 (`obj/parallel/capture-match/candidate2-dev-fast`,
+  24b7ce91, e832ec039, empty patch) ran exclusively under the unchanged 120s
+  observer from load 11.8. It stopped at the deadline (121.07s) after 15,111
+  attempts at item 10246 (core_arch `x86/sse41.rs:83`), with one record.
+  - Reached and passing: 7660, 7676, 7874, 7900, 8380, 8624, 9097, 9611 and
+    9643. No previously passing reached body failed.
+  - The only remaining failure is `as_underlying` 7631: the bool niche for
+    `transmute::<ControlFlow<bool>, u8>`.
+  - The census is incomplete, and no core artifact exists. The raw evidence is
+    `obj/parallel/capture-match/original-candidate2/` and
+    `original-candidate2-comparison.json`.
+- Next: 7631. After it, the deadline rather than a failure bounds the
+  observed prefix. Its predecessor, the destructuring clean candidate
+  (2ddb3a67), ended at item 8060 with five records.
+
 **2026-11-13 GAT region premise update (supersedes the blocks below):**
 
 - The `SplitInclusive` `clone` 8624 "unambiguous matching assumption" failure

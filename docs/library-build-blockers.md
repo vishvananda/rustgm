@@ -1,5 +1,14 @@
 # Library build blocker tracker
 
+Clean candidate2 (24b7ce91, e832ec039) carries every fix through the GAT
+region premise checkpoint. The unchanged 120s observer ran it exclusively from
+load 11.8. It stopped at the deadline after 15,111 attempts at item 10246
+(core_arch `x86/sse41.rs:83`), with one record. 7660, 7676, 7874, 7900, 8380,
+8624, 9097, 9611 and 9643 were all reached and pass, and no previously passing
+reached body failed. The only remaining failure is `as_underlying` 7631
+(`slice/cmp.rs:52`, "source transmute requires equal source and destination
+sizes"), the bool niche of `ControlFlow<bool>`. No core artifact exists.
+
 The [GAT region premise checkpoint](pa31-gat-region-premises.md) fixes "trait
 obligation requires an unambiguous matching assumption or implementation" in
 core's `SplitInclusive` `clone` 8624 (`str/iter.rs:1438`). `SplitInternal`'s
