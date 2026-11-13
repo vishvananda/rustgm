@@ -2,9 +2,10 @@
 use super::*;
 use crate::types::RegionId;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
-fn fixture() -> Result<Declarations> {
+fn fixture() -> Result<(Report, Declarations)> {
     let report = crate::test_source::resolve("fn main(){}", true)?;
-    Ok(crate::pipeline::analyze_source(&report)?.facts)
+    let facts = crate::pipeline::analyze_source(&report)?.facts;
+    Ok((report, facts))
 }
 fn reference(facts: &mut Declarations, mutable: bool, element: Primitive) -> Result<TypeId> {
     let referent = facts
@@ -26,12 +27,13 @@ fn expansion(facts: &mut Declarations) -> Expansion<'_> {
         references: HashMap::default(),
         texts: HashMap::default(),
         remaining: 1_000_000,
+        source_traits: false,
     }
 }
 #[test]
 fn only_complete_shared_byte_slice_literals_normalize() -> Result {
     use super::super::references::Metadata;
-    let mut facts = fixture()?;
+    let (report, mut facts) = fixture()?;
     let shared = reference(&mut facts, false, Primitive::U8)?;
     let mutable = reference(&mut facts, true, Primitive::U8)?;
     let other = reference(&mut facts, false, Primitive::U16)?;
@@ -53,7 +55,7 @@ fn only_complete_shared_byte_slice_literals_normalize() -> Result {
         for ty in [mutable, other, raw, slice] {
             assert!(expansion.literal_pointer(ty, value)? == value);
             expansion.select(ty, value)?;
-            assert!(expansion.drain().is_err());
+            assert!(expansion.drain(&report, None).is_err());
         }
         let mut metadata = vec![
             Metadata::Length(bytes.len() as u64 + 1),
@@ -69,7 +71,7 @@ fn only_complete_shared_byte_slice_literals_normalize() -> Result {
             let value = Value::BytePointer { text, metadata };
             assert!(expansion.literal_pointer(shared, value)? == value);
             expansion.select(shared, value)?;
-            assert!(expansion.drain().is_err());
+            assert!(expansion.drain(&report, None).is_err());
         }
     }
     Ok(())
@@ -77,7 +79,7 @@ fn only_complete_shared_byte_slice_literals_normalize() -> Result {
 #[test]
 fn repeated_literal_pointers_share_canonical_text_expansion() -> Result {
     for width in [8, 32, 128] {
-        let mut facts = fixture()?;
+        let (report, mut facts) = fixture()?;
         let ty = reference(&mut facts, false, Primitive::U8)?;
         let text = facts.texts.intern(b"abc")?;
         let value = Value::BytePointer {
@@ -91,7 +93,7 @@ fn repeated_literal_pointers_share_canonical_text_expansion() -> Result {
             assert_eq!(expansion.select(ty, Value::Bytes(text))?, first);
         }
         assert_eq!(expansion.work.len(), 1);
-        expansion.drain()?;
+        expansion.drain(&report, None)?;
         assert_eq!(expansion.texts.len(), 2);
         assert_eq!(expansion.facts.patterns.fields.len(), 3);
         assert_eq!(expansion.remaining, 1_000_000 - 8);

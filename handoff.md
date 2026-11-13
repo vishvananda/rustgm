@@ -154,7 +154,7 @@ also remain, as listed above. No new private tests have executed locally.
 
 ## Current B: predecessor CI repair awaiting private execution
 
-The coherent eight-failure repair is in B; [details](docs/ci-parent-proof-repair.md).
+Eight-failure repairc9641a67b is published on origin/main and both checkouts; [details](docs/ci-parent-proof-repair.md).
 Only production change: implementation-first normalization can reuse an actual
 positive Implementation parent from this same query/caller scope. Caller-only,
 absent/builtin sources cannot cross modes; existing witness/scope/provisional
@@ -181,6 +181,18 @@ observation exists. Calibrated observations remain refused by the14/20 host-load
 gate; last observed42.88/57.73. Source/checkpoint docs and packet metadata hashes
 were separately rechecked after documentation edits. Current original evidence
 remains13, stopped at Alignment; no original library artifact exists.
+
+## Full successor compilation follow-up
+
+Manual43491074341 on c9641a67b passed fast but stopped in private Clippy before
+executing any tests: literal_pointers.rs still constructed Expansion without
+source_traits and called drain() without its new Report/dispatcher inputs.
+The source-pattern checkpoint missed those private adapters. They now retain the
+fixture's actual Report, select source_traits=false and call drain(&report,None).
+The assertions, invalid metadata opponents, shared-literal reuse and exact work
+bounds are unchanged. Production code is unchanged. Full private execution and
+the eight baseline repairs remain pending; publish the adapter and run a fresh
+coherent successor. Raw logs: structural-constant-patterns/full-ci-failed.log.
 
 ## Historical private-port draft (superseded by resumed checkpoint)
 

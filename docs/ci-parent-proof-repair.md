@@ -41,3 +41,9 @@ rejections remain tested. No production constness rule changes.
 No references, backend contract, upstream source or compiler limit changes.
 A full successor run must execute these private controls and the prior pending
 borrowed-input opponents before claiming qualification.
+
+Full successor43491074341 stopped in private Clippy on four compile errors in
+the pre-existing literal-pointer tests: the new Expansion mode and drain inputs
+were not supplied. Their adapter now keeps its actual Report and uses the
+bootstrap mode. Production behavior and every assertion remain unchanged. This
+run executed none of the repaired private controls; a successor is required.
