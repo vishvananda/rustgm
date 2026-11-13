@@ -137,6 +137,9 @@ impl Niches {
                 .get(ty)
                 .ok_or("nullable carrier lacks its completed layout")?;
             match types.kind(ty).ok_or("missing nullable carrier type")? {
+                Kind::Primitive(crate::types::Primitive::Bool) => {
+                    break Answer::Carrier(Carrier::Boolean { leaf: ty });
+                }
                 Kind::Pattern {
                     constraint: crate::types::Constraint::NonNull,
                     ..
@@ -231,7 +234,13 @@ impl Layouts {
     ) -> Result<Option<Carrier>, &'static str> {
         let mut budget = Budget::new(1_000_000);
         self.nullable_carrier(types, definitions, ty, &mut budget)
-            .map(Answer::carrier)
+            // Standalone transparent-wrapper ABI keeps its historical profile.
+            // Bool is admitted only by an enum's explicit source policy below.
+            .map(|answer| {
+                answer
+                    .carrier()
+                    .filter(|c| !matches!(c, Carrier::Boolean { .. }))
+            })
     }
     #[cfg(test)]
     pub(crate) fn pointer_carrier(
@@ -438,6 +447,9 @@ impl Layouts {
             }
             match self.nullable_carrier(types, definitions, ty, budget)? {
                 Answer::Carrier(carrier) => {
+                    if matches!(carrier, Carrier::Boolean { .. }) && !policy.bool_niche {
+                        continue;
+                    }
                     return Ok(Some(Oriented {
                         empty,
                         payload,

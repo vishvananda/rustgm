@@ -38,6 +38,10 @@ impl Context<'_> {
         layout: &crate::abi::layout::Layout,
         value: Constant,
     ) -> Result<bool, &'static str> {
+        if let Some(niche) = self.layouts.niche(layout)? {
+            return Ok(self.constant_variant(value)? == niche.empty as usize
+                && niche.carrier.empty_bits() != 0);
+        }
         if !matches!(layout.shape, Shape::Aggregate { tag: Some(_), .. }) {
             return Ok(false);
         }
@@ -57,9 +61,9 @@ impl Context<'_> {
             return Ok(false);
         };
         let ordinal = self.constant_variant(value)?;
-        // A zero-sized companion's one field adds no bytes beside the null word.
+        // A zero-sized companion's one field adds no bytes beside the carrier.
         if ordinal == niche.empty as usize && length <= 1 {
-            return Ok(true);
+            return Ok(niche.carrier.empty_bits() == 0);
         }
         if ordinal != niche.payload as usize || length != 1 {
             return Err("nullable zero test differs from its canonical variant");

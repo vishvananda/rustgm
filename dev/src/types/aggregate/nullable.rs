@@ -8,6 +8,8 @@ pub(crate) struct NullableEnum {
     pub field: u32,
     pub fallback_tag: Option<crate::types::Primitive>,
     pub companion: Companion,
+    /// The source profile admits bool's unused byte value; course layouts do not.
+    pub bool_niche: bool,
 }
 /// What the variant beside the niche carrier may hold.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

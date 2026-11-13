@@ -190,9 +190,10 @@ impl Machine<'_, '_> {
                 .checked_add(width)
                 .filter(|&end| end <= backing.bytes.len())
                 .ok_or("nullable word exceeds backing bounds")?;
+            let encoded = niche.encoding.carrier.empty_bits().to_le_bytes();
             self.charge(width)?;
             self.buffer_fragments(backing, offset, width as u64, &[])?;
-            backing.bytes[start..end].fill(0);
+            backing.bytes[start..end].copy_from_slice(&encoded[..width]);
             for index in start..end {
                 backing.set_initialized(index, true);
             }

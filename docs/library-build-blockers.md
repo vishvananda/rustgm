@@ -15,6 +15,13 @@ run. The remaining failures:
   for `Continue(())`;
 - 2 closure lifetimes, `into_searcher` 26791 and `is_contained_in` 26792
   (`str/pattern.rs:956`), which block four more;
+The [bool niche checkpoint](pa31-bool-niches.md) now qualifies21 source outcomes,
+three native observers and18 private controls, with all9307 course outputs
+unchanged. Actual7631 still needs candidate12 observation; candidate11 remains the
+last verified census until then. Source bool's companion uses byte2 throughout
+CTFE, runtime matching, cleanup and static initialization. The course policy is
+unchanged, and an additional unused-value nesting positive remains required.
+
 The [zero-sized niche companion checkpoint](pa31-zero-sized-niche-companions.md)
 qualifies eleven source contracts,15 private/10 integration controls, all9307
 active text cases and48 calibrated output-equal measurements. Source nullable

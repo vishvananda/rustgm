@@ -4,8 +4,9 @@ The active goal is to compile the pinned original core, then alloc/std, completi
 and releasing assignment components as their contracts qualify. Continue as one
 worker. **No original library artifact exists yet.** Part A's zero-sized niche
 companion change is published and clears core's actual `Result<(), Repr>` size
-assertion. The current census has three failed and four blocked bodies; next is
-bool's nonzero niche, followed by the borrowed closure output-lifetime model.
+assertion. The last census has three failed and four blocked bodies. Bool's nonzero niche
+now passes focused/API/native/course checks and awaits candidate12 observation;
+next is the borrowed closure output-lifetime model.
 
 This supersedes earlier stop instructions. Historical checkpoints and retained
 requirements are in Git (`git show 03003a86f:handoff.md`); every retained requirement
@@ -26,10 +27,15 @@ there still holds (see [Standing requirements](#standing-requirements)).
   pending and owned by scheduled CI. Do not dispatch a manual full per edit.
 - The old uncommitted part-A patch is integrated. Its raw restoration patch and
   earlier failed receipts remain under `obj/parallel/zst-niche/`; do not reapply it.
-- Next input-only work: `bool-batch2`, `bool-declared2.json` and
-  `bool-independent2.json` under that root. All21 frozen Rust outcomes agree.
-  Batch1's four rustc ICEs came from missing bool Clone/Copy declarations and are
-  retained as infrastructure failures. No bool implementation has been made yet.
+- Bool's implementation and current input contracts are qualified; see
+  [the checkpoint](docs/pa31-bool-niches.md). There are21 active PA31 cases,
+  three native observers and one required nested-niche positive in pending.json.
+  Independent Rust22/22, API21/21,18 private controls and current native programs
+  pass. Full9307 course references are unchanged. No new oracle is generated.
+- Freeze clean candidate12 from this implementation checkpoint, then observe it
+  exclusively against11 with the unchanged120s window and normal postcheck.
+  The old exploratory WIP has a test-only hash difference; it is not a replacement
+  for the clean release producer.
 - Commits use the repository's single-line subject with no trailers.
 - The backend stays pinned at v3 (17b024f69). Don't modify the C++ or v5rust
   checkouts or other checkouts' outputs. Work as one worker, with no new
@@ -53,7 +59,7 @@ The remaining failures:
 
 | Body | Site | Failure | Next |
 | --- | --- | --- | --- |
-| `as_underlying`7631 | `slice/cmp.rs:52`, `transmute::<ControlFlow<bool>, u8>` | unequal sizes | bool niche |
+| `as_underlying`7631 | `slice/cmp.rs:52`, `transmute::<ControlFlow<bool>, u8>` | unequal sizes | bool implementation qualified; observe candidate12 |
 | `into_searcher`26791, `is_contained_in`26792, blocking26793–26796 | `str/pattern.rs:956` | closure result retains an input-only or local lifetime | PA27 closure output-lifetime model |
 
 Raw observer, comparison and postcheck are in
@@ -83,34 +89,45 @@ unsupported-profile error, alignment may not increase, and the declared orientat
 is tried first. Course eligibility is unchanged. Raw evidence is
 `obj/parallel/zst-niche/`; the actual core assertion is now verified clear.
 
-## Next: `bool` niche (part B, 7631)
+## Qualified: bool niche (part B), original observation pending
 
-`ControlFlow<bool>` is `Continue(())` beside `Break(bool)`, so it needs part A's
-companion plus a `bool` carrier whose niche value is 2. rustc encodes
-`Continue(())` as 2, which batch 5's `controlflow-bool-continue` confirms.
-Today every carrier is zero-niche. The sites that hardcode 0 or null are:
+[Implementation and qualification](docs/pa31-bool-niches.md). `Carrier::Boolean`
+provides empty_bits=2 and byte storage. An explicit bool_niche flag admits it
+only for source enum policies and validated imported source field groups. Both
+cache query orders preserve the course layout; standalone transparent-wrapper
+ABI keeps its existing profile. CTFE, validity, transmutability, construction,
+matching, cleanup, initialization and zero-data classification consume the actual
+carrier value. No backend or compiler-limit change is made.
 
-- lowering's `niche_zero` and `niche_test` (`lower/function/aggregate.rs`);
-- cleanup's variant test (`lower/cleanup/emit.rs`);
-- the initializer's `Work::Bits { bits: 0 }`;
-- `nullable_zero` (`lower/data/zero.rs`), which must not report the empty
-  variant as zero when the niche value isn't 0;
-- the const-eval byte encoder (`fill(0)`, `const_eval/memory/bytes/enumerations.rs`)
-  and decoder (`bytes/niches.rs`);
-- transmutability's `tag(0, ..)`.
+Current API receipt1794562814860019382 checks all21 outcomes; native
+1794562983528985835 passes three programs, including false/true destructor counts
+`0:0 1:0 2:1 2:1`. Four unchanged cell programs retain passing native evidence.
+Initial11 integrations pass1794561838421695979,18 private controls pass
+1794562152284043406. All9307 active references reproduce with CLIf042c27d,73.58s.
+Upstream/harness/485root/44-stage checks pass. Only test expectations/declared
+cleanup inputs changed after the initial run; production hashes and CLI match.
 
-`carrier_type` (`lower/context/niches.rs`) must represent a `bool` carrier as
-a byte so it can hold 2. Restrict the `bool` carrier to source policies with an
-explicit policy flag. The course `Option` policy shares `nullable_layout`, and
-an `Option<bool>` change there would move course references. Batch 5's
-`controlflow-bool-*` and `option-bool-size` cases are declared and confirmed by
-rustc.
+Twenty-two independently declared outcomes agree with Rust. Batch1's four rustc
+ICEs and later incomplete no_core prefixes remain setup failures, not language
+rejections. The exact21 inputs and three C observers are bound by the owning
+packet manifest. pending.json retains the Rust-positive second unused-value
+contract; f042c27d still rejects it at its size assertion. No unsupported positive
+is inverted and PA31 stays planned.
 
-**Known separate deviation, not needed by the census.** `repr(Rust)` enums get
-an `I64` tag (`enum_tag` in `abi/layout.rs`), where rustc picks the smallest
-fitting integer. So `Result<(), ()>` is 8 bytes against rustc's 1, and
-`ControlFlow<u8>` is 16 against 2 (batch 5's `result-unit-unit` and
-`controlflow-u8-size`). Changing it would move course layout references.
+Next, freeze candidate12 and repeat original observation/postcheck/comparison.
+Expect7631 to clear, but retain11 as the last authoritative census until verified.
+Then reduce actual26791/26792 at str/pattern.rs:956. Eleven frozen ordinary
+controls and their Rust/baseline11 observations are under
+`obj/parallel/closure-return-inputs/`. Inferred immediate/named/reference identity
+closures reproduce the output-lifetime error; annotated/contextual twins pass
+at typing. The first LowIR probe omitted --crate-type=lib and is not prepared
+body qualification. `check-ordinary1-library.py` is the corrected unrun probe.
+Capture actual typed region/binder coordinates before changing the shared model.
+
+A separate source-layout deviation remains: repr(Rust)'s fallback I64 tag differs
+from Rust's smallest fitting tag. Result<(),()> is8 versus1, and ControlFlow<u8>
+is16 versus2. General scalar/multifield and further unused-value nesting remain
+required; course outputs must not be moved without a reviewed contract.
 
 ## Recent checkpoints
 
@@ -137,15 +154,16 @@ fitting integer. So `Result<(), ()>` is 8 bytes against rustc's 1, and
 ## Pins, artifacts and storage
 
 - `obj/parallel/capture-match/candidate11-release` is the current comparison pin.
-- After publishing this observation, retire the superseded candidate10 release
-  pin and both `wipniche1-dev-fast`/`wipniche2-dev-fast` pins with scoped cleanup.
-  Their producers and observations remain; do not treat retired paths as binaries.
-- The pin script asserts3945 development Rust files. Update that count for actual
-  new `.rs` files under dev/src, dev/bin or dev/tests; never drop test coverage to
-  fit the count.
-- Local free space is179GiB. The shared controller still has2 jobs,150GiB reserve,
-  CPU800%,12GiB RAM and256 tasks, with a16GiB cap for this worktree. Storage's
- 40GiB local default does not reduce the controller's150GiB reserve.
+- Candidate10 and wipniche1/2 were retired after publication of11; cleanup
+ 1794560721836625856. Their producer/raw files remain, their binaries are absent.
+- `wipbool1-dev-fast` retains exploratory CLIf042c27d, with a tracked patch and a
+  pre-strengthening test hash. Current managed CLI is byte-identical. Retire that
+  exploratory pin after candidate12 qualifies.
+- Pin.py asserts3945 development Rust files. No new compiler .rs file is added
+  by part B; update the count only for actual new files, never by dropping tests.
+- Free space is about177GiB. Controller2jobs/150GiB reserve/CPU800%/RAM12GiB/
+ 256tasks and the16GiB output cap remain unchanged. Storage's40GiB local default
+  does not reduce that shared reserve. Check free space before every batch.
 
 ## Procedures
 

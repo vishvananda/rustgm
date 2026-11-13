@@ -344,6 +344,7 @@ fn nullable(variants: &[s::VariantHeader], tagged: bool) -> Option<NullableEnum>
         field: 0,
         fallback_tag: (companion == Companion::Fieldless).then_some(crate::types::Primitive::U8),
         companion,
+        bool_niche: true,
     })
 }
 

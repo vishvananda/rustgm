@@ -327,8 +327,10 @@ impl Emitter<'_, '_> {
             Some(self.builder.load(ty, address.operand)?)
         } else if let Some(niche) = self.context.layouts.niche(&layout)? {
             let address = sequence.base.offset(self.builder, niche.offset)?;
-            let ty =
-                super::super::context::representation(self.context.types, niche.carrier.leaf())?;
+            let ty = self
+                .context
+                .carrier_type(niche.carrier, niche.carrier.bytes())?
+                .ok_or("missing nullable cleanup carrier representation")?;
             Some(self.builder.load(ty, address.operand)?)
         } else {
             None
@@ -404,7 +406,7 @@ impl Emitter<'_, '_> {
                         self.builder
                             .literal(Type::Ptr, crate::lowir::program::Literal::Null)?
                     } else {
-                        self.builder.integer(tag.ty, 0)?
+                        self.builder.integer(tag.ty, niche.carrier.empty_bits())?
                     },
                     predicate,
                 )

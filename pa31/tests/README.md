@@ -2,6 +2,13 @@
 
 Planned: no graded manifest or generated reference outputs yet.
 
+`spec/bool-niches/` owns21 source layout/value contracts and three C observers:
+bool payloads use bytes0/1, and the companion uses2. Source constants, validity,
+runtime construction, statics and actual destructor selection agree with Rust;
+the course policy stays separate. One further unused-value nesting positive
+remains required in pending.json. See the
+[checkpoint](../../docs/pa31-bool-niches.md) for exact qualification.
+
 `spec/zero-sized-niche-companions/` retains eleven independently declared source
 layout outcomes for core's `Result<(), Repr>` assertion: unit, PhantomData and
 aligned zero-sized fields share an existing carrier in either variant order.

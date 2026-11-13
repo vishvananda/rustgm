@@ -35,6 +35,10 @@ impl<'a> Reader<'a> {
             .ok_or("missing nullable storage encoding")?;
         if encoding.owner != ty
             || !policy.admits(encoding.empty, encoding.payload)
+            || (matches!(
+                encoding.carrier,
+                crate::abi::layout::Carrier::Boolean { .. }
+            ) && !policy.bool_niche)
             || encoding.field != policy.field
             || encoding.offset != 0
             || (encoding.carrier.is_pointer()

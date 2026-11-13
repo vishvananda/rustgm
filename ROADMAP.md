@@ -249,6 +249,13 @@ too. Fifteen source-core reductions agree with rustc. Premises for another
 lifetime now fail prepared lowering's lifetime proof, as rustc's borrow
 checker rejects them.
 
+The [bool niche checkpoint](docs/pa31-bool-niches.md) uses byte2 for a source
+enum's companion beside bool, through CTFE, runtime matching, cleanup and static
+initialization. Twenty-one active source outcomes, three new native observers
+and private course/source cache isolation qualify it; the next original-core
+observation remains pending. Additional unused values of an already niche-encoded
+enum remain a required positive, and course layouts keep their existing profile.
+
 The [zero-sized niche companion checkpoint](docs/pa31-zero-sized-niche-companions.md)
 admits source enums with two single-field variants when one field is zero-sized
 and the other has an existing niche carrier. Eleven declared source cases match

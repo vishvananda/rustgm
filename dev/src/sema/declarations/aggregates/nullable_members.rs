@@ -73,6 +73,7 @@ impl Checker<'_> {
                     field: 0,
                     fallback_tag,
                     companion,
+                    bool_niche: true,
                 },
                 Some(storage_limit),
             )

@@ -61,7 +61,7 @@ impl Describer<'_> {
                         .ok_or("missing physical niche")?;
                     if ordinal == niche.empty as usize {
                         let size = niche.carrier.bytes();
-                        let value = self.tag(0, size, budget)?;
+                        let value = self.tag(niche.carrier.empty_bits(), size, budget)?;
                         push(
                             &mut fields,
                             Field {

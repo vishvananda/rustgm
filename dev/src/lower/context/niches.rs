@@ -5,11 +5,15 @@ use crate::{
     types::{Kind, TypeId, aggregate::Representation},
 };
 impl Context<'_> {
-    pub(super) fn carrier_type(
+    pub(in crate::lower) fn carrier_type(
         &self,
         carrier: crate::abi::layout::Carrier,
         bytes: u64,
     ) -> Result<Option<crate::lowir::vocabulary::Type>, &'static str> {
+        if matches!(carrier, crate::abi::layout::Carrier::Boolean { .. }) {
+            // The enum also stores 2, which cannot travel through an i1 value.
+            return Ok((bytes == 1).then_some(crate::lowir::vocabulary::Type::I8));
+        }
         if carrier.is_pointer() && bytes != 8 {
             return Ok(None);
         }

@@ -12,12 +12,16 @@ use crate::{
 };
 
 impl Lower<'_, '_, '_> {
-    fn niche_zero(&mut self, ty: Type) -> Result<Value, &'static str> {
+    fn niche_value(&mut self, carrier: crate::abi::layout::Carrier) -> Result<Value, &'static str> {
+        let ty = self
+            .context
+            .carrier_type(carrier, carrier.bytes())?
+            .ok_or("missing nullable carrier representation")?;
         if ty == Type::Ptr {
             self.builder
                 .literal(ty, crate::lowir::program::Literal::Null)
         } else {
-            self.builder.integer(ty, 0)
+            self.builder.integer(ty, carrier.empty_bits())
         }
     }
 
@@ -28,10 +32,9 @@ impl Lower<'_, '_, '_> {
         predicate: Predicate,
     ) -> Result<Value, &'static str> {
         let address = self.offset(base, niche.offset)?;
-        let ty = super::super::context::representation(self.context.types, niche.carrier.leaf())?;
-        let input = self.builder.load(ty, address.operand)?;
-        let null = self.niche_zero(ty)?;
-        self.builder.compare(predicate, input, null)
+        let expected = self.niche_value(niche.carrier)?;
+        let input = self.builder.load(expected.ty, address.operand)?;
+        self.builder.compare(predicate, input, expected)
     }
 
     pub(super) fn is_variant(
@@ -470,13 +473,9 @@ impl Lower<'_, '_, '_> {
             let count = self.body.arguments(fields).len();
             // A zero-sized companion's one field is written below and stores nothing.
             if ordinal == niche.empty && count <= 1 {
-                let ty = super::super::context::representation(
-                    self.context.types,
-                    niche.carrier.leaf(),
-                )?;
-                let null = self.niche_zero(ty)?;
+                let empty = self.niche_value(niche.carrier)?;
                 let destination = self.offset(address, niche.offset)?;
-                self.builder.store(null, destination.operand)?;
+                self.builder.store(empty, destination.operand)?;
             } else if ordinal != niche.payload || count != 1 {
                 return Err("nullable construction differs from its exact variant fields");
             }

@@ -40,6 +40,7 @@ impl LibraryContracts<'_> {
             field: 0,
             fallback_tag: None,
             companion: crate::types::aggregate::Companion::Fieldless,
+            bool_niche: false,
         };
         self.facts
             .aggregates

@@ -1871,6 +1871,13 @@ the declared order before its reverse; retain the actual variant identities.
 An ineligible two-field instance keeps its existing tag layout. Re-derive the
 same rule from validated imported field groups, without transporting policy bytes.
 See the [zero-sized companion checkpoint](docs/pa31-zero-sized-niche-companions.md).
+Source policies also admit bool's unused byte value2. Keep that permission
+independent of the shared physical carrier cache and the historical course policy.
+Every constant, validity, runtime, cleanup and initializer consumer uses the actual
+carrier value; the enum travels as a byte, while its bool payload still requires0
+or1. A nonzero companion is never zero-filled data. See the
+[bool niche checkpoint](docs/pa31-bool-niches.md). Reusing additional unused values
+from an already niche-encoded payload remains part of general scalar niches.
 Reuse the
 canonical carrier cache, block carriers through interior storage and preserve
 explicit representations and the separately selected historical course profile.

@@ -4,18 +4,22 @@ use crate::types::{Kind, Primitive, RangeId, Store, TypeId};
 pub enum Carrier {
     NonNullPointer { leaf: TypeId },
     ZeroExcludedUnsigned { leaf: TypeId, primitive: Primitive },
+    Boolean { leaf: TypeId },
 }
 impl Carrier {
     #[must_use]
     pub const fn leaf(self) -> TypeId {
         match self {
-            Self::NonNullPointer { leaf } | Self::ZeroExcludedUnsigned { leaf, .. } => leaf,
+            Self::NonNullPointer { leaf }
+            | Self::ZeroExcludedUnsigned { leaf, .. }
+            | Self::Boolean { leaf } => leaf,
         }
     }
     #[must_use]
     pub fn bytes(self) -> u64 {
         match self {
             Self::NonNullPointer { .. } => 8,
+            Self::Boolean { .. } => 1,
             Self::ZeroExcludedUnsigned { primitive, .. } => match primitive.integer() {
                 Some((false, bits)) => u64::from(bits / 8),
                 _ => 0,
@@ -25,6 +29,14 @@ impl Carrier {
     #[must_use]
     pub const fn is_pointer(self) -> bool {
         matches!(self, Self::NonNullPointer { .. })
+    }
+    /// The unused carrier value that encodes the companion variant.
+    #[must_use]
+    pub const fn empty_bits(self) -> u128 {
+        match self {
+            Self::Boolean { .. } => 2,
+            Self::NonNullPointer { .. } | Self::ZeroExcludedUnsigned { .. } => 0,
+        }
     }
 }
 impl Carrier {

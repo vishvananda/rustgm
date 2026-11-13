@@ -1,0 +1,21 @@
+pa31/tests/spec/bool-niches/cf-size.rs	0	
+pa31/tests/spec/bool-niches/cf-false.rs	0	
+pa31/tests/spec/bool-niches/cf-true.rs	0	
+pa31/tests/spec/bool-niches/cf-continue.rs	0	
+pa31/tests/spec/bool-niches/cf-decode-false.rs	0	
+pa31/tests/spec/bool-niches/cf-decode-true.rs	0	
+pa31/tests/spec/bool-niches/cf-decode-continue.rs	0	
+pa31/tests/spec/bool-niches/cf-invalid-three.rs	1	invalid bool representation
+pa31/tests/spec/bool-niches/cf-size-wrong.rs	1	incompatible types
+pa31/tests/spec/bool-niches/cf-transmute-wide.rs	1	source transmute requires equal source and destination sizes
+pa31/tests/spec/bool-niches/option-size.rs	0	
+pa31/tests/spec/bool-niches/option-none.rs	0	
+pa31/tests/spec/bool-niches/option-false.rs	0	
+pa31/tests/spec/bool-niches/option-true.rs	0	
+pa31/tests/spec/bool-niches/option-invalid-three.rs	1	invalid bool representation
+pa31/tests/spec/bool-niches/cf-reverse.rs	0	
+pa31/tests/spec/bool-niches/cf-wrapper.rs	0	
+pa31/tests/spec/bool-niches/cf-explicit-tag.rs	0	
+pa31/tests/spec/bool-niches/cf-native.rs	0	
+pa31/tests/spec/bool-niches/cf-static.rs	0	
+pa31/tests/spec/bool-niches/cf-cleanup.rs	0	

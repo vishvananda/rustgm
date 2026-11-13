@@ -1,0 +1,303 @@
+{
+ "schema": 1,
+ "profile": {
+  "rustc": "1.98.0 (88d9e12ae)",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "mode": "source-core",
+  "cap_lints": "allow"
+ },
+ "cases": {
+  "cf-size.rs": {
+   "expected": "accept",
+   "sha256": "640c0f9af48905789529482f332024087535d082bc4b10e3cdc299fbf4795096",
+   "rustc": "accept",
+   "candidate11": "ERROR: file 0: 1839: incompatible types",
+   "rustgm": {
+    "typing": "accept",
+    "prepared_lowering": "accept",
+    "receipt": "1794562814860019382"
+   }
+  },
+  "cf-false.rs": {
+   "expected": "accept",
+   "sha256": "1ff936288e0054484e149775e1a952fa601bb158793e53999c19c466b5f1a08b",
+   "rustc": "accept",
+   "candidate11": "ERROR: file 0: 1843: source transmute requires equal source and destination sizes",
+   "rustgm": {
+    "typing": "accept",
+    "prepared_lowering": "accept",
+    "receipt": "1794562814860019382"
+   }
+  },
+  "cf-true.rs": {
+   "expected": "accept",
+   "sha256": "3b6b80de66d9841c40cb437e3b4a34401deb97e81c999e91514e60f9b10cde95",
+   "rustc": "accept",
+   "candidate11": "ERROR: file 0: 1843: source transmute requires equal source and destination sizes",
+   "rustgm": {
+    "typing": "accept",
+    "prepared_lowering": "accept",
+    "receipt": "1794562814860019382"
+   }
+  },
+  "cf-continue.rs": {
+   "expected": "accept",
+   "sha256": "1ce15ce855570651502ebbfb215dcd7d32c551c0c93ba1dc3643b39cbec26e7f",
+   "rustc": "accept",
+   "candidate11": "ERROR: file 0: 1843: source transmute requires equal source and destination sizes",
+   "rustgm": {
+    "typing": "accept",
+    "prepared_lowering": "accept",
+    "receipt": "1794562814860019382"
+   }
+  },
+  "cf-decode-false.rs": {
+   "expected": "accept",
+   "sha256": "23fd05bee09c9dd0588d5dade4df5ed12f60bcbb346c0c5d7d811a1e267a62c1",
+   "rustc": "accept",
+   "candidate11": "ERROR: file 0: 1834: source transmute requires equal source and destination sizes",
+   "rustgm": {
+    "typing": "accept",
+    "prepared_lowering": "accept",
+    "receipt": "1794562814860019382"
+   }
+  },
+  "cf-decode-true.rs": {
+   "expected": "accept",
+   "sha256": "95a8a63f1e108d7c8e222849406a6ecc4654afb9280fa80a4b3e5646dd976273",
+   "rustc": "accept",
+   "candidate11": "ERROR: file 0: 1834: source transmute requires equal source and destination sizes",
+   "rustgm": {
+    "typing": "accept",
+    "prepared_lowering": "accept",
+    "receipt": "1794562814860019382"
+   }
+  },
+  "cf-decode-continue.rs": {
+   "expected": "accept",
+   "sha256": "571328078ddb9e7d551a1ada99ac0ded82c694000ba7dfd429244fde60a355d0",
+   "rustc": "accept",
+   "candidate11": "ERROR: file 0: 1834: source transmute requires equal source and destination sizes",
+   "rustgm": {
+    "typing": "accept",
+    "prepared_lowering": "accept",
+    "receipt": "1794562814860019382"
+   }
+  },
+  "cf-invalid-three.rs": {
+   "expected": "E0080",
+   "sha256": "338a3a2fcb89f79b08dfcca97278884f4354b3d71e6485de9317d06802fab6b8",
+   "rustc": "E0080",
+   "candidate11": "ERROR: file 0: 1830: source transmute requires equal source and destination sizes",
+   "rustgm": {
+    "typing": "reject",
+    "prepared_lowering": "typing rejected",
+    "receipt": "1794562814860019382"
+   }
+  },
+  "cf-size-wrong.rs": {
+   "expected": "E0308",
+   "sha256": "f4077161fdd0c299c273916657aae6790b8a9cb00f180b84a6546d20ba77404a",
+   "rustc": "E0308",
+   "candidate11": "ERROR: file 0: 1839: incompatible types",
+   "rustgm": {
+    "typing": "reject",
+    "prepared_lowering": "typing rejected",
+    "receipt": "1794562814860019382"
+   }
+  },
+  "cf-transmute-wide.rs": {
+   "expected": "E0512",
+   "sha256": "275fc7d3012e8f84c394ce05547a061522d38a6be676f3141e6c3c93548ff4fb",
+   "rustc": "E0512",
+   "candidate11": "ERROR: file 0: 1843: source transmute requires equal source and destination sizes",
+   "rustgm": {
+    "typing": "reject",
+    "prepared_lowering": "typing rejected",
+    "receipt": "1794562814860019382"
+   }
+  },
+  "option-size.rs": {
+   "expected": "accept",
+   "sha256": "ca7d1f7999d83404bad9f071a69eb2ee0d5839e66f40de834a0e760aa81da78a",
+   "rustc": "accept",
+   "candidate11": "ERROR: file 0: 1834: incompatible types",
+   "rustgm": {
+    "typing": "accept",
+    "prepared_lowering": "accept",
+    "receipt": "1794562814860019382"
+   }
+  },
+  "option-none.rs": {
+   "expected": "accept",
+   "sha256": "87495907d8ce425ab52b63e70f419b394ed40e79485c168c0843f12f6bfc2960",
+   "rustc": "accept",
+   "candidate11": "ERROR: file 0: 1838: source transmute requires equal source and destination sizes",
+   "rustgm": {
+    "typing": "accept",
+    "prepared_lowering": "accept",
+    "receipt": "1794562814860019382"
+   }
+  },
+  "option-false.rs": {
+   "expected": "accept",
+   "sha256": "970ef0bd5083616e44ae34679db061a2f484692adea0269bcd7a5abc7ebe092f",
+   "rustc": "accept",
+   "candidate11": "ERROR: file 0: 1838: source transmute requires equal source and destination sizes",
+   "rustgm": {
+    "typing": "accept",
+    "prepared_lowering": "accept",
+    "receipt": "1794562814860019382"
+   }
+  },
+  "option-true.rs": {
+   "expected": "accept",
+   "sha256": "20a588ad629cc8c40f039bd3149f8d9889ddc1f6ef9fd23c1c6df731449514c0",
+   "rustc": "accept",
+   "candidate11": "ERROR: file 0: 1838: source transmute requires equal source and destination sizes",
+   "rustgm": {
+    "typing": "accept",
+    "prepared_lowering": "accept",
+    "receipt": "1794562814860019382"
+   }
+  },
+  "option-invalid-three.rs": {
+   "expected": "E0080",
+   "sha256": "bb7841fd49c486bc4cf9d4b7b0b77e99c53cf7c60f32dd23077ea546482ea09e",
+   "rustc": "E0080",
+   "candidate11": "ERROR: file 0: 1825: source transmute requires equal source and destination sizes",
+   "rustgm": {
+    "typing": "reject",
+    "prepared_lowering": "typing rejected",
+    "receipt": "1794562814860019382"
+   }
+  },
+  "cf-reverse.rs": {
+   "expected": "accept",
+   "sha256": "76acee2f35ad10a6164cc41e10f88440ead8644f53b98261ead5e1ecbcbbf5d7",
+   "rustc": "accept",
+   "candidate11": "ERROR: file 0: 1902: source transmute requires equal source and destination sizes",
+   "rustgm": {
+    "typing": "accept",
+    "prepared_lowering": "accept",
+    "receipt": "1794562814860019382"
+   }
+  },
+  "cf-wrapper.rs": {
+   "expected": "accept",
+   "sha256": "e5436aed7611c7634f7b3447ab8f94c3258ef35412a80c7eede49b5006f70539",
+   "rustc": "accept",
+   "candidate11": "ERROR: file 0: 1883: incompatible types",
+   "rustgm": {
+    "typing": "accept",
+    "prepared_lowering": "accept",
+    "receipt": "1794562814860019382"
+   }
+  },
+  "cf-explicit-tag.rs": {
+   "expected": "accept",
+   "sha256": "564455f9d3d47b987b025f4e6a3d95d18b315466011ba58d79c7a9b8d0b3e96c",
+   "rustc": "accept",
+   "candidate11": 0,
+   "rustgm": {
+    "typing": "accept",
+    "prepared_lowering": "accept",
+    "receipt": "1794562814860019382"
+   }
+  },
+  "cf-native.rs": {
+   "expected": "accept",
+   "sha256": "fad8f5e32e495f8f5211787dac51c23ed8a13afe7bcd7915200bb6a42379e49a",
+   "rustc": "accept",
+   "candidate11": "ERROR: file 0: 1869: source transmute requires equal source and destination sizes",
+   "rustgm": {
+    "typing": "accept",
+    "prepared_lowering": "accept",
+    "receipt": "1794562814860019382"
+   }
+  },
+  "cf-static.rs": {
+   "expected": "accept",
+   "sha256": "b189cef56581a7e013a7fcdd785ab8d4758d2e65ff24edfc1348de2c90a502d8",
+   "rustc": "accept",
+   "candidate11": "not observed for these exact bytes",
+   "rustgm": {
+    "typing": "accept",
+    "prepared_lowering": "accept",
+    "receipt": "1794562814860019382"
+   }
+  },
+  "cf-cleanup.rs": {
+   "expected": "accept",
+   "sha256": "3ae1ae56da0dac0aaf78ed27fe1984f0214ad102eaf242dc33a45db537126eed",
+   "rustc": "accept",
+   "candidate11": "not observed for these exact bytes",
+   "rustgm": {
+    "typing": "accept",
+    "prepared_lowering": "accept",
+    "receipt": "1794562814860019382"
+   }
+  }
+ },
+ "native": {
+  "cf-native": {
+   "observer": "cf-native-observer.c",
+   "observer_sha256": "e68cb66956f6d508d659a14da34da89e76d55734590febc85d984688fcc07860",
+   "stdout": "0 1 2 0 1 2\n",
+   "status": 0,
+   "exports": [
+    "encode",
+    "decode"
+   ],
+   "declared_before_any_native_run": true
+  },
+  "cf-static": {
+   "observer": "cf-static-observer.c",
+   "observer_sha256": "0f3c31ddaeb67a0ce18ddcb99afb54b75f635cc52fefe4d2925c5232a3d65c17",
+   "stdout": "2 0 2 0\n",
+   "status": 0,
+   "exports": [
+    "get_stop",
+    "get_go"
+   ],
+   "declared_before_any_native_run": true
+  },
+  "cf-cleanup": {
+   "observer": "cf-cleanup-observer.c",
+   "observer_sha256": "44c3739b0832e87c010b994c84d630a3fc2ed22da821ce62186492b483356bcd",
+   "stdout": "0:0 1:0 2:1 2:1\n",
+   "status": 0,
+   "exports": [
+    "cleanup"
+   ],
+   "declared_before_any_native_run": true
+  }
+ },
+ "pending": "pending.json",
+ "raw_declarations": "obj/parallel/zst-niche/bool-declared4.json",
+ "raw_independent": "obj/parallel/zst-niche/bool-independent4.json",
+ "raw_static_declaration": "obj/parallel/zst-niche/bool-declared5.json",
+ "native_independent": {
+  "cf-native": "obj/parallel/zst-niche/bool-native-rust/receipt.json",
+  "cf-static": "obj/parallel/zst-niche/bool-native-rust2/receipt.json",
+  "cf-cleanup": "obj/parallel/zst-niche/bool-native-rust3/receipt.json"
+ },
+ "raw_cleanup_declaration": "obj/parallel/zst-niche/bool-declared6.json",
+ "qualification": {
+  "integration": "1794561838421695979",
+  "current_packet_api": "1794562814860019382",
+  "current_native": "1794562983528985835",
+  "private": "1794562152284043406",
+  "text": "obj/parallel/zst-niche/text-all-bool/receipt.json",
+  "cli_sha256": "f042c27d44c7362957fd337b87440357e75b037dacf979faa4370bd6ad154c95",
+  "retained_cell_native": "1794562065413043594",
+  "current_native_stdout": {
+   "cf-native": "0 1 2 0 1 2\n",
+   "cf-static": "2 0 2 0\n",
+   "cf-cleanup": "0:0 1:0 2:1 2:1\n"
+  }
+ }
+}

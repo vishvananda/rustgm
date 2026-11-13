@@ -65,12 +65,57 @@ fn nullable(
                 field: 0,
                 fallback_tag: None,
                 companion: crate::types::aggregate::Companion::Fieldless,
+                bool_niche: false,
             },
             None,
         )?;
     }
     types.intern(Kind::Adt(item, GenericArgs::EMPTY))
 }
+#[test]
+fn boolean_carrier_cache_cannot_change_a_course_policy() -> Result<(), String> {
+    let mut types = Store::default();
+    let mut definitions = Definitions::default();
+    let boolean = TypeId::primitive(crate::types::Primitive::Bool);
+    let course = nullable(&mut types, &mut definitions, ItemId(10), boolean, true)?;
+    let source = nullable(&mut types, &mut definitions, ItemId(11), boolean, false)?;
+    definitions.register_nullable_enum(
+        &types,
+        ItemId(11),
+        NullableEnum {
+            empty: 1,
+            payload: 0,
+            field: 0,
+            fallback_tag: Some(crate::types::Primitive::U8),
+            companion: crate::types::aggregate::Companion::Fieldless,
+            bool_niche: true,
+        },
+        None,
+    )?;
+    for order in [[source, course], [course, source]] {
+        let mut layouts = Layouts::default();
+        for ty in order {
+            layouts
+                .demand(&types, &definitions, ty)
+                .map_err(|e| e.to_string())?;
+        }
+        let source_layout = layouts.get(source).ok_or("source bool layout")?;
+        assert_eq!(source_layout.size, 1);
+        let encoding = layouts.niche(source_layout)?.ok_or("source bool niche")?;
+        assert_eq!(encoding.carrier.empty_bits(), 2);
+        assert_eq!(encoding.carrier.bytes(), 1);
+        let course_layout = layouts.get(course).ok_or("course bool layout")?;
+        assert_eq!(course_layout.size, 16);
+        assert!(layouts.niche(course_layout)?.is_none());
+        assert!(
+            layouts
+                .scalar_carrier(&types, &definitions, boolean)?
+                .is_none()
+        );
+    }
+    Ok(())
+}
+
 #[test]
 fn typed_fallback_tag_changes_only_the_registered_physical_profile() -> Result<(), String> {
     let mut types = Store::default();
@@ -87,6 +132,7 @@ fn typed_fallback_tag_changes_only_the_registered_physical_profile() -> Result<(
             field: 0,
             fallback_tag: Some(crate::types::Primitive::U8),
             companion: crate::types::aggregate::Companion::Fieldless,
+            bool_niche: false,
         },
         None,
     )?;

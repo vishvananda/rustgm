@@ -173,6 +173,8 @@ mod textual_scopes;
 mod token_trees;
 #[path = "../../tuple_index_privacy.rs"]
 mod tuple_index_privacy;
+#[path = "../../zero_sized_niche_companions.rs"]
+mod zero_sized_niche_companions;
 
 #[path = "../../needs_drop_provider.rs"]
 mod needs_drop_provider;

@@ -14,6 +14,9 @@ fn cli_types(path: &std::path::Path) -> Result<(bool, String)> {
         .arg(path)
         .output()?;
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+    if !matches!(output.status.code(), Some(0 | 1)) {
+        return Err(format!("CLI infrastructure failure: {}: {stderr}", output.status).into());
+    }
     Ok((output.status.success(), stderr))
 }
 
@@ -78,6 +81,73 @@ fn zero_sized_companions_niche_fill_like_rustc() -> Result {
     }
     assert_eq!(cases.lines().count(), 11);
     assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
+/// Source bool carriers store false/true/companion as 0/1/2. Invalid payload
+/// bytes still fail validity, and explicit integer tags retain their own layout.
+#[test]
+fn boolean_niche_bytes_preserve_variants_and_validity() -> Result {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("repository root")?;
+    let cases = crate::resolve::fixture("pa31/tests/spec/bool-niches/cases.tsv")?;
+    let mut failures = Vec::new();
+    for line in cases.lines() {
+        let columns: Vec<_> = line.split('\t').collect();
+        let [path, expected, reason] = columns.as_slice() else {
+            return Err(format!("malformed bool contract {line}").into());
+        };
+        let (accepted, stderr) = cli_types(&root.join(path))?;
+        if accepted != (*expected == "0") {
+            failures.push(format!("{path}: accepted={accepted} {stderr}"));
+        } else if accepted {
+            let source = crate::resolve::fixture(path)?;
+            if let Err(error) = lowered(&source, &[]) {
+                failures.push(format!("{path}: lowering {error}"));
+            }
+            if !stderr.is_empty() {
+                failures.push(format!("{path}: unexpected successful stderr {stderr}"));
+            }
+        } else if !stderr.starts_with("ERROR:") || !stderr.contains(reason) {
+            failures.push(format!("{path}: wrong rejection {stderr}"));
+        }
+    }
+    assert_eq!(cases.lines().count(), 21);
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
+/// Actual enum ABI, initialized static bytes and destructor selection must all
+/// preserve the nonzero companion value. Independent Rust/C outcomes are frozen
+/// in the packet manifest before either runtime is executed.
+#[test]
+#[ignore = "requires the pinned CPPGM backend and host C linker"]
+fn boolean_niche_values_execute_with_static_bytes_and_cleanup() -> Result {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("repository root")?;
+    let folder = root
+        .join("obj/parallel/zst-niche/bool-native")
+        .join(std::process::id().to_string());
+    std::fs::create_dir_all(&folder)?;
+    for (name, exports, expected) in [
+        ("cf-native", &["encode", "decode"][..], "0 1 2 0 1 2\n"),
+        ("cf-static", &["get_stop", "get_go"][..], "2 0 2 0\n"),
+        ("cf-cleanup", &["cleanup"][..], "0:0 1:0 2:1 2:1\n"),
+    ] {
+        let source = crate::resolve::fixture(&format!("pa31/tests/spec/bool-niches/{name}.rs"))?;
+        let observer =
+            crate::resolve::fixture(&format!("pa31/tests/spec/bool-niches/{name}-observer.c"))?;
+        crate::ffi_program::check(
+            root,
+            &folder,
+            name,
+            &lowered(&source, exports)?,
+            &observer,
+            expected,
+        )?;
+    }
     Ok(())
 }
 

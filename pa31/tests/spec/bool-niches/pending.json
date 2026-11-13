@@ -1,0 +1,32 @@
+{
+ "cases": {
+  "cf-double-niche": {
+   "expected": "accept",
+   "sha256": "d44197defa167eae7543df5909a27803bf4cc2672d1d0a8d1452e348e9a928bd",
+   "rustc": "accept",
+   "source_utf8": "#![feature(no_core,lang_items,intrinsics,rustc_attrs,pattern_types,auto_traits,decl_macro,const_trait_impl)]\n#![no_core]\n#![allow(internal_features,dead_code,unused_variables,incomplete_features)]\n// Authored reducer of core's io/error/repr_bitpacked.rs static_asserts and slice/cmp.rs\n// `as_underlying` (pinned core 88d9e12a): NonNull, PhantomData, Result and ControlFlow\n// shapes follow ptr/non_null.rs, marker.rs, result.rs and ops/control_flow.rs.\n#[lang=\"pointee_sized\"]pub trait PointeeSized{}\n#[lang=\"meta_sized\"]pub trait MetaSized:PointeeSized{}\n#[lang=\"sized\"]pub trait Sized:MetaSized{}\n#[lang=\"legacy_receiver\"]pub trait LegacyReceiver:PointeeSized{}\nimpl<T:PointeeSized> LegacyReceiver for &T{}\n#[lang=\"clone\"]pub trait Clone:Sized{#[lang=\"clone_fn\"]fn clone(&self)->Self;}\n#[lang=\"copy\"]pub trait Copy:Clone{}\n#[lang=\"freeze\"]pub unsafe auto trait Freeze{}\n#[lang=\"destruct\"]pub const trait Destruct:PointeeSized{}\nimpl Clone for bool{fn clone(&self)->Self{*self}}impl Copy for bool{}\nimpl Clone for u8{fn clone(&self)->Self{*self}}impl Copy for u8{}\n#[lang=\"phantom_data\"]pub struct PhantomData<T:PointeeSized>;\n#[rustc_intrinsic]pub const fn size_of<T>()->usize;\n#[rustc_intrinsic]pub const unsafe fn transmute<Src,Dst>(src:Src)->Dst;\n#[rustc_builtin_macro(pattern_type)]pub macro pattern_type($($arg:tt)*){}\n#[repr(transparent)]#[rustc_nonnull_optimization_guaranteed]\npub struct NonNull<T:PointeeSized>{pointer:pattern_type!(*const T is !null)}\npub enum Result<T,E>{Ok(T),Err(E)}\npub use Result::{Ok,Err};\n#[lang=\"Option\"]pub enum Option<T>{#[lang=\"None\"]None,#[lang=\"Some\"]Some(T)}\npub enum ControlFlow<B,C=()>{Continue(C),Break(B)}\npub struct Custom;\npub enum ErrorData<C>{Os(i32),Custom(C)}\n#[repr(transparent)]pub struct Repr(NonNull<()>,PhantomData<ErrorData<Custom>>);\nconst _:[u8;size_of::<Option<ControlFlow<bool>>>()]=[0u8;1];\n",
+   "status": "required positive: another unused value of an already niche-encoded enum needs the broader scalar-niche model",
+   "rustgm_observation": {
+    "cli_sha256": "f042c27d44c7362957fd337b87440357e75b037dacf979faa4370bd6ad154c95",
+    "command": [
+     "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/capture-match/wipbool1-dev-fast/rustgm",
+     "--emit-types",
+     "--edition=2024",
+     "--cap-lints=allow",
+     "--source-core",
+     "minicore@boolnested",
+     "--crate-name",
+     "minicore",
+     "--crate-disambiguator",
+     "boolnested",
+     "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/zst-niche/bool-batch4/cf-double-niche.rs"
+    ],
+    "status": 1,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "ERROR: file 0: 1847: incompatible types\n",
+    "required_expected": "accept",
+    "rustc": "accept"
+   }
+  }
+ }
+}

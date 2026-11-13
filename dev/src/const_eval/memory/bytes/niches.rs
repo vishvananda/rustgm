@@ -35,11 +35,16 @@ impl Machine<'_, '_> {
         if (start..end).any(|index| !data.initialized(index)) {
             return Err("nullable carrier word is not fully initialized".into());
         }
-        let zero = bytes.iter().all(|&byte| byte == 0);
+        let expected = carrier.empty_bits().to_le_bytes();
+        let is_empty = bytes == &expected[..bytes.len()];
         let symbolic = self.source_has_fragments(source, offset, width)?;
         if symbolic && !carrier.is_pointer() {
             return Err("integer nullable carrier contains symbolic pointer fragments".into());
         }
-        Ok(if zero && !symbolic { empty } else { payload })
+        Ok(if is_empty && !symbolic {
+            empty
+        } else {
+            payload
+        })
     }
 }
