@@ -7,8 +7,10 @@ own type, so a body lifetime parameter reached `Rhs` beneath the method
 signature's binder. `Self` now takes fresh regions, as borrow checking
 renumbers them. An unconverted right operand is now borrowed in its own type,
 which closes the `&T == &T` prepared lowering gap below. Twenty-one
-source-core reductions and function-linear work qualify the fix. No core
-observation of it has run yet.
+source-core reductions and function-linear work qualify the fix. Release
+candidate6 (54039f5d, 0d5530cca) reached the end of the body pass in 24.3s,
+with 27 failed and 14 blocked bodies. The body and the two it blocked pass,
+and no previously passing body failed.
 
 The [configured block tail checkpoint](pa31-configured-tails.md) fixes
 "missing body type constraint" in core's `fmt/num.rs:145` and `:166`

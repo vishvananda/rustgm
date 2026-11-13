@@ -161,8 +161,12 @@ the passing receipts, not those attempts, qualify the current implementation.
   - The `&T == &T` prepared lowering gap of the always-const premise packet is
     closed. `supertrait_const_premises`' gap table now lists `scalar-refs-op`
     under the const member gap.
-- Next: a release pin and a core re-observation, since the change applies to
-  every source comparison.
+- Release candidate6 (54039f5d, clean 0d5530cca) reached the end of the body
+  pass in 24.3s: 27 failed and 14 blocked bodies. The body and the two it
+  blocked pass, and no previously passing body failed.
+- Next: rustc's derived bounds on field type paths such as `I::Item`, for
+  `Peekable`, `ArrayChunks` and `Intersperse` (five bodies). The declared
+  probes are in `obj/parallel/derive-projections/core/`.
 
 **2026-11-13 configured block tail update (supersedes the blocks below):**
 

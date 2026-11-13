@@ -191,4 +191,17 @@ function, linear across widths. The base cannot type these widths.
 
 ## Core progress
 
-No core observation of this change has run yet.
+Release candidate6 (`obj/parallel/capture-match/candidate6-release`,
+54039f5d, clean 0d5530cca) carries this change. The unchanged 120s observer
+ran it exclusively from load 13.5. It reached the end of the body pass in
+24.3s:
+
+- 42,310 declarations checked, none failed;
+- 25,817 bodies checked, 27 failed and 14 blocked;
+- 3 of candidate5's records cleared: the `marker/variance.rs:107` failure and
+  the two `variance.rs:285` bodies it blocked. No previously passing body
+  failed, although the change applies to every source comparison.
+
+Every other candidate6 failure is one of candidate5's. The progress SHA-256 is
+`e0e141ddc8a2e327cb5d2a835e7ae19dd38b291207a6a07cf7ca67ff8f5887a5`, and the
+comparison is `obj/parallel/capture-match/original-candidate6-comparison.txt`.
