@@ -5,6 +5,8 @@ type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 mod lowering;
 #[path = "asm_vector_inputs.rs"]
 mod vectors;
+#[path = "ymm_operands.rs"]
+mod ymm;
 const DECL: &str = "#[rustc_builtin_macro(asm)]macro_rules!actual{($($t:tt)*)=>{9u8};}";
 fn source(program: &str) -> Result<String> {
     let mut prefix = crate::test_source::fixture(

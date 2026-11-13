@@ -64,8 +64,7 @@ fn numeric_widths_and_nonvectors_keep_register_type_rules() -> Result {
         ("wide-lane", "numeric lanes"),
         ("wrapper", "genuine representation"),
         ("general-class", "incompatible with register class"),
-        ("ymm-no-feature", "register class is not implemented"),
-        ("ymm-body-feature", "register class is not implemented"),
+        ("ymm-no-feature", "requires the avx target feature"),
     ] {
         let error = prove(&vector_source(name)?)
             .err()
@@ -73,7 +72,13 @@ fn numeric_widths_and_nonvectors_keep_register_type_rules() -> Result {
         assert!(error.to_string().contains(message), "{name}: {error}");
     }
     prove(&vector_source("explicit")?)?;
-    Ok(())
+    // rustc accepts a ymm operand under the body's own `avx`. It types here
+    // and stops at the initial assembly profile when its body is lowered.
+    let ymm = crate::support::initial_assembly::YMM;
+    match super::ymm::check(&vector_source("ymm-body-feature")?, "f")? {
+        (Ok(()), Err(error)) if error.to_string().contains(ymm) => Ok(()),
+        outcome => Err(format!("ymm-body-feature: {outcome:?}").into()),
+    }
 }
 #[test]
 fn vector_outputs_and_inputs_retain_place_copy_and_initialization_obligations() -> Result {

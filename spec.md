@@ -6274,6 +6274,14 @@ weaken language call safety or grant body transport/backend capability. The
 [vector join checkpoint](docs/source-asm-vector-join.md) records the actual source,
 ordinary proof opponents, charged-work observations and remaining boundaries.
 
+A `ymm_reg` operand types as rustc's x86 register table admits it: under
+`avx`, a 32- or 64-bit integer or float scalar or a genuine vector of 128 or
+256 supported lane bits, with the `x`, `y` and `z` modifiers. The initial
+assembly profile rejects it before native lowering and module-body export
+("inline assembly ymm_reg operand is outside the initial assembly profile"),
+so no imported body carries one. Explicit ymm registers stay rejected by name.
+See the [ymm operand checkpoint](docs/pa41-ymm-operands.md).
+
 Target-feature policy reuses the two declaration/function owners as typed rows,
 retaining declared safety, exact contributing source attributes/input trees and
 the canonical feature closure. Query authenticated rows without reparsing. A
@@ -7292,9 +7300,11 @@ only that body's asm CPU check, to the consumer's baseline plus the closure.
 A forged addition to an imported function's declared target features (bit 3
 on a function that had none, or an extra name) therefore widens that
 imported body's asm CPU check to the consumer's baseline plus the claimed
-closure. It is harmless while every admitted register class needs only
-baseline features (`reg`, and `xmm_reg` with sse). Any later item that
-admits a register class needing a non-baseline feature (`ymm_reg`,
+closure. It is harmless while the initial assembly profile admits only
+register classes that need baseline features (`reg`, and `xmm_reg` with
+sse). Typing also admits `ymm_reg`, but the profile rejects it before export,
+so no imported body can use a forged `avx`. Any later item that lets the
+profile admit a register class needing a non-baseline feature (`ymm_reg`,
 `zmm_reg`, `kreg`) must revisit forged additions first: the inventory
 identity, or an authenticated feature set, must cover them. Rows without
 bit 3 keep their exact earlier bytes.

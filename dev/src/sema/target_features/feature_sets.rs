@@ -115,7 +115,14 @@ impl FeatureSet {
         Ok(result)
     }
     pub(crate) fn supports_xmm(self) -> bool {
-        named("sse").is_some_and(|feature| self.0 & (1_u128 << feature.0) != 0)
+        self.contains_named("sse")
+    }
+    /// `ymm_reg` operands need `avx`, as in rustc's x86 register table.
+    pub(crate) fn supports_ymm(self) -> bool {
+        self.contains_named("avx")
+    }
+    fn contains_named(self, name: &str) -> bool {
+        named(name).is_some_and(|feature| self.0 & (1_u128 << feature.0) != 0)
     }
     /// An imported asm body may use the consumer's baseline plus its owner's
     /// imported closure, rustc's rule for a target-feature function's body.

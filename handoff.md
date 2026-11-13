@@ -149,6 +149,17 @@ the passing receipts, not those attempts, qualify the current implementation.
 
 ## Work still needed before integrating this WIP
 
+**2026-11-13 ymm operand update (supersedes the blocks below):**
+
+- Core's `_mm256_stream_*` 10511-10513 and `_mm256_stream_load_si256` 10805
+  "register class is not implemented" failures have a typing fix
+  ([evidence](docs/pa41-ymm-operands.md)). `ymm_reg` types under `avx`.
+  - Sixteen cases are in `pa41/tests/spec/asm-ymm`. The declared batch and
+    the oracle stderr are in `obj/parallel/asm-ymm/core/`.
+- The initial assembly profile rejects ymm before native lowering and export.
+  The forged target-feature revisit in `spec.md` is still required before
+  the profile admits it. `zmm_reg` and `kreg` remain unimplemented.
+
 **2026-11-13 clean candidate observation (supersedes the blocks below):**
 
 - Clean candidate2 (`obj/parallel/capture-match/candidate2-dev-fast`,

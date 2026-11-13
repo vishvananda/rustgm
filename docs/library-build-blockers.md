@@ -1,5 +1,13 @@
 # Library build blocker tracker
 
+The [ymm operand checkpoint](pa41-ymm-operands.md) fixes "assembly register
+class is not implemented for this target" while typing core's three `x86/avx.rs`
+stream stores, 10511-10513, and `x86/avx2.rs` `_mm256_stream_load_si256` 10805.
+`ymm_reg` now types as rustc's register table admits it under `avx`. The initial
+assembly profile still rejects it before native lowering and export, so the
+core build stops there until a 256-bit backend contract exists. Sixteen cases
+qualify it. `zmm_reg` and `kreg` (13 AVX-512 sites) remain unimplemented.
+
 Clean candidate2 (24b7ce91, e832ec039) carries every fix through the GAT
 region premise checkpoint. The unchanged 120s observer ran it exclusively from
 load 11.8. It stopped at the deadline after 15,111 attempts at item 10246

@@ -50,6 +50,7 @@ pub const BYTE: &str = "inline assembly reg_byte operand is outside the initial 
 pub const EXPLICIT: &str =
     "inline assembly explicit register operand is outside the initial assembly profile";
 pub const XMM: &str = "inline assembly xmm_reg input other than a 128-bit vector is outside the initial assembly profile";
+pub const YMM: &str = "inline assembly ymm_reg operand is outside the initial assembly profile";
 pub const MODIFIER: &str =
     "inline assembly template modifier is outside the initial assembly profile";
 /// `/* */` and `//`, which the pinned backend's assembler lacks: it reads `#`

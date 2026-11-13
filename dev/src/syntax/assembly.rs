@@ -32,7 +32,14 @@ pub(crate) enum Register {
     Abcd,
     Byte,
     Xmm,
-    Explicit { base: u8, bytes: u8, xmm: bool },
+    /// `ymm_reg`, which needs `avx`. Only typing admits it; the initial
+    /// assembly profile rejects it before lowering or export.
+    Ymm,
+    Explicit {
+        base: u8,
+        bytes: u8,
+        xmm: bool,
+    },
 }
 pub(crate) fn register(name: &str, explicit: bool) -> Result<Register, &'static str> {
     if !explicit {
@@ -41,6 +48,7 @@ pub(crate) fn register(name: &str, explicit: bool) -> Result<Register, &'static 
             "reg_abcd" => Ok(Register::Abcd),
             "reg_byte" => Ok(Register::Byte),
             "xmm_reg" => Ok(Register::Xmm),
+            "ymm_reg" => Ok(Register::Ymm),
             _ => Err("assembly register class is not implemented for this target"),
         };
     }

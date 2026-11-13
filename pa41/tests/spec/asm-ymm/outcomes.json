@@ -1,0 +1,110 @@
+{
+ "schema": 1,
+ "declared": "2026-11-13, before the frozen rustc 1.98.0 oracle of these exact bytes and before any RustGM run (obj/parallel/asm-ymm/core/declared.json, batch 1). An oracle invocation without RUSTC_BOOTSTRAP=1 stopped every file at E0554 and is recorded there as an invocation error.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --target=x86_64-unknown-linux-gnu --crate-type=lib --emit=metadata -Cpanic=abort -Copt-level=0",
+ "cases": {
+  "stream-ps.rs": {
+   "sha256": "934e42fd0e063e717827cbdf3cd1040aadee1d95a4de7a049369d3f7c494886b",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "core's _mm256_stream_ps: a 256-bit f32 vector in ymm_reg under avx"
+  },
+  "stream-pd.rs": {
+   "sha256": "f5dc99ee49ca0ac1cd3988d12ead48bff135ae11a4de8dfb904dc4c3e07780ff",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "core's _mm256_stream_pd"
+  },
+  "stream-si256.rs": {
+   "sha256": "db36b3091105d62ea72a7520e045e8310644f5da3e0253f8bfe1882ef2203504",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "core's _mm256_stream_si256 through a vector pointer"
+  },
+  "vector-i32x4.rs": {
+   "sha256": "96b97e916dfa3f802a622a5e41021ccb85addf2baad5ef8515e924f920557b1a",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "a 128-bit vector in ymm_reg"
+  },
+  "vector-i16x16.rs": {
+   "sha256": "c96e75ae5f048b22f44830b3695944ff32df453873c0ecd88d82284062cac353",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "a 256-bit i16 vector"
+  },
+  "scalar-f64.rs": {
+   "sha256": "81a63047486322fc746af1763af443734b5cf9314a853ddc68fe4944096a2836",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "an f64 scalar in ymm_reg"
+  },
+  "scalar-u32.rs": {
+   "sha256": "44fee84ca06624f78f9c446940f1d359d02477c3b91164ad49f4eb402b865355",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "a 32-bit integer scalar in ymm_reg"
+  },
+  "scalar-u8.rs": {
+   "sha256": "4ceb8acbd100e2600929799c08e9b51b3d94e78714c8ea3c12a2e382cdc53a8f",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "an 8-bit scalar has no ymm_reg type",
+   "rustc_error": "error: type `u8` cannot be used with this register class"
+  },
+  "no-avx.rs": {
+   "sha256": "ce72874bfe6e58e6b135ad89159682fb3e35946b3c81bb2a4463b3499ccf509b",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "ymm_reg needs avx; the body enables only sse",
+   "rustc_error": "error: register class `ymm_reg` requires the `avx` target feature"
+  },
+  "avx2-implies.rs": {
+   "sha256": "6387af06e87c42641a26583527eecc0023d3292468aa2c3398392d9262cb5c24",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "avx2 implies avx"
+  },
+  "wide.rs": {
+   "sha256": "6143810f16b07a75c0a1aca696776d9b710f022c49f9826fcad552cf20811456",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "a 512-bit vector does not fit ymm_reg",
+   "rustc_error": "error: type `V` cannot be used with this register class"
+  },
+  "short.rs": {
+   "sha256": "b1d16f2d0ec933d28dc053279ba7f67a0db073cd85fbd4bd2488d35ea9a102b1",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "a 64-bit vector has no ymm_reg type",
+   "rustc_error": "error: type `V` cannot be used with this register class"
+  },
+  "modifier-x.rs": {
+   "sha256": "0703204ebe726d0bbd4aeb1c3ebb92c622de7526dc33125aacffc76954df1582",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "the x modifier on ymm_reg"
+  },
+  "modifier-e.rs": {
+   "sha256": "b8da1570acacb92d92e9d9f6a3b31c87bf0160387134107822b047b90cb50e81",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "the e modifier is not valid for ymm_reg",
+   "rustc_error": "error: invalid asm template modifier `e` for this register class"
+  },
+  "xmm-256.rs": {
+   "sha256": "51c015b438b86c40a9099ae000cf6f2f10da21f9357ac252dc0641347a28d41a",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "a 256-bit vector does not fit xmm_reg",
+   "rustc_error": "error: type `V` cannot be used with this register class"
+  },
+  "output.rs": {
+   "sha256": "2cca486049e6fff876f9219e1115cdbcd1261c7f4c2a9458b861401cdc662e4f",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "a 256-bit ymm_reg output"
+  }
+ }
+}

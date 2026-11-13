@@ -7,7 +7,7 @@ use std::fmt::Write as _;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const SPEC: &str = "pa41/tests/spec/asm-native";
 /// The provider function whose `LowIR` the control demands.
-fn root(
+pub(super) fn root(
     report: &crate::resolve::expansion::Report,
     facts: &crate::sema::model::Declarations,
     name: &str,
@@ -144,7 +144,7 @@ fn comment_scan_follows_quotes_hash_comments_and_template_joins() {
 /// `native.rs` before `marker`: its lang-item prelude and the source-owned
 /// `arch::asm` and `concat!` declarations, without the test foundation's
 /// const-generic array impls.
-fn native_prefix(marker: &str) -> Result<String> {
+pub(super) fn native_prefix(marker: &str) -> Result<String> {
     let native = crate::test_source::fixture(&format!("{SPEC}/native.rs"))?;
     let end = native.find(marker).ok_or("native.rs section")?;
     Ok(native[..end].to_owned())

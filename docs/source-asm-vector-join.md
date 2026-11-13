@@ -18,8 +18,10 @@ Existing XMM classes require SSE and consume `Definitions::simd_shape`. Supporte
 integer lanes of 8/16/32/64 bits and f32/f64 lanes must total exactly 128 bits.
 A padded 12-byte vector, scalar wrapper, pointer vector or wider/shorter vector
 receives no XMM permission. SIMD values cannot enter a general register merely
-because their storage has a scalar-sized component. Ymm/Zmm remain explicitly
-unsupported, including when independent Rust accepts the body-feature opponent.
+because their storage has a scalar-sized component. Since the
+[ymm operand checkpoint](pa41-ymm-operands.md), ymm operands type under `avx`
+and stop at the initial assembly profile, including the body-feature opponent.
+Zmm remains explicitly unsupported.
 The pinned primary policy is
 [rustc_target's x86 assembly table](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_target/src/asm/x86.rs);
 preserve NOTICE.
@@ -150,14 +152,15 @@ profile`, with these forms:
   clobbers
 - `reg input other than a raw pointer`: integers, floats and function pointers
 - `reg_abcd operand`, `reg_byte operand`, `explicit register operand`
+- `ymm_reg operand`, added with the [ymm operand checkpoint](pa41-ymm-operands.md)
 - `xmm_reg input other than a 128-bit vector`: the 4- and 8-byte scalars that
   the frontend accepts in `xmm_reg`
 - `template modifier`
 - `comments other than #`: `/* */` and `//` outside a quoted string, added
   with B2 A's comment fence
 
-`const`, `sym` and `label` operands, ymm and the other unimplemented classes
-stay rejected earlier, at body construction or in the frontend.
+`const`, `sym` and `label` operands, zmm, kreg and the other unimplemented
+classes stay rejected earlier, at body construction or in the frontend.
 
 ### Module-body transport
 

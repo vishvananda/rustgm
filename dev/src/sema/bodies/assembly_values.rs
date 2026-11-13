@@ -107,6 +107,12 @@ impl Checker<'_> {
                     "assembly register class requires the sse target feature",
                 ));
             }
+            if class == Register::Ymm && !available.supports_ymm() {
+                return Err(self.error(
+                    arg,
+                    "assembly register class requires the avx target feature",
+                ));
+            }
             if let Register::Explicit { base, xmm, .. } = class {
                 let late = matches!(direction, Direction::LateOut | Direction::InLateOut);
                 let reads = input.is_some();
@@ -175,7 +181,7 @@ impl Checker<'_> {
                         }
                         Register::Abcd => b"lhxer".contains(&modifier),
                         Register::Byte => false,
-                        Register::Xmm | Register::Explicit { xmm: true, .. } => {
+                        Register::Xmm | Register::Ymm | Register::Explicit { xmm: true, .. } => {
                             b"xyz".contains(&modifier)
                         }
                     };
@@ -219,7 +225,11 @@ impl Checker<'_> {
                 (8, false, false)
             }
             Some(Type::Adt(..)) => {
-                self.assembly_simd_type(node, ty)?;
+                if class == Register::Ymm {
+                    ymm_operand(&*self.facts, ty).map_err(|message| self.error(node, message))?;
+                } else {
+                    self.assembly_simd_type(node, ty)?;
+                }
                 (16, false, true)
             }
             _ => return Err(self.error(
@@ -237,7 +247,7 @@ impl Checker<'_> {
             Register::General | Register::Abcd | Register::Explicit { xmm: false, .. } => {
                 bytes >= 2 && !vector
             }
-            Register::Xmm | Register::Explicit { xmm: true, .. } => {
+            Register::Xmm | Register::Ymm | Register::Explicit { xmm: true, .. } => {
                 matches!(bytes, 4 | 8) || vector
             }
         };
@@ -260,6 +270,26 @@ pub(crate) fn simd_operand(
     facts: &crate::sema::model::Declarations,
     ty: TypeId,
 ) -> Result<(), &'static str> {
+    if simd_bits(facts, ty)? == Some(128) {
+        Ok(())
+    } else {
+        Err("assembly xmm vector requires exactly 128 bits of supported numeric lanes")
+    }
+}
+/// A `ymm_reg` vector: 128 or 256 bits of supported numeric lanes. No
+/// imported body carries one, since the initial assembly profile rejects it.
+fn ymm_operand(facts: &crate::sema::model::Declarations, ty: TypeId) -> Result<(), &'static str> {
+    if matches!(simd_bits(facts, ty)?, Some(128 | 256)) {
+        Ok(())
+    } else {
+        Err("assembly ymm vector requires 128 or 256 bits of supported numeric lanes")
+    }
+}
+/// The width of a completed genuine vector, or `None` for unsupported lanes.
+fn simd_bits(
+    facts: &crate::sema::model::Declarations,
+    ty: TypeId,
+) -> Result<Option<u64>, &'static str> {
     let shape = facts.aggregates.simd_shape(&facts.types, ty)?;
     let SimdShape::Ready { lane, count } = shape else {
         return Err("assembly SIMD operand requires its completed genuine representation");
@@ -275,9 +305,5 @@ pub(crate) fn simd_operand(
         },
         _ => None,
     };
-    if bits.and_then(|bits| count.checked_mul(u64::from(bits))) == Some(128) {
-        Ok(())
-    } else {
-        Err("assembly xmm vector requires exactly 128 bits of supported numeric lanes")
-    }
+    Ok(bits.and_then(|bits| count.checked_mul(u64::from(bits))))
 }
