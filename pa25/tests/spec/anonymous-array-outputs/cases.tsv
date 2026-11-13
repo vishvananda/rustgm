@@ -1,0 +1,8 @@
+pa25/tests/spec/anonymous-array-outputs/return.rs	0	-
+pa25/tests/spec/anonymous-array-outputs/discard.rs	0	-
+pa25/tests/spec/anonymous-array-outputs/wrapped.rs	0	-
+pa25/tests/spec/anonymous-array-outputs/annotated.rs	0	-
+pa25/tests/spec/anonymous-array-outputs/explicit.rs	0	-
+pa25/tests/spec/anonymous-array-outputs/shared.rs	0	-
+pa25/tests/spec/anonymous-array-outputs/static-escape.rs	1	required lifetime
+pa25/tests/spec/anonymous-array-outputs/local-escape.rs	1	required lifetime

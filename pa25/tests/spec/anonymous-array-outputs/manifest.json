@@ -1,0 +1,131 @@
+{
+ "schema": 1,
+ "profile": {
+  "rustc": "1.98.0 (88d9e12ae)",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort"
+ },
+ "declaration": "Eight complete outcomes per packet: six previously frozen Rust positives plus two rejecting opponents frozen here before execution. All predictions must retain their outcomes. No reference text is generated.",
+ "cases": {
+  "return": {
+   "expected": "accept",
+   "sha256": "5e9a05aa4fcf97353b3a8e056f2e59db0f92d0aa2e2c9738c2a40049b96547fe",
+   "original_declaration": "local-inputs/declaration.json before first execution",
+   "independent_rustc": "accept",
+   "baseline18_type_status": 1
+  },
+  "discard": {
+   "expected": "accept",
+   "sha256": "d70da67f1e372bf68d154783a6b9c441102f19bd0cdf53b806aaf6c5a6150671",
+   "original_declaration": "local-inputs/declaration.json before first execution",
+   "independent_rustc": "accept",
+   "baseline18_type_status": 1
+  },
+  "wrapped": {
+   "expected": "accept",
+   "sha256": "31cdd86db17af24fc81e11d6137907ebc42406a785466c1ce83deb777cbd73c8",
+   "original_declaration": "local-inputs/declaration.json before first execution",
+   "independent_rustc": "accept",
+   "baseline18_type_status": 1
+  },
+  "annotated": {
+   "expected": "accept",
+   "sha256": "853719731b0bd36890d8b31c42730772dce6cb861bbb0e281c3bbd375f46bd20",
+   "original_declaration": "local-inputs/declaration.json before first execution",
+   "independent_rustc": "accept",
+   "baseline18_type_status": 0
+  },
+  "explicit": {
+   "expected": "accept",
+   "sha256": "575dda5821808764482af28883cf37d67bf736b6964bdeb3f8b71fd1550365ae",
+   "original_declaration": "local-inputs/declaration.json before first execution",
+   "independent_rustc": "accept",
+   "baseline18_type_status": 1
+  },
+  "shared": {
+   "expected": "accept",
+   "sha256": "017009f02087f027e6de6ec9677d2eefe11498cb81eada053ec46b3029a429c8",
+   "original_declaration": "local-inputs/declaration.json before first execution",
+   "independent_rustc": "accept",
+   "baseline18_type_status": 1
+  },
+  "static-escape": {
+   "expected": "reject",
+   "sha256": "b1c4b9b499922b742e8320aa0e6d42d7da9720d4533bc56be4de5ed18c8b7070",
+   "original_declaration": "this manifest frozen before first execution; private storage and unpaid static debt may not escape"
+  },
+  "local-escape": {
+   "expected": "reject",
+   "sha256": "bd9daadf29a4269d2a6e14b2e18fbb418ddfa86a9ecde9e7cc8bbbffea88ee0b",
+   "original_declaration": "this manifest frozen before first execution; private storage and unpaid static debt may not escape"
+  },
+  "scaling-8": {
+   "expected": "accept",
+   "sha256": "8ebaca5cecc8129740f26d420df5a11584aea687cdd03c9a4eaa0291783962b0",
+   "declaration": "Exact inferred-local source frozen before first execution; each child creates one real output port and the parent must discharge its debts."
+  },
+  "scaling-32": {
+   "expected": "accept",
+   "sha256": "03943e4f9f40af70b5374482c0db188cdca01e4cae5d7b4e9352b0e9eae4d82b",
+   "declaration": "Exact inferred-local source frozen before first execution; each child creates one real output port and the parent must discharge its debts."
+  },
+  "scaling-128": {
+   "expected": "accept",
+   "sha256": "f8ad4b860fd4209535dc2f0c0a6c198c79746b903241832005dd1641efe1c460",
+   "declaration": "Exact inferred-local source frozen before first execution; each child creates one real output port and the parent must discharge its debts."
+  }
+ },
+ "attribution": "authored ordinary source",
+ "scaling": {
+  "inputs": {
+   "8": {
+    "path": "pa25/tests/spec/anonymous-array-outputs/scaling-8.rs",
+    "sha256": "8ebaca5cecc8129740f26d420df5a11584aea687cdd03c9a4eaa0291783962b0",
+    "expected_output_ports": 8
+   },
+   "32": {
+    "path": "pa25/tests/spec/anonymous-array-outputs/scaling-32.rs",
+    "sha256": "03943e4f9f40af70b5374482c0db188cdca01e4cae5d7b4e9352b0e9eae4d82b",
+    "expected_output_ports": 32
+   },
+   "128": {
+    "path": "pa25/tests/spec/anonymous-array-outputs/scaling-128.rs",
+    "sha256": "f8ad4b860fd4209535dc2f0c0a6c198c79746b903241832005dd1641efe1c460",
+    "expected_output_ports": 128
+   }
+  },
+  "expectation": "Inference and canonical work grow at most 5x+512 for each 4x width; actual output ports equal owner count. These are separate from the eight complete outcome table rows."
+ },
+ "qualification": {
+  "complete_outcomes": "all eight table rows pass; receipt1794610960930869698",
+  "independent": "all exact packet and scaling inputs match Rust with explicit panic=abort; outputs-native-replay",
+  "regressions": "selected closure/capture, existing anonymous/source/batch outcomes pass",
+  "native_controls": "all three actual earlier anonymous test groups pass current source/harness replay; two borrowed-result native consumers elsewhere remain required",
+  "private_unit": "new graph unit awaits full CI; local cold private compilation intentionally not repeated",
+  "source_core": "not yet observed with this repair; release18 baseline still fails first next_chunk inline array",
+  "scaling": {
+   "owners": [
+    8,
+    32,
+    128
+   ],
+   "inference": [
+    1784,
+    7136,
+    28544
+   ],
+   "canonical": [
+    152,
+    608,
+    2432
+   ],
+   "real_output_ports": [
+    8,
+    32,
+    128
+   ],
+   "receipt": "1794611404797641881 plus current-source replay"
+  }
+ }
+}

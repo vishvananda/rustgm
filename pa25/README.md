@@ -2,6 +2,11 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
+The [inferred anonymous-array reductions](../docs/pa25-anonymous-array-outputs.md)
+retain ordinary local-output conditions and lifetime opponents. Actual source
+wrapper counterparts belong to PA31. Their graph repair passes16 complete
+outcomes, real output-port scaling and previous native controls.
+
 The [anonymous implied-bound continuation](../docs/pa25-anonymous-implied-bounds.md)
 retains receiver/input well-formedness in original inline constants. Ordinary
 reductions live in PA25 and actual source-wrapper counterparts in PA31; all

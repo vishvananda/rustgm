@@ -5,14 +5,14 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
-Latest continuation: d1e15f2ad is published/main. Clean release17 still fails the
-original next_chunk anonymous proof. GDB17b proves creator owner26576 is absent
-from the early signature snapshot. The current indexed-lookup repair qualifies
-26 selected complete outcomes and closure controls; new actual-header-order
-reductions independently reproduce all four missing-bound failures on release17.
-Two accepting borrowed-result native consumers stay explicitly required. Read
-the final "Release17 and late creator publication" section first. Freeze the
-next clean candidate after the current cache-native replay/fixture checks.
+Latest continuation: main/B/origin main are5e9216115 before current WIP. Clean
+release18 still fails the first next_chunk anonymous proof. New unannotated local
+array reductions isolate a conditional-verifier collection/reproof ordering
+failure; both annotated controls accept. The graph repair now passes16 complete
+outcomes, exact223n/19n/n output-port scaling and native controls. Read the final
+"Release18 and inferred local arrays" section first. Freeze the next compiler
+for actual original verification. The two accepting borrowed-result native
+consumers remain explicitly required.
 
 ## Workspace and authorization
 
@@ -393,3 +393,78 @@ core-artifact.py is prepared for a genuine module-bodies-v13 metadata/LowIR atte
 only AFTER original completion clears; it has never been executed. No original
 library artifact or whole planned PA exists. Both borrowed-result runtime positives
 and all standing requirements remain required.
+
+## Release18 and inferred local arrays
+
+5e92161157e947d568bb795940dc1facaee3c86f is committed, pushed and main fast-forwarded.
+The first SSH push failed public-key authentication; the credential-assisted retry
+succeeded (Git still rewrote its transport to SSH). No credential/config changes.
+Full43517843369 PASSED EVERY STAGE on exactd1e15f2ad, including release/debug,
+native/course/independent and113-case component. It is now the latest full green.
+One successor43523008382 was dispatched only after that completion and runs exact
+5e9216115. Do not cancel or duplicate it; it does not include the graph WIP below.
+
+Clean candidate18-release,3950 Rust sources/empty patch,8m08s build, SHA
+66633ca4ca7da79bfe1d5941c3512119408031e4e5a43b27a9ac14bcaeac364e.
+Unchanged120s diagnostic still42310 declarations/25858 bodies/35120 attempts,
+zero failed/blocked functions and completion0. Same227:103636 lifetime message.
+Postcheck verifies722/375/sixpins/current code+producer/limits, with prior site
+NOT absent.42.4332s above load gate is not a speed comparison. debug18a confirms
+the SAME first anonymous NodeKey227:9558, not IterMut or a later generated body.
+No original metadata/LowIR/native artifact attempt has run.
+
+local-inputs/ declares12 required positives before execution. All accept in Rust;
+release18 rejects10 (ordinary/source unannotated local return, discard, wrapped,
+redundant explicit bound and shared receiver). Both annotated-array controls pass.
+The installed PA25/31 anonymous-array-outputs packets add two frozen opponents
+each; all16 independent outcomes agree with Rust (outputs-oracle receipt).
+Every input has a manifest/hash, with the exact original source wrapper prefix.
+
+inspect-contract/ is a diagnostic driver built against the exact current release
+RustGM library, not another frontend. Its retained contracts show T:a assumptions,
+an extra inferred output slot b, actual scalar coercion a:b and WF T:b. The graph
+collector rejects T:b before exported a:b can participate in its final reproof.
+Driver hash/head binding and raw output remain; its generated executable was
+pruned after success. Expanded17's235MiB diagnostic remains, with iter.syntax cutout.
+
+Current WIP dev/src/types/region_graph/output.rs collects existing scalar interface
+conditions, deferring non-interface obligations to its existing FULL solve after
+adding exactly those conditions. It never drops the private obligation or invents
+a new scalar debt. A private unit requires a real scalar debt and a rejecting
+no-debt case; public source/bootstrap fixtures oppose static/private-local escape.
+dev/tests/anon_borrows.rs adds one exact16-case consumer. No new Rust file/count
+or dense field. fast6 failed only new-unit formatting before any compilation;
+the exact formatting is corrected. fast7-outputs (session77756) currently runs
+7 exact new/previous/closure/capture controls plus strict selectedCLI/fmt/audit.
+Inspect terminal result before dependent work. New private unit awaits CI; do
+not retry the known cold private build locally. No semantic result for WIP yet.
+
+That fast7 pending statement is superseded: receipt1794610960930869698 passes
+all7 exact new/previous/closure/capture tests, selected/CLI strict Clippy, fullfmt/
+audit/metadata in158.08s. The16 complete outcomes include all four exact lifetime
+opponents. fast8 failed only formatting in the added scaling test before compile;
+corrected fast9 receipt1794611404797641881 passes that test/all checks in44.13s.
+Three exact generated scaling inputs are installed and hashed in PA25's manifest.
+At8/32/128 owners inference1784/7136/28544=223n, canonical152/608/2432=19n,
+and real output ports=n. No proof is inferred merely from a zero template count.
+
+outputs-native-replay passes all three actual earlier native groups plus these
+counters against the current source map and harness SHA
+fa28fb86f22f92806ea1da059d94e27753dcf86dd900524606fe7b40eb515676.
+All19 exact new packet/scaling inputs independently match Rust with explicit
+panic=abort (the earlier metadata-only oracle omitted that flag; corrected replay
+records exact commands without changing outcomes). Fresh test-upstream128+126
+passes. No backend/bridge change. New private graph unit still awaits CI.
+
+Retired only superseded candidate12-release, candidate13-release,
+candidate14-dev-fast and wipclosure5-dev-fast markers/executables. Their producer,
+hashes, inputs/raw observations remain; retirement index is capture-match/
+retired-before-output19.json. Scoped prune1794611800337068728 reclaimed0.54GiB.
+Those executables are unavailable for new runs; rebuild/verify if ever needed.
+Current comparison pins15/16/17/18 remain. make tidy completed with record
+1794611969672383722. No local build/test/debug process remains before the next
+compiler freeze. Actual controller remains2slots/150GiB/16GiB cap.
+
+Scripts for observe/postcheck/measure-candidate18 and core-artifact18.py are ready.
+The latter must wait for actual original completion. All paired timings remain
+pending under14/20 load; keep unchanged original120s/profile/quotas and one B job.

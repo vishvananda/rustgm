@@ -2,6 +2,11 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
+The [inferred anonymous-array reductions](../docs/pa25-anonymous-array-outputs.md)
+preserve the actual source wrapper bodies behind the next_chunk output failure.
+Their ordinary counterparts belong to PA25;16 complete outcomes, real output
+port scaling and previous native controls pass. Original-core verification remains.
+
 The [anonymous implied-bound continuation](../docs/pa25-anonymous-implied-bounds.md)
 reduces the original slice iterator's anonymous lifetime failure with actual
 MaybeUninit source methods. Ordinary language counterparts belong to PA25.

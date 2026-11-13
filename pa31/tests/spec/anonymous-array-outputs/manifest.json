@@ -1,0 +1,96 @@
+{
+ "schema": 1,
+ "profile": {
+  "rustc": "1.98.0 (88d9e12ae)",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort"
+ },
+ "declaration": "Eight complete outcomes per packet: six previously frozen Rust positives plus two rejecting opponents frozen here before execution. All predictions must retain their outcomes. No reference text is generated.",
+ "cases": {
+  "return": {
+   "expected": "accept",
+   "sha256": "cff86fa47000b8b1ff7b794eca692dcfc4395166851273efe6446f7a9daf743f",
+   "original_declaration": "local-inputs/declaration.json before first execution",
+   "independent_rustc": "accept",
+   "baseline18_type_status": 1
+  },
+  "discard": {
+   "expected": "accept",
+   "sha256": "84f0d9187bccbb888087c8460d3026771549abddd5ade213f98d4820c2156799",
+   "original_declaration": "local-inputs/declaration.json before first execution",
+   "independent_rustc": "accept",
+   "baseline18_type_status": 1
+  },
+  "wrapped": {
+   "expected": "accept",
+   "sha256": "edc31d3446a9d6db03420e439d5a1311b612aaaa091f8ef72caeed00100e6e63",
+   "original_declaration": "local-inputs/declaration.json before first execution",
+   "independent_rustc": "accept",
+   "baseline18_type_status": 1
+  },
+  "annotated": {
+   "expected": "accept",
+   "sha256": "15074584bef98eabf5a745ae4fe0443fefdf68eeecded5cdf520ba832f95504e",
+   "original_declaration": "local-inputs/declaration.json before first execution",
+   "independent_rustc": "accept",
+   "baseline18_type_status": 0
+  },
+  "explicit": {
+   "expected": "accept",
+   "sha256": "ee0dd3e397b00d2fc8024816de6f1aaa0d44a06cba09c7164e34b6ae0b92dc40",
+   "original_declaration": "local-inputs/declaration.json before first execution",
+   "independent_rustc": "accept",
+   "baseline18_type_status": 1
+  },
+  "shared": {
+   "expected": "accept",
+   "sha256": "90e25c31972aad2dd43fb6b36b31002d3940c282acfbcc766fcfd2590c462092",
+   "original_declaration": "local-inputs/declaration.json before first execution",
+   "independent_rustc": "accept",
+   "baseline18_type_status": 1
+  },
+  "static-escape": {
+   "expected": "reject",
+   "sha256": "14164cb56969ea2c5109a136e89713e1f1c6fa991d59cc40ca8942728af2a49e",
+   "original_declaration": "this manifest frozen before first execution; private storage and unpaid static debt may not escape"
+  },
+  "local-escape": {
+   "expected": "reject",
+   "sha256": "a8111f86f793ff42793443e573a80ba29c2f8f318a265e442f994db9d3ded225",
+   "original_declaration": "this manifest frozen before first execution; private storage and unpaid static debt may not escape"
+  }
+ },
+ "attribution": "Exact attributed source-maybe-uninit/new-u8.rs prefix, unchanged original wrapper bodies",
+ "qualification": {
+  "complete_outcomes": "all eight table rows pass; receipt1794610960930869698",
+  "independent": "all exact packet and scaling inputs match Rust with explicit panic=abort; outputs-native-replay",
+  "regressions": "selected closure/capture, existing anonymous/source/batch outcomes pass",
+  "native_controls": "all three actual earlier anonymous test groups pass current source/harness replay; two borrowed-result native consumers elsewhere remain required",
+  "private_unit": "new graph unit awaits full CI; local cold private compilation intentionally not repeated",
+  "source_core": "not yet observed with this repair; release18 baseline still fails first next_chunk inline array",
+  "scaling": {
+   "owners": [
+    8,
+    32,
+    128
+   ],
+   "inference": [
+    1784,
+    7136,
+    28544
+   ],
+   "canonical": [
+    152,
+    608,
+    2432
+   ],
+   "real_output_ports": [
+    8,
+    32,
+    128
+   ],
+   "receipt": "1794611404797641881 plus current-source replay"
+  }
+ }
+}

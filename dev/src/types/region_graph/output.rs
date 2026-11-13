@@ -36,21 +36,18 @@ impl Graph {
         let mut solver = Solver::new(&self);
         solver.charge_many(interface.len())?;
         solver.propagate(|longer, shorter, source| {
-            if !(allowed.contains(&longer) || longer == Region::STATIC)
-                || !(allowed.contains(&shorter) || shorter == Region::STATIC)
+            if (allowed.contains(&longer) || longer == Region::STATIC)
+                && (allowed.contains(&shorter) || shorter == Region::STATIC)
             {
-                return Err(Error::Unsatisfied {
-                    longer,
-                    shorter,
-                    source,
-                });
+                conditions
+                    .entry((longer, shorter))
+                    .and_modify(|previous: &mut u32| {
+                        *previous = (*previous).min(source);
+                    })
+                    .or_insert(source);
             }
-            conditions
-                .entry((longer, shorter))
-                .and_modify(|previous: &mut u32| {
-                    *previous = (*previous).min(source);
-                })
-                .or_insert(source);
+            // The complete reproof below still requires private obligations.
+            // Existing scalar debts can discharge them through declared bounds.
             Ok(())
         })?;
         let prior = solver.steps;
@@ -91,6 +88,37 @@ mod tests {
         };
         assert_eq!(conditional.conditions, [(input, output, 1)]);
         assert!(conditional.solution.steps > 0);
+        Ok(())
+    }
+
+    #[test]
+    fn exported_scalar_debts_can_discharge_an_opaque_declared_bound() -> Result<(), Error> {
+        for scalar_debt in [false, true] {
+            let mut graph = Graph::new(4096);
+            let input = graph.region(Kind::Universal { universe: 0 })?;
+            let output = graph.region(Kind::Universal { universe: 0 })?;
+            let parameter = graph.region(Kind::Universal { universe: 0 })?;
+            graph.assume(parameter, input)?;
+            graph.require(parameter, output, 1)?;
+            if scalar_debt {
+                graph.require(input, output, 2)?;
+            }
+            let result = graph.prove_output(&[input, output]);
+            if scalar_debt {
+                let Ok(conditional) = result else {
+                    return Err(Error::Identity);
+                };
+                assert_eq!(conditional.conditions, [(input, output, 2)]);
+            } else {
+                assert!(matches!(
+                    result,
+                    Err(OutputError::Constraint(Error::Unsatisfied {
+                        source: 1,
+                        ..
+                    }))
+                ));
+            }
+        }
         Ok(())
     }
 

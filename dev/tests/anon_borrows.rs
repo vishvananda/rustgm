@@ -8,6 +8,42 @@ const PACKET: &str = "pa31/tests/spec/anonymous-associated-borrows";
 const ORDINARY: &str = "pa25/tests/spec/anonymous-associated-borrows";
 
 #[test]
+fn inferred_local_array_outputs_reprove_private_debts_under_scalar_conditions() -> Result {
+    outcomes("pa25/tests/spec/anonymous-array-outputs", 8, bootstrap)?;
+    outcomes("pa31/tests/spec/anonymous-array-outputs", 8, lower)
+}
+
+#[test]
+fn inferred_output_work_tracks_real_parent_ports() -> Result {
+    let mut previous = None;
+    for width in [8, 32, 128] {
+        let input = crate::resolve::fixture(&format!(
+            "pa25/tests/spec/anonymous-array-outputs/scaling-{width}.rs"
+        ))?;
+        let report = crate::resolve::resolve(&input, true)?;
+        let analysis = rustgm::pipeline::analyze_source(&report)?;
+        let work = [
+            analysis.facts.body_work.inference_steps,
+            analysis.facts.body_work.canonical_steps,
+            analysis
+                .facts
+                .nested_outputs
+                .as_ref()
+                .map_or(0, |r| r.ports),
+        ];
+        assert_eq!(work[2], width);
+        println!("inferred output width={width} work={work:?}");
+        if let Some(old) = previous {
+            for (before, after) in std::iter::zip(old, work) {
+                assert!(after <= 5 * before + 512, "{old:?}->{work:?}");
+            }
+        }
+        previous = Some(work);
+    }
+    Ok(())
+}
+
+#[test]
 fn source_inline_borrows_keep_deferred_associated_values() -> Result {
     outcomes(PACKET, 16, lower)
 }
