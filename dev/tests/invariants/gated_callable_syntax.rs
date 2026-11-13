@@ -229,13 +229,14 @@ fn sparse_const_rows_scale_without_growing_common_records() -> Result {
     assert_eq!(size_of::<gate_sites::Declarations>(), 112);
     assert_eq!(
         size_of::<Syntax<crate::literal::storage::StoredValue>>(),
-        312
+        336
     );
-    assert_eq!(size_of::<resolve::unit::Unit>(), 688);
+    // Pending tails add one Vec per syntax owner, while Kind/Node stay fixed.
+    assert_eq!(size_of::<resolve::unit::Unit>(), 712);
     assert_eq!(size_of::<transfer::Extent>(), 104);
     assert_eq!(resolve::unit::Unit::original_layout_bytes(), (160, 44));
     println!(
-        "const closure layouts Kind=28 Node=36 Expression=32 GateOwner=112 Syntax=312 Unit=688 Extent=104 Original=160 Saved=44"
+        "const closure layouts Kind=28 Node=36 Expression=32 GateOwner=112 Syntax=336 Unit=712 Extent=104 Original=160 Saved=44"
     );
     Ok(())
 }

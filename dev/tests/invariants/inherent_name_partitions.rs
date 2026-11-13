@@ -245,7 +245,8 @@ fn actual_source_receiver_and_path_sites_retain_their_identifier_context() -> Te
         size_of::<Use>(),
         size_of::<Methods>()
     );
-    assert_eq!(size_of::<Methods>(), 312);
+    // The smart receiver name set is one cold optional box per Methods owner.
+    assert_eq!(size_of::<Methods>(), 320);
     // `DECLARATIONS_SIZE` records every term of the compilation-wide owner's size.
     assert_eq!(
         size_of::<crate::sema::model::Declarations>(),

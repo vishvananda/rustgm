@@ -38,10 +38,12 @@ fn qualifiers_survive_inference_substitution_and_shape_keys() -> TestResult {
         arguments: GenericArgs::EMPTY,
     })?;
     let mut keys = Vec::new();
-    for constness in [
-        Constness::Ordinary,
-        Constness::Const,
-        Constness::Conditional,
+    // Rows are requirements; columns are Ordinary, Const and Conditional
+    // evidence. Always-const evidence also proves a conditional requirement.
+    for (constness, allowed) in [
+        (Constness::Ordinary, [true, true, true]),
+        (Constness::Const, [false, true, false]),
+        (Constness::Conditional, [false, true, true]),
     ] {
         let canonical = Canonical {
             ty,
@@ -56,11 +58,14 @@ fn qualifiers_survive_inference_substitution_and_shape_keys() -> TestResult {
         let mut fold = substitute::Bound::parameters(&store, &[])?;
         assert_eq!(fold.predicate(&mut store, canonical)?, canonical);
         keys.push(store.shape_key(canonical)?.0);
-        for other in [
-            Constness::Ordinary,
-            Constness::Const,
-            Constness::Conditional,
-        ] {
+        for (other, allowed) in std::iter::zip(
+            [
+                Constness::Ordinary,
+                Constness::Const,
+                Constness::Conditional,
+            ],
+            allowed,
+        ) {
             let proof = Canonical {
                 ty,
                 bound: Bound::trait_application(application, other),
@@ -69,7 +74,7 @@ fn qualifiers_survive_inference_substitution_and_shape_keys() -> TestResult {
                 context
                     .equate_trait_predicate(&mut store, &mapped, proof)
                     .is_ok(),
-                constness == Constness::Ordinary || constness == other
+                allowed
             );
         }
     }

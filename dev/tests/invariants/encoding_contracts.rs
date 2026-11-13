@@ -113,7 +113,8 @@ fn dynamic_count_recipe() -> Result {
     Ok(())
 }
 fn constructor_family_layouts() {
-    assert_eq!(size_of::<super::super::output::Output<'_>>(), 472);
+    // Syntax owns one pending-tail Vec; per-node records remain unchanged.
+    assert_eq!(size_of::<super::super::output::Output<'_>>(), 496);
     assert_eq!(size_of::<Options<'_>>(), 56);
     assert_eq!(size_of::<options::Encoded>(), 12);
     assert_eq!(size_of::<Template<'_>>(), 72);

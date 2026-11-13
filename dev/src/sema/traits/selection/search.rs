@@ -700,6 +700,18 @@ impl Search<'_> {
                     if let Some(decision) = self.query.reuse_completed(facts, frame, goal)? {
                         return Ok(Some(decision));
                     }
+                } else if frame.sources == frames::Sources::Implementations
+                    && let Some(Decision::Proven(index)) = self.query.completed(frame.scope, goal)
+                    && matches!(
+                        self.query.nodes[index].source,
+                        Some(Source::Implementation { .. })
+                    )
+                {
+                    // Member inputs share an already completed implementation
+                    // in this same caller scope. Caller-only and absent answers
+                    // cannot answer an implementation-first normalization query.
+                    self.query.reused = true;
+                    return Ok(Some(Decision::Proven(index)));
                 }
                 if matches!(
                     goal.bound,

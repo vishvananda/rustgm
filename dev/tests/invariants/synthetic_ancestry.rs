@@ -103,7 +103,8 @@ pub(super) fn units() -> TestResult {
     assert_eq!(size_of::<crate::expand::stream::Origin>(), 32);
     assert_eq!(size_of::<OriginKind>(), 2);
     assert_eq!(size_of::<Stream>(), 104);
-    assert_eq!(size_of::<Unit>(), 688);
+    // The owned Syntax adds its pending-tail Vec once per unit.
+    assert_eq!(size_of::<Unit>(), 712);
     eprintln!(
         "synthetic origin layouts Origin={} align={} Kind={} Location={} Stream={} Unit={}",
         size_of::<crate::expand::stream::Origin>(),

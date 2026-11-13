@@ -183,7 +183,8 @@ fn scope_walk_rejects_unknown_definition_sites_and_counts_failed_work() -> TestR
             .is_err()
     );
     assert!(index.steps > 1_000_000);
-    assert_eq!(size_of::<crate::sema::methods::Methods>(), 312);
+    // The smart receiver name set is one cold optional box per Methods owner.
+    assert_eq!(size_of::<crate::sema::methods::Methods>(), 320);
     // `DECLARATIONS_SIZE` records every term of the compilation-wide owner's size.
     assert_eq!(
         size_of::<Declarations>(),

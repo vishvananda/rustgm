@@ -136,7 +136,15 @@ fn source_seal_precedes_declared_specialization_and_required_stays_unpaid() -> R
         facts.closures.conditions(identity).ok_or("catalog")?,
         &[(RegionId::bound(0, 1)?, RegionId::bound(0, 0)?)]
     );
-    let required = body::instantiate::with_contract(&mut facts, template, instance, input)?;
+    // The original now receives the creator signature's implied b:a premise.
+    // Remove that exact relation for the adversarial instance, so the seal
+    // must supply it through the declared-caller route and never Required.
+    let condition = (RegionId::bound(0, 1)?, RegionId::bound(0, 0)?);
+    let mut unpaid = input.clone();
+    assert!(unpaid.assumptions.contains(&condition));
+    unpaid.assumptions.retain(|&pair| pair != condition);
+    assert!(!unpaid.assumptions.contains(&condition));
+    let required = body::instantiate::with_contract(&mut facts, template, instance, &unpaid)?;
     let original_wf = input
         .obligations
         .iter()
@@ -165,7 +173,7 @@ fn source_seal_precedes_declared_specialization_and_required_stays_unpaid() -> R
         &mut facts,
         template,
         instance,
-        input,
+        &unpaid,
         None,
         &mut cleanup,
     )?;

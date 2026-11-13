@@ -95,7 +95,7 @@ No original library artifact or planned whole assignment is complete.
 
 ## Current B continuation: structural constant patterns
 
-B has an uncommitted qualified source-pattern repair. Candidate13 remains the
+Source-pattern repair864ad9c6c is published on origin/main and both checkouts. Candidate13 remains the
 last original-core observation; no successor core run/artifact exists yet.
 See [the checkpoint](docs/pa31-structural-patterns.md) for the exact contract.
 
@@ -151,6 +151,36 @@ appears to involve implementation-only normalization children skipping completed
 parent proof lookup. Preserve Sources/Scope/positive-source distinctions; keep
 the5x scaling guard. Five stale layout tests and the Const->Conditional matrix
 also remain, as listed above. No new private tests have executed locally.
+
+## Current B: predecessor CI repair awaiting private execution
+
+The coherent eight-failure repair is in B; [details](docs/ci-parent-proof-repair.md).
+Only production change: implementation-first normalization can reuse an actual
+positive Implementation parent from this same query/caller scope. Caller-only,
+absent/builtin sources cannot cross modes; existing witness/scope/provisional
+cache guards remain. The GAT private5x assertion is unchanged.
+
+Five exact layout guards now account for the already intentional per-Syntax
+pending-tail Vec and cold Methods smart-name box: Syntax336/Unit712/Output496/
+Methods320, keeping Node28/36 and total Declarations budgets. The nine-case
+constness matrix retains ordinary-evidence rejection and permits the already
+qualified Const->Conditional pair. seals.rs now asserts/removes the exact creator
+implied b:a relation, using that narrowed contract for both Required rejection
+and Declared acceptance; no production seal permission is relaxed.
+
+Public1794597008570879431 passes8 exact tests across projections/traits/frontend,
+strict selected/CLI Clippy, full format and audit,185.43s despite host pressure.
+All eight private repairs and preceding borrowed-input private opponents still
+need execution. Do not call them passing. A single coherent full manual successor
+is next after publication; avoid another cold local link timeout.
+
+Clean candidate14-dev-fast now freezes source864ad9c6c,3948 hashes/empty patch,
+CLI56485edcef6d8823074fd1a0cd153d0409282bd3bce9077a7e649174d4e0b1a1.
+The CI patch is later and is not included in that pin. No14 release or original
+observation exists. Calibrated observations remain refused by the14/20 host-load
+gate; last observed42.88/57.73. Source/checkpoint docs and packet metadata hashes
+were separately rechecked after documentation edits. Current original evidence
+remains13, stopped at Alignment; no original library artifact exists.
 
 ## Historical private-port draft (superseded by resumed checkpoint)
 
