@@ -2,8 +2,9 @@
 
 The borrowed-input repair handles the original core pattern macro's
 `(|&s| s)(self)` shape through the existing inference and body-proof machinery.
-The original core has not been rerun with the successor compiler yet; candidate12
-remains authoritative and no original library artifact exists.
+Clean candidate13 clears both original closure failures and their four blocked
+callers. The next failure is Alignment's structural constant pattern; the census
+is incomplete and no original library artifact exists.
 
 ## Contract
 
@@ -72,7 +73,8 @@ The source marker scaling check independently accepts widths8/32/128 in Rust.
 Inference work is641/1625/5561 and canonical work2329/6193/21649: both grow
 linearly with distinct input lifetimes. Receipt1794587685884856582 and its
 hash-checked replay retain the inputs, diagnostics and counters under
-`obj/parallel/closure-return-inputs/`. Immutable calibrated timings remain due;
+`obj/parallel/closure-return-inputs/`. All48 frozen A/A+two-ABBA observations against candidate12 preserve complete
+outputs. Raw observations are under measure-candidate13/. Tiny noisy timings and
 these work counts make no wall-clock speed claim.
 
 Exactly38 new PA20/24 text triples were generated after native qualification and
@@ -88,3 +90,13 @@ attempts, including a quiet267s attempt, hit the bounded validation limit withou
 producing a harness. Scheduled
 full qualification remains required. This checkpoint does not release PA31 or
 complete any original library artifact.
+
+Clean release candidate13 binds ba6e731e2,3946 compiler sources and an empty
+patch (CLI SHA256a8307de89f5ba1bcfb6772e5dc193ff4de84bc7cbe50bcceee5974ae0b9cba67).
+Its unchanged120s exclusive core observer checks42310 declarations and25858
+bodies, with no failed/blocked functions or previously passing reached-body
+regression. Actual26791–26796 clear. A crate-category Alignment constant-pattern
+error stops the body queue; completion remains0. Postchecks verify722 upstream
+sources,375 opens, six configuration pins and all compiler producer hashes.
+Known predecessor full-CI failures include the source-seal opponent and parent
+GAT proof scaling; current push smoke passed but full qualification is pending.

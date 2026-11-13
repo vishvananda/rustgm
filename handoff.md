@@ -4,9 +4,9 @@ The goal is to compile the pinned original core, then alloc/std, completing
 and releasing assignment components as their contracts qualify. Continue as one
 worker. **No original library artifact exists yet.** Part A's zero-sized niche
 companion change is published and clears core's actual `Result<(), Repr>` size
-assertion. Candidate12 clears bool's nonzero niche in actual core. The last census now has
-two borrowed-closure lifetime failures and four blocked bodies; that lifetime
-model is next.
+assertion. Candidate13 also clears all six borrowed-closure failures/blocked
+bodies. Its next actual failure is Alignment's structural constant pattern at
+core/src/mem/alignment.rs:29. This is still an incomplete analysis-only census.
 
 This supersedes earlier stop instructions. Historical checkpoints and retained
 requirements are in Git (`git show 03003a86f:handoff.md`); every retained requirement
@@ -40,98 +40,58 @@ there still holds (see [Standing requirements](#standing-requirements)).
   checkouts or other checkouts' outputs. Work as one worker, with no new
   worktrees.
 
-## Resumed after storage cleanup
+## Current checkpoint: inferred input proof identities
 
-The user resumed the goal. Free space returned to236GiB, so the unchanged150GiB
-reserve admits validation again. B's old unbuilt private-port draft has advanced:
-exploratory wipclosure2 compiled, then wipclosure3 added mixed public/private
-binder handling, and wipclosure4 (CLI217d4c40,3945 source hashes) also fixes
-premature reference-depth selection when the expected tail is an inference hole.
-The current working tree includes a subsequent extraction of captured source-seal
-lookup into the existing closure instantiation module; it has no new clean pin.
+Published implementation ba6e731e2 (origin/main and B) qualifies the inferred
+closure input repair. The historical private-port draft below is superseded;
+never restore it. Details: [checkpoint](docs/pa24-inferred-inputs.md).
 
-All38 ordinary declared outcomes now agree with Rust and lower as expected under
-prototype4. Baseline12 independently reproduces the reference-tail error without
-a closure.31 source cases independently agree with Rust, and every positive types;
-source prepared/native qualification is pending. Independent Rust/C native outputs
-are13/29/0 then13/13/1 for the actual-pattern transposition, and13/13/13 then29/29/29
-for generic, reference-type and mixed-binder consumers. Source1's native generation
-typo and ordinary4's ambiguous elision errors remain malformed setups; separately
-declared corrected batches2/5 retain the intended outcomes.
+- All75 declared outcomes pass: PA20 ten reference-tail cases, PA24 twenty-eight
+  inherited-input cases, PA31 thirty-seven actual-source cases. All inputs are
+  manifest-bound.26 ordinary native programs and two actual Rust/C consumers
+  (six exports) pass; outputs are13/29/0/13/13/1 and13/13/13/29/29/29.
+- Public receipts1794586372014375955 and1794587214204194259 pass31+5 exact
+  selections. Native1794586605899163087 and1794589096793583294 pass the actual
+  consumers and captured-drop control. No temporary trace code remains.
+- Marker scaling8/32/128 has inference641/1625/5561 and canonical2329/6193/21649,
+  exactly linear for this family. Raw hash-checked counters are retained.
+- Exactly38 new PA20/24 reference triples were independently declared, generated
+  and reviewed. All28,260 existing sidecars are unchanged. All9345 active PA1–24
+  comparisons and separate113-case released PA25 component pass. Upstream,
+  315 harness tests,486 integration roots and44-stage/component layout pass.
+- New private opponents cover changed public/inherited regions, unpaid port
+  debt and changed source Copy instance/body/environment identity. None executed:
+  cold strict lint/link repeatedly exceeded the bounded267s compiler window.
+  Do not describe intended selections as passing or repeat cold bounded builds.
 
-New fixtures are installed byte-for-byte in PA20 `reference-tail-inference` (10),
-PA24 `inherited-input-regions` (28) and PA31's same-named packet (31). They have
-manifests and independent declarations, but **no new text references yet**. New
-maintainer root `creator_inputs.rs` is registered once in frontend; additional
-private tests in `uncaptured_debts.rs` oppose altered binders/captures and an
-unpaid specialized port debt. Development Rust source count is now3946.
+Clean immutable candidate13-release binds ba6e731e2,3946 Rust sources, an empty
+patch and CLI SHA256a8307de89f5ba1bcfb6772e5dc193ff4de84bc7cbe50bcceee5974ae0b9cba67.
+The initial270s release attempt timed out. A formal unchanged-source build then
+completed in7m08s under the same16GiB cap/150GiB reserve. This is a profiling
+checkpoint, not permission to rebuild release per edit.
 
-Focused public receipt1794581646861724074 passed metadata, formatting, architecture,
-selected strict Clippy, linking, existing closure controls, all38 ordinary outcomes
-and bounded specialization scaling; six independently valid source positives
-failed full preparation. Bounded diagnostics now explain those source failures:
+All48 frozen A/A+two-ABBA comparisons against candidate12 pass complete stdout/
+stderr equality at widths8/32/128 plus an ordinary control. Tiny noisy timings
+make no speed claim. Raw data: obj/parallel/closure-return-inputs/measure-candidate13/.
+The successor original observation and all postchecks passed; see Core census.
 
-- Structural marker siblings reused one implementation lifetime witness. The
-  component frontier now retains its completed child high watermark, and the
-  shared frame allocator includes it. Receipt1794585529030256401 clears the five
-  original lifetime failures and reaches a later native instance contract check.
-- The inferred projected-reference closure had an empty Copy trait environment,
-  losing its creator's `T: Element` premise. Closure publication now retains the
-  actual canonical declaration environment with a complete child-owned alias
-  ledger; instance transport still discards/reproves it. Alias attachment uses
-  typed allocation bounds. Receipt1794586091472104663 clears that source positive.
-- Noncapturing generic instances can also have distinct public and body proof
-  signatures. The existing Owner execution signature now retains that distinction;
-  lowering checks ABI compatibility for an empty environment. Receipt6091 reaches
-  the final source-scope rejection, which only admitted function-item instances.
-  That source-scope check is now extended to exact closure identity, source and
-  both signatures, preserving its private authentication and arena/environment
-  checks. **This last change is awaiting focused results.**
+Known full-CI baseline failures remain real work. Full43415545351 on bd0d003b4
+had3062 private passes,8 failures and3 ignored, while all13 public targets passed.
+The failures are: source_seal_precedes_declared_specialization_and_required_stays_unpaid;
+format recipe Output layout472->496; derive Unit688->712; gated Syntax312->336;
+two Methods layout guards312->320; the Const-to-Conditional proof matrix; and
+completed-parent GAT proof scaling (width8 work1866,32 work18114, quadratic).
+Inspect the intentional cold storage additions before updating layout guards;
+preserve the source-seal opponent and scaling bound. Raw failed CI and triage:
+obj/parallel/closure-return-inputs/ci-43415545351-failed.log and ci-baseline-triage.json.
+Push fast43470491776 on exact ba6e731e2 passed; qualification was skipped by event.
+The most recent known full success remains43239321921, not the current checkpoint.
 
-The final exact callable scope change passes public receipt1794586372014375955:
-31 exact tests across frontend/closures/ownership, all38 ordinary and31 source
-outcomes, exports and scaling. Native1794586605899163087 passes26 ordinary
-executables and both actual Rust/C consumers (six exports). The noncapturing
-creator context is explicitly scoped away from captured execution's separate
-receiver lifetime. Six extra independently checked source controls are installed
-in PA31, for37 source outcomes and75 total packet cases (53 accept/22 reject).
-Source6's unannotated dereference forms hit independent E0282; the separately
-declared source7 pattern forms preserve the positive and missing-Copy opponent.
-Receipt1794587214204194259 passes all37 source cases and existing actual captured
-callback, Copy/Clone and array controls. Native1794589096793583294 passes current
-source consumers and the existing captured-drop control.
-
-Source marker scaling passes8/32/128 in independent Rust and the full prepared
-pipeline (receipt1794587685884856582). Hash-checked replay records inference
-641/1625/5561, canonical2329/6193/21649. Inputs/raw counters are under
-`obj/parallel/closure-return-inputs/marker-scaling-counters.*`. These are bounded
-work observations, not calibrated timings.
-
-Exploratory immutable wipclosure5-dev-fast isCLI2c7bbb70,3946 source hashes,
-with its exact dirty patch; it is not a clean release pin. It generated only38
-new declared PA20/24 text triples in scoped reference batches. Content review
-shows positive LowIR/empty diagnostics and the declared negative diagnostics;
-all28,260 pre-existing sidecars are unchanged. Full active comparison now passes
-**9345/9345 across PA1–24**, plus the separate released PA25 unit113/113. The
-first command with `--released-units` only selected that113-case unit; the
-corrected24-stage run is in `full-active.log/summary.json`. No existing oracle was
-reblessed. Upstream,315 harness tests,486-root registration,44-stage/component
-layout all pass. See [the checkpoint](docs/pa24-inferred-inputs.md).
-
-No temporary diagnostics remain. New private tests oppose altered public and
-inherited slots, an unpaid lifetime debt, and changed source Copy instance/body
-signature/environment. Cold private lint/link attempts (trace4, its cache resume,
-private-final1) timed out without a harness. **No private tests have executed.**
-The final bounded quiet attempt `private-final2-quiet.log` also timed out at267s
-before linking (21 intended exact selections, no separate Cargo test/check).
-It started at host load6.93 with unchanged16GiB/150GiB guards. No private tests
-executed. Leave these checks to full CI; do not repeat cold local attempts.
-
-Immutable release calibration and a clean successor120s original core observer
-are still due. Candidate12 remains sole authoritative original-core evidence;
-no original library artifact exists. Private/full scheduled CI remains required.
-The spec/roadmap/checkpoint docs are updated; nothing in this continuation has
-yet been committed or pushed. Do not restore the historical draft below.
+Next: reduce actual Alignment constant-pattern failure, preserving derive_const,
+real source trait roles and independent structural-pattern opponents; repair the
+known full-CI proof/scaling failures coherently. Appropriate ordinary reductions
+belong in their earliest owning PA; actual core/language-item reductions in PA31.
+No original library artifact or planned whole assignment is complete.
 
 ## Historical private-port draft (superseded by resumed checkpoint)
 
@@ -215,27 +175,31 @@ can resume the goal. The objective and preserved uncommitted work are unchanged.
 
 ## Core census
 
-Release candidate12 (`obj/parallel/capture-match/candidate12-release`, clean
-8950ad99c, CLIbca8b9e1) is the current observation. The unchanged120s observer
-runs exclusively after load admission and finishes its body pass in23.29s:
+Candidate13-release (clean ba6e731e2, CLIa8307de8) is current. The unchanged120s
+exclusive observer finishes in23.8284s under identical compiler limits/profile:
 
 - all42310 declarations pass;
-- 35120 item attempts check25852 bodies;
-- two failures and four blocked bodies remain, against candidate11's three/four;
-- actual7631 (`ControlFlow<bool>` transmute), plus previously cleared25396
-  (`Result<(), Repr>` size assertion), pass;
-- no previously passing body fails; postcheck verifies722 sources,375 opens,
-  six configuration bindings,3945 compiler sources and unchanged limits/profile.
+- 35120 item attempts check25858 bodies, with no failed/blocked functions;
+- actual26791 into_searcher,26792 is_contained_in and26793–26796 all clear;
+- no previously passing reached body fails;
+- one crate-category error stops initializer39106: Alignment's matches!(a,
+  Alignment::MIN), alignment.rs:29, "constant pattern type must implement PartialEq";
+- completion remains0: no complete census or original artifact.
 
-The remaining failures are into_searcher26791 and is_contained_in26792 at
-str/pattern.rs:956, both "closure result retains an input-only or local lifetime".
-They block26793–26796. Raw observation/comparison/postcheck is in
-`obj/parallel/capture-match/original-candidate12*`.
+Postcheck verifies722 upstream sources,375 opens, six configuration bindings,
+3946 current/producer compiler hashes, empty tracked patch and unchanged limits.
+Observation/comparison/postcheck: obj/parallel/capture-match/original-candidate13*,
+obj/parallel/closure-return-inputs/postcheck-candidate13.py.
 
-The completion pass was not run. A core build also needs backend support beyond
-v3's initial assembly profile for ymm, zmm and kreg, and full original metadata,
-provided-body and native consumer qualification. Passing the census will not
-itself complete the original-core build or PA32.
+Alignment and its field enum use actual derive_const(Clone, PartialEq, Eq).
+Source derive expansions are completed, while the constant-pattern path still
+queries the ordinary equality-derive table; diagnose the missing typed proof
+connection without trusting attribute spelling or accepting manual equality as
+structural matching. No fix/reduction for this next blocker is installed yet.
+
+A core build additionally requires completion, genuine original metadata/body
+transport and native consumers, and backend support beyond v3's initial ymm/zmm/
+kreg assembly profile. Passing the analysis-only census does not complete PA32.
 
 ## Completed: zero-sized niche companions (part A)
 
@@ -332,16 +296,18 @@ required; course outputs must not be moved without a reviewed contract.
 
 ## Pins, artifacts and storage
 
-- `obj/parallel/capture-match/candidate12-release` is the current comparison pin.
+- `obj/parallel/capture-match/candidate13-release` is current; candidate12-release
+  is the retained immutable comparison baseline.
 - Candidate10 and wipniche1/2 were retired after publication of11; cleanup
  1794560721836625856. Their producer/raw files remain, their binaries are absent.
 - Candidate11-release and wipbool1-dev-fast were retired after publication of12;
   cleanup1794564483313447992. Their producers and raw observations remain.
-  Wipclosure1-dev-fast is exploratory; candidate12 remains the qualified comparison.
+  Wipclosure1–5 are superseded exploratory pins; retire them with scoped pruning
+  after preserving producer patches and receipts.
   The managed Cargo cache/CLI has since been retired for space; rebuild before use.
-- Pin.py asserts3945 development Rust files. No new compiler .rs file is added
-  by part B; update the count only for actual new files, never by dropping tests.
-- Free space is now below150GiB; validation is refused until headroom returns. Controller2jobs/150GiB reserve/CPU800%/RAM12GiB/
+- Current pinning asserts3946 development Rust files, including creator_inputs.rs.
+  Update the count only for actual new files, never by dropping tests.
+- Last free space219GiB; storage admission works. Controller2jobs/150GiB reserve/CPU800%/RAM12GiB/
  256tasks and the16GiB output cap remain unchanged. Storage's40GiB local default
   does not reduce that shared reserve. Check free space before every batch.
 
