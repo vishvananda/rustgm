@@ -1,11 +1,41 @@
 # RustGM handoff — 2026-11-14
 
+LATEST genuine original: clean candidate35-release on publishedead92a4cd,
+3965 source hashes/empty patch,7m14s build. CLI
+5c4168411f54c318b60910da625ef6785b0b81f85539684c63706a7acbba994a.
+Original v14 library35 CLEARS FnOnce::call_once delegation in array/drain.rs:62,
+then FAILS the following FnMut body at file100:3330/line76 with
+`const invocation differs from its defining call-trait or effect fact`.
+The body invokes borrowed field (self.f), where f:&'f mut F, in both branches.
+26.301281564868987s/status1/no timeout/RSS725944KiB; no core.rgm/0-byte core.lowir.
+Postcheck35 terminal PASS:722 hashes/375 opens/six reviewed config pins/all3965/
+clean pin/fixed120s and unchanged14500624work/1GiB attempted/64MiB retained.
+Raw explicit-call-members/{build35-release,core-artifact35,artifact-postcheck35}.log
+and original-library-candidate35/. Diagnostic only/no speed claim/no artifact.
+
+NEXT reduce borrowed-generic callable field invocation from this real FnMut
+body. Current body/constants/invocations.rs::source_receiver requires kind/borrow
+agreement and dereferences==0. Do not relax blindly: inspect actual retained
+Invocation kind, receiver, borrow, dereferences and effect plus lowered operand.
+Native Relay just qualified uses owned F, whereas original Drain stores &mut F;
+add paired borrowed-field controls and real runtime/CTFE accepting requirements.
+Reuse existing typed source adjustment/borrow results and full formal bindings;
+keep real current call/effect/borrow/lifetime/actual Code duties. No production
+edit or reduction for this new frontier yet. Ordinary minima PA25, real roles PA31.
+
+Published ABI productead92a4cd/main synced. Full prior43649121503 exact7a4e9547f
+PASSED EVERY STAGE:3083 private release6.82s/debug64.37s, all public/native/course/
+independent/component. Accounting regression is closed by that full run. Raw
+explicit-call-members/ci43649121503.log. ONE new full43652873020 exactead92a4cd
+is running fast/static checks (expected private3084). Do not duplicate, cancel
+or restart for docs. This supersedes earlier pending35/CI-running paragraphs.
+
 Active goal: compile pinned original core, completing assignment components as
 whole contracts qualify. One worker, existing B only; main Git-only. No agents
 or new tree. **No original core metadata/LowIR/native consumer artifact exists.**
 Whole PA25–PA44 remain planned; the113-case PA25 component stays unchanged.
 
-CURRENT coherent WIP ready for publication: explicit const Fn/FnMut/FnOnce
+Published coherent checkpoint: explicit const Fn/FnMut/FnOnce
 members through their actual safe rust-call ABI. See docs/pa25-explicit-call-members.md.
 Five production files reuse the existing validated role methods table, actual
 trait owner and current callable registry. Only actual members get rust-call
@@ -36,11 +66,9 @@ one component/128 upstream/126 Reference pass. New exact role-slot private guard
 is pending full CI, expected3084; no local cold private harness. Raw
 obj/parallel/explicit-call-members/. Current dev-fast replay CLIe261c7b4…884390.
 
-NEXT publish this coherent checkpoint, freeze candidate35-release and retry the
-genuine unchanged original v14 library, same120s/14500624work/1GiB attempted/
-64MiB retained; then artifact postcheck. Do not retry a census or unoptimized
-whole original. Wait for the ONE previous full43649121503 to finish before
-launching one new full successor. Do not duplicate/cancel/restart for docs.
+Clean35 and postcheck are now complete as recorded above. Continue the borrowed
+callable field frontier with the same original inputs/profile/limits. Do not retry a census or unoptimized
+whole original. Current full43652873020 is the sole successor. Do not duplicate/cancel/restart for docs.
 
 Published accounting repair7a4e9547f follows product0c4d3d721. Full43645030432
 on0c4 FAILED14 private/22 public (six targets): shared helper accidentally charged

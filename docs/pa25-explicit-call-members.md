@@ -70,3 +70,14 @@ one clean candidate35 release and retry genuine original core with unchanged
 722-source manifest, configuration pins,120s and quotas. No original metadata,
 LowIR or native consumer artifact exists. All earlier valid unsupported contracts,
 full Drain behavior and original v13/v14 artifacts remain required.
+
+
+Clean release35 verifies the genuine original adapter is cleared. Product/head
+ead92a4cd,3965 hashes/empty patch, CLI5c416841…bba994a,7m14s build. Original v14
+library35 now rejects the following array/drain FnMut body at file100:3330/line76,
+`const invocation differs from its defining call-trait or effect fact`, involving
+the borrowed callable field.26.301281564868987s/status1/no timeout/RSS725944KiB;
+no core.rgm/0-byte core.lowir. Postcheck35 passes722 originals/375 opens/six
+reviewed pins/all3965/clean pin/fixed120s and unchanged quotas. No artifact or
+speed claim. Full43649121503/7a4 is entirely green3083 release6.82s/debug64.37s;
+one successor43652873020/ead92 is running. Do not restart for documentation.
