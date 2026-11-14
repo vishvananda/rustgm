@@ -9,7 +9,7 @@ Latest continuation: clean release23 clears the layout guard and reaches genuine
 unchecked_shl through usize's source wrapper. Shift implementation is now locally
 focused/native-qualified: six exact controls and five actual programs pass.
 Full43570894822 PASSES EVERY STAGE on preceding product source36b794b08, including
-3077 private release/debug. Shift checkpoint publication/full successor is next;
+3077 private release/debug. Shift checkpoint823dc01df is published; full43575779218 is running.
 final local replay/harness/upstream and clean24original await disk admission.
 Current3958 Rust sources; pin.py now expects3958. Shared free space fell to153GiB,
 with150GiB reserve/16GiB B cap unchanged; user was asked for5–10GiB externally.
@@ -1178,3 +1178,12 @@ requirements and pending21/22 products/22/23 layout comparisons; no speed claim.
 Current shift code is the exact3958-source focused/native-qualified snapshot;
 production changes include shared bounded Copy premises and exact RHS checking
 in all CTFE/runtime/dependency consumers. No backend/bridge/storage.py change.
+
+Published shift source is823dc01dff1f2ca942e637bab6aed8c4f1d0ab01. One fresh full
+manual successor43575779218 is IN PROGRESS on that exact head; previous43570894822
+is terminal success. Do not dispatch a duplicate or a full run for this handoff
+update. B and main are synchronized; no local job is active. Latest shared free
+space151GiB, so final local replay/harness/upstream and24freeze remain blocked.
+The external5–10GiB headroom question is pending. Exact commands/evidence/CI state
+are in obj/parallel/intrinsic-completion/live-state.json. The build goal is active,
+not achieved: no original artifact or whole PA release exists.
