@@ -34,6 +34,30 @@ pub(crate) fn definition(facts: &Declarations, kind: CallTrait) -> Result<DefId,
     }
     Ok(declaration.definition)
 }
+/// An exact validated language member; classification supplies no implementation proof.
+pub(crate) fn member(
+    facts: &Declarations,
+    method: DefId,
+) -> Result<Option<CallTrait>, &'static str> {
+    let Some(parent) = facts.associated.trait_owner(method) else {
+        return Ok(None);
+    };
+    let Some(kind) = facts.associated.callable(parent) else {
+        return Ok(None);
+    };
+    let Some(catalog) = facts.source_bindings.as_deref() else {
+        return Ok(None);
+    };
+    if definition(facts, kind)? != parent {
+        return Err("source callable member changed its actual role parent");
+    }
+    Ok(catalog
+        .traits
+        .as_deref()
+        .filter(|roles| roles.methods[kind as usize] == Some(method))
+        .map(|_| kind))
+}
+
 /// The validated `FnOnce::Output` declaration of the completed family.
 pub(crate) fn output(facts: &Declarations) -> Result<DefId, &'static str> {
     let declaration = facts

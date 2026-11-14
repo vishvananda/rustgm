@@ -1,0 +1,108 @@
+{
+ "schema": 1,
+ "owner": "PA31 actual source rust-call members",
+ "declared_before_execution": true,
+ "cases": {
+  "direct-mut.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/explicit-call-members/direct-mut.rs"
+  },
+  "direct-shared.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/explicit-call-members/direct-shared.rs"
+  },
+  "direct-once.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/explicit-call-members/direct-once.rs"
+  },
+  "relay.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/explicit-call-members/relay.rs"
+  },
+  "plain-bound.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/explicit-call-members/plain-bound.rs"
+  },
+  "ordinary-impl.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/explicit-call-members/ordinary-impl.rs"
+  },
+  "immutable.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/explicit-call-members/immutable.rs"
+  },
+  "wrong-tuple.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/explicit-call-members/wrong-tuple.rs"
+  },
+  "unsafe-impl.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/explicit-call-members/unsafe-impl.rs"
+  },
+  "original-drain.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/explicit-call-members/original-drain.rs"
+  },
+  "native.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/explicit-call-members/native.rs",
+   "native_stdout": "41 59\n",
+   "observer": "observe.c",
+   "candidate_limit": "Required accepting source CTFE remains at: source const payment for this open, lifetime-bearing or argument shape is not implemented"
+  },
+  "scaling-8.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/explicit-call-members/scaling-8.rs",
+   "functions": 8
+  },
+  "scaling-32.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/explicit-call-members/scaling-32.rs",
+   "functions": 32
+  },
+  "scaling-128.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/explicit-call-members/scaling-128.rs",
+   "functions": 128
+  },
+  "native-runtime.rs": {
+   "expected": "accept",
+   "native_stdout": "41 59\n",
+   "observer": "observe.c",
+   "ordinary": "pa25/tests/spec/explicit-call-members/native-runtime.rs"
+  }
+ },
+ "files": {
+  "direct-mut.rs": "a9fde1bcc76863c3844239912771febefc1f65646a7845340696b6b82957130b",
+  "direct-shared.rs": "9745c6371a137ff2eeaea85fb5b528cb3f1a0a4e643dbd5dc3f904d337e4ebd6",
+  "direct-once.rs": "df076b48e5195ce7bac5b053e60ca990e3e8290c3e8ec0fbf216ac749f89ebe6",
+  "relay.rs": "1621c481179dbaff3a6e0124601cabec91436fd364f1ce782c9a656c156ec4b7",
+  "plain-bound.rs": "bcfc80f70aac3e71d7ec51632b42ee360ef70037ff2e4af392bdb99664099714",
+  "ordinary-impl.rs": "c963e566924bfe0bf5c6fc847e1387beb02abb1daedeab613307506ff8d0b2c0",
+  "immutable.rs": "f1ec7d984ece690ab3c6a5a6c8141f489f0e0826c68ec81c75e992a5db2c1d73",
+  "wrong-tuple.rs": "0d4c71193556a14cdfdbf776234336135186d103d65fc711da9f9777eda83e4d",
+  "unsafe-impl.rs": "cb1e286aea46f833205c8ae0fece6bbb031ed2fb4dcaf8998a593952c0310cde",
+  "native.rs": "132cff3dce8e8761c15320744e14557b78e948f3d7473fa138b2c6aa28e937e7",
+  "scaling-8.rs": "f7de409bb25198deabe92dc6b232723cc674e4ac95579f1a8a1dd9312cca6ccb",
+  "scaling-32.rs": "e0dbb3c8f4be50207fa4eb9e6c9d6c9f5d7d92f1e97f2caec4934ab86b766dd1",
+  "scaling-128.rs": "667a659abfe5849642521dac4e03f4e8cbbff798d08e58ea11939acbd0a201bf",
+  "original-drain.rs": "c9968a1e018cd0b04fcd002158be5999129fb5239c84559d0212d5c5d12b8845",
+  "observe.c": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+  "native-runtime.rs": "2ca822fdd06c9a8bffa8c0fdd7bb34bb259edfe67c2b3a4476c89d58788daf18"
+ },
+ "basis": {
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "source_path": "library/core/src/array/drain.rs",
+  "original_sha256": "96afd0e8c9cbba4d20e0990ec35203be48417a30c6d7b909c82b5261514158b9",
+  "item_sha256": "434b0dad787cfb5b5fb10ad7f50394d54f3376fbea0289699fb87dd8633caef6",
+  "license": "MIT OR Apache-2.0; third_party/sources.json"
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "target": "x86_64-unknown-linux-gnu"
+ }
+}

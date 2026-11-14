@@ -1,0 +1,166 @@
+//! Explicit call-trait methods retain their validated tuple ABI and current effect.
+use rustgm::{expand::config::Config, pipeline, support::diagnostics::LintCap};
+type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
+const PACKET: &str = "pa31/tests/spec/explicit-call-members";
+fn report(name: &str) -> Result<rustgm::resolve::expansion::Report> {
+    let source = crate::resolve::fixture(&format!("{PACKET}/{name}.rs"))?;
+    let mut config = Config::default();
+    config.set_lint_cap(LintCap::Allow);
+    Ok(crate::resolve::source_provider_config(
+        &source,
+        "explicit_calls",
+        &config,
+    )?)
+}
+fn program(report: &rustgm::resolve::expansion::Report) -> Result<rustgm::lowir::program::Program> {
+    let pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = pipeline::analyze_source(report)?;
+    let exports = facts
+        .functions
+        .iter()
+        .filter(|function| {
+            matches!(
+                report
+                    .package
+                    .names
+                    .get(report.resolution.definitions[function.definition.0 as usize].name),
+                "entry" | "probe"
+            )
+        })
+        .map(|function| function.definition)
+        .collect::<Vec<_>>();
+    Ok(rustgm::lower::instances::build_roots_prepared(
+        report,
+        &mut facts,
+        rustgm::lower::Roots {
+            entry: None,
+            exports: &exports,
+        },
+        prepared,
+    )?)
+}
+#[test]
+fn explicit_const_members_require_their_actual_role_tuple_and_receiver() -> Result {
+    let mut failures = Vec::new();
+    for name in [
+        "direct-mut",
+        "direct-shared",
+        "direct-once",
+        "relay",
+        "original-drain",
+        "native-runtime",
+    ] {
+        if let Err(error) = report(name).and_then(|report| program(&report)) {
+            failures.push(format!("{name}: {error}"));
+        }
+    }
+    for name in [
+        "plain-bound",
+        "ordinary-impl",
+        "immutable",
+        "wrong-tuple",
+        "unsafe-impl",
+    ] {
+        let error = report(name)
+            .and_then(|report| program(&report))
+            .err()
+            .ok_or_else(|| format!("accepted {name}"))?
+            .to_string();
+        if [
+            "not implemented",
+            "unsupported",
+            "exhausted",
+            "budget",
+            "current conditional trait premise",
+            "normalized safe source signature",
+        ]
+        .iter()
+        .any(|message| error.contains(message))
+        {
+            failures.push(format!("unqualified {name}: {error}"));
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+#[test]
+fn explicit_member_work_tracks_actual_typed_calls() -> Result {
+    let mut previous: Option<[usize; 2]> = None;
+    for count in [8, 32, 128] {
+        let report = report(&format!("scaling-{count}"))?;
+        let pipeline::Analysis {
+            mut facts,
+            prepared,
+        } = pipeline::analyze_source(&report)?;
+        rustgm::lower::instances::build_roots_prepared(
+            &report,
+            &mut facts,
+            rustgm::lower::Roots {
+                entry: None,
+                exports: &[],
+            },
+            prepared,
+        )?;
+        let work = [
+            facts.body_work.inference_steps,
+            facts.body_work.canonical_steps,
+        ];
+        println!("explicit members={count} work={work:?}");
+        if let Some(before) = previous {
+            for (old, actual) in std::iter::zip(before, work) {
+                assert!(actual <= 4 * old + 512, "{before:?}->{work:?}");
+            }
+        }
+        previous = Some(work);
+    }
+    Ok(())
+}
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn explicit_const_delegation_executes_the_actual_callable_and_mutable_receiver() -> Result {
+    use std::process::Command;
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let out = root.join("obj/parallel/explicit-call-members/native");
+    std::fs::create_dir_all(&out)?;
+    let ir = out.join("native.lowir");
+    let object = out.join("native.o");
+    let exe = out.join("native.exe");
+    rustgm::lowir::writer::write(
+        &program(&report("native-runtime")?)?,
+        &mut std::fs::File::create(&ir)?,
+    )?;
+    for (stage, command) in [
+        (
+            "backend",
+            Command::new("python3")
+                .arg(root.join("scripts/backend.py"))
+                .arg("--emit-object")
+                .arg(&ir)
+                .arg("-o")
+                .arg(&object),
+        ),
+        (
+            "link",
+            Command::new("cc")
+                .arg(root.join(PACKET).join("observe.c"))
+                .arg(&object)
+                .arg("-o")
+                .arg(&exe),
+        ),
+        ("native", &mut Command::new(&exe)),
+    ] {
+        let output = command.output()?;
+        std::fs::write(out.join(format!("{stage}.stdout")), &output.stdout)?;
+        std::fs::write(out.join(format!("{stage}.stderr")), &output.stderr)?;
+        assert!(
+            output.status.success() && output.stderr.is_empty(),
+            "{stage}: {output:?}"
+        );
+        if stage == "native" {
+            assert_eq!(output.stdout, b"41 59\n");
+        }
+    }
+    Ok(())
+}

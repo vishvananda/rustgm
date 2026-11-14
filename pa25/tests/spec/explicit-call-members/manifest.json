@@ -1,0 +1,107 @@
+{
+ "schema": 1,
+ "owner": "PA25 explicit const call-trait members",
+ "declared_before_execution": true,
+ "cases": {
+  "direct-mut.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required independent outcome remains unqualified at bootstrap: unsupported fn_traits library feature"
+  },
+  "direct-shared.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required independent outcome remains unqualified at bootstrap: unsupported fn_traits library feature"
+  },
+  "direct-once.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required independent outcome remains unqualified at bootstrap: unsupported fn_traits library feature"
+  },
+  "relay.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required independent outcome remains unqualified at bootstrap: unsupported fn_traits library feature"
+  },
+  "plain-bound.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required independent outcome remains unqualified at bootstrap: unsupported fn_traits library feature"
+  },
+  "ordinary-impl.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required independent outcome remains unqualified at bootstrap: unsupported fn_traits library feature"
+  },
+  "immutable.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required independent outcome remains unqualified at bootstrap: unsupported fn_traits library feature"
+  },
+  "wrong-tuple.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required independent outcome remains unqualified at bootstrap: unsupported fn_traits library feature"
+  },
+  "unsafe-impl.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required independent outcome remains unqualified at bootstrap: unsupported fn_traits library feature"
+  },
+  "original-drain.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required independent outcome remains unqualified at bootstrap: unresolved core::marker::PhantomData import"
+  },
+  "native.rs": {
+   "expected": "accept",
+   "native_stdout": "41 59\n",
+   "observer": "observe.c",
+   "candidate_limit": "Required independent outcome remains unqualified at bootstrap: unsupported fn_traits library feature"
+  },
+  "scaling-8.rs": {
+   "expected": "accept",
+   "functions": 8,
+   "candidate_limit": "Required independent outcome remains unqualified at bootstrap: unsupported fn_traits library feature"
+  },
+  "scaling-32.rs": {
+   "expected": "accept",
+   "functions": 32,
+   "candidate_limit": "Required independent outcome remains unqualified at bootstrap: unsupported fn_traits library feature"
+  },
+  "scaling-128.rs": {
+   "expected": "accept",
+   "functions": 128,
+   "candidate_limit": "Required independent outcome remains unqualified at bootstrap: unsupported fn_traits library feature"
+  },
+  "native-runtime.rs": {
+   "expected": "accept",
+   "native_stdout": "41 59\n",
+   "observer": "observe.c",
+   "candidate_limit": "Required independent outcome remains unqualified at bootstrap: unsupported fn_traits library feature"
+  }
+ },
+ "files": {
+  "direct-mut.rs": "4fc2624bb0eda13adda100214f797deaa1547a1d7c84ade9a4c4f3e8396972da",
+  "direct-shared.rs": "b7c9563657d6af7a73e0d980f8c1ab31a216dd9680365ba0f1c13a62ce0a7ef8",
+  "direct-once.rs": "019f798d2bedb248d86f22d2c597e6ebb7bea83044527e77f943186b01dffded",
+  "relay.rs": "186555ed98898e81a4edcc8ae872905b1c6aab9207e87d54ce850f1f5b98224d",
+  "plain-bound.rs": "ac21f763cb4e37b288defbb4c87bef1e864ada67b9915c97454dd13c186a9063",
+  "ordinary-impl.rs": "4f708d863f529dc70511a0b28f15884b68d254f0998591e3c7de96acec6d698e",
+  "immutable.rs": "00e1947141035022b86e67519aa76262bf01a06681ed20285d2926b8e7e60da2",
+  "wrong-tuple.rs": "c71458f8b2da7c067c72fbaff045adede2c900aadb262a6e443628de19abc45e",
+  "unsafe-impl.rs": "fdb2a035307ca73290aea117299dde04bfb9a2bb66b60d250381a44e088bc6d7",
+  "native.rs": "6ee4115f680749fc796c80a35ea6805974174671e14b11c064c27fdc4031747d",
+  "scaling-8.rs": "c2de359754e1545379b797e0f4950197c3dc2fb6d65c999425398871419071fa",
+  "scaling-32.rs": "5b273f7a56fd5da45b4c7c11b926c385a9aac9721d78dbb1695e94e2bd14f75d",
+  "scaling-128.rs": "b4a4a39683c74b63fe9acbe58e5566563cf1cebf83be2f68d141a530266d623e",
+  "original-drain.rs": "e49d98c62c1286767750bb510e1706af57582c8d23a639c0fee0dbc19d7b8f92",
+  "observe.c": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+  "native-runtime.rs": "adcc70aa0d87804fa2ce0b4a7ff356fd7edb7bdec19d00522c0ad05c20dcc100"
+ },
+ "basis": {
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "source_path": "library/core/src/array/drain.rs",
+  "original_sha256": "96afd0e8c9cbba4d20e0990ec35203be48417a30c6d7b909c82b5261514158b9",
+  "item_sha256": "434b0dad787cfb5b5fb10ad7f50394d54f3376fbea0289699fb87dd8633caef6",
+  "license": "MIT OR Apache-2.0; third_party/sources.json"
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "target": "x86_64-unknown-linux-gnu"
+ }
+}

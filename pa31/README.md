@@ -1,5 +1,11 @@
 # RustGM Programming Assignment 31: Compiler/library bindings
 
+The [explicit const call-member checkpoint](../docs/pa25-explicit-call-members.md)
+retains the original Drain adapter, actual Fn member identity, tuple ABI and
+mutable receiver proof. Full assignment, bootstrap and original artifacts remain
+required; source CTFE payment is still an accepting boundary.
+
+
 The [projected const promise checkpoint](../docs/pa25-projected-const-members.md)
 retains conditional associated-result parent proof, actual source signatures,
 ordinary/source opponents and native observations. Whole-PA and original-library

@@ -55,3 +55,40 @@ fn replace(catalog: &mut Catalog, role: LangItem, declaration: Option<Declaratio
     languages.replace(role, declaration)?;
     Ok(())
 }
+
+#[test]
+fn explicit_member_identity_requires_the_exact_validated_role_slot() -> TestResult {
+    let source = crate::test_source::fixture(
+        "pa31/tests/spec/source-const-payment/callable/const-function-item.rs",
+    )?;
+    let report = crate::test_source::source_provider(&source, "explicit_member_roles")?;
+    let mut facts = crate::sema::declarations::analyze(&report)?;
+    let mut methods = Vec::new();
+    for kind in [CallTrait::FnOnce, CallTrait::FnMut, CallTrait::Fn] {
+        let method = facts
+            .source_bindings
+            .as_deref()
+            .ok_or("catalog")?
+            .traits
+            .as_deref()
+            .ok_or("validated traits")?
+            .methods[kind as usize]
+            .ok_or("validated method")?;
+        assert_eq!(member(&facts, method)?, Some(kind));
+        methods.push(method);
+    }
+    assert!(member(&facts, output(&facts)?)?.is_none());
+    facts
+        .source_bindings
+        .as_deref_mut()
+        .ok_or("catalog")?
+        .traits
+        .as_deref_mut()
+        .ok_or("validated traits")?
+        .methods
+        .swap(CallTrait::FnOnce as usize, CallTrait::FnMut as usize);
+    assert!(member(&facts, methods[0])?.is_none());
+    assert!(member(&facts, methods[1])?.is_none());
+    assert_eq!(member(&facts, methods[2])?, Some(CallTrait::Fn));
+    Ok(())
+}

@@ -1,5 +1,11 @@
 # Compile-time-first Rust frontend architecture
 
+The [explicit call-member checkpoint](docs/pa25-explicit-call-members.md)
+retains the real Fn tuple ABI behind exact validated role identity. Fourteen
+source outcomes and eight native programs pass; original-core release35,
+source CTFE payment and ordinary bootstrap qualification remain required.
+
+
 The [projected const promise checkpoint](docs/pa25-projected-const-members.md)
 qualifies44 complete ordinary/source outcomes, seven native programs and scoped
 parent-effect proofs. Clean release34 clears the original residual helper and reaches

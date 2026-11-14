@@ -1,131 +1,83 @@
 # RustGM handoff — 2026-11-14
 
-IMMEDIATE CI repair: full43645030432 on0c4d3d721 FAILED14 private/22 public
-checks in six targets. Shared cause: the new publish_result helper charged
-ordinary result queries to caller-input storage and broadened their region
-interval. Ordinary queries now retain their original selector account and exact
-interval; only the new const-parent continuation pays its caller allocations.
-No quota, effect proof, source permission or expectations change.
-Focused repair1794695015762961110 passes five exact tests/three targets160.71s:
-new projected outcomes/scaling plus prior closure receivers, fresh cross-crate
-results and custom iteration. Native1794695369245654861 passes seven programs
-52.33s. ci-repair-replay authenticates3964 sources/all inputs,44 complete
-outcomes/two accepting gaps and unchanged bounded scaling; dev-fast CLI
-adcb403ebf7acf630fc42d5d11576c2a4b73e7689a04db09e5b6688a348f8ff0.
-Publish this small repair and dispatch ONE full successor; 14 private cases
-remain pending full CI, with no cold local private build. Raw
-projected-const-members/ci43645030432.log and ci-repair-{fast1,native,replay}.log.
-This supersedes every earlier statement that43645030432 is running or green.
+Active goal: compile pinned original core, completing assignment components as
+whole contracts qualify. One worker, existing B only; main Git-only. No agents
+or new tree. **No original core metadata/LowIR/native consumer artifact exists.**
+Whole PA25–PA44 remain planned; the113-case PA25 component stays unchanged.
 
-Next frontier reduction WIP ONLY (no Rust-call production change): untracked
-pa25/31/tests/spec/explicit-call-members/,14 paired predictions (9 accept/5 reject),
-all independently confirmed by Rust1.98. Immutable clean34 reproduces source
-call-member signature/premise blockers. All14 ordinary attempts are UNQUALIFIED
-at unsupported fn_traits or original helper's PhantomData import, including
-predicted negatives. Exact original FnOnce impl bytes434b0dad…33caef6 retained.
-The source original support FnMut stub initially missed its actual stability
-attributes; corrected before reexecution, exact original item unchanged. Needs
-one bounded corrected-original probe before adding production code. Native
-prediction41/59; not yet executed. Main remains Git-only; one worker in B.
-Raw obj/parallel/explicit-call-members/{declaration,baseline,stability-setup-correction}.
+CURRENT coherent WIP ready for publication: explicit const Fn/FnMut/FnOnce
+members through their actual safe rust-call ABI. See docs/pa25-explicit-call-members.md.
+Five production files reuse the existing validated role methods table, actual
+trait owner and current callable registry. Only actual members get rust-call
+signature admission; opened signatures/full source/current call/effect, actual
+const impl/borrow/lifetime/Code proof stay required. No new persistent cache,
+dense field, wire/backend/storage/quota change. Inventory3965 (new cohesive
+explicit_call_members root registered in closures; pin.py count updated).
 
-Availability correction after clean34: semantic31–33 release binaries, old
-26 dev-fast, generic-const-calls/default-generic-subjects replay executables and
-projected replay1–3 are RETIRED/UNAVAILABLE. Receipts/hashes remain. Current34,
-current ci-repair dev-fast and actual pending performance21–24 pins remain.
-Retirement records projected-const-members/retired-pins.json and retire-pins.log.
-Do not use a pruned historical binary as new evidence.
+PA25/31 explicit-call-members each declare15 independent Rust1.98 outcomes:
+10 accept/5 reject. Qualified14 complete source outcomes (9 accept/5 reject).
+Source CTFE native remains required at open/lifetime/argument payment. All15
+ordinary attempts remain UNQUALIFIED at unsupported fn_traits or original
+PhantomData import, including predicted negatives. Exact original FnOnce item
+434b0dad…33caef6 is unchanged; reduced FnMut support body diverges and is never
+executed/claimed as full Drain behavior. Its missing stability attrs were fixed
+before corrected-original probe. Native runtime counterpart uses a real FnMut
+body/function item/mutable receiver and prints41/59; independent Rust runs both
+that counterpart and the still-required CTFE example with41/59.
 
-Clean candidate34-release is complete on docs-only headcc1bbf993 (product0c4d3d721),
-3964 source hashes/empty patch,7m02s build. CLIfdb81f6e5f53d924a40ca847678c4e6f0e25a47c054ae5ad08861c4574f64d1a.
-Genuine unchanged original v14 library34 CLEARS residual_into_try_type and now
-FAILS array/drain.rs:62/file100:2808, `self.call_mut(args)` in the exact const
-FnOnce<(usize,)> implementation for &mut Drain<'_, '_, T, F>, under
-F:[const]FnMut(T)->U. Error: `const function member lacks its current conditional
-trait premise`.22.45777091383934s/status1/no timeout/RSS727408KiB; no core.rgm,
-0-byte core.lowir. Postcheck34 terminal PASS:722 original hashes/375 opens/six
-reviewed config pins/all3964 compiler hashes/clean pin/fixed120s and unchanged
-14500624work/1GiB attempted/64MiB retained. Diagnostic only/no speed claim.
+fast2=1794696879652162802 passes new semantics/scaling and old projected control;
+fast3=1794697385218943481 final two exact67.28s. native1794696997540382381
+passes two groups/eight real programs76.21s (new runtime plus seven old controls).
+Strict selected/production/CLI Clippy, full format/audit pass. replay authenticates
+3965 compiler hashes/all input/basis hashes,30 complete CLI attempts (14 qualified,
+16 explicit unqualified), lowering and8/32/128 work10749/2610,37965/7916,
+146829/29116. No speed claim.315 harness/496 roots/13 binaries/44 stages/
+one component/128 upstream/126 Reference pass. New exact role-slot private guard
+is pending full CI, expected3084; no local cold private harness. Raw
+obj/parallel/explicit-call-members/. Current dev-fast replay CLIe261c7b4…884390.
+
+NEXT publish this coherent checkpoint, freeze candidate35-release and retry the
+genuine unchanged original v14 library, same120s/14500624work/1GiB attempted/
+64MiB retained; then artifact postcheck. Do not retry a census or unoptimized
+whole original. Wait for the ONE previous full43649121503 to finish before
+launching one new full successor. Do not duplicate/cancel/restart for docs.
+
+Published accounting repair7a4e9547f follows product0c4d3d721. Full43645030432
+on0c4 FAILED14 private/22 public (six targets): shared helper accidentally charged
+ordinary result nodes to caller input and enlarged their region interval.
+Repair restores ordinary original account/interval, retaining new conditional
+parent-proof charges; no quota or semantic expectations change. Five exact
+controls/160.71s and seven native/52.33s pass, ci-repair-replay44 complete outcomes
+plus two accepting gaps. Full successor43649121503 exact7a4 has PASSED release/
+course/static/all-target/harness/host graph and is running debug invariants.
+Private14 release failures are cleared there; debug/final full completion pending.
+Raw projected-const-members/ci43645030432.log and ci-repair-{fast1,native,replay}.log.
+No full successor for current ABI work yet; keep the active one undisturbed.
+
+Latest genuine original observation: clean34-release on docs-only cc1bbf993,
+product0c4d3d721,3964 source hashes/empty patch,7m02s build. CLI
+fdb81f6e5f53d924a40ca847678c4e6f0e25a47c054ae5ad08861c4574f64d1a.
+Original v14 library34 CLEARS residual_into_try_type and FAILS array/drain.rs:62,
+file100:2808, self.call_mut(args) in exact const FnOnce<(usize,)> impl for
+&mut Drain under F:[const]FnMut(T)->U; current conditional premise error.
+22.45777091383934s/status1/no timeout/RSS727408KiB, no core.rgm/0-byte core.lowir.
+Postcheck34 PASS:722 originals/375 opens/six reviewed config pins/all3964 hashes/
+clean pin/fixed120s and unchanged quotas. Diagnostic only/no speed claim.
 Raw projected-const-members/{build34-release,core-artifact34,artifact-postcheck34}.log
-and original-library-candidate34/. No original library/native consumer artifact.
+and original-library-candidate34/. New ABI reduction clears original adapter;
+fresh genuine original verification remains required.
 
-NEXT reduce the actual explicit FnOnce-to-FnMut delegation. Both methods have
-extern "rust-call" signatures. The current source_request parameterized filter
-and source_member accept only safe Rust convention, preserving the earlier ABI
-fence. Inspect the actual typed call and existing callable-member roles before
-choosing a repair; this is a likely next admission boundary, not yet a qualified
-reduction or production edit. Preserve actual role identity, tuple/receiver/full
-signature, current source/effect, mutable borrow and Code execution proof. Do not
-admit arbitrary unsafe or non-language foreign conventions. Ordinary minima PA25;
-actual source Fn language roles/original item PA31. Work remains single-worker B.
-
-Full43645030432 exact0c4d3d721 has passed fast/static/all-target lint/architecture/
-harness/host graph and is running release/course tests. Do not duplicate, cancel
-or restart for these docs. Prior43636803381 is fully green as recorded below.
-This continuation supersedes pending clean34/NEXT statements below.
-
-Continue the active goal: compile pinned original core, completing assignment
-components as their complete contracts qualify. **One worker**, B only; main is
-Git-only. **No original core metadata/LowIR/native consumer artifact exists.**
-PA25–PA44 remain planned; the released113-case PA25 component is unchanged.
-
-Published source0c4d3d721a571d06df447de10f414391a1af4b97; main synced.
-CURRENT coherent checkpoint: projected conditional const associated promises.
-See docs/pa25-projected-const-members.md. Production pays the corresponding
-const-qualified parent on the existing scoped proof stack; final generic-use
-validation preserves the call's effect and declaration provenance. Projected safe
-Rust requests then reuse the existing full source validator. Unsafe/convention,
-source/current-call/caller/borrow/actual implementation/Code proof stay required.
-Lazy continuation only: no common Frame/Node/Source growth, persistent cache,
-wire, backend, storage policy or quota changes.3964 compiler sources.
-
-PA25/31 projected-const-members each declare23 outcomes (16 accept/7 reject),
-independently confirmed by pinned Rust1.98. Qualified44 complete outcomes;
-source aggregate constructor CTFE payment and ordinary original-helper imports
-remain required accepting/unqualified. Byte-exact original residual helper is
-retained (aa7409a6…527866). Source support stability/main-wrapper setup corrections
-are recorded; semantic bodies/outcomes unchanged. A new blanket-const prediction
-was independently corrected from accept to reject before candidate execution;
-no old valid positive was inverted. Both new native observers print41/59.
-
-fast7=1794691669999805863 four exact44.95s; fast8=1794691978469603016 final
-wrappers/scaling41.90s. native4=1794692601948384080 seven actual programs47.66s,
-including five old controls, source projected read and ordinary construction.
-Strict selected/production/CLI Clippy, format and architecture pass. Final replay
-binds all3964 source hashes/all packet/basis hashes,46 CLI attempts (44 qualified,
-two accepting gaps), exact prepared lowering and8/32/128 scaling. Source work
-6758/8534,26966/32944,107798/130560; ordinary3880/2641,15496/10561,61960/42241.
-No speed claim.315 harness/495 roots/13 bins/44 stages/one component,
-128 upstream+126 Reference pass. Raw obj/parallel/projected-const-members/.
-
-Clean34 and its postcheck are now complete as recorded above. Continue from the
-actual array/drain delegation, without another census or unoptimized whole-core
-retry. Original v13/v14 complete artifact/native consumers remain required.
-
-Previous published source2367320774a9df4da7d5dbcbba7c5b1d95bad38e was synced
-through docs eacd4b3d3 before this checkpoint. Clean33 CLIc638c2da…004c1af,
-3964 hashes/empty patch,8m39s build. Genuine original v14 library33 CLEARS
-RangeBounds::contains, FAILS ops/try_trait.rs:383/file95:15668 residual_into_try_type,
-`const function member lacks its current conditional trait premise`.
-25.41980179119855s/status1/no timeout/RSS728988KiB; no core.rgm,0-byte core.lowir.
-Postcheck33 PASSES722 originals/375 opens/six reviewed pins/all3964/clean pin/
-fixed120s and quotas. Raw default-generic-subjects/{core-artifact33,
-artifact-postcheck33}.log and original-library-candidate33/. Diagnostic only.
-
-Full43636803381 exact236732077 PASSED EVERY STAGE:3083 private release8.77s,
-debug92.68s, all public/native/course/independent/component. Raw
-projected-const-members/ci43636803381.log. Two preceding private scope/foreign-
-subject guards are now qualified. ONE full successor43645030432 exact0c4d3d721 is running. Do not duplicate,
-cancel or restart for documentation. Current33/32/31 and pending performance21–24 pins retained;25–30 are
-retired/unavailable. Retire superseded exploratory replay pins after clean34
-replacement; preserve all receipts/hashes and actual pending performance pins.
-
-Same existing B /mnt/vizier/rustgm-scratch/rustgm-pa26-work, branch
-implement/scoped-inherent-20261110. No new worker/tree. Shared controller verified
-2jobs/150GiB reserve/CPU800%/RAM12GiB/tasks256; one local heavy job,16GiB output
-cap. Free space is above the reserve. Backend stays frozen17b024f69. Every build,
-test/probe uses resource/storage guards. All earlier original v13/v14, bootstrap,
-future, closure, native and transport requirements below remain required.
+Availability: keep actual current34 release/current ABI replay and pending
+performance21–24 pins. Semantic25–33 release,26 dev-fast, generic-const-calls/
+default-generic-subjects replays and projected replay1–3 executables are RETIRED/
+UNAVAILABLE. Receipts/hashes remain; see projected-const-members/retired-pins.json.
+Older projected replay4/ci-repair replay may be retired after current replacement;
+never use a pruned binary as new evidence. Other checkouts' outputs untouched.
+Same B /mnt/vizier/rustgm-scratch/rustgm-pa26-work, branch implement/scoped-inherent-20261110;
+shared2jobs/150GiB reserve/CPU800%/RAM12GiB/tasks256, one local heavy job,
+16GiB output cap. Backend frozen17b024f69; storage.py unchanged. All earlier
+original v13/v14, SourceFuture/async, closure, bootstrap, signature/aggregate
+payment, native, arithmetic, layout and transport requirements below stay open.
 
 Historical checkpoint record follows; the continuation above supersedes older
 NEXT/status/build-frontier statements.

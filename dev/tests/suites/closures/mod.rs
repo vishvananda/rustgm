@@ -58,3 +58,6 @@ mod matched_captures;
 mod postponed_casts;
 #[path = "../../unannotated_closure_inputs.rs"]
 mod unannotated_closure_inputs;
+
+#[path = "../../explicit_call_members.rs"]
+mod explicit_call_members;

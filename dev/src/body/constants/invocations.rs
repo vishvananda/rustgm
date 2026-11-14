@@ -311,3 +311,38 @@ fn source_receiver(
 #[cfg(test)]
 #[path = "../../../tests/invariants/invocation_facts.rs"]
 mod tests;
+
+/// Explicit language calls retain rust-call only for their actual validated
+/// Fn member. Other members keep the original safe Rust convention boundary.
+pub(super) fn member_signature(
+    facts: &Declarations,
+    target: crate::types::TypeId,
+    signature: crate::types::TypeId,
+    opened: bool,
+    work: &mut Work,
+) -> Result<bool, &'static str> {
+    work.charge(3)?;
+    let Some(Kind::Function {
+        bound_regions,
+        unsafe_: false,
+        convention,
+        ..
+    }) = facts.types.kind(signature)
+    else {
+        return Ok(false);
+    };
+    if opened && bound_regions != 0 {
+        return Ok(false);
+    }
+    if convention == crate::types::callable::Convention::RUST {
+        return Ok(true);
+    }
+    if convention != crate::types::callable::Convention::RUST_CALL {
+        return Ok(false);
+    }
+    work.charge(4)?;
+    let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(target) else {
+        return Ok(false);
+    };
+    Ok(crate::sema::compiler_items::callable_member(facts, DefId(item.0))?.is_some())
+}

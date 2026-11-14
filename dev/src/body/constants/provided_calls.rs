@@ -237,14 +237,7 @@ pub(super) fn source_request_in_scope(
     let call = source_call(facts, body, statement, work)?;
     work.charge(3)?;
     if facts.types.contains_parameters(call.target) == Some(true)
-        && !matches!(
-            facts.types.kind(call.signature),
-            Some(Kind::Function {
-                unsafe_: false,
-                convention: crate::types::callable::Convention::RUST,
-                ..
-            })
-        )
+        && !super::invocations::member_signature(facts, call.target, call.signature, true, work)?
     {
         // Other abstract requests still consume their exact local premise.
         // This path only authenticates completed normalized source applications.
@@ -649,26 +642,11 @@ fn source_member(facts: &Declarations, call: Call, work: &mut Work) -> Result<De
         return Err("const member lost its actual function item");
     };
     let definition = DefId(item.0);
-    if !matches!(
-        facts.types.kind(signature),
-        Some(Kind::Function {
-            unsafe_: false,
-            convention: crate::types::callable::Convention::RUST,
-            ..
-        })
-    ) {
+    if !super::invocations::member_signature(facts, call.target, signature, false, work)? {
         return Err("const member requires its normalized safe source signature");
     }
     work.charge(1)?;
-    if !matches!(
-        facts.types.kind(call.signature),
-        Some(Kind::Function {
-            bound_regions: 0,
-            unsafe_: false,
-            convention: crate::types::callable::Convention::RUST,
-            ..
-        })
-    ) {
+    if !super::invocations::member_signature(facts, call.target, call.signature, true, work)? {
         return Err("const member requires its actual opened safe call signature");
     }
     work.charge(4)?;
