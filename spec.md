@@ -8247,3 +8247,15 @@ the full RHS before narrowing; unsafe runtime shifts reuse existing typed LowIR
 operations. Source, const, unsafe, closedness and imported-profile guards remain.
 The [shift checkpoint](docs/pa31-unchecked-shifts.md) records independent bits,
 reference infrastructure failures and current qualification.
+
+
+Actual unchecked integer add/multiply/divide/remainder share the existing source
+arithmetic descriptor with unchecked subtraction. Require the completed pinned
+declaration, own Copy formal, exact unsafe const signature, closed integer type
+and current typed direct call. Constant execution checks overflow, zero divisors
+and signed MIN/-1 even for remainder. Runtime valid unsafe calls consume ordinary
+LowIR operations, explicitly sign extending narrow signed division inputs and
+truncating their result; source permission and imported-profile fences remain.
+The [unchecked arithmetic checkpoint](docs/pa31-unchecked-arithmetic.md) records
+independent integer bits, real runtime ABI observations and unqualified reference
+infrastructure failures. It establishes no original library artifact or PA release.

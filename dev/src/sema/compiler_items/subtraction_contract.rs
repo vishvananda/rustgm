@@ -26,6 +26,19 @@ pub(crate) fn wrapping_operator(kind: SourceIntrinsic) -> Option<Punctuation> {
     }
 }
 
+pub(crate) fn unchecked_operator(kind: SourceIntrinsic) -> Option<Punctuation> {
+    match kind {
+        SourceIntrinsic::UncheckedSub => Some(Punctuation::Minus),
+        SourceIntrinsic::Declaration(identity) => match identity.name() {
+            "unchecked_add" => Some(Punctuation::Plus),
+            "unchecked_mul" => Some(Punctuation::Star),
+            "unchecked_div" => Some(Punctuation::Slash),
+            "unchecked_rem" => Some(Punctuation::Percent),
+            _ => None,
+        },
+        _ => None,
+    }
+}
 pub(crate) fn unchecked_shift(kind: SourceIntrinsic) -> Option<Punctuation> {
     let SourceIntrinsic::Declaration(identity) = kind else {
         return None;
@@ -37,10 +50,8 @@ pub(crate) fn unchecked_shift(kind: SourceIntrinsic) -> Option<Punctuation> {
     }
 }
 pub(crate) fn scalar_arithmetic(kind: SourceIntrinsic) -> bool {
-    matches!(
-        kind,
-        SourceIntrinsic::UncheckedSub | SourceIntrinsic::SubWithOverflow
-    ) || wrapping_operator(kind).is_some()
+    unchecked_operator(kind).is_some()
+        || wrapping_operator(kind).is_some()
         || overflowing_operator(kind).is_some()
         || unchecked_shift(kind).is_some()
 }
@@ -73,7 +84,7 @@ impl SubtractionSelection {
             signature,
             &[self.input, self.rhs],
             self.output,
-            self.kind == SourceIntrinsic::UncheckedSub || unchecked_shift(self.kind).is_some(),
+            unchecked_operator(self.kind).is_some() || unchecked_shift(self.kind).is_some(),
             Convention::RUST,
         )
     }
@@ -171,18 +182,20 @@ fn signature(
     else {
         return Err("source subtraction requires its Rust signature without late regions");
     };
-    if unsafe_ != (kind == SourceIntrinsic::UncheckedSub || unchecked_shift(kind).is_some())
+    if unsafe_ != (unchecked_operator(kind).is_some() || unchecked_shift(kind).is_some())
         || facts.types.list(parameters) != Some(&inputs)
     {
         return Err("source subtraction changed its safety or two same-type inputs");
     }
     let input = inputs[0];
     let valid = match kind {
-        SourceIntrinsic::UncheckedSub => result == input,
         kind if overflowing_operator(kind).is_some() => {
             matches!(facts.types.kind(result), Some(Kind::Tuple(fields)) if facts.types.list(fields)==Some(&[input,TypeId::primitive(Primitive::Bool)]))
         }
-        kind if wrapping_operator(kind).is_some() || unchecked_shift(kind).is_some() => {
+        kind if unchecked_operator(kind).is_some()
+            || wrapping_operator(kind).is_some()
+            || unchecked_shift(kind).is_some() =>
+        {
             result == input
         }
         _ => false,

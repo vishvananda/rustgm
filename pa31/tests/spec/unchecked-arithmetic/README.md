@@ -1,0 +1,1 @@
+Genuine source unchecked arithmetic. All source/observer bytes, outcomes, integer bit patterns and original-source attribution are declared in manifest.json before execution. Whole PA31 and all original library/metadata/runtime/ABI requirements remain open. Do not drop wide positives or classify infrastructure failures as semantic rejection.

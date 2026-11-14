@@ -1162,3 +1162,15 @@ and nine candidate guards. unchecked_shifts.rs is registered once in frontend.
 Pinned Rust/C confirms15 finite source outcomes; the noninteger reference ICE
 is retained as infrastructure failure. Candidate focused/native checks pass;
 local replay/harness/upstream pass; full successor CI remains pending.
+
+
+The [PA31 unchecked arithmetic packet](docs/pa31-unchecked-arithmetic.md) freezes
+26 intended outcomes and240 exact integer results before execution. Pinned Rust/C
+qualifies25 outcomes,240 constant exports and240 runtime calls; the noninteger
+opponent ICE is an infrastructure failure, not a passing rejection. RustGM checks
+all18 intended guards. The registered unchecked_arithmetic.rs frontend root
+covers exact bits, typed preparation, bounded work and five native programs.
+Final focused1794660904448918647 and native1794661028311363989 pass alongside old
+shift/product controls. Hash replay binds3963 sources and the predeclared packet;
+315 harness/495 roots/upstream checks pass. Standalone library transport/artifacts
+remain required independently of the successful in-memory native programs.

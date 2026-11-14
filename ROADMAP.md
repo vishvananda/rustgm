@@ -480,3 +480,14 @@ scoped qualification for projected roots and filters only actual NoDrop answers.
 Thirteen outcomes, eighteen native programs and bounded work pass; three unused
 negative definitions remain required. Original-core retry/full CI are pending;
 whole assignments and original library artifact gates remain unchanged.
+
+
+The [source unchecked arithmetic checkpoint](docs/pa31-unchecked-arithmetic.md)
+adds genuine add/multiply/divide/remainder to the existing typed scalar path.
+Twenty-five source outcomes are independently qualified; the floating-point
+opponent remains unqualified after a Rust ICE, with its required integer-domain
+rejection preserved. All240 constant and240 runtime values across12 integer types,
+five new native programs and bounded8/32/128 work pass. A real signed i32 native
+failure was repaired with explicit operand extension. Clean original-core retry
+and successor full CI remain pending. Whole PA25–44 and original library artifact
+requirements remain unchanged; the separate PA25 component stays independent.

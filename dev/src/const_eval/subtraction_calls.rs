@@ -1,9 +1,7 @@
 //! Reached subtraction consumes exact evaluated inputs and the actual source call.
 use super::{Constant, Failure, Frame, Machine, code::Code, executed_calls::Answer};
 use crate::{
-    lex::token::Punctuation,
     sema::{model::Scalar, values::Overflow},
-    support::bindings::SourceIntrinsic,
     types::instance::Instance,
 };
 impl Machine<'_, '_> {
@@ -71,7 +69,9 @@ impl Machine<'_, '_> {
         left: Constant,
         right: Constant,
     ) -> Result<Constant, Failure> {
-        if let Some(operator) = crate::sema::compiler_items::unchecked_shift(selected.kind) {
+        if let Some(operator) = crate::sema::compiler_items::unchecked_operator(selected.kind)
+            .or_else(|| crate::sema::compiler_items::unchecked_shift(selected.kind))
+        {
             return self
                 .evaluator
                 .binary(operator, selected.input, left, right, Overflow::Checked);
@@ -85,30 +85,23 @@ impl Machine<'_, '_> {
                 Overflow::Wrapping,
             );
         }
-        let operator = match selected.kind {
-            SourceIntrinsic::UncheckedSub => Punctuation::Minus,
-            kind => crate::sema::compiler_items::overflowing_operator(kind)
-                .ok_or("source arithmetic lost its selected overflow operation")?,
-        };
+        let operator = crate::sema::compiler_items::overflowing_operator(selected.kind)
+            .ok_or("source arithmetic lost its selected overflow operation")?;
         let checked =
             self.evaluator
                 .binary(operator, selected.input, left, right, Overflow::Checked);
-        if selected.kind == SourceIntrinsic::UncheckedSub {
-            checked
-        } else {
-            let overflow = match checked {
-                Ok(_) => false,
-                Err(Failure::Fault(_)) => true,
-                Err(error) => return Err(error),
-            };
-            let wrapped =
-                self.evaluator
-                    .binary(operator, selected.input, left, right, Overflow::Wrapping)?;
-            self.reserve_cells(3)?;
-            self.evaluator.fields(
-                &[wrapped, Constant::scalar(Scalar::Boolean(overflow))],
-                None,
-            )
-        }
+        let overflow = match checked {
+            Ok(_) => false,
+            Err(Failure::Fault(_)) => true,
+            Err(error) => return Err(error),
+        };
+        let wrapped =
+            self.evaluator
+                .binary(operator, selected.input, left, right, Overflow::Wrapping)?;
+        self.reserve_cells(3)?;
+        self.evaluator.fields(
+            &[wrapped, Constant::scalar(Scalar::Boolean(overflow))],
+            None,
+        )
     }
 }

@@ -830,3 +830,12 @@ scoped qualification for projected roots and filters only actual NoDrop answers.
 Thirteen outcomes, eighteen native programs and bounded work pass; three unused
 negative definitions remain required. Original-core retry/full CI are pending;
 whole assignments and original library artifact gates remain unchanged.
+
+
+The [unchecked arithmetic checkpoint](../docs/pa31-unchecked-arithmetic.md) adds
+actual unsafe add/multiply/divide/remainder through the existing typed source
+arithmetic path. The manifest preserves26 outcomes,240 exact values across12
+integer types and the original source cutouts. Constant faults and caller/Copy/
+prototype guards remain checked; all valid runtime observations pass, including
+wide integers and corrected narrow signed division. Original full-core/library
+artifacts, wider transport, successor CI and whole-assignment closure remain open.

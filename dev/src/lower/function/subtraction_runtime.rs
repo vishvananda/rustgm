@@ -67,7 +67,7 @@ impl Lower<'_, '_, '_> {
         }
         let (left, right) = (self.value(left)?.runtime()?, self.value(right)?.runtime()?);
         if let Some(operator) = crate::sema::compiler_items::wrapping_operator(selected.kind) {
-            return self.modular_binary(operator, left, right).map(Some);
+            return self.scalar_binary(operator, left, right, false).map(Some);
         }
         let Some(Kind::Primitive(primitive)) = self.context.types.kind(selected.input) else {
             return Err("source subtraction lost its integer input");
@@ -87,11 +87,8 @@ impl Lower<'_, '_, '_> {
                 .binary(binary, left, right)
                 .map(|result| Some(Selected::Runtime(result)));
         }
-        if selected.kind == crate::support::bindings::SourceIntrinsic::UncheckedSub {
-            return self
-                .builder
-                .binary(Binary::Sub, left, right)
-                .map(|result| Some(Selected::Runtime(result)));
+        if let Some(operator) = crate::sema::compiler_items::unchecked_operator(selected.kind) {
+            return self.scalar_binary(operator, left, right, signed).map(Some);
         }
         let mut arithmetic = Arithmetic {
             constants: self.context.constants,
@@ -146,20 +143,36 @@ impl Lower<'_, '_, '_> {
         )?;
         Ok(Selected::Object(address))
     }
-    /// Modular operations never acquire the checked arithmetic panic path or
-    /// C++ overflow assumptions. The builder still validates the scalar types.
-    fn modular_binary(
+    /// Wrapping and valid unsafe arithmetic use the existing raw scalar operation.
+    /// The builder validates its types; checked operations retain their own path.
+    fn scalar_binary(
         &mut self,
         operator: crate::lex::token::Punctuation,
         left: crate::lowir::program::Value,
         right: crate::lowir::program::Value,
+        signed: bool,
     ) -> Result<Selected, &'static str> {
+        use crate::lex::token::Punctuation;
         let binary = match operator {
-            crate::lex::token::Punctuation::Plus => Binary::Add,
-            crate::lex::token::Punctuation::Minus => Binary::Sub,
-            crate::lex::token::Punctuation::Star => Binary::Mul,
-            _ => return Err("wrapping scalar descriptor has an invalid operation"),
+            Punctuation::Plus => Binary::Add,
+            Punctuation::Minus => Binary::Sub,
+            Punctuation::Star => Binary::Mul,
+            Punctuation::Slash if signed => Binary::Div,
+            Punctuation::Slash => Binary::Udiv,
+            Punctuation::Percent if signed => Binary::Mod,
+            Punctuation::Percent => Binary::Umod,
+            _ => return Err("raw arithmetic descriptor has an invalid operation"),
         };
+        if matches!(binary, Binary::Div | Binary::Mod) && left.ty.bits() < 64 {
+            // Canonicalize narrow signed operands, including values entering
+            // through a C parameter whose upper register bits are unspecified.
+            let ty = left.ty;
+            let left = super::casts::integer(&mut self.builder, left, Type::I64, true)?;
+            let right = super::casts::integer(&mut self.builder, right, Type::I64, true)?;
+            let result = self.builder.binary(binary, left, right)?;
+            return super::casts::integer(&mut self.builder, result, ty, true)
+                .map(Selected::Runtime);
+        }
         self.builder
             .binary(binary, left, right)
             .map(Selected::Runtime)

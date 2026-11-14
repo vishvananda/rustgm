@@ -5,18 +5,34 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
-Latest continuation: root qualification e23bbc172 is published; full43592623119
-is running on that exact head (fast and release/course pass, native in progress).
-Clean26 release/3962/empty patch SHA
-b46acf2e92388ca59d16d9d737f09d34b7f485863ae59062fce290bf56716c51 clears the
-from_raw_parts cleanup error in unchanged original core. All42310 declarations/
-25858 bodies/35120 attempts still pass; sole completion now source intrinsic
-constant execution is not implemented at expanded num/mod.rs file12:1052023.
-Actual error-branch debug identifies Declaration273 = unchecked_mul. Postcheck
-722/375/six/all3962/fixed quotas passes. Original analysis still incomplete; no
-library metadata/LowIR artifact exists. Dev-fast full original attempt timed out
-at the unchanged120s and must not be repeated or called a semantic result.
-Continue one worker in B; reduce genuine unchecked arithmetic next.
+Latest continuation: genuine unchecked add/mul/div/rem now qualify through the
+existing typed scalar arithmetic path. PA31 unchecked-arithmetic declares26 cases;
+25 independent outcomes and240 constant/240 runtime values across12 integer types
+pass. Noninteger pinned Rust ICE stays unqualified; all18 candidate guards reject.
+First native run found signed i32 div/rem failures; explicit extension repaired
+both without changing the frozen backend or inputs. Final focused1794660904448918647
+(six exact,89.16s), native1794661028311363989 (nine programs,34.89s), authenticated
+3963-source/mathematical replay,315 harness/495 roots/upstream pass. See
+[checkpoint](docs/pa31-unchecked-arithmetic.md), raw intrinsic-next/.
+
+Full43592623119 PASSED EVERY STAGE on preceding e23bbc172 (3078 private release
+4.66s/debug46.06s). No full successor has been dispatched for this checkpoint yet.
+Next: coherent clean candidate27 release freeze, one unchanged120s original-core
+observation, then stage-aware postcheck. Do not repeat the dev-fast whole original
+observer (its prior timeout is infrastructure failure). Prepared helpers are
+intrinsic-next/observe27.py, postcheck27.py and core-artifact27.py; artifact helper
+remains UNRUN until analysis completes. pin.py now expects3963 source files.
+
+Last original result remains clean26 release/e23bbc172/3962/empty patch SHA
+b46acf2e92388ca59d16d9d737f09d34b7f485863ae59062fce290bf56716c51: all42310
+headers/25858 bodies/35120 attempts pass, sole completion at expanded num/mod.rs
+file12:1052023. Actual error-branch debug identifies Declaration273 = unchecked_mul;
+its concrete argument type was not decoded.722/375/six/all3962/fixed quotas pass.
+**No original library artifact exists.** Whole PA25–44 remain planned. Preserve
+every named positive/negative and metadata/LowIR/native requirement below.
+
+Shared free space is restored (~366GiB observed); do not ask for headroom again
+without a new admission refusal. Same150GiB reserve/16GiB cap/one B heavy job.
 
 ## Workspace and authorization
 
