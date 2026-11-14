@@ -5,34 +5,48 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
-Latest continuation: genuine unchecked add/mul/div/rem now qualify through the
-existing typed scalar arithmetic path. PA31 unchecked-arithmetic declares26 cases;
-25 independent outcomes and240 constant/240 runtime values across12 integer types
-pass. Noninteger pinned Rust ICE stays unqualified; all18 candidate guards reject.
-First native run found signed i32 div/rem failures; explicit extension repaired
-both without changing the frozen backend or inputs. Final focused1794660904448918647
-(six exact,89.16s), native1794661028311363989 (nine programs,34.89s), authenticated
-3963-source/mathematical replay,315 harness/495 roots/upstream pass. See
-[checkpoint](docs/pa31-unchecked-arithmetic.md), raw intrinsic-next/.
+Latest continuation: genuine unchecked arithmetic is published as7db0c611e.
+Clean candidate27-release (6m27s,3963 source hashes, empty patch) has CLI SHA256
+fb75da194df6bec5943d61e8a64bee56a32c0d2692b130f7c30ee66a876fe895.
+The unchanged original-core120s census now **reaches the end of analysis with
+zero records**:42310 declarations,25858 bodies and35120 attempts;22.144361595s,
+load5.67/6.78 under14/20. This is complete diagnostic analysis, never a build.
+Completion checked0 is an item counter, not a completion flag; the driver terminal
+marker/no records/end0 prove completion. Flushed progress is always labelled
+partial-analysis-only; do not infer failure from that label. Stage-aware27
+postcheck passes all722 sources/375 opens/six configuration pins/all3963 sources,
+CLI hash, empty patch and unchanged work14500624/1GiB attempted/64MiB retained.
+Raw: intrinsic-next/observe27.log, postcheck27.log and
+capture-match/original-candidate27/.
 
-Full43592623119 PASSED EVERY STAGE on preceding e23bbc172 (3078 private release
-4.66s/debug46.06s). No full successor has been dispatched for this checkpoint yet.
-Next: coherent clean candidate27 release freeze, one unchanged120s original-core
-observation, then stage-aware postcheck. Do not repeat the dev-fast whole original
-observer (its prior timeout is infrastructure failure). Prepared helpers are
-intrinsic-next/observe27.py, postcheck27.py and core-artifact27.py; artifact helper
-remains UNRUN until analysis completes. pin.py now expects3963 source files.
+The **genuine original module-bodies-v13 library attempt is still a required
+positive and FAILS** after19.825328638s: future/async_drop.rs file246:1994,
+compiler-owned async destruction requires generated future state and polling.
+No core.rgm exists; core.lowir is empty. Artifact postcheck verifies722/375/six/
+3963/clean pin/fixed120s and unchanged quotas; this is a real implementation fence,
+not timeout. Raw: intrinsic-next/core-artifact27.log, artifact-postcheck27.log,
+original-library-candidate27/. No native original consumers exist.
 
-Last original result remains clean26 release/e23bbc172/3962/empty patch SHA
-b46acf2e92388ca59d16d9d737f09d34b7f485863ae59062fce290bf56716c51: all42310
-headers/25858 bodies/35120 attempts pass, sole completion at expanded num/mod.rs
-file12:1052023. Actual error-branch debug identifies Declaration273 = unchecked_mul;
-its concrete argument type was not decoded.722/375/six/all3962/fixed quotas pass.
-**No original library artifact exists.** Whole PA25–44 remain planned. Preserve
-every named positive/negative and metadata/LowIR/native requirement below.
+Next investigate the real async_drop_in_place operation. Its written empty body
+must never execute. Existing authenticated CompilerOperations/v11 metadata works
+through the public API (docs/parallel/deferred-operations-v11.md); CLI routing is
+explicitly pending. v13 ordinary-body and v11 operation profiles are distinct.
+An additional symbolic route/profile does NOT discharge the retained original
+v13 full-LowIR positive or real constructor/poll/drop/cancellation/recursive-cleanup
+requirements. Reuse typed owners and existing coroutine state machinery; do not
+replace the helper with an empty future or relax its runtime body guard.
 
-Shared free space is restored (~366GiB observed); do not ask for headroom again
-without a new admission refusal. Same150GiB reserve/16GiB cap/one B heavy job.
+Full43597538902 runs on exact7db0c611e (fast and full lint/host graph pass;
+release/course in progress). Full43592623119 PASSED ALL on e23bbc172 (3078 private
+release4.66s/debug46.06s). No duplicate CI for this doc-only successor.
+The arithmetic checkpoint qualified25 independent outcomes,240 constant/240
+runtime values, all18 candidate guards, nine native programs,3963-source replay,
+315 harness/495 roots/upstream. Noninteger Rust ICE remains unqualified. See
+[checkpoint](docs/pa31-unchecked-arithmetic.md); every earlier named requirement
+below remains. Whole PA25–44 planned;113-case PA25 component unchanged.
+
+Shared space restored (~366GiB); same150GiB reserve/16GiB cap/one B heavy job.
+No live local heavy job at this checkpoint. B only, main Git-only; one worker.
 
 ## Workspace and authorization
 
