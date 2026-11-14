@@ -1,0 +1,88 @@
+{
+ "schema": 1,
+ "owner": "PA25 ordinary const default generic-subject minima",
+ "declared_before_execution": true,
+ "cases": {
+  "direct.rs": {
+   "expected": "accept"
+  },
+  "inherited.rs": {
+   "expected": "accept"
+  },
+  "missing.rs": {
+   "expected": "reject"
+  },
+  "native.rs": {
+   "expected": "accept"
+  },
+  "original-contains.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required accepting outcome remains; current unresolved core::ops::Bound import is an unqualified bootstrap boundary"
+  },
+  "plain.rs": {
+   "expected": "reject"
+  },
+  "reference.rs": {
+   "expected": "accept"
+  },
+  "same-application.rs": {
+   "expected": "accept"
+  },
+  "wrong-argument.rs": {
+   "expected": "reject"
+  },
+  "scaling-8.rs": {
+   "expected": "accept"
+  },
+  "scaling-32.rs": {
+   "expected": "accept"
+  },
+  "scaling-128.rs": {
+   "expected": "accept"
+  },
+  "reference-plain.rs": {
+   "expected": "reject"
+  },
+  "reference-runtime-impl.rs": {
+   "expected": "reject"
+  },
+  "concrete-runtime-impl.rs": {
+   "expected": "reject"
+  },
+  "native-contains.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required accepting outcome remains; current unresolved core::ops::Bound import is an unqualified bootstrap boundary"
+  },
+  "runtime-contains.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required accepting outcome remains; current unresolved core::ops::Bound import is an unqualified bootstrap boundary"
+  }
+ },
+ "files": {
+  "direct.rs": "d4ae13eeac37de5643b3d8b19614de9a096df49a428d3401f651a26d5ae5d74f",
+  "inherited.rs": "500d4a7c3b5a434656da78b659d9f039b074f54d3066c3fac0f2875d35f5b6e9",
+  "missing.rs": "c080bf12dbc979090a76dd789bccce7318a04f47382bd6fcbe6040d454d11854",
+  "native.rs": "82f477e2b9373498c1ff8aee42ce7bddac293d3657a2915867591e6b62cb951d",
+  "original-contains.rs": "5f6eb543dc9b9245f0b726c6d6020058559b5490b948e47e9012cd7bd5b443b4",
+  "plain.rs": "0dede46edcb33013ee9d8ffaa5cd1d85e254f5024ad8be86e200776b28c2b6ea",
+  "reference.rs": "5f8d03164bdf29a8b2e100355ab15fdc1b4612cf6113448167d417f8b8cf324b",
+  "same-application.rs": "08335421f31a63282901389d3930d4986add933c6a037336ffeb032ed452d83a",
+  "scaling-128.rs": "d5fcc32474b66d2e7519c98ee3a29f60fc6119659c5c024989a431428ad9d1bb",
+  "scaling-32.rs": "37eeb120454e5e14036f885a3249fdfd630d12ddb6cb87e4316e990752f22de4",
+  "scaling-8.rs": "aeb09bfb7d5a50fffb2f35f1b25fe763a38052fbaebd7881dddb058b0f86f408",
+  "wrong-argument.rs": "3f4a0a08e03b5a3e92dc3df2a0c34cb781cf9a23fbc8518cf0224d605547f3d1",
+  "reference-plain.rs": "e91563e79fdef788cbbfd7fa4c519e8adc6e53612e099b5b36145e8465ae447a",
+  "reference-runtime-impl.rs": "8a6ea98096d304645f107d6772d0f500911ee99e0029cc1345ca7c0746e851ba",
+  "concrete-runtime-impl.rs": "2553267a55ba09c8f6809e4115f09977716a029e02c2918e6753c51dcb0322db",
+  "native-contains.rs": "c66260ac5fbec83dcb223e82f9bc1435c408ddf6cba0e48f57c0f51c286617d2",
+  "runtime-contains.rs": "b889c2b1d86f4ccb30878156065d9378e362017c4ee79d5a434e71fca12c4e4f"
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "target": "x86_64-unknown-linux-gnu"
+ }
+}

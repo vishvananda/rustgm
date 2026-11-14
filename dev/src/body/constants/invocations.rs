@@ -43,6 +43,7 @@ pub(super) fn check_calls(
     let mut member_context = None;
     let mut seen = HashSet::default();
     let mut members = 0;
+    let defining_default = super::provided_calls::defining(facts, body, work)?;
     for statement in &body.statements {
         work.charge(1)?;
         let Action::Evaluate(id) = statement.action else {
@@ -63,11 +64,23 @@ pub(super) fn check_calls(
                 if !seen.insert(id) {
                     return Err("const member value is evaluated at multiple source sites");
                 }
+                if defining_default && member_context.is_none() {
+                    let owner = defining_owner(facts, body, work)?;
+                    member_context =
+                        Some(super::provided_calls::prepare(facts, body, owner, work)?);
+                }
                 // A defining request is authenticated against the completed
                 // source call, including generic arguments. Actual dispatch and
                 // const function entry still prove its executable implementation.
                 if let Some(report) = report
-                    && super::provided_calls::source_request(report, facts, body, statement, work)?
+                    && super::provided_calls::source_request_in_scope(
+                        report,
+                        facts,
+                        body,
+                        statement,
+                        member_context.as_ref(),
+                        work,
+                    )?
                 {
                     members += 1;
                     continue;

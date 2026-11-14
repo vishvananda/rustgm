@@ -159,3 +159,74 @@ fn direct_defining_member_rejects_foreign_trait_and_incomplete_receiver() -> Res
     );
     Ok(())
 }
+
+#[test]
+fn defining_trait_application_cannot_pay_a_foreign_subject_without_its_premise() -> Result {
+    let (mut facts, template, definition) = named_original(
+        "pa31/tests/spec/trait-default-effects/members/provider-implicit-unused.rs",
+        "provided",
+    )?;
+    let body = template.body;
+    let index = statement(&body)?;
+    let call = source_call(
+        &facts,
+        &body,
+        &body.statements[index],
+        &mut Work::new(1_000_000),
+    )?;
+    let Kind::FunctionItem {
+        item, signature, ..
+    } = facts.types.kind(call.target).ok_or("item")?
+    else {
+        return Err("function item".into());
+    };
+    let owner = facts.associated.trait_owner(definition).ok_or("trait")?;
+    let subject = facts.associated.schema(owner).ok_or("schema")?.self_type;
+    let foreign = facts
+        .generics
+        .parameters
+        .values()
+        .flatten()
+        .find_map(|parameter| {
+            let crate::types::arguments::Argument::Type(ty) = parameter.argument else {
+                return None;
+            };
+            (ty != subject && matches!(facts.types.kind(ty), Some(Kind::Parameter(_))))
+                .then_some(ty)
+        })
+        .ok_or("another actual generic type")?;
+    let arguments = facts
+        .types
+        .intern_arguments(&[crate::types::arguments::Argument::Type(foreign)])?;
+    let target = facts.types.intern(Kind::FunctionItem {
+        item,
+        signature,
+        arguments,
+    })?;
+    facts
+        .invocations
+        .get_mut(&call.site)
+        .ok_or("selected receiver")?
+        .receiver = target;
+    let mut work = Work::new(1_000_000);
+    let context = prepare(&facts, &body, definition, &mut work)?;
+    let changed = Call { target, ..call };
+    let error = context
+        .check(changed, |amount| work.charge(amount))
+        .err()
+        .ok_or("foreign Self reused owning trait application")?;
+    assert!(
+        error.contains("defining Self or trait application"),
+        "{error}"
+    );
+    assert!(
+        context
+            .source_default_request(
+                body.source.source().ok_or("body source")?,
+                target,
+                &mut |amount| work.charge(amount)
+            )
+            .is_err()
+    );
+    Ok(())
+}

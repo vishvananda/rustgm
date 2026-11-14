@@ -1,5 +1,10 @@
 # RustGM assignment roadmap
 
+The [generic-subject default checkpoint](docs/pa25-default-generic-subjects.md)
+qualifies30 complete outcomes and five native programs, including unchanged
+RangeBounds::contains runtime. Its CTFE payment and three ordinary imports remain
+required/unqualified. Clean original-core verification is next.
+
 The [generic const-call checkpoint](docs/pa25-generic-const-calls.md) qualifies
 15 source outcomes and eleven native programs, addressing original min_by_key
 defining formals and borrowed function-item execution. Fifteen ordinary imports

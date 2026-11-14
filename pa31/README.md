@@ -1,5 +1,10 @@
 # RustGM Programming Assignment 31: Compiler/library bindings
 
+The [generic-subject default checkpoint](../docs/pa25-default-generic-subjects.md)
+qualifies the exact RangeBounds::contains definition and real runtime endpoint
+observations. Scoped source requests preserve actual dispatch/borrow/Code proof.
+The CTFE signature-payment consumer and original-core artifact remain open.
+
 The [generic const-call checkpoint](../docs/pa25-generic-const-calls.md) qualifies
 unused FnOnce/FnMut/Fn bodies, exact source min_by_key, and real shared/mutable
 function-item CTFE/runtime observations. Actual source/borrow/const/Code proof

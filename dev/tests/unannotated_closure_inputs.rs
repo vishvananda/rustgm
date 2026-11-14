@@ -20,19 +20,18 @@ const REJECTED: [(&str, &str); 2] = [
     ),
 ];
 
-/// rustc accepts these, and they type here, but const closure lowering stops
-/// first with or without parameter annotations (`const-typed-fn`,
-/// `const-typed-once`). A `[const] Fn` call by reference in `take` is not yet a
-/// const invocation, and a const closure body's own call needs a function owner.
+/// rustc accepts these, and they type here, but const closure lowering still
+/// needs its actual closure-owner context,
+/// with or without parameter annotations. The caller's Fn/FnMut check now clears;
+/// a const closure body's own member call remains a required accepting boundary.
 const LOWERING_GAPS: [(&str, &str); 6] = [
-    ("const-later-sig.rs", CONST_FN_CALL),
-    ("const-later-sig-match.rs", CONST_FN_CALL),
-    ("const-concrete.rs", CONST_FN_CALL),
-    ("const-typed-fn.rs", CONST_FN_CALL),
+    ("const-later-sig.rs", CONST_CLOSURE_OWNER),
+    ("const-later-sig-match.rs", CONST_CLOSURE_OWNER),
+    ("const-concrete.rs", CONST_CLOSURE_OWNER),
+    ("const-typed-fn.rs", CONST_CLOSURE_OWNER),
     ("const-later-once.rs", CONST_CLOSURE_OWNER),
     ("const-typed-once.rs", CONST_CLOSURE_OWNER),
 ];
-const CONST_FN_CALL: &str = "const invocation differs from its defining call-trait or effect fact";
 const CONST_CLOSURE_OWNER: &str = "const call operators require their actual source function owner";
 
 fn program(source: &str) -> Result<rustgm::lowir::program::Program> {

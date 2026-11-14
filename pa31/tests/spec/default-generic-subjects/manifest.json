@@ -1,0 +1,122 @@
+{
+ "schema": 1,
+ "owner": "PA31 const default member requests on other generic subjects",
+ "declared_before_execution": true,
+ "cases": {
+  "direct.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/default-generic-subjects/direct.rs"
+  },
+  "inherited.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/default-generic-subjects/inherited.rs"
+  },
+  "missing.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/default-generic-subjects/missing.rs"
+  },
+  "native.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/default-generic-subjects/native.rs",
+   "native_stdout": "41 59\n"
+  },
+  "original-contains.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/default-generic-subjects/original-contains.rs"
+  },
+  "plain.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/default-generic-subjects/plain.rs"
+  },
+  "reference.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/default-generic-subjects/reference.rs"
+  },
+  "same-application.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/default-generic-subjects/same-application.rs"
+  },
+  "wrong-argument.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/default-generic-subjects/wrong-argument.rs"
+  },
+  "scaling-8.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/default-generic-subjects/scaling-8.rs",
+   "functions": 8
+  },
+  "scaling-32.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/default-generic-subjects/scaling-32.rs",
+   "functions": 32
+  },
+  "scaling-128.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/default-generic-subjects/scaling-128.rs",
+   "functions": 128
+  },
+  "reference-plain.rs": {
+   "expected": "reject",
+   "ordinary": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa25/tests/spec/default-generic-subjects/reference-plain.rs"
+  },
+  "reference-runtime-impl.rs": {
+   "expected": "reject",
+   "ordinary": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa25/tests/spec/default-generic-subjects/reference-runtime-impl.rs"
+  },
+  "concrete-runtime-impl.rs": {
+   "expected": "reject",
+   "ordinary": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa25/tests/spec/default-generic-subjects/concrete-runtime-impl.rs"
+  },
+  "native-contains.rs": {
+   "expected": "accept",
+   "ordinary": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa25/tests/spec/default-generic-subjects/native-contains.rs",
+   "native_stdout": "1 0 1 0\n",
+   "candidate_limit": "Required accepting CTFE/runtime outcome remains; source const payment currently requires a closed callable signature"
+  },
+  "runtime-contains.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/default-generic-subjects/runtime-contains.rs",
+   "native_stdout": "1 0 1 0\n"
+  }
+ },
+ "files": {
+  "direct.rs": "e9b3b755147fc16a77e9d58ed46406df3af83fd973ceb9806713e4c7cdc7d281",
+  "inherited.rs": "9e0167f590679333cc9646b5b4096ece53894d87abd6401dd30e419f1f12cf47",
+  "missing.rs": "9ddabc0e87b61c9bfa51805ce1bc34487d9f92fbb9d9c9fdd2cc4b0cba5fc7fe",
+  "native.rs": "0364d2ddbcc1cb57febbcf5ae74617f4e8a0199745827da0126d091af2bcb4a2",
+  "observe.c": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+  "original-contains.rs": "6f9fcc3307c529c44fcf668690d53c0d723b1a167b6d7fb683ac793ff7c1ec78",
+  "plain.rs": "5ce78d9133441371df05e1945239d1359ee7aa71a7bb18c196af4a18f717f098",
+  "reference.rs": "1c8c04220d352455f7672f9dd3ee7dfe1b77d331f7d0c06fa619b221bafd6a5c",
+  "same-application.rs": "ae653eab8c159c66dd43525c942e24c0ead6c63e4b7d46d0ee572e20d9242806",
+  "scaling-128.rs": "90dc34c75155e899e4d484aa612fdb4243d7a494ef8b0ff90d4add9d3de1d4ea",
+  "scaling-32.rs": "bc105ab1d795868392116ee90d74a8b6060969ab2e6de1542351ce9cdc05175a",
+  "scaling-8.rs": "a165c73928b3cb9761a838bad430a0b5a79d384d896ad32a18f6199e44902a98",
+  "wrong-argument.rs": "abab164a370e1555f6676d5fb6eb2cc10b83f4c9f9248f18a02874f3319b8a15",
+  "reference-plain.rs": "874c8b1d859719b68afe397dd39e1e7ed847ea05714a1a4a0eb4b6f3354652c7",
+  "reference-runtime-impl.rs": "ba6fa45cb1f0260c7d847cb0d0ca8e3026fee18f6c857b2969f5f7cb73f36db7",
+  "concrete-runtime-impl.rs": "98e60b3d05cba0ebe412dfa05c9a2bc3d4109dbb303eafe6f7f00643b09e168f",
+  "native-contains.rs": "480c47eadb8a11e75b25994781a01fc1835e806a4d0e6cf4964abe5446fbd6a2",
+  "range-observe.c": "eec0ec13643549b47271f04eab5762646bcb63ff23200ad4583b400deecff9b9",
+  "runtime-contains.rs": "50957f50efe0d2cfc6048dc0b3cfbfaffd4c065a8c378f2d7592be3737ee39e7"
+ },
+ "basis": {
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "range_source_sha256": "4ce46aa140f364787ac5584154035dd766150cec32a7e5358193425cafc8b6fc",
+  "contains_item_sha256": "2cfbd7b7ccb12a07eaf0df9fd844dd9a99c803f3c5c5662901db4cf085d41566",
+  "reference_impls_sha256": "df25debaf655666691aad4cb86f11e78c02980183192265d8886c208d9adf0ac",
+  "foundation": {
+   "path": "pa31/tests/spec/default-supertraits/original-max.rs",
+   "sha256": "d839083ff8b06a4f1165c341262ec89b2b3e4e012543bf530b5ed3059388645f"
+  },
+  "license": "MIT OR Apache-2.0; third_party/sources.json"
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "target": "x86_64-unknown-linux-gnu"
+ }
+}

@@ -195,6 +195,7 @@ fn source_call(
 
 /// Defining legality only. A source-use location is not implementation proof;
 /// actual dispatch, borrow proof and const Code entry remain independently required.
+#[cfg(test)]
 pub(super) fn source_request(
     report: &crate::resolve::expansion::Report,
     facts: &Declarations,
@@ -202,7 +203,19 @@ pub(super) fn source_request(
     statement: &Statement,
     work: &mut Work,
 ) -> Result<bool, &'static str> {
-    if !body.const_context {
+    source_request_in_scope(report, facts, body, statement, None, work)
+}
+
+pub(super) fn source_request_in_scope(
+    report: &crate::resolve::expansion::Report,
+    facts: &Declarations,
+    body: &Body,
+    statement: &Statement,
+    scope: Option<&DefiningCalls<'_>>,
+    work: &mut Work,
+) -> Result<bool, &'static str> {
+    if !body.const_context && !scope.is_some_and(|scope| scope.is_default_for(body.source.source()))
+    {
         return Ok(false);
     }
     work.charge(9)?;
@@ -248,7 +261,7 @@ pub(super) fn source_request(
             signature: call.signature,
         },
     )? {
-        return source_field(report, facts, body, source, call, id, work);
+        return source_field(report, facts, body, source, (call, scope), id, work);
     }
     let node = facts
         .node(call.site)
@@ -258,7 +271,7 @@ pub(super) fn source_request(
         | crate::sema::model::Operation::MethodReceiver { plan: id },
     ) = node.operation
     {
-        return source_field(report, facts, body, source, call, id, work);
+        return source_field(report, facts, body, source, (call, scope), id, work);
     }
     let Some(crate::sema::model::Operation::Call {
         signature,
@@ -280,13 +293,33 @@ pub(super) fn source_request(
         (None, None) => ordinary_effect(report, facts, body, source, work)?,
         _ => return Err("const member has no current source use"),
     };
-    if !closed_effect(report, facts, body, source, effect, work)? {
+    if !closed_effect(
+        report,
+        facts,
+        body,
+        source,
+        effect,
+        scope.map(|scope| (scope, call.target)),
+        work,
+    )? {
         return Ok(false);
     }
     let definition = match indexed {
         Some(definition) => definition,
         None => source_member(facts, call, work)?,
     };
+    selected_source(report, facts, call, definition, work)?;
+    Ok(true)
+}
+
+/// Revalidate the completed selected target before accepting source request data.
+fn selected_source(
+    report: &crate::resolve::expansion::Report,
+    facts: &Declarations,
+    call: Call,
+    definition: DefId,
+    work: &mut Work,
+) -> Result<(), &'static str> {
     work.charge(2)?;
     if let Some(method) = facts.methods.calls.get(&call.site) {
         if method.method != definition || method.callable != call.target {
@@ -303,7 +336,7 @@ pub(super) fn source_request(
     } else {
         direct_source(report, facts, call, definition, work)?;
     }
-    Ok(true)
+    Ok(())
 }
 
 /// A Field expression owns several actual calls, each with its real reference
@@ -313,10 +346,11 @@ fn source_field(
     facts: &Declarations,
     body: &Body,
     source: crate::resolve::unit::NodeKey,
-    call: Call,
+    scoped: (Call, Option<&DefiningCalls<'_>>),
     id: crate::sema::bodies::ProtocolPlanId,
     work: &mut Work,
 ) -> Result<bool, &'static str> {
+    let (call, scope) = scoped;
     work.charge(8)?;
     let plan = id.current(facts, source, call.site)?;
     let Some((_, _, _, steps)) = plan.kind.access() else {
@@ -345,7 +379,15 @@ fn source_field(
     }
     source_member(facts, call, work)?;
     let effect = plan.source_use.effect_for(facts, source)?;
-    closed_effect(report, facts, body, source, effect, work)
+    closed_effect(
+        report,
+        facts,
+        body,
+        source,
+        effect,
+        scope.map(|scope| (scope, call.target)),
+        work,
+    )
 }
 
 /// Index and explicit Deref calls return a reference before their expression
@@ -533,6 +575,7 @@ fn closed_effect(
     body: &Body,
     source: crate::resolve::unit::NodeKey,
     effect: crate::support::constness::Constness,
+    scoped: Option<(&DefiningCalls<'_>, crate::types::TypeId)>,
     work: &mut Work,
 ) -> Result<bool, &'static str> {
     use crate::support::constness::Constness;
@@ -547,7 +590,18 @@ fn closed_effect(
             Ok(
                 match facts.source_function_context(report, definition, source)? {
                     FunctionContext::ConstFunction => true,
-                    FunctionContext::ConstTraitDefault { .. } => body.instance.is_some(),
+                    FunctionContext::ConstTraitDefault { .. } => {
+                        if body.instance.is_some() {
+                            true
+                        } else if let Some((scope, target)) = scoped {
+                            scope.source_default_request(source, target, &mut |amount| {
+                                work.charge(amount)
+                            })?;
+                            true
+                        } else {
+                            false
+                        }
+                    }
                     FunctionContext::Runtime | FunctionContext::Comptime => false,
                 },
             )

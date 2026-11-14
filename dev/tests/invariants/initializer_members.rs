@@ -355,3 +355,58 @@ fn explicit_deref_place_keeps_its_actual_receiver_signature_and_referent() -> Re
     place_result(&report, &facts, call, node_type, &mut work)?;
     Ok(())
 }
+
+#[test]
+fn normalized_default_requests_require_their_actual_defining_context() -> Result {
+    let source =
+        crate::test_source::fixture("pa31/tests/spec/default-generic-subjects/reference.rs")?;
+    let report = crate::test_source::source_provider(&source, "default_requests")?;
+    let crate::pipeline::Analysis {
+        facts,
+        mut prepared,
+    } = crate::pipeline::analyze_source(&report)?;
+    let function = facts
+        .functions
+        .iter()
+        .find(|function| {
+            report
+                .package
+                .names
+                .get(report.resolution.definitions[function.definition.0 as usize].name)
+                == "check"
+        })
+        .ok_or("actual default")?;
+    let definition = function.definition;
+    let body = prepared.templates.function(&report, &facts, function)?.body;
+    let index = statement(&body)?;
+    let mut work = Work::new(1_000_000);
+    let context = prepare(&facts, &body, definition, &mut work)?;
+    assert!(!source_request(
+        &report,
+        &facts,
+        &body,
+        &body.statements[index],
+        &mut work
+    )?);
+    assert!(source_request_in_scope(
+        &report,
+        &facts,
+        &body,
+        &body.statements[index],
+        Some(&context),
+        &mut work
+    )?);
+    let call = source_call(&facts, &body, &body.statements[index], &mut work)?;
+    let other = facts
+        .functions
+        .iter()
+        .filter_map(|function| function.body)
+        .find(|source| Some(*source) != body.source.source())
+        .ok_or("another actual body")?;
+    assert!(
+        context
+            .source_default_request(other, call.target, &mut |amount| work.charge(amount))
+            .is_err()
+    );
+    Ok(())
+}

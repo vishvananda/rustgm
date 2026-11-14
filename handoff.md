@@ -5,6 +5,50 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
+Current coherent checkpoint: generic subjects and normalized source requests in
+actual original const defaults. See docs/pa25-default-generic-subjects.md.
+Local Self factory/context is prepared once before accepting requests; direct
+parameter subjects still require their exact current premise unless BOTH owning
+Self/application match. Composite requests reuse existing normalized source
+validation. Original bodies are not made executable; actual const impl/dispatch,
+source/call/borrow/lifetime/Code remain required. No dense field/cache/wire/backend/
+storage edit. Inventory3964. Existing traits root and two new private guards.
+
+Qualified30 complete outcomes (16 source,14 ordinary), exact original contains
+item/reference impls, generic-subject CTFE/runtime41/59, actual contains runtime
+`1 0 1 0`, three old native default controls,8/32/128 post-lowering scaling
+2890/1611,11506/5287,45970/19943. fast5=1794686954186365728 three exact91.85s;
+native=1794687165779066549 five programs62.73s. Strict selected/production/CLI
+Clippy, full fmt/audit,315 harness/495 roots/13 bins/44 stages/one component,
+128 upstream+126 Reference pass. replay authenticates all3964 compiler hashes,
+packets and basis. Pinned Rust independently agrees with17 predictions and three
+native observations. Four unqualified accepting requirements remain: three
+ordinary Bound imports, source native-contains CTFE/runtime at `source const
+payment currently requires a closed callable signature`. Runtime-only contains
+passes. No expected positive was inverted. Raw default-generic-subjects/.
+Two new private scope/foreign-subject guards await full CI; no cold local harness.
+
+NEXT publish coherent checkpoint, dispatch ONE full successor (prior terminal),
+freeze clean candidate33-release, retry genuine original v14 library with same
+120s/14500624work/1GiB attempted/64MiB retained and postcheck. No redundant census
+or dev-fast whole-original retry. Core32's RangeBounds definition passes in the
+reduction but original full verification is still required. Do not report a core
+artifact. Whole PA25–44/native/bootstrap/future/older requirements stay open.
+
+Full43627935665 exact ca20dc143 FAILED one regular closure gap classification.
+3081 private release tests PASS6.56s; static/all other regular/course checks pass.
+Four accepting closure fixtures now clear the old Fn fence and reach the known
+closure-owner fence shared by the other two accepting gaps. All six requirements
+stay accepting; only the observed fence classification changed. Current exact
+13-case unannotated_closure_inputs control passes. Raw generic-const-calls/
+ci43627935665.log. New complete successor still required; no duplicate active run.
+Prior full43624101196/c0ff is entirely green3080 release5.76s/debug64.62s.
+
+Historical checkpoint record follows; current continuation above supersedes old
+NEXT/status/availability statements. Current32/31/perf21–24 binaries remain;
+25–30/default-supertraits replay/bounds baseline executables are retired. B only,
+one worker/main Git-only,2jobs/150GiB reserve/16GiB cap. No local heavy job.
+
 Published current source ca20dc143be3691d23bb9637405de41d9ca229e0, main synced.
 Clean candidate32-release binds3964 hashes/empty patch,8m04s build,
 CLI3996c12127b33d0186e11cd233ec34f8f60543d7ffdf03b411a015d37df55670.

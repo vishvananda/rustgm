@@ -1,5 +1,11 @@
 # Compile-time-first Rust frontend architecture
 
+The [generic-subject default checkpoint](docs/pa25-default-generic-subjects.md)
+requires both subject and application for the owning Self fast path; other direct
+parameters consume exact completed premises. An original default uses normalized
+source requests only through its actual prepared Self context. This is defining
+legality, preserving actual implementation/const/borrow/Code entry requirements.
+
 The [generic const-call checkpoint](docs/pa25-generic-const-calls.md) demands
 the existing callable-template producer when a defining const body retains a call.
 Readonly checks consume exact formals and Fn/FnMut borrows; reached CTFE loads

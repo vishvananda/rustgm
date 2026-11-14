@@ -1,5 +1,10 @@
 # RustGM Programming Assignment 25: Constant evaluation
 
+The [generic-subject default checkpoint](../docs/pa25-default-generic-subjects.md)
+qualifies ordinary custom const-trait premises here and actual source reference
+requests in PA31. Bound imports and the separate CTFE signature-payment consumer
+remain required; no whole assignment is released.
+
 The [generic const-call checkpoint](../docs/pa25-generic-const-calls.md) preserves
 ordinary callable predictions here and actual source-role counterparts in PA31.
 All15 source outcomes and three native observers qualify; ordinary Destruct

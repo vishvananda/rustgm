@@ -37,7 +37,7 @@ fn program(source: &str) -> Result<rustgm::lowir::program::Program> {
                     .package
                     .names
                     .get(report.resolution.definitions[function.definition.0 as usize].name),
-                "entry" | "probe"
+                "entry" | "probe" | "range_entry" | "range_probe"
             )
         })
         .map(|function| function.definition)
@@ -270,16 +270,23 @@ fn inherited_const_default_executes_its_selected_implementation() -> Result {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
     let out = root.join("obj/parallel/default-supertraits/native");
     std::fs::create_dir_all(&out)?;
-    for (name, observer, expected) in [
-        ("constant", "observe.c", "41\n"),
-        ("builtin-destruct", "observe.c", "41\n"),
-        ("original-max", "max-observe.c", "41 41\n"),
+    for (packet, name, observer, expected) in [
+        (DEFAULTS, "constant", "observe.c", "41\n"),
+        (DEFAULTS, "builtin-destruct", "observe.c", "41\n"),
+        (DEFAULTS, "original-max", "max-observe.c", "41 41\n"),
+        (GENERIC_SUBJECTS, "native", "observe.c", "41 59\n"),
+        (
+            GENERIC_SUBJECTS,
+            "runtime-contains",
+            "range-observe.c",
+            "1 0 1 0\n",
+        ),
     ] {
         let ir = out.join(format!("{name}.lowir"));
         let object = out.join(format!("{name}.o"));
         let executable = out.join(format!("{name}.native"));
         rustgm::lowir::writer::write(
-            &program(&crate::resolve::fixture(&format!("{DEFAULTS}/{name}.rs"))?)?,
+            &program(&crate::resolve::fixture(&format!("{packet}/{name}.rs"))?)?,
             &mut std::fs::File::create(&ir)?,
         )?;
         for (stage, command) in [
@@ -295,7 +302,7 @@ fn inherited_const_default_executes_its_selected_implementation() -> Result {
             (
                 "link",
                 Command::new("cc")
-                    .arg(root.join(DEFAULTS).join(observer))
+                    .arg(root.join(packet).join(observer))
                     .arg(&object)
                     .arg("-o")
                     .arg(&executable),
@@ -313,6 +320,80 @@ fn inherited_const_default_executes_its_selected_implementation() -> Result {
                 assert_eq!(output.stdout, expected.as_bytes(), "{name}");
             }
         }
+    }
+    Ok(())
+}
+
+const GENERIC_SUBJECTS: &str = "pa31/tests/spec/default-generic-subjects";
+#[test]
+fn const_defaults_consume_exact_premises_for_other_generic_subjects() -> Result {
+    let mut failures = Vec::new();
+    for name in [
+        "direct",
+        "inherited",
+        "same-application",
+        "native",
+        "reference",
+        "original-contains",
+        "runtime-contains",
+    ] {
+        if let Err(error) = program(&crate::resolve::fixture(&format!(
+            "{GENERIC_SUBJECTS}/{name}.rs"
+        ))?) {
+            failures.push(format!("{name}: {error}"));
+        }
+    }
+    for (name, cause) in [
+        ("plain", "trait obligation requires"),
+        ("missing", "trait obligation requires"),
+        ("wrong-argument", "incompatible types"),
+        ("reference-plain", "trait obligation requires"),
+        ("reference-runtime-impl", "trait obligation requires"),
+        ("concrete-runtime-impl", "trait obligation requires"),
+    ] {
+        let error = program(&crate::resolve::fixture(&format!(
+            "{GENERIC_SUBJECTS}/{name}.rs"
+        ))?)
+        .err()
+        .ok_or_else(|| format!("accepted {name}"))?;
+        if !error.to_string().contains(cause) {
+            failures.push(format!("{name}: {error}"));
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
+#[test]
+fn other_subject_premises_and_requests_scale_with_actual_default_calls() -> Result {
+    let mut previous: Option<[usize; 2]> = None;
+    for count in [8, 32, 128] {
+        let text = crate::resolve::fixture(&format!("{GENERIC_SUBJECTS}/scaling-{count}.rs"))?;
+        let report = crate::resolve::source_provider(&text, "generic_subject_scaling")?;
+        let rustgm::pipeline::Analysis {
+            mut facts,
+            prepared,
+        } = rustgm::pipeline::analyze_source(&report)?;
+        rustgm::lower::instances::build_roots_prepared(
+            &report,
+            &mut facts,
+            rustgm::lower::Roots {
+                entry: None,
+                exports: &[],
+            },
+            prepared,
+        )?;
+        let work = [
+            facts.body_work.inference_steps,
+            facts.body_work.canonical_steps,
+        ];
+        println!("default subjects={count} work={work:?}");
+        if let Some(before) = previous {
+            for (old, actual) in std::iter::zip(before, work) {
+                assert!(actual <= old * 4 + 512, "{before:?}->{work:?}");
+            }
+        }
+        previous = Some(work);
     }
     Ok(())
 }

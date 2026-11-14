@@ -6,7 +6,10 @@ use crate::{
     support::constness::Constness,
     types::{
         GenericArgs, Kind, TypeId,
-        parameters::{clauses::Clause, predicates::Bound},
+        parameters::{
+            clauses::Clause,
+            predicates::{Bound, Predicate},
+        },
     },
 };
 
@@ -248,6 +251,39 @@ impl<'a> DefiningCalls<'a> {
         }
     }
 
+    pub(crate) fn is_default_for(&self, owner: Option<NodeKey>) -> bool {
+        owner == Some(self.owner) && matches!(self.premise, Premise::Trait { .. })
+    }
+
+    /// Authenticate a normalized source request inside this actual default.
+    /// This does not select its implementation or grant execution permission.
+    pub(crate) fn source_default_request(
+        &self,
+        owner: NodeKey,
+        target: TypeId,
+        charge: &mut impl FnMut(usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        charge(3)?;
+        if !self.is_default_for(Some(owner)) {
+            return Err("source member request belongs to another defining default context");
+        }
+        let Some(Kind::FunctionItem {
+            item, arguments, ..
+        }) = self.facts.types.kind(target)
+        else {
+            return Err("source member request lost its complete function item");
+        };
+        let predicate =
+            conditional_arguments::select(self.facts, DefId(item.0), arguments, charge)?;
+        if matches!(
+            self.facts.types.kind(predicate.ty),
+            Some(Kind::Parameter(_))
+        ) {
+            self.require_premise(predicate, charge)?;
+        }
+        Ok(())
+    }
+
     fn check_premise(
         &self,
         definition: DefId,
@@ -255,6 +291,14 @@ impl<'a> DefiningCalls<'a> {
         charge: &mut impl FnMut(usize) -> Result<(), &'static str>,
     ) -> Result<(), &'static str> {
         let predicate = conditional_arguments::select(self.facts, definition, arguments, charge)?;
+        self.require_premise(predicate, charge)
+    }
+
+    fn require_premise(
+        &self,
+        predicate: Predicate,
+        charge: &mut impl FnMut(usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
         let Bound::MaybeConstTrait(application) = predicate.bound else {
             return Err("abstract const call lost its conditional request");
         };
@@ -264,13 +308,8 @@ impl<'a> DefiningCalls<'a> {
                 subject,
                 application: defining,
             } => {
-                if predicate.ty != subject {
-                    return Err(
-                        "abstract const call changed its defining Self or trait application",
-                    );
-                }
-                if application != defining {
-                    // Other Self applications must be paid by this completed
+                if predicate.ty != subject || application != defining {
+                    // Other applications must be paid by this completed
                     // defining environment, including elaborated supertraits.
                     charge(2)?;
                     let unconditional = self.environment.assumes_predicate(
