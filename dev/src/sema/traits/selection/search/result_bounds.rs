@@ -188,8 +188,16 @@ impl Search<'_> {
         regions: std::ops::Range<u32>,
         children: Vec<usize>,
     ) -> Result<Action, String> {
-        let growth = self.query.node_growth();
-        facts.charge_caller_inputs(growth.work, growth.bytes)?;
+        // Ordinary declared-result queries retain their existing selector
+        // account and exact region interval. Only the new parent continuation
+        // allocates caller-input storage and carries its completed child range.
+        let end = if children.is_empty() {
+            regions.end
+        } else {
+            let growth = self.query.node_growth();
+            facts.charge_caller_inputs(growth.work, growth.bytes)?;
+            regions.end.max(self.query.allocations.end())
+        };
         let index = self.query.push(
             Node {
                 debt_free: false,
@@ -199,7 +207,7 @@ impl Search<'_> {
                 source: Some(source),
                 children,
                 first: frame.first,
-                end: regions.end.max(self.query.allocations.end()),
+                end,
                 equalities: std::mem::take(&mut frame.inputs.context.region_equalities),
                 outlives: Vec::new(),
                 type_outlives: Vec::new(),

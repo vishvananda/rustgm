@@ -1,5 +1,41 @@
 # RustGM handoff — 2026-11-14
 
+IMMEDIATE CI repair: full43645030432 on0c4d3d721 FAILED14 private/22 public
+checks in six targets. Shared cause: the new publish_result helper charged
+ordinary result queries to caller-input storage and broadened their region
+interval. Ordinary queries now retain their original selector account and exact
+interval; only the new const-parent continuation pays its caller allocations.
+No quota, effect proof, source permission or expectations change.
+Focused repair1794695015762961110 passes five exact tests/three targets160.71s:
+new projected outcomes/scaling plus prior closure receivers, fresh cross-crate
+results and custom iteration. Native1794695369245654861 passes seven programs
+52.33s. ci-repair-replay authenticates3964 sources/all inputs,44 complete
+outcomes/two accepting gaps and unchanged bounded scaling; dev-fast CLI
+adcb403ebf7acf630fc42d5d11576c2a4b73e7689a04db09e5b6688a348f8ff0.
+Publish this small repair and dispatch ONE full successor; 14 private cases
+remain pending full CI, with no cold local private build. Raw
+projected-const-members/ci43645030432.log and ci-repair-{fast1,native,replay}.log.
+This supersedes every earlier statement that43645030432 is running or green.
+
+Next frontier reduction WIP ONLY (no Rust-call production change): untracked
+pa25/31/tests/spec/explicit-call-members/,14 paired predictions (9 accept/5 reject),
+all independently confirmed by Rust1.98. Immutable clean34 reproduces source
+call-member signature/premise blockers. All14 ordinary attempts are UNQUALIFIED
+at unsupported fn_traits or original helper's PhantomData import, including
+predicted negatives. Exact original FnOnce impl bytes434b0dad…33caef6 retained.
+The source original support FnMut stub initially missed its actual stability
+attributes; corrected before reexecution, exact original item unchanged. Needs
+one bounded corrected-original probe before adding production code. Native
+prediction41/59; not yet executed. Main remains Git-only; one worker in B.
+Raw obj/parallel/explicit-call-members/{declaration,baseline,stability-setup-correction}.
+
+Availability correction after clean34: semantic31–33 release binaries, old
+26 dev-fast, generic-const-calls/default-generic-subjects replay executables and
+projected replay1–3 are RETIRED/UNAVAILABLE. Receipts/hashes remain. Current34,
+current ci-repair dev-fast and actual pending performance21–24 pins remain.
+Retirement records projected-const-members/retired-pins.json and retire-pins.log.
+Do not use a pruned historical binary as new evidence.
+
 Clean candidate34-release is complete on docs-only headcc1bbf993 (product0c4d3d721),
 3964 source hashes/empty patch,7m02s build. CLIfdb81f6e5f53d924a40ca847678c4e6f0e25a47c054ae5ad08861c4574f64d1a.
 Genuine unchanged original v14 library34 CLEARS residual_into_try_type and now

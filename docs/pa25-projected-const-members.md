@@ -94,3 +94,15 @@ fixed120s and unchanged quotas. No original artifact or speed claim. Raw
 `core-artifact34.log`, `artifact-postcheck34.log`, `original-library-candidate34/`.
 Full43645030432 has passed static/all-target checks and is running release/course;
 its complete successor evidence remains pending.
+
+
+Full43645030432 subsequently failed14 private and22 public tests in six targets.
+The shared publication helper accidentally charged ordinary result nodes to a
+caller-input account and enlarged their retained region interval. Restoring the
+ordinary selector's original account/interval leaves the new const-parent proof
+and its own allocation charges intact. No budget or expected outcome is relaxed.
+Repair1794695015762961110 passes five exact regressions across closures, linking
+and traits in160.71s;1794695369245654861 passes seven native programs in52.33s.
+`ci-repair-replay/` binds3964 sources/all packet hashes and replays44 complete
+outcomes/two accepting gaps with unchanged scaling. The14 private failures
+await the full successor; no cold local private harness is repeated.
