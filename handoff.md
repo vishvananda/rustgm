@@ -5,6 +5,39 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
+Published current source4a80bfb4a50368637efe70423aabf88d9abe8b59; main synchronized.
+Clean candidate30-release binds3964 source hashes/empty patch,8m36s build,
+CLI SHA2562b950bafd9fc84d9ce69b2515e3f1c43bfdf93b406bf998c4074f8d4ef56acdd.
+Genuine unchanged original v14 library30 clears DropGuard::deref and now FAILS
+in cmp.rs line1037/file73:34611, Ord::max's `if other < self { self } else { other }`:
+`abstract const call changed its defining Self or trait application`.
+36.285181019920856s, status1/no timeout; no core.rgm/0-byte core.lowir/no native
+original consumers. Artifact-postcheck30 terminal PASS:722 unchanged original
+files/375 opened inputs/six reviewed config pins/all3964 compiler hashes/clean
+producer/fixed120s/14500624work/1GiB attempted/64MiB retained. Diagnostic only,
+no timing claim. Raw mixed-declarations/{build30-release,core-artifact30,
+artifact-postcheck30}.log and original-library-candidate30/. No redundant census.
+
+NEXT reduce actual const Ord default calling its PartialOrd supertrait. Existing
+DefiningCalls Premise::Trait currently requires exactly its own defining trait
+application; inspect the completed defining environment's real conditional
+supertrait premise rather than inventing const permission or scanning unrelated
+clauses per call. Root Self/arguments, source operation and eventual implementation/
+execution/borrow proof stay required. Source reductions PA31; ordinary const
+supertrait/default-body minima PA25. Nothing new is edited/unqualified yet at
+this doc-only checkpoint. No live local heavy job.
+
+Full43618987950 is the one full successor on exact4a80bfb4a: fast/lint/architecture/
+harness/host graph passed, release/course in progress at last check. Do not restart
+for this handoff. Preceding43611467168 is fully green (3079 private8.39s/93.73s).
+The three reduced const-Deref metadata positives remain separately blocked by
+role-form transport, not declaration kinds; actual failing non-trait role has not
+been identified by a run, so do not assume which role it is. All earlier original
+v13/v14/native/ordinary-bootstrap/future/assignment requirements remain open.
+B only/one worker/main Git-only; policy2jobs/150GiB reserve/16GiB cap unchanged,
+free339GiB. Keep needed comparison pins; old timing gates and pending21/22,
+22/23,23/24 comparisons remain unwaived. No original library artifact exists.
+
 Mixed v14 declarations are now locally qualified; publish this joined checkpoint
 before clean30. exported_kind and callable_effects use existing body_nodes
 capability, so v14 inherits v13 enum/variant/tuple+unit constructor/const parameter/
