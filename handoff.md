@@ -5,6 +5,35 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
+Latest frozen checkpoint is fc4e36743276e120ea5787a2b08bab9f596ec9ad.
+Clean candidate28-release binds3964 source hashes/empty patch; CLI SHA256
+befc0f5c4e0184be8a34fbc0c39e376ca069cde9b2da269074a304576b1762d0,
+coherent build9m48s. Original diagnostic28 reaches the end of analysis with zero
+records in39.073271811s (42310 declarations/25858 bodies/35120 attempts).
+Census/progress bytes equal27. Load was above14/20, explicitly diagnostic only;
+no timing claim. The genuine module-body-operations-v14 library28 clears the
+compiler-owned async helper boundary, then FAILS after21.201781169s at
+mem/drop_guard.rs file60:2500, dismiss:
+`const function member lacks its current conditional trait premise`.
+core.rgm is absent; core.lowir is0 bytes; no original native consumers exist.
+Both28 postchecks are terminal/pass:722 sources/375 opens/six reviewed config
+pins/all3964 compiler hashes/clean producer/fixed120s/work14500624/1GiB attempted/
+64MiB retained. Raw body-operations/{observe28,postcheck28,core-artifact28,
+artifact-postcheck28}.log; capture-match/original-candidate28-diagnostic/ and
+body-operations/original-library-candidate28/ preserve receipts.
+
+The frozen census-progress/original-manifest.json remains unchanged. Its explicit
+successor body-operations/original-manifest.json changes only the crates.rs pin
+for the two reviewed CLI profile selectors/usage; all722 inputs/five other config
+pins/profile JSON are identical. config-rebinding.json and
+cli-config-rebinding.patch authenticate the exact reconstruction. Do not silently
+rebind the old manifest. Full43607051290 runs on exactfc4e36743: fast, lint/audit/
+harness and host graph passed; release/course still in progress at last check.
+No duplicate CI for this documentation. Next reduce the actual dismiss failure
+through existing conditional call owners; keep original v13 and all native future
+requirements open. Shared free space345GiB; unchanged150GiB reserve/16GiB cap,
+one worker in B, main Git-only, no live local heavy job.
+
 Latest continuation: genuine unchecked arithmetic is published as7db0c611e.
 Clean candidate27-release (6m27s,3963 source hashes, empty patch) has CLI SHA256
 fb75da194df6bec5943d61e8a64bee56a32c0d2692b130f7c30ee66a876fe895.
