@@ -3,6 +3,7 @@ pub(crate) mod code;
 mod counted;
 pub(crate) mod ctglue;
 mod executed_calls;
+mod extended_storage;
 mod invoked_defaults;
 pub(crate) mod lease_codes;
 mod memory;

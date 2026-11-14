@@ -1,0 +1,3 @@
+Initializer temporary storage packet. Outcomes, source bytes and observer values are declared before execution in manifest.json. The related PA25/27/28/31 packets separate the safe minimum, actual unsafe dangling, C ABI observation and source compiler roles. All original accepting C-export inputs remain required; no scalar metadata-profile failure becomes a semantic rejection. Whole assignments stay planned.
+
+The named-mutable and named-mutable-direct inputs are independently accepting, executed positives. They remain required pending existing RustGM mutable static-reference support. They are not part of the qualified24-outcome storage-duration subset; never invert their accepting manifest entries.

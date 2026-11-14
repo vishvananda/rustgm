@@ -1,4 +1,5 @@
 //! Complete named values required by typed bodies before the read-only lowerer.
+mod extended_borrows;
 mod invocations;
 mod qualified_invocations;
 pub(crate) use qualified_invocations::source as const_closure_source;
@@ -188,7 +189,18 @@ fn eligibility_counted(
     // unconditional transfer. Const permission is checked before value demand.
     let mut operators = 0;
     let mut members = 0;
+    let mut extended = extended_borrows::Extended::default();
     for value in &body.values {
+        if let Rvalue::Borrow { place, .. } = value.kind
+            && matches!(
+                facts.types.kind(value.ty),
+                Some(crate::types::Kind::Reference { mutable: true, .. })
+            )
+        {
+            extended
+                .check(body, place, work)
+                .map_err(|e| report.diagnostic(report.body_error(body.source, e)))?;
+        }
         if matches!(value.kind, Rvalue::Invoke { .. }) {
             operators += 1;
         }

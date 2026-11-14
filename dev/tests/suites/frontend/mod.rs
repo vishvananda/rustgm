@@ -265,6 +265,8 @@ mod knowledge_sources;
 #[path = "../../loop_results.rs"]
 mod loop_results;
 
+#[path = "../../extended_temporaries.rs"]
+mod extended_temporaries;
 #[path = "../../interchange_images.rs"]
 mod interchange_images;
 #[path = "../../preparation_accounts.rs"]

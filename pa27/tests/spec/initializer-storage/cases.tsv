@@ -1,0 +1,5 @@
+pa27/tests/spec/initializer-storage/dangling-local.rs	1	-
+pa27/tests/spec/initializer-storage/dangling-callee.rs	1	-
+pa27/tests/spec/initializer-storage/nested-dangling.rs	1	-
+pa27/tests/spec/initializer-storage/named-mutable.rs	0	-
+pa27/tests/spec/initializer-storage/named-mutable-direct.rs	0	-

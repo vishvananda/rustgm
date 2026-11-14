@@ -421,7 +421,15 @@ impl Machine<'_, '_> {
             self.evaluator.borrow(value, ty)?
         } else {
             let value = Self::value(frame, id)?;
-            self.allocate(&mut frame.allocations, Some(value), ty)?
+            if body.extends_temporary(id) {
+                // Lexical initializer extension owns immutable evaluated storage;
+                // ordinary locals still expire with their actual frame.
+                self.charge(1)?;
+                self.reserve_cells(1)?;
+                self.evaluator.allocation(Some(value), ty)?
+            } else {
+                self.allocate(&mut frame.allocations, Some(value), ty)?
+            }
         };
         frame.temporaries.insert(id, address);
         Ok(address)

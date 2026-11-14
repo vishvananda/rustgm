@@ -1,0 +1,14 @@
+pa25/tests/spec/initializer-storage/static-rows.rs	0	-
+pa25/tests/spec/initializer-storage/const-rows.rs	0	-
+pa25/tests/spec/initializer-storage/named-control.rs	0	-
+pa25/tests/spec/initializer-storage/scalar.rs	0	-
+pa25/tests/spec/initializer-storage/computed-block.rs	0	-
+pa25/tests/spec/initializer-storage/mutated-temporary.rs	1	-
+pa25/tests/spec/initializer-storage/unpaid-lifetime.rs	1	-
+pa25/tests/spec/initializer-storage/mutable-static.rs	1	-
+pa25/tests/spec/initializer-storage/mutable-constant.rs	1	-
+pa25/tests/spec/initializer-storage/scaling-8.rs	0	-
+pa25/tests/spec/initializer-storage/scaling-32.rs	0	-
+pa25/tests/spec/initializer-storage/scaling-128.rs	0	-
+pa25/tests/spec/initializer-storage/mutable-projection.rs	1	-
+pa25/tests/spec/initializer-storage/mutable-local.rs	0	-

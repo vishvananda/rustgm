@@ -5,14 +5,17 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
-Latest continuation: headroom is restored (240GiB, reserve150/cap16 unchanged).
-Published shift source823dc01df passes focused/native and now authenticated replay,
-harness/upstream too. Source3958; scaling266n+39/23n+2181. Three frozen supported
-multiply controls plus ordinary f64 pass independent/baseline23 preflight.
-Full43575779218 is still running on exact823dc01df; do not dispatch a duplicate
-for this fixture/docs continuation. Freeze clean24 next and observe original
-core unchanged. Read the final "Headroom restored; final shift checks pass" section.
-No original library artifact exists. Continue as one worker in B.
+Latest continuation: headroom is restored (reserve150/cap16 unchanged). Full
+43575779218 PASSED ALL STAGES on exact823dc01df, including3077 private tests in
+both profiles. Clean24 (source1b8722726/3958) clears unchecked shifts; original
+core now fails only completion at unicode_data.rs1148/file244:65009, expired
+storage in LOWERCASE_LUT. All42310 declarations/25858 bodies/35120 attempts pass.
+The new initializer-storage checkpoint passes24 outcomes, seven natives, four
+old compatibility controls, bounded work and authenticated replay/harness/upstream.
+Current compiler/test inventory3961. Private new snapshot invariant awaits full
+CI. Publish/freeze25, observe unchanged core, then attempt genuine metadata/LowIR
+only if analysis completes. No original library artifact exists. One worker in B.
+Read the final initializer-storage section before resuming.
 
 ## Workspace and authorization
 
@@ -1215,3 +1218,54 @@ metadata/upstream, publish this data/docs checkpoint, tidy at idle, freeze one
 clean24release and run unchanged original observe/postcheck. Only actual complete
 analysis permits core-artifact24 (module-bodies-v13 metadata/LowIR), then genuine
 original native consumers. Keep all fixed limits and previous valid positives.
+
+## Initializer storage qualified; clean25 and original retry next
+
+See docs/pa25-initializer-storage.md for the complete contract and exact focused
+receipts. The optional Code operand retains actual unpromoted Static-lifetime
+ValueIds; it does not change Code304/operand32/Body456/Value24 sizes. Evaluated
+backing survives return; ordinary frame allocations expire before extended
+contents validation. Unsafe dangling local/callee/nested-container cases reject.
+Typed const eligibility independently rejects mutable temporary borrows, including
+indexed/field projections, without granting promotion or callable permission.
+
+PA25/27/28/31 initializer-storage packets contain26 predeclared outcomes,24
+qualified (16 accept/eight reject) and two required accepting mutable-static
+controls that still fail existing direct/raw constant reference restrictions.
+Keep both inputs and accepting predictions; do not broaden this checkpoint to
+claim them. Original PA28 nominal-pointer library metadata artifacts remain
+required even though all seven native in-memory programs pass. Original Unicode
+bytes/identity bytes and all initial failed predictions/setups remain retained.
+
+Final fast1794651862191683241: four exact tests pass, strict selected/CLI Clippy,
+fmt/audit. Native1794651989245247938: one exact group/seven actual programs pass.
+Compatibility1794652124030049912: four old promotion/expiry tests pass. Frontend
+harness SHA ca42ab30990178afe16b1c08127a4039ef8e78a5b8ebd6d5c5ee7ded418f1228.
+Authenticated replay binds all3961 compiler/test sources and packet inputs.
+Widths8/32/128 retain inference/canonical/CTFE/codebytes tuples
+154/123/318/2456,418/411/1184/6584,1474/1563/4624/23096. No speed claim.
+315 harness/493 integration roots/13 binaries/44 layouts/one component and
+128 upstream+126 Reference checksum checks pass. Raw logs/receipts/debug traces:
+obj/parallel/static-temporary-storage/. First fast289.75s failed in outer cleanup
+although tests ran; retain it as failure. Later guard and test-assertion failures
+are fixed, never blessed. New private retained_cfg_storage invariant is unrun
+locally; no cold private harness. Full CI successor is required after publication.
+
+Clean24 release CLI SHA4238d43c673c8b8d91f4d61f6079caa0b0ebfdd7d1666d93ffb73eaf840f3cd5,
+build9m09s. Unchanged original diagnostic26.6543s was above load14/20, hence no
+speed claim; postcheck722 sources/375 opens/six configuration pins/all3958 hashes/
+empty patch/fixed120s and14500624 work,1GiB attempted,64MiB retained pass. Exact
+error-instruction debugging under debug24-exact confirms return->result validity
+at expiration; debug24's first source-line breakpoint hit an earlier valid read
+and is not expiration evidence. No trace patch is installed.
+
+Next freeze clean25 after coherent publication. Update capture-match/pin.py to
+3961 actual sources; adapt observe/postcheck/core-artifact24 helpers to25. Preserve
+the original manifest/profile/limits and source inputs. All four current21/22/23/24
+release pins remain available; shifted selector timing A/A+ABBA remains gated by
+14/20 load. Do not wait indefinitely to diagnose core, lower the gate, claim speed,
+or redispatch old full43575779218. Source823dc01df's full run is terminal success.
+No whole PA25–44 is complete; released113-case const-machine stays unchanged.
+All older explicit contracts, callback artifacts, two borrowed-result consumers,
+ordinary unbounded manual Copy positive, native/lifetime/transport requirements
+and original metadata/LowIR/library consumers remain required.

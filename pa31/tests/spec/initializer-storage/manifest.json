@@ -1,0 +1,40 @@
+{
+ "declaration": "Before execution of these refined inputs: all accepted inputs and observers must agree with independent Rust. Ordinary safe minima belong toPA25, actual unsafe dangling opponents toPA27, C ABI observers toPA28 and source-role counterparts toPA31. Keep all original C-export positives unchanged (first-inputs/ snapshot preserves first bytes/predictions); metadata-profile artifacts remain distinct from native program preparation. Root initializer temporary extension is independent of function-body promotion. Preserve actual expiry, scope, bounds and quotas.",
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "cases": {
+  "source-rows": {
+   "expected": "accept",
+   "native_stdout": "192 22 32 256 1 1 304 775 2 0\n",
+   "sha256": "594bcfa978d225218f3022eba2146782b7fcf5be467cd810fd55e9663081bede"
+  },
+  "scalar": {
+   "expected": "accept",
+   "native_stdout": "7\n",
+   "sha256": "8eb7d153fdeed157d5770a807c2d583962a2f63ebf09376737a6dbc5aa841b49"
+  }
+ },
+ "files": {
+  "foundation.rs": "e735dffbcbbf0749c558ce01face4c8b8632aa8cb8da09d79237472b71ae59fa",
+  "observe-scalar.c": "733b628502f4de2c96ce94de6933e17598afd1dc93abbe5fe64b6311bc845c69",
+  "observe.c": "3b31bc4b9d71e4ec058ee453ba8ca3bebb14428c464bccecea680bb5a6d9b693",
+  "original/definitions.rs": "dac20c2e3f3d7e7af050e76bae2b0a0a4c20198b85af62f69b49e7c9fb105fb1",
+  "original/identity.rs": "553a6745fbc123893ad433aa33ec0d9bc6265722a525627747163712ca01b054",
+  "original/lowercase.rs": "00ead76e514266572ec899fada396cc8c17bc16cb4dede479440f83f8b17cd41",
+  "scalar.rs": "8eb7d153fdeed157d5770a807c2d583962a2f63ebf09376737a6dbc5aa841b49",
+  "source-rows.rs": "594bcfa978d225218f3022eba2146782b7fcf5be467cd810fd55e9663081bede"
+ },
+ "originals": {
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "unicode_source_sha256": "d3d218b7574f08efe423e9d4b6b539e700046aca4f2a2793d38164ec5a1b00b2",
+  "identity_source_sha256": "95242eb094be9ab087c2bd9673736ff2125abb3430835e6a687d4aecf21625eb",
+  "reduction": "Range/L1Lut/L2Lut borrowed-table shape retained. Original Unicode definitions and lowercase initializer bytes remain under original/. Computation is reduced to the real core identity body, which is an unmarked const call, without changing the borrowed-storage contract. repr(C) is added only for the native observer. This does not claim full original Range constructor or Unicode lookup execution."
+ },
+ "setup_correction": "Initial minimal NoCore basis lacked the real unsizing, Destruct and drop_glue roles; preserve first bytes/diagnostics under refined2/source-inputs. Add known qualified role declarations and shared-reference coercion from existing source-slice-methods and drop-glue fixtures. Accepting outcomes remain unchanged. The minimal unstaged role basis does not declare the library feature names unsize/coerce_unsized; those two requests were unknown and are removed (source role declarations and permissions unchanged)."
+}

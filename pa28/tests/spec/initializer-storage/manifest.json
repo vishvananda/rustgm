@@ -1,0 +1,52 @@
+{
+ "declaration": "Before execution of these refined inputs: all accepted inputs and observers must agree with independent Rust. Ordinary safe minima belong toPA25, actual unsafe dangling opponents toPA27, C ABI observers toPA28 and source-role counterparts toPA31. Keep all original C-export positives unchanged (first-inputs/ snapshot preserves first bytes/predictions); metadata-profile artifacts remain distinct from native program preparation. Root initializer temporary extension is independent of function-body promotion. Preserve actual expiry, scope, bounds and quotas.",
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "cases": {
+  "static-rows": {
+   "expected": "accept",
+   "native_stdout": "7 11 13 14 2 2\n",
+   "legacy_scalar_library_profile": "exposed nominal pointer remains outside the scalar metadata profile; prior failure retained, no parity-negative reclassification",
+   "sha256": "cafb1462ccc432a15dab42a4e0160f670dd3d63e62e8012d367f1d4f9f5550f7"
+  },
+  "const-rows": {
+   "expected": "accept",
+   "native_stdout": "7 11 13 14 2 2\n",
+   "legacy_scalar_library_profile": "exposed nominal pointer remains outside the scalar metadata profile; prior failure retained, no parity-negative reclassification",
+   "sha256": "a3e761680275302c431a47599e1f582aa7ec60583ce878bd1332d386319fccf7"
+  },
+  "named-control": {
+   "expected": "accept",
+   "native_stdout": "7 11 13 14 2 2\n",
+   "legacy_scalar_library_profile": "exposed nominal pointer remains outside the scalar metadata profile; prior failure retained, no parity-negative reclassification",
+   "sha256": "44cd86e06ba1f2166d208006881cd24fb2d52ba3bec9c69ffae82243c5dea1d6"
+  },
+  "scalar": {
+   "expected": "accept",
+   "native_stdout": "7\n",
+   "legacy_scalar_library_profile": "exposed nominal pointer remains outside the scalar metadata profile; prior failure retained, no parity-negative reclassification",
+   "sha256": "b7f04c732558979947a803e8b63f01c5fdb6cf290bee54722f69d48200462b72"
+  },
+  "computed-block": {
+   "expected": "accept",
+   "native_stdout": "9\n",
+   "legacy_scalar_library_profile": "exposed nominal pointer remains outside the scalar metadata profile; prior failure retained, no parity-negative reclassification",
+   "sha256": "a73cc42158a92b849016f7c1e26ef8cc22bcdffda61bb2afc89f7d41109a5d8b"
+  }
+ },
+ "files": {
+  "computed-block.rs": "a73cc42158a92b849016f7c1e26ef8cc22bcdffda61bb2afc89f7d41109a5d8b",
+  "const-rows.rs": "a3e761680275302c431a47599e1f582aa7ec60583ce878bd1332d386319fccf7",
+  "named-control.rs": "44cd86e06ba1f2166d208006881cd24fb2d52ba3bec9c69ffae82243c5dea1d6",
+  "observe-scalar.c": "733b628502f4de2c96ce94de6933e17598afd1dc93abbe5fe64b6311bc845c69",
+  "observe.c": "47810b0c939bda76fe6146bcb30928241bc1e8d113c4d96e4c7ad152e0f8fd14",
+  "scalar.rs": "b7f04c732558979947a803e8b63f01c5fdb6cf290bee54722f69d48200462b72",
+  "static-rows.rs": "cafb1462ccc432a15dab42a4e0160f670dd3d63e62e8012d367f1d4f9f5550f7"
+ }
+}

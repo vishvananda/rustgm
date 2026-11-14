@@ -1,0 +1,45 @@
+{
+ "declaration": "Before execution of these refined inputs: all accepted inputs and observers must agree with independent Rust. Ordinary safe minima belong toPA25, actual unsafe dangling opponents toPA27, C ABI observers toPA28 and source-role counterparts toPA31. Keep all original C-export positives unchanged (first-inputs/ snapshot preserves first bytes/predictions); metadata-profile artifacts remain distinct from native program preparation. Root initializer temporary extension is independent of function-body promotion. Preserve actual expiry, scope, bounds and quotas.",
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "cases": {
+  "dangling-local": {
+   "expected": "reject",
+   "sha256": "ad3a9af52c2c27eab82cdf8b667319d2cd1dfe72b80a989e9f037233ec88ffe5"
+  },
+  "dangling-callee": {
+   "expected": "reject",
+   "sha256": "4b4d6f1d0eac793239e15c69dc490151132a39d3c303ac0512fae36523bb0ade"
+  },
+  "nested-dangling": {
+   "expected": "reject",
+   "sha256": "3191292ac744a49d4e0e985baa887dc2713a7cf02cdd1e4d41fa753fb5414fe1"
+  },
+  "named-mutable": {
+   "expected": "accept",
+   "native_stdout": "",
+   "sha256": "27886411b82d6e2a6d3d561cd9889ad898c8e09d53781c94ff6ff32accb949f0",
+   "pending_contract": "Independent Rust accepts and executes. Existing RustGM constant mutable raw reference to static storage is not implemented; remains a required positive outside this storage-duration checkpoint. Do not invert or remove."
+  },
+  "named-mutable-direct": {
+   "expected": "accept",
+   "native_stdout": "",
+   "sha256": "31ec058390ea880c54fa189a1641e0ffcdf83350e284f0163e8cf5bb4908c552",
+   "pending_contract": "Independent Rust accepts and executes. Existing RustGM constant references cannot access mutable static storage; remains a required positive outside this storage-duration checkpoint. Do not invert or remove."
+  }
+ },
+ "files": {
+  "dangling-callee.rs": "4b4d6f1d0eac793239e15c69dc490151132a39d3c303ac0512fae36523bb0ade",
+  "dangling-local.rs": "ad3a9af52c2c27eab82cdf8b667319d2cd1dfe72b80a989e9f037233ec88ffe5",
+  "nested-dangling.rs": "3191292ac744a49d4e0e985baa887dc2713a7cf02cdd1e4d41fa753fb5414fe1",
+  "named-mutable.rs": "27886411b82d6e2a6d3d561cd9889ad898c8e09d53781c94ff6ff32accb949f0",
+  "named-mutable-direct.rs": "31ec058390ea880c54fa189a1641e0ffcdf83350e284f0163e8cf5bb4908c552"
+ },
+ "final_boundary_declaration": "Before independent execution: mutable static/constant temporary borrows and their direct field/index projections reject. Mutable references through raw dereference of actual named static backing accept. Scaling8/32/128 positives retain their original accepting predictions. The incorrect initial mutable-static prediction is preserved with its Rust E0764 diagnostic."
+}

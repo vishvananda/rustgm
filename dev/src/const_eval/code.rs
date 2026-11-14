@@ -27,6 +27,7 @@ pub(crate) enum Inline {
 }
 #[derive(Clone)]
 pub(crate) enum PreparedOperand {
+    ExtendedStorage(std::sync::Arc<[ValueId]>),
     Inline {
         destination: ValueId,
         selected: Inline,
@@ -113,6 +114,7 @@ impl Code {
             }),
             body.callable_allocation_bytes(),
             body.reborrow_snapshot_bytes(),
+            Self::extended_storage_bound(body),
             Self::operand_count(body)?.saturating_mul(size_of::<PreparedOperand>()),
         ]
         .into_iter()
@@ -120,7 +122,8 @@ impl Code {
     }
     fn operand_count(body: &Body) -> Result<usize, &'static str> {
         body.statements.iter().try_fold(
-            usize::from(!body.caller_sites().is_empty())
+            usize::from(Self::extended_count(body) != 0)
+                .saturating_add(usize::from(!body.caller_sites().is_empty()))
                 .saturating_add(usize::from(body.reborrow_snapshot_bytes() != 0)),
             |count, statement| Ok(count + usize::from(Self::operand(body, statement)?.is_some())),
         )
@@ -144,6 +147,7 @@ impl Code {
             .filter(|n| *n < u32::MAX)
             .ok_or("constant snapshot operand cursor identity overflow")?;
         let mut operands = Vec::with_capacity(count);
+        Self::snapshot_extended_storage(body, &mut operands)?;
         for statement in &body.statements {
             if let Some(operand) = Self::operand(body, statement)? {
                 operands.push(operand);

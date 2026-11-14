@@ -17,6 +17,7 @@ impl Machine<'_, '_> {
         let result = Self::value(&frame, value)?;
         self.slots -= frame.locals.len() + frame.values.len() + frame.cleanup_slots();
         self.memory.expire(&frame.allocations);
+        self.validate_extended_storage(&frame, body)?;
         if matches!(frame.return_to, super::ReturnTo::Cleanup(_)) {
             self.cleanup_returned(frame, body, result, result_ty)?;
             return Ok(None);

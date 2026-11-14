@@ -6294,6 +6294,18 @@ requirements. Complete reachable static backing with a growing identity queue
 before lowering. Address cycles are valid storage graphs; initializer value
 cycles remain errors. Constant patterns demand finite referent expansion and
 diagnose cycles independently of executable pointer graphs.
+
+Initializer temporary extension consumes the typed CFG's lexical lifetime facts
+independently of promotion. Retain unpromoted static-lifetime temporary identities
+in an optional, budgeted execution record and preserve their evaluated backing
+after initializer return. Ordinary frame allocations still expire. Validate the
+extended contents after expiration too: extending an outer container cannot keep
+a nested reference to a dead local alive. Duration does not discharge const-call,
+region, loan or promotion eligibility. Mutable borrows of the extended temporary
+or its direct field/index projections remain invalid; dereferencing independently
+owned pointer storage selects a different referent. See the
+[initializer-storage checkpoint](docs/pa25-initializer-storage.md) for independent
+outcomes, native observers and retained mutable-static/metadata requirements.
 Coverage derives root validity from the selected input place and retains it
 through deferred binding checks. Explicit and automatic dereferences cannot
 reuse owned-value inhabitation to prune variants with potentially invalid fields.

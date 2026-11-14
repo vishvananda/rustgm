@@ -13,6 +13,8 @@ fn full_bodies_charge_proof_storage_and_snapshots_charge_callable_maps() -> Resu
     assert_eq!(size_of::<body::ir::Rvalue>(), 20);
     assert_eq!(size_of::<body::ir::Value>(), 24);
     assert_eq!(size_of::<body::ir::Body>(), 456);
+    assert_eq!(size_of::<Code>(), 304);
+    assert_eq!(size_of::<PreparedOperand>(), 32);
     let code = Code::storage_bytes(body)?;
     let scalar = Code::snapshot(body)?;
     assert!(scalar.operands.is_empty());
@@ -66,6 +68,36 @@ fn full_bodies_charge_proof_storage_and_snapshots_charge_callable_maps() -> Resu
     assert!(catalog.definitions.is_empty());
     assert!(catalog.functions.is_empty());
     assert_eq!(catalog.bytes, 64 * 1024 * 1024);
+    Ok(())
+}
+
+#[test]
+fn lexical_extension_snapshot_charges_storage_and_rejects_missing_values() -> Result<(), String> {
+    let report = source::resolve("const fn f()->u8{let x=&{7};*x}", true)?;
+    let facts = sema::declarations::analyze(&report).map_err(|e| e.to_string())?;
+    let facts = sema::bodies::analyze(&report, facts).map_err(|e| e.to_string())?;
+    let mut program = body::build(&report, &facts).map_err(|e| e.to_string())?;
+    let body = program.bodies.first_mut().ok_or("checked body")?;
+    body.promotions = None;
+    let base = Code::storage_bytes(body)?;
+    assert!(Code::snapshot(body)?.extended_temporaries().is_empty());
+    let temporary = body.temporaries.first_mut().ok_or("scoped temporary")?;
+    temporary.lifetime = body::scopes::Lifetime::Static;
+    let id = temporary.value;
+    let required = Code::storage_bytes(body)?;
+    assert!(required > base);
+    assert!(super::Prepared::plain(body, base).is_err());
+    let prepared = super::Prepared::plain(body, required)?;
+    assert!(prepared.code().extends_temporary(id));
+    assert_eq!(prepared.code().extended_temporaries(), &[id]);
+    body.temporaries[0].value = body::ir::ValueId(u32::MAX);
+    let mut catalog = Catalog::default();
+    assert_eq!(
+        catalog.insert(body).err(),
+        Some("extended temporary has no actual typed value")
+    );
+    assert!(catalog.bodies.is_empty());
+    assert_eq!(catalog.bytes, 0);
     Ok(())
 }
 

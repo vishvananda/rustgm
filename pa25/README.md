@@ -137,3 +137,10 @@ layout counterparts stay in PA31. Original generic inline values retain their
 caller and selected instances, while two complete source consumers remain
 explicit requirements. This does not extend the released const-machine component
 or complete the whole assignment.
+
+The [initializer-storage checkpoint](../docs/pa25-initializer-storage.md) retains
+computed temporary backing using existing lexical extension facts, with safe
+PA25, unsafe PA27, C ABI PA28 and source-role PA31 reductions. Local/callee expiry
+and mutable temporary restrictions remain checked. Qualified native programs do
+not replace the required named mutable-static and library metadata surfaces.
+Whole-assignment status and the separate const-machine component are unchanged.

@@ -299,3 +299,10 @@ ordinary ownership work. Context survives byte-read retries and cannot become a
 stored-value permission. Actual source MaybeUninit's initialization masks and
 unsafe operations, broader pointer domains and imported nominal authority remain
 required before whole-library/assignment completion.
+
+The [initializer-storage checkpoint](../docs/pa25-initializer-storage.md) retains
+computed temporary backing using existing lexical extension facts, with safe
+PA25, unsafe PA27, C ABI PA28 and source-role PA31 reductions. Local/callee expiry
+and mutable temporary restrictions remain checked. Qualified native programs do
+not replace the required named mutable-static and library metadata surfaces.
+Whole-assignment status and the separate const-machine component are unchanged.

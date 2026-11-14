@@ -144,6 +144,7 @@ impl Prepared {
             vector(&code.blocks),
             vector(&code.operands),
             code.caller_site_bytes(),
+            code.extended_storage_bytes(),
             code.cleanup_bytes(),
             code.reborrow_bytes(),
             code.closure_record_bytes(),

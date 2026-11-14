@@ -817,3 +817,10 @@ actual equality/marker classification modulo regions, value-specific enum fields
 and local derive API allowances, with19 source outcomes and three native exports.
 The Alignment reduction passes; unchanged original-core observation, imported
 transport and the ordinary/empty-list requirements remain open.
+
+The [initializer-storage checkpoint](../docs/pa25-initializer-storage.md) retains
+computed temporary backing using existing lexical extension facts, with safe
+PA25, unsafe PA27, C ABI PA28 and source-role PA31 reductions. Local/callee expiry
+and mutable temporary restrictions remain checked. Qualified native programs do
+not replace the required named mutable-static and library metadata surfaces.
+Whole-assignment status and the separate const-machine component are unchanged.

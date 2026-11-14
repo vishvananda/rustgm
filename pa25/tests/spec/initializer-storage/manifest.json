@@ -1,0 +1,103 @@
+{
+ "declaration": "Before execution of these refined inputs: all accepted inputs and observers must agree with independent Rust. Ordinary safe minima belong toPA25, actual unsafe dangling opponents toPA27, C ABI observers toPA28 and source-role counterparts toPA31. Keep all original C-export positives unchanged (first-inputs/ snapshot preserves first bytes/predictions); metadata-profile artifacts remain distinct from native program preparation. Root initializer temporary extension is independent of function-body promotion. Preserve actual expiry, scope, bounds and quotas.",
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "cases": {
+  "static-rows": {
+   "expected": "accept",
+   "native_stdout": "",
+   "sha256": "40220c5c3b69adcbe9e118b91e0329262eb9a666326a8e5a661cd3b031e19157"
+  },
+  "const-rows": {
+   "expected": "accept",
+   "native_stdout": "",
+   "sha256": "c8de1a26fc99ba85e20bec1182395adc9ca09314657b232a6d85f5e0821c9b49"
+  },
+  "named-control": {
+   "expected": "accept",
+   "native_stdout": "",
+   "sha256": "e838255704e09e311270cdf49578788233cbabd4b43c5a6a6c775ea2e55f53f0"
+  },
+  "scalar": {
+   "expected": "accept",
+   "native_stdout": "",
+   "sha256": "780bb2f174acfdbc794f1bdb18ac1269fb602a6443e64571272598eb5adb18aa"
+  },
+  "computed-block": {
+   "expected": "accept",
+   "native_stdout": "",
+   "sha256": "3a25fd8e4bc215350beab2fa66e5234cdc0f36c912700f3e9465d3a7c1d4f50f"
+  },
+  "mutated-temporary": {
+   "expected": "reject",
+   "native_stdout": "",
+   "sha256": "584cdafa218f5e3b308ba5ecd27420dbf94e8232106222744eea5e983faa3088"
+  },
+  "unpaid-lifetime": {
+   "expected": "reject",
+   "native_stdout": "",
+   "sha256": "46e1fa9557d8a25abd1faeaf3d85b1c2dc16051610e9e1506dac5c56ca45ab68"
+  },
+  "mutable-static": {
+   "expected": "reject",
+   "native_stdout": "",
+   "sha256": "8b0cb78611b78888b9f5a58232e7aa03a3836b363f832794f4412c60918679bf"
+  },
+  "mutable-constant": {
+   "expected": "reject",
+   "native_stdout": "",
+   "sha256": "6a17074b0cc2f4ebb8182f9f64c53fc35e9c93295c2c1aba8ccd67dceaf1a341"
+  },
+  "scaling-8": {
+   "expected": "accept",
+   "native_stdout": "",
+   "sha256": "ee08ea6313786e1ddb16748e02d00b89964ecc0177f128b5cbc9fdcc24d8510d"
+  },
+  "scaling-32": {
+   "expected": "accept",
+   "native_stdout": "",
+   "sha256": "f8d3ead7d5d1ffc88ff38f496f3ac248b320b18010916fb0268f06a96a8952f8"
+  },
+  "scaling-128": {
+   "expected": "accept",
+   "native_stdout": "",
+   "sha256": "4659ecd8732cf5f452837afbe3d608999cbc8fdc09a3338b0a17189d273a91fa"
+  },
+  "mutable-projection": {
+   "expected": "reject",
+   "native_stdout": "",
+   "sha256": "f17d3952a5fee5c259ce3eee27ff1105166612fe8e33efea1507f5a4494bdb3f"
+  },
+  "mutable-local": {
+   "expected": "accept",
+   "native_stdout": "",
+   "sha256": "62340907279a33340aca419e3bd75ecada1ea32e13150954597847d6e1f48d80"
+  }
+ },
+ "files": {
+  "computed-block.rs": "3a25fd8e4bc215350beab2fa66e5234cdc0f36c912700f3e9465d3a7c1d4f50f",
+  "const-rows.rs": "c8de1a26fc99ba85e20bec1182395adc9ca09314657b232a6d85f5e0821c9b49",
+  "mutated-temporary.rs": "584cdafa218f5e3b308ba5ecd27420dbf94e8232106222744eea5e983faa3088",
+  "named-control.rs": "e838255704e09e311270cdf49578788233cbabd4b43c5a6a6c775ea2e55f53f0",
+  "scalar.rs": "780bb2f174acfdbc794f1bdb18ac1269fb602a6443e64571272598eb5adb18aa",
+  "static-rows.rs": "40220c5c3b69adcbe9e118b91e0329262eb9a666326a8e5a661cd3b031e19157",
+  "unpaid-lifetime.rs": "46e1fa9557d8a25abd1faeaf3d85b1c2dc16051610e9e1506dac5c56ca45ab68",
+  "mutable-static.rs": "8b0cb78611b78888b9f5a58232e7aa03a3836b363f832794f4412c60918679bf",
+  "mutable-constant.rs": "6a17074b0cc2f4ebb8182f9f64c53fc35e9c93295c2c1aba8ccd67dceaf1a341",
+  "scaling-8.rs": "ee08ea6313786e1ddb16748e02d00b89964ecc0177f128b5cbc9fdcc24d8510d",
+  "scaling-32.rs": "f8d3ead7d5d1ffc88ff38f496f3ac248b320b18010916fb0268f06a96a8952f8",
+  "scaling-128.rs": "4659ecd8732cf5f452837afbe3d608999cbc8fdc09a3338b0a17189d273a91fa",
+  "mutable-projection.rs": "f17d3952a5fee5c259ce3eee27ff1105166612fe8e33efea1507f5a4494bdb3f",
+  "mutable-local.rs": "62340907279a33340aca419e3bd75ecada1ea32e13150954597847d6e1f48d80"
+ },
+ "prediction_correction": "mutated-temporary was initially predicted accept; independent Rust rejects E0716 before evaluation. Preserve that original prediction and error under ordinary2/ and first-inputs/. The new computed-block positive changes the value before the final borrow and must produce9.",
+ "additional_declaration": "Before independent execution: mutable static backing accepts; a nonempty mutable constant allocation rejects. Scaling8/32/128 must accept, check both endpoints, and retain bounded preparation/work. No existing prediction or source is replaced.",
+ "boundary_correction": "The first mutable-static acceptance prediction was false: pinned Rust rejects E0764 for extended mutable temporary borrows in statics as well as constants. Original unchanged input, prediction and diagnostic remain under boundary-oracles/. Both must reject; scaling accepting predictions and bytes are unchanged.",
+ "final_boundary_declaration": "Before independent execution: mutable static/constant temporary borrows and their direct field/index projections reject. Mutable references through raw dereference of actual named static backing accept. Scaling8/32/128 positives retain their original accepting predictions. The incorrect initial mutable-static prediction is preserved with its Rust E0764 diagnostic."
+}

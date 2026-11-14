@@ -61,7 +61,8 @@ impl Machine<'_, '_> {
             self.charge(1)?;
             if matches!(
                 operand,
-                PreparedOperand::CallerSites(_)
+                PreparedOperand::ExtendedStorage(_)
+                    | PreparedOperand::CallerSites(_)
                     | PreparedOperand::Cleanup(_)
                     | PreparedOperand::Reborrows(_)
                     | PreparedOperand::ClosureCall { .. }

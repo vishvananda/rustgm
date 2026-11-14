@@ -467,3 +467,10 @@ results, nine candidate guards, bounded preparation and five new/old native
 programs pass. A reference f32 ICE remains an infrastructure failure. Final local
 replay/harness/upstream and a new full CI/original-core attempt remain pending;
 no whole assignment or original library artifact is complete.
+
+The [initializer-storage checkpoint](docs/pa25-initializer-storage.md) qualifies
+24 outcomes and seven native programs for computed extended backing, while
+preserving ordinary expiry and mutable temporary restrictions. Two valid named
+mutable-static controls and nominal-pointer metadata artifacts remain required.
+Private full CI and a fresh original-core observation are pending. Whole
+assignments remain planned and the released const-machine component is unchanged.
