@@ -339,3 +339,43 @@ fn defining_mutable_const_operator_keeps_its_retained_borrow_and_actual_receiver
     check(&facts, &body, 1)?;
     Ok(())
 }
+
+#[test]
+fn borrowed_const_source_adjustments_keep_the_exact_reference_path() -> TestResult {
+    for (name, depth) in [("field-mut", 1), ("nested-mut", 2), ("field-shared", 1)] {
+        let source =
+            crate::test_source::fixture(&format!("pa31/tests/spec/borrowed-callables/{name}.rs"))?;
+        let report = crate::test_source::source_provider(&source, "borrowed_source")?;
+        let facts =
+            crate::sema::bodies::analyze(&report, crate::sema::declarations::analyze(&report)?)?;
+        let (&site, &retained) = facts
+            .invocations
+            .iter()
+            .find(|(_, invocation)| invocation.kind.is_some())
+            .ok_or("source invocation")?;
+        assert_eq!(retained.dereferences, depth);
+        assert_eq!(retained.borrow, Some(retained.receiver));
+        let mut work = Work::new(1_000_000);
+        receivers::source_adjustment(Some(&report), &facts, site, retained, &mut work)?;
+        assert!(receivers::source_adjustment(None, &facts, site, retained, &mut work).is_err());
+        for wrong_depth in [0, depth + 1] {
+            let mut changed = retained;
+            changed.dereferences = wrong_depth;
+            assert!(
+                receivers::source_adjustment(Some(&report), &facts, site, changed, &mut work)
+                    .is_err()
+            );
+        }
+        let mut changed = retained;
+        changed.borrow = Some(TypeId::primitive(crate::types::Primitive::U8));
+        assert!(
+            receivers::source_adjustment(Some(&report), &facts, site, changed, &mut work).is_err()
+        );
+        let mut tiny = Work::new(3);
+        assert!(
+            receivers::source_adjustment(Some(&report), &facts, site, retained, &mut tiny).is_err()
+        );
+        assert_eq!(tiny.steps, 4);
+    }
+    Ok(())
+}

@@ -12,6 +12,66 @@ use crate::{
     },
 };
 
+/// Authenticate the existing semantic reference path against the actual callee.
+/// This grants defining permission only; place/loan checking still proves the
+/// lowered reborrow and concrete invocation still needs its actual const Code.
+pub(super) fn source_adjustment(
+    report: Option<&crate::resolve::expansion::Report>,
+    facts: &Declarations,
+    source: crate::resolve::unit::NodeKey,
+    retained: crate::sema::invocations::Invocation,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    work.charge(3)?;
+    let report = report.ok_or("const invocation adjustment requires its source syntax")?;
+    let syntax = &report
+        .package
+        .units
+        .get(source.file.0 as usize)
+        .ok_or("const invocation adjustment has an invalid source file")?
+        .configured
+        .ast;
+    let Some(crate::syntax::ast::Node {
+        kind: crate::syntax::ast::Kind::Call { callee, .. },
+        ..
+    }) = syntax.nodes.get(source.node.get() as usize)
+    else {
+        return Err("const invocation adjustment belongs to another source operation");
+    };
+    let mut current = facts
+        .node(crate::resolve::unit::NodeKey {
+            node: *callee,
+            ..source
+        })
+        .and_then(|node| node.ty)
+        .ok_or("const invocation adjustment has no typed source callee")?;
+    for _ in 0..retained.dereferences {
+        work.charge(1)?;
+        let Some(Kind::Reference {
+            referent, mutable, ..
+        }) = facts.types.kind(current)
+        else {
+            return Err("const invocation changed its source reference depth");
+        };
+        if retained.kind == Some(crate::support::call_traits::CallTrait::FnMut) && !mutable {
+            return Err("const invocation cannot mutably reborrow a shared reference");
+        }
+        current = referent;
+    }
+    work.charge(1)?;
+    let subject = match retained.borrow {
+        Some(borrow) => match facts.types.kind(borrow) {
+            Some(Kind::Reference { referent, .. }) => referent,
+            _ => return Err("const invocation adjustment lost its final receiver borrow"),
+        },
+        None => retained.receiver,
+    };
+    if current != subject {
+        return Err("const invocation adjustment changed its exact source receiver");
+    }
+    Ok(())
+}
+
 pub(super) struct Bindings {
     types: HashMap<ParameterId, Option<TypeId>>,
 }

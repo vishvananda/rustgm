@@ -1,0 +1,119 @@
+{
+ "schema": 1,
+ "owner": "PA31 borrowed generic const callables",
+ "declared_before_execution": true,
+ "cases": {
+  "direct-mut.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/borrowed-callables/direct-mut.rs"
+  },
+  "field-mut.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/borrowed-callables/field-mut.rs"
+  },
+  "direct-shared.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/borrowed-callables/direct-shared.rs"
+  },
+  "field-shared.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/borrowed-callables/field-shared.rs"
+  },
+  "nested-mut.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/borrowed-callables/nested-mut.rs"
+  },
+  "nested-shared.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/borrowed-callables/nested-shared.rs"
+  },
+  "shared-through-mut.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/borrowed-callables/shared-through-mut.rs"
+  },
+  "plain-bound.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/borrowed-callables/plain-bound.rs"
+  },
+  "shared-cannot-mutate.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/borrowed-callables/shared-cannot-mutate.rs"
+  },
+  "field-cannot-mutate.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/borrowed-callables/field-cannot-mutate.rs"
+  },
+  "once-cannot-move.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/borrowed-callables/once-cannot-move.rs"
+  },
+  "wrong-argument.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/borrowed-callables/wrong-argument.rs"
+  },
+  "native-runtime.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/borrowed-callables/native-runtime.rs",
+   "native_stdout": "41 59\n",
+   "observer": "observe.c"
+  },
+  "native-ctfe.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/borrowed-callables/native-ctfe.rs",
+   "native_stdout": "41 59\n",
+   "observer": "observe.c",
+   "candidate_limit": "Required accepting source CTFE remains at: source const payment currently requires a closed callable signature"
+  },
+  "scaling-8.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/borrowed-callables/scaling-8.rs"
+  },
+  "scaling-32.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/borrowed-callables/scaling-32.rs"
+  },
+  "scaling-128.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/borrowed-callables/scaling-128.rs"
+  },
+  "borrowed-relay.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/borrowed-callables/borrowed-relay.rs"
+  }
+ },
+ "files": {
+  "direct-mut.rs": "d03242070c1fe993f3a7e4c557a9f825bd575928ac425bf24a154f1cdf6c7d7e",
+  "field-mut.rs": "4fa0237c6fbeb977e43c3584a3005369022a24816b5ebe5f5cfaeae0b06c29de",
+  "direct-shared.rs": "069989eeef1003600816fdbdc06052408bd19a2ebffa091e6a68712cf6290d3f",
+  "field-shared.rs": "87882fde36624f1aee0dbdda833e816bd56bc96eba8f207fec251fe853b8e172",
+  "nested-mut.rs": "21aba223d2d8d1a853286a1b6505dc5c30c0ef6dc40e86bf4ade1b6d5bf4ec17",
+  "nested-shared.rs": "a8985a8d530a03e9968715ba7a460972262820c6749763808f8d22e86881bfaa",
+  "shared-through-mut.rs": "feaee49e1b0d2023f1f52df192bd24c9adf1d1400622bb1bc53903ad2f407c96",
+  "plain-bound.rs": "eaa7d7f8bc964742f448440795355dfbada0606e846b27ee3d107ff7e824a562",
+  "shared-cannot-mutate.rs": "f90d401d38c311f44b3906cdbfa7de81332caecbe1af4c4f231aa6221b3c0208",
+  "field-cannot-mutate.rs": "cc2800f55b4e30429b0c34294ceaa2bd2f0c71336fac6ed919556e662e2c9810",
+  "once-cannot-move.rs": "03732b3a531261e3b7c042f0a135af561e7a8897ca745e675ae8db97041b5dac",
+  "wrong-argument.rs": "e1955d7e3e06686d60d67e60129035eeadfdbd3f9370446ce21e29334d961fda",
+  "native-runtime.rs": "439a49cf38c32577187bd94f4cc9ba4d3f0036b4d8a84149cee4abb5cfc22e5d",
+  "native-ctfe.rs": "c3c1f99151af407fe9714a2f641e7c111e25e274cf67d210a519476601b36ccd",
+  "scaling-8.rs": "68bc65ccbb3439cc731f8c8db4d3a70aaebaaa9a421484b026341082d7826d96",
+  "scaling-32.rs": "c025d639a3761addcbabb9680a7469b8ecbdbc3b60636c812f9468acbda113e9",
+  "scaling-128.rs": "4ce218e534b3a3956ebdc7e72c3a3e75cb3ee3126f16788cfe50d396d39d841a",
+  "observe.c": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+  "borrowed-relay.rs": "9edf378f5cf283268758dc7a0913e69e55029fda193e1d8b1b75221dcf1b8924"
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "target": "x86_64-unknown-linux-gnu"
+ },
+ "basis": {
+  "original": "library/core/src/array/drain.rs:76",
+  "core_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "source_role_prefix": "pa31/tests/spec/explicit-call-members/relay.rs",
+  "note": "Reduced borrowed field shape; no copied original FnMut item claimed."
+ }
+}

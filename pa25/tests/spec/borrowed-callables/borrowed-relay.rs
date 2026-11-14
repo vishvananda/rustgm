@@ -1,0 +1,5 @@
+#![feature(const_trait_impl,unboxed_closures,fn_traits)]
+pub struct Relay<'a,F>{pub f:&'a mut F}
+const impl<F:[const]FnMut(u8)->u8>FnOnce<(u8,)> for &mut Relay<'_,F>{type Output=u8;extern "rust-call" fn call_once(mut self,args:(u8,))->u8{self.call_mut(args)}}
+const impl<F:[const]FnMut(u8)->u8>FnMut<(u8,)> for &mut Relay<'_,F>{extern "rust-call" fn call_mut(&mut self,(value,):(u8,))->u8{(self.f)(value)}}
+fn main(){}

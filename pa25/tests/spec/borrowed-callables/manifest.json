@@ -1,0 +1,117 @@
+{
+ "schema": 1,
+ "owner": "PA25 borrowed generic const callables",
+ "declared_before_execution": true,
+ "cases": {
+  "direct-mut.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at const trait owner declaration preparation (borrowed-relay: unsupported active source-core fn_traits feature)"
+  },
+  "field-mut.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at const trait owner declaration preparation (borrowed-relay: unsupported active source-core fn_traits feature)"
+  },
+  "direct-shared.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at const trait owner declaration preparation (borrowed-relay: unsupported active source-core fn_traits feature)"
+  },
+  "field-shared.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at const trait owner declaration preparation (borrowed-relay: unsupported active source-core fn_traits feature)"
+  },
+  "nested-mut.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at const trait owner declaration preparation (borrowed-relay: unsupported active source-core fn_traits feature)"
+  },
+  "nested-shared.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at const trait owner declaration preparation (borrowed-relay: unsupported active source-core fn_traits feature)"
+  },
+  "shared-through-mut.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at const trait owner declaration preparation (borrowed-relay: unsupported active source-core fn_traits feature)"
+  },
+  "plain-bound.rs": {
+   "expected": "reject"
+  },
+  "shared-cannot-mutate.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required ordinary outcome remains unqualified at const trait owner declaration preparation (borrowed-relay: unsupported active source-core fn_traits feature)"
+  },
+  "field-cannot-mutate.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required ordinary outcome remains unqualified at const trait owner declaration preparation (borrowed-relay: unsupported active source-core fn_traits feature)"
+  },
+  "once-cannot-move.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required ordinary outcome remains unqualified at const trait owner declaration preparation (borrowed-relay: unsupported active source-core fn_traits feature)"
+  },
+  "wrong-argument.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required ordinary outcome remains unqualified at const trait owner declaration preparation (borrowed-relay: unsupported active source-core fn_traits feature)"
+  },
+  "native-runtime.rs": {
+   "expected": "accept",
+   "native_stdout": "41 59\n",
+   "observer": "observe.c",
+   "candidate_limit": "Required ordinary outcome remains unqualified at const trait owner declaration preparation (borrowed-relay: unsupported active source-core fn_traits feature)"
+  },
+  "native-ctfe.rs": {
+   "expected": "accept",
+   "native_stdout": "41 59\n",
+   "observer": "observe.c",
+   "candidate_limit": "Required ordinary outcome remains unqualified at const trait owner declaration preparation (borrowed-relay: unsupported active source-core fn_traits feature)"
+  },
+  "scaling-8.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at const trait owner declaration preparation (borrowed-relay: unsupported active source-core fn_traits feature)"
+  },
+  "scaling-32.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at const trait owner declaration preparation (borrowed-relay: unsupported active source-core fn_traits feature)"
+  },
+  "scaling-128.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at const trait owner declaration preparation (borrowed-relay: unsupported active source-core fn_traits feature)"
+  },
+  "borrowed-relay.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at const trait owner declaration preparation (borrowed-relay: unsupported active source-core fn_traits feature)"
+  }
+ },
+ "files": {
+  "direct-mut.rs": "153660a03e73f9bb65ea1c5e1345023053c4323440ac53e69e9a4d41e942d51a",
+  "field-mut.rs": "83fa2ee8a4e9c4e1581b28e00305e4864b8ee006ce544c399cd2cdbfbb4d296d",
+  "direct-shared.rs": "0069b719bbc1e98e85587bfb243d5edf3f85b66f0264f620b4469b76d3ed18c5",
+  "field-shared.rs": "fac9cf51072fbb6919f91791de95e1c55c848429a2615d5a1a236d6704a972f6",
+  "nested-mut.rs": "bf80e4016dc64284bee80e8e7f386facd930f1c69c14ba64a43ac31123617b61",
+  "nested-shared.rs": "5be706c47a0d3b374230415ed13dc6d1dd736873bf9994d9e00caffcb957883f",
+  "shared-through-mut.rs": "9bf93f653180df5a23790e212da2ccb054bb46600c9c84523ba84a6e52a02e8d",
+  "plain-bound.rs": "48c308475a2e549bfacdff09d27c645fcdf11ffc81ab5e60dbc938ff13bc2e76",
+  "shared-cannot-mutate.rs": "d24b934a6001edec9cdff5a9597a24a13d8a1fb90401777888e1c2409f0f462b",
+  "field-cannot-mutate.rs": "c1b494185235d1362f7424dc6e6e71a3cb2c811ba1e90550ca2196bf79a3386d",
+  "once-cannot-move.rs": "5bfb0065af327856149a855cd13c06fe3a3f265d29fe404b327954c56c8c9364",
+  "wrong-argument.rs": "0b71442fe379256c0ace701c9082eb41d0547e8349d5621ee05dc73dca9b8a6a",
+  "native-runtime.rs": "ef36e4b4e614d6db37a91185b083e8c61807b946057d80aa58e15f90dbdfaf0c",
+  "native-ctfe.rs": "86f2543ccbf96528708ace32caa2eef83a4c641453204e4e3e0896e2764cfb8f",
+  "scaling-8.rs": "88053b3c241c50d9a6e496244d74b557c9639d8072c8b0141b6011eea1ea01fb",
+  "scaling-32.rs": "c76fb2b5a6d2d552ad7a6c7ddf8c24a7efcc7001a4b326b4a57620d27aa7e8d8",
+  "scaling-128.rs": "125b90624d0fe04202183ddaaba695cf69de54196c85c87b968ebe4cf3a68a21",
+  "observe.c": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+  "borrowed-relay.rs": "d3f1a5d7c66e2fd812f0ecc6ce361ddcca7f0928e0f655d41b6addc2ab6f9168"
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "target": "x86_64-unknown-linux-gnu"
+ },
+ "basis": {
+  "original": "library/core/src/array/drain.rs:76",
+  "core_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "source_role_prefix": "pa31/tests/spec/explicit-call-members/relay.rs",
+  "note": "Reduced borrowed field shape; no copied original FnMut item claimed."
+ }
+}

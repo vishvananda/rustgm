@@ -121,6 +121,7 @@ pub(super) fn check_calls(
             receivers = Some(receivers::Bindings::new(facts, body, definition, work)?);
         }
         check_invocation(
+            report,
             facts,
             body,
             receivers
@@ -167,6 +168,7 @@ fn defining_owner(
     Ok(definition)
 }
 fn check_invocation(
+    report: Option<&crate::resolve::expansion::Report>,
     facts: &Declarations,
     body: &Body,
     receivers: &receivers::Bindings,
@@ -189,8 +191,14 @@ fn check_invocation(
     else {
         return Err("const invocation changed its operation");
     };
-    let original_receiver =
-        source_receiver(facts, body, statement, (kind, signature, value.ty), work)?;
+    let original_receiver = source_receiver(
+        report,
+        facts,
+        body,
+        statement,
+        (kind, signature, value.ty),
+        work,
+    )?;
     let Some(Kind::Function {
         parameters,
         result,
@@ -241,6 +249,7 @@ fn check_invocation(
 
 /// Source-use authority is checked independently of instantiated operand shape.
 fn source_receiver(
+    report: Option<&crate::resolve::expansion::Report>,
     facts: &Declarations,
     body: &Body,
     statement: &crate::body::ir::Statement,
@@ -269,8 +278,11 @@ fn source_receiver(
         }
         _ => false,
     };
-    if retained.kind != Some(kind) || !borrow_matches || retained.dereferences != 0 {
+    if retained.kind != Some(kind) || !borrow_matches {
         return Err("const invocation differs from its defining call-trait or effect fact");
+    }
+    if retained.dereferences != 0 {
+        receivers::source_adjustment(report, facts, source, *retained, work)?;
     }
     work.charge(1)?;
     let Some(Operation::Call {

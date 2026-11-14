@@ -1,5 +1,37 @@
 # RustGM handoff — 2026-11-14
 
+LATEST CHECKPOINT: borrowed generic const-callable reference adjustments. See
+ docs/pa25-borrowed-callables.md. Production reuses actual source Call/callee and
+walks exactly the retained reference count, charging each step, requiring mutable
+references for FnMut and matching the selected final subject/borrow. All original
+kind/effect/owner/signature/full formal binding/operand/borrow/Code checks stay.
+No dense/cache/wire/backend/storage/quota change; inventory3965.
+
+PA25/31 borrowed-callables each18 predictions13accept5reject, independently Rust
+confirmed.17 source outcomes12accept5reject and one ordinary missing-bound
+rejection qualify. Required source CTFE remains closed-signature payment;17
+ordinary attempts remain unqualified at const-trait declaration prep/fn_traits.
+Borrowed Relay retains actual inherited impl formals and delegation; no exact
+original FnMut item claimed. New native actual field reborrow41/59 plus eight old
+programs pass44.60s; independent Rust CTFE/runtime both41/59. fast2 four exact
+109.58s; fast3 two final exact; all static checks pass. replay all3965/input hashes,
+36 CLI18qualified18explicitunfinished, lowering/scaling1146/1909,4530/6447,
+18066/24575.315harness496roots13bins44stages1component128upstream126Reference.
+Private exact path/depth/borrow/work guard awaits CI(expected3085), no cold local
+harness. Devfast replay CLI4391e4f0…fd27faa9 pinned under borrowed-callables/replay.
+Raw obj/parallel/borrowed-callables/. No speed claim.
+
+NEXT freeze clean candidate36-release after publication, retry genuine original
+v14 core with unchanged722 files/six reviewed pins/120s/14500624work/1GiB attempted/
+64MiB retained, then authenticate artifact postcheck. Core35 failure below should
+clear, but has NOT yet been verified in original. No core artifact exists.
+ONE prior full43652873020 exactead92a4cd is still active in release/course; do not
+duplicate/cancel/restart. Dispatch one new full only after it is terminal. Same
+single worker/B only/main Git-only/2jobs150GiBreserve16GiBcap/frozenbackend17b024f69.
+All wholePA25–44, originalv13/v14 and older positive requirements remain open;
+released113-case component unchanged. This paragraph supersedes prior NEXT work.
+
+
 LATEST genuine original: clean candidate35-release on publishedead92a4cd,
 3965 source hashes/empty patch,7m14s build. CLI
 5c4168411f54c318b60910da625ef6785b0b81f85539684c63706a7acbba994a.
