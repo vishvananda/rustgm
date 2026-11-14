@@ -460,3 +460,10 @@ PA31 sources, high-observation prepared/native programs and original Field
 controls pass with unchanged quotas and source permissions. Private execution
 and a fresh unchanged original-core observation remain due; no whole assignment
 or original library artifact is complete.
+
+The [source unchecked-shift checkpoint](docs/pa31-unchecked-shifts.md) reduces
+release23's genuine usize::unchecked_shl completion failure. All576 constant
+results, nine candidate guards, bounded preparation and five new/old native
+programs pass. A reference f32 ICE remains an infrastructure failure. Final local
+replay/harness/upstream and a new full CI/original-core attempt remain pending;
+no whole assignment or original library artifact is complete.

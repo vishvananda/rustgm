@@ -53,12 +53,14 @@ impl Lower<'_, '_, '_> {
         let (left, right) = (*left, *right);
         if !selected.opened_signature_matches(self.context.types, signature)
             || value.ty != selected.output
-            || [left, right].into_iter().any(|id| {
-                self.body
-                    .values
-                    .get(id.0 as usize)
-                    .is_none_or(|v| v.ty != selected.input)
-            })
+            || [(left, selected.input), (right, selected.rhs)]
+                .into_iter()
+                .any(|(id, ty)| {
+                    self.body
+                        .values
+                        .get(id.0 as usize)
+                        .is_none_or(|v| v.ty != ty)
+                })
             || !matches!(self.value(callee)?, Selected::Item(actual) if actual==self.body.callable_target(instance))
         {
             return Err("source subtraction differs from its actual checked direct call");
@@ -73,6 +75,18 @@ impl Lower<'_, '_, '_> {
         let (signed, _) = primitive
             .integer()
             .ok_or("source subtraction requires an integer")?;
+        if let Some(operator) = crate::sema::compiler_items::unchecked_shift(selected.kind) {
+            let binary = match operator {
+                crate::lex::token::Punctuation::ShiftLeft => Binary::Shl,
+                _ if signed => Binary::Shr,
+                _ => Binary::Ushr,
+            };
+            let right = super::casts::integer(&mut self.builder, right, left.ty, false)?;
+            return self
+                .builder
+                .binary(binary, left, right)
+                .map(|result| Some(Selected::Runtime(result)));
+        }
         if selected.kind == crate::support::bindings::SourceIntrinsic::UncheckedSub {
             return self
                 .builder

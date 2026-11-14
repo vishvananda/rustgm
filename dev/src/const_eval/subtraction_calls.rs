@@ -54,11 +54,10 @@ impl Machine<'_, '_> {
         else {
             return Err("source subtraction requires two evaluated arguments".into());
         };
-        if [left, right].into_iter().any(|id| {
-            body.values
-                .get(id.0 as usize)
-                .is_none_or(|v| v.ty != selected.input)
-        }) {
+        if [(*left, selected.input), (*right, selected.rhs)]
+            .into_iter()
+            .any(|(id, ty)| body.values.get(id.0 as usize).is_none_or(|v| v.ty != ty))
+        {
             return Err("source subtraction changed its actual argument types".into());
         }
         let (left, right) = (Self::value(frame, *left)?, Self::value(frame, *right)?);
@@ -72,6 +71,11 @@ impl Machine<'_, '_> {
         left: Constant,
         right: Constant,
     ) -> Result<Constant, Failure> {
+        if let Some(operator) = crate::sema::compiler_items::unchecked_shift(selected.kind) {
+            return self
+                .evaluator
+                .binary(operator, selected.input, left, right, Overflow::Checked);
+        }
         if let Some(operator) = crate::sema::compiler_items::wrapping_operator(selected.kind) {
             return self.evaluator.binary(
                 operator,

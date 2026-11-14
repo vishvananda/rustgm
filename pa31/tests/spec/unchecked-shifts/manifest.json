@@ -1,0 +1,5320 @@
+{
+ "declaration": "Before first execution: matrix and actual source wrapper accept; all named count/type/safety/const/prototype opponents reject. Independent finite integer shift bits follow exact left width, signed right semantics and complete RHS range. Native wrapper output9223372036854775808. A same-name ordinary function returns99 without intrinsic authority. No quota or source permission changes. Runtime unsafe out-of-range operations are not executed.",
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true
+ },
+ "source_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+ "originals": {
+  "original/intrinsics.rs": {
+   "sha256": "30336944d006e837a740f9a7a2df355567b71f41eb53eb5bda8e3c928e52b310",
+   "source": "library/core/src/intrinsics/mod.rs",
+   "whole_sha256": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3"
+  },
+  "original/unsigned-shl.rs": {
+   "sha256": "e82305f754101f3ba004419787aa0dffde266aed164a683f92a33a9114bce01a",
+   "source": "library/core/src/num/uint_macros.rs",
+   "whole_sha256": "32c5b549de1e056fd21ced3568e4e576b9f0ac39fe6963c2344f8a56194524de"
+  }
+ },
+ "foundation": {
+  "sha256": "42d9b888ca062b8079c86ecd1bb8c9dc412984c87fd7862dbb17cb354ecc0b73",
+  "from": "pa28/tests/spec/multiply-overflow/native.rs unchanged prefix"
+ },
+ "cases": {
+  "matrix": {
+   "expected": "accept",
+   "sha256": "7fdd33719f83a20054a01a6522a076b2b0df4793f9892276bd7cf2f85223bbb9"
+  },
+  "actual-wrapper": {
+   "expected": "accept",
+   "sha256": "c625cc4ffd5b68ae71af4b9983e689bcfdf9d62df4e35e652d9e1f0867d29212"
+  },
+  "ordinary": {
+   "expected": "accept",
+   "sha256": "d787742e35978f64ac38d76c2d25bccb1d6f75c875059860c597f53195b45866"
+  },
+  "negative-count": {
+   "expected": "reject",
+   "sha256": "0e5cccfa5efb6a533fe81bf414df255f51022d8069cd2ff2eedc6a3a55863643"
+  },
+  "equal-width": {
+   "expected": "reject",
+   "sha256": "39ebbb63209c1a0f9a60d9668e25b19758f553bb26ae3ee9720b7ee9ffa89ddb"
+  },
+  "wide-count": {
+   "expected": "reject",
+   "sha256": "707037a691ffa2776b87a6501d555829cf002e5c1ac3b40af2b78dee478b2bc0"
+  },
+  "noninteger": {
+   "expected": "reject",
+   "sha256": "797dfd04c1761d283674cfbf54e4b9724654917d5b0a36e87aa9f2140fb51091",
+   "reference_status": "Rust1.98 ICE101 in both CTFE and reached runtime forms. Infrastructure failure retained under oracle1/oracle2, not a semantic rejection or a passing reference result. Candidate must reject the invalid scalar."
+  },
+  "unsafe-call": {
+   "expected": "reject",
+   "sha256": "c70e35ea947486f16e5d027e4d5ffd1a7b32dcf20cff91fbce5d876e1976ac97"
+  },
+  "missing-copy": {
+   "expected": "reject",
+   "sha256": "629ee86f949384ed8d8510ec3c9e5f4c6f0b0571c9cdb6c617b19b3e2216f109"
+  },
+  "nonconst-call": {
+   "expected": "reject",
+   "sha256": "ba610504130ddabc26af7b67078fa16f632736bc3c6d8f60a117fc50158511dc"
+  },
+  "wrong-safety": {
+   "expected": "reject",
+   "sha256": "1ece0ecd5386411b9f54a07836c55c7e572ff36d7c07bbd6c84fc96ea170c80d"
+  },
+  "wrong-result": {
+   "expected": "reject",
+   "sha256": "e28ab3fe8048b108e1d4d3cd9860b4c17b0b89e917678f95d296d7a8c2cdeacf"
+  },
+  "scaling-8": {
+   "expected": "accept",
+   "sha256": "35e4a6008291d6297e7c7af5523528b5cec6a5e9c59dce06322bba5d93d6a019"
+  },
+  "scaling-32": {
+   "expected": "accept",
+   "sha256": "26abcbc853f89e12ece71b374353a4279be4d42aaca614958801757f85d7bc6d"
+  },
+  "scaling-128": {
+   "expected": "accept",
+   "sha256": "0a8fe007c15f7e533c331f46d936254c3bdf3f0131a4f92cd3642700ca4dd594"
+  },
+  "runtime": {
+   "expected": "accept",
+   "sha256": "23e9405a3f162a0946268c94e4ba3cf87e0b65eb3b3e3ecab3e40cec9c1d25db",
+   "native_stdout": "80 ff 80000000000000000000000000000000 ffffffffffffffffffffffffffffffff ffffffffffffffff 8000000000000000\n",
+   "declaration": "Before first execution: six actual unsafe shift calls, mixed integer RHS widths, signed right extension and128-bit runtime results. No invalid runtime shift is executed."
+  }
+ },
+ "values": [
+  {
+   "name": "V0",
+   "type": "u8",
+   "rhs": "u8",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V1",
+   "type": "u8",
+   "rhs": "u8",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "128"
+  },
+  {
+   "name": "V2",
+   "type": "u8",
+   "rhs": "u8",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V3",
+   "type": "u8",
+   "rhs": "u8",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "1"
+  },
+  {
+   "name": "V4",
+   "type": "u8",
+   "rhs": "u16",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V5",
+   "type": "u8",
+   "rhs": "u16",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "128"
+  },
+  {
+   "name": "V6",
+   "type": "u8",
+   "rhs": "u16",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V7",
+   "type": "u8",
+   "rhs": "u16",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "1"
+  },
+  {
+   "name": "V8",
+   "type": "u8",
+   "rhs": "u32",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V9",
+   "type": "u8",
+   "rhs": "u32",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "128"
+  },
+  {
+   "name": "V10",
+   "type": "u8",
+   "rhs": "u32",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V11",
+   "type": "u8",
+   "rhs": "u32",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "1"
+  },
+  {
+   "name": "V12",
+   "type": "u8",
+   "rhs": "u64",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V13",
+   "type": "u8",
+   "rhs": "u64",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "128"
+  },
+  {
+   "name": "V14",
+   "type": "u8",
+   "rhs": "u64",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V15",
+   "type": "u8",
+   "rhs": "u64",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "1"
+  },
+  {
+   "name": "V16",
+   "type": "u8",
+   "rhs": "u128",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V17",
+   "type": "u8",
+   "rhs": "u128",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "128"
+  },
+  {
+   "name": "V18",
+   "type": "u8",
+   "rhs": "u128",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V19",
+   "type": "u8",
+   "rhs": "u128",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "1"
+  },
+  {
+   "name": "V20",
+   "type": "u8",
+   "rhs": "usize",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V21",
+   "type": "u8",
+   "rhs": "usize",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "128"
+  },
+  {
+   "name": "V22",
+   "type": "u8",
+   "rhs": "usize",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V23",
+   "type": "u8",
+   "rhs": "usize",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "1"
+  },
+  {
+   "name": "V24",
+   "type": "u8",
+   "rhs": "i8",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V25",
+   "type": "u8",
+   "rhs": "i8",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "128"
+  },
+  {
+   "name": "V26",
+   "type": "u8",
+   "rhs": "i8",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V27",
+   "type": "u8",
+   "rhs": "i8",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "1"
+  },
+  {
+   "name": "V28",
+   "type": "u8",
+   "rhs": "i16",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V29",
+   "type": "u8",
+   "rhs": "i16",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "128"
+  },
+  {
+   "name": "V30",
+   "type": "u8",
+   "rhs": "i16",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V31",
+   "type": "u8",
+   "rhs": "i16",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "1"
+  },
+  {
+   "name": "V32",
+   "type": "u8",
+   "rhs": "i32",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V33",
+   "type": "u8",
+   "rhs": "i32",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "128"
+  },
+  {
+   "name": "V34",
+   "type": "u8",
+   "rhs": "i32",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V35",
+   "type": "u8",
+   "rhs": "i32",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "1"
+  },
+  {
+   "name": "V36",
+   "type": "u8",
+   "rhs": "i64",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V37",
+   "type": "u8",
+   "rhs": "i64",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "128"
+  },
+  {
+   "name": "V38",
+   "type": "u8",
+   "rhs": "i64",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V39",
+   "type": "u8",
+   "rhs": "i64",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "1"
+  },
+  {
+   "name": "V40",
+   "type": "u8",
+   "rhs": "i128",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V41",
+   "type": "u8",
+   "rhs": "i128",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "128"
+  },
+  {
+   "name": "V42",
+   "type": "u8",
+   "rhs": "i128",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V43",
+   "type": "u8",
+   "rhs": "i128",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "1"
+  },
+  {
+   "name": "V44",
+   "type": "u8",
+   "rhs": "isize",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V45",
+   "type": "u8",
+   "rhs": "isize",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "128"
+  },
+  {
+   "name": "V46",
+   "type": "u8",
+   "rhs": "isize",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "131"
+  },
+  {
+   "name": "V47",
+   "type": "u8",
+   "rhs": "isize",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "1"
+  },
+  {
+   "name": "V48",
+   "type": "u16",
+   "rhs": "u8",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V49",
+   "type": "u16",
+   "rhs": "u8",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "32768"
+  },
+  {
+   "name": "V50",
+   "type": "u16",
+   "rhs": "u8",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V51",
+   "type": "u16",
+   "rhs": "u8",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "1"
+  },
+  {
+   "name": "V52",
+   "type": "u16",
+   "rhs": "u16",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V53",
+   "type": "u16",
+   "rhs": "u16",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "32768"
+  },
+  {
+   "name": "V54",
+   "type": "u16",
+   "rhs": "u16",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V55",
+   "type": "u16",
+   "rhs": "u16",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "1"
+  },
+  {
+   "name": "V56",
+   "type": "u16",
+   "rhs": "u32",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V57",
+   "type": "u16",
+   "rhs": "u32",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "32768"
+  },
+  {
+   "name": "V58",
+   "type": "u16",
+   "rhs": "u32",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V59",
+   "type": "u16",
+   "rhs": "u32",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "1"
+  },
+  {
+   "name": "V60",
+   "type": "u16",
+   "rhs": "u64",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V61",
+   "type": "u16",
+   "rhs": "u64",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "32768"
+  },
+  {
+   "name": "V62",
+   "type": "u16",
+   "rhs": "u64",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V63",
+   "type": "u16",
+   "rhs": "u64",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "1"
+  },
+  {
+   "name": "V64",
+   "type": "u16",
+   "rhs": "u128",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V65",
+   "type": "u16",
+   "rhs": "u128",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "32768"
+  },
+  {
+   "name": "V66",
+   "type": "u16",
+   "rhs": "u128",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V67",
+   "type": "u16",
+   "rhs": "u128",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "1"
+  },
+  {
+   "name": "V68",
+   "type": "u16",
+   "rhs": "usize",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V69",
+   "type": "u16",
+   "rhs": "usize",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "32768"
+  },
+  {
+   "name": "V70",
+   "type": "u16",
+   "rhs": "usize",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V71",
+   "type": "u16",
+   "rhs": "usize",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "1"
+  },
+  {
+   "name": "V72",
+   "type": "u16",
+   "rhs": "i8",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V73",
+   "type": "u16",
+   "rhs": "i8",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "32768"
+  },
+  {
+   "name": "V74",
+   "type": "u16",
+   "rhs": "i8",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V75",
+   "type": "u16",
+   "rhs": "i8",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "1"
+  },
+  {
+   "name": "V76",
+   "type": "u16",
+   "rhs": "i16",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V77",
+   "type": "u16",
+   "rhs": "i16",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "32768"
+  },
+  {
+   "name": "V78",
+   "type": "u16",
+   "rhs": "i16",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V79",
+   "type": "u16",
+   "rhs": "i16",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "1"
+  },
+  {
+   "name": "V80",
+   "type": "u16",
+   "rhs": "i32",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V81",
+   "type": "u16",
+   "rhs": "i32",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "32768"
+  },
+  {
+   "name": "V82",
+   "type": "u16",
+   "rhs": "i32",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V83",
+   "type": "u16",
+   "rhs": "i32",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "1"
+  },
+  {
+   "name": "V84",
+   "type": "u16",
+   "rhs": "i64",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V85",
+   "type": "u16",
+   "rhs": "i64",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "32768"
+  },
+  {
+   "name": "V86",
+   "type": "u16",
+   "rhs": "i64",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V87",
+   "type": "u16",
+   "rhs": "i64",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "1"
+  },
+  {
+   "name": "V88",
+   "type": "u16",
+   "rhs": "i128",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V89",
+   "type": "u16",
+   "rhs": "i128",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "32768"
+  },
+  {
+   "name": "V90",
+   "type": "u16",
+   "rhs": "i128",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V91",
+   "type": "u16",
+   "rhs": "i128",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "1"
+  },
+  {
+   "name": "V92",
+   "type": "u16",
+   "rhs": "isize",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V93",
+   "type": "u16",
+   "rhs": "isize",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "32768"
+  },
+  {
+   "name": "V94",
+   "type": "u16",
+   "rhs": "isize",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "32771"
+  },
+  {
+   "name": "V95",
+   "type": "u16",
+   "rhs": "isize",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "1"
+  },
+  {
+   "name": "V96",
+   "type": "u32",
+   "rhs": "u8",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V97",
+   "type": "u32",
+   "rhs": "u8",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "2147483648"
+  },
+  {
+   "name": "V98",
+   "type": "u32",
+   "rhs": "u8",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V99",
+   "type": "u32",
+   "rhs": "u8",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "1"
+  },
+  {
+   "name": "V100",
+   "type": "u32",
+   "rhs": "u16",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V101",
+   "type": "u32",
+   "rhs": "u16",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "2147483648"
+  },
+  {
+   "name": "V102",
+   "type": "u32",
+   "rhs": "u16",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V103",
+   "type": "u32",
+   "rhs": "u16",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "1"
+  },
+  {
+   "name": "V104",
+   "type": "u32",
+   "rhs": "u32",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V105",
+   "type": "u32",
+   "rhs": "u32",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "2147483648"
+  },
+  {
+   "name": "V106",
+   "type": "u32",
+   "rhs": "u32",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V107",
+   "type": "u32",
+   "rhs": "u32",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "1"
+  },
+  {
+   "name": "V108",
+   "type": "u32",
+   "rhs": "u64",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V109",
+   "type": "u32",
+   "rhs": "u64",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "2147483648"
+  },
+  {
+   "name": "V110",
+   "type": "u32",
+   "rhs": "u64",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V111",
+   "type": "u32",
+   "rhs": "u64",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "1"
+  },
+  {
+   "name": "V112",
+   "type": "u32",
+   "rhs": "u128",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V113",
+   "type": "u32",
+   "rhs": "u128",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "2147483648"
+  },
+  {
+   "name": "V114",
+   "type": "u32",
+   "rhs": "u128",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V115",
+   "type": "u32",
+   "rhs": "u128",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "1"
+  },
+  {
+   "name": "V116",
+   "type": "u32",
+   "rhs": "usize",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V117",
+   "type": "u32",
+   "rhs": "usize",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "2147483648"
+  },
+  {
+   "name": "V118",
+   "type": "u32",
+   "rhs": "usize",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V119",
+   "type": "u32",
+   "rhs": "usize",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "1"
+  },
+  {
+   "name": "V120",
+   "type": "u32",
+   "rhs": "i8",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V121",
+   "type": "u32",
+   "rhs": "i8",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "2147483648"
+  },
+  {
+   "name": "V122",
+   "type": "u32",
+   "rhs": "i8",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V123",
+   "type": "u32",
+   "rhs": "i8",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "1"
+  },
+  {
+   "name": "V124",
+   "type": "u32",
+   "rhs": "i16",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V125",
+   "type": "u32",
+   "rhs": "i16",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "2147483648"
+  },
+  {
+   "name": "V126",
+   "type": "u32",
+   "rhs": "i16",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V127",
+   "type": "u32",
+   "rhs": "i16",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "1"
+  },
+  {
+   "name": "V128",
+   "type": "u32",
+   "rhs": "i32",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V129",
+   "type": "u32",
+   "rhs": "i32",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "2147483648"
+  },
+  {
+   "name": "V130",
+   "type": "u32",
+   "rhs": "i32",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V131",
+   "type": "u32",
+   "rhs": "i32",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "1"
+  },
+  {
+   "name": "V132",
+   "type": "u32",
+   "rhs": "i64",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V133",
+   "type": "u32",
+   "rhs": "i64",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "2147483648"
+  },
+  {
+   "name": "V134",
+   "type": "u32",
+   "rhs": "i64",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V135",
+   "type": "u32",
+   "rhs": "i64",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "1"
+  },
+  {
+   "name": "V136",
+   "type": "u32",
+   "rhs": "i128",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V137",
+   "type": "u32",
+   "rhs": "i128",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "2147483648"
+  },
+  {
+   "name": "V138",
+   "type": "u32",
+   "rhs": "i128",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V139",
+   "type": "u32",
+   "rhs": "i128",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "1"
+  },
+  {
+   "name": "V140",
+   "type": "u32",
+   "rhs": "isize",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V141",
+   "type": "u32",
+   "rhs": "isize",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "2147483648"
+  },
+  {
+   "name": "V142",
+   "type": "u32",
+   "rhs": "isize",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "2147483651"
+  },
+  {
+   "name": "V143",
+   "type": "u32",
+   "rhs": "isize",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "1"
+  },
+  {
+   "name": "V144",
+   "type": "u64",
+   "rhs": "u8",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V145",
+   "type": "u64",
+   "rhs": "u8",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V146",
+   "type": "u64",
+   "rhs": "u8",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V147",
+   "type": "u64",
+   "rhs": "u8",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V148",
+   "type": "u64",
+   "rhs": "u16",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V149",
+   "type": "u64",
+   "rhs": "u16",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V150",
+   "type": "u64",
+   "rhs": "u16",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V151",
+   "type": "u64",
+   "rhs": "u16",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V152",
+   "type": "u64",
+   "rhs": "u32",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V153",
+   "type": "u64",
+   "rhs": "u32",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V154",
+   "type": "u64",
+   "rhs": "u32",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V155",
+   "type": "u64",
+   "rhs": "u32",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V156",
+   "type": "u64",
+   "rhs": "u64",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V157",
+   "type": "u64",
+   "rhs": "u64",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V158",
+   "type": "u64",
+   "rhs": "u64",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V159",
+   "type": "u64",
+   "rhs": "u64",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V160",
+   "type": "u64",
+   "rhs": "u128",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V161",
+   "type": "u64",
+   "rhs": "u128",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V162",
+   "type": "u64",
+   "rhs": "u128",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V163",
+   "type": "u64",
+   "rhs": "u128",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V164",
+   "type": "u64",
+   "rhs": "usize",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V165",
+   "type": "u64",
+   "rhs": "usize",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V166",
+   "type": "u64",
+   "rhs": "usize",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V167",
+   "type": "u64",
+   "rhs": "usize",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V168",
+   "type": "u64",
+   "rhs": "i8",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V169",
+   "type": "u64",
+   "rhs": "i8",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V170",
+   "type": "u64",
+   "rhs": "i8",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V171",
+   "type": "u64",
+   "rhs": "i8",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V172",
+   "type": "u64",
+   "rhs": "i16",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V173",
+   "type": "u64",
+   "rhs": "i16",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V174",
+   "type": "u64",
+   "rhs": "i16",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V175",
+   "type": "u64",
+   "rhs": "i16",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V176",
+   "type": "u64",
+   "rhs": "i32",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V177",
+   "type": "u64",
+   "rhs": "i32",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V178",
+   "type": "u64",
+   "rhs": "i32",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V179",
+   "type": "u64",
+   "rhs": "i32",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V180",
+   "type": "u64",
+   "rhs": "i64",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V181",
+   "type": "u64",
+   "rhs": "i64",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V182",
+   "type": "u64",
+   "rhs": "i64",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V183",
+   "type": "u64",
+   "rhs": "i64",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V184",
+   "type": "u64",
+   "rhs": "i128",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V185",
+   "type": "u64",
+   "rhs": "i128",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V186",
+   "type": "u64",
+   "rhs": "i128",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V187",
+   "type": "u64",
+   "rhs": "i128",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V188",
+   "type": "u64",
+   "rhs": "isize",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V189",
+   "type": "u64",
+   "rhs": "isize",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V190",
+   "type": "u64",
+   "rhs": "isize",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V191",
+   "type": "u64",
+   "rhs": "isize",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V192",
+   "type": "u128",
+   "rhs": "u8",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V193",
+   "type": "u128",
+   "rhs": "u8",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "170141183460469231731687303715884105728"
+  },
+  {
+   "name": "V194",
+   "type": "u128",
+   "rhs": "u8",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V195",
+   "type": "u128",
+   "rhs": "u8",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "1"
+  },
+  {
+   "name": "V196",
+   "type": "u128",
+   "rhs": "u16",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V197",
+   "type": "u128",
+   "rhs": "u16",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "170141183460469231731687303715884105728"
+  },
+  {
+   "name": "V198",
+   "type": "u128",
+   "rhs": "u16",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V199",
+   "type": "u128",
+   "rhs": "u16",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "1"
+  },
+  {
+   "name": "V200",
+   "type": "u128",
+   "rhs": "u32",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V201",
+   "type": "u128",
+   "rhs": "u32",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "170141183460469231731687303715884105728"
+  },
+  {
+   "name": "V202",
+   "type": "u128",
+   "rhs": "u32",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V203",
+   "type": "u128",
+   "rhs": "u32",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "1"
+  },
+  {
+   "name": "V204",
+   "type": "u128",
+   "rhs": "u64",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V205",
+   "type": "u128",
+   "rhs": "u64",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "170141183460469231731687303715884105728"
+  },
+  {
+   "name": "V206",
+   "type": "u128",
+   "rhs": "u64",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V207",
+   "type": "u128",
+   "rhs": "u64",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "1"
+  },
+  {
+   "name": "V208",
+   "type": "u128",
+   "rhs": "u128",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V209",
+   "type": "u128",
+   "rhs": "u128",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "170141183460469231731687303715884105728"
+  },
+  {
+   "name": "V210",
+   "type": "u128",
+   "rhs": "u128",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V211",
+   "type": "u128",
+   "rhs": "u128",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "1"
+  },
+  {
+   "name": "V212",
+   "type": "u128",
+   "rhs": "usize",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V213",
+   "type": "u128",
+   "rhs": "usize",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "170141183460469231731687303715884105728"
+  },
+  {
+   "name": "V214",
+   "type": "u128",
+   "rhs": "usize",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V215",
+   "type": "u128",
+   "rhs": "usize",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "1"
+  },
+  {
+   "name": "V216",
+   "type": "u128",
+   "rhs": "i8",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V217",
+   "type": "u128",
+   "rhs": "i8",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "170141183460469231731687303715884105728"
+  },
+  {
+   "name": "V218",
+   "type": "u128",
+   "rhs": "i8",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V219",
+   "type": "u128",
+   "rhs": "i8",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "1"
+  },
+  {
+   "name": "V220",
+   "type": "u128",
+   "rhs": "i16",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V221",
+   "type": "u128",
+   "rhs": "i16",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "170141183460469231731687303715884105728"
+  },
+  {
+   "name": "V222",
+   "type": "u128",
+   "rhs": "i16",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V223",
+   "type": "u128",
+   "rhs": "i16",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "1"
+  },
+  {
+   "name": "V224",
+   "type": "u128",
+   "rhs": "i32",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V225",
+   "type": "u128",
+   "rhs": "i32",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "170141183460469231731687303715884105728"
+  },
+  {
+   "name": "V226",
+   "type": "u128",
+   "rhs": "i32",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V227",
+   "type": "u128",
+   "rhs": "i32",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "1"
+  },
+  {
+   "name": "V228",
+   "type": "u128",
+   "rhs": "i64",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V229",
+   "type": "u128",
+   "rhs": "i64",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "170141183460469231731687303715884105728"
+  },
+  {
+   "name": "V230",
+   "type": "u128",
+   "rhs": "i64",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V231",
+   "type": "u128",
+   "rhs": "i64",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "1"
+  },
+  {
+   "name": "V232",
+   "type": "u128",
+   "rhs": "i128",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V233",
+   "type": "u128",
+   "rhs": "i128",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "170141183460469231731687303715884105728"
+  },
+  {
+   "name": "V234",
+   "type": "u128",
+   "rhs": "i128",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V235",
+   "type": "u128",
+   "rhs": "i128",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "1"
+  },
+  {
+   "name": "V236",
+   "type": "u128",
+   "rhs": "isize",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V237",
+   "type": "u128",
+   "rhs": "isize",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "170141183460469231731687303715884105728"
+  },
+  {
+   "name": "V238",
+   "type": "u128",
+   "rhs": "isize",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "170141183460469231731687303715884105731"
+  },
+  {
+   "name": "V239",
+   "type": "u128",
+   "rhs": "isize",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "1"
+  },
+  {
+   "name": "V240",
+   "type": "usize",
+   "rhs": "u8",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V241",
+   "type": "usize",
+   "rhs": "u8",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V242",
+   "type": "usize",
+   "rhs": "u8",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V243",
+   "type": "usize",
+   "rhs": "u8",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V244",
+   "type": "usize",
+   "rhs": "u16",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V245",
+   "type": "usize",
+   "rhs": "u16",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V246",
+   "type": "usize",
+   "rhs": "u16",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V247",
+   "type": "usize",
+   "rhs": "u16",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V248",
+   "type": "usize",
+   "rhs": "u32",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V249",
+   "type": "usize",
+   "rhs": "u32",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V250",
+   "type": "usize",
+   "rhs": "u32",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V251",
+   "type": "usize",
+   "rhs": "u32",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V252",
+   "type": "usize",
+   "rhs": "u64",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V253",
+   "type": "usize",
+   "rhs": "u64",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V254",
+   "type": "usize",
+   "rhs": "u64",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V255",
+   "type": "usize",
+   "rhs": "u64",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V256",
+   "type": "usize",
+   "rhs": "u128",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V257",
+   "type": "usize",
+   "rhs": "u128",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V258",
+   "type": "usize",
+   "rhs": "u128",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V259",
+   "type": "usize",
+   "rhs": "u128",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V260",
+   "type": "usize",
+   "rhs": "usize",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V261",
+   "type": "usize",
+   "rhs": "usize",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V262",
+   "type": "usize",
+   "rhs": "usize",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V263",
+   "type": "usize",
+   "rhs": "usize",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V264",
+   "type": "usize",
+   "rhs": "i8",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V265",
+   "type": "usize",
+   "rhs": "i8",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V266",
+   "type": "usize",
+   "rhs": "i8",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V267",
+   "type": "usize",
+   "rhs": "i8",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V268",
+   "type": "usize",
+   "rhs": "i16",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V269",
+   "type": "usize",
+   "rhs": "i16",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V270",
+   "type": "usize",
+   "rhs": "i16",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V271",
+   "type": "usize",
+   "rhs": "i16",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V272",
+   "type": "usize",
+   "rhs": "i32",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V273",
+   "type": "usize",
+   "rhs": "i32",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V274",
+   "type": "usize",
+   "rhs": "i32",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V275",
+   "type": "usize",
+   "rhs": "i32",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V276",
+   "type": "usize",
+   "rhs": "i64",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V277",
+   "type": "usize",
+   "rhs": "i64",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V278",
+   "type": "usize",
+   "rhs": "i64",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V279",
+   "type": "usize",
+   "rhs": "i64",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V280",
+   "type": "usize",
+   "rhs": "i128",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V281",
+   "type": "usize",
+   "rhs": "i128",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V282",
+   "type": "usize",
+   "rhs": "i128",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V283",
+   "type": "usize",
+   "rhs": "i128",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V284",
+   "type": "usize",
+   "rhs": "isize",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V285",
+   "type": "usize",
+   "rhs": "isize",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "9223372036854775808"
+  },
+  {
+   "name": "V286",
+   "type": "usize",
+   "rhs": "isize",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "9223372036854775811"
+  },
+  {
+   "name": "V287",
+   "type": "usize",
+   "rhs": "isize",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "1"
+  },
+  {
+   "name": "V288",
+   "type": "i8",
+   "rhs": "u8",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V289",
+   "type": "i8",
+   "rhs": "u8",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "0"
+  },
+  {
+   "name": "V290",
+   "type": "i8",
+   "rhs": "u8",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V291",
+   "type": "i8",
+   "rhs": "u8",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "255"
+  },
+  {
+   "name": "V292",
+   "type": "i8",
+   "rhs": "u16",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V293",
+   "type": "i8",
+   "rhs": "u16",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "0"
+  },
+  {
+   "name": "V294",
+   "type": "i8",
+   "rhs": "u16",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V295",
+   "type": "i8",
+   "rhs": "u16",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "255"
+  },
+  {
+   "name": "V296",
+   "type": "i8",
+   "rhs": "u32",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V297",
+   "type": "i8",
+   "rhs": "u32",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "0"
+  },
+  {
+   "name": "V298",
+   "type": "i8",
+   "rhs": "u32",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V299",
+   "type": "i8",
+   "rhs": "u32",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "255"
+  },
+  {
+   "name": "V300",
+   "type": "i8",
+   "rhs": "u64",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V301",
+   "type": "i8",
+   "rhs": "u64",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "0"
+  },
+  {
+   "name": "V302",
+   "type": "i8",
+   "rhs": "u64",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V303",
+   "type": "i8",
+   "rhs": "u64",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "255"
+  },
+  {
+   "name": "V304",
+   "type": "i8",
+   "rhs": "u128",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V305",
+   "type": "i8",
+   "rhs": "u128",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "0"
+  },
+  {
+   "name": "V306",
+   "type": "i8",
+   "rhs": "u128",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V307",
+   "type": "i8",
+   "rhs": "u128",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "255"
+  },
+  {
+   "name": "V308",
+   "type": "i8",
+   "rhs": "usize",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V309",
+   "type": "i8",
+   "rhs": "usize",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "0"
+  },
+  {
+   "name": "V310",
+   "type": "i8",
+   "rhs": "usize",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V311",
+   "type": "i8",
+   "rhs": "usize",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "255"
+  },
+  {
+   "name": "V312",
+   "type": "i8",
+   "rhs": "i8",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V313",
+   "type": "i8",
+   "rhs": "i8",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "0"
+  },
+  {
+   "name": "V314",
+   "type": "i8",
+   "rhs": "i8",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V315",
+   "type": "i8",
+   "rhs": "i8",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "255"
+  },
+  {
+   "name": "V316",
+   "type": "i8",
+   "rhs": "i16",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V317",
+   "type": "i8",
+   "rhs": "i16",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "0"
+  },
+  {
+   "name": "V318",
+   "type": "i8",
+   "rhs": "i16",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V319",
+   "type": "i8",
+   "rhs": "i16",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "255"
+  },
+  {
+   "name": "V320",
+   "type": "i8",
+   "rhs": "i32",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V321",
+   "type": "i8",
+   "rhs": "i32",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "0"
+  },
+  {
+   "name": "V322",
+   "type": "i8",
+   "rhs": "i32",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V323",
+   "type": "i8",
+   "rhs": "i32",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "255"
+  },
+  {
+   "name": "V324",
+   "type": "i8",
+   "rhs": "i64",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V325",
+   "type": "i8",
+   "rhs": "i64",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "0"
+  },
+  {
+   "name": "V326",
+   "type": "i8",
+   "rhs": "i64",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V327",
+   "type": "i8",
+   "rhs": "i64",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "255"
+  },
+  {
+   "name": "V328",
+   "type": "i8",
+   "rhs": "i128",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V329",
+   "type": "i8",
+   "rhs": "i128",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "0"
+  },
+  {
+   "name": "V330",
+   "type": "i8",
+   "rhs": "i128",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V331",
+   "type": "i8",
+   "rhs": "i128",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "255"
+  },
+  {
+   "name": "V332",
+   "type": "i8",
+   "rhs": "isize",
+   "width": 8,
+   "operator": "shl",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V333",
+   "type": "i8",
+   "rhs": "isize",
+   "width": 8,
+   "operator": "shl",
+   "count": 7,
+   "bits": "0"
+  },
+  {
+   "name": "V334",
+   "type": "i8",
+   "rhs": "isize",
+   "width": 8,
+   "operator": "shr",
+   "count": 0,
+   "bits": "254"
+  },
+  {
+   "name": "V335",
+   "type": "i8",
+   "rhs": "isize",
+   "width": 8,
+   "operator": "shr",
+   "count": 7,
+   "bits": "255"
+  },
+  {
+   "name": "V336",
+   "type": "i16",
+   "rhs": "u8",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V337",
+   "type": "i16",
+   "rhs": "u8",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "0"
+  },
+  {
+   "name": "V338",
+   "type": "i16",
+   "rhs": "u8",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V339",
+   "type": "i16",
+   "rhs": "u8",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "65535"
+  },
+  {
+   "name": "V340",
+   "type": "i16",
+   "rhs": "u16",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V341",
+   "type": "i16",
+   "rhs": "u16",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "0"
+  },
+  {
+   "name": "V342",
+   "type": "i16",
+   "rhs": "u16",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V343",
+   "type": "i16",
+   "rhs": "u16",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "65535"
+  },
+  {
+   "name": "V344",
+   "type": "i16",
+   "rhs": "u32",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V345",
+   "type": "i16",
+   "rhs": "u32",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "0"
+  },
+  {
+   "name": "V346",
+   "type": "i16",
+   "rhs": "u32",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V347",
+   "type": "i16",
+   "rhs": "u32",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "65535"
+  },
+  {
+   "name": "V348",
+   "type": "i16",
+   "rhs": "u64",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V349",
+   "type": "i16",
+   "rhs": "u64",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "0"
+  },
+  {
+   "name": "V350",
+   "type": "i16",
+   "rhs": "u64",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V351",
+   "type": "i16",
+   "rhs": "u64",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "65535"
+  },
+  {
+   "name": "V352",
+   "type": "i16",
+   "rhs": "u128",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V353",
+   "type": "i16",
+   "rhs": "u128",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "0"
+  },
+  {
+   "name": "V354",
+   "type": "i16",
+   "rhs": "u128",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V355",
+   "type": "i16",
+   "rhs": "u128",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "65535"
+  },
+  {
+   "name": "V356",
+   "type": "i16",
+   "rhs": "usize",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V357",
+   "type": "i16",
+   "rhs": "usize",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "0"
+  },
+  {
+   "name": "V358",
+   "type": "i16",
+   "rhs": "usize",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V359",
+   "type": "i16",
+   "rhs": "usize",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "65535"
+  },
+  {
+   "name": "V360",
+   "type": "i16",
+   "rhs": "i8",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V361",
+   "type": "i16",
+   "rhs": "i8",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "0"
+  },
+  {
+   "name": "V362",
+   "type": "i16",
+   "rhs": "i8",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V363",
+   "type": "i16",
+   "rhs": "i8",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "65535"
+  },
+  {
+   "name": "V364",
+   "type": "i16",
+   "rhs": "i16",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V365",
+   "type": "i16",
+   "rhs": "i16",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "0"
+  },
+  {
+   "name": "V366",
+   "type": "i16",
+   "rhs": "i16",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V367",
+   "type": "i16",
+   "rhs": "i16",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "65535"
+  },
+  {
+   "name": "V368",
+   "type": "i16",
+   "rhs": "i32",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V369",
+   "type": "i16",
+   "rhs": "i32",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "0"
+  },
+  {
+   "name": "V370",
+   "type": "i16",
+   "rhs": "i32",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V371",
+   "type": "i16",
+   "rhs": "i32",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "65535"
+  },
+  {
+   "name": "V372",
+   "type": "i16",
+   "rhs": "i64",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V373",
+   "type": "i16",
+   "rhs": "i64",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "0"
+  },
+  {
+   "name": "V374",
+   "type": "i16",
+   "rhs": "i64",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V375",
+   "type": "i16",
+   "rhs": "i64",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "65535"
+  },
+  {
+   "name": "V376",
+   "type": "i16",
+   "rhs": "i128",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V377",
+   "type": "i16",
+   "rhs": "i128",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "0"
+  },
+  {
+   "name": "V378",
+   "type": "i16",
+   "rhs": "i128",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V379",
+   "type": "i16",
+   "rhs": "i128",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "65535"
+  },
+  {
+   "name": "V380",
+   "type": "i16",
+   "rhs": "isize",
+   "width": 16,
+   "operator": "shl",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V381",
+   "type": "i16",
+   "rhs": "isize",
+   "width": 16,
+   "operator": "shl",
+   "count": 15,
+   "bits": "0"
+  },
+  {
+   "name": "V382",
+   "type": "i16",
+   "rhs": "isize",
+   "width": 16,
+   "operator": "shr",
+   "count": 0,
+   "bits": "65534"
+  },
+  {
+   "name": "V383",
+   "type": "i16",
+   "rhs": "isize",
+   "width": 16,
+   "operator": "shr",
+   "count": 15,
+   "bits": "65535"
+  },
+  {
+   "name": "V384",
+   "type": "i32",
+   "rhs": "u8",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V385",
+   "type": "i32",
+   "rhs": "u8",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "0"
+  },
+  {
+   "name": "V386",
+   "type": "i32",
+   "rhs": "u8",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V387",
+   "type": "i32",
+   "rhs": "u8",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "4294967295"
+  },
+  {
+   "name": "V388",
+   "type": "i32",
+   "rhs": "u16",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V389",
+   "type": "i32",
+   "rhs": "u16",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "0"
+  },
+  {
+   "name": "V390",
+   "type": "i32",
+   "rhs": "u16",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V391",
+   "type": "i32",
+   "rhs": "u16",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "4294967295"
+  },
+  {
+   "name": "V392",
+   "type": "i32",
+   "rhs": "u32",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V393",
+   "type": "i32",
+   "rhs": "u32",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "0"
+  },
+  {
+   "name": "V394",
+   "type": "i32",
+   "rhs": "u32",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V395",
+   "type": "i32",
+   "rhs": "u32",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "4294967295"
+  },
+  {
+   "name": "V396",
+   "type": "i32",
+   "rhs": "u64",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V397",
+   "type": "i32",
+   "rhs": "u64",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "0"
+  },
+  {
+   "name": "V398",
+   "type": "i32",
+   "rhs": "u64",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V399",
+   "type": "i32",
+   "rhs": "u64",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "4294967295"
+  },
+  {
+   "name": "V400",
+   "type": "i32",
+   "rhs": "u128",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V401",
+   "type": "i32",
+   "rhs": "u128",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "0"
+  },
+  {
+   "name": "V402",
+   "type": "i32",
+   "rhs": "u128",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V403",
+   "type": "i32",
+   "rhs": "u128",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "4294967295"
+  },
+  {
+   "name": "V404",
+   "type": "i32",
+   "rhs": "usize",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V405",
+   "type": "i32",
+   "rhs": "usize",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "0"
+  },
+  {
+   "name": "V406",
+   "type": "i32",
+   "rhs": "usize",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V407",
+   "type": "i32",
+   "rhs": "usize",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "4294967295"
+  },
+  {
+   "name": "V408",
+   "type": "i32",
+   "rhs": "i8",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V409",
+   "type": "i32",
+   "rhs": "i8",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "0"
+  },
+  {
+   "name": "V410",
+   "type": "i32",
+   "rhs": "i8",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V411",
+   "type": "i32",
+   "rhs": "i8",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "4294967295"
+  },
+  {
+   "name": "V412",
+   "type": "i32",
+   "rhs": "i16",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V413",
+   "type": "i32",
+   "rhs": "i16",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "0"
+  },
+  {
+   "name": "V414",
+   "type": "i32",
+   "rhs": "i16",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V415",
+   "type": "i32",
+   "rhs": "i16",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "4294967295"
+  },
+  {
+   "name": "V416",
+   "type": "i32",
+   "rhs": "i32",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V417",
+   "type": "i32",
+   "rhs": "i32",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "0"
+  },
+  {
+   "name": "V418",
+   "type": "i32",
+   "rhs": "i32",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V419",
+   "type": "i32",
+   "rhs": "i32",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "4294967295"
+  },
+  {
+   "name": "V420",
+   "type": "i32",
+   "rhs": "i64",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V421",
+   "type": "i32",
+   "rhs": "i64",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "0"
+  },
+  {
+   "name": "V422",
+   "type": "i32",
+   "rhs": "i64",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V423",
+   "type": "i32",
+   "rhs": "i64",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "4294967295"
+  },
+  {
+   "name": "V424",
+   "type": "i32",
+   "rhs": "i128",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V425",
+   "type": "i32",
+   "rhs": "i128",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "0"
+  },
+  {
+   "name": "V426",
+   "type": "i32",
+   "rhs": "i128",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V427",
+   "type": "i32",
+   "rhs": "i128",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "4294967295"
+  },
+  {
+   "name": "V428",
+   "type": "i32",
+   "rhs": "isize",
+   "width": 32,
+   "operator": "shl",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V429",
+   "type": "i32",
+   "rhs": "isize",
+   "width": 32,
+   "operator": "shl",
+   "count": 31,
+   "bits": "0"
+  },
+  {
+   "name": "V430",
+   "type": "i32",
+   "rhs": "isize",
+   "width": 32,
+   "operator": "shr",
+   "count": 0,
+   "bits": "4294967294"
+  },
+  {
+   "name": "V431",
+   "type": "i32",
+   "rhs": "isize",
+   "width": 32,
+   "operator": "shr",
+   "count": 31,
+   "bits": "4294967295"
+  },
+  {
+   "name": "V432",
+   "type": "i64",
+   "rhs": "u8",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V433",
+   "type": "i64",
+   "rhs": "u8",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V434",
+   "type": "i64",
+   "rhs": "u8",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V435",
+   "type": "i64",
+   "rhs": "u8",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V436",
+   "type": "i64",
+   "rhs": "u16",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V437",
+   "type": "i64",
+   "rhs": "u16",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V438",
+   "type": "i64",
+   "rhs": "u16",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V439",
+   "type": "i64",
+   "rhs": "u16",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V440",
+   "type": "i64",
+   "rhs": "u32",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V441",
+   "type": "i64",
+   "rhs": "u32",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V442",
+   "type": "i64",
+   "rhs": "u32",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V443",
+   "type": "i64",
+   "rhs": "u32",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V444",
+   "type": "i64",
+   "rhs": "u64",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V445",
+   "type": "i64",
+   "rhs": "u64",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V446",
+   "type": "i64",
+   "rhs": "u64",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V447",
+   "type": "i64",
+   "rhs": "u64",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V448",
+   "type": "i64",
+   "rhs": "u128",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V449",
+   "type": "i64",
+   "rhs": "u128",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V450",
+   "type": "i64",
+   "rhs": "u128",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V451",
+   "type": "i64",
+   "rhs": "u128",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V452",
+   "type": "i64",
+   "rhs": "usize",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V453",
+   "type": "i64",
+   "rhs": "usize",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V454",
+   "type": "i64",
+   "rhs": "usize",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V455",
+   "type": "i64",
+   "rhs": "usize",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V456",
+   "type": "i64",
+   "rhs": "i8",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V457",
+   "type": "i64",
+   "rhs": "i8",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V458",
+   "type": "i64",
+   "rhs": "i8",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V459",
+   "type": "i64",
+   "rhs": "i8",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V460",
+   "type": "i64",
+   "rhs": "i16",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V461",
+   "type": "i64",
+   "rhs": "i16",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V462",
+   "type": "i64",
+   "rhs": "i16",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V463",
+   "type": "i64",
+   "rhs": "i16",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V464",
+   "type": "i64",
+   "rhs": "i32",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V465",
+   "type": "i64",
+   "rhs": "i32",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V466",
+   "type": "i64",
+   "rhs": "i32",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V467",
+   "type": "i64",
+   "rhs": "i32",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V468",
+   "type": "i64",
+   "rhs": "i64",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V469",
+   "type": "i64",
+   "rhs": "i64",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V470",
+   "type": "i64",
+   "rhs": "i64",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V471",
+   "type": "i64",
+   "rhs": "i64",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V472",
+   "type": "i64",
+   "rhs": "i128",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V473",
+   "type": "i64",
+   "rhs": "i128",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V474",
+   "type": "i64",
+   "rhs": "i128",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V475",
+   "type": "i64",
+   "rhs": "i128",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V476",
+   "type": "i64",
+   "rhs": "isize",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V477",
+   "type": "i64",
+   "rhs": "isize",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V478",
+   "type": "i64",
+   "rhs": "isize",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V479",
+   "type": "i64",
+   "rhs": "isize",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V480",
+   "type": "i128",
+   "rhs": "u8",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V481",
+   "type": "i128",
+   "rhs": "u8",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "0"
+  },
+  {
+   "name": "V482",
+   "type": "i128",
+   "rhs": "u8",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V483",
+   "type": "i128",
+   "rhs": "u8",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "340282366920938463463374607431768211455"
+  },
+  {
+   "name": "V484",
+   "type": "i128",
+   "rhs": "u16",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V485",
+   "type": "i128",
+   "rhs": "u16",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "0"
+  },
+  {
+   "name": "V486",
+   "type": "i128",
+   "rhs": "u16",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V487",
+   "type": "i128",
+   "rhs": "u16",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "340282366920938463463374607431768211455"
+  },
+  {
+   "name": "V488",
+   "type": "i128",
+   "rhs": "u32",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V489",
+   "type": "i128",
+   "rhs": "u32",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "0"
+  },
+  {
+   "name": "V490",
+   "type": "i128",
+   "rhs": "u32",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V491",
+   "type": "i128",
+   "rhs": "u32",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "340282366920938463463374607431768211455"
+  },
+  {
+   "name": "V492",
+   "type": "i128",
+   "rhs": "u64",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V493",
+   "type": "i128",
+   "rhs": "u64",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "0"
+  },
+  {
+   "name": "V494",
+   "type": "i128",
+   "rhs": "u64",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V495",
+   "type": "i128",
+   "rhs": "u64",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "340282366920938463463374607431768211455"
+  },
+  {
+   "name": "V496",
+   "type": "i128",
+   "rhs": "u128",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V497",
+   "type": "i128",
+   "rhs": "u128",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "0"
+  },
+  {
+   "name": "V498",
+   "type": "i128",
+   "rhs": "u128",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V499",
+   "type": "i128",
+   "rhs": "u128",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "340282366920938463463374607431768211455"
+  },
+  {
+   "name": "V500",
+   "type": "i128",
+   "rhs": "usize",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V501",
+   "type": "i128",
+   "rhs": "usize",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "0"
+  },
+  {
+   "name": "V502",
+   "type": "i128",
+   "rhs": "usize",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V503",
+   "type": "i128",
+   "rhs": "usize",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "340282366920938463463374607431768211455"
+  },
+  {
+   "name": "V504",
+   "type": "i128",
+   "rhs": "i8",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V505",
+   "type": "i128",
+   "rhs": "i8",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "0"
+  },
+  {
+   "name": "V506",
+   "type": "i128",
+   "rhs": "i8",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V507",
+   "type": "i128",
+   "rhs": "i8",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "340282366920938463463374607431768211455"
+  },
+  {
+   "name": "V508",
+   "type": "i128",
+   "rhs": "i16",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V509",
+   "type": "i128",
+   "rhs": "i16",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "0"
+  },
+  {
+   "name": "V510",
+   "type": "i128",
+   "rhs": "i16",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V511",
+   "type": "i128",
+   "rhs": "i16",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "340282366920938463463374607431768211455"
+  },
+  {
+   "name": "V512",
+   "type": "i128",
+   "rhs": "i32",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V513",
+   "type": "i128",
+   "rhs": "i32",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "0"
+  },
+  {
+   "name": "V514",
+   "type": "i128",
+   "rhs": "i32",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V515",
+   "type": "i128",
+   "rhs": "i32",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "340282366920938463463374607431768211455"
+  },
+  {
+   "name": "V516",
+   "type": "i128",
+   "rhs": "i64",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V517",
+   "type": "i128",
+   "rhs": "i64",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "0"
+  },
+  {
+   "name": "V518",
+   "type": "i128",
+   "rhs": "i64",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V519",
+   "type": "i128",
+   "rhs": "i64",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "340282366920938463463374607431768211455"
+  },
+  {
+   "name": "V520",
+   "type": "i128",
+   "rhs": "i128",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V521",
+   "type": "i128",
+   "rhs": "i128",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "0"
+  },
+  {
+   "name": "V522",
+   "type": "i128",
+   "rhs": "i128",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V523",
+   "type": "i128",
+   "rhs": "i128",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "340282366920938463463374607431768211455"
+  },
+  {
+   "name": "V524",
+   "type": "i128",
+   "rhs": "isize",
+   "width": 128,
+   "operator": "shl",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V525",
+   "type": "i128",
+   "rhs": "isize",
+   "width": 128,
+   "operator": "shl",
+   "count": 127,
+   "bits": "0"
+  },
+  {
+   "name": "V526",
+   "type": "i128",
+   "rhs": "isize",
+   "width": 128,
+   "operator": "shr",
+   "count": 0,
+   "bits": "340282366920938463463374607431768211454"
+  },
+  {
+   "name": "V527",
+   "type": "i128",
+   "rhs": "isize",
+   "width": 128,
+   "operator": "shr",
+   "count": 127,
+   "bits": "340282366920938463463374607431768211455"
+  },
+  {
+   "name": "V528",
+   "type": "isize",
+   "rhs": "u8",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V529",
+   "type": "isize",
+   "rhs": "u8",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V530",
+   "type": "isize",
+   "rhs": "u8",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V531",
+   "type": "isize",
+   "rhs": "u8",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V532",
+   "type": "isize",
+   "rhs": "u16",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V533",
+   "type": "isize",
+   "rhs": "u16",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V534",
+   "type": "isize",
+   "rhs": "u16",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V535",
+   "type": "isize",
+   "rhs": "u16",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V536",
+   "type": "isize",
+   "rhs": "u32",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V537",
+   "type": "isize",
+   "rhs": "u32",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V538",
+   "type": "isize",
+   "rhs": "u32",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V539",
+   "type": "isize",
+   "rhs": "u32",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V540",
+   "type": "isize",
+   "rhs": "u64",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V541",
+   "type": "isize",
+   "rhs": "u64",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V542",
+   "type": "isize",
+   "rhs": "u64",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V543",
+   "type": "isize",
+   "rhs": "u64",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V544",
+   "type": "isize",
+   "rhs": "u128",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V545",
+   "type": "isize",
+   "rhs": "u128",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V546",
+   "type": "isize",
+   "rhs": "u128",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V547",
+   "type": "isize",
+   "rhs": "u128",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V548",
+   "type": "isize",
+   "rhs": "usize",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V549",
+   "type": "isize",
+   "rhs": "usize",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V550",
+   "type": "isize",
+   "rhs": "usize",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V551",
+   "type": "isize",
+   "rhs": "usize",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V552",
+   "type": "isize",
+   "rhs": "i8",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V553",
+   "type": "isize",
+   "rhs": "i8",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V554",
+   "type": "isize",
+   "rhs": "i8",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V555",
+   "type": "isize",
+   "rhs": "i8",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V556",
+   "type": "isize",
+   "rhs": "i16",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V557",
+   "type": "isize",
+   "rhs": "i16",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V558",
+   "type": "isize",
+   "rhs": "i16",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V559",
+   "type": "isize",
+   "rhs": "i16",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V560",
+   "type": "isize",
+   "rhs": "i32",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V561",
+   "type": "isize",
+   "rhs": "i32",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V562",
+   "type": "isize",
+   "rhs": "i32",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V563",
+   "type": "isize",
+   "rhs": "i32",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V564",
+   "type": "isize",
+   "rhs": "i64",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V565",
+   "type": "isize",
+   "rhs": "i64",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V566",
+   "type": "isize",
+   "rhs": "i64",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V567",
+   "type": "isize",
+   "rhs": "i64",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V568",
+   "type": "isize",
+   "rhs": "i128",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V569",
+   "type": "isize",
+   "rhs": "i128",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V570",
+   "type": "isize",
+   "rhs": "i128",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V571",
+   "type": "isize",
+   "rhs": "i128",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  },
+  {
+   "name": "V572",
+   "type": "isize",
+   "rhs": "isize",
+   "width": 64,
+   "operator": "shl",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V573",
+   "type": "isize",
+   "rhs": "isize",
+   "width": 64,
+   "operator": "shl",
+   "count": 63,
+   "bits": "0"
+  },
+  {
+   "name": "V574",
+   "type": "isize",
+   "rhs": "isize",
+   "width": 64,
+   "operator": "shr",
+   "count": 0,
+   "bits": "18446744073709551614"
+  },
+  {
+   "name": "V575",
+   "type": "isize",
+   "rhs": "isize",
+   "width": 64,
+   "operator": "shr",
+   "count": 63,
+   "bits": "18446744073709551615"
+  }
+ ],
+ "observer_sha256": "6ab39f7783fec00d448f393443bb56b7c0e029f06d115741f55e81e8208a3f39",
+ "setup_corrections": {
+  "first_attempt": "oracle1 preserved all bytes and logs; negative literals lacked Neg and ordinary equality lacked PartialEq. Valid positive outcomes retained; equivalent integer casts avoid introducing unrelated operator traits. f32 const evaluation caused reference ICE101, an infrastructure failure, never semantic rejection. A separate reached runtime noninteger attempt retains the intended rejecting outcome.",
+  "original_manifest_sha256": "3c4a1b15ab0508d850c11755b7cf2240256b24853998c332e9e73612541704c5"
+ },
+ "matrix_observer_sha256": "d0f3340795a9558ef13db36113b748ed5145e10752c779429af658f73d92f706",
+ "expected_matrix_stdout_sha256": "c1dce038be82b43732f855adcf71e4c0453a0c0f3bb66cd0e7882aa75ee3e797",
+ "expected_values_sha256": "167f85c59f7dcea11ebc687c41abbd46476a9bc233c3fcab756e83d3a9a74f10",
+ "runtime_observer_sha256": "9255e929b612dcfea7ea25db0d6b7ef96a40402c69c98199da23e4e7de86bfe0",
+ "artifacts": {
+  "README.md": "6c1b0c7e0742ed9a2dfb71bc0884753fa90e9d8052ae3008b3380ab7828c945e",
+  "actual-wrapper.rs": "c625cc4ffd5b68ae71af4b9983e689bcfdf9d62df4e35e652d9e1f0867d29212",
+  "cases.tsv": "4baa40b1fc0568153d216809e4073d81844e41ce63b05f2629c1cdcf49c452af",
+  "equal-width.rs": "39ebbb63209c1a0f9a60d9668e25b19758f553bb26ae3ee9720b7ee9ffa89ddb",
+  "expected-matrix.stdout": "c1dce038be82b43732f855adcf71e4c0453a0c0f3bb66cd0e7882aa75ee3e797",
+  "expected-runtime.stdout": "8051010da8ad2522300070978f417a41bacb4b9ad6819444a950be8313e99996",
+  "expected-values.tsv": "167f85c59f7dcea11ebc687c41abbd46476a9bc233c3fcab756e83d3a9a74f10",
+  "foundation.rs": "42d9b888ca062b8079c86ecd1bb8c9dc412984c87fd7862dbb17cb354ecc0b73",
+  "matrix.rs": "7fdd33719f83a20054a01a6522a076b2b0df4793f9892276bd7cf2f85223bbb9",
+  "missing-copy.rs": "629ee86f949384ed8d8510ec3c9e5f4c6f0b0571c9cdb6c617b19b3e2216f109",
+  "negative-count.rs": "0e5cccfa5efb6a533fe81bf414df255f51022d8069cd2ff2eedc6a3a55863643",
+  "nonconst-call.rs": "ba610504130ddabc26af7b67078fa16f632736bc3c6d8f60a117fc50158511dc",
+  "noninteger.rs": "797dfd04c1761d283674cfbf54e4b9724654917d5b0a36e87aa9f2140fb51091",
+  "observe-matrix.c": "d0f3340795a9558ef13db36113b748ed5145e10752c779429af658f73d92f706",
+  "observe-runtime.c": "9255e929b612dcfea7ea25db0d6b7ef96a40402c69c98199da23e4e7de86bfe0",
+  "observe.c": "6ab39f7783fec00d448f393443bb56b7c0e029f06d115741f55e81e8208a3f39",
+  "ordinary.rs": "d787742e35978f64ac38d76c2d25bccb1d6f75c875059860c597f53195b45866",
+  "original/intrinsics.rs": "30336944d006e837a740f9a7a2df355567b71f41eb53eb5bda8e3c928e52b310",
+  "original/unsigned-shl.rs": "e82305f754101f3ba004419787aa0dffde266aed164a683f92a33a9114bce01a",
+  "runtime.rs": "23e9405a3f162a0946268c94e4ba3cf87e0b65eb3b3e3ecab3e40cec9c1d25db",
+  "scaling-128.rs": "0a8fe007c15f7e533c331f46d936254c3bdf3f0131a4f92cd3642700ca4dd594",
+  "scaling-32.rs": "26abcbc853f89e12ece71b374353a4279be4d42aaca614958801757f85d7bc6d",
+  "scaling-8.rs": "35e4a6008291d6297e7c7af5523528b5cec6a5e9c59dce06322bba5d93d6a019",
+  "unsafe-call.rs": "c70e35ea947486f16e5d027e4d5ffd1a7b32dcf20cff91fbce5d876e1976ac97",
+  "wide-count.rs": "707037a691ffa2776b87a6501d555829cf002e5c1ac3b40af2b78dee478b2bc0",
+  "wrong-result.rs": "e28ab3fe8048b108e1d4d3cd9860b4c17b0b89e917678f95d296d7a8c2cdeacf",
+  "wrong-safety.rs": "1ece0ecd5386411b9f54a07836c55c7e572ff36d7c07bbd6c84fc96ea170c80d"
+ }
+}

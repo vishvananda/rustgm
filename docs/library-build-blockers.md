@@ -1,12 +1,13 @@
-Current original evidence is clean candidate22 (40d29b452), CLI8044e267:
-42310 declarations/25858 bodies/35120 attempts with zero failed/blocked functions.
-The wide product failure clears; completion now reports the source layout field
-work guard. Exact guard attribution shows8047613 whole-crate observations being
-compared against1M. The [persistent layout work repair](pa31-layout-work-owner.md)
-passes baseline reproduction, focused/scaling/native controls and strict checks.
-New private execution and a fresh unchanged original-core attempt remain due.
-Full43561807969 passes every stage on the preceding product source. No original
-artifact or whole PA25–44 release exists. Root continues as one worker in B;
+Current original evidence is clean candidate23 (36b794b08), CLI040138fd:
+42310 declarations/25858 bodies/35120 attempts, zero failed/blocked functions.
+The layout-budget error clears; completion reaches genuine unchecked_shl through
+generated usize::unchecked_shl at expanded12:1858633. All722 inputs/375 opens/six
+pins and fixed limits verify. The [source shift repair](pa31-unchecked-shifts.md)
+passes576 exact results, nine candidate guards, bounded scaling and five new/old
+native programs. Final local replay/harness/upstream await disk admission;
+a fresh full CI and unchanged original-core attempt remain due. Full43570894822
+passes every stage on preceding36b794b08, including3077 private release/debug.
+No original artifact or whole PA25–44 release exists. Root continues alone in B;
 this overrides historical worker queues below.
 
 # Library build blocker tracker

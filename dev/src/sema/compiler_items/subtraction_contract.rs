@@ -26,12 +26,23 @@ pub(crate) fn wrapping_operator(kind: SourceIntrinsic) -> Option<Punctuation> {
     }
 }
 
+pub(crate) fn unchecked_shift(kind: SourceIntrinsic) -> Option<Punctuation> {
+    let SourceIntrinsic::Declaration(identity) = kind else {
+        return None;
+    };
+    match identity.name() {
+        "unchecked_shl" => Some(Punctuation::ShiftLeft),
+        "unchecked_shr" => Some(Punctuation::ShiftRight),
+        _ => None,
+    }
+}
 pub(crate) fn scalar_arithmetic(kind: SourceIntrinsic) -> bool {
     matches!(
         kind,
         SourceIntrinsic::UncheckedSub | SourceIntrinsic::SubWithOverflow
     ) || wrapping_operator(kind).is_some()
         || overflowing_operator(kind).is_some()
+        || unchecked_shift(kind).is_some()
 }
 pub(crate) fn overflowing_operator(kind: SourceIntrinsic) -> Option<Punctuation> {
     match kind {
@@ -47,6 +58,7 @@ pub(crate) struct SubtractionSelection {
     pub definition: DefId,
     pub signature: TypeId,
     pub input: TypeId,
+    pub rhs: TypeId,
     pub output: TypeId,
     pub kind: SourceIntrinsic,
 }
@@ -59,9 +71,9 @@ impl SubtractionSelection {
         super::intrinsic_contracts::opened_signature_matches(
             store,
             signature,
-            &[self.input; 2],
+            &[self.input, self.rhs],
             self.output,
-            self.kind == SourceIntrinsic::UncheckedSub,
+            self.kind == SourceIntrinsic::UncheckedSub || unchecked_shift(self.kind).is_some(),
             Convention::RUST,
         )
     }
@@ -71,33 +83,26 @@ pub(super) fn validate(
     function: Function,
     kind: SourceIntrinsic,
 ) -> Result<(), &'static str> {
-    let Some([parameter]) = facts
+    let arity = if unchecked_shift(kind).is_some() {
+        2
+    } else {
+        1
+    };
+    let parameters = facts
         .generics
         .parameters
         .get(&function.definition)
         .map(Vec::as_slice)
-    else {
-        return Err("source subtraction requires one own Copy type formal");
-    };
-    let Argument::Type(input) = parameter.argument else {
-        return Err("source subtraction requires a type formal");
-    };
-    let Some(Kind::Parameter(id)) = facts.types.kind(input) else {
-        return Err("source subtraction lost its actual formal");
-    };
+        .ok_or("source arithmetic requires its own Copy type formals")?;
+    if parameters.len() != arity {
+        return Err("source arithmetic has the wrong own Copy type formal count");
+    }
     let lifetime = facts
         .lifetimes
         .functions
         .get(&function.definition)
         .ok_or("source subtraction requires its completed lifetime scheme")?;
-    if parameter.anonymous
-        || parameter.default.is_some()
-        || facts.types.parameter(id).is_none_or(|p| {
-            p.owner.0 != function.definition.0
-                || p.index != 0
-                || p.kind != ParameterKind::Type { sized: true }
-        })
-        || function.body.is_some()
+    if function.body.is_some()
         || !facts.is_const_function(function.definition)
         || lifetime.total != 0
         || lifetime.captures != 0
@@ -109,17 +114,51 @@ pub(super) fn validate(
             "source subtraction requires its own bodyless const declaration without regions",
         );
     }
-    signature(facts, function.signature, input, kind)?;
     let catalog = facts
         .source_bindings
         .as_deref()
         .ok_or("source subtraction has no actual catalog")?;
-    super::compare_intrinsic::copy_premise(facts, function.definition, input, catalog)
+    let mut inputs = [TypeId::UNIT; 2];
+    for (index, &parameter) in parameters.iter().enumerate() {
+        inputs[index] = formal(facts, function.definition, index, parameter)?;
+    }
+    if arity == 1 {
+        inputs[1] = inputs[0];
+        super::compare_intrinsic::copy_premise(facts, function.definition, inputs[0], catalog)?;
+    } else {
+        super::compare_intrinsic::copy_premises(facts, function.definition, inputs, catalog)?;
+    }
+    signature(facts, function.signature, inputs, kind).map(|_| ())
 }
+fn formal(
+    facts: &Declarations,
+    owner: DefId,
+    index: usize,
+    parameter: crate::sema::generics::Parameter,
+) -> Result<TypeId, &'static str> {
+    let Argument::Type(input) = parameter.argument else {
+        return Err("source arithmetic requires a type formal");
+    };
+    let Some(Kind::Parameter(id)) = facts.types.kind(input) else {
+        return Err("source arithmetic lost its actual formal");
+    };
+    if parameter.anonymous
+        || parameter.default.is_some()
+        || facts.types.parameter(id).is_none_or(|p| {
+            p.owner.0 != owner.0
+                || usize::try_from(p.index).ok() != Some(index)
+                || p.kind != ParameterKind::Type { sized: true }
+        })
+    {
+        return Err("source arithmetic changed its own sized type formal");
+    }
+    Ok(input)
+}
+
 fn signature(
     facts: &Declarations,
     signature: TypeId,
-    input: TypeId,
+    inputs: [TypeId; 2],
     kind: SourceIntrinsic,
 ) -> Result<TypeId, &'static str> {
     let Some(Kind::Function {
@@ -132,17 +171,20 @@ fn signature(
     else {
         return Err("source subtraction requires its Rust signature without late regions");
     };
-    if unsafe_ != (kind == SourceIntrinsic::UncheckedSub)
-        || facts.types.list(parameters) != Some(&[input; 2])
+    if unsafe_ != (kind == SourceIntrinsic::UncheckedSub || unchecked_shift(kind).is_some())
+        || facts.types.list(parameters) != Some(&inputs)
     {
         return Err("source subtraction changed its safety or two same-type inputs");
     }
+    let input = inputs[0];
     let valid = match kind {
         SourceIntrinsic::UncheckedSub => result == input,
         kind if overflowing_operator(kind).is_some() => {
             matches!(facts.types.kind(result), Some(Kind::Tuple(fields)) if facts.types.list(fields)==Some(&[input,TypeId::primitive(Primitive::Bool)]))
         }
-        kind if wrapping_operator(kind).is_some() => result == input,
+        kind if wrapping_operator(kind).is_some() || unchecked_shift(kind).is_some() => {
+            result == input
+        }
         _ => false,
     };
     if !valid {
@@ -200,28 +242,43 @@ impl Catalog {
             .types
             .arguments(arguments)
             .ok_or("invalid source subtraction arguments")?;
-        let (Some(Argument::Type(input)), None) = (args.next(), args.next()) else {
-            return Err("source subtraction requires its complete single-type instance");
+        let Some(Argument::Type(input)) = args.next() else {
+            return Err("source arithmetic requires its complete first type instance");
         };
+        let rhs = if unchecked_shift(kind).is_some() {
+            let Some(Argument::Type(rhs)) = args.next() else {
+                return Err("source shift requires its complete second type instance");
+            };
+            if !matches!(facts.types.kind(rhs),Some(Kind::Primitive(p)) if p.integer().is_some()) {
+                return Err("source shift amount requires a closed integer type");
+            }
+            rhs
+        } else {
+            input
+        };
+        if args.next().is_some() {
+            return Err("source arithmetic has excess instance arguments");
+        }
         if !matches!(facts.types.kind(input),Some(Kind::Primitive(p)) if p.integer().is_some()
             || wrapping_operator(kind).is_some() && matches!(p, Primitive::F32 | Primitive::F64))
         {
             return Err("source arithmetic execution requires its supported closed scalar type");
         }
-        let output = signature(facts, selected_signature, input, kind)?;
+        let output = signature(facts, selected_signature, [input, rhs], kind)?;
         let roots =
-            super::intrinsic_contracts::item_roots(&facts.types, [input, output], |work| {
+            super::intrinsic_contracts::item_roots(&facts.types, [input, rhs, output], |work| {
                 crate::sema::header_attributes::charge_source_contract_query(facts, work)
                     .map_err(|_| "source subtraction opening work exhausted")
             })?
             .ok_or("source subtraction has no canonical caller roots")?;
-        if roots != [input, output] {
+        if roots != [input, rhs, output] {
             return Err("closed source subtraction roots changed through their callable binder");
         }
         Ok(Some(SubtractionSelection {
             definition,
             signature: selected_signature,
             input,
+            rhs,
             output,
             kind,
         }))
@@ -237,7 +294,12 @@ impl Catalog {
             return Err("source subtraction lost its attributed declaration");
         };
         if kind != selected.kind
-            || signature(facts, selected.signature, selected.input, kind)? != selected.output
+            || signature(
+                facts,
+                selected.signature,
+                [selected.input, selected.rhs],
+                kind,
+            )? != selected.output
         {
             return Err("source subtraction changed its selected signature or intrinsic kind");
         }

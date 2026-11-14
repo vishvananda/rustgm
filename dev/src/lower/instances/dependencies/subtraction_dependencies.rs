@@ -37,11 +37,9 @@ pub(super) fn require(
     };
     if !selected.opened_signature_matches(&facts.types, signature)
         || value.ty != selected.output
-        || [left, right].into_iter().any(|id| {
-            body.values
-                .get(id.0 as usize)
-                .is_none_or(|v| v.ty != selected.input)
-        })
+        || [(*left, selected.input), (*right, selected.rhs)]
+            .into_iter()
+            .any(|(id, ty)| body.values.get(id.0 as usize).is_none_or(|v| v.ty != ty))
     {
         return Err("source subtraction dependency differs from its complete checked Call");
     }

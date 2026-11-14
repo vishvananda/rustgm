@@ -5,14 +5,16 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
-Latest continuation: layout repair36b794b08 is published; clean release23
-checks all42310 declarations/25858 bodies, zero failed/blocked functions, and
-CLEARS the layout-budget error. Completion now reaches genuine unchecked_shl
-through generated usize::unchecked_shl. No original artifact. Full43570894822
-PASSES EVERY STAGE, including3077 private release/debug. B contains locally
-focused-qualified shift work and PA31 reductions; candidate native execution is
-pending because shared disk admission refused launch. Read the final "Release23 observed; unchecked shifts WIP" section.
-Shared headroom157GiB, reserve150GiB and B cap16GiB unchanged. One worker.
+Latest continuation: clean release23 clears the layout guard and reaches genuine
+unchecked_shl through usize's source wrapper. Shift implementation is now locally
+focused/native-qualified: six exact controls and five actual programs pass.
+Full43570894822 PASSES EVERY STAGE on preceding product source36b794b08, including
+3077 private release/debug. Shift checkpoint publication/full successor is next;
+final local replay/harness/upstream and clean24original await disk admission.
+Current3958 Rust sources; pin.py now expects3958. Shared free space fell to153GiB,
+with150GiB reserve/16GiB B cap unchanged; user was asked for5–10GiB externally.
+Read the final "Shift natives qualified; final local admission pending" section.
+No original library artifact exists. Continue as one worker in B.
 
 ## Workspace and authorization
 
@@ -1139,3 +1141,40 @@ actual3958 only after current qualification before freezing24. Leave21/22/23
 pins available; pending21/22 products and22/23 layout comparisons still need their
 actual binaries. Do not lower the load gate14/20 to complete them. The load now
 admits timings, but disk admission remains refused, so no timing run launched.
+
+## Shift natives qualified; final local admission pending
+
+This supersedes the immediately preceding native-block notes. Native first
+refused launch, then actual admission allowed1794644281771914889: PASS three
+exact tests/five actual programs in78.27s. New matrix576 exports match all exact
+independent values; actual usize wrapper2^63 and all six mixed-type runtime calls
+match. Old156-product bits/flags and complete original Field observer also pass.
+Strict selected/CLI Clippy, fmt/audit/metadata pass, with no source changes since
+focused127.47s qualification. No native failure was hidden or reinterpreted.
+
+The next authenticated capture.py was refused before launch:152.8GiB free,
+153.8GiB required including reservations. qualified-replay.log is an admission
+failure, NOT a replay outcome. No local compiler/test/probe remains active.
+The5–10GiB async headroom question is still pending; don't lower caps/reserve or
+clean other checkouts. A transient admission allowed natives; it did not resolve
+the broader shared disk blocker. Keep current warm caches and21/22/23 pins.
+
+Focused/native evidence permits coherent development integration with honest
+pending checks. Publish the complete shift checkpoint and dispatch one full
+manual successor after confirming43570894822 remains terminal success; no full
+CI for a handoff-only descendant. That successor runs harness/upstream and all
+private/native/course/debug/independent checks. Final local replay/harness/upstream
+remain due; do not imply they executed. Docs/pa31-unchecked-shifts.md retains all
+15 independently definite outcomes and the separately retained f32 reference ICE.
+
+Pin.py now asserts actual3958. observe/postcheck/core-artifact24 are prepared;
+no24 compiler exists and none of those helpers ran. After restored headroom,
+finish guarded capture replay and make test-harness test-upstream, prepare and
+preflight same-profile changed-path/ordinary timing controls, freeze clean24 and
+run unchanged original analysis/postcheck. Keep120s/722/375/six/14500624work/
+1GiB attempted/64MiB retained. Only completed analysis permits genuine original
+metadata/LowIR and native consumers. Preserve all earlier positives, whole-PA
+requirements and pending21/22 products/22/23 layout comparisons; no speed claim.
+Current shift code is the exact3958-source focused/native-qualified snapshot;
+production changes include shared bounded Copy premises and exact RHS checking
+in all CTFE/runtime/dependency consumers. No backend/bridge/storage.py change.

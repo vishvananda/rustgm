@@ -8216,3 +8216,13 @@ that layout budget. Neither warm reuse nor a pending dependency resets it.
 Physical answers supply no caller, projection, lifetime or const permission.
 The [source layout work checkpoint](docs/pa31-layout-work-owner.md) retains the
 reproduction, independent source/native outcomes and spent-work opponents.
+
+Source unchecked integer shifts select both exact integer operand types from
+the actual declaration and complete instance. Reuse the typed arithmetic call
+proof across constant execution, dependency preparation and runtime lowering.
+Require each written Copy subject and preserve the one-subject premise checker;
+no unrelated subject or extra premise is admitted. Constant execution validates
+the full RHS before narrowing; unsafe runtime shifts reuse existing typed LowIR
+operations. Source, const, unsafe, closedness and imported-profile guards remain.
+The [shift checkpoint](docs/pa31-unchecked-shifts.md) records independent bits,
+reference infrastructure failures and current qualification.

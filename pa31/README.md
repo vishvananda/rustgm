@@ -2,6 +2,11 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
+The [unchecked-shift checkpoint](../docs/pa31-unchecked-shifts.md) retains genuine
+two-input source declarations,576 constant results and six actual runtime calls.
+Focused/native checks preserve Copy, constness, safety and full count guards.
+Fresh original-core/CI qualification and whole PA31 remain incomplete.
+
 The [layout work checkpoint](../docs/pa31-layout-work-owner.md) retains real
 source size declarations and fixes the execution provider's budget ownership.
 Independent source/native results, large unrelated observations and original

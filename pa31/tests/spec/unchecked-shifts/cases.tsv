@@ -1,0 +1,16 @@
+pa31/tests/spec/unchecked-shifts/matrix.rs	0	-
+pa31/tests/spec/unchecked-shifts/actual-wrapper.rs	0	-
+pa31/tests/spec/unchecked-shifts/ordinary.rs	0	-
+pa31/tests/spec/unchecked-shifts/negative-count.rs	1	-
+pa31/tests/spec/unchecked-shifts/equal-width.rs	1	-
+pa31/tests/spec/unchecked-shifts/wide-count.rs	1	-
+pa31/tests/spec/unchecked-shifts/noninteger.rs	1	-
+pa31/tests/spec/unchecked-shifts/unsafe-call.rs	1	-
+pa31/tests/spec/unchecked-shifts/missing-copy.rs	1	-
+pa31/tests/spec/unchecked-shifts/nonconst-call.rs	1	-
+pa31/tests/spec/unchecked-shifts/wrong-safety.rs	1	-
+pa31/tests/spec/unchecked-shifts/wrong-result.rs	1	-
+pa31/tests/spec/unchecked-shifts/scaling-8.rs	0	-
+pa31/tests/spec/unchecked-shifts/scaling-32.rs	0	-
+pa31/tests/spec/unchecked-shifts/scaling-128.rs	0	-
+pa31/tests/spec/unchecked-shifts/runtime.rs	0	-

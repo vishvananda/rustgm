@@ -102,6 +102,14 @@ pub(super) fn copy_premise(
     input: TypeId,
     catalog: &Catalog,
 ) -> Result<(), &'static str> {
+    copy_premises(facts, definition, [input], catalog)
+}
+pub(super) fn copy_premises<const N: usize>(
+    facts: &Declarations,
+    definition: DefId,
+    inputs: [TypeId; N],
+    catalog: &Catalog,
+) -> Result<(), &'static str> {
     let copying = catalog
         .language(LangItem::Copy)
         .ok_or("three_way_compare requires actual Copy")?
@@ -117,17 +125,17 @@ pub(super) fn copy_premise(
     // The existing prefix excludes elaborated Copy/Clone supertrait assumptions.
     // Those are consequences, not additional written intrinsic premises.
     let predicates = facts.generics.declared_predicates(definition);
-    if predicates.len() > 3 {
+    if predicates.len() > 3_usize.saturating_mul(N) {
         return Err("three_way_compare has extra own declaration premises");
     }
-    let mut found = false;
+    let mut found = [false; N];
     for predicate in predicates {
         let Clause::Predicate(predicate) = predicate.value else {
             return Err("three_way_compare has unsupported quantified premises");
         };
-        if predicate.ty != input {
+        let Some(index) = inputs.iter().position(|&input| input == predicate.ty) else {
             return Err("three_way_compare premise belongs to another subject");
-        }
+        };
         if predicate.bound == Bound::Sized {
             continue;
         }
@@ -151,12 +159,12 @@ pub(super) fn copy_premise(
                 .types
                 .arguments(application.arguments)
                 .is_none_or(|a| a.len() != 0)
-            || std::mem::replace(&mut found, true)
+            || std::mem::replace(&mut found[index], true)
         {
             return Err("three_way_compare changed its exact own Copy premise");
         }
     }
-    if !found {
+    if found.contains(&false) {
         return Err("three_way_compare requires its actual own Copy premise");
     }
     Ok(())
