@@ -1,0 +1,14 @@
+    pub const fn midpoint(self, other: f16) -> f16 {
+        const HI: f16 = f16::MAX * 0.5;
+
+        let (a, b) = (self, other);
+        let abs_a = a.abs();
+        let abs_b = b.abs();
+
+        if abs_a <= HI && abs_b <= HI {
+            // Overflow is impossible
+            (a + b) * 0.5
+        } else {
+            (a * 0.5) + (b * 0.5)
+        }
+    }

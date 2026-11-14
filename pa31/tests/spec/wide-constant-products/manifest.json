@@ -1,0 +1,136 @@
+{
+ "schema": 1,
+ "declaration": "All outcomes frozen before first execution: ordinary PA25 and genuine source PA31 wide constant products. Positive matrices retain exact midpoint HI/MAX expression, full precision products, nearest ties-even, signed zero, underflow/overflow and IEEE special classes. Source uses unchanged prior source-div foundation plus exact original Mul declaration and macro. Runtime wide arithmetic/ABI/metadata remain fenced. Six opponents reject; no expected outcome may be inverted.",
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "cases": {
+  "f16": {
+   "expected": "accept",
+   "width": 16,
+   "mode": "source",
+   "values": [
+    "MAX*0.5",
+    "1.5*1.5",
+    "1.0009765625*1.0009765625",
+    "1.0009765625*1.5",
+    "1.0029296875*1.5",
+    "-0.0*3.0",
+    "-0.0*-3.0",
+    "(1.0/0.0)*-2.0",
+    "(1.0/0.0)*0.0",
+    "(0.0/0.0)*2.0",
+    "1.0*(1.0/0.0)",
+    "5.9604644775390625e-8*0.5",
+    "1.78813934326171875e-7*0.5",
+    "0.00003*0.25",
+    "65504.0*65504.0",
+    "0.00003*0.00003",
+    "multiply(MAX,0.5)",
+    "limit()",
+    "1.9990234375*1.9990234375",
+    "0.0*(1.0/0.0)",
+    "(1.0/0.0)*(-1.0/0.0)",
+    "-5.9604644775390625e-8*0.25",
+    "MAX*5.9604644775390625e-8",
+    "MAX*0.00006103515625",
+    "<f16 as Mul>::mul(1.5,2.0)"
+   ],
+   "count": 25,
+   "sha256": "80a2c5c6ed03e3d244d79eb2c122cd278606eae0e6004942a33a940ebae50364",
+   "value_contract": "finite/zero/infinity exact bits, NaN classification only",
+   "bits_path": "f16.bits",
+   "bits_sha256": "01e8f7f195131d708361721431d2470b4fa4b7b0a6686c0081dcbc5da758ca14"
+  },
+  "f128": {
+   "expected": "accept",
+   "width": 128,
+   "mode": "source",
+   "values": [
+    "MAX*0.5",
+    "1.5*1.5",
+    "1.0000000000000000000000000000000001925929944387235853055977942584927318538101648215388195239938795566558837890625*1.0000000000000000000000000000000001925929944387235853055977942584927318538101648215388195239938795566558837890625",
+    "1.0000000000000000000000000000000001925929944387235853055977942584927318538101648215388195239938795566558837890625*1.5",
+    "1.0000000000000000000000000000000005777789833161707559167933827754781955614304944646164585719816386699676513671875*1.5",
+    "-0.0*3.0",
+    "-0.0*-3.0",
+    "(1.0/0.0)*-2.0",
+    "(1.0/0.0)*0.0",
+    "(0.0/0.0)*2.0",
+    "1.0*(1.0/0.0)",
+    "6e-4966*0.5",
+    "2e-4965*0.5",
+    "1e-4932*0.25",
+    "1e4932*1e4932",
+    "1e-4932*1e-4932",
+    "multiply(MAX,0.5)",
+    "limit()",
+    "1.9999999999999999999999999999999998074070055612764146944022057415072681461898351784611804760061204433441162109375*1.9999999999999999999999999999999998074070055612764146944022057415072681461898351784611804760061204433441162109375",
+    "0.0*(1.0/0.0)",
+    "(1.0/0.0)*(-1.0/0.0)",
+    "-6e-4966*0.25",
+    "MAX*6e-4966",
+    "MAX*3.36210314311209350626267781732175260e-4932",
+    "<f128 as Mul>::mul(1.5,2.0)"
+   ],
+   "count": 25,
+   "sha256": "39dd6749760164b719d9743df77571f8977c0868a120c173fc1a5389caaabc49",
+   "value_contract": "finite/zero/infinity exact bits, NaN classification only",
+   "bits_path": "f128.bits",
+   "bits_sha256": "68a7f727f401938d1e257c271397b327bfe841be7e9609bf7afe2931a2e6688a"
+  },
+  "missing-mul-role": {
+   "expected": "reject",
+   "mode": "source",
+   "sha256": "acd234cf9f47f63d250c1c731864d69b2f29af010cdc977d04e389a6c6828971"
+  },
+  "nonconst-implementation": {
+   "expected": "reject",
+   "mode": "source",
+   "sha256": "03a91a8dd375beb681e7997505c224262802ba1fe6e528aa666bbec1cf2008aa"
+  }
+ },
+ "originals": {
+  "f16": {
+   "file": "original-f16-midpoint.txt",
+   "source": "num/f16.rs",
+   "source_sha256": "315281b9dc447da7abab087401a9eb4116199d95d9732f5375fbe20632ab8519",
+   "start": 37219,
+   "end": 37578,
+   "sha256": "f38a941f22d98f36cda03f5ce9211b1f98a57c12cc22ab273b651b362f27a813"
+  },
+  "f128": {
+   "file": "original-f128-midpoint.txt",
+   "source": "num/f128.rs",
+   "source_sha256": "e6e9d69ee6ce95b8debaac63d9eed8cbfe8132b6b7aa3cff78bd14b8fef2e40a",
+   "start": 38784,
+   "end": 39147,
+   "sha256": "7596c691140816892141c10567a28b49784e69089aed380e771e6a1918b96d5f"
+  },
+  "mul": {
+   "file": "original-mul.txt",
+   "source": "ops/arith.rs",
+   "source_sha256": "a495c8c9838be09ce2c239462153a6221b6f471aa2efe43ce437e83581636c91",
+   "start": 8757,
+   "end": 10156,
+   "sha256": "c158da94aeac33dfea42e0f17c3699ffe2d30aa8b6f7930e52bc50965ac7fbb6"
+  }
+ },
+ "observers": {
+  "16": {
+   "path": "observe-16.c",
+   "sha256": "ad10bca59ab6886e8260d93599056b74210544ce6aa4125248c188c39eb0b5b1",
+   "abi": "byte address through integer/pointer ABI; COUNT is declared by each matrix"
+  },
+  "128": {
+   "path": "observe-128.c",
+   "sha256": "abeb240d7fdec8afba3bd99ffe0374e0bc901cc352182e62eb3da39706713167",
+   "abi": "byte address through integer/pointer ABI; COUNT is declared by each matrix"
+  }
+ }
+}

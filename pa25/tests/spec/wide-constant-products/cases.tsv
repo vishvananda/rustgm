@@ -1,0 +1,6 @@
+pa25/tests/spec/wide-constant-products/f16.rs	0	-
+pa25/tests/spec/wide-constant-products/f128.rs	0	-
+pa25/tests/spec/wide-constant-products/missing-feature.rs	1	wide floating type
+pa25/tests/spec/wide-constant-products/mixed-width.rs	1	incompatible types
+pa25/tests/spec/wide-constant-products/nonconst-call.rs	1	non-const calls
+pa25/tests/spec/wide-constant-products/integer-overflow-control.rs	1	constant integer

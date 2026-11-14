@@ -6251,9 +6251,11 @@ Never round a wide literal through f64. Keep the quad payload in two 64-bit
 words so it cannot enlarge ordinary scalar, node, body or LowIR value alignment.
 Measure the actual canonical-table cost and preflight bounded limb storage.
 Active literals and resolved primitive uses consume genuine crate or token-origin
-feature authority. F16/F128 constant division shares that exact rational kernel:
+feature authority. F16/F128 constant division and multiplication share that exact rational kernel:
 retain the binary scale in the output exponent, handle subnormal ties and IEEE
 special values, and never allocate scratch proportional to an exponent gap.
+Finite multiplication preserves the full significand product in at most eight
+32-bit limbs before rounding; no host floating intermediate may discard its low bits.
 Actual selected source operator and const-call permissions remain required.
 A known type grants no other unsupported arithmetic, cast, pattern, wire or ABI
 operation. The [wide-literal checkpoint](docs/wide-literals-checkpoint.md)

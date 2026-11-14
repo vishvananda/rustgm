@@ -2,6 +2,12 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
+The [wide constant product checkpoint](../docs/pa25-wide-constant-products.md)
+retains the original Mul declaration/macro and midpoint HI/MAX expression.
+Ordinary CTFE reductions belong to PA25; source authority belongs here. Its98
+new results, native byte observers and scaling leave original-library artifacts,
+runtime wide operations and the whole assignment incomplete.
+
 The [wide constant division checkpoint](../docs/pa25-wide-constant-division.md)
 qualifies exact f16/f128 division with74 observed results, actual source calls,
 native byte images and bounded scaling. Ordinary CTFE belongs to PA25 and source

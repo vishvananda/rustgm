@@ -1,12 +1,13 @@
-Current original evidence is clean candidate20 (5e59877ca), CLI8ad062c2:
+Current original evidence is clean candidate21 (f5f3e2961), CLIcfc8b0ee:
 42310 declarations/25858 bodies/35120 attempts with zero failed/blocked functions.
-The iterator loan failure clears. Completion now stops in f128.rs799 at the
-compile-time180/PI division. The unchanged120s diagnostic verifies722 hashes,
+The iterator loan and180/PI division failures clear. Completion now stops in
+f128.rs981 at midpoint's `const HI = f128::MAX * 0.5`. The unchanged120s diagnostic verifies722 hashes,
 375 opens, six pins and fixed limits; completion0 and no original artifact.
-The [wide constant division repair](pa25-wide-constant-division.md) passes74
-bit outcomes, six opponents, four native byte observers and scaling; clean
-successor/original verification is next. Full43537278071 passes the preceding
-loop source. Historical observations below are superseded where this differs.
+The [wide constant product repair](pa25-wide-constant-products.md) passes98 new
+bit/class outcomes, six opponents and all eight old/new native byte observers,
+with exact scaling; clean successor/original verification is next.
+Full43546470095 passes every stage on the preceding division source. Historical
+observations below are superseded where this differs.
 
 # Library build blocker tracker
 

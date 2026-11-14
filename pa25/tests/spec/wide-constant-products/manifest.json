@@ -1,0 +1,144 @@
+{
+ "schema": 1,
+ "declaration": "All outcomes frozen before first execution: ordinary PA25 and genuine source PA31 wide constant products. Positive matrices retain exact midpoint HI/MAX expression, full precision products, nearest ties-even, signed zero, underflow/overflow and IEEE special classes. Source uses unchanged prior source-div foundation plus exact original Mul declaration and macro. Runtime wide arithmetic/ABI/metadata remain fenced. Six opponents reject; no expected outcome may be inverted.",
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "cases": {
+  "f16": {
+   "expected": "accept",
+   "width": 16,
+   "mode": "ordinary",
+   "values": [
+    "MAX*0.5",
+    "1.5*1.5",
+    "1.0009765625*1.0009765625",
+    "1.0009765625*1.5",
+    "1.0029296875*1.5",
+    "-0.0*3.0",
+    "-0.0*-3.0",
+    "(1.0/0.0)*-2.0",
+    "(1.0/0.0)*0.0",
+    "(0.0/0.0)*2.0",
+    "1.0*(1.0/0.0)",
+    "5.9604644775390625e-8*0.5",
+    "1.78813934326171875e-7*0.5",
+    "0.00003*0.25",
+    "65504.0*65504.0",
+    "0.00003*0.00003",
+    "multiply(MAX,0.5)",
+    "limit()",
+    "1.9990234375*1.9990234375",
+    "0.0*(1.0/0.0)",
+    "(1.0/0.0)*(-1.0/0.0)",
+    "-5.9604644775390625e-8*0.25",
+    "MAX*5.9604644775390625e-8",
+    "MAX*0.00006103515625"
+   ],
+   "count": 24,
+   "sha256": "4f7241aa8209a8015684144ebe5243e21936fad2dd72ea056574f3194c1c5cae",
+   "value_contract": "finite/zero/infinity exact bits, NaN classification only",
+   "bits_path": "f16.bits",
+   "bits_sha256": "855d5af07e68a16c473384a431085205555bcbdd7840a3775d1d3a064550a4eb"
+  },
+  "f128": {
+   "expected": "accept",
+   "width": 128,
+   "mode": "ordinary",
+   "values": [
+    "MAX*0.5",
+    "1.5*1.5",
+    "1.0000000000000000000000000000000001925929944387235853055977942584927318538101648215388195239938795566558837890625*1.0000000000000000000000000000000001925929944387235853055977942584927318538101648215388195239938795566558837890625",
+    "1.0000000000000000000000000000000001925929944387235853055977942584927318538101648215388195239938795566558837890625*1.5",
+    "1.0000000000000000000000000000000005777789833161707559167933827754781955614304944646164585719816386699676513671875*1.5",
+    "-0.0*3.0",
+    "-0.0*-3.0",
+    "(1.0/0.0)*-2.0",
+    "(1.0/0.0)*0.0",
+    "(0.0/0.0)*2.0",
+    "1.0*(1.0/0.0)",
+    "6e-4966*0.5",
+    "2e-4965*0.5",
+    "1e-4932*0.25",
+    "1e4932*1e4932",
+    "1e-4932*1e-4932",
+    "multiply(MAX,0.5)",
+    "limit()",
+    "1.9999999999999999999999999999999998074070055612764146944022057415072681461898351784611804760061204433441162109375*1.9999999999999999999999999999999998074070055612764146944022057415072681461898351784611804760061204433441162109375",
+    "0.0*(1.0/0.0)",
+    "(1.0/0.0)*(-1.0/0.0)",
+    "-6e-4966*0.25",
+    "MAX*6e-4966",
+    "MAX*3.36210314311209350626267781732175260e-4932"
+   ],
+   "count": 24,
+   "sha256": "2065e32deb4cf1c44f43d8633ceee7868e2383d2b9aef386d3b80e770be2bda9",
+   "value_contract": "finite/zero/infinity exact bits, NaN classification only",
+   "bits_path": "f128.bits",
+   "bits_sha256": "6073048014746c6610e37dc98eedab885e26b148dca9e676e182ee98b5d1c246"
+  },
+  "missing-feature": {
+   "expected": "reject",
+   "mode": "ordinary",
+   "sha256": "02d97243ccfed25dd2bf8f7d76f075cc899f989b55c05381841afe049c5dfd3f"
+  },
+  "mixed-width": {
+   "expected": "reject",
+   "mode": "ordinary",
+   "sha256": "1dba6514dc66400b7808b00f6caa0b64462c5c93617a1ffe5031a89d2ffe2e35"
+  },
+  "nonconst-call": {
+   "expected": "reject",
+   "mode": "ordinary",
+   "sha256": "aae414cdb5f9d4d1066624e0b8f8d098f00f24088a52cacc18b0ccc294c12cfe"
+  },
+  "integer-overflow-control": {
+   "expected": "reject",
+   "mode": "ordinary",
+   "sha256": "bc029fd74bd34e823fb88a31490d47c72e35572c0b0c63e4ce0cf5080d8a1434"
+  }
+ },
+ "scaling": {
+  "8": {
+   "path": "scaling-8.rs",
+   "expected": "accept",
+   "count": 8,
+   "sha256": "b6ab2caadb3bc843ecd77184cd4b711466a035716b3776d908ec3c9c6c87e4ff",
+   "bits_path": "scaling-8.bits",
+   "bits_sha256": "5a725f6b5e1cf2eae4cd28e0fb5f1c627d9c27f20cb3ca1540bcbcc25b5b6e77"
+  },
+  "32": {
+   "path": "scaling-32.rs",
+   "expected": "accept",
+   "count": 32,
+   "sha256": "77f1a626b3fa77af5c7d512f02a4d2132bd80119ad809c997bde30b29f31be99",
+   "bits_path": "scaling-32.bits",
+   "bits_sha256": "446b3d24e6b9b94ccb2abee29e331e65833f807605ad6d90b76f069da3e6a054"
+  },
+  "128": {
+   "path": "scaling-128.rs",
+   "expected": "accept",
+   "count": 128,
+   "sha256": "9021b312cc11cadbe65047c2372ef181d7affe989906420c51b3657254f2178e",
+   "bits_path": "scaling-128.bits",
+   "bits_sha256": "7629ae687b3b264d769f78451d97bbbae61d2d34aca12fcf41d120ed19cecc28"
+  }
+ },
+ "observers": {
+  "16": {
+   "path": "observe-16.c",
+   "sha256": "ad10bca59ab6886e8260d93599056b74210544ce6aa4125248c188c39eb0b5b1",
+   "abi": "byte address through integer/pointer ABI; COUNT is declared by each matrix"
+  },
+  "128": {
+   "path": "observe-128.c",
+   "sha256": "abeb240d7fdec8afba3bd99ffe0374e0bc901cc352182e62eb3da39706713167",
+   "abi": "byte address through integer/pointer ABI; COUNT is declared by each matrix"
+  }
+ }
+}

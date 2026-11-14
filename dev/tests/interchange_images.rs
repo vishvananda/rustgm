@@ -1,7 +1,13 @@
-//! Exact constant divisions are observed as bytes through an integer-only ABI.
+//! Exact constant products and divisions are observed through an integer-only ABI.
 use crate::{provider_traits, resolve};
 use rustgm::lowir::{data::Item, program::Program};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
+const PACKETS: [(&str, &str); 4] = [
+    ("wide-constant-division", "pa25"),
+    ("wide-constant-division", "pa31"),
+    ("wide-constant-products", "pa25"),
+    ("wide-constant-products", "pa31"),
+];
 
 fn prepare(input: &str, source: bool) -> Result<Program> {
     if source {
@@ -10,10 +16,8 @@ fn prepare(input: &str, source: bool) -> Result<Program> {
         provider_traits::lower_report(&resolve::resolve(input, true)?)
     }
 }
-fn matrix(owner: &str, width: usize) -> Result<Program> {
-    let input = resolve::fixture(&format!(
-        "{owner}/tests/spec/wide-constant-division/f{width}.rs"
-    ))?;
+fn matrix(packet: &str, owner: &str, width: usize) -> Result<Program> {
+    let input = resolve::fixture(&format!("{owner}/tests/spec/{packet}/f{width}.rs"))?;
     prepare(&input, owner == "pa31")
 }
 fn bytes(program: &Program) -> Result<Vec<u8>> {
@@ -37,15 +41,13 @@ fn bytes(program: &Program) -> Result<Vec<u8>> {
     Ok(output)
 }
 #[test]
-fn direct_and_source_const_calls_match_independent_division_bits() -> Result {
-    for owner in ["pa25", "pa31"] {
+fn direct_and_source_const_calls_match_independent_interchange_bits() -> Result {
+    for (packet, owner) in PACKETS {
         for width in [16, 128] {
-            let program =
-                matrix(owner, width).map_err(|error| format!("{owner} f{width}: {error}"))?;
+            let program = matrix(packet, owner, width)
+                .map_err(|error| format!("{packet} {owner} f{width}: {error}"))?;
             let data = bytes(&program)?;
-            let expected = resolve::fixture(&format!(
-                "{owner}/tests/spec/wide-constant-division/f{width}.bits"
-            ))?;
+            let expected = resolve::fixture(&format!("{owner}/tests/spec/{packet}/f{width}.bits"))?;
             assert_eq!(data.len(), expected.lines().count() * width / 8);
             for (index, (value, expected)) in data
                 .chunks_exact(width / 8)
@@ -79,15 +81,15 @@ fn direct_and_source_const_calls_match_independent_division_bits() -> Result {
     Ok(())
 }
 #[test]
-fn division_retains_feature_type_const_call_and_source_role_requirements() -> Result {
-    for owner in ["pa25", "pa31"] {
-        let prefix = format!("{owner}/tests/spec/wide-constant-division");
+fn interchange_retains_feature_type_const_call_and_source_role_requirements() -> Result {
+    for (packet, owner) in PACKETS {
+        let prefix = format!("{owner}/tests/spec/{packet}");
         let table = resolve::fixture(&format!("{prefix}/cases.tsv"))?;
         let mut rejected = 0;
         for row in table.lines() {
             let columns: Vec<_> = row.split('\t').collect();
             let [path, status, reason] = columns.as_slice() else {
-                return Err("invalid division case".into());
+                return Err("invalid interchange case".into());
             };
             if *status == "0" {
                 continue;
@@ -109,71 +111,74 @@ fn division_retains_feature_type_const_call_and_source_role_requirements() -> Re
 }
 
 #[test]
-fn division_work_tracks_actual_initializers_and_output_bytes() -> Result {
-    let mut previous = None;
-    for width in [8, 32, 128] {
-        let prefix = format!("pa25/tests/spec/wide-constant-division/scaling-{width}");
-        let input = resolve::fixture(&format!("{prefix}.rs"))?;
-        let report = resolve::resolve(&input, true)?;
-        let rustgm::pipeline::Analysis {
-            mut facts,
-            prepared,
-        } = rustgm::pipeline::analyze_source(&report)?;
-        let program = rustgm::lower::instances::build_roots_prepared(
-            &report,
-            &mut facts,
-            rustgm::lower::Roots {
-                entry: None,
-                exports: &[],
-            },
-            prepared,
-        )?;
-        let data = bytes(&program)?;
-        let expected = resolve::fixture(&format!("{prefix}.bits"))?;
-        assert_eq!(data.len(), width * 16);
-        assert_eq!(expected.lines().count(), width);
-        for (value, expected) in data.as_chunks::<16>().0.iter().zip(expected.lines()) {
-            let value = u128::from_le_bytes(*value);
-            assert_eq!(value, u128::from_str_radix(expected, 16)?);
-        }
-        let work = [
-            facts.body_work.inference_steps,
-            facts.body_work.canonical_steps,
-            data.len(),
-        ];
-        println!("division width={width} work={work:?}");
-        if let Some(old) = previous {
-            for (before, after) in std::iter::zip(old, work) {
-                assert!(after <= 5 * before + 1024, "{old:?}->{work:?}");
+fn interchange_work_tracks_actual_initializers_and_output_bytes() -> Result {
+    for packet in ["wide-constant-division", "wide-constant-products"] {
+        let mut previous = None;
+        for width in [8, 32, 128] {
+            let prefix = format!("pa25/tests/spec/{packet}/scaling-{width}");
+            let input = resolve::fixture(&format!("{prefix}.rs"))?;
+            let report = resolve::resolve(&input, true)?;
+            let rustgm::pipeline::Analysis {
+                mut facts,
+                prepared,
+            } = rustgm::pipeline::analyze_source(&report)?;
+            let program = rustgm::lower::instances::build_roots_prepared(
+                &report,
+                &mut facts,
+                rustgm::lower::Roots {
+                    entry: None,
+                    exports: &[],
+                },
+                prepared,
+            )?;
+            let data = bytes(&program)?;
+            let expected = resolve::fixture(&format!("{prefix}.bits"))?;
+            assert_eq!(data.len(), width * 16);
+            assert_eq!(expected.lines().count(), width);
+            for (value, expected) in data.as_chunks::<16>().0.iter().zip(expected.lines()) {
+                let value = u128::from_le_bytes(*value);
+                assert_eq!(value, u128::from_str_radix(expected, 16)?);
             }
+            let work = [
+                facts.body_work.inference_steps,
+                facts.body_work.canonical_steps,
+                data.len(),
+            ];
+            println!("{packet} width={width} work={work:?}");
+            if let Some(old) = previous {
+                for (before, after) in std::iter::zip(old, work) {
+                    assert!(after <= 5 * before + 1024, "{old:?}->{work:?}");
+                }
+            }
+            previous = Some(work);
         }
-        previous = Some(work);
     }
     Ok(())
 }
 #[test]
 #[ignore = "requires pinned CPPGM and the host C linker"]
-fn constant_division_images_execute_without_wide_runtime_arithmetic() -> Result {
+fn constant_interchange_images_execute_without_wide_runtime_arithmetic() -> Result {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .ok_or("repository root")?;
     let folder = root
-        .join("obj/parallel/wide-division-native")
+        .join("obj/parallel/wide-interchange-native")
         .join(std::process::id().to_string());
     std::fs::create_dir_all(&folder)?;
-    for owner in ["pa25", "pa31"] {
+    for (packet, owner) in PACKETS {
         for width in [16, 128] {
-            let prefix = format!("{owner}/tests/spec/wide-constant-division");
+            let prefix = format!("{owner}/tests/spec/{packet}");
             let source = resolve::fixture(&format!("{prefix}/observe-{width}.c"))?;
-            let count = if owner == "pa25" { 18 } else { 19 };
+            let expected = resolve::fixture(&format!("{prefix}/f{width}.bits"))?;
+            let count = expected.lines().count();
             let observer = format!("#define COUNT {count}\n{source}");
             crate::ffi_program::check(
                 root,
                 &folder,
-                &format!("{owner}-{width}"),
-                &matrix(owner, width)?,
+                &format!("{packet}-{owner}-{width}"),
+                &matrix(packet, owner, width)?,
                 &observer,
-                &resolve::fixture(&format!("{prefix}/f{width}.bits"))?,
+                &expected,
             )?;
         }
     }

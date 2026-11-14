@@ -2,6 +2,12 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
+The [wide constant product checkpoint](../docs/pa25-wide-constant-products.md)
+qualifies98 new exact/classified results and genuine source Mul calls, with
+native byte observers and bounded scaling. It addresses release21's original
+midpoint HI/MAX constant. Original-library verification and all other required
+constant, runtime and transport boundaries remain open.
+
 The [wide constant division checkpoint](../docs/pa25-wide-constant-division.md)
 qualifies exact f16/f128 division with74 observed results, actual source calls,
 native byte images and bounded scaling. Ordinary CTFE belongs to PA25 and source

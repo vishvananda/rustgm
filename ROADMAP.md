@@ -6,10 +6,16 @@ assignments.json. PA1–PA20 retain implemented-draft while individual release
 records are reconciled. PA25–PA44 remain planned as whole assignments. No
 planned or empty suite counts as passing.
 
+The [wide constant product checkpoint](docs/pa25-wide-constant-products.md)
+qualifies98 new exact/classified results, real source Mul const calls and native
+byte observers. Release21 clears the original division site and reaches
+midpoint's MAX*0.5 constant; unchanged original verification of multiplication
+is next. Runtime/backend/transport and all whole-assignment requirements remain.
+
 The [wide constant division checkpoint](docs/pa25-wide-constant-division.md)
 qualifies74 exact/classified results, four native image observers and bounded
 scaling through the shared rounding kernel. It addresses clean release20's
-original f128.rs799 completion failure; actual original verification is next.
+original f128.rs799 completion failure, confirmed cleared by release21.
 Wide runtime/ABI/transport and whole-assignment requirements stay open.
 
 The [loop result checkpoint](docs/pa16-loop-result-identities.md) qualifies25

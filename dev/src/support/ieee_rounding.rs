@@ -40,6 +40,21 @@ pub(crate) fn ratio(
     )
 }
 
+/// Round the full product of finite target significands, including every low bit.
+pub(crate) fn product(
+    left: u128,
+    right: u128,
+    exponent: i64,
+    format: Format,
+) -> Result<u128, &'static str> {
+    scaled(
+        &Unsigned::product(left, right)?,
+        &Unsigned::one(),
+        exponent,
+        format,
+    )
+}
+
 pub(crate) fn round_rational(
     num: &Unsigned,
     den: &Unsigned,

@@ -1,4 +1,4 @@
-//! Bounded nonnegative limbs shared by wide literals and demanded constant division.
+//! Bounded nonnegative limbs shared by wide literals and demanded constant arithmetic.
 use std::cmp::Ordering;
 
 const MAX_WORDS: usize = 2048;
@@ -7,6 +7,31 @@ pub(crate) struct Unsigned {
     words: Vec<u32>,
 }
 impl Unsigned {
+    pub fn product(left: u128, right: u128) -> Result<Self, &'static str> {
+        if left == 0 || right == 0 {
+            return Ok(Self::default());
+        }
+        let mut result = Self::default();
+        result.reserve(8)?;
+        result.words.resize(8, 0);
+        for (i, &a) in left.to_le_bytes().as_chunks::<4>().0.iter().enumerate() {
+            let mut carry = 0_u64;
+            for (j, &b) in right.to_le_bytes().as_chunks::<4>().0.iter().enumerate() {
+                // One limb product, the existing limb and carry total at most
+                // u64::MAX. The next untouched limb receives the final carry.
+                let value = u64::from(u32::from_le_bytes(a)) * u64::from(u32::from_le_bytes(b))
+                    + u64::from(result.words[i + j])
+                    + carry;
+                let bytes = value.to_le_bytes();
+                result.words[i + j] = u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]);
+                carry = value >> 32;
+            }
+            result.words[i + 4] =
+                u32::try_from(carry).map_err(|_| "wide product carry overflow")?;
+        }
+        result.trim();
+        Ok(result)
+    }
     #[cfg(test)]
     pub fn reserved_words(&self) -> usize {
         self.words.capacity()

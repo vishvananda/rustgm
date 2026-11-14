@@ -1169,4 +1169,4 @@ impl Queries<'_> {
     }
 }
 
-mod interchange_division;
+mod interchange_arithmetic;

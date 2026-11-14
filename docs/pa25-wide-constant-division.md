@@ -61,11 +61,14 @@ literal path. Initial local audit gates requested more precise module filenames;
 Clippy requested fixed-size slice iteration and a test semicolon. Raw failed
 gates remain, with no semantic positive inverted or rejected opponent removed.
 
-Full43537278071 passed every stage on the preceding loop source5e59877ca.
-This numerical checkpoint still needs a clean compiler pin and unchanged original
-verification; module-bodies-v13 metadata/LowIR and genuine original native
+Full43546470095 passes every stage on this division sourcef5f3e2961, including
+3075 private tests and the new ratio boundary unit. Clean release21 clears the
+original division site and reaches midpoint's MAX*0.5 constant; the
+[product continuation](pa25-wide-constant-products.md) records that next repair.
+Module-bodies-v13 metadata/LowIR and genuine original native
 consumers remain required. Whole PA25/31 and every earlier retained requirement
 stay open, including both borrowed-result native consumers and the ordinary
 unbounded manual Copy-wrapper positive. The113-case const-machine component
 is unchanged. Paired same-profile20/21 observations have frozen literal/scalar
-controls and remain subject to the unchanged14/20 admission gate.
+controls now pass48 complete output equalities under the unchanged14/20 gate.
+Raw calibration/paired observations remain; no speed improvement is claimed.

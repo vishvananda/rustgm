@@ -5,15 +5,14 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
-Latest continuation: exact wide constant division is published as f5f3e2961.
-Clean candidate21-release is built and pinned, but its unchanged original-core
-observer has NEVER LAUNCHED: resource admission repeatedly refuses shared disk
-headroom. The last refusal is153.7GiB free versus154.4GiB required, before any
-compiler process. Do not mistake this for a compiler rejection or timeout.
-Full43546470095 on exact f5f3e2961 has fast success and is still running release
-and course qualification. Read the final "Release21 ready; disk admission blocks
-verification" section for the exact resume state. No original library artifact
-exists; all runtime/backend and retained positive requirements stay open.
+Latest continuation: disk headroom is restored and full43546470095 PASSES EVERY
+STAGE on the published division sourcef5f3e2961. Clean release21 clears the old
+180/PI failure and reaches f128.rs981's midpoint MAX*0.5 constant. The next source
+checkpoint qualifies exact products:98 new bit/class results, six guards, all
+eight old/new native byte observers and exact8/32/128 scaling. Read the final
+"Release21 observed; exact products qualified" section. Publish this coherent
+checkpoint, freeze clean release22, then observe unchanged original core. There
+is still no original library artifact; all retained requirements remain open.
 
 ## Workspace and authorization
 
@@ -804,3 +803,89 @@ stand, with no new speed claim. Whole PA25–44, the separate113-case const-mach
 scope, both borrowed-result native positives, ordinary manual Copy wrapper and
 all other retained requirements remain unchanged and incomplete. Live transient
 status is obj/parallel/wide-constant-division/live-state.json.
+
+## Release21 observed; exact products qualified
+
+The external disk blocker has cleared: shared free space is now about201GiB,
+with reserve150GiB and B cap16GiB unchanged. Full43546470095 PASSED EVERY STAGE
+on exact f5f3e2961, including3075 private tests and the ratio boundary unit in
+both release and debug lanes. Its full log is retained under
+wide-constant-division/ci43546470095.log. No duplicate full successor was started.
+
+The existing clean candidate21-release ran unchanged original core without a
+rebuild. Diagnostic23.0756s, admission10.57/29.83 above14/20: no speed claim.
+All42310 declarations,25858 bodies and35120 attempts pass without failed/blocked
+functions. The old division site8:31479 IS ABSENT. New sole completion failure
+is8:38864, num/f128.rs981: `const HI: f128 = f128::MAX * 0.5` in midpoint.
+Completion0, no original artifact. Stage-aware postcheck verifies722 input hashes,
+375 opens, six pins and all3956 producer/current Rust source hashes; current
+054252674 is only a handoff descendant of the original f5f3e2961 producer. Empty
+working patch and fixed120s/work14500624/1GiB attempted/64MiB retained verify.
+Raw: capture-match/original-candidate21-diagnostic/, observe-candidate21-resumed.log
+and postcheck-candidate21.log. Original-library-candidate21 remains unexecuted.
+
+The [product checkpoint](docs/pa25-wide-constant-products.md) retains ordinary
+PA25 and genuine source PA31 inputs under tests/spec/wide-constant-products/.
+Four independent Rust/C matrices observe98 results, including both ties-even
+directions, full products, special values, actual Mul const calls and the source
+HI/MAX expression. Original Mul declaration/macro bytes and full midpoint cutouts
+are attributed and hashed. Six independent guards reject; baseline21 reproduces
+the unsupported arithmetic on every accepting matrix. Outcomes precede execution;
+no valid positive was dropped or inverted. Three independent scaling programs
+also pass before candidate execution.
+
+Finite products use16 schoolbook limb steps, at most eight32-bit limbs, and the
+existing bounded rational rounding kernel, preserving all226 f128 product bits.
+Binary scale remains in the output exponent. Shared operator dispatch is renamed
+sema/constants/interchange_arithmetic.rs; the integration root is now
+dev/tests/interchange_images.rs, registered exactly once in frontend. There are
+still3956 Rust files: these are semantic module renames, not additional records.
+No dense field, layout/alignment, quota, literal bound, external frontend,
+backend/bridge or storage.py change. Wide runtime/cast/pattern/wire/C-ABI fences
+and the frozen backend/configuration truth stay intact.
+
+Fastcheck1794633042585911598 passes four exact tests in134.60s: all172 old/new
+matrix results,12 guards, both scaling packets and the literal control. FullPA2
+remains142/142, all references unchanged. Strict selected/CLI Clippy, fullfmt,
+architecture and metadata checks pass. Native1794633256850046765 passes all eight
+RustGM/CPPGM/C byte observers in39.00s, using only the integer/pointer ABI.
+The new private full-limb-carry/ties/extreme-product unit awaits CI; no cold local
+private harness was rebuilt. Prior ratio private execution is proven by full CI.
+
+Authenticated replay binds3956 compiler/test hashes and every packet source/bit
+hash before/after the three exact tests. Product work[inference,canonical,bytes]
+is81/11/128,246/35/512,906/131/2048, exactly55n/8+26,n+3,16n. Division controls
+retain82/11/128,244/35/512,892/131/2048. All315 harness tests,490roots/13binaries,
+44-stage/one-component layout and128 upstream+126 Reference checks pass.
+Raw: wide-constant-products/fast1.log, fast2-native.log, consistency-v2.log and
+scaling-replay-v2/. The first replay setup assumed an optional old bits_path
+field and failed before tests; consistency.log remains. No semantic outcome changed.
+
+Pending timing was also completed when load admitted:20/21 rounding48 complete
+output equalities, and19/20 additional full-analysis type-view48 equalities, each
+four A/A plus two ABBA per input. Raw calibration/commands/binary/input hashes
+remain under wide-constant-division/measure-candidate21/ and inline-region-arrays/
+measure-candidate20-typeviews/. Total historical output-equal observations are288.
+Largest controls show possible roughly7–15% overhead; ordinary reversals and
+small observations prevent a precise/whole-core performance claim. No speedup
+is asserted. Original19/20 full-LowIR callback-export positives remain required:
+baseline19 rejects exposed callable/reference scalar metadata before timing.
+That failed attempt and original input declarations remain under measure-candidate20/
+and loop-measure-inputs/. Additional type views do not qualify or replace those
+artifacts; retain them in PA29's required transport boundary.
+
+Observe/postcheck/core-artifact22 helpers are ready, preserving the original
+inputs, six pins and fixed limits. Publish this coherent source, then dispatch
+one full manual successor after confirming the previous full is terminal. Freeze
+one clean release22 and run unchanged original analysis. Only after completion
+clears, run genuine module-bodies-v13 metadata/LowIR and actual original native
+consumers. A census or cutout is never an original library artifact. Whole PA25–44,
+the separate113-case component and every retained positive remain incomplete.
+
+Final product preparation: four frozen21/22 timing controls (existing divisions
+8/32/128 and ordinary arithmetic) retain their independent source/byte evidence;
+immutable21 accepts every exact planned command. Timing inputs and preflight are
+under wide-constant-products/measure-inputs/ and timing-preflight/. New products
+remain separately bit/native/scaling checked because21 rejects them. make tidy
+1794633941285614191 completed; no local build/test/measurement remains. Current
+19/20/21 pins are available. Publish, then freeze22 without further source edits.

@@ -265,5 +265,5 @@ mod knowledge_sources;
 #[path = "../../loop_results.rs"]
 mod loop_results;
 
-#[path = "../../division_images.rs"]
-mod division_images;
+#[path = "../../interchange_images.rs"]
+mod interchange_images;

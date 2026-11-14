@@ -1,0 +1,4 @@
+pa31/tests/spec/wide-constant-products/f16.rs	0	-
+pa31/tests/spec/wide-constant-products/f128.rs	0	-
+pa31/tests/spec/wide-constant-products/missing-mul-role.rs	1	-
+pa31/tests/spec/wide-constant-products/nonconst-implementation.rs	1	-
