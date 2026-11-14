@@ -1,0 +1,115 @@
+{
+ "schema": 1,
+ "owner": "PA25 ordinary const associated result bounds",
+ "declared_before_execution": true,
+ "cases": {
+  "direct.rs": {
+   "expected": "accept"
+  },
+  "always.rs": {
+   "expected": "accept"
+  },
+  "plain-parent.rs": {
+   "expected": "reject"
+  },
+  "plain-result.rs": {
+   "expected": "reject"
+  },
+  "supertrait.rs": {
+   "expected": "accept"
+  },
+  "wrong-argument.rs": {
+   "expected": "reject"
+  },
+  "native.rs": {
+   "expected": "accept",
+   "observer": "observe.c",
+   "native_stdout": "41 59\n"
+  },
+  "original-residual.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required accepting original counterpart remains; unresolved core::ops::{Residual,FromResidual} import is an unqualified bootstrap boundary"
+  },
+  "scaling-8.rs": {
+   "expected": "accept"
+  },
+  "scaling-32.rs": {
+   "expected": "accept"
+  },
+  "scaling-128.rs": {
+   "expected": "accept"
+  },
+  "native-read.rs": {
+   "expected": "accept",
+   "observer": "observe.c",
+   "native_stdout": "41 59\n"
+  },
+  "always-result.rs": {
+   "expected": "accept"
+  },
+  "always-parent-required.rs": {
+   "expected": "accept"
+  },
+  "conditional-parent-insufficient.rs": {
+   "expected": "reject"
+  },
+  "plain-runtime.rs": {
+   "expected": "accept"
+  },
+  "nested.rs": {
+   "expected": "accept"
+  },
+  "nested-plain-parent.rs": {
+   "expected": "reject"
+  },
+  "quantified.rs": {
+   "expected": "accept"
+  },
+  "quantified-runtime.rs": {
+   "expected": "accept"
+  },
+  "blanket-const.rs": {
+   "expected": "reject"
+  },
+  "blanket-ordinary.rs": {
+   "expected": "reject"
+  },
+  "blanket-unbounded.rs": {
+   "expected": "accept"
+  }
+ },
+ "files": {
+  "always.rs": "d4fb52d38810a3902377fb2ce43e39ed05b5dee61cb2e8cecc4031a0d88b027a",
+  "direct.rs": "9c7278aeed5d10c81333103a0062368e8f16f92aab9463c9881ef903f0338846",
+  "native.rs": "0740946082c94575d089f27f795bd051864374d273326dd42f6d652b006159f4",
+  "original-residual.rs": "8b38a1415bdd0de50a41983cce29474f37c995b46cee6c7ac6e98d620ff69fd6",
+  "plain-parent.rs": "f0962c9490b8fb9d311f65c25afd886afa91624f1b98463f2f8d9333a1178af8",
+  "plain-result.rs": "ed76e341da3dfd70d7572ae606b19667e445fa2ab1f4b58984243259af122e4e",
+  "scaling-128.rs": "f64e7b959506ef8095d1c7a532573763875da80a1c2192ff397a5b4363aba15c",
+  "scaling-32.rs": "49c7338bfc8b0cddc1a040d311b5890ff9d58f7a328d6e01b6c1a63ec516310a",
+  "scaling-8.rs": "169382b90c5339964ff549e2e114885ce92b82e9792dfa24c869aa4174843aab",
+  "supertrait.rs": "a2e8f47789973eb33d394ce91fd63babee1840d779df4b8860c78b71a0aafdc4",
+  "wrong-argument.rs": "d10821223d82d1cc2818fa63ea44b13a8e1ed85dc1c0a0a6c5b8b93098dbea79",
+  "native-read.rs": "14b0af051c5f177d42c2b54d98391886b358b58a5e0c9d67a4924411607eec7a",
+  "always-result.rs": "d54190e770c1b67f45ff4f2c12993d84840e38b27b765b57f07e1e1a564ea92b",
+  "always-parent-required.rs": "afc4ebe0a6bbb6a05007fbc287d40d4c045a2c3e883ef280b9eb67641992e610",
+  "conditional-parent-insufficient.rs": "d065ddcc37244f3af9170fd13768e525ad7040920ed560005af14d4591d0563a",
+  "plain-runtime.rs": "de64249c132f3c6f97dd611fae16c6a1f0e56408828330f3ed7b0dbcb63616c8",
+  "nested.rs": "d23bcfed93f52386d6c5b55f77b918e029f5da59a6d7a54fa812fcb5c26be1a5",
+  "nested-plain-parent.rs": "2de9fc70a58be9de92d59dbd1e53f1b7f483c3c8a7fdc9a0aee3a7508fa4ea78",
+  "quantified.rs": "935ed475436617e47dcf50c937651e93a7b80cd791434e4c0a76662b6ac65d6f",
+  "quantified-runtime.rs": "c55131780f7e7db7d0bee71760ea40ec89b3173e7b002038c21a56cf705e685d",
+  "blanket-const.rs": "275d1ade61799b7a0440e67b8cf00b7859a36a4a56781ec33aa876e391fa3a93",
+  "blanket-ordinary.rs": "da09323a95fe2ea3c5112cf08148d2ba209350221346a944ae867fd15815907b",
+  "blanket-unbounded.rs": "8b66e067f6dab29194e9d0f42d0c33298816b49503a06ec836857696aa65f1d2",
+  "observe.c": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14"
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "target": "x86_64-unknown-linux-gnu"
+ }
+}

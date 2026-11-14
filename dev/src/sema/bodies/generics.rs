@@ -5,7 +5,10 @@ use crate::{
     types::{
         arguments::Argument as Canonical,
         infer::{self, arguments::Argument},
-        parameters::{ParameterKind, predicates::Bound},
+        parameters::{
+            ParameterKind,
+            predicates::{Bound, Predicate},
+        },
     },
 };
 
@@ -347,7 +350,13 @@ impl Checker<'_> {
                 continue;
             }
             let predicate = match evidence.get(&index) {
-                Some(Source::Assumption(actual) | Source::ResultBound(actual)) => *actual,
+                Some(Source::Assumption(actual)) => *actual,
+                // A declared conditional result is used at this call's effect.
+                // Reprove the solved goal, including its parent qualification;
+                // the declaration alone cannot strengthen an ordinary call.
+                Some(Source::ResultBound(actual)) => {
+                    self.result_effect(node, *actual, *predicate)?
+                }
                 Some(
                     Source::Implementation { .. }
                     | Source::Callable { .. }
@@ -359,36 +368,15 @@ impl Checker<'_> {
                     clause,
                     subject,
                     application,
-                }) => {
-                    if !self
-                        .trait_assumptions(node)?
-                        .is_some_and(|assumptions| assumptions.contains_quantified(*clause))
-                    {
-                        return Err(self.error(
-                            node,
-                            "quantified evidence is outside this caller environment",
-                        ));
-                    }
-                    crate::types::parameters::predicates::Predicate {
-                        ty: *subject,
-                        bound: Bound::trait_application(
-                            *application,
-                            self.facts
-                                .types
-                                .quantified(*clause)
-                                .and_then(|value| value.predicate.bound.trait_parts())
-                                .map(|(_, effect)| effect)
-                                .ok_or_else(|| {
-                                    self.error(node, "quantified evidence lost its trait effect")
-                                })?,
-                        ),
-                    }
-                }
+                }) => self.quantified_assumption(node, *clause, *subject, *application)?,
                 Some(Source::QuantifiedResultBound {
                     clause,
                     subject,
                     application,
-                }) => self.quantified_result(node, *clause, *subject, *application)?,
+                }) => {
+                    let actual = self.quantified_result(node, *clause, *subject, *application)?;
+                    self.result_effect(node, actual, *predicate)?
+                }
                 Some(Source::Pointee(selected)) => {
                     selected
                         .current(self.facts)
@@ -425,6 +413,27 @@ impl Checker<'_> {
         }
         Ok(())
     }
+    fn result_effect(
+        &self,
+        node: NodeId,
+        actual: Predicate,
+        required: Predicate,
+    ) -> Result<Predicate, Error> {
+        let (application, _) = actual.bound.trait_parts().ok_or_else(|| {
+            self.error(node, "declared result lost its selected trait application")
+        })?;
+        let (_, effect) = required.bound.trait_parts().ok_or_else(|| {
+            self.error(
+                node,
+                "declared result cannot replace a non-trait requirement",
+            )
+        })?;
+        Ok(Predicate {
+            bound: Bound::trait_application(application, effect),
+            ..actual
+        })
+    }
+
     fn builtin_call_evidence(
         &mut self,
         node: NodeId,
@@ -506,6 +515,36 @@ impl Checker<'_> {
 }
 
 impl Checker<'_> {
+    /// A quantified caller premise must still belong to this actual environment.
+    fn quantified_assumption(
+        &mut self,
+        node: NodeId,
+        clause: crate::types::parameters::clauses::QuantifiedId,
+        subject: TypeId,
+        application: crate::types::traits::ApplicationId,
+    ) -> Result<Predicate, Error> {
+        if !self
+            .trait_assumptions(node)?
+            .is_some_and(|assumptions| assumptions.contains_quantified(clause))
+        {
+            return Err(self.error(
+                node,
+                "quantified evidence is outside this caller environment",
+            ));
+        }
+        let effect = self
+            .facts
+            .types
+            .quantified(clause)
+            .and_then(|value| value.predicate.bound.trait_parts())
+            .map(|(_, effect)| effect)
+            .ok_or_else(|| self.error(node, "quantified evidence lost its trait effect"))?;
+        Ok(Predicate {
+            ty: subject,
+            bound: Bound::trait_application(application, effect),
+        })
+    }
+
     /// Recheck provenance against mapped result rules, never the caller's free assumptions.
     fn quantified_result(
         &mut self,

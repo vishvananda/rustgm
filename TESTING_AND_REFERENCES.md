@@ -1,5 +1,11 @@
 # Testing and references
 
+The [projected const promise checkpoint](docs/pa25-projected-const-members.md)
+qualifies44 complete ordinary/source outcomes, seven native programs and scoped
+parent-effect proofs. Original core remains at the last verified residual helper
+until clean release34 runs. Whole assignments and original artifacts remain open.
+
+
 The [v14 declaration checkpoint](docs/parallel/mixed-declarations-v14.md) keeps
 complete legacy provider/client bytes as controls, adds explicit mixed-profile
 expectations and independently checks the ordinary native/helper semantics.

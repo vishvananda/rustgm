@@ -1,50 +1,68 @@
 # RustGM handoff — 2026-11-14
 
-Continue the active goal: compile pinned original core, then alloc/std, completing
-assignment components as their complete contracts qualify. Work as **one worker**.
-**No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
-the released113-case PA25 const-machine component stays separate.
+Continue the active goal: compile pinned original core, completing assignment
+components as their complete contracts qualify. **One worker**, B only; main is
+Git-only. **No original core metadata/LowIR/native consumer artifact exists.**
+PA25–PA44 remain planned; the released113-case PA25 component is unchanged.
 
-Published current source2367320774a9df4da7d5dbcbba7c5b1d95bad38e; main synced.
-Clean candidate33-release binds3964 source hashes/empty patch,8m39s build,
-CLIc638c2da481039533ee73af726cf483b1d9dc04178d4a02f338083a0b004c1af.
-Genuine unchanged original v14 library33 CLEARS RangeBounds::contains and now
-FAILS ops/try_trait.rs:383/file95:15668, residual_into_try_type:
+CURRENT coherent checkpoint: projected conditional const associated promises.
+See docs/pa25-projected-const-members.md. Production pays the corresponding
+const-qualified parent on the existing scoped proof stack; final generic-use
+validation preserves the call's effect and declaration provenance. Projected safe
+Rust requests then reuse the existing full source validator. Unsafe/convention,
+source/current-call/caller/borrow/actual implementation/Code proof stay required.
+Lazy continuation only: no common Frame/Node/Source growth, persistent cache,
+wire, backend, storage policy or quota changes.3964 compiler sources.
+
+PA25/31 projected-const-members each declare23 outcomes (16 accept/7 reject),
+independently confirmed by pinned Rust1.98. Qualified44 complete outcomes;
+source aggregate constructor CTFE payment and ordinary original-helper imports
+remain required accepting/unqualified. Byte-exact original residual helper is
+retained (aa7409a6…527866). Source support stability/main-wrapper setup corrections
+are recorded; semantic bodies/outcomes unchanged. A new blanket-const prediction
+was independently corrected from accept to reject before candidate execution;
+no old valid positive was inverted. Both new native observers print41/59.
+
+fast7=1794691669999805863 four exact44.95s; fast8=1794691978469603016 final
+wrappers/scaling41.90s. native4=1794692601948384080 seven actual programs47.66s,
+including five old controls, source projected read and ordinary construction.
+Strict selected/production/CLI Clippy, format and architecture pass. Final replay
+binds all3964 source hashes/all packet/basis hashes,46 CLI attempts (44 qualified,
+two accepting gaps), exact prepared lowering and8/32/128 scaling. Source work
+6758/8534,26966/32944,107798/130560; ordinary3880/2641,15496/10561,61960/42241.
+No speed claim.315 harness/495 roots/13 bins/44 stages/one component,
+128 upstream+126 Reference pass. Raw obj/parallel/projected-const-members/.
+
+NEXT publish this coherent checkpoint, dispatch ONE full successor (prior run
+is terminal), freeze clean candidate34-release, retry unchanged genuine original
+v14 library with fixed120s/14500624work/1GiB attempted/64MiB retained, then postcheck.
+Do not run another census or unoptimized whole-original retry. Original helper
+now qualifies in the reduction; full original verification remains required.
+
+Latest published source2367320774a9df4da7d5dbcbba7c5b1d95bad38e; main synced
+through docs eacd4b3d3 before this checkpoint. Clean33 CLIc638c2da…004c1af,
+3964 hashes/empty patch,8m39s build. Genuine original v14 library33 CLEARS
+RangeBounds::contains, FAILS ops/try_trait.rs:383/file95:15668 residual_into_try_type,
 `const function member lacks its current conditional trait premise`.
-25.41980179119855s/status1/no timeout/peak childRSS728988KiB; no core.rgm,
-0-byte core.lowir. Artifact-postcheck33 terminal PASS:722 original hashes/375 opens/
-six reviewed config pins/all3964 compiler hashes/clean pin/fixed120s/
-14500624work/1GiB attempted/64MiB retained. Diagnostic only/no speed claim.
-Raw default-generic-subjects/{build33-release,core-artifact33,artifact-postcheck33}.log
-and original-library-candidate33/. No original metadata/LowIR/native consumer.
+25.41980179119855s/status1/no timeout/RSS728988KiB; no core.rgm,0-byte core.lowir.
+Postcheck33 PASSES722 originals/375 opens/six reviewed pins/all3964/clean pin/
+fixed120s and quotas. Raw default-generic-subjects/{core-artifact33,
+artifact-postcheck33}.log and original-library-candidate33/. Diagnostic only.
 
-NEXT reduce projected conditional const member requests from actual residual
-helper. Its R:[const]Residual<O> promises TryType:[const]Try<Output=O,Residual=Self>,
-and Try has FromResidual as its supertrait. The call is on the projected result,
-not a direct environment predicate. No production edit or reduction for this
-new frontier yet. Current source_request rejects parameterized targets containing
-projections, then abstract Function premise checks only exact indexed predicates.
-Inspect the existing typed associated result-bound path / current source request
-rather than inventing permission or a second solver. The previous generic member
-fast1 regression was specifically projected requests reaching source_member's
-normalized-signature error, NOT a demonstrated semantic misacceptance:
-conditional-members/fast1.log has abstract-premise source/ordinary positive errors
-`const member requires its normalized safe source signature`. Both projection
-filters currently preserve the older exact-premise fallback. Keep unsafe/convention,
-source/full-call/current-effect, execution/borrow/Code proof and all opponents.
-Ordinary associated const-trait minima PA25; actual Try/FromResidual roles PA31.
-Existing non-const source foundation: pa31/tests/spec/source-try-blocks/
-source-execute-protocol.rs. Actual unchanged original is in the frozen722 tree.
+Full43636803381 exact236732077 PASSED EVERY STAGE:3083 private release8.77s,
+debug92.68s, all public/native/course/independent/component. Raw
+projected-const-members/ci43636803381.log. Two preceding private scope/foreign-
+subject guards are now qualified. No successor yet; do not duplicate one once
+launched. Current33/32/31 and pending performance21–24 pins retained;25–30 are
+retired/unavailable. Retire superseded exploratory replay pins after clean34
+replacement; preserve all receipts/hashes and actual pending performance pins.
 
-Full43636803381 exact236732077 is the ONE successor: fast/static/harness/host graph
-pass; release/course running at last poll. Two new private guards remain pending
-that run (expected inventory3083). Do not duplicate/cancel/restart for this handoff.
-Previous ca20 full failed only closure gap classification after3081 private6.56s;
-classification is repaired and all six accepting closure requirements stay open.
-No local heavy job. Current33/32/31 and pending perf21–24 binaries retained;
-25–30/default-supertraits replay/bounds baselines retired/unavailable. Same B only/
-one worker/main Git-only/2jobs/150GiB reserve/16GiB cap, free306GiB. All older
-whole PA25–44/original v13/v14/bootstrap/future/native requirements stay required.
+Same existing B /mnt/vizier/rustgm-scratch/rustgm-pa26-work, branch
+implement/scoped-inherent-20261110. No new worker/tree. Shared controller verified
+2jobs/150GiB reserve/CPU800%/RAM12GiB/tasks256; one local heavy job,16GiB output
+cap. Free space is above the reserve. Backend stays frozen17b024f69. Every build,
+test/probe uses resource/storage guards. All earlier original v13/v14, bootstrap,
+future, closure, native and transport requirements below remain required.
 
 Historical checkpoint record follows; the continuation above supersedes older
 NEXT/status/build-frontier statements.

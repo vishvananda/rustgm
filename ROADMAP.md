@@ -1,5 +1,11 @@
 # RustGM assignment roadmap
 
+The [projected const promise checkpoint](docs/pa25-projected-const-members.md)
+qualifies44 complete ordinary/source outcomes, seven native programs and scoped
+parent-effect proofs. Original core remains at the last verified residual helper
+until clean release34 runs. Whole assignments and original artifacts remain open.
+
+
 The [generic-subject default checkpoint](docs/pa25-default-generic-subjects.md)
 qualifies30 complete outcomes and five native programs, including unchanged
 RangeBounds::contains runtime. Its CTFE payment and three ordinary imports remain

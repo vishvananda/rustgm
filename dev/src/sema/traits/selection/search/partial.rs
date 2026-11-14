@@ -67,7 +67,11 @@ impl Search<'_> {
         }
         if matches!(
             parent.language.as_deref(),
-            Some(super::mechanical::Pending::Async(_) | super::mechanical::Pending::Scoped(_))
+            Some(
+                super::mechanical::Pending::Async(_)
+                    | super::mechanical::Pending::Scoped(_)
+                    | super::mechanical::Pending::Result(_)
+            )
         ) {
             return self.accept_partial_scoped_callable(facts, parent, child);
         }

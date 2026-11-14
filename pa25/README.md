@@ -1,5 +1,11 @@
 # RustGM Programming Assignment 25: Constant evaluation
 
+The [projected const promise checkpoint](../docs/pa25-projected-const-members.md)
+retains conditional associated-result parent proof, actual source signatures,
+ordinary/source opponents and native observations. Whole-PA and original-library
+artifact requirements remain open.
+
+
 The [generic-subject default checkpoint](../docs/pa25-default-generic-subjects.md)
 qualifies ordinary custom const-trait premises here and actual source reference
 requests in PA31. Bound imports and the separate CTFE signature-payment consumer

@@ -1,5 +1,11 @@
 # Compile-time-first Rust frontend architecture
 
+The [projected const promise checkpoint](docs/pa25-projected-const-members.md)
+qualifies44 complete ordinary/source outcomes, seven native programs and scoped
+parent-effect proofs. Original core remains at the last verified residual helper
+until clean release34 runs. Whole assignments and original artifacts remain open.
+
+
 The [generic-subject default checkpoint](docs/pa25-default-generic-subjects.md)
 requires both subject and application for the owning Self fast path; other direct
 parameters consume exact completed premises. An original default uses normalized

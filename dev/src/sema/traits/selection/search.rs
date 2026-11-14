@@ -751,7 +751,11 @@ impl Search<'_> {
         }
         if matches!(
             frame.language.as_deref(),
-            Some(mechanical::Pending::Async(_) | mechanical::Pending::Scoped(_))
+            Some(
+                mechanical::Pending::Async(_)
+                    | mechanical::Pending::Scoped(_)
+                    | mechanical::Pending::Result(_)
+            )
         ) {
             return Self::accept_scoped_callable(frame, decision);
         }

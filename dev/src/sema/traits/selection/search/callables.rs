@@ -259,7 +259,10 @@ impl Search<'_> {
         if matches!(frame.language.as_deref(), Some(Pending::Async(_))) {
             return self.complete_async_callable(facts, frame);
         }
-        if matches!(frame.language.as_deref(), Some(Pending::Scoped(_))) {
+        if matches!(
+            frame.language.as_deref(),
+            Some(Pending::Scoped(_) | Pending::Result(_))
+        ) {
             return self.advance_callable_conditions(facts, frame);
         }
         if matches!(frame.language.as_deref(), Some(Pending::Components(_))) {

@@ -1,5 +1,11 @@
 # RustGM Programming Assignment 31: Compiler/library bindings
 
+The [projected const promise checkpoint](../docs/pa25-projected-const-members.md)
+retains conditional associated-result parent proof, actual source signatures,
+ordinary/source opponents and native observations. Whole-PA and original-library
+artifact requirements remain open.
+
+
 The [generic-subject default checkpoint](../docs/pa25-default-generic-subjects.md)
 qualifies the exact RangeBounds::contains definition and real runtime endpoint
 observations. Scoped source requests preserve actual dispatch/borrow/Code proof.

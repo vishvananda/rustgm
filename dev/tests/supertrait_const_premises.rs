@@ -23,11 +23,14 @@ const REJECTED: [(&str, &str); 5] = [
 ];
 
 fn program(source: &str) -> Result<rustgm::lowir::program::Program> {
-    let report = crate::resolve::source_provider(source, "const_premises")?;
+    lower(&crate::resolve::source_provider(source, "const_premises")?)
+}
+
+fn lower(report: &rustgm::resolve::expansion::Report) -> Result<rustgm::lowir::program::Program> {
     let rustgm::pipeline::Analysis {
         mut facts,
         prepared,
-    } = rustgm::pipeline::analyze_source(&report)?;
+    } = rustgm::pipeline::analyze_source(report)?;
     let exports = facts
         .functions
         .iter()
@@ -43,7 +46,7 @@ fn program(source: &str) -> Result<rustgm::lowir::program::Program> {
         .map(|function| function.definition)
         .collect::<Vec<_>>();
     Ok(rustgm::lower::instances::build_roots_prepared(
-        &report,
+        report,
         &mut facts,
         rustgm::lower::Roots {
             entry: None,
@@ -275,6 +278,13 @@ fn inherited_const_default_executes_its_selected_implementation() -> Result {
         (DEFAULTS, "builtin-destruct", "observe.c", "41\n"),
         (DEFAULTS, "original-max", "max-observe.c", "41 41\n"),
         (GENERIC_SUBJECTS, "native", "observe.c", "41 59\n"),
+        (PROJECTED_MEMBERS, "native-read", "observe.c", "41 59\n"),
+        (
+            "pa25/tests/spec/projected-const-members",
+            "native",
+            "observe.c",
+            "41 59\n",
+        ),
         (
             GENERIC_SUBJECTS,
             "runtime-contains",
@@ -282,13 +292,21 @@ fn inherited_const_default_executes_its_selected_implementation() -> Result {
             "1 0 1 0\n",
         ),
     ] {
-        let ir = out.join(format!("{name}.lowir"));
-        let object = out.join(format!("{name}.o"));
-        let executable = out.join(format!("{name}.native"));
-        rustgm::lowir::writer::write(
-            &program(&crate::resolve::fixture(&format!("{packet}/{name}.rs"))?)?,
-            &mut std::fs::File::create(&ir)?,
-        )?;
+        let ordinary = packet.starts_with("pa25/");
+        let label = if ordinary {
+            format!("ordinary-{name}")
+        } else {
+            name.to_owned()
+        };
+        let ir = out.join(format!("{label}.lowir"));
+        let object = out.join(format!("{label}.o"));
+        let executable = out.join(format!("{label}.native"));
+        let lowered = if ordinary {
+            lower(&projected_report(name, false)?)?
+        } else {
+            program(&crate::resolve::fixture(&format!("{packet}/{name}.rs"))?)?
+        };
+        rustgm::lowir::writer::write(&lowered, &mut std::fs::File::create(&ir)?)?;
         for (stage, command) in [
             (
                 "backend",
@@ -310,8 +328,8 @@ fn inherited_const_default_executes_its_selected_implementation() -> Result {
             ("native", &mut Command::new(&executable)),
         ] {
             let output = command.output()?;
-            std::fs::write(out.join(format!("{name}-{stage}.stdout")), &output.stdout)?;
-            std::fs::write(out.join(format!("{name}-{stage}.stderr")), &output.stderr)?;
+            std::fs::write(out.join(format!("{label}-{stage}.stdout")), &output.stdout)?;
+            std::fs::write(out.join(format!("{label}-{stage}.stderr")), &output.stderr)?;
             assert!(
                 output.status.success() && output.stderr.is_empty(),
                 "{name}/{stage}: {output:?}"
@@ -394,6 +412,111 @@ fn other_subject_premises_and_requests_scale_with_actual_default_calls() -> Resu
             }
         }
         previous = Some(work);
+    }
+    Ok(())
+}
+
+const PROJECTED_MEMBERS: &str = "pa31/tests/spec/projected-const-members";
+
+fn projected_report(name: &str, source: bool) -> Result<rustgm::resolve::expansion::Report> {
+    let packet = if source {
+        PROJECTED_MEMBERS
+    } else {
+        "pa25/tests/spec/projected-const-members"
+    };
+    let text = crate::resolve::fixture(&format!("{packet}/{name}.rs"))?;
+    let mut config = rustgm::expand::config::Config::default();
+    // The exact original helper has #[expect(unreachable_pub)]. Match the
+    // genuine original-core CLI profile while retaining all original item bytes.
+    config.set_lint_cap(rustgm::support::diagnostics::LintCap::Allow);
+    Ok(if source {
+        crate::resolve::source_provider_config(&text, "projected_members", &config)?
+    } else {
+        crate::resolve::resolve_config(&text, true, &config)?
+    })
+}
+
+#[test]
+fn projected_const_calls_keep_actual_source_signatures_and_conditional_bounds() -> Result {
+    let mut failures = Vec::new();
+    for source in [true, false] {
+        for name in [
+            "direct",
+            "always",
+            "supertrait",
+            "original-residual",
+            "native-read",
+            "always-result",
+            "always-parent-required",
+            "plain-runtime",
+            "nested",
+            "quantified",
+            "quantified-runtime",
+            "blanket-unbounded",
+            "native",
+        ] {
+            // These are still-required accepting boundaries, recorded in the
+            // manifests and full CLI replay, rather than qualifying negatives.
+            if (source && name == "native") || (!source && name == "original-residual") {
+                continue;
+            }
+            if let Err(error) = projected_report(name, source).and_then(|report| lower(&report)) {
+                failures.push(format!("source={source}/{name}: {error}"));
+            }
+        }
+        for name in [
+            "plain-parent",
+            "plain-result",
+            "wrong-argument",
+            "conditional-parent-insufficient",
+            "nested-plain-parent",
+            "blanket-const",
+            "blanket-ordinary",
+        ] {
+            let error = projected_report(name, source)
+                .and_then(|report| lower(&report))
+                .err()
+                .ok_or_else(|| format!("accepted source={source}/{name}"))?;
+            if !error.to_string().contains("trait obligation requires") {
+                failures.push(format!("source={source}/{name}: {error}"));
+            }
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
+#[test]
+fn projected_const_parent_proofs_scale_with_actual_calls() -> Result {
+    for source in [true, false] {
+        let mut previous: Option<[usize; 2]> = None;
+        for count in [8, 32, 128] {
+            let report = projected_report(&format!("scaling-{count}"), source)?;
+            let rustgm::pipeline::Analysis {
+                mut facts,
+                prepared,
+            } = rustgm::pipeline::analyze_source(&report)?;
+            rustgm::lower::instances::build_roots_prepared(
+                &report,
+                &mut facts,
+                rustgm::lower::Roots {
+                    entry: None,
+                    exports: &[],
+                },
+                prepared,
+            )?;
+            let work = [
+                facts.body_work.inference_steps,
+                facts.body_work.canonical_steps,
+            ];
+            println!("projected source={source} calls={count} work={work:?}");
+            if let Some(before) = previous {
+                for (old, actual) in std::iter::zip(before, work) {
+                    assert!(actual <= 4 * old + 512, "{before:?}->{work:?}");
+                }
+            }
+            previous = Some(work);
+        }
     }
     Ok(())
 }

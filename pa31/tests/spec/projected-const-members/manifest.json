@@ -1,0 +1,146 @@
+{
+ "schema": 1,
+ "owner": "PA31 actual source projected const member requests",
+ "declared_before_execution": true,
+ "cases": {
+  "direct.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/projected-const-members/direct.rs"
+  },
+  "always.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/projected-const-members/always.rs"
+  },
+  "plain-parent.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/projected-const-members/plain-parent.rs"
+  },
+  "plain-result.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/projected-const-members/plain-result.rs"
+  },
+  "supertrait.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/projected-const-members/supertrait.rs"
+  },
+  "wrong-argument.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/projected-const-members/wrong-argument.rs"
+  },
+  "native.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/projected-const-members/native.rs",
+   "native_stdout": "41 59\n",
+   "candidate_limit": "Required accepting constructor CTFE/runtime result remains; source const payment currently requires a primitive or unit result"
+  },
+  "original-residual.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/projected-const-members/original-residual.rs"
+  },
+  "scaling-8.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/projected-const-members/scaling-8.rs",
+   "functions": 8
+  },
+  "scaling-32.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/projected-const-members/scaling-32.rs",
+   "functions": 32
+  },
+  "scaling-128.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/projected-const-members/scaling-128.rs",
+   "functions": 128
+  },
+  "native-read.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/projected-const-members/native-read.rs",
+   "native_stdout": "41 59\n"
+  },
+  "always-result.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/projected-const-members/always-result.rs"
+  },
+  "always-parent-required.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/projected-const-members/always-parent-required.rs"
+  },
+  "conditional-parent-insufficient.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/projected-const-members/conditional-parent-insufficient.rs"
+  },
+  "plain-runtime.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/projected-const-members/plain-runtime.rs"
+  },
+  "nested.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/projected-const-members/nested.rs"
+  },
+  "nested-plain-parent.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/projected-const-members/nested-plain-parent.rs"
+  },
+  "quantified.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/projected-const-members/quantified.rs"
+  },
+  "quantified-runtime.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/projected-const-members/quantified-runtime.rs"
+  },
+  "blanket-const.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/projected-const-members/blanket-const.rs"
+  },
+  "blanket-ordinary.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/projected-const-members/blanket-ordinary.rs"
+  },
+  "blanket-unbounded.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/projected-const-members/blanket-unbounded.rs"
+  }
+ },
+ "files": {
+  "always.rs": "4f17b2a81c7c10b1a674856f9103e04ee4010e500e7755cd807a3d27b5f7a93a",
+  "direct.rs": "50c7a0b57946c51401f1fa6e31c9c1dcfbc8f5c5b8c63b637c8828ca47fbafd5",
+  "native.rs": "2797469c785afbb0d5a52275f611547b9159c97378f2a2816894ac9515cff5a0",
+  "observe.c": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+  "original-residual.rs": "88753c5c9ccc9a4a65a41b993ff04e7276b4cfce660485103e45053e4dff84ef",
+  "plain-parent.rs": "c0979f4b3eb3723762f24444a2da6791b01e9f74d3647a98f5f095c94ecd1f83",
+  "plain-result.rs": "553146ef42ab55a3daf5c86fc3815e8fcc0a37b2974b71d4101482d505b3a645",
+  "scaling-128.rs": "32669c8e6cea66f53250dee206a617978fc6e5a6d5ff95f7eb89ed047707ac70",
+  "scaling-32.rs": "a31a9787cd7bb9bfb790adb45c04d7c163b17dbaaa084b3f1c8640105232bd9d",
+  "scaling-8.rs": "b1bf9a163b574743121cbe9021630367279c45cfaeb8cea42cb02ec1025699e2",
+  "supertrait.rs": "70e88396e33476a4cf6b31e2cc9b4f37fddbea74c97411490a39e4e30e31247f",
+  "wrong-argument.rs": "6eddad5484c3a48b534f4c45ab2591b56e4c8b985b573c98d2095b4b616395cf",
+  "native-read.rs": "6aecdfccd9562aeedd04bb500b647d8f4cad126a5474b6220852118eedfc3983",
+  "always-result.rs": "e6ae0ff707f5f3a58076f10da22caa7719ea5155c851027951afc3aa1f5766d4",
+  "always-parent-required.rs": "71ca93d69798f293bda1a44cb48c0c60542f9c119c8fad163f8e6ff552c2bc65",
+  "conditional-parent-insufficient.rs": "127aef68a94c59c02dcf013274e5044c32da8ccd8844a8402bd9ecea242ddf56",
+  "plain-runtime.rs": "96f8d1dc40550511ecf1f693a46c321031a409fb1775ad4dbce88f159ea747db",
+  "nested.rs": "040244f6d2bcd82522ecadb50141d94a2ee650dfa87bda0ee981d828fdaa41cc",
+  "nested-plain-parent.rs": "41e8c45014f520b36ecb92bcf0be9a39a42897e3632be9952501c2c1bf29d06d",
+  "quantified.rs": "d3db47aeb1e6709ef6275e83793022b24d6c5409b73ff202b11d3642ee2c0d79",
+  "quantified-runtime.rs": "5a774d9f5ff2366bff07ff4f0108f6b7020c66e9b6dcb99e788c97c90160ed40",
+  "blanket-const.rs": "71ef5084eba1b9b15a75aa8b8751124bd9b9e7e4d0c02e1f6b25ff392d92c2af",
+  "blanket-ordinary.rs": "2509a913a0dd236108f9edbab53ee4a5c58f1e490566b45844b6b00f6ca9c984",
+  "blanket-unbounded.rs": "a081263d0ec28fd010d28252e34c90114e2898c6e70bec13b0c3eabf909a56ea"
+ },
+ "basis": {
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "source_path": "library/core/src/ops/try_trait.rs",
+  "original_sha256": "61bc75cb647e8fae3812dfda5bbc2a88f4dc54372dc64108a713d87191202ee7",
+  "helper_sha256": "aa7409a687b4b7c60c8c603d43f43a5fb80124265215cb286a1b172354527866",
+  "license": "MIT OR Apache-2.0; third_party/sources.json"
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "target": "x86_64-unknown-linux-gnu"
+ }
+}

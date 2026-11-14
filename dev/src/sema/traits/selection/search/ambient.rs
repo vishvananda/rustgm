@@ -27,6 +27,7 @@ impl super::mechanical::Pending {
         match self {
             Self::Async(pending) => pending.condition(),
             Self::Scoped(pending) => Ok(pending.condition()),
+            Self::Result(pending) => Ok(pending.condition()),
             _ => Err("missing scoped callable conditions".into()),
         }
     }
@@ -57,6 +58,9 @@ impl Search<'_> {
                 return match frame.language.as_deref() {
                     Some(super::mechanical::Pending::Async(_)) => {
                         self.finish_async_callable(facts, frame)
+                    }
+                    Some(super::mechanical::Pending::Result(_)) => {
+                        self.finish_result_bound(facts, frame)
                     }
                     _ => self.finish_scoped_callable(facts, frame),
                 };

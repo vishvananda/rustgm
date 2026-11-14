@@ -153,7 +153,7 @@ impl Search<'_> {
     ) -> Result<Option<Frame>, String> {
         if matches!(
             frame.language.as_deref(),
-            Some(Callable::Async(_) | Callable::Scoped(_))
+            Some(Callable::Async(_) | Callable::Scoped(_) | Callable::Result(_))
         ) {
             return self.scoped_callable_child(facts, frame).map(Some);
         }

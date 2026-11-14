@@ -1,0 +1,205 @@
+#![feature(const_destruct)]
+#![feature(auto_traits)]
+#![feature(unboxed_closures,const_trait_impl)]
+#![feature(no_core,lang_items,rustc_attrs,fundamental)]
+#![no_core]
+#![allow(internal_features,dead_code,unused_variables)]
+#[lang = "pointee_sized"]
+#[diagnostic::on_unimplemented(
+    message = "values of type `{Self}` may or may not have a size",
+    label = "may or may not have a known size"
+)]
+#[fundamental]
+#[rustc_specialization_trait]
+#[rustc_deny_explicit_impl]
+#[rustc_coinductive]
+pub trait PointeeSized {
+    // Empty
+}
+#[lang = "meta_sized"]
+#[diagnostic::on_unimplemented(
+    message = "the size for values of type `{Self}` cannot be known",
+    label = "doesn't have a known size"
+)]
+#[fundamental]
+#[rustc_specialization_trait]
+#[rustc_deny_explicit_impl]
+// `MetaSized` being coinductive, despite having supertraits, is okay for the same reasons as
+// `Sized` above.
+#[rustc_coinductive]
+pub trait MetaSized: PointeeSized {
+    // Empty
+}
+#[lang = "sized"]
+#[diagnostic::on_unimplemented(
+    message = "the size for values of type `{Self}` cannot be known at compilation time",
+    label = "doesn't have a size known at compile-time"
+)]
+#[fundamental] // for Default, for example, which requires that `[T]: !Default` be evaluatable
+#[rustc_specialization_trait]
+#[rustc_deny_explicit_impl]
+#[rustc_dyn_incompatible_trait]
+// `Sized` being coinductive, despite having supertraits, is okay as there are no user-written impls,
+// and we know that the supertraits are always implemented if the subtrait is just by looking at
+// the builtin impls.
+#[rustc_coinductive]
+pub trait Sized: MetaSized {
+    // Empty.
+}
+#[lang = "legacy_receiver"]
+pub trait LegacyReceiver: PointeeSized {}
+impl<T: PointeeSized> LegacyReceiver for &T {}
+impl<T: PointeeSized> LegacyReceiver for &mut T {}
+#[lang = "clone"]
+pub trait Clone: Sized { #[lang = "clone_fn"] fn clone(&self) -> Self; }
+#[lang = "copy"]
+pub trait Copy: Clone {}
+pub fn identity<T>(x: T) -> T { x }
+
+impl Clone for u8{fn clone(&self)->Self{*self}}impl Copy for u8{}
+
+impl<T:PointeeSized> Clone for &T{fn clone(&self)->Self{*self}}
+impl<T:PointeeSized> Copy for &T{}
+
+#[lang="freeze"]pub unsafe auto trait Freeze{}
+
+#[lang="destruct"]#[rustc_deny_explicit_impl]#[rustc_dyn_incompatible_trait]
+pub const trait Destruct:PointeeSized{}
+#[lang="drop_glue"]pub const unsafe fn drop_glue<T:PointeeSized>(_:&mut T)where T:[const]Destruct{}
+#[lang="tuple_trait"]#[rustc_deny_explicit_impl]pub trait Tuple{}
+#[lang="fn_once"]pub const trait FnOnce<Args:Tuple>{#[lang="fn_once_output"]type Output;extern "rust-call" fn call_once(self,args:Args)->Self::Output;}
+#[lang="fn_mut"]pub const trait FnMut<Args:Tuple>:FnOnce<Args>{extern "rust-call" fn call_mut(&mut self,args:Args)->Self::Output;}
+#[lang="fn"]pub const trait Fn<Args:Tuple>:[const]FnMut<Args>{extern "rust-call" fn call(&self,args:Args)->Self::Output;}
+
+#[lang="drop"]pub const trait Drop{fn drop(&mut self);}
+pub const trait Base<R>{fn make(value:R)->Self;}
+pub const trait Maker<R>{type Output:[const]Base<R>;}
+pub const fn convert0<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert1<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert2<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert3<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert4<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert5<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert6<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert7<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert8<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert9<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert10<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert11<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert12<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert13<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert14<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert15<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert16<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert17<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert18<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert19<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert20<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert21<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert22<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert23<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert24<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert25<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert26<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert27<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert28<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert29<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert30<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert31<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert32<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert33<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert34<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert35<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert36<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert37<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert38<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert39<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert40<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert41<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert42<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert43<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert44<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert45<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert46<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert47<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert48<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert49<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert50<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert51<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert52<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert53<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert54<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert55<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert56<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert57<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert58<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert59<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert60<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert61<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert62<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert63<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert64<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert65<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert66<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert67<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert68<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert69<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert70<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert71<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert72<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert73<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert74<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert75<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert76<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert77<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert78<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert79<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert80<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert81<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert82<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert83<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert84<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert85<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert86<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert87<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert88<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert89<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert90<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert91<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert92<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert93<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert94<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert95<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert96<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert97<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert98<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert99<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert100<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert101<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert102<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert103<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert104<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert105<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert106<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert107<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert108<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert109<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert110<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert111<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert112<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert113<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert114<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert115<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert116<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert117<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert118<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert119<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert120<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert121<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert122<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert123<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert124<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert125<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert126<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+pub const fn convert127<M:[const]Maker<R>,R>(value:R)->M::Output{Base::make(value)}
+fn main(){}
