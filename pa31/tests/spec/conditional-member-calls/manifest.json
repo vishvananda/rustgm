@@ -1,0 +1,130 @@
+{
+ "schema": 1,
+ "declared": "Seven initial outcomes frozen before oracle/baseline; native/scaling/original expressions frozen here before execution. No outcomes inverted.",
+ "owner": "PA31 actual language-role source contracts; ordinary custom const trait minima in PA25",
+ "profile": {
+  "rustc": "1.98.0 (88d9e12ae)",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "basis": {
+  "foundation": "pa31/tests/spec/dereference-source/header.rs",
+  "foundation_sha256": "780620398b00b9f3785699d8bbb87c78ae727691a1381423dba03eed502dbf89",
+  "upstream_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "license": "MIT OR Apache-2.0; third_party/sources.json"
+ },
+ "cases": {
+  "shared-field.rs": {
+   "expected": "accept",
+   "reference": "shared-field-rust.rs",
+   "declared_before_execution": true
+  },
+  "mutable-field.rs": {
+   "expected": "accept",
+   "reference": "mutable-field-rust.rs",
+   "declared_before_execution": true
+  },
+  "direct-method.rs": {
+   "expected": "accept",
+   "reference": "direct-method-rust.rs",
+   "declared_before_execution": true
+  },
+  "abstract-premise.rs": {
+   "expected": "accept",
+   "reference": "abstract-premise-rust.rs",
+   "declared_before_execution": true
+  },
+  "abstract-unpaid.rs": {
+   "expected": "reject",
+   "reference": "abstract-unpaid-rust.rs",
+   "declared_before_execution": true
+  },
+  "nonconst-impl.rs": {
+   "expected": "reject",
+   "reference": "nonconst-impl-rust.rs",
+   "declared_before_execution": true
+  },
+  "ordinary-control.rs": {
+   "expected": "accept",
+   "reference": "ordinary-control-rust.rs",
+   "declared_before_execution": true
+  },
+  "scaling-8.rs": {
+   "expected": "accept",
+   "kind": "bounded work",
+   "functions": 8
+  },
+  "scaling-32.rs": {
+   "expected": "accept",
+   "kind": "bounded work",
+   "functions": 32
+  },
+  "scaling-128.rs": {
+   "expected": "accept",
+   "kind": "bounded work",
+   "functions": 128
+  },
+  "native.rs": {
+   "expected": "accept",
+   "reference": "native-rust.rs",
+   "native_stdout": "48\n"
+  },
+  "original-fields.rs": {
+   "expected": "accept",
+   "reference": "original-fields-rust.rs",
+   "basis": "Exact original ManuallyDrop/MaybeDangling declarations and first three MaybeDangling bodies, exact const Deref/DerefMut impl bodies; derives and external attributes omitted in reduction. Actual dismiss field expressions retained. Full original files remain byte-exact under original/."
+  },
+  "lifetime-escape.rs": {
+   "expected": "reject",
+   "reference": "lifetime-escape-rust.rs",
+   "declared_before_execution": true
+  },
+  "shared-mutation.rs": {
+   "expected": "reject",
+   "reference": "shared-mutation-rust.rs",
+   "declared_before_execution": true
+  }
+ },
+ "retained_requirements": [
+  "Genuine full original core v13/v14 metadata and LowIR, native consumers",
+  "All original future state/poll/drop and earlier handoff requirements",
+  "Generic source library metadata failures remain required positives; prepared/native evidence cannot replace them"
+ ],
+ "files": {
+  "abstract-premise-rust.rs": "f6c10abd6af0a7d8d57230ea25839ec8914c17b7015f20078fe18f165c72f2f7",
+  "abstract-premise.rs": "d68ebc1cc0a00438b80196aa2e50cbe79cb67c441b4135fdff23ffb5bb4e1c8d",
+  "abstract-unpaid-rust.rs": "e0a1a2f42354aa3d20c270773fa7ac464b09eaac23f620b86201b3fbaae48ebd",
+  "abstract-unpaid.rs": "d54dab82f850602e9bbd7faa199916b69b88aa37608911dbf87441d355db62a7",
+  "direct-method-rust.rs": "8ad45e89f41d7667f21bc216b80bddb4f941a81e5b56a70b3510f5458537b767",
+  "direct-method.rs": "bbb599bee851a88b17841359f120770a9868fcdd959158861af601b6ca0130d1",
+  "expected.stdout": "654ee9da442fa353f59f11beb688fc7f76c8de62a6c18b2a181fdde2a27cc3ef",
+  "mutable-field-rust.rs": "c9eed045abd06f7d6c6dcc69a904f4a38181e2e3dc6c3479e099aa59ed77924f",
+  "mutable-field.rs": "4d343302cfca954b2568e73f47f312f461241251266b6f5d19b0d198d5ba8710",
+  "native-rust.rs": "f8a8b46bef25ad562d619f813ce27b41a3b826cd33c86240919ffd22d176e519",
+  "native.rs": "9a3512c8fbfd93152e370539ab00cf8531abfe3e65afcbbf029129094c2cd80f",
+  "nonconst-impl-rust.rs": "632c47daa860f33876014e20b7684e2b0c59b238450b359f2c431579d1529ea0",
+  "nonconst-impl.rs": "09c0b22fc38119a608eb5d341ff7d5006f3ce75840a2c68adf3480e1a7e7090e",
+  "observe.c": "95a279845325037097bb07d741dae1bed06d1fca4f2c88a486fb4695fe750025",
+  "ordinary-control-rust.rs": "3d09ae174a0e1bd9d98761301dad5d0d62cb86921df37970aa4cc9773085901f",
+  "ordinary-control.rs": "6268233f927e417712298688c1adbf406841efd1e31323dba12ff6cac3eb03ff",
+  "original/drop_guard.rs": "f665d82a0de088809701d8e4a8400e74f3e4a84b685ed3fa0be132503e6d566a",
+  "original/manually_drop.rs": "c21100b507893a11ee27b0711be3ac3fe6cc970b96bba55a7d3bae5978209818",
+  "original/maybe_dangling.rs": "dcbb54b27afa08c22e155afde5eada545aa2013e3cdedb4e7dc9f57dfe89f760",
+  "original-fields-rust.rs": "8dcbbc594c92f7456a56d1b1f2c1be5c70bdf1af273999935688c93eceda8753",
+  "original-fields.rs": "33c03b78ad06a220e92d51d1480e86061252da57f7618468862a938aebe0fe1f",
+  "scaling-128.rs": "d835dbcfcbdf53008d885a2f2bd5243c556a40cca26303a1269ac735804f4756",
+  "scaling-32.rs": "f0c78e55b4a53d0e41b85122659f14a9df5be6d28076da5240ded5b7b415fa22",
+  "scaling-8.rs": "29df4ac24d69dfcab30d078c50ec1fb93cd19aed0c704d9b8dfdac040c03c0d7",
+  "shared-field-rust.rs": "f43f51a9427630a321f5b874cef01295d9ef065e9936a72b07cdfff424dcc8dd",
+  "shared-field.rs": "29ea4886123640eb484a8b60d94546ae68fe48d6a496ccd1c8e51cb3fc268505",
+  "lifetime-escape.rs": "3df4aebc0e2d185e170ee7cc784442904b2b4429f139ca3109127727ee6b629c",
+  "lifetime-escape-rust.rs": "b0b2856636edd6c68dd8b4b3ce4beb2fead886f5848d657eb6d0fdda2561dc8c",
+  "shared-mutation.rs": "6d6ac7ead5c13f35d47444fea4f575a9b48873c73b83dc1af9f5dc8b2d914176",
+  "shared-mutation-rust.rs": "150768664b1040e6742b40f65c555134511620c5956844aea4c629495a4df438"
+ },
+ "oracle_setup_correction": "The initial original-fields companion lacked const_trait_impl and produced E0658. Added that feature before re-execution; required acceptance and executable source expressions unchanged. First raw diagnostics remain obj/parallel/conditional-members/reference/.",
+ "native_setup_correction": "The first source native draft used addition without declaring the source Add language role. Replaced that unrelated operation with dependent shared/direct reference results; all three generic calls remain observed through the actual final value48. Source and independent companion changed together; acceptance and stdout48 unchanged. First diagnostics retained fast3/reference2."
+}

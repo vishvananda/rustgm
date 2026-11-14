@@ -1,5 +1,11 @@
 # Compile-time-first Rust frontend architecture
 
+The [generic conditional-member checkpoint](docs/pa25-conditional-member-calls.md)
+authenticates normalized generic calls against completed source operations during
+defining-body checks. Projected/unsafe abstract requests retain their exact local
+premises. Actual dispatch, const entry and lifetime/ownership proof remain separate;
+a source-use location never grants execution permission.
+
 This is the normative architecture of the maintainer reference frontend.
 It adapts the principles of cppgm-extended's `spec.md`, pinned in
 [docs/cppgm-spec.md](docs/cppgm-spec.md). Preserve its attribution in

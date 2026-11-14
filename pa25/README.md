@@ -1,5 +1,10 @@
 # RustGM Programming Assignment 25: Constant evaluation
 
+The [generic conditional-member checkpoint](../docs/pa25-conditional-member-calls.md)
+retains ordinary custom const-trait minima here and actual language-role source
+cases in PA31. Defining legality accepts checked normalized generic applications;
+actual const dispatch and all full library/whole-assignment requirements remain.
+
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
 The [wide constant product checkpoint](../docs/pa25-wide-constant-products.md)

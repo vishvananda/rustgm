@@ -195,7 +195,7 @@ fn source_call(
 
 /// Defining legality only. A source-use location is not implementation proof;
 /// actual dispatch, borrow proof and const Code entry remain independently required.
-pub(super) fn closed_request(
+pub(super) fn source_request(
     report: &crate::resolve::expansion::Report,
     facts: &Declarations,
     body: &Body,
@@ -222,10 +222,20 @@ pub(super) fn closed_request(
         .source()
         .ok_or("const member has no source owner")?;
     let call = source_call(facts, body, statement, work)?;
-    work.charge(1)?;
-    if facts.types.contains_parameters(call.target) == Some(true) {
-        // The actual defining environment, rather than closed-member dispatch,
-        // must pay an abstract call's exact conditional trait premise.
+    work.charge(3)?;
+    if facts.types.contains_parameters(call.target) == Some(true)
+        && (facts.types.contains_projections(call.target) != Some(false)
+            || !matches!(
+                facts.types.kind(call.signature),
+                Some(Kind::Function {
+                    unsafe_: false,
+                    convention: crate::types::callable::Convention::RUST,
+                    ..
+                })
+            ))
+    {
+        // Other abstract requests still consume their exact local premise.
+        // This path only authenticates completed normalized source applications.
         return Ok(false);
     }
     work.charge(5)?;
@@ -238,7 +248,7 @@ pub(super) fn closed_request(
             signature: call.signature,
         },
     )? {
-        return closed_field(report, facts, body, source, call, id, work);
+        return source_field(report, facts, body, source, call, id, work);
     }
     let node = facts
         .node(call.site)
@@ -248,7 +258,7 @@ pub(super) fn closed_request(
         | crate::sema::model::Operation::MethodReceiver { plan: id },
     ) = node.operation
     {
-        return closed_field(report, facts, body, source, call, id, work);
+        return source_field(report, facts, body, source, call, id, work);
     }
     let Some(crate::sema::model::Operation::Call {
         signature,
@@ -275,7 +285,7 @@ pub(super) fn closed_request(
     }
     let definition = match indexed {
         Some(definition) => definition,
-        None => closed_member(facts, call, work)?,
+        None => source_member(facts, call, work)?,
     };
     work.charge(2)?;
     if let Some(method) = facts.methods.calls.get(&call.site) {
@@ -298,7 +308,7 @@ pub(super) fn closed_request(
 
 /// A Field expression owns several actual calls, each with its real reference
 /// result. Its final selected field type is not any call's result contract.
-fn closed_field(
+fn source_field(
     report: &crate::resolve::expansion::Report,
     facts: &Declarations,
     body: &Body,
@@ -333,7 +343,7 @@ fn closed_field(
     {
         return Err("const field call changed its actual reference result");
     }
-    closed_member(facts, call, work)?;
+    source_member(facts, call, work)?;
     let effect = plan.source_use.effect_for(facts, source)?;
     closed_effect(report, facts, body, source, effect, work)
 }
@@ -348,7 +358,7 @@ fn index_result(
     work: &mut Work,
 ) -> Result<DefId, &'static str> {
     work.charge(15)?;
-    let definition = closed_member(facts, call, work)?;
+    let definition = source_member(facts, call, work)?;
     let method = facts
         .methods
         .calls
@@ -555,7 +565,7 @@ fn direct_source(
     Ok(())
 }
 
-fn closed_member(facts: &Declarations, call: Call, work: &mut Work) -> Result<DefId, &'static str> {
+fn source_member(facts: &Declarations, call: Call, work: &mut Work) -> Result<DefId, &'static str> {
     work.charge(4)?;
     let Some(Kind::FunctionItem {
         item, signature, ..
@@ -564,8 +574,7 @@ fn closed_member(facts: &Declarations, call: Call, work: &mut Work) -> Result<De
         return Err("const member lost its actual function item");
     };
     let definition = DefId(item.0);
-    if facts.types.contains_parameters(call.target) != Some(false)
-        || facts.types.contains_projections(call.target) != Some(false)
+    if facts.types.contains_projections(call.target) != Some(false)
         || !matches!(
             facts.types.kind(signature),
             Some(Kind::Function {
@@ -575,7 +584,7 @@ fn closed_member(facts: &Declarations, call: Call, work: &mut Work) -> Result<De
             })
         )
     {
-        return Err("const member requires its closed safe source signature");
+        return Err("const member requires its normalized safe source signature");
     }
     work.charge(1)?;
     if !matches!(

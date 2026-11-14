@@ -1,0 +1,19 @@
+{
+ "schema": 1,
+ "declared_before_execution": true,
+ "owner": "PA25 ordinary custom const-trait defining calls, no language-role hooks",
+ "cases": {
+  "generic.rs": "accept",
+  "abstract-premise.rs": "accept",
+  "ordinary-control.rs": "accept",
+  "abstract-unpaid.rs": "reject",
+  "nonconst-impl.rs": "reject"
+ },
+ "files": {
+  "generic.rs": "cbda3160fd850fbb064f229b068aaa1635fc37c545c0a06e8bf9fb7e376fc1b2",
+  "abstract-premise.rs": "e3f0bd08110bb2b7e4354444e82e3e82bc4412c5e45529e3e6046402ca46eb89",
+  "ordinary-control.rs": "8db2ce2b0481b9bd77099076f721a4b6e88b5e02cec9da71096e7f52fee0b4e6",
+  "abstract-unpaid.rs": "c3745a2a62c3faaffdb1bd409dd9a8b237b437377acca87639e5bdaf004154d2",
+  "nonconst-impl.rs": "74c207896723f8374ee4884ec7016a3c462507b334c06e0aff2eda8bb73651d3"
+ }
+}

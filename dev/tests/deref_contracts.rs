@@ -102,3 +102,136 @@ fn generic_receiver_requirements_share_one_current_caller_proof_graph() -> TestR
     assert!(steps.windows(2).all(|pair| pair[1] <= pair[0] * 2));
     Ok(())
 }
+
+const CONDITIONAL_MEMBERS: &str = "pa31/tests/spec/conditional-member-calls";
+
+#[test]
+fn generic_const_member_calls_keep_checked_source_applications() -> TestResult {
+    for name in [
+        "shared-field",
+        "mutable-field",
+        "direct-method",
+        "abstract-premise",
+        "ordinary-control",
+        "original-fields",
+        "native",
+    ] {
+        let source = test_source::fixture(&format!("{CONDITIONAL_MEMBERS}/{name}.rs"))?;
+        program(&source).map_err(|error| format!("{name}: {error}"))?;
+    }
+    for name in ["abstract-unpaid", "nonconst-impl"] {
+        let source = test_source::fixture(&format!("{CONDITIONAL_MEMBERS}/{name}.rs"))?;
+        let error = program(&source)
+            .err()
+            .ok_or_else(|| format!("accepted {name}"))?;
+        assert!(
+            error.to_string().contains("trait obligation requires"),
+            "{name}: {error}"
+        );
+    }
+    for (name, cause) in [
+        ("lifetime-escape", "lifetime"),
+        ("shared-mutation", "borrow"),
+    ] {
+        let source = test_source::fixture(&format!("{CONDITIONAL_MEMBERS}/{name}.rs"))?;
+        let error = program(&source)
+            .err()
+            .ok_or_else(|| format!("accepted {name}"))?;
+        assert!(error.to_string().contains(cause), "{name}: {error}");
+    }
+    Ok(())
+}
+
+#[test]
+fn ordinary_const_member_minima_keep_their_defining_effect() -> TestResult {
+    for (name, accepted) in [
+        ("generic", true),
+        ("abstract-premise", true),
+        ("ordinary-control", true),
+        ("abstract-unpaid", false),
+        ("nonconst-impl", false),
+    ] {
+        let text = test_source::fixture(&format!(
+            "pa25/tests/spec/conditional-member-calls/{name}.rs"
+        ))?;
+        let result = (|| -> TestResult {
+            let report = test_source::resolve(&text, true)?;
+            let pipeline::Analysis {
+                mut facts,
+                prepared,
+            } = pipeline::analyze_source(&report)?;
+            lower::instances::build_roots_prepared(
+                &report,
+                &mut facts,
+                lower::Roots {
+                    entry: None,
+                    exports: &[],
+                },
+                prepared,
+            )?;
+            Ok(())
+        })();
+        if accepted {
+            result.map_err(|error| format!("{name}: {error}"))?;
+        } else {
+            let error = result.err().ok_or_else(|| format!("accepted {name}"))?;
+            assert!(
+                error.to_string().contains("trait obligation requires"),
+                "{name}: {error}"
+            );
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn generic_const_member_work_scales_with_source_calls() -> TestResult {
+    let mut previous: Option<[usize; 2]> = None;
+    for count in [8, 32, 128] {
+        let text = test_source::fixture(&format!("{CONDITIONAL_MEMBERS}/scaling-{count}.rs"))?;
+        let report = test_source::source_provider(&text, "conditional_members_scaling")?;
+        let pipeline::Analysis {
+            mut facts,
+            prepared,
+        } = pipeline::analyze_source(&report)?;
+        lower::instances::build_roots_prepared(
+            &report,
+            &mut facts,
+            lower::Roots {
+                entry: None,
+                exports: &[],
+            },
+            prepared,
+        )?;
+        let work = [
+            facts.body_work.inference_steps,
+            facts.body_work.canonical_steps,
+        ];
+        println!("conditional member calls={count} work={work:?}");
+        if let Some(before) = previous {
+            for (old, actual) in std::iter::zip(before, work) {
+                assert!(actual <= 4 * old + 512, "{before:?}->{work:?}");
+            }
+        }
+        previous = Some(work);
+    }
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn generic_const_member_instances_execute_selected_shared_and_unique_calls() -> TestResult {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let out = root.join("obj/parallel/conditional-members/native");
+    std::fs::create_dir_all(&out)?;
+    let text = test_source::fixture(&format!("{CONDITIONAL_MEMBERS}/native.rs"))?;
+    crate::ffi_program::check(
+        &root,
+        &out,
+        "members",
+        &program(&text)?,
+        &test_source::fixture(&format!("{CONDITIONAL_MEMBERS}/observe.c"))?,
+        &test_source::fixture(&format!("{CONDITIONAL_MEMBERS}/expected.stdout"))?,
+    )?;
+    Ok(())
+}

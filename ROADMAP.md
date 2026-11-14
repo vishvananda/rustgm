@@ -1,5 +1,11 @@
 # RustGM assignment roadmap
 
+The [conditional-member checkpoint](docs/pa25-conditional-member-calls.md) qualifies
+19 ordinary/source prepared outcomes, five actual native programs and bounded
+post-lowering work. It addresses original DropGuard::dismiss's generic const
+member check; clean original-library verification is next. Three reduced library
+metadata positives remain open; no whole PA or original artifact is complete.
+
 PA1–PA24 have active, independently qualified text-oracle suites. PA21–PA24 are
 **implemented**, with their completed release evidence recorded in
 assignments.json. PA1–PA20 retain implemented-draft while individual release

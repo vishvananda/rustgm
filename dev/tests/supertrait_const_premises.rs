@@ -21,21 +21,6 @@ const REJECTED: [(&str, &str); 5] = [
         "ambiguous trait assumptions in declaration",
     ),
 ];
-const MEMBER: &str = "const function member lacks its current conditional trait premise";
-/// Recorded prepared lowering gaps of accepted cases, which the base shares.
-/// A const body's trait member call whose Self an impl proves, such as
-/// `[T; N]: [const] PartialEq`, needs a direct environment premise. Since the
-/// comparison body lifetime checkpoint borrows a right operand in its own
-/// type, two `&T` operands reach that gap in a const body and lower elsewhere.
-const LOWERING: [(&str, &str); 7] = [
-    ("core-form.rs", MEMBER),
-    ("direct-call.rs", MEMBER),
-    ("element-fn.rs", MEMBER),
-    ("maybe-supertrait.rs", MEMBER),
-    ("const-impl-supertrait.rs", MEMBER),
-    ("concrete-use.rs", MEMBER),
-    ("scalar-refs-op.rs", MEMBER),
-];
 
 fn program(source: &str) -> Result<rustgm::lowir::program::Program> {
     let report = crate::resolve::source_provider(source, "const_premises")?;
@@ -93,22 +78,8 @@ fn always_const_premises_prove_conditional_requirements_like_rustc() -> Result {
         {
             failures.push(format!("{path}: {:?} {stderr}", output.status.code()));
         }
-        if accepted {
-            let gap = LOWERING
-                .iter()
-                .find(|(name, _)| path.ends_with(&format!("/{name}")))
-                .map(|(_, reason)| *reason);
-            let lowered = program(&crate::resolve::fixture(path)?)
-                .err()
-                .map(|error| error.to_string());
-            let expected = match (&lowered, gap) {
-                (None, None) => true,
-                (Some(error), Some(reason)) => error.contains(reason),
-                _ => false,
-            };
-            if !expected {
-                failures.push(format!("{path}: lowering: {lowered:?}"));
-            }
+        if accepted && let Err(error) = program(&crate::resolve::fixture(path)?) {
+            failures.push(format!("{path}: prepared lowering: {error}"));
         }
         count += 1;
     }

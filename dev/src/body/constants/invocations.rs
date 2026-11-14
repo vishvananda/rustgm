@@ -63,11 +63,11 @@ pub(super) fn check_calls(
                 if !seen.insert(id) {
                     return Err("const member value is evaluated at multiple source sites");
                 }
-                // A closed defining request is authenticated against the current
-                // source call. Ordinary dispatch and checked const function entry
-                // still select and prove its executable implementation.
+                // A defining request is authenticated against the completed
+                // source call, including generic arguments. Actual dispatch and
+                // const function entry still prove its executable implementation.
                 if let Some(report) = report
-                    && super::provided_calls::closed_request(report, facts, body, statement, work)?
+                    && super::provided_calls::source_request(report, facts, body, statement, work)?
                 {
                     members += 1;
                     continue;

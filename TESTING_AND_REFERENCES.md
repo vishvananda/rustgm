@@ -1,5 +1,11 @@
 # Testing and references
 
+The [conditional-member checkpoint](docs/pa25-conditional-member-calls.md) separates
+19 prepared outcomes and five native executions from three still-required source
+metadata/LowIR positives. Frozen independent acceptance remains acceptance when a
+previous lowering gap clears; replace its gap assertion with successful lowering,
+retaining the opponent diagnostics and explicit unresolved artifact contracts.
+
 This checkout owns the maintainer solution. `dev/rustgm-ref` invokes the built
 solution, just as reference wrappers do in cppgm-extended's solution checkout.
 Default tests compare candidates with **committed text**, not a live solution.

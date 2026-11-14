@@ -1,5 +1,11 @@
 # RustGM Programming Assignment 31: Compiler/library bindings
 
+The [generic conditional-member checkpoint](../docs/pa25-conditional-member-calls.md)
+retains actual Deref/DerefMut/ManuallyDrop reductions with byte-exact originals.
+Ordinary custom trait minima live in PA25. Generic const defining checks, nineteen
+prepared outcomes and five native programs qualify; three reduced metadata
+positives and genuine original-core library/native consumers remain required.
+
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
 The [unchecked-shift checkpoint](../docs/pa31-unchecked-shifts.md) retains genuine

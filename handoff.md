@@ -5,6 +5,40 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
+Current continuation qualifies normalized generic conditional-member defining calls;
+see docs/pa25-conditional-member-calls.md. Production source_request verifies the
+actual checked source application instead of demanding a direct environment
+premise for a generic nominal family. Generic projections/unsafe calls retain the
+old abstract-premise path; actual dispatch/const entry/loans stay independently
+required. No dense fields, new cache, wire/backend/storage change. PA25 ordinary
+and PA31 source manifests freeze19 prepared outcomes (13accept/6reject), with
+byte-exact full drop_guard/manually_drop/maybe_dangling originals. All agree with
+pinned Rust standard-core/custom-trait companions. New native48 and four prior
+const-coercion programs pass (two groups,37.63s). Seven old independently accepting
+supertrait lowering gaps now succeed; their test requires success, never inverted.
+
+Fast4 1794670401867519614: two exact54.94s; fast3 four other frontend controls
+passed before its fixture setup failure. Fast5 1794670571182299902: final scaling
+43.49s, inference/canonical after prepared lowering8/32/128 =7314/3916,
+29034/13782,115914/53222. Strict production/selected/CLI Clippy/fmt/audit pass.
+Final replay binds3964 sources/37 packet inputs including manifests, three new tests, exact
+original bytes;315harness/495roots/13bins/44stages/one component/128upstream+
+126Reference pass. Raw obj/parallel/conditional-members/. First projected-path,
+E0658 companion-feature, missing source Add fixture and independent C-link setup
+failures remain recorded; no rejection reclassified or positive inverted. New
+private forged-generic-argument/body-flag test awaits full CI; no cold harness.
+
+Three genuine reduced v14 library surfaces shared-field/mutable-field/direct-method
+clear the conditional-premise error but still FAIL source-declaration profile
+coverage. No metadata/empty LowIR. Each is a named required positive, separate from
+prepared/native success. Next publish this coherent checkpoint, dispatch one full
+successor (prior43607051290 is terminal SUCCESS on exactfc4:3078 private release
+4.79s/debug46.51s, all gates), then freeze clean candidate29-release and retry the
+full unchanged original v14 library command/120s/quotas. No need to repeat the
+already completed full census merely before the genuine build. No original
+artifact/native consumer exists; all older requirements below remain. One worker
+in B, main Git-only; reserve150GiB/cap16/controller2jobs unchanged/free344GiB.
+
 Latest frozen checkpoint is fc4e36743276e120ea5787a2b08bab9f596ec9ad.
 Clean candidate28-release binds3964 source hashes/empty patch; CLI SHA256
 befc0f5c4e0184be8a34fbc0c39e376ca069cde9b2da269074a304576b1762d0,

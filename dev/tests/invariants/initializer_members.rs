@@ -37,7 +37,7 @@ fn closed_const_member_requests_reject_forged_owner_site_signature_and_selection
         .ok_or("different actual initializer")?;
     let index = statement(&body)?;
     let mut work = Work::new(1_000_000);
-    assert!(closed_request(
+    assert!(source_request(
         &report,
         &facts,
         &body,
@@ -76,7 +76,7 @@ fn closed_const_member_requests_reject_forged_owner_site_signature_and_selection
             }
         }
         assert!(
-            closed_request(
+            source_request(
                 &report,
                 &facts,
                 &changed,
@@ -88,7 +88,7 @@ fn closed_const_member_requests_reject_forged_owner_site_signature_and_selection
         );
     }
     let mut tiny = Work::new(1);
-    assert!(closed_request(&report, &facts, &body, &body.statements[index], &mut tiny).is_err());
+    assert!(source_request(&report, &facts, &body, &body.statements[index], &mut tiny).is_err());
     assert!(tiny.steps > 1);
     Ok(())
 }
@@ -116,7 +116,7 @@ fn runtime_member_calls_cannot_acquire_const_permission_from_a_body_flag() -> Re
     let mut body = template.body;
     body.const_context = true;
     let index = statement(&body)?;
-    assert!(!closed_request(
+    assert!(!source_request(
         &report,
         &facts,
         &body,
@@ -199,5 +199,76 @@ fn const_index_operand_and_expected_receiver_remain_distinct_authenticated_input
     facts.methods.calls.insert(site, original);
     assert!(index_operand(&facts, site, site.node, original.borrow, mutable, &mut work).is_err());
     index_result(&report, &facts, call, node_type, &mut work)?;
+    Ok(())
+}
+
+#[test]
+fn generic_const_field_requests_reject_changed_arguments_and_body_flags() -> Result {
+    let source =
+        crate::test_source::fixture("pa31/tests/spec/conditional-member-calls/shared-field.rs")?;
+    let report = crate::test_source::source_provider(&source, "generic_member_requests")?;
+    let crate::pipeline::Analysis {
+        mut facts,
+        mut prepared,
+    } = crate::pipeline::analyze_source(&report)?;
+    let function = facts
+        .functions
+        .iter()
+        .find(|f| {
+            report
+                .package
+                .names
+                .get(report.resolution.definitions[f.definition.0 as usize].name)
+                == "field"
+        })
+        .ok_or("actual generic field function")?;
+    let body = prepared.templates.function(&report, &facts, function)?.body;
+    let index = statement(&body)?;
+    let mut work = Work::new(1_000_000);
+    assert!(source_request(
+        &report,
+        &facts,
+        &body,
+        &body.statements[index],
+        &mut work
+    )?);
+    let Action::Evaluate(value) = body.statements[index].action else {
+        return Err("actual field statement".into());
+    };
+    let Rvalue::Call { callee, .. } = body.values[value.0 as usize].kind else {
+        return Err("actual field call".into());
+    };
+    let Some(Kind::FunctionItem {
+        item, signature, ..
+    }) = facts.types.kind(body.values[callee.0 as usize].ty)
+    else {
+        return Err("actual field callee".into());
+    };
+    let wrong = facts.types.intern(Kind::FunctionItem {
+        item,
+        signature,
+        arguments: crate::types::GenericArgs::EMPTY,
+    })?;
+    let mut changed = body.clone();
+    changed.values[callee.0 as usize].ty = wrong;
+    assert!(
+        source_request(
+            &report,
+            &facts,
+            &changed,
+            &changed.statements[index],
+            &mut work
+        )
+        .is_err()
+    );
+    let mut changed = body.clone();
+    changed.const_context = false;
+    assert!(!source_request(
+        &report,
+        &facts,
+        &changed,
+        &changed.statements[index],
+        &mut work
+    )?);
     Ok(())
 }
