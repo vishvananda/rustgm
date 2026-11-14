@@ -5,6 +5,33 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
+Published current source170c045018dd52a830802b8de4584625fb724e81, main synchronized.
+Clean candidate29-release binds3964 hashes/empty tracked patch; build8m27s,
+CLI SHA256d62270b74c1483790572b9ed5b363d11b0654db90516bc691b58c9464a5266b9.
+Genuine unchanged original v14 library29 clears dismiss (old60:2500) and FAILS
+at DropGuard::deref, mem/drop_guard.rs line118/file60:3479, `&*self.inner`:
+`const member changed its current signature or result`.30.0036190780811s,
+status1/no timeout; no core.rgm,0-byte core.lowir/no native consumers. Terminal
+artifact-postcheck29 PASSES all722 original hashes/375 opens/six reviewed config
+pins/all3964 compiler hashes/clean producer/unchanged120s and14500624work/1GiB
+attempted/64MiB retained. Diagnostic only, no timing claim. Raw
+conditional-members/{build29-release,core-artifact29,artifact-postcheck29}.log,
+original-library-candidate29/. No redundant whole census29 run:27/28 completed
+analysis,29 exercises the genuine build directly. Full43611467168 runs exact170c:
+fast/lint/architecture/harness/host graph passed, release/course in progress.
+Do not dispatch a duplicate; preceding43607051290 is fully green.
+
+NEXT reduce the actual explicit generic Deref source-call signature/result check;
+keep all exact source, caller, selected method and borrow checks. Separately traced
+the three reduced v14 metadata failures to authored_export.rs exported_kind:
+`body_nodes() && mode == ExportMode::Nominals` excludes v14's CompilerOperations
+mode for enum/variant/tuple/unit constructors/const parameters/const items. This
+is read-only diagnosis, not a qualified fix. Frozen next expectations and four
+complete old v13 providers with appended exact genuine helper are in
+obj/parallel/mixed-declarations/{declaration.json,inputs/}; baseline.py prepared
+but UNRUN. That wider-profile repair follows the actual body blocker. No live
+local heavy job. Shared free326GiB, policy2jobs/150reserve/16cap unchanged.
+
 Current continuation qualifies normalized generic conditional-member defining calls;
 see docs/pa25-conditional-member-calls.md. Production source_request verifies the
 actual checked source application instead of demanding a direct environment
