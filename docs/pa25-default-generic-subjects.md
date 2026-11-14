@@ -77,3 +77,11 @@ profile, deadline and quotas. Original v13/v14 metadata/LowIR/native consumers,
 all three callable-signature/implied-borrow native requirements, closure owners,
 ordinary bootstrap, futures and every earlier valid unsupported contract remain
 open. PA25–PA44 remain planned; the113-case const-machine component is unchanged.
+
+Clean release33 verifies RangeBounds::contains cleared in the genuine unchanged
+original v14 library command. It now rejects residual_into_try_type in
+ops/try_trait.rs:383/file95:15668 with the separate projected conditional-premise
+fence. Source236732077/3964 clean hashes, CLIc638c2da…004c1af,25.41980179119855s,
+status1/no timeout/no core.rgm/0-byte core.lowir. Postcheck33 passes722 originals/
+375 opens/six reviewed pins/fixed120s and quotas. No original artifact or timing
+claim. Full43636803381 remains pending; do not restart for this documentation.

@@ -5,6 +5,50 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
+Published current source2367320774a9df4da7d5dbcbba7c5b1d95bad38e; main synced.
+Clean candidate33-release binds3964 source hashes/empty patch,8m39s build,
+CLIc638c2da481039533ee73af726cf483b1d9dc04178d4a02f338083a0b004c1af.
+Genuine unchanged original v14 library33 CLEARS RangeBounds::contains and now
+FAILS ops/try_trait.rs:383/file95:15668, residual_into_try_type:
+`const function member lacks its current conditional trait premise`.
+25.41980179119855s/status1/no timeout/peak childRSS728988KiB; no core.rgm,
+0-byte core.lowir. Artifact-postcheck33 terminal PASS:722 original hashes/375 opens/
+six reviewed config pins/all3964 compiler hashes/clean pin/fixed120s/
+14500624work/1GiB attempted/64MiB retained. Diagnostic only/no speed claim.
+Raw default-generic-subjects/{build33-release,core-artifact33,artifact-postcheck33}.log
+and original-library-candidate33/. No original metadata/LowIR/native consumer.
+
+NEXT reduce projected conditional const member requests from actual residual
+helper. Its R:[const]Residual<O> promises TryType:[const]Try<Output=O,Residual=Self>,
+and Try has FromResidual as its supertrait. The call is on the projected result,
+not a direct environment predicate. No production edit or reduction for this
+new frontier yet. Current source_request rejects parameterized targets containing
+projections, then abstract Function premise checks only exact indexed predicates.
+Inspect the existing typed associated result-bound path / current source request
+rather than inventing permission or a second solver. The previous generic member
+fast1 regression was specifically projected requests reaching source_member's
+normalized-signature error, NOT a demonstrated semantic misacceptance:
+conditional-members/fast1.log has abstract-premise source/ordinary positive errors
+`const member requires its normalized safe source signature`. Both projection
+filters currently preserve the older exact-premise fallback. Keep unsafe/convention,
+source/full-call/current-effect, execution/borrow/Code proof and all opponents.
+Ordinary associated const-trait minima PA25; actual Try/FromResidual roles PA31.
+Existing non-const source foundation: pa31/tests/spec/source-try-blocks/
+source-execute-protocol.rs. Actual unchanged original is in the frozen722 tree.
+
+Full43636803381 exact236732077 is the ONE successor: fast/static/harness/host graph
+pass; release/course running at last poll. Two new private guards remain pending
+that run (expected inventory3083). Do not duplicate/cancel/restart for this handoff.
+Previous ca20 full failed only closure gap classification after3081 private6.56s;
+classification is repaired and all six accepting closure requirements stay open.
+No local heavy job. Current33/32/31 and pending perf21–24 binaries retained;
+25–30/default-supertraits replay/bounds baselines retired/unavailable. Same B only/
+one worker/main Git-only/2jobs/150GiB reserve/16GiB cap, free306GiB. All older
+whole PA25–44/original v13/v14/bootstrap/future/native requirements stay required.
+
+Historical checkpoint record follows; the continuation above supersedes older
+NEXT/status/build-frontier statements.
+
 Current coherent checkpoint: generic subjects and normalized source requests in
 actual original const defaults. See docs/pa25-default-generic-subjects.md.
 Local Self factory/context is prepared once before accepting requests; direct
