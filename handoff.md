@@ -5,16 +5,18 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
-Latest continuation: full43588626797 PASSED EVERY STAGE on exactff072ae85,
-including3078 private tests in each profile. The associated Copy root checkpoint
-is locally qualified: six exact regular controls, eighteen native programs,
-bounded work and authenticated replay/harness/upstream pass; inventory3962.
-It admits bare projected roots into existing scoped qualification, then honors
-only NoDrop at the root mask. Destruct/root OwnDrop requirements stay checked.
-Publish, dispatch one full successor, freeze clean26 dev-fast and try unchanged
-core under the fixed120s/quotas. Last original release25 still has sole completion
-error ptr/metadata.rs119 (from_raw_parts const Destruct); all functions pass.
-No original library artifact exists. One worker in B. Read final root checkpoint.
+Latest continuation: root qualification e23bbc172 is published; full43592623119
+is running on that exact head (fast and release/course pass, native in progress).
+Clean26 release/3962/empty patch SHA
+b46acf2e92388ca59d16d9d737f09d34b7f485863ae59062fce290bf56716c51 clears the
+from_raw_parts cleanup error in unchanged original core. All42310 declarations/
+25858 bodies/35120 attempts still pass; sole completion now source intrinsic
+constant execution is not implemented at expanded num/mod.rs file12:1052023.
+Actual error-branch debug identifies Declaration273 = unchecked_mul. Postcheck
+722/375/six/all3962/fixed quotas passes. Original analysis still incomplete; no
+library metadata/LowIR artifact exists. Dev-fast full original attempt timed out
+at the unchanged120s and must not be repeated or called a semantic result.
+Continue one worker in B; reduce genuine unchecked arithmetic next.
 
 ## Workspace and authorization
 
@@ -1418,3 +1420,59 @@ not progress or permission to widen the deadline. If dev-fast cannot finish,
 freeze release only at a meaningful coherent checkpoint. Core artifact25 helper
 remains UNRUN because original analysis is incomplete. Complete original metadata,
 LowIR and native consumers still required. No local heavy job at this checkpoint.
+
+## Clean26 clears root cleanup; current intrinsic is unchecked_mul
+
+Published exact sourcee23bbc1724f611b98d04ede36027fdda19d8f958, inventory3962.
+Full43592623119 fast success, release/private/public/course stages passed, native
+in progress at last check. Prior43588626797 remains fully green. No duplicate
+manual successor. All focused/native/replay evidence in root checkpoint above
+stands. Main synchronized; production has no uncommitted changes at this point.
+
+Clean candidate26-dev-fast SHA
+23046e162c5c2e116820a3400f42754fc1862b368fa5b7eb1555b069c0cbaa49 used a fresh
+cached Cargo build0.03s. Its unchanged120s original diagnostic TIMED OUT at
+120.9774s, last function8825/file239:26987, zero records and no complete census.
+This is infrastructure failure, NOT a semantic frontier or passing observation.
+Independent timeout-postcheck verifies all722 original hashes/all3962 producer
+hashes/six config pins/empty patch/CLI/fixed120s and quotas. No deadline/cfg/quota
+change. Do not repeat the unoptimized full observer. A coherent release was built
+once after full local qualification, not per ordinary edit.
+
+Clean candidate26-release SHA
+b46acf2e92388ca59d16d9d737f09d34b7f485863ae59062fce290bf56716c51,8m14s build,
+same e23 source/3962/empty patch. Unchanged original diagnostic23.6811215s clears
+ptr/metadata.rs119 active const Destruct cleanup. All42310 declarations/25858
+bodies/35120 attempts remain, zero failed/blocked functions; sole completion now
+file12:1052023 num/mod.rs, source intrinsic constant execution is not implemented.
+This is an expanded macro offset, not a physical num/mod.rs file byte offset.
+Stage-aware postcheck passes722/375/six/all3962/fixed120s and
+14500624work/1GiB attempted/64MiB retained. Start load7.25/19.68 but run was declared
+diagnostic; no retrospective timing/speed claim. No complete analysis or original
+artifact. core-artifact26.py exists but is UNRUN while completion remains0.
+
+Debug obj/parallel/intrinsic-next/debug26/ stops at the real unsupported branch
+executed_calls.rs61. SourceIntrinsic low tag17 (Declaration), rbp0x1110011, payload
+273 maps to unchecked_mul in prototype_specs/prototype_tables.rs. Prior275 maps
+to already-qualified unchecked_shl, providing the layout/index control. identity.json
+binds source-table hash and exact CLI. No argument integer specialization is
+claimed. No trace patch. Both this probe and source postcheck are terminal.
+
+Next qualify actual unchecked arithmetic through existing subtraction_contract,
+CTFE subtraction_calls and runtime subtraction_runtime owners. Existing unsafe
+unchecked_sub is a dedicated identity; unchecked_add/div/mul/rem are source
+Declaration IDs sharing one-Copy-type/two-same-type prototype34. Do not alter the
+frozen registry or backend. Checked CTFE must reject overflow/zero/MIN/-1 UB;
+valid runtime cases can use existing integer operations. Keep full signed/unsigned
+widths and source declaration/unsafe/Copy/const gates. Wide runtime/ABI boundaries
+and all earlier named requirements remain required, never parity-negative just
+because unsupported. Freeze independent predictions/byte-bound source cutouts
+and own reductions in PA31; ordinary minima in the earliest owning PA.
+
+After clean26-dev-fast existed, retired the obsolete first diagnostic wip-cli
+pin and scoped-pruned one executable0.10GiB, cleanup1794657861059236793. Its source
+patch/producer/debug receipts remain. Tidy1794657861173089043 removed0 files.
+Current release21/22/23/24/25/26 pins plus clean26-dev-fast remain available for
+specific pending comparisons/current diagnosis. Reserve150/cap16/controller2jobs/
+800%/12GiB/256tasks unchanged; free339GiB before build26. No disk block. All older
+explicit native/lifetime/transport/original callback/library requirements stay.
