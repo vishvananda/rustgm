@@ -5,16 +5,15 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
-Latest continuation: clean release19 on65d222d27 clears the anonymous-array
-lifetime error and reaches IterMut::next_chunk's loan conflict at227:111229.
-The next source checkpoint now repairs fresh temporary identities in loops and
-raw loan roots, qualifying25 complete PA16/27/31 outcomes, concrete n/22n/843n
-loan/point/work scaling and four actual native comparisons. FullPA16 is340/340;
-only one independently reviewed PA24 stderr location changes among28035 old
-sidecars. Read the final "Qualified loop replacement repair" section first.
-Freeze the next clean compiler and observe unchanged original core. There is
-still no original library artifact. The ordinary unbounded manual Copy-wrapper
-positive and both earlier borrowed-result native consumers remain required.
+Latest continuation: clean release20 on published5e59877ca clears IterMut's
+loan error and stops at f128.rs799's compile-time180/PI division. The next source
+checkpoint now qualifies exact wide constant division:74 target-bit results,
+six rejecting guards, four native byte observers and linear8/32/128 scaling,
+with fullPA2 unchanged142/142. Read the final "Exact wide constant division
+checkpoint" section. Full43537278071 passed every stage on5e59877ca. Finalize
+and freeze the next clean compiler for unchanged original verification. No
+original library artifact exists; all runtime/backend and retained positive
+requirements stay open.
 
 ## Workspace and authorization
 
@@ -622,3 +621,120 @@ Those four executables are unavailable for new runs. Candidate19 remains pinned.
 make tidy completed1794617520149629540. No local build/test/debug process remains
 before publishing and freezing20. Actual caps stay2jobs/150GiB/16GiB B; the test
 harness's printed three slots describes its temporary test controller only.
+
+## Release20 verified: next is wide constant division
+
+5e59877ca45c2add358bde7fe6888413285b6b18 is published and main/B/origin match.
+Main's credential-assisted network fetch failed; it fetched the already pushed
+B head locally and fast-forwarded, without building in main. One full successor
+43537278071 was dispatched after43530351089 completed; exact5e59877ca, fast/lint/
+architecture/harness pass, release/course running. Do not cancel or duplicate.
+
+Clean candidate20-release freezes3952 Rust sources and empty patch,7m54s build,
+CLI8ad062c2c202e2e0a3ab456df32ded891732921c0fc6ac0bab184138d94a3486.
+Unchanged120s original DIAGNOSTIC (load28.56/27.00 above14/20) takes27.7973s,
+checks42310 declarations/25858 bodies/35120 attempts, zero failed/blocked
+functions. The previous iterator loan site IS ABSENT. New sole completion error:
+file8:31479, num/f128.rs799, `wide floating constant arithmetic is not implemented`.
+This is `const PIS_IN_180: f128 = 180.0 / consts::PI` inside to_degrees.
+Completion0, no artifact. Stage-aware postcheck passes722/375/six pins/current
+producer/unchanged limits; no speed claim. Raw: capture-match/
+original-candidate20-diagnostic/ and inline-region-arrays/postcheck-candidate20.log.
+core-artifact20.py is still unexecuted and must wait for completion.
+
+Next reduction work reuses literal/decimal_rounding's bounded rational/ties-even
+kernel for f16/f128 constant division. Source/runtime wide arithmetic, casts,
+metadata and C ABI have distinct existing fences; the frozen backend is not
+being extended. `sema/constants/arithmetic.rs::binary` currently rejects all wide
+operations before matching; source f128/f16 degree/radian constants need division.
+Exact FloatBits stay24bytes/alignment8, Scalar32; never round quad values viaf64.
+The existing Unsigned limbs are bounded2048words and rational rounding already
+handles subnormal ties. Consider moving only that shared numerical kernel and
+limbs below both literal and constant consumers, leaving decimal scanning in
+literal; preserve attribution/old literal outputs and existing private scratch
+regressions. New ordinary CTFE belongsPA25, genuine source counterpartsPA31.
+Declare outcomes before execution and use independent exported bytes/native C
+observers, without requesting a native wide-float ABI. All earlier requirements
+and ordinary manual Copy positive remain required. Current19/20 release pins
+are available;15–18 were explicitly pruned. New19/20 paired timing remains pending
+above unchanged load gate; older192 observations remain qualified.
+
+## Exact wide constant division checkpoint
+
+Full43537278071 PASSED EVERY STAGE on exact5e59877ca, including loop/private,
+release/native/debug/independent/component checks. It is the latest full green.
+No successor is dispatched until this coherent numerical checkpoint is published.
+
+Current implementation adds ONLY f16/f128 constant division. The exact literal
+rational kernel and bounded unsigned limbs now live below both consumers at
+support/ieee_rounding.rs and support/ieee_rounding/unsigned.rs. Decimal scanning
+stays in literal/decimal_rounding. Constant arithmetic consumes selected typed
+FloatBits through sema/constants/interchange_division.rs. Binary scale remains
+in the output exponent; early underflow/overflow avoids exponent-sized scratch
+for opposite extremes. Nearest/ties-even, signed zeros, infinities and canonical
+quiet NaNs are explicit. Other wide arithmetic/cast/pattern/wire/runtime/C-ABI
+fences, backend v3, configuration truth and all quotas remain unchanged. No dense
+record, extra primitive or FloatBits/Scalar alignment growth; no host f64 rounding.
+The existing private long-decimal scratch test still uses its original path.
+
+Frozen ordinary PA25 and actual source PA31 packets are installed under
+ tests/spec/wide-constant-division/. Four full matrices independently observe
+18+18+19+19=74 results, including direct and const-fn division plus actual source
+Div UFCS calls. Finite/zero/infinity bits compare exactly; NaNs compare class,
+never payload/sign. Four ordinary feature/type/const-call/integer-zero opponents
+and two source role/const-implementation opponents reject. The source prefix is
+unchanged source-div/foundation.rs plus genuine wide Copy/Clone/Neg roles and
+primitive implementations. Source setup v1/v2 failures remain under obj/parallel/
+wide-constant-division/: matching const_clone and Neg member stability were added
+before corrected v3 replay. No outcome was inverted or original source changed.
+
+Fast4 receipt1794620649316462287 PASSES5 exact tests/all74 bit observations,
+six opponents, earlier loop/anonymous/literal controls and fullPA2 142/142 in
+204.59s. All selected/CLI strict Clippy, fullfmt/audit/metadata pass. Fast5 native
+receipt1794621066380636715 PASSES all four RustGM/CPPGM/C byte-image executions
+in37.95s against independent Rust/C byte observations. Only the existing pointer/
+integer ABI is requested; no wide runtime instruction, wide C ABI or panic shim.
+Raw native candidate outputs stay in obj/parallel/wide-division-native/; independent
+outputs in wide-constant-division/oracle-v3/. No old text reference changes.
+
+Fast6 scaling receipt1794621384701268646 PASSES the exact8/32/128-initializer
+programs in72.29s. Each output byte is checked. Independent Rust/C separately
+matches all three frozen programs, including opposite exponent extremes. The
+source/harness hash replay records[inference,canonical,bytes]82/11/128,
+244/35/512,892/131/2048, exactly27n/4+28, n+3,16n. Raw current-harness observations
+and binding: wide-constant-division/scaling-replay/. All315 harness/490roots/
+13binaries/44stage+one component/128upstream+126Reference checks pass in
+consistency.log. The new private scaled-ratio unit awaits CI; only numeric literal
+separator spelling was corrected afterward. Do not rebuild the known cold private
+harness locally. Raw failed fast1 audit naming and fast2/3 Clippy gates remain;
+the helper ownership names/fixed slice iteration/test semicolon are corrected.
+
+The source tree now has3956 Rust files, verified by enumeration: shared kernel,
+constant division consumer, public division_images root and private scaled_ratios
+unit are real additions, while unsigned limbs move without changing count.
+Pin.py asserts3956. Frozen20/21 timing inputs are wide literal8/32/128 controls
+plus an ordinary f64 arithmetic control; both must independently accept and
+baseline20 must pass before comparisons. New divisions have separate bit/scaling
+qualification since release20 rejects them. Same-profile immutable timing uses
+four A/A plus two ABBA under unchanged14/20 gate; it is pending, never a speed claim.
+Observe/postcheck/core-artifact21 scripts are ready. Original analysis must clear
+before the genuine module-bodies-v13 artifact command; it remains unexecuted.
+All722 upstream files/six pins/work14500624/1GiB/64MiB/120s stay unchanged.
+
+One periodic guarded tidy-archive completed while idle; archive-before21.log
+lists verified restore indices under obj/archives/. It touches only this B's
+inactive scratch, preserves current19/20 pins and raw restored hashes. Restore
+an archived path through its index if an earlier receipt needs its original input.
+Finalize controls/tidy, publish this source, then freeze one clean release21 and
+observe original core. Whole PA25–44, the113-case component's separate scope,
+both borrowed-result native positives, ordinary manual Copy wrapper, original
+artifacts and every earlier retained valid requirement remain open.
+
+Final numerical preparation: all four frozen timing controls independently accept
+and immutable baseline20 accepts their full type views (control-preflight receipt).
+Periodic archive completed successfully; old inactive PID scratch was losslessly
+compacted with restored-byte verification and restore indices in obj/archives/.
+make tidy1794622629268106114 completed. No build/test/measurement/debug process
+remains before publication and the release21 freeze. Reserve150GiB/2jobs/16GiB B
+caps remain; latest shared free space155GiB. Baselines19/20 stay pinned. No original
+artifact attempt or new original21 observation has run yet.

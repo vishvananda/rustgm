@@ -1,0 +1,36 @@
+#![feature(f128)]
+const PI:f128=3.14159265358979323846264338327950288419716939937510582097494;
+const V0:f128=180.0/PI;
+const V1:f128=1e4932/6e-4966;
+const V2:f128=6e-4966/1e4932;
+const V3:f128=2e-4965/2.0;
+const V4:f128=180.0/PI;
+const V5:f128=1e4932/6e-4966;
+const V6:f128=6e-4966/1e4932;
+const V7:f128=2e-4965/2.0;
+const V8:f128=180.0/PI;
+const V9:f128=1e4932/6e-4966;
+const V10:f128=6e-4966/1e4932;
+const V11:f128=2e-4965/2.0;
+const V12:f128=180.0/PI;
+const V13:f128=1e4932/6e-4966;
+const V14:f128=6e-4966/1e4932;
+const V15:f128=2e-4965/2.0;
+const V16:f128=180.0/PI;
+const V17:f128=1e4932/6e-4966;
+const V18:f128=6e-4966/1e4932;
+const V19:f128=2e-4965/2.0;
+const V20:f128=180.0/PI;
+const V21:f128=1e4932/6e-4966;
+const V22:f128=6e-4966/1e4932;
+const V23:f128=2e-4965/2.0;
+const V24:f128=180.0/PI;
+const V25:f128=1e4932/6e-4966;
+const V26:f128=6e-4966/1e4932;
+const V27:f128=2e-4965/2.0;
+const V28:f128=180.0/PI;
+const V29:f128=1e4932/6e-4966;
+const V30:f128=6e-4966/1e4932;
+const V31:f128=2e-4965/2.0;
+#[unsafe(no_mangle)]pub static TABLE:[f128;32]=[V0,V1,V2,V3,V4,V5,V6,V7,V8,V9,V10,V11,V12,V13,V14,V15,V16,V17,V18,V19,V20,V21,V22,V23,V24,V25,V26,V27,V28,V29,V30,V31];
+#[unsafe(no_mangle)]pub extern "C" fn address()->*const u8{&raw const TABLE as *const u8}

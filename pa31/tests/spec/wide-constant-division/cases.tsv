@@ -1,0 +1,4 @@
+pa31/tests/spec/wide-constant-division/f16.rs	0	-
+pa31/tests/spec/wide-constant-division/f128.rs	0	-
+pa31/tests/spec/wide-constant-division/missing-div-role.rs	1	-
+pa31/tests/spec/wide-constant-division/nonconst-implementation.rs	1	-

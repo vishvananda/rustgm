@@ -29,3 +29,5 @@ pub mod diagnostics;
 pub(crate) mod helper_collisions;
 
 pub(crate) mod cpu_features;
+
+pub(crate) mod ieee_rounding;

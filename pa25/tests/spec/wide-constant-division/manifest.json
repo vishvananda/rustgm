@@ -1,0 +1,128 @@
+{
+ "schema": 1,
+ "declaration": "Frozen before execution. Four accepting full programs each contain18 exact constant divisions, direct and const-call forms, signed zeros, finite rounding, subnormal ties, overflow, infinities and NaNs. Four language/eligibility opponents reject. No wide runtime/ABI is requested; only byte-address C observers execute. Revision2 preserves first setup diagnostics, adds matching const_clone stability and genuine Neg role/impls required by source negatives; source matrices add an actual const UFCS Div call before their first corrected execution. Revision3 supplies actual staged stability for the Neg associated type and method before replay; no outcome change.",
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "attribution": {
+  "source_prefix": "pa31/tests/spec/source-div/foundation.rs, preserved exactly; original trait/macro bodies and source-provenance.json remain unchanged",
+  "source_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "added": "actual primitive f16/f128 Copy/Clone instances and unchanged div_impl_float expansion for those types; genuine Sync role"
+ },
+ "cases": {
+  "f16": {
+   "expected": "accept",
+   "width": 16,
+   "mode": "ordinary",
+   "values": [
+    "1.0/3.0",
+    "180.0/PI",
+    "PI/180.0",
+    "-1.0/3.0",
+    "-0.0/3.0",
+    "-0.0/-3.0",
+    "1.0/0.0",
+    "-1.0/0.0",
+    "0.0/0.0",
+    "(1.0/0.0)/(1.0/0.0)",
+    "(0.0/0.0)/1.0",
+    "1.0/(1.0/0.0)",
+    "5.9604644775390625e-8/2.0",
+    "1.78813934326171875e-7/2.0",
+    "0.00003/3.0",
+    "65504.0/0.5",
+    "divide(1.0,3.0)",
+    "divide(180.0,PI)"
+   ],
+   "sha256": "34bb08ee3e47f8ae1eb1f3ba1b39d7af8fe69d428dce226c448251fd57e78009",
+   "value_contract": "all finite, zero and infinity bits exact; NaNs must have all-one exponent and nonzero fraction, with no payload/sign equality requirement",
+   "bits_sha256": "5b1373a795ca4f90ebb1d6ac7779ae90583944143f4854c285444964fa7d2b2a",
+   "bits_path": "f16.bits"
+  },
+  "f128": {
+   "expected": "accept",
+   "width": 128,
+   "mode": "ordinary",
+   "values": [
+    "1.0/3.0",
+    "180.0/PI",
+    "PI/180.0",
+    "-1.0/3.0",
+    "-0.0/3.0",
+    "-0.0/-3.0",
+    "1.0/0.0",
+    "-1.0/0.0",
+    "0.0/0.0",
+    "(1.0/0.0)/(1.0/0.0)",
+    "(0.0/0.0)/1.0",
+    "1.0/(1.0/0.0)",
+    "6e-4966/2.0",
+    "2e-4965/2.0",
+    "1e-4932/3.0",
+    "1e4932/0.5",
+    "divide(1.0,3.0)",
+    "divide(180.0,PI)"
+   ],
+   "sha256": "33434e13677545b2b25e756b5e07e928ab3d8259c156e44a1019790b283daa82",
+   "value_contract": "all finite, zero and infinity bits exact; NaNs must have all-one exponent and nonzero fraction, with no payload/sign equality requirement",
+   "bits_sha256": "804e0489a84b3afd3c00c8ee34d54a84e996a358eada2e18dd516d48114ebced",
+   "bits_path": "f128.bits"
+  },
+  "missing-feature": {
+   "expected": "reject",
+   "mode": "ordinary",
+   "sha256": "b61b8685ce2606e198bf8b747597663a47921d3278044afae0d6bf999a1c2006"
+  },
+  "mixed-width": {
+   "expected": "reject",
+   "mode": "ordinary",
+   "sha256": "b5b5947e7c33073993166cd62619e3e936dedef4b9f592539ab4ee0a8c7259a1"
+  },
+  "nonconst-call": {
+   "expected": "reject",
+   "mode": "ordinary",
+   "sha256": "3c9ac59b28c1f683d6027a9d36a04dd7d9356672716901ef1c9806d6985d9048"
+  },
+  "integer-zero-control": {
+   "expected": "reject",
+   "mode": "ordinary",
+   "sha256": "ef84699bc3032ba1109a6433265919d151382f75863c435f87a667c1bdfe29f4"
+  }
+ },
+ "scaling": {
+  "8": {
+   "path": "scaling-8.rs",
+   "expected": "accept",
+   "sha256": "1c76a399980c72bfd4298bf66ace222fafd1fb279770d15d30e2c47e41d9e06d",
+   "bits_sha256": "556bbd609ca51ef30c7b9d03071759da0c412254131591d90ecfe76b6022e134",
+   "declaration": "Before execution: repeated PI division and opposite exponent extremes must produce these exact target bits; every real initializer and output byte is checked."
+  },
+  "32": {
+   "path": "scaling-32.rs",
+   "expected": "accept",
+   "sha256": "aca3dc8108d7b23b3fb2702597993970ba7857a6e8bb1477258eae4c68af33ac",
+   "bits_sha256": "d6c42553c6cc6c843b4971b28556db0503d26064e0ea1de5322840125fbee70e",
+   "declaration": "Before execution: repeated PI division and opposite exponent extremes must produce these exact target bits; every real initializer and output byte is checked."
+  },
+  "128": {
+   "path": "scaling-128.rs",
+   "expected": "accept",
+   "sha256": "e5bae98c9b002290e231cdb9e0e7a98bc24ae6e5a83a0ef0a55174b9c575ac88",
+   "bits_sha256": "8b350993b7568e6b263624bc04cf38eaa1edd0dc00eb2829b5da6886738d8cae",
+   "declaration": "Before execution: repeated PI division and opposite exponent extremes must produce these exact target bits; every real initializer and output byte is checked."
+  }
+ },
+ "qualification": {
+  "semantic_receipt": "1794620649316462287",
+  "native_receipt": "1794621066380636715",
+  "scaling_receipt": "1794621384701268646",
+  "scope": "74 exact/classified results plus6 independent rejection opponents; fullPA2 142/142 unchanged; original verification pending",
+  "private_unit": "awaits CI; no local private build",
+  "runtime_transport_abi": "separate existing boundaries, unchanged"
+ }
+}

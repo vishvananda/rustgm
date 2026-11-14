@@ -2,6 +2,12 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
+The [wide constant division checkpoint](../docs/pa25-wide-constant-division.md)
+qualifies exact f16/f128 division with74 observed results, actual source calls,
+native byte images and bounded scaling. Ordinary CTFE belongs to PA25 and source
+operator authority to PA31. Original-core verification and the separate runtime,
+metadata and ABI requirements remain open.
+
 The [inferred anonymous-array reductions](../docs/pa25-anonymous-array-outputs.md)
 retain ordinary local-output conditions and lifetime opponents. Actual source
 wrapper counterparts belong to PA31. Their graph repair passes16 complete

@@ -126,6 +126,9 @@ pub(super) fn binary(
     overflow: Overflow,
 ) -> Result<Scalar, Failure> {
     if matches!(ty, Primitive::F16 | Primitive::F128) {
+        if let (Op::Slash, Scalar::Float(left), Scalar::Float(right)) = (op, left, right) {
+            return super::interchange_division::divide(ty, left, right).map(Scalar::Float);
+        }
         return Err(Failure::Invalid(
             "wide floating constant arithmetic is not implemented",
         ));

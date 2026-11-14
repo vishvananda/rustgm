@@ -1,0 +1,99 @@
+{
+ "schema": 1,
+ "declaration": "Frozen before execution. Four accepting full programs each contain18 exact constant divisions, direct and const-call forms, signed zeros, finite rounding, subnormal ties, overflow, infinities and NaNs. Four language/eligibility opponents reject. No wide runtime/ABI is requested; only byte-address C observers execute. Revision2 preserves first setup diagnostics, adds matching const_clone stability and genuine Neg role/impls required by source negatives; source matrices add an actual const UFCS Div call before their first corrected execution. Revision3 supplies actual staged stability for the Neg associated type and method before replay; no outcome change.",
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "attribution": {
+  "source_prefix": "pa31/tests/spec/source-div/foundation.rs, preserved exactly; original trait/macro bodies and source-provenance.json remain unchanged",
+  "source_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "added": "actual primitive f16/f128 Copy/Clone instances and unchanged div_impl_float expansion for those types; genuine Sync role"
+ },
+ "cases": {
+  "f16": {
+   "expected": "accept",
+   "width": 16,
+   "mode": "source",
+   "values": [
+    "1.0/3.0",
+    "180.0/PI",
+    "PI/180.0",
+    "-1.0/3.0",
+    "-0.0/3.0",
+    "-0.0/-3.0",
+    "1.0/0.0",
+    "-1.0/0.0",
+    "0.0/0.0",
+    "(1.0/0.0)/(1.0/0.0)",
+    "(0.0/0.0)/1.0",
+    "1.0/(1.0/0.0)",
+    "5.9604644775390625e-8/2.0",
+    "1.78813934326171875e-7/2.0",
+    "0.00003/3.0",
+    "65504.0/0.5",
+    "divide(1.0,3.0)",
+    "divide(180.0,PI)",
+    "<f16 as Div>::div(1.0,3.0)"
+   ],
+   "sha256": "278d9fc0d263ea672418a6b9d65a38e542238baba0a3b9a24b14c858db08f900",
+   "value_contract": "all finite, zero and infinity bits exact; NaNs must have all-one exponent and nonzero fraction, with no payload/sign equality requirement",
+   "bits_sha256": "0bea096f4bc7ae45dd0f84bb05d144ccce354ec56b536776dc52e075bf917c62",
+   "bits_path": "f16.bits"
+  },
+  "f128": {
+   "expected": "accept",
+   "width": 128,
+   "mode": "source",
+   "values": [
+    "1.0/3.0",
+    "180.0/PI",
+    "PI/180.0",
+    "-1.0/3.0",
+    "-0.0/3.0",
+    "-0.0/-3.0",
+    "1.0/0.0",
+    "-1.0/0.0",
+    "0.0/0.0",
+    "(1.0/0.0)/(1.0/0.0)",
+    "(0.0/0.0)/1.0",
+    "1.0/(1.0/0.0)",
+    "6e-4966/2.0",
+    "2e-4965/2.0",
+    "1e-4932/3.0",
+    "1e4932/0.5",
+    "divide(1.0,3.0)",
+    "divide(180.0,PI)",
+    "<f128 as Div>::div(1.0,3.0)"
+   ],
+   "sha256": "3a1f8a626d96befb834bd5e5853ec5871750565f019c2ceecbf3740a3bfc26cb",
+   "value_contract": "all finite, zero and infinity bits exact; NaNs must have all-one exponent and nonzero fraction, with no payload/sign equality requirement",
+   "bits_sha256": "ee6806627439436087fa5e5fa285766ffa251e6d139362e8fb6f1f5c3f07bb9c",
+   "bits_path": "f128.bits"
+  },
+  "missing-div-role": {
+   "expected": "reject",
+   "mode": "source",
+   "sha256": "f3cc1ad71d35bc0778485982f45158751a85058acff853cf8962a664952afdb9",
+   "declaration": "Before first execution: actual division role and const implementation are separately required; UFCS const call must not gain permission from primitive result typing."
+  },
+  "nonconst-implementation": {
+   "expected": "reject",
+   "mode": "source",
+   "sha256": "117dc5b2d95a8f3cf26388ff48c66f3b2a8261650983a4241835e1f2ac652614",
+   "declaration": "Before first execution: actual division role and const implementation are separately required; UFCS const call must not gain permission from primitive result typing."
+  }
+ },
+ "qualification": {
+  "semantic_receipt": "1794620649316462287",
+  "native_receipt": "1794621066380636715",
+  "scaling_receipt": "1794621384701268646",
+  "scope": "74 exact/classified results plus6 independent rejection opponents; fullPA2 142/142 unchanged; original verification pending",
+  "private_unit": "awaits CI; no local private build",
+  "runtime_transport_abi": "separate existing boundaries, unchanged"
+ }
+}

@@ -1,15 +1,23 @@
-//! Bounded nonnegative limbs used only by demanded wide literal conversion.
+//! Bounded nonnegative limbs shared by wide literals and demanded constant division.
 use std::cmp::Ordering;
 
 const MAX_WORDS: usize = 2048;
 #[derive(Clone, Default)]
-pub(super) struct Unsigned {
+pub(crate) struct Unsigned {
     words: Vec<u32>,
 }
 impl Unsigned {
     #[cfg(test)]
     pub fn reserved_words(&self) -> usize {
         self.words.capacity()
+    }
+    pub fn from_u128(value: u128) -> Self {
+        let mut result = Self::default();
+        for &bytes in value.to_le_bytes().as_chunks::<4>().0 {
+            result.words.push(u32::from_le_bytes(bytes));
+        }
+        result.trim();
+        result
     }
     pub fn one() -> Self {
         Self { words: vec![1] }

@@ -1,13 +1,12 @@
-Current original evidence is clean candidate19 (65d222d27): all42310 declarations,
-25858 bodies and35120 item attempts, with no failed/blocked functions. Earlier
-constant-pattern, initializer-scope and anonymous-array lifetime errors clear.
-Completion stops at IterMut::next_chunk227:111229 with a live reference loan
-conflict. The load-admitted unchanged120s observation verifies722 source hashes,
-375 opens, six pins and fixed limits. Completion remains0; no core artifact exists.
-The [loop result repair](pa16-loop-result-identities.md) passes25 complete outcomes,
-scaling, existing controls and four actual native comparisons. A new clean pin
-and unchanged original verification are next. Historical observations below are
-superseded where this paragraph differs.
+Current original evidence is clean candidate20 (5e59877ca), CLI8ad062c2:
+42310 declarations/25858 bodies/35120 attempts with zero failed/blocked functions.
+The iterator loan failure clears. Completion now stops in f128.rs799 at the
+compile-time180/PI division. The unchanged120s diagnostic verifies722 hashes,
+375 opens, six pins and fixed limits; completion0 and no original artifact.
+The [wide constant division repair](pa25-wide-constant-division.md) passes74
+bit outcomes, six opponents, four native byte observers and scaling; clean
+successor/original verification is next. Full43537278071 passes the preceding
+loop source. Historical observations below are superseded where this differs.
 
 # Library build blocker tracker
 
