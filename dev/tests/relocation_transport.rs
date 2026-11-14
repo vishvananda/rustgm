@@ -126,7 +126,12 @@ const CASES: &[(&str, i32, i32, &str)] = &[
         "expired storage",
     ),
     ("union-owned-interior", 0, 0, ""),
-    ("union-interior-reference", 1, 1, "expired storage"),
+    (
+        "union-interior-reference",
+        1,
+        1,
+        "constant reference cannot escape with interior mutable allocation backing",
+    ),
 ];
 #[test]
 fn relocation_sources_match_independent_outcomes() -> Result<(), Box<dyn std::error::Error>> {

@@ -61,9 +61,23 @@ by the passing final runs. The initial mutated-temporary and mutable-static
 acceptance predictions were false under pinned Rust (E0716/E0764); their original
 bytes, predictions and diagnostics remain under `obj/parallel/static-temporary-storage/`.
 
-The new private snapshot-budget invariant is pending full CI execution; no cold
-local private build is claimed. The previous source823dc01df full43575779218
-passes every stage, including3077 private tests in each profile. A fresh full CI
-and unchanged original-core observation are required for this checkpoint.
+Full43585975943 executes all3078 release private tests successfully, including
+the new snapshot-budget invariant; no cold local private build was needed. It
+passes all other public targets but stops on one diagnostic assertion in
+relocation_transport: the interior-mutable union reference still rejects, now
+for its actual validity cause rather than expired extended storage. Pinned Rust
+rejects E0492. Focused1794654357349535933 checks all relocation Rust outcomes and
+three frontend views plus the new storage positives/guards, with strict selected/CLI
+Clippy, formatting and audit. Only the expected diagnostic is corrected; no input,
+expected status, generated reference or production guard changes. Native/debug/
+course continuation remains due in a full successor. The previous source823dc01df full43575779218
+passes every stage, including3077 private tests in each profile. A full successor is required after that diagnostic correction. Clean release25
+(source73017a98d,3961 hashes/empty patch) clears the Unicode failure in the
+unchanged original core. All declarations/bodies still pass; completion now fails
+at ptr/metadata.rs119 on actual const Destruct cleanup proof. Stage-aware
+postcheck verifies722 original sources/375 opens/six pins and unchanged limits.
+All nine safe PA25 main programs also execute through release25 and the backend,
+so16 new native programs are qualified. This observation is above the timing
+gate and makes no speed claim.
 No original library artifact or whole PA25–44 completion is claimed. The separate
 released113-case const-machine component is unchanged.

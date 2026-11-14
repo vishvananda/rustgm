@@ -6,8 +6,10 @@ assignment components as their complete contracts qualify. Work as **one worker*
 the released113-case PA25 const-machine component stays separate.
 
 Latest continuation: initializer-storage source73017a98d is published; full
-43585975943 is running on that exact head (fast success, full release/course in
-progress). Clean25 release/3961/empty patch SHA
+43585975943 finished:3078 release private/all other public targets pass; one
+relocation diagnostic assertion fails. Expected validity cause is independently
+confirmed E0492 and focused1794654357349535933 passes the correction. Full
+successor is due after publication. Clean25 release/3961/empty patch SHA
 dbd4b5ba742e321c8b02cc337ce3e24f42b89405394ce174a234e3695e4a8e4e builds in9m33s.
 Unchanged original diagnostic clears Unicode expired storage. All42310
 declarations/25858 bodies/35120 attempts still pass; sole completion error now
@@ -1328,3 +1330,45 @@ Paths obj/parallel/projected-cleanup/debug25[-exact,-exact2]/; source unmodified
 No trace patch is installed. Prefer cached dev-fast original diagnostics for
 ordinary subsequent edits if cfg matches, preserving120s/quotas; release freezes
 belong at coherent checkpoints. All older explicit contracts remain required.
+
+## Full43585975943 diagnostic correction; projected Copy baseline frozen
+
+Full43585975943 exact73017 is TERMINAL FAILURE at Release/course stage. All3078
+release private tests pass (new snapshot budget invariant included), all other
+public targets pass. The sole public failure is relocation_transport's
+union-interior-reference reason: old expired storage is now correctly
+constant reference cannot escape with interior mutable allocation backing.
+Both candidate and pinned Rust still reject; independent Rust explicitly E0492.
+Only the handwritten expected reason is updated. Original source/statuses/three
+views and every generated oracle stay unchanged. Focused1794654357349535933
+passes the full relocation Rust/three-view packet plus two new storage controls,
+strict selected/CLI Clippy/fmt/audit. No production change or new release build.
+Raw ci43585975943.log and ci-repair.log under static-temporary-storage; Rust E0492
+under obj/parallel/pa28/relocation-transport/source-333977/. Dispatch one full
+successor after publishing this correction; native/debug/independent stages did
+not execute in the failed full run. No local heavy job remains at this point.
+
+New UNTRACKED baseline packets pa25/tests/spec/projected-copy-cleanup and
+pa31/tests/spec/projected-copy-cleanup contain10 frozen inputs/expected outcomes.
+All independent Rust outcomes/native7 values agree with declaration. Candidate25:
+ordinary declared/where positives pass; source declared/where/moved associated
+Copy positives reproduce exact active-cleanup const Destruct error. Source
+parameter/reference controls pass. Three definition-only unpaid/lookalike
+negatives unexpectedly ACCEPT in candidate25; preserve their required rejection
+predictions and original bytes, never invert them. Add separate reached versions
+as narrower active-call guards; do not silently replace the original negatives.
+Oracles1 receipts/raw diagnostics under obj/parallel/projected-cleanup/.
+No compiler implementation for this new frontier has been edited yet.
+
+Investigate reuse of existing scoped Copy qualification rather than granting
+projected Destruct by name. pipeline/cdrop.rs::one already calls
+begin_qualification -> initial.questions -> defining_cleanups::qualify -> recheck
+-> accept_qualification before selecting active eligibility for ordinary function
+owners. qualify/copies.rs performs actual Copy selection in the exact defining
+environment, retains its obligations, and seeds a scoped NeedsDrop query. Determine
+why the projected associated Copy input is not filtered there. The separate
+claims.rs parameter-only Copy guard may be relevant but remains a hypothesis;
+projected evidence requires the actual completed region/owner/header/arguments,
+Body-only eligibility and no grant for Whole/OwnDrop. Keep all wrong-owner and
+proof-carrier guards. Prefer cached dev-fast diagnostic after coherent related
+edits, preserving the original120s/quotas. No new release per ordinary edit.
