@@ -1,5 +1,11 @@
 # Compile-time-first Rust frontend architecture
 
+The [generic const-call checkpoint](docs/pa25-generic-const-calls.md) demands
+the existing callable-template producer when a defining const body retains a call.
+Readonly checks consume exact formals and Fn/FnMut borrows; reached CTFE loads
+actual function items through checked storage and requires Writable for FnMut.
+Source/caller/const/borrow/Code proofs and ordinary closure entry remain separate.
+
 The [default-supertrait checkpoint](docs/pa25-default-supertraits.md) consumes
 exact completed defining-environment premises for other trait applications of the
 same Self, preserving complete canonical arguments and the own-trait fast path.

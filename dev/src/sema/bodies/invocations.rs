@@ -286,6 +286,25 @@ impl Checker<'_> {
         dereferences: u32,
         kind: Option<CallTrait>,
     ) -> Result<(), Error> {
+        if kind.is_some()
+            && self.callee_use_effect()? != crate::support::constness::Constness::Ordinary
+            && let Some(owner) = self.state.environment_owner
+            && self
+                .facts
+                .function_indices
+                .get(&owner)
+                .and_then(|&index| self.facts.functions.get(index))
+                .is_some_and(|function| function.body == Some(self.state.body))
+        {
+            // The defining body needs the same formal order as a demanded
+            // function value, even when no client instantiates this function.
+            crate::sema::declarations::prepare_callable_template(
+                self.report,
+                self.facts,
+                self.key(node),
+                owner,
+            )?;
+        }
         let borrow = match kind {
             Some(CallTrait::Fn | CallTrait::FnMut) => {
                 let mutable = kind == Some(CallTrait::FnMut);

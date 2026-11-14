@@ -1,0 +1,111 @@
+{
+ "schema": 1,
+ "owner": "PA31 actual source generic const callable body contracts",
+ "declared_before_execution": true,
+ "basis": {
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "cmp_sha256": "0a9b8c3a2f7b80447703e5cdc224d059465a90fb9203e0ab4b0182af17494cac",
+  "min_by_key_sha256": "d35a57c0ff6722c941a30840ca59a83925c9ec533f5b2fc72d4a9d94d7288c74",
+  "license": "MIT OR Apache-2.0; third_party/sources.json",
+  "foundation": {
+   "path": "pa31/tests/spec/default-supertraits/original-max.rs",
+   "sha256": "d839083ff8b06a4f1165c341262ec89b2b3e4e012543bf530b5ed3059388645f"
+  }
+ },
+ "cases": {
+  "once-unused.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/generic-const-calls/once-unused.rs"
+  },
+  "mut-unused.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/generic-const-calls/mut-unused.rs"
+  },
+  "shared-unused.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/generic-const-calls/shared-unused.rs"
+  },
+  "mut-reference.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/generic-const-calls/mut-reference.rs"
+  },
+  "mut-twice.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/generic-const-calls/mut-twice.rs"
+  },
+  "plain-bound.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/generic-const-calls/plain-bound.rs"
+  },
+  "once-twice.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/generic-const-calls/once-twice.rs"
+  },
+  "immutable-mut.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/generic-const-calls/immutable-mut.rs"
+  },
+  "native-mut.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/generic-const-calls/native-mut.rs",
+   "native_stdout": "41\n"
+  },
+  "original-min-by-key.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/generic-const-calls/original-min-by-key.rs",
+   "exact_item_sha256": "d35a57c0ff6722c941a30840ca59a83925c9ec533f5b2fc72d4a9d94d7288c74"
+  },
+  "scaling-8.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/generic-const-calls/scaling-8.rs",
+   "functions": 8
+  },
+  "scaling-32.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/generic-const-calls/scaling-32.rs",
+   "functions": 32
+  },
+  "scaling-128.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/generic-const-calls/scaling-128.rs",
+   "functions": 128
+  },
+  "native-shared.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/generic-const-calls/native-shared.rs",
+   "native_stdout": "41\n"
+  },
+  "native-mut-runtime.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/generic-const-calls/native-mut-runtime.rs",
+   "native_stdout": "41 59\n"
+  }
+ },
+ "files": {
+  "immutable-mut.rs": "1ce61c3e9a07cf01d54cb5b03ed8ab7de285a09588350d7961c5dd1cbb96bd34",
+  "mut-reference.rs": "ed87ef3f35357f34df3a115f3ab494fc1e65582377810df8af32f0422114a25a",
+  "mut-twice.rs": "f9e49f55f5f8828bb9d98a0237f138257d582f7526e9ae9f62c649d7a2e9c478",
+  "mut-unused.rs": "adf61702b15219802e8c98d24db5c71158f9f63921c53e03d8518c825357cec4",
+  "native-mut.rs": "8be3acb12de14c62ac050612de85b521e799852c6c6fbdbda39d5b258a08ff09",
+  "observe.c": "03c53b2515f445f588cabb0c7062ff90e37d679b2069c32087f1d1ccde6c6c51",
+  "once-twice.rs": "a568e40da42e4ffd73785b49a3fb1a58ea2062bfb490d0841788f5e19b5a4c72",
+  "once-unused.rs": "ef39aa53022568de2f5ec20e1f7337ce1d59d0f072f0fb78deeb35876bd59f7a",
+  "original-min-by-key.rs": "0e7c7b98b7bca308114583c03e7f3083271fd58a3187e094ca1471b66a7a0d6f",
+  "plain-bound.rs": "a22de2c7387c7721a189f5a8daab5792928f09d4ca4613fcfb220b31ff7dbb82",
+  "scaling-128.rs": "f6846c36256a6a20f5de9dee7525cd2eb9ccdc25519866bfab9f53356f3452d3",
+  "scaling-32.rs": "4de49975621c43a193d92382c5215c00ddce2a88c209c30089bf600a679829ad",
+  "scaling-8.rs": "2cb040151e668128376f8cb8332bec16b30243be027cdaa4348e9cf3d6a13f4a",
+  "shared-unused.rs": "21d22006d7da03fb48dd2e04074264e9162e848a40d2aee75201d06565e853fa",
+  "native-shared.rs": "b204e0a35b1c0ef23fbb2b23e48790c00971236afd439591031c0031e03409c8",
+  "native-mut-runtime.rs": "29dd434b2cc98878f6f4e56f5e44b78d68195ee48b7dbf4d15a855ae6475df9c",
+  "runtime-observe.c": "47f84d2d29c8fc5088dddcf4a1db51df0be276c644cff1396967709660790a74"
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "target": "x86_64-unknown-linux-gnu"
+ }
+}

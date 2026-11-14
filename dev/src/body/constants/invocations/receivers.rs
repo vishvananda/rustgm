@@ -92,11 +92,20 @@ impl Bindings {
         &self,
         facts: &Declarations,
         original: TypeId,
+        operand: TypeId,
         signature: TypeId,
         work: &mut Work,
     ) -> Result<TypeId, &'static str> {
         work.charge(2)?;
-        let Some(Kind::Parameter(id)) = facts.types.kind(original) else {
+        let (subject, borrow) = match facts.types.kind(original) {
+            Some(Kind::Reference {
+                region,
+                mutable,
+                referent,
+            }) => (referent, Some((region, mutable))),
+            _ => (original, None),
+        };
+        let Some(Kind::Parameter(id)) = facts.types.kind(subject) else {
             return Err("const invocation requires a direct generic receiver parameter");
         };
         let selected = self
@@ -121,6 +130,16 @@ impl Bindings {
             || facts.types.contains_projections(actual) != Some(false)
         {
             return Err("const invocation changed its complete receiver signature");
+        }
+        if let Some((region, mutable)) = borrow {
+            work.charge(2)?;
+            if !matches!(facts.types.kind(operand), Some(Kind::Reference {
+                region: current, mutable: capability, referent,
+            }) if current == region && capability == mutable && referent == actual)
+            {
+                return Err("const invocation changed its exact receiver borrow");
+            }
+            return Ok(operand);
         }
         Ok(actual)
     }

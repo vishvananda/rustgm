@@ -1,0 +1,92 @@
+{
+ "schema": 1,
+ "owner": "PA25 ordinary generic const callable minima",
+ "declared_before_execution": true,
+ "cases": {
+  "once-unused.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains; unresolved core::marker::Destruct import is an unqualified bootstrap boundary, never a semantic rejection"
+  },
+  "mut-unused.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains; unresolved core::marker::Destruct import is an unqualified bootstrap boundary, never a semantic rejection"
+  },
+  "shared-unused.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains; unresolved core::marker::Destruct import is an unqualified bootstrap boundary, never a semantic rejection"
+  },
+  "mut-reference.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains; unresolved core::marker::Destruct import is an unqualified bootstrap boundary, never a semantic rejection"
+  },
+  "mut-twice.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains; unresolved core::marker::Destruct import is an unqualified bootstrap boundary, never a semantic rejection"
+  },
+  "plain-bound.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required ordinary outcome remains; unresolved core::marker::Destruct import is an unqualified bootstrap boundary, never a semantic rejection"
+  },
+  "once-twice.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required ordinary outcome remains; unresolved core::marker::Destruct import is an unqualified bootstrap boundary, never a semantic rejection"
+  },
+  "immutable-mut.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required ordinary outcome remains; unresolved core::marker::Destruct import is an unqualified bootstrap boundary, never a semantic rejection"
+  },
+  "native-mut.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains; unresolved core::marker::Destruct import is an unqualified bootstrap boundary, never a semantic rejection"
+  },
+  "original-min-by-key.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains; unresolved core::marker::Destruct import is an unqualified bootstrap boundary, never a semantic rejection"
+  },
+  "scaling-8.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains; unresolved core::marker::Destruct import is an unqualified bootstrap boundary, never a semantic rejection"
+  },
+  "scaling-32.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains; unresolved core::marker::Destruct import is an unqualified bootstrap boundary, never a semantic rejection"
+  },
+  "scaling-128.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains; unresolved core::marker::Destruct import is an unqualified bootstrap boundary, never a semantic rejection"
+  },
+  "native-shared.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains; unresolved core::marker::Destruct import is an unqualified bootstrap boundary, never a semantic rejection"
+  },
+  "native-mut-runtime.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains; unresolved core::marker::Destruct import is an unqualified bootstrap boundary, never a semantic rejection"
+  }
+ },
+ "files": {
+  "immutable-mut.rs": "e652e6b9310fd9a275426d53d5502050881295e12aa9aa41395e7e8af99b518e",
+  "mut-reference.rs": "98b92f3a1033ed6d73d134382a0bf880ab27da0e90ad57c0ecb388074ad5ee51",
+  "mut-twice.rs": "484401008caeef0217b5152acb64f61984460623e6879fd80a7e482e80f51762",
+  "mut-unused.rs": "cb7bda88ab0f6d16710b0593bd21f9851e3760f0593fdeb5e385b180a71a050c",
+  "native-mut.rs": "f4286f99a08ed3862cccac37717e41b65284fc91ee4d00da3eee3d67e24cbd32",
+  "once-twice.rs": "4375c466cbb31f84477401b189ff0a124af6393e6f04302c5ebf4f343e0accba",
+  "once-unused.rs": "1df1bec9d2af63fdb02f2574210e7a5e5c2d83a62f5e90d36f22cfe17b5ae7dc",
+  "original-min-by-key.rs": "b17d65521b61c0a1ef9654fbcf0f0b0dc82ec9e8fc8446665d7313e589d50bf7",
+  "plain-bound.rs": "360e435a16c9972e2cbb3ed4208a9de8399e27886ce614003e5cef8469c3c095",
+  "scaling-128.rs": "9125f612120ae51dd7c68ec7e17dc988c38c5850c956f0990fa96a3c6fabbbe2",
+  "scaling-32.rs": "28732d1e669bc02e90195445f70a2eea57364d517d819bd2a3fc73aff50f7eba",
+  "scaling-8.rs": "0985a551bcdf44fcafa8d0d95e15f3f733fdab6479f1ee7aeee91d22027c6d97",
+  "shared-unused.rs": "bf506ae9a1557c0bf581114ff838ca70ad7433a7beab31f9d1e25ce9c5048f93",
+  "native-shared.rs": "d7a4baa098446c7a3c55b75ecf09094a479f0e9a18814e6082faad25e88361a1",
+  "native-mut-runtime.rs": "21fe585e875fa228b27e8ea4c132cb096bbf4973c9ebc2792cc643252251a18d"
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "target": "x86_64-unknown-linux-gnu"
+ }
+}

@@ -14,7 +14,7 @@ impl Machine<'_, '_> {
         kind: CallTrait,
         signature: TypeId,
         arguments: ValueList,
-    ) -> Result<(Instance, ValueList), Failure> {
+    ) -> Result<Option<(Instance, ValueList)>, Failure> {
         self.charge(1)?;
         self.bodies.validate_entry(frame.body)?;
         let position = frame
@@ -31,9 +31,8 @@ impl Machine<'_, '_> {
             || position >= block.end
             || !matches!(body.statements.get(position as usize).map(|s| s.action), Some(Action::Evaluate(value)) if value == id)
             || !body.const_context
-            || kind != CallTrait::FnOnce
         {
-            return Err("const Invoke differs from its exact checked FnOnce statement".into());
+            return Err("const Invoke differs from its exact checked statement".into());
         }
         // These charged O(1) facts are also counted on a rejected reached use.
         self.charge(3)?;
@@ -87,25 +86,10 @@ impl Machine<'_, '_> {
                 return Err("const Invoke operand differs from its complete signature".into());
             }
         }
-        self.charge(1)?;
-        let ty = body
-            .values
-            .get(receiver.0 as usize)
-            .ok_or("const Invoke has no receiver type")?
-            .ty;
-        self.charge(1)?;
-        let target = Self::value(frame, *receiver)?
-            .as_function()
-            .ok_or("const Invoke receiver is not a function item")?;
-        self.charge(3)?;
-        let facts = self.evaluator.facts();
-        if target.ty() != ty
-            || !matches!(facts.types.kind(ty), Some(Kind::FunctionItem { signature: public, .. }) if public == signature)
-            || facts.types.needs_region_context(ty) != Some(false)
-        {
-            return Err("const Invoke changed its full item receiver or argument".into());
-        }
-        Ok((
+        let Some(target) = self.invoked_receiver(body, frame, *receiver, kind, signature)? else {
+            return Ok(None);
+        };
+        Ok(Some((
             target,
             ValueList {
                 start: arguments
@@ -114,6 +98,67 @@ impl Machine<'_, '_> {
                     .ok_or("const Invoke argument overflow")?,
                 ..arguments
             },
-        ))
+        )))
+    }
+
+    fn invoked_receiver(
+        &mut self,
+        body: &Code,
+        frame: &Frame,
+        receiver: ValueId,
+        kind: CallTrait,
+        signature: TypeId,
+    ) -> Result<Option<Instance>, Failure> {
+        self.charge(7)?;
+        let operand = body
+            .values
+            .get(receiver.0 as usize)
+            .ok_or("const Invoke has no receiver type")?
+            .ty;
+        let ty = if kind == CallTrait::FnOnce {
+            operand
+        } else {
+            let Some(Kind::Reference {
+                mutable, referent, ..
+            }) = self.evaluator.facts().types.kind(operand)
+            else {
+                return Err("const Invoke requires its actual borrowed item receiver".into());
+            };
+            if mutable != (kind == CallTrait::FnMut) {
+                return Err("const Invoke changed its receiver borrow capability".into());
+            }
+            referent
+        };
+        let facts = self.evaluator.facts();
+        if !matches!(facts.types.kind(ty), Some(Kind::FunctionItem { signature: public, .. }) if public == signature)
+            || facts.types.needs_region_context(ty) != Some(false)
+        {
+            return Err("const Invoke changed its full item receiver or argument".into());
+        }
+        let mut value = Self::value(frame, receiver)?;
+        if kind != CallTrait::FnOnce {
+            if kind == CallTrait::FnMut
+                && value.write_permission() != Some(crate::sema::values::WritePermission::Writable)
+            {
+                return Err("const Invoke requires its actual unique receiver permission".into());
+            }
+            let Some(loaded) = self.read(super::memory::Resolved {
+                address: value,
+                ty,
+                raw: None,
+                union: None,
+            })?
+            else {
+                return Ok(None);
+            };
+            value = loaded;
+        }
+        let target = value
+            .as_function()
+            .ok_or("const Invoke receiver is not a function item")?;
+        if target.ty() != ty {
+            return Err("const Invoke changed its exact function item value".into());
+        }
+        Ok(Some(target))
     }
 }

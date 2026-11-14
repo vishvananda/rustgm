@@ -6,10 +6,12 @@ fn check(facts: &Declarations, body: &Body, expected: usize) -> Result<(), &'sta
     super::check(facts, body, expected, &mut Work::new(1_000_000))
 }
 fn prepared() -> TestResult<(crate::resolve::expansion::Report, Declarations, Body)> {
-    let source = std::fs::read_to_string(
-        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../pa31/tests/spec/source-const-callable/original-native29.rs"),
-    )?;
+    prepared_source("pa31/tests/spec/source-const-callable/original-native29.rs")
+}
+fn prepared_source(
+    path: &str,
+) -> TestResult<(crate::resolve::expansion::Report, Declarations, Body)> {
+    let source = crate::test_source::fixture(path)?;
     let report = crate::test_source::source_provider(&source, "operator_facts")?;
     let definition = report
         .resolution
@@ -273,5 +275,67 @@ fn const_operator_executes_multiple_operands_with_a_distinct_result() -> TestRes
         prepared,
     )?;
     assert!(!program.symbols.is_empty());
+    Ok(())
+}
+
+#[test]
+fn defining_mutable_const_operator_keeps_its_retained_borrow_and_actual_receiver() -> TestResult {
+    let (_, mut facts, body) =
+        prepared_source("pa31/tests/spec/generic-const-calls/native-mut.rs")?;
+    check(&facts, &body, 1)?;
+    let (statement, arguments) = body
+        .statements
+        .iter()
+        .find_map(|statement| {
+            let Action::Evaluate(id) = statement.action else {
+                return None;
+            };
+            let Rvalue::Invoke {
+                kind: CallTrait::FnMut,
+                arguments,
+                ..
+            } = body.values[id.0 as usize].kind
+            else {
+                return None;
+            };
+            Some((statement, arguments))
+        })
+        .ok_or("actual FnMut statement")?;
+    let key = body
+        .source
+        .proof_site(statement.source)?
+        .source()
+        .ok_or("source")?;
+    let retained = *facts.invocations.get(&key).ok_or("retained FnMut")?;
+    let mut missing = retained;
+    missing.borrow = None;
+    facts.invocations.insert(key, missing);
+    assert!(check(&facts, &body, 1).is_err());
+    facts.invocations.insert(key, retained);
+    let receiver = body.arguments[arguments.start as usize];
+    let crate::types::Kind::Reference {
+        region, referent, ..
+    } = facts
+        .types
+        .kind(body.values[receiver.0 as usize].ty)
+        .ok_or("receiver type")?
+    else {
+        return Err("borrowed receiver".into());
+    };
+    let shared = facts.types.intern(crate::types::Kind::Reference {
+        region,
+        referent,
+        mutable: false,
+    })?;
+    let mut altered = body.clone();
+    altered.values[receiver.0 as usize].ty = shared;
+    assert!(check(&facts, &altered, 1).is_err());
+    let mut changed = retained;
+    changed.receiver = shared;
+    changed.borrow = Some(shared);
+    facts.invocations.insert(key, changed);
+    assert!(check(&facts, &body, 1).is_err());
+    facts.invocations.insert(key, retained);
+    check(&facts, &body, 1)?;
     Ok(())
 }

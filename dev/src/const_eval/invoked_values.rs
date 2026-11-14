@@ -30,7 +30,11 @@ impl Machine<'_, '_> {
         else {
             return Err("const Invoke changed its actual operation".into());
         };
-        let (target, arguments) = self.invoked_item(body, frame, id, kind, signature, arguments)?;
+        let Some((target, arguments)) =
+            self.invoked_item(body, frame, id, kind, signature, arguments)?
+        else {
+            return Ok(None);
+        };
         let arguments = self.arguments(frame, arguments)?;
         match self.function_call(body, frame, target, super::function_calls::Form::Invoke)? {
             super::function_calls::Outcome::Enter(index) => Ok(Some((index, arguments, id))),

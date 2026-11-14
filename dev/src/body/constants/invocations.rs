@@ -210,7 +210,7 @@ fn check_invocation(
         .get(receiver.0 as usize)
         .ok_or("invalid const invocation receiver")?
         .ty;
-    if receivers.receiver(facts, original_receiver, signature, work)? != actual {
+    if receivers.receiver(facts, original_receiver, actual, signature, work)? != actual {
         return Err("const invocation changed its exact instantiated receiver or argument");
     }
     for (&operand, &parameter) in operands.iter().zip(parameters) {
@@ -246,11 +246,17 @@ fn source_receiver(
         .invocations
         .get(&source)
         .ok_or("const invocation has no retained source fact")?;
-    if kind != CallTrait::FnOnce
-        || retained.kind != Some(kind)
-        || retained.borrow.is_some()
-        || retained.dereferences != 0
-    {
+    let borrow_matches = match (kind, retained.borrow) {
+        (CallTrait::FnOnce, None) => true,
+        (CallTrait::Fn | CallTrait::FnMut, Some(borrow)) => {
+            work.charge(2)?;
+            borrow == retained.receiver
+                && matches!(facts.types.kind(borrow), Some(Kind::Reference { mutable, .. })
+                    if mutable == (kind == CallTrait::FnMut))
+        }
+        _ => false,
+    };
+    if retained.kind != Some(kind) || !borrow_matches || retained.dereferences != 0 {
         return Err("const invocation differs from its defining call-trait or effect fact");
     }
     work.charge(1)?;

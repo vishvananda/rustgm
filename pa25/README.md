@@ -1,5 +1,10 @@
 # RustGM Programming Assignment 25: Constant evaluation
 
+The [generic const-call checkpoint](../docs/pa25-generic-const-calls.md) preserves
+ordinary callable predictions here and actual source-role counterparts in PA31.
+All15 source outcomes and three native observers qualify; ordinary Destruct
+imports and whole-assignment requirements remain open.
+
 The [default-supertrait checkpoint](../docs/pa25-default-supertraits.md) qualifies
 ordinary const-trait default minima while retaining two Destruct import boundaries.
 Actual source roles and unchanged Ord::max belong to PA31; full bootstrap and

@@ -1,5 +1,10 @@
 # RustGM Programming Assignment 31: Compiler/library bindings
 
+The [generic const-call checkpoint](../docs/pa25-generic-const-calls.md) qualifies
+unused FnOnce/FnMut/Fn bodies, exact source min_by_key, and real shared/mutable
+function-item CTFE/runtime observations. Actual source/borrow/const/Code proof
+stays required; clean original-core verification is next.
+
 The [default-supertrait checkpoint](../docs/pa25-default-supertraits.md) qualifies
 18 source outcomes, the unchanged Ord::max item and three actual native observers.
 Defining Self/supertrait proof and builtin Destruct bound evidence preserve actual

@@ -5,6 +5,61 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
+Current coherent checkpoint: unused generic const FnOnce/FnMut/Fn defining calls
+plus actual borrowed function-item CTFE. See docs/pa25-generic-const-calls.md.
+Existing callable-template producer is demanded only for retained const-function
+calls; complete formals are indexed once. Readonly validator keeps exact borrowed
+receiver capability/type/region. Reached CTFE reads real item values from checked
+storage (Writable required for FnMut) and retains actual const/Code entry.
+Production: sema/bodies/invocations.rs, body/constants/invocations.rs and its
+invocations/receivers.rs, const_eval/{operator_calls,invoked_values}.rs. No dense field/cache/wire/backend/
+storage-policy changes. Inventory3964; B only/one worker/main Git-only.
+
+Qualified15 source outcomes (12 accept/3 reject), exact unchanged min_by_key,
+three new native41/41/`41 59` observations, eight prior native callable controls.
+Pinned Rust agrees with all15 counterparts and independently runs the three
+new native observations. All15 ordinary candidate inputs stop at unresolved
+core::marker::Destruct import, retain their original outcomes, and are UNQUALIFIED.
+fast3=1794680741839406928 four exact132.15s; fast4=1794680934117603013 final
+packet/scaling48.66s; native2=1794681053414857447 two groups/11 programs41.79s.
+Strict selected/production/CLI Clippy, full fmt/audit,315 harness/495 roots/13 bins/
+44 stages/one component,128 upstream+126 Reference all pass. replay authenticates
+all3964 compiler hashes and packet/foundation hashes. Post-lowering work8/32/128:
+1762/2037,6994/6959,27922/26623. New private retained-borrow/receiver forgery guard
+awaits full CI; no cold private build. Raw obj/parallel/generic-const-calls/.
+
+NEXT publish this coherent checkpoint, freeze clean candidate32-release and retry
+genuine original v14 library with fixed120s/14500624work/1GiB attempted/64MiB
+retained, then postcheck. No redundant census/dev-fast whole-original retry.
+Dispatch ONE full successor after c0ff's43624101196 terminates; at last poll
+fast/static/host graph/release/course/maintainer-native/broad course native passed,
+debug invariants executing. Do not duplicate or cancel it. Whole PA25–44 and all
+original v13/v14 metadata/LowIR/native/bootstrap/future/older positives stay open.
+
+Published baseline c0ff945bd0804295d79e7de1ff0411fa258a80f7, main synchronized.
+Clean candidate31-release3964 hashes/empty patch,7m51s build,
+CLI3d81449e9933f537a6efcdf060f0bd0820912cd550864cdda70d685509fd69db retained.
+Genuine original v14 library31 CLEARS Ord::max and fails cmp.rs:1641,
+file73:54310, min_by_key's `f(&v2)`:
+`const invocation has no completed callable formal order`.
+19.614398425910622s/status1/no timeout/peak childRSS731996KiB; no core.rgm,
+0-byte core.lowir. artifact-postcheck31 terminal PASS:722 originals/375 opens/
+six reviewed config pins/all3964 compiler hashes/clean pin/fixed quotas.
+Diagnostic only/no speed claim. Raw default-supertraits/{build31-release,
+core-artifact31,artifact-postcheck31}.log and original-library-candidate31/.
+
+The first new fastcheck also exceeded the unchanged16GiB cap (17307295744 bytes).
+Investigated semantic failure, then retired/pruned obsolete release25–30 pins
+and default-supertraits/{replay,bounds-reference} binaries: ~1.24GiB recovered.
+Hashes/receipts remain; those binaries are UNAVAILABLE for new observations.
+Current31 and pending performance21–24 pins remain intact. Retirement receipts
+and cleanup logs under generic-const-calls/retire-*.json/.log. No reserve/cap
+lowered or another checkout cleaned. storage.py is unchanged. Full local caps
+stay2jobs/150GiB reserve/16GiB ceiling. No local heavy job at this checkpoint.
+
+Historical checkpoint record follows; current continuation above supersedes old
+NEXT paragraphs and old executable-availability statements.
+
 Current coherent checkpoint: conditional supertrait calls in const defaults plus
 exact builtin Destruct method-bound evidence. See docs/pa25-default-supertraits.md.
 Production touches only sema/function_context/abstract_uses.rs and

@@ -1,5 +1,10 @@
 # RustGM assignment roadmap
 
+The [generic const-call checkpoint](docs/pa25-generic-const-calls.md) qualifies
+15 source outcomes and eleven native programs, addressing original min_by_key
+defining formals and borrowed function-item execution. Fifteen ordinary imports
+stay unqualified. Clean original-core verification is next.
+
 The [default-supertrait checkpoint](docs/pa25-default-supertraits.md) qualifies
 32 source/ordinary complete outcomes and eight native observations. It addresses
 original Ord::max defining legality and concrete builtin Destruct method bounds.
