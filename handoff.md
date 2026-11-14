@@ -5,6 +5,45 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
+Mixed v14 declarations are now locally qualified; publish this joined checkpoint
+before clean30. exported_kind and callable_effects use existing body_nodes
+capability, so v14 inherits v13 enum/variant/tuple+unit constructor/const parameter/
+named const classification and required Fn method conditional constness. V11
+operation-only flags and all old wire formats remain unchanged. No dense field,
+cache, backend/bridge/storage change. Four complete old PA29 providers +exact
+already-qualified helper, eight byte-identical ordinary clients/opponents and
+three scaling inputs are declared in PA43 mixed-declarations/manifest.json.
+
+Fast1794674660553215232: six exact157.65s, strict production/selected/CLI Clippy,
+fmt/audit. Native1794675128987314929: two groups/six programs44.57s (four new42s,
+two previous41s). Independent Rust semantic companions/native42×4 and actual
+helper Output/unsafe/lifetime controls pass; full old provider semantics retain
+prior independent qualification. First private-row test API failure and actual
+rust-call conditional-effect failure are preserved in fast1/2. No result inverted.
+Replay authenticates3964 sources/all packet+reference/basis hashes, two new tests,
+and immutable same-profile legacy A/A/B/B bytes.8/32/128 inference/canonical/bytes
+=115/111/9864,451/449/23852,1795/1777/79876.315harness/495roots/13bins/44stages/
+one component/128upstream+126Reference pass. Raw obj/parallel/mixed-declarations/.
+
+Immutable baseline declaration-baseline-dev-fast binds clean63c31d0bf/3964,
+CLI696cf424d29248241bce8dbb8812ca66a866a368c3d25b5fe1958def6692f89b;
+replay/wip-rustgm has authenticated patch+source hashes and immutable candidate.
+All four legacy metadata bytes equal, hashes in docs/parallel/mixed-declarations-v14.md.
+No speed claim. Baseline old release29 also confirms four legacy A/A positives
+and all eight v14 producer failures. Three reduced const-Deref library positives
+clear declaration-kind failure but still FAIL `source role form is outside the
+complete first transport family`; metadata absent. Preserve each required positive.
+
+Full43611467168 is terminal SUCCESS on exact170c04501:3079 private release8.39s/
+debug93.73s, all stages. Next publish this coherent body+declaration join, dispatch
+ONE full successor, freeze candidate30-release and run genuine original v14 core
+with the same722 sources/six config pins/375 opens/120s/14500624work/1GiB attempted/
+64MiB retained. No redundant census or dev-fast full-original retry. Actual core29
+Deref site is not yet verified cleared. No original library artifact/native consumer;
+all original v13, reduced metadata, ordinary bootstrap, real future and earlier
+requirements stay. B only/one worker/main Git-only; policy2jobs/150reserve/16cap,
+shared free342GiB. Tidy between batches and keep needed pins/raw receipts.
+
 The explicit generic Deref body repair is now locally qualified; original core
 verification is pending. place_result/operand generalize the old Index-only
 reference/place relation to actual Deref/DerefMut syntax with exact1-vs2 parameter

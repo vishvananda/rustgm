@@ -1,5 +1,11 @@
 # RustGM assignment roadmap
 
+The [mixed-declaration checkpoint](docs/parallel/mixed-declarations-v14.md) qualifies
+all four existing v13 provider families in v14 with and without operations,
+six native programs and byte-identical legacy controls. Combined with the explicit
+Deref repair, it is ready for one clean original-core retry. Three reduced
+const-Deref metadata positives now reach a later role fence and stay open.
+
 The [explicit const-dereference checkpoint](docs/pa26-explicit-const-dereference.md)
 qualifies13 standalone source outcomes, two new native41 observations and all
 seven prior indexing native controls. It addresses clean29's DropGuard::deref

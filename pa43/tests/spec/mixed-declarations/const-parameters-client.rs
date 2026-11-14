@@ -1,0 +1,5 @@
+#![feature(no_core)]
+#![no_core]
+extern crate base;
+#[unsafe(no_mangle)]
+pub extern "C" fn entry() -> i32 { let _a: base::Tag<3> = base::Tag::<3>::new(); let _b: base::Tag<3> = base::three(); 42 }

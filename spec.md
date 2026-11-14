@@ -1,5 +1,11 @@
 # Compile-time-first Rust frontend architecture
 
+The [mixed source profile](docs/parallel/mixed-declarations-v14.md) derives
+v13 declaration kinds and conditional callable headers from its existing body-node
+capability. An operation-only profile does not gain those capabilities through
+its mode name. Source/data transport still grants no implementation or execution
+proof, and prior profile bytes remain unchanged.
+
 The [generic conditional-member checkpoint](docs/pa25-conditional-member-calls.md)
 authenticates normalized generic calls against completed source operations during
 defining-body checks. Projected/unsafe abstract requests retain their exact local

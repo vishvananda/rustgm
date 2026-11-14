@@ -1,0 +1,98 @@
+#![feature(no_core,lang_items,rustc_attrs,fundamental,auto_traits)]
+#![no_core]
+#![allow(internal_features,dead_code,unused_variables)]
+#[lang = "pointee_sized"]
+#[diagnostic::on_unimplemented(
+    message = "values of type `{Self}` may or may not have a size",
+    label = "may or may not have a known size"
+)]
+#[fundamental]
+#[rustc_specialization_trait]
+#[rustc_deny_explicit_impl]
+#[rustc_coinductive]
+pub trait PointeeSized {
+    // Empty
+}
+#[lang = "meta_sized"]
+#[diagnostic::on_unimplemented(
+    message = "the size for values of type `{Self}` cannot be known",
+    label = "doesn't have a known size"
+)]
+#[fundamental]
+#[rustc_specialization_trait]
+#[rustc_deny_explicit_impl]
+// `MetaSized` being coinductive, despite having supertraits, is okay for the same reasons as
+// `Sized` above.
+#[rustc_coinductive]
+pub trait MetaSized: PointeeSized {
+    // Empty
+}
+#[lang = "sized"]
+#[diagnostic::on_unimplemented(
+    message = "the size for values of type `{Self}` cannot be known at compilation time",
+    label = "doesn't have a size known at compile-time"
+)]
+#[fundamental] // for Default, for example, which requires that `[T]: !Default` be evaluatable
+#[rustc_specialization_trait]
+#[rustc_deny_explicit_impl]
+#[rustc_dyn_incompatible_trait]
+// `Sized` being coinductive, despite having supertraits, is okay as there are no user-written impls,
+// and we know that the supertraits are always implemented if the subtrait is just by looking at
+// the builtin impls.
+#[rustc_coinductive]
+pub trait Sized: MetaSized {
+    // Empty.
+}
+#[lang = "legacy_receiver"]
+pub trait LegacyReceiver: PointeeSized {}
+impl<T: PointeeSized> LegacyReceiver for &T {}
+impl<T: PointeeSized> LegacyReceiver for &mut T {}
+#[lang = "clone"]
+pub trait Clone: Sized {  #[lang = "clone_fn"] fn clone(&self) -> Self; }
+#[lang = "copy"]
+pub trait Copy: Clone {}
+
+
+#[lang = "freeze"]
+pub unsafe auto trait Freeze {}
+
+#[lang="future_trait"]pub trait Future{#[lang="future_output"]type Output;}
+#[lang = "async_drop_in_place"]
+pub async unsafe fn cleanup<T: ?Sized>(_to_drop: &mut T) {
+    // Code here does not matter - this is replaced by the
+    // real implementation by the compiler.
+}
+
+pub struct Tag<const N:usize>;
+pub fn make_0<const N:usize>()->Tag<N>{Tag}
+pub fn make_1<const N:usize>()->Tag<N>{Tag}
+pub fn make_2<const N:usize>()->Tag<N>{Tag}
+pub fn make_3<const N:usize>()->Tag<N>{Tag}
+pub fn make_4<const N:usize>()->Tag<N>{Tag}
+pub fn make_5<const N:usize>()->Tag<N>{Tag}
+pub fn make_6<const N:usize>()->Tag<N>{Tag}
+pub fn make_7<const N:usize>()->Tag<N>{Tag}
+pub fn make_8<const N:usize>()->Tag<N>{Tag}
+pub fn make_9<const N:usize>()->Tag<N>{Tag}
+pub fn make_10<const N:usize>()->Tag<N>{Tag}
+pub fn make_11<const N:usize>()->Tag<N>{Tag}
+pub fn make_12<const N:usize>()->Tag<N>{Tag}
+pub fn make_13<const N:usize>()->Tag<N>{Tag}
+pub fn make_14<const N:usize>()->Tag<N>{Tag}
+pub fn make_15<const N:usize>()->Tag<N>{Tag}
+pub fn make_16<const N:usize>()->Tag<N>{Tag}
+pub fn make_17<const N:usize>()->Tag<N>{Tag}
+pub fn make_18<const N:usize>()->Tag<N>{Tag}
+pub fn make_19<const N:usize>()->Tag<N>{Tag}
+pub fn make_20<const N:usize>()->Tag<N>{Tag}
+pub fn make_21<const N:usize>()->Tag<N>{Tag}
+pub fn make_22<const N:usize>()->Tag<N>{Tag}
+pub fn make_23<const N:usize>()->Tag<N>{Tag}
+pub fn make_24<const N:usize>()->Tag<N>{Tag}
+pub fn make_25<const N:usize>()->Tag<N>{Tag}
+pub fn make_26<const N:usize>()->Tag<N>{Tag}
+pub fn make_27<const N:usize>()->Tag<N>{Tag}
+pub fn make_28<const N:usize>()->Tag<N>{Tag}
+pub fn make_29<const N:usize>()->Tag<N>{Tag}
+pub fn make_30<const N:usize>()->Tag<N>{Tag}
+pub fn make_31<const N:usize>()->Tag<N>{Tag}

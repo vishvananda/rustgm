@@ -503,13 +503,14 @@ impl Stage {
             mode,
             ExportMode::Conversions | ExportMode::Nominals | ExportMode::CompilerOperations
         );
-        stage.functions.callable_effects = matches!(
-            mode,
-            ExportMode::Callables
-                | ExportMode::Safety
-                | ExportMode::Conversions
-                | ExportMode::Nominals
-        );
+        stage.functions.callable_effects = stage.body_nodes()
+            || matches!(
+                mode,
+                ExportMode::Callables
+                    | ExportMode::Safety
+                    | ExportMode::Conversions
+                    | ExportMode::Nominals
+            );
         stage.reserve(count.saturating_mul(size_of::<Option<DeclarationRef>>()))?;
         stage.definitions.resize(count, None);
         stage.declarations(report, facts, mode)?;
@@ -611,7 +612,7 @@ impl Stage {
         {
             return Ok(Some(s::DefinitionKind::Struct));
         }
-        if self.body_nodes() && mode == ExportMode::Nominals {
+        if self.body_nodes() {
             match definition.kind {
                 DefKind::Enum => return Ok(Some(s::DefinitionKind::Enum)),
                 // One declaration names a variant: a unit or tuple variant's

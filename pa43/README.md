@@ -1,5 +1,11 @@
 # RustGM Programming Assignment 43: Async ownership
 
+The [mixed-declaration checkpoint](../docs/parallel/mixed-declarations-v14.md)
+restores the existing v13 declaration families and conditional Fn headers in v14
+through body capabilities. Four actual native clients retain42, old mixed clients
+retain41 and all four legacy A/A/B/B metadata controls stay byte-identical.
+Original core, wider const-role and every real future/native requirement remain.
+
 Status: **planned**. This is a buildout brief, not a released grading contract.
 Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The source profile is Rust 1.98.0, initially edition 2024
 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.

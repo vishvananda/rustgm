@@ -1,5 +1,11 @@
 # Testing and references
 
+The [v14 declaration checkpoint](docs/parallel/mixed-declarations-v14.md) keeps
+complete legacy provider/client bytes as controls, adds explicit mixed-profile
+expectations and independently checks the ordinary native/helper semantics.
+Same-profile immutable A/A and B/B metadata equality is byte evidence only;
+no timing comparison or executable future permission is claimed.
+
 The [conditional-member checkpoint](docs/pa25-conditional-member-calls.md) separates
 19 prepared outcomes and five native executions from three still-required source
 metadata/LowIR positives. Frozen independent acceptance remains acceptance when a

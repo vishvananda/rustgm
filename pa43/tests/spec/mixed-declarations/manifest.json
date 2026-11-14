@@ -1,0 +1,116 @@
+{
+ "schema": 1,
+ "declared_before_implementation_and_execution": true,
+ "basis": "Four complete existing v13 providers plus exact already-qualified Future/Output header and authentic cleanup body; all ordinary client/opponent bytes preserved",
+ "wire": "Existing tag10/version14; no format change or new legacy permission",
+ "families": {
+  "struct-constructors": {
+   "provider": "accept v14 with one genuine operation and full legacy declarations/bodies",
+   "client": "accept fresh CLI/native42",
+   "reject": "reject same private/type cause as existing byte-exact v13 client",
+   "legacy_provider": "pa29/tests/spec/struct-constructors/provider.rs",
+   "legacy_provider_sha256": "f9ac0852d76fcd8f05c94d6790c51544d8ed2c7e771dded553485ae01fd86c73",
+   "client_basis": "pa29/tests/spec/struct-constructors/called.rs",
+   "reject_basis": "pa29/tests/spec/struct-constructors/private-constructor.rs"
+  },
+  "enum-match": {
+   "provider": "accept v14 with one genuine operation and full legacy declarations/bodies",
+   "client": "accept fresh CLI/native42",
+   "reject": "reject same private/type cause as existing byte-exact v13 client",
+   "legacy_provider": "pa29/tests/spec/enum-match/provider.rs",
+   "legacy_provider_sha256": "3a7c411c40230b3ae9a68cef311a7e3f5d47d5ad943493595e330fb7a1d28fd5",
+   "client_basis": "pa29/tests/spec/enum-match/generic.rs",
+   "reject_basis": "pa29/tests/spec/enum-match/wrong-enum.rs"
+  },
+  "const-parameters": {
+   "provider": "accept v14 with one genuine operation and full legacy declarations/bodies",
+   "client": "accept fresh CLI/native42",
+   "reject": "reject same private/type cause as existing byte-exact v13 client",
+   "legacy_provider": "pa29/tests/spec/const-parameters/provider.rs",
+   "legacy_provider_sha256": "3c44e605d7b2f0815087f60d5fe6644d9ac9a03052e08a3101f4fe559dc38e6b",
+   "client_basis": "pa29/tests/spec/const-parameters/tag.rs",
+   "reject_basis": "pa29/tests/spec/const-parameters/wrong-value.rs"
+  },
+  "named-constants": {
+   "provider": "accept v14 with one genuine operation and full legacy declarations/bodies",
+   "client": "accept fresh CLI/native42",
+   "reject": "reject same private/type cause as existing byte-exact v13 client",
+   "legacy_provider": "pa29/tests/spec/named-constants/provider.rs",
+   "legacy_provider_sha256": "b6bd07e140466b8b2578e2e2a7910bfe6d72ab6c409a57ba17881c0504458865",
+   "client_basis": "pa29/tests/spec/named-constants/read.rs",
+   "reject_basis": "pa29/tests/spec/named-constants/private.rs"
+  }
+ },
+ "helper_controls": {
+  "consumer": {
+   "path": "pa43/tests/spec/deferred-compiler-op/consumer.rs",
+   "sha256": "4a584a9147560a212b7ebe3e356fa5a1f34e872b244d2ba23593631a32203ce7"
+  },
+  "unsafe": {
+   "path": "pa43/tests/spec/deferred-compiler-op/unsafe-consumer.rs",
+   "sha256": "46a1caef30611185310d8c5d6da9d3fcb43166f23e3e23ea21667fb91755d634"
+  },
+  "wrong-output": {
+   "path": "pa43/tests/spec/deferred-compiler-op/wrong-output-consumer.rs",
+   "sha256": "d3a1071056bd1bc5e22b79e8c23898ad66cfaf6ae80c782b4b59e9d1ac0af389"
+  },
+  "lifetime": {
+   "path": "pa43/tests/spec/body-operations/lifetime-consumer.rs",
+   "sha256": "d2035252fa6ba030686c19437fd6607f6911c876fb907da7dcb738681f3b3867"
+  }
+ },
+ "scaling": {
+  "8/32/128": "accept one operation, one shared unit constructor and N ordinary const-generic functions; bounded work/bytes"
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "expected": "v14 admits existing v13 declaration kinds with and without an operation; legacy v13 A/A and B/B bytes identical; actual helper keeps no executable Original",
+ "retained_required": [
+  "All legacy wider positive contract fences, including original v13 full-library command",
+  "Original core v14 metadata/LowIR/native and all earlier handoff requirements",
+  "Genuine future construction/state/poll/drop/cancellation/recursive cleanup and native consumers"
+ ],
+ "independent_basis": "Unchanged old v13 providers/consumers retain their existing PA29 independent contracts; the helper identity/Output/unsafe/lifetime semantics retain the PA43 qualified standard-core companions. This is a metadata-profile union, not new Rust source semantics.",
+ "files": {
+  "struct-constructors.rs": "d788e26610c029554124af6ecca2850ecb7de502b6ef2f47df7fcbc5b0c3e364",
+  "struct-constructors-client.rs": "df420befb493cbd9afde1421287e6dfcd1d836864ab17825f8007859837d0b8f",
+  "struct-constructors-reject.rs": "50ed2c872dee115c583ca6fcd5d77892e42202d1f79514c3966bfbfaee5c649a",
+  "enum-match.rs": "4b1acb7b8b7b390e3c2dbabd94176fb651028abfce3f024ad860ee9f18d9a501",
+  "enum-match-client.rs": "445bed942f6d14c6b245e4466b82884341e2fb8f6bb083ea7edcaf62e06e8f79",
+  "enum-match-reject.rs": "ad8d1a49ad29080a0e0b96dbe39992cb301b7816fa9cc86b6245e8f46244b7fe",
+  "const-parameters.rs": "6a3cc3894312f9b1b39776038d2e79a133360a14ac8c1bcf5c4fc159ba6121d8",
+  "const-parameters-client.rs": "a54f5e867479cc1169e9ef356f0e233284a498b745db98f5b9a4fb4fa2459de3",
+  "const-parameters-reject.rs": "f955a0f096aa8963ff174ade3b17c90eb2cdb2e1bbf48fc9c811ee109a99399f",
+  "named-constants.rs": "14033a42b4c145530091f54f153927e837c419170fb8f4a0df47ad6505aa7846",
+  "named-constants-client.rs": "10d63d9ab83a3ca540d7a86c454ea02bd53961eb331f78d8cf6a75c5f48f25c6",
+  "named-constants-reject.rs": "ea9a7b691eac6071ad47fd551362a7e52e76c16749e479b464ff63b8ff696244",
+  "observe.c": "5699f47fc10ebb8fa746e1867e410d5916d9fd170ec48fa03595030979a2b749",
+  "expected.stdout": "084c799cd551dd1d8d5c5f9a5d593b2e931f5e36122ee5c793c1d08a19839cc0",
+  "scaling-8.rs": "dc042c37e792d7c033b87555d156c61926559b6c4c5e7242ba326499cb48ec7a",
+  "scaling-32.rs": "86da7a6d2a8d20c94ea9172a2c1e8c2cd388a96f1ed87eab294335ab882b0836",
+  "scaling-128.rs": "971cc187b7cfd03a11e0ee7b9893686caa967ca8d2b41a88bc815320e393a1b1",
+  "struct-constructors-reference.rs": "2c5153ede59e59a77b228dc64d7846f600d8202b55f9cbef488238f9dfea556c",
+  "struct-constructors-reference-client.rs": "2145e12cfafd32bf1571423d01089c97b7069c0fc4d863c618f74abaccb18b46",
+  "enum-match-reference.rs": "6ae492200cef8e9e396b87c2c26f911b6966112b6a5c385f7792ebc81a7c0fd8",
+  "enum-match-reference-client.rs": "34e19723c9807cd38b060991ff48f046b224c11c75472c9c6c9131db34bc4c68",
+  "const-parameters-reference.rs": "bde785870d201388a0359c4699e7329bef7f5205e6a6f8beda519beb03640fd4",
+  "const-parameters-reference-client.rs": "c2b82f41df53fe87c78af256ebc6d0d7e82c7ba5ed5c0118fc98eed08fd53615",
+  "named-constants-reference.rs": "74c200018c33ec5f3319a5296ab191040562fe22479f0e8cacf02cd4c615d144",
+  "named-constants-reference-client.rs": "f5dda7c737fffd0a8ae89903beb061c3b3eb33e84b5973c65fb7aa1d2ca176a4",
+  "reference-consumer.rs": "cbdf5cd6860581c0f4f52350ab9caf13eea96ac9c6f4151d9d445fcbe29c69bb",
+  "reference-unsafe.rs": "e10eb5503c5c2f02b7d1ab8d72bf1ab2f3f74d90fd6f1688628fca1304bd2e38",
+  "reference-wrong-output.rs": "f16676b925aacffc8b87c73136160b4548ebf20abc352948897a67041c352b55",
+  "reference-lifetime.rs": "468f602a16c360d55715141290d1167e4d656ab7876fbba1c007ccd9aa9e606c"
+ },
+ "reference_expected_declared_before_execution": {
+  "four reference providers/native clients": "accept actual ordinary subset represented by the unchanged legacy clients; native stdout42 each; full original provider semantics retain prior PA29 qualification",
+  "helper consumer": "accept; no future execution",
+  "helper unsafe/wrong-output/lifetime": "reject for unsafe context/Output mismatch/borrowed future cannot become static"
+ }
+}
