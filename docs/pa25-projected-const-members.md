@@ -81,3 +81,16 @@ Previous full CI43636803381 on236732077 passed every stage, including3083 privat
 release tests in8.77s and debug in92.68s. Full successor43645030432 on published0c4d3d721 is running; clean release34
 original-core verification follows. No cold private build is repeated locally. No original library metadata/LowIR/native consumer artifact
 exists. Whole PA25–PA44 and all earlier valid unsupported contracts remain open.
+
+
+Clean candidate34 verifies that the genuine original residual helper is cleared.
+Source product0c4d3d721/docs-only producercc1bbf993,3964 hashes/empty patch,
+CLI fdb81f6e5f53d924a40ca847678c4e6f0e25a47c054ae5ad08861c4574f64d1a,
+7m02s build. Original v14 library34 stops later at array/drain.rs:62/file100:2808,
+`self.call_mut(args)` in its const FnOnce implementation for &mut Drain.
+22.45777091383934s/status1/no timeout/RSS727408KiB; no core.rgm/0-byte core.lowir.
+Postcheck34 passes722 originals/375 opens/six reviewed pins/all3964/clean pin/
+fixed120s and unchanged quotas. No original artifact or speed claim. Raw
+`core-artifact34.log`, `artifact-postcheck34.log`, `original-library-candidate34/`.
+Full43645030432 has passed static/all-target checks and is running release/course;
+its complete successor evidence remains pending.

@@ -1,5 +1,33 @@
 # RustGM handoff — 2026-11-14
 
+Clean candidate34-release is complete on docs-only headcc1bbf993 (product0c4d3d721),
+3964 source hashes/empty patch,7m02s build. CLIfdb81f6e5f53d924a40ca847678c4e6f0e25a47c054ae5ad08861c4574f64d1a.
+Genuine unchanged original v14 library34 CLEARS residual_into_try_type and now
+FAILS array/drain.rs:62/file100:2808, `self.call_mut(args)` in the exact const
+FnOnce<(usize,)> implementation for &mut Drain<'_, '_, T, F>, under
+F:[const]FnMut(T)->U. Error: `const function member lacks its current conditional
+trait premise`.22.45777091383934s/status1/no timeout/RSS727408KiB; no core.rgm,
+0-byte core.lowir. Postcheck34 terminal PASS:722 original hashes/375 opens/six
+reviewed config pins/all3964 compiler hashes/clean pin/fixed120s and unchanged
+14500624work/1GiB attempted/64MiB retained. Diagnostic only/no speed claim.
+Raw projected-const-members/{build34-release,core-artifact34,artifact-postcheck34}.log
+and original-library-candidate34/. No original library/native consumer artifact.
+
+NEXT reduce the actual explicit FnOnce-to-FnMut delegation. Both methods have
+extern "rust-call" signatures. The current source_request parameterized filter
+and source_member accept only safe Rust convention, preserving the earlier ABI
+fence. Inspect the actual typed call and existing callable-member roles before
+choosing a repair; this is a likely next admission boundary, not yet a qualified
+reduction or production edit. Preserve actual role identity, tuple/receiver/full
+signature, current source/effect, mutable borrow and Code execution proof. Do not
+admit arbitrary unsafe or non-language foreign conventions. Ordinary minima PA25;
+actual source Fn language roles/original item PA31. Work remains single-worker B.
+
+Full43645030432 exact0c4d3d721 has passed fast/static/all-target lint/architecture/
+harness/host graph and is running release/course tests. Do not duplicate, cancel
+or restart for these docs. Prior43636803381 is fully green as recorded below.
+This continuation supersedes pending clean34/NEXT statements below.
+
 Continue the active goal: compile pinned original core, completing assignment
 components as their complete contracts qualify. **One worker**, B only; main is
 Git-only. **No original core metadata/LowIR/native consumer artifact exists.**
@@ -34,10 +62,9 @@ two accepting gaps), exact prepared lowering and8/32/128 scaling. Source work
 No speed claim.315 harness/495 roots/13 bins/44 stages/one component,
 128 upstream+126 Reference pass. Raw obj/parallel/projected-const-members/.
 
-NEXT freeze clean candidate34-release, retry unchanged genuine original
-v14 library with fixed120s/14500624work/1GiB attempted/64MiB retained, then postcheck.
-Do not run another census or unoptimized whole-original retry. Original helper
-now qualifies in the reduction; full original verification remains required.
+Clean34 and its postcheck are now complete as recorded above. Continue from the
+actual array/drain delegation, without another census or unoptimized whole-core
+retry. Original v13/v14 complete artifact/native consumers remain required.
 
 Previous published source2367320774a9df4da7d5dbcbba7c5b1d95bad38e was synced
 through docs eacd4b3d3 before this checkpoint. Clean33 CLIc638c2da…004c1af,

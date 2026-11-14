@@ -2,8 +2,8 @@
 
 The [projected const promise checkpoint](docs/pa25-projected-const-members.md)
 qualifies44 complete ordinary/source outcomes, seven native programs and scoped
-parent-effect proofs. Original core remains at the last verified residual helper
-until clean release34 runs. Whole assignments and original artifacts remain open.
+parent-effect proofs. Clean release34 clears the original residual helper and reaches
+FnOnce-to-FnMut delegation in array/drain.rs:62. Whole assignments and original artifacts remain open.
 
 
 The [v14 declaration checkpoint](docs/parallel/mixed-declarations-v14.md) keeps
