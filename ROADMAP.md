@@ -1,5 +1,11 @@
 # RustGM assignment roadmap
 
+The [explicit const-dereference checkpoint](docs/pa26-explicit-const-dereference.md)
+qualifies13 standalone source outcomes, two new native41 observations and all
+seven prior indexing native controls. It addresses clean29's DropGuard::deref
+result/place distinction. Ordinary bootstrap and original-library artifacts stay
+open; repair the known mixed-profile declaration gate before the next freeze.
+
 The [conditional-member checkpoint](docs/pa25-conditional-member-calls.md) qualifies
 19 ordinary/source prepared outcomes, five actual native programs and bounded
 post-lowering work. It addresses original DropGuard::dismiss's generic const

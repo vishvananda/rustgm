@@ -235,3 +235,87 @@ fn generic_const_member_instances_execute_selected_shared_and_unique_calls() -> 
     )?;
     Ok(())
 }
+
+const EXPLICIT_CONST: &str = "pa31/tests/spec/explicit-const-dereference";
+
+#[test]
+fn explicit_const_dereference_preserves_the_selected_reference_and_place() -> TestResult {
+    for name in [
+        "shared",
+        "unique",
+        "impl-shared",
+        "impl-unique",
+        "ordinary",
+        "native",
+        "constant",
+    ] {
+        let source = test_source::fixture(&format!("{EXPLICIT_CONST}/{name}.rs"))?;
+        program(&source).map_err(|error| format!("{name}: {error}"))?;
+    }
+    for (name, cause) in [
+        ("nonconst", "trait obligation requires"),
+        ("shared-mutation", "borrow"),
+        ("lifetime-escape", "lifetime"),
+    ] {
+        let source = test_source::fixture(&format!("{EXPLICIT_CONST}/{name}.rs"))?;
+        let error = program(&source)
+            .err()
+            .ok_or_else(|| format!("accepted {name}"))?;
+        assert!(error.to_string().contains(cause), "{name}: {error}");
+    }
+    Ok(())
+}
+
+#[test]
+fn explicit_const_place_work_includes_prepared_validation() -> TestResult {
+    let mut previous: Option<[usize; 2]> = None;
+    for count in [8, 32, 128] {
+        let source = test_source::fixture(&format!("{EXPLICIT_CONST}/scaling-{count}.rs"))?;
+        let report = test_source::source_provider(&source, "explicit_const_places")?;
+        let pipeline::Analysis {
+            mut facts,
+            prepared,
+        } = pipeline::analyze_source(&report)?;
+        lower::instances::build_roots_prepared(
+            &report,
+            &mut facts,
+            lower::Roots {
+                entry: None,
+                exports: &[],
+            },
+            prepared,
+        )?;
+        let work = [
+            facts.body_work.inference_steps,
+            facts.body_work.canonical_steps,
+        ];
+        println!("explicit const places={count} work={work:?}");
+        if let Some(before) = previous {
+            for (old, actual) in std::iter::zip(before, work) {
+                assert!(actual <= 4 * old + 512, "{before:?}->{work:?}");
+            }
+        }
+        previous = Some(work);
+    }
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn explicit_const_dereference_executes_mutable_and_constant_instances() -> TestResult {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let out = root.join("obj/parallel/explicit-members/native");
+    std::fs::create_dir_all(&out)?;
+    for name in ["native", "constant"] {
+        let text = test_source::fixture(&format!("{EXPLICIT_CONST}/{name}.rs"))?;
+        crate::ffi_program::check(
+            &root,
+            &out,
+            name,
+            &program(&text)?,
+            &test_source::fixture(&format!("{EXPLICIT_CONST}/observe.c"))?,
+            &test_source::fixture(&format!("{EXPLICIT_CONST}/expected.stdout"))?,
+        )?;
+    }
+    Ok(())
+}

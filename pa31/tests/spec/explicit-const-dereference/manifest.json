@@ -1,0 +1,107 @@
+{
+ "schema": 1,
+ "declared_before_execution": "Initial8 outcomes frozen before Rust/baseline. Additional constant/lifetime/scaling outcomes frozen here before execution.",
+ "owner": "PA31 actual explicit source Deref/DerefMut; ordinary counterparts PA26",
+ "basis": {
+  "original": "pa31/tests/spec/conditional-member-calls/original/drop_guard.rs",
+  "original_sha256": "f665d82a0de088809701d8e4a8400e74f3e4a84b685ed3fa0be132503e6d566a",
+  "foundation": "pa31/tests/spec/conditional-member-calls/shared-field.rs",
+  "foundation_sha256": "29ea4886123640eb484a8b60d94546ae68fe48d6a496ccd1c8e51cb3fc268505",
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "license": "Rust originals MIT OR Apache-2.0; third_party/sources.json"
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": "2024",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "target": "x86_64-unknown-linux-gnu"
+ },
+ "cases": {
+  "shared.rs": {
+   "expected": "accept",
+   "reference": "pa26/tests/spec/explicit-const-dereference/shared.rs"
+  },
+  "unique.rs": {
+   "expected": "accept",
+   "reference": "pa26/tests/spec/explicit-const-dereference/unique.rs"
+  },
+  "impl-shared.rs": {
+   "expected": "accept",
+   "reference": "pa26/tests/spec/explicit-const-dereference/impl-shared.rs"
+  },
+  "impl-unique.rs": {
+   "expected": "accept",
+   "reference": "pa26/tests/spec/explicit-const-dereference/impl-unique.rs"
+  },
+  "ordinary.rs": {
+   "expected": "accept",
+   "reference": "pa26/tests/spec/explicit-const-dereference/ordinary.rs"
+  },
+  "nonconst.rs": {
+   "expected": "reject",
+   "reference": "pa26/tests/spec/explicit-const-dereference/nonconst.rs"
+  },
+  "shared-mutation.rs": {
+   "expected": "reject",
+   "reference": "pa26/tests/spec/explicit-const-dereference/shared-mutation.rs"
+  },
+  "native.rs": {
+   "expected": "accept",
+   "reference": "pa31/tests/spec/explicit-const-dereference/native-rust.rs"
+  },
+  "constant.rs": {
+   "expected": "accept",
+   "reference": "pa31/tests/spec/explicit-const-dereference/constant-rust.rs",
+   "native_stdout": "41\n"
+  },
+  "lifetime-escape.rs": {
+   "expected": "reject",
+   "reference": "pa26/tests/spec/explicit-const-dereference/lifetime-escape.rs"
+  },
+  "scaling-8.rs": {
+   "expected": "accept",
+   "reference": "pa26/tests/spec/explicit-const-dereference/scaling-8.rs",
+   "functions": 8
+  },
+  "scaling-32.rs": {
+   "expected": "accept",
+   "reference": "pa26/tests/spec/explicit-const-dereference/scaling-32.rs",
+   "functions": 32
+  },
+  "scaling-128.rs": {
+   "expected": "accept",
+   "reference": "pa26/tests/spec/explicit-const-dereference/scaling-128.rs",
+   "functions": 128
+  }
+ },
+ "native": {
+  "native.rs": "41\n",
+  "constant.rs": "41\n"
+ },
+ "retained": [
+  "Full original core v13/v14 metadata/LowIR/native consumers",
+  "Original future state/poll/drop and every prior handoff requirement",
+  "Ordinary bootstrap and reduced library artifacts remain accepting requirements independently of source prepared/native results"
+ ],
+ "files": {
+  "shared.rs": "b92a4c02564f200b8d8367ae9c259433842c25274033da85d86b4c65fbebc3ce",
+  "unique.rs": "36f42adc2e8ef9e55effb08efdec5784485a0d17f30f58247ed66d12135488bf",
+  "impl-shared.rs": "32cca74eba1a86c3d7467e21c52de7bdeda7fb496d5228a2700d9469a22e6d1e",
+  "impl-unique.rs": "02e4645c463ac71eec2deb4cd4c63c479e9425bc60420cff1dc4e6afba67a11a",
+  "ordinary.rs": "d2168b2f60a686a38f2a86f9ae92068c39efc792838a6baa31b2c1c2e976a123",
+  "nonconst.rs": "5500562e92d678aa3c4dc395aed4d7e84d93d764694838a0b4e3ddcf5cb3806d",
+  "shared-mutation.rs": "27fa7fbc1477f3ff783b79b5c3348abcae2ab453221eaf92a196cabbe4976148",
+  "native.rs": "e76b4186b77cd5571ed24e16354838705bff0a1318ac8966960af697ba597d14",
+  "native-rust.rs": "03661bdce129ea76221ee5f00efb57b175883245d43f155e68ae2fa5e1e33319",
+  "constant.rs": "616f4d17b8d81d692f9b19293bf54dd1dd7019641ae1b2c459931baaf3a726fd",
+  "constant-rust.rs": "3cee7edcba160aa38976ccc0e543ca94f1c77c4bbf42f721675d7ebd52e6f28d",
+  "lifetime-escape.rs": "e11e9f0cdf63fbe999e23b2d471773fcaca67458568204d95eeca185749b333c",
+  "scaling-8.rs": "de698f8134165e450509d9d6cc8a5c0921f62003fe39449e30511567463f802f",
+  "scaling-32.rs": "fcc0d34a9276a962e383fdce349150e082b5c22f454719243580c10e6b526814",
+  "scaling-128.rs": "1a188c39e8d24e295772e1887b2f6cab2d9f9994ef0ce7c27d1952db6323cdd9",
+  "observe.c": "95a279845325037097bb07d741dae1bed06d1fca4f2c88a486fb4695fe750025",
+  "expected.stdout": "040316eca5e77dbb2212c1efe8b81cb23bc67ce0ac8cb5c9d902d98bd45ddfa1"
+ }
+}

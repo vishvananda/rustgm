@@ -1,5 +1,10 @@
 # RustGM Programming Assignment 26: Language and library hooks
 
+The [explicit const-dereference checkpoint](../docs/pa26-explicit-const-dereference.md)
+retains ordinary operator counterparts here and actual source roles in PA31.
+Thirteen source CLI/prepared outcomes and nine native programs qualify; all eleven
+ordinary import commands remain bootstrap requirements, never parity negatives.
+
 Status: **planned**. This is a buildout brief, not a released grading contract.
 Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The common source profile is Rust 1.98.0, initially edition
 2024 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.

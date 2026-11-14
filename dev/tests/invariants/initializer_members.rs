@@ -165,7 +165,7 @@ fn const_index_operand_and_expected_receiver_remain_distinct_authenticated_input
     };
     let node_type = facts.node(site).and_then(|node| node.ty);
     let mut work = Work::new(1_000_000);
-    index_result(&report, &facts, call, node_type, &mut work)?;
+    place_result(&report, &facts, call, node_type, &mut work)?;
     assert_ne!(original.borrow, Some(original.receiver));
     let Some(Kind::Reference {
         mutable,
@@ -194,11 +194,11 @@ fn const_index_operand_and_expected_receiver_remain_distinct_authenticated_input
             _ => changed.borrow = None,
         }
         facts.methods.calls.insert(site, changed);
-        assert!(index_result(&report, &facts, call, node_type, &mut work).is_err());
+        assert!(place_result(&report, &facts, call, node_type, &mut work).is_err());
     }
     facts.methods.calls.insert(site, original);
-    assert!(index_operand(&facts, site, site.node, original.borrow, mutable, &mut work).is_err());
-    index_result(&report, &facts, call, node_type, &mut work)?;
+    assert!(place_operand(&facts, site, site.node, original.borrow, mutable, &mut work).is_err());
+    place_result(&report, &facts, call, node_type, &mut work)?;
     Ok(())
 }
 
@@ -270,5 +270,88 @@ fn generic_const_field_requests_reject_changed_arguments_and_body_flags() -> Res
         &changed.statements[index],
         &mut work
     )?);
+    Ok(())
+}
+
+#[test]
+fn explicit_deref_place_keeps_its_actual_receiver_signature_and_referent() -> Result {
+    let source =
+        crate::test_source::fixture("pa31/tests/spec/explicit-const-dereference/shared.rs")?;
+    let report = crate::test_source::source_provider(&source, "explicit_place_proof")?;
+    let crate::pipeline::Analysis {
+        mut facts,
+        mut prepared,
+    } = crate::pipeline::analyze_source(&report)?;
+    let function = facts
+        .functions
+        .iter()
+        .find(|f| {
+            report
+                .package
+                .names
+                .get(report.resolution.definitions[f.definition.0 as usize].name)
+                == "field"
+        })
+        .ok_or("actual explicit deref function")?;
+    let body = prepared.templates.function(&report, &facts, function)?.body;
+    let index = statement(&body)?;
+    let mut work = Work::new(1_000_000);
+    let call = source_call(&facts, &body, &body.statements[index], &mut work)?;
+    let node_type = facts.node(call.site).and_then(|node| node.ty);
+    let original = *facts
+        .methods
+        .calls
+        .get(&call.site)
+        .ok_or("actual selected deref")?;
+    place_result(&report, &facts, call, node_type, &mut work)?;
+    for mutation in 0..3 {
+        let mut changed = original;
+        match mutation {
+            0 => changed.receiver = crate::types::TypeId::UNIT,
+            1 => changed.borrow = None,
+            _ => changed.callable = crate::types::TypeId::UNIT,
+        }
+        facts.methods.calls.insert(call.site, changed);
+        assert!(place_result(&report, &facts, call, node_type, &mut work).is_err());
+    }
+    facts.methods.calls.insert(call.site, original);
+    assert!(
+        place_result(
+            &report,
+            &facts,
+            call,
+            Some(crate::types::TypeId::UNIT),
+            &mut work,
+        )
+        .is_err()
+    );
+    let Some(Kind::Function {
+        result,
+        unsafe_,
+        convention,
+        ..
+    }) = facts.types.kind(call.signature)
+    else {
+        return Err("actual opened deref signature".into());
+    };
+    let parameters = facts.types.intern_list(&[])?;
+    let signature = facts.types.intern(Kind::Function {
+        parameters,
+        result,
+        bound_regions: 0,
+        unsafe_,
+        convention,
+    })?;
+    assert!(
+        place_result(
+            &report,
+            &facts,
+            Call { signature, ..call },
+            node_type,
+            &mut work
+        )
+        .is_err()
+    );
+    place_result(&report, &facts, call, node_type, &mut work)?;
     Ok(())
 }

@@ -5,6 +5,38 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
+The explicit generic Deref body repair is now locally qualified; original core
+verification is pending. place_result/operand generalize the old Index-only
+reference/place relation to actual Deref/DerefMut syntax with exact1-vs2 parameter
+arity, canonical trait owner, actual call/receiver/operand, result reference,
+mutability/lifetime and referent checks intact. No new cache/dense field/wire/
+backend/storage change. PA31 source and PA26 ordinary manifests retain all inputs.
+13 complete standalone source CLI/prepared outcomes =10accept/3reject, including
+constant execution and8/32/128 scaling. All agree with pinned Rust counterparts.
+All11 ordinary candidate commands stop at unresolved core import; they are
+unqualified bootstrap requirements, not semantic rejections (including negatives).
+
+Fast1794672298823814172: six exact155.92s, strict production/selected/CLI Clippy,
+fmt/audit; includes73 Index cases, old generic fields and actual helper CFG guard.
+Native1794672574166858411: two groups/nine actual programs42.58s, two new41s plus
+seven unchanged Index programs. Replay authenticates3964 source hashes and all
+packet inputs, repeats two new tests/all13 standalone CLI outcomes; canonical/
+inference after prepared lowering8/32/128 =1919/3917,5785/15437,21225/61517.
+315harness/495roots/13bins/44stages/one component/128upstream+126Reference pass.
+New private receiver/signature/arity/referent forgery regression awaits full CI;
+no cold harness. Raw obj/parallel/explicit-members/. Temporary invalid EMPTY list
+constant in the unbuilt private test was corrected to intern_list; no private
+passing claim. See docs/pa26-explicit-const-dereference.md.
+
+NEXT publish this body checkpoint, then repair the separately reproduced v14
+exported_kind Nominals-mode gate below before ONE clean30 release/core retry.
+This batches the two known artifact blockers into the next optimized freeze.
+Do not claim original29's explicit-Deref site cleared until that genuine retry.
+Full43611467168 is still the one full successor on170c; release/course passed,
+native in progress. Do not duplicate it for this checkpoint; wait for actual
+terminal before a full successor on the joined body/declaration work. All older
+original, reduced metadata, native, future and whole-assignment requirements stay.
+
 Published current source170c045018dd52a830802b8de4584625fb724e81, main synchronized.
 Clean candidate29-release binds3964 hashes/empty tracked patch; build8m27s,
 CLI SHA256d62270b74c1483790572b9ed5b363d11b0654db90516bc691b58c9464a5266b9.

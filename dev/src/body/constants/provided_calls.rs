@@ -273,7 +273,7 @@ pub(super) fn source_request(
     let indexed = if node.ty == Some(call.result) {
         None
     } else {
-        Some(index_result(report, facts, call, node.ty, work)?)
+        Some(place_result(report, facts, call, node.ty, work)?)
     };
     let effect = match (facts.source_bindings.as_deref(), source_use) {
         (_, Some(use_)) => use_.effect_for(facts, source)?,
@@ -348,9 +348,9 @@ fn source_field(
     closed_effect(report, facts, body, source, effect, work)
 }
 
-/// A retained Index call produces a reference before its source expression forms
-/// a place. This relation is separate from ordinary direct call results.
-fn index_result(
+/// Index and explicit Deref calls return a reference before their expression
+/// forms a place. This differs from an ordinary direct call result.
+fn place_result(
     report: &crate::resolve::expansion::Report,
     facts: &Declarations,
     call: Call,
@@ -363,61 +363,83 @@ fn index_result(
         .methods
         .calls
         .get(&call.site)
-        .ok_or("const index result lacks its actual selected method")?;
+        .ok_or("const borrowed place lacks its actual selected method")?;
     if method.method != definition || method.callable != call.target || method.dereferences != 0 {
-        return Err("const index result changed its actual selected callable");
+        return Err("const borrowed place changed its actual selected callable");
     }
-    let operand = report
+    let (operand, arity, roles) = report
         .package
         .units
         .get(call.site.file.0 as usize)
         .and_then(|unit| unit.configured.ast.nodes.get(call.site.node.get() as usize))
         .and_then(|node| match node.kind {
-            crate::syntax::ast::Kind::Index { value, .. } => Some(value),
+            crate::syntax::ast::Kind::Index { value, .. } => Some((
+                value,
+                2,
+                [
+                    crate::support::bindings::LangItem::Index,
+                    crate::support::bindings::LangItem::IndexMut,
+                ],
+            )),
+            crate::syntax::ast::Kind::Unary {
+                op: crate::syntax::ast::Unary::Dereference,
+                operand,
+            } => Some((
+                operand,
+                1,
+                [
+                    crate::support::bindings::LangItem::Deref,
+                    crate::support::bindings::LangItem::DerefMut,
+                ],
+            )),
             _ => None,
         })
         .ok_or("const member changed its current signature or result")?;
     let owner = facts
         .associated
         .trait_owner(definition)
-        .ok_or("const index method lacks its actual trait owner")?;
+        .ok_or("const borrowed method lacks its actual trait owner")?;
     let catalog = facts
         .source_bindings
         .as_deref()
-        .ok_or("const index result lacks its actual source catalog")?;
+        .ok_or("const borrowed place lacks its actual source catalog")?;
     let mutable = if catalog
-        .language(crate::support::bindings::LangItem::Index)
+        .language(roles[0])
         .is_some_and(|d| d.definition == owner)
     {
         false
     } else if catalog
-        .language(crate::support::bindings::LangItem::IndexMut)
+        .language(roles[1])
         .is_some_and(|d| d.definition == owner)
     {
         true
     } else {
-        return Err("const index result belongs to another actual language trait");
+        return Err("const borrowed place belongs to another actual language trait");
     };
     let Some(Kind::Function {
         parameters, result, ..
     }) = facts.types.kind(call.signature)
     else {
-        return Err("const index result lost its actual call signature");
+        return Err("const borrowed place lost its actual call signature");
     };
-    let Some([receiver, _]) = facts.types.list(parameters) else {
-        return Err("const index result changed its actual parameter list");
+    let parameters = facts
+        .types
+        .list(parameters)
+        .ok_or("const borrowed place lost its actual parameters")?;
+    let Some(&receiver) = parameters.first().filter(|_| parameters.len() == arity) else {
+        return Err("const borrowed place changed its actual parameter list");
     };
-    if method.receiver != *receiver || result != call.result {
-        return Err("const index result changed its actual receiver borrow or call result");
+    if method.receiver != receiver || result != call.result {
+        return Err("const borrowed place changed its actual receiver borrow or call result");
     }
-    index_operand(facts, call.site, operand, method.borrow, mutable, work)?;
+    place_operand(facts, call.site, operand, method.borrow, mutable, work)?;
     let Some(Kind::Reference {
         mutable: receiver_mutable,
         region: receiver_region,
         ..
-    }) = facts.types.kind(*receiver)
+    }) = facts.types.kind(receiver)
     else {
-        return Err("const index result lost its borrowed receiver");
+        return Err("const borrowed place lost its borrowed receiver");
     };
     let Some(Kind::Reference {
         mutable: result_mutable,
@@ -425,21 +447,21 @@ fn index_result(
         referent,
     }) = facts.types.kind(call.result)
     else {
-        return Err("const index result lost its actual reference result");
+        return Err("const borrowed place lost its actual reference result");
     };
     if receiver_mutable != mutable
         || result_mutable != mutable
         || receiver_region != result_region
         || node_type != Some(referent)
     {
-        return Err("const index result changed its checked mutability, lifetime or referent");
+        return Err("const borrowed place changed its checked mutability, lifetime or referent");
     }
     Ok(definition)
 }
 
 /// The source place is borrowed before its checked directed receiver conversion.
 /// This defining check authenticates that place; it creates no region or const proof.
-fn index_operand(
+fn place_operand(
     facts: &Declarations,
     site: crate::resolve::unit::NodeKey,
     operand: crate::syntax::ast::NodeId,
@@ -454,7 +476,7 @@ fn index_operand(
         ..
     }) = borrow.and_then(|ty| facts.types.kind(ty))
     else {
-        return Err("const index result lost its actual operand borrow");
+        return Err("const borrowed place lost its actual operand borrow");
     };
     let mut actual = facts
         .node(crate::resolve::unit::NodeKey {
@@ -462,16 +484,16 @@ fn index_operand(
             ..site
         })
         .and_then(|node| node.ty)
-        .ok_or("const index result lost its actual operand type")?;
+        .ok_or("const borrowed place lost its actual operand type")?;
     for _ in 0..facts.autoderefs.get(&site).copied().unwrap_or(0) {
         work.charge(1)?;
         let Some(Kind::Reference { referent, .. }) = facts.types.kind(actual) else {
-            return Err("const index result changed its actual operand dereferences");
+            return Err("const borrowed place changed its actual operand dereferences");
         };
         actual = referent;
     }
     if actual_mutable != mutable || referent != actual {
-        return Err("const index result changed its actual operand borrow");
+        return Err("const borrowed place changed its actual operand borrow");
     }
     Ok(())
 }

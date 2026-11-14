@@ -1,5 +1,11 @@
 # RustGM Programming Assignment 31: Compiler/library bindings
 
+The [explicit const-dereference checkpoint](../docs/pa26-explicit-const-dereference.md)
+keeps source call references separate from their expression places through the
+same typed Index/Deref validator. Thirteen complete source outcomes and two new
+native41 observations pass; ordinary counterparts live in PA26. Genuine original
+core library verification and every earlier artifact requirement remain.
+
 The [generic conditional-member checkpoint](../docs/pa25-conditional-member-calls.md)
 retains actual Deref/DerefMut/ManuallyDrop reductions with byte-exact originals.
 Ordinary custom trait minima live in PA25. Generic const defining checks, nineteen

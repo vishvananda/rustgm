@@ -1,0 +1,76 @@
+{
+ "schema": 1,
+ "declared_before_execution": true,
+ "owner": "PA26 ordinary const dereference operator contracts; actual source roles in PA31",
+ "cases": {
+  "shared.rs": {
+   "expected": "accept",
+   "source_sha256": "f0b5110018c276567f7ecf83e5d904f1501b0355ac9676e8ba50863372326f07",
+   "note": "Independent standard-core counterpart; required ordinary bootstrap, never a parity negative"
+  },
+  "unique.rs": {
+   "expected": "accept",
+   "source_sha256": "e2b913db5df92466917170365c4d1de0908091c3a5c45c5029484ad7308b038b",
+   "note": "Independent standard-core counterpart; required ordinary bootstrap, never a parity negative"
+  },
+  "impl-shared.rs": {
+   "expected": "accept",
+   "source_sha256": "38eaa003fe3821d5117dfc0ca32fcb6f76f28aac66a48c3d9584efc8861e39fb",
+   "note": "Independent standard-core counterpart; required ordinary bootstrap, never a parity negative"
+  },
+  "impl-unique.rs": {
+   "expected": "accept",
+   "source_sha256": "bd1b2ef0bd2b989e4ce749f1352d23369fa0fe87ff74571ae188b99fae813695",
+   "note": "Independent standard-core counterpart; required ordinary bootstrap, never a parity negative"
+  },
+  "ordinary.rs": {
+   "expected": "accept",
+   "source_sha256": "3f9a69f3926611d2c2f00910063f03f2acbaa4443396d980b419fd81ee56a6be",
+   "note": "Independent standard-core counterpart; required ordinary bootstrap, never a parity negative"
+  },
+  "nonconst.rs": {
+   "expected": "reject",
+   "source_sha256": "a916d7c7dc70038b14406cd893c40c3f1205af6d09d6c6ce22a31e549b00d324",
+   "note": "Independent standard-core counterpart; required ordinary bootstrap, never a parity negative"
+  },
+  "shared-mutation.rs": {
+   "expected": "reject",
+   "source_sha256": "402a385978d2608cab32b1399dab506dc6cc74a0b83047d25afc64acd728d05d",
+   "note": "Independent standard-core counterpart; required ordinary bootstrap, never a parity negative"
+  },
+  "lifetime-escape.rs": {
+   "expected": "reject",
+   "source_sha256": "e6eaec74aaa553fd8ee4984a43d52dde1ccd077979d5db75bf8e4b02e9f5ae78"
+  },
+  "scaling-8.rs": {
+   "expected": "accept",
+   "source_sha256": "9de9f6f2b0527d96c3bbee87ba4c122e311e7d8ee9bb30009b0d2bc726d62f72"
+  },
+  "scaling-32.rs": {
+   "expected": "accept",
+   "source_sha256": "39045b228cebdf36521b36762b07c8ff605b85a6487632afb3cec8f1605b47db"
+  },
+  "scaling-128.rs": {
+   "expected": "accept",
+   "source_sha256": "eb3ea513bcfaa98a14a935bf9d5998bf35087e01956b917c3fd4ae9aae4b123f"
+  }
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": "2024",
+  "bootstrap": 1
+ },
+ "files": {
+  "shared.rs": "f0b5110018c276567f7ecf83e5d904f1501b0355ac9676e8ba50863372326f07",
+  "unique.rs": "e2b913db5df92466917170365c4d1de0908091c3a5c45c5029484ad7308b038b",
+  "impl-shared.rs": "38eaa003fe3821d5117dfc0ca32fcb6f76f28aac66a48c3d9584efc8861e39fb",
+  "impl-unique.rs": "bd1b2ef0bd2b989e4ce749f1352d23369fa0fe87ff74571ae188b99fae813695",
+  "ordinary.rs": "3f9a69f3926611d2c2f00910063f03f2acbaa4443396d980b419fd81ee56a6be",
+  "nonconst.rs": "a916d7c7dc70038b14406cd893c40c3f1205af6d09d6c6ce22a31e549b00d324",
+  "shared-mutation.rs": "402a385978d2608cab32b1399dab506dc6cc74a0b83047d25afc64acd728d05d",
+  "lifetime-escape.rs": "e6eaec74aaa553fd8ee4984a43d52dde1ccd077979d5db75bf8e4b02e9f5ae78",
+  "scaling-8.rs": "9de9f6f2b0527d96c3bbee87ba4c122e311e7d8ee9bb30009b0d2bc726d62f72",
+  "scaling-32.rs": "39045b228cebdf36521b36762b07c8ff605b85a6487632afb3cec8f1605b47db",
+  "scaling-128.rs": "eb3ea513bcfaa98a14a935bf9d5998bf35087e01956b917c3fd4ae9aae4b123f"
+ }
+}
