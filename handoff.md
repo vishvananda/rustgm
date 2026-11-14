@@ -5,17 +5,19 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
-Latest continuation: headroom is restored (reserve150/cap16 unchanged). Full
-43575779218 PASSED ALL STAGES on exact823dc01df, including3077 private tests in
-both profiles. Clean24 (source1b8722726/3958) clears unchecked shifts; original
-core now fails only completion at unicode_data.rs1148/file244:65009, expired
-storage in LOWERCASE_LUT. All42310 declarations/25858 bodies/35120 attempts pass.
-The new initializer-storage checkpoint passes24 outcomes, seven natives, four
-old compatibility controls, bounded work and authenticated replay/harness/upstream.
-Current compiler/test inventory3961. Private new snapshot invariant awaits full
-CI. Publish/freeze25, observe unchanged core, then attempt genuine metadata/LowIR
-only if analysis completes. No original library artifact exists. One worker in B.
-Read the final initializer-storage section before resuming.
+Latest continuation: initializer-storage source73017a98d is published; full
+43585975943 is running on that exact head (fast success, full release/course in
+progress). Clean25 release/3961/empty patch SHA
+dbd4b5ba742e321c8b02cc337ce3e24f42b89405394ce174a234e3695e4a8e4e builds in9m33s.
+Unchanged original diagnostic clears Unicode expired storage. All42310
+declarations/25858 bodies/35120 attempts still pass; sole completion error now
+ptr/metadata.rs119/file64:4584: active cleanup requires const Destruct in its
+actual defining environment. Postcheck722/375/six/all3961/fixed limits passes.
+All nine safe PA25 mains now execute natively too (16 new native programs total).
+Trace locates the new failure in original defining-body cleanup selection while
+completing an initializer. No metadata/LowIR library attempt is made while
+analysis is incomplete. Continue as one worker in B; no original artifact exists.
+Read the final clean25 frontier section before resuming.
 
 ## Workspace and authorization
 
@@ -1269,3 +1271,60 @@ No whole PA25–44 is complete; released113-case const-machine stays unchanged.
 All older explicit contracts, callback artifacts, two borrowed-result consumers,
 ordinary unbounded manual Copy positive, native/lifetime/transport requirements
 and original metadata/LowIR/library consumers remain required.
+
+## Clean25 clears Unicode; current original const-cleanup frontier
+
+Published source73017a98d6d9b58e175178c2be82705db352c266 is the initializer-storage
+checkpoint. Main is synchronized. Its clean candidate25-release freezes3961
+source hashes/empty patch; CLI SHA
+dbd4b5ba742e321c8b02cc337ce3e24f42b89405394ce174a234e3695e4a8e4e,9m33s build.
+Tidy1794652506779797178 removed19 generated files/0.04GiB first. Reserve150/cap16
+and2jobs/800%/12GiB/256tasks remain. Headroom270GiB at freeze; no disk block.
+
+Unchanged original diagnostic34.6997725s at load51.20/73.56 clears the previous
+Unicode expired-storage error. Still42310 declarations/25858 bodies/35120 attempts,
+no failed/blocked functions. Sole completion now file64:4584,
+library/core/src/ptr/metadata.rs119, the real from_raw_parts wrapper:
+active cleanup requires const Destruct in its actual defining environment.
+Completion0; NO original metadata/LowIR artifact or native consumer. The last
+initializer item39106/file41:80714 is not the error owner. Stage-aware postcheck
+passes722 original hashes/375 opens/six configuration pins/all3961 current/producer
+hashes/empty patch/fixed120s,14500624work,1GiB attempted,64MiB retained. No timing
+speed claim. Raw original-candidate25-diagnostic/, static-temporary-storage/
+observe25.log and post-and-native25.log. core-artifact25.py is prepared but UNRUN.
+
+Nine safe PA25 main inputs (including scaling8/32/128 and mutable-local result9)
+now pass actual candidate25 LowIR->frozen backend->native execution, empty outputs,
+with pinned CLI/manifest/input hashes. Together with seven ordinary/source C
+observers this adds16 actual native programs. safe-main25/ receipt retains all
+27 successful steps; generated executables pruned. Earlier24 outcomes and two
+required independently valid mutable-static positives remain unchanged.
+
+Current full manual43585975943 exact73017: fast success, full lint/host stages
+pass, release/course in progress at last check. No duplicate full run. New private
+snapshot-budget invariant still awaits actual execution, not a local cold build.
+
+Next reduce the original from_raw_parts defining cleanup with its actual Pointee
+Metadata:Copy bound and environment. Do not grant generic Destruct or infer Copy
+from a name. Existing defining_cleanups/claims.rs deliberately recognizes Copy
+claims only for parameters, and projected Destruct only with its actual header;
+this is a hypothesis to test, not yet a confirmed causal fix. Existing source
+pointer-composition/source-provider.rs retains original from_raw_parts bodies
+but declares Metadata:Sized; keep its original bytes/predictions. A paid original
+bound reduction must not erase that weaker declaration opponent or prior valid
+bound requirements.
+
+Read-only debug25: cdrop.rs29 resolved to33's success return and did not hit;
+not error evidence. First exact script had a GDB Rust/C quoting setup failure.
+The corrected exact instruction break at cdrop::prove_cleanup_requirements+184
+(0xdac4f8 static) DOES hit the absent-cleanup branch. Stack:
+proofs::select -> pipeline::cdrop::eligibility -> prove_loans -> prove_body ->
+prove_defining_original -> function_body -> source_layout -> reached preparation
+-> Evaluator.definition -> validate_ordinary_initializers -> complete_constants.
+Release contains line tables but no locals/arguments. The script then fails when
+trying unavailable body.owner; retain this partial diagnostic, not a passing
+probe or a known goal type. Raw four goal words are not decoded identity evidence.
+Paths obj/parallel/projected-cleanup/debug25[-exact,-exact2]/; source unmodified.
+No trace patch is installed. Prefer cached dev-fast original diagnostics for
+ordinary subsequent edits if cfg matches, preserving120s/quotas; release freezes
+belong at coherent checkpoints. All older explicit contracts remain required.
