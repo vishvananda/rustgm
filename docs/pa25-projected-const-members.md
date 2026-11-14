@@ -78,7 +78,6 @@ Raw evidence is under `obj/parallel/projected-const-members/`:
   const-machine component is unchanged.
 
 Previous full CI43636803381 on236732077 passed every stage, including3083 private
-release tests in8.77s and debug in92.68s. The current repair's full successor and
-clean release34 original-core attempt follow publication; no cold private build
-is repeated locally. No original library metadata/LowIR/native consumer artifact
+release tests in8.77s and debug in92.68s. Full successor43645030432 on published0c4d3d721 is running; clean release34
+original-core verification follows. No cold private build is repeated locally. No original library metadata/LowIR/native consumer artifact
 exists. Whole PA25–PA44 and all earlier valid unsupported contracts remain open.

@@ -5,6 +5,7 @@ components as their complete contracts qualify. **One worker**, B only; main is
 Git-only. **No original core metadata/LowIR/native consumer artifact exists.**
 PA25–PA44 remain planned; the released113-case PA25 component is unchanged.
 
+Published source0c4d3d721a571d06df447de10f414391a1af4b97; main synced.
 CURRENT coherent checkpoint: projected conditional const associated promises.
 See docs/pa25-projected-const-members.md. Production pays the corresponding
 const-qualified parent on the existing scoped proof stack; final generic-use
@@ -33,13 +34,12 @@ two accepting gaps), exact prepared lowering and8/32/128 scaling. Source work
 No speed claim.315 harness/495 roots/13 bins/44 stages/one component,
 128 upstream+126 Reference pass. Raw obj/parallel/projected-const-members/.
 
-NEXT publish this coherent checkpoint, dispatch ONE full successor (prior run
-is terminal), freeze clean candidate34-release, retry unchanged genuine original
+NEXT freeze clean candidate34-release, retry unchanged genuine original
 v14 library with fixed120s/14500624work/1GiB attempted/64MiB retained, then postcheck.
 Do not run another census or unoptimized whole-original retry. Original helper
 now qualifies in the reduction; full original verification remains required.
 
-Latest published source2367320774a9df4da7d5dbcbba7c5b1d95bad38e; main synced
+Previous published source2367320774a9df4da7d5dbcbba7c5b1d95bad38e was synced
 through docs eacd4b3d3 before this checkpoint. Clean33 CLIc638c2da…004c1af,
 3964 hashes/empty patch,8m39s build. Genuine original v14 library33 CLEARS
 RangeBounds::contains, FAILS ops/try_trait.rs:383/file95:15668 residual_into_try_type,
@@ -52,8 +52,8 @@ artifact-postcheck33}.log and original-library-candidate33/. Diagnostic only.
 Full43636803381 exact236732077 PASSED EVERY STAGE:3083 private release8.77s,
 debug92.68s, all public/native/course/independent/component. Raw
 projected-const-members/ci43636803381.log. Two preceding private scope/foreign-
-subject guards are now qualified. No successor yet; do not duplicate one once
-launched. Current33/32/31 and pending performance21–24 pins retained;25–30 are
+subject guards are now qualified. ONE full successor43645030432 exact0c4d3d721 is running. Do not duplicate,
+cancel or restart for documentation. Current33/32/31 and pending performance21–24 pins retained;25–30 are
 retired/unavailable. Retire superseded exploratory replay pins after clean34
 replacement; preserve all receipts/hashes and actual pending performance pins.
 
