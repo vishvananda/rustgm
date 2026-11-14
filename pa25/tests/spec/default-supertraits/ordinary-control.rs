@@ -1,0 +1,4 @@
+#![feature(const_trait_impl)]
+pub const trait Base{fn read(&self)->u8;}
+pub trait Derived:Base{fn through(&self)->u8{Base::read(self)}}
+fn main(){}

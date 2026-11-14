@@ -1,5 +1,11 @@
 # Compile-time-first Rust frontend architecture
 
+The [default-supertrait checkpoint](docs/pa25-default-supertraits.md) consumes
+exact completed defining-environment premises for other trait applications of the
+same Self, preserving complete canonical arguments and the own-trait fast path.
+Actual Destruct method bounds consume builtin selection evidence with all debts;
+ordinary implementation certification and concrete default dispatch remain separate.
+
 The [mixed source profile](docs/parallel/mixed-declarations-v14.md) derives
 v13 declaration kinds and conditional callable headers from its existing body-node
 capability. An operation-only profile does not gain those capabilities through

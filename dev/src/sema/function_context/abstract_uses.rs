@@ -22,16 +22,15 @@ pub(crate) struct Call {
 pub(crate) struct DefiningCalls<'a> {
     facts: &'a Declarations,
     owner: NodeKey,
-    premise: Premise<'a>,
+    environment: &'a crate::types::parameters::environment::Environment,
+    premise: Premise,
 }
-enum Premise<'a> {
+enum Premise {
     Trait {
-        definition: DefId,
         subject: TypeId,
-        arguments: GenericArgs,
+        application: crate::types::traits::ApplicationId,
     },
     Function {
-        environment: &'a crate::types::parameters::environment::Environment,
         effect: Constness,
     },
 }
@@ -55,8 +54,8 @@ impl<'a> DefiningCalls<'a> {
                 return Ok(Self {
                     facts,
                     owner,
+                    environment,
                     premise: Premise::Function {
-                        environment,
                         effect: if context == FunctionContext::Comptime {
                             Constness::Const
                         } else {
@@ -80,7 +79,9 @@ impl<'a> DefiningCalls<'a> {
             .types
             .trait_application(application)
             .ok_or("missing defining Self application")?;
-        let trait_arguments = application_data.arguments;
+        if application_data.item.0 != trait_definition.0 {
+            return Err("defining Self application belongs to another trait");
+        }
         predicate.bound = Bound::MaybeConstTrait(application);
         charge(1)?;
         let environment = facts
@@ -103,10 +104,10 @@ impl<'a> DefiningCalls<'a> {
         Ok(Self {
             facts,
             owner,
+            environment,
             premise: Premise::Trait {
-                definition: trait_definition,
                 subject: predicate.ty,
-                arguments: trait_arguments,
+                application,
             },
         })
     }
@@ -260,36 +261,41 @@ impl<'a> DefiningCalls<'a> {
         charge(3)?;
         match self.premise {
             Premise::Trait {
-                definition,
                 subject,
-                arguments,
+                application: defining,
             } => {
-                let actual = self
-                    .facts
-                    .types
-                    .trait_application(application)
-                    .ok_or("abstract const call lost its parent application")?;
-                if predicate.ty != subject
-                    || actual.item.0 != definition.0
-                    || actual.arguments != arguments
-                {
+                if predicate.ty != subject {
                     return Err(
                         "abstract const call changed its defining Self or trait application",
                     );
                 }
+                if application != defining {
+                    // Other Self applications must be paid by this completed
+                    // defining environment, including elaborated supertraits.
+                    charge(2)?;
+                    let unconditional = self.environment.assumes_predicate(
+                        crate::types::parameters::predicates::Predicate {
+                            bound: Bound::ConstTrait(application),
+                            ..predicate
+                        },
+                    );
+                    if !unconditional && !self.environment.assumes_predicate(predicate) {
+                        return Err(
+                            "abstract const call changed its defining Self or trait application",
+                        );
+                    }
+                }
             }
-            Premise::Function {
-                environment,
-                effect,
-            } => {
-                let unconditional = environment.assumes_predicate(
+            Premise::Function { effect } => {
+                let unconditional = self.environment.assumes_predicate(
                     crate::types::parameters::predicates::Predicate {
                         bound: Bound::ConstTrait(application),
                         ..predicate
                     },
                 );
                 if !unconditional
-                    && (effect == Constness::Const || !environment.assumes_predicate(predicate))
+                    && (effect == Constness::Const
+                        || !self.environment.assumes_predicate(predicate))
                 {
                     return Err(
                         "const function member lacks its current conditional trait premise",

@@ -1,0 +1,75 @@
+{
+ "schema": 1,
+ "declared_before_execution": true,
+ "owner": "PA25 ordinary const supertrait/default calls",
+ "cases": {
+  "conditional.rs": {
+   "expected": "accept"
+  },
+  "always.rs": {
+   "expected": "accept"
+  },
+  "plain.rs": {
+   "expected": "reject"
+  },
+  "unrelated.rs": {
+   "expected": "reject"
+  },
+  "generic.rs": {
+   "expected": "accept"
+  },
+  "wrong-argument.rs": {
+   "expected": "reject"
+  },
+  "method-where.rs": {
+   "expected": "accept"
+  },
+  "chain.rs": {
+   "expected": "accept"
+  },
+  "ordinary-control.rs": {
+   "expected": "accept"
+  },
+  "scaling-8.rs": {
+   "expected": "accept"
+  },
+  "scaling-32.rs": {
+   "expected": "accept"
+  },
+  "scaling-128.rs": {
+   "expected": "accept"
+  },
+  "builtin-destruct.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains; unresolved core::marker::Destruct import is an unqualified bootstrap boundary, never a semantic rejection"
+  },
+  "method-const-bound.rs": {
+   "expected": "accept"
+  },
+  "method-plain-bound.rs": {
+   "expected": "reject"
+  },
+  "runtime-destructor.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required ordinary outcome remains; unresolved core::marker::Destruct import is an unqualified bootstrap boundary, never a semantic rejection"
+  }
+ },
+ "files": {
+  "conditional.rs": "8613c67a390ada1db30a9cb818e8242916d6e40eaabe0fcfe765371fac73a227",
+  "always.rs": "a2149e7ec240fde8f310cab0d6a026b9d23e70cdbde7abf3aae6173ea573c1ca",
+  "plain.rs": "178a3b405e7071959c5656f36fa901aa43d65037ed649cd8645e2fce9c0d340f",
+  "unrelated.rs": "b822941a86ccfe9e7d99e1ec48e8198e9fa8099281d717ffada50670e4c5d69c",
+  "generic.rs": "396e785ac422e350d9eeb0fab0de3b956538ef5ba978298bb88b12a353087c38",
+  "wrong-argument.rs": "27f344aeaef94e1ef0dcfa34c105f33a928b2b109e6f080c16aced8b17585f02",
+  "method-where.rs": "dd68793abbd12c9fce03030eb3b154547f52c0ab61236fd2e79136bca8b2f7c7",
+  "chain.rs": "bbe801e0aaeb09d8ab32c091f9c9b58242e170dce7a64cce2248dc2e544a418a",
+  "ordinary-control.rs": "23cc8310668f0407bbbe1de5dc81080260daa8391b1566660c32d579e54f7016",
+  "scaling-8.rs": "b1fd3869c92144217e7964cfe723c00ab5d812266db7fdb5341abf7249c029a0",
+  "scaling-32.rs": "baa24124d716f69d2342ac19df1a76ec330209283de128ecf906f0dd34cbcf5f",
+  "scaling-128.rs": "1b0e60df9f4e77399b40d41590cb1f6ac8b021643f2f49bf3c182b8b517507dd",
+  "builtin-destruct.rs": "b72d31aa8f4604ae79448c3564b0d58dcba3c5b3e6d3b0b555c88011e8998735",
+  "method-const-bound.rs": "b874146ac4edfd7f5e2211bc18365f2bede67f13d315aca3da28443953ba938f",
+  "method-plain-bound.rs": "6bf82126a75d161a26ff0790ae7c143a204ccb9cb6f7449c0bec04c1a66053b1",
+  "runtime-destructor.rs": "09a5438d437f454cb3dd56767b0dfc85b3942516ca217538d962844dc8d9f3ab"
+ }
+}

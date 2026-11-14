@@ -28,12 +28,26 @@ fn program(source: &str) -> Result<rustgm::lowir::program::Program> {
         mut facts,
         prepared,
     } = rustgm::pipeline::analyze_source(&report)?;
+    let exports = facts
+        .functions
+        .iter()
+        .filter(|function| {
+            matches!(
+                report
+                    .package
+                    .names
+                    .get(report.resolution.definitions[function.definition.0 as usize].name),
+                "entry" | "probe"
+            )
+        })
+        .map(|function| function.definition)
+        .collect::<Vec<_>>();
     Ok(rustgm::lower::instances::build_roots_prepared(
         &report,
         &mut facts,
         rustgm::lower::Roots {
             entry: None,
-            exports: &[],
+            exports: &exports,
         },
         prepared,
     )?)
@@ -128,6 +142,177 @@ fn const_premise_work_tracks_functions() -> Result {
         }
         previous = Some(work);
         program(&text)?;
+    }
+    Ok(())
+}
+
+const DEFAULTS: &str = "pa31/tests/spec/default-supertraits";
+
+#[test]
+fn defining_defaults_consume_exact_completed_self_supertrait_premises() -> Result {
+    for name in [
+        "conditional",
+        "always",
+        "generic",
+        "method-where",
+        "chain",
+        "ordinary-control",
+        "constant",
+        "original-max",
+        "builtin-destruct",
+        "method-const-bound",
+    ] {
+        program(&crate::resolve::fixture(&format!("{DEFAULTS}/{name}.rs"))?)
+            .map_err(|error| format!("{name}: {error}"))?;
+    }
+    for (name, cause) in [
+        ("plain", "trait obligation requires"),
+        ("unrelated", "trait obligation requires"),
+        ("wrong-argument", "incompatible types"),
+        ("method-plain-bound", "trait obligation requires"),
+        ("runtime-destructor", "trait obligation requires"),
+    ] {
+        let error = program(&crate::resolve::fixture(&format!("{DEFAULTS}/{name}.rs"))?)
+            .err()
+            .ok_or_else(|| format!("accepted {name}"))?;
+        assert!(error.to_string().contains(cause), "{name}: {error}");
+    }
+    Ok(())
+}
+
+#[test]
+fn ordinary_const_default_minima_preserve_supertrait_effects() -> Result {
+    for (name, accepted) in [
+        ("conditional", true),
+        ("always", true),
+        ("generic", true),
+        ("method-where", true),
+        ("chain", true),
+        ("ordinary-control", true),
+        ("plain", false),
+        ("unrelated", false),
+        ("wrong-argument", false),
+        ("method-const-bound", true),
+        ("method-plain-bound", false),
+    ] {
+        let text =
+            crate::resolve::fixture(&format!("pa25/tests/spec/default-supertraits/{name}.rs"))?;
+        let result = (|| -> Result {
+            let report = crate::resolve::resolve(&text, true)?;
+            let rustgm::pipeline::Analysis {
+                mut facts,
+                prepared,
+            } = rustgm::pipeline::analyze_source(&report)?;
+            rustgm::lower::instances::build_roots_prepared(
+                &report,
+                &mut facts,
+                rustgm::lower::Roots {
+                    entry: None,
+                    exports: &[],
+                },
+                prepared,
+            )?;
+            Ok(())
+        })();
+        if accepted {
+            result.map_err(|error| format!("{name}: {error}"))?;
+        } else {
+            let error = result.err().ok_or_else(|| format!("accepted {name}"))?;
+            let cause = if name == "wrong-argument" {
+                "incompatible types"
+            } else {
+                "trait obligation requires"
+            };
+            assert!(error.to_string().contains(cause), "{name}: {error}");
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn completed_default_premise_lookup_scales_with_actual_calls() -> Result {
+    let mut previous: Option<[usize; 2]> = None;
+    for count in [8, 32, 128] {
+        let text = crate::resolve::fixture(&format!("{DEFAULTS}/scaling-{count}.rs"))?;
+        let report = crate::resolve::source_provider(&text, "default_supertrait_scaling")?;
+        let rustgm::pipeline::Analysis {
+            mut facts,
+            prepared,
+        } = rustgm::pipeline::analyze_source(&report)?;
+        rustgm::lower::instances::build_roots_prepared(
+            &report,
+            &mut facts,
+            rustgm::lower::Roots {
+                entry: None,
+                exports: &[],
+            },
+            prepared,
+        )?;
+        let work = [
+            facts.body_work.inference_steps,
+            facts.body_work.canonical_steps,
+        ];
+        println!("default supertraits={count} work={work:?}");
+        if let Some(before) = previous {
+            for (old, actual) in std::iter::zip(before, work) {
+                assert!(actual <= old * 4 + 512, "{before:?}->{work:?}");
+            }
+        }
+        previous = Some(work);
+    }
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn inherited_const_default_executes_its_selected_implementation() -> Result {
+    use std::process::Command;
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let out = root.join("obj/parallel/default-supertraits/native");
+    std::fs::create_dir_all(&out)?;
+    for (name, observer, expected) in [
+        ("constant", "observe.c", "41\n"),
+        ("builtin-destruct", "observe.c", "41\n"),
+        ("original-max", "max-observe.c", "41 41\n"),
+    ] {
+        let ir = out.join(format!("{name}.lowir"));
+        let object = out.join(format!("{name}.o"));
+        let executable = out.join(format!("{name}.native"));
+        rustgm::lowir::writer::write(
+            &program(&crate::resolve::fixture(&format!("{DEFAULTS}/{name}.rs"))?)?,
+            &mut std::fs::File::create(&ir)?,
+        )?;
+        for (stage, command) in [
+            (
+                "backend",
+                Command::new("python3")
+                    .arg(root.join("scripts/backend.py"))
+                    .arg("--emit-object")
+                    .arg(&ir)
+                    .arg("-o")
+                    .arg(&object),
+            ),
+            (
+                "link",
+                Command::new("cc")
+                    .arg(root.join(DEFAULTS).join(observer))
+                    .arg(&object)
+                    .arg("-o")
+                    .arg(&executable),
+            ),
+            ("native", &mut Command::new(&executable)),
+        ] {
+            let output = command.output()?;
+            std::fs::write(out.join(format!("{name}-{stage}.stdout")), &output.stdout)?;
+            std::fs::write(out.join(format!("{name}-{stage}.stderr")), &output.stderr)?;
+            assert!(
+                output.status.success() && output.stderr.is_empty(),
+                "{name}/{stage}: {output:?}"
+            );
+            if stage == "native" {
+                assert_eq!(output.stdout, expected.as_bytes(), "{name}");
+            }
+        }
     }
     Ok(())
 }

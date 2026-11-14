@@ -1,5 +1,10 @@
 # RustGM assignment roadmap
 
+The [default-supertrait checkpoint](docs/pa25-default-supertraits.md) qualifies
+32 source/ordinary complete outcomes and eight native observations. It addresses
+original Ord::max defining legality and concrete builtin Destruct method bounds.
+Two ordinary imports remain unqualified; clean original-core verification is next.
+
 The [mixed-declaration checkpoint](docs/parallel/mixed-declarations-v14.md) qualifies
 all four existing v13 provider families in v14 with and without operations,
 six native programs and byte-identical legacy controls. Combined with the explicit

@@ -5,31 +5,44 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
-Published current source4a80bfb4a50368637efe70423aabf88d9abe8b59; main synchronized.
-Clean candidate30-release binds3964 source hashes/empty patch,8m36s build,
-CLI SHA2562b950bafd9fc84d9ce69b2515e3f1c43bfdf93b406bf998c4074f8d4ef56acdd.
-Genuine unchanged original v14 library30 clears DropGuard::deref and now FAILS
-in cmp.rs line1037/file73:34611, Ord::max's `if other < self { self } else { other }`:
+Current coherent checkpoint: conditional supertrait calls in const defaults plus
+exact builtin Destruct method-bound evidence. See docs/pa25-default-supertraits.md.
+Production touches only sema/function_context/abstract_uses.rs and
+sema/dispatch/effect_requirements.rs. Same defining Self/current exact completed
+premise, source/call/borrow/selected implementation and execution remain required;
+ordinary closed-implementation certification/cache is retained. No persistent
+field/cache/wire/backend/storage change. Existing registered traits test root;
+inventory stays3964. No agent/new tree.
+
+Qualified:32 complete outcomes (18 source,14 ordinary), three new native programs
+41/41/`41 41`, five prior cleanup native controls, actual unchanged Ord::max
+constant/runtime execution,8/32/128 post-lowering scaling1754/1473,6962/4741,
+27794/17765. fast5=1794678879779995705, six exact tests140.36s; native=
+1794679030907816509, two groups/eight programs41.78s. Strict selected/production/
+CLI Clippy, full format/audit,315 harness/495 roots/13 bins/44 stages/one component,
+128 upstream+126 Reference pass. replay authenticates all3964 compiler hashes
+and all packet inputs. Ordinary builtin-destruct/runtime-destructor counterparts
+remain required/unqualified at unresolved core::marker::Destruct import; their
+independent acceptance/rejection predictions are unchanged. Raw evidence under
+obj/parallel/default-supertraits/{inputs,baseline,bounds-reference,reference,replay}/.
+
+NEXT publish coherent checkpoint, dispatch ONE full successor (previous run
+terminal), freeze clean candidate31-release, run genuine unchanged original v14
+library command with fixed120s/14500624work/1GiB attempted/64MiB retained and
+postcheck. Scripts default-supertraits/{core-artifact31,artifact-postcheck31}.py
+are prepared under obj. No redundant census or dev-fast whole-original retry.
+No original library artifact exists; do not infer original success from reduction.
+
+Previous clean candidate30-release: source4a80bfb4a50368637efe70423aabf88d9abe8b59,
+3964 clean source hashes, CLI2b950bafd9fc84d9ce69b2515e3f1c43bfdf93b406bf998c4074f8d4ef56acdd.
+Genuine original v14 library30 failed cmp.rs:1037/file73:34611, Ord::max's
 `abstract const call changed its defining Self or trait application`.
-36.285181019920856s, status1/no timeout; no core.rgm/0-byte core.lowir/no native
-original consumers. Artifact-postcheck30 terminal PASS:722 unchanged original
-files/375 opened inputs/six reviewed config pins/all3964 compiler hashes/clean
-producer/fixed120s/14500624work/1GiB attempted/64MiB retained. Diagnostic only,
-no timing claim. Raw mixed-declarations/{build30-release,core-artifact30,
-artifact-postcheck30}.log and original-library-candidate30/. No redundant census.
-
-NEXT reduce actual const Ord default calling its PartialOrd supertrait. Existing
-DefiningCalls Premise::Trait currently requires exactly its own defining trait
-application; inspect the completed defining environment's real conditional
-supertrait premise rather than inventing const permission or scanning unrelated
-clauses per call. Root Self/arguments, source operation and eventual implementation/
-execution/borrow proof stay required. Source reductions PA31; ordinary const
-supertrait/default-body minima PA25. Nothing new is edited/unqualified yet at
-this doc-only checkpoint. No live local heavy job.
-
-Full43618987950 is the one full successor on exact4a80bfb4a: fast/lint/architecture/
-harness/host graph passed, release/course in progress at last check. Do not restart
-for this handoff. Preceding43611467168 is fully green (3079 private8.39s/93.73s).
+36.285181019920856s/status1/no timeout; no core.rgm/0-byte core.lowir.
+Artifact-postcheck30 terminal PASS:722 original/375 opened/six reviewed config
+pins/all3964 compiler hashes/fixed limits. Diagnostic only/no speed claim.
+Full43618987950 exact4a80bfb4a now PASSED EVERY STAGE:3080 private release4.79s,
+debug46.67s, all public/native/course/independent/component. Raw
+mixed-declarations/ci43618987950.log. New checkpoint full CI pending.
 The three reduced const-Deref metadata positives remain separately blocked by
 role-form transport, not declaration kinds; actual failing non-trait role has not
 been identified by a run, so do not assume which role it is. All earlier original

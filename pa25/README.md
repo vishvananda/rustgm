@@ -1,5 +1,10 @@
 # RustGM Programming Assignment 25: Constant evaluation
 
+The [default-supertrait checkpoint](../docs/pa25-default-supertraits.md) qualifies
+ordinary const-trait default minima while retaining two Destruct import boundaries.
+Actual source roles and unchanged Ord::max belong to PA31; full bootstrap and
+whole-assignment requirements remain.
+
 The [generic conditional-member checkpoint](../docs/pa25-conditional-member-calls.md)
 retains ordinary custom const-trait minima here and actual language-role source
 cases in PA31. Defining legality accepts checked normalized generic applications;

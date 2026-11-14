@@ -52,10 +52,21 @@ pub(super) fn check(
             return Err("const default method requirements need closed normalized predicates");
         }
         let before = dispatch.context.steps;
-        let proof = dispatch.implementation(facts, predicate);
+        let proof = if crate::sema::compiler_items::destruct_predicate(facts, predicate)? {
+            // This exact source role has builtin bound evidence, rather than
+            // an implementation owner. Actual Drop/field debts stay in its proof.
+            dispatch
+                .source_evidence(facts, predicate, None)
+                .map(|evidence| evidence.proof)
+                .map_err(super::Failure::message)
+        } else {
+            // Preserve ordinary closed-implementation certification and reuse.
+            dispatch
+                .implementation(facts, predicate)
+                .map(|(_, _, proof)| proof)
+        };
         facts.charge_caller_inputs(dispatch.context.steps.saturating_sub(before), 0)?;
-        let (_, _, proof) =
-            proof.map_err(|_| "const default method requirement is not satisfied")?;
+        let proof = proof.map_err(|_| "const default method requirement is not satisfied")?;
         if !proof.is_empty() || dispatch.provisional_size {
             return Err(
                 "const default method requirement has unresolved lifetime or size obligations",

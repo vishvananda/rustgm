@@ -1,5 +1,10 @@
 # RustGM Programming Assignment 31: Compiler/library bindings
 
+The [default-supertrait checkpoint](../docs/pa25-default-supertraits.md) qualifies
+18 source outcomes, the unchanged Ord::max item and three actual native observers.
+Defining Self/supertrait proof and builtin Destruct bound evidence preserve actual
+implementation, lifetime and execution requirements. Full original-core retry is next.
+
 The [explicit const-dereference checkpoint](../docs/pa26-explicit-const-dereference.md)
 keeps source call references separate from their expression places through the
 same typed Index/Deref validator. Thirteen complete source outcomes and two new

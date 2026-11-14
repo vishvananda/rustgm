@@ -1,0 +1,131 @@
+{
+ "schema": 1,
+ "declared_before_execution": "Initial9 pairs frozen in obj before baseline; additional constant/scaling here before execution",
+ "owner": "PA31 source const default-member contracts; ordinary PA25 minima",
+ "basis": {
+  "original_cmp_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "original_cmp_sha256": "0a9b8c3a2f7b80447703e5cdc224d059465a90fb9203e0ab4b0182af17494cac",
+  "license": "Rust originals MIT OR Apache-2.0; third_party/sources.json"
+ },
+ "cases": {
+  "conditional.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/default-supertraits/conditional.rs"
+  },
+  "always.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/default-supertraits/always.rs"
+  },
+  "plain.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/default-supertraits/plain.rs"
+  },
+  "unrelated.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/default-supertraits/unrelated.rs"
+  },
+  "generic.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/default-supertraits/generic.rs"
+  },
+  "wrong-argument.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/default-supertraits/wrong-argument.rs"
+  },
+  "method-where.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/default-supertraits/method-where.rs"
+  },
+  "chain.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/default-supertraits/chain.rs"
+  },
+  "ordinary-control.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/default-supertraits/ordinary-control.rs"
+  },
+  "constant.rs": {
+   "expected": "accept",
+   "ordinary": "pa31/tests/spec/default-supertraits/constant-rust.rs",
+   "native_stdout": "41\n"
+  },
+  "scaling-8.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/default-supertraits/scaling-8.rs",
+   "functions": 8
+  },
+  "scaling-32.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/default-supertraits/scaling-32.rs",
+   "functions": 32
+  },
+  "scaling-128.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/default-supertraits/scaling-128.rs",
+   "functions": 128
+  },
+  "original-max.rs": {
+   "expected": "accept",
+   "ordinary": "pa31/tests/spec/default-supertraits/original-max-rust.rs",
+   "native_stdout": "41 41\n",
+   "basis": "Exact pinned Ord::max item including attributes/body with its real conditional Eq/PartialOrd/Destruct header shape; existing source comparisons v3 foundation retained unchanged; exact original Ord diagnostic owner retained for cmp_ord_max",
+   "foundation_sha256": "def0c8babe0ddfed26b233146ea96d038ef3d662f217fe3626a791734eb147cf",
+   "max_item_sha256": "11daf854fc5fa4ca2eb79b1d06a4a4453e864ac36f86f8591a17558b70849e1e"
+  },
+  "builtin-destruct.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/default-supertraits/builtin-destruct.rs"
+  },
+  "method-const-bound.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/default-supertraits/method-const-bound.rs"
+  },
+  "method-plain-bound.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/default-supertraits/method-plain-bound.rs"
+  },
+  "runtime-destructor.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/default-supertraits/runtime-destructor.rs"
+  }
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": "2024",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "target": "x86_64-unknown-linux-gnu"
+ },
+ "retained": [
+  "Exact original Ord::max operator body must clear on genuine full core retry",
+  "No arbitrary foreign Self/trait-argument permission or executable default body without actual selected implementation",
+  "All original v13/v14 metadata/LowIR/native, ordinary bootstrap and future requirements"
+ ],
+ "files": {
+  "conditional.rs": "46022eb8b330e08fef8dc5bcde3ab04f50f81c13e7f3d3f41f04a4ec610d54dd",
+  "always.rs": "fe147d9667d2ca93c3b225f66310e372479e7bf6185a02bdfa6942fdc399e307",
+  "plain.rs": "4c48055909634ba88e5060e21bef0946a7dc5954d4d4047c0abbf6d93ce864e0",
+  "unrelated.rs": "cd4707bc3f2fc0658173a9d05a8e053381c8f10bbf3d700c7d3ba3abf4cda648",
+  "generic.rs": "e4d5ca92c895826397d461437c76190abb6b81fe23d9fd5f9ba18feb916bf802",
+  "wrong-argument.rs": "13f15d33fd7c30529b6c3a4e00db61e9c3dd3d7a907cb5087a69b2c590c106c4",
+  "method-where.rs": "4aaf67aedf16535ea6901f1fa0fff03d007b60a197fd62a8a530ff4363f8cedc",
+  "chain.rs": "169b15751d7e4217b2ebdaf25d2e90e40684ba6b1e2ade70fc0da2ce2648cf1d",
+  "ordinary-control.rs": "38396d47f8b50a694b66ab32853a8ba6b8f27e9f4e702952643e7919d33c5eb9",
+  "constant.rs": "083371673bdb07d49c7afbbe354520cc7701fdd5a3145dd70ea62a4f2e7c3443",
+  "constant-rust.rs": "aa5882b00d589e1b19f73c058e16b114d271a090e2948bd4effa663b16ed59eb",
+  "scaling-8.rs": "bb6d8278dc0e97c74ca4ffad43e484cb25c475aed36c1fd5f04a074aaeed4551",
+  "scaling-32.rs": "640e33b7e4e32cd955a8eed60e3ff82507649012ebc877fbf46553eb4f02554f",
+  "scaling-128.rs": "f96252ec628e5b9acd357d877a5a3a6034407e051c0b8a6b59cfe3021739ea38",
+  "observe.c": "95a279845325037097bb07d741dae1bed06d1fca4f2c88a486fb4695fe750025",
+  "expected.stdout": "040316eca5e77dbb2212c1efe8b81cb23bc67ce0ac8cb5c9d902d98bd45ddfa1",
+  "original-cmp.rs": "0a9b8c3a2f7b80447703e5cdc224d059465a90fb9203e0ab4b0182af17494cac",
+  "original-max.rs": "d839083ff8b06a4f1165c341262ec89b2b3e4e012543bf530b5ed3059388645f",
+  "original-max-rust.rs": "af0478ab7f16632b32deeda56359273a49fda0efe7794ee77e6cb91fa7d20201",
+  "max-observe.c": "b3f03b668f22a6c5c6db9ba9876cc6a9822ca7486590f4a3ac8d802ddc328676",
+  "builtin-destruct.rs": "9a3e3c44ef346bf29c4efdbe86817a4a02793524d90dd7d4c738e8d37fbe57a2",
+  "method-const-bound.rs": "13e719b4f5fca9ae7dafc543dd8a5873e920f09b83d1cc740c2c98271eb6b251",
+  "method-plain-bound.rs": "9da2068ce5b9a3d3d2257af0c391e98b48e0ec0e3f1d93aa289d3dd0dcb576b6",
+  "runtime-destructor.rs": "7d95d51541739e48e23bdc3cb56de320367a2568948f8a4f43c67685ab7bcffb"
+ }
+}
