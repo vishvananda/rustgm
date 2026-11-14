@@ -133,13 +133,13 @@ impl Refinements {
                                 crate::body::ir::LocalKind::Parameter(_)
                                     | crate::body::ir::LocalKind::Variadic
                             ) && requirements.locals.get(id.0 as usize).copied() == Some(true)
-                                && structural_type(types, definitions, local.ty)
+                                && qualification_type(types, definitions, local.ty)
                         });
                     }
                     if let (Action::Evaluate(value), Some(requirements)) =
                         (statement.action, requirements)
                     {
-                        seeded |= structural_seed(types, definitions, body, requirements, value);
+                        seeded |= qualification_seed(types, definitions, body, requirements, value);
                     }
                 }
             }
@@ -495,7 +495,7 @@ impl Refinements {
     }
 }
 
-fn structural_seed(
+fn qualification_seed(
     types: &Store,
     definitions: &Definitions,
     body: &Body,
@@ -515,11 +515,15 @@ fn structural_seed(
     ) {
         return false;
     }
-    structural_type(types, definitions, value.ty)
+    qualification_type(types, definitions, value.ty)
 }
-fn structural_type(types: &Store, definitions: &Definitions, ty: TypeId) -> bool {
+fn qualification_type(types: &Store, definitions: &Definitions, ty: TypeId) -> bool {
     match types.kind(ty) {
-        Some(Kind::Tuple(_) | Kind::Array { .. } | Kind::ArrayTerm { .. }) => true,
+        // A projected root needs the same scoped Copy/Destruct selection as a
+        // projected field. Its symbolic shape alone grants neither answer.
+        Some(
+            Kind::Tuple(_) | Kind::Array { .. } | Kind::ArrayTerm { .. } | Kind::Projection(_),
+        ) => true,
         Some(Kind::Adt(item, _)) => definitions
             .get(item)
             .is_some_and(|d| d.kind == crate::types::aggregate::Kind::Struct),

@@ -144,3 +144,9 @@ PA25, unsafe PA27, C ABI PA28 and source-role PA31 reductions. Local/callee expi
 and mutable temporary restrictions remain checked. Qualified native programs do
 not replace the required named mutable-static and library metadata surfaces.
 Whole-assignment status and the separate const-machine component are unchanged.
+
+The [associated Copy root checkpoint](../docs/pa31-root-copy-qualification.md) reuses
+scoped qualification for projected roots and filters only actual NoDrop answers.
+Thirteen outcomes, eighteen native programs and bounded work pass; three unused
+negative definitions remain required. Original-core retry/full CI are pending;
+whole assignments and original library artifact gates remain unchanged.

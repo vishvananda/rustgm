@@ -1,0 +1,92 @@
+{
+ "declaration": "Before first execution: ordinary and genuine source associated Copy bounds must admit const-owned parameter cleanup; explicit where bounds, parameter and shared-reference controls accept. Missing and unrelated lookalike bounds reject. Do not add bounds to accepting inputs or infer Copy/Destruct from names. Source cases exercise their actual defining body via a demanded constant. Whole assignments stay planned.",
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "cases": {
+  "declared-copy": {
+   "expected": "accept",
+   "native_stdout": "7\n",
+   "sha256": "f2c12f8786569ca2f2f27f531c8d88e46fe71e420449fb444bf8d936a54af173"
+  },
+  "where-copy": {
+   "expected": "accept",
+   "native_stdout": "7\n",
+   "sha256": "c6295e1004377261717d1701fc0b2eb0159ecf5c628384d4b29b4f6086a4e5e5"
+  },
+  "moved-copy": {
+   "expected": "accept",
+   "native_stdout": "7\n",
+   "sha256": "8b8de891f407355d09581bb33dff3f83f401063c1e6fa3a8b9e47d41563ea2da"
+  },
+  "parameter-control": {
+   "expected": "accept",
+   "native_stdout": "7\n",
+   "sha256": "95d5709235b3fb9530a13340ea75d1ed119c6f77947fc4069fbda54d102956c2"
+  },
+  "reference-control": {
+   "expected": "accept",
+   "native_stdout": "7\n",
+   "sha256": "1a91d84628cf4996da14f360f599697694f485ec0bd4a042a2d2b4e3550a9cc7"
+  },
+  "unpaid": {
+   "expected": "reject",
+   "native_stdout": "",
+   "sha256": "e1f71465cc14e0c158e5643c28cf94319feff54afe3060f3cf7a6d0067fa7718",
+   "pending_contract": "Pinned Rust rejects the unused generic const definition, but candidate25 accepts without a reached call. Preserve this required rejection and original bytes; separate reached control adds a real demand without replacing this input."
+  },
+  "lookalike": {
+   "expected": "reject",
+   "native_stdout": "",
+   "sha256": "ec0b0c7c8515897f49ceb219b4f2d79915b01a86f403083a58ca2e1d2ea985e7",
+   "pending_contract": "Pinned Rust rejects the unused generic const definition, but candidate25 accepts without a reached call. Preserve this required rejection and original bytes; separate reached control adds a real demand without replacing this input."
+  },
+  "unpaid-reached": {
+   "expected": "reject",
+   "native_stdout": "",
+   "sha256": "d88a73b54ada9913145d7edfcb46b8e4f86642f3f5347b7d95a8430d1a73da41"
+  },
+  "lookalike-reached": {
+   "expected": "reject",
+   "native_stdout": "",
+   "sha256": "cdf8ee7feae2afd473025d4ac5b92ed9fcd7c700eb987ac8d1a512e11038a7b0"
+  },
+  "scaling-8": {
+   "expected": "accept",
+   "native_stdout": "7\n",
+   "sha256": "24b13db198ffe5b78f1b846f8095688d45c901b6d0568640e4390b046fd2fb36"
+  },
+  "scaling-32": {
+   "expected": "accept",
+   "native_stdout": "7\n",
+   "sha256": "906bd5b7d169e8fab96d0dbd7a00579ccb5956f57111fdf1a3f180a209f8be28"
+  },
+  "scaling-128": {
+   "expected": "accept",
+   "native_stdout": "7\n",
+   "sha256": "aea7fc317d8f434c9a5f4b448022c26c27652eaa558f8affd09fc7e76e896ab7"
+  }
+ },
+ "files": {
+  "declared-copy.rs": "f2c12f8786569ca2f2f27f531c8d88e46fe71e420449fb444bf8d936a54af173",
+  "where-copy.rs": "c6295e1004377261717d1701fc0b2eb0159ecf5c628384d4b29b4f6086a4e5e5",
+  "moved-copy.rs": "8b8de891f407355d09581bb33dff3f83f401063c1e6fa3a8b9e47d41563ea2da",
+  "parameter-control.rs": "95d5709235b3fb9530a13340ea75d1ed119c6f77947fc4069fbda54d102956c2",
+  "reference-control.rs": "1a91d84628cf4996da14f360f599697694f485ec0bd4a042a2d2b4e3550a9cc7",
+  "unpaid.rs": "e1f71465cc14e0c158e5643c28cf94319feff54afe3060f3cf7a6d0067fa7718",
+  "lookalike.rs": "ec0b0c7c8515897f49ceb219b4f2d79915b01a86f403083a58ca2e1d2ea985e7",
+  "observe.c": "c098dd6e5b60b83c27a170c20e62870a308d80d0cad63df38fe037d56c0a1f62",
+  "unpaid-reached.rs": "d88a73b54ada9913145d7edfcb46b8e4f86642f3f5347b7d95a8430d1a73da41",
+  "lookalike-reached.rs": "cdf8ee7feae2afd473025d4ac5b92ed9fcd7c700eb987ac8d1a512e11038a7b0",
+  "scaling-8.rs": "24b13db198ffe5b78f1b846f8095688d45c901b6d0568640e4390b046fd2fb36",
+  "scaling-32.rs": "906bd5b7d169e8fab96d0dbd7a00579ccb5956f57111fdf1a3f180a209f8be28",
+  "scaling-128.rs": "aea7fc317d8f434c9a5f4b448022c26c27652eaa558f8affd09fc7e76e896ab7"
+ },
+ "foundation": "Known qualified NoCore basis copied unchanged from initializer-storage/foundation.rs; source language Copy/Destruct/drop_glue identities retain their actual declarations.",
+ "scaling_declaration": "Before execution: source root projected Copy parameters at widths8/32/128 accept with7 and bounded preparation/work. No projection names grant permission; actual complete Copy obligations are selected in their owner scope."
+}

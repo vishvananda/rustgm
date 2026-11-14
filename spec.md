@@ -6306,6 +6306,15 @@ or its direct field/index projections remain invalid; dereferencing independentl
 owned pointer storage selects a different referent. See the
 [initializer-storage checkpoint](docs/pa25-initializer-storage.md) for independent
 outcomes, native observers and retained mutable-static/metadata requirements.
+
+Bare associated-type cleanup roots enter the same scoped value-qualification
+path as associated fields. A completed NoDrop answer may filter the root's cleanup,
+including when actual Copy selection proves it in the defining environment.
+Destruct qualification keeps the separate root cleanup requirement, and own Drop
+requirements are never filtered by this value answer. Preserve exact full-type
+applications, retained obligations and the subsequent region/owner checks; no
+declaration name or symbolic shape supplies Copy or execution permission. See
+[root qualification](docs/pa31-root-copy-qualification.md).
 Coverage derives root validity from the selected input place and retains it
 through deferred binding checks. Explicit and automatic dereferences cannot
 reuse owned-value inhabitation to prune variants with potentially invalid fields.

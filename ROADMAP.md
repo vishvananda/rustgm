@@ -474,3 +474,9 @@ preserving ordinary expiry and mutable temporary restrictions. Two valid named
 mutable-static controls and nominal-pointer metadata artifacts remain required.
 Private full CI and a fresh original-core observation are pending. Whole
 assignments remain planned and the released const-machine component is unchanged.
+
+The [associated Copy root checkpoint](docs/pa31-root-copy-qualification.md) reuses
+scoped qualification for projected roots and filters only actual NoDrop answers.
+Thirteen outcomes, eighteen native programs and bounded work pass; three unused
+negative definitions remain required. Original-core retry/full CI are pending;
+whole assignments and original library artifact gates remain unchanged.

@@ -1,0 +1,40 @@
+{
+ "declaration": "Before first execution: ordinary and genuine source associated Copy bounds must admit const-owned parameter cleanup; explicit where bounds, parameter and shared-reference controls accept. Missing and unrelated lookalike bounds reject. Do not add bounds to accepting inputs or infer Copy/Destruct from names. Source cases exercise their actual defining body via a demanded constant. Whole assignments stay planned.",
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "cases": {
+  "declared-copy": {
+   "expected": "accept",
+   "native_stdout": "",
+   "sha256": "463e9b69752b344859b389cf5accbbe3a47eed88f7a875e8c11c80fc212ffcfd"
+  },
+  "where-copy": {
+   "expected": "accept",
+   "native_stdout": "",
+   "sha256": "f5a043935d5c4047b5179b8f0a1b1a3b7f4bfca399496ee048120ec28bcce9e4"
+  },
+  "unpaid": {
+   "expected": "reject",
+   "native_stdout": "",
+   "sha256": "7edcc9a1da995d0967020df7c7e238dec5365b4fc2cce8b511802786ef88a94d",
+   "pending_contract": "Pinned Rust rejects the unused generic const definition, but candidate25 accepts without a reached call. Preserve this required rejection and original bytes; separate reached control adds a real demand without replacing this input."
+  },
+  "unpaid-reached": {
+   "expected": "reject",
+   "native_stdout": "",
+   "sha256": "53fba2e781fb027735bd4231c645001f78f4ea7ce4ff8eca2bc90f6a643f32d5"
+  }
+ },
+ "files": {
+  "declared-copy.rs": "463e9b69752b344859b389cf5accbbe3a47eed88f7a875e8c11c80fc212ffcfd",
+  "where-copy.rs": "f5a043935d5c4047b5179b8f0a1b1a3b7f4bfca399496ee048120ec28bcce9e4",
+  "unpaid.rs": "7edcc9a1da995d0967020df7c7e238dec5365b4fc2cce8b511802786ef88a94d",
+  "unpaid-reached.rs": "53fba2e781fb027735bd4231c645001f78f4ea7ce4ff8eca2bc90f6a643f32d5"
+ }
+}

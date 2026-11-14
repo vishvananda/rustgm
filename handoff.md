@@ -5,21 +5,16 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
-Latest continuation: initializer-storage source73017a98d is published; full
-43585975943 finished:3078 release private/all other public targets pass; one
-relocation diagnostic assertion fails. Expected validity cause is independently
-confirmed E0492 and focused1794654357349535933 passes the correction. Full
-successor is due after publication. Clean25 release/3961/empty patch SHA
-dbd4b5ba742e321c8b02cc337ce3e24f42b89405394ce174a234e3695e4a8e4e builds in9m33s.
-Unchanged original diagnostic clears Unicode expired storage. All42310
-declarations/25858 bodies/35120 attempts still pass; sole completion error now
-ptr/metadata.rs119/file64:4584: active cleanup requires const Destruct in its
-actual defining environment. Postcheck722/375/six/all3961/fixed limits passes.
-All nine safe PA25 mains now execute natively too (16 new native programs total).
-Trace locates the new failure in original defining-body cleanup selection while
-completing an initializer. No metadata/LowIR library attempt is made while
-analysis is incomplete. Continue as one worker in B; no original artifact exists.
-Read the final clean25 frontier section before resuming.
+Latest continuation: full43588626797 PASSED EVERY STAGE on exactff072ae85,
+including3078 private tests in each profile. The associated Copy root checkpoint
+is locally qualified: six exact regular controls, eighteen native programs,
+bounded work and authenticated replay/harness/upstream pass; inventory3962.
+It admits bare projected roots into existing scoped qualification, then honors
+only NoDrop at the root mask. Destruct/root OwnDrop requirements stay checked.
+Publish, dispatch one full successor, freeze clean26 dev-fast and try unchanged
+core under the fixed120s/quotas. Last original release25 still has sole completion
+error ptr/metadata.rs119 (from_raw_parts const Destruct); all functions pass.
+No original library artifact exists. One worker in B. Read final root checkpoint.
 
 ## Workspace and authorization
 
@@ -1372,3 +1367,54 @@ projected evidence requires the actual completed region/owner/header/arguments,
 Body-only eligibility and no grant for Whole/OwnDrop. Keep all wrong-owner and
 proof-carrier guards. Prefer cached dev-fast diagnostic after coherent related
 edits, preserving the original120s/quotas. No new release per ordinary edit.
+
+## Associated Copy root checkpoint qualified; clean26 retry next
+
+Source variant_liveness.rs now admits bare Projection roots to the already
+budgeted qualification partition. query.rs root masks honor NoDrop only; a
+Destruct qualifier keeps root eligibility and own Drop is never filtered. The
+existing actual Copy query, retained obligations, exact source environment and
+region/owner checks remain in use. No new trait rule, scalar-name permission,
+body/frame field or backend change. All prior APIs/transport/callback requirements
+remain required; unused-definition const checking is still an explicit gap.
+
+PA25/31 projected-copy-cleanup packets freeze16 outcomes, all independently Rust
+confirmed. Qualified13: ten accepting / three reached rejections. Three original
+unused-definition negatives still accept without a demand in analysis-only view;
+keep expected reject/bytes/receipts, do not invert/remove. New reached controls
+were added separately and reject for actual destructor/const Destruct causes.
+Ordinary2 constants7, source5 real nonempty LowIR/native7, three source scaling
+cases and source parameter/reference controls all pass. No whole PA is closed.
+
+Final fast1794656862666427149: six exact frontend/traits controls pass, strict
+selected/CLI Clippy/fmt/audit,142.13s. Final native1794657051948254620: three exact
+groups/eighteen actual programs pass (five new, thirteen old cleanup/flag programs),
+45.33s. Replay authenticates3962 source hashes/all packet inputs and frontend
+harness78bfda31ede60b5117899f300292738627fd3dbb215554b4a60a78413aba07a3.
+Scaling8/32/128 inference/canonical/CTFE tuples424/2507/88,1048/2651/256,
+3544/3227/928. 315 harness/494 roots/13 binaries/44 layouts/one component and
+128 upstream+126 Reference checks pass. Raw obj/parallel/projected-cleanup/.
+No speed claim; old timing gates and pending adjacent-pair controls remain.
+
+The first projected-root seeding-only candidate did NOT fix the failure.
+Read-only trace against immutable wip-cli (dev-fast SHA
+85d5086f00d8d464b5b301f8f94c28db194b3d28ff29c50e0ea99313ac67a0a8) confirms
+qualification reaches type123 and actual Copy selection returns true for declared
+and where forms, yet cleanup still fails. The root mask stayed true. This evidence
+motivates the final NoDrop-only mask change. Its production hashes and source
+patch are retained with the pin; trace-qualification/ has successful debugger
+receipts (inferior semantic failure is expected). Temporary typed inspection
+source/output preserved as inspect-root-inputs.rs and inspect2 log; test removed.
+The earlier naming/format/lint failures are retained and corrected. No trace
+patch remains in production. Retire this intermediate pin after clean26 exists.
+
+Full43588626797 exactff072ae85 is terminal SUCCESS, all stages.3078 release
+private4.30s/debug40.77s. Both original fixture source bytes and semantic rejection
+stay unchanged in the union diagnostic correction. The new root compiler still
+needs its own full successor after coherent publication; do not duplicate435886.
+Prefer clean26 dev-fast under unchanged source cfg/defaults/120s/limits for the
+next ordinary original diagnostic; no release per edit. Timeout is a failure,
+not progress or permission to widen the deadline. If dev-fast cannot finish,
+freeze release only at a meaningful coherent checkpoint. Core artifact25 helper
+remains UNRUN because original analysis is incomplete. Complete original metadata,
+LowIR and native consumers still required. No local heavy job at this checkpoint.

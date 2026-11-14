@@ -147,7 +147,14 @@ impl Partition {
                             .ok_or("qualification full field type is missing")?,
                     )?
             } else {
-                true
+                // Whole-root Destruct qualification cannot discharge its own
+                // cleanup. Actual NoDrop (including scoped Copy) needs none.
+                queries.answer_raw(
+                    *queries
+                        .coordinates
+                        .get(index)
+                        .ok_or("qualification full root type is missing")?,
+                )? != Qualif::NoDrop
             };
             queries.masks.push(mask);
         }
@@ -181,7 +188,7 @@ impl Queries {
         self.questions.push(ty);
         Ok(())
     }
-    fn may_raw(&self, ty: TypeId) -> Result<bool, &'static str> {
+    fn answer_raw(&self, ty: TypeId) -> Result<Qualif, &'static str> {
         let index = self
             .index
             .get(&ty)
@@ -189,8 +196,11 @@ impl Queries {
             .ok_or("qualification has no exact type request")?;
         self.answers
             .get(index)
-            .map(|q| *q == Qualif::MayQualify)
+            .copied()
             .ok_or("qualification answer is missing")
+    }
+    fn may_raw(&self, ty: TypeId) -> Result<bool, &'static str> {
+        Ok(self.answer_raw(ty)? == Qualif::MayQualify)
     }
     pub(super) fn may(&self, ty: TypeId) -> Result<bool, &'static str> {
         if !matches!(self.stage, Stage::Applied) {

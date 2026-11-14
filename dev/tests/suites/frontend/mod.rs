@@ -271,5 +271,7 @@ mod extended_temporaries;
 mod interchange_images;
 #[path = "../../preparation_accounts.rs"]
 mod preparation_accounts;
+#[path = "../../qualification_roots.rs"]
+mod qualification_roots;
 #[path = "../../unchecked_shifts.rs"]
 mod unchecked_shifts;

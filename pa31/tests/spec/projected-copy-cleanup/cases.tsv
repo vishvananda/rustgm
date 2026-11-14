@@ -1,0 +1,12 @@
+pa31/tests/spec/projected-copy-cleanup/declared-copy.rs	0	-
+pa31/tests/spec/projected-copy-cleanup/where-copy.rs	0	-
+pa31/tests/spec/projected-copy-cleanup/moved-copy.rs	0	-
+pa31/tests/spec/projected-copy-cleanup/parameter-control.rs	0	-
+pa31/tests/spec/projected-copy-cleanup/reference-control.rs	0	-
+pa31/tests/spec/projected-copy-cleanup/unpaid.rs	1	-
+pa31/tests/spec/projected-copy-cleanup/lookalike.rs	1	-
+pa31/tests/spec/projected-copy-cleanup/unpaid-reached.rs	1	-
+pa31/tests/spec/projected-copy-cleanup/lookalike-reached.rs	1	-
+pa31/tests/spec/projected-copy-cleanup/scaling-8.rs	0	-
+pa31/tests/spec/projected-copy-cleanup/scaling-32.rs	0	-
+pa31/tests/spec/projected-copy-cleanup/scaling-128.rs	0	-
