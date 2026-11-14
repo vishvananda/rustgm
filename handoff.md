@@ -5,15 +5,15 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
-Latest continuation: clean release20 on published5e59877ca clears IterMut's
-loan error and stops at f128.rs799's compile-time180/PI division. The next source
-checkpoint now qualifies exact wide constant division:74 target-bit results,
-six rejecting guards, four native byte observers and linear8/32/128 scaling,
-with fullPA2 unchanged142/142. Read the final "Exact wide constant division
-checkpoint" section. Full43537278071 passed every stage on5e59877ca. Finalize
-and freeze the next clean compiler for unchanged original verification. No
-original library artifact exists; all runtime/backend and retained positive
-requirements stay open.
+Latest continuation: exact wide constant division is published as f5f3e2961.
+Clean candidate21-release is built and pinned, but its unchanged original-core
+observer has NEVER LAUNCHED: resource admission repeatedly refuses shared disk
+headroom. The last refusal is153.7GiB free versus154.4GiB required, before any
+compiler process. Do not mistake this for a compiler rejection or timeout.
+Full43546470095 on exact f5f3e2961 has fast success and is still running release
+and course qualification. Read the final "Release21 ready; disk admission blocks
+verification" section for the exact resume state. No original library artifact
+exists; all runtime/backend and retained positive requirements stay open.
 
 ## Workspace and authorization
 
@@ -738,3 +738,69 @@ make tidy1794622629268106114 completed. No build/test/measurement/debug process
 remains before publication and the release21 freeze. Reserve150GiB/2jobs/16GiB B
 caps remain; latest shared free space155GiB. Baselines19/20 stay pinned. No original
 artifact attempt or new original21 observation has run yet.
+
+## Release21 ready; disk admission blocks verification
+
+Published source is f5f3e29614ab1e7200a77556f684f0458984bebf. Its clean
+candidate21-release build completed in7m59s, freezing3956 Rust source hashes and
+an empty tracked patch. CLI SHA256:
+`cfc8b0ee7382359754cf71d1215cd4cd3812bb67a37318bd979f24e5ab40d17a`.
+Pin and original producer binding remain under obj/parallel/capture-match/
+candidate21-release/. Current executable pins are19,20,21; do not rebuild21.
+The handoff-only descendant does not change the compiler or six configuration
+pins. Pending postcheck/artifact helpers explicitly require a clean descendant
+whose sole changed tracked path is handoff.md, plus every original compiler hash.
+They record current checkout and original producer heads separately.
+
+One full successor43546470095 was dispatched after the previous full green
+43537278071 completed. Exact f5f3e2961: fast PASSES; full qualification is live
+in Release and course tests at this handoff. New private scaled-ratio execution
+and all later full gates remain pending until actual CI output proves otherwise.
+Do not dispatch or cancel a duplicate full run for this documentation descendant.
+
+No candidate21 original census, postcheck or library artifact command has run.
+The wrappers refused before launch five times; the immutable compiler remains
+untested against original core. Refusal logs are inline-region-arrays/
+observe-candidate21.log, observe-candidate21-retry.log and
+observe-candidate21-admission3.log through admission5.log. The last refusal is
+153.7GiB available versus154.4GiB required including unused output reservations.
+Reserve150GiB, B cap16GiB and all CPU/RAM/task limits are unchanged. No local
+build/test/observer job remains active. About1GiB additional shared headroom was
+requested; do not clean another checkout or lower the reserve/refused cap.
+
+Own-checkout cleanup first retired two idle incremental entries,147906560
+unshared bytes, preserving newest warm sessions. Historical expanded17/stdout
+was then losslessly compressed through the existing verified archive helper:
+245784112 original bytes ->53486219 archive bytes, restored SHA256
+f5b6fb7ad812f41193314f6211950c1329a64442d78b0bcb9d224402ea262659.
+Read it with gzip; restore instructions/index are in
+obj/cleanup/expanded17-archive-1794623986173222932.json. Current pins, original
+inputs, receipts and raw observations remain. This historical diagnostic is
+not a compiler input or library artifact. Further ordinary own-output cleanup
+does not supply external headroom when the same absolute cap reserves its freed
+space; no accounting or policy workaround was introduced.
+
+Resume in B after checking live processes, CI, free space and the load gate:
+
+```sh
+python3 scripts/resources.py run --wait-seconds 0 --max-output-gib 16 -- /usr/bin/python3 scripts/storage.py run --max-output-gib 16 --prune-under obj/parallel/capture-match/original-candidate21-diagnostic -- python3 obj/parallel/inline-region-arrays/observe-candidate21.py --diagnostic
+python3 scripts/resources.py run --wait-seconds 0 --max-output-gib 16 -- /usr/bin/python3 scripts/storage.py run --max-output-gib 16 --prune-under obj/parallel/capture-match/original-candidate21-diagnostic -- python3 obj/parallel/inline-region-arrays/postcheck-candidate21.py --diagnostic
+```
+
+Use the controlled variants without --diagnostic and their matching output root
+if admission load is <=14/20. Do not widen that gate or wait indefinitely for
+timing. The diagnostic still has the unchanged120s deadline,722 original sources,
+375 opened sources, six pins,14500624work/1GiB attempted/64MiB retained. Do not
+change tracked files while the observation/postcheck are live. Only if analysis
+completion clears, run the prepared core-artifact21.py under the same guards;
+it requires genuine original module-bodies-v13 metadata/LowIR before native
+consumer qualification. Otherwise reduce the actual new original blocker in its
+owning PA. Candidate20's f128 completion error remains the latest observed
+frontier until21 actually executes.
+
+Frozen19/20 loop and20/21 rounding comparisons remain pending above the unchanged
+timing gate. All earlier192 output-equal comparisons and exact scaling evidence
+stand, with no new speed claim. Whole PA25–44, the separate113-case const-machine
+scope, both borrowed-result native positives, ordinary manual Copy wrapper and
+all other retained requirements remain unchanged and incomplete. Live transient
+status is obj/parallel/wide-constant-division/live-state.json.
