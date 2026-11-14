@@ -175,6 +175,7 @@ pub(super) struct Engine {
     retained_expressions: usize,
     charged_templates: crate::support::hash::HashSet<DefId>,
     pending_fields: Option<crate::types::ItemId>,
+    layout_work: layout_kernel::Work,
 }
 impl Engine {
     pub(super) fn transfer(

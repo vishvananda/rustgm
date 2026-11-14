@@ -1,0 +1,10 @@
+pa31/tests/spec/layout-work-owner/noise-0.rs	0	-
+pa31/tests/spec/layout-work-owner/noise-8.rs	0	-
+pa31/tests/spec/layout-work-owner/noise-32.rs	0	-
+pa31/tests/spec/layout-work-owner/noise-128.rs	0	-
+pa31/tests/spec/layout-work-owner/unsized.rs	1	-
+pa31/tests/spec/layout-work-owner/nonconst-call.rs	1	-
+pa31/tests/spec/layout-work-owner/unpaid-projection.rs	1	-
+pa31/tests/spec/layout-work-owner/declaration-8.rs	0	-
+pa31/tests/spec/layout-work-owner/declaration-32.rs	0	-
+pa31/tests/spec/layout-work-owner/declaration-128.rs	0	-

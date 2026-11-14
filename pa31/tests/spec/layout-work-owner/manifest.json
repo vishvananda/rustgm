@@ -1,0 +1,89 @@
+{
+ "schema": 1,
+ "declaration": "Before first execution: all source programs retain the actual source-div size-only prefix and real SizedTypeProperties/intrinsic/wrapper declarations. Seven size observations must agree with Rust/C. Three type/const/projection opponents reject. Large unrelated canonical telemetry is an observation, not layout spending or caller permission; bounded layout work and failed-attempt guards remain required. No quota increases or counter resets are permitted.",
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "prefix": {
+  "path": "pa31/tests/spec/source-div/size-only.rs",
+  "source_sha256": "9ab1ab1f1f048d94d00920be73a176eacf7b4fc7ca6e425ee2a8c88e458f86c0",
+  "prefix_sha256": "18eb634ad6047bb4730b0c2115a5595a2475cb8fc234969b29e923dcaf49bb2b",
+  "attribution": "unchanged prefix through the original size_of wrapper; see source-div/source-provenance.json and original/ cutouts at pinned88d9e12ae178fab0fb5cc050a94da85685d449ea"
+ },
+ "observer_sha256": "b7bbc57ff683b08b7896af6a7223a7219e25e74c7b3193fa48cc31610eb701c2",
+ "cases": {
+  "noise-0": {
+   "expected": "accept",
+   "noise": 0,
+   "sha256": "16ac3c2f647735a47bf819a7ac45fb54fae250decd3b695f29641dbb6745d53b",
+   "native_stdout": "2 4 6 8 0 8 8\n",
+   "telemetry_test": "maintainer API adds8047612 to canonical_steps after valid analysis, before native-root lowering; resulting program must equal the unmodified-telemetry program and retain the increased observations"
+  },
+  "noise-8": {
+   "expected": "accept",
+   "noise": 8,
+   "sha256": "07955c2c898b478e9c7100201c318d4ee7cd3f9cc76c1b09c2ce4bd2166a7f1b",
+   "native_stdout": "2 4 6 8 0 8 8\n",
+   "telemetry_test": "maintainer API adds8047612 to canonical_steps after valid analysis, before native-root lowering; resulting program must equal the unmodified-telemetry program and retain the increased observations"
+  },
+  "noise-32": {
+   "expected": "accept",
+   "noise": 32,
+   "sha256": "26d416fd91e1c543cc19960454c5de0a3f12db0d034e6e7e6813c98242705e73",
+   "native_stdout": "2 4 6 8 0 8 8\n",
+   "telemetry_test": "maintainer API adds8047612 to canonical_steps after valid analysis, before native-root lowering; resulting program must equal the unmodified-telemetry program and retain the increased observations"
+  },
+  "noise-128": {
+   "expected": "accept",
+   "noise": 128,
+   "sha256": "11db7ed9aca57e5ba21dd74866297895e8bf4270cacd7185afb0ea2e7611ee42",
+   "native_stdout": "2 4 6 8 0 8 8\n",
+   "telemetry_test": "maintainer API adds8047612 to canonical_steps after valid analysis, before native-root lowering; resulting program must equal the unmodified-telemetry program and retain the increased observations"
+  },
+  "unsized": {
+   "expected": "reject",
+   "sha256": "5c46a7c5ce6c3ea0ed639643d577b5e6e35440308dc5cb0aa4a746c6ff4cdc11"
+  },
+  "nonconst-call": {
+   "expected": "reject",
+   "sha256": "535b4b7212f499430d52e4d75049d180a93726726a25452c0b2655193fef0233"
+  },
+  "unpaid-projection": {
+   "expected": "reject",
+   "sha256": "bc1f30ff134de57913b42ec98804c07dd5368dc9593b1d50a81d6a0cf6b00ab9"
+  },
+  "declaration-8": {
+   "expected": "accept",
+   "noise": 8,
+   "sha256": "5dee044b8f265955970298f53576bad7f6917ef24fb5db97d74372089bd77d8d",
+   "native_stdout": "8\n",
+   "observer": "observe-declaration.c",
+   "declaration": "Frozen before execution: unchanged original size-only source plus private identity functions. PtrWords array length forces a genuine source size_of layout query during declaration analysis; unrelated source size is the scaling dimension."
+  },
+  "declaration-32": {
+   "expected": "accept",
+   "noise": 32,
+   "sha256": "02b84285ea678fd98519ded202999363d50064bb7c81509c3aff6999867e613c",
+   "native_stdout": "8\n",
+   "observer": "observe-declaration.c",
+   "declaration": "Frozen before execution: unchanged original size-only source plus private identity functions. PtrWords array length forces a genuine source size_of layout query during declaration analysis; unrelated source size is the scaling dimension."
+  },
+  "declaration-128": {
+   "expected": "accept",
+   "noise": 128,
+   "sha256": "ee46cef65347dc28ac7c455ef97b1d09aa7b3b74035d05bfe208a23f09ccdbfa",
+   "native_stdout": "8\n",
+   "observer": "observe-declaration.c",
+   "declaration": "Frozen before execution: unchanged original size-only source plus private identity functions. PtrWords array length forces a genuine source size_of layout query during declaration analysis; unrelated source size is the scaling dimension."
+  }
+ },
+ "timing_observer": {
+  "path": "observe-declaration.c",
+  "sha256": "559d18f3a3b62a67d02fbf7d48cf9198c3ec155c4ba2257fa510ee08dfe6e46d"
+ }
+}

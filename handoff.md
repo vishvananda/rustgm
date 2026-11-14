@@ -5,16 +5,14 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
-Latest continuation: exact products are published40d29b452; full43561807969
-PASSES EVERY STAGE, including3076 private tests in release/debug. Clean release22
-clears midpoint's MAX*0.5 and reaches a layout-budget ownership bug in completion:
-the1M layout guard compares8047613 cumulative whole-crate canonical observations.
-The actual guard was captured by an instruction breakpoint. A persistent1M
-source-layout work owner is now UNQUALIFIED WIP in B, with independent PA31
-sources and new public/private regression coverage. Its baseline test has NOT
-RUN: shared free space fell back below the150GiB reserve. Read the final
-"Release22 observed; layout work ownership WIP" section before doing anything.
-No original library artifact exists; all earlier retained requirements remain.
+Latest continuation: the layout-budget repair is locally QUALIFIED. Baseline
+1794638741351903699 reproduces the actual old failure; focused fixed
+1794639072978956146 and native1794639354437875740 pass. Source inventory3957.
+Shared headroom is restored, with150GiB reserve and16GiB B cap unchanged.
+Full43561807969 passes every stage on preceding product source40d29b452.
+Release22 still supplies the latest original-core frontier (completion layout
+guard); no new original observation or library artifact yet. Read the final
+"Layout work qualified; successor core attempt next" section before continuing.
 
 ## Workspace and authorization
 
@@ -937,7 +935,7 @@ are unchanged. No dense AST/body/value field, wire, backend or storage.py change
 
 UNCOMMITTED WIP files are execution.rs, execution/layout_kernel.rs, its
 normalized_fields.rs child, dev/tests/invariants/queried_storage.rs,
-dev/tests/layout_accounts.rs and frontend/mod.rs, plus
+dev/tests/preparation_accounts.rs and frontend/mod.rs, plus
 pa31/tests/spec/layout-work-owner/. The latter seven full programs preserve the
 source-div size-only prefix. All independent Rust outcomes match: four source/C
 programs output2 4 6 8 0 8 8; unsized/nonconst/unpaid-projection guards reject.
@@ -965,7 +963,7 @@ the script has NOT run yet. Once admission is possible:
 1. Run that baseline helper and inspect actual test output. Refusal is not
    reproduction; a passing baseline means the new test must reach a later real
    layout query, not that the original failure should be ignored.
-2. Run focused fixed layout_accounts tests and relevant old source-layout,
+2. Run focused fixed preparation_accounts tests and relevant old source-layout,
    projection/constant controls under fastcheck, then the two ignored native
    observers with --prune-under obj/parallel/layout-work-native. Preserve current
    work limits, guards and independent declared outcomes. Do not cold-build the
@@ -986,3 +984,56 @@ callback exports remain required positives. All288 historical output-equality
 observations stand;21/22 timings are prepared but pending above the unchanged
 gate. Every earlier valid positive, whole-PA requirement and original artifact
 gate is retained. Detailed transient state: layout-field-budget/plan.json.
+
+## Layout work qualified; successor core attempt next
+
+This supersedes the preceding WIP/admission notes. User restored shared headroom;
+free160GiB observed, with unchanged150GiB reserve/16GiB cap. Work continues as
+one worker in B, main Git-only. No agents, new trees or backend/storage.py changes.
+
+Baseline1794638741351903699 reaches the accepting API regression and FAILS the
+exact old source layout field-preparation guard. Ordinary3959->7683 succeeds;
+high start8051571->8054410 fails. baseline-switch-latest.json verifies exact WIP
+restoration. The first baseline-fast disk refusal and1794638580232389876 filename
+prefix-audit failure did not reach the test. Root was renamed preparation_accounts
+without changing fixture outcomes. Do not repeat the proven baseline.
+
+Fixed1794639072978956146 passes five exact tests in154.65s: high observations,
+three source guards, original Field defaults/projections, direct/source wide
+constant calls and pointer-add contracts. Native1794639354437875740 passes two
+tests/three actual programs in39.70s: both source size observers and original
+Field output `field 4 23 29 37 41 47 31 1`. Strict selected/CLI Clippy, fullfmt,
+architecture and metadata pass. Authenticated qualified-replay verifies3957
+compiler/test hashes before/after and every original fixture. Preparation work
+is3724+36n at0/8/32/128; high-final minus ordinary-final is exactly8047612.
+Persistent provider Work keeps1M across waits/warm/failures, mirrors every delta
+into canonical observations and changes no semantic permission. Updated private
+spent-work tests and new warm-owner regression are due in CI; do not cold-build
+that known slow harness. See docs/pa31-layout-work-owner.md for complete scope.
+
+Independent Rust/C accepts four seven-size programs and rejects three guards.
+Three later declaration controls preserve complete original size-only including
+PtrWords, append8/32/128 identity functions and independently output8. Manifest
+outcomes precede execution. All four planned CLI commands (three source types
+plus ordinary LowIR) pass immutable22release and current dev-fast with complete
+stdout/stderr equality, a correctness comparison across profiles, not timing.
+The explicit current CLI build finished3m46s; it used wrapper-default incremental0
+and unnecessarily rebuilt production code. For cached dev-fast builds use
+pin.py or explicit CARGO_INCREMENTAL=1,CARGO_TARGET_DIR=obj/rust,jobs2.
+
+Final consistency-final.log passes315 harness,491 roots/13 binaries,44 stages,
+one component,128 upstream+126 Reference checks with the expanded manifest.
+The previous full43561807969 is terminal success (all3076 private release/debug).
+Push smoke43567667793 on handoff1649 also passes. No full successor yet.
+
+Next: publish this coherent checkpoint and dispatch one fresh full manual CI;
+update pin.py source inventory3957, freeze clean23release at this meaningful
+algorithm checkpoint, and run unchanged original analysis/postcheck. Keep120s,
+722/375/six,14500624work/1GiB attempted/64MiB retained. Only after analysis clears
+run genuine module-bodies-v13 metadata/LowIR, then original native consumers.
+Do not substitute a census or raise deadlines. Same-profile22/23 layout timing
+and21/22 product timing remain due under14/20 gate. All288 earlier output-equal
+observations stand with no speed claim. Only21/22 executable pins are currently
+available;19/20 were retired, their original callback-export positives remain.
+No original artifact exists, whole PA25–44 remain planned, the separate113-case
+component and every earlier retained valid positive remain required.

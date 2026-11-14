@@ -5,6 +5,31 @@ use crate::{
     support::bindings::{LayoutIntrinsic, SourceIntrinsic},
     types::instance::Instance,
 };
+
+/// One source provider owns this budget across requests, waits and failures.
+/// Whole-crate canonical observations include unrelated inference and selection.
+#[derive(Default)]
+pub(super) struct Work {
+    steps: usize,
+}
+impl Work {
+    fn charge(
+        &mut self,
+        facts: &mut Declarations,
+        steps: usize,
+        message: &'static str,
+    ) -> Result<(), String> {
+        self.steps = self.steps.saturating_add(steps);
+        facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(steps);
+        if self.steps > crate::support::crates::MAX_COMPONENTS {
+            return Err(message.into());
+        }
+        Ok(())
+    }
+    fn remaining(&self) -> usize {
+        crate::support::crates::MAX_COMPONENTS.saturating_sub(self.steps)
+    }
+}
 impl Engine {
     fn source_wrapping_layout(
         &mut self,
@@ -62,7 +87,8 @@ impl Engine {
         facts: &mut Declarations,
         element: crate::types::TypeId,
     ) -> Result<bool, Error> {
-        let pending = prepare_layout(facts, element).map_err(|e| Error::at(FileId(0), 0, e))?;
+        let pending = prepare_layout(facts, element, &mut self.layout_work)
+            .map_err(|e| Error::at(FileId(0), 0, e))?;
         self.pending_fields = pending;
         Ok(pending.is_none())
     }
@@ -179,60 +205,70 @@ impl Engine {
 fn prepare_layout(
     facts: &mut Declarations,
     element: crate::types::TypeId,
+    budget: &mut Work,
 ) -> Result<Option<crate::types::ItemId>, String> {
-    let limit = crate::support::crates::MAX_COMPONENTS;
-    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
-    if facts.body_work.canonical_steps > limit {
-        return Err("source layout field preparation work budget exceeded".into());
-    }
+    budget.charge(
+        facts,
+        1,
+        "source layout field preparation work budget exceeded",
+    )?;
     let before = facts.aggregates.instantiation_steps();
     let fields = if facts.aggregates.has_projected_templates() {
-        normalized_fields::prepare(facts, element)
+        normalized_fields::prepare(facts, element, budget)
     } else {
         facts
             .aggregates
             .prepare_storage_fields_pending(&mut facts.types, element)
             .map_err(String::from)
     };
-    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(
-        facts
-            .aggregates
-            .instantiation_steps()
-            .saturating_sub(before),
+    let instantiated = facts
+        .aggregates
+        .instantiation_steps()
+        .saturating_sub(before);
+    let charged = budget.charge(
+        facts,
+        instantiated,
+        "source layout field preparation work budget exceeded",
     );
-    if let Some(item) = fields? {
+    let pending = fields?;
+    charged?;
+    if let Some(item) = pending {
         return Ok(Some(item));
     }
-    facts.body_work.canonical_steps = facts
-        .body_work
-        .canonical_steps
-        .saturating_add(facts.layouts.pending_state_work(&facts.types, element));
-    if facts.body_work.canonical_steps > limit {
-        return Err("source layout state preparation work budget exceeded".into());
-    }
-    let limit = limit.saturating_sub(facts.body_work.canonical_steps);
+    let pending = facts.layouts.pending_state_work(&facts.types, element);
+    budget.charge(
+        facts,
+        pending,
+        "source layout state preparation work budget exceeded",
+    )?;
     let mut work = 0;
-    let readiness =
-        facts
-            .layouts
-            .storage_readiness(&facts.types, &facts.aggregates, element, &mut work, limit);
-    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work);
+    let readiness = facts.layouts.storage_readiness(
+        &facts.types,
+        &facts.aggregates,
+        element,
+        &mut work,
+        budget.remaining(),
+    );
+    let charged = budget.charge(facts, work, "constant storage layout work budget exceeded");
     readiness?;
+    charged?;
     if facts.layouts.get(element).is_some() {
         return Ok(None);
     }
     let before = facts.layouts.steps;
-    let result = facts.layouts.demand_bounded(
-        &facts.types,
-        &facts.aggregates,
-        element,
-        limit.saturating_sub(work),
+    let result =
+        facts
+            .layouts
+            .demand_bounded(&facts.types, &facts.aggregates, element, budget.remaining());
+    let steps = facts.layouts.steps.saturating_sub(before);
+    let charged = budget.charge(
+        facts,
+        steps,
+        "source layout state preparation work budget exceeded",
     );
-    facts.body_work.canonical_steps = facts
-        .body_work
-        .canonical_steps
-        .saturating_add(facts.layouts.steps.saturating_sub(before));
-    result.map(|_| None).map_err(|error| error.message.into())
+    result.map_err(|error| String::from(error.message))?;
+    charged?;
+    Ok(None)
 }
 
 #[cfg(test)]

@@ -453,3 +453,10 @@ actual trait identities, value-specific variants and name-token API allowances.
 It reduces candidate13's Alignment failure; a successor original-core observation
 is still due. Ordinary controls and empty-list positives remain explicit
 requirements. No original library artifact or whole-PA release is implied.
+
+The [persistent layout work checkpoint](docs/pa31-layout-work-owner.md) fixes
+completion's use of whole-crate observations as layout spending. Independent
+PA31 sources, high-observation prepared/native programs and original Field
+controls pass with unchanged quotas and source permissions. Private execution
+and a fresh unchanged original-core observation remain due; no whole assignment
+or original library artifact is complete.

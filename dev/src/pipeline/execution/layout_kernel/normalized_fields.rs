@@ -12,7 +12,11 @@ use crate::{
     },
 };
 
-pub(super) fn prepare(facts: &mut Declarations, element: TypeId) -> Result<Option<ItemId>, String> {
+pub(super) fn prepare(
+    facts: &mut Declarations,
+    element: TypeId,
+    budget: &mut super::Work,
+) -> Result<Option<ItemId>, String> {
     let mut charged = facts.stored_field_work().steps;
     let mut preparation = Preparation::default();
     let mut query = Query::new(element);
@@ -24,6 +28,7 @@ pub(super) fn prepare(facts: &mut Declarations, element: TypeId) -> Result<Optio
         &mut query,
         &mut session,
         &mut charged,
+        budget,
     );
     drop(session);
     let pending = result?;
@@ -43,10 +48,11 @@ fn advance(
     query: &mut Query,
     session: &mut projections::Concrete<'_>,
     charged: &mut usize,
+    budget: &mut super::Work,
 ) -> Result<Option<ItemId>, String> {
     loop {
         let progress = preparation.advance(facts, query);
-        charge(facts, preparation, session, charged)?;
+        charge(facts, preparation, session, charged, budget)?;
         match progress? {
             Progress::Complete => return Ok(None),
             Progress::Nominal(item) => return Ok(Some(item)),
@@ -54,7 +60,7 @@ fn advance(
                 let result = session.normalize(facts, raw).and_then(|(normal, steps)| {
                     preparation.normalized(facts, query, normal, steps)
                 });
-                charge(facts, preparation, session, charged)?;
+                charge(facts, preparation, session, charged, budget)?;
                 result?;
             }
         }
@@ -67,6 +73,7 @@ fn charge(
     preparation: &Preparation,
     session: &projections::Concrete<'_>,
     charged: &mut usize,
+    budget: &mut super::Work,
 ) -> Result<(), String> {
     let work = facts
         .stored_field_work()
@@ -75,9 +82,9 @@ fn charge(
         .saturating_add(session.nested_work());
     let delta = work.saturating_sub(*charged);
     *charged = work;
-    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(delta);
-    if facts.body_work.canonical_steps > crate::support::crates::MAX_COMPONENTS {
-        return Err("source layout storage normalization work budget exceeded".into());
-    }
-    Ok(())
+    budget.charge(
+        facts,
+        delta,
+        "source layout storage normalization work budget exceeded",
+    )
 }

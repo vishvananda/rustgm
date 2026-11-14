@@ -172,7 +172,17 @@ fn structural_readiness_preserves_pending_fields_closedness_and_failed_work() ->
     let mut facts = crate::sema::declarations::analyze(&report)?;
     let layouts_before = facts.layouts.len();
     facts.body_work.canonical_steps = crate::support::crates::MAX_COMPONENTS;
-    assert!(prepare_layout(&mut facts, TypeId::primitive(crate::types::Primitive::U16)).is_err());
+    let mut budget = Work {
+        steps: crate::support::crates::MAX_COMPONENTS,
+    };
+    assert!(
+        prepare_layout(
+            &mut facts,
+            TypeId::primitive(crate::types::Primitive::U16),
+            &mut budget
+        )
+        .is_err()
+    );
     assert_eq!(
         facts.body_work.canonical_steps,
         crate::support::crates::MAX_COMPONENTS + 1
@@ -276,7 +286,7 @@ fn closed_projected_alignment_prepares_the_actual_stored_field() -> Result {
         }
         let recipes = facts.stored_field_work().recipes;
         let work = facts.body_work.canonical_steps;
-        assert!(prepare_layout(&mut facts, ty)?.is_none());
+        assert!(prepare_layout(&mut facts, ty, &mut Work::default())?.is_none());
         assert!(facts.body_work.canonical_steps > work);
         assert_eq!(facts.stored_field_work().recipes, recipes);
         assert_eq!(facts.layouts.get(ty).ok_or("missing warm layout")?.align, 8);
@@ -324,8 +334,11 @@ fn exhausted_layout_budget_stops_before_projected_fields_are_materialized() -> R
     assert!(facts.aggregates.shape(&facts.types, ty).is_err());
     assert!(facts.layouts.get(ty).is_none());
     facts.body_work.canonical_steps = crate::support::crates::MAX_COMPONENTS - 1;
+    let mut budget = Work {
+        steps: crate::support::crates::MAX_COMPONENTS - 1,
+    };
     assert_eq!(
-        prepare_layout(&mut facts, ty)
+        prepare_layout(&mut facts, ty, &mut budget)
             .err()
             .ok_or("spent layout budget accepted")?,
         "source layout storage normalization work budget exceeded",
@@ -334,10 +347,37 @@ fn exhausted_layout_budget_stops_before_projected_fields_are_materialized() -> R
     assert!(facts.layouts.get(ty).is_none());
     assert!(facts.body_work.canonical_steps > crate::support::crates::MAX_COMPONENTS);
     assert_eq!(
-        prepare_layout(&mut facts, ty)
+        prepare_layout(&mut facts, ty, &mut budget)
             .err()
             .ok_or("spent layout budget recovered")?,
         "source layout field preparation work budget exceeded",
     );
+    Ok(())
+}
+
+#[test]
+fn warm_layout_queries_keep_one_budget_and_retain_unrelated_observations() -> Result {
+    let report = crate::test_source::source_provider(&source("")?, "layout_observations")?;
+    let mut facts = crate::sema::declarations::analyze(&report)?;
+    let ty = TypeId::primitive(crate::types::Primitive::U16);
+    let mut budget = Work::default();
+    assert!(prepare_layout(&mut facts, ty, &mut budget)?.is_none());
+    let cold = budget.steps;
+    facts.body_work.canonical_steps += 8_047_612;
+    let observed = facts.body_work.canonical_steps;
+    assert!(prepare_layout(&mut facts, ty, &mut budget)?.is_none());
+    assert!(budget.steps > cold);
+    assert!(facts.body_work.canonical_steps > observed);
+    assert_eq!(facts.layouts.get(ty).ok_or("warm layout missing")?.size, 2);
+    budget.steps = crate::support::crates::MAX_COMPONENTS;
+    let observed = facts.body_work.canonical_steps;
+    assert_eq!(
+        prepare_layout(&mut facts, ty, &mut budget)
+            .err()
+            .ok_or("spent provider budget accepted a warm layout")?,
+        "source layout field preparation work budget exceeded",
+    );
+    assert_eq!(budget.steps, crate::support::crates::MAX_COMPONENTS + 1);
+    assert_eq!(facts.body_work.canonical_steps, observed + 1);
     Ok(())
 }

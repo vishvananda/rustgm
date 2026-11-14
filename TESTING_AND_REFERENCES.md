@@ -1146,3 +1146,11 @@ to required acceptance), actual native matching and8/32/128 trait-query controls
 `matchability.rs` is registered once in frontend. Source API allowances distinguish
 literal and captured attribute names. Ordinary/empty-list requirements remain
 serialized; no active reference is generated or changed.
+
+The [PA31 layout work packet](docs/pa31-layout-work-owner.md) declares seven
+source outcomes plus three declaration-time scaling controls before execution.
+`preparation_accounts.rs` is registered once in frontend. Public regression
+compares exact LowIR under ordinary and increased observations; ignored native
+companions execute the actual source sizes. Independent Rust/C, baseline
+reproduction, source/hash replay and original Field/pointer controls qualify the
+checkpoint; persistent/exhausted-work private execution remains due in full CI.

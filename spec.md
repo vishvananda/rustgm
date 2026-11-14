@@ -8206,3 +8206,13 @@ Consuming a source derive list retains its actual completed API policy and the
 name token's feature context; a literal wrapper cannot authorize a captured
 attribute path. The [structural-pattern checkpoint](docs/pa31-structural-patterns.md)
 records finite source/native controls and the remaining transport/ordinary gaps.
+
+Source layout preparation owns a persistent execution-provider work budget,
+shared across field normalization, instantiation, pending/warm queries, storage
+readiness and ABI demand. Charge all attempted work, including failures, against
+the existing cap before publishing results. Mirror actual deltas to cumulative
+BodyWork observations; unrelated inference/selection observations do not spend
+that layout budget. Neither warm reuse nor a pending dependency resets it.
+Physical answers supply no caller, projection, lifetime or const permission.
+The [source layout work checkpoint](docs/pa31-layout-work-owner.md) retains the
+reproduction, independent source/native outcomes and spent-work opponents.

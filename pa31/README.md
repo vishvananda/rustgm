@@ -2,6 +2,12 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
+The [layout work checkpoint](../docs/pa31-layout-work-owner.md) retains real
+source size declarations and fixes the execution provider's budget ownership.
+Independent source/native results, large unrelated observations and original
+Field controls pass without changing quotas or permissions. Whole PA31 and
+original-library artifact qualification remain incomplete.
+
 The [wide constant product checkpoint](../docs/pa25-wide-constant-products.md)
 retains the original Mul declaration/macro and midpoint HI/MAX expression.
 Ordinary CTFE reductions belong to PA25; source authority belongs here. Its98

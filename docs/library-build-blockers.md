@@ -1,13 +1,13 @@
-Current original evidence is clean candidate21 (f5f3e2961), CLIcfc8b0ee:
+Current original evidence is clean candidate22 (40d29b452), CLI8044e267:
 42310 declarations/25858 bodies/35120 attempts with zero failed/blocked functions.
-The iterator loan and180/PI division failures clear. Completion now stops in
-f128.rs981 at midpoint's `const HI = f128::MAX * 0.5`. The unchanged120s diagnostic verifies722 hashes,
-375 opens, six pins and fixed limits; completion0 and no original artifact.
-The [wide constant product repair](pa25-wide-constant-products.md) passes98 new
-bit/class outcomes, six opponents and all eight old/new native byte observers,
-with exact scaling; clean successor/original verification is next.
-Full43546470095 passes every stage on the preceding division source. Historical
-observations below are superseded where this differs.
+The wide product failure clears; completion now reports the source layout field
+work guard. Exact guard attribution shows8047613 whole-crate observations being
+compared against1M. The [persistent layout work repair](pa31-layout-work-owner.md)
+passes baseline reproduction, focused/scaling/native controls and strict checks.
+New private execution and a fresh unchanged original-core attempt remain due.
+Full43561807969 passes every stage on the preceding product source. No original
+artifact or whole PA25–44 release exists. Root continues as one worker in B;
+this overrides historical worker queues below.
 
 # Library build blocker tracker
 
