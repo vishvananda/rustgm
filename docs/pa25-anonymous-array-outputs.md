@@ -1,6 +1,6 @@
 # Inferred anonymous array outputs
 
-The unchanged release18 original-core diagnostic still fails the first
+The release18 baseline original-core diagnostic fails the first
 Iter::next_chunk anonymous array initializer at NodeKey227:9558. All42310
 declarations/25858 bodies and35120 item attempts retain zero failed functions.
 Postcheck verifies722 original source hashes,375 opens, six pins, the clean
@@ -38,9 +38,20 @@ All19 exact packet/scaling inputs independently match Rust under panic=abort.
 Fresh128 upstream and126 Reference checks pass; no backend contract changes.
 
 fast6 and fast8 failed only formatting in the new private/scaling tests, before
-compilation; their exact corrections are applied and raw gates remain. The new
-private unit awaits full CI, preserving the known local private-compilation budget.
+compilation; their exact corrections are applied and raw gates remain. Full43530351089 later passed the new private graph unit among3074 private
+tests, preserving the known local private-compilation budget.
 Earlier whole-CI43517843369 passed
 every stage on d1e15f2ad. The cache successor43523008382 runs exact5e9216115 and
 does not qualify this newer graph change. Whole assignments and the two existing
 borrowed-result native consumers remain open.
+
+
+Clean release19 on65d222d27 clears this exact anonymous lifetime failure. Its
+load-admitted unchanged120s original observer retains42310/25858/35120 and zero
+failed/blocked functions, then reaches an IterMut live-loan conflict at227:111229.
+Completion remains0; no original artifact exists. Postcheck verifies722 hashes,
+375 opens, six pins, current/producer code and unchanged limits. All192 adjacent
+immutable output comparisons15/16/17/18/19 pass; noisy calibration supports no
+speed claim. Full43523008382 passed every stage on5e9216115. Full43530351089
+on65d222d27 passed private/regular tests and stopped only at the reviewed PA24
+lifetime-error location difference. See the [loop result continuation](pa16-loop-result-identities.md).

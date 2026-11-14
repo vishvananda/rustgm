@@ -1,9 +1,13 @@
-Current original evidence is candidate13: all42310 declarations and25858 bodies,
-with no failed/blocked functions. Actual26791–26796 clear; one crate error stops
-Alignment's constant pattern at alignment.rs29. Completion remains0 and no core
-artifact exists. B's [source structural-pattern repair](pa31-structural-patterns.md)
-passes its19 prepared/native reductions; a clean successor observer is pending.
-The historical candidate12 detail below is superseded by this paragraph.
+Current original evidence is clean candidate19 (65d222d27): all42310 declarations,
+25858 bodies and35120 item attempts, with no failed/blocked functions. Earlier
+constant-pattern, initializer-scope and anonymous-array lifetime errors clear.
+Completion stops at IterMut::next_chunk227:111229 with a live reference loan
+conflict. The load-admitted unchanged120s observation verifies722 source hashes,
+375 opens, six pins and fixed limits. Completion remains0; no core artifact exists.
+The [loop result repair](pa16-loop-result-identities.md) passes25 complete outcomes,
+scaling, existing controls and four actual native comparisons. A new clean pin
+and unchanged original verification are next. Historical observations below are
+superseded where this paragraph differs.
 
 # Library build blocker tracker
 

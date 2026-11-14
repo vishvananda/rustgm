@@ -261,3 +261,6 @@ mod census_mode;
 
 #[path = "../../knowledge_sources.rs"]
 mod knowledge_sources;
+
+#[path = "../../loop_results.rs"]
+mod loop_results;

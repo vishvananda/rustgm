@@ -1,18 +1,20 @@
-# RustGM handoff — 2026-11-13
+# RustGM handoff — 2026-11-14
 
 Continue the active goal: compile pinned original core, then alloc/std, completing
 assignment components as their complete contracts qualify. Work as **one worker**.
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
-Latest continuation: main/B/origin main are5e9216115 before current WIP. Clean
-release18 still fails the first next_chunk anonymous proof. New unannotated local
-array reductions isolate a conditional-verifier collection/reproof ordering
-failure; both annotated controls accept. The graph repair now passes16 complete
-outcomes, exact223n/19n/n output-port scaling and native controls. Read the final
-"Release18 and inferred local arrays" section first. Freeze the next compiler
-for actual original verification. The two accepting borrowed-result native
-consumers remain explicitly required.
+Latest continuation: clean release19 on65d222d27 clears the anonymous-array
+lifetime error and reaches IterMut::next_chunk's loan conflict at227:111229.
+The next source checkpoint now repairs fresh temporary identities in loops and
+raw loan roots, qualifying25 complete PA16/27/31 outcomes, concrete n/22n/843n
+loan/point/work scaling and four actual native comparisons. FullPA16 is340/340;
+only one independently reviewed PA24 stderr location changes among28035 old
+sidecars. Read the final "Qualified loop replacement repair" section first.
+Freeze the next clean compiler and observe unchanged original core. There is
+still no original library artifact. The ordinary unbounded manual Copy-wrapper
+positive and both earlier borrowed-result native consumers remain required.
 
 ## Workspace and authorization
 
@@ -468,3 +470,155 @@ compiler freeze. Actual controller remains2slots/150GiB/16GiB cap.
 Scripts for observe/postcheck/measure-candidate18 and core-artifact18.py are ready.
 The latter must wait for actual original completion. All paired timings remain
 pending under14/20 load; keep unchanged original120s/profile/quotas and one B job.
+
+## Release19 and the iterator loan frontier
+
+Published65d222d279c5b294e8f2a4e7451d7ef21409a2d7 changes only scalar-output
+condition collection/reproof plus its declared reductions, tests and docs.
+The existing full solve still proves every private obligation after exactly the
+actual scalar interface conditions are assumed. Main/B/origin match this head.
+Full43523008382 PASSED EVERY STAGE on exact5e9216115. One successor43530351089
+was dispatched only after that completion and runs exact65d222d27; fast, lint,
+architecture and harness pass, release/course is running as of this checkpoint.
+The new private region-graph unit is included there, not locally rebuilt.
+
+Clean candidate19-release freezes3950 Rust source hashes and an empty patch.
+CLI SHA2563abf902e7023be7a6541a79d7ffc9c563281130492473bac190caf5afab6e6c5;
+release build7m13s. Unchanged120s original observation was admitted below the
+14/20 load gate and checks42310 declarations/25858 bodies/35120 item attempts,
+zero failed/blocked functions. The previous anonymous lifetime site IS ABSENT.
+The sole completion error is now227:111229, "access conflicts with a live
+reference loan"; completion0. Postcheck verifies722 sources/375 opens/six pins,
+current and producer compiler hashes, and fixed14500624/1GiB/64MiB limits.
+Host load rose after admission; there is no whole-core timing claim.
+Raw evidence: capture-match/original-candidate19/ and inline-region-arrays/
+postcheck-candidate19.log. No metadata/LowIR/native original attempt has run;
+core-artifact19.py is ready only after original completion clears.
+
+The unchanged expanded17 diagnostic maps111229 to `self` inside IterMut's
+`into.write(unsafe { self.post_inc_start(1).as_mut() })` loop. Its anonymous
+MaybeUninit array now gets past the earlier proof. Actual NonNull::as_mut has an
+independent output lifetime and dereferences self.as_ptr(); as_ptr takes a Copy
+wrapper by value. Read actual pinned ptr/non_null.rs and slice/iter/macros.rs.
+Do not weaken real reference loans based solely on this original diagnostic.
+
+All16 raw-loan inputs match independent Rust type outcomes; complete ordinary
+nongeneric checks pass all six positives and reject both tied opponents. All16
+generic-raw inputs likewise match independent Rust, then pass COMPLETE original
+proofs/LowIR preparation for12 positives and reject four true tied opponents.
+The type view alone accepts opponents and is not complete borrow evidence.
+The small API diagnostic is built against the exact current release RustGM rlib;
+it invokes RustGM's pipeline and lower::instances::build_roots_prepared, not any
+external frontend. Raw scripts/results are under inline-region-arrays/
+generic-raw-full/ and generic-raw-observed/. No source compiler fix exists yet.
+The next frozen loop-raw packet tests repeated independent raw outputs, writes
+and real tied-loop/static opponents. Inspect its terminal receipt/process before
+new heavy work. Ordinary unsafe ownership belongs toPA27, actual source roles
+toPA31; install a reproduced boundary there rather than moving it intoPA25.
+
+All192 immutable output comparisons are now captured:15/16,16/17,17/18,18/19,
+each4 inputs times4 A/A plus2 ABBA sequences. The16/17 raw batch stopped only
+because its ordinary no-main control omitted the intended library flags. Preserve
+that failure; measure-command-correction.json declares the exact lib identity
+before rerunning only its missing12 observations. The qualified.json aggregate
+references unchanged36 scaling observations plus corrected12 control. Every
+stdout/stderr comparison is exact; measurement-summary.json independently checks
+all192. A/A ratios1.05–1.63 and paired reversals support NO precise speed claim.
+New-path bounded work223n inference/19n canonical/n actual ports remains stronger
+scaling evidence. Preserve raw measurements; do not rerun passing comparisons
+without invalidation. Pins15/16/17/18/19 remain;15–18 can be retired with explicit
+scoped prune once no longer needed. Never claim new execution from a pruned pin.
+
+The old active-local/live-CI statements above are historical. No release19 build
+is still running. Update live-state.json as probes finish; keep one heavy B job,
+2-slot shared controller,150GiB reserve and16GiB cap. Last free space166GiB.
+All earlier unclosed positive native results, source/normalization/artifact
+requirements, wholePA25–44 contracts and original transport gates remain open.
+
+
+## Qualified loop replacement repair
+
+This checkpoint adds a sparse index of loans rooted in actual temporary values.
+A new definition first checks a shallow write to that temporary's own storage,
+then retires the previous value's loan identities. Ancestor/input loans and all
+lifetime, ownership, storage, alignment and constant-validity checks remain.
+Ordinary and ordered-cleanup statements share the operation. Raw dereference
+roots additionally carry no inherited reference-loan promise; references stored
+after reconstruction retain ordinary reborrow checks. No quota, dense declaration
+field, external frontend, backend/bridge or storage.py change.
+
+The first loop reductions reproduce on release19. A safe callback minimum also
+reproduces, so it belongs toPA16; generic unsafe wrapper reductions belong toPA27
+and actual source-role counterparts toPA31. Frozen oracles qualify all31 initial
+inputs, including three exact scaling inputs/two original native companions.
+The two stronger native companions were declared later before their own first
+execution. Outcome declarations, original failed setup bytes and raw logs stay
+under inline-region-arrays/. The first no_core loop lacked bool Copy; corrected
+v2 adds its actual implementation without changing any outcome.
+
+Focused fast13 receipt1794616733767643096 passes six exact tests across three
+targets in62.66s:25 complete outcomes, concrete scaling, old reference/reborrow,
+raw-address and anonymous-array controls. All selected/CLI strict Clippy,
+fullfmt/audit/metadata pass. Actual scalar output private unit also passed in
+full43530351089:3074 private pass, zero fail, three ignored, all regular maintainer
+targets pass. That CI then stopped at one old PA24 diagnostic-location difference,
+so native/debug/independent continuation did not run. Latest full green remains
+43523008382 on5e9216115; dispatch one successor after this coherent publication.
+
+Native fast15 receipt1794616907890211530 passes all four Rust/C versus
+RustGM/CPPGM/C programs in75.13s. Original companions output9; stronger C-owned
+input programs output9 3 9, proving first3 is unchanged and second7 was mutated
+through the second loop result. Raw stdout/stderr remains under
+obj/parallel/loop-results-native/. The first native gate omitted the declared
+Rust debug_assertions=false flag and could not link core pointer-check panic
+symbols. Correct profile passes with no shim. No outcome was inverted.
+
+Concrete scaling replay retains work[loans,points,steps]:8/176/6744,
+32/704/26976,128/2816/107904, exactlyn/22n/843n. Its qualified ownership harness
+is retained in dev-fast, SHA902a7e1b80465267fa5d3c15807fc79e8dee137af1003def8eb500a4669d5d93.
+The first scaling test mistakenly selected an empty template-only inventory;
+it failed0!=8 and was corrected to the actual concrete borrow proof, not weakened.
+All raw failed gates10/11/12/14 remain, including the ordinary manual-Copy issue.
+
+That original unbounded ordinary by-value-pointer.rs is STILL a required accepting
+PA27 contract in its manifest. Bootstrap mode has no authored Clone/Copy traits
+for that implementation and rejects before loan checking. Its input/acceptance
+are unchanged. The genuine source-role counterpart passes all original proofs.
+Selected packet coverage is8 safe +8 ordinary raw +9 source =25 outcomes; never
+claim the additional ordinary boundary passed or silently replace it with T:Copy.
+
+Scoped generation adds only eleven PA16 triples. Among28035 existing sidecars,
+only PA24 inherited-input-regions/late-private-unrelated-result.rs.ref.stderr
+changes168->192 with the identical lifetime cause and rejecting status. Independent
+Rust still requires b:a. FullPA16 passes340/340; exact PA24 unrelated-result,
+input-escape and projected controls pass3/3. All315 harness tests,489 integration
+roots/13 binaries,44 stages/one component and128 upstream+126 Reference checks
+pass. Full recipe/raw provenance: inline-region-arrays/loop-references/ and
+loop-harness-upstream.log. Backend contract and113-case component are unchanged.
+
+The compiler freeze scripts now assert3952 Rust files: new production
+borrow/loans/replacements.rs and dev/tests/loop_results.rs are real additions.
+Observe/postcheck/core-artifact20 scripts retain unchanged original120s,
+722-source/six-pin/14500624-work/1GiB/64MiB conditions. The artifact script must
+wait until analysis completion clears. Fresh same-profile19/20 timing inputs
+(shared callback loops8/32/128 and the existing arithmetic control) are declared
+under loop-measure-inputs/ before execution. Use unchanged14/20 load admission,
+four A/A and two ABBA; preserve outputs/calibration and make no speed claim from
+noisy ratios. Older192 output comparisons remain complete and valid.
+
+Publish this coherent checkpoint, retire superseded15–18 pins with explicit scoped
+prune while retaining current19 baseline, make tidy, then freeze clean release20.
+No original verification of this new repair has run yet. Original core/alloc/std
+artifacts, authenticated body/value transport, planned wholePA25–44 and every
+standing valid requirement above remain open.
+
+Final preparation: scaling postcheck verifies the exact qualified harness hash
+and3951 unchanged production/ownership/test source hashes (the sole excluded
+file is the frontend-only native consumer, absent from the ownership target).
+All source inputs and n/22n/843n counters verify. Retired only candidate15–18
+release pins, scoped prune1794617420959198993 reclaimed0.70GiB; retirement index
+capture-match/retired-before-loop20.json preserves producer/hash bindings.
+Those four executables are unavailable for new runs. Candidate19 remains pinned.
+make tidy completed1794617520149629540. No local build/test/debug process remains
+before publishing and freezing20. Actual caps stay2jobs/150GiB/16GiB B; the test
+harness's printed three slots describes its temporary test controller only.

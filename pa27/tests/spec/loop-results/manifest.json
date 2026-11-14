@@ -1,0 +1,86 @@
+{
+ "schema": 1,
+ "profile": {
+  "rustc": "1.98.0 (88d9e12ae)",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "debug_assertions": false,
+  "overflow_checks": true
+ },
+ "declaration": "Frozen original outcomes preserved; loop-reference identity, real tied loans and private/static storage remain distinct. Full proof required, never a type-view-only result.",
+ "cases": {
+  "discard": {
+   "expected": "accept",
+   "sha256": "3a0c40b502ff7071f9166b39ce97bff7fb602bab428a02578e18be1aa09caa46",
+   "mode": "bootstrap",
+   "declared_before_execution": "obj/parallel/inline-region-arrays/loop-raw-inputs-v2/declaration.json"
+  },
+  "slot": {
+   "expected": "accept",
+   "sha256": "4459ecc06dd25a2f5217cfe12bbca50791703aeb62626ef8405454744c0db628",
+   "mode": "bootstrap",
+   "declared_before_execution": "obj/parallel/inline-region-arrays/loop-raw-inputs-v2/declaration.json"
+  },
+  "write": {
+   "expected": "accept",
+   "sha256": "14e49965e4453552b034d14948fdfd1309a5008c006f25bfb246b199edeedf9d",
+   "mode": "bootstrap",
+   "declared_before_execution": "obj/parallel/inline-region-arrays/loop-raw-inputs-v2/declaration.json"
+  },
+  "direct": {
+   "expected": "accept",
+   "sha256": "0978097cd6e56e9fa8a243c1eb0bc19b7683b16ec558e545037f99a208fa0ac4",
+   "mode": "bootstrap",
+   "declared_before_execution": "obj/parallel/inline-region-arrays/loop-raw-inputs-v2/declaration.json"
+  },
+  "detached": {
+   "expected": "accept",
+   "sha256": "4f6d259ee2f57e5e7f46b839e2304c55f2bec080e819e340a8c3542748921694",
+   "mode": "bootstrap",
+   "declared_before_execution": "obj/parallel/inline-region-arrays/loop-raw-inputs-v2/declaration.json"
+  },
+  "single-tied": {
+   "expected": "accept",
+   "sha256": "7fa33498a1adfa6c8d55f283bd42a48ed927b2a609c61afb4c6819867fc77c83",
+   "mode": "bootstrap",
+   "declared_before_execution": "obj/parallel/inline-region-arrays/loop-raw-inputs-v2/declaration.json"
+  },
+  "live-tied-denied": {
+   "expected": "reject",
+   "sha256": "2b6c79fa43e7bfaa1eb96ddd6578705ad7b6b247c72784c98aafc33558f2fc70",
+   "mode": "bootstrap",
+   "declared_before_execution": "obj/parallel/inline-region-arrays/loop-raw-inputs-v2/declaration.json"
+  },
+  "static-denied": {
+   "expected": "reject",
+   "sha256": "98d6cba8999771f3b7b1e1d3db7397124a5836d3e4819669b719bedfaed5e520",
+   "mode": "bootstrap",
+   "declared_before_execution": "obj/parallel/inline-region-arrays/loop-raw-inputs-v2/declaration.json"
+  },
+  "by-value-pointer": {
+   "expected": "accept",
+   "sha256": "a595b11996395a84d0b2e8e79f08c6d7298ea1f00a08ec37f814ec4fb12f1bca",
+   "declaration": "Before independent execution: exact original NonNull::as_mut body, authored raw-field as_ptr reduction and real unconditional Copy impl, no T:Copy bound.",
+   "qualification_pending": "Required accepting original retained: ordinary bootstrap has no authored Clone/Copy trait declarations; current implementation rejects this manual builtin implementation before loan proof. Source-role counterpart remains a selected required positive."
+  }
+ },
+ "native": {
+  "path": "native.rs",
+  "expected": "accept",
+  "observer": "observer.c",
+  "stdout": "9\n",
+  "sha256": "e72cca9a7cc427f9c33f54dcf7ed7da585e795d294fc5462ed8fa2702bc3fd6b",
+  "declaration": "Before first native or independent execution: two iterations, distinct referents, final mutable store/read9",
+  "observer_sha256": "8c8d842a333d5999a4c4398787aaa161c98c11bb28604001ba1a329a98c1eba1"
+ },
+ "observed_native": {
+  "path": "native-observed.rs",
+  "expected": "accept",
+  "observer": "observed.c",
+  "stdout": "9 3 9\n",
+  "sha256": "c4f350635a5be98328d9e9f29810f7e31fbd6f22b8662f45ec3c22858c1b31ee",
+  "observer_sha256": "8a0e3607ea8d7eaeed6a9ecfe7b98365dcc4507ce42efa78cf7d0727e161dadb",
+  "declaration": "Before first execution: C owns both distinct inputs. Exactly two loop result generations must leave first=3 and mutate second to9; returned value9."
+ }
+}

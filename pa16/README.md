@@ -18,6 +18,13 @@ ancestry. Accessing a mutable borrow's referent differs from overwriting the
 pointer variable that contains it. Check temporary, local and promoted storage
 ends, including edge-specific ends and diverging control flow.
 
+A repeated call defines a fresh result value on each loop visit. Retire loans
+through the replaced temporary while preserving loans on real input places;
+check a shallow write before replacing borrowed temporary storage. The
+[loop result packet](tests/spec/loop-results/README.md) includes independent
+callback results, fixed-input opposition and storage escapes. Its raw-pointer
+and actual source counterparts belong to PA27 and PA31.
+
 Shared loans permit shared reads and exclude conflicting writes. Mutable loans
 exclude conflicting reads/writes while permitting access through their own
 checked reborrow chain. Check shallow pointer/tag/metadata access separately

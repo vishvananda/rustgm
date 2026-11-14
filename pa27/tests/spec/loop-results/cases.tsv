@@ -1,0 +1,8 @@
+pa27/tests/spec/loop-results/discard.rs	0	-
+pa27/tests/spec/loop-results/slot.rs	0	-
+pa27/tests/spec/loop-results/write.rs	0	-
+pa27/tests/spec/loop-results/direct.rs	0	-
+pa27/tests/spec/loop-results/detached.rs	0	-
+pa27/tests/spec/loop-results/single-tied.rs	0	-
+pa27/tests/spec/loop-results/live-tied-denied.rs	1	live reference loan
+pa27/tests/spec/loop-results/static-denied.rs	1	required lifetime

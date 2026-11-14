@@ -1,0 +1,85 @@
+{
+ "schema": 1,
+ "profile": {
+  "rustc": "1.98.0 (88d9e12ae)",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "debug_assertions": false,
+  "overflow_checks": true
+ },
+ "declaration": "Frozen original outcomes preserved; loop-reference identity, real tied loans and private/static storage remain distinct. Full proof required, never a type-view-only result.",
+ "cases": {
+  "discard": {
+   "expected": "accept",
+   "sha256": "6b65caba037cdb5a5acac0f04762ea02fe591c73be5042b7d5e1945d248ef852",
+   "mode": "source",
+   "declared_before_execution": "obj/parallel/inline-region-arrays/loop-raw-inputs-v2/declaration.json"
+  },
+  "slot": {
+   "expected": "accept",
+   "sha256": "0ef714b5a5f0c8df7d8dcc5a9e874d9df14953f0f2b0011714e32a38103e4914",
+   "mode": "source",
+   "declared_before_execution": "obj/parallel/inline-region-arrays/loop-raw-inputs-v2/declaration.json"
+  },
+  "write": {
+   "expected": "accept",
+   "sha256": "a7b5cfbc10454945a4e9e0ff02a6b30921b23a7851aa5f41b963cb4240676464",
+   "mode": "source",
+   "declared_before_execution": "obj/parallel/inline-region-arrays/loop-raw-inputs-v2/declaration.json"
+  },
+  "direct": {
+   "expected": "accept",
+   "sha256": "9db45b94f9b0384bd8e54db38e4867cd898bef2973d4c3a971d174171d672164",
+   "mode": "source",
+   "declared_before_execution": "obj/parallel/inline-region-arrays/loop-raw-inputs-v2/declaration.json"
+  },
+  "detached": {
+   "expected": "accept",
+   "sha256": "fe87bbcef9a4cd405b0b67318c9638ee530ecad84e7f76ebd076c65c416cff40",
+   "mode": "source",
+   "declared_before_execution": "obj/parallel/inline-region-arrays/loop-raw-inputs-v2/declaration.json"
+  },
+  "single-tied": {
+   "expected": "accept",
+   "sha256": "a21c8c264234a99966bd18a3a4b81d7c9e989b968435dee8dd86789ba817f900",
+   "mode": "source",
+   "declared_before_execution": "obj/parallel/inline-region-arrays/loop-raw-inputs-v2/declaration.json"
+  },
+  "live-tied-denied": {
+   "expected": "reject",
+   "sha256": "887896178ae4692d6910626826e2df5d420da7ade3ba03e4df72489b9ee4c567",
+   "mode": "source",
+   "declared_before_execution": "obj/parallel/inline-region-arrays/loop-raw-inputs-v2/declaration.json"
+  },
+  "static-denied": {
+   "expected": "reject",
+   "sha256": "4f87264206a877fa00616e710b8c23e2c7f48f7a18918a4bfb637a0e8f68e669",
+   "mode": "source",
+   "declared_before_execution": "obj/parallel/inline-region-arrays/loop-raw-inputs-v2/declaration.json"
+  },
+  "by-value-pointer": {
+   "expected": "accept",
+   "sha256": "8e45897a0b2c6f192877e7d07ef2a68bbf10213d156e12bf2ed101e6888bb801",
+   "declaration": "Before independent execution: exact original NonNull::as_mut body, authored raw-field as_ptr reduction and real unconditional Copy impl, no T:Copy bound."
+  }
+ },
+ "native": {
+  "path": "native.rs",
+  "expected": "accept",
+  "observer": "observer.c",
+  "stdout": "9\n",
+  "sha256": "c4623f5197c9dfaf8a424516e7340812a1064b7dd6e8ceaca963736ac16d04cd",
+  "declaration": "Before first native or independent execution: two iterations, distinct referents, final mutable store/read9",
+  "observer_sha256": "8c8d842a333d5999a4c4398787aaa161c98c11bb28604001ba1a329a98c1eba1"
+ },
+ "observed_native": {
+  "path": "native-observed.rs",
+  "expected": "accept",
+  "observer": "observed.c",
+  "stdout": "9 3 9\n",
+  "sha256": "29dce76e71ad987ba723cbd1229c322458c7661aaf78394a98853d83db400be6",
+  "observer_sha256": "8a0e3607ea8d7eaeed6a9ecfe7b98365dcc4507ce42efa78cf7d0727e161dadb",
+  "declaration": "Before first execution: C owns both distinct inputs. Exactly two loop result generations must leave first=3 and mutate second to9; returned value9."
+ }
+}

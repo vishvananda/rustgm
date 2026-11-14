@@ -308,7 +308,16 @@ impl Index {
         Ok(single
             .into_iter()
             .chain(self.alternatives[start..end].iter().copied())
-            .map(|id| (id, !self.paths[id.0].shared)))
+            .map(|id| {
+                let path = self.paths[id.0];
+                // Raw dereferences start a separate root with no inherited loan
+                // promise. References stored after reconstruction still acquire
+                // ordinary loans when their reference places are reborrowed.
+                (
+                    id,
+                    !path.shared && !matches!(path.root, Place::Projection(_)),
+                )
+            }))
     }
     pub fn root(&self, id: Id) -> Place {
         self.paths[id.0].root

@@ -5,6 +5,7 @@ mod formed;
 pub(crate) use formed::Formed;
 mod inspection;
 mod legality;
+mod replacements;
 pub(crate) mod seal;
 mod state;
 use state::Set;
@@ -79,6 +80,7 @@ struct Flow<'a> {
     uses: liveness::Analysis,
     regions: points::Liveness,
     expirations: expiration::Expirations,
+    replacements: replacements::Replacements,
     steps: usize,
     snapshots: Vec<inspection::Snapshot>,
 }
@@ -166,7 +168,14 @@ impl Flow<'_> {
             .prune(state, point, &self.loans, &self.regions)?;
         self.charge(steps)
     }
-    fn generate(&mut self, state: &mut Set, id: ValueId, point: Point) -> Result<(), &'static str> {
+    fn generate(
+        &mut self,
+        state: &mut Set,
+        id: ValueId,
+        point: Point,
+        inspect: bool,
+    ) -> Result<(), &'static str> {
+        self.replace(state, id, inspect)?;
         let (start, end) = self.generated[id.0 as usize];
         for loan in start..end {
             self.charge(1)?;
@@ -474,7 +483,7 @@ impl Flow<'_> {
                 self.inspect(state, action).map_err(error)?;
             }
             if let Action::Evaluate(id) = action {
-                self.generate(state, id, point).map_err(error)?;
+                self.generate(state, id, point, inspect).map_err(error)?;
             }
         }
         Ok(())
@@ -801,10 +810,14 @@ fn finish<const RECORD: bool>(
         uses,
         regions,
         expirations: expiration::Expirations::default(),
+        replacements: replacements::Replacements::default(),
         steps: 0,
         snapshots: Vec::new(),
     };
     flow.collect(types, contract).map_err(error)?;
+    let replacements = replacements::Replacements::new(&flow.loans, &flow.places).map_err(error)?;
+    flow.charge(replacements.steps).map_err(error)?;
+    flow.replacements = replacements;
     flow.expirations = expiration::Expirations::new(&flow.loans, &flow.regions).map_err(error)?;
     flow.charge(flow.expirations.steps).map_err(error)?;
     flow.solve::<RECORD>()?;

@@ -2,6 +2,12 @@
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
 
+The [loop result checkpoint](../docs/pa16-loop-result-identities.md) qualifies
+actual source Copy declarations, the by-value pointer-wrapper receiver and fresh
+loop results, with real C observations of the selected referent. The safe minimum
+belongs to PA16 and ordinary raw operations to PA27. Original-core verification
+of this repair remains required.
+
 The [inferred anonymous-array reductions](../docs/pa25-anonymous-array-outputs.md)
 preserve the actual source wrapper bodies behind the next_chunk output failure.
 Their ordinary counterparts belong to PA25;16 complete outcomes, real output

@@ -1,0 +1,8 @@
+pa16/tests/spec/loop-results/independent.rs	0	-
+pa16/tests/spec/loop-results/shared.rs	0	-
+pa16/tests/spec/loop-results/reference-argument.rs	0	-
+pa16/tests/spec/loop-results/fixed-reference.rs	1	live reference loan
+pa16/tests/spec/loop-results/local-escape.rs	1	required lifetime
+pa16/tests/spec/loop-results/temporary-storage-denied.rs	1	lifetime
+pa16/tests/spec/loop-results/tied-input-denied.rs	1	live reference loan
+pa16/tests/spec/loop-results/local-reference-denied.rs	1	live reference loan

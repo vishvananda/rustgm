@@ -1,0 +1,76 @@
+{
+ "schema": 1,
+ "profile": {
+  "rustc": "1.98.0 (88d9e12ae)",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "debug_assertions": false,
+  "overflow_checks": true
+ },
+ "declaration": "Frozen original outcomes preserved; loop-reference identity, real tied loans and private/static storage remain distinct. Full proof required, never a type-view-only result.",
+ "cases": {
+  "independent": {
+   "expected": "accept",
+   "sha256": "8a4ba470a7ae3a871520b690ce672a89784ab374cef4cf6a43cb63a9e4c6a79d",
+   "mode": "bootstrap",
+   "declared_before_execution": "obj/parallel/inline-region-arrays/loop-factory-inputs/declaration.json"
+  },
+  "shared": {
+   "expected": "accept",
+   "sha256": "e5edea4fd2f00bfcf669e0bb19dd973642bb12811ee70ad9484043ff3a24289a",
+   "mode": "bootstrap",
+   "declared_before_execution": "obj/parallel/inline-region-arrays/loop-factory-inputs/declaration.json"
+  },
+  "reference-argument": {
+   "expected": "accept",
+   "sha256": "24765da66a231fa6830addb8980016896b82926b0f1094b270dadce0734a1c5c",
+   "mode": "bootstrap",
+   "declared_before_execution": "obj/parallel/inline-region-arrays/loop-factory-inputs/declaration.json"
+  },
+  "fixed-reference": {
+   "expected": "reject",
+   "sha256": "be3032a35bdd717f20a2e66ab38aa039094c87fa7f465930cc413e4b6338869d",
+   "mode": "bootstrap",
+   "declared_before_execution": "obj/parallel/inline-region-arrays/loop-factory-inputs/declaration.json"
+  },
+  "local-escape": {
+   "expected": "reject",
+   "sha256": "86f679f2a4a85e9113a3a0aae26654311338817f4fe4e27582ec4658a597c538",
+   "mode": "bootstrap",
+   "declared_before_execution": "obj/parallel/inline-region-arrays/loop-factory-inputs/declaration.json"
+  },
+  "temporary-storage-denied": {
+   "expected": "reject",
+   "sha256": "ff0c97e8cdcb0cef3058bd7b601585924b68d5158de3fd0a0c4c937b093e6fff",
+   "declared_before_execution": "this manifest, before first independent execution"
+  },
+  "tied-input-denied": {
+   "expected": "reject",
+   "sha256": "fc6e292a2a575cc66ec0228b98a01c1ca2afbeb5d68dfba84a8183945a610f70",
+   "declared_before_execution": "this manifest, before first independent execution"
+  },
+  "local-reference-denied": {
+   "expected": "reject",
+   "sha256": "26ac5428d14739347c8eb9d87243b7cc91c9a894b320fd58a3280c514e5e96f8",
+   "declared_before_execution": "this manifest, before first independent execution"
+  }
+ },
+ "scaling": {
+  "8": {
+   "path": "scaling-8.rs",
+   "expected": "accept",
+   "sha256": "95e7ca432c98936f0fcef06f1c60d9f69c8e77161e10cbaf1a70c83275e92794"
+  },
+  "32": {
+   "path": "scaling-32.rs",
+   "expected": "accept",
+   "sha256": "4498a0ce495debaa915a6c1919b6222ae05d7f18a0094e14da32d5acb237fa2d"
+  },
+  "128": {
+   "path": "scaling-128.rs",
+   "expected": "accept",
+   "sha256": "135e7b9a05f69a4a05599dacfe21b49527d9740f748e6d9263593b8ad1732397"
+  }
+ }
+}

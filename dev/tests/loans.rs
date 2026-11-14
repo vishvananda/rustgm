@@ -1,7 +1,7 @@
 use crate::semantic;
 use rustgm::{body, borrow};
 
-fn check(source: &str) -> Result<usize, String> {
+fn analyses(source: &str) -> Result<Vec<borrow::loans::Analysis>, String> {
     let (report, mut facts) = semantic::analyze(source)?;
     let mut program = body::build(&report, &facts).map_err(|e| e.to_string())?;
     body::promote::analyze(&report, &mut facts, &mut program).map_err(|e| e.to_string())?;
@@ -25,8 +25,38 @@ fn check(source: &str) -> Result<usize, String> {
         &program,
     )
     .map_err(|e| e.to_string())?;
-    Ok(proof.loans.iter().map(|p| p.loans).sum())
+    Ok(proof.loans)
 }
+fn check(source: &str) -> Result<usize, String> {
+    Ok(analyses(source)?.iter().map(|body| body.loans).sum())
+}
+
+#[test]
+fn repeated_result_loan_work_scales_with_independent_owners()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut previous = None;
+    for width in [8, 32, 128] {
+        let input =
+            crate::resolve::fixture(&format!("pa16/tests/spec/loop-results/scaling-{width}.rs"))?;
+        let proof = analyses(&input)?;
+        let work = [
+            proof.iter().map(|body| body.loans).sum::<usize>(),
+            proof.iter().map(|body| body.points as usize).sum(),
+            proof.iter().map(|body| body.steps).sum(),
+        ];
+        assert_eq!(proof.len(), width);
+        assert!(work[0] >= width && work[2] < width * 20_000);
+        println!("loop result width={width} work={work:?}");
+        if let Some(old) = previous {
+            for (before, after) in std::iter::zip(old, work) {
+                assert!(after <= 5 * before + 256, "{old:?}->{work:?}");
+            }
+        }
+        previous = Some(work);
+    }
+    Ok(())
+}
+
 fn cases(group: &str, cases: &[(&str, bool)]) -> Result<(), Box<dyn std::error::Error>> {
     let directory = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join(format!("../obj/loans-{}-{group}", std::process::id()));

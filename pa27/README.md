@@ -42,6 +42,12 @@ address does not itself create a reference or its alignment promise. The direct
 `&raw const *pointer` cancellation does not read its referent, while accessing a
 field through the pointer still requires unsafe permission.
 
+The [loop result packet](tests/spec/loop-results/README.md) checks reconstructed
+references across repeated pointer-producing calls, actual writes and tied-loan
+opponents. The safe callback minimum belongs to PA16. The ordinary unbounded
+manual Copy-wrapper contract remains an explicit required positive; source-role
+Copy declarations and its corresponding loop are qualified in PA31.
+
 Mutable static storage requires unsafe permission for reads and writes. Keep its
 declaration mutability separate from the permission to form a reference: the
 edition-2024 `static_mut_refs` lint denies explicit and implicit references by

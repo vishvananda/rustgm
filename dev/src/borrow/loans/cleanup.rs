@@ -101,7 +101,7 @@ impl Flow<'_> {
                         self.inspect(state, action).map_err(error)?;
                     }
                     if let Action::Evaluate(id) = action {
-                        self.generate(state, id, point).map_err(error)?;
+                        self.generate(state, id, point, inspect).map_err(error)?;
                     }
                 }
                 Effect::Cleanup(id) if inspect => {

@@ -6,6 +6,13 @@ assignments.json. PA1–PA20 retain implemented-draft while individual release
 records are reconciled. PA25–PA44 remain planned as whole assignments. No
 planned or empty suite counts as passing.
 
+The [loop result checkpoint](docs/pa16-loop-result-identities.md) qualifies25
+complete safe/raw/source outcomes, bounded scaling and four native comparisons.
+It retains the ordinary unbounded manual Copy-wrapper positive as unclosed.
+Clean release19 clears the anonymous lifetime error and reaches IterMut's loop
+loan conflict; original verification of the replacement repair is next. No
+original library artifact or additional whole assignment is complete.
+
 The [adopted assignment-order review](docs/assignment-order.md) replaces the old
 numeric work/release chain for incomplete assignments. Keep PA numbers and
 fixture paths as ownership IDs; use the machine-checked

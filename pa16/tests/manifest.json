@@ -4583,6 +4583,138 @@
         "kind": "object",
         "reason": "C consumer independently observes exported ordinary/source shared calls and exact order; frozen companion trace"
       }
+    },
+    {
+      "path": "tests/spec/loop-results/independent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loop-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loop_results.rs"
+    },
+    {
+      "path": "tests/spec/loop-results/shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loop-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loop_results.rs"
+    },
+    {
+      "path": "tests/spec/loop-results/reference-argument.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loop-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loop_results.rs"
+    },
+    {
+      "path": "tests/spec/loop-results/fixed-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loop-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loop_results.rs"
+    },
+    {
+      "path": "tests/spec/loop-results/local-escape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loop-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loop_results.rs"
+    },
+    {
+      "path": "tests/spec/loop-results/temporary-storage-denied.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loop-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loop_results.rs"
+    },
+    {
+      "path": "tests/spec/loop-results/tied-input-denied.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loop-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loop_results.rs"
+    },
+    {
+      "path": "tests/spec/loop-results/local-reference-denied.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loop-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loop_results.rs"
+    },
+    {
+      "path": "tests/spec/loop-results/scaling-8.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loop-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs:repeated_result_loan_work_scales_with_independent_owners"
+    },
+    {
+      "path": "tests/spec/loop-results/scaling-32.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loop-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs:repeated_result_loan_work_scales_with_independent_owners"
+    },
+    {
+      "path": "tests/spec/loop-results/scaling-128.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loop-results"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs:repeated_result_loan_work_scales_with_independent_owners"
     }
   ],
   "additional_modes": [

@@ -13,6 +13,7 @@ consumers remain required; whole planned assignments are not released.
 All eight complete table outcomes pass, including both exact lifetime opponents.
 The three PA25 scaling inputs have actual output ports=n, inference223n and
 canonical19n at8/32/128 owners; exact inputs independently accept in Rust. Existing
-actual native controls pass; the new private graph unit and full original-source
-observation remain pending. See
+actual native controls pass; full CI passed the private graph unit and clean release19 clears the original
+anonymous lifetime error, reaching a later IterMut loan conflict. No original
+library artifact exists. See
 [the checkpoint](../../../../docs/pa25-anonymous-array-outputs.md).
