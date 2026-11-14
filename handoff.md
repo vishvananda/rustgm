@@ -5,6 +5,49 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
+Published current source ca20dc143be3691d23bb9637405de41d9ca229e0, main synced.
+Clean candidate32-release binds3964 hashes/empty patch,8m04s build,
+CLI3996c12127b33d0186e11cd233ec34f8f60543d7ffdf03b411a015d37df55670.
+Genuine unchanged original v14 library32 CLEARS min_by_key and now FAILS
+ops/range.rs:872/file94:27710, RangeBounds::contains:
+`abstract const call changed its defining Self or trait application`.
+21.455154991010204s/status1/no timeout/peak childRSS732252KiB; no core.rgm,
+0-byte core.lowir. artifact-postcheck32 terminal PASS:722 originals/375 opens/
+six reviewed config pins/all3964 compiler hashes/clean pin/fixed120s/
+14500624work/1GiB attempted/64MiB retained. Diagnostic only/no speed claim.
+Raw generic-const-calls/{build32-release,core-artifact32,artifact-postcheck32}.log
+and original-library-candidate32/. No original metadata/LowIR/native consumer.
+
+NEXT reduce actual RangeBounds::contains plus ordinary/source const-default
+calls through generic types other than defining Self. Production has not changed
+for this frontier. abstract_uses::check_premise still rejects a Trait predicate
+whose subject differs from defining Self before checking its completed environment.
+For a non-root subject/application pair, any direct proof must come from the
+exact actual defining environment; never let a foreign subject reuse the own-trait
+fast path merely because its application matches. Actual Range contains also
+compares &T/&U through the source const reference impls, so inspect the real
+failing target/predicate before choosing a repair: exact local T premises may not
+be the whole reference-implementation goal. provided_calls::closed_effect
+currently admits Conditional ConstTraitDefault only for body.instance.is_some(),
+therefore original default bodies fall back to abstract checking. Preserve local
+Self setup, full arguments, current source/call/effect, lifetime/borrow and actual
+selected implementation/Code proof. Do not treat source-use data as execution
+permission. PA25 ordinary minima; PA31 actual source originals. No new agent/tree.
+
+Full43624101196 exact c0ff945bd PASSED EVERY STAGE:3080 private release5.76s,
+debug64.62s, all public/native/course/independent/113component. Raw
+obj/parallel/default-supertraits/ci43624101196.log. ONE full successor
+43627935665 exact ca20dc143 is now running (qualification lint/architecture/harness;
+fast job was still queued at last poll). New private guard remains pending that
+run; do not duplicate or cancel it. No local heavy job at this checkpoint.
+Current32/previous31 and pending perf21–24 pins retained;25–30 binaries retired
+and unavailable as recorded below. Keep fixed2jobs/150GiB reserve/16GiB cap;
+free326GiB. All prior original v13/v14/bootstrap/future/assignment requirements
+below stay open. No whole PA25–44 is complete.
+
+Historical checkpoint record follows; the continuation above supersedes all
+older NEXT paragraphs and build-frontier statements.
+
 Current coherent checkpoint: unused generic const FnOnce/FnMut/Fn defining calls
 plus actual borrowed function-item CTFE. See docs/pa25-generic-const-calls.md.
 Existing callable-template producer is demanded only for retained const-function

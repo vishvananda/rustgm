@@ -70,3 +70,12 @@ native consumers, conditional target payment, wider receiver adapters, ordinary
 bootstrap, executable futures and every older required unsupported contract
 remain open. PA25–PA44 stay planned; the separate113-case const-machine component
 is unchanged.
+
+Clean candidate32, source ca20dc143/3964 hashes, verifies min_by_key cleared in
+the genuine unchanged v14 library command. It now rejects RangeBounds::contains
+at ops/range.rs:872/file94:27710 with the separate defining Self/application check.
+The21.455154991010204s diagnostic attempt ended status1 without timeout and has
+no core.rgm/0-byte core.lowir. Postcheck32 passes722 original hashes/375 opens/
+six reviewed pins/clean producer/fixed deadline and quotas. This is progress
+within a still-required original build, not an original artifact or speed claim.
+Full c0ff43624101196 is green; full ca20dc14343627935665 remains pending.
