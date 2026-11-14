@@ -27,17 +27,31 @@ No core.rgm exists; core.lowir is empty. Artifact postcheck verifies722/375/six/
 not timeout. Raw: intrinsic-next/core-artifact27.log, artifact-postcheck27.log,
 original-library-candidate27/. No native original consumers exist.
 
-Next investigate the real async_drop_in_place operation. Its written empty body
-must never execute. Existing authenticated CompilerOperations/v11 metadata works
-through the public API (docs/parallel/deferred-operations-v11.md); CLI routing is
-explicitly pending. v13 ordinary-body and v11 operation profiles are distinct.
-An additional symbolic route/profile does NOT discharge the retained original
-v13 full-LowIR positive or real constructor/poll/drop/cancellation/recursive-cleanup
-requirements. Reuse typed owners and existing coroutine state machinery; do not
-replace the helper with an empty future or relax its runtime body guard.
+The existing authenticated CompilerOperations/v11 profile is now exposed through
+CLI --source-profile module-compiler-operations-v11. No executable future was
+implemented and no runtime body guard changed. Eight focused1794662507576101300
+pass in45.56s across linking/frontend: CLI file exact roundtrip, one real symbolic
+operation/one ordinary body, fresh typed Output/unsafe duties, recipe/forgery/
+legacy/native-wrapper/placeholder guards. SourceClient --emit-types in the first
+test was invalid by the existing CLI contract (exit2), corrected to the existing
+fresh typed API consumer without changing fixture bytes or type outcomes.
+3963-source/nine-input hash checks, original byte equality,315 harness/495 roots/
+upstream pass. Packet pa43/tests/spec/compiler-operation-cli/manifest.json,
+raw compiler-operation-cli/, docs/parallel/deferred-operations-v11.md.
+
+Next combine ordinary v13 body transport with authenticated compiler operation
+transport in an explicit contract, preserving existing wire bytes and all owner,
+body, Output, borrow, runtime and imported-profile guards. v11 and v13 remain
+separate; do not silently give v13 an operation it cannot encode. This prerequisite
+does not close the required original-v13 full-LowIR positive or real constructor,
+poll/drop/Pin/Output/cancellation/recursive-cleanup/native and ordinary authored
+future positives. Reuse typed owners and existing coroutine machinery; never
+execute the helper's written placeholder or substitute an empty future.
+No release rebuild/core retry was run just for the small CLI route; wait for a
+coherent combined semantic checkpoint. Source Rust inventory remains3963.
 
 Full43597538902 runs on exact7db0c611e (fast and full lint/host graph pass;
-release/course in progress). Full43592623119 PASSED ALL on e23bbc172 (3078 private
+release/course passed; native maintainer in progress). Full43592623119 PASSED ALL on e23bbc172 (3078 private
 release4.66s/debug46.06s). No duplicate CI for this doc-only successor.
 The arithmetic checkpoint qualified25 independent outcomes,240 constant/240
 runtime values, all18 candidate guards, nine native programs,3963-source replay,

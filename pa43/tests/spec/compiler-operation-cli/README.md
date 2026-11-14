@@ -1,0 +1,1 @@
+Explicit CLI routing for the existing authenticated compiler-operation profile. manifest.json references the frozen PA43 source inputs by exact hash and retains original async_drop.rs byte-for-byte. This packet does not qualify any executable async future or replace the required full-body original-core artifact.

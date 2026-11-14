@@ -80,6 +80,10 @@ impl Options {
             return Err("duplicate --source-profile".into());
         }
         match value {
+            Some("module-compiler-operations-v11") => {
+                self.source_profile =
+                    Some(rustgm::lower::instances::SourcePublication::CompilerOperations);
+            }
             Some("module-bodies-v13") => {
                 self.source_profile =
                     Some(rustgm::lower::instances::SourcePublication::ModuleBodies);
@@ -126,7 +130,7 @@ impl Options {
             }
             _ => {
                 return Err(
-                    "--source-profile requires module-contracts-v2, module-availability-v3, module-definitions-v5, module-compatibility-v6, module-callables-v7, module-safety-v8, module-conversions-v9, module-nominals-v10, module-branches-v12, module-bodies-v13 or provided-contracts-v1".into(),
+                    "--source-profile requires module-contracts-v2, module-availability-v3, module-definitions-v5, module-compatibility-v6, module-callables-v7, module-safety-v8, module-conversions-v9, module-nominals-v10, module-compiler-operations-v11, module-branches-v12, module-bodies-v13 or provided-contracts-v1".into(),
                 );
             }
         }

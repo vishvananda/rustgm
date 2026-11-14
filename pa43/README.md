@@ -78,3 +78,12 @@ run the required coherent checkpoint checks from
 suites, strict Clippy, file/architecture audits, harness checks and affected
 performance measurements. Use the resource/storage guards and scoped cleanup.
 Do not activate a stage merely because a reduced example or an empty suite passes.
+
+
+The [symbolic-operation CLI integration](../docs/parallel/deferred-operations-v11.md)
+exposes existing v11 publication, exact codec roundtrip and fresh typed consumers;
+it supplies no executable future. Original core now finishes diagnostic analysis
+with zero records, but its real v13 library build stops at compiler-owned helper
+state/polling with absent metadata/empty LowIR. That full-body positive and every
+constructor, poll/drop, Pin, cancellation and recursive cleanup/native contract
+above remain required. This assignment stays planned.

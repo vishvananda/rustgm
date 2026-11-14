@@ -1,0 +1,34 @@
+{
+ "declared_before_cli_implementation": true,
+ "scope": "Expose existing authenticated CompilerOperations/v11 public API through an explicit CLI profile. No new Rust semantics or executable future is supplied.",
+ "source_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+ "license": "Original async_drop.rs MIT OR Apache-2.0, rust-lang/rust, third_party/sources.json",
+ "inputs": {
+  "pa43/tests/spec/deferred-compiler-op/provider.rs": "d238d34a1422bab7fa73168704c900b751a1d21e3967d5c1d3cdbf65f6e9b825",
+  "pa43/tests/spec/deferred-compiler-op/consumer.rs": "4a584a9147560a212b7ebe3e356fa5a1f34e872b244d2ba23593631a32203ce7",
+  "pa43/tests/spec/deferred-compiler-op/unsafe-consumer.rs": "46a1caef30611185310d8c5d6da9d3fcb43166f23e3e23ea21667fb91755d634",
+  "pa43/tests/spec/deferred-compiler-op/wrong-output-consumer.rs": "d3a1071056bd1bc5e22b79e8c23898ad66cfaf6ae80c782b4b59e9d1ac0af389",
+  "pa43/tests/spec/deferred-compiler-op/wrong-output.rs": "851ee01f520f99f1968b03bd8598a6c4169585335a49542c1d080402a2ab9205",
+  "pa43/tests/spec/deferred-compiler-op/wrong-unsafe.rs": "8520451e7e2ed5c609efee8d67acb7cd0bfe7a2f67d0dfd460b9c469123146de",
+  "pa43/tests/spec/deferred-compiler-op/invalid-body.rs": "7ba6103e23ccf9460cc6f3de5c8a0e65ead88c216d78e5c7592a715aeeae70db",
+  "pa43/tests/spec/deferred-compiler-op/unmarked.rs": "7b734df3d3164325cfb2fb3f3a8027bc0351edbd617faca66ac822be0983a581",
+  "pa43/tests/spec/compiler-operation-cli/original/async_drop.rs": "7a2ea6e4131f0df0c6bc6be75428b99de7b4e1b2de61b04fa1e3f562fdd0c83c"
+ },
+ "profile": "module-compiler-operations-v11",
+ "preexisting_oracle_basis": "Reuse byte-exact deferred-compiler-op/predictions.json and the qualified AsyncDrop/helper independent companions. CLI transport must equal the authenticated typed producer and preserve fresh-consumer duties. Authored no_core async construction fences are not Rust rejection parity.",
+ "expected": {
+  "provider_cli_metadata": "accept; one actual CompilerOperation, one ordinary body; envelope13/version11; exact decode/re-encode",
+  "unsafe-consumer": "reject unsafe context",
+  "wrong-output-consumer": "reject incompatible types",
+  "wrong-output": "reject actual async unit output before symbolic exclusion",
+  "wrong-unsafe": "reject unsafe Rust borrow signature before symbolic exclusion",
+  "invalid-body": "reject invalid authored body before symbolic exclusion",
+  "consumer_fresh_typed_API": "accept two genuine helper applications with Future Output=()"
+ },
+ "retained_required_positives": {
+  "unmarked": "ordinary authored async export requires genuine executable future family; current fence is not a qualified semantic rejection",
+  "original_full_v13": "same unchanged original module-bodies-v13 full LowIR/metadata command remains required accepting; it currently fails generated future state and polling",
+  "helper_native": "real constructor/state/poll/drop/Pin/Output/cancellation/recursive cleanup/native consumers remain required; symbolic publication never substitutes for executable future implementation"
+ },
+ "setup_correction": "First validation invoked SourceClient --emit-types, which the existing CLI usage contract expressly forbids (exit2 before frontend). Keep fast1 receipt. Decode the actual CLI-emitted bytes and use the existing authenticated fresh typed-consumer API; source inputs, outcomes, Output/unsafe proofs and executable-future requirements stay unchanged. No semantic rejection parity is claimed for the invalid invocation."
+}

@@ -365,3 +365,84 @@ fn checked_authored_future_storage_cannot_be_exported_as_a_symbolic_marker() -> 
     assert!(facts.types.storage_head(result).is_ok());
     Ok(())
 }
+
+fn cli_provider(folder: &Path, name: &str) -> Result<std::process::Output> {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    Ok(std::process::Command::new(env!("CARGO_BIN_EXE_rustgm"))
+        .args([
+            "--emit-lowir",
+            "--crate-type=lib",
+            "--edition=2024",
+            "--cap-lints=allow",
+            "--crate-name",
+            "minicore",
+            "--crate-disambiguator",
+            "operation_cli_v11",
+            "--source-core",
+            "minicore@operation_cli_v11",
+            "--source-profile",
+            "module-compiler-operations-v11",
+            "--metadata-output",
+        ])
+        .arg(folder.join(format!("{name}.rgm")))
+        .arg("-o")
+        .arg(folder.join(format!("{name}.lowir")))
+        .arg(root.join(format!("pa43/tests/spec/deferred-compiler-op/{name}.rs")))
+        .output()?)
+}
+
+#[test]
+fn cli_publication_retains_symbolic_owner_and_fresh_consumer_duties() -> Result {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let folder = root
+        .join("obj/parallel/compiler-operation-cli/transport")
+        .join(std::process::id().to_string());
+    std::fs::create_dir_all(&folder)?;
+    let output = cli_provider(&folder, "provider")?;
+    assert!(output.status.success(), "{output:?}");
+    let bytes = std::fs::read(folder.join("provider.rgm"))?;
+    let decoded = crates::decode(&bytes)?;
+    assert_eq!(crates::encode(&decoded)?, bytes);
+    let rows = decoded
+        .source_descriptor()
+        .ok_or("CLI source descriptor")?
+        .compiler_operations()?;
+    assert_eq!(rows.operations().len(), 1);
+    assert_eq!(rows.ordinary_bodies().len(), 1);
+    assert!(matches!(
+        rows.function_body(rows.operations()[0].declaration)?,
+        s::FunctionBody::CompilerOperation(_)
+    ));
+    assert!(
+        !rows
+            .ordinary_bodies()
+            .any(|body| body == rows.operations()[0].body)
+    );
+    for (name, reason) in [
+        ("consumer", None),
+        ("unsafe-consumer", Some("unsafe context")),
+        ("wrong-output-consumer", Some("incompatible types")),
+    ] {
+        let result = client(crates::decode(&bytes)?, name);
+        if let Some(reason) = reason {
+            let error = result.err().ok_or_else(|| format!("accepted {name}"))?;
+            assert!(error.to_string().contains(reason), "{name}: {error}");
+        } else {
+            result.map_err(|error| format!("{name}: {error}"))?;
+        }
+    }
+    for (name, reason) in [
+        ("wrong-output", "actual async unit output"),
+        ("wrong-unsafe", "unsafe Rust borrow signature"),
+        ("invalid-body", "incompatible types"),
+    ] {
+        let output = cli_provider(&folder, name)?;
+        assert_eq!(output.status.code(), Some(1), "{name}: {output:?}");
+        assert!(
+            String::from_utf8_lossy(&output.stderr).contains(reason),
+            "{name}: {output:?}"
+        );
+        assert!(!folder.join(format!("{name}.rgm")).exists());
+    }
+    Ok(())
+}

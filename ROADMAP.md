@@ -491,3 +491,13 @@ five new native programs and bounded8/32/128 work pass. A real signed i32 native
 failure was repaired with explicit operand extension. Clean original-core retry
 and successor full CI remain pending. Whole PA25–44 and original library artifact
 requirements remain unchanged; the separate PA25 component stays independent.
+
+
+Clean7db0c611e/release27 now completes unchanged original-core census analysis with
+zero records across42310 declarations/25858 bodies/35120 attempts. Genuine library
+output still fails at compiler-owned async_drop_in_place state/polling; metadata
+is absent and LowIR empty. The [v11 CLI integration](docs/parallel/deferred-operations-v11.md)
+exposes an existing authenticated symbolic contract and qualifies eight focused
+transport/guard tests. It does not replace the required original v13 full-body
+artifact or executable future/native consumers. Combined ordinary-body/operation
+transport and genuine async state remain required. No whole PA advances status.

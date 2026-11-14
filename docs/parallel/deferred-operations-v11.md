@@ -2,8 +2,9 @@
 
 This checkpoint publishes an authenticated symbolic `AsyncDropInPlace` operation.
 It does not publish an executable future or close PA42/43. The public entry is
-`SourcePublication::CompilerOperations`; CLI/core routing remains an integration
-task. The owning packet and frozen source fingerprints are
+`SourcePublication::CompilerOperations`. The CLI now exposes the same profile as
+`--source-profile module-compiler-operations-v11`; combined ordinary-body/core
+publication and actual future execution remain integration tasks. The owning packet and frozen source fingerprints are
 `pa43/tests/spec/deferred-compiler-op/predictions.json`.
 
 The new profile uses envelope **13**, version **11**. Source envelope10,
@@ -105,3 +106,42 @@ async destruction. Arbitrary authored async export requires its real checked
 typed body/ownership data. Actual full-core members and broader imported profiles
 must transport or fence; they are not skipped. Core's lack of an `async_drop`
 request remains valid and imposes no blanket helper gate.
+
+
+## CLI integration and original-core frontier
+
+The CLI selects the existing typed producer with full SourceCore library identity,
+LowIR and metadata outputs. Every normal option/dependency/ownership guard remains.
+The [PA43 packet](../../pa43/tests/spec/compiler-operation-cli/manifest.json)
+references eight unchanged, previously qualified inputs by hash and retains the
+complete pinned original future/async_drop.rs byte-for-byte. It supplies no new
+executable operation or Rust language semantics.
+
+Focused1794662507576101300 passes eight exact tests across linking/frontend in
+45.56s, with strict selected/CLI Clippy, full formatting and architecture checks.
+The actual CLI file decodes/re-encodes exactly, retains one CompilerOperation and
+one separate ordinary body, and supplies a fresh independent typed consumer's
+two genuine Future<Output=()> applications. Wrong Output and unsafe calls reject
+for their actual causes. Real authored body/signature checks, forgery opponents,
+legacy byte packets, native metadata wrapping and placeholder CFG guards pass.
+No native future is executed. First test setup used SourceClient --emit-types,
+which the existing CLI contract expressly forbids; its exit2 is retained as
+invalid invocation, not semantic rejection. The fresh typed API consumer owns
+this analysis contract, and no CLI mode restriction was relaxed.
+
+All3963 compiler/test sources and nine manifest inputs hash-check unchanged;
+315 harness/495 roots/13 binaries/44 stages/one component and128 upstream+126
+Reference checks pass. No old metadata byte format, runtime guard, backend or
+quota changes. Raw evidence: obj/parallel/compiler-operation-cli/.
+
+Clean7db0c611e/release27 now reaches the end of unchanged original-core analysis
+with zero records:42310 declarations/25858 bodies/35120 item attempts in22.1444s
+under the14/20 load gate. Postcheck722/375/six/3963/empty patch and fixed limits
+passes. A census still never builds core. The genuine module-bodies-v13 library
+attempt fails at async_drop_in_place after19.8253s with no metadata and empty
+LowIR: compiler-owned async destruction requires generated future state/polling.
+That full-body original command remains a required positive. Exposing this v11
+symbolic profile does not discharge it, nor real constructor/poll/drop/Pin/Output,
+cancellation, recursive cleanup, native or ordinary authored-future requirements.
+A combined body/operation transport must be explicit, authenticated and compatible
+with all existing formats; do not silently assign operation authority to v13.

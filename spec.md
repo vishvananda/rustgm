@@ -8259,3 +8259,13 @@ truncating their result; source permission and imported-profile fences remain.
 The [unchecked arithmetic checkpoint](docs/pa31-unchecked-arithmetic.md) records
 independent integer bits, real runtime ABI observations and unqualified reference
 infrastructure failures. It establishes no original library artifact or PA release.
+
+
+The CLI exposes the existing authenticated CompilerOperations profile as
+`--source-profile module-compiler-operations-v11`, retaining the normal SourceCore
+library/full-identity/LowIR/metadata option requirements. It delegates to the
+existing typed producer and codec; selecting it grants no executable future or
+placeholder body authority. Ordinary v13 body transport and v11 symbolic operation
+transport remain distinct contracts. The [CLI integration](docs/parallel/deferred-operations-v11.md)
+records exact packet roundtrip and fresh typed consumer proofs. The genuine full
+original v13 core artifact and all future execution requirements remain open.
