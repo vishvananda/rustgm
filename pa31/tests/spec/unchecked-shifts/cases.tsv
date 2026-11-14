@@ -14,3 +14,6 @@ pa31/tests/spec/unchecked-shifts/scaling-8.rs	0	-
 pa31/tests/spec/unchecked-shifts/scaling-32.rs	0	-
 pa31/tests/spec/unchecked-shifts/scaling-128.rs	0	-
 pa31/tests/spec/unchecked-shifts/runtime.rs	0	-
+pa31/tests/spec/unchecked-shifts/prior-multiply-8.rs	0	-
+pa31/tests/spec/unchecked-shifts/prior-multiply-32.rs	0	-
+pa31/tests/spec/unchecked-shifts/prior-multiply-128.rs	0	-

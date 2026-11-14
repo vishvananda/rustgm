@@ -1153,11 +1153,12 @@ source outcomes plus three declaration-time scaling controls before execution.
 compares exact LowIR under ordinary and increased observations; ignored native
 companions execute the actual source sizes. Independent Rust/C, baseline
 reproduction, source/hash replay and original Field/pointer controls qualify the
-checkpoint; persistent/exhausted-work private execution remains due in full CI.
+checkpoint; full43570894822 additionally proves persistent/exhausted-work private
+execution in release/debug.
 
 The [PA31 unchecked-shift packet](docs/pa31-unchecked-shifts.md) freezes576
 integer results, actual source wrapper, ordinary99, six runtime calls, scaling
 and nine candidate guards. unchecked_shifts.rs is registered once in frontend.
 Pinned Rust/C confirms15 finite source outcomes; the noninteger reference ICE
 is retained as infrastructure failure. Candidate focused/native checks pass;
-final local replay/harness/upstream and full successor CI remain pending.
+local replay/harness/upstream pass; full successor CI remains pending.

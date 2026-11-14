@@ -5,15 +5,13 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
-Latest continuation: clean release23 clears the layout guard and reaches genuine
-unchecked_shl through usize's source wrapper. Shift implementation is now locally
-focused/native-qualified: six exact controls and five actual programs pass.
-Full43570894822 PASSES EVERY STAGE on preceding product source36b794b08, including
-3077 private release/debug. Shift checkpoint823dc01df is published; full43575779218 is running.
-final local replay/harness/upstream and clean24original await disk admission.
-Current3958 Rust sources; pin.py now expects3958. Shared free space fell to153GiB,
-with150GiB reserve/16GiB B cap unchanged; user was asked for5–10GiB externally.
-Read the final "Shift natives qualified; final local admission pending" section.
+Latest continuation: headroom is restored (240GiB, reserve150/cap16 unchanged).
+Published shift source823dc01df passes focused/native and now authenticated replay,
+harness/upstream too. Source3958; scaling266n+39/23n+2181. Three frozen supported
+multiply controls plus ordinary f64 pass independent/baseline23 preflight.
+Full43575779218 is still running on exact823dc01df; do not dispatch a duplicate
+for this fixture/docs continuation. Freeze clean24 next and observe original
+core unchanged. Read the final "Headroom restored; final shift checks pass" section.
 No original library artifact exists. Continue as one worker in B.
 
 ## Workspace and authorization
@@ -1187,3 +1185,33 @@ space151GiB, so final local replay/harness/upstream and24freeze remain blocked.
 The external5–10GiB headroom question is pending. Exact commands/evidence/CI state
 are in obj/parallel/intrinsic-completion/live-state.json. The build goal is active,
 not achieved: no original artifact or whole PA release exists.
+
+## Headroom restored; final shift checks pass
+
+Shared free space rose to197 then240GiB. The resource blocker is resolved by
+actual external state; no reserve/cap/other-checkout cleanup change. The old
+headroom question no longer blocks work. No local job was live before resuming.
+
+Guarded consistency-final.log PASSES authenticated replay of the three shift
+controls,3958 compiled/test hashes and original packet hashes before/after.
+Inference work2167/8551/34087 =266n+39; canonical2365/2917/5125 =23n+2181 at
+8/32/128. All315 harness,492 roots/13 binaries,44 stages/one component and128
+upstream+126 Reference checks pass. No compiler or fixture source changed during
+that batch. Existing focused/native evidence is reused, without duplicate builds.
+
+Three new PA31 prior-multiply8/32/128 controls retain the exact supported native
+prefix and invoke the shared one-input arithmetic descriptor (pair33,false).
+Outcomes/hashes were frozen before first execution. Independent Rust and immutable
+release23 accept all three planned emit-types commands; unchanged ordinary f64
+emit-lowir also passes. Raw timing-preflight/ and measure-inputs/ declarations
+are under intrinsic-completion/. New shifts keep their separate576/native/work
+proof because23 rejects them. Same-profile23/24 four-A/A/two-ABBA helper is ready,
+not executed; preserve14/20 gate. Added controls do not alter compiler3958 hashes.
+
+Full43575779218 is live on exact823dc01df (release/course stage at latest read);
+its fast job passes. Prior full43570894822 is entirely green3077 private in each
+profile. No duplicate full run for docs/input descendants. Finish new-control
+metadata/upstream, publish this data/docs checkpoint, tidy at idle, freeze one
+clean24release and run unchanged original observe/postcheck. Only actual complete
+analysis permits core-artifact24 (module-bodies-v13 metadata/LowIR), then genuine
+original native consumers. Keep all fixed limits and previous valid positives.

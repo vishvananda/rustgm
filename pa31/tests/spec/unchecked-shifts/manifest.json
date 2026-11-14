@@ -91,6 +91,39 @@
    "sha256": "23e9405a3f162a0946268c94e4ba3cf87e0b65eb3b3e3ecab3e40cec9c1d25db",
    "native_stdout": "80 ff 80000000000000000000000000000000 ffffffffffffffffffffffffffffffff ffffffffffffffff 8000000000000000\n",
    "declaration": "Before first execution: six actual unsafe shift calls, mixed integer RHS widths, signed right extension and128-bit runtime results. No invalid runtime shift is executed."
+  },
+  "prior-multiply-8": {
+   "expected": "accept",
+   "count": 8,
+   "sha256": "2cd45f30d87c8a532489a78aaf864b670a12bc66b77062dc0a5278acd11df455",
+   "declaration": "Frozen before first execution: original supported multiplication descriptor exercises the shared Copy/input selector at8/32/128 calls. Each pair is33,false. Both immutable release23 and24 must accept with complete output equality. New shifts have independent576-bit/native/scaling proof because23 rejects them.",
+   "source_prefix": {
+    "path": "pa28/tests/spec/multiply-overflow/native.rs",
+    "whole_sha256": "4e79b0f8f6686425371e961874b2eea656253fd6474b943260a0c0a7f4b9e9d2",
+    "prefix_sha256": "098baefeb76697924f5cb27ea3aefb84cdbce14bb89160c64d9cc7091e90796e"
+   }
+  },
+  "prior-multiply-32": {
+   "expected": "accept",
+   "count": 32,
+   "sha256": "646f37e79a4625a39bd218a4cecd4fe0fe1043ed92b71268c44e7645d1802031",
+   "declaration": "Frozen before first execution: original supported multiplication descriptor exercises the shared Copy/input selector at8/32/128 calls. Each pair is33,false. Both immutable release23 and24 must accept with complete output equality. New shifts have independent576-bit/native/scaling proof because23 rejects them.",
+   "source_prefix": {
+    "path": "pa28/tests/spec/multiply-overflow/native.rs",
+    "whole_sha256": "4e79b0f8f6686425371e961874b2eea656253fd6474b943260a0c0a7f4b9e9d2",
+    "prefix_sha256": "098baefeb76697924f5cb27ea3aefb84cdbce14bb89160c64d9cc7091e90796e"
+   }
+  },
+  "prior-multiply-128": {
+   "expected": "accept",
+   "count": 128,
+   "sha256": "75b080b3f1896fa67698b71c3435c63dee411806575447c316e7d339af209409",
+   "declaration": "Frozen before first execution: original supported multiplication descriptor exercises the shared Copy/input selector at8/32/128 calls. Each pair is33,false. Both immutable release23 and24 must accept with complete output equality. New shifts have independent576-bit/native/scaling proof because23 rejects them.",
+   "source_prefix": {
+    "path": "pa28/tests/spec/multiply-overflow/native.rs",
+    "whole_sha256": "4e79b0f8f6686425371e961874b2eea656253fd6474b943260a0c0a7f4b9e9d2",
+    "prefix_sha256": "098baefeb76697924f5cb27ea3aefb84cdbce14bb89160c64d9cc7091e90796e"
+   }
   }
  },
  "values": [
@@ -5289,9 +5322,9 @@
  "expected_values_sha256": "167f85c59f7dcea11ebc687c41abbd46476a9bc233c3fcab756e83d3a9a74f10",
  "runtime_observer_sha256": "9255e929b612dcfea7ea25db0d6b7ef96a40402c69c98199da23e4e7de86bfe0",
  "artifacts": {
-  "README.md": "6c1b0c7e0742ed9a2dfb71bc0884753fa90e9d8052ae3008b3380ab7828c945e",
+  "README.md": "3828f336a3d312b82dfc3ee4924b3c4726f827bb98a00aef0ef49ea3645cd6c0",
   "actual-wrapper.rs": "c625cc4ffd5b68ae71af4b9983e689bcfdf9d62df4e35e652d9e1f0867d29212",
-  "cases.tsv": "4baa40b1fc0568153d216809e4073d81844e41ce63b05f2629c1cdcf49c452af",
+  "cases.tsv": "74e06e629c2a2642960d9a7bd91f4f73a8f58b4a7aea6a0a93b9a1d6fc88fae3",
   "equal-width.rs": "39ebbb63209c1a0f9a60d9668e25b19758f553bb26ae3ee9720b7ee9ffa89ddb",
   "expected-matrix.stdout": "c1dce038be82b43732f855adcf71e4c0453a0c0f3bb66cd0e7882aa75ee3e797",
   "expected-runtime.stdout": "8051010da8ad2522300070978f417a41bacb4b9ad6819444a950be8313e99996",
@@ -5308,6 +5341,9 @@
   "ordinary.rs": "d787742e35978f64ac38d76c2d25bccb1d6f75c875059860c597f53195b45866",
   "original/intrinsics.rs": "30336944d006e837a740f9a7a2df355567b71f41eb53eb5bda8e3c928e52b310",
   "original/unsigned-shl.rs": "e82305f754101f3ba004419787aa0dffde266aed164a683f92a33a9114bce01a",
+  "prior-multiply-128.rs": "75b080b3f1896fa67698b71c3435c63dee411806575447c316e7d339af209409",
+  "prior-multiply-32.rs": "646f37e79a4625a39bd218a4cecd4fe0fe1043ed92b71268c44e7645d1802031",
+  "prior-multiply-8.rs": "2cd45f30d87c8a532489a78aaf864b670a12bc66b77062dc0a5278acd11df455",
   "runtime.rs": "23e9405a3f162a0946268c94e4ba3cf87e0b65eb3b3e3ecab3e40cec9c1d25db",
   "scaling-128.rs": "0a8fe007c15f7e533c331f46d936254c3bdf3f0131a4f92cd3642700ca4dd594",
   "scaling-32.rs": "26abcbc853f89e12ece71b374353a4279be4d42aaca614958801757f85d7bc6d",

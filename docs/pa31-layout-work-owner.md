@@ -47,8 +47,8 @@ Raw observations, declarations and hashes live in obj/parallel/layout-field-budg
 The original baseline disk refusal and filename-audit setup failure are retained;
 only baseline1794638741351903699 reached the regression and proves reproduction.
 
-Updated exhausted-work guards and the new warm/persistent-owner private test
-await full CI. No cold local private harness was rebuilt. Full43561807969 passed
+Full43570894822 passes all3077 private tests in both release and debug, including
+updated exhausted-work guards and the new warm/persistent-owner test. No cold local private harness was rebuilt. Full43561807969 passed
 every stage on the preceding product source, including3076 private tests in both
 profiles. A fresh successor is required for this source checkpoint. Freeze one
 coherent compiler and rerun unchanged original core with the same120s deadline,

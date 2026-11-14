@@ -59,11 +59,22 @@ the576-value matrix, actual usize wrapper, six mixed-type runtime calls, the old
 The first native attempt was refused before launch; a later admission succeeded
 without changing limits. Its successor hash/counter replay was then refused
 before launch at152.8GiB free versus153.8GiB required including reservations.
-Authenticated replay and final local harness/upstream remain pending headroom;
-CI will run the complete harness/upstream and source tests on publication.
+Shared headroom is now restored (240GiB observed; reserve/cap unchanged).
+Authenticated replay binds3958 compiler/test sources and the original16-case
+packet before/after all three exact tests. Actual shift preparation is
+266n+39 inference and23n+2181 canonical steps at8/32/128. All315 harness checks,
+492 roots/13 binaries,44 stages/one component and128 upstream+126 Reference
+checks pass. Raw: intrinsic-completion/qualified-replay/ and consistency-final.log.
+
+Three additional prior-multiply8/32/128 controls exercise the changed shared
+selector with supported23 operations; each pair is33,false. Their manifest
+outcomes precede execution. Independent Rust and immutable23 accept all three
+exact planned commands, alongside unchanged ordinary f64 LowIR. Same-profile
+23/24 A/A+ABBA remains pending the14/20 load gate. The added controls do not
+replace new-shift576-bit/native/scaling proofs, which23 cannot pass.
 
 Full43570894822 PASSED EVERY STAGE on preceding36b794b08, including3077 private
 tests in release/debug and the persistent layout guards. This shift checkpoint
-requires its own successor. Controlled timings and a fresh unchanged original
+requires its own successor. Full43575779218 is running on the shift source. Controlled timings and a fresh unchanged original
 core attempt remain pending; no speed claim, original artifact or whole PA31
 release is made. Preserve every earlier required positive.
