@@ -5,14 +5,14 @@ assignment components as their complete contracts qualify. Work as **one worker*
 **No original library artifact exists.** PA25–PA44 remain planned as whole PAs;
 the released113-case PA25 const-machine component stays separate.
 
-Latest continuation: the layout-budget repair is locally QUALIFIED. Baseline
-1794638741351903699 reproduces the actual old failure; focused fixed
-1794639072978956146 and native1794639354437875740 pass. Source inventory3957.
-Shared headroom is restored, with150GiB reserve and16GiB B cap unchanged.
-Full43561807969 passes every stage on preceding product source40d29b452.
-Release22 still supplies the latest original-core frontier (completion layout
-guard); no new original observation or library artifact yet. Read the final
-"Layout work qualified; successor core attempt next" section before continuing.
+Latest continuation: layout repair36b794b08 is published; clean release23
+checks all42310 declarations/25858 bodies, zero failed/blocked functions, and
+CLEARS the layout-budget error. Completion now reaches genuine unchecked_shl
+through generated usize::unchecked_shl. No original artifact. Full43570894822
+PASSES EVERY STAGE, including3077 private release/debug. B contains locally
+focused-qualified shift work and PA31 reductions; candidate native execution is
+pending because shared disk admission refused launch. Read the final "Release23 observed; unchecked shifts WIP" section.
+Shared headroom157GiB, reserve150GiB and B cap16GiB unchanged. One worker.
 
 ## Workspace and authorization
 
@@ -1037,3 +1037,105 @@ observations stand with no speed claim. Only21/22 executable pins are currently
 available;19/20 were retired, their original callback-export positives remain.
 No original artifact exists, whole PA25–44 remain planned, the separate113-case
 component and every earlier retained valid positive remain required.
+
+## Release23 observed; unchecked shifts WIP
+
+Published36b794b08d652dc631499d00bfbef7424659d894 owns persistent layout Work.
+Candidate23release built8m07s,3957 hashes, empty patch. CLI SHA256
+040138fd1caae1b90b893e1fb945f687476225dc9c382aed1cbeb19068e7d5a2.
+Original diagnostic27.2399s, load22.75/24.96 above14/20: no timing claim.
+42310 declarations/25858 bodies/35120 attempts, zero failed/blocked functions;
+completion0, sole error file12:1858633 source intrinsic constant execution not
+implemented. postcheck23 PASSES722/375/six/all3957/fixed limits, old layout guard
+absent and no previous body regressed. No core-artifact23 or native original
+consumer ran. make tidy1794641541295921293 completed at the preceding idle.
+
+Exact GDB source line61 stops in Machine::source_selector_call, then evaluate,
+run, Engine.advance, Queries, named -> validate_ordinary_initializers ->
+complete_constants. Packed kind register ebp0x1130011 indicates Declaration
+ordinal275; NAMES275 is unchecked_shl. Actual current expanded23 independently
+confirms the site: complete expanded output exactly equals historical expanded17,
+SHAf5b6fb7ad812f41193314f6211950c1329a64442d78b0bcb9d224402ea262659.
+Node42146 spans1858633:1858867, genuine unchecked_shl call42144. Original uint
+macro file38:84861, substituted usize from num/mod49185 in64-bit branch. This is
+an expanded byte position, NOT offset1858633 in the65KiB physical num/mod file.
+Raw: intrinsic-completion/debug23/, expanded23/ (lossless stdout.gz), and
+expanded17-context.txt. No source trace patch is installed.
+
+PA31 tests/spec/unchecked-shifts/ declares576 exact CTFE results across all12x12
+integer LHS/RHS types and both directions/count0/width-1, actual usize wrapper,
+ordinary lookalike, three scaling sources and nine intended rejecting guards.
+Independent oracle2 confirms all576 through Rust/C and actual wrapper2^63;
+14 finite source outcomes agree, BUT f32 wrong-type opponent causes Rust ICE101
+in both const and reached runtime forms. Preserve that infrastructure failure;
+it is NOT a semantic rejection. oracle1's initial boolean nonzero classifier
+was corrected explicitly in its receipt; its overall result was already failed.
+Initial matrix lacked Neg and ordinary equality lacked PartialEq; equivalent
+casts and a plain99 ordinary body correct setup without inverting valid outcomes.
+All first inputs/logs/hashes remain under oracle1/inputs. Runtime3 separately
+qualifies six mixed-type genuine integer calls, signed extension and128-bit
+results with independent C. No invalid runtime shifts execute. All outcomes,
+original declaration/macro cutouts, fixture/observer/expected hashes are manifested.
+Baseline23 reproduces the actual unimplemented-intrinsic error for wrapper,
+matrix and all three scaling sources; ordinary lookalike succeeds unchanged.
+
+UNQUALIFIED code delta currently generalizes the existing typed subtraction/
+arithmetic selection to carry the actual RHS type; both genuine Copy formals,
+full signatures/current source/caller/const/safety proofs remain required. Reuse
+existing checked CTFE integer shift kernel (reject negative/large counts before
+narrowing), and existing LowIR shift/cast operations for valid unsafe runtime
+calls. No new intrinsic-name authority, quota/backend/wire/storage.py change.
+New dev/tests/unchecked_shifts.rs is registered once in frontend; current Rust
+inventory3958. No new private harness is built. First focused fastcheck is next.
+Do not publish or freeze24 until it and native/old arithmetic guards qualify.
+Full43570894822 remains the one manual successor on published36b; don't dispatch
+a duplicate or change sources to reinterpret a later CI failure. All earlier
+required positives, original artifact/whole-PA gates and pending timings remain.
+
+### Shift focused checks pass; native admission refused
+
+Full43570894822 PASSED EVERY STAGE on published36b794b08. Raw full log under
+layout-field-budget/ci43570894822.log proves3077 private release/debug, including
+warm persistent Work and both exhaustion/no-premature-field guards. No duplicate
+manual successor is live. Committed product source remains36b; a handoff-only descendant may follow. Shift code is WIP.
+
+Focused1794643393395070066 PASSES six exact tests in127.47s; fullfmt/audit,
+strict selected/CLI Clippy and metadata pass. All3958 current compiler/test hashes
+match that receipt. Frontend harness SHA
+4d78ccf48ea8c53b22c6ac37431da9c95482ce2eabb2aa41ed3dc50235d69e8f.
+The initial suite selector incorrectly prefixed frontend; rejected before tests.
+Fast1794642776470517595 reaches tests: old controls3pass, shift3fail because the
+shared Copy checker only allowed one subject. Generalized bounded exact premises
+preserve N1 and require both N2 subjects. Fast1794643059363250595 then5pass/1fail:
+all576 bits/guards/scaling work, but the dependency collector still required equal
+operand types. It now checks actual RHS alongside CTFE/runtime. A later test
+refactor had a missing brace and was refused by format; corrected before passing
+127s run. No quotas, opponents or valid positives were changed to hide failures.
+
+Three new native programs plus old156-product/Field controls are selected in
+fixed-native1.log, BUT refused BEFORE launch at153.8GiB available/required rounded.
+Current free space fell to153GiB;150GiB reserve and16GiB cap unchanged. User was
+asked asynchronously for another5–10GiB outside B. Do not lower reserve/cap or
+clean other checkouts. Own-output cleanup does not increase admission headroom
+when freed bytes become unused cap. No compiler/test/probe remains active.
+
+Prepared capture.py will authenticate the passing frontend harness, all3958
+sources and final fixture hashes before/after the three exact tests with
+nocapture; it has NOT executed. Native run, capture replay, final harness/upstream,
+controlled timings, publication/full successor and clean24original are pending.
+Do not claim a candidate native result, analysis completion, genuine original
+artifact or whole PA. See docs/pa31-unchecked-shifts.md for complete current scope.
+Current additional production WIP includes compare_intrinsic.rs (bounded N1/N2
+Copy premises) and lower/instances/dependencies/subtraction_dependencies.rs (exact
+RHS call proof), as well as the earlier listed four arithmetic files. Public root
+unchecked_shifts.rs and its16 source cases are untracked; all belong in this
+checkpoint after qualification. Original f32 reference ICE is retained, not a
+semantic rejection. All earlier requirements and pending measurements remain.
+
+A lossless WIP snapshot (tracked patch, new test/doc and all fixture bytes/hashes)
+is saved under intrinsic-completion/checkpoint/. observe/postcheck/core-artifact24
+helpers are prepared, not run. Pin.py still expects3957 (published36b); update to
+actual3958 only after current qualification before freezing24. Leave21/22/23
+pins available; pending21/22 products and22/23 layout comparisons still need their
+actual binaries. Do not lower the load gate14/20 to complete them. The load now
+admits timings, but disk admission remains refused, so no timing run launched.
