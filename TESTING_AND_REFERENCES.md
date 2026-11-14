@@ -1174,3 +1174,14 @@ Final focused1794660904448918647 and native1794661028311363989 pass alongside ol
 shift/product controls. Hash replay binds3963 sources and the predeclared packet;
 315 harness/495 roots/upstream checks pass. Standalone library transport/artifacts
 remain required independently of the successful in-memory native programs.
+
+
+The [mixed PA43 metadata packet](docs/parallel/body-operations-v14.md) combines
+predeclared original helper and ordinary body-node inputs. Six exact focused tests
+and two actual native Rust/C programs pass, with current source/fixture hash
+replay,315 harness and upstream checks. Static escape is rejected by actual
+ownership/loan validation, not classified from typing alone. New source envelope
+10/version14 encodes shared result columns once and adds the authenticated
+operation tail. Immutable v11/v13 A/A and B/B metadata remain byte-identical.
+All former full-body original/native async and metadata requirements remain
+explicit; no new generated text reference or backend contract is published.

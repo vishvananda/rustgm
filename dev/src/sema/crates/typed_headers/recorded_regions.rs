@@ -85,15 +85,15 @@ impl DomainStage {
         }
         let original = rows
             .originals
-            .get(raw.0 as usize)
+            .get(rows.original_index(raw).map_err(error)?)
             .ok_or_else(|| error("recorded domain lost its actual original"))?;
         let input = rows
             .body_inputs
-            .get(raw.0 as usize)
+            .get(rows.original_index(raw).map_err(error)?)
             .ok_or_else(|| error("recorded domain lost its actual inputs"))?;
         let unit = rows
             .body_units
-            .get(raw.0 as usize)
+            .get(rows.original_index(raw).map_err(error)?)
             .ok_or_else(|| error("recorded domain lost its actual numbering unit"))?;
         let frame = rows
             .binders
@@ -226,8 +226,15 @@ fn allocate(
     let mut allocations = Vec::with_capacity(n);
     let mut by_slot = Vec::with_capacity(n);
     by_slot.resize_with(n, || None);
-    let original = &rows.originals[body.0 as usize];
-    let unit = &rows.body_units[body.0 as usize];
+    let index = rows.original_index(body).map_err(error)?;
+    let original = rows
+        .originals
+        .get(index)
+        .ok_or_else(|| error("recorded allocation lost its checked ordinary row"))?;
+    let unit = rows
+        .body_units
+        .get(index)
+        .ok_or_else(|| error("recorded allocation lost its checked numbering row"))?;
     for &slot in &unit.allocation_order {
         let raw = original
             .variables
@@ -343,8 +350,15 @@ impl RecordedDomain {
     ) -> Result<std::ops::Range<u32>, Error> {
         work.charge(4)?;
         let rows = view.rows()?;
-        let original = &rows.originals[self.seal.raw.0 as usize];
-        let actual = rows.body_inputs[self.seal.raw.0 as usize]
+        let row = rows.original_index(self.seal.raw).map_err(error)?;
+        let original = rows
+            .originals
+            .get(row)
+            .ok_or_else(|| error("selected normalization lost its checked ordinary row"))?;
+        let actual = rows
+            .body_inputs
+            .get(row)
+            .ok_or_else(|| error("selected normalization lost its checked input row"))?
             .normalizations
             .get(index)
             .ok_or_else(|| error("selected normalization lost its actual body ordinal"))?;

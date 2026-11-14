@@ -87,3 +87,12 @@ with zero records, but its real v13 library build stops at compiler-owned helper
 state/polling with absent metadata/empty LowIR. That full-body positive and every
 constructor, poll/drop, Pin, cancellation and recursive cleanup/native contract
 above remain required. This assignment stays planned.
+
+
+The [mixed body/operation metadata checkpoint](../docs/parallel/body-operations-v14.md)
+retains authenticated symbolic helper declarations beside real ordinary body IR,
+with explicit version14 and unchanged v11/v13 bytes. Fresh consumers keep actual
+Output/unsafe/lifetime proofs, and ordinary native consumers return41 in both
+body orderings. The helper gains no executable state, poll/drop, cancellation or
+recursive cleanup. Original full-library artifacts and all real future/native
+requirements above remain open; the assignment stays planned.

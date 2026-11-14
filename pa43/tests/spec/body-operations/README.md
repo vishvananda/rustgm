@@ -1,0 +1,1 @@
+Frozen mixed body/operation transport contract. manifest.json declares source, wire, guard and native expectations before implementation. New source metadata version14 combines existing typed producers; it grants no executable future. Legacy profiles and all original/full async/native requirements remain.

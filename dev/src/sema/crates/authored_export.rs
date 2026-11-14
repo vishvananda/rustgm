@@ -423,6 +423,20 @@ impl Stage {
             BodyTransport::Nodes,
         )
     }
+    /// Version fourteen combines node bodies with the authenticated operation owner.
+    pub(crate) fn begin_module_body_operations(
+        report: &Report,
+        facts: &mut Declarations,
+        identity: &CrateIdentity,
+    ) -> Result<Self, &'static str> {
+        Self::begin_with(
+            report,
+            facts,
+            identity,
+            ExportMode::CompilerOperations,
+            BodyTransport::Nodes,
+        )
+    }
     fn begin_mode(
         report: &Report,
         facts: &mut Declarations,

@@ -31,7 +31,10 @@ impl OriginalBody<'_> {
                 "selected original roots require their actual raw original",
             ));
         };
-        let raw = &rows.originals[raw.0 as usize];
+        let raw = rows
+            .originals
+            .get(rows.original_index(raw).map_err(error)?)
+            .ok_or_else(|| error("selected original lost its checked ordinary row"))?;
         work.charge(
             raw.locals
                 .len()

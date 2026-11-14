@@ -19,7 +19,7 @@ pub(super) fn prepare<'rows, P: ports::OwnedPort<'rows>>(
     let rows = Port::rows(&port.port);
     let inputs = rows
         .body_inputs
-        .get(body.0 as usize)
+        .get(rows.original_index(body).map_err(error)?)
         .filter(|input| input.body == body)
         .ok_or_else(|| error("selected requests lost their actual raw body inputs"))?;
     let builtins = inputs.builtins.as_ref();
@@ -91,7 +91,7 @@ pub(super) fn prepare<'rows, P: ports::OwnedPort<'rows>>(
     if rows.descriptor().profile().conversion_roles() {
         let original = rows
             .originals
-            .get(body.0 as usize)
+            .get(rows.original_index(body).map_err(error)?)
             .filter(|original| original.body == body)
             .ok_or_else(|| error("ordinary requests lost their actual original body"))?;
         work.charge(original.calls.len().saturating_add(1))?;

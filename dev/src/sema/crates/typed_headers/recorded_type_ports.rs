@@ -56,6 +56,14 @@ impl<'rows> Port<'rows, ReservationWork> for Recorded<'rows, '_, '_> {
     fn definition(&self, row: DeclarationRef, work: &mut ReservationWork) -> Result<DefId, Error> {
         self.port.definition(row, work)
     }
+    fn opaque(
+        &self,
+        owner: DeclarationRef,
+        ordinal: u32,
+        work: &mut ReservationWork,
+    ) -> Result<crate::types::opaque::OpaqueId, Error> {
+        self.port.opaque(owner, ordinal, work)
+    }
     fn root(&self) -> ImportedDeclarationId {
         self.port.root()
     }

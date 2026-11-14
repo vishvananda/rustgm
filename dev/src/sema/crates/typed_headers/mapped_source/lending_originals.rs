@@ -172,7 +172,7 @@ fn environment(
     let rows = view.rows()?;
     let inputs = rows
         .body_inputs
-        .get(raw.0 as usize)
+        .get(rows.original_index(raw).map_err(error)?)
         .filter(|inputs| inputs.body == raw)
         .ok_or_else(|| error("ordinary environment lost its actual body inputs"))?;
     match inputs.environment {

@@ -132,7 +132,8 @@ impl Context<'_> {
                 | s::Profile::Source2024ModuleNominals
                 | s::Profile::Source2024ModuleCompilerOperations
                 | s::Profile::Source2024ModuleBranches
-                | s::Profile::Source2024ModuleBodies => {
+                | s::Profile::Source2024ModuleBodies
+                | s::Profile::Source2024ModuleBodyOperations => {
                     actual.module_contracts().map_err(error)?;
                 }
                 _ => {
@@ -214,9 +215,7 @@ impl Graph {
         // Retained maps coexist with the visiting/output vectors and a cursor
         // frontier bounded by node count, even for repeated shared children.
         recipe_identity::reserve(context, facts, budget)?;
-        let canonical = if context.descriptor.profile().conversion_roles()
-            && !context.descriptor.profile().compiler_operations()
-        {
+        let canonical = if context.descriptor.profile().original_domains() {
             budget.reserve(size_of::<Self>())?;
             Canonical::Lazy(Box::new(ingested_domains::Lazy::prepare(
                 context, facts, root, budget,

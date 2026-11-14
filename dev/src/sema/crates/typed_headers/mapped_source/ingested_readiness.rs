@@ -546,8 +546,7 @@ impl Graph {
             .get(&definition)
             .ok_or("source function readiness omitted its actual declaration environment")?;
         if header.environment.is_none()
-            && rows.descriptor().profile().conversion_roles()
-            && !rows.descriptor().profile().compiler_operations()
+            && rows.descriptor().profile().original_domains()
             && let s::FunctionBody::Original(body) = raw.body
             && rows
                 .body_inputs

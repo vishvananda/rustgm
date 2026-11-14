@@ -45,9 +45,15 @@ impl resolve::load::Sources for NoFiles {
         Ok(None)
     }
 }
-fn client(
+pub(crate) fn client(
     interface: crates::Interface,
     name: &str,
+) -> Result<(resolve::expansion::Report, pipeline::Analysis)> {
+    client_source(interface, fixture(name)?)
+}
+pub(crate) fn client_source(
+    interface: crates::Interface,
+    text: String,
 ) -> Result<(resolve::expansion::Report, pipeline::Analysis)> {
     let provider = interface.identity().clone();
     let dependencies = Arc::new(Dependencies::new(
@@ -64,7 +70,7 @@ fn client(
     let input = resolve::load::InputFile {
         identity: "recipe-client.rs".into(),
         path: "recipe-client.rs".into(),
-        source: SourceFile::new(fixture(name)?.into_bytes())?,
+        source: SourceFile::new(text.into_bytes())?,
     };
     let expanded = resolve::expansion::analyze_with_context(
         input,

@@ -8,6 +8,12 @@ use crate::support::crates::{
 pub(super) fn encode(out: &mut Writer, rows: s::ValidatedView<'_>) -> Result<(), &'static str> {
     super::write(out, &rows.associated_types, associated_write)?;
     super::write(out, &rows.projections, projection_write)?;
+    encode_operations(out, rows)
+}
+pub(super) fn encode_operations(
+    out: &mut Writer,
+    rows: s::ValidatedView<'_>,
+) -> Result<(), &'static str> {
     super::write(out, &rows.opaque_futures, opaque_write)?;
     super::write(out, &rows.compiler_operations, operation_write)
 }
@@ -17,6 +23,12 @@ pub(super) fn decode(
 ) -> Result<(), &'static str> {
     rows.associated_types = read.list(MAX_COMPONENTS, 39, associated_read)?;
     rows.projections = read.list(MAX_COMPONENTS, 24, projection_read)?;
+    decode_operations(read, rows)
+}
+pub(super) fn decode_operations(
+    read: &mut Input<'_, '_>,
+    rows: &mut s::SourceRows,
+) -> Result<(), &'static str> {
     rows.opaque_futures = read.list(MAX_COMPONENTS, 37, opaque_read)?;
     rows.compiler_operations = read.list(MAX_COMPONENTS, 21, operation_read)?;
     Ok(())

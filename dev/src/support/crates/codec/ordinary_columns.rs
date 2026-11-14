@@ -120,7 +120,11 @@ pub(super) fn encode_module_availability(
     }
     exemption_wire::encode(out, const_bodies)?;
     if rows.descriptor().profile().compiler_operations() {
-        compiler_wire::encode(out, rows)?;
+        if rows.descriptor().profile().body_nodes() {
+            compiler_wire::encode_operations(out, rows)?;
+        } else {
+            compiler_wire::encode(out, rows)?;
+        }
     }
     Ok(())
 }
@@ -177,6 +181,12 @@ pub(super) fn decode_module_branches(
     base: usize,
 ) -> Result<AvailabilityPacket, &'static str> {
     decode_availability_profile(reader, base, s::Profile::Source2024ModuleBranches)
+}
+pub(super) fn decode_module_body_operations(
+    reader: &mut Reader<'_>,
+    base: usize,
+) -> Result<AvailabilityPacket, &'static str> {
+    decode_availability_profile(reader, base, s::Profile::Source2024ModuleBodyOperations)
 }
 pub(super) fn decode_module_bodies(
     reader: &mut Reader<'_>,
@@ -236,7 +246,11 @@ fn decode_availability_profile(
         exemption_wire::decode(&mut read)?
     };
     if profile.compiler_operations() {
-        compiler_wire::decode(&mut read, &mut rows)?;
+        if profile.body_nodes() {
+            compiler_wire::decode_operations(&mut read, &mut rows)?;
+        } else {
+            compiler_wire::decode(&mut read, &mut rows)?;
+        }
     }
     Ok(AvailabilityPacket {
         rows,

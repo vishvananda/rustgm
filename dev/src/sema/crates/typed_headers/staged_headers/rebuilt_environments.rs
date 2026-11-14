@@ -280,8 +280,7 @@ pub(super) fn complete(
             .get(rows.original_index(reference).map_err(error)?)
             .filter(|inputs| inputs.body == reference)
             .ok_or_else(|| error("source original environment omitted its actual body inputs"))?;
-        if context.descriptor.profile().conversion_roles()
-            && !context.descriptor.profile().compiler_operations()
+        if context.descriptor.profile().original_domains()
             && inputs.environment == s::EnvironmentOrigin::Contract
         {
             scope

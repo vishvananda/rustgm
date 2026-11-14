@@ -128,6 +128,29 @@ impl Payload {
     }
     /// # Errors
     /// Rejects the same rows as version twelve; only their wire encoding differs.
+    pub fn from_source_module_body_operations(
+        owner: &CrateIdentity,
+        rows: source::SourceRows,
+        attributes: source::HeaderAttributeColumns,
+        modules: source::ModuleContractRows,
+        availability: source::AvailabilityRows,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        let overhead = size_of::<Self>().saturating_sub(size_of::<source::ValidatedRows>());
+        source::ValidatedRows::stage_module_body_operations(
+            owner,
+            rows,
+            attributes,
+            modules,
+            availability,
+            base.saturating_add(overhead),
+            work,
+        )
+        .map(Self::from)
+    }
+    /// # Errors
+    /// Rejects incomplete version-thirteen body-node contracts.
     pub fn from_source_module_bodies(
         owner: &CrateIdentity,
         rows: source::SourceRows,

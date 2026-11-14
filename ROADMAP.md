@@ -501,3 +501,14 @@ exposes an existing authenticated symbolic contract and qualifies eight focused
 transport/guard tests. It does not replace the required original v13 full-body
 artifact or executable future/native consumers. Combined ordinary-body/operation
 transport and genuine async state remain required. No whole PA advances status.
+
+
+The [mixed body/operation checkpoint](docs/parallel/body-operations-v14.md)
+qualifies explicit metadata version14, preserving ordinary v13 node bodies and
+actual nonexecutable async-drop operations together. Both orderings execute their
+ordinary native consumer41; typed Output/unsafe, static lifetime, wire forgery,
+owned-domain and bounded8/32/128 controls pass. Legacy v11/v13 bytes remain exact.
+Full43597538902 passed every preceding arithmetic stage. A successor clean release,
+full CI and genuine original-core library retry remain required. This metadata
+prerequisite supplies no real async constructor/poll/drop/cancellation/recursive
+cleanup and does not close the older original-v13 positive or whole PA25–44.

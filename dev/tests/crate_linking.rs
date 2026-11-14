@@ -60,6 +60,8 @@ mod lifetime_transport;
 mod marker_transport;
 #[path = "crate_linking/match_transport.rs"]
 mod match_transport;
+#[path = "crate_linking/mixed_recipes.rs"]
+mod mixed_recipes;
 #[path = "crate_linking/modifier_transport.rs"]
 mod modifier_transport;
 #[path = "crate_linking/named_constants.rs"]

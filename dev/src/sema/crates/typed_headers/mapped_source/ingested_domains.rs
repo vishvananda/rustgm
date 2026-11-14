@@ -68,7 +68,7 @@ impl Lazy {
             .get(rows.original_index(raw).map_err(error)?)
             .ok_or_else(|| error("ordinary original lost its current raw body"))?;
         let mut port = Recorded::ordinary(
-            Reserved::new(view, &self.maps, &facts.types, work)?,
+            Reserved::new(view, &self.maps, &facts.types, work)?.with_opaques(&facts.opaques),
             &domain,
             &facts.lifetimes.callables,
         );
@@ -192,7 +192,7 @@ impl Lazy {
         );
         let maps = Maps::prepaid(&view, &facts.types)?;
         let records = Box::new(OrdinaryRecords::new(&view, work)?);
-        let mut port = Reserved::new(view, &maps, &facts.types, work)?;
+        let mut port = Reserved::new(view, &maps, &facts.types, work)?.with_opaques(&facts.opaques);
         work.charge(
             rows.slots
                 .len()

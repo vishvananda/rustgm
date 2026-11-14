@@ -89,6 +89,7 @@ pub(in crate::sema::crates::typed_headers) struct Reserved<'rows, 'maps> {
     view: RecipeView<'rows>,
     rows: s::ValidatedView<'rows>,
     maps: &'maps Maps,
+    opaques: Option<&'maps crate::sema::opaque::Opaques>,
 }
 impl<'rows, 'maps> Reserved<'rows, 'maps> {
     pub(in crate::sema::crates::typed_headers) fn recipe_view(&self) -> &RecipeView<'rows> {
@@ -102,7 +103,20 @@ impl<'rows, 'maps> Reserved<'rows, 'maps> {
     ) -> Result<Self, Error> {
         maps.require(&view, store, work)?;
         let rows = view.rows()?;
-        Ok(Self { view, rows, maps })
+        Ok(Self {
+            view,
+            rows,
+            maps,
+            opaques: None,
+        })
+    }
+    /// The importing declaration phase already reserved these owner/ordinal IDs.
+    pub(in crate::sema::crates::typed_headers) fn with_opaques(
+        mut self,
+        opaques: &'maps crate::sema::opaque::Opaques,
+    ) -> Self {
+        self.opaques = Some(opaques);
+        self
     }
     pub(in crate::sema::crates::typed_headers) fn declaration(
         &self,
@@ -130,6 +144,23 @@ impl<'rows> Port<'rows, ReservationWork> for Reserved<'rows, '_> {
         budget: &mut ReservationWork,
     ) -> Result<DefId, Error> {
         self.view.definition(row, budget)
+    }
+    fn opaque(
+        &self,
+        owner: DeclarationRef,
+        ordinal: u32,
+        work: &mut ReservationWork,
+    ) -> Result<crate::types::opaque::OpaqueId, Error> {
+        let opaques = self.opaques.ok_or_else(|| {
+            error("opaque result requires its actual imported declaration reservation")
+        })?;
+        let owner = self.view.definition(owner, work)?;
+        opaques
+            .owners
+            .get(&owner)
+            .and_then(|ids| ids.get(ordinal as usize))
+            .copied()
+            .ok_or_else(|| error("imported opaque requires its actual reserved owner/ordinal"))
     }
     fn root(&self) -> ImportedDeclarationId {
         self.view.root()

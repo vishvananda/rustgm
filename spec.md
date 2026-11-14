@@ -8269,3 +8269,16 @@ placeholder body authority. Ordinary v13 body transport and v11 symbolic operati
 transport remain distinct contracts. The [CLI integration](docs/parallel/deferred-operations-v11.md)
 records exact packet roundtrip and fresh typed consumer proofs. The genuine full
 original v13 core artifact and all future execution requirements remain open.
+
+
+Source metadata `module-body-operations-v14` uses envelope10/version14 to combine
+ordinary v13 body nodes with authenticated v11 compiler-operation data. Keep all
+older envelopes/versions and the declarative macro envelope14 unchanged. Encode
+associated result authority once; the operation trailer retains explicit optional
+const-body presence followed by actual opaque/operation records. A symbolic helper
+has no ordinary executable body. Ordinary originals retain their own parameter,
+region, environment and proof domains even beside a symbolic operation. Reuse
+actual declaration opaque reservations and the checked BodyRef-to-ordinary-row
+map throughout recording and reconstruction. The [mixed transport checkpoint](docs/parallel/body-operations-v14.md)
+records independent source/native outcomes, static-lifetime rejection at borrow
+validation, legacy byte equality and all remaining executable-future/core gates.

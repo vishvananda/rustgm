@@ -210,7 +210,7 @@ fn original_formals(
     let rows = view.rows()?;
     let input = rows
         .body_inputs
-        .get(body.0 as usize)
+        .get(rows.original_index(body).map_err(error)?)
         .filter(|input| input.body == body)
         .ok_or_else(|| error("ordinary recording lost its complete original formal domain"))?;
     work.charge(input.parameters.len().saturating_add(1))?;

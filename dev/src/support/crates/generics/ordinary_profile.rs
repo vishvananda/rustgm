@@ -117,6 +117,19 @@ pub(super) fn validate_module_bodies(
         BindingProfile::Languages,
     )
 }
+pub(super) fn validate_body_operations(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    validate_with(
+        rows,
+        headers,
+        work,
+        NamespaceProfile::CompilerOperations,
+        BindingProfile::BodyOperations,
+    )
+}
 fn validate_mode(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
@@ -162,14 +175,7 @@ fn validate_with(
     );
     recipes(rows, work, features, profile.conversions())?;
     trait_headers(rows, headers, work, profile, &roles)?;
-    functions(
-        rows,
-        headers,
-        work,
-        profile,
-        &roles,
-        binding == BindingProfile::Languages,
-    )?;
+    functions(rows, headers, work, profile, &roles, binding.languages())?;
     for header in &rows.implementations {
         work.charge(1)?;
         // Version thirteen admits every trait impl's own safety and polarity;
@@ -199,12 +205,7 @@ fn validate_with(
         profile.callables(),
         profile.conversions(),
     )?;
-    body_inputs(
-        rows,
-        work,
-        profile.conversions(),
-        binding == BindingProfile::Languages,
-    )
+    body_inputs(rows, work, profile.conversions(), binding.languages())
 }
 /// Version thirteen: an implementation member's public safety is its trait
 /// member's, as rustc's E0053 requires of the impl that declares it.
@@ -759,6 +760,13 @@ pub(super) enum BindingProfile {
     CompilerOperations,
     /// Version thirteen: every spelled trait role; consumers prove their use.
     Languages,
+    /// Version fourteen combines general language headers and exact operation contracts.
+    BodyOperations,
+}
+impl BindingProfile {
+    fn languages(self) -> bool {
+        matches!(self, Self::Languages | Self::BodyOperations)
+    }
 }
 pub(super) struct Bindings {
     sizing: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 3],
@@ -784,16 +792,18 @@ impl Bindings {
     }
 }
 fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
-    if profile == BindingProfile::Languages {
-        // Future roles need the version-eleven operation tables; Send has no wire.
-        return !matches!(
-            role,
-            LangItem::Future
-                | LangItem::FutureOutput
-                | LangItem::FuturePoll
-                | LangItem::AsyncDropInPlace
-                | LangItem::Send
-        );
+    if profile.languages() {
+        // General language headers alone retain the v13 future fence. The new
+        // operation profile adds precisely v11's future family; Send stays closed.
+        return role != LangItem::Send
+            && (profile == BindingProfile::BodyOperations
+                || !matches!(
+                    role,
+                    LangItem::Future
+                        | LangItem::FutureOutput
+                        | LangItem::FuturePoll
+                        | LangItem::AsyncDropInPlace
+                ));
     }
     matches!(
         role,
@@ -866,7 +876,7 @@ pub(super) fn bindings(
         return Err("source functions require the real complete sizing trio");
     }
     slot_bindings(rows, headers, work, profile, sizing[0])?;
-    let callables = if profile == BindingProfile::Languages {
+    let callables = if profile.languages() {
         callable_roles::Roles(
             [
                 LangItem::Tuple,
@@ -879,7 +889,7 @@ pub(super) fn bindings(
     } else {
         callable_roles::Roles::default()
     };
-    let languages = profile == BindingProfile::Languages;
+    let languages = profile.languages();
     Ok(Bindings {
         callables,
         languages,
@@ -898,13 +908,17 @@ pub(super) fn bindings(
             BindingProfile::Conversions
                 | BindingProfile::CompilerOperations
                 | BindingProfile::Languages
+                | BindingProfile::BodyOperations
         ))
         .then_some(declarations[LangItem::From.index()])
         .flatten(),
         sizing,
         destruct: if matches!(
             profile,
-            BindingProfile::Callables | BindingProfile::Conversions | BindingProfile::Languages
+            BindingProfile::Callables
+                | BindingProfile::Conversions
+                | BindingProfile::Languages
+                | BindingProfile::BodyOperations
         ) {
             declarations[LangItem::Destruct.index()]
         } else {
@@ -912,7 +926,10 @@ pub(super) fn bindings(
         },
         freeze: if matches!(
             profile,
-            BindingProfile::Callables | BindingProfile::Conversions | BindingProfile::Languages
+            BindingProfile::Callables
+                | BindingProfile::Conversions
+                | BindingProfile::Languages
+                | BindingProfile::BodyOperations
         ) {
             declarations[LangItem::Freeze.index()]
         } else {
@@ -935,7 +952,7 @@ fn diagnostic_bindings(
     if diagnostics.is_empty() {
         return Ok(None);
     }
-    if profile != BindingProfile::Languages {
+    if !profile.languages() {
         return Err("source diagnostic identity requires a language role table");
     }
     let mut seen = [false; super::super::DiagnosticRole::ALL.len()];
@@ -994,13 +1011,16 @@ fn role_header(
             Some(super::super::HeaderRef::Function(_)),
         ) => {}
         (LangItem::FutureOutput, Some(super::super::HeaderRef::AssociatedType(_)))
-            if profile == BindingProfile::CompilerOperations => {}
+            if matches!(
+                profile,
+                BindingProfile::CompilerOperations | BindingProfile::BodyOperations
+            ) => {}
         // A bound `panic` names a free function; consumers re-prove its header.
         // A bound `phantom_data` names a nominal; consumers re-prove its unit struct.
         (LangItem::FnOnceOutput, Some(super::super::HeaderRef::AssociatedType(_)))
         | (LangItem::Panic, Some(super::super::HeaderRef::Function(_)))
         | (LangItem::PhantomData, Some(super::super::HeaderRef::Nominal(_)))
-            if profile == BindingProfile::Languages => {}
+            if profile.languages() => {}
         (
             _,
             Some(
@@ -1087,9 +1107,7 @@ fn slot_bindings(
             else {
                 return Err("source parameter default belongs to a non-trait owner");
             };
-            if profile != BindingProfile::Languages
-                || rows.traits[index as usize].self_type != default
-            {
+            if !profile.languages() || rows.traits[index as usize].self_type != default {
                 return Err(
                     "source parameter default other than its trait's Self requires a wider consumer",
                 );

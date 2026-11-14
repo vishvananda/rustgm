@@ -1,0 +1,77 @@
+{
+ "declared_before_implementation": true,
+ "baseline": "8ca65f1c1",
+ "scope": "Explicit union of authenticated v11 operations and ordinary v13 body-node transport; no executable future authority. All legacy formats remain byte-exact.",
+ "wire": {
+  "envelope_tag": 10,
+  "version": 14,
+  "profile": "module-body-operations-v14",
+  "note": "Existing declarative macro envelope14 is occupied and must not be reassigned. Existing source tag10 gains a new version14; v11 operations keep tag13/version11, v13 ordinary bodies keep tag10/version13.",
+  "shared_columns": "Associated types/projections/definitions use v13 result columns exactly once. The operation trailer has explicit optional const-body presence, then opaque futures and compiler operations only. Do not append the v11 result columns twice or permit a second authority to overwrite them."
+ },
+ "basis": {
+  "ordinary_source": "pa29/tests/spec/source-body-ir/provider.rs",
+  "ordinary_sha256": "505451bd74e3dcd270b09f9b1f7db69c15980735214eab1996dd75bae6229f66",
+  "original_async_source": "pa43/tests/spec/compiler-operation-cli/original/async_drop.rs",
+  "original_async_sha256": "7a2ea6e4131f0df0c6bc6be75428b99de7b4e1b2de61b04fa1e3f562fdd0c83c",
+  "source_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "license": "Rust originals MIT OR Apache-2.0, third_party/sources.json",
+  "helper_reduction": "Exact original lang-marked helper body/signature, function renamed cleanup for existing consumer spelling. The written placeholder never executes. Minimal Future declaration supplies explicit Output role; full original Future/Pin/Poll/async-destruction requirements remain."
+ },
+ "expected": {
+  "provider": "accept complete mixed metadata; helper body is CompilerOperation, ordinary bodies have actual BodyNodes",
+  "provider-last": "accept same semantics with operation after ordinary bodies; ordinary original index must remain distinct from BodyRef",
+  "consumer": "accept two genuine Future Output=() applications after serialize/decode in fresh context",
+  "unsafe-consumer": "reject unsafe context",
+  "wrong-output-consumer": "reject incompatible types",
+  "ordinary-client": "accept actual CLI LowIR and native stdout41 through fresh consumer of mixed metadata",
+  "scaling-8/32/128": "accept one operation and8/32/128 ordinary conditional bodies, bounded work/bytes",
+  "lifetime-consumer": "reject a borrowed helper application demanded as a static future; lifetime capture must not disappear"
+ },
+ "opponents": [
+  "ordinary-body collision",
+  "foreign operation owner",
+  "wrong future result",
+  "nonunit Output",
+  "wrong target formal",
+  "unknown opcode",
+  "missing operation coverage",
+  "forged version11/13 dispatch",
+  "truncation/trailing bytes",
+  "operation cannot supply executable Original"
+ ],
+ "retained_required_positives": [
+  "original full v13 library command currently failing at generated future state/polling",
+  "genuine compiler helper constructor, state, poll/drop, Pin/Output, cancellation and recursive cleanup/native consumers",
+  "ordinary authored async publication and all earlier named pending contracts"
+ ],
+ "native": {
+  "ordinary-client": {
+   "observer": "observe.c",
+   "stdout": "41\n"
+  }
+ },
+ "files": {
+  "consumer.rs": "4a584a9147560a212b7ebe3e356fa5a1f34e872b244d2ba23593631a32203ce7",
+  "expected.stdout": "040316eca5e77dbb2212c1efe8b81cb23bc67ce0ac8cb5c9d902d98bd45ddfa1",
+  "observe.c": "5699f47fc10ebb8fa746e1867e410d5916d9fd170ec48fa03595030979a2b749",
+  "ordinary-client.rs": "b235171e5b20189fdb569d72366abb18354b01ed1c62923f2a7afd7abb033c2e",
+  "provider-last.rs": "0eb476a5f02203c39dc2e45e930a51115d9afc4d0ad12d6b5ee04e120b4493d6",
+  "provider.rs": "e2631fc986dfcb8f6a06e8323f0027ab1cab80e03bae426cd43fadab39fae91e",
+  "reference-consumer.rs": "62f1374bda3912851cee53c2bbe8c2f9587fe2699e6b070c846222c1eabac84b",
+  "reference-ordinary-client.rs": "74ba86a01957739eda29f516190010c9383bf8d7de8bfeabb2a2588e9fca805c",
+  "reference-provider.rs": "2aa12cfd4d2368b0589e7bd79a7991f94a68298cb07d1166d690510205bd3b80",
+  "reference-unsafe-consumer.rs": "c28206789b1ad38e0b7e4f21fdc3129dd8129c7809eb2924724c332a86d362ec",
+  "reference-wrong-output-consumer.rs": "4c455d58c4b73b734123ae5e7d4093a269ce775611acac6615d2ca6d78664a1b",
+  "scaling-128.rs": "1df3edfa0b0133f82ab883ad90d910835b831d429b2aeb2455a351183a8ad7ed",
+  "scaling-32.rs": "1943f60c4b9b98c688fdf201795c8fe4093adaaf0767a9f94a5ab6062e30297e",
+  "scaling-8.rs": "db04c750bdeb0b2c074ef8d75a1bc98f6cc02c6a784ddc72e4bd28b470083549",
+  "unsafe-consumer.rs": "46a1caef30611185310d8c5d6da9d3fcb43166f23e3e23ea21667fb91755d634",
+  "wrong-output-consumer.rs": "d3a1071056bd1bc5e22b79e8c23898ad66cfaf6ae80c782b4b59e9d1ac0af389",
+  "lifetime-consumer.rs": "d2035252fa6ba030686c19437fd6607f6911c876fb907da7dcb738681f3b3867",
+  "reference-lifetime-consumer.rs": "84dab5cdb51e7bd5477a2b3d9e33d955b4d638fc9f01ca79b7733f338afdf72d"
+ },
+ "region_owner_rule": "v14 ordinary node recipes remain dormant under the existing lazy owner cursor, as v13 does. Do not eager-remap or erase body-owned/free regions merely because the same packet has a compiler operation.",
+ "lifetime_check_stage": "pipeline::analyze_source retains region obligations; actual inspect_prepared ownership/loan validation must reject the borrowed future as static. Typing-only acceptance in fast6 is not a full Rust acceptance outcome. Fixture bytes and required rejection remain unchanged.",
+ "native_setup_correction": "Native1 executed provider successfully, then provider-last caused usage2 because the common Packet convenience constructor used its hyphenated filename as a crate disambiguator. Use the existing Packet::new/export APIs with a valid fixed provider identity and the two original source paths. Preserve all source/observer bytes and stdout41 expectations; this was an invalid CLI invocation, not a Rust rejection."
+}

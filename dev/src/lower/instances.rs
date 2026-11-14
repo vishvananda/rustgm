@@ -298,6 +298,8 @@ pub enum SourcePublication {
     ModuleConversions,
     ModuleNominals,
     CompilerOperations,
+    /// Version fourteen combines node bodies and authenticated symbolic operations.
+    ModuleBodyOperations,
     /// Version twelve: version-ten rows plus explicit Branch/Panic CFG exits.
     ModuleBranches,
     /// Version thirteen: the version-twelve rows as stable generic body IR nodes.
@@ -412,7 +414,10 @@ pub fn build_source_library_profile(
             };
             Ok((program, with_loader_flags(report, interface)?))
         },
-        if matches!(profile, SourcePublication::CompilerOperations) {
+        if matches!(
+            profile,
+            SourcePublication::CompilerOperations | SourcePublication::ModuleBodyOperations
+        ) {
             Construction::CompilerOperations
         } else {
             Construction::Complete

@@ -84,6 +84,8 @@ pub enum Profile {
     /// Version thirteen: the version-twelve vocabulary in the stable generic body
     /// IR node encoding. Allocated forms beyond that vocabulary reject explicitly.
     Source2024ModuleBodies,
+    /// Version fourteen: body nodes plus authenticated symbolic compiler operations.
+    Source2024ModuleBodyOperations,
 }
 impl Profile {
     #[must_use]
@@ -100,6 +102,7 @@ impl Profile {
                 | Self::Source2024ModuleCompilerOperations
                 | Self::Source2024ModuleBranches
                 | Self::Source2024ModuleBodies
+                | Self::Source2024ModuleBodyOperations
         )
     }
     #[must_use]
@@ -118,6 +121,7 @@ impl Profile {
                 | Self::Source2024ModuleCompilerOperations
                 | Self::Source2024ModuleBranches
                 | Self::Source2024ModuleBodies
+                | Self::Source2024ModuleBodyOperations
         )
     }
     #[must_use]
@@ -142,6 +146,7 @@ impl Profile {
                 | Self::Source2024ModuleCompilerOperations
                 | Self::Source2024ModuleBranches
                 | Self::Source2024ModuleBodies
+                | Self::Source2024ModuleBodyOperations
         )
     }
 }
@@ -440,13 +445,20 @@ impl ValidatedRows {
         let indexed = HeaderIndex::new(&rows, extended_base, work)?;
         if profile.definitions() {
             exact_exports::validate(&rows, &indexed, work)?;
-            if profile.compiler_operations() {
-                functions::validate_compiler_operations(&rows, &indexed, work)?;
-                super::operation_contracts::validate(&rows, &indexed, work)?;
-            } else if profile.body_nodes() {
-                functions::validate_module_bodies(&rows, &indexed, work)?;
+            if profile.body_nodes() {
+                if profile.compiler_operations() {
+                    functions::validate_body_operations(&rows, &indexed, work)?;
+                } else {
+                    functions::validate_module_bodies(&rows, &indexed, work)?;
+                }
                 super::results_contract::validate(&rows, &indexed, work)?;
                 super::free_constants::validate(&rows, &indexed, work)?;
+                if profile.compiler_operations() {
+                    super::operation_contracts::validate_operations(&rows, &indexed, work)?;
+                }
+            } else if profile.compiler_operations() {
+                functions::validate_compiler_operations(&rows, &indexed, work)?;
+                super::operation_contracts::validate(&rows, &indexed, work)?;
             } else if profile.conversion_roles() {
                 functions::validate_module_conversions(&rows, &indexed, work)?;
             } else if profile.call_safety() {
@@ -584,7 +596,8 @@ impl ValidatedRows {
             | Profile::Source2024ModuleNominals
             | Profile::Source2024ModuleCompilerOperations
             | Profile::Source2024ModuleBranches
-            | Profile::Source2024ModuleBodies => {
+            | Profile::Source2024ModuleBodies
+            | Profile::Source2024ModuleBodyOperations => {
                 return Err(
                     "module contracts require their complete namespace/domain/attribute columns",
                 );

@@ -62,9 +62,7 @@ impl<'a> Context<'a> {
     ) -> Result<Vec<Option<Predicate>>, Error> {
         let count = self.applications.len();
         budget.reserve(count.saturating_mul(size_of::<Predicate>()))?;
-        for index in 0..if self.descriptor.profile().conversion_roles()
-            && !self.descriptor.profile().compiler_operations()
-        {
+        for index in 0..if self.descriptor.profile().original_domains() {
             0
         } else {
             count

@@ -69,6 +69,13 @@ pub(super) fn validate(
     for projection in &rows.projections {
         projection_contract(rows, headers, projection, work)?;
     }
+    validate_operations(rows, headers, work)
+}
+pub(super) fn validate_operations(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
     for opaque in &rows.opaque_futures {
         opaque_contract(rows, headers, opaque, work)?;
     }

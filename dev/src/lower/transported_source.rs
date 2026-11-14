@@ -230,6 +230,9 @@ impl Source {
         profile: super::instances::SourcePublication,
     ) -> Result<(Self, s::ModuleContractRows), &'static str> {
         let mut stage = match profile {
+            super::instances::SourcePublication::ModuleBodyOperations => {
+                Stage::begin_module_body_operations(report, facts, identity)?
+            }
             super::instances::SourcePublication::ModuleBodies => {
                 Stage::begin_module_bodies(report, facts, identity)?
             }
@@ -306,7 +309,8 @@ impl Source {
             }
             super::instances::SourcePublication::ModuleNominals
             | super::instances::SourcePublication::ModuleBranches
-            | super::instances::SourcePublication::ModuleBodies => {
+            | super::instances::SourcePublication::ModuleBodies
+            | super::instances::SourcePublication::ModuleBodyOperations => {
                 let (source, modules) =
                     Self::begin_module_nominals(report, facts, checked, identity, profile)
                         .map_err(legacy_error)?;
@@ -652,6 +656,7 @@ impl Source {
             | SourcePublication::ModuleNominals
             | SourcePublication::ModuleBranches
             | SourcePublication::ModuleBodies
+            | SourcePublication::ModuleBodyOperations
             | SourcePublication::CompilerOperations => self.complete_module_policy_payload(
                 modules.ok_or_else(|| {
                     crate::resolve::package::Error::unlocated(
@@ -685,6 +690,7 @@ impl Source {
                     | super::instances::SourcePublication::ModuleNominals
                     | super::instances::SourcePublication::ModuleBranches
                     | super::instances::SourcePublication::ModuleBodies
+                    | super::instances::SourcePublication::ModuleBodyOperations
                     | super::instances::SourcePublication::CompilerOperations
             ) {
                 let available = if matches!(
@@ -693,6 +699,7 @@ impl Source {
                         | super::instances::SourcePublication::ModuleNominals
                         | super::instances::SourcePublication::ModuleBranches
                         | super::instances::SourcePublication::ModuleBodies
+                        | super::instances::SourcePublication::ModuleBodyOperations
                         | super::instances::SourcePublication::CompilerOperations
                 ) {
                     self.stage
@@ -734,6 +741,7 @@ impl Source {
                     | super::instances::SourcePublication::ModuleNominals
                     | super::instances::SourcePublication::ModuleBranches
                     | super::instances::SourcePublication::ModuleBodies
+                    | super::instances::SourcePublication::ModuleBodyOperations
                     | super::instances::SourcePublication::CompilerOperations
             )
         {
@@ -759,7 +767,9 @@ impl Source {
             ..g::Work::default()
         };
         let payload = if let Some(availability) = availability {
-            let publish = if profile == super::instances::SourcePublication::CompilerOperations {
+            let publish = if profile == super::instances::SourcePublication::ModuleBodyOperations {
+                g::Payload::from_source_module_body_operations
+            } else if profile == super::instances::SourcePublication::CompilerOperations {
                 g::Payload::from_source_compiler_operations
             } else if profile == super::instances::SourcePublication::ModuleBodies {
                 g::Payload::from_source_module_bodies

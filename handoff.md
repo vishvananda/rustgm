@@ -27,31 +27,46 @@ No core.rgm exists; core.lowir is empty. Artifact postcheck verifies722/375/six/
 not timeout. Raw: intrinsic-next/core-artifact27.log, artifact-postcheck27.log,
 original-library-candidate27/. No native original consumers exist.
 
-The existing authenticated CompilerOperations/v11 profile is now exposed through
-CLI --source-profile module-compiler-operations-v11. No executable future was
-implemented and no runtime body guard changed. Eight focused1794662507576101300
-pass in45.56s across linking/frontend: CLI file exact roundtrip, one real symbolic
-operation/one ordinary body, fresh typed Output/unsafe duties, recipe/forgery/
-legacy/native-wrapper/placeholder guards. SourceClient --emit-types in the first
-test was invalid by the existing CLI contract (exit2), corrected to the existing
-fresh typed API consumer without changing fixture bytes or type outcomes.
-3963-source/nine-input hash checks, original byte equality,315 harness/495 roots/
-upstream pass. Packet pa43/tests/spec/compiler-operation-cli/manifest.json,
-raw compiler-operation-cli/, docs/parallel/deferred-operations-v11.md.
+Mixed body/operation transport now qualifies as explicit module-body-operations-v14,
+source envelope10/version14. All old formats and macro envelope14 remain unchanged.
+Associated result columns are encoded once; explicit optional const-body presence
+precedes only opaque/operation tails. Helper remains genuine CompilerOperation
+without Original/locals/CFG. Actual ordinary bodies preserve owned-domain/lifetime/
+environment proof. The cold cursor borrows existing opaque reservations; remaining
+recording/reconstruction/allocation/normalization BodyRefs use the existing checked
+ordinary-row map, never direct physical indexing. Send and runtime future guards
+remain closed. See docs/parallel/body-operations-v14.md and PA43 body-operations
+manifest. No native helper/future implementation was added.
 
-Next combine ordinary v13 body transport with authenticated compiler operation
-transport in an explicit contract, preserving existing wire bytes and all owner,
-body, Output, borrow, runtime and imported-profile guards. v11 and v13 remain
-separate; do not silently give v13 an operation it cannot encode. This prerequisite
-does not close the required original-v13 full-LowIR positive or real constructor,
-poll/drop/Pin/Output/cancellation/recursive-cleanup/native and ordinary authored
-future positives. Reuse typed owners and existing coroutine machinery; never
-execute the helper's written placeholder or substitute an empty future.
-No release rebuild/core retry was run just for the small CLI route; wait for a
-coherent combined semantic checkpoint. Source Rust inventory remains3963.
+Focused1794666856100454561:6 exact/49.77s, strict production/selected/CLI Clippy,
+fmt/audit. Native1794667305233923705:1 group/2 actual Rust/C programs/49.77s; both
+ordinary consumers return41 with helper before/after methods. Static-future leak
+matches Rust E0521 and rejects at inspect_prepared borrow validation; typing-only
+acceptance in fast6 was not full acceptance. Native1's hyphenated disambiguator
+usage2 was corrected with an explicit valid identity, preserving source bytes.
+First eager-region/reservation/environment/sparse-index failures remain recorded.
 
-Full43597538902 runs on exact7db0c611e (fast and full lint/host graph pass;
-release/course passed; native maintainer in progress). Full43592623119 PASSED ALL on e23bbc172 (3078 private
+Final authenticated replay binds3964 sources, predeclared fixture hashes and the
+three new regular tests.8/32/128 inference59/227/899, canonical336/1346/5362,
+encoded bytes18633/59741/224245. Immutable8ca baseline CLI
+fdde62dde102d7bd7ada48372b54fe3e5c4dea6bc6ac41af9cd29cedce4a9055 and current
+4f170b31a3e4a2a3b2f34a8f7fbd936339c8d811de610d9de058ec8e5d62ea7d have
+identical legacy A/A and B/B bytes: v11 2980/da3c7eea3cc6ea395338ddcbc92498f07b5e69e4c8c7acdf22bab02cf1107b91,
+v13 19695/185d4265e9e1c9463435826427763320e609fb90378e506c5a23c49258f1ba6c.
+No timing claim.315 harness/495 roots/13 binaries/44 stages/one component/
+128 upstream+126 Reference pass. Raw body-operations/; pin.py now expects3964.
+
+Next publish this coherent checkpoint, dispatch ONE full successor after the
+terminal preceding CI, freeze clean candidate28 release and attempt genuine full
+original core using the explicit mixed profile under unchanged120s/work/byte
+limits. Do not repeat dev-fast whole-original observation. Previous v13 full-body
+positive remains recorded/open, and no new profile substitutes for actual async
+constructor/poll/drop/Pin/Output/cancellation/recursive cleanup/ordinary authored
+future/native or any earlier named requirement. No original library artifact
+exists yet. Keep old profile/metadata/native contracts below intact.
+
+Full43597538902 PASSED EVERY STAGE on exact7db0c611e:3078 private
+release7.01s/debug64.08s; all public/course/native/independent gates pass. Full43592623119 PASSED ALL on e23bbc172 (3078 private
 release4.66s/debug46.06s). No duplicate CI for this doc-only successor.
 The arithmetic checkpoint qualified25 independent outcomes,240 constant/240
 runtime values, all18 candidate guards, nine native programs,3963-source replay,
