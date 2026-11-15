@@ -165,7 +165,9 @@ fn cold_storage_and_enclosing_layouts() -> TestResult {
     assert_eq!(size_of::<Engine<'_, NoFiles>>(), 4152);
     assert_eq!(size_of::<crate::resolve::expansion::Body>(), 96);
     assert_eq!(size_of::<crate::resolve::expansion::Definition>(), 136);
-    assert_eq!(size_of::<crate::resolve::package::ErrorData>(), 128);
+    // The boxed error record also holds the unprojected position it was raised
+    // at, which names the owning function in bring-up compilations.
+    assert_eq!(size_of::<crate::resolve::package::ErrorData>(), 144);
     println!(
         "defaultness enclosing Syntax={} Configured={} Unit={} Extent={} Original-Saved={:?} Report={} Engine={}; authenticated prior Syntax304 Configured384 Unit672; prior Original/Extent unmeasured",
         size_of::<Syntax<crate::literal::storage::StoredValue>>(),
