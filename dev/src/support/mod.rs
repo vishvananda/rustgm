@@ -1,5 +1,6 @@
 pub mod atomic_ordering;
 pub mod bindings;
+pub mod bringup;
 pub mod call_traits;
 pub mod comparisons;
 pub mod constness;

@@ -113,6 +113,7 @@ pub(crate) fn concrete_selected(
         outlives: facts.outlives.clone(),
         body_regions: facts.body_regions.log().to_vec(),
     };
+    let mut deferral = super::bringup::Deferral::default();
     for function in &facts.functions {
         if !selection.includes(facts, function.definition)
             || function.body.is_none()
@@ -123,18 +124,17 @@ pub(crate) fn concrete_selected(
         }
         super::coroutines::require_ordinary_original(facts, function.definition)
             .map_err(|message| report.body_error(function.node, message))?;
-        if let Some(body) = prepared.remove(&super::ir::BodyKey::Declaration(function.definition)) {
+        if let Some(body) = prepared
+            .remove(&super::ir::BodyKey::Declaration(function.definition))
+            .filter(|_| !super::bringup::stub(report, function.node))
+        {
             program.bodies.push(body);
             continue;
         }
-        program.bodies.push(function_body(
-            report,
-            facts,
-            &mut scratch,
-            function,
-            drop_query.as_mut(),
-        )?);
+        let built = function_body(report, facts, &mut scratch, function, drop_query.as_mut());
+        program.bodies.extend(deferral.admit(built)?);
     }
+    deferral.finish()?;
     initializers::concrete(
         report,
         facts,
@@ -246,6 +246,7 @@ fn function_body(
         std::mem::take(&mut scratch.scopes),
     )?;
     let mut body = Builder::new(report, facts, scratch, body, scope_plan, query)?
+        .stubbed(super::bringup::stub(report, function.node))
         .run(Some(function.parameters))
         .map_err(|e| report.diagnostic(e))?;
     if super::vararg::variadic(&facts.types, &body) {
@@ -486,6 +487,8 @@ struct Builder<'a> {
     scope_plan: scopes::Facts,
     scope_exits: Vec<super::storage::Exit>,
     capture_places: Option<Box<environments::Places>>,
+    /// Bring-up profile only: trap after binding parameters.
+    stub: bool,
 }
 impl Scratch {
     fn new(facts: &Declarations) -> Self {
@@ -555,7 +558,14 @@ impl<'a> Builder<'a> {
             scope_plan,
             scope_exits,
             capture_places: None,
+            stub: false,
         })
+    }
+    /// The unqualified bring-up profile replaces a listed function's authored
+    /// body by a trap. Its parameters are still bound, so its ABI is unchanged.
+    fn stubbed(mut self, stub: bool) -> Self {
+        self.stub = stub;
+        self
     }
     /// Give the finished body exact-size vectors and recycle construction capacity.
     fn settle(&mut self) {
@@ -889,7 +899,11 @@ impl<'a> Builder<'a> {
         if let Some(parameters) = parameters {
             self.parameters(parameters)?;
         }
-        self.scratch.work.push(Work::Enter(root));
+        if self.stub {
+            self.terminate(root, Terminator::Panic);
+        } else {
+            self.scratch.work.push(Work::Enter(root));
+        }
         while let Some(work) = self.scratch.work.pop() {
             self.step(work)?;
         }

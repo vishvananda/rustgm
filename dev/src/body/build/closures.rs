@@ -19,6 +19,7 @@ pub(super) fn concrete(
             !selection.includes(facts, owner)
                 || facts.generics.has_parameters(owner)
                 || template(owner)
+                || crate::body::bringup::stubbed(report, facts, owner)
         }) {
             continue;
         }

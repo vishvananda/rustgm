@@ -77,6 +77,8 @@ impl DiagnosticFile {
 pub struct ErrorData {
     pub file: DiagnosticFile,
     pub span: Span,
+    /// The unprojected source position this error was raised at, if any.
+    pub(crate) origin: Option<(FileId, u32)>,
     pub message: String,
     pub expansions: Vec<ExpansionTrace>,
     pub(crate) introduction: ExpansionId,
@@ -94,6 +96,7 @@ impl Error {
                 start: offset,
                 end: offset,
             },
+            origin: Some((file, offset)),
             message: message.into(),
             expansions: Vec::new(),
             introduction: ExpansionId(0),
@@ -111,6 +114,7 @@ impl Error {
         Self::from(ErrorData {
             file: DiagnosticFile::Imported(label),
             span,
+            origin: None,
             message: message.into(),
             expansions: Vec::new(),
             introduction: ExpansionId(0),
@@ -124,6 +128,7 @@ impl Error {
         Self::from(ErrorData {
             file: DiagnosticFile::Unlocated,
             span: Span { start: 0, end: 0 },
+            origin: None,
             message: message.into(),
             expansions: Vec::new(),
             introduction: ExpansionId(0),

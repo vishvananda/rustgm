@@ -1,3 +1,4 @@
+mod bringup;
 mod budget_options;
 mod census;
 mod crates;
@@ -65,7 +66,9 @@ fn options() -> Result<Options, String> {
     let mut budgets = budget_options::Options::default();
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
-        if budgets.consume(&arg, &mut args, &mut options.config)? {
+        if budgets.consume(&arg, &mut args, &mut options.config)?
+            || bringup::consume(&arg, &mut args)?
+        {
             continue;
         }
         if let Some((name, count)) = selected_view(&arg) {
@@ -125,6 +128,7 @@ fn options() -> Result<Options, String> {
     options
         .crates
         .validate(&options.mode, options.count, options.output.as_deref())?;
+    bringup::validate(&options.crates)?;
     Ok(options)
 }
 

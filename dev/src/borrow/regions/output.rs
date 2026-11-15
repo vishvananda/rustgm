@@ -208,6 +208,7 @@ pub(super) fn prove<'a>(
         std::iter::repeat_with(|| None).take(inputs.len()).collect();
     let mut queries = Queries::new(types, contracts.nominal_requirements, contracts.callables);
     let mut visited = 0;
+    let mut deferred = None;
     while let Some(ordinal) = queue.pop_front() {
         let (input, cfg) = inputs[ordinal];
         let summaries = children[ordinal]
@@ -219,7 +220,16 @@ pub(super) fn prove<'a>(
                     .ok_or_else(|| error(child, "missing conditional child proof"))
             })
             .collect::<Result<Vec<_>, _>>()?;
-        let body = check::body(types, variances, &mut queries, input, cfg, &summaries)?;
+        let body = match check::body(types, variances, &mut queries, input, cfg, &summaries) {
+            Ok(body) => body,
+            // Bring-up reports every body this proof rejects; parents of a
+            // rejected body stay unvisited and the proof still fails below.
+            Err(failure) if crate::body::bringup::defer_site(failure.source, &failure.message) => {
+                deferred = Some(failure);
+                continue;
+            }
+            Err(failure) => return Err(failure),
+        };
         if let Some(output) = &body.output {
             if !output.matches(input) {
                 return Err(error(
@@ -242,6 +252,9 @@ pub(super) fn prove<'a>(
                 queue.push_back(parent);
             }
         }
+    }
+    if let Some(failure) = deferred {
+        return Err(failure);
     }
     if visited != inputs.len() {
         return Err(Error {

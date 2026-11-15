@@ -714,6 +714,7 @@ fn prepare_template_inputs(
         inputs.retain(|contract| contract.key != body::ir::BodyKey::Declaration(definition));
     }
 
+    body::bringup::relax(report, facts, &mut inputs);
     let mut contexts = if let Some(originals) = prepared.original_contexts.take() {
         originals
             .apply(&templates, &mut inputs)

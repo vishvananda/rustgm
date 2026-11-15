@@ -45,6 +45,15 @@ debug = 0
 incremental = true
 codegen-units = 256
 
+# Optimized incremental compiler for whole-crate observation runs. Its binaries
+# are never release, qualification or measurement evidence.
+[profile.observe]
+inherits = "release"
+opt-level = 1
+debug = 0
+incremental = true
+codegen-units = 256
+
 [[test]]
 name = "suite_frontend"
 path = "tests/suites/frontend/mod.rs"

@@ -11,6 +11,10 @@ REF_TEST_APP ?= $(ROOT)/dev/rustgm-ref
 .PHONY: all test test-debug test-debug-invariants test-maintainer test-report ref-test lint setup-audit audit-rust test-harness test-backend test-native test-maintainer-native test-layouts test-upstream test-rustc perf perf-literals perf-ast perf-crate-ast perf-names perf-expanded perf-expanded-crate perf-types perf-layouts perf-body-ir perf-ownership perf-lowir clean tidy tidy-build check-space
 all:
 	$(PYTHON) scripts/storage.py run --no-prune -- $(CARGO) build --manifest-path dev/Cargo.toml --release --locked
+.PHONY: observe
+# Optimized incremental compiler for whole-crate observation; never release evidence.
+observe:
+	$(PYTHON) scripts/storage.py run --no-prune -- env CARGO_INCREMENTAL=1 CARGO_BUILD_JOBS=8 $(CARGO) build --manifest-path dev/Cargo.toml --profile observe --locked --bin rustgm
 .PHONY: fastcheck
 # Example: make fastcheck FAST_ARGS='lexer --lib-case full::private::test'
 fastcheck:

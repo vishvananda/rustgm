@@ -2,6 +2,7 @@
 pub(crate) mod adapters;
 pub mod assembly;
 pub mod body_view;
+pub mod bringup;
 mod build;
 #[path = "callsite_inputs.rs"]
 mod callable_inputs;

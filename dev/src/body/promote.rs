@@ -106,14 +106,16 @@ pub(crate) fn analyze_templates_reusing(
         return Ok(());
     }
     let mut evaluator = scratch.evaluator(report, facts);
+    let mut deferral = super::bringup::Deferral::default();
     for template in &mut templates.bodies {
-        analyze_body(
+        deferral.admit(analyze_body(
             report,
             &mut evaluator,
             &mut template.body,
             Some(&template.destruction.values),
-        )?;
+        ))?;
     }
+    deferral.finish()?;
     scratch.retain(evaluator);
     Ok(())
 }

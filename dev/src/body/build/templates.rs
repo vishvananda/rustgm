@@ -322,7 +322,11 @@ impl Prepared {
         function: &crate::sema::model::Function,
         attempted: &mut usize,
     ) -> Result<Template, Error> {
-        if let Some(template) = self.bodies.remove(&function.definition) {
+        if let Some(template) = self
+            .bodies
+            .remove(&function.definition)
+            .filter(|_| !crate::body::bringup::stub(report, function.node))
+        {
             if matches!(
                 template.body.owner,
                 crate::body::ir::Owner::AsyncBody { .. }
@@ -476,6 +480,7 @@ impl Prepared {
         selection: crate::body::Selection,
     ) -> Result<Templates, Error> {
         let mut bodies = Vec::new();
+        let mut deferral = crate::body::bringup::Deferral::default();
         for function in &facts.functions {
             if matches!(selection, crate::body::Selection::CompilerOperations)
                 && crate::sema::compiler_items::async_operation_recipe(
@@ -495,7 +500,7 @@ impl Prepared {
                 && owns(facts, function.definition)
                 && selection.includes(facts, function.definition)
             {
-                bodies.push(self.function(report, facts, function)?);
+                bodies.extend(deferral.admit(self.function(report, facts, function))?);
             }
         }
         for initializer in &facts.initializers {
@@ -510,10 +515,12 @@ impl Prepared {
             if let Some(owner) = closure.owner
                 && owns(facts, owner)
                 && selection.includes(facts, owner)
+                && !crate::body::bringup::stubbed(report, facts, owner)
             {
-                bodies.push(self.closure(report, facts, closure, owner)?);
+                bodies.extend(deferral.admit(self.closure(report, facts, closure, owner))?);
             }
         }
+        deferral.finish()?;
         for (source, _) in facts.constant_bodies() {
             if facts
                 .inline_constants

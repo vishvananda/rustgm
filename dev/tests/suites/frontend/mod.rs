@@ -259,6 +259,9 @@ mod deprecation_releases;
 #[path = "../../census_mode.rs"]
 mod census_mode;
 
+#[path = "../../bringup_stubs.rs"]
+mod bringup_stubs;
+
 #[path = "../../knowledge_sources.rs"]
 mod knowledge_sources;
 

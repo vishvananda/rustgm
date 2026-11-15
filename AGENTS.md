@@ -66,9 +66,12 @@ code, duplicated blocks, phase dependencies and misplaced environment access.
   Makefile targets or `python3 scripts/storage.py run -- COMMAND` for direct
   Cargo/test/measurement commands; `make fastcheck` supplies its own guards.
   Use `--no-prune` before `--` for other build-only commands. The wrapper reserves
-  40 GiB locally and disables incremental caches outside `dev-fast`. Fastcheck
-  keeps bounded incremental caches under `obj/rust/dev-fast` and
-  `obj/rust/private-lint/dev-fast`; shared output caps include both caches.
+  40 GiB locally and disables incremental caches outside `dev-fast` and
+  `observe`. Fastcheck keeps bounded incremental caches under `obj/rust/dev-fast`
+  and `obj/rust/private-lint/dev-fast`; shared output caps include both caches.
+  `make observe` builds the optimized incremental `obj/rust/observe/rustgm` for
+  whole-crate observation runs; fastcheck retires its older sessions likewise,
+  and its binaries are never release, qualification or measurement evidence.
   Before resource admission, fastcheck retires older
   completed incremental sessions while preserving each crate's newest warm
   session, in-progress directories and explicit pins. At that idle boundary it

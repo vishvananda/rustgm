@@ -416,6 +416,19 @@ fn emit_body_view(
     .map_err(|e| e.to_string())
 }
 
+/// Render a lowering failure; the bring-up profile also names its owning function.
+fn lowering_error(
+    report: &resolve::expansion::Report,
+    facts: &mut rustgm::sema::model::Declarations,
+    error: resolve::package::Error,
+) -> String {
+    let attribution = crate::bringup::attribute(report, facts, &error);
+    let message = semantic_error(&facts.retain_error_warnings(error));
+    match attribution {
+        Ok(()) => message,
+        Err(failure) => format!("{message}; bring-up attribution failed: {failure}"),
+    }
+}
 fn semantic_error(error: &resolve::package::Error) -> String {
     let message = error.to_string();
     match write_warnings(error.warnings()) {
@@ -501,7 +514,7 @@ fn emit_lowir(
             )
         };
         let (lowir, interface) =
-            built.map_err(|error| semantic_error(&facts.retain_error_warnings(error)))?;
+            built.map_err(|error| lowering_error(&report, &mut facts, error))?;
         (lowir, Some(interface))
     } else {
         if let Some(identity) = crates
@@ -518,7 +531,7 @@ fn emit_lowir(
             semantic_error(&facts.retain_error_warnings(report.diagnostic(error)))
         })?;
         let lowir = rustgm::lower::instances::build_prepared(&report, &mut facts, entry, prepared)
-            .map_err(|error| semantic_error(&facts.retain_error_warnings(error)))?;
+            .map_err(|error| lowering_error(&report, &mut facts, error))?;
         (lowir, None)
     };
     let native_links =
