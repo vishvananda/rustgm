@@ -1,6 +1,8 @@
 # RustGM Programming Assignment 27: Unsafe language
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
+Released component: [unsafe-places](../docs/pa27-unsafe-places-release.md),
+253 cases in `tests/units/unsafe-places.json`, with its own deferred list.
 Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The common source profile is Rust 1.98.0, initially edition
 2024 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
 

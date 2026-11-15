@@ -523,7 +523,7 @@
         "pa27/README.md",
         "docs/unsafe-policy-warning-gap.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unsafe-places component released (docs/pa27-unsafe-places-release.md); whole PA27 unpublished",
       "units": [
         "unsafe-places"
       ]
@@ -546,7 +546,7 @@
       "evidence": [
         "pa27/README.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unsafe-places component released (docs/pa27-unsafe-places-release.md); whole PA27 unpublished",
       "units": [
         "unsafe-places"
       ]
@@ -570,7 +570,7 @@
       "evidence": [
         "docs/pa27-packed-raw-target-review.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unsafe-places component released (docs/pa27-unsafe-places-release.md); whole PA27 unpublished",
       "units": [
         "unsafe-places"
       ]

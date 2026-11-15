@@ -1,0 +1,1 @@
+ERROR: file 0: 21: union fields require Copy, references, ManuallyDrop, or allowed tuples and arrays

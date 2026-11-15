@@ -1,0 +1,1 @@
+ERROR: file 0: 41: cannot mutably borrow shared or static storage

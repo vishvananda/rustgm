@@ -59,7 +59,7 @@
       "owner": "pa27",
       "title": "Unsafe permission and native places",
       "implementation": "implemented",
-      "publication": "unpublished",
+      "publication": "released",
       "depends_on": [
         "operator-kernel"
       ],
@@ -74,7 +74,9 @@
         "docs/pa27-packed-raw-target-review.md",
         "pa27/README.md",
         "docs/unsafe-policy-warning-gap.md"
-      ]
+      ],
+      "manifest": "pa27/tests/units/unsafe-places.json",
+      "release_evidence": "docs/pa27-unsafe-places-release.md"
     },
     {
       "id": "c-abi",

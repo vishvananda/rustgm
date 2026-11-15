@@ -1,0 +1,1 @@
+ERROR: file 0: 32: references to mutable statics are denied in edition 2024

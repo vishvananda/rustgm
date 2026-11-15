@@ -436,6 +436,7 @@ unit manifest plus the deferred list in its release record):
 | --- | --- | --- | --- | --- |
 | `const-machine` | 25 | 113 | 2 maintainer-level limits | [record](docs/pa25-const-machine-release.md) |
 | `operator-kernel` | 26 | 739 | 5 | [record](docs/pa26-operator-kernel-release.md) |
+| `unsafe-places` | 27 | 253 | 11 | [record](docs/pa27-unsafe-places-release.md) |
 
 | PA | Assignment | Status |
 | --- | --- | --- |

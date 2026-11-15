@@ -1,0 +1,1 @@
+warning[static_mut_refs]: file 0: 69: creating a reference to a mutable static is discouraged

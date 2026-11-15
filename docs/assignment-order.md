@@ -122,7 +122,7 @@ scope, predecessor IDs and executable exit are in assignment-plan.json.
 | --- | --- | --- | --- | --- |
 | 1 | PA29 | Crate identities and declaration metadata (`declarations`) | implemented | unpublished |
 | 2 | PA26 | Canonical operator and indexing kernels (`operator-kernel`) | implemented | released |
-| 3 | PA27 | Unsafe permission and native places (`unsafe-places`) | implemented | unpublished |
+| 3 | PA27 | Unsafe permission and native places (`unsafe-places`) | implemented | released |
 | 4 | PA30 | Local C ABI and linkage (`c-abi`) | implemented | unpublished |
 | 5 | PA31 | Local compiler declarations and attribute authority (`source-declarations`) | partial | unpublished |
 | 6 | PA25 | Typed constant machine and inspection (`const-machine`) | implemented | released |

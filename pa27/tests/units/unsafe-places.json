@@ -1,0 +1,5060 @@
+{
+ "schema": 1,
+ "mode": "--emit-lowir",
+ "language": "Rust 1.98.0",
+ "edition": "2024",
+ "target": "x86_64-unknown-linux-gnu",
+ "discovery": [
+  "tests/spec/callable-safety",
+  "tests/spec/capture-integration-native",
+  "tests/spec/capture-precision",
+  "tests/spec/contexts",
+  "tests/spec/native",
+  "tests/spec/policies/allow-safe-function.rs",
+  "tests/spec/policies/block-override.rs",
+  "tests/spec/policies/configured-allow.rs",
+  "tests/spec/policies/configured-disabled.rs",
+  "tests/spec/policies/crate-deny.rs",
+  "tests/spec/policies/crate-override.rs",
+  "tests/spec/policies/deny-call.rs",
+  "tests/spec/policies/deny-static.rs",
+  "tests/spec/policies/forbid-allow.rs",
+  "tests/spec/policies/forbid-deny-allow.rs",
+  "tests/spec/policies/forbid-deny.rs",
+  "tests/spec/policies/forbid-same.rs",
+  "tests/spec/policies/forbid-warn.rs",
+  "tests/spec/policies/inline-inner-deny.rs",
+  "tests/spec/policies/inline-module-inherit.rs",
+  "tests/spec/policies/inline-module-override.rs",
+  "tests/spec/policies/nested-item-inherit.rs",
+  "tests/spec/policies/nested-item-override.rs",
+  "tests/spec/policies/operation-allow.rs",
+  "tests/spec/policies/operation-deny.rs",
+  "tests/spec/policies/operation-explicit.rs",
+  "tests/spec/policies/operation-forbid.rs",
+  "tests/spec/policies/operation-warn.rs",
+  "tests/spec/policies/reference-allow.rs",
+  "tests/spec/policies/reference-binding-allow.rs",
+  "tests/spec/policies/reference-deny-override.rs",
+  "tests/spec/policies/reference-forbid.rs",
+  "tests/spec/policies/reference-method-allow.rs",
+  "tests/spec/policies/reference-safe.rs",
+  "tests/spec/policies/reference-warn.rs",
+  "tests/spec/policies/statement-operation-allow.rs",
+  "tests/spec/policies/statement-operation-deny.rs",
+  "tests/spec/policies/statement-reference-allow.rs",
+  "tests/spec/policies/statement-reference-deny.rs",
+  "tests/spec/policies/unknown-path.rs",
+  "tests/spec/policies/modules/external-forbid/m.rs",
+  "tests/spec/policies/modules/external-forbid/main.rs",
+  "tests/spec/policies/modules/external-inherit/m.rs",
+  "tests/spec/policies/modules/external-inherit/main.rs",
+  "tests/spec/policies/modules/external-inner-override/m.rs",
+  "tests/spec/policies/modules/external-inner-override/main.rs",
+  "tests/spec/policies/modules/external-outer-override/m.rs",
+  "tests/spec/policies/modules/external-outer-override/main.rs",
+  "tests/spec/statics",
+  "tests/spec/statics-native",
+  "tests/spec/union-borrows/call-reference.rs",
+  "tests/spec/union-borrows/copy-snapshot.rs",
+  "tests/spec/union-borrows/cross-field-aliases.rs",
+  "tests/spec/union-borrows/escape.rs",
+  "tests/spec/union-borrows/generic.rs",
+  "tests/spec/union-borrows/immutable-mutable-borrow.rs",
+  "tests/spec/union-borrows/invalid-bool.rs",
+  "tests/spec/union-borrows/invalid-char.rs",
+  "tests/spec/union-borrows/missing-unsafe-mutable.rs",
+  "tests/spec/union-borrows/missing-unsafe-shared.rs",
+  "tests/spec/union-borrows/mutable-local.rs",
+  "tests/spec/union-borrows/ordinary-scalar.rs",
+  "tests/spec/union-borrows/packed-aligned-source.rs",
+  "tests/spec/union-borrows/packed-raw-base-aligned-source.rs",
+  "tests/spec/union-borrows/pointer-family-boundary.rs",
+  "tests/spec/union-borrows/raw-base.rs",
+  "tests/spec/union-borrows/shared-local.rs",
+  "tests/spec/union-borrows/static-shared.rs",
+  "tests/spec/union-borrows/uninitialized-wide.rs",
+  "tests/spec/union-borrows/unit-family-boundary.rs",
+  "tests/spec/unions/array-element-write.rs",
+  "tests/spec/unions/array-mut-reference-field.rs",
+  "tests/spec/unions/borrow-safe.rs",
+  "tests/spec/unions/borrow-unsafe.rs",
+  "tests/spec/unions/c-layout.rs",
+  "tests/spec/unions/clone-with-copy.rs",
+  "tests/spec/unions/clone-without-copy.rs",
+  "tests/spec/unions/copy-field.rs",
+  "tests/spec/unions/copy-generic.rs",
+  "tests/spec/unions/derive-equality.rs",
+  "tests/spec/unions/destructor-field-move.rs",
+  "tests/spec/unions/different-field-borrow.rs",
+  "tests/spec/unions/different-field-subfield-overlap.rs",
+  "tests/spec/unions/empty-init.rs",
+  "tests/spec/unions/empty-union.rs",
+  "tests/spec/unions/fake-manuallydrop.rs",
+  "tests/spec/unions/grouped-wildcard-safe.rs",
+  "tests/spec/unions/index-field-write-unsafe.rs",
+  "tests/spec/unions/manuallydrop-field.rs",
+  "tests/spec/unions/multiple-init.rs",
+  "tests/spec/unions/mut-reference-field.rs",
+  "tests/spec/unions/nested-field-write.rs",
+  "tests/spec/unions/nested-wildcard-safe.rs",
+  "tests/spec/unions/nondrop-noncopy-field.rs",
+  "tests/spec/unions/packed-aligned-union-container.rs",
+  "tests/spec/unions/packed-aligned-union.rs",
+  "tests/spec/unions/packed-field-reference.rs",
+  "tests/spec/unions/packed-layout.rs",
+  "tests/spec/unions/packed-raw-field-address.rs",
+  "tests/spec/unions/pattern-rest.rs",
+  "tests/spec/unions/pattern-safe.rs",
+  "tests/spec/unions/pattern-two-fields.rs",
+  "tests/spec/unions/pattern-unsafe.rs",
+  "tests/spec/unions/raw-address-safe.rs",
+  "tests/spec/unions/raw-array-element-safe.rs",
+  "tests/spec/unions/raw-nested-field-safe.rs",
+  "tests/spec/unions/raw-uninit-union-address.rs",
+  "tests/spec/unions/reference-field-store.rs",
+  "tests/spec/unions/safe-compound.rs",
+  "tests/spec/unions/safe-read.rs",
+  "tests/spec/unions/safe-write.rs",
+  "tests/spec/unions/same-field-subfield-disjoint.rs",
+  "tests/spec/unions/single-init.rs",
+  "tests/spec/unions/transparent-layout.rs",
+  "tests/spec/unions/tuple-mut-reference-field.rs",
+  "tests/spec/unions/tuple-reference-field-store.rs",
+  "tests/spec/unions/unbound-generic.rs",
+  "tests/spec/unions/uninhabited-union-match.rs",
+  "tests/spec/unions/uninhabited-union-wildcard.rs",
+  "tests/spec/unions/uninit-field-read.rs",
+  "tests/spec/unions/uninit-field-write-unsafe.rs",
+  "tests/spec/unions/uninit-wildcard-safe.rs",
+  "tests/spec/unions/union-move-field.rs",
+  "tests/spec/unions/union-move-reuse.rs",
+  "tests/spec/unions/unsafe-compound.rs",
+  "tests/spec/unions/unsafe-read.rs",
+  "tests/spec/unions/update-init.rs",
+  "tests/spec/unions/wildcard-pattern-safe.rs",
+  "tests/spec/unions-native"
+ ],
+ "cases": [
+  {
+   "path": "tests/spec/contexts/unsafe-block-value.rs",
+   "source_sha256": "7bc2546cda7981b755894ca6c02277957d7d8ba05de4b280b3cb435d492cde35",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/contexts/unsafe-constant-block.rs",
+   "source_sha256": "0765ad124b11c1eabc7ceceffa91483789acb7f671d26cd21e4c3d6e213b1e2d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/contexts/safe-reference.rs",
+   "source_sha256": "46fb45f7cb4153e575fbc1a4b7f831ab1a21eaf9784bc9d869525d0e4b87a613",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/contexts/raw-read.rs",
+   "source_sha256": "7e3773e72e26a324976b71ac8a3f45295204a17f63695a9f87a21799a7e39d5f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/contexts/raw-read-safe.rs",
+   "source_sha256": "da642ffbb1841fbe8287f229fcb9458e7e5f4758a88db31a49532bbc4988598b",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/contexts/raw-write.rs",
+   "source_sha256": "b9fa9b06ccf3d82c8718a96a09b59ac9cb5415cd21e6805b8b3aafa0036e7852",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/contexts/const-pointer-write.rs",
+   "source_sha256": "8d99746d891c08321ab9f7b62d2624d93ee0ca890906688821093d84910b6d72",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/contexts/raw-fn-body.rs",
+   "source_sha256": "5a614635965e38ac140382f9eff27640ef29f2b6e39b1f5a78b5777364ebc312",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   },
+   "warnings": [
+    "unsafe_op_in_unsafe_fn"
+   ]
+  },
+  {
+   "path": "tests/spec/contexts/unsafe-call.rs",
+   "source_sha256": "2189f6033b2ed297bd2265084d47bd56c48c6f2ff5e66cf5bdc7b843d89ecfd4",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/contexts/unsafe-call-safe.rs",
+   "source_sha256": "5007a93a393eed1543c8810d09b38ca3e95c2807d6046c3ba66bfabbeee45673",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/contexts/unsafe-fn-caller.rs",
+   "source_sha256": "eca81e34ec0b14fd7ae10b582f058bd5baa288aa1845df59537ac2c5b77b3944",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   },
+   "warnings": [
+    "unsafe_op_in_unsafe_fn"
+   ]
+  },
+  {
+   "path": "tests/spec/contexts/unsafe-pointer-call.rs",
+   "source_sha256": "7d0aebcbaff77862a8db722e63c23d1e069f574afd907a235c3eaf7687a98631",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/contexts/unsafe-pointer-call-safe.rs",
+   "source_sha256": "f239974bf84408279225e88f8d9393028f696a6d13ea178aca19f62ca5eb2392",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/contexts/unsafe-method.rs",
+   "source_sha256": "22cfd34d2773a026fccb11fcf26b5271a1436b3d36b4c667f8db684f82c25dc9",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/contexts/unsafe-method-safe.rs",
+   "source_sha256": "ed197cb19e037bda0ff20e232a3e308e07dfb3b7f280e850621a6aeee6e6349a",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/contexts/nested-block.rs",
+   "source_sha256": "3fd8d9ab76872bcbd5bb554bc89933b6c25b3f02b21c956e689a944fcadca24b",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/contexts/unsafe-does-not-leak.rs",
+   "source_sha256": "2d482818530a164538cc6448acf7d95f189339148ab4cab398182a8e0d3c84b7",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/contexts/nested-item-reset.rs",
+   "source_sha256": "c7f31dad4f107ec26a71c6b93578ac47be5d7e3da03cc2a4d00e28b14d4697b9",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/contexts/nested-unsafe-item.rs",
+   "source_sha256": "9e9f2924a5ba6382bdf2d7821bd58f7d4434fa88fc58cfe21728fdfb37c102af",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   },
+   "warnings": [
+    "unsafe_op_in_unsafe_fn"
+   ]
+  },
+  {
+   "path": "tests/spec/contexts/raw-address-cancel.rs",
+   "source_sha256": "de10638ba34859197e64cfc2321b78fe832c78347eeae1535e203de99633925e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/contexts/raw-address-field-needs-unsafe.rs",
+   "source_sha256": "6f5f5f2dce5d6d75ac18e38b72902cb0ec7c73146a3be5e96567998b23f62ff3",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/contexts/raw-field.rs",
+   "source_sha256": "3c037cba8b57e7ca7357f71493de32f4ba858facb38737d0aa08751a31c79706",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/contexts/raw-index.rs",
+   "source_sha256": "18591efd53730cd5d0de136d67e0bf9f5fe4f9f507e4d29c033ced60728a4c33",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/contexts/raw-slice.rs",
+   "source_sha256": "261fa0e8210f0c81df6a18ccb2d1ebd14497102d024beb01471c66b2474f9b2a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/contexts/raw-to-reference.rs",
+   "source_sha256": "c8d1cf7f0a7fbb7585dddbd321ec881d40349eccf2def674843e82946052e1ee",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/contexts/raw-to-mut-reference.rs",
+   "source_sha256": "855a1f4f6e8ec06c4bebd62448331181342c86e4ab2b6a43f4430031a7ddc445",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/contexts/raw-const-to-mut-reference.rs",
+   "source_sha256": "3d0bbcf6f5958be994b4c7277fbde698eb2b0423b081079909fe46830eb2af2e",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/contexts/raw-copy-move.rs",
+   "source_sha256": "12a63e6fb6c2a7bf4230d4566b7fa3ae249239ede45760356451b1c5939e8c01",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/contexts/raw-uninitialized.rs",
+   "source_sha256": "d5a26c550ad90d65af9088a41f5a1a661efbe2e229f862b931fda21f0798898a",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/contexts/raw-uninitialized-write.rs",
+   "source_sha256": "e61e091011e4a90b55ec0ef9de4ef6e458bd9282b1c0d4d8b2d613f76b9f0358",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/contexts/mutable-static-read-safe.rs",
+   "source_sha256": "4fb26be4cde044f2f051c6b5406011da5371721bf246bcf551ecc00ee921ec99",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/contexts/mutable-static-read.rs",
+   "source_sha256": "6de9b13b90888c21e0f7a0b338e2b9e2e61eff655fc5c5acb8cc6b46470ce53d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/contexts/const-mutable-static-read.rs",
+   "source_sha256": "fd2ba9ad42ee07aa6c5c54b19a50df9e40b4f9697133605f4cf3ae17dd7a8211",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/contexts/mutable-static-raw-address.rs",
+   "source_sha256": "46eaa5a01e719f8d66f225876410634bd19b48beafcc8a3d6743c4695c0041cc",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/contexts/mutable-static-raw-field.rs",
+   "source_sha256": "19d77f585ac0305dd0d3a1c3258da1c2d4c303b7037642a0c4d3aed8580f2548",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/contexts/mutable-static-raw-field-unsafe.rs",
+   "source_sha256": "86894871fca881e265882138411eb9bb4f8c53626ec86c2971e1b5ad95f9014e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/contexts/mutable-static-pointer-read.rs",
+   "source_sha256": "0c22a179152a280ff7429e9ac24e8ffd6fb2920cadcac975d19f229b48732597",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/contexts/unsafe-type-checks.rs",
+   "source_sha256": "1ea194b283fa445f63e1a70c18a1686c8065365d56fdb32c3ac89aae76cd0309",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/contexts/packed-reference.rs",
+   "source_sha256": "0c35c57419b41ee3b44106237cb9e3f3481a701b4c932ac6701d0b47403682fc",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/contexts/packed-raw-address.rs",
+   "source_sha256": "3f89f663d23cc3c2f952ebf6f0dbbb04f2fc5298f9b01db84b32ca1c40ce0ac3",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/native/read-write.rs",
+   "source_sha256": "e6d4ae99327732911d14230bc8eae05984a31e031b2a32a3aaeb14d07db1b7e4",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/native/reborrow.rs",
+   "source_sha256": "01096445d7cd7b8341574d2152e4ce182428fd14f9336a33fb78dfb9e3a9b7b0",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/native/function-pointer.rs",
+   "source_sha256": "ef049bc163e1ffac2d6d477329d9e3fb0d0b58289c47fe23c98c020f6fdcb95a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/native/wide-slice.rs",
+   "source_sha256": "a98292aa31362d6288c549e766c8d60e646682ae8bf9a1a0ce8cbdf918d4828c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/native/raw-aliases.rs",
+   "source_sha256": "c685413d194f0aa346e9008c2a0cd205730b5d4ec5a5c064c9a2a84d43bb025c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/contexts/raw-mut-reference-store.rs",
+   "source_sha256": "f3e190de339f51b336fad7af9588526e2c4bea1f62668607e9c1584f5795da67",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/contexts/raw-const-reference-store.rs",
+   "source_sha256": "f6b47ac0d220a0ce19595b1f6e6551fe218c827ebb74e08aaee603cea18682b1",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/contexts/raw-mut-shared-reference-store.rs",
+   "source_sha256": "59685dff146a038e47c4df6aad60a00ab69a6e1fae50164124cf03529280946c",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/statics/store.rs",
+   "source_sha256": "7bebb5951228a70f3911820089e35c99047b169b663620bbb2864579f6063bde",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/statics/store-safe.rs",
+   "source_sha256": "543ad695bb504a5bf8032c5e01cf735f907f62feacc35334c175ed518b023fb8",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/statics/immutable-store.rs",
+   "source_sha256": "da8a86a6cd15b08ac5f7ca8eecc2c666ecf04fbf357dac39f4c82067bf1c1992",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/statics/field-store.rs",
+   "source_sha256": "c2624126e116a5e6a34f8c6545bf6fd8a1e3bf2aba9508e11aa76b81bb64fd43",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/statics/immutable-field-store.rs",
+   "source_sha256": "fbcacd0dd0266c321d5da11bf7acf56dec8de1173414bbf123ce3e25a3cdde8a",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/statics/index-store.rs",
+   "source_sha256": "1d122674d250d0b8ebe1601ff7210a55b78313e6d62ed88705b5257cd41f85b9",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/statics/compound-store.rs",
+   "source_sha256": "69e8179b66ed160c13df7b646b84ca50e036eb5a3708e731e147dc56bf4cb41b",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/statics/unsafe-function-store.rs",
+   "source_sha256": "1f0d2734699064f4cdc3e491bef6f8b38909c5095ce9d60ae455f902636eb116",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   },
+   "warnings": [
+    "unsafe_op_in_unsafe_fn"
+   ]
+  },
+  {
+   "path": "tests/spec/contexts/raw-mut-address.rs",
+   "source_sha256": "2b4f7245b1d1827b79d0c5c3f9c949618772d7b9a1dae109faa0da8d19afd912",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/contexts/raw-mut-immutable.rs",
+   "source_sha256": "03d5106ab2eb8f71c5be6428373ead6786f2413cb0e433d5e29f763d1e72d8f3",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/statics/shared-reference.rs",
+   "source_sha256": "861b4d529a70060b0a503ce5b1bca47fe04c96d3c007980ae6f4641f56bab993",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/statics/mutable-reference.rs",
+   "source_sha256": "d59eff1285d29d9643e50c7ed5fb455fe1a754f78d75d9c84cee4488529b5319",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/statics/field-reference.rs",
+   "source_sha256": "63a7ae2b6d44b5e27e335e337956d04913a7633ad9f126b6e2047f5ecc311036",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/statics/method-reference.rs",
+   "source_sha256": "5d0cc95f736885bd98bb48455c0a60e1a03220adbeb348c338644990b8123e04",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/statics/unused-reference.rs",
+   "source_sha256": "870325e8d17bde6676d6a4d30d2aa8713120e0c53aff410d470f41abca972984",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/statics/unreachable-reference.rs",
+   "source_sha256": "3baba20d351c6cb2f8f87adcd5bda9e5dd810f7cb9a9fec37b2afe49ab3dd728",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/statics/immutable-reference.rs",
+   "source_sha256": "5df195c1459beebea5f146e3d0b21fc730ce46b3c2b93a537753d669287e02ac",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/statics/ref-binding.rs",
+   "source_sha256": "94f5511a528fa4478b091b1132f3774cf6188baf0b857df391b63b4bbf60fabf",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/statics/ref-mut-binding.rs",
+   "source_sha256": "fc627c05d538ff183d0282776c62f4e0850a7304f155e92008b6176a444a13e5",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/statics/paren-ref-binding.rs",
+   "source_sha256": "9ea73ffe65b517e310ecfe364b5b579aaf843336b83d29ac639ac8e1ccb0056f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/statics/let-else-ref-binding.rs",
+   "source_sha256": "2770b32684e6fd656b47a0b27505a4cbdf97c03dfe4800e19316cd45f9911fc4",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/statics/match-ref-lint-control.rs",
+   "source_sha256": "55ccf496460bac9ea791c2ce1299214d27f8b52cabc75ac6b7b237e569fa30b6",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/statics/struct-ref-lint-control.rs",
+   "source_sha256": "2c802cd6439af156bd450f4920275b7bcb96899372979768b111bd21b3a5f032",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/statics/if-let-ref-lint-control.rs",
+   "source_sha256": "1eb254d5d11d61408110da8037678fa889253cc18081b84aa1aff9db6f60d002",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/statics/guard-copy.rs",
+   "source_sha256": "d58ec4af63ee6ac5faaf28630eded4cf778844020dec5a636e031f47cc61ae85",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/statics/destructor-store.rs",
+   "source_sha256": "562453a8f8ea5de39fd459b72d4b18c7ec44058bf77d1834a76d42574923095a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/contexts/raw-mut-field.rs",
+   "source_sha256": "b4c56a5c9325cd0cedad962c763084f9f105626f03294e293765cab99e96b254",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.contexts"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/statics-native/destructor-store.rs",
+   "source_sha256": "8679e7c5c908463b376db563695aa493d9c60b39b2273ee6c19cc5161e1dd96f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/statics-native/direct-store.rs",
+   "source_sha256": "0139686a4134ec210b5d5348da6de1b68b0a73c654825660481573422768b744",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/statics-native/field-store.rs",
+   "source_sha256": "5ca1c9b15506257a306b47988f1bc485168216e873101944ede61098af7f3bd7",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/statics-native/indexed-store.rs",
+   "source_sha256": "ecbc72fe573abf9f20cf7ebba2369d55e98a1acedec8edf0077aee36a62f48b9",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/statics-native/raw-mut-address.rs",
+   "source_sha256": "07db5aa359f17b69369efeb1e329366a8e5d6f4a97ff3554d1a86e847f7f38f8",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.statics"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/policies/statement-operation-allow.rs",
+   "source_sha256": "a72fd255987a44f95497eb70e05eb31f2ec6170976a77c044695219747cdeacb",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/policies/statement-operation-deny.rs",
+   "source_sha256": "41e193eb38670c1c2c705f206011ca9222d8093280a55e5a04d89963b5f4d0cf",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/policies/statement-reference-allow.rs",
+   "source_sha256": "a9270a94650a9bfe15dac61100c749503f1b9c8e97b5b477e1fdda9a4b15c095",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/policies/statement-reference-deny.rs",
+   "source_sha256": "28db24f10bfe5a696cf5052fc7c139e08179e129d6cd3438af0c2f0bd286d0e2",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/policies/operation-deny.rs",
+   "source_sha256": "c23273dcbc57abbdf04564665bccb84aa00b069e4ab79aeec396ae668bd8de24",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/policies/operation-forbid.rs",
+   "source_sha256": "6fc386c9b857f0a5e708a30fd5770ecba04d9c10a23e1a75ec4e7e7a5b0023e3",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/policies/operation-allow.rs",
+   "source_sha256": "b197f7bab2785f7d2c302ff6c1dc5e1f254d8ebe0001d2fd8764dc4d4cd24b04",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/policies/operation-warn.rs",
+   "source_sha256": "04b825bdced00646216d13b00b4e2a9224b9943c4f5b717e25a58051a3b84730",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   },
+   "warnings": [
+    "unsafe_op_in_unsafe_fn"
+   ]
+  },
+  {
+   "path": "tests/spec/policies/operation-explicit.rs",
+   "source_sha256": "88c4a1d4a04149cf2c52de04aea705f103082d810c356f52abea6170a62b4a9a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/policies/allow-safe-function.rs",
+   "source_sha256": "afc4a174f18e2c6824ca15bdec6c1575b3ea3bf83895808ff1a8eb68c566313d",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/policies/deny-call.rs",
+   "source_sha256": "775c84db76c24c867a5298b5eda4f142ee54c7872ce42adbf259fcf3971e07bd",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/policies/deny-static.rs",
+   "source_sha256": "118720b682811c8926790b9ec93d3bb95aec4a042d5449943b114573fd8a2bdd",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/policies/crate-deny.rs",
+   "source_sha256": "cae83172af5045e5d2699059acdb69513185c82523a752e714854d4e8da9d693",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/policies/crate-override.rs",
+   "source_sha256": "625a762809e5700b7778945dfc34b3b5c2e0274f1daa0566db083b1800342a21",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/policies/block-override.rs",
+   "source_sha256": "87e7e9c995c0fad8a908b1d0cf2b64a9053efca866eae62a00fac874acf5dcde",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/policies/nested-item-inherit.rs",
+   "source_sha256": "14c84d19f12ad02fe16dde69808ba1673b76326540d04e7089aff823d13f1500",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/policies/nested-item-override.rs",
+   "source_sha256": "bb8d4cfdcb8620fdea935d679e9b1b780f96256f2f79b838467eaa7f2063ffd4",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/policies/inline-module-inherit.rs",
+   "source_sha256": "f62d1a4104fba044f74b0cc47e7e7fb42f5515c1d310c6a16f71359999438e13",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/policies/inline-module-override.rs",
+   "source_sha256": "4ec08fb8a1162d137ffba06cb1ffdf8742572a0286ce7c33d270e6bfef01fb19",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/policies/inline-inner-deny.rs",
+   "source_sha256": "6283cb2bfe2433b19160ca9d52785cd10c4c6041358851276c8a93df1d46dfef",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/policies/forbid-allow.rs",
+   "source_sha256": "e476fed3bacd543739949598cb8349b4a32d314ad782514d20a0cafab4a19184",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/policies/forbid-warn.rs",
+   "source_sha256": "dad7f7f6484edc75f80162a456d1d7a7fb65da7a913226328d62bc237a6ca4e1",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/policies/forbid-deny.rs",
+   "source_sha256": "0d20bc7e795761bf51f231a2c11ce6f061d0efa9d53d8f25df1c6d1df80c5590",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/policies/forbid-same.rs",
+   "source_sha256": "f9aaa60bc1b7585c6483dc2afb5981865c6e12de847f99a1404a7a3e39c91279",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/policies/forbid-deny-allow.rs",
+   "source_sha256": "a1398a3b37ddd1ce1943d359ec7064fbf3d4a00703001f33c53f805f3034c9c4",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/policies/reference-allow.rs",
+   "source_sha256": "c59ebc377e387a4a005914f69c2ca9bbb983f9d00d4b3c538b2cadd67cd4c19e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/policies/reference-warn.rs",
+   "source_sha256": "593bb1c5d45ab09a6ece4eb734e4b63562ad1beae38b8cd8cd87a3f4e60f962c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   },
+   "warnings": [
+    "static_mut_refs"
+   ]
+  },
+  {
+   "path": "tests/spec/policies/reference-safe.rs",
+   "source_sha256": "0574c2e140d2a34480aae0ba41c3ac1c00f62213d5e142ab851aee5d9f81e1ec",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/policies/reference-deny-override.rs",
+   "source_sha256": "8aa07dc234d03fccf53efc3db2a8a3912e5f28fc7ae2ce271913e9c225b59119",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/policies/reference-forbid.rs",
+   "source_sha256": "b49a770a8520aac6b91d8df1ded5eba029a76fdbc8101fd58908c0f2573381d0",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/policies/reference-binding-allow.rs",
+   "source_sha256": "9e233cde4866edb783a934b04b29a7ad5c2cbd48cf7b57049a6c6a2ddc58000f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/policies/reference-method-allow.rs",
+   "source_sha256": "66537963167ab48851b9e8fa4e2f631c782e81515c39fbb9b2b102df3bc77cd3",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/policies/configured-allow.rs",
+   "source_sha256": "e6481ea1c0386aefd56e35bdfbe698c56cbaa61be14258d7f1f8fc7a2e3632d6",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/policies/configured-disabled.rs",
+   "source_sha256": "8a3b5c16b21e632625852a43027054c0e520d0314eed199a12825076975b5f74",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/policies/unknown-path.rs",
+   "source_sha256": "cc13027fda9372be4c48980f84dab046dcda5a17ddf41662b50c808e47e486e9",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/unions/unsafe-read.rs",
+   "source_sha256": "dbdd36d10b503d86785121904997d71e309138e312083fcbf910dcb6a663f843",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/safe-read.rs",
+   "source_sha256": "da92cac39f4a363511e51f46c7e856fe2df1ebe84a311539f3f28f84189941d0",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/safe-write.rs",
+   "source_sha256": "0a7627a354c1e591262b04f0b42dd7f0baec409d34e48db3350ba41ed515aa13",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/safe-compound.rs",
+   "source_sha256": "9bc00fabfcbb26d33189e608b0d32dc3b7ea553f836886d26c8eb90b33a56ff9",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/unsafe-compound.rs",
+   "source_sha256": "2f33cdf537b5c4e39987138eb86ebd8ce1c2284b2b16c5b86082a1d34dfd5a6b",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/single-init.rs",
+   "source_sha256": "9a3920981571cbab5d1e3a0c37ac29100ddc95e73e90093f7dd9a951f2a99aa5",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/empty-init.rs",
+   "source_sha256": "a35b4ca36d93436c95e4251f5852c274a155fc7698dcaf1743b8e9b3818fd3cf",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/multiple-init.rs",
+   "source_sha256": "635234bed7fa027828d99ace41dbae44b484da50d091d93682a3c2278f657125",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/update-init.rs",
+   "source_sha256": "d6b26430292a01e4aa16a44256bafe62e42bb296738c1ca28a9f69ecfd2c377a",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/empty-union.rs",
+   "source_sha256": "6805eb023b72f3c16f18dd659624d27b2760bbf5aaca0702e5cbacd953b4c580",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/nondrop-noncopy-field.rs",
+   "source_sha256": "6a4b97c3d03fae19448d8603c1fdfb105667e4390ace1ca7518f5a414cecb6bb",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/copy-field.rs",
+   "source_sha256": "153910ce99165916d06da1948edba69473775a79c0e98e5be932079ba4f8e962",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/mut-reference-field.rs",
+   "source_sha256": "05a6a0bd73211dd049c9f6ca2705ab20cb778d93736f601c3a464107adb46fee",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/tuple-mut-reference-field.rs",
+   "source_sha256": "79d6a33dee663063fcab701f9d479045c044acce491cdce9e3c29e0692780f7b",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/array-mut-reference-field.rs",
+   "source_sha256": "c170e7ec73135420f73d7d09f52dc4732ed69d1ee6d502c1a470c21bdae8d6b0",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/manuallydrop-field.rs",
+   "source_sha256": "a42c9d5fad16a60e128ec9e892d562475fa1ea5c922764a98db1c92a6d98765f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/fake-manuallydrop.rs",
+   "source_sha256": "a4033a808f373ffb03fd89fee338079f6a14c7f5a2a651d0b82d56dcb378d7c1",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/copy-generic.rs",
+   "source_sha256": "b0c762deaece562150787d0478587882f1865550d06ac8d5e0b418f5d4304389",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/unbound-generic.rs",
+   "source_sha256": "6c751cd9e43c5473a13304b79e36baa274d42cf440faa093afc00e06f2874c89",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/c-layout.rs",
+   "source_sha256": "b73ad9bb1d90656c4a4b72b470215495935c660a36c23d23d7ca61d94fbbc421",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/packed-layout.rs",
+   "source_sha256": "3ee88d84eeffc3b78efffdb6661cb234af085e034cb6d3cd0a68e786899fb139",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/packed-field-reference.rs",
+   "source_sha256": "c8ef0e674bec76d49da0aa33d1e2327f6ca7708f789003c2e98588917d415019",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/packed-raw-field-address.rs",
+   "source_sha256": "81dc3ecbfba55912e36bc81eb996f3c90bc1a79b10c89122366b32f9e6769077",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/transparent-layout.rs",
+   "source_sha256": "bffc832ab222890991d941877a19a7ca6fe42a9c7a82ac2ba02595ea7f426685",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/borrow-safe.rs",
+   "source_sha256": "60e24f1de7103f22295e239829a697419659bb64b18eb489ef7d1c1dd83ea62c",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/borrow-unsafe.rs",
+   "source_sha256": "13d3a5ebd8772110966b5195b085cf0b503731a2afd324d50ecf49fea4f74395",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/raw-address-safe.rs",
+   "source_sha256": "3ea57e70aaed94748dd862d3a77214a3ba85d2163f568d872bc199feaef7f229",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/uninit-field-read.rs",
+   "source_sha256": "ae2764707e31220d0212487e1e93f4fa899d4c2e42a4931481c243302bd7cfba",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/nested-field-write.rs",
+   "source_sha256": "674014f131332c044a957d507f97705bc947883137ead22948cd3b7cb4a883a1",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/array-element-write.rs",
+   "source_sha256": "cff24a1d65ea7948feb97665cbe9edeb59a2b43e20cce9b7bc249f5571ac56da",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/different-field-borrow.rs",
+   "source_sha256": "178d380ee1828318e122352a2dc25851ea73a96a191c8dd6eb0c07d84f13b7b2",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/same-field-subfield-disjoint.rs",
+   "source_sha256": "93e333cc54244b71abdf941cfbfbf71fba5557a3ada5a8207715a210ca8ca03d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/different-field-subfield-overlap.rs",
+   "source_sha256": "6865666398564d06d2d9849800ff1c1f655faf8860e95bc58b419d2bb6661ce8",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/union-move-field.rs",
+   "source_sha256": "3c724a3775bcf1514b375c8ab355ee35d2f8c40bc891f9b2991ce4b5f5a98b25",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/union-move-reuse.rs",
+   "source_sha256": "b110ffbd2769aa805b7ecba9f6f63a23a1ae73bac0319e71460d830d8739f6f2",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/pattern-safe.rs",
+   "source_sha256": "692065d6048f486b88528776580e044f0a18c7d726ff50005198792e7bd836d2",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/pattern-unsafe.rs",
+   "source_sha256": "2ab928b7066a3d432b4b621f46b2fa8f89206ec0f05f6377b468e7beb2bf19e1",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/pattern-two-fields.rs",
+   "source_sha256": "174d4f61662468fef2748b369b998e97bf926e3d835fb7a129def0e0772b919a",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/pattern-rest.rs",
+   "source_sha256": "5cd0e3f57c16362edea665e61a54b70a22ef7004f88c005fd65a8185a6c41473",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/raw-nested-field-safe.rs",
+   "source_sha256": "c858a4964a9270c08102c4bf596aca83b94bbaf1ef49e0782c739c48e1a10c34",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/raw-array-element-safe.rs",
+   "source_sha256": "cac6697492a6850aa4851b7d31fda7aecc9d2af5d26c29662b14e6eda8a5b949",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/index-field-write-unsafe.rs",
+   "source_sha256": "8c67232e9ef020de53d59404a2bdb78df5947af08b35163e82b3fafe946c8d8b",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/uninit-field-write-unsafe.rs",
+   "source_sha256": "391d1a5e806aec14fe74dc34cb880dda5cb0ce7c759abbf5350af3961a55dd89",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/wildcard-pattern-safe.rs",
+   "source_sha256": "ee8ad99f58105854bca0e04ed8e44b68df51db4a73a167c4974ff5f8b280adc2",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/reference-field-store.rs",
+   "source_sha256": "19e9dfa0f9e00421fb3f4790d1e8ab2398fc04381e9f07daea34253f39d23ae4",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/tuple-reference-field-store.rs",
+   "source_sha256": "0aab72934c384e0a11a9faca9e91e25bb36935b328b853c4d22f10ea88425bcf",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/clone-without-copy.rs",
+   "source_sha256": "8b8e0c7154631058d77d781a8308061cb9ed2e79c639c03f5c9be24215e40beb",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/clone-with-copy.rs",
+   "source_sha256": "5271f808039faa32f1584f5a779c99f475b8b0872b36738197dd1c6f41815dde",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/derive-equality.rs",
+   "source_sha256": "cc07d5925ab8dab400fdfc0772c290fffa7c609096623edc75610b2891e7da66",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/uninhabited-union-match.rs",
+   "source_sha256": "d870bc8e245b279183204d8d327c04ffe56aae216f889d65d63afba5afc8e862",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/uninhabited-union-wildcard.rs",
+   "source_sha256": "a99f120a73da3f136d35acfc808c83c58bc9e3654b2b8b23afbe8216126a8806",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/packed-aligned-union.rs",
+   "source_sha256": "3a061c17622a2eba3683bfb400c958af875ef9099392ef5bacc8481e50fdc6a7",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/packed-aligned-union-container.rs",
+   "source_sha256": "22e5517479322946880efb416d46db0a31e76c3ce1f9323c1eb9aaeed95eed35",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/grouped-wildcard-safe.rs",
+   "source_sha256": "904116bb798075546c0a4cdd8c8924371869faf2c0ed4beecde997ddef271caa",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/nested-wildcard-safe.rs",
+   "source_sha256": "9a78580c2ed7f80d57e79cdaa48009a7f5f6f8f954d421d15325a0d7a9c9b7d3",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/uninit-wildcard-safe.rs",
+   "source_sha256": "c377f37ad221d9228c9adfd5d4a2c9763aeb4a0e8b46754a7cd262b18cb3a649",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and body checking control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/unions/raw-uninit-union-address.rs",
+   "source_sha256": "3f38cd6f4171fdd31104b143c50dc5c2c0dca5992489af3eca319d3df041b665",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions/destructor-field-move.rs",
+   "source_sha256": "ae10af4930bd71ad0d39a3eca563d0b544aae35adf2918a49dfe0b3dbb4f3eab",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unions-native/shared-bytes.rs",
+   "source_sha256": "d6f8e63b84da75d7a0ec35f30c4c6158a9195c3068b2ce40c0332f61572035ed",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/unions-native/float-bits.rs",
+   "source_sha256": "2f1c6d1172040c11f39300af8d2d742926ca0fb5cc47309bbb57756570a6d989",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/unions-native/value-transfer.rs",
+   "source_sha256": "1752b8e3e96e3a39d6986caf0d2fdd1d0604b05b622bff78aa88dd3154b83d7f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/unions-native/raw-field-address.rs",
+   "source_sha256": "772fdcbc96ec119742c3b1c2d49498cd3a7c46f722042d1cc0a31a73111fca36",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/unions-native/union-destructor.rs",
+   "source_sha256": "549fa79e204782c938ec65c8aaf8c7b98a4f05608dc4e681a52e7374529cf071",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/policies/modules/external-inherit/main.rs",
+   "source_sha256": "c8023a9be7fbbd9e9102b3b127514b3254f5711bfed44d2f525e2e39daecffd7",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   },
+   "auxiliary": [
+    "tests/spec/policies/modules/external-inherit/m.rs"
+   ]
+  },
+  {
+   "path": "tests/spec/policies/modules/external-outer-override/main.rs",
+   "source_sha256": "dadb6cedb2b1215a5a305ad150d96d36a79f3d004fdb040acbaf33939ae3140d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "auxiliary": [
+    "tests/spec/policies/modules/external-outer-override/m.rs"
+   ],
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and module policy control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/policies/modules/external-inner-override/main.rs",
+   "source_sha256": "c8023a9be7fbbd9e9102b3b127514b3254f5711bfed44d2f525e2e39daecffd7",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "auxiliary": [
+    "tests/spec/policies/modules/external-inner-override/m.rs"
+   ],
+   "native": {
+    "kind": "codegen",
+    "reason": "Declared source acceptance and module policy control; no runtime execution claim."
+   }
+  },
+  {
+   "path": "tests/spec/policies/modules/external-forbid/main.rs",
+   "source_sha256": "00de58f4ce14cc3c9e546df95e23b4d8593318e890ffae168773e2123a26899f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.policies"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   },
+   "auxiliary": [
+    "tests/spec/policies/modules/external-forbid/m.rs"
+   ]
+  },
+  {
+   "path": "tests/spec/callable-safety/unsafe-closure.rs",
+   "source_sha256": "8671dee3c3a3b86aec14070ef88c7452b8b7f11d46490a6d82b5cecff41dcbd3",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.callable-safety"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+   }
+  },
+  {
+   "path": "tests/spec/callable-safety/nested-safety.rs",
+   "source_sha256": "0178f6afebdd3b53000113ef3663c9e49e6d9153a65049c76049ccc73e410df0",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.callable-safety"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/callable-safety/captured-unsafe.rs",
+   "source_sha256": "d014f305cf054c7bbd59f83d698ef3ac1b7a9dd094c6da2688e340ce215754ee",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.callable-safety"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/callable-safety/zero-repeat.rs",
+   "source_sha256": "199d80958d2b77ffb8fa752a18769b3d4ad9024d606976fbe8d31bb8190d4da4",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.callable-safety"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/packed-copy.rs",
+   "source_sha256": "8f7595da514ef53536f2ef50298e87e552dd85a28ac11d216e8bd8bd9bc0fec6",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/packed-aligned-conflict.rs",
+   "source_sha256": "a1b77f84363ab1ab62bf8f6660a811924b7cbf8e24efd19ee373e13d8f102f57",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/ordinary-disjoint.rs",
+   "source_sha256": "9cfbb1278891e891ec1f93920e5771aae43eca7e09a622a99e64dd3f506b152c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/packed-nested-disjoint.rs",
+   "source_sha256": "28485f139b0001d7c026ea0dc67781f817eb9114738f67cb1aaf0ef7f2e99818",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/packed-nested-conflict.rs",
+   "source_sha256": "e4a2f0a2744a45db4e204933150af556600cef0329e5df8533d4689d311a2e3f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/packed-noncopy-conflict.rs",
+   "source_sha256": "e129532089f762fce836b77569d536da11219910737ca2cc5893f62e50b7e90f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/ordinary-noncopy-disjoint.rs",
+   "source_sha256": "f70da201aacd3e83d2a0a283a023ec84679067c782da311e8cb51a4ab0101917",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/packed-move-conflict.rs",
+   "source_sha256": "8601e0b3fecb8f0e8badd16c85e98d319682f05567d5c77b8e04b37c7ff47612",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/packed-aligned-reference.rs",
+   "source_sha256": "d6dd6d978f09bec33150fda1a327d50c50f8becff46537b3ca66933069b9b3e4",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/packed-unaligned-reference.rs",
+   "source_sha256": "30092298a6f8763626e957284f3183684b80eed9a30f180f881f9ee2af6aa738",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/packed-raw-address.rs",
+   "source_sha256": "5478335d532b802bbf1088fefe3ecdd9864e20faf7c335ba277d1f8f90a02ae1",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/packed-raw-mutable.rs",
+   "source_sha256": "baa314733454859168da43a8e93a65500562b5fc51cef9d5362e399751db4d8e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/raw-read.rs",
+   "source_sha256": "bc497916ad38ecc1b655506046b5c6189286d16849a7c96dee6019914108b948",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/raw-write-shared-call.rs",
+   "source_sha256": "8cea1ac3219d1f9c1bdbadd952a6d540abcc9bfb9a1dfc1a40e0ad3e4426fb25",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/raw-pointer-slot-conflict.rs",
+   "source_sha256": "c7a0092bf97c89bc26479dfaca8e055cfcbf53b8ed1cdd6a6adef9f0268b49f9",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/raw-nested-field.rs",
+   "source_sha256": "26acbe579ff48343052ef411926490d986c1dbb963ef0c4b5088aee7e69c88b9",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/raw-move-field.rs",
+   "source_sha256": "9e00d6390753501c5a412583dfec841c88dc5d827615118b598c69ec60d2b67e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/raw-two-dereferences.rs",
+   "source_sha256": "40be46cfa97ae13a97e8a8e74573ebf8796f4544919be59e2600f7bedad9aafe",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/raw-cancellation.rs",
+   "source_sha256": "2b45551440fef8fc658afa5d6b21cbdb8c446784285d683cfa03af36a9cc5c05",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/raw-unsafe-required.rs",
+   "source_sha256": "288bd2650119c6134dc15656175923890e0bd1d7d1eb3708a18284e7a6bc4dff",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/raw-const-write-denied.rs",
+   "source_sha256": "6a68839a798e98e2bbe71c0ae248ec421fa426fcfa036ba67f3b2de063febf7f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/union-copy-read.rs",
+   "source_sha256": "645b18b51e5fc715323bf6d8c9b3d510acfd09d98c96c97ff08327e19e89e11a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/union-use-after-capture.rs",
+   "source_sha256": "fab9a8439fd666c0883a8531afc67ea4280d8dab8c870b53061256f44cb3da40",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/union-write.rs",
+   "source_sha256": "7e3c50e987da5d0fe93d4dc547c49e8169ff6b5ea81307224e0849109d1b62cd",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/union-write-requires-mut-call.rs",
+   "source_sha256": "f7698bbcdb4e54d1763d53aaf139d2c37657345f708b9a79bff158ffe8b51001",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/union-nested-disjoint.rs",
+   "source_sha256": "1a995fe3837939e1d2d6f55e3dd271e8bb1c2e96f282c07fceccef2724712c64",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/union-field-reference.rs",
+   "source_sha256": "82bd21e8bcbc2ceee193ec4c3182c7f84b98897ea68a5e967bff6463042aad72",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/union-raw-address.rs",
+   "source_sha256": "939080e166e068523fe21afba0f2a846362f644b4787e58b4a4c4321f835a1aa",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/union-raw-unsafe-required.rs",
+   "source_sha256": "9904e077876195fb9af584d38bc4ebfa1a96d726b9204a5adfe1fb252769baa3",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/nested-raw.rs",
+   "source_sha256": "d19b09439eb9c8defa11c11473a3a8b8bd8bc9a01af5d4d9be53b943263c0b99",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/nested-packed.rs",
+   "source_sha256": "e2c8d94570ae41f2e724454bad56839c262e69a3ce836f7a3bb7f7e2ccb390dc",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/nested-union.rs",
+   "source_sha256": "38b16e2d2442bb0fa74ac2f1d69df056ff3e3ba9c714f51632df149ebfbadc4a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/union-consume-before-call.rs",
+   "source_sha256": "85ec065cdd50b1aa9bcaca0ad1d00ce7bdcef883d531047832d9a4e88db3c634",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/union-consume-after-call.rs",
+   "source_sha256": "ee388945df7ed917424da30b496532742efb9312ceca7eae7f1c67ef38824beb",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/union-move-consume.rs",
+   "source_sha256": "f6aff011a27581296e1b13843b4825117f77200ede77ee1354f576ce387c1b1d",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/union-raw-nested-unsafe.rs",
+   "source_sha256": "3d2d9acb3c0718155bcafc2ce9988d8baefd2eab1b4af86be647516ad358ab45",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/union-raw-nested.rs",
+   "source_sha256": "c437ec26f293b37693ed5878b53d07f1d408947faad3deab6c0b605c2db3b673",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/union-raw-mutable.rs",
+   "source_sha256": "d17467d04c448ca16c156551989808ba30a860f067434f1b3189b9b393b6f585",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/raw-address-through-pointer-shared-call.rs",
+   "source_sha256": "3beffad4fac19ce565addded72a232d4140f5a2b836cbde53b2b2b49b57a119c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/packed-copy-shared-call.rs",
+   "source_sha256": "f1556e02d10408dff15902e78025d98a4f44a85564ae7342003120ba9066833e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/raw-outer-reference.rs",
+   "source_sha256": "745f9eef0273a4c7413b31437de2185fa496c82593b8f6a6b4d6615fba8f92c3",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/raw-slot-and-pointee.rs",
+   "source_sha256": "1ca68191cd2bdc0355d83a12fe7a90068ae4e2d8c9adda2bc268db9cd6161043",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/raw-slot-requires-mut-call.rs",
+   "source_sha256": "50b69a89eef434cc481704d7db6c1ab520040e44f3910063c241fce239553a30",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/packed-aligned-local-borrow.rs",
+   "source_sha256": "e92c08e165e89eae148a56bdd175260f2add2ae77847534504e3d1deed961e6c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/capture-precision/packed-unaligned-local-borrow.rs",
+   "source_sha256": "71c894bd4783a9a365fbe7b3cf00b49f71278bf0fd732a320e66e3c56b498c13",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/capture-integration-native/packed-reference.rs",
+   "source_sha256": "0dc988a448a3882a6a9c9f8734b51781ebf3cb6772d97ee35cd746d4842d173c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/capture-integration-native/union-reference.rs",
+   "source_sha256": "a7d6bed1f5e92842d8020df477a6a37be793c93d294187ac2cd14287daa0d467",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.capture-precision"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/union-borrows/shared-local.rs",
+   "source_sha256": "2ca87f4b77f5053899e900df03fc38958a8114cf96bc6f96076b2c17f24ade53",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/union-borrows/mutable-local.rs",
+   "source_sha256": "b6a52264625602e41f1742c5b888521588399d66021d7595b5c8cefe27850a7d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/union-borrows/cross-field-aliases.rs",
+   "source_sha256": "d4735ca6134829d17e3ea9d8c632f45b261b0f54634f22e70337999a66dec6e8",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/union-borrows/static-shared.rs",
+   "source_sha256": "8a57d730fef03e7b6db574c5d71904857eb0c78372a9f118d4e12ac3d07b4fea",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/union-borrows/generic.rs",
+   "source_sha256": "d9e98d2b9c599a9f872b7919d55bddf5f680039a5e4934e366e6389b3d68bc42",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/union-borrows/call-reference.rs",
+   "source_sha256": "f9cf3441903303637f0a7d2c28f46e8fd1c595cd2d2c8dff0f290d601b7e7d00",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/union-borrows/copy-snapshot.rs",
+   "source_sha256": "a83c9706ba4cdd48fe539b88d099599888940a64f7b5b4926d155cf4a039da42",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/union-borrows/missing-unsafe-shared.rs",
+   "source_sha256": "2f6da2d358aace746e163172c747d63720a13ae80e5a7626732436629b6a2a37",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/union-borrows/missing-unsafe-mutable.rs",
+   "source_sha256": "819d3839170988b246ab46edde184a2a945f28b97aa722ecdadf574bfa31dc2e",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/union-borrows/immutable-mutable-borrow.rs",
+   "source_sha256": "49b60f3cc3576a4ac9bf21508354599d87008afdd91d29cd565b47070b0984e1",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/union-borrows/packed-aligned-source.rs",
+   "source_sha256": "d0e78123f9674c4c9a86f3fe5cefe6106bfa69749256dcd66945058597321c08",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/union-borrows/invalid-bool.rs",
+   "source_sha256": "f6e9db173522f0a6b4848a0072bda4bdbbc36f9cc5be02e6a5cdb309aafe973a",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/union-borrows/invalid-char.rs",
+   "source_sha256": "901f9180a64fd1de16f52b99c7b03e84e6539fbd51fce3fc119e1249aad51c0f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/union-borrows/uninitialized-wide.rs",
+   "source_sha256": "4296f901d8707d2b90db1a631b8cd0fc1b788945e972a35cdcbd61eb31c2d68b",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/union-borrows/escape.rs",
+   "source_sha256": "ee0b37e124763584be970951dabdd4615569f2ca8d387982986c6072e9c7c3f3",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/union-borrows/pointer-family-boundary.rs",
+   "source_sha256": "f08c74d5e279ad70d6fc75998d74593256087abfb9f4b35813e4973f228d2971",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/union-borrows/unit-family-boundary.rs",
+   "source_sha256": "c3d7010f760b7db5dec1956a3dd35a7b2ac98038c68eba2755e3a4fe0c56341f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/union-borrows/ordinary-scalar.rs",
+   "source_sha256": "8213e830136224a050821294a33ff6e8d8c06c0eec5705aca629e9e0d29c51f0",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/union-borrows/raw-base.rs",
+   "source_sha256": "6ff3136dea208f0bd9a0f7fe4579bef38e31cf91b6e15c6541b4c0553cf37b07",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/union-borrows/packed-raw-base-aligned-source.rs",
+   "source_sha256": "e630832c9ca1287932a5073de96a04874bd65980f8d2856ad8cc199e3271e85b",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa27.unions"
+   ],
+   "work_units": [
+    "unsafe-places"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  }
+ ]
+}
