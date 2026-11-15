@@ -961,6 +961,16 @@ from a root `main`, and a call through `&dyn FnMut` rejects (E0596). A
 maintainer integration test checks them through the CLI. There is no graded
 manifest.
 
+`spec/source-index-deref/` freezes eighteen declared no_core programs that
+index a value whose type reaches its indexed place through source `Deref`
+implementations, as `shared.borrow()[0]` does. The operand takes one actual
+`deref` call per step, or `deref_mut` in a mutable index place, before the
+array, slice or source `Index` is applied; a type's own `Index` wins over its
+`Deref`. Ten forms accept and one runs natively against a C observer of the
+calls, six reject (E0608, E0596, E0594, E0308), and two forms rustc accepts
+are recorded gaps that fail closed. A maintainer integration test checks every
+case through the borrow checker. There is no graded manifest.
+
 `spec/specialized-trait-inputs/` freezes nine declared no_core reductions of
 core's `Zip` `fold`. `ZImpl::size(..)` inside a specializing impl leaves the
 trait inputs to inference while two or three specializing impls all resolve

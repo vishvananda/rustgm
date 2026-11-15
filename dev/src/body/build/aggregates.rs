@@ -190,6 +190,9 @@ impl Builder<'_> {
                 if matches!(self.fact(node)?.operation, Some(Operation::Call { .. })) {
                     self.scratch.work.push(Work::LanguageReceiver(node));
                 }
+                if self.index_operand_plan(node).is_some() {
+                    self.scratch.work.push(Work::IndexOperand(node));
+                }
                 let receiver =
                     self.receiver_place_work(value, node, crate::sema::closures::AccessKind::Index);
                 self.scratch.work.push(receiver);

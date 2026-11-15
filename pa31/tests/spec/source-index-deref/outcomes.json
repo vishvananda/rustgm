@@ -1,0 +1,142 @@
+{
+ "schema": 1,
+ "declared": "2026-11-15T17:50:34Z, sixteen cases, before the frozen rustc 1.98.0 oracle and before any candidate run (obj/parallel/index-deref/declared-1.json). Their declared statuses and the declared native stdout never changed. Two inputs changed bytes after declaration, each for a setup failure: (1) slice-target.rs and native.rs gained `impl Clone/Copy for &T`, without which rustc's built-in slice length read is an internal compiler error (status 101, `fully_perform`) rather than an outcome; (2) native.rs was rewritten to index only through source `Index<u8>`/`IndexMut<u8>` implementations and struct fields, because a built-in array or slice index lowers to a bounds guard and demanded native LowIR stops at the existing source panic routing boundary while the library installs `panic_bounds_check` (as symbolic-index records). The first candidate native run stopped there before printing anything. observer.c and native.stdout are byte-identical to the first declaration. The two recorded gaps, reference-impl.rs and ref-mut-binding.rs, were added at 2026-11-15T18:52:34Z (declared-5.json) and are not blind declarations: probes of the same two forms had already been compiled by the oracle (status 0) and by the candidate.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "native": {
+  "observer.c": "1db177b4e475ced0da10b0af390fae96aedc5b53b530f97e0fe6bb4b14f367ac",
+  "native.stdout": "ffc3bfe8104a4892f8aa3da15cc2ef53c3da7de141501e51b17e128a7a4bb8e0",
+  "rustc": "native.rs compiled by the oracle, linked with observer.c by cc, prints native.stdout"
+ },
+ "cases": {
+  "shared.rs": {
+   "sha256": "8b7ff2299b9c2fd2809afc2f669cf4ba5e057e09e4993c2ceeb243b56cc194aa",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "w[2]: one Deref call, then the built-in array index"
+  },
+  "nested.rs": {
+   "sha256": "c6e5aa9ab52ebd1bc30cf2b758d447671ec6a89a7591e3904328a277f491a4e4",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "o[1]: Outer's then Wrap's Deref call"
+  },
+  "references.rs": {
+   "sha256": "92271516f06bc9cbf8c7c49fe899eeb0b60e8d263861fc9a868c1e479c1bb11a",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "r[0] and rr[2]: &Wrap and &&Wrap are dereferenced before the Deref call"
+  },
+  "slice-target.rs": {
+   "sha256": "a8e225e10795c8b577d76953a45c39d7505458815f0c4084f8ab7bbe88cbb7bf",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "s[1] with Target=[u8]: the built-in slice index follows the Deref call"
+  },
+  "custom-target.rs": {
+   "sha256": "c0c65e9cca253c3f9bbb0d4444de2c96107c8b93b5bb736291804951e16d6ed8",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "h[Key(1)] with Target=Table: Table's own Index<Key> call follows the Deref call"
+  },
+  "own-index.rs": {
+   "sha256": "075125f90bf502d3459b28b6f11cc99666121d8b5aa1e7b65404b46644d29778",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "x[0]: a type with Index<usize> and Deref uses its own Index and never calls deref"
+  },
+  "mutable.rs": {
+   "sha256": "35e7479da877cb537185fc4441be7fab27d012635a9e83700d310d4c068bbcf8",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "w[1]=v, w[0]|=v, &mut w[2], a nested store and a store through &mut Wrap select DerefMut"
+  },
+  "late-mutable.rs": {
+   "sha256": "c130ca973a8e51532ed03dd5fc187edb48d56811126cc6b76c0d87b9ce0ee42e",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "c[1].set(v): the &mut self receiver selects DerefMut after the index is typed"
+  },
+  "generic.rs": {
+   "sha256": "67137b91ac806619c2ef312a4fab8ab19e72e57fbcd6f41be9a2d9fa299fe8f9",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "t[0] with T: Deref<Target=[u8;3]> reads through the assumption"
+  },
+  "native.rs": {
+   "sha256": "d13ad040adace9bc3d979c62e32e1c1eccc76e8cfa74b965315637ed738c5647",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "every accepted form through source index calls keyed by u8, with the C observer",
+   "rustc_stdout_matches_declared": true
+  },
+  "missing.rs": {
+   "sha256": "ce07bfce94e879ea1469becef29b8bf035a89c3a856b90ebbd7b77805586e239",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "p[0]: neither Index nor Deref",
+   "rustc_codes": [
+    "E0608"
+   ]
+  },
+  "shared-only-borrow.rs": {
+   "sha256": "72fe45298e16bb00c9c15114c938a31a7900d093c61f7f58eeb218f44bea79a4",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "&mut s[0] through a type with Deref only",
+   "rustc_codes": [
+    "E0596"
+   ]
+  },
+  "shared-only-store.rs": {
+   "sha256": "45db7a946966b5b50cfaa4ce678b57f43ef107f8760992ce0d76a4a87d220c91",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "s[1]=v through a type with Deref only",
+   "rustc_codes": [
+    "E0594"
+   ]
+  },
+  "wrong-index.rs": {
+   "sha256": "99061f8a94d2a8732b3d635ded89c894f6e8a5e273bd542dff722f9b38403f45",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "w[0u8]: the reached array has no Index<u8>",
+   "rustc_codes": [
+    "E0308"
+   ]
+  },
+  "hidden-target.rs": {
+   "sha256": "cfa642f6c1fca65f66b7b3ec52b1977266034e552b25622377778824450c51db",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "x[0usize]: the type's own Index<Key> is chosen, so its Deref target's Index<usize> is never reached",
+   "rustc_codes": [
+    "E0308"
+   ]
+  },
+  "immutable-binding.rs": {
+   "sha256": "636ec7fc456a5cc35336ba0460b6d77d6c6fa7003d9eea26945a154b5ee201d6",
+   "declared": 1,
+   "rustc_status": 1,
+   "form": "w[1]=v through DerefMut on an immutable binding",
+   "rustc_codes": [
+    "E0596"
+   ]
+  },
+  "reference-impl.rs": {
+   "sha256": "c27f87d75b393d70d18fb580a5a65b9635da812437ce2a1b0b3e194d6ee7f438",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "r[0] where &Own itself implements Index<usize>, which rustc selects before any dereference",
+   "recorded_gap": "an index implementation for a reference type is not selected"
+  },
+  "ref-mut-binding.rs": {
+   "sha256": "1f68e5761a794d496abfee2110096ff7aff5b01d2e426f79d5e7b697ba3f16ce",
+   "declared": 0,
+   "rustc_status": 0,
+   "form": "let ref mut y=w[1]: a binding pattern makes the index place mutable",
+   "recorded_gap": "cannot mutably borrow shared or static storage"
+  }
+ }
+}

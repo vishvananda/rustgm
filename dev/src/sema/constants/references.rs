@@ -389,10 +389,12 @@ impl Queries<'_> {
                         | Operation::IndexParameter { .. }
                         | Operation::IndexSlice,
                     ),
-                ) => Some(Expression::Index {
-                    value: child(value),
-                    index: child(index),
-                }),
+                ) if self.typing.facts.methods.index_operand(key).is_none() => {
+                    Some(Expression::Index {
+                        value: child(value),
+                        index: child(index),
+                    })
+                }
                 _ => None,
             },
         )

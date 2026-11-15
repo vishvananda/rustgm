@@ -267,6 +267,9 @@ fn nodes(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Res
             if let Some(count) = facts.autoderefs.get(&key) {
                 writeln!(out, "autoderef {file}:{node} count={count}")?;
             }
+            if let Some(plan) = facts.methods.index_operand(key) {
+                writeln!(out, "index-operand {file}:{node} plan={}", plan.index())?;
+            }
             if let Some(value) = fact.adjustment {
                 let kind = match value.kind {
                     AdjustmentKind::Never => "never",

@@ -27,6 +27,7 @@ mod access_paths;
 pub(crate) mod assembly_values;
 mod autoderef;
 mod deref_coercions;
+mod dereferenced_indexes;
 mod environment_values;
 mod field_storage;
 mod finalization;
@@ -259,6 +260,8 @@ enum Work {
     Exit(NodeId),
     CompleteExpression(NodeId, TermId),
     Field(NodeId, aggregates::Field),
+    /// An index operand's next autoderef step, at its current subject.
+    Index(NodeId, TermId),
     CoerceElement(NodeId, TermId),
     PrepareBorrowOperand {
         node: NodeId,
@@ -1034,6 +1037,11 @@ impl Checker<'_> {
                         return Ok(Some(dependency));
                     }
                 }
+                Work::Index(node, operand) => {
+                    if let Some(dependency) = self.progress_index(node, operand)? {
+                        return Ok(Some(dependency));
+                    }
+                }
                 Work::CompleteExpression(node, term) => self.exit_expression(node, term)?,
             }
         }
@@ -1118,6 +1126,12 @@ impl Checker<'_> {
         if let Kind::Field { value, name } = self.kind(node) {
             let field = self.prepare_field(node, value, name)?;
             return self.progress_field(node, field);
+        }
+        if let Kind::Index { value, .. } = self.kind(node)
+            && self.index_operand_steps()
+        {
+            let operand = self.term(value)?;
+            return self.progress_index(node, operand);
         }
         let term = self.expression(node)?;
         self.schedule_expression_completion(node, term)?;

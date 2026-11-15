@@ -275,6 +275,10 @@ pub(in crate::sema) fn check_rows(
             matches!(syntax, crate::syntax::ast::Kind::Field { value, .. } if value == operand)
                 && matches!(facts.node(plan.node).and_then(|node| node.operation), Some(super::super::model::Operation::Field { field: actual, .. }) if actual == field)
         }
+        super::Kind::Index { .. } => {
+            matches!(syntax, crate::syntax::ast::Kind::Index { value, .. } if value == operand)
+                && indexed_receiver(facts, plan.node, receiver)
+        }
         super::Kind::Receiver { call, .. } => {
             matches!(syntax,
                 crate::syntax::ast::Kind::MethodCall { receiver, .. }
@@ -340,6 +344,34 @@ pub(in crate::sema) fn check_rows(
         check_method(facts, plan, call)?;
     }
     Ok(())
+}
+
+/// The place an index operand's calls reach is the one its index reads: the
+/// erased built-in's array or slice, or the selected index call's borrow.
+fn indexed_receiver(
+    facts: &super::super::model::Declarations,
+    node: NodeKey,
+    receiver: TypeId,
+) -> bool {
+    use super::super::model::Operation;
+    use crate::types::Kind;
+    match facts.node(node).and_then(|node| node.operation) {
+        Some(Operation::Index { .. } | Operation::IndexParameter { .. }) => matches!(
+            facts.types.kind(receiver),
+            Some(Kind::Array { .. } | Kind::ArrayTerm { .. })
+        ),
+        Some(Operation::IndexSlice) => {
+            matches!(facts.types.kind(receiver), Some(Kind::Slice(_)))
+        }
+        _ => facts
+            .methods
+            .calls
+            .get(&node)
+            .and_then(|selected| selected.borrow)
+            .is_some_and(|borrow| {
+                matches!(facts.types.kind(borrow), Some(Kind::Reference { referent, .. }) if referent == receiver)
+            }),
+    }
 }
 
 pub(crate) fn references(
@@ -521,37 +553,40 @@ fn check_method(
     Ok(())
 }
 
-/// A converted expression may also contain its own ordinary call. Select only
-/// actual calls present in the distinct, retained conversion range.
+/// A converted or indexed expression may also contain its own ordinary call.
+/// Select only actual calls present in the distinct, retained conversion or
+/// index-operand range.
 pub(crate) fn conversion_call(
     facts: &super::super::model::Declarations,
     owner: NodeKey,
     node: NodeKey,
     call: super::super::iteration::Call,
 ) -> Result<Option<super::super::bodies::ProtocolPlanId>, &'static str> {
-    let Some(id) = facts
+    let conversion = facts
         .reference_adjustments
         .get(&node)
-        .and_then(|row| row.plan)
-    else {
-        return Ok(None);
-    };
-    let plan = id.current(facts, owner, node)?;
-    let super::Kind::Coercion { steps, .. } = plan.kind else {
-        return Err("reference conversion changed its actual protocol kind");
-    };
-    let entries = rows(facts, plan, owner, steps)?;
-    super::super::header_attributes::charge_source_contract_query(
-        facts,
-        entries.len().checked_ilog2().map_or(1, |n| n as usize + 2),
-    )
-    .map_err(|_| "reference conversion lookup budget exceeded")?;
-    let Ok(index) = entries.binary_search_by_key(&call.callable.0, |step| step.call.callable.0)
-    else {
-        return Ok(None);
-    };
-    if entries[index].call != call {
-        return Err("reference conversion changed its complete actual call signature");
+        .and_then(|row| row.plan);
+    let indexed = facts.methods.index_operand(node);
+    for id in [conversion, indexed].into_iter().flatten() {
+        let plan = id.current(facts, owner, node)?;
+        let (super::Kind::Coercion { steps, .. } | super::Kind::Index { steps, .. }) = plan.kind
+        else {
+            return Err("reference conversion changed its actual protocol kind");
+        };
+        let entries = rows(facts, plan, owner, steps)?;
+        super::super::header_attributes::charge_source_contract_query(
+            facts,
+            entries.len().checked_ilog2().map_or(1, |n| n as usize + 2),
+        )
+        .map_err(|_| "reference conversion lookup budget exceeded")?;
+        let Ok(index) = entries.binary_search_by_key(&call.callable.0, |step| step.call.callable.0)
+        else {
+            continue;
+        };
+        if entries[index].call != call {
+            return Err("reference conversion changed its complete actual call signature");
+        }
+        return Ok(Some(id));
     }
-    Ok(Some(id))
+    Ok(None)
 }

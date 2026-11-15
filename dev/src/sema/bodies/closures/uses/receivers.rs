@@ -197,6 +197,28 @@ impl Collector<'_> {
         value: NodeId,
         index: NodeId,
     ) -> Result<(), Error> {
+        if let Some(id) = checker.index_plan(work.node) {
+            // The operand's first Deref step borrows the captured place. Its
+            // later steps and the index run in the closure body on call.
+            let receiver = checker.capture_access_receiver(work.node, id)?;
+            let usage = match checker.head(work.node, receiver.borrow)? {
+                Some(Constructor::Reference { mutable: true, .. }) => Use::Mutable,
+                Some(Constructor::Reference { mutable: false, .. }) => Use::Shared,
+                _ => {
+                    return Err(
+                        checker.error(work.node, "index capture lost its actual operand borrow")
+                    );
+                }
+            };
+            self.pending.push(Work {
+                node: receiver.operand,
+                usage,
+                dereferences: receiver.dereferences,
+                receiver: Some((work.node, AccessKind::Index)),
+            });
+            self.push(index, Use::Value);
+            return Ok(());
+        }
         let dereferences = checker
             .facts
             .autoderefs

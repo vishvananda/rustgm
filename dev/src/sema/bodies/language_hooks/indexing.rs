@@ -161,6 +161,10 @@ impl Checker<'_> {
                 "source index receiver policy changed its checked borrow or callable",
             ));
         }
+        if self.index_plan(node).is_some() {
+            // The operand is borrowed by its first Deref step, checked there.
+            return Ok(());
+        }
         self.check_published_raw_receiver(node, value, selected.method)
     }
     pub(in crate::sema::bodies) fn erased_source_index(&self, node: NodeId) -> bool {

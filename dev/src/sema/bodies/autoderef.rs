@@ -155,16 +155,20 @@ impl Checker<'_> {
     }
 
     pub(super) fn access_step_method(&self, node: NodeId, index: usize) -> bool {
-        [self.access_plan(node), self.coercion_plan(node)]
-            .into_iter()
-            .flatten()
-            .filter_map(|id| self.state.call_types.protocol_plans.get(id.index()))
-            .filter_map(|plan| plan.kind.access())
-            .any(|access| {
-                access.calls.is_some_and(|range| {
-                    let start = range.method as usize;
-                    index >= start && access.steps.len().is_ok_and(|count| index - start < count)
-                })
+        [
+            self.access_plan(node),
+            self.coercion_plan(node),
+            self.index_plan(node),
+        ]
+        .into_iter()
+        .flatten()
+        .filter_map(|id| self.state.call_types.protocol_plans.get(id.index()))
+        .filter_map(|plan| plan.kind.access())
+        .any(|access| {
+            access.calls.is_some_and(|range| {
+                let start = range.method as usize;
+                index >= start && access.steps.len().is_ok_and(|count| index - start < count)
             })
+        })
     }
 }

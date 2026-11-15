@@ -243,7 +243,7 @@ impl Checker<'_> {
                 })?
                 .operation;
             // ForPlan retains distinct into_iter/next signatures, not one Call.
-            if self.erased_source_operator(node)? {
+            if self.erased_source_operator(node)? && !self.index_step_call(node, index) {
                 continue;
             }
             any = true;

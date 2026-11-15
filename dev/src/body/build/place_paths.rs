@@ -28,6 +28,42 @@ impl Builder<'_> {
         self.project(node, self.ty(node)?, place, ProjectionKind::Field(field))
     }
 
+    pub(super) fn index_operand_plan(&self, node: NodeId) -> Option<ProtocolPlanId> {
+        self.facts.methods.index_operand(NodeKey {
+            node,
+            ..self.source
+        })
+    }
+
+    /// Replace an index operand's place by the place its Deref calls reach.
+    /// The index expression then reads or borrows that place as usual.
+    pub(super) fn index_operand_place(&mut self, node: NodeId) -> Result<(), Error> {
+        let place = match self.pop_place(node)? {
+            Some(place) if self.current.is_some() => {
+                let key = NodeKey {
+                    node,
+                    ..self.source
+                };
+                let id = self
+                    .index_operand_plan(node)
+                    .ok_or_else(|| self.error(node, "index operand lost its actual source plan"))?;
+                let plan = protocol_plans::checked(self.report, self.facts, self.source, key, id)?;
+                if !matches!(plan.kind, Kind::Index { .. }) {
+                    return Err(self.error(node, "index operand received another actual protocol"));
+                }
+                Some(self.access_call_place(
+                    node,
+                    place,
+                    plan,
+                    crate::sema::closures::AccessKind::Index,
+                )?)
+            }
+            place => place,
+        };
+        self.scratch.places.push(place);
+        Ok(())
+    }
+
     pub(super) fn access_call_place(
         &mut self,
         node: NodeId,

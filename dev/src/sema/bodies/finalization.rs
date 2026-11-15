@@ -169,7 +169,8 @@ impl Checker<'_> {
                 return Err(self.error(node, "body type work budget exceeded"));
             }
             if let Some(Source::Implementation { owner, .. }) = publication.evidence.get(&index)
-                && !self.erased_solved_call(node, &publication.solved)?
+                && (!self.erased_solved_call(node, &publication.solved)?
+                    || self.index_step_obligation(index)?)
                 && !self
                     .facts
                     .generics

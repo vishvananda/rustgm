@@ -70,7 +70,7 @@ impl Checker<'_> {
                 kind: OpenKind::Coercion { access, mutable },
             })?;
             let id = AccessPlanId::new(slot).map_err(|e| self.error(node, e))?;
-            self.retain_reference_calls(node, id)?;
+            self.retain_side_plan(node, id, false)?;
             id
         };
         let access = self.state.call_types.protocol_plans[id.index()]
@@ -204,18 +204,27 @@ impl Checker<'_> {
         .map_err(|e| self.error(node, e))
     }
 
-    fn retain_reference_calls(&mut self, node: NodeId, id: AccessPlanId) -> Result<(), Error> {
+    /// A conversion or index-operand plan is found by its expression, beside
+    /// that expression's own selected operation.
+    pub(super) fn retain_side_plan(
+        &mut self,
+        node: NodeId,
+        id: AccessPlanId,
+        indexed: bool,
+    ) -> Result<(), Error> {
         let rows = self
             .state
             .call_types
             .access
             .as_deref()
             .ok_or_else(|| self.error(node, "reference conversion lost its discovery owner"))?;
-        let growth = retained::Growth::map::<NodeId, AccessPlanId>(
-            rows.conversions.len(),
-            rows.conversions.capacity(),
-            1,
-        );
+        let plans = if indexed {
+            &rows.indexes
+        } else {
+            &rows.conversions
+        };
+        let growth =
+            retained::Growth::map::<NodeId, AccessPlanId>(plans.len(), plans.capacity(), 1);
         crate::sema::header_attributes::charge_source_retention(
             self.facts,
             growth.work.saturating_add(1),
@@ -226,13 +235,18 @@ impl Checker<'_> {
         let rows = self.state.call_types.access.as_deref_mut().ok_or_else(|| {
             super::Declarations::error(report, source, "reference conversion owner disappeared")
         })?;
-        rows.conversions.try_reserve(1).map_err(|_| {
+        let plans = if indexed {
+            &mut rows.indexes
+        } else {
+            &mut rows.conversions
+        };
+        plans.try_reserve(1).map_err(|_| {
             super::Declarations::error(report, source, "reference conversion allocation failed")
         })?;
-        if growth.bytes != 0 && retained::map(&rows.conversions) > growth.bytes {
+        if growth.bytes != 0 && retained::map(plans) > growth.bytes {
             return Err(self.error(node, "reference conversion exceeded its paid storage"));
         }
-        rows.conversions.insert(node, id);
+        plans.insert(node, id);
         Ok(())
     }
 

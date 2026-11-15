@@ -2,6 +2,8 @@
 use crate::resolve as source;
 use rustgm::{sema, syntax::ast::Kind};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
+#[path = "access_sources/dereferenced_indexes.rs"]
+mod dereferenced_indexes;
 
 #[test]
 fn field_semantic_producers_keep_actual_calls_and_complete_target_applications() -> Result {

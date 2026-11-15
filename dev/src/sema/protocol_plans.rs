@@ -25,6 +25,13 @@ pub(crate) enum Kind {
         steps: access::Range,
         call: Call,
     },
+    /// An index operand's calls; the index itself stays the node's operation.
+    Index {
+        operand: NodeId,
+        receiver: TypeId,
+        dereferences: u32,
+        steps: access::Range,
+    },
     Block {
         body: NodeId,
         from_output: Call,
@@ -60,6 +67,9 @@ impl Kind {
         if matches!(self, Self::Coercion { .. }) {
             return facts.reference_adjustments.get(&node)?.plan;
         }
+        if matches!(self, Self::Index { .. }) {
+            return facts.methods.index_operand(node);
+        }
         match facts.node(node)?.operation? {
             super::model::Operation::Field { plan, .. } => plan,
             super::model::Operation::MethodReceiver { plan }
@@ -84,6 +94,12 @@ impl Kind {
                 dereferences,
                 steps,
             }
+            | Self::Index {
+                operand,
+                receiver,
+                dereferences,
+                steps,
+            }
             | Self::Receiver {
                 operand,
                 receiver,
@@ -100,6 +116,7 @@ impl Plan {
         let (next, remaining) = match self.kind {
             Kind::Field { steps, .. }
             | Kind::Coercion { steps, .. }
+            | Kind::Index { steps, .. }
             | Kind::Receiver { steps, .. } => {
                 let count = steps
                     .end
@@ -135,6 +152,7 @@ impl Plan {
             (
                 Kind::Field { steps, .. }
                 | Kind::Coercion { steps, .. }
+                | Kind::Index { steps, .. }
                 | Kind::Receiver { steps, .. },
                 _,
             ) => {

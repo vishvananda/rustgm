@@ -100,19 +100,34 @@ impl Checker<'_> {
                 }
                 | crate::syntax::ast::Kind::For { .. }
         ) || self.access_plan(node).is_some()
-            || self
-                .coercion_plan(node)
-                .and_then(|id| self.state.call_types.protocol_plans.get(id.index()))
-                .and_then(|plan| plan.kind.access())
-                .is_some_and(|access| {
-                    access.calls.is_some_and(|calls| {
-                        index >= calls.call as usize
-                            && access
-                                .steps
-                                .len()
-                                .is_ok_and(|n| index - (calls.call as usize) < n)
-                    })
+            || self.side_plan_call(self.coercion_plan(node), index)
+            || self.index_step_call(node, index)
+    }
+    /// Whether call row `index` is one of the node's index-operand calls,
+    /// distinct from the index expression's own selected call.
+    pub(in crate::sema::bodies) fn index_step_call(
+        &self,
+        node: crate::syntax::ast::NodeId,
+        index: usize,
+    ) -> bool {
+        self.side_plan_call(self.index_plan(node), index)
+    }
+    fn side_plan_call(
+        &self,
+        plan: Option<super::super::access_paths::AccessPlanId>,
+        index: usize,
+    ) -> bool {
+        plan.and_then(|id| self.state.call_types.protocol_plans.get(id.index()))
+            .and_then(|plan| plan.kind.access())
+            .is_some_and(|access| {
+                access.calls.is_some_and(|calls| {
+                    index >= calls.call as usize
+                        && access
+                            .steps
+                            .len()
+                            .is_ok_and(|n| index - (calls.call as usize) < n)
                 })
+            })
     }
     pub(in crate::sema::bodies) fn replayed_protocol_context(
         &self,
@@ -135,7 +150,8 @@ impl Checker<'_> {
                     },
                 ) => Some(plan),
                 _ => None,
-            });
+            })
+            .or_else(|| self.facts.methods.index_operand(key));
         let Some(plan) = plan else { return Ok(None) };
         let plan = plan
             .current(self.facts, self.state.body, key)
@@ -202,6 +218,7 @@ impl Checker<'_> {
             let open = self.state.call_types.protocol_plans[index];
             let kind = match open.kind {
                 super::super::protocol_control::OpenKind::Field(field)
+                | super::super::protocol_control::OpenKind::Index { access: field, .. }
                 | super::super::protocol_control::OpenKind::Receiver { access: field, .. }
                 | super::super::protocol_control::OpenKind::Coercion { access: field, .. } => {
                     self.publish_field_plan(open, field, solved, source_use)?
@@ -224,9 +241,40 @@ impl Checker<'_> {
         // from an ordinary call at the same coerced expression node.
         Ok(())
     }
-    fn commit_protocol_plans(&mut self, plans: Vec<Plan>) -> Result<(), Error> {
+    fn reserve_index_plans(&mut self, count: usize) -> Result<(), Error> {
+        if count == 0 {
+            return Ok(());
+        }
+        // The cold table's owner is paid with its first plan.
+        let (length, capacity, owner) = self.facts.methods.index_operands.as_deref().map_or(
+            (
+                0,
+                0,
+                size_of::<crate::support::hash::HashMap<NodeKey, ProtocolPlanId>>(),
+            ),
+            |rows| (rows.len(), rows.capacity(), 0),
+        );
+        let growth = crate::support::retained::Growth::map::<NodeKey, ProtocolPlanId>(
+            length, capacity, count,
+        );
+        crate::sema::header_attributes::charge_source_retention(
+            self.facts,
+            growth.work.saturating_add(count),
+            growth.bytes.saturating_add(owner),
+        )?;
+        self.facts
+            .methods
+            .index_operands
+            .get_or_insert_with(Box::default)
+            .try_reserve(count)
+            .map_err(|_| self.error(self.state.body.node, "index operand plan allocation failed"))
+    }
+    /// The plans a replay has not published yet, and how many of them are
+    /// index-operand plans; a published plan must be unchanged.
+    fn unpublished_protocol_plans(&self, plans: &[Plan]) -> Result<(usize, usize), Error> {
         let mut new_count = 0;
-        for plan in &plans {
+        let mut indexed = 0;
+        for plan in plans {
             if let Some(id) = plan.kind.retained_id(self.facts, plan.node) {
                 if id
                     .current(self.facts, self.state.body, plan.node)
@@ -240,8 +288,14 @@ impl Checker<'_> {
                 }
             } else {
                 new_count += 1;
+                indexed += usize::from(matches!(plan.kind, Kind::Index { .. }));
             }
         }
+        Ok((new_count, indexed))
+    }
+    fn commit_protocol_plans(&mut self, plans: Vec<Plan>) -> Result<(), Error> {
+        let (new_count, indexed) = self.unpublished_protocol_plans(&plans)?;
+        self.reserve_index_plans(indexed)?;
         let report = self.report;
         let owner = self.state.body;
         let contexts = CallContexts::slot(
@@ -260,13 +314,15 @@ impl Checker<'_> {
             .reserve_protocol(new_count)
             .map_err(|e| Declarations::error(report, owner, e))?;
         for plan in plans {
-            let existing = if matches!(plan.kind, Kind::Coercion { .. }) {
-                self.facts
+            // A plan is found beside its expression's operation, or as it.
+            let existing = match plan.kind {
+                Kind::Coercion { .. } => self
+                    .facts
                     .reference_adjustments
                     .get(&plan.node)
-                    .is_some_and(|r| r.plan.is_some())
-            } else {
-                matches!(
+                    .is_some_and(|r| r.plan.is_some()),
+                Kind::Index { .. } => self.facts.methods.index_operand(plan.node).is_some(),
+                _ => matches!(
                     self.facts.nodes[plan.node.file.0 as usize][plan.node.node.get() as usize]
                         .operation,
                     Some(
@@ -275,7 +331,7 @@ impl Checker<'_> {
                             | Operation::Iteration { .. }
                             | Operation::Field { plan: Some(_), .. }
                     )
-                )
+                ),
             };
             if existing {
                 continue;
@@ -300,6 +356,14 @@ impl Checker<'_> {
                         )
                     })?;
                 row.plan = Some(id);
+                continue;
+            }
+            if matches!(plan.kind, Kind::Index { .. }) {
+                self.facts
+                    .methods
+                    .index_operands
+                    .get_or_insert_with(Box::default)
+                    .insert(plan.node, id);
                 continue;
             }
             self.facts.nodes[plan.node.file.0 as usize][plan.node.node.get() as usize].operation =
@@ -386,6 +450,7 @@ impl Checker<'_> {
             }
             Kind::Iteration { .. }
             | Kind::Field { .. }
+            | Kind::Index { .. }
             | Kind::Receiver { .. }
             | Kind::Coercion { .. } => {
                 return Err(self.error(plan.node.node, "iteration plan lost its source branch"));

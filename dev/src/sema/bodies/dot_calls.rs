@@ -454,8 +454,11 @@ impl Checker<'_> {
             let key = self.key(*node);
             let actual = solved.types[pending.actual.0 as usize];
             let expected = solved.types[pending.expected.0 as usize];
+            // An erased index keeps no call of its own; its operand's Deref
+            // steps are actual calls at the same expression.
             if self.source_scalar_assignment_solved(*node, solved)?
-                || self.source_primitive_index_solved(*node, solved)?
+                || (self.source_primitive_index_solved(*node, solved)?
+                    && !self.access_step_method(*node, index))
             {
                 continue;
             }

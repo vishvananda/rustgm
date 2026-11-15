@@ -166,10 +166,16 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         for i in 0..self.state.alignment.borrows.len() {
             let (source, operand) = self.state.alignment.borrows[i];
-            if self.erased_source_assignment(source)? || self.erased_source_index(source) {
+            // An index operand's first Deref step borrows the operand even
+            // when the index itself is an erased built-in.
+            let erased = self.erased_source_index(source);
+            let stepped = self.index_plan(source).is_some();
+            if self.erased_source_assignment(source)? || (erased && !stepped) {
                 continue;
             }
-            self.check_index_receiver_policy(source, operand, solved)?;
+            if !erased {
+                self.check_index_receiver_policy(source, operand, solved)?;
+            }
             self.check_static_reference(source, operand)?;
             let packed = self.packed_place(operand)?;
             self.alignment_requirement(source, self.ty(operand)?, packed, false)?;

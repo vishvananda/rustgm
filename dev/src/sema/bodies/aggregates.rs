@@ -713,7 +713,21 @@ impl Checker<'_> {
         value: NodeId,
         index: NodeId,
     ) -> Result<TermId, Error> {
-        let array = self.autoderef(node, self.term(value)?)?;
+        let operand = self.term(value)?;
+        if crate::sema::compiler_items::index_available(self.facts) {
+            self.indexed_referent(node, operand)?;
+        }
+        let array = self.autoderef(node, operand)?;
+        self.indexed_element(node, value, index, array)
+    }
+    /// The element an index selects in `array`, the operand's indexed place.
+    pub(super) fn indexed_element(
+        &mut self,
+        node: NodeId,
+        value: NodeId,
+        index: NodeId,
+        array: TermId,
+    ) -> Result<TermId, Error> {
         if self.facts.source_bindings.is_some() {
             if matches!(
                 self.head(node, array)?,

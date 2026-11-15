@@ -117,7 +117,7 @@ impl Checker<'_> {
                     }) {
                         let old = self.term(node)?;
                         let new = if self.facts.source_bindings.is_some() {
-                            let subject = self.autoderef(node, self.term(value)?)?;
+                            let subject = self.indexed_subject(node, value)?;
                             self.source_index_operator(node, value, index, subject, true)?
                         } else {
                             self.language_operator(node, Hook::IndexMut, value, Some(index))?

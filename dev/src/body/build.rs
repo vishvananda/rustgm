@@ -375,6 +375,8 @@ enum Work {
         kind: crate::sema::closures::AccessKind,
     },
     FinishPlace(NodeId),
+    /// An index operand's Deref calls, after its place and before its index.
+    IndexOperand(NodeId),
     TemporaryPlace(NodeId),
     ReadPlace(NodeId),
     DiscardPlace(NodeId),
@@ -1024,6 +1026,7 @@ impl<'a> Builder<'a> {
                 self.enter_adjusted_place(operand, site, kind)?;
             }
             Work::FinishPlace(node) => self.finish_place(node)?,
+            Work::IndexOperand(node) => self.index_operand_place(node)?,
             Work::TemporaryPlace(node) => {
                 let place = if self.current.is_some() {
                     let value = self.value(node)?;

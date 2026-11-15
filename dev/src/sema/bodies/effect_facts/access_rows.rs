@@ -108,6 +108,12 @@ impl Checker<'_> {
                 dereferences: field.dereferences,
                 steps,
             },
+            super::super::protocol_control::OpenKind::Index { complete: true, .. } => Kind::Index {
+                operand: field.operand,
+                receiver,
+                dereferences: field.dereferences,
+                steps,
+            },
             super::super::protocol_control::OpenKind::Field(_) => Kind::Field {
                 operand: field.operand,
                 field: field.field.ok_or_else(|| {
@@ -145,15 +151,20 @@ impl Checker<'_> {
     /// Replay checks the conversion's own sparse owner, independently of the
     /// original expression operation and its field/method plan.
     fn retained_access_plan(&self, open: OpenPlan) -> Result<Option<Plan>, Error> {
-        let existing = if matches!(
-            open.kind,
-            super::super::protocol_control::OpenKind::Coercion { .. }
-        ) {
-            self.facts
-                .reference_adjustments
-                .get(&self.key(open.node))
-                .and_then(|row| row.plan)
-                .map(|id| id.current(self.facts, self.state.body, self.key(open.node)))
+        let side = match open.kind {
+            super::super::protocol_control::OpenKind::Coercion { .. } => Some(
+                self.facts
+                    .reference_adjustments
+                    .get(&self.key(open.node))
+                    .and_then(|row| row.plan),
+            ),
+            super::super::protocol_control::OpenKind::Index { .. } => {
+                Some(self.facts.methods.index_operand(self.key(open.node)))
+            }
+            _ => None,
+        };
+        let existing = if let Some(side) = side {
+            side.map(|id| id.current(self.facts, self.state.body, self.key(open.node)))
                 .transpose()
                 .map_err(|e| self.error(open.node, e))?
         } else {

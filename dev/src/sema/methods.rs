@@ -48,6 +48,10 @@ pub struct Methods {
     pub(super) bound_uses: HashMap<NodeKey, DefId>,
     pub(super) receivers: HashMap<DefId, (TypeId, u32)>,
     pub calls: HashMap<NodeKey, Call>,
+    /// An index expression whose operand reaches its indexed place through
+    /// Deref calls keeps their plan beside its own index selection. Cold:
+    /// only a source core that declares `Deref` and `Index` has any.
+    pub(super) index_operands: Option<Box<HashMap<NodeKey, super::bodies::ProtocolPlanId>>>,
     /// Unique owner-pair probes, shared across names and independent of call demand.
     pub overlap_pairs: usize,
     pub overlap_steps: usize,
@@ -78,6 +82,10 @@ struct ComparisonBorrows {
     right: HashMap<NodeKey, TypeId>,
 }
 impl Methods {
+    /// The plan of the Deref calls an index expression's operand takes.
+    pub(crate) fn index_operand(&self, node: NodeKey) -> Option<super::bodies::ProtocolPlanId> {
+        self.index_operands.as_deref()?.get(&node).copied()
+    }
     pub(super) fn retain_comparison_borrow(&mut self, node: NodeKey, ty: TypeId) {
         self.comparison_borrows
             .get_or_insert_default()
