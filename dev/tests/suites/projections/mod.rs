@@ -7,6 +7,8 @@ mod associated_declarations;
 mod associated_resolution;
 #[path = "../../associated_type_declarations.rs"]
 mod associated_type_declarations;
+#[path = "../../harness/checked_sources.rs"]
+pub(crate) mod checked_sources;
 #[path = "../../deferred_alias_projections.rs"]
 mod deferred_alias_projections;
 #[path = "../../field_results.rs"]
@@ -65,6 +67,8 @@ mod signature_projection_environments;
 mod stored_projected_callables;
 #[path = "../../stored_projections.rs"]
 mod stored_projections;
+#[path = "../../undetermined_goal_inputs.rs"]
+mod undetermined_goal_inputs;
 #[path = "../../unnormalized_body_projections.rs"]
 mod unnormalized_body_projections;
 #[path = "../../unreduced_annotations.rs"]

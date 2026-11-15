@@ -7,7 +7,7 @@ use crate::sema::{
     bodies::{Dependency, Requirement, projections},
     traits::{assumptions::Assumptions, obligations::Reservation},
 };
-use crate::support::hash::HashMap;
+use crate::support::hash::{HashMap, HashSet};
 use std::sync::Arc;
 
 pub(in crate::sema::bodies) enum Progress {
@@ -26,6 +26,8 @@ pub(in crate::sema::bodies) struct Pending {
     query: Option<Box<selection::Pending>>,
     reservation: Reservation,
     partial: HashMap<usize, (Box<selection::Pending>, Reservation)>,
+    /// Goals whose undetermined projected inputs the body already normalizes.
+    projected: HashSet<usize>,
 }
 impl Checker<'_> {
     /// Intermediate joins may own pending goals while syntax work remains.
@@ -168,6 +170,7 @@ impl Checker<'_> {
                 query: None,
                 reservation: Reservation::default(),
                 partial: HashMap::default(),
+                projected: HashSet::default(),
             })
         };
         for index in pending.registered..self.state.call_types.obligations.len() {
@@ -355,6 +358,9 @@ impl Checker<'_> {
                         .complete(&mut self.state.infer, index)
                         .map_err(|e| self.error(node, e))?;
                 } else {
+                    if matches!(selected, Selection::Deferred) && pending.projected.insert(index) {
+                        self.defer_goal_inputs(node, index)?;
+                    }
                     self.observe_trait_goal(node, index, true)?;
                 }
             }
@@ -377,6 +383,45 @@ impl Checker<'_> {
             }
         }
         Ok(None)
+    }
+    /// Selection normalizes only the determined projected inputs of a goal and
+    /// defers on any other. The body publishes such an input's result as it
+    /// does a signature's, so that a single matching candidate can bind the
+    /// remaining holes before numeric fallback. Every walk allocates the
+    /// scopes of the callable inputs it crosses, so a goal registers once. A
+    /// quantified goal's inputs stay beneath its binder.
+    fn defer_goal_inputs(&mut self, node: NodeId, index: usize) -> Result<(), Error> {
+        let predicate = &self.state.call_types.obligations[index].1;
+        if predicate.trait_arguments().is_none()
+            || self.state.call_types.bound_regions(index).is_some()
+        {
+            return Ok(());
+        }
+        let roots = self
+            .state
+            .infer
+            .predicate_normalization_roots(
+                &self.facts.types,
+                predicate,
+                crate::types::lifetime_proof::ScopeId::ROOT,
+                |parent, count| {
+                    self.state
+                        .projections
+                        .scope(parent, count)
+                        .map_err(|_| crate::types::infer::Error::InvalidIdentity)
+                },
+            )
+            .map_err(|e| self.error(node, e))?;
+        for (scope, root) in roots {
+            match self.state.infer.resolved(&mut self.facts.types, root) {
+                Ok(_) => {}
+                Err(crate::types::infer::Error::Unresolved) => {
+                    self.defer_normalization(node, scope, root)?;
+                }
+                Err(error) => return Err(self.error(node, error)),
+            }
+        }
+        Ok(())
     }
     fn observe_trait_goal(
         &mut self,
