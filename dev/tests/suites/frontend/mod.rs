@@ -19,6 +19,8 @@ mod callback_provider;
 mod capped_cli;
 #[path = "../../cell_sources.rs"]
 mod cell_sources;
+#[path = "../../cleared_parameter_attributes.rs"]
+mod cleared_parameter_attributes;
 #[path = "../../closureconst.rs"]
 mod closureconst;
 #[path = "../../coerce_validation_source.rs"]

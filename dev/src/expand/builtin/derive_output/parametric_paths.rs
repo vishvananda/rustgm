@@ -20,14 +20,9 @@ pub(super) fn collect(
         found: Vec::new(),
     };
     for &node in site.ast.list(site.item.generics) {
-        charge(1, 0)?;
-        let Kind::Generic(index) = site.ast.node(node).kind else {
-            return Err(error(
-                site.original.start,
-                "derive lost an actual generic parameter",
-            ));
+        let Some(parameter) = site.generic_parameter(node, charge)? else {
+            continue;
         };
-        let parameter = site.ast.generics[index as usize];
         if parameter.flavor == GenericFlavor::Type {
             let name = walk.name(parameter.name)?;
             let growth = crate::support::retained::Growth::vector::<&str>(

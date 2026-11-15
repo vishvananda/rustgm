@@ -9,14 +9,9 @@ impl Output<'_> {
         }
         self.text("<")?;
         for &node in parameters {
-            (self.charge)(1, 0)?;
-            let Kind::Generic(index) = self.site.ast.node(node).kind else {
-                return Err(error(
-                    self.site.original.start,
-                    "derive lost an actual generic parameter",
-                ));
+            let Some(parameter) = self.site.generic_parameter(node, self.charge)? else {
+                continue;
             };
-            let parameter = self.site.ast.generics[index as usize];
             if implementation.is_some() && parameter.flavor == GenericFlavor::Const {
                 self.text("const")?;
             }

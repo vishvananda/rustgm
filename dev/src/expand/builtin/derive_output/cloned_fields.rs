@@ -1,6 +1,6 @@
 //! Type-generic Clone uses real field calls; paired Copy never changes its bound.
 use super::{
-    GenericFlavor, ItemKind, Kind, LexError, NodeId, Output, active_members::VariantMembers, error,
+    GenericFlavor, ItemKind, LexError, NodeId, Output, active_members::VariantMembers, error,
 };
 use crate::syntax::item::Shape;
 impl Output<'_> {
@@ -13,14 +13,10 @@ impl Output<'_> {
         self.select(1);
         let mut type_parameters = false;
         for &node in self.site.ast.list(self.site.item.generics) {
-            (self.charge)(1, 0)?;
-            let Kind::Generic(index) = self.site.ast.node(node).kind else {
-                return Err(error(
-                    self.site.original.start,
-                    "derived Clone lost its generic parameter",
-                ));
-            };
-            type_parameters |= self.site.ast.generics[index as usize].flavor == GenericFlavor::Type;
+            type_parameters |= self
+                .site
+                .generic_parameter(node, self.charge)?
+                .is_some_and(|parameter| parameter.flavor == GenericFlavor::Type);
         }
         let union = matches!(self.site.item.kind, ItemKind::Union { .. });
         if union || (copy && !type_parameters) {

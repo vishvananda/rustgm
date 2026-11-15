@@ -27,7 +27,7 @@ use crate::{
         ast::{Ast, Kind, MacroContext, NodeId, Syntax},
         expression::fragment::{self, FragmentKind},
         interpolation::{Nonterminal, ParsedSyntax, Splice},
-        item::{GenericFlavor, Item, ItemContext, ItemKind},
+        item::{GenericFlavor, GenericParameter, Item, ItemContext, ItemKind},
         token_tree::{Span, error},
     },
 };
@@ -48,6 +48,43 @@ pub(crate) struct Site<'a> {
     pub const_: bool,
     pub prior_copy: bool,
     pub enum_default: Option<NodeId>,
+}
+impl Site<'_> {
+    /// The derived item's configured generic parameter at `node`, or `None`
+    /// for one that `cfg` removed. rustc derives from the configured item and
+    /// clears every parameter's attributes in the impl it writes
+    /// (`create_derived_impl`), so no attribute of a parameter reaches it.
+    fn generic_parameter(
+        &self,
+        mut node: NodeId,
+        charge: &Charge<'_>,
+    ) -> Result<Option<GenericParameter>, LexError> {
+        charge(1, 0)?;
+        if self.active.get(node.get() as usize) != Some(&true) {
+            return Ok(None);
+        }
+        while let Kind::Attributed { value, .. } = self.ast.node(node).kind {
+            charge(1, 0)?;
+            node = value;
+        }
+        let Kind::Generic(index) = self.ast.node(node).kind else {
+            return Err(error(
+                self.original.start,
+                "derive lost an actual generic parameter",
+            ));
+        };
+        self.ast
+            .generics
+            .get(index as usize)
+            .copied()
+            .map(Some)
+            .ok_or_else(|| {
+                error(
+                    self.original.start,
+                    "derive lost an actual generic parameter",
+                )
+            })
+    }
 }
 struct Field {
     parsed: ParsedSyntax,

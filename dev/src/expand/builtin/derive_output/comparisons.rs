@@ -197,14 +197,10 @@ impl Output<'_> {
     fn hasher_name(&self) -> Result<String, LexError> {
         let mut maximum = 0;
         for &node in self.site.ast.list(self.site.item.generics) {
-            (self.charge)(1, 0)?;
-            let Kind::Generic(index) = self.site.ast.node(node).kind else {
-                return Err(error(
-                    self.site.original.start,
-                    "derived hash lost its actual generic",
-                ));
+            let Some(parameter) = self.site.generic_parameter(node, self.charge)? else {
+                continue;
             };
-            let name = self.site.ast.generics[index as usize].name;
+            let name = parameter.name;
             let length = name.end.saturating_sub(name.start) as usize;
             maximum = maximum.max(length);
         }
