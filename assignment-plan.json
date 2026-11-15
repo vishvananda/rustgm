@@ -722,6 +722,19 @@
       "scope": "All retained assignment requirements, whole-library/crate graphs, debug locations, deterministic outputs and scaling.",
       "requirements": [],
       "exit": "Full assignment closure, independent/source/native/debug/architecture/Clippy and performance release qualification."
+    },
+    {
+      "id": "self-hosting",
+      "owner": "pa45",
+      "title": "Reproducible self-hosting",
+      "implementation": "missing",
+      "publication": "unpublished",
+      "depends_on": [
+        "std-artifact"
+      ],
+      "scope": "RustGM and its dependency crates built by RustGM through CPPGM on original core, alloc and std in the abort profile. Procedural macros, unwinding and async are not prerequisites.",
+      "requirements": [],
+      "exit": "Stage 1 passes the committed PA1-PA24 oracles through RUSTGM_TEST_APP; stage 2 output is byte-identical to stage 1; strict mode reports zero bring-up records."
     }
   ]
 }

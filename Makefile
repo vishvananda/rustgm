@@ -45,7 +45,7 @@ test-maintainer: test-backend
 test-report: all
 	@status=0; for stage in $(ACTIVE_PAS); do $(PYTHON) scripts/course.py $$stage --app "$(RUSTGM_TEST_APP)" || status=1; done; exit $$status
 	$(GUARDED) $(PYTHON) scripts/course.py --released-units --app "$(RUSTGM_TEST_APP)"
-	@echo 'Whole PA25-PA44: planned; released components are reported separately'
+	@echo 'Whole PA25-PA45: planned; released components are reported separately'
 test-pa%: all
 	$(PYTHON) scripts/course.py pa$* --app "$(RUSTGM_TEST_APP)"
 ref-test: all

@@ -696,6 +696,21 @@
         "performance",
         "upstream library and crate acceptance"
       ]
+    },
+    {
+      "number": 45,
+      "path": "pa45",
+      "title": "Reproducible self-hosting",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "RustGM built by RustGM through CPPGM: stage 1 passes the PA1-PA24 oracles, stage 2 is byte-identical to stage 1, strict mode with zero bring-up records",
+      "test_families": [
+        "stage 1 against the PA1-PA24 oracles",
+        "stage 1 against stage 2 byte identity",
+        "strict build with zero bring-up records",
+        "reproducible inputs and deterministic output",
+        "bounded build resources"
+      ]
     }
   ]
 }

@@ -85,7 +85,7 @@ metadata positives remain open; no whole PA or original artifact is complete.
 PA1–PA24 have active, independently qualified text-oracle suites. PA21–PA24 are
 **implemented**, with their completed release evidence recorded in
 assignments.json. PA1–PA20 retain implemented-draft while individual release
-records are reconciled. PA25–PA44 remain planned as whole assignments. No
+records are reconciled. PA25–PA45 remain planned as whole assignments. No
 planned or empty suite counts as passing.
 
 The [wide constant product checkpoint](docs/pa25-wide-constant-products.md)
@@ -487,6 +487,7 @@ unit manifest plus the deferred list in its release record):
 | [42](pa42/README.md) | Async lowering | planned |
 | [43](pa43/README.md) | Async ownership | planned |
 | [44](pa44/README.md) | Frontend acceptance | planned |
+| [45](pa45/README.md) | Reproducible self-hosting | planned |
 
 The goal remains all assignment requirements needed to build original pinned
 core, alloc and std and execute independent real-crate consumers. Actual active

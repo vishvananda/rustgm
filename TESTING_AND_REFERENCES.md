@@ -815,7 +815,7 @@ our oracle: their representation and diagnostic contracts belong to upstream.
 ## Release discipline
 
 PA1–PA24 are implemented drafts, not a claim of full Rust frontend conformance.
-Planned PA25–PA44 fail on invocation and are excluded from pass counts. Promote
+Planned PA25–PA45 fail on invocation and are excluded from pass counts. Promote
 a stage only after handout/reference/fixtures are coherent, independent checks
 pass, the source-to-feature ledger is reviewed and all prior stages remain green.
 Keep maintainer measurements and logs in ignored `obj/`; keep student handout
@@ -1121,7 +1121,7 @@ semantic inspections and 809 LowIR checks, with 489 independent native execution
 One explicitly classified semantic-positive case defers an escaping-reference
 error to the complete proof. See `docs/pa20-validation.md` for the seven families,
 source provenance, count/row checks and reference review. `make test-native` and
-`make test-rustc` include PA20; PA25–PA44 remain planned and fail explicitly.
+`make test-rustc` include PA20; PA25–PA45 remain planned and fail explicitly.
 
 Parameter-default checks use their own lifetime eligibility rule, separate from
 closed definition-time bounds. The default-clause invariants retain unused

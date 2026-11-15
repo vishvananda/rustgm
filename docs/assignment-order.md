@@ -1,7 +1,7 @@
 # Assignment order and completion review
 
 Adopted 2026-10-27. This replaces numeric implementation/release ordering for
-unreleased PA25–PA44. PA numbers remain stable ownership identifiers: fixtures,
+unreleased PA25–PA45. PA numbers remain stable ownership identifiers: fixtures,
 feature tags, historical receipts and student links keep their paths. The
 machine-checked [work plan](../assignment-plan.json) supplies the actual order.
 [The requirement ledger](assignment-requirements.json) retains all46 audited
@@ -157,6 +157,7 @@ scope, predecessor IDs and executable exit are in assignment-plan.json.
 | 35 | PA42 | Async lowering (`async`) | missing | unpublished |
 | 36 | PA43 | Async ownership and pinning (`async-ownership`) | missing | unpublished |
 | 37 | PA44 | Complete frontend acceptance (`frontend-acceptance`) | missing | unpublished |
+| 38 | PA45 | Reproducible self-hosting (`self-hosting`) | missing | unpublished |
 
 A fixture can declare `work_units` selecting its actual owning unit(s). Feature
 owners are then checked against those units' transitive prerequisite graph and

@@ -12,7 +12,8 @@ Complete feature census, cross-feature corpus, debug locations and scaling.
 
 Include the complete required upstream core/alloc/std and real-crate acceptance
 graph, not only isolated language fixtures. Reproducible self-hosting is the
-optional PA45 extension and does not redefine this frontend acceptance contract.
+required [PA45](../pa45/README.md) capstone. It has its own contract and does
+not redefine this frontend acceptance contract.
 
 The maintainer implements compiler responsibilities in `dev/src/` and introduces
 typed interfaces before text views. Follow [spec.md](../spec.md), the pinned Rust

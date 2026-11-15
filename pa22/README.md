@@ -159,4 +159,4 @@ rejects, while its raw address can be formed.
 
 Run `make test-pa22`, `make test-native-pa22`, `make test-rustc`, and the release,
 lint/audit/harness checks in `TESTING_AND_REFERENCES.md` before changing this
-contract. PA23 owns object metadata and dispatch; PA25–PA44 remain planned.
+contract. PA23 owns object metadata and dispatch; PA25–PA45 remain planned.
