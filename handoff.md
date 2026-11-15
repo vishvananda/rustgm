@@ -56,6 +56,19 @@ disambiguator ending in `_bringup`. Everything below is refused without it.
 `summary.tsv`, `waived.tsv`, `unproven.tsv` and `records.json`. A consumer's waived intrinsics
 are its remaining work list.
 
+`--bringup-guest NAME=ROOT.rs` (repeatable, in dependency order, over a
+`--source-core` session) resolves a further crate inside the same session. A
+guest has its own `crate` and `$crate` root, restricted visibility, exported
+macros, extern prelude (the host and the guests before it) and the prelude its
+root attributes select; lang items, feature gates, coherence and the edition
+stay the session's. Its files are keyed `NAME:PATH` in skip lists and
+`bringup-*` lines. The last guest is the program: under `#![no_main]` its
+exported C `main` is the entry point. `scripts/bringup_linked.py --guest`
+passes a consumer this way instead of mounting it in a copy of core. A guest
+session publishes no metadata, and there is no allocator shim (a
+`#![needs_allocator]` guest is reported as waived), `#[global_allocator]`,
+runtime start or `std` prelude yet.
+
 ```sh
 # Frontier worktree. Optimized incremental compiler; never release evidence.
 make observe && cp obj/rust/observe/rustgm obj/parallel/bringup/bin/rustgm-observe
