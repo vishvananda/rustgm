@@ -1,2442 +1,292 @@
-# Latest original-core progress — candidate41
-
-Published2e25fdba4/main synced. Clean optimized41:3967 hashes/empty patch,7m48s,
-CLI1dd358581384e4783248db169ec99cc722c23626609d117d277afffd7a495fdf.
-Actual original v14 core41 CLEARS slice/cmp.rs PartialOrd const closure calls.
-It next FAILS slice/mod.rs:4667/file210:176765, as_simd body (assert_eq borrows
-size_of calls), with `marked function-call promotion requires its actual evaluation
-profile`. Exact marked callee NOT traced yet; don't assume or bypass attribute.
-20.600939011899754s/status1/no timeout/RSS772712KiB; no core.rgm/0-byte core.lowir.
-Postcheck41 terminal PASS722 originals375opens/six reviewedpins/all3967/cleanpin/
-120s/unchanged14500624work/1GiB attempted/64MiB retained. Raw closure-members/
-{build41-release,core-artifact41,artifact-postcheck41}.log +original-library-
-candidate41/. Diagnostic progress only, no artifact/native/speed claim.
-
-NEXT real marked-call promotion profile. body/promote/queries.rs dependencies:
-nonconstructor RvalueCall invokes require_call_promotion_profile then returnsfalse.
-values.rs guard errors on ANY KnownPresent promotable_contract. Need trace actual
-callee, read existing promotion/const-eval policy and source marker contract, then
-reduce in PA25/31. Existing dev/tests/invariants/promotable_headers.rs and
-pa31/tests/spec/source-promotable/ preserve valid runtime+requiredCTFE vs marked
-borrow/profile boundary. Don't merely remove guard or ignore source attribute;
-marked function calls must honor real overflow/effect/failure/borrow/static rules.
-No new reductions or production changes for this frontier yet.
-
-Full43669171589 exact73eec FULLGREEN every stage:3088 debug45.91s; raw
-closure-members/ci43669171589.log (release timing below in raw). Earlier malformed
-signature guard repair verified. ONE successor43672166930 exact2e25fdba4 queued,
-expanded member/Invoke private guard pending; don't duplicate/restart for docs.
-40/capturedreplay RETIRED unavailable per closure-members/retired-pins.json.
-Current41 and memberreplay5bbc391f…a08994 available. Pendingperformance21–24 keep.
-All6 old unannotatedconstclosure prepared-lowering gaps are NOW COMPLETE; all
-other named native/CTFE/adapter/import requirements remain. No coreartifact or
-wholePA25–44 completion;113component unchanged. Sameoneworker/Bonly/mainGit-only/
-2jobs150GiBreserve16GiBcap/frozenbackend17b024f69. This supersedes older NEXT/CI/
-pin and six-case gap classifications below.
-
-# Current continuation — const closure member calls
-
-Checkpoint: shared actual closure contract now permits its own conditional source
-trait-member requests. Source/typedcall/effect/signature/selectedmethod/borrow/
-actualCode preserved. ConstTraitDefault parents still fenced for exact local Self
-premise, no parent-owner substitution or newdense/authority/quota/wire/backend/
-storage/ABI change. All SIX old unannotated const closure accepting inputs now
-PASS prepared lowering, old classifier removed; bytes/predictions unchanged.
-Native/CTFE/general adapter requirements not thereby closed.
-
-PA25/31 closure-members each12 predictions9accept3reject, Rust1.98 agreesall12.
-Initial implconst typo corrected to constimpl before candidate execution, no
-prediction inversion.10 source outcomes7accept3reject qualify; sourceCTFE opaque
-result and constdefaultpremise2 plus12ordinaryDestructimports remain required.
-fast2=1794712084032770967 sixexact53.15s allstaticPASS; native3groups4programs41.09s
-newCompare+capturedruntime41/59 and2oldordinaryclosures. IndependentRust runtime/
-CTFEboth41/59. replay3967/allinputs/24CLI10qualified14gaps, sourcework8/32/128
-6952/1425,27736/4325,110872/15901. CLI5bbc391f93e44f44d66ab288e85d29d63b8f3e05e40c1dd99192843fa9a08994
-pinned closure-members/replay/.315harness497roots13bins44stages1component128upstream/
-126Reference PASS. Raw obj/parallel/closure-members/; docdocs/pa25-closure-members.md.
-Private existing closure guard extended to real Call as well as Invoke; pending
-successor CI, total3088 unchanged. No coldlocalprivateharness or speedclaim.
-
-ONE full43669171589 previous73eec active: strictlint/architecture/harness +release/
-course PASS, native qualification running. This verifies earlier malformed-unit
-signature repair; new member extension pending. Don't duplicate/cancel it. NEXT
-publish coherent checkpoint, freeze optimized41 and retry unchanged originalv14
-with postcheck. Current40 original below remains latest until actual41 result.
-Keep40 and currentmemberreplay; superseded capturedreplay can retire after new
-qualified release replacement.38/39/nominalreplay retired; performance21–24 keep.
-No coreartifact/wholePA25–44 completion;113component unchanged. Sameoneworker/Bonly/
-mainGit-only/2jobs150GiBreserve16GiBcap/frozenbackend17b024f69. This supersedes
-older CI/NEXT and the six old accepting-gap classifications below.
-
-# Latest original-core progress — candidate40
-
-Published73eec244c/main synced. Clean optimized40:3967 hashes/empty patch,7m49s,
-CLIdef42988f408e1ed5ea4597bab4b1acbac22ba10d2c8681e6ab485f8eb595b80.
-Actual original v14 core40 CLEARS ops/try_trait.rs NeverShortCircuit wrap_mut_1/2
-captured generic FnMut closure calls. It next FAILS slice/cmp.rs:184/file225:7130,
-const closure elem_chain invoking PartialOrd::partial_cmp in default
-SlicePartialOrd::partial_compare, same owner-fence message.23.419543341966346s/
-status1/no timeout/RSS742664KiB; no core.rgm/0-byte core.lowir. Postcheck40 terminal
-PASS722 originals375opens/six reviewedpins/all3967/cleanproducer/120s/unchanged
-14500624work/1GiB attempted/64MiB retained. Raw captured-const-calls/
-{build40-release,core-artifact40,artifact-postcheck40}.log +original-library-
-candidate40/. Diagnostic progress only; no artifact/native/speed claim.
-
-NEXT actual const-closure trait-member source effect/owner context. Existing
-provided_calls::source_request_in_scope authenticates source_caller and exact
-source Call; source_direct then closed_effect rejects Conditional unless
-Owner::Function, before source_member+selected_source. check_calls consequently
-falls back to function-only defining_owner. Inspect existing complete selected
-member/source evidence and actual closure context; don't substitute enclosing
-function owner or grant concrete Code from a defining request. This is precisely
-the six earlier unannotated closure accepting requirements, still old ownerfence.
-Reuse their PA25/31 ownership and add targeted ordinary/source opponents/native
-consumers as needed. New captured25 packet retains all local/once/CTFE/import gaps.
-
-ONE full43669171589 exact73eec244c active: fast/all-target private strict lint,
-architecture/harness PASS; release/course running, expected3088 private. New
-privateguard compiles/styles but execution pending. Prior436652 failed one
-unchanged malformed-signature corruption guard; explicit signature-kind fix is
-in73eec. Don't duplicate/cancel/restart CI for docs. Current40 and captured replay
-ad8b9489…faeb available.38/39+nominalreplay RETIRED/unavailable; records under
-captured-const-calls/retired-pins.json. Earlier retirements remain; performance
-21–24 preserved. Same singleworker/Bonly/mainGit-only/2jobs150GiBreserve16GiBcap/
-frozenbackend17b024f69. No core artifact or wholePA25–44 completion;113component
-unchanged. This section supersedes older NEXT/CI/pin statuses below.
-
-# Current continuation — captured const calls
-
-Checkpoint: captured const-call ownership; current39 original below remains latest. Closure defining operators now authenticate actual const
-wrapper/declaration/source/signatures/instance and reuse existing complete closure
-argument bindings (including pre-opaque declaration order). No parent-owner swap,
-newdense/persistent authority/quota/wire/backend/storage changes. Source effect,
-borrow/signature/operand and actual Code checks remain. Source-call non-function
-signature now explicitly errors, repairing full43665225882's unchanged private
-corruption guard. Full had3086 private PASS/1FAIL; all public release targets PASS;
-later full stages skipped. No active full; successor expected3088 private after
-new actual closure corruption guard. No cold local private harness.
-
-PA25/31 captured-const-calls each25 predictions20accept5reject, all independently
-Rust-qualified. Original18 bytes/predictions preserved; seven returned controls
-added before execution.14 source outcomes10accept4reject qualify;11 source gaps
-(local cleanup incl1maskednegative, consumingcleanup, opaqueCTFE) and25 ordinary
-Destruct-import attempts remain required/unqualified. Actual Rust runtime/CTFE
-both41/59. RustGM new runtime41/59 plus old borrowed/explicit/unsafe controls pass
-native4groups38.00s. fast4=1794710365842385778 four exact40.72s allstaticPASS;
-fast3's old borrowed and6unannotatedclosuregap controls PASS. replay3967/allinputs/
-50CLI14qualified36gaps, exactlowering/scaling3382/2160,13486/7436,53902/28516.
-CLIad8b948907471b23e0f5616996c1b7f4aa9bf5932db15ae306a2914a5061faeb pinned
-captured-const-calls/replay/.315harness497roots13bins44stages1component128upstream/
-126Reference PASS. Raw obj/parallel/captured-const-calls/; doc
- docs/pa25-captured-const-calls.md. Full failure log nominal-residuals/
-ci43665225882-failed.log. No speedclaim. NEXT publish coherent checkpoint, dispatch
-ONE fullsuccessor, freeze optimized40, retry unchanged originalv14+postcheck.
-No core artifact/wholePA25–44 completion;113component unchanged. Sameoneworker/B
-only/mainGit-only/2jobs150GiBreserve16GiBcap/frozenbackend17b024f69. Current39/38,
-newreplay/nominalreplay available; pendingperformance21–24 preserved. Older positive
-requirements including all6unannotatedconstclosures remain. This section supersedes
-older CI/NEXT statuses below.
-
-# RustGM handoff — 2026-11-14
-
-LATEST genuine original: clean candidate39-release on publishedb3ab20376,
-3967 hashes/empty patch,7m38s build. CLI
-599bd5076f7557693b91b185e8f7fa7eac87e4314ae9d71b17d45223bba9cd2c.
-Original v14 library39 CLEARS generic result-field/SliceIndex tuple-get fence,
-then FAILS ops/try_trait.rs:415/file95:16949, NeverShortCircuit::wrap_mut_1:
-`const call operators require their actual source function owner`.
-Its body returns const move |a| NeverShortCircuit(f(a)), with parent bound
-F:[const]FnMut(A)->T+[const]Destruct. FnMut call occurs in actual const closure
-body; readonly invocations::defining_owner currently requires Owner::Function.
-17.839266604045406s/status1/no timeout/RSS744164KiB. No core.rgm/0-byte core.lowir.
-Postcheck39 terminal PASS722 originals/375 opens/six reviewedpins/all3967/cleanpin/
-fixed120s/unchanged14500624work/1GiB attempted/64MiB retained. Raw nominal-residuals/
-{build39-release,core-artifact39,artifact-postcheck39}.log and original-library-
-candidate39/. Diagnostic only/no speed/native-consumer/artifact claim.
-
-NEXT reduce captured generic callable inside genuine const closure (wrap_mut_1
-and2 shape), preserving owner/capture/formal/effect/borrow/actualCode proof. Use
-existing sema::closures::Body semantic_source/body/constant/owner/inherited/
-execution and typed capture environment; do not just substitute parent function
-owner for closure body. Bindings::new also currently assumes FunctionItem body
-instance; inspect actual closure owner/instance and full inherited parameter
-registration. sema::bodies::invocations retain prepares parent callable template
-only when current body equals function.body; new closure needs authenticated
-producer demand, no second authority map/densefield/synthesizedtraitpermission.
-No new reduction or production edit for this frontier yet. Ordinary const minima
-PA25; source roles PA31. All6 earlier unannotated const closure accepting inputs
-and older adapter/factory/native requirements remain accepting/open.
-
-Publishedb3ab20376/main synced; ONE full43665225882 exactb3ab20376 active. Fast,
-all-target/private strict lint, architecture and harness PASS; release/course
-running, expected3087 private. This clears both earlier private compile/style
-blockers but private execution/full final status remains pending. Do not duplicate,
-cancel or restart for docs. Full43660831620 failed8oldplace_result callers;
-43661946931 failed1private missingsemicolon. Both fixes are in currentsource.
-Priorfullygreen43656293922/8560 has3085 release4.97s/debug45.56s.
-
-Current39/38 cleanpins and nominal replaya688464c…af6f7004 available;37/unsafe
-replay retired/unavailable via nominal-residuals/retired-pins.json. Earlier36/Try
-and prior retirements stillapply. Pending performance21–24 preserved. No core
-artifact/wholePA25–44 completion;113component unchanged. Sameoneworker/B only/
-mainGit-only/2jobs150GiBreserve16GiBcap/frozenbackend17b024f69. Earlier ordinary
-questionmark16/provider, TryaggregateCTFE, unsafe/simpleCTFE distinction and all
-older requirements retained. This continuation supersedes older NEXT/CI/original.
-
-
-LATEST checkpoint: exact implicit protocol result field preparation. See
- docs/pa20-implicit-result-fields.md. Sema body call pass now prepares storage for
-actual solved signature results of implicit protocol calls (which lack exact
-expression-node lifetime instantiations), reusing bounded memoized producer.
-Readonly shape/drop guard unchanged; no declaration fallback/newdense/cache/quota/
-wire/backend/storage/ABI changes. Inventory3967; fallible_calls root extended.
-Frozen38 GDB trace raw_shape->NeedsDrop->create_owned->implicit_call->question_mark
-residual conversion proves consumer (nominal-residuals/trace.log).
-
-PA20/31 nominal-residuals each17 independent Rust predictions13accept4reject.
-All17 source+ordinary no-question generic/associated control qualify;16 ordinary
-questionmark provider-catalog attempts remain required/unqualified (including
-negatives). PA20 active manifest adds ONE primary (1627 total,614semantics/1013
-LowIR,608 runtime executions unchanged) with other16+observer auxiliaries; actual
-associated control appended without removing original free control. Course outcome
-and codegen-only intent declared before generation. One scoped batch+3new sidecars;
-ALL4878 old oracle files unchanged. Main-only10-lineIR independently reviewed,
-Rust object/status/compare and scoped native codegen pass. Actual source generic
-borrow success/residual observer41/59/23 +10prior programs pass43.94s; independent
-Rust counterpart same. fast2=1794706508201717071 fourexact168.93s allstaticpass;
-replay3967/allinputs34CLI18qualified16explicitgaps, exact lowering/scaling
-11270/4316/507,41798/12692/1587,163910/46468/5907; no speedclaim. Current devfast
-CLI a688464caf5a5604d324c7106c7590cd092023e8904594b9f5b06a07af6f7004 pinned.
-315harness497roots13bins44stages1component128upstream126Reference pass after new
-reference. Initialfast failed missingPA20inventory; initial replayfinal layout
-failed missingnewreference. Both resolved through declared registration/oracles,
-not gate changes. Raw obj/parallel/nominal-residuals/.
-
-Full43661946931 onafe0fc9e2 compiled the8 repaired private callers, then FAILED
-private Clippy missingsemicolon defining_members.rs339 Trycorruption assignment.
-Corrected that statement here, no assertion/expectation changes. Raw unsafe-const-
-members/ci43661946931-failed.log. Full43660831620 old8callermismatch alreadyfixed.
-No semantic tests ran in either full failure. Expected3087 private stillpending;
-no coldlocalprivateharness. Prior43656293922/8560 fullygreen3085/4.97s/45.56s.
-No fullactive. NEXT publish this coherent checkpoint+semicolonfix, dispatch ONE
-fullsuccessor, freeze candidate39-release and retry unchanged originalv14 artifact
-with722/sixreviewedpins/120s/14500624work/1GiB attempted/64MiB retained +postcheck.
-Core38 below remains latest; reduction clears borrowed generic result but original
-notyetverified. No coreartifact/wholePA25–44 completion;113component unchanged.
-Current38/37 cleanpins and nominal replay available; obsoleteunsafe replay may
-retire after replacement.36/Tryreplay retired. Pendingperf21–24 preserved. Same
-singleworker/B/mainGit-only/2jobs150GiBreserve16GiBcap/frozen17b024f69. Allolder
-positive requirements retained. This continuation supersedes older NEXT/CI text.
-
-
-LATEST genuine original: clean candidate38-release on published638369a03,
-3967 hashes/empty patch,6m57s build. CLI
-951d14737beb79ccd004e96fcdcb429cc57a95790775f40386bcd8c3afc65a3e.
-Original v14 library38 CLEARS unsafe SlicePartialEq and FAILS
-slice/index.rs:1035/file226:34591 in SliceIndex<[T]> for tuple(Bound<usize>,Bound<usize>)
-get method: try_into_slice_range(slice.len(),self)?.get(slice), with
-`generic aggregate requires instantiated fields`.18.82637868099846s/status1/
-no timeout/RSS732340KiB. No core.rgm/0-byte core.lowir. Postcheck38 terminal PASS
-722 originals/375 opens/six reviewed pins/all3967/clean pin/fixed120s and unchanged
-14500624work/1GiB attempted/64MiB retained. Raw unsafe-const-members/{build38-release,
-core-artifact38,artifact-postcheck38}.log and original-library-candidate38/.
-No speed/artifact/native-consumer claim. Types aggregate.rs::shape or instances::get
-emits this error; identify the actual missing nominal instance/consumer beforefix.
-No reduction or production edit for this new frontier yet. Reuse typed demand/
-instantiated fields; never substitute declaration fields for generic instances.
-
-Full43660831620 on638369a03 FAILED before tests:8 E0061 private calls in two
-initializer_members tests omit the new Signature argument. No semantic tests ran.
-Raw unsafe-const-members/ci43660831620-failed.log. Fixed only that private testfile:
-actual prepared calc/field bodies provide witnesses; all8 callers and existing
-rejection mutations retained. ci-repair-fast=1794704897192954334 two exact37.08s
-passesallstatic/publiccontrols. ci-repair-equivalence.json proves onlyone test-only
-Rust hash changes; all production hashes and CLI1ccf4aff…efb2c1d0 stay identical.
-Original38 retains original producer/testhashes; no fresh optimizedbuild/native/
-original repeat for test-only fix. Private execution still pending(new full3087).
-NEXT publish test-only repair and dispatch ONE full successor (failed runterminal),
-then reduce genuine generic aggregate frontier. Prior full43656293922 staysfully
-green3085 release4.97s/debug45.56s. Source/ordinary unsafe34 outcomes and12native
-programs remain qualified; priorTry/newunsafeprivateguards stillawait3087fullCI.
-No coreartifact or wholePA25–44 completion; released113component unchanged.
-Clean38/current37 and unsafe replay available;36/Tryreplay2 binaries RETIRED/
-UNAVAILABLE via unsafe-const-members/retired-pins.json. Pendingperf21–24 preserved.
-Sameoneworker/B/mainGit-only/2jobs150GiBreserve16GiBcap/frozenbackend17b024f69.
-This continuation supersedes older NEXT/current-original/CI/availability text.
-
-
-LATEST checkpoint: unsafe generic const members through actual blanket proof.
-See docs/pa25-unsafe-const-members.md. New transient Signature witness binds full
-selected target/opened signature; unsafe Rust additionally consumes exact typed
-Call/result/SourceCallUse.call_safety keyed by body/node/signature. UnsafeFunction
-also requires actual caller unsafe signature; explicit block remains distinct.
-Ordinary const bodies now retain existing discharged safety rows in existing
-local contexts; ordinary runtime-only path unchanged. Source caller/report/full
-call/effect/header/selectedmethod/impl/borrow/Code remain. No dense/cache/wire/
-backend/storage/quota/ABI-retag change. New cohesive provided_calls/signatures.rs;
-inventory3967. Direct validator factored beside access/Try to meet Clippy size.
-
-PA25/31 unsafe-const-members each17 independent Rust predictions12accept5reject;
-ALL34 ordinary/source complete CLI outcomes qualify. New runtime/CTFE actualCode
-41/59 each, independent Rust both41/59; nativefivegroups12programs40.48s includes
-10 prior programs. fast2=1794703721225702094 fourexact2targets219.68s, all static
-checks pass. replay3967/allinputs34qualified, exact lowering/scaling3392/1358,
-13064/3928,51752/14184; no speed claim.315harness497roots13bins44stages1component
-128upstream126Reference. Current pinned devfast CLI
-1ccf4aff5fc49aaa3057eea5c30f0d46d7566d70a0ba10a1492e1460efb2c1d0.
-Support Base static call corrected to exact<T as Base<U>> UFCS before anycandidate
-execution; initial independentE0790 retained, no prediction inversion. Raw-pointer
-case signature-only, no full comparison claimed. One new private safety witness/
-missing-row/site/target guard plus priorTry guard await fullCI(expected3087);
-no cold local harness. Existing Try private guard adapted to witness parameter.
-Raw obj/parallel/unsafe-const-members/; new simple CTFE does NOT close earlier
-aggregate/open/lifetime/argument payment requirements.
-
-Full43656293922 exact8560c4dbb (borrowed product05d1beedd) PASSED EVERY STAGE,
-3085 release4.97s/debug45.56s, raw unsafe-const-members/ci43656293922.log. No full
-is active. NEXT after publishing this concrete checkpoint launch ONE combined
-successor for Try+unsafe(expected3087), freeze clean candidate38-release, retry
-unchanged originalv14 library and postcheck with722/six reviewedpins/120s/
-14500624work/1GiB attempted/64MiB retained. Core37 below latestoriginal; reduced
-unsafe fence passes but original not yet verified. No coreartifact/wholePA25–44
-completion; released113 component unchanged. Current37/36 clean pins and new
-unsafe replay available; retire superseded36/Try replay after replacement. Pending
-perf21–24 preserved. All previous retirement records/older positives remain.
-Same one worker/B only/mainGit-only/2jobs150GiBreserve16GiBcap/frozen17b024f69.
-This continuation supersedes prior NEXT/current checkpoint/CI paragraphs.
-
-
-LATEST genuine original: clean candidate37-release on published694738c4e,
-3966 hashes/empty patch,8m27s build. CLI
-811564513e4453f8807b7aa4175056ae6934b9bd399e7c78172caf15aba3781d.
-Original v14 library37 CLEARS try_from_fn/Try-plan fence, then FAILS
-slice/cmp.rs:19/file225:534 in const PartialEq<[U]> for [T], T:[const]PartialEq<U>:
-`const function member lacks its current conditional trait premise`.
-Actual call: unsafe { SlicePartialEq::equal_same_length(self.as_ptr(),
-other.as_ptr(),len) }. SlicePartialEq<B> declares unsafe method with two raw
-pointer inputs; blanket const impl<A:[const]PartialEq<B>,B> for A supplies a
-specializable implementation.21.58684038813226s/status1/no timeout/RSS731712KiB.
-No core.rgm/0-byte core.lowir. Postcheck37 terminal PASS722 originals/375 opens/
-six reviewed pins/all3966/clean pin/fixed120s and unchanged14500624work/1GiB
-attempted/64MiB retained. Raw const-try-calls/{build37-release,core-artifact37,
-artifact-postcheck37}.log and original-library-candidate37/. Diagnostic only,
-no speed claim/native consumers false.
-
-NEXT reduce unsafe generic const member selected through conditional blanket
-impl, paired with safe/direct-premise/ordinary/missing-bound/outside-unsafe/wrong
-application controls. Current provided source request's member_signature requires
-safe Rust; unsafe requests fall back to DefiningCalls exact premise, which cannot
-consume the semantically selected blanket proof. This is a hypothesis to prove
-in reductions, not an instruction to relax all unsafe signatures. Preserve actual
-unsafe source proof, current full call/effect/owner/signature/impl/borrow/Code and
-complete trait applications. Reuse semantic results; no source frontend oracle.
-Earliest ordinary const minima PA25, source roles PA31. No new reduction or
-production edit for this frontier yet.
-
-Published694738c4e/main synced. Fast push43657804335 PASS. ONE prior full
-43656293922 exact8560c4dbb (borrowed product05d1beedd) has passed release/course
-and is running maintainer native; expected3085 private. New Try full successor
-waits for terminal prior run(expected3086). Do not duplicate/cancel/restart.
-No original artifact/wholePA25–44 completion; released113 component unchanged.
-Current clean37, prior36 and Try replay2 ac7bf92e…1e5c4c35 remain; 36 may be
-retired after replacement baseline qualification. Borrowed replay and failed Try
-replay1 binaries are retired/unavailable (const-try-calls/retired-pins.json).
-Pending performance21–24 remain pinned; all older retirement records still apply.
-Same one worker/B only/main Git-only/2jobs150GiB reserve16GiB cap/frozen17b024f69.
-This continuation supersedes older NEXT/current-original/availability statements.
-
-
-LATEST checkpoint: generic const Try protocol calls. Production50-line addition
-in body/constants/provided_calls.rs reuses protocol_plans::checked for actual
-Block/Branch source/gate/role/application/signature/owner/effect, requires exactly
-one complete selected call and its actual signature result, then keeps existing
-source member and scoped effect checks. No syntheticCall/dense/cache/wire/backend/
-storage/quota changes. New fallible_calls root in traits; inventory3966.
-
-PA25/31 const-try-calls each19 independent Rust predictions12accept7reject.
-18 source11accept7reject plus ordinary disabled-gate rejection qualify. Required
-source CTFE stays primitive/unit-result payment;18 ordinary imports unqualified.
-Independent Rust exposed residual Destruct and const Residual<TryType=R> duties;
-positives now pay them, unpaid shapes retained as independently rejecting controls
-before further candidate/production execution. Source self-owned roles drop only
-undefined standard-library feature requests; real try_blocks gate retained.
-fast4=1794701680018963910 four exact2targets153.12s; strict selected/production/CLI
-Clippy/full fmt/audit pass. Earlier audits stopped before tests on native duplicate
-and filename ownership. Existing observed_program harness now shares prepared
-native execution; no audit rule weakened. Native1794701845691912429 four groups/
-ten programs47.70s,new success/residual41/59/23+nine prior; independent Rust CTFE/
-runtime both41/59/23. replay2 authenticates3966/allfixtures/38CLI19qualified19gaps,
-exact lowering/scaling2356/2422,6844/5472,24796/17648; no speed claim.315harness/
-497roots13bins44stages1component128upstream126Reference. One new actual plan/call/
-result/site/work private guard awaits CI(expected3086), no cold harness locally.
-Current devfast replay2 CLIac7bf92e…1e5c4c35 pinned. Raw const-try-calls/.
-
-Full43652873020 exactead92a4cd PASSED EVERY STAGE,3084 release5.25s/debug49.86s;
-raw borrowed-callables/ci43652873020.log. ONE successor43656293922 exact8560c4dbb
-(borrowed product05d1beedd) is active release/course(expected3085). Do not duplicate,
-cancel or restart; new Try full successor waits until it is terminal.
-
-NEXT publish/freeze clean candidate37-release and retry unchanged original core
-v14 artifact with same722/six reviewed pins/120s/14500624work/1GiB attempted/64MiB
-retained; authenticate postcheck. Core36 below remains latest original observation;
-Try fence clears reduced cases but has not yet cleared original. No artifact exists.
-Current clean36 and current Try replay2 protect executable pins; pendingperf21–24
-retained.34/35 release, explicit replay and projected replay4/ci-repair binaries
-are RETIRED/UNAVAILABLE after replacement; raw retirement borrowed-callables/.
-Earlier retired baselines stay unavailable. Same one worker/B/mainGit-only,
-2jobs150GiBreserve16GiBcap/frozenbackend17b024f69. WholePA25–44, originalv13/v14,
-Future/async/older CTFE/bootstrap/native/closure/ABI positives and113-case component
-retain prior status. This continuation supersedes earlier NEXT/availability text.
-
-
-LATEST genuine original: clean candidate36-release on published05d1beedd,
-3965 hashes/empty patch,6m42s build. CLI
-35d8c41c4fd584772fa5182f4884598b64bd634b60bd6856871ce38fef8a251c.
-Original v14 library36 CLEARS the borrowed callable/Drain FnMut fence and FAILS
-array/mod.rs:153/file98:5582, try_from_fn, with `const member lost its typed Call
-operation`.19.973867606837302s/status1/no timeout/RSS730216KiB. No core.rgm and
-0-byte core.lowir. Postcheck36 terminal PASS722 originals/375 opens/six reviewed
-pins/all3965/clean pin/fixed120s and unchanged14500624work/1GiB attempted/64MiB
-retained. Diagnostic only/no speed claim/native consumers false. Raw
-borrowed-callables/{build36-release,core-artifact36,artifact-postcheck36}.log and
-original-library-candidate36/. Initial build wrapper rejected --no-prune with
---prune-under before launch; corrected clean build above is terminal/pass.
-
-NEXT reduce actual implicit Try call in generic const try_from_fn body. Its try
-block has existing Operation::Try/ProtocolPlanId (Block.from_output); provided
-source requests currently require Operation::Call after handling access plans.
-Existing sema::protocol_plans::checked authenticates source syntax/gate/actual
-registered methods, signatures, owner/effect; reuse that typed producer. Inspect
-actual lowered call membership/result and preserve every const/effect/borrow/Code
-requirement. Do not invent Call records or relax protocol/role bindings. Const
-ordinary minima PA25; source roles PA31. No reduction or product edit yet.
-
-Published05d1beedd/main synced. Push43655058769 fast CI PASS. ONE previous full
-43652873020/ead92a4cd has PASSED release/course, maintainer native and broad native
-course and is in debug invariants. Do not duplicate/cancel/restart for docs; new
-borrowed checkpoint's full successor waits for terminal prior run(expected3085).
-No original artifact or whole PA25–44 qualification. Earlier CTFE/preparation,
-originalv13/v14/Future/closure/ABI/native/bootstrap positives remain required.
-
-
-LATEST CHECKPOINT: borrowed generic const-callable reference adjustments. See
- docs/pa25-borrowed-callables.md. Production reuses actual source Call/callee and
-walks exactly the retained reference count, charging each step, requiring mutable
-references for FnMut and matching the selected final subject/borrow. All original
-kind/effect/owner/signature/full formal binding/operand/borrow/Code checks stay.
-No dense/cache/wire/backend/storage/quota change; inventory3965.
-
-PA25/31 borrowed-callables each18 predictions13accept5reject, independently Rust
-confirmed.17 source outcomes12accept5reject and one ordinary missing-bound
-rejection qualify. Required source CTFE remains closed-signature payment;17
-ordinary attempts remain unqualified at const-trait declaration prep/fn_traits.
-Borrowed Relay retains actual inherited impl formals and delegation; no exact
-original FnMut item claimed. New native actual field reborrow41/59 plus eight old
-programs pass44.60s; independent Rust CTFE/runtime both41/59. fast2 four exact
-109.58s; fast3 two final exact; all static checks pass. replay all3965/input hashes,
-36 CLI18qualified18explicitunfinished, lowering/scaling1146/1909,4530/6447,
-18066/24575.315harness496roots13bins44stages1component128upstream126Reference.
-Private exact path/depth/borrow/work guard awaits CI(expected3085), no cold local
-harness. Devfast replay CLI4391e4f0…fd27faa9 pinned under borrowed-callables/replay.
-Raw obj/parallel/borrowed-callables/. No speed claim.
-
-NEXT freeze clean candidate36-release after publication, retry genuine original
-v14 core with unchanged722 files/six reviewed pins/120s/14500624work/1GiB attempted/
-64MiB retained, then authenticate artifact postcheck. Core35 failure below should
-clear, but has NOT yet been verified in original. No core artifact exists.
-ONE prior full43652873020 exactead92a4cd is still active in release/course; do not
-duplicate/cancel/restart. Dispatch one new full only after it is terminal. Same
-single worker/B only/main Git-only/2jobs150GiBreserve16GiBcap/frozenbackend17b024f69.
-All wholePA25–44, originalv13/v14 and older positive requirements remain open;
-released113-case component unchanged. This paragraph supersedes prior NEXT work.
-
-
-LATEST genuine original: clean candidate35-release on publishedead92a4cd,
-3965 source hashes/empty patch,7m14s build. CLI
-5c4168411f54c318b60910da625ef6785b0b81f85539684c63706a7acbba994a.
-Original v14 library35 CLEARS FnOnce::call_once delegation in array/drain.rs:62,
-then FAILS the following FnMut body at file100:3330/line76 with
-`const invocation differs from its defining call-trait or effect fact`.
-The body invokes borrowed field (self.f), where f:&'f mut F, in both branches.
-26.301281564868987s/status1/no timeout/RSS725944KiB; no core.rgm/0-byte core.lowir.
-Postcheck35 terminal PASS:722 hashes/375 opens/six reviewed config pins/all3965/
-clean pin/fixed120s and unchanged14500624work/1GiB attempted/64MiB retained.
-Raw explicit-call-members/{build35-release,core-artifact35,artifact-postcheck35}.log
-and original-library-candidate35/. Diagnostic only/no speed claim/no artifact.
-
-NEXT reduce borrowed-generic callable field invocation from this real FnMut
-body. Current body/constants/invocations.rs::source_receiver requires kind/borrow
-agreement and dereferences==0. Do not relax blindly: inspect actual retained
-Invocation kind, receiver, borrow, dereferences and effect plus lowered operand.
-Native Relay just qualified uses owned F, whereas original Drain stores &mut F;
-add paired borrowed-field controls and real runtime/CTFE accepting requirements.
-Reuse existing typed source adjustment/borrow results and full formal bindings;
-keep real current call/effect/borrow/lifetime/actual Code duties. No production
-edit or reduction for this new frontier yet. Ordinary minima PA25, real roles PA31.
-
-Published ABI productead92a4cd/main synced. Full prior43649121503 exact7a4e9547f
-PASSED EVERY STAGE:3083 private release6.82s/debug64.37s, all public/native/course/
-independent/component. Accounting regression is closed by that full run. Raw
-explicit-call-members/ci43649121503.log. ONE new full43652873020 exactead92a4cd
-is running fast/static checks (expected private3084). Do not duplicate, cancel
-or restart for docs. This supersedes earlier pending35/CI-running paragraphs.
-
-Active goal: compile pinned original core, completing assignment components as
-whole contracts qualify. One worker, existing B only; main Git-only. No agents
-or new tree. **No original core metadata/LowIR/native consumer artifact exists.**
-Whole PA25–PA44 remain planned; the113-case PA25 component stays unchanged.
-
-Published coherent checkpoint: explicit const Fn/FnMut/FnOnce
-members through their actual safe rust-call ABI. See docs/pa25-explicit-call-members.md.
-Five production files reuse the existing validated role methods table, actual
-trait owner and current callable registry. Only actual members get rust-call
-signature admission; opened signatures/full source/current call/effect, actual
-const impl/borrow/lifetime/Code proof stay required. No new persistent cache,
-dense field, wire/backend/storage/quota change. Inventory3965 (new cohesive
-explicit_call_members root registered in closures; pin.py count updated).
-
-PA25/31 explicit-call-members each declare15 independent Rust1.98 outcomes:
-10 accept/5 reject. Qualified14 complete source outcomes (9 accept/5 reject).
-Source CTFE native remains required at open/lifetime/argument payment. All15
-ordinary attempts remain UNQUALIFIED at unsupported fn_traits or original
-PhantomData import, including predicted negatives. Exact original FnOnce item
-434b0dad…33caef6 is unchanged; reduced FnMut support body diverges and is never
-executed/claimed as full Drain behavior. Its missing stability attrs were fixed
-before corrected-original probe. Native runtime counterpart uses a real FnMut
-body/function item/mutable receiver and prints41/59; independent Rust runs both
-that counterpart and the still-required CTFE example with41/59.
-
-fast2=1794696879652162802 passes new semantics/scaling and old projected control;
-fast3=1794697385218943481 final two exact67.28s. native1794696997540382381
-passes two groups/eight real programs76.21s (new runtime plus seven old controls).
-Strict selected/production/CLI Clippy, full format/audit pass. replay authenticates
-3965 compiler hashes/all input/basis hashes,30 complete CLI attempts (14 qualified,
-16 explicit unqualified), lowering and8/32/128 work10749/2610,37965/7916,
-146829/29116. No speed claim.315 harness/496 roots/13 binaries/44 stages/
-one component/128 upstream/126 Reference pass. New exact role-slot private guard
-is pending full CI, expected3084; no local cold private harness. Raw
-obj/parallel/explicit-call-members/. Current dev-fast replay CLIe261c7b4…884390.
-
-Clean35 and postcheck are now complete as recorded above. Continue the borrowed
-callable field frontier with the same original inputs/profile/limits. Do not retry a census or unoptimized
-whole original. Current full43652873020 is the sole successor. Do not duplicate/cancel/restart for docs.
-
-Published accounting repair7a4e9547f follows product0c4d3d721. Full43645030432
-on0c4 FAILED14 private/22 public (six targets): shared helper accidentally charged
-ordinary result nodes to caller input and enlarged their region interval.
-Repair restores ordinary original account/interval, retaining new conditional
-parent-proof charges; no quota or semantic expectations change. Five exact
-controls/160.71s and seven native/52.33s pass, ci-repair-replay44 complete outcomes
-plus two accepting gaps. Full successor43649121503 exact7a4 has PASSED release/
-course/static/all-target/harness/host graph and is running debug invariants.
-Private14 release failures are cleared there; debug/final full completion pending.
-Raw projected-const-members/ci43645030432.log and ci-repair-{fast1,native,replay}.log.
-No full successor for current ABI work yet; keep the active one undisturbed.
-
-Latest genuine original observation: clean34-release on docs-only cc1bbf993,
-product0c4d3d721,3964 source hashes/empty patch,7m02s build. CLI
-fdb81f6e5f53d924a40ca847678c4e6f0e25a47c054ae5ad08861c4574f64d1a.
-Original v14 library34 CLEARS residual_into_try_type and FAILS array/drain.rs:62,
-file100:2808, self.call_mut(args) in exact const FnOnce<(usize,)> impl for
-&mut Drain under F:[const]FnMut(T)->U; current conditional premise error.
-22.45777091383934s/status1/no timeout/RSS727408KiB, no core.rgm/0-byte core.lowir.
-Postcheck34 PASS:722 originals/375 opens/six reviewed config pins/all3964 hashes/
-clean pin/fixed120s and unchanged quotas. Diagnostic only/no speed claim.
-Raw projected-const-members/{build34-release,core-artifact34,artifact-postcheck34}.log
-and original-library-candidate34/. New ABI reduction clears original adapter;
-fresh genuine original verification remains required.
-
-Availability: keep actual current34 release/current ABI replay and pending
-performance21–24 pins. Semantic25–33 release,26 dev-fast, generic-const-calls/
-default-generic-subjects replays and projected replay1–3 executables are RETIRED/
-UNAVAILABLE. Receipts/hashes remain; see projected-const-members/retired-pins.json.
-Older projected replay4/ci-repair replay may be retired after current replacement;
-never use a pruned binary as new evidence. Other checkouts' outputs untouched.
-Same B /mnt/vizier/rustgm-scratch/rustgm-pa26-work, branch implement/scoped-inherent-20261110;
-shared2jobs/150GiB reserve/CPU800%/RAM12GiB/tasks256, one local heavy job,
-16GiB output cap. Backend frozen17b024f69; storage.py unchanged. All earlier
-original v13/v14, SourceFuture/async, closure, bootstrap, signature/aggregate
-payment, native, arithmetic, layout and transport requirements below stay open.
-
-Historical checkpoint record follows; the continuation above supersedes older
-NEXT/status/build-frontier statements.
-
-Current coherent checkpoint: generic subjects and normalized source requests in
-actual original const defaults. See docs/pa25-default-generic-subjects.md.
-Local Self factory/context is prepared once before accepting requests; direct
-parameter subjects still require their exact current premise unless BOTH owning
-Self/application match. Composite requests reuse existing normalized source
-validation. Original bodies are not made executable; actual const impl/dispatch,
-source/call/borrow/lifetime/Code remain required. No dense field/cache/wire/backend/
-storage edit. Inventory3964. Existing traits root and two new private guards.
-
-Qualified30 complete outcomes (16 source,14 ordinary), exact original contains
-item/reference impls, generic-subject CTFE/runtime41/59, actual contains runtime
-`1 0 1 0`, three old native default controls,8/32/128 post-lowering scaling
-2890/1611,11506/5287,45970/19943. fast5=1794686954186365728 three exact91.85s;
-native=1794687165779066549 five programs62.73s. Strict selected/production/CLI
-Clippy, full fmt/audit,315 harness/495 roots/13 bins/44 stages/one component,
-128 upstream+126 Reference pass. replay authenticates all3964 compiler hashes,
-packets and basis. Pinned Rust independently agrees with17 predictions and three
-native observations. Four unqualified accepting requirements remain: three
-ordinary Bound imports, source native-contains CTFE/runtime at `source const
-payment currently requires a closed callable signature`. Runtime-only contains
-passes. No expected positive was inverted. Raw default-generic-subjects/.
-Two new private scope/foreign-subject guards await full CI; no cold local harness.
-
-NEXT publish coherent checkpoint, dispatch ONE full successor (prior terminal),
-freeze clean candidate33-release, retry genuine original v14 library with same
-120s/14500624work/1GiB attempted/64MiB retained and postcheck. No redundant census
-or dev-fast whole-original retry. Core32's RangeBounds definition passes in the
-reduction but original full verification is still required. Do not report a core
-artifact. Whole PA25–44/native/bootstrap/future/older requirements stay open.
-
-Full43627935665 exact ca20dc143 FAILED one regular closure gap classification.
-3081 private release tests PASS6.56s; static/all other regular/course checks pass.
-Four accepting closure fixtures now clear the old Fn fence and reach the known
-closure-owner fence shared by the other two accepting gaps. All six requirements
-stay accepting; only the observed fence classification changed. Current exact
-13-case unannotated_closure_inputs control passes. Raw generic-const-calls/
-ci43627935665.log. New complete successor still required; no duplicate active run.
-Prior full43624101196/c0ff is entirely green3080 release5.76s/debug64.62s.
-
-Historical checkpoint record follows; current continuation above supersedes old
-NEXT/status/availability statements. Current32/31/perf21–24 binaries remain;
-25–30/default-supertraits replay/bounds baseline executables are retired. B only,
-one worker/main Git-only,2jobs/150GiB reserve/16GiB cap. No local heavy job.
-
-Published current source ca20dc143be3691d23bb9637405de41d9ca229e0, main synced.
-Clean candidate32-release binds3964 hashes/empty patch,8m04s build,
-CLI3996c12127b33d0186e11cd233ec34f8f60543d7ffdf03b411a015d37df55670.
-Genuine unchanged original v14 library32 CLEARS min_by_key and now FAILS
-ops/range.rs:872/file94:27710, RangeBounds::contains:
-`abstract const call changed its defining Self or trait application`.
-21.455154991010204s/status1/no timeout/peak childRSS732252KiB; no core.rgm,
-0-byte core.lowir. artifact-postcheck32 terminal PASS:722 originals/375 opens/
-six reviewed config pins/all3964 compiler hashes/clean pin/fixed120s/
-14500624work/1GiB attempted/64MiB retained. Diagnostic only/no speed claim.
-Raw generic-const-calls/{build32-release,core-artifact32,artifact-postcheck32}.log
-and original-library-candidate32/. No original metadata/LowIR/native consumer.
-
-NEXT reduce actual RangeBounds::contains plus ordinary/source const-default
-calls through generic types other than defining Self. Production has not changed
-for this frontier. abstract_uses::check_premise still rejects a Trait predicate
-whose subject differs from defining Self before checking its completed environment.
-For a non-root subject/application pair, any direct proof must come from the
-exact actual defining environment; never let a foreign subject reuse the own-trait
-fast path merely because its application matches. Actual Range contains also
-compares &T/&U through the source const reference impls, so inspect the real
-failing target/predicate before choosing a repair: exact local T premises may not
-be the whole reference-implementation goal. provided_calls::closed_effect
-currently admits Conditional ConstTraitDefault only for body.instance.is_some(),
-therefore original default bodies fall back to abstract checking. Preserve local
-Self setup, full arguments, current source/call/effect, lifetime/borrow and actual
-selected implementation/Code proof. Do not treat source-use data as execution
-permission. PA25 ordinary minima; PA31 actual source originals. No new agent/tree.
-
-Full43624101196 exact c0ff945bd PASSED EVERY STAGE:3080 private release5.76s,
-debug64.62s, all public/native/course/independent/113component. Raw
-obj/parallel/default-supertraits/ci43624101196.log. ONE full successor
-43627935665 exact ca20dc143 is now running (qualification lint/architecture/harness;
-fast job was still queued at last poll). New private guard remains pending that
-run; do not duplicate or cancel it. No local heavy job at this checkpoint.
-Current32/previous31 and pending perf21–24 pins retained;25–30 binaries retired
-and unavailable as recorded below. Keep fixed2jobs/150GiB reserve/16GiB cap;
-free326GiB. All prior original v13/v14/bootstrap/future/assignment requirements
-below stay open. No whole PA25–44 is complete.
-
-Historical checkpoint record follows; the continuation above supersedes all
-older NEXT paragraphs and build-frontier statements.
-
-Current coherent checkpoint: unused generic const FnOnce/FnMut/Fn defining calls
-plus actual borrowed function-item CTFE. See docs/pa25-generic-const-calls.md.
-Existing callable-template producer is demanded only for retained const-function
-calls; complete formals are indexed once. Readonly validator keeps exact borrowed
-receiver capability/type/region. Reached CTFE reads real item values from checked
-storage (Writable required for FnMut) and retains actual const/Code entry.
-Production: sema/bodies/invocations.rs, body/constants/invocations.rs and its
-invocations/receivers.rs, const_eval/{operator_calls,invoked_values}.rs. No dense field/cache/wire/backend/
-storage-policy changes. Inventory3964; B only/one worker/main Git-only.
-
-Qualified15 source outcomes (12 accept/3 reject), exact unchanged min_by_key,
-three new native41/41/`41 59` observations, eight prior native callable controls.
-Pinned Rust agrees with all15 counterparts and independently runs the three
-new native observations. All15 ordinary candidate inputs stop at unresolved
-core::marker::Destruct import, retain their original outcomes, and are UNQUALIFIED.
-fast3=1794680741839406928 four exact132.15s; fast4=1794680934117603013 final
-packet/scaling48.66s; native2=1794681053414857447 two groups/11 programs41.79s.
-Strict selected/production/CLI Clippy, full fmt/audit,315 harness/495 roots/13 bins/
-44 stages/one component,128 upstream+126 Reference all pass. replay authenticates
-all3964 compiler hashes and packet/foundation hashes. Post-lowering work8/32/128:
-1762/2037,6994/6959,27922/26623. New private retained-borrow/receiver forgery guard
-awaits full CI; no cold private build. Raw obj/parallel/generic-const-calls/.
-
-NEXT publish this coherent checkpoint, freeze clean candidate32-release and retry
-genuine original v14 library with fixed120s/14500624work/1GiB attempted/64MiB
-retained, then postcheck. No redundant census/dev-fast whole-original retry.
-Dispatch ONE full successor after c0ff's43624101196 terminates; at last poll
-fast/static/host graph/release/course/maintainer-native/broad course native passed,
-debug invariants executing. Do not duplicate or cancel it. Whole PA25–44 and all
-original v13/v14 metadata/LowIR/native/bootstrap/future/older positives stay open.
-
-Published baseline c0ff945bd0804295d79e7de1ff0411fa258a80f7, main synchronized.
-Clean candidate31-release3964 hashes/empty patch,7m51s build,
-CLI3d81449e9933f537a6efcdf060f0bd0820912cd550864cdda70d685509fd69db retained.
-Genuine original v14 library31 CLEARS Ord::max and fails cmp.rs:1641,
-file73:54310, min_by_key's `f(&v2)`:
-`const invocation has no completed callable formal order`.
-19.614398425910622s/status1/no timeout/peak childRSS731996KiB; no core.rgm,
-0-byte core.lowir. artifact-postcheck31 terminal PASS:722 originals/375 opens/
-six reviewed config pins/all3964 compiler hashes/clean pin/fixed quotas.
-Diagnostic only/no speed claim. Raw default-supertraits/{build31-release,
-core-artifact31,artifact-postcheck31}.log and original-library-candidate31/.
-
-The first new fastcheck also exceeded the unchanged16GiB cap (17307295744 bytes).
-Investigated semantic failure, then retired/pruned obsolete release25–30 pins
-and default-supertraits/{replay,bounds-reference} binaries: ~1.24GiB recovered.
-Hashes/receipts remain; those binaries are UNAVAILABLE for new observations.
-Current31 and pending performance21–24 pins remain intact. Retirement receipts
-and cleanup logs under generic-const-calls/retire-*.json/.log. No reserve/cap
-lowered or another checkout cleaned. storage.py is unchanged. Full local caps
-stay2jobs/150GiB reserve/16GiB ceiling. No local heavy job at this checkpoint.
-
-Historical checkpoint record follows; current continuation above supersedes old
-NEXT paragraphs and old executable-availability statements.
-
-Current coherent checkpoint: conditional supertrait calls in const defaults plus
-exact builtin Destruct method-bound evidence. See docs/pa25-default-supertraits.md.
-Production touches only sema/function_context/abstract_uses.rs and
-sema/dispatch/effect_requirements.rs. Same defining Self/current exact completed
-premise, source/call/borrow/selected implementation and execution remain required;
-ordinary closed-implementation certification/cache is retained. No persistent
-field/cache/wire/backend/storage change. Existing registered traits test root;
-inventory stays3964. No agent/new tree.
-
-Qualified:32 complete outcomes (18 source,14 ordinary), three new native programs
-41/41/`41 41`, five prior cleanup native controls, actual unchanged Ord::max
-constant/runtime execution,8/32/128 post-lowering scaling1754/1473,6962/4741,
-27794/17765. fast5=1794678879779995705, six exact tests140.36s; native=
-1794679030907816509, two groups/eight programs41.78s. Strict selected/production/
-CLI Clippy, full format/audit,315 harness/495 roots/13 bins/44 stages/one component,
-128 upstream+126 Reference pass. replay authenticates all3964 compiler hashes
-and all packet inputs. Ordinary builtin-destruct/runtime-destructor counterparts
-remain required/unqualified at unresolved core::marker::Destruct import; their
-independent acceptance/rejection predictions are unchanged. Raw evidence under
-obj/parallel/default-supertraits/{inputs,baseline,bounds-reference,reference,replay}/.
-
-NEXT publish coherent checkpoint, dispatch ONE full successor (previous run
-terminal), freeze clean candidate31-release, run genuine unchanged original v14
-library command with fixed120s/14500624work/1GiB attempted/64MiB retained and
-postcheck. Scripts default-supertraits/{core-artifact31,artifact-postcheck31}.py
-are prepared under obj. No redundant census or dev-fast whole-original retry.
-No original library artifact exists; do not infer original success from reduction.
-
-Previous clean candidate30-release: source4a80bfb4a50368637efe70423aabf88d9abe8b59,
-3964 clean source hashes, CLI2b950bafd9fc84d9ce69b2515e3f1c43bfdf93b406bf998c4074f8d4ef56acdd.
-Genuine original v14 library30 failed cmp.rs:1037/file73:34611, Ord::max's
-`abstract const call changed its defining Self or trait application`.
-36.285181019920856s/status1/no timeout; no core.rgm/0-byte core.lowir.
-Artifact-postcheck30 terminal PASS:722 original/375 opened/six reviewed config
-pins/all3964 compiler hashes/fixed limits. Diagnostic only/no speed claim.
-Full43618987950 exact4a80bfb4a now PASSED EVERY STAGE:3080 private release4.79s,
-debug46.67s, all public/native/course/independent/component. Raw
-mixed-declarations/ci43618987950.log. New checkpoint full CI pending.
-The three reduced const-Deref metadata positives remain separately blocked by
-role-form transport, not declaration kinds; actual failing non-trait role has not
-been identified by a run, so do not assume which role it is. All earlier original
-v13/v14/native/ordinary-bootstrap/future/assignment requirements remain open.
-B only/one worker/main Git-only; policy2jobs/150GiB reserve/16GiB cap unchanged,
-free339GiB. Keep needed comparison pins; old timing gates and pending21/22,
-22/23,23/24 comparisons remain unwaived. No original library artifact exists.
-
-Mixed v14 declarations are now locally qualified; publish this joined checkpoint
-before clean30. exported_kind and callable_effects use existing body_nodes
-capability, so v14 inherits v13 enum/variant/tuple+unit constructor/const parameter/
-named const classification and required Fn method conditional constness. V11
-operation-only flags and all old wire formats remain unchanged. No dense field,
-cache, backend/bridge/storage change. Four complete old PA29 providers +exact
-already-qualified helper, eight byte-identical ordinary clients/opponents and
-three scaling inputs are declared in PA43 mixed-declarations/manifest.json.
-
-Fast1794674660553215232: six exact157.65s, strict production/selected/CLI Clippy,
-fmt/audit. Native1794675128987314929: two groups/six programs44.57s (four new42s,
-two previous41s). Independent Rust semantic companions/native42×4 and actual
-helper Output/unsafe/lifetime controls pass; full old provider semantics retain
-prior independent qualification. First private-row test API failure and actual
-rust-call conditional-effect failure are preserved in fast1/2. No result inverted.
-Replay authenticates3964 sources/all packet+reference/basis hashes, two new tests,
-and immutable same-profile legacy A/A/B/B bytes.8/32/128 inference/canonical/bytes
-=115/111/9864,451/449/23852,1795/1777/79876.315harness/495roots/13bins/44stages/
-one component/128upstream+126Reference pass. Raw obj/parallel/mixed-declarations/.
-
-Immutable baseline declaration-baseline-dev-fast binds clean63c31d0bf/3964,
-CLI696cf424d29248241bce8dbb8812ca66a866a368c3d25b5fe1958def6692f89b;
-replay/wip-rustgm has authenticated patch+source hashes and immutable candidate.
-All four legacy metadata bytes equal, hashes in docs/parallel/mixed-declarations-v14.md.
-No speed claim. Baseline old release29 also confirms four legacy A/A positives
-and all eight v14 producer failures. Three reduced const-Deref library positives
-clear declaration-kind failure but still FAIL `source role form is outside the
-complete first transport family`; metadata absent. Preserve each required positive.
-
-Full43611467168 is terminal SUCCESS on exact170c04501:3079 private release8.39s/
-debug93.73s, all stages. Next publish this coherent body+declaration join, dispatch
-ONE full successor, freeze candidate30-release and run genuine original v14 core
-with the same722 sources/six config pins/375 opens/120s/14500624work/1GiB attempted/
-64MiB retained. No redundant census or dev-fast full-original retry. Actual core29
-Deref site is not yet verified cleared. No original library artifact/native consumer;
-all original v13, reduced metadata, ordinary bootstrap, real future and earlier
-requirements stay. B only/one worker/main Git-only; policy2jobs/150reserve/16cap,
-shared free342GiB. Tidy between batches and keep needed pins/raw receipts.
-
-The explicit generic Deref body repair is now locally qualified; original core
-verification is pending. place_result/operand generalize the old Index-only
-reference/place relation to actual Deref/DerefMut syntax with exact1-vs2 parameter
-arity, canonical trait owner, actual call/receiver/operand, result reference,
-mutability/lifetime and referent checks intact. No new cache/dense field/wire/
-backend/storage change. PA31 source and PA26 ordinary manifests retain all inputs.
-13 complete standalone source CLI/prepared outcomes =10accept/3reject, including
-constant execution and8/32/128 scaling. All agree with pinned Rust counterparts.
-All11 ordinary candidate commands stop at unresolved core import; they are
-unqualified bootstrap requirements, not semantic rejections (including negatives).
-
-Fast1794672298823814172: six exact155.92s, strict production/selected/CLI Clippy,
-fmt/audit; includes73 Index cases, old generic fields and actual helper CFG guard.
-Native1794672574166858411: two groups/nine actual programs42.58s, two new41s plus
-seven unchanged Index programs. Replay authenticates3964 source hashes and all
-packet inputs, repeats two new tests/all13 standalone CLI outcomes; canonical/
-inference after prepared lowering8/32/128 =1919/3917,5785/15437,21225/61517.
-315harness/495roots/13bins/44stages/one component/128upstream+126Reference pass.
-New private receiver/signature/arity/referent forgery regression awaits full CI;
-no cold harness. Raw obj/parallel/explicit-members/. Temporary invalid EMPTY list
-constant in the unbuilt private test was corrected to intern_list; no private
-passing claim. See docs/pa26-explicit-const-dereference.md.
-
-NEXT publish this body checkpoint, then repair the separately reproduced v14
-exported_kind Nominals-mode gate below before ONE clean30 release/core retry.
-This batches the two known artifact blockers into the next optimized freeze.
-Do not claim original29's explicit-Deref site cleared until that genuine retry.
-Full43611467168 is still the one full successor on170c; release/course passed,
-native in progress. Do not duplicate it for this checkpoint; wait for actual
-terminal before a full successor on the joined body/declaration work. All older
-original, reduced metadata, native, future and whole-assignment requirements stay.
-
-Published current source170c045018dd52a830802b8de4584625fb724e81, main synchronized.
-Clean candidate29-release binds3964 hashes/empty tracked patch; build8m27s,
-CLI SHA256d62270b74c1483790572b9ed5b363d11b0654db90516bc691b58c9464a5266b9.
-Genuine unchanged original v14 library29 clears dismiss (old60:2500) and FAILS
-at DropGuard::deref, mem/drop_guard.rs line118/file60:3479, `&*self.inner`:
-`const member changed its current signature or result`.30.0036190780811s,
-status1/no timeout; no core.rgm,0-byte core.lowir/no native consumers. Terminal
-artifact-postcheck29 PASSES all722 original hashes/375 opens/six reviewed config
-pins/all3964 compiler hashes/clean producer/unchanged120s and14500624work/1GiB
-attempted/64MiB retained. Diagnostic only, no timing claim. Raw
-conditional-members/{build29-release,core-artifact29,artifact-postcheck29}.log,
-original-library-candidate29/. No redundant whole census29 run:27/28 completed
-analysis,29 exercises the genuine build directly. Full43611467168 runs exact170c:
-fast/lint/architecture/harness/host graph passed, release/course in progress.
-Do not dispatch a duplicate; preceding43607051290 is fully green.
-
-NEXT reduce the actual explicit generic Deref source-call signature/result check;
-keep all exact source, caller, selected method and borrow checks. Separately traced
-the three reduced v14 metadata failures to authored_export.rs exported_kind:
-`body_nodes() && mode == ExportMode::Nominals` excludes v14's CompilerOperations
-mode for enum/variant/tuple/unit constructors/const parameters/const items. This
-is read-only diagnosis, not a qualified fix. Frozen next expectations and four
-complete old v13 providers with appended exact genuine helper are in
-obj/parallel/mixed-declarations/{declaration.json,inputs/}; baseline.py prepared
-but UNRUN. That wider-profile repair follows the actual body blocker. No live
-local heavy job. Shared free326GiB, policy2jobs/150reserve/16cap unchanged.
-
-Current continuation qualifies normalized generic conditional-member defining calls;
-see docs/pa25-conditional-member-calls.md. Production source_request verifies the
-actual checked source application instead of demanding a direct environment
-premise for a generic nominal family. Generic projections/unsafe calls retain the
-old abstract-premise path; actual dispatch/const entry/loans stay independently
-required. No dense fields, new cache, wire/backend/storage change. PA25 ordinary
-and PA31 source manifests freeze19 prepared outcomes (13accept/6reject), with
-byte-exact full drop_guard/manually_drop/maybe_dangling originals. All agree with
-pinned Rust standard-core/custom-trait companions. New native48 and four prior
-const-coercion programs pass (two groups,37.63s). Seven old independently accepting
-supertrait lowering gaps now succeed; their test requires success, never inverted.
-
-Fast4 1794670401867519614: two exact54.94s; fast3 four other frontend controls
-passed before its fixture setup failure. Fast5 1794670571182299902: final scaling
-43.49s, inference/canonical after prepared lowering8/32/128 =7314/3916,
-29034/13782,115914/53222. Strict production/selected/CLI Clippy/fmt/audit pass.
-Final replay binds3964 sources/37 packet inputs including manifests, three new tests, exact
-original bytes;315harness/495roots/13bins/44stages/one component/128upstream+
-126Reference pass. Raw obj/parallel/conditional-members/. First projected-path,
-E0658 companion-feature, missing source Add fixture and independent C-link setup
-failures remain recorded; no rejection reclassified or positive inverted. New
-private forged-generic-argument/body-flag test awaits full CI; no cold harness.
-
-Three genuine reduced v14 library surfaces shared-field/mutable-field/direct-method
-clear the conditional-premise error but still FAIL source-declaration profile
-coverage. No metadata/empty LowIR. Each is a named required positive, separate from
-prepared/native success. Next publish this coherent checkpoint, dispatch one full
-successor (prior43607051290 is terminal SUCCESS on exactfc4:3078 private release
-4.79s/debug46.51s, all gates), then freeze clean candidate29-release and retry the
-full unchanged original v14 library command/120s/quotas. No need to repeat the
-already completed full census merely before the genuine build. No original
-artifact/native consumer exists; all older requirements below remain. One worker
-in B, main Git-only; reserve150GiB/cap16/controller2jobs unchanged/free344GiB.
-
-Latest frozen checkpoint is fc4e36743276e120ea5787a2b08bab9f596ec9ad.
-Clean candidate28-release binds3964 source hashes/empty patch; CLI SHA256
-befc0f5c4e0184be8a34fbc0c39e376ca069cde9b2da269074a304576b1762d0,
-coherent build9m48s. Original diagnostic28 reaches the end of analysis with zero
-records in39.073271811s (42310 declarations/25858 bodies/35120 attempts).
-Census/progress bytes equal27. Load was above14/20, explicitly diagnostic only;
-no timing claim. The genuine module-body-operations-v14 library28 clears the
-compiler-owned async helper boundary, then FAILS after21.201781169s at
-mem/drop_guard.rs file60:2500, dismiss:
-`const function member lacks its current conditional trait premise`.
-core.rgm is absent; core.lowir is0 bytes; no original native consumers exist.
-Both28 postchecks are terminal/pass:722 sources/375 opens/six reviewed config
-pins/all3964 compiler hashes/clean producer/fixed120s/work14500624/1GiB attempted/
-64MiB retained. Raw body-operations/{observe28,postcheck28,core-artifact28,
-artifact-postcheck28}.log; capture-match/original-candidate28-diagnostic/ and
-body-operations/original-library-candidate28/ preserve receipts.
-
-The frozen census-progress/original-manifest.json remains unchanged. Its explicit
-successor body-operations/original-manifest.json changes only the crates.rs pin
-for the two reviewed CLI profile selectors/usage; all722 inputs/five other config
-pins/profile JSON are identical. config-rebinding.json and
-cli-config-rebinding.patch authenticate the exact reconstruction. Do not silently
-rebind the old manifest. Full43607051290 runs on exactfc4e36743: fast, lint/audit/
-harness and host graph passed; release/course still in progress at last check.
-No duplicate CI for this documentation. Next reduce the actual dismiss failure
-through existing conditional call owners; keep original v13 and all native future
-requirements open. Shared free space345GiB; unchanged150GiB reserve/16GiB cap,
-one worker in B, main Git-only, no live local heavy job.
-
-Latest continuation: genuine unchecked arithmetic is published as7db0c611e.
-Clean candidate27-release (6m27s,3963 source hashes, empty patch) has CLI SHA256
-fb75da194df6bec5943d61e8a64bee56a32c0d2692b130f7c30ee66a876fe895.
-The unchanged original-core120s census now **reaches the end of analysis with
-zero records**:42310 declarations,25858 bodies and35120 attempts;22.144361595s,
-load5.67/6.78 under14/20. This is complete diagnostic analysis, never a build.
-Completion checked0 is an item counter, not a completion flag; the driver terminal
-marker/no records/end0 prove completion. Flushed progress is always labelled
-partial-analysis-only; do not infer failure from that label. Stage-aware27
-postcheck passes all722 sources/375 opens/six configuration pins/all3963 sources,
-CLI hash, empty patch and unchanged work14500624/1GiB attempted/64MiB retained.
-Raw: intrinsic-next/observe27.log, postcheck27.log and
-capture-match/original-candidate27/.
-
-The **genuine original module-bodies-v13 library attempt is still a required
-positive and FAILS** after19.825328638s: future/async_drop.rs file246:1994,
-compiler-owned async destruction requires generated future state and polling.
-No core.rgm exists; core.lowir is empty. Artifact postcheck verifies722/375/six/
-3963/clean pin/fixed120s and unchanged quotas; this is a real implementation fence,
-not timeout. Raw: intrinsic-next/core-artifact27.log, artifact-postcheck27.log,
-original-library-candidate27/. No native original consumers exist.
-
-Mixed body/operation transport now qualifies as explicit module-body-operations-v14,
-source envelope10/version14. All old formats and macro envelope14 remain unchanged.
-Associated result columns are encoded once; explicit optional const-body presence
-precedes only opaque/operation tails. Helper remains genuine CompilerOperation
-without Original/locals/CFG. Actual ordinary bodies preserve owned-domain/lifetime/
-environment proof. The cold cursor borrows existing opaque reservations; remaining
-recording/reconstruction/allocation/normalization BodyRefs use the existing checked
-ordinary-row map, never direct physical indexing. Send and runtime future guards
-remain closed. See docs/parallel/body-operations-v14.md and PA43 body-operations
-manifest. No native helper/future implementation was added.
-
-Focused1794666856100454561:6 exact/49.77s, strict production/selected/CLI Clippy,
-fmt/audit. Native1794667305233923705:1 group/2 actual Rust/C programs/49.77s; both
-ordinary consumers return41 with helper before/after methods. Static-future leak
-matches Rust E0521 and rejects at inspect_prepared borrow validation; typing-only
-acceptance in fast6 was not full acceptance. Native1's hyphenated disambiguator
-usage2 was corrected with an explicit valid identity, preserving source bytes.
-First eager-region/reservation/environment/sparse-index failures remain recorded.
-
-Final authenticated replay binds3964 sources, predeclared fixture hashes and the
-three new regular tests.8/32/128 inference59/227/899, canonical336/1346/5362,
-encoded bytes18633/59741/224245. Immutable8ca baseline CLI
-fdde62dde102d7bd7ada48372b54fe3e5c4dea6bc6ac41af9cd29cedce4a9055 and current
-4f170b31a3e4a2a3b2f34a8f7fbd936339c8d811de610d9de058ec8e5d62ea7d have
-identical legacy A/A and B/B bytes: v11 2980/da3c7eea3cc6ea395338ddcbc92498f07b5e69e4c8c7acdf22bab02cf1107b91,
-v13 19695/185d4265e9e1c9463435826427763320e609fb90378e506c5a23c49258f1ba6c.
-No timing claim.315 harness/495 roots/13 binaries/44 stages/one component/
-128 upstream+126 Reference pass. Raw body-operations/; pin.py now expects3964.
-
-Next publish this coherent checkpoint, dispatch ONE full successor after the
-terminal preceding CI, freeze clean candidate28 release and attempt genuine full
-original core using the explicit mixed profile under unchanged120s/work/byte
-limits. Do not repeat dev-fast whole-original observation. Previous v13 full-body
-positive remains recorded/open, and no new profile substitutes for actual async
-constructor/poll/drop/Pin/Output/cancellation/recursive cleanup/ordinary authored
-future/native or any earlier named requirement. No original library artifact
-exists yet. Keep old profile/metadata/native contracts below intact.
-
-Full43597538902 PASSED EVERY STAGE on exact7db0c611e:3078 private
-release7.01s/debug64.08s; all public/course/native/independent gates pass. Full43592623119 PASSED ALL on e23bbc172 (3078 private
-release4.66s/debug46.06s). No duplicate CI for this doc-only successor.
-The arithmetic checkpoint qualified25 independent outcomes,240 constant/240
-runtime values, all18 candidate guards, nine native programs,3963-source replay,
-315 harness/495 roots/upstream. Noninteger Rust ICE remains unqualified. See
-[checkpoint](docs/pa31-unchecked-arithmetic.md); every earlier named requirement
-below remains. Whole PA25–44 planned;113-case PA25 component unchanged.
-
-Shared space restored (~366GiB); same150GiB reserve/16GiB cap/one B heavy job.
-No live local heavy job at this checkpoint. B only, main Git-only; one worker.
-
-## Workspace and authorization
-
-- Main `/home/vishvananda/rustgm` is Git-only; never build there.
-- Edit/build in B `/mnt/vizier/rustgm-scratch/rustgm-pa26-work`, branch
-  `implement/scoped-inherent-20261110`. No agents or new worktrees.
-- Coherent commits/pushes are authorized. Single-line subjects, no trailers.
-  Publish `git push origin HEAD:main`, then fast-forward main.
-- Backend stays v3,17b024f69. Do not alter active C++/v5rust checkouts or another
-  checkout's outputs. No frontend delegation, invented library body or abort shim.
-- Read AGENTS.md, spec.md, ROADMAP.md, owning handout and TESTING_AND_REFERENCES.md.
-  Historical details in `git show 2072521b8:handoff.md` are superseded where below
-  differs. Never restore its superseded private-port prototype.
-
-## Previous core evidence: release15
-
-Clean **candidate15-release** freezes2072521b8,3948 Rust source hashes and an
-empty tracked patch. CLI SHA256
-`700e4cb31ba1360f694ac6806b7e24b88fc2b814d6dedeee9de518c2c0d902b0`.
-The coherent release build completed in7m22s under the unchanged resource caps.
-Do not release-build per edit.
-
-Its full unchanged120s **diagnostic** census clears candidate13's Alignment
-constant-pattern error and reaches completion checking:
-
-- all42310 declarations pass;
-- all25858 checked bodies have zero failed/blocked functions;
-- the same35120 item attempts as13 are reached, including the final initializer;
-- the sole error is now **completion**, mem/mod.rs1421's SIZE default:
-  `source computation requires its current initializer scope`;
-- completion remains0; no complete census or original artifact exists.
-
-The26.7341s diagnostic ran above the14/20 load gate, so it is semantic evidence,
-not a controlled timing comparison. Waiting on the gate was delaying diagnosis;
-its read-only wait was terminated after recording the above. A controlled
-successor observation remains required. **Candidate13 is the last load-controlled
-original observation**, not the latest semantic diagnostic.
-
-`obj/parallel/capture-match/original-candidate15-diagnostic/` contains result,
-progress, complete census, binding and postcheck. Postcheck verifies722 upstream
-sources,375 opens, six configuration pins, all3948 current/producer compiler
-hashes, empty patch, CLI hash and unchanged14500624 work/1GiB attempted/64MiB
-retained/cap-lints allow. The old generic comparison helper incorrectly attributes
-a completion error to the last initializer; use the stage-aware15 diagnostic
-postcheck, which compares all reached items and the actual terminal phase.
-
-Debugger evidence under `obj/parallel/initializer-completion/` identifies the
-path: check_inline_bodies -> retain_anonymous -> build_anonymous -> promotion ->
-Evaluator::associated -> source_computation. **Promotion of an original generic
-anonymous template tries evaluating unresolved associated values without its
-parked source caller.** No source trace patch is installed. First GDB line115
-breakpoint moved to117 and did not fire; the subsequent function-entry trace
-produced the useful stack. The extra anonymous trace logged only r8, not the full
-NodeKey; do not treat it as a verified owner identity.
-
-Frozen source reductions, all declared before oracle execution:
-
-- `initializer-completion/source1/`:10 full sources,8 accept/2 reject. Independent
-  Rust and release15 agree on all10 through the complete source pipeline. They
-  cover unborrowed generic/inline/default/projected size and negative bounds/calls.
-- `initializer-completion/source2/`:8 full sources,6 required positives/2 negatives.
-  All independent Rust outcomes agree with declaration. Release15 reproduces the
-  current scope error for borrowed generic inline size, actual const call and
-  tuple. The ordinary borrowed-function control passes. A concrete inline borrow
-  instead fails reentrant eligibility; a manual associated-constant borrow fails
-  missing initializer. Both remain required positives, never inverted. The two
-  unpaid-bound/nonconst-call opponents reject for their intended causes.
-- Both batches reuse attributed source-div size declarations. Native values4/7
-  are declared but unrun. They are not installed in a PA or integration root yet.
-  Install actual-source reductions in PA31; ordinary reductions in the earliest
-  owning PA. Pending valid boundaries must remain named even if a smaller contract
-  is qualified first.
-
-Next repair anonymous-template promotion using its real original/deferred owner,
-without weakening evaluated instances, type bounds, constant eligibility or
-caller proof. Add prepared/native/scaling controls, then a coherent clean pin and
-unchanged full original observation. Continue toward genuine metadata/LowIR and
-native original consumers after analysis clears; census alone never builds core.
-
-## Published semantic checkpoints
-
-- **ba6e731e2**, inferred closure inputs:75 outcomes in PA20/24/31,26 ordinary
-  natives and two actual source Rust/C observers, all9345 active text cases plus
-  separate113-case PA25 component.38 new independently reviewed triples leave
-  all28260 older sidecars unchanged. [Details](docs/pa24-inferred-inputs.md).
-  Candidate13 clears original26791–26796. Its CLI is
-  a8307de89f5ba1bcfb6772e5dc193ff4de84bc7cbe50bcceee5974ae0b9cba67.
-- **864ad9c6c**, actual structural constant patterns:19 prepared source outcomes
-  (12accept/7reject), native1 0 1 0 1 0 0, real equality/marker identity and
-  value-specific fields, modulo-regions classification with no trait permission.
-  Literal versus captured derive allowance remains distinct.
-  [Details](docs/pa31-structural-patterns.md). PA31 byte-bound packet and PA20's
-  serialized ordinary controls preserve every input. No references changed.
-- **c9641a67b**, completed implementation parent proof reuse, source-seal opponent,
-  five intended layout guards and explicit constness matrix.
-  [Details](docs/ci-parent-proof-repair.md). Existing private GAT5x bound unchanged.
-- **2072521b8**, literal-pointer private adapters for source pattern expansion;
-  actual Report/bootstrap mode supplied, every opponent and work bound unchanged.
-
-Structural public receipts1794594933591102663 (7 exact),1794595182597516639
-(final2),1794595309828174033 (native) pass strict selected/CLI Clippy, fmt/audit.
-Upstream128+126,315 harness,487 integration roots/13 binaries and44-stage layout
-pass. Width8/32/128 inference5024/6752/13664, canonical4047/8055/24087 and actual
-trait queries16/64/256 are bounded; hash-checked replay is retained.
-
-All48 A/A+two-ABBA source-pattern comparisons pass complete stdout/stderr equality
-between same-profile wipclosure5 and clean candidate14-dev-fast. Load starts
-13.15/18.58, ends12.84/18.24; no speed claim from tiny/noisy observations.
-Raw: `obj/parallel/structural-constant-patterns/measure-candidate14/`.
-The retained empty derive-list inputs still require work: Rust accepts8/32,
-128 hits Rust's default recursion limit (setup failure), and release15 rejects
-8/32 at vocabulary provenance validation. Earlier declaration/failures remain.
-
-## Full CI and current follow-up
-
-Last fully green remains43239321921 on a7ce2784a.
-Manual43491074341 on c9641a67b stopped in private lint (literal-pointer adapters),
-with no private execution. **Manual43492592267 on2072521b8 did execute**:
-
--3071 private pass,2 fail,3 ignored;
--all eight predecessor repairs pass, including source-seal and GAT scaling;
--all three new borrowed-input/source-Copy private opponents pass;
--12 public targets pass; frontend has one failure;
--course/native/debug/independent continuation did not run.
-
-The failures share two causes: nonstaged source derive incorrectly requires a
-staged API inventory (one private + frontend MaybeUninit packet), and an old
-carrier-instance test expects a later generic Copy diagnostic after a precise
-selected-callable guard now rejects first.
-
-Current follow-up validates canonical macro identity, then requires API inventory
-only for actually staged libraries; staged missing inventories still fail. Carrier
-opponents now expect exact selected public/execution/full-instance/missing-owner
-guards. No opponent is removed or production Copy permission changed. The Sources
-comment also reflects actual positive implementation-parent reuse.
-
-**1794599635678273601** passes3 exact wrapper/pattern/scaling tests, strict
-production/CLI Clippy, full fmt/audit,176.29s. The final carrier diagnostic mapping
-was corrected afterward by reading the exact guard order; no local private
-harness is rebuilt. Publish this coherent follow-up and dispatch one fresh full
-manual successor, justified by the actual failures. Record its exact head/run;
-do not dispatch duplicates or full runs for each edit. Raw failed CI and focused
-logs: `obj/parallel/structural-constant-patterns/`.
-
-## Pins and storage
-
-Keep current13/15 release pins, wipclosure5-dev-fast (same-profile source baseline)
-and candidate14-dev-fast (source864ad9c6c/3948/empty patch,
-CLI56485edcef6d8823074fd1a0cd153d0409282bd3bce9077a7e649174d4e0b1a1).
-Candidate12-release remains present as the prior historical comparison.
-
-Six obsolete pins wipclosure1–4 and wippattern1–2 were retired with literal marker
-removal and scoped prune1794598398378001056, reclaiming0.58GiB. Producer patches,
-inputs and raw evidence remain. make tidy1794598420127051960 completed. Current
-pin.py count is3948; update it only for actual new Rust files. No14 release exists.
-
-Shared controller:2 jobs,150GiB reserve,800% CPU,12GiB RAM,256 tasks; B absolute
-cap16GiB, one B heavy job. Latest free space191GiB. Preserve reserve/caps; clean
-this checkout's generated output first. No live build/test/debug/load wait remains
-at this checkpoint. Inspect actual processes/controller before new work.
-
-Every build/test/probe/benchmark uses wrappers; check free space before each batch:
-
-```
-python3 scripts/resources.py run --wait-seconds 0 --max-output-gib 16 -- \
-  /usr/bin/python3 scripts/storage.py run --max-output-gib 16 \
-  --prune-under obj/KNOWN -- COMMAND
-```
-
-Use `--no-prune` for build-only commands. Make targets own storage wrappers, so
-wrap Make only in resources.py. Fastcheck supplies both guards; no outer wrapper:
-`python3 scripts/fastcheck.py --max-output-gib 16 MODULE::test ...`.
-Native selections require `--ignored --prune-under obj/KNOWN`.
-Keep development batches under five minutes including admission; don't repeat
-cold267s private link timeouts. CI owns full qualification. Wait for terminal
-wrapper completion before another heavy job; a returned session ID is still live.
-
-Measure immutable binaries/frozen inputs with A/A+paired ABBA and full output
-comparison. Formal original observers retain120s, all722 bytes,375 opens, six pins,
-limits/profile and no body filtering. Main runner15/postcheck scripts are under
-capture-match/ and structural-constant-patterns/. Diagnostic observations and
-controlled timings must stay distinguished. Never treat a pruned pin as available.
-Retire markers literally, then explicitly scoped storage prune; no globs/xargs or
-variable/command substitutions in deletion. Use make tidy between batches.
-
-## Standing requirements
-
-All retained requirements in `git show 03003a86f:handoff.md` and historical details
-in `git show 2072521b8:handoff.md` remain binding, including:
-
-- symbolic-index native companions and genuine source panic runtime;
-- implicit-receiver Deref's two128-layer positives;
-- const-adapter bootstrap/runtime positives;
-- three tuple-factory cleanup-owner positives;
-- general/nested layout, bool niche second unused-value and repr(Rust) tag work;
-- authenticated original metadata/body/value transport and actual native consumers;
-- PA25–PA44 planned suites fail rather than succeed empty.
-
-Earlier bool/ZST/closure/reference/scaling inputs and unclosed positives remain in
-owning packets and checkpoint docs. No frontend/body/library substitution is
-permitted and no original-core artifact or whole planned PA is complete.
-
-## Resumed after filesystem recovery: anonymous associated borrows
-
-The temporary Btrfs read-only barrier was externally recovered; the volume is rw
-and all28 original modified/fixture files matched the verified recovery archive.
-No restoration or filesystem repair was performed by this worker. The archive
-under main/obj/parallel/recovery-readonly-vizier-20261113T204218Z remains historical,
-not a replacement for this newer state. Builds continue only in B.
-
-Full43499374010 PASSED EVERY STAGE on exactc4d76b6af, including3073 private tests
-in both release and debug, all public/course/native/independent and113-case PA25.
-It is the latest fully green published baseline. It does not qualify the later
-anonymous repair. No new manual full successor has been dispatched for that repair.
-
-[Current checkpoint](docs/pa25-anonymous-associated-borrows.md) qualifies21 complete
-prepared outcomes (five PA25 ordinary and16 PA31 source), one additional projected
-source original, three ordinary native programs printing7 and a five-export actual
-source observer printing4 8 4 4 8. All independently declared outcomes agree with
-Rust. Both native tests and exact counters pass a hash-checked current-source/
-harness replay. Public1794603811953549205 passes6 exact tests plus strict selected/
-CLI Clippy, full fmt/audit,136.28s. All315 harness/488 roots/44-stage layout/
-128+126 upstream checks now pass; no reference changes or backend contract change.
-
-Inference3521/6545/18641 and canonical4473/6585/15033 at8/32/128 are linear;
-original anonymous templates exactly8/32/128. All exact scaling inputs accept in
-Rust. Frozen unborrowed inline controls plus arithmetic are under
-initializer-completion/measure-inputs, declared before first compiler execution
-for same-profile A/A+ABBA. Measurement itself is pending. Source packet retains
-both required complete consumers (projected normalization and concrete inline
-source promotion), never inverted. Ordinary inputs are now installed in PA25;
-bootstrap3 accept/2 reject and all three actual natives pass.
-
-Implementation uses the registered DeferredTemplate state, restores the lent
-executor on every outcome, limits active anonymous service deferral to actual
-source mode, and resolves closed expression implementations before promotion.
-No new dense records, trait evidence, body substitution or compiler limit. The
-original initializer-scope error is reduced and repaired locally; actual core
-has NOT yet been observed with this code. There is no candidate16 yet.
-
-Pin.py now asserts3949 for the real anon_borrows.rs integration root. After
-publication, freeze one clean release16 and run the unchanged120s full original
-observer/postcheck. Keep all722 sources,375 opens, six pins and compiler limits.
-If host14/20 load prevents controlled observation, a separately labelled semantic
-diagnostic may identify the next blocker; no controlled speed claim. Then continue
-to actual original metadata/LowIR/native artifacts. No original artifact exists
-and no whole planned assignment is complete. Source tree must stay frozen during
-pinning/measurement. New full successor qualification remains required.
-
-## Release16 original observation and implied-bound continuation
-
-This section supersedes the preceding pending-release16/CI statements.
-Full43509700804 PASSED EVERY STAGE on exact2b2332577, including release/debug,
-all native/independent checks and the113-case PA25 component. B/main/origin main
-were clean at that checkpoint. Only B builds; main remains Git-only. No agents.
-
-Clean release16 (3949 Rust sources, empty patch) SHA256
-edd069c6ae82b1ebe06f5bc06f4cd3819d577a496ab914471b0b91da9c8018b4
-was built once in7m28s as the coherent profiling checkpoint. The separately
-labelled unchanged120s original diagnostic checks42310 declarations/25858 bodies,
-35120 item attempts, no failed/blocked functions. The initializer-scope cause is
-gone; completion now fails with `required lifetime does not outlive its target`
-at file227:103636, slice/iter.rs EOF. Completion0; no analysis/artifact claim.
-Stage-aware postcheck verifies all722 upstream hashes,375 opens, six pins,
-producer/current hashes and unchanged work/attempted/retained limits. Raw:
-capture-match/original-candidate16-diagnostic/; scripts under initializer-completion/.
-The27.4384s observation ran above14/20 load and establishes no speed comparison.
-The pending A15release/B16release calibrated timing batch refused that same
-unchanged load gate before observations; no passing timing receipt exists.
-
-debug16c.gdb breaks the actual region error-conversion line and proves the stack
-is check_original_child -> anonymous_needs_parent -> retain_anonymous during
-complete_constants. The earlier Display breakpoint attempts did not intercept
-the optimized/inlined formatting; their logs remain, with no stack claim.
-
-inline-region-arrays/batch1 and batch2 contain20 accepted positive controls
-with explicit T:a; none reproduce. Four rejected programs' type views also
-accept because they do not perform complete ordinary-function borrow proof;
-that is not a claimed full acceptance. Batch3 removes the redundant explicit
-impl T:a while preserving the struct's declaration bound: all eight ordinary/
-source, direct/macro, inherent/trait forms accept in Rust and fail release16
-with the exact new core lifetime cause. This is the reduced missing implied
-receiver/input well-formedness assumption.
-
-The current implementation reuses regions::creator's existing implied-bound
-cache for original anonymous headers, gated by the inherited universal prefix.
-Both batch collect and incremental Collector pass that cache. No new dense
-field, callable ABI, projection permission, local lifetime or constant value.
-PA25/PA31 anonymous-implied-bounds each bind eleven complete outcomes (7accept,
-4reject), including free/nested inputs, static/local escapes, unpaid static
-type bounds and unrelated universal regions. All22 match Rust; both independent
-Rust/C programs print7. Actual source MaybeUninit methods and real existing
-panic_nounwind hook remain. Failed native consumer setup declarations and Rust
-diagnostics are retained in native-declaration-v1/v2/v3 and oracle1/2/3; corrected
-oracle4 passes, expectations never inverted. Focused RustGM qualification is in
-progress in inline-region-arrays/fast1.log at that point; the following supersedes
-that WIP statement. No new original observation of this repair yet.
-
-Selected complete qualification is now22 outcomes (7accept/4reject per packet).
-Each manifest additionally retains its twelfth, original native.rs borrowed-result
-consumer as an unclosed positive. Rust/C7 passes for those original programs.
-Callable anonymous results now use the existing requested-result transport and
-complete reproof; this qualifies scalar results but retains the borrowed result's
-unclosed enclosing-lifetime connection. No conditional debt is assumed. New
-scalar-native.rs companions and exact u8 scalar-observer.c both independently
-print7; original input/observer bytes remain in their manifests.
-
-fast3 passes six exact tests (all22 selected complete outcomes, owner scaling,
-earlier ordinary/source anonymous controls and MaybeUninit). The batch consumer
-needed the correct parameterized template CFG and promotion preparation; fast4
-1794607901095329290 passes it plus fullfmt/audit/selectedCLI strict Clippy in44.08s.
-The source/harness-hash checked native-replay passes both new scalar programs,
-all earlier anonymous source/bootstrap native programs and current scaling.
-Inference528/2112/8448=66n; canonical80/320/1280=10n; anonymous templates=n at
-8/32/128 owners. All four exact frozen timing inputs independently accept in Rust.
-All failed fast/oracle gates remain with their real diagnostics; no expected
-positive is inverted. Header/runtime borrowed-result work and original core
-artifacts remain required; no whole planned PA or additional component release.
-
-Current-source regular-replay also passes all five fast3 semantic controls
-against the fast4 source map and harness SHA03657c5bfdec93620e10294a6477ed1177ae31836378a17d685533538842f8ce.
-All315 harness/488roots/44stage+1unit/128upstream+126Reference checks pass in
-harness-upstream.log. Controller was rechecked:2slots/150GiB/CPU800%/RAM12GiB/
-tasks256, cap16GiB. The harness's printed "three slots" is a temporary test
-controller, not the actual configuration. make tidy is the current cleanup;
-no release17/compiler freeze exists yet. Pin.py now asserts3950 for the new
-anon_borrows/implied.rs test submodule. Do not remove it to meet an old count.
-
-## Release17 and late creator publication
-
-Published d1e15f2ad20c991eb0f0b4dfcfea359d204d6375 is clean main/B/origin before
-this cache repair. Manual full43517843369 is running that exact source; fast/lint/
-architecture/harness pass, release/course running. Do not cancel or duplicate it.
-Full43509700804 on2b remains the latest fully green checkpoint.
-
-Clean candidate17-release:3950 Rust sources, empty patch,7m58s build, CLI SHA
-f962818c1b6e295f5cfb0b16c3d2e208f439665d13278a8e578f1bb02eee5c69.
-Unchanged120s diagnostic still checks42310 declarations/25858 bodies and35120
-item attempts with no failed/blocked functions, then the SAME completion lifetime
-error at227:103636. Completion0; no artifact. The stage-aware postcheck passes
-722hashes/375opens/sixpins/current producer/limits and reports the previous site
-is NOT absent.25.5293s above the load gate is not a speed comparison.
-
-debug17a raw entry registers plus the unchanged expanded diagnostic identify
-actual NodeKey227:9558 (register9559 is the NonZero representation). It is the
-first Iter::next_chunk `[const { MaybeUninit::<&'a T>::uninit() }; N]` block.
-debug17b breaks Creators::implied under that exact anonymous owner: owner26576
-enters anonymous::header, then hits the actual `return Ok(None)` missing-signature
-branch. The expanded resolution confirms definition26576 at227:9596 next_chunk.
-Original expanded output is a diagnostic only (235MiB), not a library artifact.
-
-Six earlier nominal-field/named header constants all accept and do not reproduce.
-Four actual early function-signature parameter/result array lengths DO reproduce:
-all Rust accept, all release17 reject the later method's implied bound. Raw
-late-signatures/declaration.json froze outcomes before execution. They are now
-late-parameter.rs/late-result.rs in both PA25/PA31 packets, with hashes and unchanged
-positive outcomes. Packet now14 independent outcomes (10accept/4reject),13 selected
-complete outcomes and one original borrowed-result native artifact still required.
-
-The fix removes Creators.signatures' whole-function snapshot. Each call looks up
-its owner's current function_indices row, excludes bodyless/authored-async owners
-as before, and caches only successfully computed implied requirements. Missing
-owners can appear later. No new dense field or whole-fact scan is introduced.
-fast5-cache receipt1794609319805878213 passes7 exact tests in134.87s: all26 selected
-outcomes, batch contracts, owner scaling, old anonymous source/bootstrap and two
-actual const-closure execution/lifetime-opponent controls. Strict selected/CLI
-Clippy, fullfmt/audit/metadata pass. Cache-native-replay PASSES all three native
-test groups (both scalar programs, earlier source/bootstrap programs) and exact
-66n/10n/n scaling against the current source map and harness hash. Source count
-remains3950. Fresh test-upstream passes128+126, and make tidy completed with
-record1794609565853113627. No live local build/test/debug process remains before
-freezing the next compiler. Actual controller remains2slots/150GiB/16GiB cap.
-
-Actual original observation of this cache repair and immutable paired timing are
-pending. Frozen measure-inputs remain independently accepted; do not weaken the
-14/20 load gate or change original120s/722/profile/limits to claim progress.
-core-artifact.py is prepared for a genuine module-bodies-v13 metadata/LowIR attempt
-only AFTER original completion clears; it has never been executed. No original
-library artifact or whole planned PA exists. Both borrowed-result runtime positives
-and all standing requirements remain required.
-
-## Release18 and inferred local arrays
-
-5e92161157e947d568bb795940dc1facaee3c86f is committed, pushed and main fast-forwarded.
-The first SSH push failed public-key authentication; the credential-assisted retry
-succeeded (Git still rewrote its transport to SSH). No credential/config changes.
-Full43517843369 PASSED EVERY STAGE on exactd1e15f2ad, including release/debug,
-native/course/independent and113-case component. It is now the latest full green.
-One successor43523008382 was dispatched only after that completion and runs exact
-5e9216115. Do not cancel or duplicate it; it does not include the graph WIP below.
-
-Clean candidate18-release,3950 Rust sources/empty patch,8m08s build, SHA
-66633ca4ca7da79bfe1d5941c3512119408031e4e5a43b27a9ac14bcaeac364e.
-Unchanged120s diagnostic still42310 declarations/25858 bodies/35120 attempts,
-zero failed/blocked functions and completion0. Same227:103636 lifetime message.
-Postcheck verifies722/375/sixpins/current code+producer/limits, with prior site
-NOT absent.42.4332s above load gate is not a speed comparison. debug18a confirms
-the SAME first anonymous NodeKey227:9558, not IterMut or a later generated body.
-No original metadata/LowIR/native artifact attempt has run.
-
-local-inputs/ declares12 required positives before execution. All accept in Rust;
-release18 rejects10 (ordinary/source unannotated local return, discard, wrapped,
-redundant explicit bound and shared receiver). Both annotated-array controls pass.
-The installed PA25/31 anonymous-array-outputs packets add two frozen opponents
-each; all16 independent outcomes agree with Rust (outputs-oracle receipt).
-Every input has a manifest/hash, with the exact original source wrapper prefix.
-
-inspect-contract/ is a diagnostic driver built against the exact current release
-RustGM library, not another frontend. Its retained contracts show T:a assumptions,
-an extra inferred output slot b, actual scalar coercion a:b and WF T:b. The graph
-collector rejects T:b before exported a:b can participate in its final reproof.
-Driver hash/head binding and raw output remain; its generated executable was
-pruned after success. Expanded17's235MiB diagnostic remains, with iter.syntax cutout.
-
-Current WIP dev/src/types/region_graph/output.rs collects existing scalar interface
-conditions, deferring non-interface obligations to its existing FULL solve after
-adding exactly those conditions. It never drops the private obligation or invents
-a new scalar debt. A private unit requires a real scalar debt and a rejecting
-no-debt case; public source/bootstrap fixtures oppose static/private-local escape.
-dev/tests/anon_borrows.rs adds one exact16-case consumer. No new Rust file/count
-or dense field. fast6 failed only new-unit formatting before any compilation;
-the exact formatting is corrected. fast7-outputs (session77756) currently runs
-7 exact new/previous/closure/capture controls plus strict selectedCLI/fmt/audit.
-Inspect terminal result before dependent work. New private unit awaits CI; do
-not retry the known cold private build locally. No semantic result for WIP yet.
-
-That fast7 pending statement is superseded: receipt1794610960930869698 passes
-all7 exact new/previous/closure/capture tests, selected/CLI strict Clippy, fullfmt/
-audit/metadata in158.08s. The16 complete outcomes include all four exact lifetime
-opponents. fast8 failed only formatting in the added scaling test before compile;
-corrected fast9 receipt1794611404797641881 passes that test/all checks in44.13s.
-Three exact generated scaling inputs are installed and hashed in PA25's manifest.
-At8/32/128 owners inference1784/7136/28544=223n, canonical152/608/2432=19n,
-and real output ports=n. No proof is inferred merely from a zero template count.
-
-outputs-native-replay passes all three actual earlier native groups plus these
-counters against the current source map and harness SHA
-fa28fb86f22f92806ea1da059d94e27753dcf86dd900524606fe7b40eb515676.
-All19 exact new packet/scaling inputs independently match Rust with explicit
-panic=abort (the earlier metadata-only oracle omitted that flag; corrected replay
-records exact commands without changing outcomes). Fresh test-upstream128+126
-passes. No backend/bridge change. New private graph unit still awaits CI.
-
-Retired only superseded candidate12-release, candidate13-release,
-candidate14-dev-fast and wipclosure5-dev-fast markers/executables. Their producer,
-hashes, inputs/raw observations remain; retirement index is capture-match/
-retired-before-output19.json. Scoped prune1794611800337068728 reclaimed0.54GiB.
-Those executables are unavailable for new runs; rebuild/verify if ever needed.
-Current comparison pins15/16/17/18 remain. make tidy completed with record
-1794611969672383722. No local build/test/debug process remains before the next
-compiler freeze. Actual controller remains2slots/150GiB/16GiB cap.
-
-Scripts for observe/postcheck/measure-candidate18 and core-artifact18.py are ready.
-The latter must wait for actual original completion. All paired timings remain
-pending under14/20 load; keep unchanged original120s/profile/quotas and one B job.
-
-## Release19 and the iterator loan frontier
-
-Published65d222d279c5b294e8f2a4e7451d7ef21409a2d7 changes only scalar-output
-condition collection/reproof plus its declared reductions, tests and docs.
-The existing full solve still proves every private obligation after exactly the
-actual scalar interface conditions are assumed. Main/B/origin match this head.
-Full43523008382 PASSED EVERY STAGE on exact5e9216115. One successor43530351089
-was dispatched only after that completion and runs exact65d222d27; fast, lint,
-architecture and harness pass, release/course is running as of this checkpoint.
-The new private region-graph unit is included there, not locally rebuilt.
-
-Clean candidate19-release freezes3950 Rust source hashes and an empty patch.
-CLI SHA2563abf902e7023be7a6541a79d7ffc9c563281130492473bac190caf5afab6e6c5;
-release build7m13s. Unchanged120s original observation was admitted below the
-14/20 load gate and checks42310 declarations/25858 bodies/35120 item attempts,
-zero failed/blocked functions. The previous anonymous lifetime site IS ABSENT.
-The sole completion error is now227:111229, "access conflicts with a live
-reference loan"; completion0. Postcheck verifies722 sources/375 opens/six pins,
-current and producer compiler hashes, and fixed14500624/1GiB/64MiB limits.
-Host load rose after admission; there is no whole-core timing claim.
-Raw evidence: capture-match/original-candidate19/ and inline-region-arrays/
-postcheck-candidate19.log. No metadata/LowIR/native original attempt has run;
-core-artifact19.py is ready only after original completion clears.
-
-The unchanged expanded17 diagnostic maps111229 to `self` inside IterMut's
-`into.write(unsafe { self.post_inc_start(1).as_mut() })` loop. Its anonymous
-MaybeUninit array now gets past the earlier proof. Actual NonNull::as_mut has an
-independent output lifetime and dereferences self.as_ptr(); as_ptr takes a Copy
-wrapper by value. Read actual pinned ptr/non_null.rs and slice/iter/macros.rs.
-Do not weaken real reference loans based solely on this original diagnostic.
-
-All16 raw-loan inputs match independent Rust type outcomes; complete ordinary
-nongeneric checks pass all six positives and reject both tied opponents. All16
-generic-raw inputs likewise match independent Rust, then pass COMPLETE original
-proofs/LowIR preparation for12 positives and reject four true tied opponents.
-The type view alone accepts opponents and is not complete borrow evidence.
-The small API diagnostic is built against the exact current release RustGM rlib;
-it invokes RustGM's pipeline and lower::instances::build_roots_prepared, not any
-external frontend. Raw scripts/results are under inline-region-arrays/
-generic-raw-full/ and generic-raw-observed/. No source compiler fix exists yet.
-The next frozen loop-raw packet tests repeated independent raw outputs, writes
-and real tied-loop/static opponents. Inspect its terminal receipt/process before
-new heavy work. Ordinary unsafe ownership belongs toPA27, actual source roles
-toPA31; install a reproduced boundary there rather than moving it intoPA25.
-
-All192 immutable output comparisons are now captured:15/16,16/17,17/18,18/19,
-each4 inputs times4 A/A plus2 ABBA sequences. The16/17 raw batch stopped only
-because its ordinary no-main control omitted the intended library flags. Preserve
-that failure; measure-command-correction.json declares the exact lib identity
-before rerunning only its missing12 observations. The qualified.json aggregate
-references unchanged36 scaling observations plus corrected12 control. Every
-stdout/stderr comparison is exact; measurement-summary.json independently checks
-all192. A/A ratios1.05–1.63 and paired reversals support NO precise speed claim.
-New-path bounded work223n inference/19n canonical/n actual ports remains stronger
-scaling evidence. Preserve raw measurements; do not rerun passing comparisons
-without invalidation. Pins15/16/17/18/19 remain;15–18 can be retired with explicit
-scoped prune once no longer needed. Never claim new execution from a pruned pin.
-
-The old active-local/live-CI statements above are historical. No release19 build
-is still running. Update live-state.json as probes finish; keep one heavy B job,
-2-slot shared controller,150GiB reserve and16GiB cap. Last free space166GiB.
-All earlier unclosed positive native results, source/normalization/artifact
-requirements, wholePA25–44 contracts and original transport gates remain open.
-
-
-## Qualified loop replacement repair
-
-This checkpoint adds a sparse index of loans rooted in actual temporary values.
-A new definition first checks a shallow write to that temporary's own storage,
-then retires the previous value's loan identities. Ancestor/input loans and all
-lifetime, ownership, storage, alignment and constant-validity checks remain.
-Ordinary and ordered-cleanup statements share the operation. Raw dereference
-roots additionally carry no inherited reference-loan promise; references stored
-after reconstruction retain ordinary reborrow checks. No quota, dense declaration
-field, external frontend, backend/bridge or storage.py change.
-
-The first loop reductions reproduce on release19. A safe callback minimum also
-reproduces, so it belongs toPA16; generic unsafe wrapper reductions belong toPA27
-and actual source-role counterparts toPA31. Frozen oracles qualify all31 initial
-inputs, including three exact scaling inputs/two original native companions.
-The two stronger native companions were declared later before their own first
-execution. Outcome declarations, original failed setup bytes and raw logs stay
-under inline-region-arrays/. The first no_core loop lacked bool Copy; corrected
-v2 adds its actual implementation without changing any outcome.
-
-Focused fast13 receipt1794616733767643096 passes six exact tests across three
-targets in62.66s:25 complete outcomes, concrete scaling, old reference/reborrow,
-raw-address and anonymous-array controls. All selected/CLI strict Clippy,
-fullfmt/audit/metadata pass. Actual scalar output private unit also passed in
-full43530351089:3074 private pass, zero fail, three ignored, all regular maintainer
-targets pass. That CI then stopped at one old PA24 diagnostic-location difference,
-so native/debug/independent continuation did not run. Latest full green remains
-43523008382 on5e9216115; dispatch one successor after this coherent publication.
-
-Native fast15 receipt1794616907890211530 passes all four Rust/C versus
-RustGM/CPPGM/C programs in75.13s. Original companions output9; stronger C-owned
-input programs output9 3 9, proving first3 is unchanged and second7 was mutated
-through the second loop result. Raw stdout/stderr remains under
-obj/parallel/loop-results-native/. The first native gate omitted the declared
-Rust debug_assertions=false flag and could not link core pointer-check panic
-symbols. Correct profile passes with no shim. No outcome was inverted.
-
-Concrete scaling replay retains work[loans,points,steps]:8/176/6744,
-32/704/26976,128/2816/107904, exactlyn/22n/843n. Its qualified ownership harness
-is retained in dev-fast, SHA902a7e1b80465267fa5d3c15807fc79e8dee137af1003def8eb500a4669d5d93.
-The first scaling test mistakenly selected an empty template-only inventory;
-it failed0!=8 and was corrected to the actual concrete borrow proof, not weakened.
-All raw failed gates10/11/12/14 remain, including the ordinary manual-Copy issue.
-
-That original unbounded ordinary by-value-pointer.rs is STILL a required accepting
-PA27 contract in its manifest. Bootstrap mode has no authored Clone/Copy traits
-for that implementation and rejects before loan checking. Its input/acceptance
-are unchanged. The genuine source-role counterpart passes all original proofs.
-Selected packet coverage is8 safe +8 ordinary raw +9 source =25 outcomes; never
-claim the additional ordinary boundary passed or silently replace it with T:Copy.
-
-Scoped generation adds only eleven PA16 triples. Among28035 existing sidecars,
-only PA24 inherited-input-regions/late-private-unrelated-result.rs.ref.stderr
-changes168->192 with the identical lifetime cause and rejecting status. Independent
-Rust still requires b:a. FullPA16 passes340/340; exact PA24 unrelated-result,
-input-escape and projected controls pass3/3. All315 harness tests,489 integration
-roots/13 binaries,44 stages/one component and128 upstream+126 Reference checks
-pass. Full recipe/raw provenance: inline-region-arrays/loop-references/ and
-loop-harness-upstream.log. Backend contract and113-case component are unchanged.
-
-The compiler freeze scripts now assert3952 Rust files: new production
-borrow/loans/replacements.rs and dev/tests/loop_results.rs are real additions.
-Observe/postcheck/core-artifact20 scripts retain unchanged original120s,
-722-source/six-pin/14500624-work/1GiB/64MiB conditions. The artifact script must
-wait until analysis completion clears. Fresh same-profile19/20 timing inputs
-(shared callback loops8/32/128 and the existing arithmetic control) are declared
-under loop-measure-inputs/ before execution. Use unchanged14/20 load admission,
-four A/A and two ABBA; preserve outputs/calibration and make no speed claim from
-noisy ratios. Older192 output comparisons remain complete and valid.
-
-Publish this coherent checkpoint, retire superseded15–18 pins with explicit scoped
-prune while retaining current19 baseline, make tidy, then freeze clean release20.
-No original verification of this new repair has run yet. Original core/alloc/std
-artifacts, authenticated body/value transport, planned wholePA25–44 and every
-standing valid requirement above remain open.
-
-Final preparation: scaling postcheck verifies the exact qualified harness hash
-and3951 unchanged production/ownership/test source hashes (the sole excluded
-file is the frontend-only native consumer, absent from the ownership target).
-All source inputs and n/22n/843n counters verify. Retired only candidate15–18
-release pins, scoped prune1794617420959198993 reclaimed0.70GiB; retirement index
-capture-match/retired-before-loop20.json preserves producer/hash bindings.
-Those four executables are unavailable for new runs. Candidate19 remains pinned.
-make tidy completed1794617520149629540. No local build/test/debug process remains
-before publishing and freezing20. Actual caps stay2jobs/150GiB/16GiB B; the test
-harness's printed three slots describes its temporary test controller only.
-
-## Release20 verified: next is wide constant division
-
-5e59877ca45c2add358bde7fe6888413285b6b18 is published and main/B/origin match.
-Main's credential-assisted network fetch failed; it fetched the already pushed
-B head locally and fast-forwarded, without building in main. One full successor
-43537278071 was dispatched after43530351089 completed; exact5e59877ca, fast/lint/
-architecture/harness pass, release/course running. Do not cancel or duplicate.
-
-Clean candidate20-release freezes3952 Rust sources and empty patch,7m54s build,
-CLI8ad062c2c202e2e0a3ab456df32ded891732921c0fc6ac0bab184138d94a3486.
-Unchanged120s original DIAGNOSTIC (load28.56/27.00 above14/20) takes27.7973s,
-checks42310 declarations/25858 bodies/35120 attempts, zero failed/blocked
-functions. The previous iterator loan site IS ABSENT. New sole completion error:
-file8:31479, num/f128.rs799, `wide floating constant arithmetic is not implemented`.
-This is `const PIS_IN_180: f128 = 180.0 / consts::PI` inside to_degrees.
-Completion0, no artifact. Stage-aware postcheck passes722/375/six pins/current
-producer/unchanged limits; no speed claim. Raw: capture-match/
-original-candidate20-diagnostic/ and inline-region-arrays/postcheck-candidate20.log.
-core-artifact20.py is still unexecuted and must wait for completion.
-
-Next reduction work reuses literal/decimal_rounding's bounded rational/ties-even
-kernel for f16/f128 constant division. Source/runtime wide arithmetic, casts,
-metadata and C ABI have distinct existing fences; the frozen backend is not
-being extended. `sema/constants/arithmetic.rs::binary` currently rejects all wide
-operations before matching; source f128/f16 degree/radian constants need division.
-Exact FloatBits stay24bytes/alignment8, Scalar32; never round quad values viaf64.
-The existing Unsigned limbs are bounded2048words and rational rounding already
-handles subnormal ties. Consider moving only that shared numerical kernel and
-limbs below both literal and constant consumers, leaving decimal scanning in
-literal; preserve attribution/old literal outputs and existing private scratch
-regressions. New ordinary CTFE belongsPA25, genuine source counterpartsPA31.
-Declare outcomes before execution and use independent exported bytes/native C
-observers, without requesting a native wide-float ABI. All earlier requirements
-and ordinary manual Copy positive remain required. Current19/20 release pins
-are available;15–18 were explicitly pruned. New19/20 paired timing remains pending
-above unchanged load gate; older192 observations remain qualified.
-
-## Exact wide constant division checkpoint
-
-Full43537278071 PASSED EVERY STAGE on exact5e59877ca, including loop/private,
-release/native/debug/independent/component checks. It is the latest full green.
-No successor is dispatched until this coherent numerical checkpoint is published.
-
-Current implementation adds ONLY f16/f128 constant division. The exact literal
-rational kernel and bounded unsigned limbs now live below both consumers at
-support/ieee_rounding.rs and support/ieee_rounding/unsigned.rs. Decimal scanning
-stays in literal/decimal_rounding. Constant arithmetic consumes selected typed
-FloatBits through sema/constants/interchange_division.rs. Binary scale remains
-in the output exponent; early underflow/overflow avoids exponent-sized scratch
-for opposite extremes. Nearest/ties-even, signed zeros, infinities and canonical
-quiet NaNs are explicit. Other wide arithmetic/cast/pattern/wire/runtime/C-ABI
-fences, backend v3, configuration truth and all quotas remain unchanged. No dense
-record, extra primitive or FloatBits/Scalar alignment growth; no host f64 rounding.
-The existing private long-decimal scratch test still uses its original path.
-
-Frozen ordinary PA25 and actual source PA31 packets are installed under
- tests/spec/wide-constant-division/. Four full matrices independently observe
-18+18+19+19=74 results, including direct and const-fn division plus actual source
-Div UFCS calls. Finite/zero/infinity bits compare exactly; NaNs compare class,
-never payload/sign. Four ordinary feature/type/const-call/integer-zero opponents
-and two source role/const-implementation opponents reject. The source prefix is
-unchanged source-div/foundation.rs plus genuine wide Copy/Clone/Neg roles and
-primitive implementations. Source setup v1/v2 failures remain under obj/parallel/
-wide-constant-division/: matching const_clone and Neg member stability were added
-before corrected v3 replay. No outcome was inverted or original source changed.
-
-Fast4 receipt1794620649316462287 PASSES5 exact tests/all74 bit observations,
-six opponents, earlier loop/anonymous/literal controls and fullPA2 142/142 in
-204.59s. All selected/CLI strict Clippy, fullfmt/audit/metadata pass. Fast5 native
-receipt1794621066380636715 PASSES all four RustGM/CPPGM/C byte-image executions
-in37.95s against independent Rust/C byte observations. Only the existing pointer/
-integer ABI is requested; no wide runtime instruction, wide C ABI or panic shim.
-Raw native candidate outputs stay in obj/parallel/wide-division-native/; independent
-outputs in wide-constant-division/oracle-v3/. No old text reference changes.
-
-Fast6 scaling receipt1794621384701268646 PASSES the exact8/32/128-initializer
-programs in72.29s. Each output byte is checked. Independent Rust/C separately
-matches all three frozen programs, including opposite exponent extremes. The
-source/harness hash replay records[inference,canonical,bytes]82/11/128,
-244/35/512,892/131/2048, exactly27n/4+28, n+3,16n. Raw current-harness observations
-and binding: wide-constant-division/scaling-replay/. All315 harness/490roots/
-13binaries/44stage+one component/128upstream+126Reference checks pass in
-consistency.log. The new private scaled-ratio unit awaits CI; only numeric literal
-separator spelling was corrected afterward. Do not rebuild the known cold private
-harness locally. Raw failed fast1 audit naming and fast2/3 Clippy gates remain;
-the helper ownership names/fixed slice iteration/test semicolon are corrected.
-
-The source tree now has3956 Rust files, verified by enumeration: shared kernel,
-constant division consumer, public division_images root and private scaled_ratios
-unit are real additions, while unsigned limbs move without changing count.
-Pin.py asserts3956. Frozen20/21 timing inputs are wide literal8/32/128 controls
-plus an ordinary f64 arithmetic control; both must independently accept and
-baseline20 must pass before comparisons. New divisions have separate bit/scaling
-qualification since release20 rejects them. Same-profile immutable timing uses
-four A/A plus two ABBA under unchanged14/20 gate; it is pending, never a speed claim.
-Observe/postcheck/core-artifact21 scripts are ready. Original analysis must clear
-before the genuine module-bodies-v13 artifact command; it remains unexecuted.
-All722 upstream files/six pins/work14500624/1GiB/64MiB/120s stay unchanged.
-
-One periodic guarded tidy-archive completed while idle; archive-before21.log
-lists verified restore indices under obj/archives/. It touches only this B's
-inactive scratch, preserves current19/20 pins and raw restored hashes. Restore
-an archived path through its index if an earlier receipt needs its original input.
-Finalize controls/tidy, publish this source, then freeze one clean release21 and
-observe original core. Whole PA25–44, the113-case component's separate scope,
-both borrowed-result native positives, ordinary manual Copy wrapper, original
-artifacts and every earlier retained valid requirement remain open.
-
-Final numerical preparation: all four frozen timing controls independently accept
-and immutable baseline20 accepts their full type views (control-preflight receipt).
-Periodic archive completed successfully; old inactive PID scratch was losslessly
-compacted with restored-byte verification and restore indices in obj/archives/.
-make tidy1794622629268106114 completed. No build/test/measurement/debug process
-remains before publication and the release21 freeze. Reserve150GiB/2jobs/16GiB B
-caps remain; latest shared free space155GiB. Baselines19/20 stay pinned. No original
-artifact attempt or new original21 observation has run yet.
-
-## Release21 ready; disk admission blocks verification
-
-Published source is f5f3e29614ab1e7200a77556f684f0458984bebf. Its clean
-candidate21-release build completed in7m59s, freezing3956 Rust source hashes and
-an empty tracked patch. CLI SHA256:
-`cfc8b0ee7382359754cf71d1215cd4cd3812bb67a37318bd979f24e5ab40d17a`.
-Pin and original producer binding remain under obj/parallel/capture-match/
-candidate21-release/. Current executable pins are19,20,21; do not rebuild21.
-The handoff-only descendant does not change the compiler or six configuration
-pins. Pending postcheck/artifact helpers explicitly require a clean descendant
-whose sole changed tracked path is handoff.md, plus every original compiler hash.
-They record current checkout and original producer heads separately.
-
-One full successor43546470095 was dispatched after the previous full green
-43537278071 completed. Exact f5f3e2961: fast PASSES; full qualification is live
-in Release and course tests at this handoff. New private scaled-ratio execution
-and all later full gates remain pending until actual CI output proves otherwise.
-Do not dispatch or cancel a duplicate full run for this documentation descendant.
-
-No candidate21 original census, postcheck or library artifact command has run.
-The wrappers refused before launch five times; the immutable compiler remains
-untested against original core. Refusal logs are inline-region-arrays/
-observe-candidate21.log, observe-candidate21-retry.log and
-observe-candidate21-admission3.log through admission5.log. The last refusal is
-153.7GiB available versus154.4GiB required including unused output reservations.
-Reserve150GiB, B cap16GiB and all CPU/RAM/task limits are unchanged. No local
-build/test/observer job remains active. About1GiB additional shared headroom was
-requested; do not clean another checkout or lower the reserve/refused cap.
-
-Own-checkout cleanup first retired two idle incremental entries,147906560
-unshared bytes, preserving newest warm sessions. Historical expanded17/stdout
-was then losslessly compressed through the existing verified archive helper:
-245784112 original bytes ->53486219 archive bytes, restored SHA256
-f5b6fb7ad812f41193314f6211950c1329a64442d78b0bcb9d224402ea262659.
-Read it with gzip; restore instructions/index are in
-obj/cleanup/expanded17-archive-1794623986173222932.json. Current pins, original
-inputs, receipts and raw observations remain. This historical diagnostic is
-not a compiler input or library artifact. Further ordinary own-output cleanup
-does not supply external headroom when the same absolute cap reserves its freed
-space; no accounting or policy workaround was introduced.
-
-Resume in B after checking live processes, CI, free space and the load gate:
+# RustGM handoff — 2026-11-15
+
+## State at wrap-up
+
+Work stopped at the user's request to wrap up and rewrite this handoff. Continue
+as **one worker** when asked. Compiler changes and fixtures are committed and
+pushed; this handoff is a documentation-only descendant.
+
+**Core does not build yet.** No genuine original-core metadata, complete LowIR or
+native consumer artifact exists. Whole PA25–PA44 remain planned; the separate
+released 113-case PA25 component is unchanged. PA20 remains implemented-draft.
+
+Current compiler product: `2e25fdba40428eb1d8564a100ba1015c358e5c5d`
+(`fix: retain defining permission for const closure members`). Previous product:
+`73eec244cb25f1a611a4b0cf134d8e8484ff5c83` (captured generic const invocations).
+Detailed historical handoff is retained in Git:
+`git show 0031a83d4:handoff.md`. Its accumulated NEXT/CI/pin statements are
+superseded by this document; its unclosed requirements are not discarded.
+
+## Workspace, authorization and resources
+
+- Work/build only in `/mnt/vizier/rustgm-scratch/rustgm-pa26-work` (B), branch
+  `implement/scoped-inherent-20261110`. Main `/home/vishvananda/rustgm` is Git-only.
+  Both trees were clean and synchronized before this documentation rewrite.
+- No agents or new worktrees. Coherent relevant commits/pushes are authorized;
+  use single-line subjects without trailers.
+- Frozen CPPGM backend: v3, `17b024f69`. Do not modify C++/v5rust checkouts or
+  another checkout's outputs. Rustc is a test oracle, never a frontend substitute.
+- Read AGENTS.md, spec.md, ROADMAP.md, the owning handout and
+  TESTING_AND_REFERENCES.md. `docs/parallel-work.md` contains historical worker
+  assignments; the user's single-worker instruction takes precedence.
+- Shared controller: 2 heavy jobs globally, 150 GiB free-space reserve, CPU 800%,
+  RAM 12 GiB, tasks 256. B output cap 16 GiB; run only one local heavy job at a time.
+  Shared free space was about 278 GiB at wrap-up. The former headroom blocker is
+  resolved. Do not lower reserves or clean other checkouts.
+- Every build/test/frontend/debugger probe/measurement uses resource and storage
+  guards. `make fastcheck` supplies its own guards and has a 300s feedback budget.
+  Wait for a wrapper's actual terminal result before editing or starting the next
+  heavy command. Do not change tracked files during builds or validation.
 
 ```sh
-python3 scripts/resources.py run --wait-seconds 0 --max-output-gib 16 -- /usr/bin/python3 scripts/storage.py run --max-output-gib 16 --prune-under obj/parallel/capture-match/original-candidate21-diagnostic -- python3 obj/parallel/inline-region-arrays/observe-candidate21.py --diagnostic
-python3 scripts/resources.py run --wait-seconds 0 --max-output-gib 16 -- /usr/bin/python3 scripts/storage.py run --max-output-gib 16 --prune-under obj/parallel/capture-match/original-candidate21-diagnostic -- python3 obj/parallel/inline-region-arrays/postcheck-candidate21.py --diagnostic
+# Direct validation/probe; declare all disposable roots, or omit --prune-under
+# for scattered outputs and let storage perform its full scan.
+python3 scripts/resources.py run --wait-seconds 0 --max-output-gib 16 -- \
+  /usr/bin/python3 scripts/storage.py run --max-output-gib 16 \
+  --prune-under obj/KNOWN_PARENT -- COMMAND
+
+# Build-only: use --no-prune, never combine it with --prune-under.
+python3 scripts/resources.py run --wait-seconds 0 --max-output-gib 16 -- \
+  /usr/bin/python3 scripts/storage.py run --max-output-gib 16 --no-prune -- COMMAND
+
+# Focused selection syntax: root::test, not --case.
+make fastcheck FAST_ARGS='root::test --prune-under obj/KNOWN_PARENT'
 ```
 
-Use the controlled variants without --diagnostic and their matching output root
-if admission load is <=14/20. Do not widen that gate or wait indefinitely for
-timing. The diagnostic still has the unchanged120s deadline,722 original sources,
-375 opened sources, six pins,14500624work/1GiB attempted/64MiB retained. Do not
-change tracked files while the observation/postcheck are live. Only if analysis
-completion clears, run the prepared core-artifact21.py under the same guards;
-it requires genuine original module-bodies-v13 metadata/LowIR before native
-consumer qualification. Otherwise reduce the actual new original blocker in its
-owning PA. Candidate20's f128 completion error remains the latest observed
-frontier until21 actually executes.
-
-Frozen19/20 loop and20/21 rounding comparisons remain pending above the unchanged
-timing gate. All earlier192 output-equal comparisons and exact scaling evidence
-stand, with no new speed claim. Whole PA25–44, the separate113-case const-machine
-scope, both borrowed-result native positives, ordinary manual Copy wrapper and
-all other retained requirements remain unchanged and incomplete. Live transient
-status is obj/parallel/wide-constant-division/live-state.json.
-
-## Release21 observed; exact products qualified
-
-The external disk blocker has cleared: shared free space is now about201GiB,
-with reserve150GiB and B cap16GiB unchanged. Full43546470095 PASSED EVERY STAGE
-on exact f5f3e2961, including3075 private tests and the ratio boundary unit in
-both release and debug lanes. Its full log is retained under
-wide-constant-division/ci43546470095.log. No duplicate full successor was started.
-
-The existing clean candidate21-release ran unchanged original core without a
-rebuild. Diagnostic23.0756s, admission10.57/29.83 above14/20: no speed claim.
-All42310 declarations,25858 bodies and35120 attempts pass without failed/blocked
-functions. The old division site8:31479 IS ABSENT. New sole completion failure
-is8:38864, num/f128.rs981: `const HI: f128 = f128::MAX * 0.5` in midpoint.
-Completion0, no original artifact. Stage-aware postcheck verifies722 input hashes,
-375 opens, six pins and all3956 producer/current Rust source hashes; current
-054252674 is only a handoff descendant of the original f5f3e2961 producer. Empty
-working patch and fixed120s/work14500624/1GiB attempted/64MiB retained verify.
-Raw: capture-match/original-candidate21-diagnostic/, observe-candidate21-resumed.log
-and postcheck-candidate21.log. Original-library-candidate21 remains unexecuted.
-
-The [product checkpoint](docs/pa25-wide-constant-products.md) retains ordinary
-PA25 and genuine source PA31 inputs under tests/spec/wide-constant-products/.
-Four independent Rust/C matrices observe98 results, including both ties-even
-directions, full products, special values, actual Mul const calls and the source
-HI/MAX expression. Original Mul declaration/macro bytes and full midpoint cutouts
-are attributed and hashed. Six independent guards reject; baseline21 reproduces
-the unsupported arithmetic on every accepting matrix. Outcomes precede execution;
-no valid positive was dropped or inverted. Three independent scaling programs
-also pass before candidate execution.
-
-Finite products use16 schoolbook limb steps, at most eight32-bit limbs, and the
-existing bounded rational rounding kernel, preserving all226 f128 product bits.
-Binary scale remains in the output exponent. Shared operator dispatch is renamed
-sema/constants/interchange_arithmetic.rs; the integration root is now
-dev/tests/interchange_images.rs, registered exactly once in frontend. There are
-still3956 Rust files: these are semantic module renames, not additional records.
-No dense field, layout/alignment, quota, literal bound, external frontend,
-backend/bridge or storage.py change. Wide runtime/cast/pattern/wire/C-ABI fences
-and the frozen backend/configuration truth stay intact.
-
-Fastcheck1794633042585911598 passes four exact tests in134.60s: all172 old/new
-matrix results,12 guards, both scaling packets and the literal control. FullPA2
-remains142/142, all references unchanged. Strict selected/CLI Clippy, fullfmt,
-architecture and metadata checks pass. Native1794633256850046765 passes all eight
-RustGM/CPPGM/C byte observers in39.00s, using only the integer/pointer ABI.
-The new private full-limb-carry/ties/extreme-product unit awaits CI; no cold local
-private harness was rebuilt. Prior ratio private execution is proven by full CI.
-
-Authenticated replay binds3956 compiler/test hashes and every packet source/bit
-hash before/after the three exact tests. Product work[inference,canonical,bytes]
-is81/11/128,246/35/512,906/131/2048, exactly55n/8+26,n+3,16n. Division controls
-retain82/11/128,244/35/512,892/131/2048. All315 harness tests,490roots/13binaries,
-44-stage/one-component layout and128 upstream+126 Reference checks pass.
-Raw: wide-constant-products/fast1.log, fast2-native.log, consistency-v2.log and
-scaling-replay-v2/. The first replay setup assumed an optional old bits_path
-field and failed before tests; consistency.log remains. No semantic outcome changed.
-
-Pending timing was also completed when load admitted:20/21 rounding48 complete
-output equalities, and19/20 additional full-analysis type-view48 equalities, each
-four A/A plus two ABBA per input. Raw calibration/commands/binary/input hashes
-remain under wide-constant-division/measure-candidate21/ and inline-region-arrays/
-measure-candidate20-typeviews/. Total historical output-equal observations are288.
-Largest controls show possible roughly7–15% overhead; ordinary reversals and
-small observations prevent a precise/whole-core performance claim. No speedup
-is asserted. Original19/20 full-LowIR callback-export positives remain required:
-baseline19 rejects exposed callable/reference scalar metadata before timing.
-That failed attempt and original input declarations remain under measure-candidate20/
-and loop-measure-inputs/. Additional type views do not qualify or replace those
-artifacts; retain them in PA29's required transport boundary.
-
-Observe/postcheck/core-artifact22 helpers are ready, preserving the original
-inputs, six pins and fixed limits. Publish this coherent source, then dispatch
-one full manual successor after confirming the previous full is terminal. Freeze
-one clean release22 and run unchanged original analysis. Only after completion
-clears, run genuine module-bodies-v13 metadata/LowIR and actual original native
-consumers. A census or cutout is never an original library artifact. Whole PA25–44,
-the separate113-case component and every retained positive remain incomplete.
-
-Final product preparation: four frozen21/22 timing controls (existing divisions
-8/32/128 and ordinary arithmetic) retain their independent source/byte evidence;
-immutable21 accepts every exact planned command. Timing inputs and preflight are
-under wide-constant-products/measure-inputs/ and timing-preflight/. New products
-remain separately bit/native/scaling checked because21 rejects them. make tidy
-1794633941285614191 completed; no local build/test/measurement remains. Current
-19/20/21 pins are available. Publish, then freeze22 without further source edits.
-
-## Release22 observed; layout work ownership WIP
-
-Published main/B source baseline is40d29b45251e23988f9775fff3e72582b3c95e37.
-Full43561807969 PASSED EVERY STAGE on that exact source:3076 private tests in
-release/debug, including products_keep_every_carry_and_round_both_even_ties;
-all native/course/independent/component gates pass. Full log is retained under
-wide-constant-products/ci43561807969.log. No successor full CI is live or needed
-for a handoff-only descendant. The current budget-ownership WIP is NOT in this CI.
-
-Clean candidate22-release built in8m30s,3956 Rust hashes, empty tracked patch.
-CLI8044e2678fa8b293ce477c3f4eaeda326021c4d9171d4daeb3cf9a635bd2bff8.
-The unchanged120s original diagnostic takes38.0712s at load48.75/44.61, so no
-speed claim. All42310 declarations/25858 bodies/35120 attempts have zero failed
-or blocked functions. The old product site8:38864 IS ABSENT. Completion remains0:
-sole budget record at file0:0, `source layout field preparation work budget
-exceeded`. Stage-aware postcheck passes all722/375/six/current3956 bindings,
-empty patch and unchanged14500624work/1GiB attempted/64MiB retained/120s.
-Raw: capture-match/original-candidate22-diagnostic/, observe-candidate22.log,
-postcheck-candidate22.log. No core-artifact22 or original native consumer ran.
-
-Actual diagnostic: layout-field-budget/interactive22/gdb.log records the exact
-optimized guard at prepare_layout+54, CLI above. Its compared register and
-facts+0x1b20 memory both contain canonical_steps8047613; element TypeId687.
-Stack: source_layout161 -> validate_ordinary_initializers -> complete_constants.
-Assembly confirms the compare against unchanged1000000. The first source-line
-breakpoint moved186->189 AFTER the guard and captured an earlier valid request;
-debug22/ is NOT an exhaustion trace. The first disassembly.txt attempt failed
-in GDB's Rust expression parser; the corrected interactive C-language disassembly
-and exact instruction breakpoint supply the actual evidence. Never use current
-WIP line numbers as the old producer's source; read source40d29b452 or restore
-its bytes before repeating a source-bound probe.
-
-BodyWork explicitly documents observations, not language facts. canonical_steps
-sums inference/selection across the crate. Only layout_kernel and its
-normalized_fields child compare this cumulative telemetry against MAX_COMPONENTS.
-The WIP adds one Work counter to the once-per-provider Engine, retaining the
-same1M limit across layout requests/waits/failures. Every layout delta still
-increases canonical observations; no counter is reset or quota raised. Field
-normalization, storage-state prepayment, readiness and ABI demand all share the
-owner. Actual child failures retain their diagnostic while their failed work is
-charged. Source caller, field/projection, closedness, lifetime and layout proofs
-are unchanged. No dense AST/body/value field, wire, backend or storage.py change.
-
-UNCOMMITTED WIP files are execution.rs, execution/layout_kernel.rs, its
-normalized_fields.rs child, dev/tests/invariants/queried_storage.rs,
-dev/tests/preparation_accounts.rs and frontend/mod.rs, plus
-pa31/tests/spec/layout-work-owner/. The latter seven full programs preserve the
-source-div size-only prefix. All independent Rust outcomes match: four source/C
-programs output2 4 6 8 0 8 8; unsized/nonconst/unpaid-projection guards reject.
-Public tests compare exact prepared/native-root programs after adding8047612
-only to BodyWork observations; native companions and updated persistent/spent
-work private guards are written, NOT compiled/executed. Inventory is now3957
-Rust files. Pin.py still asserts the published3956: update only after qualification.
-
-baseline-fast.log is an ADMISSION FAILURE, not a regression reproduction:
-149.5GiB free was below150GiB before launching any compiler. Shared free space
-has continued falling, about145GiB at this handoff. User was asked for at least
-10GiB external headroom; no permission to clean another checkout or lower the
-reserve/cap exists. Do not claim a failing or passing API regression yet. No
-local build/test/probe/measurement remains active. Rustfmt editing and diff
-whitespace checks are complete; all substantive fixed-code validation is pending.
-
-The exact four-file implementation/unit delta is saved as
-layout-field-budget/layout-owned-work.patch. baseline-switch.py verifies that
-exact current diff and no staged changes, temporarily restores ONLY those four
-original40d29b452 files, runs guarded baseline fastcheck, then restores the exact
-WIP in finally and verifies restored hashes. New public tests/fixtures stay in
-place. It accepts only a clean committed baseline or handoff-only descendant;
-the script has NOT run yet. Once admission is possible:
-
-1. Run that baseline helper and inspect actual test output. Refusal is not
-   reproduction; a passing baseline means the new test must reach a later real
-   layout query, not that the original failure should be ignored.
-2. Run focused fixed preparation_accounts tests and relevant old source-layout,
-   projection/constant controls under fastcheck, then the two ignored native
-   observers with --prune-under obj/parallel/layout-work-native. Preserve current
-   work limits, guards and independent declared outcomes. Do not cold-build the
-   known slow private harness; new/updated private execution remains due in CI.
-3. Verify source/fixture hashes, actual work/cold/warm/failure bounds, strict
-   checks, harness/upstream and native outputs before publishing. Prefer a
-   cached dev-fast original diagnostic if its effective cfg matches; no release
-   build per ordinary edit, and never widen the original120s deadline or quotas.
-4. After qualification update the exact compiler inventory3957, freeze the
-   next coherent compiler and observe original core. Genuine metadata/LowIR and
-   original native consumers still require analysis completion first.
-
-Current executable pins are ONLY21/22. Completed19/20 and20/21 measurements
-permit retiring19/20: scoped prune1794637011472478656 reclaimed0.35GiB. Their
-producer/source/input/receipt hashes remain in retired-before-layout23.json;
-those executables are unavailable for new runs. The original failed full-LowIR
-callback exports remain required positives. All288 historical output-equality
-observations stand;21/22 timings are prepared but pending above the unchanged
-gate. Every earlier valid positive, whole-PA requirement and original artifact
-gate is retained. Detailed transient state: layout-field-budget/plan.json.
-
-## Layout work qualified; successor core attempt next
-
-This supersedes the preceding WIP/admission notes. User restored shared headroom;
-free160GiB observed, with unchanged150GiB reserve/16GiB cap. Work continues as
-one worker in B, main Git-only. No agents, new trees or backend/storage.py changes.
-
-Baseline1794638741351903699 reaches the accepting API regression and FAILS the
-exact old source layout field-preparation guard. Ordinary3959->7683 succeeds;
-high start8051571->8054410 fails. baseline-switch-latest.json verifies exact WIP
-restoration. The first baseline-fast disk refusal and1794638580232389876 filename
-prefix-audit failure did not reach the test. Root was renamed preparation_accounts
-without changing fixture outcomes. Do not repeat the proven baseline.
-
-Fixed1794639072978956146 passes five exact tests in154.65s: high observations,
-three source guards, original Field defaults/projections, direct/source wide
-constant calls and pointer-add contracts. Native1794639354437875740 passes two
-tests/three actual programs in39.70s: both source size observers and original
-Field output `field 4 23 29 37 41 47 31 1`. Strict selected/CLI Clippy, fullfmt,
-architecture and metadata pass. Authenticated qualified-replay verifies3957
-compiler/test hashes before/after and every original fixture. Preparation work
-is3724+36n at0/8/32/128; high-final minus ordinary-final is exactly8047612.
-Persistent provider Work keeps1M across waits/warm/failures, mirrors every delta
-into canonical observations and changes no semantic permission. Updated private
-spent-work tests and new warm-owner regression are due in CI; do not cold-build
-that known slow harness. See docs/pa31-layout-work-owner.md for complete scope.
-
-Independent Rust/C accepts four seven-size programs and rejects three guards.
-Three later declaration controls preserve complete original size-only including
-PtrWords, append8/32/128 identity functions and independently output8. Manifest
-outcomes precede execution. All four planned CLI commands (three source types
-plus ordinary LowIR) pass immutable22release and current dev-fast with complete
-stdout/stderr equality, a correctness comparison across profiles, not timing.
-The explicit current CLI build finished3m46s; it used wrapper-default incremental0
-and unnecessarily rebuilt production code. For cached dev-fast builds use
-pin.py or explicit CARGO_INCREMENTAL=1,CARGO_TARGET_DIR=obj/rust,jobs2.
-
-Final consistency-final.log passes315 harness,491 roots/13 binaries,44 stages,
-one component,128 upstream+126 Reference checks with the expanded manifest.
-The previous full43561807969 is terminal success (all3076 private release/debug).
-Push smoke43567667793 on handoff1649 also passes. No full successor yet.
-
-Next: publish this coherent checkpoint and dispatch one fresh full manual CI;
-update pin.py source inventory3957, freeze clean23release at this meaningful
-algorithm checkpoint, and run unchanged original analysis/postcheck. Keep120s,
-722/375/six,14500624work/1GiB attempted/64MiB retained. Only after analysis clears
-run genuine module-bodies-v13 metadata/LowIR, then original native consumers.
-Do not substitute a census or raise deadlines. Same-profile22/23 layout timing
-and21/22 product timing remain due under14/20 gate. All288 earlier output-equal
-observations stand with no speed claim. Only21/22 executable pins are currently
-available;19/20 were retired, their original callback-export positives remain.
-No original artifact exists, whole PA25–44 remain planned, the separate113-case
-component and every earlier retained valid positive remain required.
-
-## Release23 observed; unchecked shifts WIP
-
-Published36b794b08d652dc631499d00bfbef7424659d894 owns persistent layout Work.
-Candidate23release built8m07s,3957 hashes, empty patch. CLI SHA256
-040138fd1caae1b90b893e1fb945f687476225dc9c382aed1cbeb19068e7d5a2.
-Original diagnostic27.2399s, load22.75/24.96 above14/20: no timing claim.
-42310 declarations/25858 bodies/35120 attempts, zero failed/blocked functions;
-completion0, sole error file12:1858633 source intrinsic constant execution not
-implemented. postcheck23 PASSES722/375/six/all3957/fixed limits, old layout guard
-absent and no previous body regressed. No core-artifact23 or native original
-consumer ran. make tidy1794641541295921293 completed at the preceding idle.
-
-Exact GDB source line61 stops in Machine::source_selector_call, then evaluate,
-run, Engine.advance, Queries, named -> validate_ordinary_initializers ->
-complete_constants. Packed kind register ebp0x1130011 indicates Declaration
-ordinal275; NAMES275 is unchecked_shl. Actual current expanded23 independently
-confirms the site: complete expanded output exactly equals historical expanded17,
-SHAf5b6fb7ad812f41193314f6211950c1329a64442d78b0bcb9d224402ea262659.
-Node42146 spans1858633:1858867, genuine unchecked_shl call42144. Original uint
-macro file38:84861, substituted usize from num/mod49185 in64-bit branch. This is
-an expanded byte position, NOT offset1858633 in the65KiB physical num/mod file.
-Raw: intrinsic-completion/debug23/, expanded23/ (lossless stdout.gz), and
-expanded17-context.txt. No source trace patch is installed.
-
-PA31 tests/spec/unchecked-shifts/ declares576 exact CTFE results across all12x12
-integer LHS/RHS types and both directions/count0/width-1, actual usize wrapper,
-ordinary lookalike, three scaling sources and nine intended rejecting guards.
-Independent oracle2 confirms all576 through Rust/C and actual wrapper2^63;
-14 finite source outcomes agree, BUT f32 wrong-type opponent causes Rust ICE101
-in both const and reached runtime forms. Preserve that infrastructure failure;
-it is NOT a semantic rejection. oracle1's initial boolean nonzero classifier
-was corrected explicitly in its receipt; its overall result was already failed.
-Initial matrix lacked Neg and ordinary equality lacked PartialEq; equivalent
-casts and a plain99 ordinary body correct setup without inverting valid outcomes.
-All first inputs/logs/hashes remain under oracle1/inputs. Runtime3 separately
-qualifies six mixed-type genuine integer calls, signed extension and128-bit
-results with independent C. No invalid runtime shifts execute. All outcomes,
-original declaration/macro cutouts, fixture/observer/expected hashes are manifested.
-Baseline23 reproduces the actual unimplemented-intrinsic error for wrapper,
-matrix and all three scaling sources; ordinary lookalike succeeds unchanged.
-
-UNQUALIFIED code delta currently generalizes the existing typed subtraction/
-arithmetic selection to carry the actual RHS type; both genuine Copy formals,
-full signatures/current source/caller/const/safety proofs remain required. Reuse
-existing checked CTFE integer shift kernel (reject negative/large counts before
-narrowing), and existing LowIR shift/cast operations for valid unsafe runtime
-calls. No new intrinsic-name authority, quota/backend/wire/storage.py change.
-New dev/tests/unchecked_shifts.rs is registered once in frontend; current Rust
-inventory3958. No new private harness is built. First focused fastcheck is next.
-Do not publish or freeze24 until it and native/old arithmetic guards qualify.
-Full43570894822 remains the one manual successor on published36b; don't dispatch
-a duplicate or change sources to reinterpret a later CI failure. All earlier
-required positives, original artifact/whole-PA gates and pending timings remain.
-
-### Shift focused checks pass; native admission refused
-
-Full43570894822 PASSED EVERY STAGE on published36b794b08. Raw full log under
-layout-field-budget/ci43570894822.log proves3077 private release/debug, including
-warm persistent Work and both exhaustion/no-premature-field guards. No duplicate
-manual successor is live. Committed product source remains36b; a handoff-only descendant may follow. Shift code is WIP.
-
-Focused1794643393395070066 PASSES six exact tests in127.47s; fullfmt/audit,
-strict selected/CLI Clippy and metadata pass. All3958 current compiler/test hashes
-match that receipt. Frontend harness SHA
-4d78ccf48ea8c53b22c6ac37431da9c95482ce2eabb2aa41ed3dc50235d69e8f.
-The initial suite selector incorrectly prefixed frontend; rejected before tests.
-Fast1794642776470517595 reaches tests: old controls3pass, shift3fail because the
-shared Copy checker only allowed one subject. Generalized bounded exact premises
-preserve N1 and require both N2 subjects. Fast1794643059363250595 then5pass/1fail:
-all576 bits/guards/scaling work, but the dependency collector still required equal
-operand types. It now checks actual RHS alongside CTFE/runtime. A later test
-refactor had a missing brace and was refused by format; corrected before passing
-127s run. No quotas, opponents or valid positives were changed to hide failures.
-
-Three new native programs plus old156-product/Field controls are selected in
-fixed-native1.log, BUT refused BEFORE launch at153.8GiB available/required rounded.
-Current free space fell to153GiB;150GiB reserve and16GiB cap unchanged. User was
-asked asynchronously for another5–10GiB outside B. Do not lower reserve/cap or
-clean other checkouts. Own-output cleanup does not increase admission headroom
-when freed bytes become unused cap. No compiler/test/probe remains active.
-
-Prepared capture.py will authenticate the passing frontend harness, all3958
-sources and final fixture hashes before/after the three exact tests with
-nocapture; it has NOT executed. Native run, capture replay, final harness/upstream,
-controlled timings, publication/full successor and clean24original are pending.
-Do not claim a candidate native result, analysis completion, genuine original
-artifact or whole PA. See docs/pa31-unchecked-shifts.md for complete current scope.
-Current additional production WIP includes compare_intrinsic.rs (bounded N1/N2
-Copy premises) and lower/instances/dependencies/subtraction_dependencies.rs (exact
-RHS call proof), as well as the earlier listed four arithmetic files. Public root
-unchecked_shifts.rs and its16 source cases are untracked; all belong in this
-checkpoint after qualification. Original f32 reference ICE is retained, not a
-semantic rejection. All earlier requirements and pending measurements remain.
-
-A lossless WIP snapshot (tracked patch, new test/doc and all fixture bytes/hashes)
-is saved under intrinsic-completion/checkpoint/. observe/postcheck/core-artifact24
-helpers are prepared, not run. Pin.py still expects3957 (published36b); update to
-actual3958 only after current qualification before freezing24. Leave21/22/23
-pins available; pending21/22 products and22/23 layout comparisons still need their
-actual binaries. Do not lower the load gate14/20 to complete them. The load now
-admits timings, but disk admission remains refused, so no timing run launched.
-
-## Shift natives qualified; final local admission pending
-
-This supersedes the immediately preceding native-block notes. Native first
-refused launch, then actual admission allowed1794644281771914889: PASS three
-exact tests/five actual programs in78.27s. New matrix576 exports match all exact
-independent values; actual usize wrapper2^63 and all six mixed-type runtime calls
-match. Old156-product bits/flags and complete original Field observer also pass.
-Strict selected/CLI Clippy, fmt/audit/metadata pass, with no source changes since
-focused127.47s qualification. No native failure was hidden or reinterpreted.
-
-The next authenticated capture.py was refused before launch:152.8GiB free,
-153.8GiB required including reservations. qualified-replay.log is an admission
-failure, NOT a replay outcome. No local compiler/test/probe remains active.
-The5–10GiB async headroom question is still pending; don't lower caps/reserve or
-clean other checkouts. A transient admission allowed natives; it did not resolve
-the broader shared disk blocker. Keep current warm caches and21/22/23 pins.
-
-Focused/native evidence permits coherent development integration with honest
-pending checks. Publish the complete shift checkpoint and dispatch one full
-manual successor after confirming43570894822 remains terminal success; no full
-CI for a handoff-only descendant. That successor runs harness/upstream and all
-private/native/course/debug/independent checks. Final local replay/harness/upstream
-remain due; do not imply they executed. Docs/pa31-unchecked-shifts.md retains all
-15 independently definite outcomes and the separately retained f32 reference ICE.
-
-Pin.py now asserts actual3958. observe/postcheck/core-artifact24 are prepared;
-no24 compiler exists and none of those helpers ran. After restored headroom,
-finish guarded capture replay and make test-harness test-upstream, prepare and
-preflight same-profile changed-path/ordinary timing controls, freeze clean24 and
-run unchanged original analysis/postcheck. Keep120s/722/375/six/14500624work/
-1GiB attempted/64MiB retained. Only completed analysis permits genuine original
-metadata/LowIR and native consumers. Preserve all earlier positives, whole-PA
-requirements and pending21/22 products/22/23 layout comparisons; no speed claim.
-Current shift code is the exact3958-source focused/native-qualified snapshot;
-production changes include shared bounded Copy premises and exact RHS checking
-in all CTFE/runtime/dependency consumers. No backend/bridge/storage.py change.
-
-Published shift source is823dc01dff1f2ca942e637bab6aed8c4f1d0ab01. One fresh full
-manual successor43575779218 is IN PROGRESS on that exact head; previous43570894822
-is terminal success. Do not dispatch a duplicate or a full run for this handoff
-update. B and main are synchronized; no local job is active. Latest shared free
-space151GiB, so final local replay/harness/upstream and24freeze remain blocked.
-The external5–10GiB headroom question is pending. Exact commands/evidence/CI state
-are in obj/parallel/intrinsic-completion/live-state.json. The build goal is active,
-not achieved: no original artifact or whole PA release exists.
-
-## Headroom restored; final shift checks pass
-
-Shared free space rose to197 then240GiB. The resource blocker is resolved by
-actual external state; no reserve/cap/other-checkout cleanup change. The old
-headroom question no longer blocks work. No local job was live before resuming.
-
-Guarded consistency-final.log PASSES authenticated replay of the three shift
-controls,3958 compiled/test hashes and original packet hashes before/after.
-Inference work2167/8551/34087 =266n+39; canonical2365/2917/5125 =23n+2181 at
-8/32/128. All315 harness,492 roots/13 binaries,44 stages/one component and128
-upstream+126 Reference checks pass. No compiler or fixture source changed during
-that batch. Existing focused/native evidence is reused, without duplicate builds.
-
-Three new PA31 prior-multiply8/32/128 controls retain the exact supported native
-prefix and invoke the shared one-input arithmetic descriptor (pair33,false).
-Outcomes/hashes were frozen before first execution. Independent Rust and immutable
-release23 accept all three planned emit-types commands; unchanged ordinary f64
-emit-lowir also passes. Raw timing-preflight/ and measure-inputs/ declarations
-are under intrinsic-completion/. New shifts keep their separate576/native/work
-proof because23 rejects them. Same-profile23/24 four-A/A/two-ABBA helper is ready,
-not executed; preserve14/20 gate. Added controls do not alter compiler3958 hashes.
-
-Full43575779218 is live on exact823dc01df (release/course stage at latest read);
-its fast job passes. Prior full43570894822 is entirely green3077 private in each
-profile. No duplicate full run for docs/input descendants. Finish new-control
-metadata/upstream, publish this data/docs checkpoint, tidy at idle, freeze one
-clean24release and run unchanged original observe/postcheck. Only actual complete
-analysis permits core-artifact24 (module-bodies-v13 metadata/LowIR), then genuine
-original native consumers. Keep all fixed limits and previous valid positives.
-
-## Initializer storage qualified; clean25 and original retry next
-
-See docs/pa25-initializer-storage.md for the complete contract and exact focused
-receipts. The optional Code operand retains actual unpromoted Static-lifetime
-ValueIds; it does not change Code304/operand32/Body456/Value24 sizes. Evaluated
-backing survives return; ordinary frame allocations expire before extended
-contents validation. Unsafe dangling local/callee/nested-container cases reject.
-Typed const eligibility independently rejects mutable temporary borrows, including
-indexed/field projections, without granting promotion or callable permission.
-
-PA25/27/28/31 initializer-storage packets contain26 predeclared outcomes,24
-qualified (16 accept/eight reject) and two required accepting mutable-static
-controls that still fail existing direct/raw constant reference restrictions.
-Keep both inputs and accepting predictions; do not broaden this checkpoint to
-claim them. Original PA28 nominal-pointer library metadata artifacts remain
-required even though all seven native in-memory programs pass. Original Unicode
-bytes/identity bytes and all initial failed predictions/setups remain retained.
-
-Final fast1794651862191683241: four exact tests pass, strict selected/CLI Clippy,
-fmt/audit. Native1794651989245247938: one exact group/seven actual programs pass.
-Compatibility1794652124030049912: four old promotion/expiry tests pass. Frontend
-harness SHA ca42ab30990178afe16b1c08127a4039ef8e78a5b8ebd6d5c5ee7ded418f1228.
-Authenticated replay binds all3961 compiler/test sources and packet inputs.
-Widths8/32/128 retain inference/canonical/CTFE/codebytes tuples
-154/123/318/2456,418/411/1184/6584,1474/1563/4624/23096. No speed claim.
-315 harness/493 integration roots/13 binaries/44 layouts/one component and
-128 upstream+126 Reference checksum checks pass. Raw logs/receipts/debug traces:
-obj/parallel/static-temporary-storage/. First fast289.75s failed in outer cleanup
-although tests ran; retain it as failure. Later guard and test-assertion failures
-are fixed, never blessed. New private retained_cfg_storage invariant is unrun
-locally; no cold private harness. Full CI successor is required after publication.
-
-Clean24 release CLI SHA4238d43c673c8b8d91f4d61f6079caa0b0ebfdd7d1666d93ffb73eaf840f3cd5,
-build9m09s. Unchanged original diagnostic26.6543s was above load14/20, hence no
-speed claim; postcheck722 sources/375 opens/six configuration pins/all3958 hashes/
-empty patch/fixed120s and14500624 work,1GiB attempted,64MiB retained pass. Exact
-error-instruction debugging under debug24-exact confirms return->result validity
-at expiration; debug24's first source-line breakpoint hit an earlier valid read
-and is not expiration evidence. No trace patch is installed.
-
-Next freeze clean25 after coherent publication. Update capture-match/pin.py to
-3961 actual sources; adapt observe/postcheck/core-artifact24 helpers to25. Preserve
-the original manifest/profile/limits and source inputs. All four current21/22/23/24
-release pins remain available; shifted selector timing A/A+ABBA remains gated by
-14/20 load. Do not wait indefinitely to diagnose core, lower the gate, claim speed,
-or redispatch old full43575779218. Source823dc01df's full run is terminal success.
-No whole PA25–44 is complete; released113-case const-machine stays unchanged.
-All older explicit contracts, callback artifacts, two borrowed-result consumers,
-ordinary unbounded manual Copy positive, native/lifetime/transport requirements
-and original metadata/LowIR/library consumers remain required.
-
-## Clean25 clears Unicode; current original const-cleanup frontier
-
-Published source73017a98d6d9b58e175178c2be82705db352c266 is the initializer-storage
-checkpoint. Main is synchronized. Its clean candidate25-release freezes3961
-source hashes/empty patch; CLI SHA
-dbd4b5ba742e321c8b02cc337ce3e24f42b89405394ce174a234e3695e4a8e4e,9m33s build.
-Tidy1794652506779797178 removed19 generated files/0.04GiB first. Reserve150/cap16
-and2jobs/800%/12GiB/256tasks remain. Headroom270GiB at freeze; no disk block.
-
-Unchanged original diagnostic34.6997725s at load51.20/73.56 clears the previous
-Unicode expired-storage error. Still42310 declarations/25858 bodies/35120 attempts,
-no failed/blocked functions. Sole completion now file64:4584,
-library/core/src/ptr/metadata.rs119, the real from_raw_parts wrapper:
-active cleanup requires const Destruct in its actual defining environment.
-Completion0; NO original metadata/LowIR artifact or native consumer. The last
-initializer item39106/file41:80714 is not the error owner. Stage-aware postcheck
-passes722 original hashes/375 opens/six configuration pins/all3961 current/producer
-hashes/empty patch/fixed120s,14500624work,1GiB attempted,64MiB retained. No timing
-speed claim. Raw original-candidate25-diagnostic/, static-temporary-storage/
-observe25.log and post-and-native25.log. core-artifact25.py is prepared but UNRUN.
-
-Nine safe PA25 main inputs (including scaling8/32/128 and mutable-local result9)
-now pass actual candidate25 LowIR->frozen backend->native execution, empty outputs,
-with pinned CLI/manifest/input hashes. Together with seven ordinary/source C
-observers this adds16 actual native programs. safe-main25/ receipt retains all
-27 successful steps; generated executables pruned. Earlier24 outcomes and two
-required independently valid mutable-static positives remain unchanged.
-
-Current full manual43585975943 exact73017: fast success, full lint/host stages
-pass, release/course in progress at last check. No duplicate full run. New private
-snapshot-budget invariant still awaits actual execution, not a local cold build.
-
-Next reduce the original from_raw_parts defining cleanup with its actual Pointee
-Metadata:Copy bound and environment. Do not grant generic Destruct or infer Copy
-from a name. Existing defining_cleanups/claims.rs deliberately recognizes Copy
-claims only for parameters, and projected Destruct only with its actual header;
-this is a hypothesis to test, not yet a confirmed causal fix. Existing source
-pointer-composition/source-provider.rs retains original from_raw_parts bodies
-but declares Metadata:Sized; keep its original bytes/predictions. A paid original
-bound reduction must not erase that weaker declaration opponent or prior valid
-bound requirements.
-
-Read-only debug25: cdrop.rs29 resolved to33's success return and did not hit;
-not error evidence. First exact script had a GDB Rust/C quoting setup failure.
-The corrected exact instruction break at cdrop::prove_cleanup_requirements+184
-(0xdac4f8 static) DOES hit the absent-cleanup branch. Stack:
-proofs::select -> pipeline::cdrop::eligibility -> prove_loans -> prove_body ->
-prove_defining_original -> function_body -> source_layout -> reached preparation
--> Evaluator.definition -> validate_ordinary_initializers -> complete_constants.
-Release contains line tables but no locals/arguments. The script then fails when
-trying unavailable body.owner; retain this partial diagnostic, not a passing
-probe or a known goal type. Raw four goal words are not decoded identity evidence.
-Paths obj/parallel/projected-cleanup/debug25[-exact,-exact2]/; source unmodified.
-No trace patch is installed. Prefer cached dev-fast original diagnostics for
-ordinary subsequent edits if cfg matches, preserving120s/quotas; release freezes
-belong at coherent checkpoints. All older explicit contracts remain required.
-
-## Full43585975943 diagnostic correction; projected Copy baseline frozen
-
-Full43585975943 exact73017 is TERMINAL FAILURE at Release/course stage. All3078
-release private tests pass (new snapshot budget invariant included), all other
-public targets pass. The sole public failure is relocation_transport's
-union-interior-reference reason: old expired storage is now correctly
-constant reference cannot escape with interior mutable allocation backing.
-Both candidate and pinned Rust still reject; independent Rust explicitly E0492.
-Only the handwritten expected reason is updated. Original source/statuses/three
-views and every generated oracle stay unchanged. Focused1794654357349535933
-passes the full relocation Rust/three-view packet plus two new storage controls,
-strict selected/CLI Clippy/fmt/audit. No production change or new release build.
-Raw ci43585975943.log and ci-repair.log under static-temporary-storage; Rust E0492
-under obj/parallel/pa28/relocation-transport/source-333977/. Dispatch one full
-successor after publishing this correction; native/debug/independent stages did
-not execute in the failed full run. No local heavy job remains at this point.
-
-New UNTRACKED baseline packets pa25/tests/spec/projected-copy-cleanup and
-pa31/tests/spec/projected-copy-cleanup contain10 frozen inputs/expected outcomes.
-All independent Rust outcomes/native7 values agree with declaration. Candidate25:
-ordinary declared/where positives pass; source declared/where/moved associated
-Copy positives reproduce exact active-cleanup const Destruct error. Source
-parameter/reference controls pass. Three definition-only unpaid/lookalike
-negatives unexpectedly ACCEPT in candidate25; preserve their required rejection
-predictions and original bytes, never invert them. Add separate reached versions
-as narrower active-call guards; do not silently replace the original negatives.
-Oracles1 receipts/raw diagnostics under obj/parallel/projected-cleanup/.
-No compiler implementation for this new frontier has been edited yet.
-
-Investigate reuse of existing scoped Copy qualification rather than granting
-projected Destruct by name. pipeline/cdrop.rs::one already calls
-begin_qualification -> initial.questions -> defining_cleanups::qualify -> recheck
--> accept_qualification before selecting active eligibility for ordinary function
-owners. qualify/copies.rs performs actual Copy selection in the exact defining
-environment, retains its obligations, and seeds a scoped NeedsDrop query. Determine
-why the projected associated Copy input is not filtered there. The separate
-claims.rs parameter-only Copy guard may be relevant but remains a hypothesis;
-projected evidence requires the actual completed region/owner/header/arguments,
-Body-only eligibility and no grant for Whole/OwnDrop. Keep all wrong-owner and
-proof-carrier guards. Prefer cached dev-fast diagnostic after coherent related
-edits, preserving the original120s/quotas. No new release per ordinary edit.
-
-## Associated Copy root checkpoint qualified; clean26 retry next
-
-Source variant_liveness.rs now admits bare Projection roots to the already
-budgeted qualification partition. query.rs root masks honor NoDrop only; a
-Destruct qualifier keeps root eligibility and own Drop is never filtered. The
-existing actual Copy query, retained obligations, exact source environment and
-region/owner checks remain in use. No new trait rule, scalar-name permission,
-body/frame field or backend change. All prior APIs/transport/callback requirements
-remain required; unused-definition const checking is still an explicit gap.
-
-PA25/31 projected-copy-cleanup packets freeze16 outcomes, all independently Rust
-confirmed. Qualified13: ten accepting / three reached rejections. Three original
-unused-definition negatives still accept without a demand in analysis-only view;
-keep expected reject/bytes/receipts, do not invert/remove. New reached controls
-were added separately and reject for actual destructor/const Destruct causes.
-Ordinary2 constants7, source5 real nonempty LowIR/native7, three source scaling
-cases and source parameter/reference controls all pass. No whole PA is closed.
-
-Final fast1794656862666427149: six exact frontend/traits controls pass, strict
-selected/CLI Clippy/fmt/audit,142.13s. Final native1794657051948254620: three exact
-groups/eighteen actual programs pass (five new, thirteen old cleanup/flag programs),
-45.33s. Replay authenticates3962 source hashes/all packet inputs and frontend
-harness78bfda31ede60b5117899f300292738627fd3dbb215554b4a60a78413aba07a3.
-Scaling8/32/128 inference/canonical/CTFE tuples424/2507/88,1048/2651/256,
-3544/3227/928. 315 harness/494 roots/13 binaries/44 layouts/one component and
-128 upstream+126 Reference checks pass. Raw obj/parallel/projected-cleanup/.
-No speed claim; old timing gates and pending adjacent-pair controls remain.
-
-The first projected-root seeding-only candidate did NOT fix the failure.
-Read-only trace against immutable wip-cli (dev-fast SHA
-85d5086f00d8d464b5b301f8f94c28db194b3d28ff29c50e0ea99313ac67a0a8) confirms
-qualification reaches type123 and actual Copy selection returns true for declared
-and where forms, yet cleanup still fails. The root mask stayed true. This evidence
-motivates the final NoDrop-only mask change. Its production hashes and source
-patch are retained with the pin; trace-qualification/ has successful debugger
-receipts (inferior semantic failure is expected). Temporary typed inspection
-source/output preserved as inspect-root-inputs.rs and inspect2 log; test removed.
-The earlier naming/format/lint failures are retained and corrected. No trace
-patch remains in production. Retire this intermediate pin after clean26 exists.
-
-Full43588626797 exactff072ae85 is terminal SUCCESS, all stages.3078 release
-private4.30s/debug40.77s. Both original fixture source bytes and semantic rejection
-stay unchanged in the union diagnostic correction. The new root compiler still
-needs its own full successor after coherent publication; do not duplicate435886.
-Prefer clean26 dev-fast under unchanged source cfg/defaults/120s/limits for the
-next ordinary original diagnostic; no release per edit. Timeout is a failure,
-not progress or permission to widen the deadline. If dev-fast cannot finish,
-freeze release only at a meaningful coherent checkpoint. Core artifact25 helper
-remains UNRUN because original analysis is incomplete. Complete original metadata,
-LowIR and native consumers still required. No local heavy job at this checkpoint.
-
-## Clean26 clears root cleanup; current intrinsic is unchecked_mul
-
-Published exact sourcee23bbc1724f611b98d04ede36027fdda19d8f958, inventory3962.
-Full43592623119 fast success, release/private/public/course stages passed, native
-in progress at last check. Prior43588626797 remains fully green. No duplicate
-manual successor. All focused/native/replay evidence in root checkpoint above
-stands. Main synchronized; production has no uncommitted changes at this point.
-
-Clean candidate26-dev-fast SHA
-23046e162c5c2e116820a3400f42754fc1862b368fa5b7eb1555b069c0cbaa49 used a fresh
-cached Cargo build0.03s. Its unchanged120s original diagnostic TIMED OUT at
-120.9774s, last function8825/file239:26987, zero records and no complete census.
-This is infrastructure failure, NOT a semantic frontier or passing observation.
-Independent timeout-postcheck verifies all722 original hashes/all3962 producer
-hashes/six config pins/empty patch/CLI/fixed120s and quotas. No deadline/cfg/quota
-change. Do not repeat the unoptimized full observer. A coherent release was built
-once after full local qualification, not per ordinary edit.
-
-Clean candidate26-release SHA
-b46acf2e92388ca59d16d9d737f09d34b7f485863ae59062fce290bf56716c51,8m14s build,
-same e23 source/3962/empty patch. Unchanged original diagnostic23.6811215s clears
-ptr/metadata.rs119 active const Destruct cleanup. All42310 declarations/25858
-bodies/35120 attempts remain, zero failed/blocked functions; sole completion now
-file12:1052023 num/mod.rs, source intrinsic constant execution is not implemented.
-This is an expanded macro offset, not a physical num/mod.rs file byte offset.
-Stage-aware postcheck passes722/375/six/all3962/fixed120s and
-14500624work/1GiB attempted/64MiB retained. Start load7.25/19.68 but run was declared
-diagnostic; no retrospective timing/speed claim. No complete analysis or original
-artifact. core-artifact26.py exists but is UNRUN while completion remains0.
-
-Debug obj/parallel/intrinsic-next/debug26/ stops at the real unsupported branch
-executed_calls.rs61. SourceIntrinsic low tag17 (Declaration), rbp0x1110011, payload
-273 maps to unchecked_mul in prototype_specs/prototype_tables.rs. Prior275 maps
-to already-qualified unchecked_shl, providing the layout/index control. identity.json
-binds source-table hash and exact CLI. No argument integer specialization is
-claimed. No trace patch. Both this probe and source postcheck are terminal.
-
-Next qualify actual unchecked arithmetic through existing subtraction_contract,
-CTFE subtraction_calls and runtime subtraction_runtime owners. Existing unsafe
-unchecked_sub is a dedicated identity; unchecked_add/div/mul/rem are source
-Declaration IDs sharing one-Copy-type/two-same-type prototype34. Do not alter the
-frozen registry or backend. Checked CTFE must reject overflow/zero/MIN/-1 UB;
-valid runtime cases can use existing integer operations. Keep full signed/unsigned
-widths and source declaration/unsafe/Copy/const gates. Wide runtime/ABI boundaries
-and all earlier named requirements remain required, never parity-negative just
-because unsupported. Freeze independent predictions/byte-bound source cutouts
-and own reductions in PA31; ordinary minima in the earliest owning PA.
-
-After clean26-dev-fast existed, retired the obsolete first diagnostic wip-cli
-pin and scoped-pruned one executable0.10GiB, cleanup1794657861059236793. Its source
-patch/producer/debug receipts remain. Tidy1794657861173089043 removed0 files.
-Current release21/22/23/24/25/26 pins plus clean26-dev-fast remain available for
-specific pending comparisons/current diagnosis. Reserve150/cap16/controller2jobs/
-800%/12GiB/256tasks unchanged; free339GiB before build26. No disk block. All older
-explicit native/lifetime/transport/original callback/library requirements stay.
+Do not cold-build the private unit harness locally: prior attempts exceed the
+feedback budget. Use focused public controls and let full CI execute private
+invariants. Private fast selections lint/link once with clippy-driver; do not
+repeat that compilation using cargo test --lib. Do not run broad release/native
+matrices per edit. Use `make tidy` between batches, preserving active pins.
+
+Publish from B, then synchronize main using Git only:
+
+```sh
+git -c credential.helper= -c 'credential.helper=!gh auth git-credential' \
+  push https://github.com/vishvananda/rustgm.git HEAD:main
+# In /home/vishvananda/rustgm:
+git fetch /mnt/vizier/rustgm-scratch/rustgm-pa26-work HEAD:refs/remotes/origin/main
+git merge --ff-only --quiet origin/main
+```
+
+## Latest genuine original-core attempt: candidate41
+
+Clean immutable release pin:
+`obj/parallel/capture-match/candidate41-release/`.
+Producer is exact product `2e25fdba4`, with 3967 compiler/test Rust hashes and an
+empty tracked patch. Optimized build took 7m48s. CLI SHA-256:
+`1dd358581384e4783248db169ec99cc722c23626609d117d277afffd7a495fdf`.
+
+The genuine original v14 library attempt **clears the PartialOrd const closure
+calls in slice/cmp.rs**, then rejects:
+
+```text
+ERROR: file 210: 176765: marked function-call promotion requires its actual evaluation profile
+```
+
+File210 is `library/core/src/slice/mod.rs`, line4667, the `as_simd` body. That body
+contains `assert_eq!(size_of::<Simd<T, LANES>>(), size_of::<[T; LANES]>())`.
+The exact marked callee has NOT been identified; size_of is a lead, not a verified
+callee identity.
+
+Result: status 1, no timeout, 20.600939011899754s, peak child RSS 772712 KiB.
+No `core.rgm`; `core.lowir` exists with zero bytes. This is diagnostic progress,
+not an artifact, native-consumer or performance qualification.
+
+Raw evidence under `obj/parallel/closure-members/`:
+
+- `build41-release.log`, `core-artifact41.py/.log`,
+  `artifact-postcheck41.py/.log`;
+- `original-library-candidate41/{declaration,result,postcheck}.json`,
+  `whole-core.openat`, `stdout`, `stderr`.
+
+Postcheck41 passed: 722 original source hashes, 375 source opens, six reviewed
+configuration bindings, all 3967 compiler hashes, clean producer and the fixed 120s
+observer deadline. Unchanged source-contract limits: 14500624 work,
+1073741824 attempted bytes,67108864 retained bytes; lint cap allow; profile
+`module-body-operations-v14`.
+
+Original input tree:
+`obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea/`.
+Reviewed manifest: `obj/parallel/body-operations/original-manifest.json`, SHA-256
+`9d14519e7f61352c1ed126d1a4e1590fcbb99aa9debcaafa3e54f3d08e750381`.
+The older census manifest remains immutable. The sole reviewed configuration
+rebinding is dev/bin/crates.rs; see body-operations/config-rebinding.json and
+cli-config-rebinding.patch. Do not overwrite old manifests or loosen the profile.
+The file map is capture-match/original-candidate28-diagnostic/progress.tsv.
+
+## Next blocker: actual marked-call promotion policy
+
+There are **no production edits or new fixtures for this frontier**.
+
+`dev/src/body/promote/queries.rs` treats a nonconstructor Rvalue::Call as follows:
+call `require_call_promotion_profile(callee)`, then return false (unpromoted).
+`dev/src/body/promote/values.rs` currently errors for ANY KnownPresent
+`Evaluator::promotable_contract` result. This is an explicit incomplete boundary,
+not proof that the original program is invalid.
+
+Relevant existing contracts and APIs:
+
+- `dev/src/sema/constants/values.rs`: Evaluator::promotable_contract, Overflow and
+  Failure. Promotion value arithmetic wraps while original CFG overflow assertions
+  remain; required constant evaluation still diagnoses overflow.
+- `dev/src/body/promote/{queries,values,session}.rs`: demand DAG, constructor-only
+  call folding and shared evaluator preparation. The call helper currently handles
+  constructors, not arbitrary marked function execution.
+- `dev/tests/invariants/promotable_headers.rs` and
+  `pa31/tests/spec/source-promotable/`: source marker ownership, required CTFE,
+  ordinary runtime calls and the valid marked borrow/profile requirement.
+  The borrow-required private guard currently records this unfinished fence.
+
+A guarded read-only GDB run of frozen41 has finished successfully as a probe
+(the compiler inferior still rejects core). Evidence is under
+`obj/parallel/promoted-calls/`: trace.gdb, trace.py, trace-command.json,
+trace-command.stdout/.stderr, trace.log and original-trace/.
+It confirms require_call_promotion_profile -> dependencies -> demand -> collect ->
+analyze_templates_reusing. The binary's limited debug information reports
+"No arguments"; **no DefId/TypeId or exact marked callee was observed**.
+No compiler/test/probe remains running locally.
+
+Recommended continuation:
+
+1. Identify the actual marked source callee and its complete instance/profile.
+   Use a bounded probe; the existing stack-only GDB trace cannot name it.
+2. Read the source promotable promise and evaluator execution/overflow policies.
+   Declare paired PA25 ordinary and PA31 source outcomes before execution.
+3. Preserve runtime effects, overflow checks, failure classification, safety,
+   borrow/storage/lifetime and actual const Code requirements. Do not simply
+   remove the guard, ignore rustc_promotable or grant static storage from a marker.
+   Existing valid borrow/profile positives remain accepting requirements.
+4. Qualify a coherent change with focused controls, actual observers and bounded
+   work. Keep generated output in obj. Run test-upstream after fixture changes;
+   run test-backend only if the bridge/backend contract changes.
+5. After publication, freeze one clean optimized successor using
+   obj/parallel/capture-match/pin.py (currently asserts 3967), then repeat the same
+   original artifact attempt/postcheck. Do not use a dev-fast whole-core timeout
+   or a census as a substitute for an actual library artifact.
+
+## CI
+
+- **Entirely green:** [43669171589](https://github.com/vishvananda/rustgm/actions/runs/43669171589),
+  exact 73eec244c. Strict all-target/private Clippy, architecture/harness,
+  release/course, maintainer native, broad native course, debug, independent Rust
+  and PA25 component stages all pass. 3088 private release tests pass in 4.77s;
+  debug 3088 in 45.91s. Raw: closure-members/ci43669171589.log.
+- **One successor queued at wrap-up:**
+  [43672166930](https://github.com/vishvananda/rustgm/actions/runs/43672166930),
+  exact 2e25fdba4. This covers the member-call change and expanded private guard.
+  Check its actual status on resumption. Do not duplicate, cancel or restart it
+  for documentation. No full-success claim is made for 2e25fdba4 yet.
+- Earlier full 43665225882 failed one malformed-signature corruption guard after
+  3086 private passes. Product 73eec restores an explicit error for non-function
+  Call signatures; the assertion was unchanged and the green full verifies it.
+  Earlier compile/semicolon CI repairs are also superseded by this green run.
+
+## Completed checkpoints and focused evidence
+
+Detailed implementation, declared predictions, limitations and raw paths are in
+these documents. Whole assignments were not released by these finite checkpoints.
+
+| Checkpoint | Verified result | Details |
+| --- | --- | --- |
+| 2e25fdba4: const closure members | Six older unannotated const closure cases now pass prepared lowering; bytes/predictions unchanged. New 12-case PA25/31 packets: 10 source outcomes qualified, 2 source and 12 ordinary gaps explicit. | [docs/pa25-closure-members.md](docs/pa25-closure-members.md) |
+| 73eec244c: captured generic const calls | Actual closure owner, wrapper and complete enclosing arguments; 14/25 source outcomes qualify; runtime 41/59. | [docs/pa25-captured-const-calls.md](docs/pa25-captured-const-calls.md) |
+| b3ab20376: implicit generic result fields | Exact implicit protocol call results prepare existing storage;17 source outcomes and ordinary no-question control qualify; borrowed native 41/59/23. | [docs/pa20-implicit-result-fields.md](docs/pa20-implicit-result-fields.md) |
+| 638369a03: unsafe const members | Exact discharged call safety retained; 34 ordinary/source outcomes qualify; runtime and simple CTFE 41/59. | [docs/pa25-unsafe-const-members.md](docs/pa25-unsafe-const-members.md) |
+| 694738c4e: const Try calls | Existing complete protocol plans authenticate implicit calls and effects; runtime 41/59/23. | [docs/pa25-const-try-calls.md](docs/pa25-const-try-calls.md) |
+| 05d1beedd: borrowed callables | Actual source reference path, capability, final receiver borrow and formal bindings retained. | [docs/pa25-borrowed-callables.md](docs/pa25-borrowed-callables.md) |
+| ead92a4cd and predecessors | Actual Fn role/tuple ABI; projected const parent promises; exact generic/default/supertrait premises. | [docs/pa25-explicit-call-members.md](docs/pa25-explicit-call-members.md), [docs/pa25-projected-const-members.md](docs/pa25-projected-const-members.md), [docs/pa25-default-generic-subjects.md](docs/pa25-default-generic-subjects.md), [docs/pa25-generic-const-calls.md](docs/pa25-generic-const-calls.md), [docs/pa25-default-supertraits.md](docs/pa25-default-supertraits.md) |
+
+Latest member checkpoint evidence under obj/parallel/closure-members/:
+fast2=1794712084032770967, six exact selections, 53.15s, strict selected/production/CLI
+lint, full format and architecture pass. Native 1794712252305956183 passes three
+groups/four programs, 41.09s: new Compare and captured controls print 41/59, two ordinary
+unannotated closure programs. Independent Rust runtime/CTFE both print 41/59.
+Replay authenticates3967 hashes and 24 CLI attempts (10 qualified/14 explicit gaps).
+At 8/32/128 closures, inference/canonical work is 6952/1425, 27736/4325, 110872/15901.
+315 harness tests,497 integration roots/13 binaries,44 stages/one component,
+128 upstream fixtures and126 Reference files pass. No speed claim.
+
+PA20's new nominal-residuals/without-question.rs primary is codegen-only, explicitly
+not a runtime feature consumer. One declared scoped reference batch and three new
+sidecars were independently checked; all 4878 prior PA20 oracle files are unchanged.
+Current main manifest: 1627 cases: 614 semantics/1013 LowIR; 608 runtime executions
+unchanged. Never hand-edit or broadly regenerate references to hide failures.
+
+## Pins, cleanup and pending measurements
+
+Available current executables:
+
+- candidate41-release above (clean original-core/compiler pin).
+- obj/parallel/closure-members/replay/wip-rustgm, SHA-256
+  `5bbc391f93e44f44d66ab288e85d29d63b8f3e05e40c1dd99192843fa9a08994`.
+  This qualified dev-fast replay records its tracked patch/prepublication head;
+  it is not a clean release pin.
+- **Pending performance baselines 21–24: preserve their executable pins.**
+
+Candidates25–40 and superseded nominal/captured/unsafe/Try/borrowed/explicit/
+projected replay executables have been retired and are unavailable for new runs.
+Historical receipts and hashes are retained; do not mistake them for available
+binaries. Retirement records are in the owning obj/parallel/*/retired-pins.json,
+most recently closure-members/retired-pins.json. Older operational/archive details
+remain in the historical Git handoff. Never clean another checkout.
+
+Pending performance comparisons use immutable candidates 21/22, 22/23 and 23/24:
+wide-constant-products/measure-candidate22.py,
+layout-field-budget/measure-candidate23.py,
+intrinsic-completion/measure-candidate24.py. Preserve their producer manifests,
+inputs, actual executables and .keep-artifacts files. Use four A/A plus two paired
+ABBA runs, equal outputs and the unchanged 14/20 load gate. Historical 288 equal
+observations do not qualify current speed ratios. Do not wait indefinitely or
+relax admission; no current speed improvement is claimed.
+
+Remove a superseded pin only after qualification of its replacement, then
+explicitly prune its own directory with storage.py prune --apply --prune-under.
+Successful wrappers prune generated scratch; failed artifacts remain for diagnosis.
+No storage.py implementation changes were made in this continuation.
+
+## Requirements still open
+
+The six unannotated const closure prepared-lowering cases are completed. The
+following requirements, and any other unclosed positives in their owning docs,
+remain binding; accepting predictions must never become infrastructure rejects.
+
+- Genuine original core v13 AND v14 metadata, complete LowIR and native consumers;
+  original 19/20 full LowIR callback exports (type views do not replace artifacts).
+- Source Future/state/poll/drop/Pin/Output/cancellation/recursive cleanup/native
+  execution and ordinary authored async; four transported Future headers grant
+  no executable Future Code.
+- Const-adapter bootstrap/runtime/CTFE/factory consumers; three tuple-factory
+  cleanup-owner positives; anonymous associated-borrow/implied-bound, projected
+  inline normalization and concrete inline source-promotion consumers.
+- Layout/bool niche/repr(Rust) tag and closure cases; symbolic Index native plus
+  real source panic routing; two implicit-Deref 128-layer accepting inputs.
+- Earlier const payment: anonymous/implied-borrow consumers, range contains,
+  projected constructor/aggregate, explicit-call open signature/lifetime/argument,
+  borrowed callable and Try aggregate CTFE. Simple unsafe-member CTFE does not
+  close these. New captured local/consuming cleanup and opaque CTFE remain open.
+- closure-members/default-owner.rs still needs the exact const-default Self
+  premise continuation. closure-members/native-ctfe.rs still needs opaque-result
+  callable typing. All 12 ordinary member-packet import attempts and all 25 ordinary
+  captured-packet attempts remain unqualified at Destruct imports.
+- Ordinary bootstrap gaps retained in earlier packets: const-Deref 11,
+  default-supertraits Destruct 2, generic-const-calls Destruct 15,
+  default-generic-subjects Bound 3, projected original-helper imports,
+  explicit-call-members 15, borrowed-callables 17, const-Try 18 and ordinary nominal
+  question-mark 16/provider. Independently rejecting inputs masked by these gaps
+  are also unqualified, not semantic rejection evidence.
+- Ordinary PA27 manual Copy wrapper valid bootstrap input without adding T:Copy;
+  three original unused-definition projected-Copy negatives must eventually reject.
+- Two initializer-storage named mutable-static direct/raw positives; ordinary
+  nominal-pointer legacy metadata separate from its in-memory native behavior.
+- Three conditional-member-calls const-Deref metadata positives:
+  shared-field.rs, mutable-field.rs, direct-method.rs. v14 clears declaration
+  encoding but still meets the source-role first-family fence; the actual first
+  role has not been identified. Do not assume DropGlue or DerefTarget.
+- Runtime wide casts/operations/patterns, metadata/wire/C ABI and all other named
+  boundaries in owning packets. Mixed declaration/body v14 extensions do not
+  replace the required genuine original v13 transport/artifact contracts.
+
+Earlier retained requirements in Git handoffs 03003a86f and 2072521b8 remain binding
+where not expressly completed in later checkpoint docs. Planned suites must fail,
+not pass empty. Infrastructure exits, timeouts and panics never qualify a reject.
