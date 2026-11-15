@@ -158,6 +158,8 @@ pub extern "C" fn main(_argc: i32, _argv: *const *const u8) -> i32 {
     out.flush();
     memory_sweeps(&mut out);
     out.flush();
+    hints(&mut out);
+    out.flush();
     if out.failed > 100 { 100 } else { out.failed }
 }
 
@@ -1386,4 +1388,34 @@ fn memory_sweeps(out: &mut Out) {
     }
     out.check("memory sweep bad", bad as u128, 0);
     out.show("memory sweep sum", sum as u128);
+}
+
+static DROPS: AtomicUsize = AtomicUsize::new(0);
+
+struct Counted(u32);
+
+impl Drop for Counted {
+    fn drop(&mut self) {
+        DROPS.fetch_add(1, Ordering::Relaxed);
+    }
+}
+
+/// `spin_loop` has no effect a program can observe. `select_unpredictable`
+/// returns one value and drops the other once; `mem::forget` drops nothing.
+fn hints(out: &mut Out) {
+    core::hint::spin_loop();
+    out.check("select true", core::hint::select_unpredictable(black_box(true), 5u32, 7u32) as u128, 5);
+    out.check("select false", core::hint::select_unpredictable(black_box(false), 5u32, 7u32) as u128, 7);
+    let picked = core::hint::select_unpredictable(
+        black_box(false),
+        Record { a: 1, b: 2, c: [3; 5] },
+        Record { a: 4, b: 5, c: [6; 5] },
+    );
+    out.check("select record", (picked.a * 100 + picked.b as u64 * 10 + picked.c[0] as u64) as u128, 456);
+    let picked = core::hint::select_unpredictable(black_box(true), Counted(1), Counted(2));
+    out.check("select drops the other", (picked.0 as usize * 16 + DROPS.load(Ordering::Relaxed)) as u128, 0x11);
+    drop(picked);
+    out.check("select result dropped", DROPS.load(Ordering::Relaxed) as u128, 2);
+    mem::forget(Counted(3));
+    out.check("forget drops nothing", DROPS.load(Ordering::Relaxed) as u128, 2);
 }

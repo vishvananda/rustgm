@@ -488,3 +488,9 @@ f64 signum bff0000000000000
 f32 signum 3f800000
 memory sweep bad 0
 memory sweep sum eb21030a6a156949
+select true 5
+select false 7
+select record 1c8
+select drops the other 11
+select result dropped 2
+forget drops nothing 2

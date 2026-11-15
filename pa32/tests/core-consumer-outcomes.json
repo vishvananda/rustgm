@@ -332,10 +332,11 @@
         "atomic integers, booleans and pointers at every width",
         "counted copies, fills and byte comparisons",
         "size_of_val, volatile accesses, mem::zeroed and float sign bits",
+        "spin_loop, select_unpredictable and mem::forget",
         "output without core::fmt"
       ],
-      "source_sha256": "efd6b6ba00b42e51417064b7e1ad8599ed6809421ac5c61c8fcabc4f42c17b06",
-      "stdout_sha256": "302627bdda5f00e761793bfac3c9ac996bcbf579d9091d08f22a4647c9a510a9"
+      "source_sha256": "38b13142c1a301ef64b86adf3ab20eee869d8e74a5ef5a8449c3791cad74c962",
+      "stdout_sha256": "26faba4752def90f6df85a5143f35373c9c8f4fdc0f1afa33940d09fed93671d"
     }
   ]
 }
