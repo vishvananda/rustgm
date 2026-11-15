@@ -15,6 +15,14 @@ pub(super) enum Tracking {
     Untracked,
     Explicit,
     Inherited(DefId),
+    /// An untracked trait member that some implementation tracks explicitly.
+    Overridden,
+}
+impl Tracking {
+    /// Whether the declaration itself receives its caller's location.
+    const fn tracked(self) -> bool {
+        matches!(self, Self::Explicit | Self::Inherited(_))
+    }
 }
 
 pub(in crate::sema) fn consume_tracking(
@@ -229,7 +237,7 @@ impl Declarations {
                 .declarations
                 .get(key)
                 .ok_or("caller header identity disappeared")?;
-            return Ok(header.tracking != Tracking::Untracked);
+            return Ok(header.tracking.tracked());
         }
         if self.function_indices.contains_key(&definition) {
             return Err("source function lacks its caller policy header");
@@ -241,6 +249,19 @@ impl Declarations {
         report: &Report,
         definition: DefId,
     ) -> Result<bool, Error> {
+        Ok(self.checked_tracking(report, definition)?.tracked())
+    }
+    /// Whether an implementation in this crate tracks its caller although the
+    /// trait member `declaration` does not. A call that leaves the member's
+    /// implementation to each instance of its body may then reach one.
+    pub(crate) fn checked_tracked_override(
+        &self,
+        report: &Report,
+        declaration: DefId,
+    ) -> Result<bool, Error> {
+        Ok(self.checked_tracking(report, declaration)? == Tracking::Overridden)
+    }
+    fn checked_tracking(&self, report: &Report, definition: DefId) -> Result<Tracking, Error> {
         let actual = report
             .resolution
             .definitions
@@ -253,19 +274,21 @@ impl Declarations {
                     .constructor_tracking_absent(definition)
                     .map_err(Error::unlocated)?
             {
-                return Ok(false);
+                return Ok(Tracking::Untracked);
             }
             return Err(Error::unlocated("caller policy requires a function"));
         }
         let Some(key) = actual.node else {
-            if super::super::bootstrap_owner(report, definition)? {
-                return Ok(false);
+            if super::super::bootstrap_owner(report, definition)?
+                || !super::super::imported::caller_tracking(self, definition)
+                    .map_err(Error::unlocated)?
+            {
+                return Ok(Tracking::Untracked);
             }
-            return super::super::imported::caller_tracking(self, definition)
-                .map_err(Error::unlocated);
+            return Ok(Tracking::Explicit);
         };
         if report.package.source_core().is_none() {
-            return Ok(false);
+            return Ok(Tracking::Untracked);
         }
         let headers = self
             .must_use_contracts
@@ -282,7 +305,7 @@ impl Declarations {
             .and_then(|_| headers.declarations.get(&key))
             .ok_or_else(|| Error::unlocated("caller policy changed declaration identity"))?;
         validate_header(report, self, definition, key, header)?;
-        Ok(header.tracking != Tracking::Untracked)
+        Ok(header.tracking)
     }
 
     /// A canonical nominal constructor is callable without a function header.
@@ -324,18 +347,29 @@ pub(in crate::sema) fn inherit_tracking(
     expected: DefId,
     actual: DefId,
 ) -> Result<(), Error> {
+    let source = |definition: DefId| {
+        report
+            .resolution
+            .definitions
+            .get(definition.0 as usize)
+            .filter(|definition| definition.kind == DefKind::Function)
+            .and_then(|definition| definition.node)
+    };
     if !facts.checked_caller_tracking(report, expected)? {
+        // The member stays untracked. Its own header remembers that this
+        // implementation is not, for the calls that select it per instance.
+        if facts.checked_caller_tracking(report, actual)?
+            && let Some(member) = source(expected)
+            && let Some(header) = ledger(facts, 0)?.local.declarations.get_mut(&member)
+            && header.tracking == Tracking::Untracked
+        {
+            header.tracking = Tracking::Overridden;
+        }
         return Ok(());
     }
-    let declaration = report
-        .resolution
-        .definitions
-        .get(actual.0 as usize)
-        .filter(|definition| definition.kind == DefKind::Function)
-        .and_then(|definition| definition.node)
-        .ok_or_else(|| {
-            Error::unlocated("inherited caller policy needs its actual source method")
-        })?;
+    let declaration = source(actual).ok_or_else(|| {
+        Error::unlocated("inherited caller policy needs its actual source method")
+    })?;
     let header: &mut Header = ledger(facts, 0)?
         .local
         .declarations

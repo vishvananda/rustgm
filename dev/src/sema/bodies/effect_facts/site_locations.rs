@@ -171,7 +171,12 @@ impl Checker<'_> {
             crate::sema::dispatch::selected_definition(self.facts, source, callable)
                 .map_err(|error| self.error(node, error))?
         else {
-            return Ok(false);
+            // Each instance of this body selects the member's implementation.
+            // One that tracks its caller reports this call.
+            return Ok(self.facts.associated.trait_owner(definition).is_some()
+                && self
+                    .facts
+                    .checked_tracked_override(self.report, definition)?);
         };
         self.facts.checked_caller_tracking(self.report, selected)
     }
