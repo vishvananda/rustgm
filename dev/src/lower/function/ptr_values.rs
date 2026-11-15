@@ -55,7 +55,10 @@ impl Lower<'_, '_, '_> {
             .context
             .constants
             .source_ptr_metadata_input(&selected)?;
-        if signature != selected.signature()
+        if !self
+            .context
+            .constants
+            .source_ptr_metadata_opened(&selected, signature)
             || value.ty != selected.output()
             || self
                 .body
@@ -139,7 +142,10 @@ impl Lower<'_, '_, '_> {
         };
         let (data, meta) = (*data, *meta);
         let inputs = self.context.constants.source_raw_parts_inputs(&selected)?;
-        if signature != selected.signature()
+        if !self
+            .context
+            .constants
+            .source_raw_parts_opened(&selected, signature)
             || value.ty != selected.output()
             || [data, meta].into_iter().zip(inputs).any(|(id, ty)| {
                 self.body

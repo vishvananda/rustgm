@@ -35,7 +35,7 @@ pub(super) fn require(
     else {
         return Err("source ptr_metadata requires one direct pointer argument");
     };
-    if signature != selected.signature()
+    if !selected.opened_matches(facts, signature)
         || value.ty != selected.output()
         || body
             .values
@@ -75,7 +75,7 @@ pub(super) fn require_parts(
         .get(arguments.start as usize..arguments.end as usize)
         .ok_or("source aggregate_raw_ptr lost its argument range")?;
     let expected = selected.inputs(facts)?;
-    if signature != selected.signature()
+    if !selected.opened_matches(facts, signature)
         || value.ty != selected.output()
         || inputs.len() != 2
         || inputs

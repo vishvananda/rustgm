@@ -23,6 +23,13 @@ impl Reader<'_> {
     ) -> Result<crate::types::TypeId, &'static str> {
         selected.input(self.facts)
     }
+    pub(crate) fn source_ptr_metadata_opened(
+        self,
+        selected: &PtrMetadataSelection,
+        signature: crate::types::TypeId,
+    ) -> bool {
+        selected.opened_matches(self.facts, signature)
+    }
     pub(crate) fn pointer_text_length(
         self,
         pointer: Constant,
@@ -63,6 +70,13 @@ impl Reader<'_> {
         selected: &crate::sema::compiler_items::RawPartsSelection,
     ) -> Result<[crate::types::TypeId; 2], &'static str> {
         selected.inputs(self.facts)
+    }
+    pub(crate) fn source_raw_parts_opened(
+        self,
+        selected: &crate::sema::compiler_items::RawPartsSelection,
+        signature: crate::types::TypeId,
+    ) -> bool {
+        selected.opened_matches(self.facts, signature)
     }
     pub(crate) fn source_raw_parts(
         self,

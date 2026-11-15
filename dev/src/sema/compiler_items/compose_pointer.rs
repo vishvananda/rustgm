@@ -23,12 +23,11 @@ impl RawPartsSelection {
     pub(crate) const fn definition(&self) -> DefId {
         self.definition
     }
-    pub(crate) const fn signature(&self) -> TypeId {
-        self.signature
-    }
     pub(crate) const fn output(&self) -> TypeId {
         self.output
     }
+    /// The data and metadata types as the caller writes them. The signature is a
+    /// binder of its own and names a lifetime of the caller one level deeper.
     pub(crate) fn inputs(&self, facts: &Declarations) -> Result<[TypeId; 2], &'static str> {
         let Some(Kind::Function { parameters, .. }) = facts.types.kind(self.signature) else {
             return Err("source aggregate_raw_ptr lost its callable signature");
@@ -40,7 +39,24 @@ impl RawPartsSelection {
         else {
             return Err("source aggregate_raw_ptr requires exactly two inputs");
         };
-        Ok([*data, *meta])
+        super::intrinsic_contracts::item_roots(&facts.types, [*data, *meta], |steps| {
+            crate::sema::header_attributes::charge_source_contract_query(facts, steps)
+                .map_err(|_| "source aggregate_raw_ptr instance work exhausted")
+        })?
+        .ok_or("source aggregate_raw_ptr inputs lost their caller types")
+    }
+    /// A body Call's record holds its roots in the caller, unlike the item signature.
+    pub(crate) fn opened_matches(&self, facts: &Declarations, signature: TypeId) -> bool {
+        self.inputs(facts).is_ok_and(|inputs| {
+            super::intrinsic_contracts::opened_signature_matches(
+                &facts.types,
+                signature,
+                &inputs,
+                self.output,
+                false,
+                Convention::RUST,
+            )
+        })
     }
     pub(crate) fn current(&self, facts: &Declarations) -> Result<(), &'static str> {
         let Some(Kind::FunctionItem {
@@ -186,7 +202,20 @@ impl Catalog {
         else {
             return Err("selected source aggregate_raw_ptr changed its safe Rust signature");
         };
-        if result != output || facts.types.list(parameters) != Some(&[data, meta]) {
+        let Some(&[first, second]) = facts.types.list(parameters) else {
+            return Err("selected source aggregate_raw_ptr input arity changed");
+        };
+        // Arguments inhabit the caller. The signature is a binder of its own, so a
+        // lifetime of an enclosing binder appears in it one level deeper.
+        let roots = super::intrinsic_contracts::item_roots(
+            &facts.types,
+            [first, second, result],
+            |steps| {
+                crate::sema::header_attributes::charge_source_contract_query(facts, steps)
+                    .map_err(|_| "source aggregate_raw_ptr instance work exhausted")
+            },
+        )?;
+        if roots != Some([data, meta, output]) {
             return Err("selected source aggregate_raw_ptr differs from its complete instance");
         }
         if !matches!(facts.types.kind(output), Some(Kind::Pointer { .. }))

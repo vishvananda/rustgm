@@ -166,6 +166,45 @@ fn actual_header_role_gate_and_signature_opponents_stay_closed() -> TestResult {
     Ok(())
 }
 #[test]
+fn caller_chosen_lifetimes_reach_the_selected_signature_one_binder_deeper() -> TestResult {
+    // `'a` belongs to each function's own binder. The intrinsic's signature is a
+    // binder of its own, so it names the same lifetime one level deeper.
+    let text = source("slice-length")?
+        + "pub struct Named<T>{name:T}\n\
+           fn count<'a>(values:*const [Named<&'a str>])->usize{metadata(values)}\n\
+           fn first<'a>(values:*const [&'a str])->usize{metadata(values)}\n\
+           #[unsafe(no_mangle)]pub extern \"C\" fn named()->usize{\
+           count(&[Named{name:\"a\"},Named{name:\"b\"}] as *const [Named<&str>;2] \
+           as *const [Named<&str>])}\n\
+           #[unsafe(no_mangle)]pub extern \"C\" fn plain()->usize{\
+           first(&[\"a\",\"b\",\"c\"] as *const [&str;3] as *const [&str])}\n";
+    let report = crate::test_source::source_provider(&text, "pointer_metadata_lifetimes")?;
+    let pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = pipeline::analyze_source(&report)?;
+    let program = crate::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        crate::lower::Roots {
+            entry: None,
+            exports: &[],
+        },
+        prepared,
+    )
+    .map_err(|e| e.to_string())?;
+    for name in ["named", "plain"] {
+        assert!(
+            program
+                .symbols
+                .iter()
+                .any(|symbol| symbol.name == name && symbol.body.is_some()),
+            "{name}: the exported caller was not lowered"
+        );
+    }
+    Ok(())
+}
+#[test]
 fn pointer_contract_storage_keeps_hot_body_and_declaration_widths() {
     assert_eq!(size_of::<crate::types::Kind>(), 24);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);

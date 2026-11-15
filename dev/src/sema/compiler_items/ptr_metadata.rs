@@ -32,12 +32,11 @@ impl PtrMetadataSelection {
     pub(crate) const fn definition(&self) -> DefId {
         self.definition
     }
-    pub(crate) const fn signature(&self) -> TypeId {
-        self.signature
-    }
     pub(crate) const fn output(&self) -> TypeId {
         self.output
     }
+    /// The pointer argument's type as the caller writes it. The signature is a
+    /// binder of its own and names a lifetime of the caller one level deeper.
     pub(crate) fn input(&self, facts: &Declarations) -> Result<TypeId, &'static str> {
         let Some(Kind::Function { parameters, .. }) = facts.types.kind(self.signature) else {
             return Err("source ptr_metadata lost its callable signature");
@@ -46,10 +45,28 @@ impl PtrMetadataSelection {
             .types
             .list(parameters)
             .ok_or("source ptr_metadata input disappeared")?;
-        match inputs {
-            [input] => Ok(*input),
-            _ => Err("source ptr_metadata input arity changed"),
-        }
+        let &[input] = inputs else {
+            return Err("source ptr_metadata input arity changed");
+        };
+        let [input] = super::intrinsic_contracts::item_roots(&facts.types, [input], |steps| {
+            crate::sema::header_attributes::charge_source_contract_query(facts, steps)
+                .map_err(|_| "source ptr_metadata instance work exhausted")
+        })?
+        .ok_or("source ptr_metadata input lost its caller type")?;
+        Ok(input)
+    }
+    /// A body Call's record holds its roots in the caller, unlike the item signature.
+    pub(crate) fn opened_matches(&self, facts: &Declarations, signature: TypeId) -> bool {
+        self.input(facts).is_ok_and(|input| {
+            super::intrinsic_contracts::opened_signature_matches(
+                &facts.types,
+                signature,
+                &[input],
+                self.output,
+                false,
+                Convention::RUST,
+            )
+        })
     }
     pub(crate) fn current(&self, facts: &Declarations) -> Result<(), &'static str> {
         let catalog = facts
@@ -317,14 +334,23 @@ impl Catalog {
             .types
             .list(parameters)
             .ok_or("selected source ptr_metadata input disappeared")?;
-        if result != output
-            || inputs.len() != 1
-            || facts.types.kind(inputs[0])
-                != Some(Kind::Pointer {
-                    mutable: false,
-                    pointee,
-                })
-        {
+        let &[input] = inputs else {
+            return Err("selected source ptr_metadata input arity changed");
+        };
+        // Arguments inhabit the caller. The signature is a binder of its own, so a
+        // lifetime of an enclosing binder appears in it one level deeper.
+        let roots =
+            super::intrinsic_contracts::item_roots(&facts.types, [input, result], |steps| {
+                crate::sema::header_attributes::charge_source_contract_query(facts, steps)
+                    .map_err(|_| "source ptr_metadata instance work exhausted")
+            })?;
+        let expected = Kind::Pointer {
+            mutable: false,
+            pointee,
+        };
+        if roots.is_none_or(|[input, result]| {
+            result != output || facts.types.kind(input) != Some(expected)
+        }) {
             return Err(
                 "selected source ptr_metadata signature differs from its complete instance",
             );

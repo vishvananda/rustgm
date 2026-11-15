@@ -153,6 +153,38 @@ fn actual_runtime_calls_keep_complete_typed_instances_and_cold_record_sizes() ->
 }
 
 #[test]
+fn caller_chosen_lifetimes_reach_the_constructor_one_binder_deeper() -> TestResult {
+    // `'a` belongs to `borrowed`'s own binder; each selected signature is a binder
+    // of its own and names the same lifetime one level deeper.
+    let text = source("runtime-order")?
+        + "fn borrowed<'a>(data:*const &'a str,len:usize)->usize{\
+           ptr::metadata(ptr::slice_from_raw_parts(data,len))}\n\
+           #[unsafe(no_mangle)]pub extern \"C\" fn run_borrowed()->usize{\
+           borrowed(&\"a\" as *const &str,1)}\n";
+    let report = crate::test_source::source_provider(&text, "raw_parts_lifetimes")?;
+    let pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = pipeline::analyze_source(&report)?;
+    let result = crate::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        crate::lower::Roots {
+            entry: None,
+            exports: &[],
+        },
+        prepared,
+    )?;
+    assert!(
+        result
+            .symbols
+            .iter()
+            .any(|symbol| symbol.name == "run_borrowed" && symbol.body.is_some())
+    );
+    Ok(())
+}
+
+#[test]
 fn associated_results_preserve_actual_sizing_roles_aliases_and_relaxation() -> TestResult {
     for name in [
         "pointee-parameter",
