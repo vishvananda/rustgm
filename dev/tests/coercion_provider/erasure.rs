@@ -47,21 +47,24 @@ fn projected_erasure_requires_real_traits_sizing_equalities_and_lifetimes() -> T
     Ok(())
 }
 
-// Rust accepts and executes these three original inputs. Their desired LowIR
-// result remains acceptance; this records an independent generated-owner gap.
+/// The three original inputs that call an implicit generic tuple factory.
+const FACTORIES: [&str; 3] = [
+    "intrinsic-field-factory",
+    "assumed-intrinsic-factory",
+    "generic-control-factory",
+];
+
+fn factory(name: &str) -> std::io::Result<String> {
+    crate::resolve::fixture(&format!("{PACKET}/required/{name}.rs"))
+}
+
+// Rust accepts and executes these three original inputs. Their factory copies
+// its one field, which the discriminant protocol's `Tag: Copy` bound proves
+// Copy; a Copy value has no cleanup, so no cleanup owner is consulted.
 #[test]
-fn generic_tuple_factories_retain_the_separate_cleanup_owner_requirement() -> TestResult {
-    for name in ["intrinsic-field", "assumed-intrinsic", "generic-control"] {
-        let source = crate::resolve::fixture(&format!("{PACKET}/required/{name}-factory.rs"))?;
-        let error = lower(&source)
-            .err()
-            .ok_or("required constructor gap disappeared")?;
-        assert!(
-            error
-                .to_string()
-                .contains("defining cleanup function header is pending"),
-            "{name}: {error}"
-        );
+fn generic_tuple_factories_lower_their_copied_associated_field() -> TestResult {
+    for name in FACTORIES {
+        lower(&factory(name)?).map_err(|error| format!("{name}: {error}"))?;
     }
     Ok(())
 }
@@ -112,12 +115,16 @@ fn projected_erasure_and_intrinsic_tags_execute_actual_virtual_values() -> TestR
     let folder = root.join("obj/parallel/projected-erasure/native");
     std::fs::create_dir_all(&folder)?;
     let client = crate::resolve::fixture(&format!("{PACKET}/observer.c"))?;
-    let rows: Vec<_> = cases()?
+    let mut rows: Vec<_> = cases()?
         .into_iter()
         .filter(|(_, _, accepted)| *accepted)
+        .map(|(name, source, _)| (name, source))
         .collect();
     assert_eq!(rows.len(), 19);
-    for (name, source, _) in rows {
+    for name in FACTORIES {
+        rows.push((name.to_owned(), factory(name)?));
+    }
+    for (name, source) in rows {
         let program = lower(&source)?;
         std::fs::write(folder.join(format!("{name}.rs")), source)?;
         crate::ffi_program::check(root, &folder, &name, &program, &client, "9 23\n")?;

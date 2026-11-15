@@ -31,10 +31,11 @@ paid/unpaid markers, missing parent/principal proofs, escaping lifetimes and an
 overlap that must not infer false absence from an unknown source head.
 
 Three original intrinsic inputs remain byte-for-byte in `required/`. Rust accepts
-and executes them, but RustGM's generated generic tuple factory reaches a const
-cleanup consumer that requires an authored function header. They remain valid
-unsupported requirements, separately manifested and tested at the retained
-boundary. Active intrinsic counterparts form the same tuple aggregate with a
+and executes them. RustGM's generated generic tuple factory used to reach a const
+cleanup consumer that requires an authored function header; since the
+Copy-proved constructor fields change (`pa24-source-copy-captures.md`) the
+factory's copied field owns no cleanup and the three lower and execute with
+output `9 23`. Active intrinsic counterparts form the same tuple aggregate with a
 struct literal, isolating borrowed-field erasure without demanding a separate
 factory body. Neither form adds a wrapper Copy implementation.
 

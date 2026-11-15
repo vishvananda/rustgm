@@ -155,13 +155,23 @@ fn selected_signature(
     let Some([parameter]) = facts.types.list(parameters) else {
         return Err("source discriminant requires exactly one shared reference");
     };
+    // A lifetime of the caller's own scopes sits one binder deeper under the
+    // late input lifetime; only its already prepared relocation is accepted.
+    let referent = if facts.types.escaping_binders(input) == Some(0) {
+        Some(input)
+    } else {
+        facts.types.prepared_shift(input, 1)?
+    };
+    let region = RegionId::bound(0, 0)?;
     if result != output
-        || facts.types.kind(*parameter)
-            != Some(Kind::Reference {
-                mutable: false,
-                region: RegionId::bound(0, 0)?,
-                referent: input,
-            })
+        || referent.is_none_or(|referent| {
+            facts.types.kind(*parameter)
+                != Some(Kind::Reference {
+                    mutable: false,
+                    region,
+                    referent,
+                })
+        })
     {
         return Err("source discriminant signature differs from its actual shared input/result");
     }

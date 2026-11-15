@@ -21,9 +21,10 @@ virtual dispatch.
 
 Three original intrinsic inputs are retained byte-for-byte under `required/`,
 with their Rust acceptance and native results. They call an implicit generic tuple
-factory, whose const-cleanup consumer requires an authored function header even
-though the owner is generated. This is a separate valid unsupported requirement,
-not a passing source outcome. Active intrinsic counterparts construct the exact
-same tuple aggregate with a struct literal, so no separate factory body is demanded.
+factory. Its const-cleanup consumer used to require an authored function header
+("defining cleanup function header is pending"); the factory's one field is
+copied under the protocol's `Tag: Copy` bound, a Copy value owns no cleanup, and
+the three now lower and print9 and23 natively. Active intrinsic counterparts construct
+the exact same tuple aggregate with a struct literal, so no separate factory body is demanded.
 Both forms preserve the same DiscriminantKind identity, field type, borrowing and
 virtual dispatch; no Copy implementation was added to the wrapper.

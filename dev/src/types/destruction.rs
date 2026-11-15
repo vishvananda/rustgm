@@ -98,6 +98,17 @@ impl NeedsDrop {
             steps: 0,
         }
     }
+    /// Settle a type whose reads its body's own Copy proof selected as copies:
+    /// a Copy value owns no destructor, whatever its unnormalized head names.
+    pub(crate) fn settle_copied(&mut self, ty: TypeId) -> Result<(), &'static str> {
+        self.charge::<false>()?;
+        let scope = self
+            .scope
+            .as_mut()
+            .ok_or("copied destruction answers require a scoped query")?;
+        scope.states.insert(ty, State::Ready(false));
+        Ok(())
+    }
     /// # Errors
     /// Rejects invalid identities, by-value cycles and exhausted query work.
     pub fn demand(

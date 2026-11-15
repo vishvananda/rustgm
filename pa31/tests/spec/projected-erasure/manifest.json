@@ -218,8 +218,8 @@
       "rustc_object_status": 0,
       "native": true,
       "desired_lowir_status": 0,
-      "current_boundary": "defining cleanup function header is pending",
-      "requirement": "Real generic tuple constructor cleanup must consume its generated owner instead of requiring an authored function header."
+      "lowir_status": 0,
+      "resolution": "The factory copies its one field under the protocol's Copy bound; a Copy value owns no cleanup, so no defining cleanup owner is consulted. The earlier boundary was: defining cleanup function header is pending."
     },
     {
       "path": "pa31/tests/spec/projected-erasure/required/assumed-intrinsic-factory.rs",
@@ -227,8 +227,8 @@
       "rustc_object_status": 0,
       "native": true,
       "desired_lowir_status": 0,
-      "current_boundary": "defining cleanup function header is pending",
-      "requirement": "Real generic tuple constructor cleanup must consume its generated owner instead of requiring an authored function header."
+      "lowir_status": 0,
+      "resolution": "The factory copies its one field under the protocol's Copy bound; a Copy value owns no cleanup, so no defining cleanup owner is consulted. The earlier boundary was: defining cleanup function header is pending."
     },
     {
       "path": "pa31/tests/spec/projected-erasure/required/generic-control-factory.rs",
@@ -236,8 +236,8 @@
       "rustc_object_status": 0,
       "native": true,
       "desired_lowir_status": 0,
-      "current_boundary": "defining cleanup function header is pending",
-      "requirement": "Real generic tuple constructor cleanup must consume its generated owner instead of requiring an authored function header."
+      "lowir_status": 0,
+      "resolution": "The factory copies its one field under the protocol's Copy bound; a Copy value owns no cleanup, so no defining cleanup owner is consulted. The earlier boundary was: defining cleanup function header is pending."
     }
   ]
 }

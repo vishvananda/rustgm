@@ -306,3 +306,27 @@ client that imports its core is unchanged and still has no executable method;
 a const context cannot prove `[const] Clone` for these types ("trait obligation
 requires an unambiguous matching assumption or implementation"), although a
 `[const] Clone` bound called at run time works; coroutines are not cloned.
+
+## Copy-proved constructor fields
+
+A tuple constructor reads each field by value. When the body's own source Copy
+proof selects such a read as a copy, the parameter stays initialized, but the
+symbolic destruction query still answered "may need drop" for an unnormalized
+head such as `<T as DiscriminantKind>::Discriminant` (`type Discriminant:
+Copy`). The constructor's const body then kept a live cleanup and failed
+"defining cleanup function header is pending", so core's
+`mem::Discriminant<T>` constructor had no checked template and
+`mem::discriminant` could not be demanded.
+
+`Verifier::select_initial` (`borrow/loans/templates.rs`) now settles every read
+type that `Prepared::copied` reports as owning no destructor before it selects
+cleanups: a Copy value has none, the rule function qualification already
+applies. A field without a Copy proof is still moved, and a sibling field that
+needs drop keeps its cleanup.
+
+`dev/tests/source_closures/copied_fields.rs` declares 13 accepted and two
+rejected programs against rustc 1.98.0, and its native test compares each
+program's discriminants and drops with rustc's.
+The three `required/` factories of
+`pa31/tests/spec/projected-erasure`, which recorded this boundary, now lower and
+print `9 23` (`dev/tests/coercion_provider/erasure.rs`).

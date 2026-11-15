@@ -77,6 +77,19 @@ impl Prepared {
             .declaration
             .and_then(|_| self.decisions.get(&ty).copied()))
     }
+    /// The read types that this body's own selection proved Copy.
+    pub(crate) fn copied(
+        &self,
+        body: &Body,
+        requirements: &Arc<SourceCopyRequirements>,
+        environment: Option<&Arc<Environment>>,
+    ) -> Result<impl Iterator<Item = TypeId> + '_, &'static str> {
+        self.check(body, requirements, environment)?;
+        Ok(self
+            .decisions
+            .iter()
+            .filter_map(|(&ty, &copy)| copy.then_some(ty)))
+    }
     fn check(
         &self,
         body: &Body,

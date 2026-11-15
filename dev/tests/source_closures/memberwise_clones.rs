@@ -292,7 +292,7 @@ fn source(items: &str, body: &str) -> Result<String> {
 }
 
 /// The independent oracle: pinned rustc compiles the same library to an object.
-fn rustc(path: &Path) -> Result<std::process::Output> {
+pub(super) fn rustc(path: &Path) -> Result<std::process::Output> {
     Ok(Command::new("rustc")
         .env("RUSTC_BOOTSTRAP", "1")
         .args([
@@ -363,7 +363,7 @@ fn language_clones_keep_rejecting_members_that_are_not_clone() -> Result {
     Ok(())
 }
 
-fn program(text: &str) -> Result<rustgm::lowir::program::Program> {
+pub(super) fn program(text: &str) -> Result<rustgm::lowir::program::Program> {
     let mut config =
         rustgm::expand::config::Config::in_edition(rustgm::support::edition::Edition::Rust2024);
     config.set_lint_cap(rustgm::support::diagnostics::LintCap::Allow);
@@ -384,7 +384,7 @@ fn program(text: &str) -> Result<rustgm::lowir::program::Program> {
 }
 
 /// Link rustc's object with the observer and return what the program prints.
-fn independent(path: &Path, observer: &Path) -> Result<Vec<u8>> {
+pub(super) fn independent(path: &Path, observer: &Path) -> Result<Vec<u8>> {
     let oracle = rustc(path)?;
     if !oracle.status.success() {
         return Err(String::from_utf8_lossy(&oracle.stderr).into_owned().into());

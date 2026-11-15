@@ -120,3 +120,16 @@ Body448/Value24/Rvalue20/Code304 are observed through actual local roots.
 Candidate combined CLI/native execution still belongs to root's one fresh
 integration build; the frozen native runner, plan and companion bytes are
 unchanged.
+
+## Caller-scoped lifetimes
+
+A generic body instantiated at an enum that names a lifetime of its caller's
+scopes, such as `mem::discriminant::<Option<&T>>`, reaches
+`discriminant_value` with that lifetime one binder deeper inside the
+intrinsic's signature than in the instance's argument, because the signature
+binds its own late input lifetime. `selected_signature` therefore compares the
+shared input with the Store's already prepared relocation of the argument
+(`prepared_shift`), as the `const_eval_select` check does. A relocation that
+was never prepared still fails "source discriminant signature differs from its
+actual shared input/result". `dev/tests/source_closures/copied_fields.rs`
+(`pointer-niche-value`, `scoped-niche-parameter`) holds the controls.

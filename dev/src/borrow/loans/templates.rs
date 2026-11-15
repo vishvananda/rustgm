@@ -265,6 +265,16 @@ impl Verifier {
             None
         } else {
             let mut needed = self.needed.scoped(std::sync::Arc::clone(parameters));
+            // A read this body proved Copy leaves its place initialized; that
+            // place then has no cleanup, as for a parameter assumed Copy.
+            if let Some(requirements) = contract.builtins.as_deref() {
+                requirements
+                    .settle_copied(body, &mut needed)
+                    .map_err(|message| Error {
+                        node: Some(body.source.into()),
+                        message: message.into(),
+                    })?;
+            }
             let select = if matches!(mode, initialization::Refinement::Defining)
                 && environment.source_copy
                 && (body.const_context

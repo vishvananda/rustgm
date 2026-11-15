@@ -161,6 +161,21 @@ impl BuiltinRequirements {
             .ok_or("source Copy requires prepared body-local selection")?
             .lookup(body, requirements, self.environment.as_ref(), ty)
     }
+    /// A value whose type this body's own source Copy proof selected owns no
+    /// destructor. Without a prepared selection nothing is settled.
+    pub(crate) fn settle_copied(
+        &self,
+        body: &crate::body::ir::Body,
+        needed: &mut crate::types::destruction::NeedsDrop,
+    ) -> Result<(), &'static str> {
+        let (Some(requirements), Some(prepared)) = (&self.source_copy, &self.prepared_copy) else {
+            return Ok(());
+        };
+        for ty in prepared.copied(body, requirements, self.environment.as_ref())? {
+            needed.settle_copied(ty)?;
+        }
+        Ok(())
+    }
     pub(crate) fn copy_decision(
         &self,
         body: &crate::body::ir::Body,
