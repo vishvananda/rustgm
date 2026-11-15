@@ -20,13 +20,12 @@ no released manifest claims is not graded, whatever this brief says about it.
 | Component | Manifest | Cases | Deferred list |
 | --- | --- | --- | --- |
 | `operator-kernel` | [operator-kernel.json](tests/units/operator-kernel.json) | 739 | [5 fixtures](../docs/pa26-operator-kernel-release.md#deferred-list) |
+| `iteration-kernel` | [iteration-kernel.json](tests/units/iteration-kernel.json) | 196 | [8 fixtures](../docs/pa26-iteration-kernel-release.md#deferred-list) |
 
 From the repository root, `python3 scripts/course.py pa26 --unit operator-kernel --app BIN`
 runs one component and `make test` runs every released component.
 
-Not released: `iteration-kernel` is implemented and has a declared manifest of
-196 cases, but its `source-declarations` prerequisite is unreleased, so it has no
-references and is not graded. `hook-closure` and `format-derive` are partial.
+Not released: `hook-closure` and `format-derive` are partial.
 
 Deferred and unclaimed fixtures are not waived. Everything the self-hosting
 corpus needs stays required through PA32–PA36, PA44 and PA45. The whole

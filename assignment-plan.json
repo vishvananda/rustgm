@@ -197,10 +197,9 @@
       "owner": "pa26",
       "title": "Core iteration and residual protocols",
       "implementation": "implemented",
-      "publication": "unpublished",
+      "publication": "released",
       "depends_on": [
-        "operator-kernel",
-        "source-declarations"
+        "operator-kernel"
       ],
       "scope": "Qualified user/slice/range iteration and local Try/FromResidual control flow. Full iterator/library and imported source closure remain required.",
       "requirements": [
@@ -216,7 +215,8 @@
         "docs/pa26-mutable-iteration.md",
         "spec.md"
       ],
-      "manifest": "pa26/tests/units/iteration-kernel.json"
+      "manifest": "pa26/tests/units/iteration-kernel.json",
+      "release_evidence": "docs/pa26-iteration-kernel-release.md"
     },
     {
       "id": "raw-validity",

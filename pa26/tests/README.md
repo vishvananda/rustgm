@@ -3,8 +3,11 @@
 The released `operator-kernel` component publishes `units/operator-kernel.json`
 and the reference sidecars of its 739 cases; see the
 [release record](../../docs/pa26-operator-kernel-release.md) for its deferred
-list. The draft tables described below are the origin of those declarations and
-still feed the maintainer suites. Every other family here is unpublished.
+list. The released `iteration-kernel` component publishes
+`units/iteration-kernel.json` and the sidecars of its 196 cases; see its
+[release record](../../docs/pa26-iteration-kernel-release.md). The draft tables
+described below are the origin of those declarations and still feed the
+maintainer suites. Every other family here is unpublished.
 
 PA26 remains planned. `operator-outcomes.json` declares the draft operator and
 shared-index outcomes before reference generation; it is not an executed course

@@ -376,7 +376,7 @@
         "docs/pa26-iteration-checkpoint.md",
         "docs/pa26-mutable-iteration.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "finite iteration-kernel profile released (docs/pa26-iteration-kernel-release.md)",
       "units": [
         "iteration-kernel"
       ]
@@ -398,7 +398,7 @@
       "evidence": [
         "docs/pa26-integer-ranges.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "finite iteration-kernel profile released (docs/pa26-iteration-kernel-release.md); owned collections, other ranges and helpers unpublished under hook-closure",
       "units": [
         "iteration-kernel",
         "hook-closure"
