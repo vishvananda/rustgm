@@ -66,6 +66,8 @@ def run_inventory(root, unit):
         print("  undeclared:", name)
     if foreign:
         print(f"  skipped {len(foreign)} sources owned by another assignment: {foreign[:6]}")
+    for row, reason in document["unrepresented_rows"].items():
+        print(f"  not representable: {row}: {reason}")
     notes = collections.defaultdict(list)
     for path, rows in document["bindings"].items():
         for note in sorted({note for row in rows for note in row["notes"]}):

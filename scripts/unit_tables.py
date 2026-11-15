@@ -8,15 +8,18 @@ import json
 from pathlib import Path
 import re
 
+from unit_graphs import graph_rows
+
 ENTRY_FREE_REASON = ("Complete entry-free source contract; compare relocatable object acceptance "
                      "without adding main.")
 CODEGEN_REASON = ("The draft outcome table declares acceptance and typed lowering only; "
                   "no runtime outcome was declared for this source.")
+LIBRARY_REASON = "Library crate of a dependency graph; compare relocatable object acceptance."
 EMPTY_UNIT_REASON = ("Entry-free source contract with no exported root: acceptance only, "
                      "and both objects must define nothing.")
 # Draft tables name the independent outcome in several historical ways, strongest first.
 RUST_STATUS_KEYS = ("rustc_expected", "rustc_status", "rustc_hypothesis")
-COPIED_KEYS = ("args", "auxiliary", "library", "source_provider", "warnings", "environment")
+COPIED_KEYS = ("args", "auxiliary", "library", "source_provider", "warnings", "environment", "crates", "externs")
 CALLS_CHECK = re.compile(r"\bcheck\s*\(")
 DEFINES_CHECK = re.compile(r"\bfn\s+check\b")
 
@@ -131,6 +134,8 @@ def normalize(root, row, *, pa, unit, table, default_feature, environment=None, 
         case["environment"] = environment
     if status == 0:
         case["native"] = native_declaration(row, native_rows)
+        if rustc["kind"] == "library" and not isinstance(row.get("native"), dict):
+            case["native"] = {"kind": "object", "reason": LIBRARY_REASON}
     text = source.read_text()
     if prelude is not None and CALLS_CHECK.search(text) and not DEFINES_CHECK.search(text):
         # The maintainer native harness compiles these bodies behind its fixed check prelude.
@@ -162,7 +167,7 @@ def merge(cases, case, table, notes, bindings):
         return
     if old["exit_status"] != case["exit_status"] or old["rustc"]["status"] != case["rustc"]["status"]:
         raise ValueError(f"conflicting declared outcomes for {path}")
-    for key in ("prelude", "input"):
+    for key in ("prelude", "input", "crates", "externs", "library"):
         if old.get(key) != case.get(key):
             raise ValueError(f"conflicting {key} declarations for {path}")
     native, previous = case.get("native", {}), old.get("native", {})
@@ -185,19 +190,24 @@ def skipped(config, row):
 
 
 def table_rows(root, pa, entry):
+    """The rows of one configured table, and the rows its configuration skips with a reason."""
     data = json.loads((root / pa / entry["table"]).read_text())
-    return data[entry.get("rows", "cases")] if isinstance(data, dict) else data
+    if "graph" in entry:
+        return graph_rows(data, entry)
+    return (data[entry.get("rows", "cases")] if isinstance(data, dict) else data), {}
 
 
 def inventory(root, unit):
     """Read every configured table; return the candidate document and the rows owned elsewhere."""
     pa, config = load_config(root, unit)
-    cases, bindings, foreign = {}, {}, []
+    cases, bindings, foreign, unrepresented = {}, {}, [], {}
     for entry in config["tables"]:
         label = entry["table"] + ("#" + entry["rows"] if "rows" in entry else "")
         options = {"pa": pa, "unit": unit, "default_feature": entry["feature"],
                    "entry_free": config.get("entry_free")}
-        for row in table_rows(root, pa, entry):
+        rows, omitted = table_rows(root, pa, entry)
+        unrepresented.update({f"{label}: {name}": reason for name, reason in omitted.items()})
+        for row in rows:
             named = row.get("path") or row.get("input") or ""
             if skipped(config, row):
                 continue
@@ -231,7 +241,8 @@ def inventory(root, unit):
                                      for source in (root / pa / family).glob("*.rs"))
                   if name not in cases and name not in auxiliary]
     document = {"unit": unit, "stage": pa, "mode": "--emit-lowir", "families": families,
-                "cases": list(cases.values()), "bindings": bindings, "undeclared_sources": undeclared}
+                "cases": list(cases.values()), "bindings": bindings, "undeclared_sources": undeclared,
+                "unrepresented_rows": unrepresented}
     return document, sorted(set(foreign))
 
 

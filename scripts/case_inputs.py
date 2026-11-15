@@ -4,9 +4,11 @@
 - `prelude`: one source whose bytes precede the primary's; the compiler reads the
   joined bytes as a single translation unit on standard input.
 - `native.providers`: host C translation units linked into both native executables.
+- `crates`: provider crates the case is compiled against; see `crate_graph`.
 
 Every such file is declared in the manifest and hashed in the reference receipt.
 """
+from crate_graph import provider_sources, validate as validate_graph
 
 
 def declared_file(root, stage, name, suffix, role):
@@ -18,9 +20,9 @@ def declared_file(root, stage, name, suffix, role):
         raise ValueError(f"{stage}: invalid {role} path {name}")
 
 
-def validate(root, stage, case, primaries):
-    """Check one case's prelude and host providers; return the extra Rust sources it declares."""
-    sources = set()
+def validate(root, stage, case, primaries, mode):
+    """Check one case's prelude, host providers and crate graph; return the extra Rust sources it declares."""
+    sources = validate_graph(root, stage, case, mode)
     if "prelude" in case:
         prelude = case["prelude"]
         declared_file(root, stage, prelude, ".rs", "prelude")
@@ -51,6 +53,7 @@ def support_files(case):
     native = case.get("native")
     if isinstance(native, dict):
         files.extend(native.get("providers", []))
+    files.extend(provider_sources(case))
     return list(dict.fromkeys(files))
 
 

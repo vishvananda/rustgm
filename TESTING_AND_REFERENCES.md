@@ -105,6 +105,19 @@ candidate's through the LowIR object bridge. Both kinds are validated with the
 manifest, claimed by discovery when they are Rust sources, and hashed in the
 reference receipt beside auxiliary sources.
 
+A crate-graph case compiles a consumer against provider crates. `crates` lists
+the providers in build order, each with `name`, `path`, `crate_name`,
+`disambiguator` and its own `externs` (alias to an earlier provider); the
+case's `externs` binds the consumer. The runner builds each provider with the
+candidate (`--crate-type=lib`, its identity and `--metadata-output`), then runs
+the consumer with `--extern ALIAS=ARTIFACT` per binding and
+`--dependency-metadata ARTIFACT` per provider reached only through another.
+Pinned rustc builds the same graph as rlibs, and the native check links every
+LowIR unit as an object with the host `cc`. Only the consumer has references;
+provider sources are declared inputs, and a provider that fails to build is a
+harness error. Crate-graph cases require `--emit-lowir`. `unit_tables.json`
+reads the three draft graph table shapes through a table's `graph` key.
+
 Use the resource/storage wrappers for execution, as for other validation.
 Generation uses the existing `--bless` and optional exact `--case` selectors
 after independent outcome review. Sidecars stay beside their source inputs;

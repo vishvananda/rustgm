@@ -190,7 +190,7 @@ class DraftTables(unittest.TestCase):
             self.assertEqual(loaded, entry)
             for table in entry["tables"]:
                 with self.subTest(unit=unit, table=table["table"]):
-                    self.assertTrue(unit_tables.table_rows(REPOSITORY, owner, table))
+                    self.assertTrue(unit_tables.table_rows(REPOSITORY, owner, table)[0])
         with self.assertRaises(ValueError):
             unit_tables.load_config(REPOSITORY, "no-such-unit")
 

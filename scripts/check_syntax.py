@@ -10,6 +10,7 @@ import subprocess
 import sys
 
 from case_inputs import source_bytes
+from crate_graph import rustc_graph
 from course import ROOT, load_cases, run_case, case_environment
 from course_suites import run_released, suite_paths
 
@@ -91,6 +92,9 @@ def independent_rustc(stage, mode, case, case_directory):
         mode = case.get("mode", mode)
         command += ["--crate-type=bin" if mode == "--emit-lowir" and kind != "library" else "--crate-type=lib",
                     rustc_emission(metadata)]
+    if "crates" in case:
+        command += rustc_graph(ROOT, stage, case, case_directory / "crates",
+                               ["-C", "panic=abort", "-C", "debug-assertions=off"], case_environment(case))
     result = subprocess.run(command, capture_output=True, timeout=30, env=case_environment(case))
     (case_directory / "rustc.stderr").write_bytes(result.stderr)
     return result, binary

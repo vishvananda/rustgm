@@ -10,9 +10,11 @@ import re
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 import time
 import reference_batches
 from case_inputs import source_bytes, support_files, validate as validate_inputs
+from crate_graph import candidate_graph
 from course_suites import check_publishers, discovery, run_released, shared_outputs, suite_paths
 from storage import cleanup_roots
 
@@ -98,7 +100,7 @@ def load_cases(root, stage, *, unit=None):
                     or not child.is_relative_to((assignment / "tests").resolve())):
                 raise ValueError(f"{stage}: invalid auxiliary path {file}")
             auxiliary.add(file)
-        auxiliary.update(validate_inputs(root, stage, case, set(paths)))
+        auxiliary.update(validate_inputs(root, stage, case, set(paths), case.get("mode", manifest["mode"])))
         environment = case.get("environment", {})
         if (not isinstance(environment, dict)
                 or any(not isinstance(key, str) or not key or "=" in key or "\0" in key
@@ -145,16 +147,24 @@ def execute(command, data, timeout, *, cwd=None, env=None):
     return result.stdout, result.stderr, f"{result.returncode}\n".encode()
 
 
-def run_case(root, stage, mode, case, app, timeout):
+def run_case(root, stage, mode, case, app, timeout, *, graph=None):
+    """Run the candidate on one case; a crate-graph case first builds its providers unless given them."""
     fixture = root / stage / case["path"]
     mode = case.get("mode", mode)
     command = [*app, mode, "--edition=2024", *case.get("args", []), *library_arguments(case, mode)]
     data = source_bytes(root, stage, case)
+    source = []
     if case.get("input") == "file":
-        command.append(str(Path(stage) / case["path"]))
+        source = [str(Path(stage) / case["path"])]
         data = b""
-    actual = execute(command, data, timeout, cwd=root, env=case_environment(case))
-    return fixture, actual
+    env = case_environment(case)
+    if "crates" not in case:
+        return fixture, execute([*command, *source], data, timeout, cwd=root, env=env)
+    if graph is not None:
+        return fixture, execute([*command, *graph.arguments, *source], data, timeout, cwd=root, env=env)
+    with tempfile.TemporaryDirectory(prefix="rustgm-crates-") as folder:
+        graph = candidate_graph(root, stage, case, app, Path(folder), timeout, env)
+        return fixture, execute([*command, *graph.arguments, *source], data, timeout, cwd=root, env=env)
 
 
 def compare(fixture, actual):

@@ -16,6 +16,7 @@ import reference_batches
 
 from backend import digest, emit_object, load_tools, verify_object
 from case_inputs import source_bytes
+from crate_graph import candidate_graph, rustc_graph
 from course import ROOT, case_environment, library_arguments, load_cases, run_case
 from course_suites import run_released, suite_paths
 from check_syntax import rustc_arguments
@@ -130,18 +131,22 @@ def execution(result, outcome, compiler):
         # The pinned course runtime implements abort as exit(134), not SIGABRT.
         if result.returncode != 134 or result.stderr:
             raise ValueError(f"cppgm: expected qualified abort exit 134, got {result.returncode}")
+    elif compiler == "cppgm-linked":
+        # An object linked by the host toolchain aborts through the host C library.
+        if result.returncode != -signal.SIGABRT or result.stderr:
+            raise ValueError(f"cppgm: expected a host abort, got {result.returncode}")
     elif result.returncode != -signal.SIGABRT or b"panicked at" not in result.stderr:
         raise ValueError(f"rustc: expected a runtime panic with abort, got {result.returncode}")
 
 
-def run_executables(metadata, rustexe, native, run):
+def run_executables(metadata, rustexe, native, run, linked=False):
     """Compilation-only controls can diverge; never execute either produced binary."""
     if metadata.get("kind", "execute") in ("codegen", "object"):
         return
     outcome = metadata["outcome"]
     independent = metadata.get("rustc_outcome", outcome)
     execution(run([str(rustexe)], "rustc-run", 10), independent, "rustc")
-    execution(run([str(native)], "native-run", 10), outcome, "cppgm")
+    execution(run([str(native)], "native-run", 10), outcome, "cppgm-linked" if linked else "cppgm")
 
 
 def native_cases(manifest, cases):
@@ -275,7 +280,11 @@ def check_case(stage, mode, case, app, directory, tools, *, observed_warnings=Fa
             (folder / (label + ".stderr")).write_bytes(result.stderr)
             return result
 
-        _, actual = run_case(ROOT, stage, mode, case, [str(app)], 30)
+        graph = candidate_graph(ROOT, stage, case, [str(app)], folder / "crates", 30, env) if "crates" in case else None
+        if graph is not None:
+            evidence["crates"] = {name: {"metadata_sha256": digest(metadata), "lowir_sha256": digest(lowir)}
+                                  for name, (metadata, lowir) in graph.artifacts.items()}
+        _, actual = run_case(ROOT, stage, mode, case, [str(app)], 30, graph=graph)
         for suffix, data in zip(("stdout", "stderr", "status"), actual):
             (folder / ("frontend." + suffix)).write_bytes(data)
         if actual[2] != f"{case['exit_status']}\n".encode():
@@ -299,6 +308,9 @@ def check_case(stage, mode, case, app, directory, tools, *, observed_warnings=Fa
             command += ["--cap-lints", "allow"]
         if library:
             command += ["--crate-type=lib", "--emit=obj"]
+        if graph is not None:
+            command += rustc_graph(ROOT, stage, case, folder / "rustc-crates", [
+                "-C", "panic=abort", "-C", "overflow-checks=yes", "-C", "debug-assertions=off"], env)
         providers = host_objects(stage, case, folder, run) if case["exit_status"] == 0 else []
         command += [f"-Clink-arg={provider}" for provider in providers]
         if providers:
@@ -310,6 +322,8 @@ def check_case(stage, mode, case, app, directory, tools, *, observed_warnings=Fa
             text = folder / "output.lowir"
             text.write_bytes(actual[0])
             native = folder / ("native-output.o" if library else "native-output")
+            linked = bool(providers or graph is not None)
+
             def object_run(command):
                 result = run(command, "backend-object")
                 if result.returncode:
@@ -322,12 +336,14 @@ def check_case(stage, mode, case, app, directory, tools, *, observed_warnings=Fa
                 if declares_empty_lowir(case):
                     empty_objects((("rustc", rustexe), ("cppgm", native)))
                 evidence["objects"] = {"rustc_sha256": digest(rustexe), "native_sha256": digest(native)}
-            elif providers:
-                # The standalone executable writer cannot link host objects: emit the program's
-                # object through the same bridge as a library and let the host linker join them.
-                unit = folder / "native-unit.o"
-                emit_object(text, unit, tools, run=object_run)
-                result = run(["cc", str(unit), *map(str, providers), "-lm", "-o", str(native)], "link")
+            elif linked:
+                # The standalone executable writer takes one unit and no host objects: emit every
+                # LowIR unit through the library object bridge and let the host linker join them.
+                units = []
+                for index, unit in enumerate([*(graph.units if graph is not None else []), text]):
+                    units.append(folder / f"native-unit-{index}.o")
+                    emit_object(unit, units[-1], tools, run=object_run)
+                result = run(["cc", *map(str, units), *map(str, providers), "-lm", "-o", str(native)], "link")
                 if result.returncode:
                     raise ValueError(f"host link failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
             else:
@@ -338,9 +354,9 @@ def check_case(stage, mode, case, app, directory, tools, *, observed_warnings=Fa
                     if result.returncode:
                         raise ValueError(f"{label} failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
             evidence["native"] = case["native"]
-            run_executables(case["native"], rustexe, native, run)
-        for executable in (rustexe, folder / "native-output", folder / "native-output.o",
-                           folder / "native-unit.o", *providers):
+            run_executables(case["native"], rustexe, native, run, linked)
+        for executable in (rustexe, folder / "native-output", folder / "native-output.o", *providers,
+                           *folder.glob("native-unit-*.o"), *folder.glob("rustc-crates/*.rlib")):
             executable.unlink(missing_ok=True)
         evidence["passed"] = True
     except (ValueError, OSError, subprocess.SubprocessError) as error:
@@ -357,7 +373,8 @@ def check(app, jobs, stage="pa11", *, unit=None, case_paths=None):
         raise ValueError(f"expected pinned rustc 1.98.0: {version.strip()}")
     identity = candidate_identity(app)
     required = {"lowir", "lowir2native"} if any(c["rustc"]["kind"] == "program" for c in cases) else set()
-    if any(c.get("native", {}).get("kind") == "object" or "providers" in c.get("native", {}) for c in cases):
+    if any(c.get("native", {}).get("kind") == "object" or "providers" in c.get("native", {}) or "crates" in c
+           for c in cases):
         required.add("cppgm++")
     tools = load_tools(tuple(sorted(required)))  # Hash each required immutable tool once.
     directory = ROOT / "obj/native" / paths.evidence
@@ -391,6 +408,9 @@ def check(app, jobs, stage="pa11", *, unit=None, case_paths=None):
     linked = sum("providers" in native for native in accepted)
     if linked:
         print(f"  {linked} programs linked with their declared host C providers")
+    graphs = sum("crates" in case for case in cases)
+    if graphs:
+        print(f"  {graphs} cases compiled against their declared provider crates")
     differences = sum(c.get("native", {}).get("rustc_outcome", c.get("native", {}).get("outcome"))
                       != c.get("native", {}).get("outcome") for c in cases)
     if differences:
