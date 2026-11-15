@@ -1,5 +1,11 @@
 # PA26 fixture development
 
+The released `operator-kernel` component publishes `units/operator-kernel.json`
+and the reference sidecars of its 739 cases; see the
+[release record](../../docs/pa26-operator-kernel-release.md) for its deferred
+list. The draft tables described below are the origin of those declarations and
+still feed the maintainer suites. Every other family here is unpublished.
+
 PA26 remains planned. `operator-outcomes.json` declares the draft operator and
 shared-index outcomes before reference generation; it is not an executed course
 manifest. Its inputs belong to the `spec/operators` family. The maintainer
@@ -12,7 +18,7 @@ spelling-only lookalikes, method conformance, moved operands, shared-index write
 and receiver loans during index argument evaluation. Native programs additionally
 check operand evaluation order and actual selected method execution.
 
-No text sidecars are published yet. Release requires the remaining PA26 families,
+Text sidecars exist only for released component cases. Whole-PA release requires the remaining PA26 families,
 reviewed complete outcomes and references, the cumulative source/native suites,
 and the assignment activation reviewed by the integrator.
 

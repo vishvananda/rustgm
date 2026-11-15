@@ -1,0 +1,42 @@
+function @rg.15() -> void {
+  block ^b0:
+    %t0 = cmp eq u16 65535, 65535
+    %t1 = convert trunc i1 i64 %t0
+    call void @rg.13(%t1)
+    return void
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  slot $s1 : i32
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    store i32 0, $s1
+    %t2 = load i32 $s1
+    %t3 = cmp eq i32 %t2, 0
+    branch %t3, ^b4, ^b5
+  block ^b5:
+    %t4 = cmp eq i32 1, 2147483648
+    %t5 = cmp eq i32 %t2, 4294967295
+    %t6 = binary and i64 %t4, %t5
+    branch %t6, ^b4, ^b6
+  block ^b6:
+    %t7 = binary div i32 1, %t2
+    jump ^b3
+  block ^b3:
+    return void
+  block ^b4:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.15()
+    return i64 0
+}

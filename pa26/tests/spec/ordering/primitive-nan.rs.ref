@@ -1,0 +1,175 @@
+function @rg.16() -> void {
+  slot $s0 : f64
+  slot $s1 : i1
+  slot $s2 : ptr
+  slot $s3 : ptr
+  slot $s4 : obj<16x8>
+  block ^b0:
+    %t0 = binary div f64 0.00000000000000000e0, 0.00000000000000000e0
+    store f64 %t0, $s0
+    %t1 = addr $s0
+    store ptr %t1, $s2
+    %t2 = load ptr $s2
+    %t3 = addr $s0
+    store ptr %t3, $s3
+    %t4 = load ptr $s3
+    %t5 = addr $s4
+    call void @rg.15.i3(%t5, %t2, %t4)
+    %t6 = load i64 $s4
+    %t7 = cmp eq i64 %t6, 0
+    branch %t7, ^b4, ^b3
+  block ^b3:
+    jump ^b5
+  block ^b5:
+    jump ^b6
+  block ^b6:
+    store i1 0, $s1
+    jump ^b1
+  block ^b4:
+    jump ^b2
+  block ^b2:
+    store i1 1, $s1
+    jump ^b1
+  block ^b1:
+    %t8 = load i1 $s1
+    call void @rg.13(%t8)
+    %t9 = load f64 $s0
+    %t10 = cmp lt f64 %t9, 1.00000000000000000e0
+    %t11 = convert trunc i1 i64 %t10
+    %t12 = unary not i1 %t11
+    call void @rg.13(%t12)
+    %t13 = load f64 $s0
+    %t14 = cmp le f64 %t13, 1.00000000000000000e0
+    %t15 = convert trunc i1 i64 %t14
+    %t16 = unary not i1 %t15
+    call void @rg.13(%t16)
+    %t17 = load f64 $s0
+    %t18 = cmp gt f64 %t17, 1.00000000000000000e0
+    %t19 = convert trunc i1 i64 %t18
+    %t20 = unary not i1 %t19
+    call void @rg.13(%t20)
+    %t21 = load f64 $s0
+    %t22 = cmp ge f64 %t21, 1.00000000000000000e0
+    %t23 = convert trunc i1 i64 %t22
+    %t24 = unary not i1 %t23
+    call void @rg.13(%t24)
+    return void
+  block ^b7:
+    unreachable
+  block ^b8:
+    unreachable
+}
+function @rg.15.i3(%p0 : ptr, %p1 : ptr, %p2 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  slot $s2 : obj<16x8>
+  block ^b0:
+    store ptr %p1, $s0
+    store ptr %p2, $s1
+    %t0 = load ptr $s0
+    %t1 = load ptr $s1
+    %t2 = addr $s2
+    call void @rg.68.i4(%t2, %t0, %t1)
+    %t3 = addr $s2
+    copyobj 16x8 %t3, %p0
+    return void
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.68.i4(%p0 : ptr, %p1 : ptr, %p2 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  slot $s2 : obj<16x8>
+  slot $s3 : obj<1x1>
+  slot $s4 : obj<16x8>
+  slot $s5 : obj<1x1>
+  slot $s6 : obj<16x8>
+  slot $s7 : obj<1x1>
+  slot $s8 : obj<16x8>
+  block ^b0:
+    store ptr %p1, $s0
+    store ptr %p2, $s1
+    %t0 = load ptr $s0
+    %t1 = load f64 %t0
+    %t2 = load ptr $s1
+    %t3 = load f64 %t2
+    %t4 = cmp lt f64 %t1, %t3
+    %t5 = convert trunc i1 i64 %t4
+    branch %t5, ^b1, ^b2
+  block ^b2:
+    %t6 = cmp eq f64 %t1, %t3
+    %t7 = convert trunc i1 i64 %t6
+    branch %t7, ^b3, ^b4
+  block ^b4:
+    %t8 = cmp gt f64 %t1, %t3
+    %t9 = convert trunc i1 i64 %t8
+    branch %t9, ^b5, ^b6
+  block ^b6:
+    store i64 0, $s2
+    %t10 = addr $s2
+    copyobj 16x8 %t10, %p0
+    return void
+  block ^b5:
+    store i8 1, $s3
+    store i64 1, $s4
+    %t11 = addr $s4
+    %t12 = index u8 %t11, 8
+    %t13 = addr $s3
+    copyobj 1x1 %t13, %t12
+    %t14 = addr $s4
+    copyobj 16x8 %t14, %p0
+    return void
+  block ^b3:
+    store i8 0, $s5
+    store i64 1, $s6
+    %t15 = addr $s6
+    %t16 = index u8 %t15, 8
+    %t17 = addr $s5
+    copyobj 1x1 %t17, %t16
+    %t18 = addr $s6
+    copyobj 16x8 %t18, %p0
+    return void
+  block ^b1:
+    store i8 255, $s7
+    store i64 1, $s8
+    %t19 = addr $s8
+    %t20 = index u8 %t19, 8
+    %t21 = addr $s7
+    copyobj 1x1 %t21, %t20
+    %t22 = addr $s8
+    copyobj 16x8 %t22, %p0
+    return void
+}
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.16()
+    return i64 0
+}

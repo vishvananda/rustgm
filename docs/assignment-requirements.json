@@ -276,7 +276,7 @@
         "docs/pa26-selected-index-captures.md",
         "docs/implicit-assignment-demand.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "finite operator-kernel profile released (docs/pa26-operator-kernel-release.md); remaining method/source forms unpublished under hook-closure",
       "units": [
         "operator-kernel",
         "hook-closure"
@@ -301,7 +301,7 @@
         "docs/pa26-sequence-ordering.md",
         "docs/pa26-reference-comparisons.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "operator-kernel component released (docs/pa26-operator-kernel-release.md); whole PA26 unpublished",
       "units": [
         "operator-kernel"
       ]
@@ -326,7 +326,7 @@
         "docs/source-shift-or-checkpoint.md",
         "docs/pa26-comparison-performance.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "finite operator-kernel profile released (docs/pa26-operator-kernel-release.md); remaining operator/coercion surface unpublished under hook-closure",
       "units": [
         "operator-kernel",
         "hook-closure"
@@ -351,7 +351,7 @@
         "docs/pa26-nominal-checkpoint.md",
         "docs/pa26-environment-checkpoint.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "operator-kernel component released (docs/pa26-operator-kernel-release.md); whole PA26 unpublished",
       "units": [
         "operator-kernel"
       ]

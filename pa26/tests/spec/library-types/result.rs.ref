@@ -1,0 +1,97 @@
+function @rg.14() -> void {
+  slot $s0 : obj<16x8>
+  slot $s1 : obj<16x8>
+  block ^b0:
+    %t0 = addr $s0
+    call void @rg.42.i2(%t0, 7)
+    %t1 = addr $s0
+    %t2 = call u16 @rg.13(%t1)
+    %t3 = addr $s1
+    call void @rg.44.i3(%t3, 9)
+    %t4 = addr $s1
+    %t5 = call u16 @rg.13(%t4)
+    return void
+}
+function @rg.42.i2(%p0 : ptr, %p1 : u8) -> void {
+  slot $s0 : u8
+  slot $s1 : obj<16x8>
+  block ^b0:
+    store u8 %p1, $s0
+    %t0 = load u8 $s0
+    store i64 0, $s1
+    %t1 = addr $s1
+    %t2 = index u8 %t1, 8
+    store u8 %t0, %t2
+    %t3 = addr $s1
+    copyobj 16x8 %t3, %p0
+    return void
+}
+function @rg.13(%p0 : ptr) -> u16 {
+  slot $s0 : obj<16x8>
+  slot $s1 : u16
+  slot $s2 : u8
+  slot $s3 : u16
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 16x8 %p0, %t0
+    %t1 = load i64 $s0
+    %t2 = cmp eq i64 %t1, 0
+    branch %t2, ^b4, ^b3
+  block ^b3:
+    jump ^b5
+  block ^b5:
+    %t3 = load i64 $s0
+    %t4 = cmp eq i64 %t3, 1
+    branch %t4, ^b8, ^b7
+  block ^b7:
+    jump ^b9
+  block ^b9:
+    unreachable
+  block ^b8:
+    %t5 = addr $s0
+    %t6 = index u8 %t5, 8
+    jump ^b6
+  block ^b6:
+    %t7 = addr $s0
+    %t8 = index u8 %t7, 8
+    %t9 = load u16 %t8
+    store u16 %t9, $s3
+    %t10 = load u16 $s3
+    store u16 %t10, $s1
+    jump ^b1
+  block ^b4:
+    %t11 = addr $s0
+    %t12 = index u8 %t11, 8
+    jump ^b2
+  block ^b2:
+    %t13 = addr $s0
+    %t14 = index u8 %t13, 8
+    %t15 = load u8 %t14
+    store u8 %t15, $s2
+    %t16 = load u8 $s2
+    %t17 = convert zext u16 u8 %t16
+    store u16 %t17, $s1
+    jump ^b1
+  block ^b1:
+    %t18 = load u16 $s1
+    return u16 %t18
+}
+function @rg.44.i3(%p0 : ptr, %p1 : u16) -> void {
+  slot $s0 : u16
+  slot $s1 : obj<16x8>
+  block ^b0:
+    store u16 %p1, $s0
+    %t0 = load u16 $s0
+    store i64 1, $s1
+    %t1 = addr $s1
+    %t2 = index u8 %t1, 8
+    store u16 %t0, %t2
+    %t3 = addr $s1
+    copyobj 16x8 %t3, %p0
+    return void
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.14()
+    return i64 0
+}

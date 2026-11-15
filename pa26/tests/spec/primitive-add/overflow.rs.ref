@@ -1,0 +1,39 @@
+function @rg.16() -> void {
+  block ^b0:
+    %t0 = call u8 @rg.15.i3(255, 1)
+    return void
+}
+function @rg.15.i3(%p0 : u8, %p1 : u8) -> u8 {
+  slot $s0 : u8
+  slot $s1 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    store u8 %p1, $s1
+    %t0 = load u8 $s0
+    %t1 = load u8 $s1
+    %t2 = call u8 @rg.47.i4(%t0, %t1)
+    return u8 %t2
+}
+function @rg.47.i4(%p0 : u8, %p1 : u8) -> u8 {
+  slot $s0 : u8
+  slot $s1 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    store u8 %p1, $s1
+    %t0 = load u8 $s0
+    %t1 = load u8 $s1
+    %t2 = binary add u8 %t0, %t1
+    %t3 = cmp ult u8 %t2, %t0
+    branch %t3, ^b1, ^b2
+  block ^b2:
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.16()
+    return i64 0
+}

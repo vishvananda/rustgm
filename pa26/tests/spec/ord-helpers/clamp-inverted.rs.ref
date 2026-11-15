@@ -1,0 +1,90 @@
+function @rg.15() -> void {
+  block ^b0:
+    %t0 = call u8 @rg.76.i3(2, 3, 1)
+    return void
+}
+function @rg.76.i3(%p0 : u8, %p1 : u8, %p2 : u8) -> u8 {
+  slot $s0 : u8
+  slot $s1 : u8
+  slot $s2 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    store u8 %p1, $s1
+    store u8 %p2, $s2
+    %t0 = addr $s1
+    %t1 = addr $s2
+    %t2 = call i1 @rg.68.i4(%t0, %t1)
+    branch %t2, ^b1, ^b6
+  block ^b6:
+    jump ^b7
+  block ^b1:
+    %t3 = addr $s0
+    %t4 = addr $s1
+    %t5 = call i1 @rg.67.i5(%t3, %t4)
+    branch %t5, ^b2, ^b3
+  block ^b3:
+    %t6 = addr $s0
+    %t7 = addr $s2
+    %t8 = call i1 @rg.69.i6(%t6, %t7)
+    branch %t8, ^b4, ^b5
+  block ^b5:
+    %t9 = load u8 $s0
+    return u8 %t9
+  block ^b4:
+    %t10 = load u8 $s2
+    return u8 %t10
+  block ^b2:
+    %t11 = load u8 $s1
+    return u8 %t11
+  block ^b7:
+    call void @abort()
+    unreachable
+}
+function @rg.68.i4(%p0 : ptr, %p1 : ptr) -> i1 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = load ptr $s0
+    %t1 = load u8 %t0
+    %t2 = load ptr $s1
+    %t3 = load u8 %t2
+    %t4 = cmp ule u8 %t1, %t3
+    %t5 = convert trunc i1 i64 %t4
+    return i1 %t5
+}
+function @rg.67.i5(%p0 : ptr, %p1 : ptr) -> i1 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = load ptr $s0
+    %t1 = load u8 %t0
+    %t2 = load ptr $s1
+    %t3 = load u8 %t2
+    %t4 = cmp ult u8 %t1, %t3
+    %t5 = convert trunc i1 i64 %t4
+    return i1 %t5
+}
+function @rg.69.i6(%p0 : ptr, %p1 : ptr) -> i1 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = load ptr $s0
+    %t1 = load u8 %t0
+    %t2 = load ptr $s1
+    %t3 = load u8 %t2
+    %t4 = cmp ugt u8 %t1, %t3
+    %t5 = convert trunc i1 i64 %t4
+    return i1 %t5
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.15()
+    return i64 0
+}

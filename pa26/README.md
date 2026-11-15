@@ -6,6 +6,8 @@ Thirteen source CLI/prepared outcomes and nine native programs qualify; all elev
 ordinary import commands remain bootstrap requirements, never parity negatives.
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
+Released component: [operator-kernel](../docs/pa26-operator-kernel-release.md),
+739 cases in `tests/units/operator-kernel.json`, with its own deferred list.
 Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The common source profile is Rust 1.98.0, initially edition
 2024 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
 

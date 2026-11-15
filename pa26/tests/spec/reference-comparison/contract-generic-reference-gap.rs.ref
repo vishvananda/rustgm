@@ -1,0 +1,62 @@
+global @rg.data.0 : obj<1x1> [storage=readonly] = {
+  u8 1
+}
+global @rg.data.1 : obj<1x1> [storage=readonly] = {
+  u8 2
+}
+function @rg.16() -> void {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    %t0 = addr @rg.data.0
+    store ptr %t0, $s0
+    %t1 = load ptr $s0
+    %t2 = addr @rg.data.1
+    store ptr %t2, $s1
+    %t3 = load ptr $s1
+    %t4 = call i1 @rg.15.i3(%t1, %t3)
+    return void
+}
+function @rg.15.i3(%p0 : ptr, %p1 : ptr) -> i1 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = addr $s0
+    %t1 = addr $s1
+    %t2 = call i1 @rg.69.i4(%t0, %t1)
+    return i1 %t2
+}
+function @rg.69.i4(%p0 : ptr, %p1 : ptr) -> i1 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = load ptr $s0
+    %t1 = load ptr %t0
+    %t2 = load ptr $s1
+    %t3 = load ptr %t2
+    %t4 = call i1 @rg.69.i5(%t1, %t3)
+    return i1 %t4
+}
+function @rg.69.i5(%p0 : ptr, %p1 : ptr) -> i1 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = load ptr $s0
+    %t1 = load u8 %t0
+    %t2 = load ptr $s1
+    %t3 = load u8 %t2
+    %t4 = cmp ult u8 %t1, %t3
+    %t5 = convert trunc i1 i64 %t4
+    return i1 %t5
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.16()
+    return i64 0
+}

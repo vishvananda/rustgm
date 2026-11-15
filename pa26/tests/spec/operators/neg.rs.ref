@@ -1,0 +1,41 @@
+function @rg.18() -> void {
+  slot $s0 : obj<4x4>
+  block ^b0:
+    %t0 = addr $s0
+    call void @rg.14(%t0, 7)
+    %t1 = addr $s0
+    %t2 = call i32 @rg.17(%t1)
+    return void
+}
+function @rg.14(%p0 : ptr, %p1 : i32) -> void {
+  slot $s0 : i32
+  slot $s1 : obj<4x4>
+  block ^b0:
+    store i32 %p1, $s0
+    %t0 = load i32 $s0
+    store i32 %t0, $s1
+    %t1 = addr $s1
+    copyobj 4x4 %t1, %p0
+    return void
+}
+function @rg.17(%p0 : ptr) -> i32 {
+  slot $s0 : obj<4x4>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 4x4 %p0, %t0
+    %t1 = load i32 $s0
+    %t2 = cmp eq i32 %t1, 2147483648
+    branch %t2, ^b1, ^b2
+  block ^b2:
+    %t3 = unary neg i32 %t1
+    return i32 %t3
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.18()
+    return i64 0
+}

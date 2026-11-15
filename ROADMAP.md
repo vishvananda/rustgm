@@ -429,6 +429,14 @@ limit controls, pass text, independent Rust and native checks with frozen a08ab1
 Full 43177635950 passed on its release documentation commit. PA25 and every other
 parent assignment remain planned.
 
+Released components (each parent assignment stays planned; the contract is the
+unit manifest plus the deferred list in its release record):
+
+| Unit | PA | Cases | Deferred | Release record |
+| --- | --- | --- | --- | --- |
+| `const-machine` | 25 | 113 | 2 maintainer-level limits | [record](docs/pa25-const-machine-release.md) |
+| `operator-kernel` | 26 | 739 | 5 | [record](docs/pa26-operator-kernel-release.md) |
+
 | PA | Assignment | Status |
 | --- | --- | --- |
 | [1](pa1/README.md) | Source and tokens | implemented-draft |

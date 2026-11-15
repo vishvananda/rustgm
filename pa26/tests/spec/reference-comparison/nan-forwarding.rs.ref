@@ -1,0 +1,387 @@
+function @rg.15() -> void {
+  slot $s0 : f64
+  slot $s1 : ptr
+  slot $s2 : i1
+  slot $s3 : ptr
+  slot $s4 : ptr
+  slot $s5 : ptr
+  slot $s6 : ptr
+  slot $s7 : ptr
+  slot $s8 : ptr
+  slot $s9 : obj<16x8>
+  slot $s10 : ptr
+  slot $s11 : ptr
+  slot $s12 : ptr
+  slot $s13 : ptr
+  slot $s14 : ptr
+  slot $s15 : ptr
+  slot $s16 : ptr
+  slot $s17 : ptr
+  block ^b0:
+    %t0 = binary div f64 0.00000000000000000e0, 0.00000000000000000e0
+    store f64 %t0, $s0
+    %t1 = addr $s0
+    store ptr %t1, $s1
+    %t2 = addr $s1
+    store ptr %t2, $s3
+    %t3 = load ptr $s3
+    %t4 = addr $s1
+    store ptr %t4, $s4
+    %t5 = load ptr $s4
+    %t6 = call i1 @rg.47.i3(%t3, %t5)
+    %t7 = unary not i1 %t6
+    call void @rg.13(%t7)
+    %t8 = addr $s1
+    store ptr %t8, $s5
+    %t9 = load ptr $s5
+    %t10 = addr $s1
+    store ptr %t10, $s6
+    %t11 = load ptr $s6
+    %t12 = call i1 @rg.48.i5(%t9, %t11)
+    call void @rg.13(%t12)
+    %t13 = addr $s1
+    store ptr %t13, $s7
+    %t14 = load ptr $s7
+    %t15 = addr $s1
+    store ptr %t15, $s8
+    %t16 = load ptr $s8
+    %t17 = addr $s9
+    call void @rg.68.i7(%t17, %t14, %t16)
+    %t18 = load i64 $s9
+    %t19 = cmp eq i64 %t18, 0
+    branch %t19, ^b4, ^b3
+  block ^b3:
+    jump ^b5
+  block ^b5:
+    jump ^b6
+  block ^b6:
+    store i1 0, $s2
+    jump ^b1
+  block ^b4:
+    jump ^b2
+  block ^b2:
+    store i1 1, $s2
+    jump ^b1
+  block ^b1:
+    %t20 = load i1 $s2
+    call void @rg.13(%t20)
+    %t21 = addr $s1
+    store ptr %t21, $s10
+    %t22 = load ptr $s10
+    %t23 = addr $s1
+    store ptr %t23, $s11
+    %t24 = load ptr $s11
+    %t25 = call i1 @rg.69.i9(%t22, %t24)
+    %t26 = unary not i1 %t25
+    call void @rg.13(%t26)
+    %t27 = addr $s1
+    store ptr %t27, $s12
+    %t28 = load ptr $s12
+    %t29 = addr $s1
+    store ptr %t29, $s13
+    %t30 = load ptr $s13
+    %t31 = call i1 @rg.70.i11(%t28, %t30)
+    %t32 = unary not i1 %t31
+    call void @rg.13(%t32)
+    %t33 = addr $s1
+    store ptr %t33, $s14
+    %t34 = load ptr $s14
+    %t35 = addr $s1
+    store ptr %t35, $s15
+    %t36 = load ptr $s15
+    %t37 = call i1 @rg.71.i13(%t34, %t36)
+    %t38 = unary not i1 %t37
+    call void @rg.13(%t38)
+    %t39 = addr $s1
+    store ptr %t39, $s16
+    %t40 = load ptr $s16
+    %t41 = addr $s1
+    store ptr %t41, $s17
+    %t42 = load ptr $s17
+    %t43 = call i1 @rg.72.i15(%t40, %t42)
+    %t44 = unary not i1 %t43
+    call void @rg.13(%t44)
+    return void
+  block ^b7:
+    unreachable
+  block ^b8:
+    unreachable
+}
+function @rg.47.i3(%p0 : ptr, %p1 : ptr) -> i1 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = load ptr $s0
+    %t1 = load ptr %t0
+    %t2 = load ptr $s1
+    %t3 = load ptr %t2
+    %t4 = call i1 @rg.47.i4(%t1, %t3)
+    return i1 %t4
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.48.i5(%p0 : ptr, %p1 : ptr) -> i1 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = load ptr $s0
+    %t1 = load ptr %t0
+    %t2 = load ptr $s1
+    %t3 = load ptr %t2
+    %t4 = call i1 @rg.48.i6(%t1, %t3)
+    return i1 %t4
+}
+function @rg.68.i7(%p0 : ptr, %p1 : ptr, %p2 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  slot $s2 : obj<16x8>
+  block ^b0:
+    store ptr %p1, $s0
+    store ptr %p2, $s1
+    %t0 = load ptr $s0
+    %t1 = load ptr %t0
+    %t2 = load ptr $s1
+    %t3 = load ptr %t2
+    %t4 = addr $s2
+    call void @rg.68.i8(%t4, %t1, %t3)
+    %t5 = addr $s2
+    copyobj 16x8 %t5, %p0
+    return void
+}
+function @rg.69.i9(%p0 : ptr, %p1 : ptr) -> i1 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = load ptr $s0
+    %t1 = load ptr %t0
+    %t2 = load ptr $s1
+    %t3 = load ptr %t2
+    %t4 = call i1 @rg.69.i10(%t1, %t3)
+    return i1 %t4
+}
+function @rg.70.i11(%p0 : ptr, %p1 : ptr) -> i1 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = load ptr $s0
+    %t1 = load ptr %t0
+    %t2 = load ptr $s1
+    %t3 = load ptr %t2
+    %t4 = call i1 @rg.70.i12(%t1, %t3)
+    return i1 %t4
+}
+function @rg.71.i13(%p0 : ptr, %p1 : ptr) -> i1 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = load ptr $s0
+    %t1 = load ptr %t0
+    %t2 = load ptr $s1
+    %t3 = load ptr %t2
+    %t4 = call i1 @rg.71.i14(%t1, %t3)
+    return i1 %t4
+}
+function @rg.72.i15(%p0 : ptr, %p1 : ptr) -> i1 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = load ptr $s0
+    %t1 = load ptr %t0
+    %t2 = load ptr $s1
+    %t3 = load ptr %t2
+    %t4 = call i1 @rg.72.i16(%t1, %t3)
+    return i1 %t4
+}
+function @rg.47.i4(%p0 : ptr, %p1 : ptr) -> i1 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = load ptr $s0
+    %t1 = load f64 %t0
+    %t2 = load ptr $s1
+    %t3 = load f64 %t2
+    %t4 = cmp eq f64 %t1, %t3
+    %t5 = convert trunc i1 i64 %t4
+    return i1 %t5
+}
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.48.i6(%p0 : ptr, %p1 : ptr) -> i1 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = load ptr $s0
+    %t1 = load f64 %t0
+    %t2 = load ptr $s1
+    %t3 = load f64 %t2
+    %t4 = cmp ne f64 %t1, %t3
+    %t5 = convert trunc i1 i64 %t4
+    return i1 %t5
+}
+function @rg.68.i8(%p0 : ptr, %p1 : ptr, %p2 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  slot $s2 : obj<16x8>
+  slot $s3 : obj<1x1>
+  slot $s4 : obj<16x8>
+  slot $s5 : obj<1x1>
+  slot $s6 : obj<16x8>
+  slot $s7 : obj<1x1>
+  slot $s8 : obj<16x8>
+  block ^b0:
+    store ptr %p1, $s0
+    store ptr %p2, $s1
+    %t0 = load ptr $s0
+    %t1 = load f64 %t0
+    %t2 = load ptr $s1
+    %t3 = load f64 %t2
+    %t4 = cmp lt f64 %t1, %t3
+    %t5 = convert trunc i1 i64 %t4
+    branch %t5, ^b1, ^b2
+  block ^b2:
+    %t6 = cmp eq f64 %t1, %t3
+    %t7 = convert trunc i1 i64 %t6
+    branch %t7, ^b3, ^b4
+  block ^b4:
+    %t8 = cmp gt f64 %t1, %t3
+    %t9 = convert trunc i1 i64 %t8
+    branch %t9, ^b5, ^b6
+  block ^b6:
+    store i64 0, $s2
+    %t10 = addr $s2
+    copyobj 16x8 %t10, %p0
+    return void
+  block ^b5:
+    store i8 1, $s3
+    store i64 1, $s4
+    %t11 = addr $s4
+    %t12 = index u8 %t11, 8
+    %t13 = addr $s3
+    copyobj 1x1 %t13, %t12
+    %t14 = addr $s4
+    copyobj 16x8 %t14, %p0
+    return void
+  block ^b3:
+    store i8 0, $s5
+    store i64 1, $s6
+    %t15 = addr $s6
+    %t16 = index u8 %t15, 8
+    %t17 = addr $s5
+    copyobj 1x1 %t17, %t16
+    %t18 = addr $s6
+    copyobj 16x8 %t18, %p0
+    return void
+  block ^b1:
+    store i8 255, $s7
+    store i64 1, $s8
+    %t19 = addr $s8
+    %t20 = index u8 %t19, 8
+    %t21 = addr $s7
+    copyobj 1x1 %t21, %t20
+    %t22 = addr $s8
+    copyobj 16x8 %t22, %p0
+    return void
+}
+function @rg.69.i10(%p0 : ptr, %p1 : ptr) -> i1 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = load ptr $s0
+    %t1 = load f64 %t0
+    %t2 = load ptr $s1
+    %t3 = load f64 %t2
+    %t4 = cmp lt f64 %t1, %t3
+    %t5 = convert trunc i1 i64 %t4
+    return i1 %t5
+}
+function @rg.70.i12(%p0 : ptr, %p1 : ptr) -> i1 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = load ptr $s0
+    %t1 = load f64 %t0
+    %t2 = load ptr $s1
+    %t3 = load f64 %t2
+    %t4 = cmp le f64 %t1, %t3
+    %t5 = convert trunc i1 i64 %t4
+    return i1 %t5
+}
+function @rg.71.i14(%p0 : ptr, %p1 : ptr) -> i1 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = load ptr $s0
+    %t1 = load f64 %t0
+    %t2 = load ptr $s1
+    %t3 = load f64 %t2
+    %t4 = cmp gt f64 %t1, %t3
+    %t5 = convert trunc i1 i64 %t4
+    return i1 %t5
+}
+function @rg.72.i16(%p0 : ptr, %p1 : ptr) -> i1 {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = load ptr $s0
+    %t1 = load f64 %t0
+    %t2 = load ptr $s1
+    %t3 = load f64 %t2
+    %t4 = cmp ge f64 %t1, %t3
+    %t5 = convert trunc i1 i64 %t4
+    return i1 %t5
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.15()
+    return i64 0
+}

@@ -1,0 +1,1 @@
+ERROR: file 0: 67: mutable static access requires an unsafe context

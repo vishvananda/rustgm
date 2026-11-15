@@ -29,7 +29,7 @@
       "owner": "pa26",
       "title": "Canonical operator and indexing kernels",
       "implementation": "implemented",
-      "publication": "unpublished",
+      "publication": "released",
       "depends_on": [],
       "scope": "Qualified canonical operators/comparisons/indexing/assignment and nominal constructor protocols; actual source dispatch and remaining library/coercion forms continue separately.",
       "requirements": [
@@ -50,7 +50,9 @@
         "docs/source-shift-or-checkpoint.md",
         "docs/operator-kernel-blockers.md",
         "docs/implicit-assignment-demand.md"
-      ]
+      ],
+      "manifest": "pa26/tests/units/operator-kernel.json",
+      "release_evidence": "docs/pa26-operator-kernel-release.md"
     },
     {
       "id": "unsafe-places",
