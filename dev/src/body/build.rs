@@ -363,11 +363,11 @@ enum Work {
     Place(NodeId),
     /// A destructuring assignment, after its right operand's place.
     Destructure(NodeId),
-    /// One leaf's store, after its place.
+    /// One leaf's store of its element's value, after its place.
     DestructureStore {
         node: NodeId,
         leaf: NodeId,
-        source: Option<Place>,
+        value: Option<ValueId>,
     },
     AdjustedPlace {
         operand: NodeId,
@@ -1013,8 +1013,8 @@ impl<'a> Builder<'a> {
             }
             Work::Place(node) => self.enter_place(node)?,
             Work::Destructure(node) => self.destructure(node)?,
-            Work::DestructureStore { node, leaf, source } => {
-                self.destructure_store(node, leaf, source)?;
+            Work::DestructureStore { node, leaf, value } => {
+                self.destructure_store(node, leaf, value)?;
             }
             Work::AdjustedPlace {
                 operand,

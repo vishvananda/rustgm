@@ -1,6 +1,7 @@
 //! An array assignee is rustc's `{ let [lhs0, lhs1] = rhs; leaf0 = lhs0; leaf1 = lhs1; }`:
 //! the right operand is evaluated first, then each element is stored to its
-//! leaf from left to right.
+//! leaf from left to right. A leaf that overlaps the right operand's place, in
+//! an array or a tuple assignee, still takes the element read before any store.
 use super::Result;
 use crate::{checked_sources as checked, native_references as native};
 use std::path::PathBuf;
@@ -34,6 +35,14 @@ const ACCEPTED: &[(&str, &str)] = &[
     (
         "captured",
         "fn main(){let (mut x,mut y)=(1u8,2u8);let mut swap=||[x,y]=[y,x];swap();swap();swap();check(x==2&&y==1);}\n",
+    ),
+    (
+        "overlap",
+        "fn main(){let mut a=[1u8,2];[a[1],a[0]]=a;check(a[0]==2&&a[1]==1);let mut t=(3u8,4u8);(t.1,t.0)=t;check(t.0==4&&t.1==3);}\n",
+    ),
+    (
+        "overlap-moves",
+        "struct Token{v:u8}\nfn main(){let mut t=(Token{v:3},Token{v:4});(t.1,t.0)=t;check(t.0.v==4&&t.1.v==3);}\n",
     ),
 ];
 /// rustc 1.98.0 rejects every control. Typing rejects in all three views;

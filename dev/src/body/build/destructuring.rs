@@ -1,9 +1,11 @@
-//! A destructuring assignment evaluates its right operand into a place, then
-//! stores each projected element to its place leaf from left to right, as
-//! rustc's `{ let <pattern> = rhs; leaf = binding; ... }` does. A leaf place is
+//! A destructuring assignment evaluates its right operand into a place, reads
+//! the projected element of every place leaf, then stores each to its leaf from
+//! left to right, as rustc's `{ let <pattern> = rhs; leaf = binding; ... }`
+//! does. Reading first keeps a store from changing an element that a later
+//! leaf takes when a leaf overlaps the right operand's place. A leaf place is
 //! evaluated after the stores before it; `_` and unread elements stay in the
 //! right operand's place.
-use super::{Builder, Error, NodeId, Place, Rvalue, Type, TypeId, Work};
+use super::{Builder, Error, NodeId, Place, Rvalue, Type, ValueId, Work};
 use crate::{
     body::ir::ProjectionKind,
     sema::members::Selection,
@@ -25,6 +27,7 @@ impl Builder<'_> {
             .ast
             .assignees(left, &self.unit.configured.active, &mut walk);
         let mut places: Vec<Option<Place>> = Vec::with_capacity(walk.len());
+        let mut stores: Vec<(NodeId, Option<ValueId>)> = Vec::new();
         for entry in &walk {
             let place = match entry.parent {
                 None => source,
@@ -42,23 +45,29 @@ impl Builder<'_> {
                 }
             };
             places.push(place);
-        }
-        // The worklist is LIFO, so the first leaf's place and store run first.
-        for (entry, source) in walk.iter().zip(places).rev() {
             match entry.role {
                 Role::Place => {
-                    self.scratch.work.push(Work::DestructureStore {
-                        node,
-                        leaf: entry.node,
-                        source,
-                    });
-                    self.scratch.work.push(Work::Place(entry.node));
+                    let value = match place {
+                        Some(place) if self.current.is_some() => {
+                            let ty = self.place_type(node, place)?;
+                            Some(self.evaluate(node, ty, Rvalue::Read(place))?)
+                        }
+                        _ => None,
+                    };
+                    stores.push((entry.node, value));
                 }
                 Role::Rest => {
                     return Err(self.error(entry.node, "rest assignees are not implemented"));
                 }
                 Role::Tuple | Role::Array | Role::Wildcard => {}
             }
+        }
+        // The worklist is LIFO, so the first leaf's place and store run first.
+        for (leaf, value) in stores.into_iter().rev() {
+            self.scratch
+                .work
+                .push(Work::DestructureStore { node, leaf, value });
+            self.scratch.work.push(Work::Place(leaf));
         }
         Ok(())
     }
@@ -98,22 +107,21 @@ impl Builder<'_> {
         })?;
         self.project(node, ty, base, kind)
     }
-    /// Move or copy one projected element into its leaf.
+    /// Store one element, read before any leaf's store, into its leaf.
     pub(super) fn destructure_store(
         &mut self,
         node: NodeId,
         leaf: NodeId,
-        source: Option<Place>,
+        value: Option<ValueId>,
     ) -> Result<(), Error> {
         let target = self.pop_place(leaf)?;
-        let (Some(target), Some(source)) = (target, source) else {
+        let (Some(target), Some(value)) = (target, value) else {
             return Ok(());
         };
         if self.current.is_none() {
             return Ok(());
         }
-        let ty: TypeId = self.place_type(node, source)?;
-        let value = self.evaluate(node, ty, Rvalue::Read(source))?;
+        let ty = self.body.values[value.0 as usize].ty;
         let target_ty = self.place_type(leaf, target)?;
         let value = if ty == target_ty {
             value
