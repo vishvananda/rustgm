@@ -47,10 +47,12 @@ fn ordinary_requests_do_not_allocate_a_provider_or_library_policy() -> Result {
     }
     assert_eq!(size_of::<Features>(), 16);
     assert_eq!(size_of::<MacroFeatures>(), 1);
-    // The cold provider includes 160 bytes of contracts and a second permission
-    // word. The contracts hold inventory retention, the admitted-source grant
-    // and the optional explicit caps that bound the macro-contract ledger.
-    assert_eq!(size_of::<SourceCore>(), 240);
+    // The cold provider includes 160 bytes of contracts, a second permission
+    // word and one pointer for the bring-up guest crates, which the larger
+    // source client variant already pays for in the boxed policy. The contracts
+    // hold inventory retention, the admitted-source grant and the optional
+    // explicit caps that bound the macro-contract ledger.
+    assert_eq!(size_of::<SourceCore>(), 248);
     assert_eq!(size_of::<Package>(), 256);
     Ok(())
 }

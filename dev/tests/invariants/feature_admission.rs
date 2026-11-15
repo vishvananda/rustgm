@@ -113,10 +113,12 @@ fn ordinary_admission_inspects_no_syntax_and_language_requests_stay_packed() -> 
         240 + size_of::<Option<Box<crate::resolve::stability::Library>>>()
             + size_of::<crate::expand::marks::Marks>()
     );
-    // The cold provider includes 160 bytes of contracts and a second permission
-    // word. The contracts hold inventory retention, the admitted-source grant
-    // and the optional explicit caps that bound the macro-contract ledger.
-    assert_eq!(size_of::<super::super::SourceCore>(), 240);
+    // The cold provider includes 160 bytes of contracts, a second permission
+    // word and one pointer for the bring-up guest crates, which the larger
+    // source client variant already pays for in the boxed policy. The contracts
+    // hold inventory retention, the admitted-source grant and the optional
+    // explicit caps that bound the macro-contract ledger.
+    assert_eq!(size_of::<super::super::SourceCore>(), 248);
     Ok(())
 }
 

@@ -62,6 +62,8 @@ pub struct SourceCore {
     pub provider: CrateIdentity,
     pub(super) features: policy::Features,
     pub(in crate::resolve) macros: panic_contracts::Contracts,
+    /// Bring-up guest crates of this session; absent in every strict one.
+    pub(in crate::resolve) guests: Option<Box<super::guests::Guests>>,
 }
 impl super::package::Package {
     pub(crate) fn requested_cfg_gate(

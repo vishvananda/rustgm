@@ -221,7 +221,9 @@ fn immutable_limit_layout_is_cold_and_default_records_remain_dense() {
     assert_eq!(size_of::<Config>(), 96);
     assert_eq!(size_of::<State>(), 152);
     assert_eq!(size_of::<Contracts>(), 160);
-    assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 240);
+    // The provider adds one pointer for the bring-up guest crates; the source
+    // client variant still sizes the boxed policy.
+    assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 248);
     assert_eq!(size_of::<Package>(), 256);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);

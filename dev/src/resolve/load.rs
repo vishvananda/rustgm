@@ -211,7 +211,6 @@ impl<'a, S: Sources> Loader<'a, S> {
                         .replace('-', "_")
                 },
                 units: vec![unit],
-                guests: None,
                 modules: vec![Module {
                     krate: super::guests::CrateSlot::HOST,
                     implicit_prelude,
@@ -301,8 +300,7 @@ impl<'a, S: Sources> Loader<'a, S> {
             self.admit(file)?;
             super::bindings::policy::admit_guest(&mut self.package, file)?;
         }
-        self.package.guests = Some(Box::new(guests));
-        Ok(())
+        self.package.install_guests(guests)
     }
     pub(crate) fn isolate_expansions(&mut self) {
         self.separate_instances = true;

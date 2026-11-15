@@ -14,7 +14,7 @@ impl super::Index {
             return Ok(());
         }
         // A bring-up guest crate's module reads that crate's own prelude.
-        let selected = if let Some(guest) = report.resolution.guest(&report.package, module) {
+        let selected = if let Some(guest) = report.package.entered_guest(module) {
             guest.checked_prelude(&report.resolution)?
         } else {
             // The index authenticated the selector once; each probe pays its lookup.

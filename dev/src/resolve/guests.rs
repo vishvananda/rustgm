@@ -6,8 +6,10 @@
 //! standard prelude follow the crate that owns the module they are asked
 //! from. Lang items, features and coherence stay those of the session. The
 //! bring-up profile names the guests; a strict compilation has none and takes
-//! none of these paths.
+//! none of these paths. Their state lives in the session's boxed source core,
+//! so no package or resolution record grows for them.
 use super::{
+    bindings::Source,
     index::Resolver,
     lookup::Observations,
     model::{Access, Binding, DefId, DefKind, Definition, Namespace, Origin, Resolution, ScopeId},
@@ -67,10 +69,12 @@ pub struct Member {
     pub no_main: bool,
 }
 
-/// The crates of a session that has guests, and the crate of each source file.
+/// The crates of a session that has guests, the crate of each source file,
+/// and the roots that resolution has entered so far, in slot order.
 pub struct Guests {
     members: Vec<Member>,
     files: Vec<CrateSlot>,
+    roots: Vec<Root>,
 }
 impl Guests {
     /// Begin a guest session over the loaded host root.
@@ -82,6 +86,7 @@ impl Guests {
         let mut guests = Self {
             members: Vec::new(),
             files: vec![CrateSlot::HOST],
+            roots: Vec::new(),
         };
         let name = guests.name(&mut package.names, &host)?;
         let macro_root = guests.macro_root(&mut package.names)?;
@@ -173,20 +178,48 @@ impl Guests {
 }
 
 impl Package {
+    fn guest_state(&self) -> Option<&Guests> {
+        self.source_core()?.guests.as_deref()
+    }
+    fn guest_state_mut(&mut self) -> Option<&mut Guests> {
+        match self.source.as_deref_mut()? {
+            Source::Core(core) => core.guests.as_deref_mut(),
+            Source::Client(_) | Source::Staged(_) | Source::LocalMacros(_) => None,
+        }
+    }
+    /// Keep the loaded guests in the session's source core.
+    pub(super) fn install_guests(&mut self, guests: Guests) -> Result<(), Error> {
+        let Some(Source::Core(core)) = self.source.as_deref_mut() else {
+            return Err(Error::unlocated("guest crates require a source core"));
+        };
+        core.guests = Some(Box::new(guests));
+        Ok(())
+    }
     /// Whether this session resolves bring-up guest crates beside its own.
     #[must_use]
-    pub const fn has_guests(&self) -> bool {
-        self.guests.is_some()
+    pub fn has_guests(&self) -> bool {
+        self.guest_state().is_some()
     }
     /// Every crate of a guest session, the host first; empty without guests.
     #[must_use]
     pub fn crate_members(&self) -> &[Member] {
-        self.guests
-            .as_deref()
+        self.guest_state()
             .map_or(&[], |guests| guests.members.as_slice())
     }
     fn member(&self, slot: CrateSlot) -> Option<&Member> {
-        self.guests.as_deref()?.members.get(slot.index())
+        self.guest_state()?.members.get(slot.index())
+    }
+    /// The entered guest crate that owns `module`, if any. Strict sessions
+    /// answer from the module's own slot without reading any guest state.
+    pub(crate) fn entered_guest(&self, module: ModuleId) -> Option<&Root> {
+        let slot = self.modules.get(module.0 as usize)?.krate.guest()?;
+        self.guest_state()?.roots.get(slot)
+    }
+    fn guest_definition(&self, guest: usize) -> Option<DefId> {
+        self.guest_state()?
+            .roots
+            .get(guest)
+            .map(|root| root.definition)
     }
     /// The root module of the crate that owns `module`: what `crate` names.
     #[must_use]
@@ -212,7 +245,7 @@ impl Package {
     /// The crate id that a macro defined in `module` gives its `$crate`.
     /// Zero, the using crate's own root, in every session without guests.
     pub(crate) fn macro_crate(&self, module: ModuleId) -> u32 {
-        if self.guests.is_none() {
+        if !self.has_guests() {
             return 0;
         }
         self.modules[module.0 as usize].krate.0 + 1
@@ -248,8 +281,7 @@ impl Package {
     /// The crate whose module tree loaded `file`.
     #[must_use]
     pub fn file_crate(&self, file: FileId) -> CrateSlot {
-        self.guests
-            .as_deref()
+        self.guest_state()
             .and_then(|guests| guests.files.get(file.0 as usize))
             .copied()
             .unwrap_or(CrateSlot::HOST)
@@ -257,7 +289,7 @@ impl Package {
     /// Record that `file` was loaded for the crate that owns `module`.
     pub(super) fn note_file_crate(&mut self, file: FileId, module: ModuleId) {
         let slot = self.modules[module.0 as usize].krate;
-        if let Some(guests) = self.guests.as_deref_mut() {
+        if let Some(guests) = self.guest_state_mut() {
             guests.note_file(file, slot);
         }
     }
@@ -407,17 +439,11 @@ const fn prelude_module(edition: Edition) -> &'static str {
 }
 
 impl Resolution {
-    /// The entered guest crate that owns `module`, if any. Strict sessions
-    /// answer from the module's own slot without reading any guest state.
-    pub(crate) fn guest<'a>(&'a self, package: &Package, module: ModuleId) -> Option<&'a Root> {
-        let slot = package.modules.get(module.0 as usize)?.krate.guest()?;
-        self.guests.get(slot)
-    }
     /// The definition of the crate root that a macro's `$crate` names.
     pub(super) fn macro_crate_root(&self, package: &Package, name: NameId) -> Option<DefId> {
         match package.macro_crate_slot(name)?.guest() {
             None => self.crate_root,
-            Some(guest) => self.guests.get(guest).map(|root| root.definition),
+            Some(guest) => package.guest_definition(guest),
         }
     }
 }
@@ -425,7 +451,7 @@ impl Resolution {
 impl Resolver<'_> {
     /// The entered guest crate that owns `module`, if any.
     pub(super) fn guest(&self, module: ModuleId) -> Option<&Root> {
-        self.facts.guest(self.package, module)
+        self.package.entered_guest(module)
     }
     /// The scope where the `crate` keyword starts for a path in `module`.
     pub(super) fn crate_scope(&self, module: ModuleId) -> ScopeId {
@@ -444,10 +470,14 @@ impl Resolver<'_> {
     /// extern prelude over the host and the earlier guests, and select the
     /// standard prelude and macro-use crate that its root attributes name.
     pub(super) fn enter_guest(&mut self, slot: CrateSlot) -> Result<(ModuleId, ScopeId), Error> {
+        let entered = self
+            .package
+            .guest_state()
+            .map_or(0, |guests| guests.roots.len());
         let (name, module, library) = self
             .package
             .member(slot)
-            .filter(|_| slot.guest() == Some(self.facts.guests.len()))
+            .filter(|_| slot.guest() == Some(entered))
             .map(|member| (member.name, member.root, member.library))
             .ok_or_else(|| Error::unlocated("guest crates are entered in driver order"))?;
         let file = self.package.modules[module.0 as usize].file;
@@ -474,7 +504,7 @@ impl Resolver<'_> {
             let earlier = CrateSlot(earlier);
             let target = match earlier.guest() {
                 None => self.facts.crate_root,
-                Some(guest) => self.facts.guests.get(guest).map(|root| root.definition),
+                Some(guest) => self.package.guest_definition(guest),
             };
             let (Some(target), Some(member)) = (target, self.package.member(earlier)) else {
                 return Err(Error::at(file, 0, "guest crate precedes its dependencies"));
@@ -499,7 +529,11 @@ impl Resolver<'_> {
             root.prelude = Some(self.guest_prelude(file, name, provider, library)?);
             root.macro_use.push(provider);
         }
-        self.facts.guests.push(root);
+        self.package
+            .guest_state_mut()
+            .ok_or_else(|| Error::at(file, 0, "guest crates require a source core"))?
+            .roots
+            .push(root);
         Ok((module, scope))
     }
     /// The root scope of the standard library crate a guest's attributes
@@ -589,7 +623,7 @@ impl Resolver<'_> {
             .map(|(name, _, _)| name)
             .collect();
         names.sort_unstable_by_key(|name| name.0);
-        let root = self.facts.guests.get_mut(slot)?;
+        let root = self.package.guest_state_mut()?.roots.get_mut(slot)?;
         if !root.macro_use.contains(&provider) {
             root.macro_use.push(provider);
         }
