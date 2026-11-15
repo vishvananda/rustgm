@@ -1,5 +1,48 @@
 # RustGM handoff — 2026-11-14
 
+LATEST checkpoint: generic const Try protocol calls. Production50-line addition
+in body/constants/provided_calls.rs reuses protocol_plans::checked for actual
+Block/Branch source/gate/role/application/signature/owner/effect, requires exactly
+one complete selected call and its actual signature result, then keeps existing
+source member and scoped effect checks. No syntheticCall/dense/cache/wire/backend/
+storage/quota changes. New fallible_calls root in traits; inventory3966.
+
+PA25/31 const-try-calls each19 independent Rust predictions12accept7reject.
+18 source11accept7reject plus ordinary disabled-gate rejection qualify. Required
+source CTFE stays primitive/unit-result payment;18 ordinary imports unqualified.
+Independent Rust exposed residual Destruct and const Residual<TryType=R> duties;
+positives now pay them, unpaid shapes retained as independently rejecting controls
+before further candidate/production execution. Source self-owned roles drop only
+undefined standard-library feature requests; real try_blocks gate retained.
+fast4=1794701680018963910 four exact2targets153.12s; strict selected/production/CLI
+Clippy/full fmt/audit pass. Earlier audits stopped before tests on native duplicate
+and filename ownership. Existing observed_program harness now shares prepared
+native execution; no audit rule weakened. Native1794701845691912429 four groups/
+ten programs47.70s,new success/residual41/59/23+nine prior; independent Rust CTFE/
+runtime both41/59/23. replay2 authenticates3966/allfixtures/38CLI19qualified19gaps,
+exact lowering/scaling2356/2422,6844/5472,24796/17648; no speed claim.315harness/
+497roots13bins44stages1component128upstream126Reference. One new actual plan/call/
+result/site/work private guard awaits CI(expected3086), no cold harness locally.
+Current devfast replay2 CLIac7bf92e…1e5c4c35 pinned. Raw const-try-calls/.
+
+Full43652873020 exactead92a4cd PASSED EVERY STAGE,3084 release5.25s/debug49.86s;
+raw borrowed-callables/ci43652873020.log. ONE successor43656293922 exact8560c4dbb
+(borrowed product05d1beedd) is active release/course(expected3085). Do not duplicate,
+cancel or restart; new Try full successor waits until it is terminal.
+
+NEXT publish/freeze clean candidate37-release and retry unchanged original core
+v14 artifact with same722/six reviewed pins/120s/14500624work/1GiB attempted/64MiB
+retained; authenticate postcheck. Core36 below remains latest original observation;
+Try fence clears reduced cases but has not yet cleared original. No artifact exists.
+Current clean36 and current Try replay2 protect executable pins; pendingperf21–24
+retained.34/35 release, explicit replay and projected replay4/ci-repair binaries
+are RETIRED/UNAVAILABLE after replacement; raw retirement borrowed-callables/.
+Earlier retired baselines stay unavailable. Same one worker/B/mainGit-only,
+2jobs150GiBreserve16GiBcap/frozenbackend17b024f69. WholePA25–44, originalv13/v14,
+Future/async/older CTFE/bootstrap/native/closure/ABI positives and113-case component
+retain prior status. This continuation supersedes earlier NEXT/availability text.
+
+
 LATEST genuine original: clean candidate36-release on published05d1beedd,
 3965 hashes/empty patch,6m42s build. CLI
 35d8c41c4fd584772fa5182f4884598b64bd634b60bd6856871ce38fef8a251c.

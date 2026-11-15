@@ -283,3 +283,82 @@ fn actual_generic_const_helper_requires_its_complete_conditional_trait_premise()
     }
     Ok(())
 }
+
+#[test]
+fn implicit_try_defining_request_keeps_the_actual_plan_and_complete_call() -> Result {
+    for (fixture, name) in [("block", "make"), ("question-return", "apply")] {
+        let source =
+            crate::test_source::fixture(&format!("pa31/tests/spec/const-try-calls/{fixture}.rs"))?;
+        let report = crate::test_source::source_provider(&source, "const_try_facts")?;
+        let crate::pipeline::Analysis {
+            facts,
+            mut prepared,
+        } = crate::pipeline::analyze_source(&report)?;
+        let function = facts
+            .functions
+            .iter()
+            .find(|function| {
+                report
+                    .package
+                    .names
+                    .get(report.resolution.definitions[function.definition.0 as usize].name)
+                    == name
+            })
+            .ok_or("actual const Try function")?;
+        let body = prepared.templates.function(&report, &facts, function)?.body;
+        let mut work = Work::new(1_000_000);
+        let index = statement(&body)?;
+        let call = source_call(&facts, &body, &body.statements[index], &mut work)?;
+        let Some(crate::sema::model::Operation::Try { plan }) =
+            facts.node(call.site).and_then(|node| node.operation)
+        else {
+            return Err("actual Try operation".into());
+        };
+        assert!(source_try(
+            &report,
+            &facts,
+            &body,
+            body.source.source().ok_or("owner")?,
+            (call, None),
+            plan,
+            &mut work
+        )?);
+        for change in 0..3 {
+            let mut altered = call;
+            match change {
+                0 => altered.target = crate::types::TypeId::primitive(crate::types::Primitive::U8),
+                1 => {
+                    altered.result = crate::types::TypeId::primitive(crate::types::Primitive::Bool)
+                }
+                _ => altered.site = body.source.source().ok_or("other site")?,
+            }
+            assert!(
+                source_try(
+                    &report,
+                    &facts,
+                    &body,
+                    body.source.source().ok_or("owner")?,
+                    (altered, None),
+                    plan,
+                    &mut work
+                )
+                .is_err()
+            );
+        }
+        let mut tiny = Work::new(7);
+        assert!(
+            source_try(
+                &report,
+                &facts,
+                &body,
+                body.source.source().ok_or("owner")?,
+                (call, None),
+                plan,
+                &mut tiny
+            )
+            .is_err()
+        );
+        assert_eq!(tiny.steps, 8);
+    }
+    Ok(())
+}

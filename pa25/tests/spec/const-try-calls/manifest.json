@@ -1,0 +1,123 @@
+{
+ "schema": 1,
+ "owner": "PA25 generic const implicit Try calls",
+ "declared_before_execution": true,
+ "cases": {
+  "block.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at unresolved core::marker or core::ops imports"
+  },
+  "question-return.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at unresolved core::marker or core::ops imports"
+  },
+  "block-question.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at unresolved core::marker or core::ops imports"
+  },
+  "nested.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at unresolved core::marker or core::ops imports"
+  },
+  "projected-block.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at unresolved core::marker or core::ops imports"
+  },
+  "projected-question.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at unresolved core::marker or core::ops imports"
+  },
+  "runtime.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at unresolved core::marker or core::ops imports"
+  },
+  "plain-bound.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required ordinary outcome remains unqualified at unresolved core::marker or core::ops imports"
+  },
+  "plain-maker.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required ordinary outcome remains unqualified at unresolved core::marker or core::ops imports"
+  },
+  "wrong-output.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required ordinary outcome remains unqualified at unresolved core::marker or core::ops imports"
+  },
+  "missing-gate.rs": {
+   "expected": "reject"
+  },
+  "ordinary-impl.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required ordinary outcome remains unqualified at unresolved core::marker or core::ops imports"
+  },
+  "native-runtime.rs": {
+   "expected": "accept",
+   "native_stdout": "41 59 23\n",
+   "observer": "observe.c",
+   "candidate_limit": "Required ordinary outcome remains unqualified at unresolved core::marker or core::ops imports"
+  },
+  "native-ctfe.rs": {
+   "expected": "accept",
+   "native_stdout": "41 59 23\n",
+   "observer": "observe.c",
+   "candidate_limit": "Required ordinary outcome remains unqualified at unresolved core::marker or core::ops imports"
+  },
+  "scaling-8.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at unresolved core::marker or core::ops imports"
+  },
+  "scaling-32.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at unresolved core::marker or core::ops imports"
+  },
+  "scaling-128.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at unresolved core::marker or core::ops imports"
+  },
+  "unpaid-residual-drop.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required ordinary outcome remains unqualified at unresolved core::marker or core::ops imports"
+  },
+  "unpaid-residual-conversion.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required ordinary outcome remains unqualified at unresolved core::marker or core::ops imports"
+  }
+ },
+ "files": {
+  "block.rs": "13a5adcfe92f1a6fee4606e753975cc14d38d37b814f68d323be399b83487a17",
+  "question-return.rs": "14ca546cd58cc2255cc4587aefae245a695c0ebdaf4e2449e0953a313829beb8",
+  "block-question.rs": "a2579211d90efcdef050ea957a6574f2273345c3a1b1a66864812a6ed9ea092c",
+  "nested.rs": "8ad73842c4c5a635ca96de6b775a3941ddb996d88627e288f41785c9d1442ad5",
+  "projected-block.rs": "dd025dc2ce8e2c0d7ffac56430fda64a115df85b10a9cf235aa6616aab6eb78a",
+  "projected-question.rs": "9c04b7c9ff4839e7a02dda9bd8e8e7643ad315711befe2bc2a2b21741afc4b3a",
+  "runtime.rs": "b8c3689560649d9132d22048f197827bf761ed80bc7fceb69f5d76e44dd2b15c",
+  "plain-bound.rs": "53a26558d970dfaea1e20a91d2c509dd830548c4b60649446dd7de9406959f73",
+  "plain-maker.rs": "49d8002577795f4ac396393a64bc398fe1e8300824a1a9b34e094adfac6e7e4e",
+  "wrong-output.rs": "842b8a5c5df9e7fb5c45e4b8f55bff30a34bb62974359978872bfe5296463a42",
+  "missing-gate.rs": "f2ad0b092ef40393da70827e34877ed825d71ecd67811e64e4fb0a316fa19adb",
+  "ordinary-impl.rs": "d6a3c2f683f678124235af0021d9150822c69a0457db78039cd992cdd4d74493",
+  "native-runtime.rs": "e8965ced5331b9da5c1531b5dce1155f0a44433139a2f0783e53965897c5d3a8",
+  "native-ctfe.rs": "c820b51deb219a1710f38f36c961097f1ac44cf8f12fda172f75d3a8603469fa",
+  "scaling-8.rs": "24bed28534dd7983fc877607a19764a1bfa6e967f7ade5ab0f0d416ca605c627",
+  "scaling-32.rs": "02346faf10c641f5ae576bef909d27aa0ef66b63dc598bdf87f4df7ec737719e",
+  "scaling-128.rs": "1f0658ac970010f35b35958c8bc3f753291154b0147d12c79ea6ffd29c161953",
+  "observe.c": "f439e865e8253a40ef42deca9b6ac9d683c7c9a6b6536b647b47123b2ed791ee",
+  "unpaid-residual-drop.rs": "53f8507755555cc995fe916106d812cb776be00d1dd99298b190708f16b14fc2",
+  "unpaid-residual-conversion.rs": "34ed8d8dfe2f562421039462c6383eb0280fa0850b0f31a9d7781893bc3fe819"
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "basis": {
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "source_path": "library/core/src/array/mod.rs",
+  "source_sha256": "96b713988c0a1659d698ff89f0c76f0ebb7f7a3e9a4bdfc5da0a3573e6c5353c",
+  "shape": "Reduced implicit Try from_output call from try_from_fn; no copied original function claimed.",
+  "license": "MIT OR Apache-2.0; third_party/sources.json"
+ }
+}

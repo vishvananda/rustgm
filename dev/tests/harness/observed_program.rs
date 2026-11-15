@@ -14,6 +14,10 @@ fn checked(folder: &Path, name: &str, command: &mut Command) -> Result<Vec<u8>> 
     }
     Ok(output.stdout)
 }
+#[allow(
+    dead_code,
+    reason = "suite groups select ordinary comparison and prepared source execution independently"
+)]
 pub(crate) fn compare(namespace: &str, fixture: &str, expected: &[u8]) -> Result {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -82,5 +86,50 @@ pub(crate) fn compare(namespace: &str, fixture: &str, expected: &[u8]) -> Result
         )?,
         expected
     );
+    Ok(())
+}
+
+/// Execute a prepared source program through the locked object backend and its
+/// declared C observer. The caller supplies independently frozen output bytes.
+#[allow(
+    dead_code,
+    reason = "suite groups select ordinary comparison and prepared source execution independently"
+)]
+pub(crate) fn execute(
+    folder: &Path,
+    program: &rustgm::lowir::program::Program,
+    observer: &Path,
+    expected: &[u8],
+) -> Result {
+    std::fs::create_dir_all(folder)?;
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("repository root")?;
+    let ir = folder.join("native.lowir");
+    rustgm::lowir::writer::write(program, &mut std::fs::File::create(&ir)?)?;
+    let object = folder.join("native.o");
+    checked(
+        folder,
+        "backend",
+        Command::new("python3")
+            .arg(root.join("scripts/backend.py"))
+            .arg("--emit-object")
+            .arg(&ir)
+            .arg("-o")
+            .arg(&object),
+    )?;
+    let executable = folder.join("native.exe");
+    checked(
+        folder,
+        "link",
+        Command::new("cc")
+            .arg(observer)
+            .arg(&object)
+            .arg("-o")
+            .arg(&executable),
+    )?;
+    let actual = checked(folder, "native", &mut Command::new(executable))?;
+    std::fs::write(folder.join("native.stdout"), &actual)?;
+    assert_eq!(actual, expected);
     Ok(())
 }

@@ -1,0 +1,125 @@
+{
+ "schema": 1,
+ "owner": "PA31 generic const implicit Try calls",
+ "declared_before_execution": true,
+ "cases": {
+  "block.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/const-try-calls/block.rs"
+  },
+  "question-return.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/const-try-calls/question-return.rs"
+  },
+  "block-question.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/const-try-calls/block-question.rs"
+  },
+  "nested.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/const-try-calls/nested.rs"
+  },
+  "projected-block.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/const-try-calls/projected-block.rs"
+  },
+  "projected-question.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/const-try-calls/projected-question.rs"
+  },
+  "runtime.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/const-try-calls/runtime.rs"
+  },
+  "plain-bound.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/const-try-calls/plain-bound.rs"
+  },
+  "plain-maker.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/const-try-calls/plain-maker.rs"
+  },
+  "wrong-output.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/const-try-calls/wrong-output.rs"
+  },
+  "missing-gate.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/const-try-calls/missing-gate.rs"
+  },
+  "ordinary-impl.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/const-try-calls/ordinary-impl.rs"
+  },
+  "native-runtime.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/const-try-calls/native-runtime.rs",
+   "native_stdout": "41 59 23\n",
+   "observer": "observe.c"
+  },
+  "native-ctfe.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/const-try-calls/native-ctfe.rs",
+   "native_stdout": "41 59 23\n",
+   "observer": "observe.c",
+   "candidate_limit": "Required accepting CTFE remains at: source const payment currently requires a primitive or unit result"
+  },
+  "scaling-8.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/const-try-calls/scaling-8.rs"
+  },
+  "scaling-32.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/const-try-calls/scaling-32.rs"
+  },
+  "scaling-128.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/const-try-calls/scaling-128.rs"
+  },
+  "unpaid-residual-drop.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/const-try-calls/unpaid-residual-drop.rs"
+  },
+  "unpaid-residual-conversion.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/const-try-calls/unpaid-residual-conversion.rs"
+  }
+ },
+ "files": {
+  "block.rs": "b08058cde7deee7445b700c5aa22945c979547ff98b0cc28a2032964a3d1512c",
+  "question-return.rs": "e01d165176abaf90035ee6d070ea5acdd2289ea0ada65e2695e576fbc226db40",
+  "block-question.rs": "1c9b98625de715e18674bd96477b522329947961d5966e1f69362272461113d1",
+  "nested.rs": "e152a2f74e870bca7748e5328f4f5ae6066a054d6dc3c5fce057631b8bcd1fa5",
+  "projected-block.rs": "0aa1caa7bef43288b60800f5864ba257df2949860021093c420633a9ea4b979e",
+  "projected-question.rs": "b619af7c288f7477975fcd05a7ede0430327480ccb1aa32b6876b23efa1eccfc",
+  "runtime.rs": "2603f9f8f17fc0b951b77d6a9d785e18f514c0f978d5bdc6e874e04897f3e1a2",
+  "plain-bound.rs": "51c114d3b75464d8db55ed30b8740a7772487c740d33fd8d3377580af8e337f8",
+  "plain-maker.rs": "129ddf24c6d6f495ca31031e2da1fa38b437082eab0c1cb80d4178d70374ad91",
+  "wrong-output.rs": "8a7cebfe1a42d46c04e59cf849513c388a03a117722473648251ade7b4bde546",
+  "missing-gate.rs": "1f187b5a1da3fe65bb19d78f2551370b02ded8e107951c122e03318e0133d510",
+  "ordinary-impl.rs": "d3e942883a86d47142c373d4c0114ffd3a5cafbb14c58930997e7f7b4ce97d37",
+  "native-runtime.rs": "c5d9886e8bf3bb3e08757926ac0118793480a9af43fa07229000f8b7840bdef4",
+  "native-ctfe.rs": "1458fa54d7bd99845461b72b6ea171d4aaf1fcbdaf3c359855d4e285576c941e",
+  "scaling-8.rs": "3572711fb747cb7893cf1aeaafccc85c299ca7747435b2cf6f3aa17d56a11554",
+  "scaling-32.rs": "8f4594e5700030cab1a3bd55dc3fbab169e6bf7db7dc4660b1cd151045741103",
+  "scaling-128.rs": "5f3e164c1b7e0d62929cb627899395d43643dd16da363032ec0d33cbeb71e3af",
+  "observe.c": "f439e865e8253a40ef42deca9b6ac9d683c7c9a6b6536b647b47123b2ed791ee",
+  "unpaid-residual-drop.rs": "df0aa4812d545e56a554483d2d85128c25c377e18a0422cf787bacc68d938f21",
+  "unpaid-residual-conversion.rs": "25e329cbac3e1f7353cea253b2f50febaa02260a0794002432dc2ef9ddb455ae"
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "basis": {
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "source_path": "library/core/src/array/mod.rs",
+  "source_sha256": "96b713988c0a1659d698ff89f0c76f0ebb7f7a3e9a4bdfc5da0a3573e6c5353c",
+  "shape": "Reduced implicit Try from_output call from try_from_fn; no copied original function claimed.",
+  "license": "MIT OR Apache-2.0; third_party/sources.json"
+ }
+}

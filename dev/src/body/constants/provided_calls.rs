@@ -258,6 +258,9 @@ pub(super) fn source_request_in_scope(
     let node = facts
         .node(call.site)
         .ok_or("const member lost its typed site")?;
+    if let Some(crate::sema::model::Operation::Try { plan }) = node.operation {
+        return source_try(report, facts, body, source, (call, scope), plan, work);
+    }
     if let Some(
         crate::sema::model::Operation::Field { plan: Some(id), .. }
         | crate::sema::model::Operation::MethodReceiver { plan: id },
@@ -302,6 +305,54 @@ pub(super) fn source_request_in_scope(
     };
     selected_source(report, facts, call, definition, work)?;
     Ok(true)
+}
+
+/// An implicit Try call retains its protocol operation, rather than a direct
+/// Call node. Authenticate its exact current plan and complete selected call.
+fn source_try(
+    report: &crate::resolve::expansion::Report,
+    facts: &Declarations,
+    body: &Body,
+    source: crate::resolve::unit::NodeKey,
+    scoped: (Call, Option<&DefiningCalls<'_>>),
+    id: crate::sema::bodies::ProtocolPlanId,
+    work: &mut Work,
+) -> Result<bool, &'static str> {
+    let (call, scope) = scoped;
+    work.charge(8)?;
+    let plan = crate::sema::protocol_plans::checked(report, facts, source, call.site, id)
+        .map_err(|_| "const Try call changed its actual source protocol")?;
+    if !matches!(
+        plan.kind,
+        crate::sema::protocol_plans::Kind::Block { .. }
+            | crate::sema::protocol_plans::Kind::Branch { .. }
+    ) {
+        return Err("const Try call belongs to another source protocol");
+    }
+    let mut calls = plan.calls()?;
+    let mut matches = 0;
+    while let Some(actual) = plan.next_call(facts, source, &mut calls)? {
+        work.charge(1)?;
+        matches +=
+            usize::from(actual.callable == call.target && actual.signature == call.signature);
+    }
+    if matches != 1
+        || !matches!(facts.types.kind(call.signature), Some(Kind::Function { result, .. })
+            if result == call.result)
+    {
+        return Err("const Try call differs from its complete selected protocol call");
+    }
+    source_member(facts, call, work)?;
+    let effect = plan.source_use.effect_for(facts, source)?;
+    closed_effect(
+        report,
+        facts,
+        body,
+        source,
+        effect,
+        scope.map(|scope| (scope, call.target)),
+        work,
+    )
 }
 
 /// Revalidate the completed selected target before accepting source request data.

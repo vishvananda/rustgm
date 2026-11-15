@@ -61,3 +61,6 @@ mod unannotated_closure_inputs;
 
 #[path = "../../explicit_call_members.rs"]
 mod explicit_call_members;
+
+#[path = "../../harness/observed_program.rs"]
+pub(crate) mod observed_program;

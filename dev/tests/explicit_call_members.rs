@@ -126,49 +126,13 @@ fn explicit_const_delegation_executes_the_actual_callable_and_mutable_receiver()
     native(PACKET, "obj/parallel/explicit-call-members/native")
 }
 fn native(packet: &str, output: &str) -> Result {
-    use std::process::Command;
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
-    let out = root.join(output);
-    std::fs::create_dir_all(&out)?;
-    let ir = out.join("native.lowir");
-    let object = out.join("native.o");
-    let exe = out.join("native.exe");
-    rustgm::lowir::writer::write(
+    crate::observed_program::execute(
+        &root.join(output),
         &program(&packet_report(packet, "native-runtime")?)?,
-        &mut std::fs::File::create(&ir)?,
-    )?;
-    for (stage, command) in [
-        (
-            "backend",
-            Command::new("python3")
-                .arg(root.join("scripts/backend.py"))
-                .arg("--emit-object")
-                .arg(&ir)
-                .arg("-o")
-                .arg(&object),
-        ),
-        (
-            "link",
-            Command::new("cc")
-                .arg(root.join(packet).join("observe.c"))
-                .arg(&object)
-                .arg("-o")
-                .arg(&exe),
-        ),
-        ("native", &mut Command::new(&exe)),
-    ] {
-        let output = command.output()?;
-        std::fs::write(out.join(format!("{stage}.stdout")), &output.stdout)?;
-        std::fs::write(out.join(format!("{stage}.stderr")), &output.stderr)?;
-        assert!(
-            output.status.success() && output.stderr.is_empty(),
-            "{stage}: {output:?}"
-        );
-        if stage == "native" {
-            assert_eq!(output.stdout, b"41 59\n");
-        }
-    }
-    Ok(())
+        &root.join(packet).join("observe.c"),
+        b"41 59\n",
+    )
 }
 
 const BORROWED: &str = "pa31/tests/spec/borrowed-callables";

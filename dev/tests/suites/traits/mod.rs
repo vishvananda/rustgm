@@ -133,3 +133,6 @@ mod ctseal;
 mod ctsel;
 #[path = "../../ctwire.rs"]
 mod ctwire;
+
+#[path = "../../fallible_calls.rs"]
+mod fallible_calls;
