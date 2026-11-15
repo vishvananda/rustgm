@@ -1,7 +1,7 @@
 //! A destructuring assignment evaluates its right operand into a place, then
-//! stores each projected field to its place leaf from left to right, as
+//! stores each projected element to its place leaf from left to right, as
 //! rustc's `{ let <pattern> = rhs; leaf = binding; ... }` does. A leaf place is
-//! evaluated after the stores before it; `_` and unread fields stay in the
+//! evaluated after the stores before it; `_` and unread elements stay in the
 //! right operand's place.
 use super::{Builder, Error, NodeId, Place, Rvalue, Type, TypeId, Work};
 use crate::{
@@ -28,14 +28,14 @@ impl Builder<'_> {
         for entry in &walk {
             let place = match entry.parent {
                 None => source,
-                Some((parent, field)) => {
-                    let base = places
+                Some((parent, element)) => {
+                    let (shell, base) = walk
                         .get(parent as usize)
-                        .copied()
+                        .zip(places.get(parent as usize))
                         .ok_or_else(|| self.error(node, "invalid assignee walk"))?;
-                    match base {
+                    match *base {
                         Some(base) if self.current.is_some() && entry.role != Role::Wildcard => {
-                            Some(self.tuple_field(node, base, field)?)
+                            Some(self.shell_element(node, shell.role, base, element)?)
                         }
                         _ => None,
                     }
@@ -57,36 +57,48 @@ impl Builder<'_> {
                 Role::Rest => {
                     return Err(self.error(entry.node, "rest assignees are not implemented"));
                 }
-                Role::Tuple | Role::Wildcard => {}
+                Role::Tuple | Role::Array | Role::Wildcard => {}
             }
         }
         Ok(())
     }
-    fn tuple_field(&mut self, node: NodeId, base: Place, field: u32) -> Result<Place, Error> {
-        let ty = self.place_type(node, base)?;
-        let element = match self.facts.types.kind(ty) {
-            Some(Type::Tuple(fields)) => self
+    /// A tuple shell selects a field; an array shell selects a constant index,
+    /// as an array pattern's element does.
+    fn shell_element(
+        &mut self,
+        node: NodeId,
+        shell: Role,
+        base: Place,
+        element: u32,
+    ) -> Result<Place, Error> {
+        let aggregate = self.place_type(node, base)?;
+        let selected = match (shell, self.facts.types.kind(aggregate)) {
+            (Role::Tuple, Some(Type::Tuple(fields))) => self
                 .facts
                 .types
                 .list(fields)
-                .and_then(|fields| fields.get(field as usize))
-                .copied(),
+                .and_then(|fields| fields.get(element as usize))
+                .map(|&ty| (ty, ProjectionKind::Field(Selection::Tuple(element)))),
+            (
+                Role::Array,
+                Some(Type::Array {
+                    element: ty,
+                    length,
+                }),
+            ) if u64::from(element) < length => {
+                Some((ty, ProjectionKind::ConstantIndex(u64::from(element))))
+            }
             _ => None,
-        }
-        .ok_or_else(|| {
+        };
+        let (ty, kind) = selected.ok_or_else(|| {
             self.error(
                 node,
-                "destructured value is not a tuple of the assignee's arity",
+                "destructured value does not have the assignee's shape",
             )
         })?;
-        self.project(
-            node,
-            element,
-            base,
-            ProjectionKind::Field(Selection::Tuple(field)),
-        )
+        self.project(node, ty, base, kind)
     }
-    /// Move or copy one projected field into its leaf.
+    /// Move or copy one projected element into its leaf.
     pub(super) fn destructure_store(
         &mut self,
         node: NodeId,

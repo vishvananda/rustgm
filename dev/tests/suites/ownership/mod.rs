@@ -3,6 +3,8 @@
 mod binding_contracts;
 #[path = "../../borrow_places.rs"]
 mod borrow_places;
+#[path = "../../harness/checked_sources.rs"]
+pub(crate) mod checked_sources;
 #[path = "../../helpers/cleanup_lowering.rs"]
 pub(crate) mod cleanup_lowering;
 #[path = "../../deferred_promotions.rs"]

@@ -288,7 +288,7 @@ enum Work {
     AssignmentValue(NodeId),
     /// One node of a destructuring assignment's left operand.
     Assignee(NodeId),
-    /// A tuple or group assignee, after its elements.
+    /// A tuple, array or group assignee, after its elements.
     AssigneeShell(NodeId),
     ForIterator(NodeId),
     ForPattern(NodeId, TermId),

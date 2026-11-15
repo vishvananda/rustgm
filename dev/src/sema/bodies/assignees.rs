@@ -1,12 +1,13 @@
 //! A destructuring assignment is rustc's `{ let <pattern> = rhs; leaf = binding; ... }`.
-//! Its tuple shells take the tuple of their elements' types, `_` takes a fresh
-//! variable, and each place leaf is entered as the place an assignment writes.
-//! The right operand then coerces to the assembled type.
+//! Its tuple shells take the tuple of their elements' types, its array shells
+//! the array of their elements' one type, `_` takes a fresh variable, and each
+//! place leaf is entered as the place an assignment writes. The right operand
+//! then coerces to the assembled type.
 use super::{Checker, Constructor, Domain, Error, Kind, NodeId, TermId, TypeId, Work};
 use crate::syntax::assignee::{Assignee, Role};
 
 impl Checker<'_> {
-    /// Whether this assignment's left operand is a tuple or `_` assignee.
+    /// Whether this assignment's left operand is a tuple, array or `_` assignee.
     pub(super) fn destructures(&self, left: NodeId) -> bool {
         self.report
             .package
@@ -31,7 +32,7 @@ impl Checker<'_> {
                 self.state.work.push(Work::AssigneeShell(node));
                 self.state.work.push(Work::Assignee(inner));
             }
-            Kind::Tuple(elements) => {
+            Kind::Tuple(elements) | Kind::Array(elements) => {
                 self.state.work.push(Work::AssigneeShell(node));
                 let unit = self.report.package.unit(self.state.file);
                 for &element in unit.configured.ast.list(elements).iter().rev() {
@@ -59,7 +60,8 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    /// A tuple shell's type is the tuple of its elements' types.
+    /// A tuple shell's type is the tuple of its elements' types; an array
+    /// shell's is the array, of its element count, of their one type.
     pub(super) fn finish_assignee(&mut self, node: NodeId) -> Result<(), Error> {
         let term = match self.kind(node) {
             Kind::Group(inner) | Kind::Attributed { value: inner, .. } => self.term(inner)?,
@@ -73,6 +75,21 @@ impl Checker<'_> {
                     }
                 }
                 self.shape(node, Constructor::Tuple, None)?
+            }
+            Kind::Array(elements) => {
+                let shared = self.variable(node, Domain::Any)?;
+                let unit = self.report.package.unit(self.state.file);
+                let mut length = 0;
+                for &element in unit.configured.ast.list(elements) {
+                    if self.active(element) {
+                        let term = self.term(element)?;
+                        self.equate(element, shared, term)?;
+                        length += 1;
+                    }
+                }
+                self.state.type_children.clear();
+                self.state.type_children.push(shared);
+                self.shape(node, Constructor::Array(length), None)?
             }
             _ => return Err(self.error(node, "invalid assignee shell")),
         };

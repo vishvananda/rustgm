@@ -1,6 +1,7 @@
 //! The left operand of a destructuring assignment is an assignee expression,
-//! not a value (the Rust Reference's destructuring assignment). Tuples are
-//! shells, `_` assigns nothing, and every other operand is a place leaf.
+//! not a value (the Rust Reference's destructuring assignment). Tuples and
+//! arrays are shells, `_` assigns nothing, and every other operand is a place
+//! leaf.
 use super::ast::{Kind, NodeId, Syntax};
 
 /// One node of an assignee walk, in source order: a shell precedes its
@@ -8,7 +9,7 @@ use super::ast::{Kind, NodeId, Syntax};
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Assignee {
     pub node: NodeId,
-    /// The walk index of the enclosing tuple and this node's active field.
+    /// The walk index of the enclosing shell and this node's active element.
     pub parent: Option<(u32, u32)>,
     pub role: Role,
 }
@@ -16,6 +17,7 @@ pub struct Assignee {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Role {
     Tuple,
+    Array,
     Wildcard,
     /// A `..` rest marker; it assigns nothing, but it is not yet implemented.
     Rest,
@@ -32,12 +34,12 @@ impl<L> Syntax<L> {
         }
         left
     }
-    /// Whether an assignment's left operand destructures: a tuple or `_`.
+    /// Whether an assignment's left operand destructures: a tuple, an array or `_`.
     #[must_use]
     pub fn destructures(&self, left: NodeId) -> bool {
         matches!(
             self.node(self.assignee_root(left)).kind,
-            Kind::Tuple(_) | Kind::Wildcard
+            Kind::Tuple(_) | Kind::Array(_) | Kind::Wildcard
         )
     }
     /// Append `root`'s assignee walk to `output`, skipping inactive elements.
@@ -47,6 +49,7 @@ impl<L> Syntax<L> {
             let node = self.assignee_root(node);
             let role = match self.node(node).kind {
                 Kind::Tuple(_) => Role::Tuple,
+                Kind::Array(_) => Role::Array,
                 Kind::Wildcard => Role::Wildcard,
                 Kind::Range {
                     start: None,
@@ -57,7 +60,7 @@ impl<L> Syntax<L> {
             };
             let index = u32::try_from(output.len()).unwrap_or(u32::MAX);
             output.push(Assignee { node, parent, role });
-            if let Kind::Tuple(elements) = self.node(node).kind {
+            if let Kind::Tuple(elements) | Kind::Array(elements) = self.node(node).kind {
                 let start = pending.len();
                 let mut field = 0;
                 for &element in self.list(elements) {

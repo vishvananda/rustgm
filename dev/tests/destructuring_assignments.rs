@@ -1,5 +1,7 @@
 //! A destructuring assignment is rustc's `{ let <pattern> = rhs; leaf = binding; ... }`:
 //! core's `(left, right, dst) = merge_up(...)` stores each field to its place leaf.
+#[path = "destructuring_assignments/assigned_arrays.rs"]
+mod assigned_arrays;
 use std::fmt::Write as _;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const PACKET: &str = "pa31/tests/spec/destructuring-assignment";
