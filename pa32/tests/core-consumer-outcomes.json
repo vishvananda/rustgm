@@ -313,6 +313,26 @@
       ],
       "source_sha256": "4736bf26731fa57df53e51085dc846ee27997de290c3060c838c43ea94ea5780",
       "stdout_sha256": "01df093a303a3904ef31e027a208e8e57734f205601bc72303df5991dc4ea328"
+    },
+    {
+      "name": "intrinsic-ops",
+      "path": "tests/spec/core-consumers/intrinsic-ops.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/core-consumers/intrinsic-ops.stdout",
+      "features": [
+        "bit counts, byte swaps and bit reversal at every integer width",
+        "overflowing, checked and saturating sums and differences",
+        "raw pointer offsets and distances",
+        "unchecked slice access",
+        "ptr::read, ptr::write and mem::replace",
+        "output without core::fmt"
+      ],
+      "source_sha256": "80df7f906d92144ab5233721a46150843f9220f7b5213ee641c3818941de95bc",
+      "stdout_sha256": "cb0fad1047cd5afa9df46accbd16a089ad9208001215e79d840244f3c634da69"
     }
   ]
 }

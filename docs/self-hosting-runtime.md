@@ -145,7 +145,7 @@ before any output was recorded.
 
 | Rung | Programs | Outcomes | Count |
 | --- | --- | --- | ---: |
-| M1 | `pa32/tests/spec/core-consumers/` | `pa32/tests/core-consumer-outcomes.json` | 17 |
+| M1 | `pa32/tests/spec/core-consumers/` | `pa32/tests/core-consumer-outcomes.json` | 18 |
 | M2 | `pa33/tests/spec/alloc-consumers/` | `pa33/tests/alloc-consumer-outcomes.json` | 12 |
 | M3 | `pa36/tests/spec/std-consumers/` | `pa36/tests/std-consumer-outcomes.json` | 14 |
 | M4 | `pa35/tests/spec/unicode-consumers/` | `pa35/tests/unicode-consumer-outcomes.json` | 4 |
@@ -162,14 +162,17 @@ toolchain's prebuilt std for M3 and M4, rebuilt core and alloc for M1 and M2).
 It runs every program three times per build in a fresh empty directory with
 only the declared environment. All six runs must meet the declared status and
 standard error and print identical bytes. `--record` writes the `.stdout` files
-and hashes and refuses when a declaration is not met. All 47 programs pass in
-check mode.
+and hashes and refuses when a declaration is not met. All 48 programs pass in
+check mode. The demand table above predates `intrinsic-ops.rs` and counts 17.
 
 Conventions the frontier needs:
 
 - **M1** programs are `#![no_std] #![no_main]`. They export an unmangled C
   `main`, format through `core::fmt::Write` into a 256-byte buffer and call
   only libc `write` and `abort`. The panic handler aborts without printing.
+  `intrinsic-ops.rs` alone avoids `core::fmt`: it writes hexadecimal lines
+  itself and exits with the number of values that differ from its own
+  predictions, so it runs before formatting does.
 - **M2** programs add `extern crate alloc` and a `#[global_allocator]` over
   libc `malloc`, `posix_memalign` and `free`. It counts live blocks and bytes,
   and every program's last line is `heap: N blocks, M bytes live`, so a leak or
@@ -242,6 +245,10 @@ row needs a backend change.
 | 1 | Link through the object bridge | M1 | Runner | Bridge exists; the consumer runner must use it |
 | 2 | Program entry: `#![no_main]`, C `main` with arguments, `lang_start`, `Termination` | M1 | Frontend | Fenced |
 | 3 | Intrinsics executed at run time | M1 | Frontend | A fixed list is lowered; the rest stop at one fence |
+| 3a | Bring-up lowering, integer arithmetic: `add_with_overflow`, `saturating_add/sub`, `exact_div` | M1 | Runtime lane | Lowered in place and waived by name; `intrinsic-ops.rs` matches rustc |
+| 3b | Bring-up lowering, bits: `ctpop`, `ctlz`, `cttz`, their `_nonzero` forms, `bswap`, `bitreverse` | M1 | Runtime lane | Same; shift-and-mask sequences at 8 to 128 bits |
+| 3c | Bring-up lowering, pointers: `offset`, `slice_get_unchecked`, `ptr_offset_from`, `ptr_offset_from_unsigned` | M1 | Runtime lane | Same; a zero-sized `ptr_offset_from` keeps its trap |
+| 3d | Bring-up lowering, moves: `read_via_copy`, `write_via_move`, `black_box`, `unreachable` | M1 | Runtime lane | Same; `unreachable` aborts |
 | 4 | Atomics other than `u32` | M1 `atomics.rs`, M2 `arc.rs` | Frontend | Fenced; backend already qualified for 8 to 64 bits and pointers |
 | 5 | SIMD: 16-byte vectors for hashbrown and `str` search | M1 `chars-strs.rs`, M3 every `HashMap` | Frontend | No handler; backend has `v128` |
 | 6 | `compiler_builtins` | M1 | Integrator decision | Its symbols are provided at link time; its sources need assembly RustGM fences |

@@ -1,0 +1,277 @@
+u8 ones 5a 4
+u8 ones 0 0
+u8 ones ff 8
+u8 lz 0 8
+u8 lz 1 7
+u8 lz 10 3
+u8 lz 80 0
+u8 tz 0 8
+u8 tz 18 3
+u8 tz 80 7
+u8 leading ones f0 4
+u8 leading ones ff 8
+u8 trailing ones 0f 4
+i8 ones -1 8
+i8 zeros -1 0
+i8 lz min 0
+i8 lz 0 8
+i8 lz 1 7
+i8 tz min 7
+u16 ones f0f0 8
+u16 lz 0 10
+u16 lz 100 7
+u16 tz 0 10
+u16 tz 100 8
+i16 ones -2 f
+i16 tz -2 1
+i16 lz max 1
+u32 ones deadbeef 18
+u32 lz 0 20
+u32 lz 1 1f
+u32 lz 10000 f
+u32 tz 0 20
+u32 tz 10000 10
+u32 trailing ones max 20
+i32 ones min 1
+i32 lz max 1
+i32 tz -1 0
+u64 ones max 40
+u64 ones ends 2
+u64 lz 0 40
+u64 lz bit40 17
+u64 tz 0 40
+u64 tz bit40 28
+i64 ones 0 0
+i64 lz -1 0
+i64 tz min 3f
+u128 ones max 80
+u128 ones two 2
+u128 lz 0 80
+u128 lz 1 7f
+u128 lz bit100 1b
+u128 tz 0 80
+u128 tz bit100 64
+i128 ones -1 80
+i128 lz max 1
+i128 tz min 7f
+usize ones max 40
+usize lz 0 40
+usize tz 4096 c
+isize lz min 0
+isize tz min 3f
+nonzero u8 80 7
+nonzero u32 1 c1c
+nonzero u64 bit40 924
+nonzero u128 bit100 69dc
+nonzero u16 fffe 1
+nonzero none 1
+ilog2 1000 9
+ilog2 u8 1 0
+ilog2 u64 max 3f
+ilog2 u128 bit100 64
+next power 5 8
+next power 1 1
+next power u8 65 80
+next power none 1
+power of two 64 1
+power of two 65 0
+u8 swap 12
+u16 swap 3412
+i16 swap 3412
+u32 swap 78563412
+i32 swap -2 feffffff
+u64 swap efcdab8967452301
+usize swap 807060504030201
+u128 swap ffeeddccbbaa99887766554433221100
+u32 to_be 78563412
+u32 to_le 12345678
+u32 from_be_bytes 12345678
+u32 from_le_bytes 78563412
+u16 to_be_bytes 12
+u8 reverse 01 80
+u8 reverse 12 48
+i8 reverse min 1
+u16 reverse 2c48
+u32 reverse 1e6a2c48
+u64 reverse f7b3d591e6a2c480
+u64 reverse 1 8000000000000000
+u128 reverse 1 80000000000000000000000000000000
+u128 reverse top 3
+u8 200+100 2c 1
+i8 100+100 c8 1
+i8 -100-100 38 1
+i8 100+27 7f 0
+u16 max+1 0 1
+u16 max-1+1 ffff 0
+i16 max+1 8000 1
+i16 min-1 7fff 1
+u32 max+max fffffffe 1
+i32 min+min 0 1
+i32 max+min ffffffff 0
+u64 max+1 0 1
+i64 max+1 8000000000000000 1
+i64 -5+3 fffffffffffffffe 0
+usize max+2 1 1
+isize min+min 0 1
+u128 max+1 0 1
+u128 top+top 0 1
+u128 carry 20000000000000000 0
+i128 max+1 80000000000000000000000000000000 1
+i128 min-1 7fffffffffffffffffffffffffffffff 1
+i128 -1+1 0 0
+u8 checked 200+55 ff 1
+u8 checked 200+56 0 0
+i8 checked min-1 0 0
+i64 checked max+0 7fffffffffffffff 1
+u128 checked max-1+1 ffffffffffffffffffffffffffffffff 1
+i128 checked min+min 0 0
+u8 200+100 ff
+u8 200+55 ff
+u8 200+54 fe
+u8 5-10 0
+u8 10-5 5
+i8 100+100 7f
+i8 -100-100 80
+i8 -100+100 0
+i8 100--100 7f
+i8 -100-100 sub 80
+i8 0-min 7f
+i8 -1-min 7f
+i8 -2-min 7e
+u16 max+1 ffff
+u16 0-1 0
+i16 max+1 7fff
+i16 min-1 8000
+u32 max+max ffffffff
+u32 7-max 0
+i32 min+-1 80000000
+i32 max-min 7fffffff
+i32 3-5 fffffffe
+u64 max+1 ffffffffffffffff
+u64 1-2 0
+i64 max+max 7fffffffffffffff
+i64 min-max 8000000000000000
+usize max+1 ffffffffffffffff
+usize 0-1 0
+isize min-1 8000000000000000
+isize max+1 7fffffffffffffff
+u128 max+max ffffffffffffffffffffffffffffffff
+u128 max-1+1 ffffffffffffffffffffffffffffffff
+u128 0-1 0
+u128 big-small fffffffffffffffffffffffff
+i128 max+max 7fffffffffffffffffffffffffffffff
+i128 min+min 80000000000000000000000000000000
+i128 min-max 80000000000000000000000000000000
+i128 max-min 7fffffffffffffffffffffffffffffff
+i128 -1+1 0
+bits u8 bad 0
+bits u8 sum 3629e40c4e24e6a3
+bits i8 bad 0
+bits i8 sum 7c8bfa31d6368d46
+bits u16 bad 0
+bits u16 sum 27c295ca932cdbf5
+bits i16 bad 0
+bits i16 sum bdcea91452f5b858
+bits u32 bad 0
+bits u32 sum db19394f4c7dbf54
+bits i32 bad 0
+bits i32 sum 107946e17bb50737
+bits u64 bad 0
+bits u64 sum 914de41c998802a4
+bits i64 bad 0
+bits i64 sum 555e63fa79c2187
+bits usize bad 0
+bits usize sum 914de41c998802a4
+bits isize bad 0
+bits isize sum 555e63fa79c2187
+bits u128 bad 0
+bits u128 sum e2f911fdfb298205
+bits i128 bad 0
+bits i128 sum 8b4ce783ce75b44c
+sums u8 bad 0
+sums u8 sum 360213ed1d8ac94a
+sums i8 bad 0
+sums i8 sum f77756d2bee6a6f9
+sums u16 bad 0
+sums u16 sum aa21702183b8d9bf
+sums i16 bad 0
+sums i16 sum 69d3b2248439c42f
+sums u32 bad 0
+sums u32 sum 984e24b74581aa5f
+sums i32 bad 0
+sums i32 sum 35fbf92ec51a3c63
+sums u64 bad 0
+sums u64 sum e901c22c669de5b9
+sums i64 bad 0
+sums i64 sum 62ae53ffdb94cc71
+sums usize bad 0
+sums usize sum e901c22c669de5b9
+sums isize bad 0
+sums isize sum 62ae53ffdb94cc71
+chunks of 4 3
+chunks of 4 rest 0
+chunk element a
+chunks of 3 3
+chunks of 3 rest 1
+align u16 to 8 1
+align triple to 4 1
+align u8 to 16 1
+u32 add 3 a
+u32 add 7 sub 2 1a
+u32 offset -3 2
+u32 offset 0 1
+u32 distance 6
+u32 distance back fffffffffffffffa
+u32 unsigned distance 6
+u32 byte distance 18
+triple add 3 b
+triple distance 4
+triple distance back fffffffffffffffd
+triple unsigned distance 3
+triple byte distance f
+u8 add 8 63
+u8 distance 9
+u8 unsigned distance 7
+u128 add 2 ffffffffffffffffffffffffffffffff
+u128 add 2 sub 1 7
+u128 distance 3
+unit add 5 1
+mut distance 3
+mut writes 1f0
+get_unchecked 5 9
+get 1 7
+get 8 63
+get_mut 7 10
+range 159
+triple get_unchecked 8
+triple get none 1
+unit get 5 1
+unit get 6 0
+bytes get_unchecked 74
+u128 get 2 40000000000000000000000
+read u64 123456789abcdef0
+read u8 a5
+read u128 8000000000000000000000000
+read bool 1
+read char 3bb
+read f64 3ff8000000000000
+read record a 1122334455667788
+read record b 99aa
+read record c f
+read pair 102030b
+read array 3c
+read slice reference e6
+read option 1e
+write u32 deadbeef
+write u128 8000000000000000000000000
+write bool 1
+write record 81
+write pair 4e
+write slice reference dc
+replace u32 38
+replace record old 159
+replace record new 2a6
+black_box u32 7
+black_box pair 3
+black_box record 3db
+unreachable arm not taken 2a
