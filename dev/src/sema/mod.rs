@@ -27,6 +27,7 @@ mod documentation_labels;
 mod documentation_options;
 pub mod dyn_compat;
 pub mod entry;
+mod eyepatches;
 pub mod foreign;
 pub(crate) mod function_context;
 pub(crate) mod function_headers;

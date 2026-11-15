@@ -241,6 +241,13 @@ impl super::package::Package {
             .macro_context()?
             .is_some_and(|context| context.requested(policy::Feature::ExternTypes)))
     }
+    /// Permission for `#[may_dangle]`, never its drop-check opt-out.
+    pub(crate) fn requested_dropck_eyepatch(&self) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            policy::Feature::DropckEyepatch,
+            "drop-check eyepatch client identity changed",
+        )
+    }
     pub(crate) fn requested_marker_traits(&self) -> Result<bool, &'static str> {
         if let Some(source) = self.staged_consumer() {
             source.require_package(self)?;

@@ -34,9 +34,6 @@ pub(super) fn collect(report: &Report, facts: &Declarations) -> Result<Vec<Heade
     } else {
         report.resolution.drop_trait
     };
-    let Some(drop_trait) = selected else {
-        return Ok(Vec::new());
-    };
     let mut headers = Vec::new();
     let mut owners = vec![None; facts.associated.owners().len()];
     for index in 0..facts.associated.owners().len() {
@@ -62,10 +59,28 @@ pub(super) fn collect(report: &Report, facts: &Declarations) -> Result<Vec<Heade
             node: path.node,
             ..source
         };
-        if facts.node(path).and_then(|f| f.reference) != Some(Target::Definition(drop_trait)) {
+        // rustc requires `unsafe impl Drop` exactly when a parameter is marked.
+        let marked = crate::sema::eyepatches::marked(report, source)?;
+        if selected.is_none_or(|drop_trait| {
+            facts.node(path).and_then(|f| f.reference) != Some(Target::Definition(drop_trait))
+        }) {
+            if marked {
+                return Err(Declarations::error(
+                    report,
+                    source,
+                    crate::sema::eyepatches::MISPLACED,
+                ));
+            }
             continue;
         }
-        if unsafe_
+        if marked && !unsafe_ {
+            return Err(Declarations::error(
+                report,
+                source,
+                "`#[may_dangle]` requires an `unsafe impl` of Drop",
+            ));
+        }
+        if unsafe_ != marked
             || polarity != crate::sema::associated::ImplPolarity::Positive
             || crate::sema::lifetimes::arguments(report, path, false)?.is_some()
         {
@@ -74,6 +89,9 @@ pub(super) fn collect(report: &Report, facts: &Declarations) -> Result<Vec<Heade
                 source,
                 "Drop requires a positive safe impl without trait arguments",
             ));
+        }
+        if marked {
+            crate::sema::eyepatches::admit(report, source)?;
         }
         owners[index] = Some(headers.len());
         headers.push(Header {

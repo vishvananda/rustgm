@@ -332,6 +332,16 @@ fn consume_annotation<'unit>(
                 allowances,
             )?;
         }
+        Some(Consumer::DropCheckEyepatch) => {
+            crate::sema::eyepatches::consume(
+                report,
+                facts,
+                (owner, declaration),
+                attribute,
+                forest,
+                allowances,
+            )?;
+        }
         Some(Consumer::InsignificantDestructor) => {
             crate::sema::insignificant_drop::consume(
                 report,

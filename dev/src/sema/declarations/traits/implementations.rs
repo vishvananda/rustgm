@@ -120,7 +120,10 @@ impl Checker<'_> {
                 .const_impl(owner.self_definition, definition)
                 .map_err(|e| self.error(owner.source, e))?;
         }
-        let trait_unsafe = self.impl_trait_safety(path, definition)?;
+        // rustc also requires `unsafe impl` for a safe trait when a parameter
+        // is `#[may_dangle]` (`check_impl_safety`).
+        let trait_unsafe = self.impl_trait_safety(path, definition)?
+            || crate::sema::eyepatches::marked(self.report, owner.source)?;
         if if negative {
             unsafe_
         } else {

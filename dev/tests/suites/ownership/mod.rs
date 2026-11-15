@@ -47,6 +47,8 @@ mod drop_identity;
 mod drop_initialization;
 #[path = "../../drop_value_scopes.rs"]
 mod drop_value_scopes;
+#[path = "../../eyepatch_parameters.rs"]
+mod eyepatch_parameters;
 #[path = "../../loans.rs"]
 mod loans;
 #[path = "../../moved_cleanup.rs"]

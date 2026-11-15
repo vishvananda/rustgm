@@ -95,6 +95,9 @@ pub(in crate::resolve) enum Feature {
     /// The internal language feature that admits a bring-up guest crate's
     /// `#![needs_allocator]`; no strict session knows the request.
     AllocatorInternals = 77,
+    /// The language feature that admits `#[may_dangle]` on a parameter of a
+    /// `Drop` impl.
+    DropckEyepatch = 78,
 }
 
 #[cfg(test)]
@@ -149,6 +152,7 @@ impl Request {
             "allocator_internals" if crate::support::bringup::selected().is_some() => {
                 Self::Capability(Feature::AllocatorInternals)
             }
+            "dropck_eyepatch" => Self::Capability(Feature::DropckEyepatch),
             "abi_unadjusted" => Self::Capability(Feature::AbiUnadjusted),
             "lang_items" => Self::Capability(Feature::LangItems),
             "intrinsics" => Self::Capability(Feature::Intrinsics),

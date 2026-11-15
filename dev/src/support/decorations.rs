@@ -25,6 +25,7 @@ pub(crate) enum Consumer {
     InherentPolicy,
     IncoherentTarget,
     InsignificantDestructor,
+    DropCheckEyepatch,
     NonExhaustive,
     UnsafeSpecialization,
     SpecializationTrait,
@@ -143,6 +144,7 @@ impl Consumer {
             "rustc_allow_incoherent_impl" => Self::InherentPolicy,
             "rustc_has_incoherent_inherent_impls" => Self::IncoherentTarget,
             "rustc_insignificant_dtor" => Self::InsignificantDestructor,
+            "may_dangle" => Self::DropCheckEyepatch,
             _ => return None,
         })
     }
