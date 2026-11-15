@@ -204,6 +204,44 @@ impl Builder {
             operand: Operand::Literal(id),
         })
     }
+    /// A float constant with its exact bits. The text spells one quiet NaN,
+    /// the positive one without a payload; any other NaN is read back from its
+    /// integer bits, so that its sign and payload reach run time unchanged.
+    ///
+    /// # Errors
+    /// Rejects a literal that is not a float of this type, invalid
+    /// construction state and exhausted identities.
+    pub fn float(&mut self, ty: Type, literal: Literal) -> Result<Value, &'static str> {
+        let (own, carrier, bits, spelled) = match literal {
+            Literal::F32(bits) => (
+                Type::F32,
+                Type::U32,
+                u128::from(bits),
+                bits == 0x7fc0_0000 || !f32::from_bits(bits).is_nan(),
+            ),
+            Literal::F64(bits) => (
+                Type::F64,
+                Type::I64,
+                u128::from(bits),
+                bits == 0x7ff8_0000_0000_0000 || !f64::from_bits(bits).is_nan(),
+            ),
+            Literal::Integer(_) | Literal::Null => return Err("nonfloat LowIR float literal"),
+        };
+        if spelled {
+            return self.literal(ty, literal);
+        }
+        if ty != own {
+            return Err("LowIR float literal differs from its type");
+        }
+        let bytes = u64::from(carrier.bits() / 8);
+        let slot = Operand::Slot(self.object_slot(MemorySpan {
+            bytes,
+            align: carrier.bits() / 8,
+        })?);
+        let raw = self.integer(carrier, bits)?;
+        self.store(raw, slot)?;
+        self.load(ty, slot)
+    }
     /// # Errors
     /// Rejects noninteger types and exhausted literal identities.
     pub fn integer(&mut self, ty: Type, bits: u128) -> Result<Value, &'static str> {

@@ -33,6 +33,8 @@ mod initializer_selection;
 mod initializer_validation;
 #[path = "../../interval_publication.rs"]
 mod interval_publication;
+#[path = "../../nan_constants.rs"]
+mod nan_constants;
 #[path = "../../harness/native_references.rs"]
 pub(crate) mod native_references;
 #[path = "../../nominal_constants.rs"]

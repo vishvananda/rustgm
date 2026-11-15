@@ -97,6 +97,23 @@ fn comparison<T: Copy + PartialEq + PartialOrd>(op: Op, left: T, right: T) -> Op
         _ => return None,
     })
 }
+/// A NaN that compile-time arithmetic produces is the positive quiet NaN of its
+/// width, whatever the host or an operand's payload would give. Values that are
+/// only copied, reinterpreted or negated never pass through here.
+fn single(value: f32) -> FloatBits {
+    FloatBits::F32(if value.is_nan() {
+        0x7fc0_0000
+    } else {
+        value.to_bits()
+    })
+}
+fn double(value: f64) -> FloatBits {
+    FloatBits::F64(if value.is_nan() {
+        0x7ff8_0000_0000_0000
+    } else {
+        value.to_bits()
+    })
+}
 fn numeric<T>(op: Op, left: T, right: T) -> Result<T, Failure>
 where
     T: std::ops::Add<Output = T>
@@ -157,18 +174,14 @@ pub(super) fn binary(
             if let Some(value) = comparison(op, left, right) {
                 return Ok(Scalar::Boolean(value));
             }
-            Ok(Scalar::Float(FloatBits::F32(
-                numeric(op, left, right)?.to_bits(),
-            )))
+            Ok(Scalar::Float(single(numeric(op, left, right)?)))
         }
         (Scalar::Float(FloatBits::F64(left)), Scalar::Float(FloatBits::F64(right))) => {
             let (left, right) = (f64::from_bits(left), f64::from_bits(right));
             if let Some(value) = comparison(op, left, right) {
                 return Ok(Scalar::Boolean(value));
             }
-            Ok(Scalar::Float(FloatBits::F64(
-                numeric(op, left, right)?.to_bits(),
-            )))
+            Ok(Scalar::Float(double(numeric(op, left, right)?)))
         }
         _ => Err(Failure::Invalid("mismatched selected constant operands")),
     }
@@ -334,12 +347,8 @@ pub(super) fn cast(
             }))
         }
         (Cast::FloatToFloat, Scalar::Float(value)) => Ok(Scalar::Float(match (value, target) {
-            (FloatBits::F32(v), Primitive::F64) => {
-                FloatBits::F64(f64::from(f32::from_bits(v)).to_bits())
-            }
-            (FloatBits::F64(v), Primitive::F32) => {
-                FloatBits::F32((f64::from_bits(v) as f32).to_bits())
-            }
+            (FloatBits::F32(v), Primitive::F64) => double(f64::from(f32::from_bits(v))),
+            (FloatBits::F64(v), Primitive::F32) => single(f64::from_bits(v) as f32),
             (value, _) => value,
         })),
         _ => Err(Failure::Invalid("unsupported selected constant cast")),

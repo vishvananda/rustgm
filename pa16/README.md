@@ -65,8 +65,12 @@ proofs, including zero-sized elements and empty slices.
 Borrowed values need stable storage, including aligned nonnull backing for
 zero-sized values. Preserve snapshots when arguments, returns or assignments
 copy aggregates containing references. Persistent constants and readonly statics
-retain typed data identity and relocations. Static addresses do not read static
-initializer values. Packed fields retain their declared offsets; taking an
+retain typed data identity and relocations. A NaN that constant arithmetic or a
+constant width-changing float cast computes is rustc's canonical positive quiet
+NaN (`0x7FC00000`, `0x7FF8000000000000`), whatever its operands carry; a copied,
+reinterpreted or negated NaN keeps its bits, negation flipping only the sign.
+Static addresses do not read static initializer values. Packed fields retain
+their declared offsets; taking an
 unaligned reference is rejected even in an unused function or an unevaluated
 constant branch. A packed constant borrow demands complete enum discriminants
 before caching its referent layout, including nested and zero-length array fields;

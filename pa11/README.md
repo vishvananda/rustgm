@@ -89,7 +89,9 @@ Helper CFGs have fixed construction order. IDs restart per function: `%pN`
 parameters, `$sN` slots, `^bN` blocks, `%tN` temporaries. Named parameters also
 appear in indirect call signatures. Integer literals print unsigned decimal
 bits at their width; floats print 17-place scientific decimals or `nan`/`inf`/
-`-inf`. The serializer never becomes an input to another frontend phase.
+`-inf`. `nan` is the positive quiet NaN without a payload; a constant holding
+any other NaN is stored as its integer bits in a slot and loaded as the float.
+The serializer never becomes an input to another frontend phase.
 
 ## Tools and tests
 
