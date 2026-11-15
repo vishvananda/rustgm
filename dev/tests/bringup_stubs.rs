@@ -474,78 +474,156 @@ const ATOMICS: &str = "\
     unsafe{atomic_cxchg::<_,true,false>(p,old,new).1}
 }
 ";
+/// Counted transfers and comparisons, a volatile read, a slice's size, a
+/// validity assertion that holds and a float's magnitude.
+const MEMORY: &str = "\
+#[rustc_intrinsic] const unsafe fn copy_nonoverlapping<T>(src:*const T,dst:*mut T,count:usize);
+#[rustc_intrinsic] const unsafe fn write_bytes<T>(dst:*mut T,val:u8,count:usize);
+#[rustc_intrinsic] const unsafe fn compare_bytes(left:*const u8,right:*const u8,bytes:usize)->i32;
+#[rustc_intrinsic] const unsafe fn raw_eq<T>(a:&T,b:&T)->bool;
+#[rustc_intrinsic] unsafe fn volatile_load<T>(src:*const T)->T;
+#[rustc_intrinsic] const unsafe fn size_of_val<T:?Sized>(ptr:*const T)->usize;
+#[rustc_intrinsic] const fn assert_zero_valid<T>();
+#[rustc_intrinsic] const fn fabs<T>(x:T)->T;
+#[unsafe(no_mangle)]pub unsafe fn moved(s:*const u32,d:*mut u32){unsafe{copy_nonoverlapping(s,d,4usize)}}
+#[unsafe(no_mangle)]pub unsafe fn filled(d:*mut u16){unsafe{write_bytes(d,7u8,3usize)}}
+#[unsafe(no_mangle)]pub unsafe fn ordered(l:*const u8,r:*const u8)->i32{unsafe{compare_bytes(l,r,5usize)}}
+#[unsafe(no_mangle)]pub fn same(a:&[u8;6],b:&[u8;6])->bool{unsafe{raw_eq(a,b)}}
+#[unsafe(no_mangle)]pub unsafe fn sensed(p:*const u32)->u32{unsafe{volatile_load(p)}}
+#[unsafe(no_mangle)]pub unsafe fn extent(p:*const [u16])->usize{unsafe{size_of_val(p)}}
+#[unsafe(no_mangle)]pub fn zeroable(){assert_zero_valid::<(u32,[bool;2])>()}
+#[unsafe(no_mangle)]pub fn magnitude(x:f64)->f64{fabs(x)}
+";
+/// An assertion that the lowering cannot decide for the asserted type.
+const UNDECIDED: &str = "#[unsafe(no_mangle)]pub fn refused(){assert_zero_valid::<&u8>()}\n";
 const UNQUALIFIED: &str = "source intrinsic uses unqualified lowering: ";
+const UNLOWERED: &str = "source intrinsic executable lowering is not implemented: ";
+/// Where a strict library with such declarations has always stopped.
+const DECLARED: &str = "source intrinsic declaration semantics require a wider metadata profile";
+const PARAMETERS: &str = "source const parameters are outside the initial source profile";
+
+/// One library: its source after `HEAD`, the strict profile's fence, the
+/// intrinsics lowered in place, pieces of their `LowIR` and the one intrinsic
+/// whose call keeps its trap.
+struct Lowering {
+    name: &'static str,
+    source: [&'static str; 2],
+    fence: &'static str,
+    lowered: &'static [&'static str],
+    emitted: &'static [&'static str],
+    trapped: Option<&'static str>,
+}
+const PLAIN: &[&str] = &["ctpop", "saturating_add", "offset", "read_via_copy"];
+const SCALAR: &[&str] = &["binary ushr", "index u8"];
+const STORED: &[&str] = &[
+    "copy_nonoverlapping",
+    "write_bytes",
+    "compare_bytes",
+    "raw_eq",
+    "volatile_load",
+    "size_of_val",
+    "assert_zero_valid",
+    "fabs",
+];
+/// Transfers and comparisons call one shim each; the rest is emitted in place.
+const SHIMS: &[&str] = &[
+    "rg.unqualified.copy_nonoverlapping.t",
+    "rg.unqualified.write_bytes.t",
+    "rg.unqualified.compare_bytes.t",
+    "rg.unqualified.raw_eq.t",
+    "load volatile u32",
+    "binary mul i64",
+    "binary and i64",
+];
+const LOWERINGS: &[Lowering] = &[
+    Lowering {
+        name: "lowered",
+        source: [LOWERED, ""],
+        fence: DECLARED,
+        lowered: PLAIN,
+        emitted: SCALAR,
+        trapped: None,
+    },
+    Lowering {
+        name: "unhandled",
+        source: [LOWERED, UNHANDLED],
+        fence: DECLARED,
+        lowered: PLAIN,
+        emitted: SCALAR,
+        trapped: Some("ctpop"),
+    },
+    // Atomics use the word's own width; a pointer is carried as a machine word.
+    Lowering {
+        name: "atomics",
+        source: [ATOMICS, ""],
+        fence: PARAMETERS,
+        lowered: &[
+            "atomic_load",
+            "atomic_xadd",
+            "atomic_cxchg",
+            "atomic_umax",
+            "atomic_fence",
+        ],
+        emitted: &[
+            "atomic_add_fetch u16",
+            "atomic_load i64",
+            "atomic_compare_exchange i64",
+        ],
+        trapped: None,
+    },
+    Lowering {
+        name: "memory",
+        source: [MEMORY, ""],
+        fence: DECLARED,
+        lowered: STORED,
+        emitted: SHIMS,
+        trapped: None,
+    },
+    Lowering {
+        name: "undecided",
+        source: [MEMORY, UNDECIDED],
+        fence: DECLARED,
+        lowered: STORED,
+        emitted: SHIMS,
+        trapped: Some("assert_zero_valid"),
+    },
+];
 
 #[test]
 fn intrinsics_with_an_unqualified_lowering_are_named_and_stay_fenced_when_strict() -> Result {
-    // Where a strict library with such declarations has always stopped.
-    let declared = "source intrinsic declaration semantics require a wider metadata profile";
-    let parameters = "source const parameters are outside the initial source profile";
-    let plain = ["ctpop", "saturating_add", "offset", "read_via_copy"];
-    let atomic = [
-        "atomic_load",
-        "atomic_xadd",
-        "atomic_cxchg",
-        "atomic_umax",
-        "atomic_fence",
-    ];
-    let trapped = "source intrinsic executable lowering is not implemented: ctpop";
-    let scalar = ["binary ushr", "index u8"];
-    // Atomics use the word's own width; a pointer is carried as a machine word.
-    let words = [
-        "atomic_add_fetch u16",
-        "atomic_load i64",
-        "atomic_compare_exchange i64",
-    ];
-    for (name, source, fence, lowered, emitted, traps) in [
-        (
-            "lowered",
-            [LOWERED, ""],
-            declared,
-            &plain[..],
-            &scalar[..],
-            false,
-        ),
-        (
-            "unhandled",
-            [LOWERED, UNHANDLED],
-            declared,
-            &plain[..],
-            &scalar[..],
-            true,
-        ),
-        (
-            "atomics",
-            [ATOMICS, ""],
-            parameters,
-            &atomic[..],
-            &words[..],
-            false,
-        ),
-    ] {
-        let source = format!("{HEAD}{}", source.concat());
+    for case in LOWERINGS {
+        let source = format!("{HEAD}{}", case.source.concat());
         // The strict profile stops at its own fence, lowers and names nothing.
-        let (strict, _) = library(&format!("{name}-strict"), &source, "lowers", None, false)?;
+        let strict = format!("{}-strict", case.name);
+        let (strict, _) = library(&strict, &source, "lowers", None, false)?;
         let stderr = String::from_utf8(strict.stderr)?;
         assert_eq!(strict.status.code(), Some(1), "{stderr}");
         assert!(
-            stderr.contains(fence) && !stderr.contains("bringup-") && strict.stdout.is_empty(),
+            stderr.contains(case.fence) && !stderr.contains("bringup-") && strict.stdout.is_empty(),
             "{stderr}"
         );
-        let (passed, _) = library(name, &source, "lowers_bringup", Some(""), false)?;
+        let (passed, _) = library(case.name, &source, "lowers_bringup", Some(""), false)?;
         let stderr = String::from_utf8(passed.stderr)?;
         assert!(passed.status.success(), "{stderr}");
         let fences = waived(&stderr);
-        for intrinsic in lowered {
+        for intrinsic in case.lowered {
             let fence = format!("{UNQUALIFIED}{intrinsic}");
             assert!(fences.contains(&fence.as_str()), "{stderr}");
         }
-        // Lowered calls need no shim; only the unhandled call keeps its trap.
-        assert_eq!(fences.contains(&trapped), traps, "{stderr}");
+        // Lowered calls need no trap; only the call left alone keeps one.
+        let kept: Vec<_> = fences
+            .iter()
+            .filter_map(|fence| fence.strip_prefix(UNLOWERED))
+            .collect();
+        assert_eq!(kept, Vec::from_iter(case.trapped), "{stderr}");
         let text = std::str::from_utf8(&passed.stdout)?;
+        let traps = case.trapped.is_some();
         assert_eq!(text.contains("rg.trap."), traps, "{text}");
         assert_eq!(text.contains("call void @abort()"), traps, "{text}");
-        assert!(emitted.iter().all(|piece| text.contains(piece)), "{text}");
+        assert!(
+            case.emitted.iter().all(|piece| text.contains(piece)),
+            "{text}"
+        );
     }
     Ok(())
 }

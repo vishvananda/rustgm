@@ -6,6 +6,7 @@ mod memory;
 mod offsets;
 mod overlapping;
 mod trap;
+mod unqualified;
 use super::context::{Context, Representation};
 use crate::{
     lowir::{

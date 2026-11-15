@@ -4,8 +4,11 @@
 mod arithmetic;
 mod atomics;
 mod bits;
+mod floats;
+mod layouts;
 mod memory;
 mod offsets;
+mod transfers;
 use super::{Lower, Selected, ir};
 use crate::{
     lowir::{
@@ -15,10 +18,14 @@ use crate::{
     types::{Kind, TypeId},
 };
 
-/// One evaluated direct call: its inputs in source order and its result type.
+/// One evaluated direct call: the function item called, its inputs in source
+/// order and its result type.
 #[derive(Clone, Copy)]
 struct Call<'body> {
     name: &'static str,
+    callee: TypeId,
+    signature: TypeId,
+    arguments: ir::ValueList,
     inputs: &'body [ir::ValueId],
     result: TypeId,
 }
@@ -42,11 +49,19 @@ impl Lower<'_, '_, '_> {
             .values
             .get(id.0 as usize)
             .ok_or("unqualified intrinsic call disappeared")?;
-        let ir::Rvalue::Call { arguments, .. } = value.kind else {
+        let ir::Rvalue::Call {
+            signature,
+            callee,
+            arguments,
+        } = value.kind
+        else {
             return Ok(None);
         };
         let call = Call {
             name,
+            callee: self.input_type(callee)?,
+            signature,
+            arguments,
             inputs: self
                 .body
                 .arguments
@@ -63,7 +78,15 @@ impl Lower<'_, '_, '_> {
             "offset" | "slice_get_unchecked" | "ptr_offset_from" | "ptr_offset_from_unsigned" => {
                 self.unqualified_offset(call)?
             }
-            "read_via_copy" | "write_via_move" | "black_box" => self.unqualified_memory(call)?,
+            "read_via_copy" | "write_via_move" | "black_box" | "volatile_load"
+            | "volatile_store" => self.unqualified_memory(call)?,
+            "copy_nonoverlapping" | "copy" | "write_bytes" | "compare_bytes" | "raw_eq" => {
+                self.unqualified_transfer(call)?
+            }
+            "size_of_val" | "align_of_val" | "assert_inhabited" | "assert_zero_valid" => {
+                self.unqualified_layout(call)?
+            }
+            "fabs" | "copysignf32" | "copysignf64" => self.unqualified_float(call)?,
             "unreachable" => self.unqualified_unreachable(call)?,
             _ if name.starts_with("atomic_") => self.unqualified_atomic(call)?,
             _ => None,

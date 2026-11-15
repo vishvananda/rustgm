@@ -3,7 +3,11 @@ use super::{
     super::{Address, Lower, Representation, Selected},
     Call,
 };
-use crate::{lowir::vocabulary::Type, types::TypeId};
+use crate::{
+    body::ir,
+    lowir::{program::Value, vocabulary::Type},
+    types::TypeId,
+};
 
 impl Lower<'_, '_, '_> {
     pub(super) fn unqualified_memory(
@@ -51,8 +55,44 @@ impl Lower<'_, '_, '_> {
                     selected => Ok(Some(selected)),
                 }
             }
+            ("volatile_load", &[pointer]) => {
+                let Some((pointer, scalar)) = self.volatile_input(pointer, call.result)? else {
+                    return Ok(None);
+                };
+                self.builder
+                    .volatile_load(scalar, pointer.operand)
+                    .map(|value| Some(Selected::Runtime(value)))
+            }
+            ("volatile_store", &[pointer, value]) => {
+                let stored = self.input_type(value)?;
+                let Some((pointer, scalar)) = self.volatile_input(pointer, stored)? else {
+                    return Ok(None);
+                };
+                let value = self.value(value)?.runtime()?;
+                if value.ty != scalar || call.result != TypeId::UNIT {
+                    return Ok(None);
+                }
+                self.builder.volatile_store(value, pointer.operand)?;
+                Ok(Some(Selected::Unit))
+            }
             _ => Ok(None),
         }
+    }
+    /// The thin pointer to `target` and the scalar one volatile access moves.
+    /// An aggregate or zero-sized target keeps the trap.
+    fn volatile_input(
+        &mut self,
+        pointer: ir::ValueId,
+        target: TypeId,
+    ) -> Result<Option<(Value, Type)>, &'static str> {
+        let Some((pointer, referent)) = self.thin_input(pointer)? else {
+            return Ok(None);
+        };
+        let Representation::Scalar(scalar) = self.context.representation(target)? else {
+            return Ok(None);
+        };
+        let whole = self.context.layout(target)?.size == u64::from(scalar.bits() / 8);
+        Ok((referent == target && scalar != Type::Void && whole).then_some((pointer, scalar)))
     }
     /// A fresh snapshot of the value of type `ty` stored at `source`.
     fn loaded(&mut self, source: Address, ty: TypeId) -> Result<Selected, &'static str> {
