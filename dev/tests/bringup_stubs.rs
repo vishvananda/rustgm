@@ -434,9 +434,8 @@ fn unlowered_intrinsics_trap_or_run_their_fallback_bodies_and_are_named() -> Res
     Ok(())
 }
 
-/// A source-core library that declares bodiless intrinsics which the bring-up
-/// profile lowers in place, and calls each with types the lowering handles.
-const LOWERED: &str = "\
+/// The head of a source-core library that may declare intrinsics.
+const HEAD: &str = "\
 #![feature(no_core,lang_items,intrinsics,rustc_attrs)]
 #![no_core]
 #![allow(internal_features,dead_code,unused_variables)]
@@ -447,6 +446,10 @@ const LOWERED: &str = "\
 impl<T:PointeeSized> LegacyReceiver for &T{}
 #[lang=\"clone\"]pub trait Clone:Sized{#[lang=\"clone_fn\"]fn clone(&self)->Self;}
 #[lang=\"copy\"]pub trait Copy:Clone{}
+";
+/// Bodiless intrinsics that the bring-up profile lowers in place, each called
+/// with types the lowering handles.
+const LOWERED: &str = "\
 #[rustc_intrinsic] const fn ctpop<T>(x:T)->u32;
 #[rustc_intrinsic] const fn saturating_add<T>(a:T,b:T)->T;
 #[rustc_intrinsic] const unsafe fn offset<P,D>(dst:P,offset:D)->P;
@@ -457,45 +460,92 @@ impl<T:PointeeSized> LegacyReceiver for &T{}
 ";
 /// A call with a type that the lowering of the same intrinsic does not handle.
 const UNHANDLED: &str = "#[unsafe(no_mangle)]pub fn truth(x:bool)->u32{ctpop(x)}\n";
-/// Where a strict library that declares such an intrinsic has always stopped.
-const DECLARED: &str = "source intrinsic declaration semantics require a wider metadata profile";
+/// Atomic accesses of a narrow integer, a machine word and a pointer.
+const ATOMICS: &str = "\
+#[rustc_intrinsic] unsafe fn atomic_load<T,const ORD:bool>(src:*const T)->T;
+#[rustc_intrinsic] unsafe fn atomic_xadd<T,U,const ORD:bool>(dst:*mut T,src:U)->T;
+#[rustc_intrinsic] unsafe fn atomic_cxchg<T,const S:bool,const F:bool>(dst:*mut T,old:T,src:T)->(T,bool);
+#[rustc_intrinsic] unsafe fn atomic_umax<T,const ORD:bool>(dst:*mut T,src:T)->T;
+#[rustc_intrinsic] unsafe fn atomic_fence<const ORD:bool>();
+#[unsafe(no_mangle)]pub unsafe fn bump(p:*mut u16)->u16{unsafe{atomic_fence::<true>();atomic_xadd::<_,_,true>(p,3u16)}}
+#[unsafe(no_mangle)]pub unsafe fn raise(p:*mut i64,v:i64)->i64{unsafe{atomic_umax::<_,true>(p,v)}}
+#[unsafe(no_mangle)]pub unsafe fn peek(p:*const *const u8)->*const u8{unsafe{atomic_load::<_,true>(p)}}
+#[unsafe(no_mangle)]pub unsafe fn claim(p:*mut *const u8,old:*const u8,new:*const u8)->bool{
+    unsafe{atomic_cxchg::<_,true,false>(p,old,new).1}
+}
+";
+const UNQUALIFIED: &str = "source intrinsic uses unqualified lowering: ";
 
 #[test]
 fn intrinsics_with_an_unqualified_lowering_are_named_and_stay_fenced_when_strict() -> Result {
-    let lowered = [
-        "source intrinsic uses unqualified lowering: ctpop",
-        "source intrinsic uses unqualified lowering: saturating_add",
-        "source intrinsic uses unqualified lowering: offset",
-        "source intrinsic uses unqualified lowering: read_via_copy",
+    // Where a strict library with such declarations has always stopped.
+    let declared = "source intrinsic declaration semantics require a wider metadata profile";
+    let parameters = "source const parameters are outside the initial source profile";
+    let plain = ["ctpop", "saturating_add", "offset", "read_via_copy"];
+    let atomic = [
+        "atomic_load",
+        "atomic_xadd",
+        "atomic_cxchg",
+        "atomic_umax",
+        "atomic_fence",
     ];
     let trapped = "source intrinsic executable lowering is not implemented: ctpop";
-    for (name, user, traps) in [("lowered", "", false), ("unhandled", UNHANDLED, true)] {
-        let source = format!("{LOWERED}{user}");
+    let scalar = ["binary ushr", "index u8"];
+    // Atomics use the word's own width; a pointer is carried as a machine word.
+    let words = [
+        "atomic_add_fetch u16",
+        "atomic_load i64",
+        "atomic_compare_exchange i64",
+    ];
+    for (name, source, fence, lowered, emitted, traps) in [
+        (
+            "lowered",
+            [LOWERED, ""],
+            declared,
+            &plain[..],
+            &scalar[..],
+            false,
+        ),
+        (
+            "unhandled",
+            [LOWERED, UNHANDLED],
+            declared,
+            &plain[..],
+            &scalar[..],
+            true,
+        ),
+        (
+            "atomics",
+            [ATOMICS, ""],
+            parameters,
+            &atomic[..],
+            &words[..],
+            false,
+        ),
+    ] {
+        let source = format!("{HEAD}{}", source.concat());
         // The strict profile stops at its own fence, lowers and names nothing.
         let (strict, _) = library(&format!("{name}-strict"), &source, "lowers", None, false)?;
         let stderr = String::from_utf8(strict.stderr)?;
         assert_eq!(strict.status.code(), Some(1), "{stderr}");
         assert!(
-            stderr.contains(DECLARED) && !stderr.contains("bringup-") && strict.stdout.is_empty(),
+            stderr.contains(fence) && !stderr.contains("bringup-") && strict.stdout.is_empty(),
             "{stderr}"
         );
         let (passed, _) = library(name, &source, "lowers_bringup", Some(""), false)?;
         let stderr = String::from_utf8(passed.stderr)?;
         assert!(passed.status.success(), "{stderr}");
         let fences = waived(&stderr);
-        assert!(
-            lowered.iter().all(|fence| fences.contains(fence)),
-            "{stderr}"
-        );
+        for intrinsic in lowered {
+            let fence = format!("{UNQUALIFIED}{intrinsic}");
+            assert!(fences.contains(&fence.as_str()), "{stderr}");
+        }
         // Lowered calls need no shim; only the unhandled call keeps its trap.
         assert_eq!(fences.contains(&trapped), traps, "{stderr}");
         let text = std::str::from_utf8(&passed.stdout)?;
-        assert_eq!(text.contains("rg.trap.ctpop"), traps, "{text}");
+        assert_eq!(text.contains("rg.trap."), traps, "{text}");
         assert_eq!(text.contains("call void @abort()"), traps, "{text}");
-        assert!(
-            text.contains("binary ushr") && text.contains("index u8"),
-            "{text}"
-        );
+        assert!(emitted.iter().all(|piece| text.contains(piece)), "{text}");
     }
     Ok(())
 }

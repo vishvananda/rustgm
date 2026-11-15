@@ -55,7 +55,7 @@ impl Lower<'_, '_, '_> {
             .map(|value| Some(Selected::Runtime(value)))
     }
     /// The operand type itself, or its pair with the overflow flag.
-    fn arithmetic_result(&self, result: TypeId, operand: TypeId, paired: bool) -> bool {
+    pub(super) fn arithmetic_result(&self, result: TypeId, operand: TypeId, paired: bool) -> bool {
         if !paired {
             return result == operand;
         }

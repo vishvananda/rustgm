@@ -28,6 +28,16 @@ pub struct Builder {
 const fn unopened(range: Range) -> bool {
     range.start > range.end
 }
+/// Strict lowering emits only `u32` atomics. The bring-up profile also uses
+/// the other integer widths that the backend's atomic contract covers.
+fn atomic_word(ty: Type) -> bool {
+    ty == Type::U32
+        || (crate::support::bringup::selected().is_some()
+            && matches!(
+                ty,
+                Type::I8 | Type::U8 | Type::I16 | Type::U16 | Type::I32 | Type::I64
+            ))
+}
 impl Builder {
     /// Start a body in a recycled, emptied function whose capacity is reused.
     pub(super) fn reuse(function: Function) -> Self {
@@ -228,7 +238,7 @@ impl Builder {
         address: Operand,
         ordering: super::atomic::LoadOrder,
     ) -> Result<Value, &'static str> {
-        if ty != Type::U32 {
+        if !atomic_word(ty) {
             return Err("atomic load currently requires u32");
         }
         self.value(
@@ -248,7 +258,7 @@ impl Builder {
         address: Operand,
         ordering: super::atomic::StoreOrder,
     ) -> Result<(), &'static str> {
-        if value.ty != Type::U32 {
+        if !atomic_word(value.ty) {
             return Err("atomic store currently requires u32");
         }
         self.emit(
@@ -269,7 +279,7 @@ impl Builder {
         expected: Operand,
         ordering: super::atomic::CompareOrder,
     ) -> Result<Value, &'static str> {
-        if value.ty != Type::U32 {
+        if !atomic_word(value.ty) {
             return Err("atomic compare-exchange currently requires u32");
         }
         self.value(
@@ -290,7 +300,7 @@ impl Builder {
         address: Operand,
         ordering: super::atomic::RmwOrder,
     ) -> Result<Value, &'static str> {
-        if value.ty != Type::U32 {
+        if !atomic_word(value.ty) {
             return Err("atomic exchange currently requires u32");
         }
         self.value(
@@ -310,7 +320,7 @@ impl Builder {
         address: Operand,
         ordering: super::atomic::RmwOrder,
     ) -> Result<Value, &'static str> {
-        if value.ty != Type::U32 {
+        if !atomic_word(value.ty) {
             return Err("atomic add-fetch currently requires u32");
         }
         self.value(

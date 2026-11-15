@@ -2,6 +2,7 @@
 //! without qualification. Each lowered name is waived; any other call, or a
 //! call whose actual types this module does not handle, keeps its trap.
 mod arithmetic;
+mod atomics;
 mod bits;
 mod memory;
 mod offsets;
@@ -64,6 +65,7 @@ impl Lower<'_, '_, '_> {
             }
             "read_via_copy" | "write_via_move" | "black_box" => self.unqualified_memory(call)?,
             "unreachable" => self.unqualified_unreachable(call)?,
+            _ if name.starts_with("atomic_") => self.unqualified_atomic(call)?,
             _ => None,
         };
         if lowered.is_some()
