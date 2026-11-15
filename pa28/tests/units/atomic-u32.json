@@ -1,0 +1,5120 @@
+{
+ "schema": 1,
+ "mode": "--emit-lowir",
+ "language": "Rust 1.98.0",
+ "edition": "2024",
+ "target": "x86_64-unknown-linux-gnu",
+ "discovery": [
+  "tests/spec/atomic-bitwise",
+  "tests/spec/atomic-cas",
+  "tests/spec/atomic-cas-native/dynamic-invalid.rs",
+  "tests/spec/atomic-cas-native/reified-invalid.rs",
+  "tests/spec/atomic-cas-native/ufcs-invalid.rs",
+  "tests/spec/atomic-cas-native/weak-invalid.rs",
+  "tests/spec/atomic-cas-orders",
+  "tests/spec/atomic-extrema",
+  "tests/spec/atomic-method-native/allowed-invalid.rs",
+  "tests/spec/atomic-method-native/const-alias-invalid.rs",
+  "tests/spec/atomic-method-native/dynamic-acqrel-load.rs",
+  "tests/spec/atomic-method-native/dynamic-acqrel-store.rs",
+  "tests/spec/atomic-method-native/dynamic-acquire-store.rs",
+  "tests/spec/atomic-method-native/dynamic-release-load.rs",
+  "tests/spec/atomic-method-native/reified-invalid.rs",
+  "tests/spec/atomic-method-native/ufcs-invalid.rs",
+  "tests/spec/atomic-methods/allow-invalid-order.rs",
+  "tests/spec/atomic-methods/block-order.rs",
+  "tests/spec/atomic-methods/closure-inherits.rs",
+  "tests/spec/atomic-methods/const-alias-order.rs",
+  "tests/spec/atomic-methods/const-load.rs",
+  "tests/spec/atomic-methods/const-reified.rs",
+  "tests/spec/atomic-methods/const-store-skipped.rs",
+  "tests/spec/atomic-methods/direct-acqrel-load.rs",
+  "tests/spec/atomic-methods/direct-acqrel-store.rs",
+  "tests/spec/atomic-methods/direct-acquire-store.rs",
+  "tests/spec/atomic-methods/direct-release-load.rs",
+  "tests/spec/atomic-methods/forbid-weaken.rs",
+  "tests/spec/atomic-methods/grouped-invalid-order.rs",
+  "tests/spec/atomic-methods/imported-invalid-order.rs",
+  "tests/spec/atomic-methods/known-only-let.rs",
+  "tests/spec/atomic-methods/known-only-match.rs",
+  "tests/spec/atomic-methods/load-store.rs",
+  "tests/spec/atomic-methods/nested-allow.rs",
+  "tests/spec/atomic-methods/nested-known-match.rs",
+  "tests/spec/atomic-methods/nested-wildcard-match.rs",
+  "tests/spec/atomic-methods/ordering-constant-tags.rs",
+  "tests/spec/atomic-methods/ordering-copy.rs",
+  "tests/spec/atomic-methods/packed-raw.rs",
+  "tests/spec/atomic-methods/packed-receiver.rs",
+  "tests/spec/atomic-methods/reified-order.rs",
+  "tests/spec/atomic-methods/shadowed-method.rs",
+  "tests/spec/atomic-methods/ufcs-order.rs",
+  "tests/spec/atomic-methods/unknown-not-unreachable.rs",
+  "tests/spec/atomic-methods/variable-order.rs",
+  "tests/spec/atomic-methods/wildcard-makes-unreachable.rs",
+  "tests/spec/atomic-methods/wildcard-match.rs",
+  "tests/spec/atomic-methods/wrong-order-type.rs",
+  "tests/spec/atomic-methods/wrong-store-type.rs",
+  "tests/spec/atomic-preparation",
+  "tests/spec/atomic-rmw",
+  "tests/spec/atomic-storage/active-option-return.rs",
+  "tests/spec/atomic-storage/alias-new.rs",
+  "tests/spec/atomic-storage/atomic-markers.rs",
+  "tests/spec/atomic-storage/atomic-not-clone.rs",
+  "tests/spec/atomic-storage/atomic-not-copy.rs",
+  "tests/spec/atomic-storage/const-field-reference.rs",
+  "tests/spec/atomic-storage/const-fn-local.rs",
+  "tests/spec/atomic-storage/const-new.rs",
+  "tests/spec/atomic-storage/const-reference-const.rs",
+  "tests/spec/atomic-storage/const-temporary-reference.rs",
+  "tests/spec/atomic-storage/const-unit-local.rs",
+  "tests/spec/atomic-storage/inactive-option-return.rs",
+  "tests/spec/atomic-storage/new.rs",
+  "tests/spec/atomic-storage/no-prelude.rs",
+  "tests/spec/atomic-storage/no-type-parameter.rs",
+  "tests/spec/atomic-storage/packed-atomic.rs",
+  "tests/spec/atomic-storage/private-field.rs",
+  "tests/spec/atomic-storage/private-rest.rs",
+  "tests/spec/atomic-storage/runtime-named-field-reference.rs",
+  "tests/spec/atomic-storage/runtime-temporary-field-reference.rs",
+  "tests/spec/atomic-storage/static-temporary-reference.rs",
+  "tests/spec/atomic-storage/temporary-field-reference.rs",
+  "tests/spec/atomic-storage/wrong-input.rs",
+  "tests/spec/atomic-storage/zero-array-not-copy.rs",
+  "tests/spec/atomic-storage/zero-array-repeat-return.rs",
+  "tests/spec/atomic-storage/zero-array-return.rs",
+  "tests/spec/atomic-subtract"
+ ],
+ "cases": [
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-relaxed-relaxed.rs",
+   "source_sha256": "efe7dfdef6563ad144588172d55981c461acb1b20f234c02e76c6cf0b748a277",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-relaxed-release.rs",
+   "source_sha256": "ba7511518857bc20b505a343eab758a343117327b7e59227f4ce5b835fab05f8",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-relaxed-acquire.rs",
+   "source_sha256": "587b9faffa8d71335ebf0ccd6dd39debc3a87c3f6cb9d3a4bfc01870e95fd35d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-relaxed-acqrel.rs",
+   "source_sha256": "adec0050089d8990cd7ac566939a7b61ea0a65ec562d268e72d4fd8bc8272098",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-relaxed-seqcst.rs",
+   "source_sha256": "8eba77dc98a69975096352195956a279faf6650d6b37e0d0c050022e82ea338f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-release-relaxed.rs",
+   "source_sha256": "b5e5ba2275323002519c4c4b22ae106b1d4d9bd6cd8dbce599c5af8e04e73020",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-release-release.rs",
+   "source_sha256": "84c0ea2fc8ec0913b064be4575df27e8eb893a207841a1415113f5fc10c0522e",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-release-acquire.rs",
+   "source_sha256": "d6fbf2681f4ee0c49478d28b5068adc37caa28accc458cae0d5214be45f75393",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-release-acqrel.rs",
+   "source_sha256": "ce43d06a9e41b16741c737556580da119effdca52891bd6369e4dbe829400fa6",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-release-seqcst.rs",
+   "source_sha256": "d7181f78ce10cb0058ebf1562dcc745ac082bc3bcd3842d95c7471e584fe0345",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-acquire-relaxed.rs",
+   "source_sha256": "6dfd222d2c1646f17d3376682f52888996687dc47eed19329edd21cc44da0974",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-acquire-release.rs",
+   "source_sha256": "c0dda2b0df949f14aae7ae72e575f2ac225c0a62d6a0f35eda1f6e229f5d7857",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-acquire-acquire.rs",
+   "source_sha256": "32c07792d27a5cd763bc17f71eb05a97c922323960f849480949e343a63e3176",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-acquire-acqrel.rs",
+   "source_sha256": "d84e2ddb09a083d938137eed9d1a5ace8c57301e04b8e2f7c688e8e82cad94b9",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-acquire-seqcst.rs",
+   "source_sha256": "70df81c7257a36549fb83ef916dcf2c6415baa842db903496475a2bdc2687d76",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-acqrel-relaxed.rs",
+   "source_sha256": "b8b8c6860476a0fc790892df743e5e703a800de4e5a4c12ce80743f82786a07f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-acqrel-release.rs",
+   "source_sha256": "0bd6a73e6a1bd57690b45ec573b5a98fafa02462d1971f38113c3167e35f8460",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-acqrel-acquire.rs",
+   "source_sha256": "9f1eec8b70389ced6776a23809947af32bc4d24e9760dbb69d2433e13e929ebf",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-acqrel-acqrel.rs",
+   "source_sha256": "62e790800ef97ae64b86624ab557b375dcbb6bbbc7f54c907b2f9792fc05bdf8",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-acqrel-seqcst.rs",
+   "source_sha256": "f991717892fac20f7cc57343d0adf4218dccdf6aa9229d25c2f848451d906061",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-seqcst-relaxed.rs",
+   "source_sha256": "d0572a3166e4bdec046a31b15b564826db571af91c2552888185b49d36220f2a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-seqcst-release.rs",
+   "source_sha256": "b4d2ae43ef9468538f6531d74a64d70ecb04f2d9be20cd33bbc76f99b8d64784",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-seqcst-acquire.rs",
+   "source_sha256": "aff3271740c6459161e3ab19e7a5e5c9191586d0b78864eea580953f31b2b0d1",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-seqcst-acqrel.rs",
+   "source_sha256": "6bbbef047f679ff381b9c1656f9924a26daeb99804548557f76fe39caa6b2560",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange-seqcst-seqcst.rs",
+   "source_sha256": "6683bbf0cc8c59ed4c255454fcaa422873458095b424a1969186bd350a91495e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-relaxed-relaxed.rs",
+   "source_sha256": "d97cb71a7d96249423bb7e31ab0fa66566bd1398c45d0f2e9d617592877c79c3",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-relaxed-release.rs",
+   "source_sha256": "292b8b6cf878e7c74eb2cc1ed10954a841250fd548a5841d56d5a94acbb1e926",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-relaxed-acquire.rs",
+   "source_sha256": "5cc73abe080d2dc8b91d4653f0abd02928cefb13a7e8a470bdbcd35c55b61f9f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-relaxed-acqrel.rs",
+   "source_sha256": "10c9ebf6b5576ef86f4ca245b2fd66318d9638d70f5c241ea5b1d6fe68428132",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-relaxed-seqcst.rs",
+   "source_sha256": "9c671589688c12acc6f1acb85a0c3397ab44cbb817ec8cf9c97fc0e4dc66ac2d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-release-relaxed.rs",
+   "source_sha256": "37f7b8c48574272670d5b1735c8d1d59679cf71ffac30f481b8f5228b39eeaec",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-release-release.rs",
+   "source_sha256": "057a4d189f6186b31070653fab9c5dd181c7ecea77e171a8f4af466da2a8e1be",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-release-acquire.rs",
+   "source_sha256": "7539ff1f8d35ab1118f156625f3971809cc40f17f79ef5b07daa279550658c1a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-release-acqrel.rs",
+   "source_sha256": "e53d04dcccc1589a3940a5430cc46378c91ac646a524362d19a812caef2de3db",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-release-seqcst.rs",
+   "source_sha256": "d6f466cdf7f99620bb90f18c2c11017a8b5a1595f780f5da13292f3b2b941b80",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-acquire-relaxed.rs",
+   "source_sha256": "f11a3308ad2cfdba2c959a9d774799ceae569ae9aac7da3c05674add1e6eb0b9",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-acquire-release.rs",
+   "source_sha256": "88ea751e702d01bddd1042c625da49f0c36439fa5004e7622b27588456f53f83",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-acquire-acquire.rs",
+   "source_sha256": "252bff57b4917ce12a8992a0339ac51fa97591a8ec16140578fadb7a0839f754",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-acquire-acqrel.rs",
+   "source_sha256": "04a4966974f78329abaa2f98e2ccea5b16513ddcee40ebf6adc5727470e20539",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-acquire-seqcst.rs",
+   "source_sha256": "07bc750e6032aab7c2ba973cf1f9878737dd66b145ef00e62264d50649796c62",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-acqrel-relaxed.rs",
+   "source_sha256": "27bc5fb4a2e04f06877ac200dee4941d48be901116786477f1d0d0c9b8262a9e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-acqrel-release.rs",
+   "source_sha256": "d9afca831dfb7d3c9aad958c019bbfa7ee5e2458bbd68421826280a42d17f04c",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-acqrel-acquire.rs",
+   "source_sha256": "9ba40137cabad7c8007d4739cfd31cc53b652ec8101267756435703605fb7124",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-acqrel-acqrel.rs",
+   "source_sha256": "5057fcc627dd3c980cfd2628e9bb486a7129f10a2ca9a80cbbe65c3eef4e5aeb",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-acqrel-seqcst.rs",
+   "source_sha256": "ae7945ae7385a65053c05f25a5e14f97ee86e62fc164847b8bf98caae21fcca2",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-seqcst-relaxed.rs",
+   "source_sha256": "481304d4270732f33abad6c9fed8dffb51b0448c09cb0b00dca0692fc2c45b9a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-seqcst-release.rs",
+   "source_sha256": "dffdee4bae62ed7cad954677362e3285393ae163eeb9c6740c4c85448722eb07",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-seqcst-acquire.rs",
+   "source_sha256": "b7baca38ea4f3593ca7f2437346b962942c0b5183a7d1c27b5dd26991772c4e3",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-seqcst-acqrel.rs",
+   "source_sha256": "c8c81a4b53f9f2181659b684abef12cf0ceac1af7dfedffd017fa56581ccbde5",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-orders/compare_exchange_weak-seqcst-seqcst.rs",
+   "source_sha256": "b07fdb1018fb4f77c2097fc3fc2d0aa1408a086836539adb0b6469d3728b3948",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas/ufcs-invalid-failure.rs",
+   "source_sha256": "b79e711c5a4a94e860bfaaf0feed3016f2c7a8882efc390d7bb1baac686a9c2f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas/alias-invalid-failure.rs",
+   "source_sha256": "8d68931af0300eea28d17b5e2437d4ffb2dd3f917c590b755447f6d9785a8b9e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas/variable-order.rs",
+   "source_sha256": "13b2fb7c82be9aa099d10c31c31cfb6039cb10605f64d58164fd7a24f886ddc4",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas/reified.rs",
+   "source_sha256": "1e14724f26c200b10d56f6c7422f670c7a77e81a8540c868450b231134fd1ca6",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas/result-alias.rs",
+   "source_sha256": "9cdf5d49c26ab81f97c6bea883436bf24a0401d0bcc44565690659f1d804877c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas/local-result.rs",
+   "source_sha256": "5bf75a9e1950ca15797760e31165c961c2227790b8b61a548cc9cb9f92ae4838",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas/const-direct.rs",
+   "source_sha256": "2889bebd4bf0874dd3d8101e51fef3da372758c0d18624aac6711e85588bc53c",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas/const-skipped.rs",
+   "source_sha256": "a42f362b31de4cc7a0c1ad735e26f482fef68298b58f24af4cc4932ab6a2f395",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas/const-alias.rs",
+   "source_sha256": "2fd29c5d23529597cb3c3be44efe404f7101f1cae61dd13d548b3d91f7359da9",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas/const-reified.rs",
+   "source_sha256": "87412fee8a71a6ec25a5bc1bfe23e0ae8a11daa95c60ed0177b6beb3f42753f8",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas/wrong-current.rs",
+   "source_sha256": "94067cb083df6e5ab0376bb45f27f7f65c4302e0aadfd39aab828bc0e68cddf4",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas/wrong-new.rs",
+   "source_sha256": "ce8d37951440ca18ccedf5bcdab202cc7727db5e7678343eb2a99c1e9d7d7263",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas/wrong-success.rs",
+   "source_sha256": "b818a468a7c9e59c6f29c946ce1fb82de70b69f5e03803c8e7ed303002062981",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas/wrong-failure.rs",
+   "source_sha256": "36d46afd4ef0ae2dfc7371a46cd8454b314af12d45a9508b0fbcca9772df8e2d",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas/packed-receiver.rs",
+   "source_sha256": "3d4aada102d3c6c4b5127bec09eadd441fe97d5dfcddb3ab45d334ce49a8f1e5",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas/unsafe-narrowing.rs",
+   "source_sha256": "842f9ce6f9737583711be3216e469368b84b96fb3d2b09167538d928dda16590",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas/no-prelude.rs",
+   "source_sha256": "9961d436b20dd2139c7e0b4d82ffc1a4747e570768626620e1b257cd39c62fe9",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-preparation/qualified.rs",
+   "source_sha256": "8cb010ece36401980f497f04be3b371b5a4573708280119857a89ece985a1937",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-preparation/extern-qualified.rs",
+   "source_sha256": "7a8e823256f71c4cd1d940857a1fc766d88626767cdd8884ea85b38c517a20c7",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-preparation/no-prelude-qualified.rs",
+   "source_sha256": "1ccc8b0dfdef2951bd91397ede145d468be7ba740482ec4dbd3990d05f522c79",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-preparation/absolute.rs",
+   "source_sha256": "ca9baaded3caabd89712306b13c2c7cb289ab1cf71685e2cc8eb2484df8447b8",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-preparation/core-alias.rs",
+   "source_sha256": "2de32af768ad879f32c258668ded4d5bbf9b090c2517cb73453f74dbd057a768",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-preparation/new-only.rs",
+   "source_sha256": "f9bdb3e818c8f2a70574cafb181d2cac3b09c6bdc5d95de2f6f0346e7cf9d0e3",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-preparation/load-only.rs",
+   "source_sha256": "5da0fc7cc63cba165aa9594d7d050fb75346589bf0f4f016f399f2995470f359",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-preparation/ordering-only.rs",
+   "source_sha256": "80ecfb46ec4357b41731344b50b000253350c0e0c8870bcdcec69547afecb56b",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-preparation/local-core.rs",
+   "source_sha256": "9b752a1e820999741696cba7cb22108a42eeac766aa653c890c9541fd0528eb8",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-preparation/local-types.rs",
+   "source_sha256": "1f681aee964d674ee284af074fa2cbddb226f4b22285148d2229a60363ed627b",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-preparation/ordinary.rs",
+   "source_sha256": "49a9c9db947d5ba0e2af2b370a06ec28ec53659141a47b6c6cdc3fd1c2c8adc4",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-native/dynamic-invalid.rs",
+   "source_sha256": "f19c590dbd63e99d86ee6a6136beac192b718699e91186e1524ce59cedc91821",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "panic"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-native/weak-invalid.rs",
+   "source_sha256": "d2a714cf478f41ed417c50957e8169c482b8183be2c0a5e3e2a7f9304d097771",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "panic"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-native/reified-invalid.rs",
+   "source_sha256": "70bae36b7d1237f82697894bf64b3db14187ff2129e7b1cd0681b933e0552486",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "panic"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-cas-native/ufcs-invalid.rs",
+   "source_sha256": "8190af0729c413e6bd0670665e0d75bb8fd2a9daf2b951b857dc28f6a7bb39dc",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "panic"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-rmw/swap-orders.rs",
+   "source_sha256": "f56df7c937b4ad1a406cff004ac9ca871d67404f4d6bc7d73fb9e5ae1c4a1465",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-rmw/add-orders.rs",
+   "source_sha256": "b46d2b56ebe14c78b503d0ac201b48249cb542f180025d656d923184e5628565",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-rmw/variable-order.rs",
+   "source_sha256": "4c87171e5b0e6433d934f20015b7e3617eddbc02653ed17160c1d843a2a6fffa",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-rmw/aliased-order.rs",
+   "source_sha256": "f3cda536518cee93b80ab0a89bf8526e1e4b82d65b4ad60616ec352521d8cd5e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-rmw/reified.rs",
+   "source_sha256": "0137636e5d09f7c9df6e1d4a8d0a67305f3a6467a71b2edeb9ecb1ca931becda",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-rmw/ufcs.rs",
+   "source_sha256": "d201379e9d52b8f58a53a0aff86de47cb2a23c061edc0b65adf9b2de8cce0616",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-rmw/shared-static.rs",
+   "source_sha256": "4bdccba13968440e926a95aa8b9bfa50d0a5eb27d51505a2f59409a737fb5699",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-rmw/wrapping.rs",
+   "source_sha256": "d26cfd9644a86a1fe6cc8d30b9e294ae5323a7f63127db8392f25df727711524",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-rmw/unsafe-narrowing.rs",
+   "source_sha256": "aee53404d80dee5f0598a2853b34df8f56e170a6a0264abe246bddd5ca5b58d9",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-rmw/const-swap.rs",
+   "source_sha256": "be3b2ed133b6b5012220a345db3fe379ae4eff639398d0ce19958f2aa15d7a86",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-rmw/const-add.rs",
+   "source_sha256": "5841f44d413a771ed2a22d65af452cfa5a9c53aa2937df5d5165ec0292ad30bf",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-rmw/const-dead-add.rs",
+   "source_sha256": "ea6a4b2a3073db91c2e131382f88bca4b587029d3027741ec02edfb55b9613d5",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-rmw/const-reified.rs",
+   "source_sha256": "3c0b468d95e05f0bc9e7bb26c2406f25b64bfc047ebd1bf2d58724fce07605fe",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-rmw/packed-receiver.rs",
+   "source_sha256": "5b60565e9cf9eeff4eda9c02a5d89ee92ae8ee1f587d4d0a9ae04b9f810f7b66",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-rmw/wrong-value.rs",
+   "source_sha256": "ad0ea9c0cdc683b5316cace34842ce6e53db3b98ec535279801d4bfe55a92024",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-rmw/wrong-order.rs",
+   "source_sha256": "e7bf7ddfa0a67c6a15035630ce3274b119a69a5bdda4d4fb2288d624611edf74",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-rmw/wrong-arity.rs",
+   "source_sha256": "3eca491c6f83f530707cd2bcad2a78f966bd7290873709761d0e9be762149cc5",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-rmw/generic-argument.rs",
+   "source_sha256": "7b572fd9439f707d8db95cdc350c031b15430574cba2dafdfef7701a4e93f472",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-rmw/local-shadow.rs",
+   "source_sha256": "fb00bae64a8425894a79706cbf12f9491125aebb9d70e4d1e3e3d56bcb9e1408",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-rmw/const-swap-alias.rs",
+   "source_sha256": "72e2a1ee7c9084ad97c441edec03cfd56b6be3d0c479b63e873176d8cb2ff5b7",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-rmw/const-add-alias.rs",
+   "source_sha256": "51f5d3c967cfa38e48c611d9b83845ee08c1b723ab0b085fe1a3e849c6abd49c",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/and-orders.rs",
+   "source_sha256": "50ad97ca9eb4fdf43ebca454d77b6317368e7cef07f9c88ca9ca4593c38c76bc",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/variable-order.rs",
+   "source_sha256": "cdd3e4096cb26dd669b6eabfa65be47d2b4be583cc057d4c8e5a5b8f10685dd6",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/aliased-order.rs",
+   "source_sha256": "b5f8fddd674cd5ad80a2146a37b87630c607f4bdf5de2ff4848e6665530d2dfa",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/reified.rs",
+   "source_sha256": "4af278daea2e40b0976344efa739fc44a75b0a994cf4070d298888702681e1b2",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/ufcs.rs",
+   "source_sha256": "add6f0901de1cebeb6ff284ebc6a46ea04d33636a103a5d6e6d523d47cf14667",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/shared-static.rs",
+   "source_sha256": "ad8f89b21fc5c03070f6af3f68b57a15afbde5378ada1ce1a33fce4ea3a3e1e6",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/masks.rs",
+   "source_sha256": "da1061e8bf8fbb7fff8af119d91ea7def14e09a69083d6778f0a321230bbb05d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/unsafe-narrowing.rs",
+   "source_sha256": "808cafe0bd66c031030b144f312d60b423b04a81c68aaa74acf1de54fe9b75da",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/const-and.rs",
+   "source_sha256": "f8d3e08c1451757c847ecfa357d79377cf898c92a48b9747e4da9664014db377",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/const-dead-call.rs",
+   "source_sha256": "481e01e98ac75a301ae33b986e75179576d99ad416641ddc6b49a441e1baebcd",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/const-reified.rs",
+   "source_sha256": "2b4974165db0a6ea53873db531956f54f98d3f4d902aa575d670e2fef38dc540",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/packed-receiver.rs",
+   "source_sha256": "4ff64848753984ce98392b89293af214f98956ae9bf564fbd1d3660d03cce7dd",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/wrong-value.rs",
+   "source_sha256": "651f65c6bf21865c48e09d90b4e891b3951124a13cc6c2af7904af734a060253",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/wrong-order.rs",
+   "source_sha256": "1124e80c0bb822ee91b3ca5e1b288eb5d995ac47b90bb4b8d0b4bcd009a49f6c",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/wrong-arity.rs",
+   "source_sha256": "282914029799ecda637ebb8bb59d9114c68bcdbfe9db3f1ea54b61f443b4f976",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/generic-argument.rs",
+   "source_sha256": "58f46f69a9def4ccbd3031574bff7eabbf3db0982aa6c20c69c4fb4e0dc02efa",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/local-shadow.rs",
+   "source_sha256": "bc3ad6f8c3b1ecb43a5a10295e9dd4fba0360bfc8c5dd04b2715221f447ce7f3",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/const-method-alias.rs",
+   "source_sha256": "94dadb54b8bb6edd825d542fc2803cc3addadec82cb016786f1f2a29d48b200d",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/const-generic-skipped.rs",
+   "source_sha256": "9a8fff128638c90e868090f7f57a16127ecd8b78132066d231078ceef932ad0b",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/const-unsafe.rs",
+   "source_sha256": "a4fe683ca78b2ae7ebd91b82bec1193a87fa7b04b33a596aa272e5fa0c5d6ced",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/packed-raw.rs",
+   "source_sha256": "14446d8ef82e23b5317036a4cfa551359ce29e29a72c606ed59eed6408358313",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/or-orders.rs",
+   "source_sha256": "43d2f74415499f3d28c948530a167c3326d1b74a2b785b97d8e0d2703e502d19",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/const-or.rs",
+   "source_sha256": "8784e146ef7d27239fbabe08124e8b2e2fc6b29af4a5593dfc7c134ce9a3831f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/xor-orders.rs",
+   "source_sha256": "35b982899049c12408d5443e86341996e405ff0fa19fc74f3aa9f646dfcec654",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/const-xor.rs",
+   "source_sha256": "8b150d1db0d570a34d3cc1f30c6e2e3916ac45f5777901b2d365686b89c99744",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/nand-orders.rs",
+   "source_sha256": "e785ab05f316c36ef9bae6ec4979ef1d3f44bcd26f8ff6716570acc84fad8599",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-bitwise/const-nand.rs",
+   "source_sha256": "46120d72d27d874608cefffdf0f19a9ca8d49ecf27eb511574a2add1e7fd5013",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-bitwise"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-subtract/sub-orders.rs",
+   "source_sha256": "fa175fd5583ffda1b2838cf147581e47f2b1862593b95780a62951ba84be506c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-subtract"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-subtract/variable-order.rs",
+   "source_sha256": "4f893d8ef27c92a24ea302f65aa46743728e8919f5eb31d430b313d3d575b885",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-subtract"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-subtract/aliased-order.rs",
+   "source_sha256": "b3a7553db92de488c54b7e4fe2f4d7518135ec88fa39a9dc261de0a58516beea",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-subtract"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-subtract/reified.rs",
+   "source_sha256": "6056b6ab6a836dad814d3697158ac0b6fa61f38362f875f1e9c3bc65d740e8f9",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-subtract"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-subtract/ufcs.rs",
+   "source_sha256": "bdd768995be00d60f8f7fcf24e4292277f5e7b7559783085f539f944c3a02733",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-subtract"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-subtract/shared-static.rs",
+   "source_sha256": "d93633a4edcfc596064ebf808645bc103cf471ff4bc974d105ee625a90c80884",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-subtract"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-subtract/wrapping.rs",
+   "source_sha256": "edaad1553e7cc7eb51e8c851c449b7934214192e6b7cce51aa9abeaacaa8f7fb",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-subtract"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-subtract/unsafe-narrowing.rs",
+   "source_sha256": "3020b4bfbb662d3db5b4a73374e6f7c87c65dfee26281a9e31c6c21ef8d4594d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-subtract"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-subtract/const-sub.rs",
+   "source_sha256": "283f2f42fa08493bdd313fe56a8aee9da5b280d592fb974641ac3f3283f96f9a",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-subtract"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-subtract/const-dead-sub.rs",
+   "source_sha256": "3d1513e6c204225f87c0aa4b22809a8f7f0c8dc5028af01fa05873433dcc950c",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-subtract"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-subtract/const-reified.rs",
+   "source_sha256": "3ebd9cbb61a61a12dd4970dd8c452c70dd990bbfa9cd1ece9369f0a572135916",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-subtract"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-subtract/packed-receiver.rs",
+   "source_sha256": "6dc1a4b14f19d11c5c41b71709bff6a4cccc24d43261dc0e09ba25454471cfc5",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-subtract"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-subtract/wrong-value.rs",
+   "source_sha256": "6f5d46a3f87edab9016ec74ecc75d49c9233383bde22e91c894511890525d600",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-subtract"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-subtract/wrong-order.rs",
+   "source_sha256": "0c4dca3565c7fe2adbabb071b2bd70af2ed99320f79dca21712141fbc93a492d",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-subtract"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-subtract/wrong-arity.rs",
+   "source_sha256": "52b2b284c738916aafe6d3080a9bcdbaf394364349bc396359561e33d9c21b17",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-subtract"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-subtract/generic-argument.rs",
+   "source_sha256": "bbcbd4a0f418515906af7ed8b7edc5c953e0801c01b438654b9093cb021b8b65",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-subtract"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-subtract/local-shadow.rs",
+   "source_sha256": "4bf2d973a25fc026399f679426e5f9dcc7c348d21f3075761cf420db6604062f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-subtract"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-subtract/const-sub-alias.rs",
+   "source_sha256": "ed7092a7e03eb38932511912a5d031e3b15c5cb4b072c3e643033afd9187773a",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-subtract"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-subtract/const-generic-skipped.rs",
+   "source_sha256": "14f8935dda218e8694120055a0496f0cca502aa5aa325e4ea64fa5d3133e5a38",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-subtract"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-subtract/const-unsafe.rs",
+   "source_sha256": "3e177942248e6c662b04022db73891f0006921dda3ce0af63cd70df57d4bb35f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-subtract"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-subtract/packed-raw.rs",
+   "source_sha256": "14446d8ef82e23b5317036a4cfa551359ce29e29a72c606ed59eed6408358313",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-subtract"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/fetch_min-relaxed.rs",
+   "source_sha256": "75431f29c179288122c6bd1d8917cf4833ec953c25f50b910d157ff9f5a20d23",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/fetch_min-release.rs",
+   "source_sha256": "be0adb1d646ba38da7bfb87c7d3db2dee259ba321a9d23fe1e8a64efd672cc63",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/fetch_min-acquire.rs",
+   "source_sha256": "48c9ab1449025a1e06e31ba8108a6699251c91fe18462ef9d03898f974d3ed9f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/fetch_min-acqrel.rs",
+   "source_sha256": "a69b5b3671dda80903fe37e236ac8011bdb092a558cd2087665c4f8f13eb86cd",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/fetch_min-seqcst.rs",
+   "source_sha256": "28e9117c725a17aeb715c3f8b15f45797d8d1ef6486ee7614a8ae502a3f0e5c7",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/fetch_max-relaxed.rs",
+   "source_sha256": "ccab63762bed36353f55b2fcbb6ccec308684f889139c0a74192363d65749c4c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/fetch_max-release.rs",
+   "source_sha256": "e713e8a7c2dc2ffc31343145817430f5f81d33f013028039ce6e41c9587d4c49",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/fetch_max-acquire.rs",
+   "source_sha256": "02dfe30ff3830b45d4ce9a40af21e64f9c733182667cdff802b800f4d92337b1",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/fetch_max-acqrel.rs",
+   "source_sha256": "23450dd100e383ae9dc49334ff4860457090b66a3311114ba5407ac026509f6d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/fetch_max-seqcst.rs",
+   "source_sha256": "6c514e2d4c56663e29a8b921a1928a077b3cfbb331c023725c8aac9c8b18a8f8",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/variable-order.rs",
+   "source_sha256": "11ab286c6bfa1d89db7153b9539bc56331ec305963dc472c2a32d24866ea2366",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/reified.rs",
+   "source_sha256": "2c8e56d09f63b06b773637659966feafd9d5d03adb9cd73aee5ec88ea2f45f77",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/ufcs.rs",
+   "source_sha256": "3183df93fa8413ddfba025c7091afe78729d08f85e3f25a8996d18b1932aa0f0",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/std-import.rs",
+   "source_sha256": "a9c460822239750d12931f99ddc238aa4c84aa1e1db542d3ff795292eb583090",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/no-prelude.rs",
+   "source_sha256": "f63a8a54dfa3a69576f3da3c7e6425cb931f9c3e7b4c1113820d86ca5ee754e9",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/shared-static.rs",
+   "source_sha256": "21b4e08cdfcf9612c1276f830f8890708946c8fdb4af94bea97af72ccb8b9ddd",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/local-shadow.rs",
+   "source_sha256": "7a368f3253575928e7e4f963e2a61d1b7b722777b420808200e32f0afbf67e41",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/const-min.rs",
+   "source_sha256": "28b045fc5d8884917d7aa382ccd15a9f0c3d7a9c46a5387e8305d292a89b629b",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/const-max.rs",
+   "source_sha256": "b02f812ff8efa31e807fc78b55f363239148eaa0c91a2da0fe76aaed7bdbee74",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/const-skipped.rs",
+   "source_sha256": "a9c3207cfef9a6605fcf997ada9831800c2fa68a68dcb408e109e82f8a99393f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/const-alias.rs",
+   "source_sha256": "cdbb0cfef5bf8757e79be791749abf97064e3b1e631fb40b1b7b91e44506982f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/const-reified.rs",
+   "source_sha256": "0363412117767937adeecf78b13595a0310e569affd0aba9b9aa87a503014d56",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/packed-receiver.rs",
+   "source_sha256": "58d65ff050ed8052e49ed5795c25a1da15ce9737dedf3404064793ab0281ce57",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/packed-address.rs",
+   "source_sha256": "3e325b9b752fde047876be7691996163652020821dac79209a3db6d7eb0c345b",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/wrong-value.rs",
+   "source_sha256": "69252b8eb73ab106fa3efeeee92d27dff5474eaaf9dd7b1901a12fe663b2cb16",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/wrong-order.rs",
+   "source_sha256": "c2ba758a4bf6b1efd13a7fab7f8058247c23d47600e7ff3fb55acb729bbeb29a",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/wrong-arity.rs",
+   "source_sha256": "06ec9e46df6b0928c7294c7d1140c9836e808f90231c43b2a8394becd4e382ec",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-extrema/generic-argument.rs",
+   "source_sha256": "3deea9492585028abf748b2c0ddd6b4a2babf01ae2f032a06858dc2c4363d3e3",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/load-store.rs",
+   "source_sha256": "22bfd3214777162ad5b002da3705ebfabce4b94d657a0117ba3e017a5af1006f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/variable-order.rs",
+   "source_sha256": "492df20e1eb9789f4f8e600b17c5d26c7d00839b96b5c3524053f01a15fd4b31",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/ufcs-order.rs",
+   "source_sha256": "3ad591e3a4ea465db02a781f308647c391e7a7e40a172a162a7bc03412b3e531",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/reified-order.rs",
+   "source_sha256": "fa2094e06e685c09e7cd685087790d3ada496c11f92dd04cd98860f997b52740",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/const-alias-order.rs",
+   "source_sha256": "bf3fca61a9aa356f13366915e6a42b7c3956f2f6e409d64bc15256c44c51dbcd",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/block-order.rs",
+   "source_sha256": "8d2ae36a6048569bea04b5e6c18ac177cb1bd3184e7c347bd35e57078d0289fd",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/direct-release-load.rs",
+   "source_sha256": "68dfb34eed9f023b6db624c8333548e12ed1ec6510543480e304f2d35e98504a",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/direct-acqrel-load.rs",
+   "source_sha256": "31e2fb70b1b9cf631cd9961014a7111a3ea012e00bd9283c5280edc6635e6777",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/direct-acquire-store.rs",
+   "source_sha256": "37bf9a88174d702642abfa3910209edabd6aa00f57840d7a5dc348849486bb9e",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/direct-acqrel-store.rs",
+   "source_sha256": "ed5447866164194f9e1b7ad955ab1136d12c1c87b29dc6053fd06dd2c7d6b43e",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/grouped-invalid-order.rs",
+   "source_sha256": "6ad592ae7a6df1c6e26e18293839d200968ed11bd418925286083be00db20d6e",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/imported-invalid-order.rs",
+   "source_sha256": "57cd8534937ec283bf42bb709144789e7322d35f2ef4f1d92560a5a34776b1f4",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/allow-invalid-order.rs",
+   "source_sha256": "b1dab8ec1b9676fe9df366a78bdc345d7dc42ba8e7fb27dd3f988b24fa96ebf3",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/forbid-weaken.rs",
+   "source_sha256": "e12eb86b507d9f7e8308af85e3d706beef6ee14531be2b9c168e614927a966f3",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/closure-inherits.rs",
+   "source_sha256": "0876abffa79bd91d589f1fd812a6a64bf63bedcdbe4f1f1c2205102f10951006",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/nested-allow.rs",
+   "source_sha256": "f16dfeb38e0830254b4154990df7315cca2c71c71be313f8597ef9b4970ee7d0",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/known-only-match.rs",
+   "source_sha256": "3c06c80581337f58b0444a872a1010ec3194e585c55e1e5745c594fabd1cc83d",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/wildcard-match.rs",
+   "source_sha256": "6d2657d8338f5aee05e97a6bf4763a789645a1f8aca8e4e08b1a59123782732e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/known-only-let.rs",
+   "source_sha256": "e2a41dd677f8e92b77cc95bf702b639c52c585455e204cea15d89b227423fc70",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/nested-known-match.rs",
+   "source_sha256": "ced57082d60d83c6a35a58de8afe3aadd1016e3f3541573f85004d2d12c4d733",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/nested-wildcard-match.rs",
+   "source_sha256": "986b96ee05836a83ff978d4fe7da94831e28cd3a2bab76e0bbdc53ae6e6ace3a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/unknown-not-unreachable.rs",
+   "source_sha256": "55e7b0819a883b291bb8596203423b092c5f20d2255156765358ef691c1dd5fd",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/wildcard-makes-unreachable.rs",
+   "source_sha256": "d2ffdb7bedb7b644ac006a7a296334fc277014f8d525bb3988937d8aaef6d8ba",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/packed-receiver.rs",
+   "source_sha256": "cb423ea7e0cb3f0cf0ccdd504e87981552fe22bf50f20c3567864b53fad0c22e",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/packed-raw.rs",
+   "source_sha256": "d8cc9096e9c62043af4b2c253fe0047eecc122d728cd44f554e68fe57e0cb480",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/const-load.rs",
+   "source_sha256": "99b5e853edd18a5d5cf7f25363975fbcfaf0cbd78b5a79bf4ec5dd27222ef176",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/const-store-skipped.rs",
+   "source_sha256": "3f770f3895ce8ee38ea7d80d6ea718066e3da16911d9b4c49b7f2d2ea8f19fca",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/const-reified.rs",
+   "source_sha256": "f4b6b9873d70c9dd637d05c79e4878e48af9e7a679ed5cbf690ed1378ea018cb",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/ordering-copy.rs",
+   "source_sha256": "226df12f3bb1d2f2de5eb20dac03105816f40d67985f6de7a9cbb400d1c8904c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/wrong-order-type.rs",
+   "source_sha256": "4f5e963393df6d0f0316171c161cef4b51d09746b4af566081fe431ba49a9a20",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/wrong-store-type.rs",
+   "source_sha256": "8a38afc1c466e0924223bfa4f8e58dfbb452708e2545b6620cac87c09872b3bf",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/shadowed-method.rs",
+   "source_sha256": "e42cc7f073136abe6c535a7a52f585b4919964d78e3ed5f9ea82ec23fc356bd7",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-methods/ordering-constant-tags.rs",
+   "source_sha256": "3845b3894582c490db1724ddef04e8500d664e8f19cdf5075f934a66eff15cc2",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-method-native/dynamic-release-load.rs",
+   "source_sha256": "2cd7369e1d4bf3347d5170b041da42b41850ba7f87aae34c2a0bce82c8f4a1e8",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "panic"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-method-native/dynamic-acqrel-load.rs",
+   "source_sha256": "5ce6d5cea75e5441eb3ea3050ca08f80787391e6e84e0650de0fbd6f04560d6d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "panic"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-method-native/dynamic-acquire-store.rs",
+   "source_sha256": "bf288edc3a1c57db254583d0b90b6f6d42871cd68c1776974a47721af25f8d32",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "panic"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-method-native/dynamic-acqrel-store.rs",
+   "source_sha256": "00154d6b03501f7549c4588b727e54b9bd884f80274807ebdffa880c063719af",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "panic"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-method-native/ufcs-invalid.rs",
+   "source_sha256": "61144093b4e0b8d1c18e1f92f393704b336a9aaa98e207b9439c843a0d97decf",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "panic"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-method-native/reified-invalid.rs",
+   "source_sha256": "bf0c4021d18df735d80ecfc9be1ae26eefdf23758ad095a4f64787e975e71a92",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "panic"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-method-native/const-alias-invalid.rs",
+   "source_sha256": "2e42b523aeb8d21da1276649aeabe167caa8aadfae97eb03cfd07ec45404df22",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "panic"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-method-native/allowed-invalid.rs",
+   "source_sha256": "f5e65d4955d0d13a01d752ba423cf4c3b7720b78c2542ab64ec30fa782904abf",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "panic"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/new.rs",
+   "source_sha256": "d894f1a81c05070261c4aa7b3ce14fa12b8bc564cf282b819b3de01e9bf1fc88",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/alias-new.rs",
+   "source_sha256": "b08b0055542b5147d9cf82b9eae26e682904084204da817bed735edc3a95a84f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/no-prelude.rs",
+   "source_sha256": "a6ad3f77935229f1894274e290bc82fa6cfc70b748a7854dc2387be3c4d7ae27",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/no-type-parameter.rs",
+   "source_sha256": "9aa7f160e596fd5340ca67ca7c6de32f739a34f9bc1296e228fd67e574526692",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/wrong-input.rs",
+   "source_sha256": "e5ddddb1e4633899bb8bccdbfa7028de23a1041c9bea1533f742983f5ecaa71b",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/private-field.rs",
+   "source_sha256": "a257b45eb91fe1f28315dfd773f8295a20cec67b93a1e20a160715f6ea60d8af",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/private-rest.rs",
+   "source_sha256": "14d9614e9f04cb59f16a89a3a818624e7f97666c0b69abdc57e5dbc23fcdaa19",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/zero-array-not-copy.rs",
+   "source_sha256": "fe4fe7ee9f12c1b049f199d95ec7bb9625906bcdeb4f16ab2f9528e685028469",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/atomic-markers.rs",
+   "source_sha256": "c56e0d691e0a80b69660a2189c538305084611ab4449e63860e9c2c38e5f30b8",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/atomic-not-copy.rs",
+   "source_sha256": "ee12dff7465d1409558031a000a3ceb35a6f78858cb6f34ce9350d6811a48fcc",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/atomic-not-clone.rs",
+   "source_sha256": "22108703ca2e3b465b30d14fdda283dcee06606f4559d873460fd2114b0c10cc",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/const-new.rs",
+   "source_sha256": "db74a8d635d7c9cbf6b35e7e5f96f9ba7be8017005fb35ded7fd2f28803e6203",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/const-reference-const.rs",
+   "source_sha256": "868c5979162375970bac6a290dc97081641345adb54243f47b43d91e75046abd",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/packed-atomic.rs",
+   "source_sha256": "0536ccf6528a4e5e7c8a079a7654a4506d8f166219002c398c547eb1596ae198",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/zero-array-return.rs",
+   "source_sha256": "adfb661bfd6e5377411347aee9fe1db24d8dde49e12f27544088a745bdbaef4a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/zero-array-repeat-return.rs",
+   "source_sha256": "de32d2569a89bd1bc9aec5c795c87bb35236f10a9161a6d4fb15f39bae03e2ac",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/inactive-option-return.rs",
+   "source_sha256": "95fd4f83271b379cb7a880659f9af57d2f2337685f83b403ad547895987fdde0",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/active-option-return.rs",
+   "source_sha256": "efb2e70058144b08fcd6ba32cd118b6af554b183744cb90117eb234fa3dbe5c8",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/const-temporary-reference.rs",
+   "source_sha256": "295d895dab3752eafca92a0476780dcf36b84d2b11791137b9cf97b393c5ee6d",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/static-temporary-reference.rs",
+   "source_sha256": "e83987fdceb55a37b649df864b26e2d995adb9a90a82f35abce4057fb70d59c8",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/const-fn-local.rs",
+   "source_sha256": "e6125d28caf2af5eafbd0de134eec0183e32558c734157b78bcbf48586d5568d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/const-unit-local.rs",
+   "source_sha256": "68de63a84c3243840da6191a6f743e9c097d7dfdaf3ea7aec74cb5d9895c5b38",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/const-field-reference.rs",
+   "source_sha256": "91efbc0d91a9c65132499a361976c9d3cfef74a36e27756f27cd6ba587688ed2",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/temporary-field-reference.rs",
+   "source_sha256": "bd2d4d8936f261840df74bf662e0c7caf50584468b1a404614198e178fd10bfa",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/runtime-named-field-reference.rs",
+   "source_sha256": "284a935a4871eab16755398495562650e37a2a8a825d84bbd4d581888180cb11",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  },
+  {
+   "path": "tests/spec/atomic-storage/runtime-temporary-field-reference.rs",
+   "source_sha256": "9189389079cfb65ed8e3f12fba266e4e72d32d1c4a17010e9c524aef96212556",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   }
+  }
+ ]
+}

@@ -439,6 +439,7 @@ unit manifest plus the deferred list in its release record):
 | `unsafe-places` | 27 | 253 | 11 | [record](docs/pa27-unsafe-places-release.md) |
 | `c-abi` | 30 | 85 | 73 (57 need a host C provider) | [record](docs/pa30-c-abi-release.md) |
 | `runtime-memory` | 28 | 265 | 90 | [record](docs/pa28-runtime-memory-release.md) |
+| `atomic-u32` | 28 | 246 | 28 | [record](docs/pa28-atomic-u32-release.md) |
 
 | PA | Assignment | Status |
 | --- | --- | --- |

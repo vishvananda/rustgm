@@ -741,7 +741,7 @@
         "docs/pa28-atomic-extrema.md",
         "pa28/tests/atomic-cas-outcomes.json"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "atomic-u32 component released (docs/pa28-atomic-u32-release.md); whole PA28 unpublished",
       "units": [
         "atomic-u32"
       ]

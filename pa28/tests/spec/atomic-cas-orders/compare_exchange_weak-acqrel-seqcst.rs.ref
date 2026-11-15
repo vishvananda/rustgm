@@ -1,0 +1,333 @@
+function @rg.53() -> void {
+  slot $s0 : obj<4x4>
+  slot $s1 : obj<4x4>
+  slot $s2 : obj<1x1>
+  slot $s3 : obj<1x1>
+  slot $s4 : obj<16x8>
+  block ^b0:
+    %t0 = addr $s1
+    call void @rg.20.i1(%t0, 7)
+    %t1 = addr $s1
+    %t2 = addr $s0
+    copyobj 4x4 %t1, %t2
+    %t3 = addr $s0
+    store u8 3, $s2
+    store u8 4, $s3
+    %t4 = addr $s4
+    %t5 = load u8 $s2
+    %t6 = load u8 $s3
+    call void @rg.intrinsic.compare_exchange_weak.t43(%t4, %t3, 7, 9, %t5, %t6)
+    return void
+}
+function @rg.20.i1(%p0 : ptr, %p1 : u32) -> void {
+  slot $s0 : u32
+  slot $s1 : obj<4x4>
+  block ^b0:
+    store u32 %p1, $s0
+    %t0 = load u32 $s0
+    store u32 %t0, $s1
+    %t1 = addr $s1
+    copyobj 4x4 %t1, %p0
+    return void
+}
+declare function @abort() -> void [return=noreturn]
+function @rg.intrinsic.compare_exchange_weak.t43(%p0 : ptr, %p1 : ptr, %p2 : u32, %p3 : u32, %p4 : u8, %p5 : u8) -> void {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p2, $s0
+    %t0 = addr $s0
+    %t1 = cmp eq u8 %p4, 0
+    %t2 = cmp eq u8 %p5, 0
+    %t3 = binary and i64 %t1, %t2
+    branch %t3, ^b2, ^b3
+  block ^b2:
+    %t4 = atomic_compare_exchange u32 %p1, %t0, %p3, 0, 0
+    %t5 = load u32 $s0
+    branch %t4, ^b4, ^b5
+  block ^b4:
+    store i64 0, %p0
+    %t6 = index u8 %p0, 8
+    store u32 %t5, %t6
+    return void
+  block ^b5:
+    store i64 1, %p0
+    %t7 = index u8 %p0, 8
+    store u32 %t5, %t7
+    return void
+  block ^b3:
+    %t8 = cmp eq u8 %p4, 0
+    %t9 = cmp eq u8 %p5, 2
+    %t10 = binary and i64 %t8, %t9
+    branch %t10, ^b6, ^b7
+  block ^b6:
+    %t11 = atomic_compare_exchange u32 %p1, %t0, %p3, 0, 2
+    %t12 = load u32 $s0
+    branch %t11, ^b8, ^b9
+  block ^b8:
+    store i64 0, %p0
+    %t13 = index u8 %p0, 8
+    store u32 %t12, %t13
+    return void
+  block ^b9:
+    store i64 1, %p0
+    %t14 = index u8 %p0, 8
+    store u32 %t12, %t14
+    return void
+  block ^b7:
+    %t15 = cmp eq u8 %p4, 0
+    %t16 = cmp eq u8 %p5, 4
+    %t17 = binary and i64 %t15, %t16
+    branch %t17, ^b10, ^b11
+  block ^b10:
+    %t18 = atomic_compare_exchange u32 %p1, %t0, %p3, 0, 5
+    %t19 = load u32 $s0
+    branch %t18, ^b12, ^b13
+  block ^b12:
+    store i64 0, %p0
+    %t20 = index u8 %p0, 8
+    store u32 %t19, %t20
+    return void
+  block ^b13:
+    store i64 1, %p0
+    %t21 = index u8 %p0, 8
+    store u32 %t19, %t21
+    return void
+  block ^b11:
+    %t22 = cmp eq u8 %p4, 1
+    %t23 = cmp eq u8 %p5, 0
+    %t24 = binary and i64 %t22, %t23
+    branch %t24, ^b14, ^b15
+  block ^b14:
+    %t25 = atomic_compare_exchange u32 %p1, %t0, %p3, 3, 0
+    %t26 = load u32 $s0
+    branch %t25, ^b16, ^b17
+  block ^b16:
+    store i64 0, %p0
+    %t27 = index u8 %p0, 8
+    store u32 %t26, %t27
+    return void
+  block ^b17:
+    store i64 1, %p0
+    %t28 = index u8 %p0, 8
+    store u32 %t26, %t28
+    return void
+  block ^b15:
+    %t29 = cmp eq u8 %p4, 1
+    %t30 = cmp eq u8 %p5, 2
+    %t31 = binary and i64 %t29, %t30
+    branch %t31, ^b18, ^b19
+  block ^b18:
+    %t32 = atomic_compare_exchange u32 %p1, %t0, %p3, 3, 2
+    %t33 = load u32 $s0
+    branch %t32, ^b20, ^b21
+  block ^b20:
+    store i64 0, %p0
+    %t34 = index u8 %p0, 8
+    store u32 %t33, %t34
+    return void
+  block ^b21:
+    store i64 1, %p0
+    %t35 = index u8 %p0, 8
+    store u32 %t33, %t35
+    return void
+  block ^b19:
+    %t36 = cmp eq u8 %p4, 1
+    %t37 = cmp eq u8 %p5, 4
+    %t38 = binary and i64 %t36, %t37
+    branch %t38, ^b22, ^b23
+  block ^b22:
+    %t39 = atomic_compare_exchange u32 %p1, %t0, %p3, 3, 5
+    %t40 = load u32 $s0
+    branch %t39, ^b24, ^b25
+  block ^b24:
+    store i64 0, %p0
+    %t41 = index u8 %p0, 8
+    store u32 %t40, %t41
+    return void
+  block ^b25:
+    store i64 1, %p0
+    %t42 = index u8 %p0, 8
+    store u32 %t40, %t42
+    return void
+  block ^b23:
+    %t43 = cmp eq u8 %p4, 2
+    %t44 = cmp eq u8 %p5, 0
+    %t45 = binary and i64 %t43, %t44
+    branch %t45, ^b26, ^b27
+  block ^b26:
+    %t46 = atomic_compare_exchange u32 %p1, %t0, %p3, 2, 0
+    %t47 = load u32 $s0
+    branch %t46, ^b28, ^b29
+  block ^b28:
+    store i64 0, %p0
+    %t48 = index u8 %p0, 8
+    store u32 %t47, %t48
+    return void
+  block ^b29:
+    store i64 1, %p0
+    %t49 = index u8 %p0, 8
+    store u32 %t47, %t49
+    return void
+  block ^b27:
+    %t50 = cmp eq u8 %p4, 2
+    %t51 = cmp eq u8 %p5, 2
+    %t52 = binary and i64 %t50, %t51
+    branch %t52, ^b30, ^b31
+  block ^b30:
+    %t53 = atomic_compare_exchange u32 %p1, %t0, %p3, 2, 2
+    %t54 = load u32 $s0
+    branch %t53, ^b32, ^b33
+  block ^b32:
+    store i64 0, %p0
+    %t55 = index u8 %p0, 8
+    store u32 %t54, %t55
+    return void
+  block ^b33:
+    store i64 1, %p0
+    %t56 = index u8 %p0, 8
+    store u32 %t54, %t56
+    return void
+  block ^b31:
+    %t57 = cmp eq u8 %p4, 2
+    %t58 = cmp eq u8 %p5, 4
+    %t59 = binary and i64 %t57, %t58
+    branch %t59, ^b34, ^b35
+  block ^b34:
+    %t60 = atomic_compare_exchange u32 %p1, %t0, %p3, 2, 5
+    %t61 = load u32 $s0
+    branch %t60, ^b36, ^b37
+  block ^b36:
+    store i64 0, %p0
+    %t62 = index u8 %p0, 8
+    store u32 %t61, %t62
+    return void
+  block ^b37:
+    store i64 1, %p0
+    %t63 = index u8 %p0, 8
+    store u32 %t61, %t63
+    return void
+  block ^b35:
+    %t64 = cmp eq u8 %p4, 3
+    %t65 = cmp eq u8 %p5, 0
+    %t66 = binary and i64 %t64, %t65
+    branch %t66, ^b38, ^b39
+  block ^b38:
+    %t67 = atomic_compare_exchange u32 %p1, %t0, %p3, 4, 0
+    %t68 = load u32 $s0
+    branch %t67, ^b40, ^b41
+  block ^b40:
+    store i64 0, %p0
+    %t69 = index u8 %p0, 8
+    store u32 %t68, %t69
+    return void
+  block ^b41:
+    store i64 1, %p0
+    %t70 = index u8 %p0, 8
+    store u32 %t68, %t70
+    return void
+  block ^b39:
+    %t71 = cmp eq u8 %p4, 3
+    %t72 = cmp eq u8 %p5, 2
+    %t73 = binary and i64 %t71, %t72
+    branch %t73, ^b42, ^b43
+  block ^b42:
+    %t74 = atomic_compare_exchange u32 %p1, %t0, %p3, 4, 2
+    %t75 = load u32 $s0
+    branch %t74, ^b44, ^b45
+  block ^b44:
+    store i64 0, %p0
+    %t76 = index u8 %p0, 8
+    store u32 %t75, %t76
+    return void
+  block ^b45:
+    store i64 1, %p0
+    %t77 = index u8 %p0, 8
+    store u32 %t75, %t77
+    return void
+  block ^b43:
+    %t78 = cmp eq u8 %p4, 3
+    %t79 = cmp eq u8 %p5, 4
+    %t80 = binary and i64 %t78, %t79
+    branch %t80, ^b46, ^b47
+  block ^b46:
+    %t81 = atomic_compare_exchange u32 %p1, %t0, %p3, 4, 5
+    %t82 = load u32 $s0
+    branch %t81, ^b48, ^b49
+  block ^b48:
+    store i64 0, %p0
+    %t83 = index u8 %p0, 8
+    store u32 %t82, %t83
+    return void
+  block ^b49:
+    store i64 1, %p0
+    %t84 = index u8 %p0, 8
+    store u32 %t82, %t84
+    return void
+  block ^b47:
+    %t85 = cmp eq u8 %p4, 4
+    %t86 = cmp eq u8 %p5, 0
+    %t87 = binary and i64 %t85, %t86
+    branch %t87, ^b50, ^b51
+  block ^b50:
+    %t88 = atomic_compare_exchange u32 %p1, %t0, %p3, 5, 0
+    %t89 = load u32 $s0
+    branch %t88, ^b52, ^b53
+  block ^b52:
+    store i64 0, %p0
+    %t90 = index u8 %p0, 8
+    store u32 %t89, %t90
+    return void
+  block ^b53:
+    store i64 1, %p0
+    %t91 = index u8 %p0, 8
+    store u32 %t89, %t91
+    return void
+  block ^b51:
+    %t92 = cmp eq u8 %p4, 4
+    %t93 = cmp eq u8 %p5, 2
+    %t94 = binary and i64 %t92, %t93
+    branch %t94, ^b54, ^b55
+  block ^b54:
+    %t95 = atomic_compare_exchange u32 %p1, %t0, %p3, 5, 2
+    %t96 = load u32 $s0
+    branch %t95, ^b56, ^b57
+  block ^b56:
+    store i64 0, %p0
+    %t97 = index u8 %p0, 8
+    store u32 %t96, %t97
+    return void
+  block ^b57:
+    store i64 1, %p0
+    %t98 = index u8 %p0, 8
+    store u32 %t96, %t98
+    return void
+  block ^b55:
+    %t99 = cmp eq u8 %p4, 4
+    %t100 = cmp eq u8 %p5, 4
+    %t101 = binary and i64 %t99, %t100
+    branch %t101, ^b58, ^b59
+  block ^b58:
+    %t102 = atomic_compare_exchange u32 %p1, %t0, %p3, 5, 5
+    %t103 = load u32 $s0
+    branch %t102, ^b60, ^b61
+  block ^b60:
+    store i64 0, %p0
+    %t104 = index u8 %p0, 8
+    store u32 %t103, %t104
+    return void
+  block ^b61:
+    store i64 1, %p0
+    %t105 = index u8 %p0, 8
+    store u32 %t103, %t105
+    return void
+  block ^b59:
+    jump ^b1
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.53()
+    return i64 0
+}

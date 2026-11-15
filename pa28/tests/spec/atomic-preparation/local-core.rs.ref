@@ -1,0 +1,25 @@
+function @rg.24() -> void {
+  slot $s0 : obj<1x1>
+  block ^b0:
+    call void @rg.19(7)
+    %t0 = addr $s0
+    %t1 = call u32 @rg.20(%t0)
+    return void
+}
+function @rg.19(%p0 : u32) -> void {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    return void
+}
+function @rg.20(%p0 : ptr) -> u32 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    return u32 7
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.24()
+    return i64 0
+}

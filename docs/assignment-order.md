@@ -127,7 +127,7 @@ scope, predecessor IDs and executable exit are in assignment-plan.json.
 | 5 | PA31 | Local compiler declarations and attribute authority (`source-declarations`) | partial | unpublished |
 | 6 | PA25 | Typed constant machine and inspection (`const-machine`) | implemented | released |
 | 7 | PA28 | Runtime memory and scalar volatile kernels (`runtime-memory`) | implemented | released |
-| 8 | PA28 | Core AtomicU32 protocol (`atomic-u32`) | implemented | unpublished |
+| 8 | PA28 | Core AtomicU32 protocol (`atomic-u32`) | implemented | released |
 | 9 | PA26 | Core iteration and residual protocols (`iteration-kernel`) | implemented | unpublished |
 | 10 | PA27 | Interior mutation and wide-value validity (`raw-validity`) | partial | unpublished |
 | 11 | PA25 | Symbolic constant storage and provenance (`const-memory`) | partial | unpublished |

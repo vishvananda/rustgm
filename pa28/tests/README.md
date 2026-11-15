@@ -3,7 +3,10 @@
 The released `runtime-memory` component publishes `units/runtime-memory.json`
 and the reference sidecars of its 265 cases; see the
 [release record](../../docs/pa28-runtime-memory-release.md) for its deferred
-list. Every other family here is unpublished.
+list. The released `atomic-u32` component publishes `units/atomic-u32.json` and
+the sidecars of its 246 cases; see its
+[release record](../../docs/pa28-atomic-u32-release.md). Every other family
+here is unpublished.
 
 Whole PA28 is planned: no graded whole-assignment suite yet.
 

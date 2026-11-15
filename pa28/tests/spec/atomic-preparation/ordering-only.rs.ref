@@ -1,0 +1,11 @@
+function @rg.13() -> void {
+  slot $s0 : obj<1x1>
+  block ^b0:
+    store u8 4, $s0
+    return void
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.13()
+    return i64 0
+}

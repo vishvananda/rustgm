@@ -1,0 +1,1 @@
+ERROR: file 0: 94: constant reference cannot escape with interior mutable allocation backing

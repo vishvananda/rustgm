@@ -176,7 +176,7 @@
       "owner": "pa28",
       "title": "Core AtomicU32 protocol",
       "implementation": "implemented",
-      "publication": "unpublished",
+      "publication": "released",
       "depends_on": [
         "unsafe-places"
       ],
@@ -188,7 +188,9 @@
       "implementation_evidence": [
         "docs/pa28-atomic-extrema.md",
         "pa28/tests/atomic-cas-outcomes.json"
-      ]
+      ],
+      "manifest": "pa28/tests/units/atomic-u32.json",
+      "release_evidence": "docs/pa28-atomic-u32-release.md"
     },
     {
       "id": "iteration-kernel",
