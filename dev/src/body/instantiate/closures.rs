@@ -98,6 +98,7 @@ pub(super) fn private_inputs(
         let mut session = crate::sema::projections::concrete(&mut proof, ScopeId::ROOT)?;
         formal = normalize_signature(facts, &mut session, formal)?;
     }
+    crate::sema::closures::matching::prepare_heads(facts, formal, actual)?;
     let (bindings, steps) = crate::sema::closures::matching::signature_bindings(
         &facts.types,
         formal,

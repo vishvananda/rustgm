@@ -67,6 +67,7 @@ impl Candidate {
             proofs: retained,
             ..
         } = super::shaping::prepare(facts, source, instance, adapter)?;
+        crate::sema::closures::matching::prepare_heads(facts, execution.signature, selected)?;
         let bindings = matching::execution_bindings(&facts.types, execution, selected)?;
         for proof in retained {
             proofs.retain(

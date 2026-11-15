@@ -69,3 +69,27 @@ fn public_signature_prepares_distinct_binder_storage_without_rewriting() -> Resu
     );
     Ok(())
 }
+
+#[test]
+fn a_public_root_with_projected_fields_is_stored_under_an_argument_lifetime() -> Result {
+    // A control: `wrap`'s public result keeps the caller's lifetime inside `P`,
+    // while its body names that lifetime as one of its own. Both are laid out.
+    // Core's `str::split` over a `&[char]` is the shape that first lacked the
+    // public root's storage; this profile stops at that body's lifetime proof.
+    let mut report = crate::test_source::resolve(
+        "trait Pattern{type Searcher<'a>;}\
+         struct Found<'a,'b>(&'a u8,&'b u8);\
+         impl<'b>Pattern for &'b u8{type Searcher<'a>=Found<'a,'b>;}\
+         struct Split<'a,P:Pattern>{matcher:P::Searcher<'a>}\
+         fn wrap<'a,P:Pattern>(pattern:P,matcher:P::Searcher<'a>)->Split<'a,P>{\
+         let _=pattern;Split{matcher}}\
+         fn main(){let hay=1u8;let needle=2u8;\
+         let found=wrap(&needle,Found(&hay,&needle));let _=found.matcher.0;}",
+        true,
+    )?;
+    let analysis = crate::pipeline::analyze_source(&report)?;
+    let mut facts = analysis.facts;
+    let entry = crate::sema::entry::select(&mut report, &facts)?;
+    crate::lower::instances::build_prepared(&report, &mut facts, entry, analysis.prepared)?;
+    Ok(())
+}

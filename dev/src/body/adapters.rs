@@ -172,7 +172,7 @@ pub(crate) fn build(
         result,
         convention,
     )?;
-    super::build::finish_factory(&mut writer.body, result)?;
+    finish(facts, &mut writer.body, result)?;
     super::invocation_entries::select(facts, &mut writer.body, &mut contract)?;
     super::copy_requirements::prepare(facts, &writer.body, &mut contract)
         .map_err(|_| "receiver adapter source Copy preparation failed")?;
@@ -192,6 +192,25 @@ pub(crate) fn build(
         input: contract,
         template,
     })
+}
+
+/// Close the adapter's one block. Its types name its execution's own
+/// lifetimes, so their nominal fields are instantiated here as dispatch does
+/// for an ordinary body.
+fn finish(
+    facts: &mut Declarations,
+    body: &mut Body,
+    result: crate::body::ir::ValueId,
+) -> Result<(), &'static str> {
+    super::build::finish_factory(body, result)?;
+    let types = (body.locals.iter().map(|local| local.ty))
+        .chain(body.values.iter().map(|value| value.ty))
+        .chain(body.projections.iter().map(|projection| projection.ty))
+        .collect::<Vec<_>>();
+    for ty in types {
+        facts.aggregates.prepare(&mut facts.types, ty)?;
+    }
+    Ok(())
 }
 
 fn contract(

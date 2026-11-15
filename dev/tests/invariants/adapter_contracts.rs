@@ -691,3 +691,48 @@ fn distinct_borrowed_callers_cache_exact_self_entries() -> TestResult {
     }
     Ok(())
 }
+/// Analyze and lower a whole program from its `main`.
+fn lowers(source: &str) -> TestResult {
+    let mut report = crate::test_source::resolve(source, true)?;
+    let analysis = crate::pipeline::analyze_source(&report)?;
+    let mut facts = analysis.facts;
+    let entry = crate::sema::entry::select(&mut report, &facts)?;
+    crate::lower::instances::build_prepared(&report, &mut facts, entry, analysis.prepared)?;
+    Ok(())
+}
+#[test]
+fn adapter_values_instantiate_their_own_nominal_fields() -> TestResult {
+    // The closure assigns a capture, so `then` calls it through a by-value
+    // adapter. The adapter names its execution's own lifetimes in
+    // `Maybe<&[char]>`, a different type from the closure body's result.
+    lowers(
+        "enum Maybe<T>{No,Yes(T)}\
+         impl<T> Maybe<T>{fn then<U,F:FnOnce(T)->Maybe<U>>(self,f:F)->Maybe<U>{\
+         match self{Maybe::Yes(inner)=>f(inner),Maybe::No=>Maybe::No}}}\
+         fn halves<T>(all:&[T],at:usize)->Maybe<(&[T],&[T])>{\
+         if at==0{Maybe::No}else{Maybe::Yes((all,all))}}\
+         trait Step{type Item;fn next(&mut self)->Maybe<Self::Item>;}\
+         struct Chunks<'a,T>{v:&'a [T],size:usize}\
+         impl<'a,T>Step for Chunks<'a,T>{type Item=&'a [T];\
+         fn next(&mut self)->Maybe<&'a [T]>{\
+         halves(self.v,self.size).then(|(chunk,rest)|{self.v=rest;Maybe::Yes(chunk)})}}\
+         fn main(){let data=['a','b'];let mut chunks=Chunks{v:&data,size:1};\
+         let _=chunks.next();}",
+    )
+}
+#[test]
+fn an_opaque_callable_in_a_selected_closure_signature_is_stored_before_matching() -> TestResult {
+    // `call`'s closure calls its capture, which is `compare`'s opaque result
+    // and borrows a local of `same`. Selecting that entry compares signatures
+    // that name the application as the instance spells its lifetimes.
+    lowers(
+        "fn compare<'a,B:Copy,X>(b:&'a mut B,mut f:impl FnMut(X,B)->bool+'a)\
+         ->impl FnMut(X)->bool+'a{move|x|f(x,*b)}\
+         fn call<T,R>(mut f:impl FnMut(T)->R)->impl FnMut((),T)->R{move|(),x|f(x)}\
+         fn fold<T:Copy,F:FnMut((),T)->bool>(value:T,mut f:F)->bool{f((),value)}\
+         fn each<T:Copy,F:FnMut(T)->bool>(value:T,f:F)->bool{fold(value,call(f))}\
+         fn same<'v,F:FnMut(&'v i32,i32)->bool>(left:&'v i32,f:F)->bool{\
+         let mut right=4;each(left,compare(&mut right,f))}\
+         fn main(){let value=3;let _=same(&value,|a,b|*a==b);}",
+    )
+}

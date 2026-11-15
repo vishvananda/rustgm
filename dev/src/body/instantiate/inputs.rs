@@ -69,9 +69,27 @@ pub(super) fn prepare_signature(
             .types
             .list(parameters)
             .ok_or("invalid public parameters")?[index];
-        facts.aggregates.prepare(&mut facts.types, ty)?;
+        prepare_root(facts, ty)?;
     }
-    facts.aggregates.prepare(&mut facts.types, result)
+    prepare_root(facts, result)
+}
+
+/// A concrete public root whose fields are projected also needs their normal
+/// storage: an instance argument's lifetime makes it a different type from the
+/// body's own root. The probe's lifetime facts are dropped, since the body
+/// proves its opened interface and field readiness is no evidence.
+fn prepare_root(facts: &mut Declarations, ty: TypeId) -> Result<(), &'static str> {
+    use crate::types::lifetime_proof::{Obligations, ScopeId};
+    facts.aggregates.prepare(&mut facts.types, ty)?;
+    if !facts.aggregates.has_projected_templates()
+        || facts.types.contains_parameters(ty) != Some(false)
+        || facts.types.contains_projections(ty) != Some(false)
+    {
+        return Ok(());
+    }
+    let mut proof = Obligations::new(facts.body_regions.probe_frontier()?);
+    let mut session = crate::sema::projections::concrete(&mut proof, ScopeId::ROOT)?;
+    crate::sema::stored_fields::Preparation::default().prepare(facts, ty, &mut session)
 }
 
 pub(super) struct Inputs {

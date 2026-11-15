@@ -20,6 +20,20 @@ pub(crate) fn execution(
 ) -> Result<Vec<(RegionId, RegionId)>, &'static str> {
     execution_bindings(types, formal, actual).map(|bindings| bindings.equalities)
 }
+/// The matcher compares storage heads. Either signature may name an opaque
+/// application that its instance interned only now, so they are prepared first.
+pub(crate) fn prepare_heads(
+    facts: &mut crate::sema::model::Declarations,
+    formal: TypeId,
+    actual: TypeId,
+) -> Result<(), &'static str> {
+    if facts.types.contains_opaques(formal) != Some(false)
+        || facts.types.contains_opaques(actual) != Some(false)
+    {
+        facts.prepare_opaque_storage()?;
+    }
+    Ok(())
+}
 pub(crate) fn execution_bindings(
     types: &Store,
     formal: Execution,
