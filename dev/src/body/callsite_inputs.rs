@@ -136,14 +136,18 @@ impl Body {
             let Rvalue::Call { callee, .. } = value.kind else {
                 return Err("caller site requires its actual Call");
             };
-            if previous.is_some_and(|previous| previous >= site.value.0)
-                || Some(site.owner) != self.source.source()
-                || self
-                    .values
-                    .get(callee.0 as usize)
-                    .is_none_or(|callee| callee.ty != site.callable)
+            if previous.is_some_and(|previous| previous >= site.value.0) {
+                return Err("caller-site value order changed");
+            }
+            if Some(site.owner) != self.source.source() {
+                return Err("caller-site owning body changed");
+            }
+            if self
+                .values
+                .get(callee.0 as usize)
+                .is_none_or(|callee| callee.ty != site.callable)
             {
-                return Err("caller-site body/value/callee identity changed");
+                return Err("caller-site callee identity changed");
             }
             previous = Some(site.value.0);
         }

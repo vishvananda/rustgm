@@ -435,6 +435,42 @@ fn unused_tracked_calls_type_without_location_but_reached_calls_require_actual_d
 }
 
 #[test]
+fn a_tracked_instance_forwards_its_caller_to_a_member_selected_as_tracked() -> TestResult {
+    // The generic body calls an untracked trait member and seals no site for
+    // it; only the `u8` instance selects the tracked implementation.
+    let mut source = test_source::fixture("pa31/tests/spec/source-location/selected-tracking.rs")?;
+    source.push_str(
+        "\n#[track_caller]fn forwarded<T:Probe<u8>>(value:T)->u32{value.call(2)}\n\
+         #[unsafe(no_mangle)]pub extern \"C\" fn forwarded_line()->u32{forwarded(1u8)}\n",
+    );
+    let report = test_source::source_provider(&source, "selected_tracking")?;
+    let crate::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = crate::pipeline::analyze_source(&report)?;
+    let root = selected_export(&report, "forwarded_line")?;
+    let program = crate::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        crate::lower::Roots {
+            entry: None,
+            exports: &[root],
+        },
+        prepared,
+    )?;
+    let mut text = Vec::new();
+    crate::lowir::writer::write(&program, &mut text)?;
+    let text = String::from_utf8(text)?;
+    // `forwarded::<u8>` passes its own hidden caller parameter on.
+    assert!(
+        text.lines()
+            .any(|line| line.contains("call u32") && line.trim_end().ends_with("%p1)")),
+        "{text}"
+    );
+    Ok(())
+}
+
+#[test]
 fn ordinary_default_inputs_pay_actual_attribute_budget_without_source_catalog_authority()
 -> Result<(), Box<dyn std::error::Error>> {
     let source = crate::test_source::fixture(

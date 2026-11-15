@@ -107,9 +107,15 @@ impl Lower<'_, '_, '_> {
         let argument = self.value(call.operands[0])?;
         self.value(call.operands[1])?;
         let runtime = self.value(call.operands[2])?;
-        let (signature, callee) =
+        let (signature, callee, tracked) =
             self.runtime_callback(call.selection.types[2], runtime, call.origin)?;
-        self.call_arguments(
+        // A tracked callback reports the caller of its selector.
+        let location = if tracked {
+            Some(self.caller_pointer(call.value)?)
+        } else {
+            None
+        };
+        self.call_arguments_with_caller(
             signature,
             callee,
             Arguments::Tuple {
@@ -117,6 +123,7 @@ impl Lower<'_, '_, '_> {
                 value: argument,
             },
             call.selection.types[3],
+            location,
         )
     }
 
@@ -125,7 +132,7 @@ impl Lower<'_, '_, '_> {
         ty: TypeId,
         selected: Selected,
         origin: Option<ir::ValueId>,
-    ) -> Result<(TypeId, Operand), &'static str> {
+    ) -> Result<(TypeId, Operand, bool), &'static str> {
         match (self.context.types.kind(ty), selected) {
             (Some(Kind::FunctionItem { .. }), Selected::Item(actual)) => {
                 let origin = origin.ok_or("runtime selector callback lacks its checked origin")?;
@@ -138,17 +145,23 @@ impl Lower<'_, '_, '_> {
                 if actual != self.body.callable_target(raw) {
                     return Err("runtime selector callback lost its checked executable mapping");
                 }
-                let Some(Kind::FunctionItem { signature, .. }) =
-                    self.context.types.kind(actual.ty())
+                let Some(Kind::FunctionItem {
+                    item, signature, ..
+                }) = self.context.types.kind(actual.ty())
                 else {
                     return Err("runtime selector callback target has no actual signature");
                 };
-                Ok((signature, Operand::Symbol(self.context.demand(actual)?)))
+                let tracked = self
+                    .context
+                    .constants
+                    .caller_tracking(crate::resolve::model::DefId(item.0))?;
+                let symbol = self.context.demand(actual)?;
+                Ok((signature, Operand::Symbol(symbol), tracked))
             }
             (Some(Kind::Function { .. }), Selected::Runtime(value))
                 if value.ty == Type::Ptr && origin.is_none() =>
             {
-                Ok((ty, value.operand))
+                Ok((ty, value.operand, false))
             }
             _ => Err("runtime selector callback requires its evaluated item or function pointer"),
         }

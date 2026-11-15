@@ -6,21 +6,23 @@ use crate::{
 };
 
 impl Lower<'_, '_, '_> {
-    fn caller_pointer(&mut self, id: ir::ValueId) -> Result<Value, &'static str> {
+    /// The location that a tracked callee of this call reports. A tracked
+    /// body forwards its own caller, also for a symbolic member whose tracked
+    /// implementation was only selected for this instance; any other body
+    /// needs the site that its source call sealed.
+    pub(super) fn caller_pointer(&mut self, id: ir::ValueId) -> Result<Value, &'static str> {
         self.context
             .require_reached_body(self.body_index, self.body)?;
-        let site = self
-            .body
-            .caller_site(id)?
-            .ok_or("tracked call lacks its actual sealed caller site")?;
+        let site = self.body.caller_site(id)?;
         let ir::Rvalue::Call { callee, .. } = self.body.values[id.0 as usize].kind else {
             return Err("caller site is not an actual Call");
         };
-        if self
-            .body
-            .values
-            .get(callee.0 as usize)
-            .is_none_or(|value| value.ty != site.callable)
+        if let Some(site) = site
+            && self
+                .body
+                .values
+                .get(callee.0 as usize)
+                .is_none_or(|value| value.ty != site.callable)
         {
             return Err("caller site changed its actual callee");
         }
@@ -39,6 +41,7 @@ impl Lower<'_, '_, '_> {
                 ),
             });
         }
+        let site = site.ok_or("tracked call lacks its actual sealed caller site")?;
         self.static_caller_pointer(site.location)
     }
     fn static_caller_pointer(&mut self, location: LocationId) -> Result<Value, &'static str> {
