@@ -1,4 +1,5 @@
-"""The linked bring-up driver mounts a consumer in core without changing either."""
+"""The linked bring-up driver adds a consumer to core's session without changing either."""
+import argparse
 from pathlib import Path
 import sys
 import tempfile
@@ -67,6 +68,32 @@ class Linked(unittest.TestCase):
             program.write_text(PROGRAM.replace("    0\n", "    1\n"))
             linked.prepare(work, folder / "frozen" / "library", program)
             self.assertIn("    1\n", (work / "app/main.rs").read_text())
+            self.assertEqual(root.read_text(), "//! core\n" + linked.MOUNT)
+
+    def test_guest_mode_passes_the_unchanged_program_beside_frozen_core(self):
+        with tempfile.TemporaryDirectory() as folder:
+            folder = Path(folder)
+            source = folder / "frozen" / "library" / "core" / "src"
+            source.mkdir(parents=True)
+            (source / "lib.rs").write_text("//! core\n")
+            program = folder / "one.rs"
+            program.write_text(PROGRAM)
+            work = folder / "work"
+            work.mkdir()
+            options = argparse.Namespace(guest=True, work=work,
+                                         library=folder / "frozen" / "library")
+            root, extra = linked.session(options, program)
+            self.assertEqual(root, source / "lib.rs")
+            self.assertEqual(extra, ["--bringup-guest", f"app={program}"])
+            # Nothing is copied, mounted or rewritten.
+            self.assertEqual(list(work.iterdir()), [])
+            self.assertEqual((source / "lib.rs").read_text(), "//! core\n")
+            self.assertEqual(program.read_text(), PROGRAM)
+            # Without the mode the same call mounts the program in a copy.
+            options.guest = False
+            root, extra = linked.session(options, program)
+            self.assertEqual(root, work / "library" / "core" / "src" / "lib.rs")
+            self.assertEqual(extra, [])
             self.assertEqual(root.read_text(), "//! core\n" + linked.MOUNT)
 
     def test_skip_rows_are_keyed_by_path_and_offset(self):

@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
 """Compile a no_std consumer in one session with real core, then run it.
 
-Bring-up only. The consumer is mounted as a private module of a writable copy
-of core's sources, so that no metadata crosses a crate boundary: the session
-compiles core and the program together as one executable. The exported C
-``main`` of the program becomes ``guest_main``, called by a Rust ``main`` that
-aborts on a nonzero status; the crate-level ``no_std``/``no_main`` attributes
-are dropped. Nothing produced here is a qualification.
+Bring-up only. No metadata crosses a crate boundary: the session compiles core
+and the program together as one executable. Nothing produced here is a
+qualification.
+
+With ``--guest`` the unchanged program is a guest crate of the session
+(``--bringup-guest app=PROGRAM``) over core's frozen sources: its crate-level
+attributes stay its own and its exported C ``main`` is the executable's entry.
+
+Otherwise the consumer is mounted as a private module of a writable copy of
+core's sources. The exported C ``main`` of the program becomes ``guest_main``,
+called by a Rust ``main`` that aborts on a nonzero status; the crate-level
+``no_std``/``no_main`` attributes are dropped.
 
 For each program the driver grows a copy of the core skip list with
 ``bringup_census.py`` until the session compiles, builds the LowIR through the
@@ -32,6 +38,7 @@ pub(crate) fn main() {
 }
 '''
 MOUNT = '\n#[path = "../../../app/main.rs"]\nmod __guest_app;\nuse __guest_app::main;\n'
+GUEST = "app"
 CRATE = "core_1_98_88d9_bringup"
 FLAGS = [
     "--cap-lints=allow",
@@ -83,6 +90,14 @@ def prepare(work, library, program):
     return root
 
 
+def session(options, program):
+    """Return core's root and the options that add this program to its session."""
+    if options.guest:
+        return (options.library / "core" / "src" / "lib.rs",
+                ["--bringup-guest", f"{GUEST}={program}"])
+    return prepare(options.work, options.library, program), []
+
+
 def native(out, expected):
     """Build and run the program; return its status and whether stdout matches."""
     sys.path.insert(0, str(SCRIPTS))
@@ -101,14 +116,14 @@ def run(options, program):
     name = program.stem
     out = options.work / name
     out.mkdir(parents=True, exist_ok=True)
-    root = prepare(options.work, options.library, program)
+    root, extra = session(options, program)
     skip = out / "skip.tsv"
     shutil.copyfile(options.skip_list, skip)
     census = subprocess.run(
         [sys.executable, str(SCRIPTS / "bringup_census.py"),
          "--compiler", str(options.compiler), "--skip-list", str(skip), "--out", str(out),
          "--timeout", str(options.timeout), "--max-iterations", str(options.max_iterations),
-         "--", *FLAGS, "--native-links-output", str(out / "app.native-links.json"),
+         "--", *FLAGS, *extra, "--native-links-output", str(out / "app.native-links.json"),
          "-o", str(out / "app.lowir"), str(root)],
         capture_output=True, text=True, check=False)
     (out / "census.log").write_text(census.stdout + census.stderr)
@@ -139,6 +154,8 @@ def main():
     parser.add_argument("--skip-list", required=True, type=pathlib.Path,
                         help="the skip list with which core alone compiles")
     parser.add_argument("--work", required=True, type=pathlib.Path)
+    parser.add_argument("--guest", action="store_true",
+                        help="pass each program as a guest crate instead of mounting it in core")
     parser.add_argument("--timeout", type=float, default=900.0)
     parser.add_argument("--max-iterations", type=int, default=30)
     parser.add_argument("programs", nargs="+", type=pathlib.Path)
