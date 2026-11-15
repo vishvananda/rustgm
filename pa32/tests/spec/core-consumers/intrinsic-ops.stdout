@@ -360,3 +360,131 @@ atomic usize bad 0
 atomic usize sum ec0f9ec72e91617a
 atomic isize bad 0
 atomic isize sum c766154c23592a42
+copy u32 61
+copy up u32 4d2
+copy down u32 860
+copy in place 17
+copy none 2
+fill u32 abababababababab
+fill u32 edges 17
+fill none 2
+copy u8 6963
+copy up u8 6969
+copy down u8 6e69
+fill u8 0
+copy u16 123456789abc
+fill u16 56785a5a
+copy u64 fffffefffffffffc
+copy u128 ffffffeffffffffffffffffffffffff8
+copy up u128 10000000000000000000000007
+fill u128 11111111111111111111111111111111
+copy triple 9f
+copy up triple 92
+fill triple 22a
+copy record 54c
+copy down record 1c8
+fill record 0
+copy str reference 17
+copy bool 5
+copy f64 bff8000000000000
+unit transfers 4
+copy_from_slice 13
+copy_within up d80
+copy_within down 135f
+fill slice 6
+clone_from_slice 32
+swap_with_slice 1ce
+swap u64 21
+reverse 15
+rotate_left 32
+bytes eq 0
+bytes eq prefix 1
+bytes eq empty 1
+bytes eq lengths 0
+bytes ne 1
+array eq 0
+array eq same 1
+bytes lt 0
+bytes gt 1
+bytes prefix lt 1
+bytes le same 1
+bytes unsigned order 1
+bytes cmp greater 1
+bytes cmp less ff
+bytes cmp equal 0
+bytes cmp prefix ff
+str eq 1
+str eq case 0
+str lt 1
+str cmp prefix ff
+str cmp greater 1
+u32 array eq 1
+u32 array eq last 0
+u32 slice eq 1
+u32 slice eq first 0
+u128 array eq 1
+u128 array eq top 0
+unit array eq 1
+bool array eq 1
+bool slice order 1
+i8 slice order 1
+i8 array eq 1
+char array eq 1
+char array eq last 0
+size slice u16 6
+align slice u16 2
+size empty slice 0
+size slice u128 20
+align slice u128 10
+size slice triple f
+align slice triple 1
+size slice unit 0
+size str 5
+align str 1
+size u64 8
+align u64 8
+size record 10
+align record 8
+size array 14
+size slice reference 10
+size unit 0
+align unit 1
+volatile read u8 a5
+volatile write u8 5a
+volatile read i16 fffe
+volatile write i16 12c
+volatile u32 9
+volatile read u64 10000000000
+volatile write u64 ffffffffffffffff
+volatile read u128 10000000000000000000000000
+volatile write u128 fffffffffffffffffffffffffffffffe
+volatile bool 1
+volatile read f64 3ff8000000000000
+volatile write f64 c004000000000000
+volatile pointer 4d
+zeroed u64 0
+zeroed tuple 0
+zeroed pointer 1
+zeroed f64 0
+zeroed u128 array 0
+assume_init u32 4d
+assume_init record 7b
+zeroed assume_init 0
+zeroed option 1
+f64 abs 4004000000000000
+f64 abs positive 4004000000000000
+f64 abs -0 0
+f64 abs -inf 7ff0000000000000
+f64 abs nan 7ff8000000001234
+f32 abs 40700000
+f32 abs -0 0
+f32 abs nan 7fc00123
+f64 copysign 4004000000000000
+f64 copysign -0 c004000000000000
+f64 copysign nan bff0000000000000
+f32 copysign c0700000
+f32 copysign 0 40700000
+f64 signum bff0000000000000
+f32 signum 3f800000
+memory sweep bad 0
+memory sweep sum eb21030a6a156949

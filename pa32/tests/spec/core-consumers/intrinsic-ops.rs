@@ -2,6 +2,7 @@
 #![no_main]
 
 use core::hint::black_box;
+use core::mem::MaybeUninit;
 use core::num::NonZero;
 use core::sync::atomic::{
     AtomicBool, AtomicI8, AtomicI16, AtomicI32, AtomicI64, AtomicIsize, AtomicPtr, AtomicU8, AtomicU16, AtomicU32,
@@ -142,6 +143,20 @@ pub extern "C" fn main(_argc: i32, _argv: *const *const u8) -> i32 {
     atomics(&mut out);
     out.flush();
     atomic_sweeps(&mut out);
+    out.flush();
+    transfers(&mut out);
+    out.flush();
+    comparisons(&mut out);
+    out.flush();
+    extents(&mut out);
+    out.flush();
+    volatile(&mut out);
+    out.flush();
+    validity(&mut out);
+    out.flush();
+    floats(&mut out);
+    out.flush();
+    memory_sweeps(&mut out);
     out.flush();
     if out.failed > 100 { 100 } else { out.failed }
 }
@@ -1001,4 +1016,374 @@ fn atomic_sweeps(out: &mut Out) {
     atomic_sweep!(out, "atomic i64 bad", "atomic i64 sum", AtomicI64, i64, u64);
     atomic_sweep!(out, "atomic usize bad", "atomic usize sum", AtomicUsize, usize, usize);
     atomic_sweep!(out, "atomic isize bad", "atomic isize sum", AtomicIsize, isize, usize);
+}
+
+/// `ptr::copy_nonoverlapping`, `ptr::copy` in both overlapping directions and
+/// `ptr::write_bytes`, with elements of every representation.
+fn transfers(out: &mut Out) {
+    let source = black_box([1u32, 2, 3, 4, 5, 6]);
+    let mut target = [0u32; 6];
+    let t = target.as_mut_ptr();
+    unsafe { ptr::copy_nonoverlapping(source.as_ptr(), t, 6) };
+    out.check("copy u32", (target[0] + target[5] * 16) as u128, 0x61);
+    unsafe { ptr::copy(t, t.add(2), 4) };
+    out.check("copy up u32", (target[2] * 1000 + target[3] * 100 + target[4] * 10 + target[5]) as u128, 1234);
+    unsafe { ptr::copy(t.add(1), t, 5) };
+    out.check("copy down u32", (target[0] * 1000 + target[1] * 100 + target[4] * 10 + target[5]) as u128, 2144);
+    unsafe { ptr::copy(t, t, 6) };
+    out.check("copy in place", (target[2] * 10 + target[3]) as u128, 23);
+    unsafe { ptr::copy_nonoverlapping(source.as_ptr(), t, 0) };
+    out.check("copy none", target[0] as u128, 2);
+    unsafe { ptr::write_bytes(t.add(1), 0xab, 2) };
+    out.check("fill u32", ((target[1] as u64) << 32 | target[2] as u64) as u128, 0xabab_abab_abab_abab);
+    out.check("fill u32 edges", (target[0] * 10 + target[3]) as u128, 23);
+    unsafe { ptr::write_bytes(t, 0xff, 0) };
+    out.check("fill none", target[0] as u128, 2);
+
+    let bytes = black_box(*b"intrinsic");
+    let mut copy = [0u8; 9];
+    let c = copy.as_mut_ptr();
+    unsafe { ptr::copy_nonoverlapping(bytes.as_ptr(), c, 9) };
+    out.check("copy u8", (copy[0] as u32 * 256 + copy[8] as u32) as u128, 0x6963);
+    unsafe { ptr::copy(c, c.add(1), 8) };
+    out.check("copy up u8", (copy[1] as u32 * 256 + copy[8] as u32) as u128, 0x6969);
+    unsafe { ptr::copy(c.add(2), c, 7) };
+    out.check("copy down u8", (copy[0] as u32 * 256 + copy[6] as u32) as u128, 0x6e69);
+    unsafe { ptr::write_bytes(c, 0, 9) };
+    out.check("fill u8", (copy[0] | copy[4] | copy[8]) as u128, 0);
+
+    let halves = black_box([0x1234u16, 0x5678, 0x9abc]);
+    let mut copy = [0u16; 3];
+    unsafe { ptr::copy_nonoverlapping(halves.as_ptr(), copy.as_mut_ptr(), 3) };
+    out.check("copy u16", ((copy[0] as u64) << 32 | (copy[1] as u64) << 16 | copy[2] as u64) as u128, 0x1234_5678_9abc);
+    unsafe { ptr::write_bytes(copy.as_mut_ptr().add(2), 0x5a, 1) };
+    out.check("fill u16", ((copy[1] as u32) << 16 | copy[2] as u32) as u128, 0x5678_5a5a);
+
+    let longs = black_box([u64::MAX, 1 << 40, 3]);
+    let mut copy = [0u64; 3];
+    unsafe { ptr::copy(longs.as_ptr(), copy.as_mut_ptr(), 3) };
+    out.check("copy u64", (copy[0] ^ copy[1] ^ copy[2]) as u128, (u64::MAX ^ (1 << 40) ^ 3) as u128);
+
+    let wide = black_box([1u128 << 100, 7, u128::MAX]);
+    let mut copy = [0u128; 3];
+    let c = copy.as_mut_ptr();
+    unsafe { ptr::copy_nonoverlapping(wide.as_ptr(), c, 3) };
+    out.check("copy u128", copy[0] ^ copy[1] ^ copy[2], u128::MAX ^ (1 << 100) ^ 7);
+    unsafe { ptr::copy(c, c.add(1), 2) };
+    out.check("copy up u128", copy[1] + copy[2], (1 << 100) + 7);
+    unsafe { ptr::write_bytes(c, 0x11, 1) };
+    out.check("fill u128", copy[0], u128::MAX / 15);
+
+    let triples = black_box([[1u8, 2, 3], [4, 5, 6], [7, 8, 9]]);
+    let mut copy = [[0u8; 3]; 3];
+    let c = copy.as_mut_ptr();
+    unsafe { ptr::copy_nonoverlapping(triples.as_ptr(), c, 3) };
+    out.check("copy triple", (copy[0][0] as u32 * 100 + copy[1][1] as u32 * 10 + copy[2][2] as u32) as u128, 159);
+    unsafe { ptr::copy(c, c.add(1), 2) };
+    out.check("copy up triple", (copy[1][0] as u32 * 100 + copy[2][0] as u32 * 10 + copy[2][2] as u32) as u128, 146);
+    unsafe { ptr::write_bytes(c, 5, 2) };
+    out.check("fill triple", (copy[0][0] as u32 * 100 + copy[1][2] as u32 * 10 + copy[2][0] as u32) as u128, 554);
+
+    let records = black_box([Record { a: 1, b: 2, c: [3; 5] }, Record { a: 4, b: 5, c: [6; 5] }]);
+    let mut slots = [Record { a: 0, b: 0, c: [0; 5] }, Record { a: 0, b: 0, c: [0; 5] }];
+    let s = slots.as_mut_ptr();
+    unsafe { ptr::copy_nonoverlapping(records.as_ptr(), s, 2) };
+    out.check(
+        "copy record",
+        (slots[0].a * 1000 + slots[0].c[4] as u64 * 100 + slots[1].b as u64 * 10 + slots[1].c[0] as u64) as u128,
+        1356,
+    );
+    unsafe { ptr::copy(s.add(1), s, 1) };
+    out.check("copy down record", (slots[0].a * 100 + slots[0].b as u64 * 10 + slots[0].c[2] as u64) as u128, 456);
+    unsafe { ptr::write_bytes(s, 0, 2) };
+    out.check("fill record", (slots[0].a + slots[1].b as u64 + slots[1].c[4] as u64) as u128, 0);
+
+    let texts: [&str; 2] = black_box(["ab", "cde"]);
+    let mut slots: [&str; 2] = [""; 2];
+    unsafe { ptr::copy_nonoverlapping(texts.as_ptr(), slots.as_mut_ptr(), 2) };
+    out.check("copy str reference", (slots[0].len() * 10 + slots[1].len()) as u128, 23);
+    let flags = black_box([true, false, true]);
+    let mut slots = [false; 3];
+    unsafe { ptr::copy(flags.as_ptr(), slots.as_mut_ptr(), 3) };
+    out.check("copy bool", (slots[0] as u8 * 4 + slots[1] as u8 * 2 + slots[2] as u8) as u128, 5);
+    let reals = black_box([1.5f64, -0.0]);
+    let mut slots = [0f64; 2];
+    unsafe { ptr::copy_nonoverlapping(reals.as_ptr(), slots.as_mut_ptr(), 2) };
+    out.check("copy f64", (slots[0].to_bits() ^ slots[1].to_bits()) as u128, 0xbff8_0000_0000_0000);
+    let units = black_box([(); 4]);
+    let mut slots = [(); 4];
+    let s = slots.as_mut_ptr();
+    unsafe {
+        ptr::copy_nonoverlapping(units.as_ptr(), s, 4);
+        ptr::copy(s, s.add(1), 3);
+        ptr::write_bytes(s, 1, 4);
+    }
+    out.check("unit transfers", slots.len() as u128, 4);
+
+    let mut bytes = [7u8; 9];
+    bytes.copy_from_slice(black_box(&[1, 2, 3, 4, 5, 6, 7, 8, 9]));
+    out.check("copy_from_slice", (bytes[0] * 10 + bytes[8]) as u128, 19);
+    bytes.copy_within(2..6, 4);
+    out.check(
+        "copy_within up",
+        (bytes[4] as u32 * 1000 + bytes[5] as u32 * 100 + bytes[6] as u32 * 10 + bytes[7] as u32) as u128,
+        3456,
+    );
+    bytes.copy_within(3.., 0);
+    out.check(
+        "copy_within down",
+        (bytes[0] as u32 * 1000 + bytes[5] as u32 * 100 + bytes[6] as u32 * 10 + bytes[8] as u32) as u128,
+        4959,
+    );
+    bytes.fill(3);
+    out.check("fill slice", (bytes[0] + bytes[8]) as u128, 6);
+    let mut words = [0u16; 4];
+    words.clone_from_slice(black_box(&[10, 20, 30, 40]));
+    out.check("clone_from_slice", (words[0] + words[3]) as u128, 50);
+    let mut left = black_box([1u32, 2, 3]);
+    let mut right = black_box([4u32, 5, 6]);
+    left.swap_with_slice(&mut right);
+    out.check("swap_with_slice", (left[0] * 100 + left[2] * 10 + right[1]) as u128, 462);
+    let mut a = black_box(1u64);
+    let mut b = black_box(2u64);
+    mem::swap(&mut a, &mut b);
+    out.check("swap u64", (a * 16 + b) as u128, 0x21);
+    let mut values = black_box([5u8, 4, 3, 2, 1]);
+    values.reverse();
+    out.check("reverse", (values[0] * 16 + values[4]) as u128, 0x15);
+    values.rotate_left(2);
+    out.check("rotate_left", (values[0] * 16 + values[4]) as u128, 0x32);
+}
+
+/// Slice, array and string equality and byte-slice ordering: the first
+/// unequal byte decides, read as unsigned, and a prefix orders first.
+fn comparisons(out: &mut Out) {
+    let left = black_box(*b"intrinsic");
+    let right = black_box(*b"intrinsiC");
+    out.check("bytes eq", (left[..] == right[..]) as u128, 0);
+    out.check("bytes eq prefix", (left[..8] == right[..8]) as u128, 1);
+    out.check("bytes eq empty", (left[..0] == right[9..]) as u128, 1);
+    out.check("bytes eq lengths", (left[..8] == right[..7]) as u128, 0);
+    out.check("bytes ne", (left[..] != right[..]) as u128, 1);
+    out.check("array eq", (left == right) as u128, 0);
+    out.check("array eq same", (left == black_box(*b"intrinsic")) as u128, 1);
+    out.check("bytes lt", (left[..] < right[..]) as u128, 0);
+    out.check("bytes gt", (left[..] > right[..]) as u128, 1);
+    out.check("bytes prefix lt", (left[..4] < left[..5]) as u128, 1);
+    out.check("bytes le same", (left[..] <= left[..]) as u128, 1);
+    let high = black_box([0x80u8, 0]);
+    let low = black_box([0x7fu8, 0xff]);
+    out.check("bytes unsigned order", (high[..] > low[..]) as u128, 1);
+    out.check("bytes cmp greater", high[..].cmp(&low[..]) as i8 as u8 as u128, 1);
+    out.check("bytes cmp less", low[..].cmp(&high[..]) as i8 as u8 as u128, 0xff);
+    out.check("bytes cmp equal", low[..].cmp(&low[..]) as i8 as u8 as u128, 0);
+    out.check("bytes cmp prefix", low[..1].cmp(&low[..]) as i8 as u8 as u128, 0xff);
+    out.check("str eq", (black_box("alpha") == "alpha") as u128, 1);
+    out.check("str eq case", (black_box("alpha") == "alphA") as u128, 0);
+    out.check("str lt", (black_box("alpha") < "beta") as u128, 1);
+    out.check("str cmp prefix", black_box("alp").cmp("alpha") as i8 as u8 as u128, 0xff);
+    out.check("str cmp greater", black_box("b").cmp("alpha") as i8 as u8 as u128, 1);
+    let words = black_box([1u32, 2, 3, 4]);
+    out.check("u32 array eq", (words == [1, 2, 3, 4]) as u128, 1);
+    out.check("u32 array eq last", (words == [1, 2, 3, 5]) as u128, 0);
+    out.check("u32 slice eq", (words[1..] == [2, 3, 4]) as u128, 1);
+    out.check("u32 slice eq first", (words[1..] == [3, 3, 4]) as u128, 0);
+    let wide = black_box([u128::MAX, 1 << 100]);
+    out.check("u128 array eq", (wide == [u128::MAX, 1 << 100]) as u128, 1);
+    out.check("u128 array eq top", (wide == [u128::MAX, 1 << 101]) as u128, 0);
+    let units = black_box([(); 3]);
+    out.check("unit array eq", (units == [(); 3]) as u128, 1);
+    let flags = black_box([true, false]);
+    out.check("bool array eq", (flags == [true, false]) as u128, 1);
+    out.check("bool slice order", (flags[..] > [false, true][..]) as u128, 1);
+    let signed = black_box([-1i8, 5]);
+    out.check("i8 slice order", (signed[..] < [0i8, 0][..]) as u128, 1);
+    out.check("i8 array eq", (signed == [-1, 5]) as u128, 1);
+    let letters = black_box(['a', '\u{3bb}']);
+    out.check("char array eq", (letters == ['a', '\u{3bb}']) as u128, 1);
+    out.check("char array eq last", (letters == ['a', '\u{3bc}']) as u128, 0);
+}
+
+/// `size_of_val` and `align_of_val` of sized values, slices and strings.
+fn extents(out: &mut Out) {
+    let words: &[u16] = black_box(&[1, 2, 3]);
+    out.check("size slice u16", mem::size_of_val(words) as u128, 6);
+    out.check("align slice u16", mem::align_of_val(words) as u128, 2);
+    out.check("size empty slice", mem::size_of_val(&words[..0]) as u128, 0);
+    let wide: &[u128] = black_box(&[1, 2]);
+    out.check("size slice u128", mem::size_of_val(wide) as u128, 32);
+    out.check("align slice u128", mem::align_of_val(wide) as u128, 16);
+    let triples: &[[u8; 3]] = black_box(&[[0; 3]; 5]);
+    out.check("size slice triple", mem::size_of_val(triples) as u128, 15);
+    out.check("align slice triple", mem::align_of_val(triples) as u128, 1);
+    let units: &[()] = black_box(&[(); 7]);
+    out.check("size slice unit", mem::size_of_val(units) as u128, 0);
+    out.check("size str", mem::size_of_val(black_box("hello")) as u128, 5);
+    out.check("align str", mem::align_of_val(black_box("hello")) as u128, 1);
+    out.check("size u64", mem::size_of_val(&black_box(7u64)) as u128, 8);
+    out.check("align u64", mem::align_of_val(&black_box(7u64)) as u128, 8);
+    let record = Record { a: 1, b: 2, c: [3; 5] };
+    out.check("size record", mem::size_of_val(black_box(&record)) as u128, 16);
+    out.check("align record", mem::align_of_val(black_box(&record)) as u128, 8);
+    out.check("size array", mem::size_of_val(black_box(&[0u32; 5])) as u128, 20);
+    out.check("size slice reference", mem::size_of_val(&words) as u128, 16);
+    out.check("size unit", mem::size_of_val(&()) as u128, 0);
+    out.check("align unit", mem::align_of_val(&()) as u128, 1);
+}
+
+/// `read_volatile` and `write_volatile` of scalars of every width.
+fn volatile(out: &mut Out) {
+    let mut cell = black_box(0xa5u8);
+    out.check("volatile read u8", unsafe { ptr::read_volatile(&cell) } as u128, 0xa5);
+    unsafe { ptr::write_volatile(&mut cell, 0x5a) };
+    out.check("volatile write u8", cell as u128, 0x5a);
+    let mut cell = black_box(-2i16);
+    out.check("volatile read i16", unsafe { ptr::read_volatile(&cell) } as u16 as u128, 0xfffe);
+    unsafe { ptr::write_volatile(&mut cell, 300) };
+    out.check("volatile write i16", cell as u128, 300);
+    let mut cell = black_box(5u32);
+    unsafe { ptr::write_volatile(&mut cell, 9) };
+    out.check("volatile u32", unsafe { ptr::read_volatile(&cell) } as u128, 9);
+    let mut cell = black_box(1u64 << 40);
+    out.check("volatile read u64", unsafe { ptr::read_volatile(&cell) } as u128, 1 << 40);
+    unsafe { ptr::write_volatile(&mut cell, u64::MAX) };
+    out.check("volatile write u64", cell as u128, u64::MAX as u128);
+    let mut cell = black_box(1u128 << 100);
+    out.check("volatile read u128", unsafe { ptr::read_volatile(&cell) }, 1 << 100);
+    unsafe { ptr::write_volatile(&mut cell, u128::MAX - 1) };
+    out.check("volatile write u128", cell, u128::MAX - 1);
+    let mut cell = black_box(false);
+    unsafe { ptr::write_volatile(&mut cell, true) };
+    out.check("volatile bool", unsafe { ptr::read_volatile(&cell) } as u128, 1);
+    let mut cell = black_box(1.5f64);
+    out.check("volatile read f64", unsafe { ptr::read_volatile(&cell) }.to_bits() as u128, 0x3ff8_0000_0000_0000);
+    unsafe { ptr::write_volatile(&mut cell, -2.5) };
+    out.check("volatile write f64", cell.to_bits() as u128, 0xc004_0000_0000_0000);
+    let target = 77u32;
+    let mut cell: *const u32 = ptr::null();
+    unsafe { ptr::write_volatile(&mut cell, black_box(&target)) };
+    out.check("volatile pointer", unsafe { *ptr::read_volatile(&cell) } as u128, 77);
+}
+
+/// `mem::zeroed` and `MaybeUninit::assume_init` for types whose zero-valid
+/// and inhabited assertions hold.
+fn validity(out: &mut Out) {
+    let zero: u64 = unsafe { mem::zeroed() };
+    out.check("zeroed u64", zero as u128, 0);
+    let zero: (u8, [u16; 3], bool, char) = unsafe { mem::zeroed() };
+    out.check("zeroed tuple", (zero.0 as u32 + zero.1[2] as u32 + zero.2 as u32 + zero.3 as u32) as u128, 0);
+    let zero: *const u32 = unsafe { mem::zeroed() };
+    out.check("zeroed pointer", zero.is_null() as u128, 1);
+    let zero: f64 = unsafe { mem::zeroed() };
+    out.check("zeroed f64", zero.to_bits() as u128, 0);
+    let zero: [u128; 2] = unsafe { mem::zeroed() };
+    out.check("zeroed u128 array", zero[0] | zero[1], 0);
+    let mut slot = MaybeUninit::<u32>::uninit();
+    slot.write(black_box(77));
+    out.check("assume_init u32", unsafe { slot.assume_init() } as u128, 77);
+    let mut slot = MaybeUninit::<Record>::uninit();
+    slot.write(Record { a: 1, b: 2, c: [3; 5] });
+    let record = unsafe { slot.assume_init() };
+    out.check("assume_init record", (record.a * 100 + record.b as u64 * 10 + record.c[1] as u64) as u128, 123);
+    let slot = MaybeUninit::<[u8; 4]>::zeroed();
+    out.check("zeroed assume_init", unsafe { slot.assume_init() }[3] as u128, 0);
+    let slot = MaybeUninit::<Option<NonZero<u32>>>::zeroed();
+    out.check("zeroed option", unsafe { slot.assume_init() }.is_none() as u128, 1);
+}
+
+/// `abs` clears the sign bit and `copysign` replaces it; every other bit,
+/// a NaN payload included, is kept.
+fn floats(out: &mut Out) {
+    out.check("f64 abs", black_box(-2.5f64).abs().to_bits() as u128, 0x4004_0000_0000_0000);
+    out.check("f64 abs positive", black_box(2.5f64).abs().to_bits() as u128, 0x4004_0000_0000_0000);
+    out.check("f64 abs -0", black_box(-0.0f64).abs().to_bits() as u128, 0);
+    out.check("f64 abs -inf", black_box(f64::NEG_INFINITY).abs().to_bits() as u128, 0x7ff0_0000_0000_0000);
+    let nan = f64::from_bits(black_box(0xfff8_0000_0000_1234));
+    out.check("f64 abs nan", nan.abs().to_bits() as u128, 0x7ff8_0000_0000_1234);
+    out.check("f32 abs", black_box(-3.75f32).abs().to_bits() as u128, 0x4070_0000);
+    out.check("f32 abs -0", black_box(-0.0f32).abs().to_bits() as u128, 0);
+    let nan = f32::from_bits(black_box(0xffc0_0123));
+    out.check("f32 abs nan", nan.abs().to_bits() as u128, 0x7fc0_0123);
+    out.check("f64 copysign", black_box(-2.5f64).copysign(1.0).to_bits() as u128, 0x4004_0000_0000_0000);
+    out.check("f64 copysign -0", black_box(2.5f64).copysign(-0.0).to_bits() as u128, 0xc004_0000_0000_0000);
+    let nan = f64::from_bits(black_box(0xfff8_0000_0000_0000));
+    out.check("f64 copysign nan", black_box(1.0f64).copysign(nan).to_bits() as u128, 0xbff0_0000_0000_0000);
+    out.check("f32 copysign", black_box(3.75f32).copysign(-1.0).to_bits() as u128, 0xc070_0000);
+    out.check("f32 copysign 0", black_box(-3.75f32).copysign(0.0).to_bits() as u128, 0x4070_0000);
+    out.check("f64 signum", black_box(-2.5f64).signum().to_bits() as u128, 0xbff0_0000_0000_0000);
+    out.check("f32 signum", black_box(0.0f32).signum().to_bits() as u128, 0x3f80_0000);
+}
+
+/// Overlapping copies, fills and byte comparisons at sampled offsets and
+/// lengths beside loops over a model of the same bytes. `bad` counts
+/// differences; `sum` is a checksum of the buffer after every step.
+fn memory_sweeps(out: &mut Out) {
+    let mut state = 0x0f1e_2d3c_4b5a_6978u64;
+    let mut buffer = [0u8; 48];
+    let mut model = [0u8; 48];
+    let mut i = 0;
+    while i < 48 {
+        buffer[i] = (next(&mut state) & 3) as u8;
+        model[i] = buffer[i];
+        i += 1;
+    }
+    let mut bad = 0u32;
+    let mut sum = 0u64;
+    let mut k = 0;
+    while k < 600 {
+        let r = next(&mut state);
+        let from = (r % 48) as usize;
+        let to = ((r >> 8) % 48) as usize;
+        let room = 48 - if from > to { from } else { to };
+        let count = ((r >> 16) as usize) % (room + 1);
+        let p = buffer.as_mut_ptr();
+        match (r >> 40) % 3 {
+            0 => {
+                unsafe { ptr::copy(p.add(from), p.add(to), count) };
+                let mut held = [0u8; 48];
+                let mut i = 0;
+                while i < count {
+                    held[i] = model[from + i];
+                    i += 1;
+                }
+                let mut i = 0;
+                while i < count {
+                    model[to + i] = held[i];
+                    i += 1;
+                }
+            }
+            1 => {
+                let value = ((r >> 48) & 3) as u8;
+                unsafe { ptr::write_bytes(p.add(to), value, count) };
+                let mut i = 0;
+                while i < count {
+                    model[to + i] = value;
+                    i += 1;
+                }
+            }
+            _ => {
+                let order = buffer[from..from + count].cmp(&buffer[to..to + count]) as i8;
+                let equal = buffer[from..from + count] == buffer[to..to + count];
+                let mut expected = 0i8;
+                let mut i = 0;
+                while i < count && expected == 0 {
+                    if model[from + i] != model[to + i] {
+                        expected = if model[from + i] < model[to + i] { -1 } else { 1 };
+                    }
+                    i += 1;
+                }
+                bad += (order != expected) as u32 + (equal != (expected == 0)) as u32;
+                sum = sum.wrapping_add(order as u8 as u64);
+            }
+        }
+        let mut i = 0;
+        while i < 48 {
+            bad += (buffer[i] != model[i]) as u32;
+            sum = sum.wrapping_mul(31).wrapping_add(buffer[i] as u64);
+            i += 1;
+        }
+        k += 1;
+    }
+    out.check("memory sweep bad", bad as u128, 0);
+    out.show("memory sweep sum", sum as u128);
 }

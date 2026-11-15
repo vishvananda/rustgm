@@ -330,10 +330,12 @@
         "unchecked slice access",
         "ptr::read, ptr::write and mem::replace",
         "atomic integers, booleans and pointers at every width",
+        "counted copies, fills and byte comparisons",
+        "size_of_val, volatile accesses, mem::zeroed and float sign bits",
         "output without core::fmt"
       ],
-      "source_sha256": "14292c82e84c251cd8e0f3111fb94ee67b39270798db95547a8a6380719da21d",
-      "stdout_sha256": "396bab9f1432a059da160a6f56508db8d69c1db9aaebdd4e6ff62b97ee7d0f86"
+      "source_sha256": "efd6b6ba00b42e51417064b7e1ad8599ed6809421ac5c61c8fcabc4f42c17b06",
+      "stdout_sha256": "302627bdda5f00e761793bfac3c9ac996bcbf579d9091d08f22a4647c9a510a9"
     }
   ]
 }
