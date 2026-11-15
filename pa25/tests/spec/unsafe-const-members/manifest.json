@@ -1,0 +1,97 @@
+{
+ "schema": 1,
+ "owner": "PA25 unsafe generic const members",
+ "declared_before_execution": true,
+ "cases": {
+  "blanket.rs": {
+   "expected": "accept"
+  },
+  "direct-premise.rs": {
+   "expected": "accept"
+  },
+  "safe-control.rs": {
+   "expected": "accept"
+  },
+  "runtime.rs": {
+   "expected": "accept"
+  },
+  "plain-bound.rs": {
+   "expected": "reject"
+  },
+  "ordinary-impl.rs": {
+   "expected": "reject"
+  },
+  "outside-unsafe.rs": {
+   "expected": "reject"
+  },
+  "wrong-application.rs": {
+   "expected": "reject"
+  },
+  "wrong-argument.rs": {
+   "expected": "reject"
+  },
+  "wrapper-owner.rs": {
+   "expected": "accept"
+  },
+  "raw-pointer-shape.rs": {
+   "expected": "accept"
+  },
+  "native-runtime.rs": {
+   "expected": "accept",
+   "native_stdout": "41 59\n",
+   "observer": "observe.c"
+  },
+  "native-ctfe.rs": {
+   "expected": "accept",
+   "native_stdout": "41 59\n",
+   "observer": "observe.c"
+  },
+  "scaling-8.rs": {
+   "expected": "accept"
+  },
+  "scaling-32.rs": {
+   "expected": "accept"
+  },
+  "scaling-128.rs": {
+   "expected": "accept"
+  },
+  "unsafe-caller.rs": {
+   "expected": "accept"
+  }
+ },
+ "files": {
+  "blanket.rs": "5bc79495defb29931fd7c9568fdf4d1ae0a4510575c6b6426088823e5510aa9a",
+  "direct-premise.rs": "0ab966573c3c0de45a2dea3c263f45d4f7f26f866735b0302f46cd6ea2cbd151",
+  "safe-control.rs": "ef56bbea062291fdb59c2d784c118ef38cce78728aa9792bbbdee47c8d936d43",
+  "runtime.rs": "841d85c664fc0fece40e3c47f83259419baf9d46fc545d6ae52ddcda31ce7ae4",
+  "plain-bound.rs": "5771936d0a22b27205cf98c867e220cb37666ba48bc22df50a1ddba93e6b2c53",
+  "ordinary-impl.rs": "312edb4ed4878705d80ac6071fd65ca4153864b7ecfb117d992b06e818239503",
+  "outside-unsafe.rs": "e5ba57f9eeed456ffb09264e581871bb9cb88acbb617266629ef4e0d8f96e4c8",
+  "wrong-application.rs": "70d51bd2c4ba479dd03b61f58c26ccf07dcfb7cef4c42c14a91fb3b6bc90d4da",
+  "wrong-argument.rs": "50925516514fea6e99d29fbdf796d4887ecfdf108102c4b56bd8dc1e3b7a7812",
+  "wrapper-owner.rs": "78c754abcb2c6b0c54631130bff2bf7b6a575b7e6a422b184f9d962440b9cd7c",
+  "raw-pointer-shape.rs": "607eaf124bbc53211566ffffe5beb415967122ec2eb29e88957696ade190a8ee",
+  "native-runtime.rs": "f7458c3bb588ce3dc347a419657dd152dadd1dc6e7840cf7781752ab7c8b0ab7",
+  "native-ctfe.rs": "531b69cfd511fa1128c710ebabdd334a8ed15e7af8377c7ba944b792a8a9a665",
+  "scaling-8.rs": "fc26e1d38cf894a75940565568e9de11ebad21164b94cb0fe1feb551d940885a",
+  "scaling-32.rs": "932642f94937a12616b010d9280df1c81dfce4e7b7115952676cb84f221ec029",
+  "scaling-128.rs": "02dfbd8df4224b9c538d49ab092037d52a1d7660062899d233672a7fcf6979e6",
+  "observe.c": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+  "unsafe-caller.rs": "4f9243e6f3ee706027126e3abd537823d84191d312f52b68ec7f4faf29bb014f"
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "basis": {
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "source_path": "library/core/src/slice/cmp.rs",
+  "source_sha256": "b6df2890d8e3970994e610a110419c78d01e12c0a78385811c9ffe0ff5a78edf",
+  "shape": "Unsafe helper on element Self selected through conditional blanket impl from composite wrapper; raw-pointer counterpart is signature-only, not full slice comparison. No copied original item.",
+  "license": "MIT OR Apache-2.0; third_party/sources.json"
+ }
+}

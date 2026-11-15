@@ -1,5 +1,46 @@
 # RustGM handoff — 2026-11-14
 
+LATEST checkpoint: unsafe generic const members through actual blanket proof.
+See docs/pa25-unsafe-const-members.md. New transient Signature witness binds full
+selected target/opened signature; unsafe Rust additionally consumes exact typed
+Call/result/SourceCallUse.call_safety keyed by body/node/signature. UnsafeFunction
+also requires actual caller unsafe signature; explicit block remains distinct.
+Ordinary const bodies now retain existing discharged safety rows in existing
+local contexts; ordinary runtime-only path unchanged. Source caller/report/full
+call/effect/header/selectedmethod/impl/borrow/Code remain. No dense/cache/wire/
+backend/storage/quota/ABI-retag change. New cohesive provided_calls/signatures.rs;
+inventory3967. Direct validator factored beside access/Try to meet Clippy size.
+
+PA25/31 unsafe-const-members each17 independent Rust predictions12accept5reject;
+ALL34 ordinary/source complete CLI outcomes qualify. New runtime/CTFE actualCode
+41/59 each, independent Rust both41/59; nativefivegroups12programs40.48s includes
+10 prior programs. fast2=1794703721225702094 fourexact2targets219.68s, all static
+checks pass. replay3967/allinputs34qualified, exact lowering/scaling3392/1358,
+13064/3928,51752/14184; no speed claim.315harness497roots13bins44stages1component
+128upstream126Reference. Current pinned devfast CLI
+1ccf4aff5fc49aaa3057eea5c30f0d46d7566d70a0ba10a1492e1460efb2c1d0.
+Support Base static call corrected to exact<T as Base<U>> UFCS before anycandidate
+execution; initial independentE0790 retained, no prediction inversion. Raw-pointer
+case signature-only, no full comparison claimed. One new private safety witness/
+missing-row/site/target guard plus priorTry guard await fullCI(expected3087);
+no cold local harness. Existing Try private guard adapted to witness parameter.
+Raw obj/parallel/unsafe-const-members/; new simple CTFE does NOT close earlier
+aggregate/open/lifetime/argument payment requirements.
+
+Full43656293922 exact8560c4dbb (borrowed product05d1beedd) PASSED EVERY STAGE,
+3085 release4.97s/debug45.56s, raw unsafe-const-members/ci43656293922.log. No full
+is active. NEXT after publishing this concrete checkpoint launch ONE combined
+successor for Try+unsafe(expected3087), freeze clean candidate38-release, retry
+unchanged originalv14 library and postcheck with722/six reviewedpins/120s/
+14500624work/1GiB attempted/64MiB retained. Core37 below latestoriginal; reduced
+unsafe fence passes but original not yet verified. No coreartifact/wholePA25–44
+completion; released113 component unchanged. Current37/36 clean pins and new
+unsafe replay available; retire superseded36/Try replay after replacement. Pending
+perf21–24 preserved. All previous retirement records/older positives remain.
+Same one worker/B only/mainGit-only/2jobs150GiBreserve16GiBcap/frozen17b024f69.
+This continuation supersedes prior NEXT/current checkpoint/CI paragraphs.
+
+
 LATEST genuine original: clean candidate37-release on published694738c4e,
 3966 hashes/empty patch,8m27s build. CLI
 811564513e4453f8807b7aa4175056ae6934b9bd399e7c78172caf15aba3781d.

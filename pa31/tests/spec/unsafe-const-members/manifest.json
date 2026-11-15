@@ -1,0 +1,114 @@
+{
+ "schema": 1,
+ "owner": "PA31 unsafe generic const members",
+ "declared_before_execution": true,
+ "cases": {
+  "blanket.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/unsafe-const-members/blanket.rs"
+  },
+  "direct-premise.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/unsafe-const-members/direct-premise.rs"
+  },
+  "safe-control.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/unsafe-const-members/safe-control.rs"
+  },
+  "runtime.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/unsafe-const-members/runtime.rs"
+  },
+  "plain-bound.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/unsafe-const-members/plain-bound.rs"
+  },
+  "ordinary-impl.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/unsafe-const-members/ordinary-impl.rs"
+  },
+  "outside-unsafe.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/unsafe-const-members/outside-unsafe.rs"
+  },
+  "wrong-application.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/unsafe-const-members/wrong-application.rs"
+  },
+  "wrong-argument.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/unsafe-const-members/wrong-argument.rs"
+  },
+  "wrapper-owner.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/unsafe-const-members/wrapper-owner.rs"
+  },
+  "raw-pointer-shape.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/unsafe-const-members/raw-pointer-shape.rs"
+  },
+  "native-runtime.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/unsafe-const-members/native-runtime.rs",
+   "native_stdout": "41 59\n",
+   "observer": "observe.c"
+  },
+  "native-ctfe.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/unsafe-const-members/native-ctfe.rs",
+   "native_stdout": "41 59\n",
+   "observer": "observe.c"
+  },
+  "scaling-8.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/unsafe-const-members/scaling-8.rs"
+  },
+  "scaling-32.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/unsafe-const-members/scaling-32.rs"
+  },
+  "scaling-128.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/unsafe-const-members/scaling-128.rs"
+  },
+  "unsafe-caller.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/unsafe-const-members/unsafe-caller.rs"
+  }
+ },
+ "files": {
+  "blanket.rs": "39132b1b8455b7cbec6ec272a0a0d1b13e8f8055d123d4377f4a9074565bfee3",
+  "direct-premise.rs": "9f664e7a409039c98584408e68dafc0b7a52c914750ea7830211e5d3f50a860d",
+  "safe-control.rs": "9987eb412a8c2f20e13941a00321950c9c036bf67bc13dd99983d92eda5aeea1",
+  "runtime.rs": "e458273bc948539f21c7574f20051d80f5c035a2a5443c6de65cfcccaf0731f9",
+  "plain-bound.rs": "797527ad512654c9d0b8fbd864fe2fdb06e4f1ad873b8ce68793f4044b6022b0",
+  "ordinary-impl.rs": "4fc8ff2a016fbb0f30ba3af01c920fb0ef4f6b823101d56374b06fb65fc5de7e",
+  "outside-unsafe.rs": "849d222db24ba90df428d6908f79ada96bd0dfab0572e3715701ea823fd947a6",
+  "wrong-application.rs": "63df9465c1c20b2f2d54938dc5212d05aea2500d805cf8de2190415a0d40f11f",
+  "wrong-argument.rs": "37438d32c30bf92b05274426fb687a836b9389d7c4f9bd3ad54375a2019818df",
+  "wrapper-owner.rs": "b6b826a4964204a15ef68c9ca5babfd3b71b6795d3edf71fe532d8965095bdaa",
+  "raw-pointer-shape.rs": "40670f4b897537f7d26b81acd2bbe319f34a75a9386b667ddf6d41736ad22037",
+  "native-runtime.rs": "ca520dea05ea8a98e25f72ff23dc6e79c74dceffcf8256eacb9a109ab32affc4",
+  "native-ctfe.rs": "21ce4f7f62cc68bfe9ce78d0ae5ce83bad5860ebcb7f3bc829358d388f032f03",
+  "scaling-8.rs": "742cd09c64bd936573a6fd451565e86312317bd698bddc9d77d7a17a4744d3cc",
+  "scaling-32.rs": "ab5c62f01f852ebfa57f8470ce4d981d33917d19d13ad2d18bf24cfbc0371e5c",
+  "scaling-128.rs": "0e80cb33c87e713d8725b6a3bb73c957e71da5a70f8d9b82335d0615ce144fc9",
+  "observe.c": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+  "unsafe-caller.rs": "452ee5a045fde5d9fda92b7c4128e8183822d2525e5fa47612c6f7a498ea00ef"
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "basis": {
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "source_path": "library/core/src/slice/cmp.rs",
+  "source_sha256": "b6df2890d8e3970994e610a110419c78d01e12c0a78385811c9ffe0ff5a78edf",
+  "shape": "Unsafe helper on element Self selected through conditional blanket impl from composite wrapper; raw-pointer counterpart is signature-only, not full slice comparison. No copied original item.",
+  "license": "MIT OR Apache-2.0; third_party/sources.json"
+ }
+}

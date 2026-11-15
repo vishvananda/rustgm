@@ -1,5 +1,11 @@
 # RustGM Programming Assignment 31: Compiler/library bindings
 
+The [unsafe const-member checkpoint](../docs/pa25-unsafe-const-members.md) consumes
+exact discharged safety rows and complete source calls.34 ordinary/source outcomes
+and twelve native programs pass, including the new simple CTFE consumer. Original
+core, earlier payment/bootstrap contracts and whole assignments remain required.
+
+
 The [const Try protocol checkpoint](../docs/pa25-const-try-calls.md) authenticates
 implicit calls through their existing source plans and preserves residual effect,
 conversion and destruction duties.18 source outcomes, one ordinary opponent and

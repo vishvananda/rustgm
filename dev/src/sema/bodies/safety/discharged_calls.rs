@@ -94,12 +94,13 @@ impl Checker<'_> {
         )
     }
     fn retain_safety_record(&mut self, node: NodeId, kind: PendingKind) -> Result<(), Error> {
-        let Some(catalog) = self.facts.source_bindings.as_deref() else {
+        if let Some(catalog) = self.facts.source_bindings.as_deref() {
+            catalog
+                .require_provider_report(self.report)
+                .map_err(|e| self.error(node, e))?;
+        } else if self.callee_use_effect()? == crate::support::constness::Constness::Ordinary {
             return Ok(());
-        };
-        catalog
-            .require_provider_report(self.report)
-            .map_err(|e| self.error(node, e))?;
+        }
         let (length, capacity, old) = self
             .state
             .call_types

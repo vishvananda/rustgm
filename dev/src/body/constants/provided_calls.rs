@@ -1,4 +1,5 @@
 //! Convert an exact original IR statement into a neutral defining-call query.
+mod signatures;
 use super::invocations::Work;
 use crate::{
     body::ir::{Action, Body, Owner, Rvalue, Statement},
@@ -9,6 +10,7 @@ use crate::{
     },
     types::Kind,
 };
+use signatures::Signature;
 
 /// Only the actual freshly materialized body may consume a const-default
 /// selection. Original and runtime templates retain their defining context.
@@ -235,14 +237,9 @@ pub(super) fn source_request_in_scope(
         .source()
         .ok_or("const member has no source owner")?;
     let call = source_call(facts, body, statement, work)?;
-    work.charge(3)?;
-    if facts.types.contains_parameters(call.target) == Some(true)
-        && !super::invocations::member_signature(facts, call.target, call.signature, true, work)?
-    {
-        // Other abstract requests still consume their exact local premise.
-        // This path only authenticates completed normalized source applications.
+    let Some(permission) = signatures::checked(facts, body, source, call, work)? else {
         return Ok(false);
-    }
+    };
     work.charge(5)?;
     if let Some(id) = crate::sema::protocol_plans::access::conversion_call(
         facts,
@@ -253,21 +250,67 @@ pub(super) fn source_request_in_scope(
             signature: call.signature,
         },
     )? {
-        return source_field(report, facts, body, source, (call, scope), id, work);
+        return source_field(
+            report,
+            facts,
+            body,
+            source,
+            (call, scope, permission),
+            id,
+            work,
+        );
     }
     let node = facts
         .node(call.site)
         .ok_or("const member lost its typed site")?;
     if let Some(crate::sema::model::Operation::Try { plan }) = node.operation {
-        return source_try(report, facts, body, source, (call, scope), plan, work);
+        return source_try(
+            report,
+            facts,
+            body,
+            source,
+            (call, scope, permission),
+            plan,
+            work,
+        );
     }
     if let Some(
         crate::sema::model::Operation::Field { plan: Some(id), .. }
         | crate::sema::model::Operation::MethodReceiver { plan: id },
     ) = node.operation
     {
-        return source_field(report, facts, body, source, (call, scope), id, work);
+        return source_field(
+            report,
+            facts,
+            body,
+            source,
+            (call, scope, permission),
+            id,
+            work,
+        );
     }
+    source_direct(
+        report,
+        facts,
+        body,
+        source,
+        node,
+        (call, scope, permission),
+        work,
+    )
+}
+
+/// Direct calls authenticate their exact typed result and selected source member.
+fn source_direct(
+    report: &crate::resolve::expansion::Report,
+    facts: &Declarations,
+    body: &Body,
+    source: crate::resolve::unit::NodeKey,
+    node: &crate::sema::model::NodeFacts,
+    scoped: (Call, Option<&DefiningCalls<'_>>, Signature),
+    work: &mut Work,
+) -> Result<bool, &'static str> {
+    let (call, scope, permission) = scoped;
     let Some(crate::sema::model::Operation::Call {
         signature,
         source_use,
@@ -281,7 +324,9 @@ pub(super) fn source_request_in_scope(
     let indexed = if node.ty == Some(call.result) {
         None
     } else {
-        Some(place_result(report, facts, call, node.ty, work)?)
+        Some(place_result(
+            report, facts, call, node.ty, permission, work,
+        )?)
     };
     let effect = match (facts.source_bindings.as_deref(), source_use) {
         (_, Some(use_)) => use_.effect_for(facts, source)?,
@@ -301,7 +346,7 @@ pub(super) fn source_request_in_scope(
     }
     let definition = match indexed {
         Some(definition) => definition,
-        None => source_member(facts, call, work)?,
+        None => source_member(facts, call, permission, work)?,
     };
     selected_source(report, facts, call, definition, work)?;
     Ok(true)
@@ -314,11 +359,11 @@ fn source_try(
     facts: &Declarations,
     body: &Body,
     source: crate::resolve::unit::NodeKey,
-    scoped: (Call, Option<&DefiningCalls<'_>>),
+    scoped: (Call, Option<&DefiningCalls<'_>>, Signature),
     id: crate::sema::bodies::ProtocolPlanId,
     work: &mut Work,
 ) -> Result<bool, &'static str> {
-    let (call, scope) = scoped;
+    let (call, scope, signature) = scoped;
     work.charge(8)?;
     let plan = crate::sema::protocol_plans::checked(report, facts, source, call.site, id)
         .map_err(|_| "const Try call changed its actual source protocol")?;
@@ -342,7 +387,7 @@ fn source_try(
     {
         return Err("const Try call differs from its complete selected protocol call");
     }
-    source_member(facts, call, work)?;
+    source_member(facts, call, signature, work)?;
     let effect = plan.source_use.effect_for(facts, source)?;
     closed_effect(
         report,
@@ -389,11 +434,11 @@ fn source_field(
     facts: &Declarations,
     body: &Body,
     source: crate::resolve::unit::NodeKey,
-    scoped: (Call, Option<&DefiningCalls<'_>>),
+    scoped: (Call, Option<&DefiningCalls<'_>>, Signature),
     id: crate::sema::bodies::ProtocolPlanId,
     work: &mut Work,
 ) -> Result<bool, &'static str> {
-    let (call, scope) = scoped;
+    let (call, scope, signature) = scoped;
     work.charge(8)?;
     let plan = id.current(facts, source, call.site)?;
     let Some((_, _, _, steps)) = plan.kind.access() else {
@@ -420,7 +465,7 @@ fn source_field(
     {
         return Err("const field call changed its actual reference result");
     }
-    source_member(facts, call, work)?;
+    source_member(facts, call, signature, work)?;
     let effect = plan.source_use.effect_for(facts, source)?;
     closed_effect(
         report,
@@ -440,10 +485,11 @@ fn place_result(
     facts: &Declarations,
     call: Call,
     node_type: Option<crate::types::TypeId>,
+    signature: Signature,
     work: &mut Work,
 ) -> Result<DefId, &'static str> {
     work.charge(15)?;
-    let definition = source_member(facts, call, work)?;
+    let definition = source_member(facts, call, signature, work)?;
     let method = facts
         .methods
         .calls
@@ -684,7 +730,12 @@ fn direct_source(
     Ok(())
 }
 
-fn source_member(facts: &Declarations, call: Call, work: &mut Work) -> Result<DefId, &'static str> {
+fn source_member(
+    facts: &Declarations,
+    call: Call,
+    permission: Signature,
+    work: &mut Work,
+) -> Result<DefId, &'static str> {
     work.charge(4)?;
     let Some(Kind::FunctionItem {
         item, signature, ..
@@ -693,11 +744,11 @@ fn source_member(facts: &Declarations, call: Call, work: &mut Work) -> Result<De
         return Err("const member lost its actual function item");
     };
     let definition = DefId(item.0);
-    if !super::invocations::member_signature(facts, call.target, signature, false, work)? {
+    if !permission.permits(facts, call.target, signature, false, work)? {
         return Err("const member requires its normalized safe source signature");
     }
     work.charge(1)?;
-    if !super::invocations::member_signature(facts, call.target, call.signature, true, work)? {
+    if !permission.permits(facts, call.target, call.signature, true, work)? {
         return Err("const member requires its actual opened safe call signature");
     }
     work.charge(4)?;

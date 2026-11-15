@@ -314,12 +314,20 @@ fn implicit_try_defining_request_keeps_the_actual_plan_and_complete_call() -> Re
         else {
             return Err("actual Try operation".into());
         };
+        let permission = signatures::checked(
+            &facts,
+            &body,
+            body.source.source().ok_or("owner")?,
+            call,
+            &mut work,
+        )?
+        .ok_or("checked safe Try signature")?;
         assert!(source_try(
             &report,
             &facts,
             &body,
             body.source.source().ok_or("owner")?,
-            (call, None),
+            (call, None, permission),
             plan,
             &mut work
         )?);
@@ -338,7 +346,7 @@ fn implicit_try_defining_request_keeps_the_actual_plan_and_complete_call() -> Re
                     &facts,
                     &body,
                     body.source.source().ok_or("owner")?,
-                    (altered, None),
+                    (altered, None, permission),
                     plan,
                     &mut work
                 )
@@ -352,13 +360,84 @@ fn implicit_try_defining_request_keeps_the_actual_plan_and_complete_call() -> Re
                 &facts,
                 &body,
                 body.source.source().ok_or("owner")?,
-                (call, None),
+                (call, None, permission),
                 plan,
                 &mut tiny
             )
             .is_err()
         );
         assert_eq!(tiny.steps, 8);
+    }
+    Ok(())
+}
+
+#[test]
+fn unsafe_defining_signatures_require_the_exact_retained_safety_row() -> Result {
+    for name in ["blanket", "unsafe-caller"] {
+        let source = crate::test_source::fixture(&format!(
+            "pa31/tests/spec/unsafe-const-members/{name}.rs"
+        ))?;
+        let report = crate::test_source::source_provider(&source, "unsafe_member_facts")?;
+        let crate::pipeline::Analysis {
+            mut facts,
+            mut prepared,
+        } = crate::pipeline::analyze_source(&report)?;
+        let function = facts
+            .functions
+            .iter()
+            .find(|function| {
+                report
+                    .package
+                    .names
+                    .get(report.resolution.definitions[function.definition.0 as usize].name)
+                    == "apply"
+            })
+            .ok_or("apply")?;
+        let body = prepared.templates.function(&report, &facts, function)?.body;
+        let owner = body.source.source().ok_or("owner")?;
+        let mut work = Work::new(1_000_000);
+        let index = statement(&body)?;
+        let call = source_call(&facts, &body, &body.statements[index], &mut work)?;
+        let permission =
+            signatures::checked(&facts, &body, owner, call, &mut work)?.ok_or("paid signature")?;
+        assert!(permission.permits(&facts, call.target, call.signature, true, &mut work)?);
+        assert!(!permission.permits(
+            &facts,
+            crate::types::TypeId::primitive(crate::types::Primitive::U8),
+            call.signature,
+            true,
+            &mut work
+        )?);
+        let original = facts
+            .node(call.site)
+            .and_then(|node| node.operation)
+            .ok_or("operation")?;
+        facts.nodes[call.site.file.0 as usize][call.site.node.get() as usize].operation =
+            Some(crate::sema::model::Operation::Call {
+                signature: call.signature,
+                source_use: None,
+            });
+        assert!(signatures::checked(&facts, &body, owner, call, &mut work)?.is_none());
+        facts.nodes[call.site.file.0 as usize][call.site.node.get() as usize].operation =
+            Some(original);
+        let node = facts.nodes[owner.file.0 as usize][owner.node.get() as usize];
+        facts.nodes[owner.file.0 as usize][owner.node.get() as usize].operation = Some(original);
+        facts.nodes[owner.file.0 as usize][owner.node.get() as usize].ty = Some(call.result);
+        assert!(
+            signatures::checked(
+                &facts,
+                &body,
+                owner,
+                Call {
+                    site: owner,
+                    ..call
+                },
+                &mut work
+            )?
+            .is_none()
+        );
+        facts.nodes[owner.file.0 as usize][owner.node.get() as usize] = node;
+        assert!(signatures::checked(&facts, &body, owner, call, &mut work)?.is_some());
     }
     Ok(())
 }
