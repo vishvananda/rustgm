@@ -180,7 +180,7 @@ fn coordinates<'report>(
 ) -> Result<(&'report str, crate::support::source::Position), Failure> {
     facts.charge_caller_inputs(1, 0)?;
     let mut origin_steps = 0;
-    let physical = report.physical_node_location(source, &mut origin_steps);
+    let physical = report.physical_call_location(source, &mut origin_steps);
     facts.charge_caller_inputs(origin_steps, 0)?;
     let physical = physical.map_err(|_| "caller location has invalid expansion provenance")?;
     let source = &report.package.unit(physical.file).source;

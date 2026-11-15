@@ -36,32 +36,47 @@ impl<S: Sources> Engine<'_, S> {
 }
 
 impl super::Report {
-    /// Follow the same authenticated expansion call sites used by file/line builtins.
-    pub(crate) fn physical_node_location(
+    /// Where a call at `source` reports its caller: a method call from its
+    /// method name on, any other expression as a whole. Follow the same
+    /// authenticated expansion call sites used by file/line builtins.
+    pub(crate) fn physical_call_location(
         &self,
         source: super::NodeKey,
         steps: &mut usize,
     ) -> Result<Location, Error> {
+        use crate::syntax::ast::Kind;
         let unit = self
             .package
             .units
             .get(source.file.0 as usize)
             .ok_or_else(|| Error::unlocated("physical source file disappeared"))?;
-        let node = unit
-            .configured
-            .ast
-            .nodes
+        let nodes = &unit.configured.ast.nodes;
+        let node = nodes
             .get(source.node.get() as usize)
             .ok_or_else(|| Error::unlocated("physical source node disappeared"))?;
         if unit.configured.active.get(source.node.get() as usize) != Some(&true) {
             return Err(Error::unlocated("physical source node is inactive"));
         }
+        let start = match node.kind {
+            Kind::MethodCall { name, .. } => name.start,
+            Kind::GenericMethodCall { method, .. } => {
+                nodes
+                    .get(method.get() as usize)
+                    .ok_or_else(|| Error::unlocated("physical method name disappeared"))?
+                    .span
+                    .start
+            }
+            _ => node.span.start,
+        };
         physical_location(
             &self.package,
             &self.invocations,
             Location {
                 file: source.file,
-                span: node.span,
+                span: super::Span {
+                    start,
+                    end: node.span.end,
+                },
             },
             steps,
         )

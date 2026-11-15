@@ -435,17 +435,11 @@ fn unused_tracked_calls_type_without_location_but_reached_calls_require_actual_d
 }
 
 /// The selected-tracking provider with `items` appended, lowered from the
-/// exports named `roots`: the emitted text, and the line of the appended
-/// `value.call(2)`.
-fn lowered_with_items(items: &str, roots: &[&str]) -> TestResult<(String, usize)> {
+/// exports named `roots`: the emitted text and the whole source.
+fn lowered_with_items(items: &str, roots: &[&str]) -> TestResult<(String, String)> {
     let mut source = test_source::fixture("pa31/tests/spec/source-location/selected-tracking.rs")?;
     source.push('\n');
     source.push_str(items);
-    let line = source
-        .lines()
-        .position(|line| line.contains("value.call(2)"))
-        .ok_or("the appended member call")?
-        + 1;
     let report = test_source::source_provider(&source, "selected_tracking")?;
     let crate::pipeline::Analysis {
         mut facts,
@@ -466,7 +460,15 @@ fn lowered_with_items(items: &str, roots: &[&str]) -> TestResult<(String, usize)
     )?;
     let mut text = Vec::new();
     crate::lowir::writer::write(&program, &mut text)?;
-    Ok((String::from_utf8(text)?, line))
+    Ok((String::from_utf8(text)?, source))
+}
+/// The line and column, both counted from one, of the first `needle`.
+fn position(source: &str, needle: &str) -> TestResult<(usize, usize)> {
+    source
+        .lines()
+        .enumerate()
+        .find_map(|(index, line)| Some((index + 1, line.find(needle)? + 1)))
+        .ok_or_else(|| format!("the source has no {needle}").into())
 }
 
 #[test]
@@ -492,19 +494,20 @@ fn an_untracked_instance_reports_its_own_call_of_a_member_selected_as_tracked() 
     // Neither `generic` nor the trait member it calls is tracked. Its `u8`
     // instance selects the tracked implementation, which reports the call in
     // the generic body; its `u16` instance selects an untracked one.
-    let (text, line) = lowered_with_items(
+    let (text, source) = lowered_with_items(
         "fn generic<T:Probe<u8>>(value:T)->u32{value.call(2)}\n\
          #[unsafe(no_mangle)]pub extern \"C\" fn generic_line()->u32{generic(1u8)}\n\
          #[unsafe(no_mangle)]pub extern \"C\" fn generic_other()->u32{generic(1u16)}\n",
         &["generic_line", "generic_other"],
     )?;
-    // The location is a static whose third row is the line, and the `u8`
-    // instance passes its address as the hidden caller argument.
+    // The location is a static that ends in the line and column of the
+    // method name, and the `u8` instance passes its address as the caller.
+    let (line, column) = position(&source, "call(2)")?;
     let location = text
         .split("global ")
-        .find(|global| global.contains(&format!("\n  u32 {line}\n")))
+        .find(|global| global.contains(&format!("\n  u32 {line}\n  u32 {column}\n")))
         .and_then(|global| global.split(' ').next())
-        .ok_or_else(|| format!("no caller location on line {line}: {text}"))?;
+        .ok_or_else(|| format!("no caller location at {line}:{column}: {text}"))?;
     assert_eq!(
         text.matches(&format!("= addr {location}\n")).count(),
         1,
@@ -517,7 +520,7 @@ fn an_untracked_instance_reports_its_own_call_of_a_member_selected_as_tracked() 
 fn a_constant_reports_the_generic_call_of_a_member_selected_as_tracked() -> TestResult {
     // Constant evaluation enters the untracked generic body from the
     // constant's initializer and reports the call in that body.
-    let (text, line) = lowered_with_items(
+    let (text, source) = lowered_with_items(
         "#[unstable(feature=\"selected_probe\",issue=\"none\")]\
          #[rustc_const_unstable(feature=\"selected_probe\",issue=\"none\")]\
          pub const fn generic<T:[const] Probe<u8>>(value:T)->u32{value.call(2)}\n\
@@ -525,7 +528,36 @@ fn a_constant_reports_the_generic_call_of_a_member_selected_as_tracked() -> Test
          #[unsafe(no_mangle)]pub extern \"C\" fn generic_constant()->u32{GENERIC}\n",
         &["generic_constant"],
     )?;
+    let (line, _) = position(&source, "call(2)")?;
     assert!(text.contains(&format!("return u32 {line}\n")), "{text}");
+    Ok(())
+}
+
+#[test]
+fn a_tracked_method_call_is_reported_from_its_method_name() -> TestResult {
+    // As rustc does: a method call reports its method name, with or without
+    // generic arguments and on whichever line it stands, a path call itself.
+    let (text, source) = lowered_with_items(
+        "pub struct Receiver;impl Receiver{\
+         #[track_caller]fn at<T>(&self,_:T)->u32{location::Location::caller().line()}}\n\
+         #[unsafe(no_mangle)]pub extern \"C\" fn plain()->u32{Receiver.at(1u8)}\n\
+         #[unsafe(no_mangle)]pub extern \"C\" fn applied()->u32{Receiver.at::<u8>(2)}\n\
+         #[unsafe(no_mangle)]pub extern \"C\" fn chained()->u32{Receiver\n  .at(3u8)}\n\
+         #[unsafe(no_mangle)]pub extern \"C\" fn path()->u32{Receiver::at(&Receiver,4u8)}\n",
+        &["plain", "applied", "chained", "path"],
+    )?;
+    for call in [
+        "at(1u8)",
+        "at::<u8>(2)",
+        "at(3u8)",
+        "Receiver::at(&Receiver,4u8)",
+    ] {
+        let (line, column) = position(&source, call)?;
+        assert!(
+            text.contains(&format!("\n  u32 {line}\n  u32 {column}\n")),
+            "{call} at {line}:{column}: {text}"
+        );
+    }
     Ok(())
 }
 
