@@ -7,6 +7,18 @@ use crate::{
 };
 
 impl Declarations {
+    /// A body without free hidden lifetimes publishes its hidden type itself.
+    /// Applications that an earlier storage preparation parked for this
+    /// identity are replayed by the next one.
+    pub(crate) fn wake_opaque_applications(
+        &mut self,
+        id: crate::types::opaque::OpaqueId,
+    ) -> Result<(), &'static str> {
+        match self.opaques.storage_preparation.as_mut() {
+            Some(preparation) => preparation.wake(id),
+            None => Ok(()),
+        }
+    }
     pub(crate) fn close_opaque_results(
         &mut self,
         owner: DefId,

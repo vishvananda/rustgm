@@ -273,3 +273,26 @@ fn failed_wakeup_remains_an_error_after_the_checked_head_closes() -> Result<(), 
     assert!(facts.types.storage_head(application).is_err());
     Ok(())
 }
+
+#[test]
+fn an_application_parked_by_an_executed_constant_wakes_when_its_body_publishes_its_hidden_type()
+-> Result<(), Box<dyn std::error::Error>> {
+    // `Align::MIN` sizes a field, so declaration analysis executes `make` and
+    // `get` while `pair`'s application has no hidden type yet; it is parked.
+    // `pair`'s body then publishes that type, and `main` stores the application.
+    let mut report = crate::test_source::resolve(
+        "fn pair(x:u8)->impl Copy{(x,x)}\
+         enum Maybe{No,Yes(usize)}\
+         impl Maybe{const fn get(self)->usize{match self{Maybe::Yes(v)=>v,Maybe::No=>0}}}\
+         const fn make(v:usize)->Maybe{if v>0{Maybe::Yes(v)}else{Maybe::No}}\
+         struct Align(usize);impl Align{const MIN:Self=Align(make(3).get());}\
+         struct Wide{cells:[u8;Align::MIN.0]}\
+         fn main(){let w=Wide{cells:[1,2,3]};let held=pair(w.cells[0]);let _again=held;}",
+        true,
+    )?;
+    let analysis = crate::pipeline::analyze_source(&report)?;
+    let mut facts = analysis.facts;
+    let entry = crate::sema::entry::select(&mut report, &facts)?;
+    crate::lower::instances::build_prepared(&report, &mut facts, entry, analysis.prepared)?;
+    Ok(())
+}

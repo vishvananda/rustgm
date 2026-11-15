@@ -208,6 +208,11 @@ impl Checker<'_> {
             declaration.inferred = Some(value.inferred);
             declaration.free_regions = value.free_regions;
             declaration.hidden = value.closed;
+            if value.closed.is_some() {
+                self.facts
+                    .wake_opaque_applications(value.id)
+                    .map_err(|e| super::Declarations::error(self.report, value.source, e))?;
+            }
         }
         if let Some((owner, result)) = results.result {
             self.facts.opaques.body_results.insert(owner, result);
