@@ -840,7 +840,7 @@
       "evidence": [
         "docs/pa29-transitive-metadata.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "finite declarations profile released (docs/pa29-declarations-release.md)",
       "units": [
         "declarations"
       ]
@@ -865,7 +865,7 @@
         "docs/pa29-public-names.md",
         "docs/pa29-aggregate-metadata.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "finite declarations profile released (docs/pa29-declarations-release.md); value payload codecs unpublished under value-metadata",
       "units": [
         "declarations",
         "value-metadata"

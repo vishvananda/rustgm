@@ -9,13 +9,25 @@ Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The
 ## Graded contract
 
 PA29 is graded as a finite contract: the published manifest of each released
-component, less the fixtures on that component's deferred list. No component
-of PA29 is released yet, so nothing here is graded.
+component, less the fixtures on that component's deferred list. A fixture that
+no released manifest claims is not graded, whatever this brief says about it.
 
-Not released: `declarations` is implemented but unpublished. Its fixtures are
-crate graphs with dependency and metadata arguments, which a course case cannot
-declare yet. `provided-profile` is implemented but waits on `declarations` and
-`source-declarations`. `value-metadata` and `generic-transport` are partial.
+| Component | Manifest | Cases | Deferred list |
+| --- | --- | --- | --- |
+| `declarations` | [declarations.json](tests/units/declarations.json) | 30 | [0 fixtures](../docs/pa29-declarations-release.md#deferred-list) |
+
+From the repository root, `python3 scripts/course.py pa29 --unit declarations --app BIN`
+runs one component and `make test` runs every released component.
+
+Its cases are crate graphs: a case lists its provider crates and binds the
+consumer's aliases, and the runner builds each provider's metadata artifact
+before the consumer. See the [release record](../docs/pa29-declarations-release.md#crate-graph-cases).
+
+Not released: `provided-profile` is implemented but unpublished. Its fixtures
+live under `pa31/tests/spec/source-header-transport`, its independent oracle
+needs unstable compiler declarations, its native consumers exit with status 7,
+and it waits on the partial `source-declarations`. `value-metadata` and
+`generic-transport` are partial.
 
 Deferred and unclaimed fixtures are not waived. Everything the self-hosting
 corpus needs stays required through PA32–PA36, PA44 and PA45. The whole

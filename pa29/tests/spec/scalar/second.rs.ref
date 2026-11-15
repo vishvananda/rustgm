@@ -1,0 +1,70 @@
+global @rgc$6_736861726564$6_7365636f6e64$internal$rg.data.0 : obj<4x4> [storage=readonly] = {
+  u32 5
+}
+function @rgc$6_736861726564$6_7365636f6e64$f$5_76616c7565$(%p0 : u32) -> u32 {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    %t0 = load u32 $s0
+    %t1 = call u32 @rgc$6_736861726564$6_7365636f6e64$internal$rg.23(%t0)
+    %t2 = call u32 @rgc$6_736861726564$6_7365636f6e64$internal$rg.24.i5(%t1)
+    %t3 = call u32 @rgc$6_736861726564$5_6669727374$f$5_76616c7565$(1)
+    %t4 = binary add u32 %t2, %t3
+    %t5 = cmp ult u32 %t4, %t2
+    branch %t5, ^b1, ^b2
+  block ^b2:
+    %t6 = load u32 @rgc$6_736861726564$6_7365636f6e64$internal$rg.data.0
+    %t7 = binary add u32 %t4, %t6
+    %t8 = cmp ult u32 %t7, %t4
+    branch %t8, ^b1, ^b3
+  block ^b3:
+    return u32 %t7
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rgc$6_736861726564$6_7365636f6e64$f$5_736d616c6c$(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = call u8 @rgc$6_736861726564$6_7365636f6e64$internal$rg.24.i6(%t0)
+    return u8 %t1
+}
+function @rgc$6_736861726564$6_7365636f6e64$f$4_7265616c$(%p0 : f32) -> f32 {
+  slot $s0 : f32
+  block ^b0:
+    store f32 %p0, $s0
+    %t0 = load f32 $s0
+    return f32 %t0
+}
+function @rgc$6_736861726564$6_7365636f6e64$internal$rg.23(%p0 : u32) -> u32 {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    %t0 = load u32 $s0
+    %t1 = binary add u32 %t0, 2
+    %t2 = cmp ult u32 %t1, %t0
+    branch %t2, ^b1, ^b2
+  block ^b2:
+    return u32 %t1
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rgc$6_736861726564$6_7365636f6e64$internal$rg.24.i5(%p0 : u32) -> u32 {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    %t0 = load u32 $s0
+    return u32 %t0
+}
+declare function @rgc$6_736861726564$5_6669727374$f$5_76616c7565$(%p0 : u32) -> u32
+declare function @abort() -> void [return=noreturn]
+function @rgc$6_736861726564$6_7365636f6e64$internal$rg.24.i6(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    return u8 %t0
+}

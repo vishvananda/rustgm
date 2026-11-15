@@ -1,0 +1,97 @@
+function @rg.29() -> void {
+  slot $s0 : ptr
+  block ^b0:
+    %t0 = call u32 @rgc$6_736861726564$5_6669727374$f$5_76616c7565$(10)
+    %t1 = cmp eq u32 %t0, 14
+    %t2 = convert trunc i1 i64 %t1
+    call void @rg.27(%t2)
+    %t3 = call u32 @rgc$6_736861726564$6_7365636f6e64$f$5_76616c7565$(10)
+    %t4 = cmp eq u32 %t3, 22
+    %t5 = convert trunc i1 i64 %t4
+    call void @rg.27(%t5)
+    %t6 = call u32 @rgc$6_736861726564$5_6669727374$f$6_6e6573746564$5_7477696365$(4)
+    %t7 = cmp eq u32 %t6, 10
+    %t8 = convert trunc i1 i64 %t7
+    call void @rg.27(%t8)
+    %t9 = call u8 @rgc$6_736861726564$5_6669727374$f$5_736d616c6c$(7)
+    %t10 = cmp eq u8 %t9, 7
+    %t11 = convert trunc i1 i64 %t10
+    call void @rg.27(%t11)
+    %t12 = call u8 @rgc$6_736861726564$6_7365636f6e64$f$5_736d616c6c$(9)
+    %t13 = cmp eq u8 %t12, 9
+    %t14 = convert trunc i1 i64 %t13
+    call void @rg.27(%t14)
+    %t15 = unary neg i128 12345678901234567890
+    %t16 = call i128 @rgc$6_736861726564$5_6669727374$f$6_7369676e6564$(%t15)
+    %t17 = unary neg i128 12345678901234567890
+    %t18 = cmp eq i128 %t16, %t17
+    %t19 = convert trunc i1 i64 %t18
+    call void @rg.27(%t19)
+    %t20 = call i1 @rgc$6_736861726564$5_6669727374$f$5_7472757468$(1)
+    call void @rg.27(%t20)
+    %t21 = call u32 @rgc$6_736861726564$5_6669727374$f$9_636861726163746572$(233)
+    %t22 = cmp eq u32 %t21, 233
+    %t23 = convert trunc i1 i64 %t22
+    call void @rg.27(%t23)
+    %t24 = call f64 @rgc$6_736861726564$5_6669727374$f$4_7265616c$(3.50000000000000000e0)
+    %t25 = cmp eq f64 %t24, 3.50000000000000000e0
+    %t26 = convert trunc i1 i64 %t25
+    call void @rg.27(%t26)
+    %t27 = call f32 @rgc$6_736861726564$6_7365636f6e64$f$4_7265616c$(1.25000000000000000e0)
+    %t28 = cmp eq f32 %t27, 1.25000000000000000e0
+    %t29 = convert trunc i1 i64 %t28
+    call void @rg.27(%t29)
+    %t30 = addr @rgc$6_736861726564$5_6669727374$f$5_76616c7565$
+    store ptr %t30, $s0
+    %t31 = load ptr $s0
+    %t32 = call u32 %t31(3) as (%p0 : u32) -> u32
+    %t33 = cmp eq u32 %t32, 7
+    %t34 = convert trunc i1 i64 %t33
+    call void @rg.27(%t34)
+    return void
+}
+declare function @rgc$6_736861726564$5_6669727374$f$5_76616c7565$(%p0 : u32) -> u32
+function @rg.27(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.28(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+declare function @rgc$6_736861726564$6_7365636f6e64$f$5_76616c7565$(%p0 : u32) -> u32
+declare function @rgc$6_736861726564$5_6669727374$f$6_6e6573746564$5_7477696365$(%p0 : u32) -> u32
+declare function @rgc$6_736861726564$5_6669727374$f$5_736d616c6c$(%p0 : u8) -> u8
+declare function @rgc$6_736861726564$6_7365636f6e64$f$5_736d616c6c$(%p0 : u8) -> u8
+declare function @rgc$6_736861726564$5_6669727374$f$6_7369676e6564$(%p0 : i128) -> i128
+declare function @rgc$6_736861726564$5_6669727374$f$5_7472757468$(%p0 : i1) -> i1
+declare function @rgc$6_736861726564$5_6669727374$f$9_636861726163746572$(%p0 : u32) -> u32
+declare function @rgc$6_736861726564$5_6669727374$f$4_7265616c$(%p0 : f64) -> f64
+declare function @rgc$6_736861726564$6_7365636f6e64$f$4_7265616c$(%p0 : f32) -> f32
+function @rg.28(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.29()
+    return i64 0
+}

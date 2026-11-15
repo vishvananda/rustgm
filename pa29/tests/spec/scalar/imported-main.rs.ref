@@ -1,0 +1,6 @@
+declare function @rgc$6_736861726564$5_6669727374$f$5_656e747279$() -> void
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rgc$6_736861726564$5_6669727374$f$5_656e747279$()
+    return i64 0
+}

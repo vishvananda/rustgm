@@ -107,6 +107,15 @@
    ],
    "entry_free": {"crate_name": "atomic_fixture", "disambiguator": "pa28"}
   },
+  "declarations": {
+   "note": "Requirements 29.1 and 29.2: crate identity, dependency aliases and the closed interface/value/namespace codecs. Each table is a crate graph; a row's providers are the earlier rows its dependencies reach.",
+   "tables": [
+    {"table": "tests/scalar-outcomes.json", "feature": "pa29.crate-identity", "graph": "crates"},
+    {"table": "tests/transitive-metadata-outcomes.json", "feature": "pa29.transitive-metadata", "graph": "named", "skip_rows": {"inventory-only": "The same source as `client`, under a second dependency graph in which no crate is bound by alias. A course case is keyed by its source path, so one source has one graph."}},
+    {"table": "tests/public-name-outcomes.json", "feature": "pa29.public-names", "graph": "named"},
+    {"table": "tests/array-metadata-outcomes.json", "feature": "pa29.array-metadata", "graph": "library", "disambiguator": "aggregate_v1"}
+   ]
+  },
   "c-abi": {
    "note": "Requirements 30.1-30.4 and 30.7. Metadata tables belong to value-metadata (30.5).",
    "tables": [

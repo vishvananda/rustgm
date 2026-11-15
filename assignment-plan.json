@@ -8,7 +8,7 @@
       "owner": "pa29",
       "title": "Crate identities and declaration metadata",
       "implementation": "implemented",
-      "publication": "unpublished",
+      "publication": "released",
       "depends_on": [],
       "scope": "Finite identity, namespace and signature-only schemas; excludes completed values and executable bodies.",
       "requirements": [
@@ -22,7 +22,9 @@
         "docs/pa29-public-names.md",
         "docs/pa29-transitive-metadata.md",
         "docs/source-core-cli-contracts.md"
-      ]
+      ],
+      "manifest": "pa29/tests/units/declarations.json",
+      "release_evidence": "docs/pa29-declarations-release.md"
     },
     {
       "id": "operator-kernel",

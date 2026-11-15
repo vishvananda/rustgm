@@ -1,0 +1,106 @@
+global @rgc$6_736861726564$5_6669727374$internal$rg.data.0 : obj<4x4> [storage=readonly] = {
+  u32 3
+}
+function @rgc$6_736861726564$5_6669727374$f$5_76616c7565$(%p0 : u32) -> u32 {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    %t0 = load u32 $s0
+    %t1 = call u32 @rgc$6_736861726564$5_6669727374$internal$rg.13(%t0)
+    %t2 = call u32 @rgc$6_736861726564$5_6669727374$internal$rg.14.i10(%t1)
+    %t3 = load u32 @rgc$6_736861726564$5_6669727374$internal$rg.data.0
+    %t4 = binary add u32 %t2, %t3
+    %t5 = cmp ult u32 %t4, %t2
+    branch %t5, ^b1, ^b2
+  block ^b2:
+    return u32 %t4
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rgc$6_736861726564$5_6669727374$f$5_736d616c6c$(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = call u8 @rgc$6_736861726564$5_6669727374$internal$rg.14.i11(%t0)
+    return u8 %t1
+}
+function @rgc$6_736861726564$5_6669727374$f$5_656e747279$() -> void {
+  block ^b0:
+    return void
+}
+function @rgc$6_736861726564$5_6669727374$f$6_7369676e6564$(%p0 : i128) -> i128 {
+  slot $s0 : i128
+  block ^b0:
+    store i128 %p0, $s0
+    %t0 = load i128 $s0
+    return i128 %t0
+}
+function @rgc$6_736861726564$5_6669727374$f$5_7472757468$(%p0 : i1) -> i1 {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    return i1 %t0
+}
+function @rgc$6_736861726564$5_6669727374$f$9_636861726163746572$(%p0 : u32) -> u32 {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    %t0 = load u32 $s0
+    return u32 %t0
+}
+function @rgc$6_736861726564$5_6669727374$f$4_7265616c$(%p0 : f64) -> f64 {
+  slot $s0 : f64
+  block ^b0:
+    store f64 %p0, $s0
+    %t0 = load f64 $s0
+    return f64 %t0
+}
+function @rgc$6_736861726564$5_6669727374$f$6_6e6573746564$5_7477696365$(%p0 : u32) -> u32 {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    %t0 = load u32 $s0
+    %t1 = call u32 @rgc$6_736861726564$5_6669727374$internal$rg.13(%t0)
+    %t2 = load u32 $s0
+    %t3 = call u32 @rgc$6_736861726564$5_6669727374$internal$rg.13(%t2)
+    %t4 = binary add u32 %t1, %t3
+    %t5 = cmp ult u32 %t4, %t1
+    branch %t5, ^b1, ^b2
+  block ^b2:
+    return u32 %t4
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rgc$6_736861726564$5_6669727374$internal$rg.13(%p0 : u32) -> u32 {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    %t0 = load u32 $s0
+    %t1 = binary add u32 %t0, 1
+    %t2 = cmp ult u32 %t1, %t0
+    branch %t2, ^b1, ^b2
+  block ^b2:
+    return u32 %t1
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rgc$6_736861726564$5_6669727374$internal$rg.14.i10(%p0 : u32) -> u32 {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    %t0 = load u32 $s0
+    return u32 %t0
+}
+declare function @abort() -> void [return=noreturn]
+function @rgc$6_736861726564$5_6669727374$internal$rg.14.i11(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    return u8 %t0
+}

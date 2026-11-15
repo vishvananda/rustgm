@@ -1,0 +1,15 @@
+function @rgc$6_76616c756573$5_6669727374$f$7_72756e74696d65$(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = binary add u8 %t0, 7
+    %t2 = cmp ult u8 %t1, %t0
+    branch %t2, ^b1, ^b2
+  block ^b2:
+    return u8 %t1
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]

@@ -1,0 +1,37 @@
+global @rgc$6_6f726967696e$5_6669727374$s$14_696d706c656d656e746174696f6e$4_44415441$ : obj<4x4> [storage=readonly] = {
+  u32 7
+}
+function @rgc$6_6f726967696e$5_6669727374$f$14_696d706c656d656e746174696f6e$4_6d616b65$(%p0 : ptr) -> void {
+  slot $s0 : obj<8x4>
+  block ^b0:
+    store u32 7, $s0
+    %t0 = addr $s0
+    %t1 = index u8 %t0, 4
+    store u32 1, %t1
+    %t2 = addr $s0
+    copyobj 8x4 %t2, %p0
+    return void
+}
+function @rgc$6_6f726967696e$5_6669727374$f$14_696d706c656d656e746174696f6e$5_76616c7565$(%p0 : ptr) -> u32 {
+  slot $s0 : obj<8x4>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 8x4 %p0, %t0
+    %t1 = load u32 $s0
+    %t2 = addr $s0
+    %t3 = index u8 %t2, 4
+    %t4 = load u32 %t3
+    %t5 = binary add u32 %t1, %t4
+    %t6 = cmp ult u32 %t5, %t1
+    branch %t6, ^b1, ^b2
+  block ^b2:
+    %t7 = binary sub u32 %t5, 1
+    %t8 = cmp ult u32 %t5, 1
+    branch %t8, ^b1, ^b3
+  block ^b3:
+    return u32 %t7
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]

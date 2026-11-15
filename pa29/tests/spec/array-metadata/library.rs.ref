@@ -1,0 +1,62 @@
+function @rgc$6_617272617973$12_6167677265676174655f7631$f$5_726f756e64$(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : obj<8x2>
+  slot $s1 : obj<8x2>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 8x2 %p1, %t0
+    %t1 = cmp uge i64 2, 4
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary mul i64 2, 2
+    %t3 = addr $s0
+    %t4 = index u8 %t3, %t2
+    %t5 = load u16 %t4
+    %t6 = binary add u16 %t5, 1
+    %t7 = cmp ult u16 %t6, %t5
+    branch %t7, ^b1, ^b3
+  block ^b3:
+    store u16 %t6, %t4
+    %t8 = addr $s0
+    %t9 = addr $s1
+    copyobj 8x2 %t8, %t9
+    %t10 = addr $s1
+    copyobj 8x2 %t10, %p0
+    return void
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rgc$6_617272617973$12_6167677265676174655f7631$f$6_6e6573746564$(%p0 : ptr) -> u16 {
+  slot $s0 : obj<8x2>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 8x2 %p0, %t0
+    %t1 = cmp uge i64 1, 2
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary mul i64 1, 4
+    %t3 = addr $s0
+    %t4 = index u8 %t3, %t2
+    %t5 = cmp uge i64 1, 2
+    branch %t5, ^b1, ^b3
+  block ^b3:
+    %t6 = binary mul i64 1, 2
+    %t7 = index u8 %t4, %t6
+    %t8 = load u16 %t7
+    return u16 %t8
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rgc$6_617272617973$12_6167677265676174655f7631$f$8_626f72726f776564$(%p0 : ptr) -> ptr {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    return ptr %t0
+}
+function @rgc$6_617272617973$12_6167677265676174655f7631$f$5_656d707479$() -> void {
+  block ^b0:
+    return void
+}
+declare function @abort() -> void [return=noreturn]

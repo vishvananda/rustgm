@@ -1,0 +1,66 @@
+function @rg.22() -> void {
+  slot $s0 : obj<8x2>
+  slot $s1 : ptr
+  slot $s2 : obj<8x2>
+  slot $s3 : ptr
+  block ^b0:
+    store u16 1, $s2
+    %t0 = addr $s2
+    %t1 = index u8 %t0, 2
+    store u16 2, %t1
+    %t2 = addr $s2
+    %t3 = index u8 %t2, 4
+    store u16 3, %t3
+    %t4 = addr $s2
+    %t5 = index u8 %t4, 6
+    store u16 4, %t5
+    %t6 = addr $s2
+    %t7 = addr $s0
+    copyobj 8x2 %t6, %t7
+    %t8 = addr $s0
+    store ptr %t8, $s3
+    %t9 = load ptr $s3
+    %t10 = call ptr @rgc$6_617272617973$12_6167677265676174655f7631$f$8_626f72726f776564$(%t9)
+    store ptr %t10, $s1
+    %t11 = load ptr $s1
+    %t12 = cmp uge i64 2, 4
+    branch %t12, ^b4, ^b5
+  block ^b5:
+    %t13 = binary mul i64 2, 2
+    %t14 = index u8 %t11, %t13
+    %t15 = load u16 %t14
+    %t16 = cmp ne u16 %t15, 3
+    %t17 = convert trunc i1 i64 %t16
+    branch %t17, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t18 = call u8 @rg.21(0)
+    jump ^b3
+  block ^b3:
+    return void
+  block ^b4:
+    call void @abort()
+    unreachable
+}
+declare function @rgc$6_617272617973$12_6167677265676174655f7631$f$8_626f72726f776564$(%p0 : ptr) -> ptr
+function @rg.21(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.22()
+    return i64 0
+}

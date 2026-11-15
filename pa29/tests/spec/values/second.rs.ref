@@ -1,0 +1,17 @@
+function @rgc$6_76616c756573$6_7365636f6e64$f$7_72756e74696d65$(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = call u8 @rgc$6_76616c756573$5_6669727374$f$7_72756e74696d65$(%t0)
+    %t2 = binary add u8 %t1, 1
+    %t3 = cmp ult u8 %t2, %t1
+    branch %t3, ^b1, ^b2
+  block ^b2:
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @rgc$6_76616c756573$5_6669727374$f$7_72756e74696d65$(%p0 : u8) -> u8
+declare function @abort() -> void [return=noreturn]

@@ -1,6 +1,17 @@
 # PA29 fixture ownership
 
-Planned: no graded suite or generated reference outputs yet.
+The released `declarations` component publishes `units/declarations.json` and
+the reference sidecars of its 30 cases; see the
+[release record](../../docs/pa29-declarations-release.md). Every other family
+here is unpublished, and whole PA29 is planned.
+
+A crate-graph case lists its provider crates in build order under `crates`
+(`name`, `path`, `crate_name`, `disambiguator`, `externs`) and binds the
+consumer's aliases under `externs`. The runner compiles each provider with
+`--crate-type=lib --crate-name NAME --crate-disambiguator ID --metadata-output
+ARTIFACT`, then the consumer with `--extern ALIAS=ARTIFACT` for each binding and
+`--dependency-metadata ARTIFACT` for each provider it reaches only through
+another. Only the consumer has reference sidecars.
 
 `scalar-outcomes.json` declares the maintainer checkpoint's multi-crate inputs,
 identities, dependency aliases and independent outcomes. The explicit Cargo
