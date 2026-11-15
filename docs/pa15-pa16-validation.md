@@ -177,3 +177,18 @@ operands still require disposal, while nonzero constant repeats retain their
 instantiation and lifetime-adjustment checks. These changes update the typed
 ownership invariants to the same independently established rule; they do not
 change compiler behavior.
+
+## Qualification of the current suite, 2026-11-15
+
+The published PA15 manifest now has 202 `--emit-regions` cases, 133 accepted and
+69 rejected; the totals above describe 191. The published PA16 manifest now has
+340 cases: 209 `--emit-loans` inspections (125 accepted, 84 rejected) and 131
+`--emit-lowir` cases (125 accepted, 6 rejected); the totals above describe 292.
+
+With the release CLI built from clean `80229d28d` (SHA-256
+`9717800a61fce3779a9ca7b0715fdc2e2594672365191bb778477bbbb140a2b9`), pinned
+rustc 1.98.0 and the locked CPPGM v3 backend, `course.py` passes 202/202 for
+PA15 and 340/340 for PA16 against the committed text, and `check_syntax.py`
+agrees on all 202 and all 340 independent rustc checks. PA15 declares no native
+case. `check_native.py pa16` passes all 131 independent checks: 123 executable
+comparisons (118 clean runs and 5 expected panics) and 2 object comparisons.

@@ -162,3 +162,18 @@ third executable case must panic when a returned Drop constant is consumed.
 All outcomes were declared and checked with pinned rustc before reference
 generation. Existing 199 fixtures retain their text oracles. Maintainer evidence
 is recorded with the declaration-readiness work in `docs/pa18-pa21-buildout.md`.
+
+## Qualification of the current suite, 2026-11-15
+
+The published manifest now has 205 `--emit-lowir` cases, 135 accepted and 70
+rejected. The 207 above included two boundary rejections whose sources later
+stages accept: `boundaries/type-generic.rs` left at `83832d493` with the PA18
+release and `boundaries/inherent-method.rs` at `446a788e7` with inherent dot
+calls.
+
+With the release CLI built from clean `80229d28d` (SHA-256
+`9717800a61fce3779a9ca7b0715fdc2e2594672365191bb778477bbbb140a2b9`), pinned
+rustc 1.98.0 and the locked CPPGM v3 backend, `course.py pa17` passes 205/205
+against the committed text, `check_syntax.py pa17` agrees on all 205 independent
+rustc checks and `check_native.py pa17` passes all 205 independent checks,
+including 135 executable comparisons (133 clean runs and 2 expected panics).

@@ -270,3 +270,24 @@ Macro matching, typed transcription and parser input evidence is in
 [pa7-validation.md](pa7-validation.md). PA7 preserves `--emit-expanded` as its
 one-step matching view; PA8 introduces `--emit-expanded-crate` for integrated
 expansion, keeping earlier oracles stable.
+
+## Qualification of the current PA2–PA5 suites, 2026-11-15
+
+PA2–PA5 have no release record of their own, so their dated qualification is
+recorded here. It describes the suites as published now, not the totals in the
+buildout sections above.
+
+| PA | Cases | Accept | Reject | Committed text | Independent rustc |
+| --- | ---: | ---: | ---: | --- | --- |
+| 2 | 142 | 84 | 58 | 142/142 | 69 value and bit comparisons and 58 expression outcomes agree; the other 15 are stream and upstream cases outside `check_literals.py` |
+| 3 | 93 | 59 | 34 | 93/93 | 82 checks agree, 2 of them declared acceptance differences; the other 11 are declared stream fragments |
+| 4 | 200 | 126 | 74 | 200/200 | 200 checks agree, 10 of them declared acceptance differences |
+| 5 | 231 | 164 | 67 | 231/231 | 231 checks agree, 3 of them declared acceptance differences |
+
+The runs used the release CLI built from clean `80229d28d` (SHA-256
+`9717800a61fce3779a9ca7b0715fdc2e2594672365191bb778477bbbb140a2b9`) and pinned
+rustc 1.98.0: `course.py` for the text, `check_literals.py` for PA2 and
+`check_syntax.py` for PA3–PA5. `check_rustc.py` confirms the 22 imported
+upstream program outcomes with pinned rustc. None of these stages declares a
+native case. PA1 has no entry: its 51 token cases pass against the committed
+text, but no independent check of token streams exists to re-run.

@@ -93,3 +93,14 @@ every scale. Paired A/B medians are 160.96/162.45, 692.39/692.75 and
 36,672/137,836/542,660 KiB: 13,376 KiB saved at 64k functions. Small timing
 differences are comparable to calibration variation; the memory saving is the
 reason to retain the representation. `make perf-body-ir` reproduces the workload.
+
+## Qualification of the current suite, 2026-11-15
+
+The published manifest now has 81 `--emit-body-ir` cases, 70 accepted and 11
+rejected. The totals above describe the 47 cases of the original release.
+
+With the release CLI built from clean `80229d28d` (SHA-256
+`9717800a61fce3779a9ca7b0715fdc2e2594672365191bb778477bbbb140a2b9`) and pinned
+rustc 1.98.0, `course.py pa10` passes 81/81 against the committed text and
+`check_syntax.py pa10` agrees on all 81 independent rustc checks, with no
+declared acceptance difference. PA10 declares no native case.

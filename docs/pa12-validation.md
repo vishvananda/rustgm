@@ -121,3 +121,17 @@ End-to-end A/A medians are 22.90, 89.58 and 399.73 ms, with peak RSS
 in `obj/perf/1791825420695763288/samples.json`. The preceding compiler has no
 layout inspection mode, so this is scaling evidence rather than an A/B claim.
 `make perf-layouts` reproduces this workload.
+
+## Qualification of the current suite, 2026-11-15
+
+The published manifest now has 125 cases: 12 `--emit-layouts` inspections and
+113 `--emit-lowir` cases, 64 accepted and 49 rejected. The totals above describe
+110 cases, later 109.
+
+With the release CLI built from clean `80229d28d` (SHA-256
+`9717800a61fce3779a9ca7b0715fdc2e2594672365191bb778477bbbb140a2b9`), pinned
+rustc 1.98.0 and the locked CPPGM v3 backend, `course.py pa12` passes 125/125
+against the committed text, `check_syntax.py pa12` agrees on all 125 independent
+rustc checks and `check_native.py pa12` passes all 113 independent checks,
+including 64 executable comparisons (54 clean runs and 10 expected panics).
+`check_layouts.py pa12` passes its 12 independent layout cases.

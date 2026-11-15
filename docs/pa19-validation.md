@@ -147,3 +147,17 @@ course/source checks, 648 LowIR checks and 258 native executions. Existing oracl
 bytes and the seven documented acceptance exceptions are unchanged. See the
 [retained inference validation](pa21-validation.md#retained-ordinary-partial-trait-inference)
 for full checks, scaling regressions, measured overhead and remaining PA21 gates.
+
+## Qualification of the current suite, 2026-11-15
+
+The published manifest now has 1,236 cases: 468 `--emit-semantics` inspections
+(454 accepted, 14 rejected) and 768 `--emit-lowir` cases (336 accepted, 432
+rejected). The totals above describe the 1,070 cases of the release.
+
+With the release CLI built from clean `80229d28d` (SHA-256
+`9717800a61fce3779a9ca7b0715fdc2e2594672365191bb778477bbbb140a2b9`), pinned
+rustc 1.98.0 and the locked CPPGM v3 backend, `course.py pa19` passes 1236/1236
+against the committed text, `check_syntax.py pa19` agrees on all 1,236
+independent rustc checks, five of them acceptance differences the manifest
+declares, and `check_native.py pa19` passes all 768 independent checks: 334
+executable comparisons, every one a clean run, and 2 codegen-only comparisons.

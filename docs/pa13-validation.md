@@ -113,3 +113,18 @@ Clippy, the 216-file audit, 25 harness tests, placement and upstream verificatio
 also pass. `obj/pa13-course/release-summary.json`, `release-report.log`,
 `release-independent.log` and `obj/native/pa13/evidence.json` retain these results.
 The installed and frozen compiler bytes were verified equal after validation.
+
+## Qualification of the current suite, 2026-11-15
+
+The published manifest now has 805 cases: 273 `--emit-patterns` inspections (174
+accepted, 99 rejected) and 532 `--emit-lowir` cases (365 accepted, 167
+rejected). The totals above describe 803 cases.
+
+With the release CLI built from clean `80229d28d` (SHA-256
+`9717800a61fce3779a9ca7b0715fdc2e2594672365191bb778477bbbb140a2b9`), pinned
+rustc 1.98.0 and the locked CPPGM v3 backend, `course.py pa13` passes 805/805
+against the committed text, `check_syntax.py pa13` agrees on all 805 independent
+rustc checks, eight of them acceptance differences the manifest declares, and
+`check_native.py pa13` passes all 532 independent checks, including 365
+executable comparisons (357 clean runs and 8 expected panics), sixteen of them
+runtime differences the manifest declares.

@@ -102,3 +102,18 @@ peak RSS is 46,200/175,624/693,480 KiB. Counts and complete serialized output
 match between immutable snapshots at every scale. This establishes the first
 LowIR-stage baseline; `make perf-lowir` reproduces the workload. It is not a
 comparison with a different compiler or an executable-backend benchmark.
+
+## Qualification of the current suite, 2026-11-15
+
+The published manifest now has 191 `--emit-lowir` cases, 180 accepted and 11
+rejected. The 194 above included three phase-boundary rejections for constants,
+statics and reference-bearing signatures. They left this suite at `1651a5e89`,
+when PA15 and PA16 were published, and their sources are kept as
+`pa16/tests/spec/former-boundaries/pa11-{constant,reference,static}.rs`.
+
+With the release CLI built from clean `80229d28d` (SHA-256
+`9717800a61fce3779a9ca7b0715fdc2e2594672365191bb778477bbbb140a2b9`), pinned
+rustc 1.98.0 and the locked CPPGM v3 backend, `course.py pa11` passes 191/191
+against the committed text, `check_syntax.py pa11` agrees on all 191 independent
+rustc checks and `check_native.py pa11` passes all 191 independent checks,
+including 180 executable comparisons (88 clean runs and 92 expected panics).

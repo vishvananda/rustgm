@@ -96,3 +96,14 @@ range was 441.95–676.12 ms; do not claim a universal time improvement from thi
 noisy host. Initial A/A scaling is in `1791773761329396100`; the intermediate
 capture-allocation-only comparison is in `1791773862275654630`. All three
 receipts remain available and identify their distinct binary hashes.
+
+## Qualification of the current suite, 2026-11-15
+
+The published manifest now has 183 `--emit-expanded` cases, 123 accepted and 60
+rejected. The totals above describe the 181 cases of the original release.
+
+With the release CLI built from clean `80229d28d` (SHA-256
+`9717800a61fce3779a9ca7b0715fdc2e2594672365191bb778477bbbb140a2b9`) and pinned
+rustc 1.98.0, `course.py pa7` passes 183/183 against the committed text and
+`check_syntax.py pa7` agrees on all 183 independent rustc checks, two of them
+acceptance differences the manifest declares. PA7 declares no native case.

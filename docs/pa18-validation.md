@@ -185,3 +185,17 @@ into PA18; no remaining earlier oracle was changed to conceal a regression.
 
 PA19–PA21 remain planned and required by the active goal. This release completes
 PA18's bounded assignment contract, not all four assignments or Rust conformance.
+
+## Qualification of the current suite, 2026-11-15
+
+The published manifest now has 510 cases: 505 `--emit-lowir` cases (317
+accepted, 188 rejected) and 5 `--emit-patterns` inspections (4 accepted, 1
+rejected). The totals above describe 441 cases.
+
+With the release CLI built from clean `80229d28d` (SHA-256
+`9717800a61fce3779a9ca7b0715fdc2e2594672365191bb778477bbbb140a2b9`), pinned
+rustc 1.98.0 and the locked CPPGM v3 backend, `course.py pa18` passes 510/510
+against the committed text, `check_syntax.py pa18` agrees on all 510 independent
+rustc checks and `check_native.py pa18` passes all 505 independent checks: 308
+executable comparisons (301 clean runs and 7 expected panics), 6 codegen-only
+comparisons and 3 object comparisons of declared empty LowIR units.

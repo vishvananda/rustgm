@@ -104,3 +104,14 @@ in `1791793964917222573/samples.json`: 28.29/28.09, 116.60/119.21 and
 a decoded string and nested eager expansion. Largest peak RSS is about 102 MiB;
 A/A samples span 443.31–557.28 ms. The final subsequent compiler change affects
 only error projection and does not run on these successful workloads.
+
+## Qualification of the current suite, 2026-11-15
+
+The published manifest now has 126 `--emit-expanded-crate` cases, 72 accepted
+and 54 rejected. The totals above describe the 87 cases of the original release.
+
+With the release CLI built from clean `80229d28d` (SHA-256
+`9717800a61fce3779a9ca7b0715fdc2e2594672365191bb778477bbbb140a2b9`) and pinned
+rustc 1.98.0, `course.py pa8` passes 126/126 against the committed text and
+`check_syntax.py pa8` agrees on all 126 independent rustc checks, with no
+declared acceptance difference. PA8 declares no native case.

@@ -56,3 +56,14 @@ calibration spread. This does not establish a significant regression or speedup.
 Names had no PA5 implementation; its A snapshot is an immutable earlier PA6
 implementation and B is the final implementation. These measurements establish
 scaling/output equivalence, not a comparison with rustc or a fixed speed claim.
+
+## Qualification of the current suite, 2026-11-15
+
+The published manifest now has 259 `--emit-names` cases, 161 accepted and 98
+rejected. The totals above describe the 153 cases of the original release.
+
+With the release CLI built from clean `80229d28d` (SHA-256
+`9717800a61fce3779a9ca7b0715fdc2e2594672365191bb778477bbbb140a2b9`) and pinned
+rustc 1.98.0, `course.py pa6` passes 259/259 against the committed text and
+`check_syntax.py pa6` agrees on all 259 independent rustc checks, two of them
+acceptance differences the manifest declares. PA6 declares no native case.

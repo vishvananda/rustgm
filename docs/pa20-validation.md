@@ -173,3 +173,18 @@ study retains 234 timing and 36 qualification observations with sixteen
 invocations each. Every observation and all equality/hash checks are preserved.
 Full validation cleanup removed 6.90 GiB of disposable artifacts. The prototype
 binary was retired after transfer to the matching final validated pin.
+
+## Qualification of the current suite, 2026-11-15
+
+The published manifest now has 1,627 cases: 614 `--emit-trait-semantics`
+inspections (525 accepted, 89 rejected) and 1,013 `--emit-lowir` cases (639
+accepted, 374 rejected). The totals above describe the 1,343 cases of the
+release.
+
+With the release CLI built from clean `80229d28d` (SHA-256
+`9717800a61fce3779a9ca7b0715fdc2e2594672365191bb778477bbbb140a2b9`), pinned
+rustc 1.98.0 and the locked CPPGM v3 backend, `course.py pa20` passes 1627/1627
+against the committed text, `check_syntax.py pa20` agrees on all 1,627
+independent rustc checks, one of them an acceptance difference the manifest
+declares, and `check_native.py pa20` passes all 1,013 independent checks: 613
+executable comparisons, every one a clean run, and 26 codegen-only comparisons.

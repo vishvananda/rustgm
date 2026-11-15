@@ -121,3 +121,14 @@ unchanged `constant-call.rs` boundary moved to PA25 as
 `tests/spec/migrated/nonconstant-call.rs`, with an independently declared rejection.
 The current PA9 manifest has 200 fixtures and three deferred phase boundaries;
 the historical release counts above describe their original snapshot.
+
+## Qualification of the current suite, 2026-11-15
+
+The published manifest now has 203 `--emit-types` cases, 110 accepted and 93
+rejected. The totals above describe 198 cases, later 200.
+
+With the release CLI built from clean `80229d28d` (SHA-256
+`9717800a61fce3779a9ca7b0715fdc2e2594672365191bb778477bbbb140a2b9`) and pinned
+rustc 1.98.0, `course.py pa9` passes 203/203 against the committed text and
+`check_syntax.py pa9` agrees on all 203 independent rustc checks, three of them
+acceptance differences the manifest declares. PA9 declares no native case.
