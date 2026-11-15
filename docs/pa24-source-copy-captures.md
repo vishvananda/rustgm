@@ -268,3 +268,41 @@ above plus an ordinary shared-reference repeat (PA18
 0.951/1.032/0.989/0.979/0.967/1.060, at 19–593 ms. External load rose to a
 load average near 30 as the run ended. No optimized, neutrality or
 original-core speed is claimed.
+
+## Language-provided Clone
+
+A source core writes no `Clone` implementation for tuples, closures, function
+items or function pointers; the language provides it. Selection already proved
+that marker (`search/cloning.rs`) but named no method, so `t.clone()` on such a
+value did not type ("no applicable method for this receiver") and a generic
+`T: Clone` call failed when instantiated ("concrete dispatch cannot use a
+symbolic assumption"). rustc 1.98.0 builds a clone shim instead.
+
+- **Identity.** `sema/compiler_items/clone_shims.rs` recognises the declared
+  `#[lang = "clone_fn"]` member of a source provider instantiated at a closed
+  tuple, closure, function item or function pointer. Concrete dispatch
+  (`Method::Structural` in `sema/dispatch/objects.rs`) selects that instance
+  when ordinary selection proves the goal by the marker alone, after replacing
+  an opaque Self by its storage. A provided member such as `clone_from` keeps
+  the trait's own body. `may_have_subject` no longer excludes the provider's
+  `Clone` for those heads, so a direct method call finds it; selection still
+  proves every element and capture.
+- **Body.** `body/clone_shims.rs` builds the shim in its own lifetime universe
+  under the one premise `Self: Clone`. It borrows each tuple element or closure
+  capture through the receiver, calls that member's own `clone` in order and
+  rebuilds Self; ordinary dispatch resolves each callee, so a nested tuple or
+  closure demands another shim. A function item or pointer is read through the
+  receiver. As in rustc, every member's `clone` runs even when the whole value
+  is Copy. `validate` re-derives the identity, contract and member-by-member
+  shape before it mints the permit that `body/factories.rs` carries.
+- **Lowering.** `lower/instances/demand.rs` demands the shim like the
+  `FnPtr::addr` factory, and the ordinary borrow, cleanup and source Copy
+  proofs check its body.
+
+`dev/tests/source_closures/memberwise_clones.rs` declares 33 accepted and six
+rejected programs against rustc 1.98.0, and its native test compares each
+program's clone and drop order with rustc's. Gaps, all failing closed: a source
+client that imports its core is unchanged and still has no executable method;
+a const context cannot prove `[const] Clone` for these types ("trait obligation
+requires an unambiguous matching assumption or implementation"), although a
+`[const] Clone` bound called at run time works; coroutines are not cloned.
