@@ -1,8 +1,27 @@
 # RustGM Programming Assignment 29: Crates and metadata
 
-Status: **planned**. This is a buildout brief, not a released grading contract.
+Status: **planned** as a whole assignment. What is graded is the finite contract
+under [Graded contract](#graded-contract); the rest of this brief is buildout
+guidance.
 Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The common source profile is Rust 1.98.0, initially edition
 2024 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
+
+## Graded contract
+
+PA29 is graded as a finite contract: the published manifest of each released
+component, less the fixtures on that component's deferred list. No component
+of PA29 is released yet, so nothing here is graded.
+
+Not released: `declarations` is implemented but unpublished. Its fixtures are
+crate graphs with dependency and metadata arguments, which a course case cannot
+declare yet. `provided-profile` is implemented but waits on `declarations` and
+`source-declarations`. `value-metadata` and `generic-transport` are partial.
+
+Deferred and unclaimed fixtures are not waived. Everything the self-hosting
+corpus needs stays required through PA32–PA36, PA44 and PA45. The whole
+assignment stays planned and fails explicitly until every unit above and every
+unit named by its requirement rows is released and a nonempty
+`tests/manifest.json` is published with its references.
 
 ## Required implementation
 

@@ -1,6 +1,11 @@
 # PA25 fixture ownership
 
-Planned: no released grading contract or generated reference outputs yet.
+The released `const-machine` component publishes `units/const-machine.json` and
+the reference sidecars of its 113 cases; see the
+[release record](../../docs/pa25-const-machine-release.md). Every other family
+here is unpublished.
+
+Whole PA25 is planned: no graded whole-assignment suite yet.
 
 `migrated-outcomes.json` declares accepted outcomes for the unchanged former
 PA12 discriminant-statements/constant-function and PA19 generic-constant-statements

@@ -1,10 +1,32 @@
 # RustGM Programming Assignment 30: Foreign interfaces
 
-Status: **planned**. This is a buildout brief, not a released grading contract.
-Released component: [c-abi](../docs/pa30-c-abi-release.md),
-85 cases in `tests/units/c-abi.json`, with its own deferred list.
+Status: **planned** as a whole assignment. What is graded is the finite contract
+under [Graded contract](#graded-contract); the rest of this brief is buildout
+guidance.
 Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The common source profile is Rust 1.98.0, initially edition
 2024 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
+
+## Graded contract
+
+PA30 is graded as a finite contract: the published manifest of each released
+component, less the fixtures on that component's deferred list. A fixture that
+no released manifest claims is not graded, whatever this brief says about it.
+
+| Component | Manifest | Cases | Deferred list |
+| --- | --- | --- | --- |
+| `c-abi` | [c-abi.json](tests/units/c-abi.json) | 85 | [73 fixtures](../docs/pa30-c-abi-release.md#deferred-list) |
+
+From the repository root, `python3 scripts/course.py pa30 --unit c-abi --app BIN`
+runs one component and `make test` runs every released component.
+
+Not released: `ffi-closure` is partial. Of the 73 deferred `c-abi` fixtures, 58
+need a host C provider, which the course native checker cannot link yet.
+
+Deferred and unclaimed fixtures are not waived. Everything the self-hosting
+corpus needs stays required through PA32–PA36, PA44 and PA45. The whole
+assignment stays planned and fails explicitly until every unit above and every
+unit named by its requirement rows is released and a nonempty
+`tests/manifest.json` is published with its references.
 
 ## Required implementation
 

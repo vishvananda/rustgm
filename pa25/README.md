@@ -62,7 +62,9 @@ retains ordinary custom const-trait minima here and actual language-role source
 cases in PA31. Defining legality accepts checked normalized generic applications;
 actual const dispatch and all full library/whole-assignment requirements remain.
 
-Status: **planned**. This is a buildout brief, not a released grading contract.
+Status: **planned** as a whole assignment. What is graded is the finite contract
+under [Graded contract](#graded-contract); the rest of this brief is buildout
+guidance.
 
 The [wide constant product checkpoint](../docs/pa25-wide-constant-products.md)
 qualifies98 new exact/classified results and genuine source Mul calls, with
@@ -94,6 +96,27 @@ receiver adapters, bootstrap calls, complete capture destruction and imported
 transport remain required; this finite checkpoint does not release PA25.
 Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The common source profile is Rust 1.98.0, initially edition
 2024 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
+
+## Graded contract
+
+PA25 is graded as a finite contract: the published manifest of each released
+component, less the fixtures on that component's deferred list. A fixture that
+no released manifest claims is not graded, whatever this brief says about it.
+
+| Component | Manifest | Cases | Deferred list |
+| --- | --- | --- | --- |
+| `const-machine` | [const-machine.json](tests/units/const-machine.json) | 113 | [2 maintainer-level limit contracts](../docs/pa25-const-machine-release.md) |
+
+From the repository root, `python3 scripts/course.py pa25 --unit const-machine --app BIN`
+runs one component and `make test` runs every released component.
+
+Not released: `const-memory` and `const-callables` are partial.
+
+Deferred and unclaimed fixtures are not waived. Everything the self-hosting
+corpus needs stays required through PA32–PA36, PA44 and PA45. The whole
+assignment stays planned and fails explicitly until every unit above and every
+unit named by its requirement rows is released and a nonempty
+`tests/manifest.json` is published with its references.
 
 ## Required implementation
 

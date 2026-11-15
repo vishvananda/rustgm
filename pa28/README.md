@@ -1,12 +1,32 @@
 # RustGM Programming Assignment 28: Intrinsics and atomics
 
-Status: **planned**. This is a buildout brief, not a released grading contract.
-Released component: [runtime-memory](../docs/pa28-runtime-memory-release.md),
-265 cases in `tests/units/runtime-memory.json`, with its own deferred list.
-Released component: [atomic-u32](../docs/pa28-atomic-u32-release.md),
-246 cases in `tests/units/atomic-u32.json`, with its own deferred list.
+Status: **planned** as a whole assignment. What is graded is the finite contract
+under [Graded contract](#graded-contract); the rest of this brief is buildout
+guidance.
 Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The common source profile is Rust 1.98.0, initially edition
 2024 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
+
+## Graded contract
+
+PA28 is graded as a finite contract: the published manifest of each released
+component, less the fixtures on that component's deferred list. A fixture that
+no released manifest claims is not graded, whatever this brief says about it.
+
+| Component | Manifest | Cases | Deferred list |
+| --- | --- | --- | --- |
+| `runtime-memory` | [runtime-memory.json](tests/units/runtime-memory.json) | 265 | [90 fixtures](../docs/pa28-runtime-memory-release.md#deferred-list) |
+| `atomic-u32` | [atomic-u32.json](tests/units/atomic-u32.json) | 246 | [28 fixtures](../docs/pa28-atomic-u32-release.md#deferred-list) |
+
+From the repository root, `python3 scripts/course.py pa28 --unit runtime-memory --app BIN`
+runs one component and `make test` runs every released component.
+
+Not released: `intrinsic-closure` is partial.
+
+Deferred and unclaimed fixtures are not waived. Everything the self-hosting
+corpus needs stays required through PA32–PA36, PA44 and PA45. The whole
+assignment stays planned and fails explicitly until every unit above and every
+unit named by its requirement rows is released and a nonempty
+`tests/manifest.json` is published with its references.
 
 ## Required implementation
 

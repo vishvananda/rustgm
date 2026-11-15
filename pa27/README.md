@@ -1,10 +1,31 @@
 # RustGM Programming Assignment 27: Unsafe language
 
-Status: **planned**. This is a buildout brief, not a released grading contract.
-Released component: [unsafe-places](../docs/pa27-unsafe-places-release.md),
-253 cases in `tests/units/unsafe-places.json`, with its own deferred list.
+Status: **planned** as a whole assignment. What is graded is the finite contract
+under [Graded contract](#graded-contract); the rest of this brief is buildout
+guidance.
 Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The common source profile is Rust 1.98.0, initially edition
 2024 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
+
+## Graded contract
+
+PA27 is graded as a finite contract: the published manifest of each released
+component, less the fixtures on that component's deferred list. A fixture that
+no released manifest claims is not graded, whatever this brief says about it.
+
+| Component | Manifest | Cases | Deferred list |
+| --- | --- | --- | --- |
+| `unsafe-places` | [unsafe-places.json](tests/units/unsafe-places.json) | 253 | [11 fixtures](../docs/pa27-unsafe-places-release.md#deferred-list) |
+
+From the repository root, `python3 scripts/course.py pa27 --unit unsafe-places --app BIN`
+runs one component and `make test` runs every released component.
+
+Not released: `raw-validity` is partial.
+
+Deferred and unclaimed fixtures are not waived. Everything the self-hosting
+corpus needs stays required through PA32–PA36, PA44 and PA45. The whole
+assignment stays planned and fails explicitly until every unit above and every
+unit named by its requirement rows is released and a nonempty
+`tests/manifest.json` is published with its references.
 
 ## Required implementation
 

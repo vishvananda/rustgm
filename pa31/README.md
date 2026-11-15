@@ -76,7 +76,9 @@ Ordinary custom trait minima live in PA25. Generic const defining checks, ninete
 prepared outcomes and five native programs qualify; three reduced metadata
 positives and genuine original-core library/native consumers remain required.
 
-Status: **planned**. This is a buildout brief, not a released grading contract.
+Status: **planned** as a whole assignment. What is graded is the finite contract
+under [Graded contract](#graded-contract); the rest of this brief is buildout
+guidance.
 
 The [unchecked-shift checkpoint](../docs/pa31-unchecked-shifts.md) retains genuine
 two-input source declarations,576 constant results and six actual runtime calls.
@@ -262,6 +264,20 @@ Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The
 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
 See the [library bootstrap plan](../docs/library-bootstrap-roadmap.md) for
 implementation priority, source pins and the migration of unreleased numbers.
+
+## Graded contract
+
+PA31 is graded as a finite contract: the published manifest of each released
+component, less the fixtures on that component's deferred list. No component
+of PA31 is released yet, so nothing here is graded.
+
+Not released: `source-declarations` and `source-runtime` are partial.
+
+Deferred and unclaimed fixtures are not waived. Everything the self-hosting
+corpus needs stays required through PA32–PA36, PA44 and PA45. The whole
+assignment stays planned and fails explicitly until every unit above and every
+unit named by its requirement rows is released and a nonempty
+`tests/manifest.json` is published with its references.
 
 ## Dependency boundary
 

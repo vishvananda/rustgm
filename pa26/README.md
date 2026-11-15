@@ -5,11 +5,34 @@ retains ordinary operator counterparts here and actual source roles in PA31.
 Thirteen source CLI/prepared outcomes and nine native programs qualify; all eleven
 ordinary import commands remain bootstrap requirements, never parity negatives.
 
-Status: **planned**. This is a buildout brief, not a released grading contract.
-Released component: [operator-kernel](../docs/pa26-operator-kernel-release.md),
-739 cases in `tests/units/operator-kernel.json`, with its own deferred list.
+Status: **planned** as a whole assignment. What is graded is the finite contract
+under [Graded contract](#graded-contract); the rest of this brief is buildout
+guidance.
 Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The common source profile is Rust 1.98.0, initially edition
 2024 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
+
+## Graded contract
+
+PA26 is graded as a finite contract: the published manifest of each released
+component, less the fixtures on that component's deferred list. A fixture that
+no released manifest claims is not graded, whatever this brief says about it.
+
+| Component | Manifest | Cases | Deferred list |
+| --- | --- | --- | --- |
+| `operator-kernel` | [operator-kernel.json](tests/units/operator-kernel.json) | 739 | [5 fixtures](../docs/pa26-operator-kernel-release.md#deferred-list) |
+
+From the repository root, `python3 scripts/course.py pa26 --unit operator-kernel --app BIN`
+runs one component and `make test` runs every released component.
+
+Not released: `iteration-kernel` is implemented and has a declared manifest of
+196 cases, but its `source-declarations` prerequisite is unreleased, so it has no
+references and is not graded. `hook-closure` and `format-derive` are partial.
+
+Deferred and unclaimed fixtures are not waived. Everything the self-hosting
+corpus needs stays required through PA32–PA36, PA44 and PA45. The whole
+assignment stays planned and fails explicitly until every unit above and every
+unit named by its requirement rows is released and a nonempty
+`tests/manifest.json` is published with its references.
 
 ## Required implementation
 
