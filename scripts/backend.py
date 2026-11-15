@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import shutil
@@ -28,6 +29,20 @@ LIBRARY_TEXT = (
     " intel readwrite 1 0 0 2 {",
     "    asm @",
 )
+# The same forms in the library's view of the module the Rust bridge states
+# from RustGM's model (tests/backend/library-observer.c calls it).
+BRIDGE_TEXT = (
+    "[classes=integer_sse]) -> obj<16x8> [result_classes=sse_integer] {",
+    ") as (",
+    "[classes=1:integer_sse]",
+    "[arity=variadic]",
+    "[return=noreturn]",
+    "[storage=readonly]",
+    " intel readwrite 1 0 0 2 {",
+    "    asm @",
+)
+# The bridge crate builds apart from the frontend's Cargo cache.
+BRIDGE_TARGET = ROOT / "obj" / "rust" / "bridge"
 
 
 def digest(path):
@@ -142,6 +157,16 @@ def load_library():
         if digest(Path(folder) / name) != expected:
             raise ValueError(f"{name}: backend bytes changed")
     return Path(folder)
+
+
+def library_config():
+    """What the in-process bridge's build script links: the verified pin only.
+
+    One `key=value` line each, so that the build script needs no JSON reader."""
+    lock = json.loads((ROOT / "backend.lock.json").read_text())
+    folder = load_library()
+    return (f"folder={folder}\nrelease={library_release(lock)}\n"
+            f"abi_version={library_profile(lock)['abi_version']}\n")
 
 
 def load_tools(required=("lowir", "lowir2native")):
@@ -403,6 +428,63 @@ def test_library():
           "assembly in process; its objects equal the driver's and link")
 
 
+def build_bridge():
+    """The optional bridge crate's binaries, linked against the verified pin."""
+    environment = dict(os.environ, CARGO_TARGET_DIR=str(BRIDGE_TARGET))
+    result = subprocess.run(["cargo", "build", "--manifest-path", str(ROOT / "dev/backend-bridge/Cargo.toml"),
+                             "--locked", "--profile", "dev-fast", "--bins"],
+                            capture_output=True, timeout=1800, env=environment)
+    if result.returncode:
+        raise ValueError("the in-process bridge did not build: " + result.stderr.decode(errors="replace")[-4000:])
+    return BRIDGE_TARGET / "dev-fast"
+
+
+def test_bridge():
+    """The Rust side of the library handshake: the module of library.c, built
+    through RustGM's LowIR model and stated by the bridge crate."""
+    local = ROOT / "backend.local.json"
+    if not local.is_file() or json.loads(local.read_text()).get("library") is None:
+        print("SKIP: in-process LowIR bridge: the pinned LowIR library is not installed "
+              "(python3 scripts/setup_backend.py)")
+        return
+    # An installed library whose bytes changed is a failure, never a skip.
+    load_library()
+    tools = load_tools(("cppgm",))
+    producer = build_bridge() / "rustgm-bridge-handshake"
+    folder = ROOT / "obj" / "backend" / "bridge-handshake"
+    folder.mkdir(parents=True, exist_ok=True)
+    for stale in folder.iterdir():
+        if stale.is_file():
+            stale.unlink()
+    result = subprocess.run([str(producer), str(folder)], capture_output=True, timeout=60)
+    if result.returncode or result.stdout or result.stderr:
+        raise ValueError(f"in-process bridge producer failed ({result.returncode}): "
+                         + result.stderr.decode(errors="replace"))
+    strict = ["cc", "-std=c11", "-Wall", "-Wextra", "-Werror"]
+    for form, flags in (("fixed", []), ("pic", ["-fPIC"])):
+        module, view = folder / (form + ".o"), folder / (form + ".lowir")
+        verify_object(module)
+        stated = view.read_text()
+        missing = [words for words in BRIDGE_TEXT if words not in stated]
+        if missing:
+            raise ValueError(f"the bridge's library view lacks {missing}")
+        # The library's view and RustGM's own text must both make this object:
+        # the bridge states the module the reader builds from that text.
+        for source, name in ((view, "view"), (folder / "text.lowir", "text")):
+            compiled = folder / f"{form}-{name}.o"
+            invoke([tools["cppgm"], "-O0", *flags, "-c", str(source), "-o", str(compiled)])
+            if module.read_bytes() != compiled.read_bytes():
+                raise ValueError(f"object compiled in process differs from the driver's object of the {name} ({form})")
+        require_instruction(module, "movntps", "0f 2b", ("rg_library_stream",))
+        observer = folder / (form + "-observer")
+        invoke([*strict, str(ROOT / "tests" / "backend" / "library-observer.c"), str(module), "-o", str(observer)])
+        result = subprocess.run([str(observer)], capture_output=True, timeout=5)
+        if result.returncode or result.stdout or result.stderr:
+            raise ValueError(f"object the bridge compiled did not link and compute its declared results ({form})")
+    print("PASS: the in-process bridge states RustGM's LowIR to the library; its objects equal the driver's "
+          "objects of the library view and of RustGM's text, and link")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--configure", type=Path)
@@ -411,6 +493,8 @@ def main():
     parser.add_argument("--test-object", action="store_true")
     parser.add_argument("--test-assembly", action="store_true")
     parser.add_argument("--test-library", action="store_true")
+    parser.add_argument("--test-bridge", action="store_true")
+    parser.add_argument("--library-config", action="store_true")
     parser.add_argument("--emit-object", action="store_true")
     parser.add_argument("--native-links", type=Path)
     parser.add_argument("--native-search", type=Path, action="append", default=[])
@@ -431,6 +515,10 @@ def main():
             test_assembly()
         elif args.test_library:
             test_library()
+        elif args.test_bridge:
+            test_bridge()
+        elif args.library_config:
+            sys.stdout.write(library_config())
         elif args.source and args.o:
             if args.emit_object:
                 if args.native_links or args.native_search or args.native_object:
@@ -444,7 +532,7 @@ def main():
                            native_objects=[path.resolve() for path in args.native_object])
         else:
             parser.error("use --configure, --configure-object, --test, --test-object, --test-assembly, "
-                         "--test-library, or SOURCE -o OUTPUT")
+                         "--test-library, --test-bridge, --library-config, or SOURCE -o OUTPUT")
         return 0
     except (ValueError, OSError, subprocess.SubprocessError) as error:
         print(f"backend error: {error}", file=sys.stderr)

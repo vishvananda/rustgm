@@ -69,10 +69,33 @@ def nesting(node, depth=0):
     return max([next_depth, *(nesting(child, next_depth) for child in node.children)])
 
 
+# The one file that may declare and call a foreign interface: the pinned CPPGM
+# LowIR library's, in the optional in-process backend bridge. Each of its
+# unsafe blocks states why it is sound on the comment lines just above it.
+FFI_BOUNDARY = "dev/backend-bridge/src/ffi.rs"
+
+
+def lines_of(data):
+    return data.decode(errors="replace").splitlines()
+
+
+def justified(lines, row):
+    """Whether the comment lines directly above `row` hold a SAFETY: note."""
+    above = row - 1
+    while above >= 0 and lines[above].lstrip().startswith("//"):
+        if lines[above].lstrip().startswith("// SAFETY:"):
+            return True
+        above -= 1
+    return False
+
+
 def inspect_file(path, root, roles):
     data = path.read_bytes()
-    tree = PARSER.parse(data).root_node
     relative = path.relative_to(root).as_posix()
+    # Edition 2024 spells a foreign block `unsafe extern`, which the pinned
+    # grammar cannot parse: files are parsed with that keyword blanked
+    # (offsets unchanged), so such a block is the foreign module it is.
+    tree = PARSER.parse(re.sub(rb"\bunsafe(\s+extern\s+\")", rb"      \1", data)).root_node
     errors = []
     if tree.has_error:
         errors.append("Rust syntax could not be audited")
@@ -102,9 +125,12 @@ def inspect_file(path, root, roles):
             for dependency in set(dependencies):
                 if dependency != owner and dependency not in ALLOWED_DEPENDENCIES[owner]:
                     errors.append(f"line {node.start_point.row + 1}: forbidden phase dependency {owner} -> {dependency}")
-        if node.type in {"unsafe_block", "foreign_mod_item"} or (
-                node.type in {"function_modifiers", "impl_item", "trait_item"}
-                and re.match(r"\s*unsafe\b", content)):
+        unsafe_item = (node.type in {"function_modifiers", "impl_item", "trait_item"}
+                       and re.match(r"\s*unsafe\b", content))
+        if relative == FFI_BOUNDARY and node.type in {"unsafe_block", "foreign_mod_item"}:
+            if node.type == "unsafe_block" and not justified(lines_of(data), node.start_point.row):
+                errors.append(f"line {node.start_point.row + 1}: unsafe block lacks a // SAFETY: justification")
+        elif node.type in {"unsafe_block", "foreign_mod_item"} or unsafe_item:
             errors.append(f"line {node.start_point.row + 1}: unsafe/FFI implementation is prohibited")
         if node.type in FUNCTIONS:
             length = sum(node.start_point.row <= row <= node.end_point.row for row in rows)

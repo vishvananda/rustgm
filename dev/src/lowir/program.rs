@@ -282,6 +282,11 @@ impl Program {
             .as_deref()
             .map(|assemblies| assemblies.templates.len())
     }
+    /// The inline assembly templates, when the program ever began one.
+    #[must_use]
+    pub fn assemblies(&self) -> Option<&Assemblies> {
+        self.assemblies.as_deref()
+    }
     /// A builder for the next body that reuses the emptied storage of the
     /// last installed body.
     pub fn body_builder(&mut self) -> super::builder::Builder {

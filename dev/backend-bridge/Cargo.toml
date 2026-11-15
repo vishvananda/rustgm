@@ -1,0 +1,71 @@
+# The in-process LowIR backend bridge. A separate package, so that the default
+# `rustgm` build, fastcheck and CI never need the pinned C++ library: build it
+# with `--manifest-path dev/backend-bridge/Cargo.toml` only where the backend
+# is installed (`python3 scripts/setup_backend.py`).
+[package]
+name = "rustgm-backend-bridge"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.98"
+publish = false
+autobins = false
+autotests = false
+license = "MIT OR Apache-2.0"
+build = "build.rs"
+
+[lib]
+path = "src/lib.rs"
+
+# The `rustgm` command line with `--emit-object`: the object is compiled in
+# process, and a form the bridge does not state takes the text path visibly.
+[[bin]]
+name = "rustgm-inprocess"
+path = "bin/inprocess.rs"
+
+# The Rust side of `make test-backend`: the handshake module built through
+# RustGM's LowIR model and stated to the library.
+[[bin]]
+name = "rustgm-bridge-handshake"
+path = "bin/handshake.rs"
+
+[dependencies]
+rustgm = { path = ".." }
+
+# The frontend's lints, except that `unsafe_code` is denied rather than
+# forbidden: `src/ffi.rs` alone states an expectation for it, and every unsafe
+# block must carry its own `// SAFETY:` justification.
+[lints.rust]
+unsafe_code = "deny"
+unsafe_op_in_unsafe_fn = "deny"
+unused_must_use = "deny"
+unfulfilled_lint_expectations = "deny"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+todo = "deny"
+unimplemented = "deny"
+dbg_macro = "deny"
+exit = "deny"
+mem_forget = "deny"
+undocumented_unsafe_blocks = "deny"
+multiple_unsafe_ops_per_block = "deny"
+
+[profile.release]
+debug = 1
+
+[profile.dev-fast]
+inherits = "dev"
+debug = 0
+incremental = true
+codegen-units = 256
+
+[profile.observe]
+inherits = "release"
+opt-level = 1
+debug = 0
+incremental = true
+codegen-units = 256

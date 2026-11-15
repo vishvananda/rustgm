@@ -42,13 +42,16 @@ impl Kind {
         }
     }
     /// The input-storage flag: whether the argument is a pointer to the value.
-    pub(super) const fn stored(self) -> u8 {
+    #[must_use]
+    pub const fn stored(self) -> u8 {
         match self {
             Self::Pointer => 0,
             Self::Vector => 1,
         }
     }
-    pub(super) const fn registers(self) -> &'static [&'static str] {
+    /// The registers the backend may bind, each a single-register group.
+    #[must_use]
+    pub const fn registers(self) -> &'static [&'static str] {
         match self {
             Self::Pointer => &[
                 "rax", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14",
@@ -84,7 +87,56 @@ pub struct Assemblies {
     pub(super) pieces: Vec<Piece>,
     pub(super) text: String,
 }
+/// One piece of a template as a serializer reads it.
+#[derive(Clone, Copy, Debug)]
+pub enum Part<'a> {
+    /// Literal assembly text.
+    Text(&'a str),
+    /// The register bound to one operand of the template.
+    Use(u32),
+}
+/// One defined template, read in definition order by a serializer.
+#[derive(Clone, Copy)]
+pub struct Reading<'a> {
+    assemblies: &'a Assemblies,
+    template: &'a Template,
+}
+impl<'a> Reading<'a> {
+    /// The property, state-read and state-write bits of the header.
+    #[must_use]
+    pub const fn header(&self) -> (u8, u8, u8) {
+        (
+            self.template.properties,
+            self.template.reads,
+            self.template.writes,
+        )
+    }
+    /// # Errors
+    /// Rejects a malformed operand range.
+    pub fn operands(&self) -> Result<&'a [Kind], &'static str> {
+        self.assemblies.operands(self.template)
+    }
+    /// # Errors
+    /// Rejects malformed piece and text ranges.
+    pub fn parts(&self) -> Result<Vec<Part<'a>>, &'static str> {
+        self.assemblies
+            .pieces(self.template)?
+            .iter()
+            .map(|piece| match *piece {
+                Piece::Text(range) => self.assemblies.text(range).map(Part::Text),
+                Piece::Use(operand) => Ok(Part::Use(operand)),
+            })
+            .collect()
+    }
+}
 impl Assemblies {
+    /// Every template in definition order.
+    pub fn readings(&self) -> impl Iterator<Item = Reading<'_>> {
+        self.templates.iter().map(|template| Reading {
+            assemblies: self,
+            template,
+        })
+    }
     pub(super) fn operands(&self, template: &Template) -> Result<&[Kind], &'static str> {
         self.operands
             .get(template.operands.start as usize..template.operands.end as usize)

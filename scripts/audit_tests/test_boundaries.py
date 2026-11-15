@@ -55,3 +55,27 @@ class AuditBoundaries(unittest.TestCase):
         findings = self.inspect("dev/src/pipeline/mod.rs",
                                 'fn read() { let _ = std::env::var("RUSTGM_MODE"); }')
         self.assertTrue(any("environment" in finding for finding in findings))
+
+    def test_ffi_is_accepted_only_in_the_bridge_boundary_file(self):
+        boundary = "dev/backend-bridge/src/ffi.rs"
+        declared = 'unsafe extern "C" {\n    fn cppgm_lowir_abi_version() -> u32;\n}\n'
+        called = ("fn version() -> u32 {\n    // SAFETY: the function takes no argument.\n"
+                  "    unsafe { cppgm_lowir_abi_version() }\n}\n")
+        self.assertEqual(self.inspect(boundary, declared + called), [])
+        for relative in ("dev/backend-bridge/src/lib.rs", "dev/backend-bridge/bin/inprocess.rs",
+                         "dev/src/lowir/writer.rs", "dev/bin/emission.rs"):
+            for source in (declared, called):
+                with self.subTest(path=relative, source=source):
+                    self.assertTrue(any("unsafe/FFI implementation is prohibited" in finding
+                                        for finding in self.inspect(relative, source)))
+
+    def test_bridge_boundary_justifies_each_unsafe_block_and_has_no_unsafe_items(self):
+        boundary = "dev/backend-bridge/src/ffi.rs"
+        bare = "fn version() -> u32 {\n    // The library is linked.\n    unsafe { version_of() }\n}\n"
+        self.assertTrue(any("lacks a // SAFETY: justification" in finding
+                            for finding in self.inspect(boundary, bare)))
+        for source in ("unsafe fn read() {}\n", "unsafe impl Send for Module {}\n",
+                       "unsafe trait Raw {}\n"):
+            with self.subTest(source=source):
+                self.assertTrue(any("unsafe/FFI implementation is prohibited" in finding
+                                    for finding in self.inspect(boundary, source)))

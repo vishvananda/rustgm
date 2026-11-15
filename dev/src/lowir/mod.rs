@@ -5,7 +5,7 @@ pub mod boundary;
 pub mod builder;
 pub mod data;
 pub mod program;
-mod validation;
+pub mod validation;
 mod vararg;
 pub mod vocabulary;
 pub mod writer;

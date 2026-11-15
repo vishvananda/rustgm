@@ -84,6 +84,7 @@ test-backend:
 	$(PYTHON) scripts/backend.py --test-object
 	$(PYTHON) scripts/backend.py --test-assembly
 	$(PYTHON) scripts/backend.py --test-library
+	$(PYTHON) scripts/backend.py --test-bridge
 test-maintainer-native: test-backend
 	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --release --locked --no-fail-fast -- --ignored
 	$(GUARDED) $(PYTHON) scripts/check_native.py --released-units --app "$(RUSTGM_TEST_APP)"

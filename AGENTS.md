@@ -5,6 +5,9 @@ RustGM owns both the full maintainer frontend and its assignments. Read
 
 - Compiler code belongs in `dev/src/`; CLI, environment and process boundaries
   belong in `dev/bin/` or `scripts/`. Use idiomatic Rust names and safe code.
+  The one exception is the FFI of the optional in-process backend bridge,
+  confined to `dev/backend-bridge/src/ffi.rs`; each unsafe block there states
+  why it is sound in a `// SAFETY:` comment. The frontend never depends on it.
 - Put fixtures in the earliest `paN/tests/` that owns every feature they use.
   Every input must appear in the assignment's manifest. Preserve upstream
   attribution, original bytes and `third_party/sources.json` checksums.
@@ -58,7 +61,8 @@ Clippy all/pedantic warnings are errors. Avoid unwrap, expect, panic, todo,
 unimplemented and process exit in production. Narrow lint expectations require
 reasons; blanket allowances and mechanical file splitting are prohibited.
 The syntax-aware audit additionally checks file/function size, nesting, unsafe
-code, duplicated blocks, phase dependencies and misplaced environment access.
+code (accepted only in that FFI file, each block justified), duplicated blocks,
+phase dependencies and misplaced environment access.
 
 ## Generated storage
 

@@ -97,11 +97,7 @@ pub fn run(
         return rustgm::lower::instances::with_provided_client(
             resolve::crates::ConsumerRequest::new(root, &mut Files, config, &context), |_, facts, program| {
                 emit_warnings(facts)?;
-                if count {
-                    rustgm::lowir::writer::count(program, out)
-                } else {
-                    rustgm::lowir::writer::write(program, out)
-                }.map_err(|error| error.to_string())
+                crate::emission::emit(program, count, out)
             },
         ).map_err(|error| semantic_error(&error))?;
     }
@@ -572,10 +568,5 @@ fn emit_lowir(
     emit_warnings(&facts)?;
     drop(facts);
     drop(report);
-    if count {
-        rustgm::lowir::writer::count(&lowir, out)
-    } else {
-        rustgm::lowir::writer::write(&lowir, out)
-    }
-    .map_err(|error| error.to_string())
+    crate::emission::emit(&lowir, count, out)
 }

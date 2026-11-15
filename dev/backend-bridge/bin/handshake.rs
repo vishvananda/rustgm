@@ -1,0 +1,284 @@
+//! The Rust side of `make test-backend`: the module that
+//! `tests/backend/library.c` states in C, built here through `RustGM`'s own
+//! `LowIR` model and compiled in process by the bridge.
+//!
+//! Usage: `rustgm-bridge-handshake FOLDER`
+//!
+//! Writes `text.lowir`, the program as `RustGM`'s writer serializes it, and
+//! for each of `fixed` and `pic` the object `FORM.o` with the library's text
+//! view of the module, `FORM.lowir`. `tests/backend/library-observer.c` links
+//! each object and calls every function:
+//!
+//! - `rg_library_seed`: a read-only global holding 40;
+//! - `rg_library_answer(x)`: the seed plus `x`;
+//! - `rg_library_swap(p)`: `{i64, f64}` to `{f64, i64}`, by `classes=` and
+//!   `result_classes=`;
+//! - `rg_library_apply(f, x, p)`: `f(p)` through a pointer, a call boundary
+//!   `as (...)` with an object temporary for its result;
+//! - `rg_library_tally(n, d)`: the variadic `rg_host_tally(1, {n, d})`, by
+//!   `arity=variadic` and a call-site `classes=1:`;
+//! - `rg_library_stream(d, s)`: one `movntps` through an assembly template;
+//! - `rg_library_stop(code)`: `return=noreturn`, calling `exit(code)`.
+use rustgm::lowir::{
+    asm::{self, Kind},
+    boundary::{self, Class, Classes, ObjectValue, ResultValue},
+    data::Item,
+    program::{MemorySpan, Operand, Program, SignatureId, Terminator, Value},
+    vocabulary::{Binary, Type},
+    writer,
+};
+use rustgm_backend_bridge::Request;
+use std::{fs, io::BufWriter, path::Path, process::ExitCode};
+
+const PAIR: MemorySpan = MemorySpan {
+    bytes: 16,
+    align: 8,
+};
+
+fn pair(first: Class, second: Class) -> boundary::Type {
+    boundary::Type::Object(boundary::Object {
+        span: PAIR,
+        classes: Classes::Eightbytes {
+            first,
+            second: Some(second),
+        },
+    })
+}
+
+fn parameter(ty: Type, index: u32) -> Value {
+    Value {
+        ty,
+        operand: Operand::Parameter(index),
+    }
+}
+
+/// The seed and `rg_library_answer`.
+fn answer(program: &mut Program) -> Result<(), &'static str> {
+    let seed = program.global(
+        "rg_library_seed".into(),
+        MemorySpan { bytes: 8, align: 8 },
+        true,
+    )?;
+    program.initialize(
+        seed,
+        &[Item::Bits {
+            ty: Type::I64,
+            bits: 40,
+        }],
+    )?;
+    let signature = program.signature(&[Type::I64], Type::I64, false)?;
+    let symbol = program.declare("rg_library_answer".into(), signature, false)?;
+    let mut body = program.body_builder();
+    let entry = body.block()?;
+    body.enter(entry)?;
+    let loaded = body.load(Type::I64, Operand::Global(seed))?;
+    let sum = body.binary(Binary::Add, loaded, parameter(Type::I64, 0))?;
+    body.terminate(Terminator::Return(Some(sum)))?;
+    program.define(symbol, body.finish()?)
+}
+
+/// `rg_library_swap`: the fields of the pair in the other order.
+fn swap(program: &mut Program, signature: SignatureId) -> Result<(), &'static str> {
+    let symbol = program.declare("rg_library_swap".into(), signature, false)?;
+    let mut body = program.body_builder();
+    let entry = body.block()?;
+    body.enter(entry)?;
+    let incoming = body.object_slot(PAIR)?;
+    let outgoing = body.object_slot(PAIR)?;
+    let from = body.address(Operand::Slot(incoming))?;
+    let argument = ObjectValue {
+        operand: Operand::Parameter(0),
+        span: PAIR,
+    };
+    body.copy_object_value(program, signature, argument, from)?;
+    let integer = body.load(Type::I64, from.operand)?;
+    let eight = body.integer(Type::I64, 8)?;
+    let second = body.index(Type::U8, from, eight)?;
+    let double = body.load(Type::F64, second.operand)?;
+    let to = body.address(Operand::Slot(outgoing))?;
+    body.store(double, to.operand)?;
+    let eight = body.integer(Type::I64, 8)?;
+    let second = body.index(Type::U8, to, eight)?;
+    body.store(integer, second.operand)?;
+    let result = ObjectValue {
+        operand: Operand::Slot(outgoing),
+        span: PAIR,
+    };
+    body.return_object(program, signature, result)?;
+    let function = body.finish()?;
+    program.define(symbol, function)
+}
+
+/// `rg_library_apply`: the pair passed to a function through a pointer.
+fn apply(program: &mut Program, callee: SignatureId) -> Result<(), &'static str> {
+    let parameters = [
+        boundary::Type::Scalar(Type::Ptr),
+        boundary::Type::Scalar(Type::F64),
+        pair(Class::Integer, Class::Sse),
+    ];
+    let signature =
+        program.object_signature(&parameters, pair(Class::Sse, Class::Integer), false)?;
+    let symbol = program.declare("rg_library_apply".into(), signature, false)?;
+    let mut body = program.body_builder();
+    let entry = body.block()?;
+    body.enter(entry)?;
+    let argument = body.object_slot(PAIR)?;
+    let to = body.address(Operand::Slot(argument))?;
+    let incoming = ObjectValue {
+        operand: Operand::Parameter(2),
+        span: PAIR,
+    };
+    body.copy_object_value(program, signature, incoming, to)?;
+    let passed = boundary::Value::Object(ObjectValue {
+        operand: Operand::Slot(argument),
+        span: PAIR,
+    });
+    let ResultValue::Object(returned) =
+        body.object_call(program, callee, Operand::Parameter(0), &[passed])?
+    else {
+        return Err("the applied function returns no object");
+    };
+    let result = body.object_slot(PAIR)?;
+    let to = body.address(Operand::Slot(result))?;
+    body.copy_object_value(program, signature, returned, to)?;
+    let result = ObjectValue {
+        operand: Operand::Slot(result),
+        span: PAIR,
+    };
+    body.return_object(program, signature, result)?;
+    let function = body.finish()?;
+    program.define(symbol, function)
+}
+
+/// `rg_library_tally`: one pair passed through `...` of a host function.
+fn tally(program: &mut Program) -> Result<(), &'static str> {
+    let host = program.signature_with_arity(&[Type::I32], Type::F64, false, true)?;
+    let host_symbol = program.declare("rg_host_tally".into(), host, false)?;
+    let signature = program.signature(&[Type::I64, Type::F64], Type::F64, false)?;
+    let symbol = program.declare("rg_library_tally".into(), signature, false)?;
+    let mut body = program.body_builder();
+    let entry = body.block()?;
+    body.enter(entry)?;
+    let value = body.object_slot(PAIR)?;
+    let to = body.address(Operand::Slot(value))?;
+    body.store(parameter(Type::I64, 0), to.operand)?;
+    let eight = body.integer(Type::I64, 8)?;
+    let second = body.index(Type::U8, to, eight)?;
+    body.store(parameter(Type::F64, 1), second.operand)?;
+    let one = body.integer(Type::I32, 1)?;
+    let arguments = [
+        boundary::Value::Scalar(one),
+        boundary::Value::Object(ObjectValue {
+            operand: Operand::Slot(value),
+            span: PAIR,
+        }),
+    ];
+    let tail = [pair(Class::Integer, Class::Sse)];
+    let ResultValue::Scalar(result) = body.boundary_call(
+        program,
+        host,
+        Operand::Symbol(host_symbol),
+        &arguments,
+        &tail,
+    )?
+    else {
+        return Err("the host tally returns no scalar");
+    };
+    body.terminate(Terminator::Return(Some(result)))?;
+    let function = body.finish()?;
+    program.define(symbol, function)
+}
+
+/// The `movntps` template and `rg_library_stream`.
+fn stream(program: &mut Program) -> Result<(), &'static str> {
+    let mut draft = program.assembly()?;
+    draft.operand(Kind::Pointer)?;
+    draft.operand(Kind::Vector)?;
+    draft.text("movntps [")?;
+    draft.operand_use(0)?;
+    draft.text("],")?;
+    draft.operand_use(1)?;
+    let template = draft.finish(asm::SIDE_EFFECT, 0, 0)?;
+    let signature = program.signature(&[Type::Ptr, Type::Ptr], Type::Void, false)?;
+    let symbol = program.declare("rg_library_stream".into(), signature, false)?;
+    let mut body = program.body_builder();
+    let entry = body.block()?;
+    body.enter(entry)?;
+    body.asm(
+        template,
+        &[parameter(Type::Ptr, 0), parameter(Type::Ptr, 1)],
+    )?;
+    body.terminate(Terminator::Return(None))?;
+    program.define(symbol, body.finish()?)
+}
+
+/// `exit` and `rg_library_stop`, both `return=noreturn`.
+fn stop(program: &mut Program) -> Result<(), &'static str> {
+    let signature = program.signature(&[Type::I32], Type::Void, true)?;
+    let exit = program.declare("exit".into(), signature, false)?;
+    let symbol = program.declare("rg_library_stop".into(), signature, false)?;
+    let mut body = program.body_builder();
+    let entry = body.block()?;
+    body.enter(entry)?;
+    body.call(
+        signature,
+        Type::Void,
+        Operand::Symbol(exit),
+        &[parameter(Type::I32, 0)],
+    )?;
+    body.terminate(Terminator::Unreachable)?;
+    program.define(symbol, body.finish()?)
+}
+
+fn module() -> Result<Program, &'static str> {
+    let mut program = Program::default();
+    answer(&mut program)?;
+    let swapped = program.object_signature(
+        &[pair(Class::Integer, Class::Sse)],
+        pair(Class::Sse, Class::Integer),
+        false,
+    )?;
+    swap(&mut program, swapped)?;
+    apply(&mut program, swapped)?;
+    tally(&mut program)?;
+    stream(&mut program)?;
+    stop(&mut program)?;
+    Ok(program)
+}
+
+fn run(folder: &Path) -> Result<(), String> {
+    let program = module().map_err(str::to_owned)?;
+    let mut text = BufWriter::new(
+        fs::File::create(folder.join("text.lowir")).map_err(|error| error.to_string())?,
+    );
+    writer::write(&program, &mut text).map_err(|error| error.to_string())?;
+    drop(text);
+    for (form, pic) in [("fixed", false), ("pic", true)] {
+        let view = folder.join(format!("{form}.lowir"));
+        let request = Request {
+            level: 0,
+            pic,
+            view: Some(&view),
+        };
+        let object = rustgm_backend_bridge::compile(&program, &request)
+            .map_err(|failure| format!("{form}: {failure}"))?;
+        let bytes = object.bytes().map_err(|failure| failure.to_string())?;
+        fs::write(folder.join(format!("{form}.o")), bytes).map_err(|error| error.to_string())?;
+    }
+    Ok(())
+}
+
+fn main() -> ExitCode {
+    let arguments: Vec<String> = std::env::args().skip(1).collect();
+    let [folder] = arguments.as_slice() else {
+        eprintln!("USAGE: rustgm-bridge-handshake FOLDER");
+        return ExitCode::from(2);
+    };
+    match run(Path::new(folder)) {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(message) => {
+            eprintln!("rustgm-bridge-handshake: {message}");
+            ExitCode::FAILURE
+        }
+    }
+}

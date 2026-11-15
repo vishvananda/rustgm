@@ -3,9 +3,70 @@ use super::{
     boundary::{self, ObjectValue},
     program::{
         BoundaryArgument, CallArguments, Function, Instruction, Operand, Operation, Program,
-        ResultId, SignatureId, Storage, Value,
+        ResultId, SignatureId, Storage, Terminator, Value,
     },
 };
+/// The typed checks the text writer applies to one instruction, for a
+/// serializer that states the same program without text.
+///
+/// # Errors
+/// Rejects the identities, spans and boundary values the writer rejects.
+pub fn instruction(
+    program: &Program,
+    function: &Function,
+    owner: SignatureId,
+    instruction: &Instruction,
+) -> Result<(), &'static str> {
+    scalar_operation(function, instruction)?;
+    super::vararg::instruction(program, function, owner, instruction)?;
+    match instruction.operation {
+        Operation::CopyObject { span, source, .. } => {
+            let span = function
+                .spans
+                .get(span.0 as usize)
+                .ok_or("invalid LowIR copy span")?;
+            copy_source(program, function, owner, source, *span)
+        }
+        Operation::Call { .. } => call(program, function, owner, instruction),
+        _ => Ok(()),
+    }
+}
+/// The typed checks the text writer applies to one terminator.
+///
+/// # Errors
+/// Rejects an object condition and a return that differs from its boundary.
+pub fn terminator(
+    program: &Program,
+    function: &Function,
+    owner: SignatureId,
+    terminator: Terminator,
+) -> Result<(), &'static str> {
+    let returned = match terminator {
+        Terminator::Jump(_) | Terminator::Unreachable => return Ok(()),
+        Terminator::Branch { condition, .. } => return scalar_operand(condition),
+        Terminator::Return(_) | Terminator::ReturnObject { .. } => terminator,
+    };
+    match (returned, program.result_type(owner)?) {
+        (Terminator::Return(Some(value)), boundary::Type::Scalar(ty)) if value.ty == ty => {
+            scalar_operand(value.operand)
+        }
+        (Terminator::Return(None), boundary::Type::Scalar(super::vocabulary::Type::Void)) => Ok(()),
+        (Terminator::ReturnObject { operand, span }, boundary::Type::Object(object))
+            if function.spans.get(span.0 as usize) == Some(&object.span) =>
+        {
+            object_operand(
+                program,
+                function,
+                Some(owner),
+                ObjectValue {
+                    operand,
+                    span: object.span,
+                },
+            )
+        }
+        _ => Err("LowIR return kind or span differs from boundary"),
+    }
+}
 pub(super) fn object_operand(
     program: &Program,
     function: &Function,
