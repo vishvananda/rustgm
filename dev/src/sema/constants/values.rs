@@ -412,18 +412,6 @@ impl<'a> Evaluator<'a> {
             .check_const_default(self.queries.report, instance)
             .map(|_| ())
     }
-    pub(crate) fn promotable_contract(
-        &self,
-        definition: DefId,
-    ) -> Result<
-        crate::sema::header_attributes::ContractKnowledge<
-            crate::sema::header_attributes::SourceContractSite,
-        >,
-        Error,
-    > {
-        self.facts()
-            .promotable_contract(self.queries.report, definition)
-    }
     /// Actual compiler-owned source mode, independent from optional catalog presence.
     pub(crate) fn requires_source_catalog(&self) -> bool {
         self.queries.report.package.uses_source_bindings()

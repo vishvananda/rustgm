@@ -119,8 +119,12 @@ fn source_marker_keeps_const_unsafe_and_promotion_boundaries_distinct() -> TestR
     )
     .err()
     .ok_or("borrow promotion silently granted")?;
+    // The marked call is not evaluated for promotion, so its borrow keeps
+    // temporary storage and the lifetime proof rejects the static return.
     assert!(
-        error.to_string().contains("marked function-call promotion"),
+        error
+            .to_string()
+            .contains("required lifetime does not outlive its target"),
         "{error}"
     );
     Ok(())

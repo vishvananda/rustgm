@@ -99,7 +99,10 @@ impl Engine<'_, '_> {
                     callee, arguments, ..
                 } => {
                     if self.constructor(callee)?.is_none() {
-                        self.require_call_promotion_profile(callee)?;
+                        // No call is promoted yet, marked promotable or not.
+                        // Its borrow keeps ordinary temporary storage, so the
+                        // lifetime and loan proofs reject every use that
+                        // needed the promotion; nothing is granted here.
                         return Ok(false);
                     }
                     self.push(Key::Value(callee))?;
