@@ -3973,7 +3973,7 @@
     "dev/tests/wrapper_sources.rs": "9d50a37a73fcaf431b0ca64add4142cf38d85237d07557d0a786c0f2217f49cb",
     "dev/tests/zero_sized_niche_companions.rs": "560ed324f5c781c2585b712e0e56c9baa0243837ae0460036dfef11e4baba009"
   },
-  "manifest_sha256": "aa708a8d0ce554ffe3472a8e570a799260b8ee90bcbe39168c1e79f34a2ef531",
+  "manifest_sha256": "51c41f8a6fc84aba147eed55907970efdffa8ef1a1065d79a40ee322ff4568d3",
   "case_contracts": {
     "tests/spec/atomic-cas-orders/compare_exchange-relaxed-relaxed.rs": "c67cc9d2f073611e7211141bb7f9077d5d59bba6352d731ae10a63de6ea5edcd",
     "tests/spec/atomic-cas-orders/compare_exchange-relaxed-release.rs": "66f509a94f12bdb6b445a44de38b10847ffc57613159b1776bb620d2cc1f0b12",
@@ -4181,6 +4181,7 @@
     "tests/spec/atomic-methods/grouped-invalid-order.rs": "3274b28b629c9666fbb9855dd90e0c1d8890791647582c044c269d00c4554d86",
     "tests/spec/atomic-methods/imported-invalid-order.rs": "f92dbb14124d0c5bf8d3350abd97de5c277166961cc22e4b67d949e2dbcdf1c0",
     "tests/spec/atomic-methods/allow-invalid-order.rs": "5e915cffe7c55b0ed6deed8a2a413e80663b7d14aa1f6cfda5e76580de3942bd",
+    "tests/spec/atomic-methods/warn-invalid-order.rs": "af491a25a4ca28cc1982ab80cdd0a9cf7c39b514a5581d00050c10ddcb943934",
     "tests/spec/atomic-methods/forbid-weaken.rs": "c436ac746e6070590d8b4e3917cd80379e810198cf822303cbd34d9090ad32d6",
     "tests/spec/atomic-methods/closure-inherits.rs": "77a815bc50112595d8502a942c2bc057cf729cd0999bc61fca80c4bdcf14e3c5",
     "tests/spec/atomic-methods/nested-allow.rs": "22e8bcc6e45b61809ae7841bc942d276089b424afb0c33d348ccfe14a8c3b58d",
@@ -4454,6 +4455,7 @@
     "tests/spec/atomic-methods/grouped-invalid-order.rs": "6ad592ae7a6df1c6e26e18293839d200968ed11bd418925286083be00db20d6e",
     "tests/spec/atomic-methods/imported-invalid-order.rs": "57cd8534937ec283bf42bb709144789e7322d35f2ef4f1d92560a5a34776b1f4",
     "tests/spec/atomic-methods/allow-invalid-order.rs": "b1dab8ec1b9676fe9df366a78bdc345d7dc42ba8e7fb27dd3f988b24fa96ebf3",
+    "tests/spec/atomic-methods/warn-invalid-order.rs": "5e7dd006524fb88c834cd13878c5585684f900c791c143f3bbb82d18311b0ddb",
     "tests/spec/atomic-methods/forbid-weaken.rs": "e12eb86b507d9f7e8308af85e3d706beef6ee14531be2b9c168e614927a966f3",
     "tests/spec/atomic-methods/closure-inherits.rs": "0876abffa79bd91d589f1fd812a6a64bf63bedcdbe4f1f1c2205102f10951006",
     "tests/spec/atomic-methods/nested-allow.rs": "f16dfeb38e0830254b4154990df7315cca2c71c71be313f8597ef9b4970ee7d0",
@@ -5552,6 +5554,11 @@
     "tests/spec/atomic-methods/allow-invalid-order.rs": {
       ".ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/atomic-methods/warn-invalid-order.rs": {
+      ".ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.stderr": "9a06c976cf557127f53775000bfed860d69c6d7987e217b1aee23f0964eee0ef",
       ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
     },
     "tests/spec/atomic-methods/forbid-weaken.rs": {

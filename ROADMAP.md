@@ -440,7 +440,7 @@ unit manifest plus the deferred list in its release record):
 | `unsafe-places` | 27 | 262 | 2 | [record](docs/pa27-unsafe-places-release.md) |
 | `c-abi` | 30 | 143 | 15 | [record](docs/pa30-c-abi-release.md) |
 | `runtime-memory` | 28 | 323 | 32 | [record](docs/pa28-runtime-memory-release.md) |
-| `atomic-u32` | 28 | 271 | 3 | [record](docs/pa28-atomic-u32-release.md) |
+| `atomic-u32` | 28 | 272 | 2 | [record](docs/pa28-atomic-u32-release.md) |
 | `iteration-kernel` | 26 | 196 | 8 | [record](docs/pa26-iteration-kernel-release.md) |
 | `declarations` | 29 | 30 | 0 | [record](docs/pa29-declarations-release.md) |
 

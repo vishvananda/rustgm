@@ -182,6 +182,18 @@ class NativeContract(unittest.TestCase):
             classification(dict(case, exit_status=1))
 
 
+class ReviewedWarnings(unittest.TestCase):
+    def test_a_reviewed_atomic_ordering_warning_can_be_declared_and_an_unreviewed_code_cannot(self):
+        case = {"exit_status": 0, "rustc": {"kind": "program", "status": 0}, "native": {"outcome": "pass"}}
+        classification(case | {"warnings": ["invalid_atomic_ordering"]})
+        stderr = b"warning[invalid_atomic_ordering]: file 0: 108: invalid atomic ordering for this operation\n"
+        accepted_frontend((b"lowir", stderr, b"0\n"), stderr, ["invalid_atomic_ordering"])
+        with self.assertRaises(ValueError):
+            classification(case | {"warnings": ["dead_code"]})
+        with self.assertRaises(ValueError):
+            accepted_frontend((b"lowir", stderr, b"0\n"), stderr, [])
+
+
 class SuccessfulFrontendDiagnostics(unittest.TestCase):
     warning = b"warning[unused_must_use]: file 0: 37: unused must_use result: retain result\n"
 

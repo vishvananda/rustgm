@@ -27,6 +27,9 @@ REVIEWED_WARNING_CODES = (
     "malformed_diagnostic_attributes", "malformed_diagnostic_format_literals",
     "misplaced_diagnostic_attributes",
     "unsafe_op_in_unsafe_fn", "static_mut_refs", "unreachable_patterns",
+    # Reviewed 2026-11-15 over the 274 PA28 atomic candidates: pinned rustc and the reference
+    # compiler report this lint for the same 28 sources, 27 at deny level and one as a warning.
+    "invalid_atomic_ordering",
 )
 # ELF symbol types that name generated code or data: object, function, common, TLS, indirect function.
 CODE_OR_DATA_SYMBOLS = (1, 2, 5, 6, 10)

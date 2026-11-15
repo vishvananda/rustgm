@@ -4,7 +4,7 @@ The released `runtime-memory` component publishes `units/runtime-memory.json`
 and the reference sidecars of its 323 cases; see the
 [release record](../../docs/pa28-runtime-memory-release.md) for its deferred
 list. The released `atomic-u32` component publishes `units/atomic-u32.json` and
-the sidecars of its 271 cases; see its
+the sidecars of its 272 cases; see its
 [release record](../../docs/pa28-atomic-u32-release.md). Every other family
 here is unpublished.
 

@@ -42,6 +42,7 @@
   "tests/spec/atomic-methods/ufcs-order.rs",
   "tests/spec/atomic-methods/unknown-not-unreachable.rs",
   "tests/spec/atomic-methods/variable-order.rs",
+  "tests/spec/atomic-methods/warn-invalid-order.rs",
   "tests/spec/atomic-methods/wildcard-makes-unreachable.rs",
   "tests/spec/atomic-methods/wildcard-match.rs",
   "tests/spec/atomic-methods/wrong-order-type.rs",
@@ -4161,6 +4162,35 @@
     "crate_name": "atomic_fixture",
     "disambiguator": "pa28"
    }
+  },
+  {
+   "path": "tests/spec/atomic-methods/warn-invalid-order.rs",
+   "source_sha256": "5e7dd006524fb88c834cd13878c5585684f900c791c143f3bbb82d18311b0ddb",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   },
+   "library": {
+    "crate_name": "atomic_fixture",
+    "disambiguator": "pa28"
+   },
+   "warnings": [
+    "invalid_atomic_ordering"
+   ]
   },
   {
    "path": "tests/spec/atomic-methods/forbid-weaken.rs",
