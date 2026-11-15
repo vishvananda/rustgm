@@ -44,19 +44,20 @@ The clients read a const in a client array length unless noted:
 rustc accepts every client except the two overlap clients, which it rejects
 with E0119. Each accepted client returns 42.
 
-On the base pin, 14 cases stop at "implementation validation has no source
+On the base pin, 15 cases stop at "implementation validation has no source
 scheduling context" and are accepted afterwards. Each exits 42 natively with
-empty stdout. 17 accepted cases stay accepted. Four are rejected:
+empty stdout. 17 accepted cases stay accepted. Three are rejected:
 
 - `overlap-twin` and `overlap` report "overlapping trait implementation
   headers require coherence proof", with the same diagnostic line. The base
   pin rejects `overlap` at the fence instead.
 - `local-copy` reports "client implementation validation before the eager
   walk requires a source scheduling context", a known rejects-valid.
-- `generic-usize` reports "defining cleanup requires its actual language
-  declaration", an existing fence independent of this packet: the inherited
-  lines declare no Destruct language item. It is a failed prediction
-  (amendment 1).
+
+`generic-usize` was first a failed prediction, rejected by an independent
+cleanup fence because the inherited lines declare no Destruct language item
+(amendment 1). A Copy-bounded body has needed no defining cleanup since
+fc128d725, so it is accepted as first declared (amendment 3).
 
 The `crate_linking::scheduling_context` integration control and its ignored
 native twin consume the packet. The `executable_demands` invariant analyzes

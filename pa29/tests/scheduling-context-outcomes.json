@@ -396,7 +396,8 @@
       "native_exit": null,
       "amended_provider": "amendment 1: from blanket-provider.rs",
       "failed_prediction": "fastcheck fc3 rejected it with `defining cleanup requires its actual language declaration`, an existing fence independent of this item",
-      "amended_expected": "rejected with `defining cleanup requires its actual language declaration` (amendment 1); rustc accepts it and exits 42"
+      "amended_expected": "rejected with `defining cleanup requires its actual language declaration` (amendment 1); rustc accepts it and exits 42",
+      "reamended_expected": "accepted, and it exits 42 natively with empty stdout (amendment 3), as rustc"
     },
     {
       "provider": "spec/scheduling-context/blanket-provider.rs",
@@ -515,7 +516,8 @@
     "flips": 15,
     "unchanged_accepted": 17,
     "rejected": 3,
-    "amended": "amendment 1: 8 providers; 14 flips, 17 unchanged accepted clients, 4 rejected (overlap-twin, overlap, local-copy, generic-usize)"
+    "amended": "amendment 1: 8 providers; 14 flips, 17 unchanged accepted clients, 4 rejected (overlap-twin, overlap, local-copy, generic-usize)",
+    "reamended": "amendment 3: 8 providers; 15 flips, 17 unchanged accepted clients, 3 rejected (overlap-twin, overlap, local-copy)"
   },
   "efficiency_item": "hypothesis, untraced: an imported body's goal reaches candidates_for without a closed shape and reads the coarse heads bucket (implementations.rs:237-242), while a local body's resolved goal reads the exact closed bucket (227-235)",
   "amendments": [
@@ -530,6 +532,12 @@
       "before": "the focused fastcheck of the review follow-up",
       "governs": "Lane A's read-review of e6635526c, relayed by the integrator: pin the charge of a repeat demand, which the D=8 ledger shows only as each owner appearing once",
       "change": "scaling.repeat is declared; the cfg(test) ledger gains `imported conformance owner=N`, recorded only when imported conformance runs. No case, provider, text or count changes"
+    },
+    {
+      "recorded": "2026-11-15T23:08:09Z",
+      "before": "the focused fastcheck and native run of this follow-up",
+      "governs": "the full qualification run on main 8b2e98948 (GitHub run 43770353490): crate_linking::scheduling_context accepted generic-usize, exit 0, where amendment 1 declared the cleanup rejection. fc128d725 gives a body whose type proves Copy no defining cleanup, so the Copy-bounded `id` no longer reaches the Destruct language item",
+      "change": "generic-usize returns to its original declaration: accepted, one more flip from the base pin's scheduling fence. It joins the demanded clients and their native twin, which expects exit 42 with empty stdout; the rustc oracle, rerun on the recorded bytes (RUSTC_BOOTSTRAP=1 -Cpanic=abort --cfg rustc_oracle, provider --emit=link,obj), accepts it and exits 42 with empty stdout. The provider split of amendment 1 stays, and no other case, provider or text changes"
     }
   ]
 }

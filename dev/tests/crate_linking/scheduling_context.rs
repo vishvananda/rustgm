@@ -10,7 +10,7 @@ const GROUP: &str = "auto-traits";
 const PROFILE: &str = "module-bodies-v13";
 /// Frozen outcomes from `pa29/tests/scheduling-context-outcomes.json`: each
 /// provider and the clients rustc and the frontend accept against it.
-const ACCEPTED: [(&str, &[&str]); 6] = [
+const ACCEPTED: [(&str, &[&str]); 7] = [
     (
         "none-provider",
         &[
@@ -58,9 +58,12 @@ const ACCEPTED: [(&str, &[&str]); 6] = [
     ),
     ("nominal-provider", &["four", "placed", "local-placed"]),
     ("primitives-provider", &["four", "eight", "local-placed"]),
+    ("generic-provider", &["generic-usize"]),
 ];
 /// The accepted clients that the base pin stopped at the scheduling fence.
-const DEMANDED: [(&str, &[&str]); 4] = [
+/// `generic-usize` is accepted since a Copy-bounded body needs no defining
+/// cleanup, so no Destruct language item (amendment 3).
+const DEMANDED: [(&str, &[&str]); 5] = [
     (
         "usize-provider",
         &["four", "suffixed", "placed", "local-placed", "minspec"],
@@ -68,15 +71,11 @@ const DEMANDED: [(&str, &[&str]); 4] = [
     ("u8-provider", &["four", "suffixed", "placed"]),
     ("bool-provider", &["four", "suffixed", "placed"]),
     ("primitives-provider", &["four", "eight", "local-placed"]),
+    ("generic-provider", &["generic-usize"]),
 ];
 const OVERLAP: &str = "overlapping trait implementation headers require coherence proof";
 const SOURCE_BACKED: &str =
     "client implementation validation before the eager walk requires a source scheduling context";
-/// Amendment 1: rustc accepts `generic-usize`, but defining cleanup of the
-/// Copy-bounded generic `id` requires the Destruct language item, which the
-/// branch provider's first 57 lines lack. The base pin reproduces this
-/// existing fence without any scheduling demand.
-const CLEANUP: &str = "defining cleanup requires its actual language declaration";
 /// A packet whose provider is the fixture `provider`, under the shared
 /// `provider` owner identity.
 fn published(label: &str, provider: &str) -> Result<Packet> {
@@ -122,11 +121,6 @@ fn clients_validate_imported_impls_on_executable_demand() -> Result {
         "local-copy",
         &mut generic.client("local-copy"),
         SOURCE_BACKED,
-    )?;
-    generic.rejected(
-        "generic-usize",
-        &mut generic.client("generic-usize"),
-        CLEANUP,
     )?;
     Ok(())
 }

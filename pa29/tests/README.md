@@ -760,12 +760,12 @@ before the eager implementation walk. The packet holds:
 - eight providers, each the branch provider's first 57 lines plus authored
   lines: no Copy impl, one primitive's, a unit struct's, fourteen
   primitives', a blanket marker impl and a Copy-bounded generic const fn;
-- twelve clients in 35 cases. 14 cases flip from the base pin's "implementation
+- twelve clients in 35 cases. 15 cases flip from the base pin's "implementation
   validation has no source scheduling context" to accepted, and 17 accepted
   cases are unchanged;
-- four rejected cases: two overlap clients that rustc rejects with E0119, the
-  client-local Copy rejects-valid and one failed prediction at an existing
-  cleanup fence;
+- three rejected cases: two overlap clients that rustc rejects with E0119 and
+  the client-local Copy rejects-valid. `generic-usize`, once a failed
+  prediction at a cleanup fence, is accepted again (amendment 3);
 - the specialization-gate, selected-mode, scaling and flip-survey controls.
 
 Its amendments are recorded beside the declarations they amend, each before

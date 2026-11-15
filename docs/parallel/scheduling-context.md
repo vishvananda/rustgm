@@ -109,17 +109,17 @@ anyway.
 ## Results
 
 `pa29/tests/scheduling-context-outcomes.json` froze the outcomes before any
-run of its fixtures. Two amendments are recorded there, each before the run
+run of its fixtures. Three amendments are recorded there, each before the run
 it governs.
 
 | Evidence | Result |
 | --- | --- |
 | fixture cases | 35 cases over 8 providers and 12 clients; the rustc oracle matches every declaration |
-| flips | 14 clients rejected at the fence on the base pin are accepted, and each exits 42 natively with empty stdout |
+| flips | 15 clients rejected at the fence on the base pin are accepted, and each exits 42 natively with empty stdout (`generic-usize` since amendment 3) |
 | unchanged | 17 accepted clients stay accepted |
 | overlap (A3) | Rejected before and after, in a different order. The base pin reports the fence; the candidate reports the overlap text, the same diagnostic line as `overlap-twin` |
 | client-local Copy (A4) | `local-copy` reports the source-backed text, a known rejects-valid |
-| `generic-usize` | A failed prediction, rejected by an existing, independent cleanup fence (amendment 1) |
+| `generic-usize` | A failed prediction, rejected by an existing, independent cleanup fence (amendment 1); accepted since that fence no longer applies (amendment 3) |
 | scaling | 14 demanded owners for `four` (D=1) and for `eight` (D=8), and 1 for `local-placed`, each owner once; a repeat demand of a validated owner charges no graph work and pays no conformance |
 | gate (F2) | A forged forest vertex, relation and comparison each stop demand by name; the unforged `min_specialization` client relates no imported impl |
 | named-constants `const-call` | Accepted, and exits 42 natively (its amendment 9) |
@@ -136,6 +136,11 @@ it governs.
   split: `blanket-provider.rs` drops `id`, so `overlap` reaches the pair
   check, and the new `generic-provider.rs` holds usize's impls and `id`.
   `generic-usize` and `local-copy` moved to it. No other case changed.
+- **Amendment 3.** Main's qualification run at 8b2e98948 accepted
+  `generic-usize`. Since fc128d725 a body whose type proves Copy needs no
+  defining cleanup, so the Destruct language item is never reached. The case
+  returns to its first declaration and joins the demanded clients and their
+  native twin; the rustc oracle, rerun on the recorded bytes, also exits 42.
 - **`u8clone` is excluded.** Its provider is invalid: `impl Clone for u8 {
   fn clone(&self) -> Self { *self } }` moves out of a reference without a
   Copy impl, so rustc and RustGM both reject the provider itself.
@@ -162,10 +167,12 @@ it governs.
   imported generic const fn during declaration preparation keeps the
   source-backed text. Its follow-up is an early scheduler for client source
   headers outside a source core.
-- **Cleanup fence.** A client const evaluation of an imported Copy-bounded
-  generic const fn stops at "defining cleanup requires its actual language
-  declaration" under a provider without the Destruct language item. Core
-  declares it.
+- **Cleanup fence, lifted.** A client const evaluation of an imported
+  Copy-bounded generic const fn stopped at "defining cleanup requires its
+  actual language declaration" under a provider without the Destruct language
+  item. Since fc128d725 a body whose type proves Copy needs no defining
+  cleanup, so `generic-usize` is accepted and exits 42 natively, as rustc
+  does (amendment 3).
 - **The efficiency item** above, with its hypothesis.
 - **Next.** Lane C's next item is R2, with `value_rows.rs`'s `emit()`
   factored first.
