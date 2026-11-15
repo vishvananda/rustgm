@@ -223,6 +223,12 @@ impl Collector {
     fn update(&mut self, facts: &Declarations) -> Result<(), &'static str> {
         self.cursor.visit(facts, |body, source, fact| {
             if self.completed.contains_key(&body) {
+                // An instance's source caller reserves proof identities in its
+                // original's numbering unit after that contract is sealed. The
+                // instance keeps their proof; the sealed contract gains nothing.
+                if matches!(fact, Fact::Reserved(_)) {
+                    return Ok(());
+                }
                 return Err("completed lifetime contract received additional facts");
             }
             let bucket = self.pending.entry(body).or_default();
@@ -240,6 +246,10 @@ impl Collector {
         })
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/sealed_contracts.rs"]
+mod tests;
 
 pub(super) enum Fact<'a> {
     Obligation(usize, Kind),
