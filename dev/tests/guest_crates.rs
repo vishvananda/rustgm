@@ -280,6 +280,23 @@ pub fn same() -> u8 {
     2
 }
 ";
+/// A crate that needs an allocator, as `alloc` declares itself.
+const NEEDS_ALLOCATOR: &str = r"#![feature(no_core, allocator_internals)]
+#![no_core]
+#![no_main]
+#![needs_allocator]
+#![allow(internal_features)]
+extern crate core;
+pub fn same() -> u8 {
+    2
+}
+";
+const UNGATED_ALLOCATOR: &str = r"#![feature(no_core)]
+#![no_core]
+#![no_main]
+#![needs_allocator]
+extern crate core;
+";
 const DUPLICATE_LANG: &str = r#"#![feature(no_core, lang_items)]
 #![no_core]
 #![no_main]
@@ -500,6 +517,23 @@ fn lang_items_belong_to_the_session() -> Result {
     )?;
     accepted(&session("guest-lang", &[("app", GUEST_LANG)])?)?;
     Ok(())
+}
+
+/// rustc: accepts the gated crate and rejects the ungated one with E0658. No
+/// allocator shim is generated here, which the session reports.
+#[test]
+fn a_guest_that_needs_an_allocator_is_reported_as_waived() -> Result {
+    let output = session("needs-allocator", &[("app", NEEDS_ALLOCATOR)])?;
+    accepted(&output)?;
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let waiver = "bringup-waived\tguest crate `app` needs an allocator";
+    assert!(stderr.contains(waiver), "{stderr}");
+    rejected(
+        &session("ungated-allocator", &[("app", UNGATED_ALLOCATOR)])?,
+        (1, UNGATED_ALLOCATOR),
+        "#![feature(no_core)]",
+        "`#![needs_allocator]` requires `#![feature(allocator_internals)]`",
+    )
 }
 
 /// rustc: no analog. Guest crates exist only in the bring-up profile, over a

@@ -203,9 +203,8 @@ impl<S: Sources> Engine<'_, S> {
         name: Option<&str>,
         input: Input,
     ) -> Result<bool, Error> {
-        // A guest crate's root owns `no_main`; its program selection reads it.
         Ok(matches!(input, Input::Doc(_))
-            || name == Some("no_main") && self.loader.package.guest_root(owner)
+            || name.is_some_and(|name| self.loader.package.guest_root_attribute(owner, name))
             || name == Some("default") && self.default_helper(owner, effect)?
             || name.and_then(Consumer::named).is_some()
                 && !(matches!(name, Some("derive" | "derive_const"))

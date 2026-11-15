@@ -92,6 +92,9 @@ pub(in crate::resolve) enum Feature {
     InherentAssociatedTypes = 75,
     /// The internal language feature that admits `#![compiler_builtins]`.
     CompilerBuiltins = 76,
+    /// The internal language feature that admits a bring-up guest crate's
+    /// `#![needs_allocator]`; no strict session knows the request.
+    AllocatorInternals = 77,
 }
 
 #[cfg(test)]
@@ -143,6 +146,9 @@ impl Request {
             "must_not_suspend" => Self::Capability(Feature::MustNotSuspend),
             "no_core" => Self::Capability(Feature::NoCore),
             "compiler_builtins" => Self::Capability(Feature::CompilerBuiltins),
+            "allocator_internals" if crate::support::bringup::selected().is_some() => {
+                Self::Capability(Feature::AllocatorInternals)
+            }
             "abi_unadjusted" => Self::Capability(Feature::AbiUnadjusted),
             "lang_items" => Self::Capability(Feature::LangItems),
             "intrinsics" => Self::Capability(Feature::Intrinsics),
@@ -475,7 +481,18 @@ pub(in crate::resolve) fn admit_guest(
     package: &mut crate::resolve::package::Package,
     file: FileId,
 ) -> Result<(), Error> {
-    let (features, library) = features(package.unit(file), file)?;
+    let unit = package.unit(file);
+    let (features, library) = features(unit, file)?;
+    let needs_allocator = unit
+        .word_attribute(Some(unit.configured.ast.root), "needs_allocator")
+        .map_err(|error| Error::at(file, error.offset, error.message))?;
+    if needs_allocator && !features.has(Feature::AllocatorInternals) {
+        return Err(Error::at(
+            file,
+            0,
+            "`#![needs_allocator]` requires `#![feature(allocator_internals)]`",
+        ));
+    }
     let Some(Source::Core(source)) = package.source.as_deref_mut() else {
         return Err(Error::at(file, 0, "guest crates require a source core"));
     };
