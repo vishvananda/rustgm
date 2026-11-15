@@ -329,10 +329,11 @@
         "raw pointer offsets and distances",
         "unchecked slice access",
         "ptr::read, ptr::write and mem::replace",
+        "atomic integers, booleans and pointers at every width",
         "output without core::fmt"
       ],
-      "source_sha256": "80df7f906d92144ab5233721a46150843f9220f7b5213ee641c3818941de95bc",
-      "stdout_sha256": "cb0fad1047cd5afa9df46accbd16a089ad9208001215e79d840244f3c634da69"
+      "source_sha256": "14292c82e84c251cd8e0f3111fb94ee67b39270798db95547a8a6380719da21d",
+      "stdout_sha256": "396bab9f1432a059da160a6f56508db8d69c1db9aaebdd4e6ff62b97ee7d0f86"
     }
   ]
 }

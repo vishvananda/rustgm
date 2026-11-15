@@ -250,6 +250,7 @@ row needs a backend change.
 | 3c | Bring-up lowering, pointers: `offset`, `slice_get_unchecked`, `ptr_offset_from`, `ptr_offset_from_unsigned` | M1 | Runtime lane | Same; a zero-sized `ptr_offset_from` keeps its trap |
 | 3d | Bring-up lowering, moves: `read_via_copy`, `write_via_move`, `black_box`, `unreachable` | M1 | Runtime lane | Same; `unreachable` aborts |
 | 4 | Atomics other than `u32` | M1 `atomics.rs`, M2 `arc.rs` | Frontend | Fenced; backend already qualified for 8 to 64 bits and pointers |
+| 4a | Bring-up lowering, atomics: the fifteen `atomic_*` accesses and `atomic_fence` | M1 | Runtime lane | Lowered in place for 8 to 64 bits and pointers, always sequentially consistent; `intrinsic-ops.rs` matches rustc |
 | 5 | SIMD: 16-byte vectors for hashbrown and `str` search | M1 `chars-strs.rs`, M3 every `HashMap` | Frontend | No handler; backend has `v128` |
 | 6 | `compiler_builtins` | M1 | Integrator decision | Its symbols are provided at link time; its sources need assembly RustGM fences |
 | 7 | Allocator shims and `#[global_allocator]` | M2 | Frontend | Fenced |

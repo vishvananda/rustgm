@@ -3,6 +3,10 @@
 
 use core::hint::black_box;
 use core::num::NonZero;
+use core::sync::atomic::{
+    AtomicBool, AtomicI8, AtomicI16, AtomicI32, AtomicI64, AtomicIsize, AtomicPtr, AtomicU8, AtomicU16, AtomicU32,
+    AtomicU64, AtomicUsize, Ordering,
+};
 use core::{mem, ptr};
 
 #[link(name = "c")]
@@ -134,6 +138,10 @@ pub extern "C" fn main(_argc: i32, _argv: *const *const u8) -> i32 {
     slices(&mut out);
     out.flush();
     moves(&mut out);
+    out.flush();
+    atomics(&mut out);
+    out.flush();
+    atomic_sweeps(&mut out);
     out.flush();
     if out.failed > 100 { 100 } else { out.failed }
 }
@@ -765,4 +773,232 @@ fn moves(out: &mut Out) {
         None => unsafe { core::hint::unreachable_unchecked() },
     };
     out.check("unreachable arm not taken", value as u128, 42);
+}
+
+static COUNTER: AtomicUsize = AtomicUsize::new(5);
+static FLAG: AtomicBool = AtomicBool::new(false);
+
+/// A compare-exchange result as the value it carries and whether it stored.
+macro_rules! outcome {
+    ($result:expr) => {
+        match $result {
+            Ok(seen) => (seen as u128, true),
+            Err(seen) => (seen as u128, false),
+        }
+    };
+}
+
+/// Atomic integers, booleans and pointers. A fetch operation returns the
+/// value before it; unsigned and signed extrema differ at the top bit.
+fn atomics(out: &mut Out) {
+    let small = AtomicU8::new(200);
+    out.check("u8 load", small.load(Ordering::SeqCst) as u128, 200);
+    small.store(250, Ordering::Release);
+    out.check("u8 swap", small.swap(7, Ordering::AcqRel) as u128, 250);
+    out.check("u8 add", small.fetch_add(250, Ordering::Relaxed) as u128, 7);
+    out.check("u8 sub", small.fetch_sub(3, Ordering::Relaxed) as u128, 1);
+    out.check("u8 and", small.fetch_and(0x3c, Ordering::Acquire) as u128, 0xfe);
+    out.check("u8 nand", small.fetch_nand(0x0f, Ordering::Relaxed) as u128, 0x3c);
+    out.check("u8 or", small.fetch_or(0x0c, Ordering::Relaxed) as u128, 0xf3);
+    out.check("u8 xor", small.fetch_xor(0xf0, Ordering::Relaxed) as u128, 0xff);
+    out.check("u8 max", small.fetch_max(0x80, Ordering::Relaxed) as u128, 0x0f);
+    out.check("u8 min", small.fetch_min(0x7f, Ordering::Relaxed) as u128, 0x80);
+    out.check("u8 max kept", small.fetch_max(3, Ordering::Relaxed) as u128, 0x7f);
+    let exchanged = small.compare_exchange(0x7f, 9, Ordering::SeqCst, Ordering::SeqCst);
+    out.pair("u8 exchange", outcome!(exchanged), (0x7f, true));
+    let exchanged = small.compare_exchange(0x7f, 10, Ordering::AcqRel, Ordering::Relaxed);
+    out.pair("u8 exchange stale", outcome!(exchanged), (9, false));
+    out.check("u8 final", small.load(Ordering::Relaxed) as u128, 9);
+
+    let signed = AtomicI8::new(1);
+    out.check("i8 max kept", signed.fetch_max(-1, Ordering::Relaxed) as u8 as u128, 1);
+    out.check("i8 min", signed.fetch_min(-1, Ordering::Relaxed) as u8 as u128, 1);
+    out.check("i8 min kept", signed.fetch_min(127, Ordering::Relaxed) as u8 as u128, 0xff);
+    out.check("i8 add", signed.fetch_add(-128, Ordering::Relaxed) as u8 as u128, 0xff);
+    out.check("i8 sub", signed.fetch_sub(-1, Ordering::Relaxed) as u8 as u128, 0x7f);
+    out.check("i8 load", signed.load(Ordering::Relaxed) as u8 as u128, 0x80);
+
+    let word = AtomicU16::new(0xfff0);
+    out.check("u16 add", word.fetch_add(0x20, Ordering::Release) as u128, 0xfff0);
+    out.check("u16 max", word.fetch_max(0x8000, Ordering::Relaxed) as u128, 0x10);
+    out.check("u16 load", word.load(Ordering::Acquire) as u128, 0x8000);
+    let short = AtomicI16::new(-2);
+    out.check("i16 or", short.fetch_or(1, Ordering::SeqCst) as u16 as u128, 0xfffe);
+    out.check("i16 swap", short.swap(300, Ordering::SeqCst) as u16 as u128, 0xffff);
+    out.check("i16 max kept", short.fetch_max(-300, Ordering::SeqCst) as u16 as u128, 300);
+    out.check("i16 min", short.fetch_min(-300, Ordering::SeqCst) as u16 as u128, 300);
+    out.check("i16 load", short.load(Ordering::SeqCst) as u16 as u128, 0xfed4);
+
+    let wide = AtomicU32::new(0xffff_fff0);
+    out.check("u32 add", wide.fetch_add(0x20, Ordering::Release) as u128, 0xffff_fff0);
+    out.check("u32 sub", wide.fetch_sub(0x11, Ordering::Release) as u128, 0x10);
+    out.check("u32 min", wide.fetch_min(5, Ordering::Relaxed) as u128, 0xffff_ffff);
+    out.check("u32 load", wide.load(Ordering::Acquire) as u128, 5);
+    let narrow = AtomicI32::new(i32::MIN);
+    out.check("i32 sub", narrow.fetch_sub(1, Ordering::AcqRel) as u32 as u128, 0x8000_0000);
+    out.check("i32 xor", narrow.fetch_xor(-1, Ordering::AcqRel) as u32 as u128, 0x7fff_ffff);
+    out.check("i32 max", narrow.fetch_max(0, Ordering::AcqRel) as u32 as u128, 0x8000_0000);
+    out.check("i32 load", narrow.load(Ordering::Acquire) as u32 as u128, 0);
+
+    let big = AtomicU64::new(u64::MAX - 1);
+    out.check("u64 add", big.fetch_add(3, Ordering::SeqCst) as u128, 0xffff_ffff_ffff_fffe);
+    out.check("u64 max", big.fetch_max(1 << 63, Ordering::SeqCst) as u128, 1);
+    out.check("u64 min kept", big.fetch_min(u64::MAX, Ordering::SeqCst) as u128, 1 << 63);
+    out.check("u64 swap", big.swap(1 << 40, Ordering::SeqCst) as u128, 1 << 63);
+    let exchanged = big.compare_exchange(1 << 40, 9, Ordering::Release, Ordering::Relaxed);
+    out.pair("u64 exchange", outcome!(exchanged), (1 << 40, true));
+    let total = AtomicI64::new(-5);
+    out.check("i64 sub", total.fetch_sub(10, Ordering::SeqCst) as u64 as u128, 0xffff_ffff_ffff_fffb);
+    out.check("i64 max", total.fetch_max(3, Ordering::Relaxed) as u64 as u128, 0xffff_ffff_ffff_fff1);
+    out.check("i64 min", total.fetch_min(i64::MIN, Ordering::Relaxed) as u64 as u128, 3);
+    out.check("i64 load", total.load(Ordering::Relaxed) as u64 as u128, 1 << 63);
+    let size = AtomicIsize::new(-1);
+    out.check("isize add", size.fetch_add(isize::MAX, Ordering::Relaxed) as usize as u128, u64::MAX as u128);
+    out.check("isize and", size.fetch_and(0xff, Ordering::Relaxed) as usize as u128, 0x7fff_ffff_ffff_fffe);
+    out.check("isize load", size.load(Ordering::Relaxed) as usize as u128, 0xfe);
+
+    out.check("static add", COUNTER.fetch_add(3, Ordering::Relaxed) as u128, 5);
+    let mut current = COUNTER.load(Ordering::Relaxed);
+    loop {
+        match COUNTER.compare_exchange_weak(current, current * 7, Ordering::SeqCst, Ordering::Relaxed) {
+            Ok(_) => break,
+            Err(seen) => current = seen,
+        }
+    }
+    core::sync::atomic::fence(Ordering::SeqCst);
+    out.check("static weak exchange", COUNTER.load(Ordering::SeqCst) as u128, 56);
+
+    out.check("bool swap", FLAG.swap(true, Ordering::AcqRel) as u128, 0);
+    out.check("bool and", FLAG.fetch_and(false, Ordering::SeqCst) as u128, 1);
+    out.check("bool or", FLAG.fetch_or(true, Ordering::SeqCst) as u128, 0);
+    out.check("bool xor", FLAG.fetch_xor(true, Ordering::SeqCst) as u128, 1);
+    out.check("bool nand", FLAG.fetch_nand(true, Ordering::SeqCst) as u128, 0);
+    out.check("bool not", FLAG.fetch_not(Ordering::SeqCst) as u128, 1);
+    let exchanged = FLAG.compare_exchange(false, true, Ordering::SeqCst, Ordering::Relaxed);
+    out.pair("bool exchange", outcome!(exchanged), (0, true));
+    let exchanged = FLAG.compare_exchange(false, true, Ordering::SeqCst, Ordering::Relaxed);
+    out.pair("bool exchange stale", outcome!(exchanged), (1, false));
+    FLAG.store(false, Ordering::Release);
+    out.check("bool load", FLAG.load(Ordering::Acquire) as u128, 0);
+
+    let mut first = 11u32;
+    let mut second = 22u32;
+    let one: *mut u32 = &mut first;
+    let two: *mut u32 = &mut second;
+    let slot = AtomicPtr::new(ptr::null_mut::<u32>());
+    out.check("ptr null", slot.load(Ordering::Acquire).is_null() as u128, 1);
+    slot.store(one, Ordering::Release);
+    out.check("ptr load", unsafe { *slot.load(Ordering::SeqCst) } as u128, 11);
+    out.check("ptr swap", (slot.swap(two, Ordering::AcqRel) == one) as u128, 1);
+    let exchanged = match slot.compare_exchange(one, one, Ordering::SeqCst, Ordering::SeqCst) {
+        Ok(seen) => ((seen == two) as u128, true),
+        Err(seen) => ((seen == two) as u128, false),
+    };
+    out.pair("ptr exchange stale", exchanged, (1, false));
+    let exchanged = match slot.compare_exchange(two, one, Ordering::SeqCst, Ordering::SeqCst) {
+        Ok(seen) => ((seen == two) as u128, true),
+        Err(seen) => ((seen == two) as u128, false),
+    };
+    out.pair("ptr exchange", exchanged, (1, true));
+    out.check("ptr final", unsafe { *slot.load(Ordering::Relaxed) } as u128, 11);
+}
+
+/// Drives one atomic type with sampled operations beside a plain model of
+/// the same type. `bad` counts returned or stored values that differ from
+/// the model; `sum` is a checksum of every returned value.
+macro_rules! atomic_sweep {
+    ($out:ident, $bad:literal, $sum:literal, $atomic:ty, $t:ty, $u:ty) => {{
+        let mut state = 0x0123_4567_89ab_cdefu64;
+        let mut model = sample!(state, $t);
+        let cell = <$atomic>::new(model);
+        let mut sum = 0u64;
+        let mut bad = 0u32;
+        let mut k = 0;
+        while k < 600 {
+            let operand = sample!(state, $t);
+            let before = model;
+            let returned = match next(&mut state) % 12 {
+                0 => cell.load(Ordering::SeqCst),
+                1 => {
+                    model = operand;
+                    cell.swap(operand, Ordering::AcqRel)
+                }
+                2 => {
+                    model = model.wrapping_add(operand);
+                    cell.fetch_add(operand, Ordering::Relaxed)
+                }
+                3 => {
+                    model = model.wrapping_sub(operand);
+                    cell.fetch_sub(operand, Ordering::Release)
+                }
+                4 => {
+                    model &= operand;
+                    cell.fetch_and(operand, Ordering::Acquire)
+                }
+                5 => {
+                    model = !(model & operand);
+                    cell.fetch_nand(operand, Ordering::SeqCst)
+                }
+                6 => {
+                    model |= operand;
+                    cell.fetch_or(operand, Ordering::Relaxed)
+                }
+                7 => {
+                    model ^= operand;
+                    cell.fetch_xor(operand, Ordering::AcqRel)
+                }
+                8 => {
+                    if operand > model {
+                        model = operand;
+                    }
+                    cell.fetch_max(operand, Ordering::SeqCst)
+                }
+                9 => {
+                    if operand < model {
+                        model = operand;
+                    }
+                    cell.fetch_min(operand, Ordering::Relaxed)
+                }
+                10 => {
+                    model = operand;
+                    cell.store(operand, Ordering::Release);
+                    before
+                }
+                _ => {
+                    // Against the current value, or a stale one for odd operands.
+                    let expected = if operand as u64 & 1 == 0 { model } else { operand };
+                    let replacement = operand.wrapping_add(1);
+                    match cell.compare_exchange(expected, replacement, Ordering::SeqCst, Ordering::Acquire) {
+                        Ok(seen) => {
+                            bad += (expected != model) as u32;
+                            model = replacement;
+                            seen
+                        }
+                        Err(seen) => {
+                            bad += (expected == model) as u32;
+                            seen
+                        }
+                    }
+                }
+            };
+            bad += (returned != before) as u32 + (cell.load(Ordering::Relaxed) != model) as u32;
+            sum = sum.wrapping_mul(1_000_003).wrapping_add(returned as $u as u64);
+            k += 1;
+        }
+        $out.check($bad, bad as u128, 0);
+        $out.show($sum, sum as u128);
+    }};
+}
+
+fn atomic_sweeps(out: &mut Out) {
+    atomic_sweep!(out, "atomic u8 bad", "atomic u8 sum", AtomicU8, u8, u8);
+    atomic_sweep!(out, "atomic i8 bad", "atomic i8 sum", AtomicI8, i8, u8);
+    atomic_sweep!(out, "atomic u16 bad", "atomic u16 sum", AtomicU16, u16, u16);
+    atomic_sweep!(out, "atomic i16 bad", "atomic i16 sum", AtomicI16, i16, u16);
+    atomic_sweep!(out, "atomic u32 bad", "atomic u32 sum", AtomicU32, u32, u32);
+    atomic_sweep!(out, "atomic i32 bad", "atomic i32 sum", AtomicI32, i32, u32);
+    atomic_sweep!(out, "atomic u64 bad", "atomic u64 sum", AtomicU64, u64, u64);
+    atomic_sweep!(out, "atomic i64 bad", "atomic i64 sum", AtomicI64, i64, u64);
+    atomic_sweep!(out, "atomic usize bad", "atomic usize sum", AtomicUsize, usize, usize);
+    atomic_sweep!(out, "atomic isize bad", "atomic isize sum", AtomicIsize, isize, usize);
 }
