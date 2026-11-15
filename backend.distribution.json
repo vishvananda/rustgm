@@ -1,6 +1,7 @@
 {
   "schema": 1,
-  "backend_lock_sha256": "6a70ac5be95e9a58a3345d2c7309962d4d16de6f66d09aa5bcfe3f0126a1dcb1",
-  "url": "https://github.com/vishvananda/rustgm/releases/download/backend-pins-v3/rustgm-backend-x86_64-linux-v3.tar.gz",
-  "sha256": "581be6bf83bf625e1a191c189e872bbeb735b88cf843c2aaeb7f85a040866aa9"
+  "backend_lock_sha256": "b240edea2f8519bb1368f944e8e35bba79312666d82b11957ffc3abef491e493",
+  "url": "https://github.com/vishvananda/cppgm/releases/download/v0.9.0/cppgm-v0.9.0-linux-x86_64.tar.gz",
+  "sha256": "8448da3fbb55c13e5420f9e177261664b6d97df39090bc8348fd469786218a68",
+  "prefix": "cppgm-v0.9.0-linux-x86_64"
 }

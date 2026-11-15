@@ -85,7 +85,7 @@ def qualify(app, folder, native, manifest):
     version = check.run('rust-version', ['rustc', '+1.98.0', '--version']).stdout
     if not version.startswith(b'rustc 1.98.0 '):
         raise ValueError('unexpected independent toolchain')
-    tools = backend.load_tools(('cppgm++',)) if native else None
+    tools = backend.load_tools(('cppgm',)) if native else None
     provider_objects = []
     if native and provider:
         obj = check.folder / 'provider.o'

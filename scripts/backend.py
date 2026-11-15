@@ -29,10 +29,11 @@ def configure(checkout):
             raise ValueError(f"{name}: binary differs from reviewed backend; qualify a new lock explicitly")
     # Verify every live input before installing pins or replacing configuration.
     local = ROOT / "backend.local.json"
-    configured = json.loads(local.read_text())["tools"] if local.is_file() else {}
+    # Keep whatever else is configured, such as the object driver and library.
+    configured = json.loads(local.read_text()) if local.is_file() else {}
     for name, path in tools.items():
-        configured[name] = str(pin_tool(Path(path), name, lock["sha256"][name]))
-    local.write_text(json.dumps({"tools": configured}, indent=2) + "\n")
+        configured.setdefault("tools", {})[name] = str(pin_tool(Path(path), name, lock["sha256"][name]))
+    local.write_text(json.dumps(configured, indent=2) + "\n")
     print("Configured immutable pinned CPPGM backend")
 
 
@@ -68,14 +69,64 @@ def assembly_profile(lock):
     return profile
 
 
+def library_profile(lock):
+    """The in-process LowIR library is an optional capability of the same release.
+
+    Its headers and both library forms are pinned together: a client built
+    from one header set must link the library those headers describe."""
+    profile = lock.get("optional", {}).get("library", {})
+    hashes = profile.get("sha256", {})
+    if (profile.get("target") != "x86_64-linux" or profile.get("commit") != lock.get("commit") or
+            profile.get("abi_version") != 2 or
+            not {"libcppgm_lowir.a", "lowir_interface.h"} <= set(hashes) or
+            any(Path(name).name != name or not name.endswith((".a", ".so", ".h")) for name in hashes)):
+        raise ValueError("reviewed LowIR library capability is unavailable")
+    return profile
+
+
+def library_member(name):
+    """Where the release package keeps one library file."""
+    return ("include/" if name.endswith(".h") else "lib/") + name
+
+
+def pin_library(source, profile, *, root=None):
+    """Keep the verified library and its headers in one immutable folder."""
+    hashes = profile["sha256"]
+    pin = (ROOT if root is None else root) / "obj" / "backend" / "pins" / hashes["libcppgm_lowir.a"]
+    pin.mkdir(parents=True, exist_ok=True)
+    for name, expected in hashes.items():
+        target = pin / name
+        if not target.exists():
+            shutil.copyfile(source / name, target)
+        if digest(target) != expected:
+            raise ValueError(f"{name}: immutable backend pin differs from reviewed bytes")
+        target.chmod(0o444)
+    (pin / ".keep-artifacts").write_text("Current reviewed LowIR backend library\n")
+    return pin
+
+
+def load_library():
+    local = ROOT / "backend.local.json"
+    if not local.is_file():
+        raise ValueError("install the backend first: python3 scripts/setup_backend.py")
+    folder = json.loads(local.read_text()).get("library")
+    profile = library_profile(json.loads((ROOT / "backend.lock.json").read_text()))
+    if folder is None:
+        raise ValueError("LowIR library: install the reviewed backend capability first")
+    for name, expected in profile["sha256"].items():
+        if digest(Path(folder) / name) != expected:
+            raise ValueError(f"{name}: backend bytes changed")
+    return Path(folder)
+
+
 def load_tools(required=("lowir", "lowir2native")):
     local = ROOT / "backend.local.json"
     if not local.is_file():
-        raise ValueError("configure backend first: python3 scripts/backend.py --configure CPPGM_CHECKOUT")
+        raise ValueError("install the backend first: python3 scripts/setup_backend.py")
     tools = json.loads(local.read_text())["tools"]
     lock = json.loads((ROOT / "backend.lock.json").read_text())
     for name in required:
-        hashes = object_profile(lock)["sha256"] if name == "cppgm++" else lock["sha256"]
+        hashes = object_profile(lock)["sha256"] if name == "cppgm" else lock["sha256"]
         if name not in tools or name not in hashes:
             raise ValueError(f"{name}: configure the reviewed backend capability first")
         if digest(Path(tools[name])) != hashes[name]:
@@ -91,12 +142,14 @@ def configure_object(checkout):
     commit = subprocess.check_output(["git", "-C", str(checkout), "rev-parse", "HEAD"], text=True).strip()
     if commit != profile["commit"]:
         raise ValueError("checkout differs from the reviewed object backend commit")
-    source = checkout / "dev" / "cppgm++"
-    expected = profile["sha256"]["cppgm++"]
+    source = checkout / "dev" / "cppgm"
+    expected = profile["sha256"]["cppgm"]
     if digest(source) != expected:
-        raise ValueError("cppgm++: binary differs from reviewed object backend")
-    tools["cppgm++"] = str(pin_tool(source, "cppgm++", expected))
-    (ROOT / "backend.local.json").write_text(json.dumps({"tools": tools}, indent=2) + "\n")
+        raise ValueError("cppgm: binary differs from reviewed object backend")
+    tools["cppgm"] = str(pin_tool(source, "cppgm", expected))
+    local = ROOT / "backend.local.json"
+    configured = {**json.loads(local.read_text()), "tools": tools}
+    local.write_text(json.dumps(configured, indent=2) + "\n")
     print("Configured immutable pinned CPPGM LowIR object backend")
 
 
@@ -140,7 +193,7 @@ def build_objects(sources, output, *, libraries=(), search=(), native_objects=()
     # The standalone reader deliberately has a narrower executable profile.
     if not sources or any(source.suffix != ".lowir" or not source.is_file() for source in sources):
         raise ValueError("object bridge accepts only existing serialized .lowir inputs")
-    tools = load_tools(("cppgm++",))
+    tools = load_tools(("cppgm",))
     output.parent.mkdir(parents=True, exist_ok=True)
     objects = []
     for index, source in enumerate(sources):
@@ -156,7 +209,7 @@ def build_objects(sources, output, *, libraries=(), search=(), native_objects=()
 def build_object(source, output):
     if source.suffix != ".lowir":
         raise ValueError("object bridge accepts only serialized .lowir input")
-    tools = load_tools(("cppgm++",))
+    tools = load_tools(("cppgm",))
     emit_object(source, output, tools)
 
 
@@ -166,7 +219,7 @@ def emit_object(source, output, tools, *, run=None):
     output.parent.mkdir(parents=True, exist_ok=True)
     # This mode validates serialized LowIR with the host-object ABI facts enabled.
     # The suffix gate prevents the multi-input driver from selecting a frontend.
-    (invoke if run is None else run)([tools["cppgm++"], "-O0", "-c", str(source), "-o", str(output)])
+    (invoke if run is None else run)([tools["cppgm"], "-O0", "-c", str(source), "-o", str(output)])
     verify_object(output)
 
 
@@ -281,6 +334,30 @@ def test_assembly():
     print("PASS: LowIR assembly emits movntps in objects and executables with full bits and guards")
 
 
+def test_library():
+    library = load_library()
+    folder = ROOT / "obj" / "backend" / "library-handshake"
+    folder.mkdir(parents=True, exist_ok=True)
+    client, producer = folder / "producer.o", folder / "producer"
+    module, observer = folder / "module.o", folder / "observer"
+    strict = ["cc", "-std=c11", "-Wall", "-Wextra", "-Werror"]
+    invoke([*strict, "-I", str(library), "-c", str(ROOT / "tests" / "backend" / "library.c"),
+            "-o", str(client)])
+    # The library is C++ inside: its C client links with the C++ driver.
+    invoke(["c++", str(client), str(library / "libcppgm_lowir.a"), "-pthread", "-o", str(producer)])
+    module.unlink(missing_ok=True)
+    result = subprocess.run([str(producer), str(module)], capture_output=True, timeout=30)
+    if result.returncode or result.stdout or result.stderr:
+        raise ValueError("LowIR library producer failed: " + result.stderr.decode(errors="replace"))
+    verify_object(module)
+    invoke([*strict, str(ROOT / "tests" / "backend" / "library-observer.c"), str(module),
+            "-o", str(observer)])
+    result = subprocess.run([str(observer)], capture_output=True, timeout=5)
+    if result.returncode or result.stdout or result.stderr:
+        raise ValueError("object compiled in process did not link and compute its declared results")
+    print("PASS: the LowIR library builds a module in process and returns a linkable object")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--configure", type=Path)
@@ -288,6 +365,7 @@ def main():
     parser.add_argument("--test", action="store_true")
     parser.add_argument("--test-object", action="store_true")
     parser.add_argument("--test-assembly", action="store_true")
+    parser.add_argument("--test-library", action="store_true")
     parser.add_argument("--emit-object", action="store_true")
     parser.add_argument("--native-links", type=Path)
     parser.add_argument("--native-search", type=Path, action="append", default=[])
@@ -306,6 +384,8 @@ def main():
             test_object()
         elif args.test_assembly:
             test_assembly()
+        elif args.test_library:
+            test_library()
         elif args.source and args.o:
             if args.emit_object:
                 if args.native_links or args.native_search or args.native_object:
@@ -319,7 +399,7 @@ def main():
                            native_objects=[path.resolve() for path in args.native_object])
         else:
             parser.error("use --configure, --configure-object, --test, --test-object, --test-assembly, "
-                         "or SOURCE -o OUTPUT")
+                         "--test-library, or SOURCE -o OUTPUT")
         return 0
     except (ValueError, OSError, subprocess.SubprocessError) as error:
         print(f"backend error: {error}", file=sys.stderr)

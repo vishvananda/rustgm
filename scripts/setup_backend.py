@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Install the exact locked C++ backend distribution for native qualification."""
+"""Install the exact locked CPPGM release package for native qualification."""
 import argparse
 import hashlib
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
+import re
 import tarfile
 import tempfile
 import urllib.request
@@ -20,6 +21,18 @@ def digest(path):
         return hashlib.file_digest(source, "sha256").hexdigest()
 
 
+def locked_members(lock, prefix):
+    """Map each locked file's path in the release package to its name and hash."""
+    tools = {**lock["sha256"], **backend.object_profile(lock)["sha256"]}
+    if set(tools) != {"lowir", "lowir2native", "cppgm"}:
+        raise ValueError("unexpected backend tool inventory")
+    library = backend.library_profile(lock)
+    members = {f"{prefix}/bin/{name}": (name, expected) for name, expected in tools.items()}
+    for name, expected in library["sha256"].items():
+        members[f"{prefix}/{backend.library_member(name)}"] = (name, expected)
+    return tools, library, members
+
+
 def install(root, bundle):
     lock = json.loads((root / "backend.lock.json").read_text())
     distribution = json.loads((root / "backend.distribution.json").read_text())
@@ -29,9 +42,10 @@ def install(root, bundle):
         raise ValueError("distribution requires the locked x86-64 Linux backend")
     if bundle.stat().st_size > MAX_ARCHIVE or digest(bundle) != distribution["sha256"]:
         raise ValueError("backend distribution differs from the locked archive")
-    expected = {**lock["sha256"], **backend.object_profile(lock)["sha256"]}
-    if set(expected) != {"lowir", "lowir2native", "cppgm++"}:
-        raise ValueError("unexpected backend tool inventory")
+    prefix = distribution.get("prefix", "")
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", prefix):
+        raise ValueError("distribution names no release directory")
+    tools, library, members = locked_members(lock, prefix)
     destination = root / "obj/backend"
     destination.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="setup-", dir=destination) as temporary:
@@ -39,31 +53,38 @@ def install(root, bundle):
         seen = set()
         with tarfile.open(bundle) as archive:
             for member in archive:
-                if (member.name not in {*expected, "manifest.json", "NOTICE"}
+                # The release package holds more than the locked files. Every
+                # entry must still be a plain file inside the release directory.
+                parts = PurePosixPath(member.name).parts
+                if (parts[:1] != (prefix,) or len(parts) < 2 or ".." in parts
                         or member.name in seen or not member.isfile()
                         or not 0 <= member.size <= MAX_TOOL):
                     raise ValueError("unexpected backend archive entry")
                 seen.add(member.name)
-                if member.name not in expected:
+                if member.name not in members:
                     continue
-                path = Path(temporary) / member.name
+                name, expected = members[member.name]
+                path = Path(temporary) / name
                 with archive.extractfile(member) as source, path.open("xb") as output:
                     while block := source.read(1024 * 1024):
                         output.write(block)
-                if digest(path) != expected[member.name]:
-                    raise ValueError(f"{member.name}: distribution tool differs from backend lock")
-                prepared[member.name] = path
-        if set(prepared) != set(expected):
-            raise ValueError("backend distribution is missing a locked tool")
+                if digest(path) != expected:
+                    raise ValueError(f"{name}: distribution file differs from backend lock")
+                prepared[name] = path
+        if set(prepared) != {name for name, _ in members.values()}:
+            raise ValueError("backend distribution is missing a locked file")
         # Validate the whole bundle before publishing pins or configuration.
-        tools = {name: str(backend.pin_tool(path, name, expected[name], root=root))
-                 for name, path in prepared.items()}
+        configured = {
+            "tools": {name: str(backend.pin_tool(prepared[name], name, expected, root=root))
+                      for name, expected in tools.items()},
+            "library": str(backend.pin_library(Path(temporary), library, root=root)),
+        }
         with tempfile.NamedTemporaryFile(mode="w", dir=root, prefix=".backend-local-", delete=False) as output:
-            json.dump({"tools": tools}, output, indent=2)
+            json.dump(configured, output, indent=2)
             output.write("\n")
             temporary_config = Path(output.name)
         temporary_config.replace(root / "backend.local.json")
-    print("Configured all three exact locked backend tools")
+    print("Configured the exact locked backend tools and LowIR library")
 
 
 def main():

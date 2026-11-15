@@ -142,7 +142,7 @@ def run_probe(root, unit, app, jobs):
     if not version.startswith("rustc 1.98.0 "):
         raise ValueError(f"expected pinned rustc 1.98.0: {version}")
     identity = candidate_identity(app)
-    tools = load_tools(("lowir", "lowir2native", "cppgm++"))
+    tools = load_tools(("lowir", "lowir2native", "cppgm"))
     directory = state(root, unit) / "probe"
     started = time.time()
     with ThreadPoolExecutor(max_workers=jobs) as pool:

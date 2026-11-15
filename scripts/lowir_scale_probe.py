@@ -9,7 +9,7 @@ renamed, and a generated entry calls every replica's former entry, so the
 combined program still checks itself: exit status 0 means every replica ran
 and passed. Each size is built and run on both link paths: the pinned `lowir`
 validator and standalone `lowir2native -O0`, and the object bridge
-(`cppgm++ -O0 -c`, then the system `cc`). The probe records wall time, CPU time
+(`cppgm -O0 -c`, then the system `cc`). The probe records wall time, CPU time
 and peak resident memory per process.
 
 Each backend process runs under an address-space limit, so a size that needs
@@ -218,7 +218,7 @@ def code_bytes(path):
 def density(tools, folder, source, stage, case):
     """Machine code for one fixture: pinned rustc's object against the backend's object."""
     fixture, ours, theirs = ROOT / stage / case['path'], folder / 'unit.o', folder / 'rustc.o'
-    for command in ([tools['cppgm++'], '-O0', '-c', str(source), '-o', str(ours)],
+    for command in ([tools['cppgm'], '-O0', '-c', str(source), '-o', str(ours)],
                     ['rustc', '--edition=2024', '--target', 'x86_64-unknown-linux-gnu',
                      *rustc_arguments(case, 'density'), '-C', 'panic=abort', '-C', 'overflow-checks=yes',
                      '-C', 'debug-assertions=off', '-C', 'codegen-units=1', '--cap-lints', 'allow',
@@ -263,7 +263,7 @@ def observe(tools, rounds, units, arguments, record):
     paths = ((('lowir', [tools['lowir'], '-o', str(checked), str(program)], checked),
               ('lowir2native', [tools['lowir2native'], '-O0', '-o', str(native), str(checked)], native),
               ('run', [str(native)], None)),
-             (('cppgm++', [tools['cppgm++'], '-O0', '-c', str(program), '-o', str(unit)], unit),
+             (('cppgm', [tools['cppgm'], '-O0', '-c', str(program), '-o', str(unit)], unit),
               ('cc', ['cc', str(unit), '-lm', '-o', str(linked)], linked),
               ('run-linked', [str(linked)], None)))
     passing = list(paths)
@@ -322,7 +322,7 @@ def main():
     arguments = parser.parse_args()
     # A stopped probe must still remove the large programs it composed.
     signal.signal(signal.SIGTERM, lambda number, _frame: sys.exit(128 + number))
-    wanted = ('lowir', 'lowir2native', 'cppgm++')
+    wanted = ('lowir', 'lowir2native', 'cppgm')
     tools = {name: str(path) for name, path in load_tools(wanted).items() if name in wanted}
     folder = arguments.output = arguments.output.resolve()
     scratch = folder / 'scratch'

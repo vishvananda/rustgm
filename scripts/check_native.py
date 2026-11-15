@@ -378,7 +378,7 @@ def check(app, jobs, stage="pa11", *, unit=None, case_paths=None):
     required = {"lowir", "lowir2native"} if any(c["rustc"]["kind"] == "program" for c in cases) else set()
     if any(c.get("native", {}).get("kind") == "object" or "providers" in c.get("native", {}) or "crates" in c
            for c in cases):
-        required.add("cppgm++")
+        required.add("cppgm")
     tools = load_tools(tuple(sorted(required)))  # Hash each required immutable tool once.
     directory = ROOT / "obj/native" / paths.evidence
     if case_paths is not None:

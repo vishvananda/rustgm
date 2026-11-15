@@ -223,7 +223,7 @@ def qualify(app, folder, native, seconds):
     plan_sha = sha(PLAN)
     gate = Gate(app, folder, seconds)
     binary_sha = sha(gate.check.app)
-    tools = backend.load_tools(('cppgm++',)) if native else {}
+    tools = backend.load_tools(('cppgm',)) if native else {}
     declaration = {'plan_sha256': plan_sha, 'cli_sha256': binary_sha, 'native': native,
                    'seconds': seconds, 'prebuilt_backend': tools,
                    'native_stdout': '7\n', 'accepted_cases': len(plan['accepted'])}

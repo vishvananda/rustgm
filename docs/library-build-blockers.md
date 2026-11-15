@@ -1705,7 +1705,7 @@ unchanged.
 - Validation work is linear in pattern impls and in consumers. Recorded: a
   consumer's goal visits every non-null pattern impl, about 20 steps a pair.
 
-Lane D [refreshes the backend pin](backend-current-checkpoint.md) for inline
+Lane D [refreshes the backend pin](backend-v3-checkpoint.md) for inline
 assembly, on main `347373f7f`. All three CPPGM tools now pin cppgm-extended
 `17b024f69` through the `backend-pins-v3` distribution. The reviewed object
 profile records the optional `assembly` capability.

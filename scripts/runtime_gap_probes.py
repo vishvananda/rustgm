@@ -5,7 +5,7 @@ Each probe is a few lines of Rust for the RustGM frontend, or of hand-written
 LowIR for the pinned backend, with the expected observation declared beside
 it. A frontend probe records the compiler's exit status and diagnostic. A
 backend probe is built twice: by the standalone tools (`lowir`, then
-`lowir2native -O0`) and by the object bridge (`cppgm++ -c`, then the system
+`lowir2native -O0`) and by the object bridge (`cppgm -c`, then the system
 `cc`), and records the failing tool's message or the program's exit status.
 
 The script fails when an observation no longer contains its declaration, so a
@@ -134,7 +134,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.split('\n', 1)[0])
     parser.add_argument('--app', required=True, type=Path, help='RustGM compiler binary for the frontend probes')
     arguments = parser.parse_args()
-    backend.load_tools(('lowir', 'lowir2native', 'cppgm++'))
+    backend.load_tools(('lowir', 'lowir2native', 'cppgm'))
     scratch = WORK / 'scratch'
     scratch.mkdir(parents=True, exist_ok=True)
     rows = [(name, 'frontend', declared, frontend(arguments.app, source)) for name, source, declared in FRONTEND]

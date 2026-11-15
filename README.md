@@ -111,20 +111,26 @@ All LowIR lanes retain complete execution proofs.
 
 ## CPPGM backend
 
-Configure a built checkout of the commit in `backend.lock.json`:
+Install the CPPGM release package that `backend.lock.json` and
+`backend.distribution.json` name:
 
 ```sh
-python3 scripts/backend.py --configure /path/to/cppgm-extended
+python3 scripts/setup_backend.py
 make test-backend test-native
 dev/rustgm --emit-lowir -o obj/program.lowir program.rs
 python3 scripts/backend.py obj/program.lowir -o obj/program
 ```
 
-The initial lock records the qualified Linux binaries as well as their source
-commit. The local configuration is ignored by Git; it contains machine paths.
-The bridge checks binary hashes before use, writes only under this repository,
-and never rebuilds or edits CPPGM. A different host build needs an explicit
-reviewed lock update and backend validation, not a silent repin.
+The lock records the release commit and the hash of each tool, of the LowIR
+library and of its headers. The installer downloads the package, or takes an
+already downloaded one with `--bundle PATH`, checks it and every locked file,
+and keeps private read-only copies under `obj/backend/pins/`. The local
+configuration is ignored by Git; it contains machine paths. The bridge checks
+binary hashes before use, writes only under this repository, and never
+rebuilds or edits CPPGM. A local build of the same commit has different
+bytes: using one needs an explicit reviewed lock update and backend
+validation, not a silent repin. The
+[current checkpoint](docs/backend-current-checkpoint.md) records the pin.
 
 ## Growing an assignment
 

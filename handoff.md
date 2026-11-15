@@ -141,8 +141,15 @@ Detailed earlier handoffs are retained in Git: `git show 0031a83d4:handoff.md`.
   `rustgm-async-work` (publication). Main `/home/vishvananda/rustgm` is Git-only.
 - No new worktrees. Coherent relevant commits/pushes are authorized;
   use single-line subjects without trailers.
-- Frozen CPPGM backend: v3, `17b024f69`. Do not modify C++/v5rust checkouts or
-  another checkout's outputs. Rustc is a test oracle, never a frontend substitute.
+- CPPGM backend: release v0.9.0, `bb0980105`, of `vishvananda/cppgm` (the
+  renamed cppgm-extended; the driver is now `cppgm`). Install it in a worktree
+  with `python3 scripts/setup_backend.py`; a v3 `backend.local.json` no longer
+  works. The release's in-process LowIR library is pinned and has a handshake,
+  but nothing uses it yet: a bridge needs an FFI boundary outside the frontend
+  library, which the `unsafe` ban forbids until the user decides
+  ([checkpoint](docs/backend-current-checkpoint.md)).
+- Do not modify C++/v5rust checkouts or another checkout's outputs. Rustc is a
+  test oracle, never a frontend substitute.
 - Read AGENTS.md, spec.md, ROADMAP.md, the owning handout and
   TESTING_AND_REFERENCES.md. `docs/parallel-work.md` contains historical worker
   assignments; the self-hosting plan's three lanes take precedence.

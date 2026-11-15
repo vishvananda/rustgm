@@ -42,34 +42,37 @@ class ObjectBridge(unittest.TestCase):
             (checkout / "dev").mkdir(parents=True)
             tools = {}
             hashes = {}
-            for name in ("lowir", "lowir2native", "cppgm++"):
+            for name in ("lowir", "lowir2native", "cppgm"):
                 path = checkout / "dev" / name
                 path.write_bytes((name + " reviewed bytes").encode())
                 tools[name] = str(path)
                 hashes[name] = backend.digest(path)
             original = {name: tools[name] for name in ("lowir", "lowir2native")}
-            (root / "backend.local.json").write_text(json.dumps({"tools": original}))
+            (root / "backend.local.json").write_text(json.dumps(
+                {"tools": original, "library": "library-pin"}))
             (root / "backend.lock.json").write_text(json.dumps({
                 "commit": "original-executable-commit", "sha256": {
                     name: hashes[name] for name in original},
                 "optional": {"object": {
                     "commit": "reviewed-commit", "target": "x86_64-linux",
                     "object_format": "elf64-x86-64", "capabilities": ["lowir-to-object"],
-                    "sha256": {"cppgm++": hashes["cppgm++"]}}}}))
+                    "sha256": {"cppgm": hashes["cppgm"]}}}}))
             with mock.patch.object(backend, "ROOT", root), mock.patch.object(
                     backend.subprocess, "check_output", return_value="reviewed-commit\n"):
                 backend.configure_object(checkout)
                 configured = backend.load_tools()
                 self.assertEqual({name: configured[name] for name in original}, original)
-                pin = Path(configured["cppgm++"])
-                self.assertNotEqual(pin, Path(tools["cppgm++"]))
-                self.assertEqual(backend.digest(pin), hashes["cppgm++"])
-                Path(tools["cppgm++"]).write_bytes(b"later live rebuild")
-                backend.load_tools(("cppgm++",))
+                installed = json.loads((root / "backend.local.json").read_text())
+                self.assertEqual(installed["library"], "library-pin")
+                pin = Path(configured["cppgm"])
+                self.assertNotEqual(pin, Path(tools["cppgm"]))
+                self.assertEqual(backend.digest(pin), hashes["cppgm"])
+                Path(tools["cppgm"]).write_bytes(b"later live rebuild")
+                backend.load_tools(("cppgm",))
                 pin.chmod(0o755)
                 pin.write_bytes(b"changed pin")
                 with self.assertRaisesRegex(ValueError, "backend bytes changed"):
-                    backend.load_tools(("cppgm++",))
+                    backend.load_tools(("cppgm",))
                 # An unused optional capability cannot change the earlier bridge.
                 backend.load_tools()
 
@@ -160,14 +163,17 @@ class ExecutablePins(unittest.TestCase):
             hashes = {tool.name: backend.digest(tool) for tool in (validator, linker)}
             (root / "backend.lock.json").write_text(json.dumps({"commit": "reviewed", "sha256": hashes}))
             # An independently installed optional profile must survive default setup.
-            (root / "backend.local.json").write_text(json.dumps({"tools": {"cppgm++": "optional-pin"}}))
+            (root / "backend.local.json").write_text(json.dumps(
+                {"tools": {"cppgm": "optional-pin"}, "library": "library-pin"}))
             source, output = root / "source.lowir", root / "program"
             source.write_text("frozen LowIR input")
             with mock.patch.object(backend, "ROOT", root), mock.patch.object(
                     backend.subprocess, "check_output", return_value="reviewed\n"):
                 backend.configure(checkout)
                 configured = backend.load_tools()
-                self.assertEqual(configured["cppgm++"], "optional-pin")
+                self.assertEqual(configured["cppgm"], "optional-pin")
+                installed = json.loads((root / "backend.local.json").read_text())
+                self.assertEqual(installed["library"], "library-pin")
                 for tool in (validator, linker):
                     self.assertNotEqual(Path(configured[tool.name]), tool)
                     self.assertEqual(backend.digest(Path(configured[tool.name])), hashes[tool.name])
@@ -251,7 +257,7 @@ class MultipleUnits(unittest.TestCase):
             for source in sources:
                 source.write_text("serialized unit")
             output = root / "program"
-            tools = {"lowir": "validator", "cppgm++": "object-compiler"}
+            tools = {"lowir": "validator", "cppgm": "object-compiler"}
             with mock.patch.object(backend, "load_tools", return_value=tools), mock.patch.object(
                     backend, "invoke") as invoke, mock.patch.object(backend, "emit_object") as emit:
                 backend.build_many(sources, output)

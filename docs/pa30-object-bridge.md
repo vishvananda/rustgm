@@ -1,5 +1,9 @@
 # Optional PA30 LowIR object bridge
 
+This records the first object profile. Since the v0.9.0 pin the driver is named
+`cppgm` and is installed by `scripts/setup_backend.py`; see the
+[current checkpoint](backend-current-checkpoint.md).
+
 The executable bridge keeps its reviewed `lowir` and `lowir2native` tools,
 configuration and invocation sequence. The optional object profile separately
 pins CPPGM revision `3438f5aea24d8fcc9a0113316f7e27c890cd5ac6` and its

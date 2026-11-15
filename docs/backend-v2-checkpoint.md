@@ -1,6 +1,6 @@
 # CPPGM backend v2 checkpoint (b7c6b8e72)
 
-The [current checkpoint](backend-current-checkpoint.md) superseded this pin on
+The [v3 checkpoint](backend-v3-checkpoint.md) superseded this pin on
 2026-11-08. This record of the v2 qualification is otherwise unchanged.
 
 All three tools now pin cppgm-extended
