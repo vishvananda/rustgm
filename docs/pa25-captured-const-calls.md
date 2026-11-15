@@ -67,3 +67,20 @@ A clean optimized40 compiler and unchanged genuine original-core retry are next.
 No original-core metadata/LowIR/native artifact or whole PA25–44 release is
 claimed. The separate113-case PA25 component and every older accepting requirement
 retain their prior status.
+
+Clean optimized40 on published73eec244c confirms the original captured FnMut
+adapter blocker is cleared.3967 hashes/empty patch; CLI
+ def42988f408e1ed5ea4597bab4b1acbac22ba10d2c8681e6ab485f8eb595b80;
+7m49s build. Genuine original v14 core40 stops at `slice/cmp.rs:184`,
+file225:7130, in the const closure calling `PartialOrd::partial_cmp` inside
+`SlicePartialOrd::partial_compare`. Its defining member call still needs actual
+closure context; `closed_effect` currently handles conditional function owners
+only.23.419543341966346s/status1/no timeout/RSS742664KiB; no metadata and zero-byte
+LowIR. Postcheck passes722 unchanged originals/375 opens/six reviewed pins/all3967/
+clean producer/fixed120s/unchanged contract limits. Raw `core-artifact40.log`,
+`artifact-postcheck40.log` and `original-library-candidate40/`. Diagnostic progress,
+not a build, native-consumer or speed claim. Full43669171589 exact73eec244c passes
+fast/all-target lint/architecture/harness and is running release/course tests.
+Do not duplicate it for documentation.39/38 and nominal replay binaries are now
+retired/unavailable;40 and the captured replay remain available. Retirement
+receipts and historical observations remain; performance21–24 pins are preserved.

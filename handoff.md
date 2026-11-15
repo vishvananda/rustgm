@@ -1,3 +1,39 @@
+# Latest original-core progress — candidate40
+
+Published73eec244c/main synced. Clean optimized40:3967 hashes/empty patch,7m49s,
+CLIdef42988f408e1ed5ea4597bab4b1acbac22ba10d2c8681e6ab485f8eb595b80.
+Actual original v14 core40 CLEARS ops/try_trait.rs NeverShortCircuit wrap_mut_1/2
+captured generic FnMut closure calls. It next FAILS slice/cmp.rs:184/file225:7130,
+const closure elem_chain invoking PartialOrd::partial_cmp in default
+SlicePartialOrd::partial_compare, same owner-fence message.23.419543341966346s/
+status1/no timeout/RSS742664KiB; no core.rgm/0-byte core.lowir. Postcheck40 terminal
+PASS722 originals375opens/six reviewedpins/all3967/cleanproducer/120s/unchanged
+14500624work/1GiB attempted/64MiB retained. Raw captured-const-calls/
+{build40-release,core-artifact40,artifact-postcheck40}.log +original-library-
+candidate40/. Diagnostic progress only; no artifact/native/speed claim.
+
+NEXT actual const-closure trait-member source effect/owner context. Existing
+provided_calls::source_request_in_scope authenticates source_caller and exact
+source Call; source_direct then closed_effect rejects Conditional unless
+Owner::Function, before source_member+selected_source. check_calls consequently
+falls back to function-only defining_owner. Inspect existing complete selected
+member/source evidence and actual closure context; don't substitute enclosing
+function owner or grant concrete Code from a defining request. This is precisely
+the six earlier unannotated closure accepting requirements, still old ownerfence.
+Reuse their PA25/31 ownership and add targeted ordinary/source opponents/native
+consumers as needed. New captured25 packet retains all local/once/CTFE/import gaps.
+
+ONE full43669171589 exact73eec244c active: fast/all-target private strict lint,
+architecture/harness PASS; release/course running, expected3088 private. New
+privateguard compiles/styles but execution pending. Prior436652 failed one
+unchanged malformed-signature corruption guard; explicit signature-kind fix is
+in73eec. Don't duplicate/cancel/restart CI for docs. Current40 and captured replay
+ad8b9489…faeb available.38/39+nominalreplay RETIRED/unavailable; records under
+captured-const-calls/retired-pins.json. Earlier retirements remain; performance
+21–24 preserved. Same singleworker/Bonly/mainGit-only/2jobs150GiBreserve16GiBcap/
+frozenbackend17b024f69. No core artifact or wholePA25–44 completion;113component
+unchanged. This section supersedes older NEXT/CI/pin statuses below.
+
 # Current continuation — captured const calls
 
 Checkpoint: captured const-call ownership; current39 original below remains latest. Closure defining operators now authenticate actual const
