@@ -1,5 +1,10 @@
 # RustGM assignment roadmap
 
+The [self-hosting plan](docs/self-hosting-plan.md), adopted 2026-11-15, is the
+current execution path: a whole-pipeline census, an unqualified bring-up
+profile, demand-ranked fixes and three lanes. PA45 self-hosting is now the
+required capstone. Assignment statuses below are unchanged.
+
 The [implicit result-field checkpoint](docs/pa20-implicit-result-fields.md)
 prepares exact solved protocol results before readonly drop queries.17 source
 outcomes, one ordinary control and eleven native programs pass. A scoped PA20
@@ -475,8 +480,8 @@ The goal remains all assignment requirements needed to build original pinned
 core, alloc and std and execute independent real-crate consumers. Actual active
 source determines required language/runtime/target capabilities; a later number
 never excuses a failed library path. Full unwinding and async remain separate
-from the initial abort-profile graph. Optional PA45 reproducible self-hosting
-remains outside this goal. CPPGM is the explicit LowIR backend; backend extensions
+from the initial abort-profile graph. PA45 reproducible self-hosting is the
+required capstone as of 2026-11-15. CPPGM is the explicit LowIR backend; backend extensions
 require separate reviewed capability work.
 
 The [overflow/automatic/CI checkpoint](docs/parallel/overflow-auto-ci-main-join.md)

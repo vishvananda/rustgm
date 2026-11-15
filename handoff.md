@@ -1,10 +1,21 @@
 # RustGM handoff — 2026-11-15
 
-## State at wrap-up
+## Current plan
 
-Work stopped at the user's request to wrap up and rewrite this handoff. Continue
-as **one worker** when asked. Compiler changes and fixtures are committed and
-pushed; this handoff is a documentation-only descendant.
+The user adopted the [self-hosting plan](docs/self-hosting-plan.md) on
+2026-11-15. It supersedes the single-worker, strict-artifact-only loop that
+this handoff described. Where the sections below conflict with that plan, the
+plan wins. In particular:
+
+- Three lanes and agents are allowed again, on the three existing worktrees.
+- An unqualified bring-up profile may produce artifacts; strict mode is still
+  the only release gate.
+- The ordinary bootstrap profile is frozen at PA24. The "ordinary" items under
+  "Requirements still open" are no longer work items.
+- The next step is the pipeline census and demand list, not the marked-call
+  promotion repair. That blocker becomes one census record.
+
+## State at the 2026-11-15 wrap-up
 
 **Core does not build yet.** No genuine original-core metadata, complete LowIR or
 native consumer artifact exists. Whole PA25–PA44 remain planned; the separate
@@ -14,23 +25,22 @@ Current compiler product: `2e25fdba40428eb1d8564a100ba1015c358e5c5d`
 (`fix: retain defining permission for const closure members`). Previous product:
 `73eec244cb25f1a611a4b0cf134d8e8484ff5c83` (captured generic const invocations).
 Detailed historical handoff is retained in Git:
-`git show 0031a83d4:handoff.md`. Its accumulated NEXT/CI/pin statements are
-superseded by this document; its unclosed requirements are not discarded.
+`git show 0031a83d4:handoff.md`.
 
 ## Workspace, authorization and resources
 
-- Work/build only in `/mnt/vizier/rustgm-scratch/rustgm-pa26-work` (B), branch
-  `implement/scoped-inherent-20261110`. Main `/home/vishvananda/rustgm` is Git-only.
-  Both trees were clean and synchronized before this documentation rewrite.
-- No agents or new worktrees. Coherent relevant commits/pushes are authorized;
+- Build only in the three worktrees under `/mnt/vizier/rustgm-scratch`:
+  `rustgm-pa26-work` (frontier), `rustgm-backend-work` (runtime) and
+  `rustgm-async-work` (publication). Main `/home/vishvananda/rustgm` is Git-only.
+- No new worktrees. Coherent relevant commits/pushes are authorized;
   use single-line subjects without trailers.
 - Frozen CPPGM backend: v3, `17b024f69`. Do not modify C++/v5rust checkouts or
   another checkout's outputs. Rustc is a test oracle, never a frontend substitute.
 - Read AGENTS.md, spec.md, ROADMAP.md, the owning handout and
   TESTING_AND_REFERENCES.md. `docs/parallel-work.md` contains historical worker
-  assignments; the user's single-worker instruction takes precedence.
-- Shared controller: 2 heavy jobs globally, 150 GiB free-space reserve, CPU 800%,
-  RAM 12 GiB, tasks 256. B output cap 16 GiB; run only one local heavy job at a time.
+  assignments; the self-hosting plan's three lanes take precedence.
+- Shared controller: 3 heavy jobs globally, 150 GiB free-space reserve, CPU 800%,
+  RAM 12 GiB, tasks 256. Output cap 16 GiB per worktree; one heavy job per worktree.
   Shared free space was about 278 GiB at wrap-up. The former headroom blocker is
   resolved. Do not lower reserves or clean other checkouts.
 - Every build/test/frontend/debugger probe/measurement uses resource and storage
