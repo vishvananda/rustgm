@@ -77,8 +77,10 @@ impl<'a> BoundParts<'a> {
         self.scalars.is_empty() && self.projections.is_empty()
     }
     fn scalar_only(self) -> Result<Parts<'a>, &'static str> {
-        if !self.projections.is_empty() {
-            return Err("projected lifetime components require a scoped proof");
+        const PROJECTED: &str = "projected lifetime components require a scoped proof";
+        // Bring-up reads a projected component as holding no lifetime.
+        if !self.projections.is_empty() && !crate::support::bringup::waive(PROJECTED) {
+            return Err(PROJECTED);
         }
         Ok(self.scalars)
     }

@@ -134,6 +134,19 @@ pub(crate) fn defer_site(site: Option<ProofSite>, message: &str) -> bool {
     crate::support::bringup::defer(key.file.0, Position::Node(key.node.get()), message)
 }
 
+/// Pass over a failed soundness proof of this body, keeping its code. The
+/// proof must have no result that a later stage reads.
+pub(crate) fn unproven(body: BodyOrigin, message: &str) -> bool {
+    unproven_site(Some(body.root_site()), message)
+}
+/// Like `unproven`, for a stage that names the proof's own syntax node.
+pub(crate) fn unproven_site(site: Option<ProofSite>, message: &str) -> bool {
+    let Some(ProofSite::Source(key)) = site else {
+        return false;
+    };
+    crate::support::bringup::unproven(key.file.0, Position::Node(key.node.get()), message)
+}
+
 /// The innermost function item with a body that contains a source position.
 fn owner<'a>(
     report: &Report,
@@ -170,16 +183,8 @@ pub fn blockers(report: &Report, facts: &Declarations, error: &Error) -> Attribu
     }
     let mut failures = Vec::new();
     for failure in crate::support::bringup::deferred() {
-        let file = FileId(failure.file);
-        let at = match failure.position {
-            Position::Byte(at) => Some(at),
-            Position::Node(node) => NodeId::checked(node).map(|node| {
-                let ast = &report.package.unit(file).configured.ast;
-                ast.node(node).span.start
-            }),
-        };
-        match at {
-            Some(at) => failures.push((file, at, failure.message)),
+        match offset(report, &failure) {
+            Some(at) => failures.push((FileId(failure.file), at, failure.message)),
             None => attribution.unattributed.push(failure.message),
         }
     }
@@ -192,31 +197,69 @@ pub fn blockers(report: &Report, facts: &Declarations, error: &Error) -> Attribu
         None => attribution.unattributed.push(error.message.clone()),
     }
     for (file, at, message) in failures {
-        // Outside every function, the position itself is the entry: it only
-        // takes effect where it is the anchor of a synthesized body.
-        let (offset, name) = owner(report, facts, file, at).map_or((at, "<item>"), |found| {
-            let name = report
-                .resolution
-                .definitions
-                .get(found.0.definition.0 as usize)
-                .map_or("?", |definition| report.package.names.get(definition.name));
-            (found.1, name)
-        });
-        let path = path(&report.package, file);
+        let blocker = blocker(report, facts, file, at, message);
         if !attribution
             .blockers
             .iter()
-            .any(|seen| seen.offset == offset && seen.path == path)
+            .any(|seen| seen.offset == blocker.offset && seen.path == blocker.path)
         {
-            attribution.blockers.push(Blocker {
-                path,
-                offset,
-                name: name.to_owned(),
-                message,
-            });
+            attribution.blockers.push(blocker);
         }
     }
     attribution
+}
+/// The byte offset of a failure set aside, if its position still exists.
+fn offset(report: &Report, failure: &crate::support::bringup::Deferred) -> Option<u32> {
+    match failure.position {
+        Position::Byte(at) => Some(at),
+        Position::Node(node) => NodeId::checked(node).map(|node| {
+            let ast = &report.package.unit(FileId(failure.file)).configured.ast;
+            ast.node(node).span.start
+        }),
+    }
+}
+/// Name the function item that owns a position. Outside every function, the
+/// position itself is the entry: it only takes effect where it is the anchor
+/// of a synthesized body.
+fn blocker(
+    report: &Report,
+    facts: &Declarations,
+    file: FileId,
+    at: u32,
+    message: String,
+) -> Blocker {
+    let (offset, name) = owner(report, facts, file, at).map_or((at, "<item>"), |found| {
+        let name = report
+            .resolution
+            .definitions
+            .get(found.0.definition.0 as usize)
+            .map_or("?", |definition| report.package.names.get(definition.name));
+        (found.1, name)
+    });
+    Blocker {
+        path: path(&report.package, file),
+        offset,
+        name: name.to_owned(),
+        message,
+    }
+}
+/// The functions that keep their bodies although a soundness proof of them
+/// failed, once per function and message. Empty outside the bring-up profile.
+#[must_use]
+pub fn unproven_bodies(report: &Report, facts: &Declarations) -> Vec<Blocker> {
+    let mut bodies: Vec<Blocker> = Vec::new();
+    for failure in crate::support::bringup::unproven_proofs() {
+        let Some(at) = offset(report, &failure) else {
+            continue;
+        };
+        let body = blocker(report, facts, FileId(failure.file), at, failure.message);
+        if !bodies.iter().any(|seen| {
+            seen.offset == body.offset && seen.path == body.path && seen.message == body.message
+        }) {
+            bodies.push(body);
+        }
+    }
+    bodies
 }
 
 /// A stubbed function proves nothing about the body it replaces: drop the

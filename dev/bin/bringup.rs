@@ -61,6 +61,22 @@ pub(super) fn attribute(report: &Report, facts: &Declarations, error: &Error) ->
     }
     Ok(())
 }
+/// Name every function that keeps its body although a soundness proof of it
+/// failed.
+pub(super) fn unproven(report: &Report, facts: &Declarations) -> io::Result<()> {
+    let mut stderr = io::stderr().lock();
+    for body in rustgm::body::bringup::unproven_bodies(report, facts) {
+        writeln!(
+            stderr,
+            "bringup-unproven\t{}\t{}\t{}\t{}",
+            body.path,
+            body.offset,
+            body.name,
+            line(&body.message)
+        )?;
+    }
+    Ok(())
+}
 /// Name every publication fence this compilation passed over.
 pub(super) fn waivers() -> io::Result<()> {
     let mut stderr = io::stderr().lock();

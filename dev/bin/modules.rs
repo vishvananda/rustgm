@@ -422,7 +422,8 @@ fn lowering_error(
     facts: &mut rustgm::sema::model::Declarations,
     error: resolve::package::Error,
 ) -> String {
-    let attribution = crate::bringup::attribute(report, facts, &error);
+    let attribution = crate::bringup::attribute(report, facts, &error)
+        .and_then(|()| crate::bringup::unproven(report, facts));
     let message = semantic_error(&facts.retain_error_warnings(error));
     match attribution {
         Ok(()) => message,
@@ -534,6 +535,8 @@ fn emit_lowir(
             .map_err(|error| lowering_error(&report, &mut facts, error))?;
         (lowir, None)
     };
+    crate::bringup::unproven(&report, &facts)
+        .map_err(|error| failure_message(&facts, error.to_string()))?;
     let native_links =
         crate::link_manifest::prepare(&report, &facts, crates.native_links.as_deref())
             .map_err(|message| failure_message(&facts, message))?;

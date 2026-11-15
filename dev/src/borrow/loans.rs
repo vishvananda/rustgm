@@ -67,6 +67,9 @@ struct State {
     live: u64,
     active: u64,
 }
+const CONFLICT: &str = "access conflicts with a live reference loan";
+/// Bring-up passes this over: the body still runs its destructors at run time.
+const DESTRUCTORS: &str = "constant evaluation cannot run destructors";
 struct Flow<'a> {
     types: &'a Store,
     body: &'a Body,
@@ -211,8 +214,11 @@ impl Flow<'_> {
                     Mode::Mutable => true,
                     Mode::Reserved => loan.mode != Mode::Shared,
                 };
-                if incompatible && self.places.conflicts(loan.place, place, depth)? {
-                    return Err("access conflicts with a live reference loan");
+                if incompatible
+                    && self.places.conflicts(loan.place, place, depth)?
+                    && !crate::body::bringup::unproven(self.body.source, CONFLICT)
+                {
+                    return Err(CONFLICT);
                 }
             }
         }
@@ -641,10 +647,13 @@ pub(crate) fn require_no_const_cleanup(
     body: &Body,
     plan: super::destruction::schedule::Schedule<'_>,
 ) -> Result<(), Error> {
-    if body.const_context && plan.cleanups().any(|cleanup| cleanup.access) {
+    if body.const_context
+        && plan.cleanups().any(|cleanup| cleanup.access)
+        && !crate::body::bringup::unproven(body.source, DESTRUCTORS)
+    {
         return Err(Error {
             node: body.source.into(),
-            message: "constant evaluation cannot run destructors",
+            message: DESTRUCTORS,
         });
     }
     Ok(())
@@ -673,8 +682,9 @@ pub(crate) fn check_schedule(
                 .builtins
                 .as_deref()
                 .is_none_or(|requirements| requirements.defining().is_none()))
+        && !crate::body::bringup::unproven(body.source, DESTRUCTORS)
     {
-        return Err(error("constant evaluation cannot run destructors"));
+        return Err(error(DESTRUCTORS));
     }
     // Actual originals authenticate the same prepared defining eligibility for
     // symbolic and concrete plans. Code publication independently fences reached

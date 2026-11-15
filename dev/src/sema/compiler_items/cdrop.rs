@@ -18,16 +18,22 @@ pub(crate) fn prove_cleanup_requirements(
     universals: u32,
     first: u32,
     goals: &[(Eligibility, Predicate)],
+    mut unproven: impl FnMut(&'static str) -> bool,
 ) -> Result<Obligations, &'static str> {
     let (decisions, proof) =
         decide_cleanup_requirements(facts, environment, universals, first, goals)?;
     for (&decision, &(purpose, _)) in decisions.iter().zip(goals) {
         if decision == Decision::Absent {
-            return Err(if purpose == Eligibility::OwnDrop {
+            let absent = if purpose == Eligibility::OwnDrop {
                 "active cleanup requires const Drop in its actual defining environment"
             } else {
                 "active cleanup requires const Destruct in its actual defining environment"
-            });
+            };
+            // The caller may pass over a missing const effect; the cleanup
+            // itself is unchanged.
+            if !unproven(absent) {
+                return Err(absent);
+            }
         }
     }
     Ok(proof)

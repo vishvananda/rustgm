@@ -8,6 +8,7 @@ use crate::{
         traits::Application,
     },
 };
+const NESTED: &str = "const cleanup selection requires its actual source function";
 pub(crate) fn select(
     facts: &mut Declarations,
     body: &Body,
@@ -17,6 +18,17 @@ pub(crate) fn select(
     physical_cleanup: bool,
 ) -> Result<(), String> {
     let mut work = Work::new(1_000_000);
+    if !matches!(
+        body.owner,
+        Owner::Function {
+            execution: None,
+            ..
+        }
+    ) && crate::body::bringup::unproven(body.source, NESTED)
+    {
+        // Bring-up leaves a nested body's cleanups without their const proof.
+        return Ok(());
+    }
     let mut prepared = prepare(facts, body, contract, &mut work)?;
     let role = prepared.role;
     let environment = Arc::clone(&prepared.environment);
@@ -60,6 +72,7 @@ pub(crate) fn select(
         contract.universals,
         first,
         &goals,
+        |absent| crate::body::bringup::unproven(body.source, absent),
     )?;
     for &(ty, purpose) in &selected.values {
         prepared
@@ -232,7 +245,7 @@ pub(super) fn prepare(
         execution: None,
     } = body.owner
     else {
-        return Err("const cleanup selection requires its actual source function".into());
+        return Err(NESTED.into());
     };
     if body.instance.is_some() {
         return Err("const cleanup specialization requires its original defining proof".into());

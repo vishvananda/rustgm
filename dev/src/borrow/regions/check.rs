@@ -279,7 +279,63 @@ pub(super) fn body(
     cfg: Option<&crate::body::ir::Body>,
     children: &[&super::output::Summary],
 ) -> Result<Body, Error> {
-    body_inner(types, variances, queries, input, cfg, children, None)
+    let mut omitted = Vec::new();
+    loop {
+        let terms = Terms {
+            paid: None,
+            omitted: &omitted,
+        };
+        match body_inner(types, variances, queries, input, cfg, children, &terms) {
+            Ok(body) => return Ok(body),
+            // Bring-up proves the body without a requirement that this proof
+            // cannot discharge, and names it: rustc accepted the source.
+            Err(Failure {
+                error,
+                obligation: Some(index),
+            }) if omitted.len() < 64
+                && !omitted.contains(&index)
+                && UNPROVEN.contains(&error.message.as_str())
+                && crate::body::bringup::unproven_site(error.source, &error.message) =>
+            {
+                omitted.push(index);
+            }
+            Err(failure) => return Err(failure.error),
+        }
+    }
+}
+/// Results that mean "not proven", as opposed to malformed inputs.
+const UNPROVEN: [&str; 2] = [
+    "required lifetime does not outlive its target",
+    "required type does not outlive its target",
+];
+/// A failed proof and, when one requirement that the proof may omit caused
+/// it, that requirement's source index among the body's obligations and its
+/// retained trait evidence.
+struct Failure {
+    error: Error,
+    obligation: Option<usize>,
+}
+impl From<Error> for Failure {
+    fn from(error: Error) -> Self {
+        Self {
+            error,
+            obligation: None,
+        }
+    }
+}
+/// What one attempt may assume or leave out.
+struct Terms<'a> {
+    paid: Option<&'a crate::borrow::incremental::PaidInline<'a>>,
+    /// Source indexes of the requirements left out of this attempt.
+    omitted: &'a [usize],
+}
+/// Whether leaving this obligation out only weakens the proof. A variable, a
+/// hidden choice and a storage bound define identities that later stages read.
+const fn omissible(kind: Obligation) -> bool {
+    !matches!(
+        kind,
+        Obligation::Variable { .. } | Obligation::Membership { .. } | Obligation::LocalBorrow(_)
+    )
 }
 pub(crate) fn paid_inline(
     types: &Store,
@@ -289,7 +345,12 @@ pub(crate) fn paid_inline(
     cfg: &crate::body::ir::Body,
     paid: &crate::borrow::incremental::PaidInline<'_>,
 ) -> Result<Body, Error> {
-    let result = body_inner(types, variances, queries, input, Some(cfg), &[], Some(paid))?;
+    let terms = Terms {
+        paid: Some(paid),
+        omitted: &[],
+    };
+    let result = body_inner(types, variances, queries, input, Some(cfg), &[], &terms)
+        .map_err(|failure| failure.error)?;
     if result.needs_parent() {
         return Err(Error {
             source: Some(input.source.into()),
@@ -305,8 +366,8 @@ fn body_inner(
     input: &Contract,
     cfg: Option<&crate::body::ir::Body>,
     children: &[&super::output::Summary],
-    paid: Option<&crate::borrow::incremental::PaidInline<'_>>,
-) -> Result<Body, Error> {
+    terms: &Terms<'_>,
+) -> Result<Body, Failure> {
     let error = |message| Error {
         source: Some(input.source.into()),
         message,
@@ -322,7 +383,7 @@ fn body_inner(
     for &(a, b) in &input.assumptions {
         constraints.assume(a, b).map_err(|e| error(e.to_string()))?;
     }
-    assume_paid(paid, cfg, input, &mut constraints).map_err(error)?;
+    assume_paid(terms.paid, cfg, input, &mut constraints).map_err(error)?;
     super::interfaces::assume_inputs(types, queries, input, &mut constraints)?;
     constraints
         .assume_outlives_clauses(queries, input.type_assumptions.iter().copied())
@@ -334,14 +395,19 @@ fn body_inner(
         .unwrap_or_default();
     for child in children {
         if child.parent != input.source {
-            return Err(error(
-                "nested output summary belongs to another parent".into(),
-            ));
+            return Err(error("nested output summary belongs to another parent".into()).into());
         }
         provenance.extend(child.requirements.iter().copied());
     }
     let first_proof = input.obligations.len().saturating_add(provenance.len());
-    let obligations = || input.obligations.iter().chain(&provenance).enumerate();
+    let obligations = || {
+        input
+            .obligations
+            .iter()
+            .chain(&provenance)
+            .enumerate()
+            .filter(|(index, _)| !terms.omitted.contains(index))
+    };
     let mut members = super::membership::Requests::new(types);
     if !input.proofs.is_empty() {
         // An inferred input can contain a fresh existential owned by a retained
@@ -354,7 +420,7 @@ fn body_inner(
             cfg.is_some(),
             &mut members,
         )?;
-        quantified(input, queries, &mut constraints, first_proof)?;
+        quantified(input, queries, &mut constraints, first_proof, terms.omitted)?;
     }
     require_obligations(
         obligations().filter(|(_, o)| {
@@ -366,32 +432,8 @@ fn body_inner(
         &mut members,
     )?;
     super::interfaces::require_return(types, input, cfg, &mut constraints, first_proof)?;
-    let (proof, output) = super::output::finish(constraints, input).map_err(|e| {
-        let source = match e {
-            graph::Error::Unsatisfied { source, .. }
-            | graph::Error::Verification { source }
-            | graph::Error::Membership { source } => input
-                .obligations
-                .get(source as usize)
-                .or_else(|| {
-                    (source as usize)
-                        .checked_sub(input.obligations.len())
-                        .and_then(|i| provenance.get(i))
-                })
-                .map(|o| o.source)
-                .or_else(|| {
-                    (source as usize)
-                        .checked_sub(first_proof)
-                        .and_then(|i| proof_source(input, i))
-                })
-                .unwrap_or(input.source.into()),
-            _ => input.source.into(),
-        };
-        Error {
-            source: Some(source),
-            message: e.to_string(),
-        }
-    })?;
+    let (proof, output) = super::output::finish(constraints, input)
+        .map_err(|e| unsatisfied(input, &provenance, first_proof, e))?;
     let hidden_regions = members.finish(&proof).map_err(|e| error(e.to_string()))?;
     Ok(Body {
         hidden_regions,
@@ -404,13 +446,54 @@ fn body_inner(
         output,
     })
 }
+/// Name the requirement that the solved constraints leave unsatisfied.
+fn unsatisfied(
+    input: &Contract,
+    provenance: &[crate::body::regions::Obligation],
+    first_proof: usize,
+    failure: graph::Error,
+) -> Failure {
+    let mut obligation = None;
+    let source = match failure {
+        graph::Error::Unsatisfied { source, .. }
+        | graph::Error::Verification { source }
+        | graph::Error::Membership { source } => {
+            let index = source as usize;
+            let found = input.obligations.get(index).or_else(|| {
+                index
+                    .checked_sub(input.obligations.len())
+                    .and_then(|i| provenance.get(i))
+            });
+            let evidence = index
+                .checked_sub(first_proof)
+                .and_then(|i| proof_source(input, i));
+            // A requirement of retained trait evidence names that evidence.
+            obligation = match found {
+                Some(found) => omissible(found.kind).then_some(index),
+                None => evidence.map(|_| index),
+            };
+            found
+                .map(|o| o.source)
+                .or(evidence)
+                .unwrap_or(input.source.into())
+        }
+        _ => input.source.into(),
+    };
+    Failure {
+        error: Error {
+            source: Some(source),
+            message: failure.to_string(),
+        },
+        obligation,
+    }
+}
 fn require_obligations<'a>(
     obligations: impl Iterator<Item = (usize, &'a crate::body::regions::Obligation)>,
     queries: &mut Queries<'_>,
     constraints: &mut Constraints<'_>,
     has_provenance: bool,
     members: &mut super::membership::Requests<'_>,
-) -> Result<(), Error> {
+) -> Result<(), Failure> {
     let mut formation = None;
     for (index, obligation) in obligations {
         let error = |message| Error {
@@ -428,7 +511,10 @@ fn require_obligations<'a>(
             &mut formation,
             members,
         )
-        .map_err(error)?;
+        .map_err(|message| Failure {
+            error: error(message),
+            obligation: omissible(obligation.kind).then_some(index),
+        })?;
     }
     Ok(())
 }
@@ -437,6 +523,7 @@ fn quantified(
     queries: &mut Queries<'_>,
     constraints: &mut Constraints<'_>,
     first: usize,
+    omitted: &[usize],
 ) -> Result<(), Error> {
     let mut first = first;
     for evidence in &input.proofs {
@@ -444,16 +531,20 @@ fn quantified(
             source: Some(evidence.source),
             message,
         };
-        let count = evidence.sources.len().saturating_add(1);
+        let sources = first..first.saturating_add(evidence.sources.len().saturating_add(1));
         let index =
             u32::try_from(first).map_err(|_| error("too many lifetime proof sources".into()))?;
-        let count =
-            u32::try_from(count).map_err(|_| error("too many lifetime proof sources".into()))?;
+        let count = u32::try_from(sources.len())
+            .map_err(|_| error("too many lifetime proof sources".into()))?;
+        first = sources.end;
+        // An attempt leaves out the whole evidence that a left-out source names.
+        if omitted.iter().any(|source| sources.contains(source)) {
+            continue;
+        }
         evidence
             .proof
             .require_sources(constraints, queries, index, count)
             .map_err(error)?;
-        first = first.saturating_add(count as usize);
     }
     Ok(())
 }

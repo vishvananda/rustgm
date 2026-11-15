@@ -20,7 +20,7 @@ fn main() {
 }
 ";
 
-/// Two functions that only the borrow stage rejects, and one it accepts.
+/// Two functions whose ownership only the borrow stage rejects, and one it accepts.
 const REJECTED: &str = "\
 struct Token;
 fn consume(_: Token) {}
@@ -29,16 +29,41 @@ fn moved_twice() {
     consume(token);
     consume(token);
 }
-fn shortened<'a, 'b>(first: &'a i32, _second: &'b i32) -> &'b i32 {
-    first
+fn stolen(token: &Token) {
+    consume(*token);
 }
 fn accepted(x: i32) -> i32 {
     x & 3
 }
 fn main() {
     moved_twice();
-    let value = accepted(1);
+    stolen(&Token);
+    let _ = accepted(1);
+}
+";
+
+/// Three functions that fail only a lifetime, loan or const-cleanup proof:
+/// each body still means what it says without that proof.
+const UNPROVEN: &str = "\
+struct Guard;
+impl Drop for Guard {
+    fn drop(&mut self) {}
+}
+fn shortened<'a, 'b>(first: &'a i32, _second: &'b i32) -> &'b i32 {
+    first
+}
+fn conflicted(mut value: i32) -> i32 {
+    let held = &value;
+    value |= 4;
+    *held
+}
+const fn discarded() {
+    let _guard = Guard;
+}
+fn main() {
+    let value = conflicted(1);
     let _ = shortened(&value, &value);
+    discarded();
 }
 ";
 
@@ -245,10 +270,59 @@ fn rejected_functions_are_named_until_the_list_compiles_the_rest() -> Result {
         assert!(names.len() > before, "no new function: {stderr}");
     };
     names.sort_unstable();
-    assert_eq!(names, ["moved_twice", "shortened"]);
+    assert_eq!(names, ["moved_twice", "stolen"]);
     // The accepted function keeps its body; both rejected ones trap instead.
     assert!(stubbed.contains("binary and"));
     assert_eq!(stubbed.matches("call void @abort()").count(), 2);
+    Ok(())
+}
+
+#[test]
+fn failed_soundness_proofs_keep_their_bodies_and_are_named() -> Result {
+    let folder = folder_with("unproven", UNPROVEN)?;
+    // Strict compilation still rejects the first of them and names nothing.
+    let strict = run(&folder, &[], &[])?;
+    assert_eq!(strict.status.code(), Some(1));
+    let stderr = String::from_utf8(strict.stderr)?;
+    assert!(stderr.contains("required lifetime does not outlive its target"));
+    assert!(!stderr.contains("bringup-"), "{stderr}");
+    // Bring-up compiles all three with an empty list and reports each once.
+    let passed = run(&folder, &[""], &[])?;
+    let stderr = String::from_utf8_lossy(&passed.stderr).into_owned();
+    let lowered = text(&passed)?;
+    let mut rows = stderr
+        .lines()
+        .filter_map(|line| line.strip_prefix("bringup-unproven\t"))
+        .collect::<Vec<_>>();
+    rows.sort_unstable();
+    let row = |start: &str, name: &str, message: &str| -> Result<String> {
+        let offset = UNPROVEN.find(start).ok_or("fixture lost a function")?;
+        Ok(format!("main.rs\t{offset}\t{name}\t{message}"))
+    };
+    assert_eq!(
+        rows,
+        [
+            row(
+                "fn conflicted",
+                "conflicted",
+                "access conflicts with a live reference loan"
+            )?,
+            row(
+                "const fn discarded",
+                "discarded",
+                "constant evaluation cannot run destructors"
+            )?,
+            row(
+                "fn shortened",
+                "shortened",
+                "required lifetime does not outlive its target"
+            )?,
+        ]
+    );
+    assert!(!stderr.contains("bringup-blocker"), "{stderr}");
+    // No body became a trapping stub: the loan conflict still writes its value.
+    assert!(lowered.contains("binary or"), "{lowered}");
+    assert!(!lowered.contains("call void @abort()"), "{lowered}");
     Ok(())
 }
 

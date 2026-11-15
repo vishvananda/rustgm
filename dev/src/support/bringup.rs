@@ -65,7 +65,7 @@ pub fn waived() -> Vec<String> {
 static DEFERRED: Mutex<Vec<Deferred>> = Mutex::new(Vec::new());
 
 /// Where a failure set aside was raised, within its source file.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Position {
     /// A byte offset.
     Byte(u32),
@@ -99,6 +99,40 @@ pub fn defer(file: u32, position: Position, message: &str) -> bool {
 #[must_use]
 pub fn deferred() -> Vec<Deferred> {
     std::mem::take(&mut *DEFERRED.lock().unwrap_or_else(PoisonError::into_inner))
+}
+
+/// Soundness proofs passed over, in first-met order.
+static UNPROVEN: Mutex<Vec<Deferred>> = Mutex::new(Vec::new());
+
+/// Pass over a failed soundness proof of one body: a borrow, lifetime or
+/// const-cleanup check whose only result is acceptance, made of source that
+/// rustc already accepted. The body keeps its code and the driver reports the
+/// proof as missing. Refused outside the bring-up profile, where it stops the
+/// stage.
+pub fn unproven(file: u32, position: Position, message: &str) -> bool {
+    if selected().is_none() {
+        return false;
+    }
+    let mut unproven = UNPROVEN.lock().unwrap_or_else(PoisonError::into_inner);
+    if !unproven
+        .iter()
+        .any(|seen| seen.file == file && seen.position == position && seen.message == message)
+    {
+        unproven.push(Deferred {
+            file,
+            position,
+            message: message.to_owned(),
+        });
+    }
+    true
+}
+/// Every soundness proof passed over so far.
+#[must_use]
+pub fn unproven_proofs() -> Vec<Deferred> {
+    UNPROVEN
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner)
+        .clone()
 }
 
 /// Function items replaced by trapping stubs, keyed by crate-relative source

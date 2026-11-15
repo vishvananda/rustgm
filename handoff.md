@@ -50,9 +50,10 @@ disambiguator ending in `_bringup`. Everything below is refused without it.
 | A constant that cannot be evaluated belongs to the body that demands it | blocker for that body |
 | Compiler-inserted checks keep the course abort although core installs panic hooks | waived fence |
 | A bodiless intrinsic without run-time lowering becomes a trapping shim; one with a fallback body runs it | waived fence naming the intrinsic |
+| A body that fails only a loan, lifetime or const-cleanup proof keeps its code (the failing lifetime requirement is left out and the proof retried) | `bringup-unproven<TAB>path<TAB>offset<TAB>name<TAB>message` |
 
 `scripts/bringup_census.py` grows a skip list until a crate compiles and writes
-`summary.tsv`, `waived.tsv` and `records.json`. A consumer's waived intrinsics
+`summary.tsv`, `waived.tsv`, `unproven.tsv` and `records.json`. A consumer's waived intrinsics
 are its remaining work list.
 
 ```sh

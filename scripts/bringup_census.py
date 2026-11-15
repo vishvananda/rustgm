@@ -10,8 +10,10 @@ or at the iteration limit.
 
 The skip list is the census of the artifact pipeline: one row per function that
 does not yet compile, with the message that stopped it. ``waived.tsv`` names the
-crate-level publication fences that the last compilation passed over. Neither is
-a qualification. Run this under the resource and storage guards.
+crate-level publication fences that the last compilation passed over, and
+``unproven.tsv`` the functions that kept their bodies although a borrow,
+lifetime or const-cleanup proof of them failed. None of these is a
+qualification. Run this under the resource and storage guards.
 """
 import argparse
 import collections
@@ -39,6 +41,12 @@ def rows(path):
 def waived(stderr):
     """Return the publication fences that the compilation passed over."""
     prefix = "bringup-waived\t"
+    return [line[len(prefix):] for line in stderr.splitlines() if line.startswith(prefix)]
+
+
+def unproven(stderr):
+    """Return the functions that kept their bodies without a soundness proof."""
+    prefix = "bringup-unproven\t"
     return [line[len(prefix):] for line in stderr.splitlines() if line.startswith(prefix)]
 
 
@@ -88,6 +96,7 @@ def main():
     keys = {(row[0], row[1]) for row in rows(options.skip_list)}
     records = []
     fences = []
+    bodies = []
     outcome = "iteration limit"
     stop = None
     for iteration in range(1, options.max_iterations + 1):
@@ -103,6 +112,8 @@ def main():
         (options.out / "last.stderr").write_text(result.stderr)
         fences = waived(result.stderr)
         (options.out / "waived.tsv").write_text("".join(fence + "\n" for fence in fences))
+        bodies = unproven(result.stderr)
+        (options.out / "unproven.tsv").write_text("".join(body + "\n" for body in bodies))
         if result.returncode == 0:
             outcome = "compiled"
             stop = {"iteration": iteration, "seconds": seconds}
@@ -131,9 +142,10 @@ def main():
     counts = summarize(options.skip_list, options.out)
     (options.out / "records.json").write_text(json.dumps(
         {"outcome": outcome, "listed": len(keys), "added": len(records), "stop": stop,
-         "waived": fences, "command": arguments, "records": records}, indent=1) + "\n")
+         "waived": fences, "unproven": bodies, "command": arguments, "records": records},
+        indent=1) + "\n")
     print(f"outcome: {outcome}; listed {len(keys)}; distinct causes {len(counts)}"
-          f"; waived fences {len(fences)}")
+          f"; waived fences {len(fences)}; unproven bodies {len(bodies)}")
     if stop and stop.get("message"):
         print(f"last failure: {stop['message']}")
         for text in stop["unattributed"]:
