@@ -83,7 +83,7 @@ impl Lower<'_, '_, '_> {
             "copy_nonoverlapping" | "copy" | "write_bytes" | "compare_bytes" | "raw_eq" => {
                 self.unqualified_transfer(call)?
             }
-            "size_of_val" | "align_of_val" | "assert_inhabited" | "assert_zero_valid" => {
+            "size_of_val" | "align_of_val" | "assert_zero_valid" => {
                 self.unqualified_layout(call)?
             }
             "fabs" | "copysignf32" | "copysignf64" => self.unqualified_float(call)?,

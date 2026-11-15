@@ -1,5 +1,5 @@
-//! Sizes and alignments of pointed-to values, and validity assertions that
-//! hold for the asserted type.
+//! Sizes and alignments of pointed-to values, and the zero-validity
+//! assertion when it holds for the asserted type.
 use super::{
     super::{Lower, Selected},
     Call,
@@ -17,7 +17,7 @@ impl Lower<'_, '_, '_> {
     ) -> Result<Option<Selected>, &'static str> {
         match (call.name, call.inputs) {
             ("size_of_val" | "align_of_val", &[pointer]) => self.unqualified_extent(call, pointer),
-            ("assert_inhabited" | "assert_zero_valid", &[]) => self.unqualified_assertion(call),
+            ("assert_zero_valid", &[]) => self.unqualified_assertion(call),
             _ => Ok(None),
         }
     }
@@ -61,7 +61,7 @@ impl Lower<'_, '_, '_> {
         }
         Ok(Some(Selected::Runtime(extent)))
     }
-    /// An assertion about the one type argument does nothing when it holds;
+    /// The assertion about the one type argument does nothing when it holds;
     /// one that fails, or that this module cannot decide, keeps the trap.
     fn unqualified_assertion(&mut self, call: Call<'_>) -> Result<Option<Selected>, &'static str> {
         let types = self.context.types;
@@ -77,12 +77,7 @@ impl Lower<'_, '_, '_> {
         if call.result != TypeId::UNIT {
             return Ok(None);
         }
-        let holds = if call.name == "assert_inhabited" {
-            self.context.layout(ty)?.inhabited
-        } else {
-            self.zero_valid(ty)?
-        };
-        Ok(holds.then_some(Selected::Unit))
+        Ok(self.zero_valid(ty)?.then_some(Selected::Unit))
     }
     /// Whether all-zero bytes are a value of a type built from numbers,
     /// booleans, characters, thin raw pointers, arrays and tuples. Any other
