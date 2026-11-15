@@ -1,0 +1,127 @@
+{
+ "schema": 1,
+ "units": {
+  "operator-kernel": {
+   "note": "The 20 tables of the 2026-10-27 completion packet and the two later operator-kernel joins (LIB-048, LIB-049). The environment table uses the provider snapshot of dev/tests/option_environment.rs.",
+   "tables": [
+    {"table": "tests/operator-outcomes.json", "feature": "pa26.operator"},
+    {"table": "tests/index-mut-outcomes.json", "feature": "pa26.index-mut"},
+    {"table": "tests/assignment-outcomes.json", "feature": "pa26.assignment"},
+    {"table": "tests/orphan-outcomes.json", "feature": "pa26.orphan"},
+    {"table": "tests/primitive-assignment-outcomes.json", "feature": "pa26.primitive-assignment"},
+    {"table": "tests/primitive-add-outcomes.json", "feature": "pa26.primitive-add"},
+    {"table": "tests/primitive-binary-outcomes.json", "feature": "pa26.primitive-binary"},
+    {"table": "tests/dot-method-outcomes.json", "feature": "pa26.dot-method"},
+    {"table": "tests/comparison-outcomes.json", "feature": "pa26.comparison"},
+    {"table": "tests/ordering-outcomes.json", "feature": "pa26.ordering"},
+    {"table": "tests/ord-helper-outcomes.json", "feature": "pa26.ord-helper"},
+    {"table": "tests/ordering-impl-outcomes.json", "feature": "pa26.ordering-impl"},
+    {"table": "tests/reference-comparison-outcomes.json", "feature": "pa26.reference-comparison"},
+    {"table": "tests/slice-length-outcomes.json", "feature": "pa26.slice-length"},
+    {"table": "tests/sequence-equality-outcomes.json", "feature": "pa26.sequence-equality"},
+    {"table": "tests/sequence-ordering-outcomes.json", "feature": "pa26.sequence-ordering"},
+    {"table": "tests/primitive-constant-outcomes.json", "feature": "pa26.primitive-constant"},
+    {"table": "tests/library-type-outcomes.json", "feature": "pa26.library-type"},
+    {"table": "tests/environment-outcomes.json", "feature": "pa26.environment", "environment": {"KEY": "é\r\nvalue", "MISSING": null}},
+    {"table": "tests/constructor-promotion-outcomes.json", "feature": "pa26.constructor-promotion"},
+    {"table": "tests/implicit-assignment-demand-predictions.json", "feature": "pa26.primitive-assignment-traits"},
+    {"table": "tests/implicit-assignment-visibility-predictions.json", "feature": "pa26.primitive-assignment-traits"},
+    {"table": "tests/spec/index-capture/predictions.json", "feature": "pa26.mutable-indexing"},
+    {"table": "tests/spec/index-capture/followup.json", "feature": "pa26.mutable-indexing"}
+   ],
+   "default_lints": ["tests/spec/slice-length/mutable-static-lint.rs"],
+   "review": {
+    "tests/spec/primitive-constants/float-trait-priority.rs": "Rejected through 'this primitive MAX constant is not implemented' (the float-required.rs gap), not Rust's E0308 type mismatch; the diagnostic would change when the gap closes"
+   }
+  },
+  "unsafe-places": {
+   "note": "Requirements 27.1-27.3. Draft manifest rows that originate in image_storage/string_words are byte-image storage (27.5, const-memory).",
+   "tables": [
+    {"table": "tests/manifest.draft.json", "feature": "pa27.unsafe-places"},
+    {"table": "tests/capture-precision-outcomes.json", "feature": "pa27.capture-precision"},
+    {"table": "tests/capture-integration-outcomes.json", "rows": "source", "feature": "pa27.capture-precision"},
+    {"table": "tests/capture-integration-outcomes.json", "rows": "native", "feature": "pa27.capture-precision"},
+    {"table": "tests/capture-native-hypotheses.json", "rows": "native", "feature": "pa27.capture-precision"},
+    {"table": "tests/union-borrow-outcomes.json", "feature": "pa27.unions"}
+   ],
+   "skip_origins": ["dev/tests/image_storage.rs", "dev/tests/string_words.rs"]
+  },
+  "iteration-kernel": {
+   "note": "26.5 and the iteration-kernel share of 26.6. The 26.7 residual fixtures live under pa31.",
+   "tables": [
+    {"table": "tests/iteration-outcomes.json", "feature": "pa26.iteration"},
+    {"table": "tests/mutable-iteration-outcomes.json", "feature": "pa26.mutable-iteration"},
+    {"table": "tests/iterator-clone-outcomes.json", "feature": "pa26.iterator-clone"},
+    {"table": "tests/integer-range-outcomes.json", "feature": "pa26.integer-range"},
+    {"table": "tests/shared-iteration-outcomes.json", "feature": "pa26.shared-iteration"},
+    {"table": "tests/iteration-visibility-outcomes.json", "feature": "pa26.iteration-visibility"}
+   ],
+   "review": {
+    "tests/spec/iteration/integer-ranges/range-full-reject.rs": "Rust rejects it, and so does the candidate, but for the wrong reason: `ERROR: expected punctuation` (the parser does not accept the `..` form, as in range-from-break.rs)",
+    "tests/spec/iteration/integer-ranges/range-to-reject.rs": "Rust rejects it, and so does the candidate, but with implementation-gap wording: `this range form requires actual source range declarations`"
+   }
+  },
+  "runtime-memory": {
+   "note": "28.1 native transfers and 28.2 volatile. The draft manifest's source-transmute rows are 28.6 (source-runtime).",
+   "tables": [
+    {"table": "tests/manifest.draft.json", "feature": "pa28.volatile"},
+    {"table": "tests/owned-memory-outcomes.json", "feature": "pa28.owned-memory"},
+    {"table": "tests/owned-memory-outcomes.json", "rows": "native_cases", "feature": "pa28.owned-memory", "native_rows": true},
+    {"table": "tests/unaligned-memory-contract.json", "feature": "pa28.unaligned-memory"},
+    {"table": "tests/unaligned-memory-contract.json", "rows": "native", "feature": "pa28.unaligned-memory", "native_rows": true},
+    {"table": "tests/counted-memory-contract.json", "feature": "pa28.counted-memory"},
+    {"table": "tests/counted-memory-contract.json", "rows": "native", "feature": "pa28.counted-memory", "native_rows": true},
+    {"table": "tests/overlapping-memory-contract.json", "feature": "pa28.overlapping-memory"},
+    {"table": "tests/overlapping-memory-contract.json", "rows": "native", "feature": "pa28.overlapping-memory", "native_rows": true},
+    {"table": "tests/byte-fill-contract.json", "feature": "pa28.byte-fill"}
+   ],
+   "skip_paths_containing": ["source-transmute"],
+   "review": {
+    "tests/spec/counted-memory/null-source-zero.rs": "Rust rejects it, and so does the candidate, but with implementation-gap wording: `constant counted numeric pointer access is not implemented`",
+    "tests/spec/counted-memory/null-destination-zero.rs": "Rust rejects it, and so does the candidate, but with implementation-gap wording: `constant counted numeric pointer access is not implemented`",
+    "tests/spec/counted-memory/misaligned-zero.rs": "Rust rejects it, and so does the candidate, but with implementation-gap wording: `constant counted numeric pointer access is not implemented`",
+    "tests/spec/counted-memory/zst-misaligned.rs": "Rust rejects it, and so does the candidate, but with implementation-gap wording: `constant counted numeric pointer access is not implemented`",
+    "tests/spec/overlapping-memory/null-source-zero.rs": "Rust rejects it, and so does the candidate, but with implementation-gap wording: `constant counted numeric pointer access is not implemented`",
+    "tests/spec/overlapping-memory/null-destination-zero.rs": "Rust rejects it, and so does the candidate, but with implementation-gap wording: `constant counted numeric pointer access is not implemented`",
+    "tests/spec/overlapping-memory/misaligned-zero.rs": "Rust rejects it, and so does the candidate, but with implementation-gap wording: `constant counted numeric pointer access is not implemented`",
+    "tests/spec/overlapping-memory/zst-misaligned.rs": "Rust rejects it, and so does the candidate, but with implementation-gap wording: `constant counted numeric pointer access is not implemented`",
+    "tests/spec/byte-fill/null-zero-default.rs": "Rust rejects it, and so does the candidate, but with implementation-gap wording: `constant counted numeric pointer access is not implemented`"
+   }
+  },
+  "atomic-u32": {
+   "note": "28.3. Entry-free sources are declared as libraries with one fixed identity.",
+   "tables": [
+    {"table": "tests/atomic-cas-outcomes.json", "feature": "pa28.atomic-cas"},
+    {"table": "tests/atomic-cas-outcomes.json", "rows": "native", "feature": "pa28.atomic-cas", "native_rows": true},
+    {"table": "tests/atomic-rmw-outcomes.json", "feature": "pa28.atomic-rmw"},
+    {"table": "tests/atomic-rmw-outcomes.json", "rows": "native", "feature": "pa28.atomic-rmw", "native_rows": true},
+    {"table": "tests/atomic-bitwise-outcomes.json", "feature": "pa28.atomic-bitwise"},
+    {"table": "tests/atomic-subtract-outcomes.json", "feature": "pa28.atomic-subtract"},
+    {"table": "tests/atomic-extrema-outcomes.json", "rows": "source_cases", "feature": "pa28.atomic-extrema"},
+    {"table": "tests/atomic-extrema-outcomes.json", "rows": "native_cases", "feature": "pa28.atomic-extrema", "native_rows": true},
+    {"table": "tests/atomic-method-outcomes.json", "feature": "pa28.atomic-methods"},
+    {"table": "tests/atomic-method-outcomes.json", "rows": "native", "feature": "pa28.atomic-methods", "native_rows": true},
+    {"table": "tests/atomic-method-outcomes.json", "rows": "boundaries", "feature": "pa28.atomic-methods"},
+    {"table": "tests/atomic-storage-outcomes.json", "feature": "pa28.atomic-storage"},
+    {"table": "tests/atomic-storage-outcomes.json", "rows": "native_cases", "feature": "pa28.atomic-storage", "native_rows": true}
+   ],
+   "entry_free": {"crate_name": "atomic_fixture", "disambiguator": "pa28"}
+  },
+  "c-abi": {
+   "note": "Requirements 30.1-30.4 and 30.7. Metadata tables belong to value-metadata (30.5).",
+   "tables": [
+    {"table": "tests/convention-outcomes.json", "feature": "pa30.convention"},
+    {"table": "tests/import-outcomes.json", "feature": "pa30.import"},
+    {"table": "tests/linkage-outcomes.json", "feature": "pa30.linkage"},
+    {"table": "tests/static-outcomes.json", "feature": "pa30.static"},
+    {"table": "tests/aggregate-outcomes.json", "feature": "pa30.aggregate"},
+    {"table": "tests/composite-outcomes.json", "feature": "pa30.composite"},
+    {"table": "tests/variadic-outcomes.json", "feature": "pa30.variadic"},
+    {"table": "tests/variadic-tail-outcomes.json", "feature": "pa30.variadic-tail"}
+   ],
+   "review": {
+    "tests/spec/statics/interior-storage.rs": "Passes the probe, but declares pa28.atomic-storage; c-abi has no atomic-u32 prerequisite edge, so the unit validator rejects it as a future-stage feature"
+   }
+  }
+ }
+}

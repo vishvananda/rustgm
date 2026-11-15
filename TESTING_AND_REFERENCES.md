@@ -112,6 +112,44 @@ empty component still fails. Publication retains the owning scope, independent
 and native evidence, release gates and every residual parent requirement; the
 tooling alone does not release a component.
 
+### Component release recipe
+
+`scripts/unit_release.py` turns an implemented unit's draft outcome tables into
+a release. [unit_tables.json](scripts/unit_tables.json) names each unit's
+tables, row filters, entry-free library identity and reviewed deferrals;
+working state stays under `obj/publication/UNIT/`.
+
+```sh
+python3 scripts/unit_release.py inventory UNIT
+python3 scripts/unit_release.py probe UNIT --app /immutable/qualified/rustgm
+python3 scripts/unit_release.py review UNIT
+python3 scripts/unit_release.py declare UNIT
+python3 scripts/unit_release.py checks UNIT --app /immutable/qualified/rustgm --bless
+python3 scripts/unit_release.py summary UNIT
+python3 scripts/unit_release.py wire UNIT --record docs/paN-UNIT-release.md --deferred N
+python3 scripts/unit_release.py ledger 'ID=publication text'
+```
+
+- `inventory` runs no compiler. Each row keeps its independent Rust outcome as
+  the contract outcome, and sources no table declares are listed, not dropped.
+- `probe` runs pinned rustc, the candidate and the native lane through the
+  checkers' own per-case functions. It adds `default_lints` only when the
+  outcome needs a lint level, a warning code only when pinned rustc reports the
+  same lint, and `lowir: empty` only for an empty library unit.
+- `declare` publishes the candidates that passed and writes every other one to
+  `deferred.json` with its observed message. A rejection that passes through
+  implementation-gap wording is the right status for the wrong reason: it needs
+  a reviewed deferral in `unit_tables.json` (or `--exclude PATH=REASON`).
+- `checks` runs metadata, independent rustc, the course writer (with `--bless`),
+  layout, text and native checks in that order and stops at the first failure.
+- `summary` prints the family and deferred tables for the one release record;
+  `wire` updates the plan, order table, ROADMAP and the handout's contract table.
+
+Wrap `probe` and `checks` in the resource/storage wrappers with
+`--prune-under obj/publication/UNIT`, `obj/rustc-syntax/paN/units/UNIT` and
+`obj/native/paN/units/UNIT`. The release record, its deferred list and the
+remaining handout prose are still written and reviewed by hand.
+
 ## Development checkpoints
 
 Maintainer integration roots under `dev/tests/` are registered as modules in

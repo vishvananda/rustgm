@@ -227,6 +227,96 @@ def native_selection(manifest, cases, case_paths, stage):
                       "selected_paths": [case["path"] for case in selected]}
 
 
+def check_case(stage, mode, case, app, directory, tools, *, observed_warnings=False):
+    """Check one native case in its own evidence folder; the result records every command and the verdict.
+
+    A release compares successful diagnostics with the committed reference. Before a
+    reference exists, `observed_warnings` holds the candidate to its own observed
+    diagnostics, so the declared warning codes are still checked exactly.
+    """
+    evidence = {"path": case["path"], "commands": [], "passed": False}
+    folder = directory / case["path"].removesuffix(".rs")
+    try:
+        classification(case)
+        if folder.exists():
+            shutil.rmtree(folder)
+        folder.mkdir(parents=True)
+        fixture = ROOT / stage / case["path"]
+        source = folder / fixture.name
+        source.write_bytes(fixture.read_bytes())
+        for auxiliary in case.get("auxiliary", []):
+            original = ROOT / stage / auxiliary
+            destination = folder / original.relative_to(fixture.parent)
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(original, destination)
+        env = case_environment(case)
+
+        def run(command, label, timeout=60):
+            result = subprocess.run(command, capture_output=True, timeout=timeout, cwd=ROOT, env=env)
+            evidence["commands"].append({"argv": command, "status": result.returncode})
+            (folder / (label + ".stdout")).write_bytes(result.stdout)
+            (folder / (label + ".stderr")).write_bytes(result.stderr)
+            return result
+
+        _, actual = run_case(ROOT, stage, mode, case, [str(app)], 30)
+        for suffix, data in zip(("stdout", "stderr", "status"), actual):
+            (folder / ("frontend." + suffix)).write_bytes(data)
+        if actual[2] != f"{case['exit_status']}\n".encode():
+            raise ValueError(f"frontend outcome differs: {actual[2]!r}, {actual[1]!r}")
+        if not case["exit_status"]:
+            warning_reference = Path(str(fixture) + ".ref.stderr")
+            expected = actual[1] if observed_warnings else warning_reference.read_bytes()
+            accepted_frontend(actual, expected, case.get("warnings", []), declares_empty_lowir(case))
+            if not observed_warnings:
+                evidence["warning_reference"] = str(warning_reference.relative_to(ROOT))
+                evidence["warning_reference_sha256"] = digest(warning_reference)
+            evidence["declared_warning_codes"] = case.get("warnings", [])
+        if case["exit_status"] and (actual[0] or not actual[1]):
+            raise ValueError("rejections require empty stdout and a diagnostic")
+        library = case["rustc"]["kind"] == "library"
+        rustexe = folder / ("rustc-output.o" if library else "rustc-output")
+        command = ["rustc", "--edition=2024", "--target", "x86_64-unknown-linux-gnu",
+                   *rustc_arguments(case, "native_check"), "-C", "panic=abort", "-C", "overflow-checks=yes",
+                   "-C", "debug-assertions=off", str(source), "-o", str(rustexe)]
+        if not case["rustc"].get("default_lints", False):
+            command += ["--cap-lints", "allow"]
+        if library:
+            command += ["--crate-type=lib", "--emit=obj"]
+        rust = run(command, "rustc")
+        if rust.returncode != case["rustc"]["status"]:
+            raise ValueError(f"rustc outcome differs: {rust.returncode}: {rust.stderr.decode(errors='replace')}")
+        if case["exit_status"] == 0:
+            text = folder / "output.lowir"
+            text.write_bytes(actual[0])
+            native = folder / ("native-output.o" if library else "native-output")
+            if library:
+                verify_object(rustexe)
+                def object_run(command):
+                    result = run(command, "backend-object")
+                    if result.returncode:
+                        raise ValueError(f"object backend failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
+                # A declared empty unit still crosses the object bridge, proving the backend accepts it.
+                emit_object(text, native, tools, run=object_run)
+                if declares_empty_lowir(case):
+                    empty_objects((("rustc", rustexe), ("cppgm", native)))
+                evidence["objects"] = {"rustc_sha256": digest(rustexe), "native_sha256": digest(native)}
+            else:
+                validated = folder / "validated.lowir"
+                for command, label in [([tools["lowir"], "-o", str(validated), str(text)], "validate"),
+                                       ([tools["lowir2native"], "-O0", "-o", str(native), str(validated)], "backend")]:
+                    result = run(command, label)
+                    if result.returncode:
+                        raise ValueError(f"{label} failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
+            evidence["native"] = case["native"]
+            run_executables(case["native"], rustexe, native, run)
+        for executable in (rustexe, folder / "native-output", folder / "native-output.o"):
+            executable.unlink(missing_ok=True)
+        evidence["passed"] = True
+    except (ValueError, OSError, subprocess.SubprocessError) as error:
+        evidence["error"] = str(error)
+    return evidence
+
+
 def check(app, jobs, stage="pa11", *, unit=None, case_paths=None):
     paths = suite_paths(ROOT, stage, unit)
     manifest, cases = load_cases(ROOT, stage, unit=unit)
@@ -245,86 +335,7 @@ def check(app, jobs, stage="pa11", *, unit=None, case_paths=None):
     directory.mkdir(parents=True, exist_ok=True)
 
     def worker(case):
-        evidence = {"path": case["path"], "commands": [], "passed": False}
-        folder = directory / case["path"].removesuffix(".rs")
-        try:
-            classification(case)
-            if folder.exists():
-                shutil.rmtree(folder)
-            folder.mkdir(parents=True)
-            fixture = ROOT / stage / case["path"]
-            source = folder / fixture.name
-            source.write_bytes(fixture.read_bytes())
-            for auxiliary in case.get("auxiliary", []):
-                original = ROOT / stage / auxiliary
-                destination = folder / original.relative_to(fixture.parent)
-                destination.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(original, destination)
-            env = case_environment(case)
-
-            def run(command, label, timeout=60):
-                result = subprocess.run(command, capture_output=True, timeout=timeout, cwd=ROOT, env=env)
-                evidence["commands"].append({"argv": command, "status": result.returncode})
-                (folder / (label + ".stdout")).write_bytes(result.stdout)
-                (folder / (label + ".stderr")).write_bytes(result.stderr)
-                return result
-
-            _, actual = run_case(ROOT, stage, manifest["mode"], case, [str(app)], 30)
-            for suffix, data in zip(("stdout", "stderr", "status"), actual):
-                (folder / ("frontend." + suffix)).write_bytes(data)
-            if actual[2] != f"{case['exit_status']}\n".encode():
-                raise ValueError(f"frontend outcome differs: {actual[2]!r}, {actual[1]!r}")
-            if not case["exit_status"]:
-                warning_reference = Path(str(fixture) + ".ref.stderr")
-                accepted_frontend(actual, warning_reference.read_bytes(), case.get("warnings", []),
-                                  declares_empty_lowir(case))
-                evidence["warning_reference"] = str(warning_reference.relative_to(ROOT))
-                evidence["warning_reference_sha256"] = digest(warning_reference)
-                evidence["declared_warning_codes"] = case.get("warnings", [])
-            if case["exit_status"] and (actual[0] or not actual[1]):
-                raise ValueError("rejections require empty stdout and a diagnostic")
-            library = case["rustc"]["kind"] == "library"
-            rustexe = folder / ("rustc-output.o" if library else "rustc-output")
-            command = ["rustc", "--edition=2024", "--target", "x86_64-unknown-linux-gnu",
-                       *rustc_arguments(case, "native_check"), "-C", "panic=abort", "-C", "overflow-checks=yes",
-                       "-C", "debug-assertions=off", str(source), "-o", str(rustexe)]
-            if not case["rustc"].get("default_lints", False):
-                command += ["--cap-lints", "allow"]
-            if library:
-                command += ["--crate-type=lib", "--emit=obj"]
-            rust = run(command, "rustc")
-            if rust.returncode != case["rustc"]["status"]:
-                raise ValueError(f"rustc outcome differs: {rust.returncode}: {rust.stderr.decode(errors='replace')}")
-            if case["exit_status"] == 0:
-                text = folder / "output.lowir"
-                text.write_bytes(actual[0])
-                native = folder / ("native-output.o" if library else "native-output")
-                if library:
-                    verify_object(rustexe)
-                    def object_run(command):
-                        result = run(command, "backend-object")
-                        if result.returncode:
-                            raise ValueError(f"object backend failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
-                    # A declared empty unit still crosses the object bridge, proving the backend accepts it.
-                    emit_object(text, native, tools, run=object_run)
-                    if declares_empty_lowir(case):
-                        empty_objects((("rustc", rustexe), ("cppgm", native)))
-                    evidence["objects"] = {"rustc_sha256": digest(rustexe), "native_sha256": digest(native)}
-                else:
-                    validated = folder / "validated.lowir"
-                    for command, label in [([tools["lowir"], "-o", str(validated), str(text)], "validate"),
-                                           ([tools["lowir2native"], "-O0", "-o", str(native), str(validated)], "backend")]:
-                        result = run(command, label)
-                        if result.returncode:
-                            raise ValueError(f"{label} failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
-                evidence["native"] = case["native"]
-                run_executables(case["native"], rustexe, native, run)
-            for executable in (rustexe, folder / "native-output", folder / "native-output.o"):
-                executable.unlink(missing_ok=True)
-            evidence["passed"] = True
-        except (ValueError, OSError, subprocess.SubprocessError) as error:
-            evidence["error"] = str(error)
-        return evidence
+        return check_case(stage, manifest["mode"], case, app, directory, tools)
 
     with ThreadPoolExecutor(max_workers=jobs) as pool:
         results = list(pool.map(worker, cases))

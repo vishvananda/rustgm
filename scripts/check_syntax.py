@@ -56,6 +56,75 @@ def check_configured_owners(metadata, output):
             raise ValueError(f"configured owner facts disagree: {actual}, wanted {metadata['configured']}")
 
 
+def independent_rustc(stage, mode, case, case_directory):
+    """Compile one classified case with pinned rustc in a fresh directory; return its result and output."""
+    metadata = case["rustc"]
+    kind = metadata["kind"]
+    if kind not in ("program", "library", "predicate", "expression"):
+        raise ValueError(f"unknown independent check kind: {kind}")
+    fixture = ROOT / stage / case["path"]
+    data = fixture.read_bytes()
+    if case_directory.exists():
+        shutil.rmtree(case_directory)
+    case_directory.mkdir(parents=True)
+    source = case_directory / fixture.name
+    suffix = "" if kind == "predicate" else ".o" if metadata.get("emit") == "obj" else ".rmeta"
+    binary = case_directory / ("output" + suffix)
+    for auxiliary in case.get("auxiliary", []):
+        original = ROOT / stage / auxiliary
+        destination = case_directory / original.relative_to(fixture.parent)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(original, destination)
+    if kind == "predicate":
+        source.write_text('fn main() { println!("{}", cfg!(' + metadata["predicate"] + ')); }\n')
+    elif kind == "expression":
+        source.write_bytes(expression_source(data, metadata))
+    else:
+        source.write_bytes(data)
+    command = ["rustc", "--edition=2024", "--target", "x86_64-unknown-linux-gnu",
+               "-C", "panic=abort", "-C", "debug-assertions=off",
+               *rustc_arguments(case, "syntax_check"), str(source), "-o", str(binary)]
+    if not metadata.get("default_lints", False):
+        command += ["--cap-lints", "allow"]
+    if kind != "predicate":
+        mode = case.get("mode", mode)
+        command += ["--crate-type=bin" if mode == "--emit-lowir" and kind != "library" else "--crate-type=lib",
+                    rustc_emission(metadata)]
+    result = subprocess.run(command, capture_output=True, timeout=30, env=case_environment(case))
+    (case_directory / "rustc.stderr").write_bytes(result.stderr)
+    return result, binary
+
+
+def check_case(stage, mode, case, app, directory):
+    """One independent check: False for a declared stream fragment, True when both compilers agree."""
+    metadata = case["rustc"]
+    kind = metadata["kind"]
+    if kind == "fragment":
+        return False
+    fixture = ROOT / stage / case["path"]
+    result, binary = independent_rustc(stage, mode, case, directory / case["path"].removesuffix(".rs"))
+    wanted = 0 if kind == "predicate" else metadata["status"]
+    if result.returncode != wanted:
+        raise ValueError(f"rustc disagreement: {fixture}: {result.returncode}, wanted {wanted}\n{result.stderr.decode(errors='replace')}")
+    _, actual = run_case(ROOT, stage, mode, case, [str(app)], 10)
+    if actual[2] != f"{case['exit_status']}\n".encode():
+        raise ValueError(f"candidate outcome disagreement: {fixture}: {actual[1]!r}")
+    check_configured_owners(metadata, actual[0])
+    if kind == "predicate":
+        runtime = subprocess.run([str(binary)], capture_output=True, timeout=10)
+        expected = b"true\n" if metadata["value"] else b"false\n"
+        if runtime.returncode or runtime.stderr or runtime.stdout != expected:
+            raise ValueError(f"independent predicate expectation is wrong: {fixture}: {runtime.stdout!r}")
+        facts = re.findall(rb"^attribute .*? cfg=(true|false) ", actual[0], re.M)
+        if facts != [expected.strip()]:
+            raise ValueError(f"cfg evaluation disagrees with rustc: {fixture}: {facts!r}")
+    elif "enabled" in metadata:
+        enabled = not re.search(rb"^attribute .*? cfg=false ", actual[0], re.M)
+        if enabled != metadata["enabled"]:
+            raise ValueError(f"configuration fact disagrees with declared ownership case: {fixture}")
+    return True
+
+
 def check(stage, app, jobs=None, *, unit=None):
     jobs = int(os.environ.get("RUSTGM_TEST_JOBS", "4")) if jobs is None else jobs
     if not 1 <= jobs <= 8:
@@ -72,63 +141,7 @@ def check(stage, app, jobs=None, *, unit=None):
     directory.mkdir(parents=True, exist_ok=True)
 
     def worker(case):
-        metadata = case["rustc"]
-        kind = metadata["kind"]
-        if kind == "fragment":
-            return False
-        if kind not in ("program", "library", "predicate", "expression"):
-            raise ValueError(f"unknown independent check kind: {kind}")
-        fixture = ROOT / stage / case["path"]
-        data = fixture.read_bytes()
-        case_directory = directory / case["path"].removesuffix(".rs")
-        if case_directory.exists():
-            shutil.rmtree(case_directory)
-        case_directory.mkdir(parents=True)
-        source = case_directory / fixture.name
-        suffix = "" if kind == "predicate" else ".o" if metadata.get("emit") == "obj" else ".rmeta"
-        binary = case_directory / ("output" + suffix)
-        for auxiliary in case.get("auxiliary", []):
-            original = ROOT / stage / auxiliary
-            destination = case_directory / original.relative_to(fixture.parent)
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(original, destination)
-        if kind == "predicate":
-            source.write_text('fn main() { println!("{}", cfg!(' + metadata["predicate"] + ')); }\n')
-        elif kind == "expression":
-            source.write_bytes(expression_source(data, metadata))
-        else:
-            source.write_bytes(data)
-        command = ["rustc", "--edition=2024", "--target", "x86_64-unknown-linux-gnu",
-                   "-C", "panic=abort", "-C", "debug-assertions=off",
-                   *rustc_arguments(case, "syntax_check"), str(source), "-o", str(binary)]
-        if not metadata.get("default_lints", False):
-            command += ["--cap-lints", "allow"]
-        if kind != "predicate":
-            mode = case.get("mode", manifest["mode"])
-            command += ["--crate-type=bin" if mode == "--emit-lowir" and kind != "library" else "--crate-type=lib",
-                        rustc_emission(metadata)]
-        result = subprocess.run(command, capture_output=True, timeout=30, env=case_environment(case))
-        (case_directory / "rustc.stderr").write_bytes(result.stderr)
-        wanted = 0 if kind == "predicate" else metadata["status"]
-        if result.returncode != wanted:
-            raise ValueError(f"rustc disagreement: {fixture}: {result.returncode}, wanted {wanted}\n{result.stderr.decode(errors='replace')}")
-        _, actual = run_case(ROOT, stage, manifest["mode"], case, [str(app)], 10)
-        if actual[2] != f"{case['exit_status']}\n".encode():
-            raise ValueError(f"candidate outcome disagreement: {fixture}: {actual[1]!r}")
-        check_configured_owners(metadata, actual[0])
-        if kind == "predicate":
-            runtime = subprocess.run([str(binary)], capture_output=True, timeout=10)
-            expected = b"true\n" if metadata["value"] else b"false\n"
-            if runtime.returncode or runtime.stderr or runtime.stdout != expected:
-                raise ValueError(f"independent predicate expectation is wrong: {fixture}: {runtime.stdout!r}")
-            facts = re.findall(rb"^attribute .*? cfg=(true|false) ", actual[0], re.M)
-            if facts != [expected.strip()]:
-                raise ValueError(f"cfg evaluation disagrees with rustc: {fixture}: {facts!r}")
-        elif "enabled" in metadata:
-            enabled = not re.search(rb"^attribute .*? cfg=false ", actual[0], re.M)
-            if enabled != metadata["enabled"]:
-                raise ValueError(f"configuration fact disagrees with declared ownership case: {fixture}")
-        return True
+        return check_case(stage, manifest["mode"], case, app, directory)
 
     with ThreadPoolExecutor(max_workers=jobs) as pool:
         count = sum(pool.map(worker, cases))
