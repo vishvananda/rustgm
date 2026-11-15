@@ -1189,6 +1189,8 @@ pub(super) fn prepare_ordinary<C: Collect>(
         .prepare_original_regions(facts, &inputs, bodies.bodies())
         .map_err(|e| diagnostic(report, e.node, e.message))?;
     let mut ordinary = Ordinary::default();
+    // The bring-up profile reports every ordinary body this stage rejects.
+    let mut deferral = crate::body::bringup::Deferral::default();
     // Prove in program order while releasing the moved-from body records.
     bodies
         .reverse(facts)
@@ -1201,15 +1203,10 @@ pub(super) fn prepare_ordinary<C: Collect>(
             .shrink(facts)
             .map_err(|e| diagnostic(report, None, e.into()))?;
         let source = body.source;
-        let closure = if let Owner::Closure { identity, .. } = body.owner {
-            Some(identity)
-        } else {
-            None
-        };
-        let definition = if let Owner::Function { definition, .. } = body.owner {
-            Some(definition)
-        } else {
-            None
+        let (closure, definition) = match body.owner {
+            Owner::Closure { identity, .. } => (Some(identity), None),
+            Owner::Function { definition, .. } => (None, Some(definition)),
+            _ => (None, None),
         };
         let input = inputs.remove(&body.key()).ok_or_else(|| {
             diagnostic(
@@ -1218,8 +1215,10 @@ pub(super) fn prepare_ordinary<C: Collect>(
                 "missing ordinary body contract".into(),
             )
         })?;
-        let index =
-            program.push_original(report, facts, originals, (body, requirements), &input)?;
+        let pushed = program.push_original(report, facts, originals, (body, requirements), &input);
+        let Some(index) = deferral.admit(pushed)? else {
+            continue;
+        };
         #[cfg(test)]
         program
             .observe_original(facts, index, &input)
@@ -1231,6 +1230,7 @@ pub(super) fn prepare_ordinary<C: Collect>(
             ordinary.closures.insert(identity, index);
         }
     }
+    deferral.finish()?;
     Ok((program, ordinary))
 }
 

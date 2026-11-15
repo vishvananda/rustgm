@@ -334,10 +334,12 @@ pub fn build_source_library_profile(
         facts,
         prepared,
         |facts, checked| {
-            let (source, modules) = super::transported_source::Source::begin_publication(
-                report, facts, checked, &identity, profile,
-            )
-            .map_err(|error| report.diagnostic(error))?;
+            let source = withheld(
+                super::transported_source::Source::begin_publication(
+                    report, facts, checked, &identity, profile,
+                )
+                .map_err(|error| report.diagnostic(error)),
+            )?;
             let mut dependencies =
                 report
                     .resolution
@@ -363,55 +365,25 @@ pub fn build_source_library_profile(
                 .map_err(|e| diagnostic(report, None, e.into()))?;
             let roots = super::roots::exports(facts, &[])
                 .map_err(|e| diagnostic(report, None, e.into()))?;
-            Ok((None, roots, (source, base, modules)))
+            Ok((None, roots, (source, base)))
         },
-        |(source, _, _), facts, proved, input| {
-            source
-                .collect(facts, proved, input)
-                .map_err(|e| diagnostic(report, None, e.into()))
+        |(source, _), facts, proved, input| {
+            let Some((rows, _)) = source else {
+                return Ok(());
+            };
+            match rows.collect(facts, proved, input) {
+                // The bring-up profile still lowers what it cannot publish.
+                Err(message) if crate::support::bringup::withhold(message) => {
+                    *source = None;
+                    Ok(())
+                }
+                collected => collected.map_err(|e| diagnostic(report, None, e.into())),
+            }
         },
-        |facts, assembled, roots, (source, base, modules)| {
+        |facts, assembled, roots, (source, base)| {
             let program = super::build_assembled(facts, assembled, roots)
                 .map_err(|e| diagnostic(report, e.node, e.message.into()))?;
-            let interface = source
-                .complete_publication(report, facts, base, modules, profile)
-                .map_err(|error| facts.retain_error_warnings(error))?;
-            // A generated exported definition is located in expanded text;
-            // project it to the tokens that produced it.
-            let table = crate::sema::crates::macro_table(report, interface.dependencies())
-                .map_err(|error| report.diagnostic(error))?;
-            let interface = match table {
-                Some(macros)
-                    if interface.macros().is_none() && interface.native_links().is_none() =>
-                {
-                    interface
-                        .with_macros(macros)
-                        .map_err(|message| diagnostic(report, None, message.into()))?
-                }
-                Some(_) => {
-                    return Err(diagnostic(
-                        report,
-                        None,
-                        "source publication already wraps its macro table".into(),
-                    ));
-                }
-                None => interface,
-            };
-            let interface = if interface.native_links().is_none() {
-                if let Some(plan) = facts
-                    .foreign
-                    .as_deref()
-                    .and_then(crate::sema::foreign::Registry::native_links)
-                {
-                    interface
-                        .with_native_links(plan.clone())
-                        .map_err(|message| diagnostic(report, None, message.into()))?
-                } else {
-                    interface
-                }
-            } else {
-                interface
-            };
+            let interface = published_interface(report, facts, source, base, profile)?;
             Ok((program, with_loader_flags(report, interface)?))
         },
         if matches!(
@@ -423,6 +395,89 @@ pub fn build_source_library_profile(
             Construction::Complete
         },
     )?
+}
+
+/// A publication step's result, or nothing once the bring-up profile withheld
+/// the metadata that the step could not produce.
+fn withheld<T>(result: Result<T, Error>) -> Result<Option<T>, Error> {
+    match result {
+        Ok(value) => Ok(Some(value)),
+        Err(error) if crate::support::bringup::withhold(&error.message) => Ok(None),
+        Err(error) => Err(error),
+    }
+}
+
+/// Complete a source library's interface: its collected rows wrapped in the
+/// macro table and native links, or the bare interface when the bring-up
+/// profile withheld the rows.
+fn published_interface(
+    report: &Report,
+    facts: &mut Declarations,
+    source: Option<(
+        super::transported_source::Source,
+        Option<crate::support::crates::generics::source::ModuleContractRows>,
+    )>,
+    base: crate::support::crates::Interface,
+    profile: SourcePublication,
+) -> Result<crate::support::crates::Interface, Error> {
+    let unpublished = |report: &Report| {
+        crate::support::crates::Interface::new(
+            base.identity().clone(),
+            base.dependencies().to_vec(),
+            Vec::new(),
+        )
+        .map_err(|e| diagnostic(report, None, e.into()))
+    };
+    let Some((source, modules)) = source else {
+        return Ok(base);
+    };
+    let fallback = crate::support::bringup::selected()
+        .map(|_| unpublished(report))
+        .transpose()?;
+    let completed = source
+        .complete_publication(report, facts, base, modules, profile)
+        .map_err(|error| facts.retain_error_warnings(error));
+    let Some(interface) = withheld(completed)? else {
+        return fallback.ok_or_else(|| {
+            diagnostic(
+                report,
+                None,
+                "withheld metadata lost its bare interface".into(),
+            )
+        });
+    };
+    // A generated exported definition is located in expanded text;
+    // project it to the tokens that produced it.
+    let table = crate::sema::crates::macro_table(report, interface.dependencies())
+        .map_err(|error| report.diagnostic(error))?;
+    let interface = match table {
+        Some(macros) if interface.macros().is_none() && interface.native_links().is_none() => {
+            interface
+                .with_macros(macros)
+                .map_err(|message| diagnostic(report, None, message.into()))?
+        }
+        Some(_) => {
+            return Err(diagnostic(
+                report,
+                None,
+                "source publication already wraps its macro table".into(),
+            ));
+        }
+        None => interface,
+    };
+    if interface.native_links().is_some() {
+        return Ok(interface);
+    }
+    match facts
+        .foreign
+        .as_deref()
+        .and_then(crate::sema::foreign::Registry::native_links)
+    {
+        Some(plan) => interface
+            .with_native_links(plan.clone())
+            .map_err(|message| diagnostic(report, None, message.into())),
+        None => Ok(interface),
+    }
 }
 
 /// Inspect the complete checked source program without requiring an executable entry.
@@ -506,7 +561,7 @@ fn inspect_selected<R>(
         |facts, checked| select(facts, checked).map(|(entry, exports)| (entry, exports, ())),
         staged_originals::ignore,
         |facts, assembled, roots, ()| inspect(facts, assembled, roots),
-        Construction::Complete,
+        Construction::ordinary(),
     )
 }
 
@@ -537,6 +592,16 @@ enum Construction<'a> {
     Local,
 }
 impl<'a> Construction<'a> {
+    /// Every selected body. The bring-up profile leaves the compiler-owned
+    /// async operation to its owner, as a source publication does, so that a
+    /// program can be lowered in the same session as its source provider.
+    fn ordinary() -> Self {
+        if crate::support::bringup::selected().is_some() {
+            Self::CompilerOperations
+        } else {
+            Self::Complete
+        }
+    }
     fn selection(&self) -> body::Selection {
         if matches!(self, Self::CompilerOperations) {
             body::Selection::CompilerOperations

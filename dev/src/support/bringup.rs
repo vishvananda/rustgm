@@ -20,6 +20,47 @@ pub fn selected() -> Option<&'static Stubs> {
     SELECTED.get()
 }
 
+/// Crate-level publication fences passed over, in first-met order.
+static WAIVED: Mutex<Vec<String>> = Mutex::new(Vec::new());
+
+/// Pass over a crate-level publication fence: the artifact then lacks the
+/// fact that the fence protects, and the driver reports the waiver. Refused
+/// outside the bring-up profile, where every fence stops publication.
+pub fn waive(fence: &str) -> bool {
+    if selected().is_none() {
+        return false;
+    }
+    let mut waived = WAIVED.lock().unwrap_or_else(PoisonError::into_inner);
+    if !waived.iter().any(|seen| seen == fence) {
+        waived.push(fence.to_owned());
+    }
+    true
+}
+/// Withhold a library's source metadata that a publication step could not
+/// produce, so that its code is still lowered. No consumer can bind the
+/// artifact's declarations. Refused outside the bring-up profile.
+#[must_use]
+pub fn withhold(reason: &str) -> bool {
+    waive(&format!("source metadata is withheld: {reason}"))
+}
+/// A publication check's result, or success once its fence was waived.
+/// # Errors
+/// Returns the check's failure outside the bring-up profile.
+pub fn waiving(result: Result<(), &'static str>) -> Result<(), &'static str> {
+    match result {
+        Err(fence) if waive(fence) => Ok(()),
+        other => other,
+    }
+}
+/// Every fence waived so far.
+#[must_use]
+pub fn waived() -> Vec<String> {
+    WAIVED
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner)
+        .clone()
+}
+
 /// Located failures that a stage set aside to let its other bodies report.
 static DEFERRED: Mutex<Vec<Deferred>> = Mutex::new(Vec::new());
 

@@ -61,6 +61,14 @@ pub(super) fn attribute(report: &Report, facts: &Declarations, error: &Error) ->
     }
     Ok(())
 }
+/// Name every publication fence this compilation passed over.
+pub(super) fn waivers() -> io::Result<()> {
+    let mut stderr = io::stderr().lock();
+    for fence in rustgm::support::bringup::waived() {
+        writeln!(stderr, "bringup-waived\t{}", line(&fence))?;
+    }
+    Ok(())
+}
 /// A message as one tab-free field.
 fn line(message: &str) -> String {
     message.replace(['\t', '\n', '\r'], " ")

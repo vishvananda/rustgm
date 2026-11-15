@@ -31,10 +31,13 @@ use crate::{
         model::{Access, DefId, DefKind, Namespace, ScopeId},
     },
     sema::{associated::OwnerKind, model::Declarations},
-    support::crates::{
-        self, CrateIdentity,
-        generics::{self as g, source as s},
-        owner_catalog::DeclarationRef,
+    support::{
+        bringup::waiving,
+        crates::{
+            self, CrateIdentity,
+            generics::{self as g, source as s},
+            owner_catalog::DeclarationRef,
+        },
     },
     syntax::item::Shape,
 };
@@ -1009,19 +1012,24 @@ fn require_export_mode(
     mode: ExportMode,
     languages: bool,
 ) -> Result<(), &'static str> {
-    facts.require_declaration_policy_transport(report)?;
-    facts.require_incoherent_target_transport(report)?;
-    facts.require_dispatch_policy_transport(report)?;
-    facts.require_optimization_transport(report)?;
-    crate::sema::coherence_policy::require_transport(facts)?;
-    facts.aggregates.require_simd_limit_transport()?;
+    // The bring-up profile publishes without the facts these fences protect.
+    waiving(facts.require_declaration_policy_transport(report))?;
+    waiving(facts.require_incoherent_target_transport(report))?;
+    waiving(facts.require_dispatch_policy_transport(report))?;
+    waiving(facts.require_optimization_transport(report))?;
+    waiving(crate::sema::coherence_policy::require_transport(facts))?;
+    waiving(facts.aggregates.require_simd_limit_transport())?;
     if let Some(producer) = report.lint_producer() {
-        producer
-            .require_deprecation_transport(&report.package)
-            .map_err(|error| error.message)?;
-        producer
-            .require_impl_annotation_transport(&report.package, mode.feature_predicates())
-            .map_err(|error| error.message)?;
+        waiving(
+            producer
+                .require_deprecation_transport(&report.package)
+                .map_err(|error| error.message),
+        )?;
+        waiving(
+            producer
+                .require_impl_annotation_transport(&report.package, mode.feature_predicates())
+                .map_err(|error| error.message),
+        )?;
     }
     let provider = report
         .package
@@ -1062,7 +1070,9 @@ fn require_export_mode(
         report.package.marks.context_count() != 1
     };
     if report.resolution.bindings.has_contextual_items() || marked {
-        return Err("source macro/semantic-name provenance metadata is not implemented");
+        waiving(Err(
+            "source macro/semantic-name provenance metadata is not implemented",
+        ))?;
     }
     facts
         .source_bindings

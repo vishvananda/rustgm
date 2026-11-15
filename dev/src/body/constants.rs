@@ -1,4 +1,5 @@
 //! Complete named values required by typed bodies before the read-only lowerer.
+mod demands;
 mod extended_borrows;
 mod invocations;
 mod qualified_invocations;
@@ -10,6 +11,7 @@ use crate::{
     resolve::{expansion::Report, package::Error},
     sema::{model::Declarations, values::Evaluator},
 };
+use demands::Demand;
 pub(crate) use provided_calls::prepare_default_execution;
 
 /// Evaluate each demanded definition once, retaining values in semantic arenas.
@@ -21,7 +23,7 @@ pub fn analyze(report: &Report, facts: &mut Declarations, bodies: &Program) -> R
 pub(crate) fn analyze_bodies<'a>(
     report: &Report,
     facts: &mut Declarations,
-    bodies: impl Iterator<Item = &'a super::ir::Body>,
+    bodies: impl Iterator<Item = &'a super::ir::Body> + Clone,
     globals: &[crate::resolve::model::DefId],
 ) -> Result<(), Error> {
     prepare(report, facts, bodies, globals)
@@ -39,7 +41,7 @@ pub fn instance(
 fn prepare<'a>(
     report: &Report,
     facts: &mut Declarations,
-    bodies: impl Iterator<Item = &'a super::ir::Body>,
+    bodies: impl Iterator<Item = &'a super::ir::Body> + Clone,
     globals: &[crate::resolve::model::DefId],
 ) -> Result<(), Error> {
     let mut seen = HashSet::default();
@@ -60,7 +62,7 @@ fn prepare<'a>(
     for &id in globals {
         demand(id, true);
     }
-    for body in bodies {
+    for body in bodies.clone() {
         eligibility_charged(report, facts, body)?;
         if matches!(body.owner, super::ir::Owner::AnonymousConstant)
             && facts.inline_constants.as_deref().is_some_and(|registry| {
@@ -117,26 +119,26 @@ fn prepare<'a>(
     {
         return Ok(());
     }
+    let ordered = demands
+        .into_iter()
+        .map(|(id, static_)| {
+            if static_ {
+                Demand::Static(id)
+            } else {
+                Demand::Definition(id)
+            }
+        })
+        .chain(inline.into_iter().map(Demand::Inline))
+        .chain(
+            instances
+                .into_iter()
+                .map(|(instance, result)| Demand::InlineInstance(instance, result)),
+        )
+        .chain(sources.into_iter().map(Demand::Source))
+        .chain(associated.into_iter().map(Demand::Associated))
+        .collect::<Vec<_>>();
     let mut evaluator = Evaluator::new(report, facts);
-    for (id, static_) in demands {
-        if static_ {
-            evaluator.initializer(id)?;
-        } else {
-            evaluator.definition(id)?;
-        }
-    }
-    for source in inline {
-        evaluator.inline(source)?;
-    }
-    for (instance, result) in instances {
-        evaluator.inline_instance(instance, result)?;
-    }
-    for source in sources {
-        evaluator.source_associated(source)?;
-    }
-    for instance in associated {
-        evaluator.associated(instance)?;
-    }
+    demands::evaluate(report, &mut evaluator, &ordered, bodies)?;
     evaluator.complete_static_storage()?;
     Ok(())
 }

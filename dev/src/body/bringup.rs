@@ -1,6 +1,6 @@
 //! Bring-up attribution names the function item that owns a located failure.
 use super::{
-    ir::{Body, ProofSite},
+    ir::{BodyOrigin, ProofSite},
     regions::Contract,
 };
 use crate::{
@@ -14,6 +14,7 @@ use crate::{
     support::bringup::{Position, Stubs, selected},
     syntax::ast::NodeId,
 };
+use std::collections::HashSet;
 
 /// A source file's skip-list key: its path below the crate root's directory,
 /// or its whole path when it lies elsewhere.
@@ -44,9 +45,18 @@ pub(crate) fn stub(report: &Report, item: NodeKey) -> bool {
     })
 }
 
-/// Whether the bring-up profile replaced this body by a trapping stub.
-pub(crate) fn stub_body(report: &Report, body: &Body) -> bool {
-    body.source.source().is_some_and(|key| stub(report, key))
+/// The body nodes of the functions that the bring-up profile replaced by
+/// trapping stubs. A body records its block, not its function item.
+pub(crate) fn stub_bodies(report: &Report, facts: &Declarations) -> HashSet<NodeKey> {
+    if selected().is_none_or(Stubs::is_empty) {
+        return HashSet::new();
+    }
+    facts
+        .functions
+        .iter()
+        .filter(|function| stub(report, function.node))
+        .filter_map(|function| function.body)
+        .collect()
 }
 
 /// The innermost function item containing a failure's unprojected position.
@@ -90,6 +100,24 @@ impl Deferral {
                     Err(error)
                 }
             }
+        }
+    }
+    /// Like `admit`, for a stage whose failure belongs to the body it worked
+    /// on wherever it was raised: a constant that this body demands may fail
+    /// inside a callee that is sound at run time.
+    pub(crate) fn admit_for<T>(
+        &mut self,
+        report: &Report,
+        body: BodyOrigin,
+        result: Result<T, Error>,
+    ) -> Result<Option<T>, Error> {
+        match result {
+            Ok(value) => Ok(Some(value)),
+            Err(error) if defer_site(Some(body.root_site()), &error.message) => {
+                self.0 = Some(report.body_error(body.root_site(), error.message.clone()));
+                Ok(None)
+            }
+            Err(error) => Err(error),
         }
     }
     /// Fail the stage with the last failure it set aside, if any.

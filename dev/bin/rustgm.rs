@@ -312,13 +312,17 @@ fn render_view(options: &Options, source: &str, output: &mut impl Write) -> Resu
 
 fn main() -> ExitCode {
     match options() {
-        Ok(options) => match compile(&options) {
-            Ok(()) => ExitCode::SUCCESS,
-            Err(error) => {
-                let _ = writeln!(io::stderr().lock(), "ERROR: {error}");
-                ExitCode::FAILURE
+        Ok(options) => {
+            let compiled = compile(&options);
+            let _ = bringup::waivers();
+            match compiled {
+                Ok(()) => ExitCode::SUCCESS,
+                Err(error) => {
+                    let _ = writeln!(io::stderr().lock(), "ERROR: {error}");
+                    ExitCode::FAILURE
+                }
             }
-        },
+        }
         Err(error) => {
             let _ = writeln!(io::stderr().lock(), "USAGE: {error}");
             ExitCode::from(2)

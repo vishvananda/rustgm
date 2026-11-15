@@ -242,11 +242,13 @@ pub(crate) fn templates<'a>(
         message,
     })?;
     let mut deferred = None;
+    let stubs = body::bringup::stub_bodies(report, facts);
     loop {
         // A bring-up stub replaced this body; there is nothing of it to prove.
         if batch
             .pending()
-            .is_some_and(|body| body::bringup::stub_body(report, body))
+            .and_then(|body| body.source.source())
+            .is_some_and(|source| stubs.contains(&source))
         {
             batch.skip();
             continue;

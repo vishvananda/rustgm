@@ -59,9 +59,11 @@ pub(in crate::sema) fn require_guard(
     role: LangItem,
 ) -> Result<(), &'static str> {
     if installed(facts, role)? {
-        return Err(
+        // A waived guard keeps the course abort: the program traps where the
+        // installed source hook would have reported the failed assertion.
+        return crate::support::bringup::waiving(Err(
             "compiler assertion requires checked source panic signature, caller and runtime routing",
-        );
+        ));
     }
     Ok(())
 }

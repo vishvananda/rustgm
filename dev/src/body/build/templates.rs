@@ -145,6 +145,13 @@ pub struct Prepared {
     reused: usize,
 }
 impl Prepared {
+    /// A construction whose failure the bring-up profile set aside left the
+    /// shared scratch inside its body; the next body starts a fresh one.
+    fn retire_failed_scratch(&mut self, failed: bool) {
+        if failed {
+            self.scratch = None;
+        }
+    }
     /// Build one already typed anonymous constant using retained construction scratch.
     /// The same fixed source environment must also verify the resulting template;
     /// possible opaque cleanup is retained until executable head selection.
@@ -500,7 +507,9 @@ impl Prepared {
                 && owns(facts, function.definition)
                 && selection.includes(facts, function.definition)
             {
-                bodies.extend(deferral.admit(self.function(report, facts, function))?);
+                let built = deferral.admit(self.function(report, facts, function))?;
+                self.retire_failed_scratch(built.is_none());
+                bodies.extend(built);
             }
         }
         for initializer in &facts.initializers {
@@ -517,7 +526,9 @@ impl Prepared {
                 && selection.includes(facts, owner)
                 && !crate::body::bringup::stubbed(report, facts, owner)
             {
-                bodies.extend(deferral.admit(self.closure(report, facts, closure, owner))?);
+                let built = deferral.admit(self.closure(report, facts, closure, owner))?;
+                self.retire_failed_scratch(built.is_none());
+                bodies.extend(built);
             }
         }
         deferral.finish()?;

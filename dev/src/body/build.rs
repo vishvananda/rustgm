@@ -132,7 +132,12 @@ pub(crate) fn concrete_selected(
             continue;
         }
         let built = function_body(report, facts, &mut scratch, function, drop_query.as_mut());
-        program.bodies.extend(deferral.admit(built)?);
+        let built = deferral.admit(built)?;
+        if built.is_none() {
+            // The failed construction left the shared scratch inside its body.
+            scratch = Scratch::new(facts);
+        }
+        program.bodies.extend(built);
     }
     deferral.finish()?;
     initializers::concrete(

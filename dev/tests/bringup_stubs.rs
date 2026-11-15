@@ -42,6 +42,82 @@ fn main() {
 }
 ";
 
+/// A source-core library whose publication meets one waivable fence.
+const FENCED: &str = "\
+#![feature(no_core,lang_items,fundamental)]
+#![no_core]
+#![allow(internal_features,dead_code,unused_variables)]
+#[lang=\"pointee_sized\"]pub trait PointeeSized{}
+#[lang=\"meta_sized\"]pub trait MetaSized:PointeeSized{}
+#[lang=\"sized\"]pub trait Sized:MetaSized{}
+#[lang=\"legacy_receiver\"]pub trait LegacyReceiver:PointeeSized{}
+impl<T:PointeeSized> LegacyReceiver for &T{}
+#[lang=\"clone\"]pub trait Clone:Sized{#[lang=\"clone_fn\"]fn clone(&self)->Self;}
+#[lang=\"copy\"]pub trait Copy:Clone{}
+#[fundamental]pub struct Wrap;
+pub fn kept(x: u8) -> u8 { x }
+";
+const FENCE: &str =
+    "general fundamental policy requires authenticated trait/nominal metadata transport";
+
+/// A constant that cannot be evaluated, demanded by exactly one function.
+const DEMANDED: &str = "\
+fn demanded() -> usize {
+    const { 1usize - 2 }
+}
+fn kept(x: i32) -> i32 {
+    x & 3
+}
+fn main() {
+    let _ = kept(1);
+    let _ = demanded();
+}
+";
+const GUARD: &str =
+    "compiler assertion requires checked source panic signature, caller and runtime routing";
+
+/// Compile `source` as a source-core library named by `identity`; with
+/// `publish`, in the source profile that writes `probe.rgm` into the folder.
+fn library(
+    name: &str,
+    source: &str,
+    identity: &str,
+    list: Option<&str>,
+    publish: bool,
+) -> Result<(Output, PathBuf)> {
+    let folder = folder_with(name, source)?;
+    let provider = format!("probe@{identity}");
+    let metadata = folder.join("probe.rgm");
+    let mut command = Command::new(env!("CARGO_BIN_EXE_rustgm"));
+    command
+        .args(["--emit-lowir", "--cap-lints=allow", "--edition=2024"])
+        .args(["--crate-type=lib", "--crate-name", "probe"])
+        .args([
+            "--crate-disambiguator",
+            identity,
+            "--source-core",
+            &provider,
+        ]);
+    if publish {
+        command
+            .args(["--source-profile", "module-body-operations-v14"])
+            .arg("--metadata-output")
+            .arg(&metadata);
+    }
+    if let Some(list) = list {
+        let path = folder.join("skip.tsv");
+        std::fs::write(&path, list)?;
+        command.arg("--bringup-skip-list").arg(path);
+    }
+    Ok((command.arg(folder.join("main.rs")).output()?, metadata))
+}
+fn waived(stderr: &str) -> Vec<&str> {
+    stderr
+        .lines()
+        .filter_map(|line| line.strip_prefix("bringup-waived\t"))
+        .collect()
+}
+
 fn folder(name: &str) -> Result<PathBuf> {
     folder_with(name, SOURCE)
 }
@@ -173,5 +249,67 @@ fn rejected_functions_are_named_until_the_list_compiles_the_rest() -> Result {
     // The accepted function keeps its body; both rejected ones trap instead.
     assert!(stubbed.contains("binary and"));
     assert_eq!(stubbed.matches("call void @abort()").count(), 2);
+    Ok(())
+}
+
+#[test]
+fn publication_fences_stop_strict_libraries_and_are_named_when_waived() -> Result {
+    let (strict, _) = library("fence-strict", FENCED, "fenced", None, true)?;
+    let stderr = String::from_utf8(strict.stderr)?;
+    assert_eq!(strict.status.code(), Some(1), "{stderr}");
+    assert!(stderr.contains(FENCE) && !stderr.contains("bringup-"));
+    let (passed, metadata) = library("fence-waived", FENCED, "fenced_bringup", Some(""), true)?;
+    let stderr = String::from_utf8(passed.stderr)?;
+    assert!(passed.status.success(), "{stderr}");
+    assert_eq!(waived(&stderr), [FENCE]);
+    // The waived fence still publishes the rest of the interface.
+    assert!(std::fs::metadata(metadata)?.len() > 0);
+    Ok(())
+}
+
+#[test]
+fn waived_guards_keep_the_course_abort_and_withheld_metadata_is_named() -> Result {
+    // This source installs its own panic hooks and reaches a bounds guard.
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../pa31/tests/spec/assertion-panics/bounds-route-v2.rs");
+    let source = std::fs::read_to_string(fixture)?;
+    let (strict, _) = library("guard-strict", &source, "guards", None, false)?;
+    assert_eq!(strict.status.code(), Some(1));
+    assert!(!String::from_utf8(strict.stderr)?.contains("bringup-"));
+    let (passed, _) = library("guard-waived", &source, "guards_bringup", Some(""), false)?;
+    let stderr = String::from_utf8(passed.stderr)?;
+    assert!(passed.status.success(), "{stderr}");
+    let fences = waived(&stderr);
+    assert!(fences.contains(&GUARD), "{stderr}");
+    assert!(
+        fences
+            .iter()
+            .any(|fence| fence.starts_with("source metadata is withheld: ")),
+        "{stderr}"
+    );
+    assert!(std::str::from_utf8(&passed.stdout)?.contains("call void @abort()"));
+    Ok(())
+}
+
+#[test]
+fn an_unevaluable_constant_stubs_the_function_that_demands_it() -> Result {
+    let folder = folder_with("constant", DEMANDED)?;
+    assert_eq!(run(&folder, &[], &[])?.status.code(), Some(1));
+    let named = run(&folder, &[""], &[])?;
+    assert_eq!(named.status.code(), Some(1));
+    let stderr = String::from_utf8(named.stderr)?;
+    let rows = stderr
+        .lines()
+        .filter_map(|line| line.strip_prefix("bringup-blocker\t"))
+        .collect::<Vec<_>>();
+    let &[row] = rows.as_slice() else {
+        return Err(format!("expected one blocker: {stderr}").into());
+    };
+    assert!(row.starts_with("main.rs\t0\tdemanded\t"), "{row}");
+    let stubbed = run(&folder, &[&format!("{row}\n")], &[])?;
+    let stubbed = text(&stubbed)?;
+    // The function that only uses evaluable values keeps its body.
+    assert!(stubbed.contains("binary and"));
+    assert_eq!(stubbed.matches("call void @abort()").count(), 1);
     Ok(())
 }

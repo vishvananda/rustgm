@@ -72,6 +72,7 @@ pub fn analyze(
         return Ok(());
     }
     let mut evaluator = Evaluator::new(report, facts);
+    let mut deferral = super::bringup::Deferral::default();
     for (index, body) in program.bodies.iter_mut().enumerate() {
         if body.promotions.is_some() {
             continue;
@@ -81,9 +82,10 @@ pub fn analyze(
             .as_ref()
             .and_then(|p| p.bodies.get(index))
             .map(|b| b.values.as_slice());
-        analyze_body(report, &mut evaluator, body, drop_values)?;
+        let analyzed = analyze_body(report, &mut evaluator, body, drop_values);
+        deferral.admit_for(report, body.source, analyzed)?;
     }
-    Ok(())
+    deferral.finish()
 }
 /// Evaluate demanded promotions using each template's scoped destruction facts.
 /// This supplies provenance, not loan checking or an executable specialization.
@@ -108,12 +110,13 @@ pub(crate) fn analyze_templates_reusing(
     let mut evaluator = scratch.evaluator(report, facts);
     let mut deferral = super::bringup::Deferral::default();
     for template in &mut templates.bodies {
-        deferral.admit(analyze_body(
+        let analyzed = analyze_body(
             report,
             &mut evaluator,
             &mut template.body,
             Some(&template.destruction.values),
-        ))?;
+        );
+        deferral.admit_for(report, template.body.source, analyzed)?;
     }
     deferral.finish()?;
     scratch.retain(evaluator);
