@@ -226,9 +226,9 @@ program may call.
 
 | Path | Used today | Start and runtime | libc, libm, pthread |
 | --- | --- | --- | --- |
-| Standalone `lowir2native` | One unit: `scripts/check_native.py:316`, `scripts/backend.py:124-130` | Own start code. argc and argv only when the entry has parameters, no envp, no `.init_array` (`cppgm:dev/src/native/runtime/runtime.cpp:397-417`) | No: "undefined symbol: write" (observed `libc-write`) |
+| Standalone `lowir2native` | One unit: `scripts/check_native.py:316`, `scripts/backend.py:177-183` | Own start code. argc and argv only when the entry has parameters, no envp, no `.init_array` (`cppgm:dev/src/native/runtime/runtime.cpp:397-417`) | No: "undefined symbol: write" (observed `libc-write`) |
 | Course link, the automatic fallback of `lowir2native` | Same | `main(argc, argv, envp)`; `malloc`, `free`, `calloc`, `realloc`, `atexit`, the i128 helpers; `abort` is `exit_group(134)` (`cppgm:dev/src/native/link/runtime_support.cpp:24-76`, `runtime_library.cpp:466-481`) | No (`cppgm:dev/src/native/link/linker.cpp:361`) |
-| Object bridge: `cppgm++ -c` per unit, then `cc ... -lm` | Several units or native libraries: `scripts/backend.py:119-122,133-153` | glibc start files; the entry is exported as `main` (`cppgm:dev/src/native/object/object_compiler.cpp:1101-1110`) | Yes (observed `libc-write`, `variadic-open`) |
+| Object bridge: `cppgm -c` per unit, then `cc ... -lm` | Several units or native libraries: `scripts/backend.py:172-175,186-206` | glibc start files; the entry is exported as `main` (`cppgm:dev/src/native/object/object_compiler.cpp:1101-1110`) | Yes (observed `libc-write`, `variadic-open`) |
 
 Every consumer rung calls libc (`write` at least), so every rung must be built
 through the object bridge, also for a single unit. There `abort` is glibc's and
@@ -478,7 +478,7 @@ pthread, file system); the rustgm corpus 57. See the table above.
   (`dev/src/lower/arithmetic.rs:49,76`) and no corpus demands them.
 - Backend: `unary sqrt` on f32 and f64
   (`cppgm:dev/src/lowir/validator.cpp:932-934`) and nothing else; libm is on
-  the bridge's link line (`scripts/backend.py:153`).
+  the bridge's link line (`scripts/backend.py:206`).
 
 **13. Memory builtins.**
 - Demand: `llvm.memcpy`, `llvm.memmove`, `llvm.memset`, `memcmp`, `strlen`;
@@ -541,7 +541,7 @@ hash, every composed program's counts and hash), `density.tsv`.
   every copy's former entry through a tree of functions and adds the results.
   Exit status 0 means every copy ran and passed.
 - Each size is built and run on both link paths: `lowir`, then
-  `lowir2native -O0`; and `cppgm++ -O0 -c`, then `cc ... -lm`. Every process
+  `lowir2native -O0`; and `cppgm -O0 -c`, then `cc ... -lm`. Every process
   runs alone under a 10 GiB address-space limit and is measured with `wait4`.
   Three repeats.
 - RustGM is the rustc-built opt-level 0 binary of `dev/` at 80229d28d. The
@@ -571,7 +571,7 @@ Standalone path:
 
 Object bridge:
 
-| Rounds | `cppgm++ -O0 -c` s | MiB | Object MB | `cc` s | MiB | Executable MB |
+| Rounds | `cppgm -O0 -c` s | MiB | Object MB | `cc` s | MiB | Executable MB |
 | ---: | --- | ---: | ---: | --- | ---: | ---: |
 | 16 | 7.7 (5.9 to 8.8) | 491 | 51.6 | 2.6 (2.5 to 3.0) | 150 | 36.3 |
 | 64 | 20.5 (17.7 to 29.5) | 1,964 | 207.1 | 10.8 (8.7 to 13.2) | 573 | 145.7 |
@@ -580,8 +580,8 @@ Object bridge:
 
 - Nothing is worse than proportional. From 16 to 256 rounds the size grows
   16 times and the fastest runs 11 to 13 times (`lowir` 12.2, `lowir2native`
-  12.9, `cppgm++` 11.2, `cc` 13.4).
-- `lowir`, `lowir2native` and `cppgm++` each hold the whole program: 4.8 to
+  12.9, `cppgm` 11.2, `cc` 13.4).
+- `lowir`, `lowir2native` and `cppgm` each hold the whole program: 4.8 to
   4.9 MiB of resident memory per MB of LowIR. The link takes about 1.4.
 - The bridge is not the slower path: 106 s against 179 s at 256 rounds (sums
   of medians).
@@ -592,7 +592,7 @@ Object bridge:
 
 ### Code density
 
-With `--density`, each unit is also compiled to an object by `cppgm++ -O0 -c`
+With `--density`, each unit is also compiled to an object by `cppgm -O0 -c`
 and, from its Rust source, by rustc 1.98.0 at opt-level 0 under the course
 profile; the bytes of executable sections are compared (`density.tsv`).
 
@@ -635,7 +635,7 @@ and memory at this size were not measured.
   (`dev/src/lower/roots.rs:42-60`), 100,000 intrinsic shims
   (`dev/src/lower/intrinsics.rs:133-134`), 1,000,000 persistent data steps
   (`dev/src/lower/data.rs:62-68`) and 1,025 LowIR units per link
-  (`scripts/backend.py:117-118`). What each counts against the 309,093
+  (`scripts/backend.py:170-171`). What each counts against the 309,093
   instances of the self-hosting program is for the frontier's census to
   report.
 
