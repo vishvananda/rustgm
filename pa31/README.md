@@ -1,5 +1,10 @@
 # RustGM Programming Assignment 31: Compiler/library bindings
 
+The [captured const-call checkpoint](../docs/pa25-captured-const-calls.md)
+authenticates actual closure ownership and complete enclosing arguments.
+Returned adapters and runtime execution qualify; cleanup, CTFE, ordinary imports
+and original-core artifacts remain required. Whole assignments remain planned.
+
 The [implicit result-field checkpoint](../docs/pa20-implicit-result-fields.md)
 prepares exact solved protocol results before readonly drop queries.17 source
 outcomes, one ordinary control and eleven native programs pass. A scoped PA20

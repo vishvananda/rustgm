@@ -1,5 +1,10 @@
 # RustGM Programming Assignment 25: Constant evaluation
 
+The [captured const-call checkpoint](../docs/pa25-captured-const-calls.md)
+authenticates actual closure ownership and complete enclosing arguments.
+Returned adapters and runtime execution qualify; cleanup, CTFE, ordinary imports
+and original-core artifacts remain required. Whole assignments remain planned.
+
 The [unsafe const-member checkpoint](../docs/pa25-unsafe-const-members.md) consumes
 exact discharged safety rows and complete source calls.34 ordinary/source outcomes
 and twelve native programs pass, including the new simple CTFE consumer. Original

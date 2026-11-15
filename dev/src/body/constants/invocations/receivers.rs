@@ -76,6 +76,95 @@ pub(super) struct Bindings {
     types: HashMap<ParameterId, Option<TypeId>>,
 }
 impl Bindings {
+    /// A closure owns its source call; its parent supplies only generic order.
+    /// Reuse the same complete argument binding as closure instantiation, including
+    /// the declaration-order path used before enclosing opaque templates exist.
+    pub(super) fn closure(
+        report: Option<&crate::resolve::expansion::Report>,
+        facts: &Declarations,
+        body: &Body,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        let crate::body::ir::Owner::Closure { identity, .. } = body.owner else {
+            return Err("const captured invocation requires its closure owner");
+        };
+        work.charge(8)?;
+        body.owner
+            .source_caller(facts, body.source, body.instance)?;
+        let source = *facts
+            .closures
+            .identity(identity)
+            .ok_or("const captured invocation lost its source closure")?;
+        if !source
+            .check_const_source(report.ok_or("const captured invocation requires source syntax")?)?
+            || facts
+                .types
+                .closure_declaration(identity)
+                .and_then(crate::types::closure::Declaration::constant)
+                != Some(true)
+            || !body.const_context
+            || (body.instance.is_none()
+                && body.owner.signatures()
+                    != Some((
+                        source.signature,
+                        source.execution.map_or(source.signature, |e| e.signature),
+                    )))
+        {
+            return Err("const captured invocation changed its authenticated closure contract");
+        }
+        let owner = source
+            .owner
+            .ok_or("const captured invocation has no enclosing generic owner")?;
+        let formals = crate::sema::closures::actual::defining_parameters(facts, owner)?;
+        work.charge(1 + formals.len() + source.inherited as usize)?;
+        let actual = body
+            .instance
+            .map(|instance| {
+                crate::sema::closures::actual::defining_arguments(facts, instance, source)
+            })
+            .transpose()?;
+        let mut types = HashMap::default();
+        types
+            .try_reserve(formals.len())
+            .map_err(|_| "const captured invocation binding allocation failed")?;
+        for (index, &id) in formals.iter().enumerate() {
+            work.charge(1)?;
+            let parameter = facts
+                .types
+                .parameter(id)
+                .ok_or("const captured invocation has an invalid enclosing formal")?;
+            let selected = actual
+                .as_ref()
+                .map(|actual| {
+                    actual
+                        .bindings
+                        .get(index)
+                        .copied()
+                        .ok_or("const captured invocation lost its complete argument")
+                })
+                .transpose()?;
+            if selected.is_some_and(|(formal, _)| formal != id) {
+                return Err("const captured invocation changed its enclosing formal order");
+            }
+            let argument = selected.map(|(_, argument)| argument);
+            match (parameter.kind, argument) {
+                (ParameterKind::Type { .. }, None | Some(Argument::Type(_))) => {
+                    let ty = if let Some(Argument::Type(ty)) = argument {
+                        Some(ty)
+                    } else {
+                        None
+                    };
+                    if types.insert(id, ty).is_some() {
+                        return Err("const captured invocation repeats an enclosing formal");
+                    }
+                }
+                (ParameterKind::Const { .. }, None | Some(Argument::Const(_))) => {}
+                _ => return Err("const captured invocation changed a complete argument kind"),
+            }
+        }
+        Ok(Self { types })
+    }
+
     pub(super) fn new(
         facts: &Declarations,
         body: &Body,

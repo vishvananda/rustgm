@@ -170,6 +170,10 @@ fn source_call(
         return Err("const member changed its direct Call operation");
     };
     work.charge(1)?;
+    if !matches!(facts.types.kind(signature), Some(Kind::Function { .. })) {
+        return Err("const member changed its actual callable signature kind");
+    }
+    work.charge(1)?;
     let target = body
         .values
         .get(callee.0 as usize)

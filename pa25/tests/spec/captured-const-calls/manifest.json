@@ -1,0 +1,161 @@
+{
+ "schema": 1,
+ "owner": "PA25 captured generic const invocations",
+ "declared_before_execution": true,
+ "cases": {
+  "owned-mut.rs": {
+   "expected": "accept",
+   "candidate_limit": "unresolved import"
+  },
+  "owned-shared.rs": {
+   "expected": "accept",
+   "candidate_limit": "unresolved import"
+  },
+  "owned-once.rs": {
+   "expected": "accept",
+   "candidate_limit": "unresolved import"
+  },
+  "borrowed-mut.rs": {
+   "expected": "accept",
+   "candidate_limit": "unresolved import"
+  },
+  "borrowed-shared.rs": {
+   "expected": "accept",
+   "candidate_limit": "unresolved import"
+  },
+  "two-args.rs": {
+   "expected": "accept",
+   "candidate_limit": "unresolved import"
+  },
+  "opaque-adapter.rs": {
+   "expected": "accept",
+   "candidate_limit": "unresolved import"
+  },
+  "inherited-adapter.rs": {
+   "expected": "accept",
+   "candidate_limit": "unresolved import"
+  },
+  "ordinary-control.rs": {
+   "expected": "accept",
+   "candidate_limit": "unresolved import"
+  },
+  "plain-bound.rs": {
+   "expected": "reject",
+   "candidate_limit": "unresolved import"
+  },
+  "immutable-capture.rs": {
+   "expected": "reject",
+   "candidate_limit": "unresolved import"
+  },
+  "wrong-arity.rs": {
+   "expected": "reject",
+   "candidate_limit": "unresolved import"
+  },
+  "wrong-argument.rs": {
+   "expected": "reject",
+   "candidate_limit": "unresolved import"
+  },
+  "native-runtime.rs": {
+   "expected": "accept",
+   "native_stdout": "41 59\n",
+   "observer": "observe.c",
+   "candidate_limit": "unresolved import"
+  },
+  "native-ctfe.rs": {
+   "expected": "accept",
+   "native_stdout": "41 59\n",
+   "observer": "observe.c",
+   "candidate_limit": "unresolved import"
+  },
+  "scaling-8.rs": {
+   "expected": "accept",
+   "candidate_limit": "unresolved import"
+  },
+  "scaling-32.rs": {
+   "expected": "accept",
+   "candidate_limit": "unresolved import"
+  },
+  "scaling-128.rs": {
+   "expected": "accept",
+   "candidate_limit": "unresolved import"
+  },
+  "returned-shared.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/returned-shared.rs",
+   "candidate_limit": "unresolved import"
+  },
+  "returned-once.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/returned-once.rs",
+   "candidate_limit": "unresolved import"
+  },
+  "returned-two-args.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/returned-two-args.rs",
+   "candidate_limit": "unresolved import"
+  },
+  "immutable-adapter.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/captured-const-calls/immutable-adapter.rs",
+   "candidate_limit": "unresolved import"
+  },
+  "adapter-scaling-8.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/adapter-scaling-8.rs",
+   "candidate_limit": "unresolved import"
+  },
+  "adapter-scaling-32.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/adapter-scaling-32.rs",
+   "candidate_limit": "unresolved import"
+  },
+  "adapter-scaling-128.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/adapter-scaling-128.rs",
+   "candidate_limit": "unresolved import"
+  }
+ },
+ "files": {
+  "owned-mut.rs": "95ab4b4d656d329987904d405d5a1139c36eb89a030a7db7dd371627acdd94ec",
+  "owned-shared.rs": "6afda0b37aa36f0ec173a31fb3a774ea84f868c7146ac8c1c3de9c58d0b4086b",
+  "owned-once.rs": "ff3235fbcdd27a53565c76c2c79200dbc3da790912e5827e7edc01a163e984de",
+  "borrowed-mut.rs": "010f818cc949557cb4e10fb04a31bafa69efbbdd97972dc32ddeac4e4d1fc872",
+  "borrowed-shared.rs": "67dd8283db0aef75190c96b66a78c509714b299f1f29f4d0deb0d7ae91cedc33",
+  "two-args.rs": "c226ec6aeded9d88c79271d627785d909d473734bf780092aa91eba18d836274",
+  "opaque-adapter.rs": "fa07d16d58d0cb64ad99488f1b5402ee912d71024ccb918313676fca3ee46984",
+  "inherited-adapter.rs": "86477966ca521b40de15f3ba58e33550d901ea12d5034eb6db795b213e57fb17",
+  "ordinary-control.rs": "36df9350ae9b160de6b45bc64c90ff8c6d5b7b92d556753749ad4d7314660341",
+  "plain-bound.rs": "e1830d356f3035b9121df9cdcce32cf9bfde8254610a2cdab29346ab732c651b",
+  "immutable-capture.rs": "37e27ee43af5de8c5a72285afb834680aca3fc12e4250f56ac0f0f8fd0d5f9ca",
+  "wrong-arity.rs": "bcbc92b678a9b617f3c34b7f9f7931e9722458b0c8133728ba0f8c02318d9cdd",
+  "wrong-argument.rs": "f20e4d68726edb66ed37d53e758e6a34242224571d3e68a53af674422dd4ba8e",
+  "native-runtime.rs": "d74fec1f95654ee59bdd709b56ed53f5da68a9d1d82e9a91d205935ac9f1cf63",
+  "native-ctfe.rs": "3a473447ae052f6b3b79d8aa41eb8675c3fc4a8e9ca008164ce1721a13e1d719",
+  "scaling-8.rs": "a1886253d018dc5a01e48d792036685a1d9ec58421af15263146f4c1fa87f58d",
+  "scaling-32.rs": "97f83cf611d3f2a7d1573391e6bac1458e63701301afb724cc78b77fd717cb44",
+  "scaling-128.rs": "da0d719f2946b6d37e974664299c7047d997b65015f8acaa6523ea9e18896f90",
+  "observe.c": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+  "returned-shared.rs": "d3454585bf11673c62fe88e5c2953ed94fa6e21fb1b550cc69006f387558b665",
+  "returned-once.rs": "4474ca44fc347873b3381ec55abc6a1c2aa3eae5c924099dcc3990a769de56f4",
+  "returned-two-args.rs": "2ab73dfed0f0eb91b39ace4e8bdc188851ef5935a5f45f3e0c3a3d38e00ff6fa",
+  "immutable-adapter.rs": "1fee59ee3777158e907942b61ca73a8983c888a5ddb764e0d6ee65a9b932f7e5",
+  "adapter-scaling-8.rs": "103bdd6e13599a9262a5514bd50e01182030d35fc58122e8a654d6f48f089b43",
+  "adapter-scaling-32.rs": "d4e541f34448e305dde85e10d4977431728369bf40cfd4029bff8343290d4ed0",
+  "adapter-scaling-128.rs": "fc74ccab7bcc51686bbc7c473d90b233780078705d68ed276684ff0058f6bdfc"
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "basis": {
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "source_path": "library/core/src/ops/try_trait.rs",
+  "source_sha256": "61bc75cb647e8fae3812dfda5bbc2a88f4dc54372dc64108a713d87191202ee7",
+  "shape": "NeverShortCircuit::wrap_mut_1/2 captured F calls inside returned const move closures; no copied original items claimed.",
+  "license": "MIT OR Apache-2.0; third_party/sources.json"
+ }
+}

@@ -1,0 +1,165 @@
+{
+ "schema": 1,
+ "owner": "PA31 captured generic const invocations",
+ "declared_before_execution": true,
+ "cases": {
+  "owned-mut.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/owned-mut.rs",
+   "candidate_limit": "active cleanup requires const Destruct in its actual defining environment"
+  },
+  "owned-shared.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/owned-shared.rs",
+   "candidate_limit": "active cleanup requires const Destruct in its actual defining environment"
+  },
+  "owned-once.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/owned-once.rs",
+   "candidate_limit": "active cleanup requires const Destruct in its actual defining environment"
+  },
+  "borrowed-mut.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/borrowed-mut.rs"
+  },
+  "borrowed-shared.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/borrowed-shared.rs"
+  },
+  "two-args.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/two-args.rs",
+   "candidate_limit": "active cleanup requires const Destruct in its actual defining environment"
+  },
+  "opaque-adapter.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/opaque-adapter.rs"
+  },
+  "inherited-adapter.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/inherited-adapter.rs"
+  },
+  "ordinary-control.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/ordinary-control.rs",
+   "candidate_limit": "active cleanup requires const Destruct in its actual defining environment"
+  },
+  "plain-bound.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/captured-const-calls/plain-bound.rs"
+  },
+  "immutable-capture.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/captured-const-calls/immutable-capture.rs",
+   "candidate_limit": "active cleanup requires const Destruct in its actual defining environment"
+  },
+  "wrong-arity.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/captured-const-calls/wrong-arity.rs"
+  },
+  "wrong-argument.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/captured-const-calls/wrong-argument.rs"
+  },
+  "native-runtime.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/native-runtime.rs",
+   "native_stdout": "41 59\n",
+   "observer": "observe.c"
+  },
+  "native-ctfe.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/native-ctfe.rs",
+   "native_stdout": "41 59\n",
+   "observer": "observe.c",
+   "candidate_limit": "call requires a known function type"
+  },
+  "scaling-8.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/scaling-8.rs",
+   "candidate_limit": "active cleanup requires const Destruct in its actual defining environment"
+  },
+  "scaling-32.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/scaling-32.rs",
+   "candidate_limit": "active cleanup requires const Destruct in its actual defining environment"
+  },
+  "scaling-128.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/scaling-128.rs",
+   "candidate_limit": "active cleanup requires const Destruct in its actual defining environment"
+  },
+  "returned-shared.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/returned-shared.rs"
+  },
+  "returned-once.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/returned-once.rs",
+   "candidate_limit": "const cleanup selection requires its actual source function"
+  },
+  "returned-two-args.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/returned-two-args.rs"
+  },
+  "immutable-adapter.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/captured-const-calls/immutable-adapter.rs"
+  },
+  "adapter-scaling-8.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/adapter-scaling-8.rs"
+  },
+  "adapter-scaling-32.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/adapter-scaling-32.rs"
+  },
+  "adapter-scaling-128.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/captured-const-calls/adapter-scaling-128.rs"
+  }
+ },
+ "files": {
+  "owned-mut.rs": "d14d4fe408dfcdfa572e69f1fe48135245251dd939246fb04bc3510c9be84d91",
+  "owned-shared.rs": "d5f6a4c2046b44adbcd740a719cc38c4822557422574950bcf12712e6a8c90be",
+  "owned-once.rs": "7b002bfaabca1ff77f9ead0d4a9e65beb9284c476575e89b22090c607c5f1eae",
+  "borrowed-mut.rs": "a82c13e5c67058ff3aee741157da4967d14c7ca0fe19123d2737a4116e29dcb1",
+  "borrowed-shared.rs": "378b089570d53aa89316c8de334c9b7624351d74fee6d27db5aaef9e5e59ee20",
+  "two-args.rs": "501eb331bf89006a52872724309a23f289f4aab3443fa2263577bb23da97510c",
+  "opaque-adapter.rs": "2cdf3119fd6f152aa94b178460c1e783192f3aae1cd9045d5127ba6573e24d3e",
+  "inherited-adapter.rs": "5cfb7518a06d291610ac0f9a01d536f8a6ea6a13b52780cca7142e4ab0adcaa6",
+  "ordinary-control.rs": "09c1ed37d766044c7a3b91a263133f65d93b5234a8e1349ce5fcfd629acb5d80",
+  "plain-bound.rs": "9a4079e2098be45042a0236a498b06730aef76f679019898d78682c54a5d480c",
+  "immutable-capture.rs": "440740c0bd928d9e01622163e2b2a457cc3b114cbfac44afdea899dd3662d7ca",
+  "wrong-arity.rs": "d9964354dd1a0e5866c56076a8b0aeb325c3f78888a32722c64f185441c90dbc",
+  "wrong-argument.rs": "b8b3c1340458ae8affc3da1288bb0f85100803919dbe44dbb2d48afdc6b5dd36",
+  "native-runtime.rs": "0bde2d7403a7f5402ae43befbec100c7485dc0da0a374f04be2234cfba3df0bd",
+  "native-ctfe.rs": "063d8b67f77e2d0f2cadefef912dd3f54ad896556f5e2ea18a398b6a9a5ed3c1",
+  "scaling-8.rs": "9e04adf87fe36bca4eda12453c563059bf412e121a78952994442498648b5003",
+  "scaling-32.rs": "4a52d6fcd2fd76407971be8529ceb2aba781374eadbc45db8f726bfa678ea270",
+  "scaling-128.rs": "a601f4f792993d567bcbeb64c24a3ad23c37ce958e665ce5d46d103ef2fadd3a",
+  "observe.c": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+  "returned-shared.rs": "d2696e8235bbde8009063fb6029ecbabe397b5a5fef6b4dff1f997c3d9050552",
+  "returned-once.rs": "952661232667919bdacf4922cb36078f14a0289581d2562e71e23a8762e35b04",
+  "returned-two-args.rs": "eb9859fcd2ef442ff6c6875be18e414d0c59174fac24ced01e105e3f8f2955c2",
+  "immutable-adapter.rs": "ba4f6539eedf3a0eaf04fd875571961e7d1ff2bc088da02e7dbda0db6657210f",
+  "adapter-scaling-8.rs": "543cee64662118741e75a6d901a1e0a718e9459f99f1c06806c6ff59a58a9237",
+  "adapter-scaling-32.rs": "48c752ecf66ccbfa583f6cc01b8a9339449af7793f647ebdb73c77528fe666f5",
+  "adapter-scaling-128.rs": "916889f3af7225c6327f010aa4c02d2f1840c4f09a9140a26dead5cde013b744"
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "basis": {
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "source_path": "library/core/src/ops/try_trait.rs",
+  "source_sha256": "61bc75cb647e8fae3812dfda5bbc2a88f4dc54372dc64108a713d87191202ee7",
+  "shape": "NeverShortCircuit::wrap_mut_1/2 captured F calls inside returned const move closures; no copied original items claimed.",
+  "license": "MIT OR Apache-2.0; third_party/sources.json"
+ }
+}

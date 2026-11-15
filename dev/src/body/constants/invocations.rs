@@ -115,10 +115,14 @@ pub(super) fn check_calls(
             continue;
         }
         if receivers.is_none() {
-            let definition = defining_owner(facts, body, work)?;
             work.charge(3)?;
             crate::sema::compiler_items::callable_role(facts, CallTrait::FnOnce)?;
-            receivers = Some(receivers::Bindings::new(facts, body, definition, work)?);
+            receivers = Some(if matches!(body.owner, Owner::Closure { .. }) {
+                receivers::Bindings::closure(report, facts, body, work)?
+            } else {
+                let definition = defining_owner(facts, body, work)?;
+                receivers::Bindings::new(facts, body, definition, work)?
+            });
         }
         check_invocation(
             report,

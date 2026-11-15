@@ -136,6 +136,115 @@ fn native(packet: &str, output: &str) -> Result {
 }
 
 const BORROWED: &str = "pa31/tests/spec/borrowed-callables";
+const CAPTURED: &str = "pa31/tests/spec/captured-const-calls";
+#[test]
+fn captured_const_calls_keep_the_actual_closure_and_enclosing_formals() -> Result {
+    for name in [
+        "borrowed-mut",
+        "borrowed-shared",
+        "opaque-adapter",
+        "inherited-adapter",
+        "returned-shared",
+        "returned-two-args",
+        "native-runtime",
+    ] {
+        packet_report(CAPTURED, name)
+            .and_then(|report| program(&report))
+            .map_err(|error| format!("{name}: {error}"))?;
+    }
+    for (name, cause) in [
+        ("plain-bound", "known function type"),
+        ("immutable-adapter", "mutable"),
+        ("wrong-arity", "argument count"),
+        ("wrong-argument", "incompatible types"),
+    ] {
+        let error = packet_report(CAPTURED, name)
+            .and_then(|report| program(&report))
+            .err()
+            .ok_or_else(|| format!("accepted {name}"))?;
+        assert!(error.to_string().contains(cause), "{name}: {error}");
+    }
+    Ok(())
+}
+#[test]
+fn captured_const_call_work_tracks_actual_closures() -> Result {
+    let mut previous: Option<[usize; 2]> = None;
+    for count in [8, 32, 128] {
+        let report = packet_report(CAPTURED, &format!("adapter-scaling-{count}"))?;
+        let pipeline::Analysis {
+            mut facts,
+            prepared,
+        } = pipeline::analyze_source(&report)?;
+        rustgm::lower::instances::build_roots_prepared(
+            &report,
+            &mut facts,
+            rustgm::lower::Roots {
+                entry: None,
+                exports: &[],
+            },
+            prepared,
+        )?;
+        let work = [
+            facts.body_work.inference_steps,
+            facts.body_work.canonical_steps,
+        ];
+        println!("captured callable {count}: {work:?}");
+        if let Some(before) = previous {
+            for (actual, old) in work.into_iter().zip(before) {
+                assert!(actual <= old.saturating_mul(5));
+            }
+        }
+        previous = Some(work);
+    }
+    Ok(())
+}
+#[test]
+fn captured_local_cleanup_and_ctfe_remain_accepting_requirements() -> Result {
+    // Independent Rust accepts every positive below. Keep the concrete unfinished
+    // boundary explicit rather than recording those programs as expected rejects.
+    for name in [
+        "owned-mut",
+        "owned-shared",
+        "owned-once",
+        "two-args",
+        "ordinary-control",
+        "scaling-8",
+        "scaling-32",
+        "scaling-128",
+    ] {
+        let error = packet_report(CAPTURED, name)
+            .and_then(|report| program(&report))
+            .err()
+            .ok_or_else(|| format!("{name}: update completed accepting requirement"))?;
+        assert!(
+            error
+                .to_string()
+                .contains("active cleanup requires const Destruct"),
+            "{name}: {error}"
+        );
+    }
+    let error = packet_report(CAPTURED, "native-ctfe")
+        .and_then(|report| program(&report))
+        .err()
+        .ok_or("update completed CTFE accepting requirement")?;
+    assert!(error.to_string().contains("known function type"), "{error}");
+    let error = packet_report(CAPTURED, "returned-once")
+        .and_then(|report| program(&report))
+        .err()
+        .ok_or("update completed consuming closure cleanup requirement")?;
+    assert!(
+        error
+            .to_string()
+            .contains("const cleanup selection requires its actual source function"),
+        "{error}"
+    );
+    Ok(())
+}
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn captured_const_adapter_executes_its_actual_function_and_receiver() -> Result {
+    native(CAPTURED, "obj/parallel/captured-const-calls/native")
+}
 #[test]
 fn borrowed_const_callables_keep_source_adjustments_and_permissions() -> Result {
     let mut failures = Vec::new();

@@ -1,3 +1,36 @@
+# Current continuation — captured const calls
+
+Checkpoint: captured const-call ownership; current39 original below remains latest. Closure defining operators now authenticate actual const
+wrapper/declaration/source/signatures/instance and reuse existing complete closure
+argument bindings (including pre-opaque declaration order). No parent-owner swap,
+newdense/persistent authority/quota/wire/backend/storage changes. Source effect,
+borrow/signature/operand and actual Code checks remain. Source-call non-function
+signature now explicitly errors, repairing full43665225882's unchanged private
+corruption guard. Full had3086 private PASS/1FAIL; all public release targets PASS;
+later full stages skipped. No active full; successor expected3088 private after
+new actual closure corruption guard. No cold local private harness.
+
+PA25/31 captured-const-calls each25 predictions20accept5reject, all independently
+Rust-qualified. Original18 bytes/predictions preserved; seven returned controls
+added before execution.14 source outcomes10accept4reject qualify;11 source gaps
+(local cleanup incl1maskednegative, consumingcleanup, opaqueCTFE) and25 ordinary
+Destruct-import attempts remain required/unqualified. Actual Rust runtime/CTFE
+both41/59. RustGM new runtime41/59 plus old borrowed/explicit/unsafe controls pass
+native4groups38.00s. fast4=1794710365842385778 four exact40.72s allstaticPASS;
+fast3's old borrowed and6unannotatedclosuregap controls PASS. replay3967/allinputs/
+50CLI14qualified36gaps, exactlowering/scaling3382/2160,13486/7436,53902/28516.
+CLIad8b948907471b23e0f5616996c1b7f4aa9bf5932db15ae306a2914a5061faeb pinned
+captured-const-calls/replay/.315harness497roots13bins44stages1component128upstream/
+126Reference PASS. Raw obj/parallel/captured-const-calls/; doc
+ docs/pa25-captured-const-calls.md. Full failure log nominal-residuals/
+ci43665225882-failed.log. No speedclaim. NEXT publish coherent checkpoint, dispatch
+ONE fullsuccessor, freeze optimized40, retry unchanged originalv14+postcheck.
+No core artifact/wholePA25–44 completion;113component unchanged. Sameoneworker/B
+only/mainGit-only/2jobs150GiBreserve16GiBcap/frozenbackend17b024f69. Current39/38,
+newreplay/nominalreplay available; pendingperformance21–24 preserved. Older positive
+requirements including all6unannotatedconstclosures remain. This section supersedes
+older CI/NEXT statuses below.
+
 # RustGM handoff — 2026-11-14
 
 LATEST genuine original: clean candidate39-release on publishedb3ab20376,
