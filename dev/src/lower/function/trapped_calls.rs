@@ -37,6 +37,9 @@ impl Lower<'_, '_, '_> {
         let Some(name) = self.context.constants.source_trap(DefId(item.0))? else {
             return Ok(None);
         };
+        if let Some(lowered) = self.unqualified_call(name, id)? {
+            return Ok(Some(lowered));
+        }
         let result = value.ty;
         let instance = self
             .body

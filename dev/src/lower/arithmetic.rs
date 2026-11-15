@@ -291,6 +291,17 @@ impl Arithmetic<'_, '_> {
         let overflow = self.overflow_flag(Binary::Sub, signed, left, right, result)?;
         Ok((result, overflow))
     }
+    /// The wrapped sum and its flag, in the carrier `subtract_overflow` uses.
+    pub(super) fn add_overflow(
+        &mut self,
+        signed: bool,
+        left: Value,
+        right: Value,
+    ) -> Result<(Value, Value), &'static str> {
+        let result = self.builder.binary(Binary::Add, left, right)?;
+        let overflow = self.overflow_flag(Binary::Add, signed, left, right, result)?;
+        Ok((result, overflow))
+    }
     fn overflow_flag(
         &mut self,
         op: Binary,

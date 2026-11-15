@@ -433,3 +433,69 @@ fn unlowered_intrinsics_trap_or_run_their_fallback_bodies_and_are_named() -> Res
     }
     Ok(())
 }
+
+/// A source-core library that declares bodiless intrinsics which the bring-up
+/// profile lowers in place, and calls each with types the lowering handles.
+const LOWERED: &str = "\
+#![feature(no_core,lang_items,intrinsics,rustc_attrs)]
+#![no_core]
+#![allow(internal_features,dead_code,unused_variables)]
+#[lang=\"pointee_sized\"]pub trait PointeeSized{}
+#[lang=\"meta_sized\"]pub trait MetaSized:PointeeSized{}
+#[lang=\"sized\"]pub trait Sized:MetaSized{}
+#[lang=\"legacy_receiver\"]pub trait LegacyReceiver:PointeeSized{}
+impl<T:PointeeSized> LegacyReceiver for &T{}
+#[lang=\"clone\"]pub trait Clone:Sized{#[lang=\"clone_fn\"]fn clone(&self)->Self;}
+#[lang=\"copy\"]pub trait Copy:Clone{}
+#[rustc_intrinsic] const fn ctpop<T>(x:T)->u32;
+#[rustc_intrinsic] const fn saturating_add<T>(a:T,b:T)->T;
+#[rustc_intrinsic] const unsafe fn offset<P,D>(dst:P,offset:D)->P;
+#[rustc_intrinsic] const unsafe fn read_via_copy<T>(ptr:*const T)->T;
+#[unsafe(no_mangle)]pub fn ones(x:u32)->u32{ctpop(x)}
+#[unsafe(no_mangle)]pub fn clamped(a:u8,b:u8)->u8{saturating_add(a,b)}
+#[unsafe(no_mangle)]pub unsafe fn third(p:*const u32)->u32{unsafe{read_via_copy(offset(p,3isize))}}
+";
+/// A call with a type that the lowering of the same intrinsic does not handle.
+const UNHANDLED: &str = "#[unsafe(no_mangle)]pub fn truth(x:bool)->u32{ctpop(x)}\n";
+/// Where a strict library that declares such an intrinsic has always stopped.
+const DECLARED: &str = "source intrinsic declaration semantics require a wider metadata profile";
+
+#[test]
+fn intrinsics_with_an_unqualified_lowering_are_named_and_stay_fenced_when_strict() -> Result {
+    let lowered = [
+        "source intrinsic uses unqualified lowering: ctpop",
+        "source intrinsic uses unqualified lowering: saturating_add",
+        "source intrinsic uses unqualified lowering: offset",
+        "source intrinsic uses unqualified lowering: read_via_copy",
+    ];
+    let trapped = "source intrinsic executable lowering is not implemented: ctpop";
+    for (name, user, traps) in [("lowered", "", false), ("unhandled", UNHANDLED, true)] {
+        let source = format!("{LOWERED}{user}");
+        // The strict profile stops at its own fence, lowers and names nothing.
+        let (strict, _) = library(&format!("{name}-strict"), &source, "lowers", None, false)?;
+        let stderr = String::from_utf8(strict.stderr)?;
+        assert_eq!(strict.status.code(), Some(1), "{stderr}");
+        assert!(
+            stderr.contains(DECLARED) && !stderr.contains("bringup-") && strict.stdout.is_empty(),
+            "{stderr}"
+        );
+        let (passed, _) = library(name, &source, "lowers_bringup", Some(""), false)?;
+        let stderr = String::from_utf8(passed.stderr)?;
+        assert!(passed.status.success(), "{stderr}");
+        let fences = waived(&stderr);
+        assert!(
+            lowered.iter().all(|fence| fences.contains(fence)),
+            "{stderr}"
+        );
+        // Lowered calls need no shim; only the unhandled call keeps its trap.
+        assert_eq!(fences.contains(&trapped), traps, "{stderr}");
+        let text = std::str::from_utf8(&passed.stdout)?;
+        assert_eq!(text.contains("rg.trap.ctpop"), traps, "{text}");
+        assert_eq!(text.contains("call void @abort()"), traps, "{text}");
+        assert!(
+            text.contains("binary ushr") && text.contains("index u8"),
+            "{text}"
+        );
+    }
+    Ok(())
+}

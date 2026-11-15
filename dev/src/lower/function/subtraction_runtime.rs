@@ -109,7 +109,7 @@ impl Lower<'_, '_, '_> {
             .map(Some)
     }
     /// Publish the real checked result and flag using its selected tuple layout.
-    fn store_subtraction_tuple(
+    pub(super) fn store_subtraction_tuple(
         &mut self,
         result: crate::lowir::program::Value,
         overflow: crate::lowir::program::Value,
@@ -145,7 +145,7 @@ impl Lower<'_, '_, '_> {
     }
     /// Wrapping and valid unsafe arithmetic use the existing raw scalar operation.
     /// The builder validates its types; checked operations retain their own path.
-    fn scalar_binary(
+    pub(super) fn scalar_binary(
         &mut self,
         operator: crate::lex::token::Punctuation,
         left: crate::lowir::program::Value,

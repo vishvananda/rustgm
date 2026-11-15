@@ -23,10 +23,35 @@ pub(super) fn build(
     let mut builder = Builder::default();
     let block = builder.block()?;
     builder.enter(block)?;
-    let mut value = Value {
+    let input = Value {
         ty,
         operand: Operand::Parameter(0),
     };
+    let mut value = emit(&mut builder, operation, input)?;
+    if value.ty != result {
+        value = builder.copy(result, value)?;
+    }
+    builder.terminate(Terminator::Return(Some(value)))?;
+    builder.finish()
+}
+/// The transform of an integer value at its own width, in the open block.
+pub(super) fn emit(
+    builder: &mut Builder,
+    operation: Operation,
+    mut value: Value,
+) -> Result<Value, &'static str> {
+    let ty = value.ty;
+    let bits = match ty.bits() {
+        8 => 8_u16,
+        16 => 16,
+        32 => 32,
+        64 => 64,
+        128 => 128,
+        _ => return Err("invalid scalar LLVM kernel descriptor"),
+    };
+    if operation == Operation::Unsupported {
+        return Err("invalid scalar LLVM kernel descriptor");
+    }
     let mut shift = if operation == Operation::SwapBytes {
         8
     } else {
@@ -50,9 +75,5 @@ pub(super) fn build(
         };
         shift *= 2;
     }
-    if value.ty != result {
-        value = builder.copy(result, value)?;
-    }
-    builder.terminate(Terminator::Return(Some(value)))?;
-    builder.finish()
+    Ok(value)
 }

@@ -26,6 +26,7 @@ mod subtraction_runtime;
 mod termination_call;
 mod text;
 mod trapped_calls;
+mod unqualified;
 mod vararg;
 mod wrapper_transfers;
 mod wrapping_runtime;
