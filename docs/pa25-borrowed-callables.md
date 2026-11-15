@@ -60,3 +60,12 @@ Previous full43652873020/ead92a4cd is still active; no duplicate successor is
 launched. A clean optimized36 build and unchanged original-core artifact retry
 are next. Original v13/v14 artifacts/native consumers, every earlier positive,
 whole PA25–44 and the separate113-case PA25 component retain their prior status.
+
+Clean release36 on published05d1beedd confirms the original Drain FnMut blocker
+is cleared.3965 hashes/empty patch, CLI35d8c41c…ef8a251c,6m42s build. Original
+v14 core36 next rejects array/mod.rs:153/file98:5582 in try_from_fn with `const
+member lost its typed Call operation`.19.973867606837302s/status1/no timeout/
+RSS730216KiB; no metadata/0-byte LowIR. Postcheck passes722 originals/375 opens/
+six reviewed pins/all3965/clean pin/fixed120s/unchanged limits. No speed/artifact
+claim. Full prior43652873020 passes release/course and both native stages; debug
+invariants remain active. New borrowed full successor still waits for terminal.

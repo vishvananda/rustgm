@@ -1,5 +1,35 @@
 # RustGM handoff — 2026-11-14
 
+LATEST genuine original: clean candidate36-release on published05d1beedd,
+3965 hashes/empty patch,6m42s build. CLI
+35d8c41c4fd584772fa5182f4884598b64bd634b60bd6856871ce38fef8a251c.
+Original v14 library36 CLEARS the borrowed callable/Drain FnMut fence and FAILS
+array/mod.rs:153/file98:5582, try_from_fn, with `const member lost its typed Call
+operation`.19.973867606837302s/status1/no timeout/RSS730216KiB. No core.rgm and
+0-byte core.lowir. Postcheck36 terminal PASS722 originals/375 opens/six reviewed
+pins/all3965/clean pin/fixed120s and unchanged14500624work/1GiB attempted/64MiB
+retained. Diagnostic only/no speed claim/native consumers false. Raw
+borrowed-callables/{build36-release,core-artifact36,artifact-postcheck36}.log and
+original-library-candidate36/. Initial build wrapper rejected --no-prune with
+--prune-under before launch; corrected clean build above is terminal/pass.
+
+NEXT reduce actual implicit Try call in generic const try_from_fn body. Its try
+block has existing Operation::Try/ProtocolPlanId (Block.from_output); provided
+source requests currently require Operation::Call after handling access plans.
+Existing sema::protocol_plans::checked authenticates source syntax/gate/actual
+registered methods, signatures, owner/effect; reuse that typed producer. Inspect
+actual lowered call membership/result and preserve every const/effect/borrow/Code
+requirement. Do not invent Call records or relax protocol/role bindings. Const
+ordinary minima PA25; source roles PA31. No reduction or product edit yet.
+
+Published05d1beedd/main synced. Push43655058769 fast CI PASS. ONE previous full
+43652873020/ead92a4cd has PASSED release/course, maintainer native and broad native
+course and is in debug invariants. Do not duplicate/cancel/restart for docs; new
+borrowed checkpoint's full successor waits for terminal prior run(expected3085).
+No original artifact or whole PA25–44 qualification. Earlier CTFE/preparation,
+originalv13/v14/Future/closure/ABI/native/bootstrap positives remain required.
+
+
 LATEST CHECKPOINT: borrowed generic const-callable reference adjustments. See
  docs/pa25-borrowed-callables.md. Production reuses actual source Call/callee and
 walks exactly the retained reference count, charging each step, requiring mutable

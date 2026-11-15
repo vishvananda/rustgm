@@ -4,7 +4,8 @@ The [borrowed const-callable checkpoint](docs/pa25-borrowed-callables.md)
 authenticates the existing source reference adjustment and final call-trait borrow.
 Seventeen source outcomes, one ordinary opponent and nine native programs pass.
 Source CTFE payment, ordinary declaration preparation and original core artifacts
-remain required; whole assignments retain their planned status.
+remain required; whole assignments retain their planned status. Clean36 clears
+the original Drain body and reaches the implicit Try-call fence in try_from_fn.
 
 
 The [explicit call-member checkpoint](docs/pa25-explicit-call-members.md)
