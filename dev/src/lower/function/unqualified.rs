@@ -70,7 +70,7 @@ impl Lower<'_, '_, '_> {
             result: value.ty,
         };
         let lowered = match name {
-            "add_with_overflow" | "saturating_add" | "saturating_sub" | "exact_div" => {
+            "saturating_add" | "saturating_sub" | "exact_div" => {
                 self.unqualified_arithmetic(call)?
             }
             "ctpop" | "ctlz" | "ctlz_nonzero" | "cttz" | "cttz_nonzero" | "bswap"

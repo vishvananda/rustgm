@@ -631,6 +631,46 @@ fn intrinsics_with_an_unqualified_lowering_are_named_and_stay_fenced_when_strict
     Ok(())
 }
 
+/// Checked addition in a constant and in lowered code.
+const CHECKED_ADDITION: &str = "\
+impl Clone for u8{fn clone(&self)->Self{*self}}impl Copy for u8{}
+impl Clone for bool{fn clone(&self)->Self{*self}}impl Copy for bool{}
+#[rustc_intrinsic] const fn add_with_overflow<T:Copy>(x:T,y:T)->(T,bool);
+const WRAPPED:(u8,bool)=add_with_overflow(250u8,10u8);
+#[unsafe(no_mangle)]pub fn folded()->u8{WRAPPED.0}
+#[unsafe(no_mangle)]pub fn carried(a:u8,b:u8)->bool{add_with_overflow(a,b).1}
+";
+
+#[test]
+fn checked_addition_runs_in_constants_and_lowered_code_and_stays_fenced_when_strict() -> Result {
+    let source = format!("{HEAD}{CHECKED_ADDITION}");
+    let (strict, _) = library("checked-add-strict", &source, "adds", None, false)?;
+    let stderr = String::from_utf8(strict.stderr)?;
+    assert_eq!(strict.status.code(), Some(1), "{stderr}");
+    assert!(
+        stderr.contains("source intrinsic constant execution is not implemented")
+            && !stderr.contains("bringup-")
+            && strict.stdout.is_empty(),
+        "{stderr}"
+    );
+    let (passed, _) = library("checked-add", &source, "adds_bringup", Some(""), false)?;
+    let stderr = String::from_utf8(passed.stderr)?;
+    assert!(passed.status.success(), "{stderr}");
+    let fences = waived(&stderr);
+    let fence = "source intrinsic uses unqualified checked arithmetic: add_with_overflow";
+    assert!(fences.contains(&fence), "{stderr}");
+    // Both calls take the checked contract: no trap and no in-place lowering.
+    assert!(
+        fences
+            .iter()
+            .all(|fence| !fence.starts_with(UNLOWERED) && !fence.starts_with(UNQUALIFIED)),
+        "{stderr}"
+    );
+    let text = std::str::from_utf8(&passed.stdout)?;
+    assert!(!text.contains("rg.trap."), "{text}");
+    Ok(())
+}
+
 /// The x86 spin-wait hint that `core::hint::spin_loop` reaches through stdarch.
 const PAUSE: &str = "\
 #![allow(internal_features)]

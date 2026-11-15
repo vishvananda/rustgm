@@ -1,4 +1,4 @@
-//! Overflow-reporting, saturating and exact integer operations at their own width.
+//! Saturating and exact integer operations at their own width.
 use super::{
     super::{Arithmetic, Lower, Selected, casts},
     Call, Integer,
@@ -25,8 +25,7 @@ impl Lower<'_, '_, '_> {
         else {
             return Ok(None);
         };
-        let paired = call.name == "add_with_overflow";
-        if left.ty != right.ty || !self.arithmetic_result(call.result, left.ty, paired) {
+        if left.ty != right.ty || call.result != left.ty {
             return Ok(None);
         }
         if call.name == "exact_div" {
@@ -46,11 +45,6 @@ impl Lower<'_, '_, '_> {
         } else {
             arithmetic.add_overflow(left.signed, left.value, right.value)?
         };
-        if paired {
-            return self
-                .store_subtraction_tuple(wrapped, overflow, left.ty, call.result)
-                .map(Some);
-        }
         saturate(&mut self.builder, subtract, left, wrapped, overflow)
             .map(|value| Some(Selected::Runtime(value)))
     }

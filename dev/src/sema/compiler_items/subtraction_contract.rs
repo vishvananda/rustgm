@@ -55,11 +55,22 @@ pub(crate) fn scalar_arithmetic(kind: SourceIntrinsic) -> bool {
         || overflowing_operator(kind).is_some()
         || unchecked_shift(kind).is_some()
 }
+/// The fence that the bring-up profile passes over for `add_with_overflow`.
+const CHECKED_ADDITION: &str =
+    "source intrinsic uses unqualified checked arithmetic: add_with_overflow";
 pub(crate) fn overflowing_operator(kind: SourceIntrinsic) -> Option<Punctuation> {
     match kind {
         SourceIntrinsic::SubWithOverflow => Some(Punctuation::Minus),
         SourceIntrinsic::Declaration(identity) if identity.name() == "mul_with_overflow" => {
             Some(Punctuation::Star)
+        }
+        // Bring-up only: checked addition takes the contract of its two siblings
+        // without its own qualification, in constants and in lowered code.
+        SourceIntrinsic::Declaration(identity)
+            if identity.name() == "add_with_overflow"
+                && crate::support::bringup::waive(CHECKED_ADDITION) =>
+        {
+            Some(Punctuation::Plus)
         }
         _ => None,
     }

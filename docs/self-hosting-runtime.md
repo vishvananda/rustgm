@@ -245,7 +245,7 @@ row needs a backend change.
 | 1 | Link through the object bridge | M1 | Runner | Bridge exists; the consumer runner must use it |
 | 2 | Program entry: `#![no_main]`, C `main` with arguments, `lang_start`, `Termination` | M1 | Frontend | Fenced |
 | 3 | Intrinsics executed at run time | M1 | Frontend | A fixed list is lowered; the rest stop at one fence |
-| 3a | Bring-up lowering, integer arithmetic: `add_with_overflow`, `saturating_add/sub`, `exact_div` | M1 | Runtime lane | Lowered in place and waived by name; `intrinsic-ops.rs` matches rustc |
+| 3a | Bring-up lowering, integer arithmetic: `saturating_add/sub`, `exact_div`; `add_with_overflow` takes the checked contract of `sub_with_overflow` and `mul_with_overflow`, in constants too | M1 | Runtime lane | Lowered in place and waived by name; `intrinsic-ops.rs` matches rustc |
 | 3b | Bring-up lowering, bits: `ctpop`, `ctlz`, `cttz`, their `_nonzero` forms, `bswap`, `bitreverse` | M1 | Runtime lane | Same; shift-and-mask sequences at 8 to 128 bits |
 | 3c | Bring-up lowering, pointers: `offset`, `slice_get_unchecked`, `ptr_offset_from`, `ptr_offset_from_unsigned` | M1 | Runtime lane | Same; a zero-sized `ptr_offset_from` keeps its trap |
 | 3d | Bring-up lowering, moves: `read_via_copy`, `write_via_move`, `black_box`, `forget`, `unreachable` | M1 | Runtime lane | Same; `unreachable` aborts |

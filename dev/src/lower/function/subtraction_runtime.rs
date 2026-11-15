@@ -103,6 +103,9 @@ impl Lower<'_, '_, '_> {
                 Some(crate::lex::token::Punctuation::Star) => {
                     arithmetic.multiply_overflow(signed, left, right)?
                 }
+                Some(crate::lex::token::Punctuation::Plus) => {
+                    arithmetic.add_overflow(signed, left, right)?
+                }
                 _ => return Err("source arithmetic lost its selected overflow operation"),
             };
         self.store_subtraction_tuple(result, overflow, selected.input, selected.output)
