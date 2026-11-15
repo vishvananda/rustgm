@@ -41,7 +41,7 @@ pub(super) fn selected(
 ) -> Result<Requirements, &'static str> {
     if !source
         .owner
-        .is_some_and(|owner| facts.generics.has_parameters(owner))
+        .is_some_and(|owner| crate::body::templates::owns(facts, owner))
     {
         return Ok(Requirements(Vec::new()));
     }

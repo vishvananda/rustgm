@@ -152,7 +152,8 @@ fn reference_self(
     base: u32,
 ) -> Result<Receiver, &'static str> {
     let mut chain = Vec::new();
-    let mut actual = adapter.receiver();
+    // A returned `impl Fn` on the path is stored as its hidden closure.
+    let mut actual = types.storage_head(adapter.receiver())?;
     while actual != adapter.instance().ty() {
         if chain.len() >= 1_000_000 {
             return Err("adapter reference path exceeds its work budget");
@@ -166,7 +167,7 @@ fn reference_self(
             return Err("reference adapter selects another closure Self");
         };
         chain.push((mutable, region));
-        actual = referent;
+        actual = types.storage_head(referent)?;
     }
     let regions = chain.iter().map(|&(_, region)| region).collect::<Vec<_>>();
     let prefix = matching::bind_instance(types, base, canonical, actual)?.prefixes(&regions)?;

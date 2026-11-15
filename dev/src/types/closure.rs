@@ -43,7 +43,8 @@ impl Adapter {
             .closure_kind(identity)
             .ok_or("receiver adapter requires complete call permission")?;
         let mut permission = requested;
-        let mut referent_ty = receiver;
+        // A returned `impl Fn` on the path is stored as its hidden closure.
+        let mut referent_ty = types.storage_head(receiver)?;
         let mut depth = 0usize;
         while referent_ty != instance.ty() {
             depth += 1;
@@ -59,7 +60,7 @@ impl Adapter {
             permission = permission
                 .referent(mutable)
                 .ok_or("mutable references do not implement shared call permission")?;
-            referent_ty = referent;
+            referent_ty = types.storage_head(referent)?;
         }
         let required = CallKind::from_trait(permission);
         if environment == TypeId::UNIT

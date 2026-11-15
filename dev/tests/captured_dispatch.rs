@@ -9,6 +9,8 @@ use crate::native_references as native;
 mod quantifiers;
 #[path = "captured_dispatch/referenced_self.rs"]
 mod reference_objects;
+#[path = "captured_dispatch/returned_callables.rs"]
+mod returned_callables;
 use std::path::PathBuf;
 
 const ACCEPTED: &[&str] = &[

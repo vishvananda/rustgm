@@ -98,9 +98,11 @@ pub(crate) fn build(
     let (source, prepared) = selected.validate_adapter(facts)?;
     let execution = prepared.execution;
     let canonical = prepared.canonical;
+    // An opaque-defining owner is checked as a template family as well, so
+    // its closure reaches this wrapper as an instance of that original.
     let generic = source
         .owner
-        .is_some_and(|owner| facts.generics.has_parameters(owner));
+        .is_some_and(|owner| crate::body::templates::owns(facts, owner));
     let instance = generic.then_some(adapter.instance());
     let public = if generic {
         let Some(Kind::Closure { signature, .. }) = facts.types.kind(adapter.instance().ty())

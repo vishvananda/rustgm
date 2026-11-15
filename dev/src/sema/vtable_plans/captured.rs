@@ -62,7 +62,9 @@ pub(crate) fn prepare_captured(
         } else {
             entry.instance.ty()
         };
-        if checked != concrete || entry.requested == CallTrait::FnOnce {
+        // A returned `impl Fn` stays the conversion's source Self, while its
+        // entries name the closure that stores it.
+        if checked != facts.types.storage_head(concrete)? || entry.requested == CallTrait::FnOnce {
             return Err("captured table entry differs from its checked source conversion");
         }
     }
