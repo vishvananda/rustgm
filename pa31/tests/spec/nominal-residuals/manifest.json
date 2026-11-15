@@ -1,0 +1,112 @@
+{
+ "schema": 1,
+ "owner": "PA31 generic residual result fields",
+ "declared_before_execution": true,
+ "cases": {
+  "value-direct.rs": {
+   "expected": "accept",
+   "ordinary": "pa20/tests/spec/nominal-residuals/value-direct.rs"
+  },
+  "borrow-direct.rs": {
+   "expected": "accept",
+   "ordinary": "pa20/tests/spec/nominal-residuals/borrow-direct.rs"
+  },
+  "slice-direct.rs": {
+   "expected": "accept",
+   "ordinary": "pa20/tests/spec/nominal-residuals/slice-direct.rs"
+  },
+  "value-delegated.rs": {
+   "expected": "accept",
+   "ordinary": "pa20/tests/spec/nominal-residuals/value-delegated.rs"
+  },
+  "borrow-delegated.rs": {
+   "expected": "accept",
+   "ordinary": "pa20/tests/spec/nominal-residuals/borrow-delegated.rs"
+  },
+  "slice-delegated.rs": {
+   "expected": "accept",
+   "ordinary": "pa20/tests/spec/nominal-residuals/slice-delegated.rs"
+  },
+  "associated-delegated.rs": {
+   "expected": "accept",
+   "ordinary": "pa20/tests/spec/nominal-residuals/associated-delegated.rs"
+  },
+  "associated-direct.rs": {
+   "expected": "accept",
+   "ordinary": "pa20/tests/spec/nominal-residuals/associated-direct.rs"
+  },
+  "without-question.rs": {
+   "expected": "accept",
+   "ordinary": "pa20/tests/spec/nominal-residuals/without-question.rs"
+  },
+  "wrong-output.rs": {
+   "expected": "reject",
+   "ordinary": "pa20/tests/spec/nominal-residuals/wrong-output.rs"
+  },
+  "escaped-borrow.rs": {
+   "expected": "reject",
+   "ordinary": "pa20/tests/spec/nominal-residuals/escaped-borrow.rs"
+  },
+  "moved-output.rs": {
+   "expected": "reject",
+   "ordinary": "pa20/tests/spec/nominal-residuals/moved-output.rs"
+  },
+  "wrong-associated-output.rs": {
+   "expected": "reject",
+   "ordinary": "pa20/tests/spec/nominal-residuals/wrong-associated-output.rs"
+  },
+  "native-runtime.rs": {
+   "expected": "accept",
+   "ordinary": "pa20/tests/spec/nominal-residuals/native-runtime.rs",
+   "native_stdout": "41 59 23\n",
+   "observer": "observe.c"
+  },
+  "scaling-8.rs": {
+   "expected": "accept",
+   "ordinary": "pa20/tests/spec/nominal-residuals/scaling-8.rs"
+  },
+  "scaling-32.rs": {
+   "expected": "accept",
+   "ordinary": "pa20/tests/spec/nominal-residuals/scaling-32.rs"
+  },
+  "scaling-128.rs": {
+   "expected": "accept",
+   "ordinary": "pa20/tests/spec/nominal-residuals/scaling-128.rs"
+  }
+ },
+ "files": {
+  "value-direct.rs": "26e704641c82a2a7ed3e164a3397b8d2f3af07ea88ea484d8acbb2fb6f31fa7b",
+  "borrow-direct.rs": "50b91ee355756d402508d1baa16bb63f1c6cf22ba5386fa0ed6eb4bb05a2bd9b",
+  "slice-direct.rs": "2b97c1a5263d8329172b194a721addba7df82edc601030c73d6a655f8c3d31f1",
+  "value-delegated.rs": "a46871970849d8aa66f47b85c68e1251678b833a9a1b828df0f1f04f76e8e128",
+  "borrow-delegated.rs": "64d6891e94c4a4bca01e2403d232b7c025e76ba192f24da52758c6e6a9fca2d2",
+  "slice-delegated.rs": "2b5335890394340336752386e8458b1e3bc2439352b8890b0b8d9737365d6484",
+  "associated-delegated.rs": "5930165df68bb2d01c45f2f1f891c051bd4ac1e54e50b8da277d45c0187e68b2",
+  "associated-direct.rs": "425294f2fbbfaaad398dd7977efbb44c8d46ef0c31c732d88fd4b04526c0a16d",
+  "without-question.rs": "931cd413674a72026a08e8821a9de13fd7cb2e2e3b38d785051e5c4d1596e480",
+  "wrong-output.rs": "7031cadbdc3c7998e08d1c47e224273d207f17e6e7a90a8c11030b0e689c0409",
+  "escaped-borrow.rs": "9a3f00254027be68ad9b470a790542bea5f34f109a6ddb97d11e229950452b96",
+  "moved-output.rs": "7c25a051d0bcd2cc9f0ecc6da9158198ef1ce8d41b58f23f35fcc78fde78b0fc",
+  "wrong-associated-output.rs": "ad3b356adac7b01b12627a1a4e95495374a9fa99fdea03fb6bce3010840dac06",
+  "native-runtime.rs": "393e20ab7b9f7dd6088391a319d2d764adc23f8966018ba7209da116c7da291c",
+  "scaling-8.rs": "06623cab3a860d11e509608ea5f9cf399129b4ca678ea6bfb3e6b15b49105f6a",
+  "scaling-32.rs": "53f1902001f6351ec11d30d8d1d65cfc6c2b3cdcdbc41356e39476ecf905de1e",
+  "scaling-128.rs": "01aeab924384e5f08acfa9d48f627f454ea7661eb61f09c3e885712b8f7ee05a",
+  "observe.c": "f439e865e8253a40ef42deca9b6ac9d683c7c9a6b6536b647b47123b2ed791ee"
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "basis": {
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "source_path": "library/core/src/slice/index.rs",
+  "source_sha256": "8c2d4f2dd29808136d4a45878010f2edb7c64c3c197d564f86d034b33df4e8ec",
+  "shape": "Generic aggregate result after question mark and delegated associated slice output. No copied original method.",
+  "license": "MIT OR Apache-2.0; third_party/sources.json"
+ }
+}

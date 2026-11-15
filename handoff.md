@@ -1,5 +1,50 @@
 # RustGM handoff — 2026-11-14
 
+LATEST checkpoint: exact implicit protocol result field preparation. See
+ docs/pa20-implicit-result-fields.md. Sema body call pass now prepares storage for
+actual solved signature results of implicit protocol calls (which lack exact
+expression-node lifetime instantiations), reusing bounded memoized producer.
+Readonly shape/drop guard unchanged; no declaration fallback/newdense/cache/quota/
+wire/backend/storage/ABI changes. Inventory3967; fallible_calls root extended.
+Frozen38 GDB trace raw_shape->NeedsDrop->create_owned->implicit_call->question_mark
+residual conversion proves consumer (nominal-residuals/trace.log).
+
+PA20/31 nominal-residuals each17 independent Rust predictions13accept4reject.
+All17 source+ordinary no-question generic/associated control qualify;16 ordinary
+questionmark provider-catalog attempts remain required/unqualified (including
+negatives). PA20 active manifest adds ONE primary (1627 total,614semantics/1013
+LowIR,608 runtime executions unchanged) with other16+observer auxiliaries; actual
+associated control appended without removing original free control. Course outcome
+and codegen-only intent declared before generation. One scoped batch+3new sidecars;
+ALL4878 old oracle files unchanged. Main-only10-lineIR independently reviewed,
+Rust object/status/compare and scoped native codegen pass. Actual source generic
+borrow success/residual observer41/59/23 +10prior programs pass43.94s; independent
+Rust counterpart same. fast2=1794706508201717071 fourexact168.93s allstaticpass;
+replay3967/allinputs34CLI18qualified16explicitgaps, exact lowering/scaling
+11270/4316/507,41798/12692/1587,163910/46468/5907; no speedclaim. Current devfast
+CLI a688464caf5a5604d324c7106c7590cd092023e8904594b9f5b06a07af6f7004 pinned.
+315harness497roots13bins44stages1component128upstream126Reference pass after new
+reference. Initialfast failed missingPA20inventory; initial replayfinal layout
+failed missingnewreference. Both resolved through declared registration/oracles,
+not gate changes. Raw obj/parallel/nominal-residuals/.
+
+Full43661946931 onafe0fc9e2 compiled the8 repaired private callers, then FAILED
+private Clippy missingsemicolon defining_members.rs339 Trycorruption assignment.
+Corrected that statement here, no assertion/expectation changes. Raw unsafe-const-
+members/ci43661946931-failed.log. Full43660831620 old8callermismatch alreadyfixed.
+No semantic tests ran in either full failure. Expected3087 private stillpending;
+no coldlocalprivateharness. Prior43656293922/8560 fullygreen3085/4.97s/45.56s.
+No fullactive. NEXT publish this coherent checkpoint+semicolonfix, dispatch ONE
+fullsuccessor, freeze candidate39-release and retry unchanged originalv14 artifact
+with722/sixreviewedpins/120s/14500624work/1GiB attempted/64MiB retained +postcheck.
+Core38 below remains latest; reduction clears borrowed generic result but original
+notyetverified. No coreartifact/wholePA25–44 completion;113component unchanged.
+Current38/37 cleanpins and nominal replay available; obsoleteunsafe replay may
+retire after replacement.36/Tryreplay retired. Pendingperf21–24 preserved. Same
+singleworker/B/mainGit-only/2jobs150GiBreserve16GiBcap/frozen17b024f69. Allolder
+positive requirements retained. This continuation supersedes older NEXT/CI text.
+
+
 LATEST genuine original: clean candidate38-release on published638369a03,
 3967 hashes/empty patch,6m57s build. CLI
 951d14737beb79ccd004e96fcdcb429cc57a95790775f40386bcd8c3afc65a3e.

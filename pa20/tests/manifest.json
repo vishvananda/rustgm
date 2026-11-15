@@ -26886,6 +26886,47 @@
       },
       "maintainer_origin": "frozen inherited closure/reference inputs; independently declared before oracle",
       "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/nominal-residuals/without-question.rs",
+      "source_sha256": "a748ef2086bb8dacd07c9006b6de5a294c8c589ab4f4f4dc75e1094c7814833f",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa20.associated-types",
+        "pa20.generic-call-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "Independently declared generic residual-result field packet; direct generic/associated delegation control. Auxiliary question-mark cases retain pending ordinary provider-catalog requirements.",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "codegen",
+        "reason": "Generic defining-body and associated-output control has no concrete feature consumer; actual source native observer remains independently required."
+      },
+      "auxiliary": [
+        "tests/spec/nominal-residuals/value-direct.rs",
+        "tests/spec/nominal-residuals/borrow-direct.rs",
+        "tests/spec/nominal-residuals/slice-direct.rs",
+        "tests/spec/nominal-residuals/value-delegated.rs",
+        "tests/spec/nominal-residuals/borrow-delegated.rs",
+        "tests/spec/nominal-residuals/slice-delegated.rs",
+        "tests/spec/nominal-residuals/associated-delegated.rs",
+        "tests/spec/nominal-residuals/associated-direct.rs",
+        "tests/spec/nominal-residuals/wrong-output.rs",
+        "tests/spec/nominal-residuals/escaped-borrow.rs",
+        "tests/spec/nominal-residuals/moved-output.rs",
+        "tests/spec/nominal-residuals/wrong-associated-output.rs",
+        "tests/spec/nominal-residuals/native-runtime.rs",
+        "tests/spec/nominal-residuals/scaling-8.rs",
+        "tests/spec/nominal-residuals/scaling-32.rs",
+        "tests/spec/nominal-residuals/scaling-128.rs",
+        "tests/spec/nominal-residuals/observe.c"
+      ]
     }
   ]
 }

@@ -1201,11 +1201,9 @@ impl Checker<'_> {
             let (node, ty) = (*node, solved.types[pending.receiver.0 as usize]);
             self.value_type(node, ty, &mut well_formed, &mut nominal_types)?;
         }
-        // Call inputs need their instantiated contracts even when an argument
-        // diverges and therefore has no value node with the parameter's type.
-        // Results already occur in `touched`; share input lifetime formation
-        // with value types. Nominal proofs belong to the complete signature,
-        // and diverging arguments need no additional concrete storage preparation.
+        // Implicit protocol results need owned storage even when no expression
+        // node has their exact lifetime instantiation. Ordinary results are in
+        // `touched`; call inputs retain formation even for diverging arguments.
         let mut call_inputs = crate::types::substitute::Bound::lower(1);
         for index in 0..self.state.calls.len() {
             let (node, term) = self.state.calls[index];
@@ -1213,6 +1211,7 @@ impl Checker<'_> {
             self.nominal_requirements(node, signature, &mut nominal_types)?;
             let Some(Type::Function {
                 parameters,
+                result,
                 bound_regions: 0,
                 convention,
                 ..
@@ -1220,6 +1219,9 @@ impl Checker<'_> {
             else {
                 return Err(self.error(node, "call requires an opened signature"));
             };
+            if self.is_protocol_call(node, index) {
+                self.prepare_storage(node, result)?;
+            }
             let count = self
                 .facts
                 .types

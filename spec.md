@@ -1,5 +1,12 @@
 # Compile-time-first Rust frontend architecture
 
+The [implicit result-field checkpoint](docs/pa20-implicit-result-fields.md)
+prepares exact solved protocol results before readonly drop queries.17 source
+outcomes, one ordinary control and eleven native programs pass. A scoped PA20
+primary preserves every older oracle; ordinary question-mark bootstrap and original
+core artifacts remain required.
+
+
 The [unsafe const-member checkpoint](docs/pa25-unsafe-const-members.md) consumes
 exact discharged safety rows and complete source calls.34 ordinary/source outcomes
 and twelve native programs pass, including the new simple CTFE consumer. Original

@@ -1,0 +1,35 @@
+#![allow(dead_code,unused_variables)]
+pub fn make<T>(slice:&[T])->Option<&[T]>{Some(slice)}
+pub fn probe0<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe1<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe2<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe3<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe4<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe5<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe6<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe7<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe8<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe9<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe10<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe11<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe12<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe13<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe14<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe15<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe16<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe17<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe18<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe19<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe20<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe21<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe22<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe23<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe24<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe25<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe26<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe27<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe28<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe29<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe30<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+pub fn probe31<T>(input:Option<u8>,slice:&[T])->Option<&[T]>{input?;make(slice)}
+fn main(){}

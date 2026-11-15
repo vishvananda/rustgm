@@ -1,0 +1,111 @@
+{
+ "schema": 1,
+ "owner": "PA20 generic residual result fields",
+ "declared_before_execution": true,
+ "cases": {
+  "value-direct.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at: source Try requires its actual provider catalog"
+  },
+  "borrow-direct.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at: source Try requires its actual provider catalog"
+  },
+  "slice-direct.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at: source Try requires its actual provider catalog"
+  },
+  "value-delegated.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at: source Try requires its actual provider catalog"
+  },
+  "borrow-delegated.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at: source Try requires its actual provider catalog"
+  },
+  "slice-delegated.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at: source Try requires its actual provider catalog"
+  },
+  "associated-delegated.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at: source Try requires its actual provider catalog"
+  },
+  "associated-direct.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at: source Try requires its actual provider catalog"
+  },
+  "without-question.rs": {
+   "expected": "accept"
+  },
+  "wrong-output.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required ordinary outcome remains unqualified at: source Try requires its actual provider catalog"
+  },
+  "escaped-borrow.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required ordinary outcome remains unqualified at: source Try requires its actual provider catalog"
+  },
+  "moved-output.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required ordinary outcome remains unqualified at: source Try requires its actual provider catalog"
+  },
+  "wrong-associated-output.rs": {
+   "expected": "reject",
+   "candidate_limit": "Required ordinary outcome remains unqualified at: source Try requires its actual provider catalog"
+  },
+  "native-runtime.rs": {
+   "expected": "accept",
+   "native_stdout": "41 59 23\n",
+   "observer": "observe.c",
+   "candidate_limit": "Required ordinary outcome remains unqualified at: source Try requires its actual provider catalog"
+  },
+  "scaling-8.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at: source Try requires its actual provider catalog"
+  },
+  "scaling-32.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at: source Try requires its actual provider catalog"
+  },
+  "scaling-128.rs": {
+   "expected": "accept",
+   "candidate_limit": "Required ordinary outcome remains unqualified at: source Try requires its actual provider catalog"
+  }
+ },
+ "files": {
+  "value-direct.rs": "e6da905da18e15941622fd3db1670bcf57487fe7486e4da2633da468d1e83caa",
+  "borrow-direct.rs": "9beed366adeaa72636c8d9ec76ec0bb2cb4f3dc4482ce81eabb2f4d2ea48842f",
+  "slice-direct.rs": "498f37a44245e4472484e40b5e078edf6eb916d9a4fc24a9119ad8a7cde5713b",
+  "value-delegated.rs": "fbc3d7d436e46888fcd1464f5fc1862e64580b2ac18945e9996eef821a26fd2d",
+  "borrow-delegated.rs": "6c48022e1db4e68e4d2cb1fc1b3b787142f8506a63ee4b67baad9d03a09b8b9e",
+  "slice-delegated.rs": "170a781c3c74b4ed001dd02e3d293ca0eb2ed2182cbfafc59f74729e6660dfeb",
+  "associated-delegated.rs": "660ee2c1d65beece898f20b77293518793f61a88267381eb50096038e43d0e10",
+  "associated-direct.rs": "e9a787fdcbd497f6bb4e8660409dd614f1eabcd6cbc152f111ba69c53f8db667",
+  "without-question.rs": "a748ef2086bb8dacd07c9006b6de5a294c8c589ab4f4f4dc75e1094c7814833f",
+  "wrong-output.rs": "557cec2435bfd5897201583c9ee9e1c391732eb4c6744d4e93f61c27b019e4f3",
+  "escaped-borrow.rs": "a17e5458ec0d6e7f826dd846a2f64feb5c11cda68f77c72205bf5752715a7c60",
+  "moved-output.rs": "ae2fd9625627c0647413db47f5a49b9dc9b6eea64bc2f933e5d4bfb2d8dc7540",
+  "wrong-associated-output.rs": "2e0a7abdeb483d79ee03b75d5caa1a84d1f1b045787dbbc7c85ecfa15cfa2c24",
+  "native-runtime.rs": "5a4f1bcccc33a67fc9009693c5e5b7001ce48f6d65a0e5a8de01b87e648bd3fc",
+  "scaling-8.rs": "5a0bb255d2501d6deafd75764ca61a4c5f1eb5ded47151fe384b9cf634971c08",
+  "scaling-32.rs": "144869588e2c24cd1729238a8a85e931ab27ce09d828837a49e38f7f15de1301",
+  "scaling-128.rs": "79b4b13eeba2a4f84c769111aec0b2a15ae471438019fca359574a1166a5e21c",
+  "observe.c": "f439e865e8253a40ef42deca9b6ac9d683c7c9a6b6536b647b47123b2ed791ee"
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "basis": {
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "source_path": "library/core/src/slice/index.rs",
+  "source_sha256": "8c2d4f2dd29808136d4a45878010f2edb7c64c3c197d564f86d034b33df4e8ec",
+  "shape": "Generic aggregate result after question mark and delegated associated slice output. No copied original method.",
+  "license": "MIT OR Apache-2.0; third_party/sources.json"
+ }
+}

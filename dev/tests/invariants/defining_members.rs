@@ -336,7 +336,7 @@ fn implicit_try_defining_request_keeps_the_actual_plan_and_complete_call() -> Re
             match change {
                 0 => altered.target = crate::types::TypeId::primitive(crate::types::Primitive::U8),
                 1 => {
-                    altered.result = crate::types::TypeId::primitive(crate::types::Primitive::Bool)
+                    altered.result = crate::types::TypeId::primitive(crate::types::Primitive::Bool);
                 }
                 _ => altered.site = body.source.source().ok_or("other site")?,
             }

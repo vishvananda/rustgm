@@ -16,6 +16,12 @@ fn packet_report(packet: &str, name: &str) -> Result<rustgm::resolve::expansion:
     )?)
 }
 fn program(report: &rustgm::resolve::expansion::Report) -> Result<rustgm::lowir::program::Program> {
+    program_with_exports(report, &["entry", "probe", "fail"])
+}
+fn program_with_exports(
+    report: &rustgm::resolve::expansion::Report,
+    names: &[&str],
+) -> Result<rustgm::lowir::program::Program> {
     let pipeline::Analysis {
         mut facts,
         prepared,
@@ -24,12 +30,11 @@ fn program(report: &rustgm::resolve::expansion::Report) -> Result<rustgm::lowir:
         .functions
         .iter()
         .filter(|function| {
-            matches!(
-                report
+            names.contains(
+                &report
                     .package
                     .names
                     .get(report.resolution.definitions[function.definition.0 as usize].name),
-                "entry" | "probe" | "fail"
             )
         })
         .map(|function| function.definition)
@@ -235,4 +240,98 @@ fn unsafe_const_member_code_executes_only_its_actual_const_implementation() -> R
         )?;
     }
     Ok(())
+}
+
+const NOMINAL_PACKET: &str = "pa31/tests/spec/nominal-residuals";
+#[test]
+fn residual_call_results_prepare_exact_generic_borrowed_fields() -> Result {
+    let mut failures = Vec::new();
+    for name in [
+        "value-direct",
+        "borrow-direct",
+        "slice-direct",
+        "value-delegated",
+        "borrow-delegated",
+        "slice-delegated",
+        "associated-delegated",
+        "associated-direct",
+        "without-question",
+        "native-runtime",
+    ] {
+        if let Err(error) = packet_report(NOMINAL_PACKET, name)
+            .and_then(|report| program_with_exports(&report, &[]))
+        {
+            failures.push(format!("{name}: {error}"));
+        }
+    }
+    for name in [
+        "wrong-output",
+        "escaped-borrow",
+        "moved-output",
+        "wrong-associated-output",
+    ] {
+        let error = packet_report(NOMINAL_PACKET, name)
+            .and_then(|report| program_with_exports(&report, &[]))
+            .err()
+            .ok_or_else(|| format!("accepted {name}"))?
+            .to_string();
+        if [
+            "not implemented",
+            "unsupported",
+            "exhausted",
+            "budget",
+            "requires instantiated fields",
+        ]
+        .iter()
+        .any(|message| error.contains(message))
+        {
+            failures.push(format!("unqualified {name}: {error}"));
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+#[test]
+fn implicit_result_field_work_tracks_actual_generic_calls() -> Result {
+    let mut previous: Option<[usize; 3]> = None;
+    for count in [8, 32, 128] {
+        let report = packet_report(NOMINAL_PACKET, &format!("scaling-{count}"))?;
+        let pipeline::Analysis {
+            mut facts,
+            prepared,
+        } = pipeline::analyze_source(&report)?;
+        rustgm::lower::instances::build_roots_prepared(
+            &report,
+            &mut facts,
+            rustgm::lower::Roots {
+                entry: None,
+                exports: &[],
+            },
+            prepared,
+        )?;
+        let work = [
+            facts.body_work.inference_steps,
+            facts.body_work.canonical_steps,
+            facts.aggregates.instantiation_steps(),
+        ];
+        println!("implicit result fields {count}: {work:?}");
+        if let Some(before) = previous {
+            for (old, actual) in std::iter::zip(before, work) {
+                assert!(actual <= 5 * old + 512, "{before:?}->{work:?}");
+            }
+        }
+        previous = Some(work);
+    }
+    Ok(())
+}
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn generic_residual_borrows_execute_the_real_fields_and_lifetimes() -> Result {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    crate::observed_program::execute(
+        &root.join("obj/parallel/nominal-residuals/native"),
+        &program(&packet_report(NOMINAL_PACKET, "native-runtime")?)?,
+        &root.join(NOMINAL_PACKET).join("observe.c"),
+        b"41 59 23\n",
+    )
 }

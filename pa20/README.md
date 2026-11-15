@@ -1,9 +1,16 @@
 # RustGM Programming Assignment 20: Trait solving
 
+The [implicit result-field checkpoint](../docs/pa20-implicit-result-fields.md)
+prepares exact solved protocol results before readonly drop queries.17 source
+outcomes, one ordinary control and eleven native programs pass. A scoped PA20
+primary preserves every older oracle; ordinary question-mark bootstrap and original
+core artifacts remain required.
+
+
 Status: **implemented-draft**. Prerequisite: PA19. The bounded source profile is
 Rust 1.98.0, edition 2024, Linux x86-64, panic abort, overflow checks enabled and
-debug assertions disabled. The current public manifest has1,626 text-oracle cases:614 trait-semantic
-inspections and1,012 complete LowIR checks, with608 declared native executions.
+debug assertions disabled. The current public manifest has1,627 text-oracle cases:614 trait-semantic
+inspections and1,013 complete LowIR checks, with608 declared native executions.
 The [post-inference property repair](../docs/pa20-post-inference-properties.md)
 keeps candidate conditions after trait equations settle, with four concrete
 projection controls and explicit remaining generic projected-premise requirements.
