@@ -1,5 +1,50 @@
 # RustGM handoff — 2026-11-14
 
+LATEST genuine original: clean candidate39-release on publishedb3ab20376,
+3967 hashes/empty patch,7m38s build. CLI
+599bd5076f7557693b91b185e8f7fa7eac87e4314ae9d71b17d45223bba9cd2c.
+Original v14 library39 CLEARS generic result-field/SliceIndex tuple-get fence,
+then FAILS ops/try_trait.rs:415/file95:16949, NeverShortCircuit::wrap_mut_1:
+`const call operators require their actual source function owner`.
+Its body returns const move |a| NeverShortCircuit(f(a)), with parent bound
+F:[const]FnMut(A)->T+[const]Destruct. FnMut call occurs in actual const closure
+body; readonly invocations::defining_owner currently requires Owner::Function.
+17.839266604045406s/status1/no timeout/RSS744164KiB. No core.rgm/0-byte core.lowir.
+Postcheck39 terminal PASS722 originals/375 opens/six reviewedpins/all3967/cleanpin/
+fixed120s/unchanged14500624work/1GiB attempted/64MiB retained. Raw nominal-residuals/
+{build39-release,core-artifact39,artifact-postcheck39}.log and original-library-
+candidate39/. Diagnostic only/no speed/native-consumer/artifact claim.
+
+NEXT reduce captured generic callable inside genuine const closure (wrap_mut_1
+and2 shape), preserving owner/capture/formal/effect/borrow/actualCode proof. Use
+existing sema::closures::Body semantic_source/body/constant/owner/inherited/
+execution and typed capture environment; do not just substitute parent function
+owner for closure body. Bindings::new also currently assumes FunctionItem body
+instance; inspect actual closure owner/instance and full inherited parameter
+registration. sema::bodies::invocations retain prepares parent callable template
+only when current body equals function.body; new closure needs authenticated
+producer demand, no second authority map/densefield/synthesizedtraitpermission.
+No new reduction or production edit for this frontier yet. Ordinary const minima
+PA25; source roles PA31. All6 earlier unannotated const closure accepting inputs
+and older adapter/factory/native requirements remain accepting/open.
+
+Publishedb3ab20376/main synced; ONE full43665225882 exactb3ab20376 active. Fast,
+all-target/private strict lint, architecture and harness PASS; release/course
+running, expected3087 private. This clears both earlier private compile/style
+blockers but private execution/full final status remains pending. Do not duplicate,
+cancel or restart for docs. Full43660831620 failed8oldplace_result callers;
+43661946931 failed1private missingsemicolon. Both fixes are in currentsource.
+Priorfullygreen43656293922/8560 has3085 release4.97s/debug45.56s.
+
+Current39/38 cleanpins and nominal replaya688464c…af6f7004 available;37/unsafe
+replay retired/unavailable via nominal-residuals/retired-pins.json. Earlier36/Try
+and prior retirements stillapply. Pending performance21–24 preserved. No core
+artifact/wholePA25–44 completion;113component unchanged. Sameoneworker/B only/
+mainGit-only/2jobs150GiBreserve16GiBcap/frozenbackend17b024f69. Earlier ordinary
+questionmark16/provider, TryaggregateCTFE, unsafe/simpleCTFE distinction and all
+older requirements retained. This continuation supersedes older NEXT/CI/original.
+
+
 LATEST checkpoint: exact implicit protocol result field preparation. See
  docs/pa20-implicit-result-fields.md. Sema body call pass now prepares storage for
 actual solved signature results of implicit protocol calls (which lack exact

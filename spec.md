@@ -4,7 +4,8 @@ The [implicit result-field checkpoint](docs/pa20-implicit-result-fields.md)
 prepares exact solved protocol results before readonly drop queries.17 source
 outcomes, one ordinary control and eleven native programs pass. A scoped PA20
 primary preserves every older oracle; ordinary question-mark bootstrap and original
-core artifacts remain required.
+core artifacts remain required. Clean39 clears tuple-get and reaches captured
+generic invocation inside the original const closure adapter.
 
 
 The [unsafe const-member checkpoint](docs/pa25-unsafe-const-members.md) consumes

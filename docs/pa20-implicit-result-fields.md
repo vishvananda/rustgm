@@ -80,3 +80,14 @@ with722 sources/six reviewed pins/120s/unchanged quotas plus postcheck. Core38 i
 still latest until that run. No original metadata/LowIR/native consumer artifact
 exists; all older originalv13/v14, Future/async, CTFE/bootstrap/closure/ABI/native
 requirements, wholePA25–44 and the released113-case component retain their status.
+
+Clean release39 on publishedb3ab20376 verifies the original tuple-of-bounds get
+fence clears.3967 hashes/empty patch, CLI599bd507…bba9cd2c,7m38s build. Original
+v14 next rejects ops/try_trait.rs:415/file95:16949 in NeverShortCircuit::wrap_mut_1:
+`const call operators require their actual source function owner`, from captured
+F invocation inside its returned const move closure.17.839266604045406s/status1/
+no timeout/RSS744164KiB; no metadata/0-byte LowIR. Postcheck passes722 originals/
+375 opens/six reviewedpins/all3967/cleanpin/fixed120s/unchanged limits. Diagnostic
+only/no speed/artifact/native-consumer claim. One full43665225882/b3ab passes
+fast and all-target/private lint/architecture/harness, and runs release/course;
+private3087 execution and final full status remain pending.
