@@ -28,7 +28,9 @@ RustGM run. All 17 declarations agree, and both are recorded in
 `obj/parallel/assignee/core/declared.json`: a closure and an array index on the
 foundation prefix, and a closure prefix without `Freeze`. So are five
 rustc-accepted forms that RustGM does not yet implement: rest, array, struct
-(with and without `..`) and tuple struct assignees. The cases keep Rust's
+(with and without `..`) and tuple struct assignees. Array assignees were
+implemented afterwards; `dev/tests/destructuring_assignments/assigned_arrays.rs`
+declares and checks them. The cases keep Rust's
 MIT/Apache-2.0 attribution; see root NOTICE and `third_party/sources.json`.
 
 `dev/tests/destructuring_assignments.rs` checks every case's typing through the

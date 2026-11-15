@@ -27,11 +27,13 @@ previous exploratory pin before any implementation.
 ## Change
 
 - **Syntax.** `crate::syntax::assignee` classifies an assignment's left operand.
-  A tuple (or a group around one) or `_` destructures. Its walk lists shells,
-  `_` and place leaves in source order, skipping inactive elements.
+  A tuple or an array (or a group around one) or `_` destructures. Its walk
+  lists shells, `_` and place leaves in source order, skipping inactive
+  elements.
 - **Typing.** A destructuring assignment enters its assignee instead of a
-  value. Tuple shells take the tuple of their elements' types, `_` takes a fresh
-  variable, and place leaves are entered as an assignment's place (union write
+  value. Tuple shells take the tuple of their elements' types, array shells the
+  array of their elements' one type, `_` takes a fresh variable, and place
+  leaves are entered as an assignment's place (union write
   and mutable language place marks included). Each leaf must be assignable as
   `leaf = value` is (`assignment_target`). The right operand coerces to the
   assembled type. The node's operation is `Operation::Destructure`
@@ -40,19 +42,27 @@ previous exploratory pin before any implementation.
 - **Temporary scopes.** `_` has no operands.
 - **Body construction.** The right operand is evaluated into a place: a
   materialized temporary, or the place a place expression names. Its tuple
-  fields are projected. Each leaf's place is evaluated after the stores before
-  it, and its field is moved or copied into it. `_` and unread fields stay in
-  the right operand's place. Ownership checking runs on these ordinary stores,
-  so E0384, E0507 and E0382 need no new rule.
+  fields and array elements are projected, and every place leaf's element is
+  read before any leaf place is evaluated. Each leaf's place is then evaluated
+  after the stores before it, and its element is stored into it. `_` and unread
+  elements stay in the right operand's place. Ownership checking runs on these
+  ordinary reads and stores, so E0384, E0507 and E0382 need no new rule.
 
 No new engine, backend, storage policy or compiler limit is added.
 
 Tradeoffs:
 
-- Only tuple and `_` assignees are implemented. Rest (`(a, ..)`), array, struct
-  and tuple struct assignees fail closed. A struct with a `..` rest does not
-  yet parse. rustc accepts all five, and core uses none of them. A unit struct
-  path assignee stays an ordinary assignment, which rejects it.
+- Only tuple, array and `_` assignees are implemented. Rest (`(a, ..)`,
+  `[a, ..]`), struct and tuple struct assignees fail closed. A struct with a
+  `..` rest does not yet parse. rustc accepts all of them, and core uses none.
+  A unit struct path assignee stays an ordinary assignment, which rejects it.
+- An array shell equates its leaves' types and the right operand is typed
+  against that one element type. rustc instead infers the element type from
+  the right operand alone and coerces each binding at its leaf. Two probed
+  programs differ: `[a, b] = [x, x]` with leaves of different lifetimes is
+  accepted by rustc and rejected here ("required lifetime does not outlive its
+  target"), and `[p, q] = [&[1u8, 2], &[3u8]]` with `p, q: &[u8]` is E0308 in
+  rustc and accepted here.
 - The right operand coerces to the assembled tuple once. rustc instead
   coerces each binding at its own `leaf = binding`. For a tuple expression the
   two agree, because its elements coerce to the expected element types. A
@@ -60,11 +70,13 @@ Tradeoffs:
   rejected here. The declared probe `field-coercion` (batch 5), `(p,) = f(r)`
   with `f` returning `(&mut u8,)` and `p: *mut u8`, is accepted by rustc and
   rejected here ("incompatible types").
-- Fields move into their leaves at each store, not first into fresh bindings.
-  If a later leaf's place evaluation panics, the unread fields drop with the
-  right operand's place rather than as bindings. The drop set is the same. The
-  right operand's temporaries end with the assignment statement, as the
-  desugared block's do.
+- Every place leaf's element is read before the first leaf place is evaluated,
+  as the desugared bindings are, so a leaf that overlaps the right operand's
+  place (`(t.1, t.0) = t`, `[a[1], a[0]] = a`) still takes the original
+  element. If a later leaf's place evaluation leaves the assignment, the
+  elements already read are dropped as the bindings would be. The right
+  operand's temporaries end with the assignment statement, as the desugared
+  block's do.
 
 ## Contract
 
