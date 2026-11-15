@@ -8,6 +8,7 @@ mod build;
 mod callable_inputs;
 mod caller_identity;
 mod clone_factories;
+pub(crate) mod clone_shims;
 mod collection_factories;
 pub(crate) mod conditional_inputs;
 pub mod constants;

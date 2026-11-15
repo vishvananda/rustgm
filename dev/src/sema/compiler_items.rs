@@ -3,6 +3,7 @@ pub(in crate::sema) mod arbitrary_self;
 mod binding_views;
 pub(crate) mod c_strings;
 mod calls;
+pub(crate) mod clone_shims;
 pub(in crate::sema) mod dereferencing;
 mod frozen_effects;
 pub(in crate::sema) mod interval_values;

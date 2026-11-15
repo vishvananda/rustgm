@@ -28,6 +28,10 @@ pub(super) enum Method {
         descriptor: crate::sema::primitive_methods::Descriptor,
         proof: Obligations,
     },
+    /// The language's own `Clone` of a tuple, closure or function: a shim.
+    Structural {
+        proof: Obligations,
+    },
 }
 
 /// Read a complete trait method's Self/application from its retained arguments.
@@ -91,10 +95,12 @@ impl Dispatcher {
             .transpose()?
             .flatten()
             .is_some();
+        let structural = crate::sema::compiler_items::clone_shims::application(facts, predicate)?;
         if !language
             && !future
             && !fn_pointer
             && !asynchronous
+            && !structural
             && !matches!(facts.types.kind(predicate.ty), Some(Kind::Dynamic { .. }))
         {
             return self
@@ -108,6 +114,9 @@ impl Dispatcher {
         let evidence = self.source_evidence(facts, predicate, preparation)?;
         match evidence.source {
             selection::Source::Builtin if fn_pointer => Ok(Method::FunctionPointer {
+                proof: evidence.proof,
+            }),
+            selection::Source::Builtin if structural => Ok(Method::Structural {
                 proof: evidence.proof,
             }),
             selection::Source::Implementation { owner, arguments } => Ok(Method::Implementation {

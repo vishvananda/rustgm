@@ -676,6 +676,30 @@ impl Builder {
             crate::body::factories::Permit::FunctionPointer(permit),
         )
     }
+    pub(super) fn push_clone_factory(
+        &mut self,
+        facts: &mut Declarations,
+        templates: &templates::Checked<'_>,
+        selected: crate::sema::compiler_items::clone_shims::Shim,
+        body: Body,
+        input: &Contract,
+        budget: &mut usize,
+    ) -> Result<usize, borrow::Error> {
+        let permit = crate::body::clone_shims::validate(facts, selected, &body, input).map_err(
+            |message| borrow::Error {
+                node: Some(body.source.into()),
+                message: message.into(),
+            },
+        )?;
+        self.push_validated_factory(
+            facts,
+            templates,
+            body,
+            input,
+            budget,
+            crate::body::factories::Permit::Clone(permit),
+        )
+    }
     pub(super) fn push_lending_factory(
         &mut self,
         facts: &mut Declarations,

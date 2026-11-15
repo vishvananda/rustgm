@@ -410,6 +410,23 @@ impl Budget {
             .map_err(|e| diagnostic(report, e.node, e.message))?;
         Ok((index, family))
     }
+    fn clone_factory(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        templates: &Checked<'_>,
+        program: &mut proof::Builder,
+        selected: crate::sema::compiler_items::clone_shims::Shim,
+    ) -> Result<(usize, BodyKey), Error> {
+        let (body, input) = body::clone_shims::build(report, facts, selected)?;
+        let family = body.key();
+        self.enter(family, &body, &input)
+            .map_err(|e| diagnostic(report, Some(body.source.into()), e.into()))?;
+        let index = program
+            .push_clone_factory(facts, templates, selected, body, &input, &mut self.bytes)
+            .map_err(|e| diagnostic(report, e.node, e.message))?;
+        Ok((index, family))
+    }
     fn lending_factory(
         &mut self,
         report: &Report,
@@ -759,6 +776,20 @@ impl Traversal<'_> {
                 &mut self.program,
                 selected,
             )?;
+            self.instances.insert(instance, index);
+            self.budget
+                .push_work(facts, &mut self.work, Work::Leave(family))
+                .map_err(error)?;
+            index
+        } else if let Some(selected) =
+            crate::sema::compiler_items::clone_shims::shim(facts, instance).map_err(error)?
+        {
+            if self.instances.contains_key(&instance) {
+                return Ok(());
+            }
+            let (index, family) =
+                self.budget
+                    .clone_factory(report, facts, templates, &mut self.program, selected)?;
             self.instances.insert(instance, index);
             self.budget
                 .push_work(facts, &mut self.work, Work::Leave(family))

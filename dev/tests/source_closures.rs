@@ -414,6 +414,8 @@ mod identity;
 mod implemented_copies;
 #[path = "source_closures/let_conditions.rs"]
 mod let_conditions;
+#[path = "source_closures/memberwise_clones.rs"]
+mod memberwise_clones;
 
 #[path = "source_closures/captures.rs"]
 mod captures;

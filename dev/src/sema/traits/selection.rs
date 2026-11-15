@@ -336,6 +336,35 @@ pub(in crate::sema) struct OwnedCaller {
     pub placeholders: Option<crate::types::parameters::shape::Placeholders>,
 }
 
+/// The traits a source provider's language implements for these outer heads:
+/// a function pointer's address trait, and `Clone` for the tuples, closures and
+/// functions that have no written implementation.
+fn language_subject(
+    facts: &Declarations,
+    item: crate::types::ItemId,
+    subject: super::heads::Subject,
+) -> bool {
+    use super::heads::{Head, Subject};
+    use crate::support::bindings::LangItem;
+    let Some(catalog) = facts.source_bindings.as_deref() else {
+        return false;
+    };
+    let provides = |role| {
+        catalog
+            .language(role)
+            .is_some_and(|role| role.definition.0 == item.0)
+    };
+    match subject {
+        Subject::Rigid(Head::Function) => {
+            provides(LangItem::FnPtrTrait) || provides(LangItem::Clone)
+        }
+        Subject::Rigid(Head::Tuple | Head::Closure(_) | Head::FunctionItem(_)) => {
+            provides(LangItem::Clone)
+        }
+        _ => false,
+    }
+}
+
 /// A negative outer-head result excludes a candidate without importing its graph.
 /// A positive result still requires complete equations and implementation proof.
 pub(in crate::sema) fn may_have_subject(
@@ -379,17 +408,9 @@ pub(in crate::sema) fn may_have_subject(
     let Some(subject) = subject else {
         return Ok(true);
     };
-    if matches!(
-        subject,
-        super::heads::Subject::Rigid(super::heads::Head::Function)
-    ) && facts
-        .source_bindings
-        .as_deref()
-        .and_then(|catalog| catalog.language(crate::support::bindings::LangItem::FnPtrTrait))
-        .is_some_and(|role| role.definition.0 == item.0)
-    {
-        // Exclusion only: actual declaration completion and full pointer evidence
-        // still belong to ordinary source trait selection.
+    if language_subject(facts, item, subject) {
+        // Exclusion only: actual declaration completion and the full pointer,
+        // element or capture evidence still belong to ordinary source selection.
         return Ok(true);
     }
     if (facts

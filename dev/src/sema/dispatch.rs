@@ -369,6 +369,13 @@ impl Dispatcher {
                     self.selected.insert(ty, ty);
                     return Ok(ty);
                 }
+                objects::Method::Structural { proof } => {
+                    let selected =
+                        crate::sema::compiler_items::clone_shims::select(facts, ty, predicate.ty)?;
+                    self.extend_evidence(proof)?;
+                    self.selected.insert(ty, selected);
+                    return Ok(selected);
+                }
             };
         let selected =
             super::specialization::selected_method(facts, owner, implementation, method)?;

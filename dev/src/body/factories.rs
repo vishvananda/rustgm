@@ -3,6 +3,7 @@ use crate::types::instance::Instance;
 pub(crate) enum Permit {
     Primitive(super::primitive_methods::Permit),
     FunctionPointer(super::pointers::Permit),
+    Clone(super::clone_shims::Permit),
     Future(Box<super::coroutines::Permit>),
     Lending(super::lending::Permit),
 }
@@ -11,6 +12,7 @@ impl Permit {
         match self {
             Self::Primitive(permit) => Some(permit.instance()),
             Self::FunctionPointer(permit) => Some(permit.instance()),
+            Self::Clone(permit) => Some(permit.instance()),
             Self::Future(permit) => permit.instance(),
             Self::Lending(permit) => Some(permit.instance()),
         }
