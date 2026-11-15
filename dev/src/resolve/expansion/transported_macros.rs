@@ -43,12 +43,20 @@ impl Definition {
             None => facts.module_scopes.get(self.module.0 as usize).copied(),
         }
     }
-    /// The file holding this definition's spelling, and the crate id of its `$crate`.
-    pub(super) fn spelling(&self, index: usize, facts: &Resolution) -> Option<(FileId, u32)> {
+    /// The file holding this definition's spelling, and the crate id of its
+    /// `$crate`: the provider's for an imported row, otherwise that of the
+    /// crate whose module defines it.
+    pub(super) fn spelling(
+        &self,
+        index: usize,
+        facts: &Resolution,
+        package: &crate::resolve::package::Package,
+    ) -> Option<(FileId, u32)> {
         if let Some(imported) = imported(facts, index) {
             return imported.image.map(|file| (file, imported.crate_id));
         }
-        self.node.map(|node| (node.file, 0))
+        self.node
+            .map(|node| (node.file, package.macro_crate(self.module)))
     }
 }
 

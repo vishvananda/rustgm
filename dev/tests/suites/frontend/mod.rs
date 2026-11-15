@@ -262,6 +262,9 @@ mod census_mode;
 #[path = "../../bringup_stubs.rs"]
 mod bringup_stubs;
 
+#[path = "../../guest_crates.rs"]
+mod guest_crates;
+
 #[path = "../../knowledge_sources.rs"]
 mod knowledge_sources;
 

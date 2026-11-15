@@ -197,7 +197,7 @@ impl<S: Sources> Engine<'_, S> {
                         ));
                     }
                     self.local_panic_provider(&error)?;
-                    0
+                    self.loader.package.macro_crate(entry.module)
                 }
             };
         let edition = self.panic_edition(

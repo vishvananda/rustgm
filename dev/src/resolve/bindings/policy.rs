@@ -388,7 +388,7 @@ pub(in crate::resolve) fn prepare_with_admission(
     let no_core = unit
         .word_attribute(Some(root), "no_core")
         .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
-    let (features, library) = features(unit)?;
+    let (features, library) = features(unit, FileId(0))?;
     let options = super::root_options::prepare(unit, features.has(Feature::RustcAttributes))?;
     super::root_options::validate_compiler_builtins(unit, features.has(Feature::CompilerBuiltins))?;
     if let Some(request) = admission {
@@ -469,7 +469,31 @@ pub(in crate::resolve) fn prepare_with_admission(
     })
 }
 
-fn features(unit: &Unit) -> Result<(Features, Option<Box<Library>>), Error> {
+/// A bring-up guest's root requests join the session's. The session keeps one
+/// feature set, so a gate that any of its crates requests is open in all.
+pub(in crate::resolve) fn admit_guest(
+    package: &mut crate::resolve::package::Package,
+    file: FileId,
+) -> Result<(), Error> {
+    let (features, library) = features(package.unit(file), file)?;
+    let Some(Source::Core(source)) = package.source.as_deref_mut() else {
+        return Err(Error::at(file, 0, "guest crates require a source core"));
+    };
+    for (session, guest) in source.features.0.iter_mut().zip(features.0) {
+        *session |= guest;
+    }
+    package.macro_features.0 |= features.macros().0;
+    if let Some(requests) = library {
+        package
+            .library
+            .get_or_insert_default()
+            .absorb(*requests)
+            .map_err(|message| Error::at(file, 0, message))?;
+    }
+    Ok(())
+}
+
+fn features(unit: &Unit, file: FileId) -> Result<(Features, Option<Box<Library>>), Error> {
     let mut result = Features::default();
     let mut library: Option<Box<Library>> = None;
     let Some(index) = unit.owner_indices[unit.configured.ast.root.get() as usize] else {
@@ -480,13 +504,7 @@ fn features(unit: &Unit) -> Result<(Features, Option<Box<Library>>), Error> {
         if attribute.name(forest, unit.source.text()) != Some("feature") {
             continue;
         }
-        let failure = || {
-            Error::at(
-                FileId(0),
-                attribute.span.start,
-                "invalid source feature request",
-            )
-        };
+        let failure = || Error::at(file, attribute.span.start, "invalid source feature request");
         let Input::Delimited(group) = attribute.input else {
             return Err(failure());
         };
@@ -503,14 +521,14 @@ fn features(unit: &Unit) -> Result<(Features, Option<Box<Library>>), Error> {
                     library
                         .get_or_insert_with(|| Box::new(Library::default()))
                         .request(name)
-                        .map_err(|message| Error::at(FileId(0), attribute.span.start, message))?;
+                        .map_err(|message| Error::at(file, attribute.span.start, message))?;
                 }
                 Some(Request::NoCapability) => {}
                 None => {
                     library
                         .get_or_insert_with(|| Box::new(Library::default()))
                         .request(name)
-                        .map_err(|message| Error::at(FileId(0), attribute.span.start, message))?;
+                        .map_err(|message| Error::at(file, attribute.span.start, message))?;
                 }
             }
             cursor += 1;

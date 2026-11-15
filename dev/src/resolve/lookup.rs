@@ -243,6 +243,10 @@ impl Resolver<'_> {
         name: NameId,
         namespace: Namespace,
     ) -> Option<(ScopeId, Binding)> {
+        if let Some(root) = self.guest(module) {
+            let implicit = self.package.modules[module.0 as usize].implicit_prelude;
+            return root.terminal(self.facts, name, namespace, implicit);
+        }
         if namespace == Namespace::Macro
             && let Some(target) = self.facts.macro_prelude.get(&name)
         {
@@ -297,7 +301,8 @@ impl Resolver<'_> {
         let mut scope = if absolute {
             // A later explicit extern declaration can introduce this name.
             if let Some(observed) = observed.as_mut() {
-                observed.dependency((ScopeId(0), first, Namespace::Type, ItemContext::ROOT));
+                let root = self.crate_scope(c.module);
+                observed.dependency((root, first, Namespace::Type, ItemContext::ROOT));
             }
             Some(self.external_root(c, node, first)?)
         } else {
@@ -307,9 +312,9 @@ impl Resolver<'_> {
         let mut module = c.module;
         match self.package.names.get(first) {
             "crate" => {
-                scope = Some(self.facts.module_scopes[0]);
+                module = self.package.crate_root(c.module);
+                scope = Some(self.facts.module_scopes[module.0 as usize]);
                 index = 1;
-                module = ModuleId(0);
             }
             "self" if path.len() > 1 || matches!(mode, LookupMode::Module) => {
                 let mut context = path.context(0).map_err(|e| self.error(c, node, e))?;
@@ -345,6 +350,7 @@ impl Resolver<'_> {
                     .crates
                     .as_deref()
                     .and_then(|crates| crates.macro_root(first))
+                    .or_else(|| self.facts.macro_crate_root(self.package, first))
                     .ok_or_else(|| self.error(c, node, "unknown external defining crate"))?;
                 if path.len() == 1 {
                     return Ok(if namespace == Namespace::Type {
@@ -367,9 +373,7 @@ impl Resolver<'_> {
             if namespace != Namespace::Type {
                 return Ok(Lookup::Missing);
             }
-            if module == ModuleId(0)
-                && let Some(target) = self.facts.crate_root
-            {
+            if let Some(target) = self.root_definition(module) {
                 return Ok(Lookup::Found(Binding {
                     target,
                     access: Access::Public,

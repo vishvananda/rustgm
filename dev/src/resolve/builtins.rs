@@ -63,10 +63,29 @@ impl Resolver<'_> {
             return self
                 .facts
                 .module_scopes
-                .first()
+                .get(self.package.crate_root(c.module).0 as usize)
                 .copied()
                 .map(Some)
                 .ok_or_else(|| self.error(c, node, "missing self-crate root"));
+        }
+        if let Some(root) = self.guest(c.module) {
+            // A guest names the host and the guests before it, nothing else.
+            return self
+                .facts
+                .bindings
+                .get(root.externs, name, Namespace::Type)
+                .and_then(|binding| self.facts.definitions[binding.target.0 as usize].members)
+                .map(Some)
+                .ok_or_else(|| {
+                    self.error(
+                        c,
+                        node,
+                        format!(
+                            "can't find crate for `{}`: a guest crate names only the host and earlier guests",
+                            self.package.names.get(name)
+                        ),
+                    )
+                });
         }
         if self.facts.crates.is_some()
             && let Some(binding) = self
@@ -111,6 +130,30 @@ impl Resolver<'_> {
         node: NodeId,
         target: DefId,
     ) -> Result<(), Error> {
+        if let Some(root) = self.guest(c.module) {
+            // A root `extern crate` item adds its name, or its alias, to the
+            // guest's own extern prelude; the crates' own names stay bound.
+            let (scope, externs) = (root.scope, root.externs);
+            let (_, name, namespace, context) =
+                self.binding_key(&self.facts.definitions[target.0 as usize])?;
+            if c.scope != scope || self.facts.bindings.contains(externs, name, namespace) {
+                return Ok(());
+            }
+            return self
+                .facts
+                .bindings
+                .insert_key(
+                    (externs, name, namespace, context),
+                    Binding {
+                        target,
+                        access: Access::Public,
+                        origin: super::model::Origin::Direct,
+                        ambiguous: false,
+                    },
+                )
+                .map(drop)
+                .map_err(|error| self.error(c, node, error));
+        }
         if c.scope != ScopeId(0) {
             return Ok(());
         }
@@ -357,8 +400,8 @@ impl Resolver<'_> {
         node: NodeId,
         name: NameId,
     ) -> Result<ScopeId, Error> {
-        self.facts
-            .extern_scope
+        self.guest(c.module)
+            .map_or(self.facts.extern_scope, |root| Some(root.externs))
             .filter(|scope| self.facts.bindings.contains(*scope, name, Namespace::Type))
             .ok_or_else(|| self.error(c, node, "external-crate paths require external metadata"))
     }

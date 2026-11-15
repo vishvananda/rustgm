@@ -206,16 +206,11 @@ impl Policies {
     ) -> Result<(), Error> {
         let package = &report.package;
         let root = &package.modules[0];
-        let mut work = vec![(
-            ModuleId(0),
-            NodeKey {
-                file: root.file,
-                node: root.root,
-            },
-            0_u32,
-            None::<Tail>,
-            Completion::Whole,
-        )];
+        // Each bring-up guest crate is a further root with its own policy.
+        let mut work: Vec<_> = package
+            .crate_roots()
+            .map(|(module, key)| (module, key, 0_u32, None::<Tail>, Completion::Whole))
+            .collect();
         let mut children = Vec::new();
         let budget = self
             .work

@@ -13,11 +13,17 @@ impl super::Index {
         if !report.package.modules[module.0 as usize].implicit_prelude {
             return Ok(());
         }
-        // The index authenticated the selector once; each probe pays its lookup.
-        let selected = report.resolution.selected_source_prelude(&report.package)?;
-        if selected != self.source_prelude {
-            return Err("source prelude changed after its method index was built");
-        }
+        // A bring-up guest crate's module reads that crate's own prelude.
+        let selected = if let Some(guest) = report.resolution.guest(&report.package, module) {
+            guest.checked_prelude(&report.resolution)?
+        } else {
+            // The index authenticated the selector once; each probe pays its lookup.
+            let selected = report.resolution.selected_source_prelude(&report.package)?;
+            if selected != self.source_prelude {
+                return Err("source prelude changed after its method index was built");
+            }
+            selected
+        };
         let Some(scope) = selected else {
             return Ok(());
         };

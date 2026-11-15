@@ -22,7 +22,7 @@ impl<S: Sources> Engine<'_, S> {
             parts.push(package.modules[module.0 as usize].name);
             module = parent;
         }
-        let mut path = package.crate_name.clone();
+        let mut path = package.root_name(module).to_owned();
         for name in parts.into_iter().rev() {
             path.push_str("::");
             path.push_str(package.names.get(name));

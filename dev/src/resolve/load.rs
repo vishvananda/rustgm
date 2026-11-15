@@ -92,6 +92,11 @@ pub fn load_with_context(
     context: &super::bindings::Context,
 ) -> Result<Package, Error> {
     let mut loader = Loader::with_context(root, sources, config, context)?;
+    if loader.package.has_guests() {
+        return Err(Error::unlocated(
+            "guest crates require a view that expands the crate",
+        ));
+    }
     let root_node = loader.package.modules[0].root;
     let mut work = vec![Visit {
         module: ModuleId(0),
@@ -206,7 +211,9 @@ impl<'a, S: Sources> Loader<'a, S> {
                         .replace('-', "_")
                 },
                 units: vec![unit],
+                guests: None,
                 modules: vec![Module {
+                    krate: super::guests::CrateSlot::HOST,
                     implicit_prelude,
                     parent: None,
                     declaration: None,
@@ -237,7 +244,65 @@ impl<'a, S: Sources> Loader<'a, S> {
                 context.crate_name.as_deref(),
             )?;
         }
+        loader.load_guests(crate::support::bringup::guests())?;
         Ok(loader)
+    }
+    /// Load each bring-up guest's root source as a further crate root of this
+    /// session, with its own module directory and admitted source bytes.
+    fn load_guests(&mut self, inputs: &[crate::support::bringup::Guest]) -> Result<(), Error> {
+        if inputs.is_empty() {
+            return Ok(());
+        }
+        let mut guests = super::guests::Guests::open(&mut self.package)?;
+        for input in inputs {
+            let missing = || {
+                Error::unlocated(format!(
+                    "guest crate `{}` has no root source {:?}",
+                    input.name(),
+                    input.root().to_string_lossy()
+                ))
+            };
+            let source = self
+                .sources
+                .read(input.root())
+                .map_err(Error::unlocated)?
+                .ok_or_else(missing)?;
+            let file = FileId(
+                u32::try_from(self.package.units.len())
+                    .map_err(|_| Error::unlocated("too many source files"))?,
+            );
+            let module = ModuleId(
+                u32::try_from(self.package.modules.len())
+                    .map_err(|_| Error::unlocated("too many modules"))?,
+            );
+            if self
+                .cache
+                .insert(source.identity.clone(), Some(file))
+                .is_some()
+            {
+                return Err(Error::unlocated(format!(
+                    "guest crate `{}` shares its root source with another crate of this session",
+                    input.name()
+                )));
+            }
+            let unit = Unit::parse(source.source, self.config, &mut self.package.names)
+                .map_err(|e| Error::at(file, e.offset, e.message))?;
+            let root = guests.admit(&mut self.package.names, input, &unit, (file, module))?;
+            self.package.units.push(unit);
+            self.package
+                .file_paths
+                .push(source.path.components().collect());
+            self.package.modules.push(root);
+            self.directories.push(Directory {
+                path: source.path.parent().unwrap_or(Path::new("")).into(),
+                relative: None,
+            });
+            self.identities.push(source.identity);
+            self.admit(file)?;
+            super::bindings::policy::admit_guest(&mut self.package, file)?;
+        }
+        self.package.guests = Some(Box::new(guests));
+        Ok(())
     }
     pub(crate) fn isolate_expansions(&mut self) {
         self.separate_instances = true;
@@ -440,7 +505,9 @@ impl<'a, S: Sources> Loader<'a, S> {
                 .unit(source_file)
                 .word_attribute(Some(root), "no_implicit_prelude")
                 .map_err(|e| Error::at(source_file, e.offset, e.message))?;
+        self.package.note_file_crate(source_file, visit.module);
         self.package.modules.push(Module {
+            krate: self.package.modules[visit.module.0 as usize].krate,
             implicit_prelude,
             parent: Some(visit.module),
             declaration: Some(declaration),

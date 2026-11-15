@@ -435,7 +435,10 @@ impl Resolver<'_> {
         context: ItemContext,
         observed: Option<&mut Observations>,
     ) -> Result<Option<Selected>, &'static str> {
-        if namespace == Namespace::Macro && self.facts.macro_prelude.contains_key(&name)
+        let mut observed = observed;
+        let scope = if let Some(root) = self.guest(c.module) {
+            root.prelude(self.facts, name, namespace, observed.as_deref_mut())
+        } else if namespace == Namespace::Macro && self.facts.macro_prelude.contains_key(&name)
             || namespace == Namespace::Type
                 && self
                     .facts
@@ -445,9 +448,11 @@ impl Resolver<'_> {
                         self.facts.definitions[binding.target.0 as usize].kind == DefKind::Module
                     })
         {
-            return Ok(None);
-        }
-        let Some(scope) = self.facts.selected_source_prelude(self.package)? else {
+            None
+        } else {
+            self.facts.selected_source_prelude(self.package)?
+        };
+        let Some(scope) = scope else {
             return Ok(None);
         };
         let selected = self

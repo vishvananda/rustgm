@@ -19,6 +19,8 @@ pub struct Options {
     /// Analysis-only census records; never a build output.
     pub census: Option<String>,
     pub census_progress: Option<String>,
+    /// Bring-up guest crates in command-line order; never a strict input.
+    pub guests: Vec<rustgm::support::bringup::Guest>,
 }
 impl Options {
     /// Consume only arguments owned by this crate/environment boundary.
@@ -47,6 +49,7 @@ impl Options {
             "--metadata-output" => {
                 self.metadata = Some(args.next().ok_or("--metadata-output requires a path")?);
             }
+            "--bringup-guest" => self.guest(args.next().as_deref())?,
             "--crate-type=lib" => self.library = true,
             "--crate-type=bin" => self.library = false,
             "--extern" | "--dependency-metadata" => {
@@ -67,6 +70,21 @@ impl Options {
             _ => return Ok(false),
         }
         Ok(true)
+    }
+    /// `--bringup-guest NAME=ROOT.rs`: one more crate resolved in this session.
+    fn guest(&mut self, value: Option<&str>) -> Result<(), String> {
+        let (name, root) = value
+            .and_then(|value| value.split_once('='))
+            .filter(|(_, root)| !root.is_empty())
+            .ok_or("--bringup-guest requires NAME=ROOT.rs")?;
+        if self.guests.len() >= 64 {
+            return Err("guest crates exceed the bring-up profile's limit of 64".into());
+        }
+        self.guests.push(
+            rustgm::support::bringup::Guest::new(name, PathBuf::from(root))
+                .map_err(|message| format!("--bringup-guest {name}: {message}"))?,
+        );
+        Ok(())
     }
     pub fn select_native_output(&mut self, path: Option<String>) -> Result<(), String> {
         if self.native_links.is_some() {
@@ -230,6 +248,7 @@ impl Options {
                 return Err("source-core artifact options require --emit-lowir".into());
             }
         }
+        self.validate_guests(mode)?;
         if self.library && self.identity()?.is_none() {
             return Err("library output requires --crate-name and --crate-disambiguator".into());
         }
@@ -246,6 +265,18 @@ impl Options {
         }
         if self.dependency_count() > 1024 {
             return Err("external crate arguments exceed profile budget".into());
+        }
+        Ok(())
+    }
+    /// Guest crates need a source core to depend on and an expanding view.
+    fn validate_guests(&self, mode: &str) -> Result<(), String> {
+        if !self.guests.is_empty()
+            && (self.source_core.is_none()
+                || self.dependency_count() != 0
+                || self.census.is_some()
+                || mode == "--emit-names")
+        {
+            return Err("--bringup-guest requires --source-core and a view that expands the crate, without external crates or a census".into());
         }
         Ok(())
     }

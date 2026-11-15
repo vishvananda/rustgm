@@ -408,6 +408,8 @@ pub struct Resolution {
     /// by import identity for trait lookup, including its scope and hygiene.
     pub anonymous_types: HashMap<usize, Binding>,
     pub crate_root: Option<DefId>,
+    /// The roots of the bring-up guest crates entered so far, in slot order.
+    pub guests: Vec<super::guests::Root>,
     pub scopes: Vec<Scope>,
     /// Every scope's bindings, in one table keyed by scope, name and namespace.
     pub bindings: BindingTable,

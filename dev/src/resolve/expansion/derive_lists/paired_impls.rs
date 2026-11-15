@@ -185,7 +185,14 @@ impl<S: Sources> Engine<'_, S> {
                 item: unit.configured.ast.items[item as usize],
                 original,
                 crate_id: super::super::transported_macros::imported(&self.paths.state.facts, list)
-                    .map_or(0, |imported| imported.crate_id),
+                    .map_or_else(
+                        || {
+                            self.loader
+                                .package
+                                .macro_crate(self.definitions[list].module)
+                        },
+                        |imported| imported.crate_id,
+                    ),
                 members: std::array::from_fn(|slot| {
                     selected[slot].map(|(_, definition)| derive_output::MemberContext {
                         context: contexts[slot],

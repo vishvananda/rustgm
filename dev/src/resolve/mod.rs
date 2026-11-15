@@ -13,6 +13,7 @@ mod contextual_lookup;
 pub mod crates;
 pub mod expansion;
 mod gated_closures;
+pub mod guests;
 mod hidden_globs;
 mod hygiene;
 mod identifiers;

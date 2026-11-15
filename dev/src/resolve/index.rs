@@ -822,7 +822,13 @@ impl Resolver<'_> {
                 .context(index)
                 .map_err(|e| self.error(c, node, e))?;
             match self.package.names.get(name) {
-                "crate" if index == 0 => module = ModuleId(0),
+                "crate" if index == 0 => module = self.package.crate_root(c.module),
+                spelling if index == 0 && spelling.starts_with('$') => {
+                    module = self
+                        .package
+                        .macro_crate_module(name)
+                        .ok_or_else(|| self.error(c, node, "unknown external defining crate"))?;
+                }
                 "self" if index == 0 => {
                     module = self
                         .self_module(module, &mut context)

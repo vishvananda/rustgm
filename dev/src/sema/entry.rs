@@ -28,10 +28,15 @@ pub(in crate::sema) fn select_named(
     name: crate::support::names::NameId,
 ) -> Result<DefId, Error> {
     let error = |message| Error::at(FileId(0), 0, message);
+    // A bring-up guest session's program is its last guest crate.
+    let program = report
+        .package
+        .program_crate()
+        .map_or(0, |program| program.root.0 as usize);
     let root = *report
         .resolution
         .module_scopes
-        .first()
+        .get(program)
         .ok_or_else(|| error("missing root scope"))?;
     let binding = report
         .resolution

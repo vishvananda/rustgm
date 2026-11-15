@@ -334,12 +334,20 @@ pub fn build_source_library_profile(
         facts,
         prepared,
         |facts, checked| {
-            let source = withheld(
-                super::transported_source::Source::begin_publication(
-                    report, facts, checked, &identity, profile,
-                )
-                .map_err(|error| report.diagnostic(error)),
-            )?;
+            // Guest crates are not part of the host's interface, and their
+            // code needs none: the session lowers them beside the host.
+            let guests = report.package.has_guests()
+                && crate::support::bringup::withhold("guest crates share this session");
+            let source = if guests {
+                None
+            } else {
+                withheld(
+                    super::transported_source::Source::begin_publication(
+                        report, facts, checked, &identity, profile,
+                    )
+                    .map_err(|error| report.diagnostic(error)),
+                )?
+            };
             let mut dependencies =
                 report
                     .resolution

@@ -189,6 +189,8 @@ enum Work {
         output: Option<Scope>,
         restore: Scope,
     },
+    /// Enter a bring-up guest crate once every earlier crate was scanned.
+    Guest(super::guests::CrateSlot),
 }
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum State {
@@ -403,7 +405,6 @@ impl<'a, S: Sources> Engine<'a, S> {
                 attributes::crate_name(&loader.package, context.crate_name.as_deref())?;
         }
         loader.isolate_expansions();
-        let root = loader.package.modules[0].root;
         let recursion_limit = attributes::recursion_limit(&loader.package)?;
         let dependencies = if loader.package.staged_consumer().is_some() {
             None
@@ -432,23 +433,40 @@ impl<'a, S: Sources> Engine<'a, S> {
             cfg_memo: None,
         };
         engine.import_macros()?;
+        // The worklist is a stack: each guest waits below the crates before it.
+        let guests = engine.loader.package.guest_slots().rev();
+        engine.work.extend(guests.map(Work::Guest));
+        let host = engine.root_visit(ModuleId(0), ScopeId(0));
         engine
-            .push_visit(Visit {
-                module: ModuleId(0),
-                file: engine.loader.package.modules[0].file,
-                node: root,
-                owner: None,
-                in_block: false,
-                literal_value: false,
-                depth: 0,
-                introduction: ExpansionId(0),
-                path_scope: ScopeId(0),
-                eager: None,
-                include: None,
-                foreign: None,
-            })
+            .push_visit(host)
             .map_err(|error| engine.diagnostic(error))?;
         Ok(engine)
+    }
+    /// The traversal root of one crate's root module.
+    fn root_visit(&self, module: ModuleId, path_scope: ScopeId) -> Visit {
+        let root = &self.loader.package.modules[module.0 as usize];
+        Visit {
+            module,
+            file: root.file,
+            node: root.root,
+            owner: None,
+            in_block: false,
+            literal_value: false,
+            depth: 0,
+            introduction: ExpansionId(0),
+            path_scope,
+            eager: None,
+            include: None,
+            foreign: None,
+        }
+    }
+    /// Start a bring-up guest crate: its own root scope and preludes, and an
+    /// empty textual macro scope, since no `macro_rules!` crosses a crate.
+    fn enter_guest(&mut self, slot: super::guests::CrateSlot) -> Result<(), Error> {
+        let (module, path_scope) = self.paths.guest(&mut self.loader.package, slot)?;
+        self.head = Scope::ROOT;
+        let guest = self.root_visit(module, path_scope);
+        self.push_visit(guest)
     }
     fn run(&mut self) -> Result<(), Error> {
         self.scan()?;
@@ -543,6 +561,7 @@ impl<'a, S: Sources> Engine<'a, S> {
                     }
                 }
                 Work::Restore(head) => self.head = head,
+                Work::Guest(slot) => self.enter_guest(slot)?,
                 Work::Finish { output, restore } => {
                     if let Some(output) = output {
                         for index in self
@@ -595,8 +614,14 @@ impl<'a, S: Sources> Engine<'a, S> {
                 .map(|call| call.definition)
                 .filter(|&definition| self.definitions[definition].local_inner_macros)
                 .map(|definition| {
-                    transported_macros::imported(&self.paths.state.facts, definition)
-                        .map_or(0, |imported| imported.crate_id)
+                    transported_macros::imported(&self.paths.state.facts, definition).map_or_else(
+                        || {
+                            self.loader
+                                .package
+                                .macro_crate(self.definitions[definition].module)
+                        },
+                        |imported| imported.crate_id,
+                    )
                 });
             if let Some(crate_id) = local_inner {
                 let spelling = if crate_id == 0 {

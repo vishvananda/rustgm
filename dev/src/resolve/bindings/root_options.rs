@@ -153,7 +153,10 @@ pub(in crate::resolve) fn validate(report: &Report) -> Result<(), Error> {
                     file,
                     node: owner.node,
                 };
-                if name == Some(BUILTINS) && key != expected {
+                // A bring-up guest's root is a crate root of its own. Its
+                // options are checked here, but the session keeps the host's.
+                let guest = key != expected && report.package.guest_root(key);
+                if name == Some(BUILTINS) && key != expected && !guest {
                     return Err(error(
                         "the `#![compiler_builtins]` attribute can only be used at the crate root",
                     ));
@@ -171,13 +174,15 @@ pub(in crate::resolve) fn validate(report: &Report) -> Result<(), Error> {
                         .map_err(error)?;
                 }
                 form(attribute, file)?;
-                if key != expected {
+                if key != expected && !guest {
                     return Err(error(
                         "compiler crate option requires the actual crate root owner",
                     ));
                 }
                 require_internal(report, &mut allowances, file, attribute, forest)?;
-                seen.insert(kind, file, attribute.span.start)?;
+                if !guest {
+                    seen.insert(kind, file, attribute.span.start)?;
+                }
             }
         }
     }

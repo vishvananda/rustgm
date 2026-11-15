@@ -418,7 +418,7 @@ impl Paths {
         let access = if exported {
             Access::Public
         } else {
-            Access::Within(ModuleId(0))
+            Access::Within(package.crate_root(context.module))
         };
         let mut resolver = self.state.bind(package);
         let id = DefId(
@@ -454,13 +454,12 @@ impl Paths {
         self.macros.resize(index + 1, None);
         self.macros[index] = Some(id);
         if exported {
+            // An exported macro is bound at the root of its own crate.
+            let scope = resolver.crate_scope(context.module);
             Self::direct(
                 &mut resolver,
                 &mut self.work,
-                Context {
-                    scope: ScopeId(0),
-                    ..context
-                },
+                Context { scope, ..context },
                 node,
                 id,
             )?;
@@ -813,6 +812,10 @@ impl Paths {
         node: NodeId,
         item: crate::syntax::item::Item,
     ) -> Result<(), Error> {
+        if package.has_guests() {
+            self.guest_macro_use(package, context, node, item);
+            return Ok(());
+        }
         let resolver = self.state.bind(package);
         let (Some(span), Some(crates), Some(external)) = (
             item.name,
@@ -852,6 +855,47 @@ impl Paths {
             );
         }
         Ok(())
+    }
+    /// `#[macro_use] extern crate krate;` at a bring-up guest's root: the
+    /// named crate's public root macros join that guest's macro-use prelude.
+    /// The host names no other crate, so the attribute changes nothing there.
+    fn guest_macro_use(
+        &mut self,
+        package: &mut Package,
+        context: Context,
+        node: NodeId,
+        item: crate::syntax::item::Item,
+    ) {
+        let mut resolver = self.state.bind(package);
+        let Some(provider) = resolver
+            .facts
+            .item_definitions
+            .get(&(context.module, node, Namespace::Type))
+            .and_then(|id| resolver.facts.definitions[id.0 as usize].members)
+            .filter(|_| item.name.is_some())
+        else {
+            return;
+        };
+        let Some((scope, names)) = resolver.guest_macro_use(context.module, provider) else {
+            return;
+        };
+        self.work.extend(resolver.facts);
+        for name in names {
+            self.work.declared(
+                &resolver.facts.bindings,
+                (scope, name, Namespace::Macro, ItemContext::ROOT),
+            );
+        }
+    }
+    /// Enter the next bring-up guest crate; return its root module and scope.
+    pub(super) fn guest(
+        &mut self,
+        package: &mut Package,
+        slot: crate::resolve::guests::CrateSlot,
+    ) -> Result<(ModuleId, ScopeId), Error> {
+        let root = self.state.bind(package).enter_guest(slot)?;
+        self.work.extend(&self.state.facts);
+        Ok(root)
     }
     /// An authenticated imported row executes as this definition of its kind.
     pub(super) fn imported_macro(

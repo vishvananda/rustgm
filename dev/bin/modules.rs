@@ -528,11 +528,27 @@ fn emit_lowir(
                 .set_identity(identity)
                 .map_err(|message| failure_message(&facts, message.to_owned()))?;
         }
-        let entry = rustgm::sema::entry::select(&mut report, &facts).map_err(|error| {
-            semantic_error(&facts.retain_error_warnings(report.diagnostic(error)))
-        })?;
-        let lowir = rustgm::lower::instances::build_prepared(&report, &mut facts, entry, prepared)
-            .map_err(|error| lowering_error(&report, &mut facts, error))?;
+        // A `#![no_main]` bring-up guest program exports its own C `main`.
+        let no_main = report
+            .package
+            .program_crate()
+            .is_some_and(|program| program.no_main);
+        let entry = if no_main {
+            None
+        } else {
+            Some(
+                rustgm::sema::entry::select(&mut report, &facts).map_err(|error| {
+                    semantic_error(&facts.retain_error_warnings(report.diagnostic(error)))
+                })?,
+            )
+        };
+        let roots = rustgm::lower::Roots {
+            entry,
+            exports: &[],
+        };
+        let lowir =
+            rustgm::lower::instances::build_roots_prepared(&report, &mut facts, roots, prepared)
+                .map_err(|error| lowering_error(&report, &mut facts, error))?;
         (lowir, None)
     };
     crate::bringup::unproven(&report, &facts)

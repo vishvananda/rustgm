@@ -103,6 +103,14 @@ impl Library {
         self.staged
     }
 
+    /// Join the root requests of a bring-up guest crate to this session's.
+    pub(super) fn absorb(&mut self, guest: Self) -> Result<(), &'static str> {
+        self.staged |= guest.staged;
+        for name in guest.requests {
+            self.request(&name)?;
+        }
+        Ok(())
+    }
     pub(super) fn request(&mut self, name: &str) -> Result<(), &'static str> {
         if name == "staged_api" {
             self.staged = true;

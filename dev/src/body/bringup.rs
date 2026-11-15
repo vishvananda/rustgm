@@ -17,9 +17,15 @@ use crate::{
 use std::collections::HashSet;
 
 /// A source file's skip-list key: its path below the crate root's directory,
-/// or its whole path when it lies elsewhere.
+/// or its whole path when it lies elsewhere. A guest crate's file is keyed
+/// `NAME:PATH`, its path below that guest's own root directory, which no
+/// host key can spell.
 fn path(package: &Package, file: FileId) -> String {
     let path = &package.file_paths[file.0 as usize];
+    if let Some((guest, root)) = package.guest_origin(file) {
+        let below = path.strip_prefix(root).unwrap_or(path);
+        return format!("{guest}:{}", below.to_string_lossy());
+    }
     package
         .file_paths
         .first()

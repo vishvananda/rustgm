@@ -14,6 +14,9 @@ use crate::syntax::{ast::NodeId, token_tree::Span};
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ModuleId(pub u32);
 pub struct Module {
+    /// The crate whose root this module descends from; the host in every
+    /// session without bring-up guests.
+    pub krate: super::guests::CrateSlot,
     pub implicit_prelude: bool,
     pub parent: Option<ModuleId>,
     pub declaration: Option<NodeKey>,
@@ -28,6 +31,8 @@ pub struct Package {
     pub(super) macro_features: super::bindings::policy::MacroFeatures,
     pub(super) runtime_checks: crate::support::runtime_checks::RuntimeCheckConfig,
     pub(super) lint_cap: crate::support::diagnostics::LintCap,
+    /// Bring-up guest crates of this session; absent in every strict one.
+    pub(super) guests: Option<Box<super::guests::Guests>>,
     /// Original bytes of the authenticated sources admitted so far, saturating.
     pub(super) admitted_source_bytes: u32,
     pub no_std: bool,
