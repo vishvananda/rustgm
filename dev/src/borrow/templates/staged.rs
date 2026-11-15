@@ -106,6 +106,17 @@ impl<'a> Batch<'a> {
         }
         Ok(())
     }
+    /// Pass over a body whose proof failed, so that a bring-up compilation
+    /// reports the remaining bodies. The caller must still fail the batch.
+    pub(crate) fn skip(&mut self) {
+        self.state.loans.push(loans::Analysis {
+            loans: 0,
+            steps: 0,
+            points: 0,
+            region_words: 0,
+        });
+        self.cursor += 1;
+    }
     pub(crate) fn finish(mut self, types: &crate::types::Store) -> Result<Checked<'a>, Error> {
         if self.cursor != self.state.regions.bodies.len() || self.state.loans.len() != self.cursor {
             return Err(error("staged cleanup proofs have incomplete body coverage"));

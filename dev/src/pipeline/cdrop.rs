@@ -241,46 +241,69 @@ pub(crate) fn templates<'a>(
         node: None,
         message,
     })?;
+    let mut deferred = None;
     loop {
-        let initial = with_environment(facts, &mut copies, |environment| batch.begin(environment))?;
-        let Some(mut initial) = initial else {
-            break;
-        };
-        qualify_row(facts, &mut copies, &mut initial)?;
-        let mut row = with_environment(facts, &mut copies, |environment| {
-            initial.select(environment, &|ty, field| {
-                body::drops::nominal_position(facts, ty, field)
-            })
-        })?;
-        row.resolve_selected(&mut facts.types, &facts.aggregates)?;
-        if row.active()? {
-            let (plan, contract) = row.input();
-            let error = |message| borrow::Error {
-                node: Some(plan.body().source.into()),
-                message,
-            };
-            body::defining_cleanups::select(
-                facts,
-                plan.body(),
-                contract,
-                plan.eligibility(),
-                precise,
-                plan.active().next().is_some(),
-            )
-            .map_err(error)?;
-            contract
-                .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
-                .map_err(|e| error(e.into()))?;
-            let mut queries = crate::types::outlives::Queries::new(
-                &facts.types,
-                &facts.lifetimes.nominal_requirements,
-                &facts.lifetimes.callables,
-            );
-            row.refresh(&facts.types, &facts.lifetimes.variances, &mut queries)?;
+        match staged_row(facts, &mut copies, &mut batch, precise) {
+            Ok(true) => {}
+            Ok(false) => break,
+            // Bring-up reports every body this stage rejects, then still fails.
+            Err(failure) if body::bringup::defer_site(failure.node, &failure.message) => {
+                batch.skip();
+                deferred = Some(failure);
+            }
+            Err(failure) => return Err(failure),
         }
-        with_environment(facts, &mut copies, |environment| row.finish(environment))?;
+    }
+    if let Some(failure) = deferred {
+        return Err(failure);
     }
     batch.finish(&facts.types).map(|checked| (checked, inputs))
+}
+/// Prove the batch's next body; false once every body has been visited.
+fn staged_row(
+    facts: &mut Declarations,
+    copies: &mut Copies,
+    batch: &mut borrow::templates::Batch<'_>,
+    precise: bool,
+) -> std::result::Result<bool, borrow::Error> {
+    let initial = with_environment(facts, copies, |environment| batch.begin(environment))?;
+    let Some(mut initial) = initial else {
+        return Ok(false);
+    };
+    qualify_row(facts, copies, &mut initial)?;
+    let mut row = with_environment(facts, copies, |environment| {
+        initial.select(environment, &|ty, field| {
+            body::drops::nominal_position(facts, ty, field)
+        })
+    })?;
+    row.resolve_selected(&mut facts.types, &facts.aggregates)?;
+    if row.active()? {
+        let (plan, contract) = row.input();
+        let error = |message| borrow::Error {
+            node: Some(plan.body().source.into()),
+            message,
+        };
+        body::defining_cleanups::select(
+            facts,
+            plan.body(),
+            contract,
+            plan.eligibility(),
+            precise,
+            plan.active().next().is_some(),
+        )
+        .map_err(error)?;
+        contract
+            .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
+            .map_err(|e| error(e.into()))?;
+        let mut queries = crate::types::outlives::Queries::new(
+            &facts.types,
+            &facts.lifetimes.nominal_requirements,
+            &facts.lifetimes.callables,
+        );
+        row.refresh(&facts.types, &facts.lifetimes.variances, &mut queries)?;
+    }
+    with_environment(facts, copies, |environment| row.finish(environment))?;
+    Ok(true)
 }
 fn qualify_row(
     facts: &mut Declarations,
