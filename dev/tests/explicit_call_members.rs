@@ -168,9 +168,12 @@ fn captured_const_calls_keep_the_actual_closure_and_enclosing_formals() -> Resul
 }
 #[test]
 fn captured_const_call_work_tracks_actual_closures() -> Result {
+    callable_scaling(CAPTURED, "adapter-scaling")
+}
+fn callable_scaling(packet: &str, prefix: &str) -> Result {
     let mut previous: Option<[usize; 2]> = None;
     for count in [8, 32, 128] {
-        let report = packet_report(CAPTURED, &format!("adapter-scaling-{count}"))?;
+        let report = packet_report(packet, &format!("{prefix}-{count}"))?;
         let pipeline::Analysis {
             mut facts,
             prepared,
@@ -331,4 +334,58 @@ fn borrowed_callable_work_tracks_actual_reference_paths() -> Result {
 #[ignore = "requires the locked CPPGM object backend and a C compiler"]
 fn borrowed_callable_fields_execute_the_actual_mutable_reborrow() -> Result {
     native(BORROWED, "obj/parallel/borrowed-callables/native")
+}
+
+const MEMBERS: &str = "pa31/tests/spec/closure-members";
+#[test]
+fn const_closure_members_keep_their_actual_source_owner_and_effect() -> Result {
+    for name in [
+        "generic-ufcs",
+        "generic-method",
+        "concrete",
+        "native-runtime",
+    ] {
+        packet_report(MEMBERS, name)
+            .and_then(|report| program(&report))
+            .map_err(|error| format!("{name}: {error}"))?;
+    }
+    for (name, cause) in [
+        ("plain-bound", "trait obligation requires"),
+        ("ordinary-closure", "quantified body requirement needs"),
+        ("wrong-argument", "incompatible types"),
+    ] {
+        let error = packet_report(MEMBERS, name)
+            .and_then(|report| program(&report))
+            .err()
+            .ok_or_else(|| format!("accepted {name}"))?;
+        assert!(error.to_string().contains(cause), "{name}: {error}");
+    }
+    Ok(())
+}
+#[test]
+fn const_closure_member_work_tracks_actual_source_calls() -> Result {
+    callable_scaling(MEMBERS, "scaling")
+}
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn const_closure_member_executes_its_selected_implementation() -> Result {
+    native(MEMBERS, "obj/parallel/closure-members/native")
+}
+
+#[test]
+fn const_closure_ctfe_and_default_premises_remain_accepting_requirements() -> Result {
+    for (name, cause) in [
+        ("native-ctfe", "known function type"),
+        (
+            "default-owner",
+            "const call operators require their actual source function owner",
+        ),
+    ] {
+        let error = packet_report(MEMBERS, name)
+            .and_then(|report| program(&report))
+            .err()
+            .ok_or_else(|| format!("{name}: update completed accepting requirement"))?;
+        assert!(error.to_string().contains(cause), "{name}: {error}");
+    }
+    Ok(())
 }

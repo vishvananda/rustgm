@@ -20,20 +20,6 @@ const REJECTED: [(&str, &str); 2] = [
     ),
 ];
 
-/// rustc accepts these, and they type here, but const closure lowering still
-/// needs its actual closure-owner context,
-/// with or without parameter annotations. The caller's Fn/FnMut check now clears;
-/// a const closure body's own member call remains a required accepting boundary.
-const LOWERING_GAPS: [(&str, &str); 6] = [
-    ("const-later-sig.rs", CONST_CLOSURE_OWNER),
-    ("const-later-sig-match.rs", CONST_CLOSURE_OWNER),
-    ("const-concrete.rs", CONST_CLOSURE_OWNER),
-    ("const-typed-fn.rs", CONST_CLOSURE_OWNER),
-    ("const-later-once.rs", CONST_CLOSURE_OWNER),
-    ("const-typed-once.rs", CONST_CLOSURE_OWNER),
-];
-const CONST_CLOSURE_OWNER: &str = "const call operators require their actual source function owner";
-
 fn program(source: &str) -> Result<rustgm::lowir::program::Program> {
     let report = crate::resolve::source_provider(source, "closures")?;
     let rustgm::pipeline::Analysis {
@@ -100,14 +86,9 @@ fn closure_input_regions_match_rustc() -> Result {
             Some(stderr)
         };
         println!("{path}: {outcome:?}");
-        let gap = LOWERING_GAPS
-            .iter()
-            .find(|(name, _)| path.ends_with(&format!("/{name}")))
-            .map(|(_, reason)| *reason);
-        let matches = match (&outcome, reason, gap) {
-            (Some(message), None, Some(gap)) => accepted && types && message.contains(gap),
-            (None, None, None) => accepted,
-            (Some(message), Some(reason), None) => !accepted && message.contains(reason),
+        let matches = match (&outcome, reason) {
+            (None, None) => accepted,
+            (Some(message), Some(reason)) => !accepted && message.contains(reason),
             _ => false,
         };
         if !matches {

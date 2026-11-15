@@ -1,3 +1,37 @@
+# Current continuation — const closure member calls
+
+Checkpoint: shared actual closure contract now permits its own conditional source
+trait-member requests. Source/typedcall/effect/signature/selectedmethod/borrow/
+actualCode preserved. ConstTraitDefault parents still fenced for exact local Self
+premise, no parent-owner substitution or newdense/authority/quota/wire/backend/
+storage/ABI change. All SIX old unannotated const closure accepting inputs now
+PASS prepared lowering, old classifier removed; bytes/predictions unchanged.
+Native/CTFE/general adapter requirements not thereby closed.
+
+PA25/31 closure-members each12 predictions9accept3reject, Rust1.98 agreesall12.
+Initial implconst typo corrected to constimpl before candidate execution, no
+prediction inversion.10 source outcomes7accept3reject qualify; sourceCTFE opaque
+result and constdefaultpremise2 plus12ordinaryDestructimports remain required.
+fast2=1794712084032770967 sixexact53.15s allstaticPASS; native3groups4programs41.09s
+newCompare+capturedruntime41/59 and2oldordinaryclosures. IndependentRust runtime/
+CTFEboth41/59. replay3967/allinputs/24CLI10qualified14gaps, sourcework8/32/128
+6952/1425,27736/4325,110872/15901. CLI5bbc391f93e44f44d66ab288e85d29d63b8f3e05e40c1dd99192843fa9a08994
+pinned closure-members/replay/.315harness497roots13bins44stages1component128upstream/
+126Reference PASS. Raw obj/parallel/closure-members/; docdocs/pa25-closure-members.md.
+Private existing closure guard extended to real Call as well as Invoke; pending
+successor CI, total3088 unchanged. No coldlocalprivateharness or speedclaim.
+
+ONE full43669171589 previous73eec active: strictlint/architecture/harness +release/
+course PASS, native qualification running. This verifies earlier malformed-unit
+signature repair; new member extension pending. Don't duplicate/cancel it. NEXT
+publish coherent checkpoint, freeze optimized41 and retry unchanged originalv14
+with postcheck. Current40 original below remains latest until actual41 result.
+Keep40 and currentmemberreplay; superseded capturedreplay can retire after new
+qualified release replacement.38/39/nominalreplay retired; performance21–24 keep.
+No coreartifact/wholePA25–44 completion;113component unchanged. Sameoneworker/Bonly/
+mainGit-only/2jobs150GiBreserve16GiBcap/frozenbackend17b024f69. This supersedes
+older CI/NEXT and the six old accepting-gap classifications below.
+
 # Latest original-core progress — candidate40
 
 Published73eec244c/main synced. Clean optimized40:3967 hashes/empty patch,7m49s,

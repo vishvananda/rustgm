@@ -4,56 +4,64 @@ use crate::{sema::invocations::Invocation, types::TypeId};
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 #[test]
 fn captured_invocations_authenticate_the_actual_const_closure_contract() -> TestResult {
-    let source =
-        crate::test_source::fixture("pa31/tests/spec/captured-const-calls/inherited-adapter.rs")?;
-    let report = crate::test_source::source_provider(&source, "captured_facts")?;
-    let crate::pipeline::Analysis {
-        facts,
-        mut prepared,
-    } = crate::pipeline::analyze_source(&report)?;
-    let closure = facts.closures.all().first().ok_or("actual closure")?;
-    let body = prepared
-        .templates
-        .closure(
-            &report,
-            &facts,
-            closure,
-            closure.owner.ok_or("actual enclosing owner")?,
-        )?
-        .body;
-    let validate = |body: &Body, report| {
-        super::check_calls(report, &facts, body, (1, 0), &mut Work::new(1_000_000))
-    };
-    validate(&body, Some(&report))?;
-    assert!(validate(&body, None).is_err());
-    for corruption in 0..4 {
-        let mut changed = body.clone();
-        match corruption {
-            0 => changed.const_context = false,
-            1 => {
-                let Owner::Closure { identity, .. } = &mut changed.owner else {
-                    return Err("actual closure owner".into());
-                };
-                *identity = crate::types::closure::ClosureId(u32::MAX);
+    for (path, expected) in [
+        (
+            "pa31/tests/spec/captured-const-calls/inherited-adapter.rs",
+            (1, 0),
+        ),
+        ("pa31/tests/spec/closure-members/generic-ufcs.rs", (0, 1)),
+    ] {
+        let source = crate::test_source::fixture(path)?;
+        let report = crate::test_source::source_provider(&source, "captured_facts")?;
+        let crate::pipeline::Analysis {
+            facts,
+            mut prepared,
+        } = crate::pipeline::analyze_source(&report)?;
+        let closure = facts.closures.all().first().ok_or("actual closure")?;
+        let body = prepared
+            .templates
+            .closure(
+                &report,
+                &facts,
+                closure,
+                closure.owner.ok_or("actual enclosing owner")?,
+            )?
+            .body;
+        let validate = |body: &Body, report| {
+            super::check_calls(report, &facts, body, expected, &mut Work::new(1_000_000))
+        };
+        validate(&body, Some(&report))?;
+        assert!(validate(&body, None).is_err());
+        for corruption in 0..4 {
+            let mut changed = body.clone();
+            match corruption {
+                0 => changed.const_context = false,
+                1 => {
+                    let Owner::Closure { identity, .. } = &mut changed.owner else {
+                        return Err("actual closure owner".into());
+                    };
+                    *identity = crate::types::closure::ClosureId(u32::MAX);
+                }
+                2 => {
+                    let Owner::Closure { signature, .. } = &mut changed.owner else {
+                        return Err("actual closure signature".into());
+                    };
+                    *signature = TypeId::UNIT;
+                }
+                _ => changed.source = closure.body.into(),
             }
-            2 => {
-                let Owner::Closure { signature, .. } = &mut changed.owner else {
-                    return Err("actual closure signature".into());
-                };
-                *signature = TypeId::UNIT;
-            }
-            _ => changed.source = closure.body.into(),
+            assert!(
+                validate(&changed, Some(&report)).is_err(),
+                "corruption {corruption}"
+            );
         }
-        assert!(
-            validate(&changed, Some(&report)).is_err(),
-            "corruption {corruption}"
-        );
+        let mut tiny = Work::new(0);
+        assert!(super::check_calls(Some(&report), &facts, &body, expected, &mut tiny).is_err());
+        assert_eq!(tiny.steps, 1);
     }
-    let mut tiny = Work::new(0);
-    assert!(super::check_calls(Some(&report), &facts, &body, (1, 0), &mut tiny).is_err());
-    assert_eq!(tiny.steps, 1);
     Ok(())
 }
+
 fn check(facts: &Declarations, body: &Body, expected: usize) -> Result<(), &'static str> {
     super::check(facts, body, expected, &mut Work::new(1_000_000))
 }

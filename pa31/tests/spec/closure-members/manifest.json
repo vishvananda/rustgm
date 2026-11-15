@@ -1,0 +1,90 @@
+{
+ "schema": 1,
+ "owner": "pa31 const closure member calls",
+ "declared_before_execution": true,
+ "cases": {
+  "generic-ufcs.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/closure-members/generic-ufcs.rs"
+  },
+  "generic-method.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/closure-members/generic-method.rs"
+  },
+  "concrete.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/closure-members/concrete.rs"
+  },
+  "plain-bound.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/closure-members/plain-bound.rs"
+  },
+  "ordinary-closure.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/closure-members/ordinary-closure.rs"
+  },
+  "wrong-argument.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/closure-members/wrong-argument.rs"
+  },
+  "native-runtime.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/closure-members/native-runtime.rs",
+   "native_stdout": "41 59\n",
+   "observer": "observe.c"
+  },
+  "native-ctfe.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/closure-members/native-ctfe.rs",
+   "native_stdout": "41 59\n",
+   "observer": "observe.c",
+   "candidate_limit": "call requires a known function type"
+  },
+  "default-owner.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/closure-members/default-owner.rs",
+   "candidate_limit": "const call operators require their actual source function owner"
+  },
+  "scaling-8.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/closure-members/scaling-8.rs"
+  },
+  "scaling-32.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/closure-members/scaling-32.rs"
+  },
+  "scaling-128.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/closure-members/scaling-128.rs"
+  }
+ },
+ "files": {
+  "generic-ufcs.rs": "e7b89b21ccdb2b47ca4e928f6a3d1b72f43e1e2a36ccf380c328f4798ccef104",
+  "generic-method.rs": "7adbad9cc7aee21ca1f3e283ac652354bca79d193e0bbaa99dac2a107ed5c72b",
+  "concrete.rs": "d4ac2501c88cde5496f269507985bb8bc73c6893fdeaf190893b9ab5802ba048",
+  "plain-bound.rs": "13e119dc1962fe5099c9721c8730bb165bc940ef145567d5fe29c3dd30085bf7",
+  "ordinary-closure.rs": "b4718d49a6a4ffc5787d3df9a783bddf69538e503d2a98e12c8b2c2f8d9235a9",
+  "wrong-argument.rs": "9dd760cde7a28ea757dc695f0129ccdc1b850b8dd8f104d76c45cc5e893a16cf",
+  "native-runtime.rs": "a5a5eac6f539894e95115457641d0fc138586bfa270b74b9a3bdca1c7a2ed27c",
+  "native-ctfe.rs": "799ff72fec2a2fa2f40e48aad5cbcb16ba382aa608a3797f5dd9f502aa188d66",
+  "default-owner.rs": "c14c4fadd67e1721ab5e442c387e8a2b20fb11ba96e22b40a7ded8e39597277b",
+  "scaling-8.rs": "7b4cec622f8e785a8d53c8abd041cb84aba54ad82140faac5ce89380ba9af4b8",
+  "scaling-32.rs": "b1c3df6ff4ebcd5c1463e3e8c3de4c3e86781a7d942aeb13848e233f241c1c05",
+  "scaling-128.rs": "32090fdb30c02ec4173c875d6ff5c6ff9b9e162dbbfe802bfbd06ff40c0842c0",
+  "observe.c": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14"
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "basis": {
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "source_path": "library/core/src/slice/cmp.rs",
+  "source_sha256": "b6df2890d8e3970994e610a110419c78d01e12c0a78385811c9ffe0ff5a78edf",
+  "shape": "PartialOrd::partial_cmp call inside actual const closure; reduced custom trait, no byte-exact original item claimed",
+  "license": "MIT OR Apache-2.0; third_party/sources.json"
+ }
+}

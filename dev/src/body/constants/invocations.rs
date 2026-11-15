@@ -171,6 +171,42 @@ fn defining_owner(
     }
     Ok(definition)
 }
+/// Defining permission authenticates this actual closure, without granting Code.
+pub(super) fn closure_source(
+    report: Option<&crate::resolve::expansion::Report>,
+    facts: &Declarations,
+    body: &Body,
+    work: &mut Work,
+) -> Result<crate::sema::closures::Body, &'static str> {
+    let crate::body::ir::Owner::Closure { identity, .. } = body.owner else {
+        return Err("const captured invocation requires its closure owner");
+    };
+    work.charge(8)?;
+    body.owner
+        .source_caller(facts, body.source, body.instance)?;
+    let source = *facts
+        .closures
+        .identity(identity)
+        .ok_or("const captured invocation lost its source closure")?;
+    if !source
+        .check_const_source(report.ok_or("const captured invocation requires source syntax")?)?
+        || facts
+            .types
+            .closure_declaration(identity)
+            .and_then(crate::types::closure::Declaration::constant)
+            != Some(true)
+        || !body.const_context
+        || (body.instance.is_none()
+            && body.owner.signatures()
+                != Some((
+                    source.signature,
+                    source.execution.map_or(source.signature, |e| e.signature),
+                )))
+    {
+        return Err("const captured invocation changed its authenticated closure contract");
+    }
+    Ok(source)
+}
 fn check_invocation(
     report: Option<&crate::resolve::expansion::Report>,
     facts: &Declarations,

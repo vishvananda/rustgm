@@ -676,6 +676,27 @@ fn closed_effect(
         Constness::Const => Ok(true),
         Constness::Ordinary => Ok(false),
         Constness::Conditional => {
+            if matches!(body.owner, Owner::Closure { .. }) {
+                let closure = super::invocations::closure_source(Some(report), facts, body, work)?;
+                if let Some(owner) = closure.owner {
+                    work.charge(7)?;
+                    let parent = facts
+                        .function_indices
+                        .get(&owner)
+                        .and_then(|&index| facts.functions.get(index))
+                        .and_then(|function| function.body)
+                        .ok_or("const closure member lost its enclosing source environment")?;
+                    if matches!(
+                        facts.function_context(owner, parent)?,
+                        FunctionContext::ConstTraitDefault { .. }
+                    ) {
+                        // Default Self permission requires its own exact premise;
+                        // an enclosing default is not a closure execution token.
+                        return Ok(false);
+                    }
+                }
+                return Ok(true);
+            }
             let Owner::Function { definition, .. } = body.owner else {
                 return Ok(false);
             };

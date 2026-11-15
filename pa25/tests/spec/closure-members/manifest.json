@@ -1,0 +1,100 @@
+{
+ "schema": 1,
+ "owner": "pa25 const closure member calls",
+ "declared_before_execution": true,
+ "cases": {
+  "generic-ufcs.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/closure-members/generic-ufcs.rs",
+   "candidate_limit": "unresolved import"
+  },
+  "generic-method.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/closure-members/generic-method.rs",
+   "candidate_limit": "unresolved import"
+  },
+  "concrete.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/closure-members/concrete.rs",
+   "candidate_limit": "unresolved import"
+  },
+  "plain-bound.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/closure-members/plain-bound.rs",
+   "candidate_limit": "unresolved import"
+  },
+  "ordinary-closure.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/closure-members/ordinary-closure.rs",
+   "candidate_limit": "unresolved import"
+  },
+  "wrong-argument.rs": {
+   "expected": "reject",
+   "ordinary": "pa25/tests/spec/closure-members/wrong-argument.rs",
+   "candidate_limit": "unresolved import"
+  },
+  "native-runtime.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/closure-members/native-runtime.rs",
+   "native_stdout": "41 59\n",
+   "observer": "observe.c",
+   "candidate_limit": "unresolved import"
+  },
+  "native-ctfe.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/closure-members/native-ctfe.rs",
+   "native_stdout": "41 59\n",
+   "observer": "observe.c",
+   "candidate_limit": "unresolved import"
+  },
+  "default-owner.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/closure-members/default-owner.rs",
+   "candidate_limit": "unresolved import"
+  },
+  "scaling-8.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/closure-members/scaling-8.rs",
+   "candidate_limit": "unresolved import"
+  },
+  "scaling-32.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/closure-members/scaling-32.rs",
+   "candidate_limit": "unresolved import"
+  },
+  "scaling-128.rs": {
+   "expected": "accept",
+   "ordinary": "pa25/tests/spec/closure-members/scaling-128.rs",
+   "candidate_limit": "unresolved import"
+  }
+ },
+ "files": {
+  "generic-ufcs.rs": "5e9e80bc5f1c31feebe72299c23551a82f5958acce06dd5ffaa7af916974e064",
+  "generic-method.rs": "bf22a85d5e281d0f372e73fa0a13ea689c7601cf5d1683478d9caa2e293bd79b",
+  "concrete.rs": "30859edf2fc9d241110f528ad654d1a4a5799a9667aba516b79d42f846d5fafa",
+  "plain-bound.rs": "c33e40456f8dda4bde7a36934f77c2a6acc5eebd08e70420c09c6d2437156c1d",
+  "ordinary-closure.rs": "747aae87d346a1b0544404bf9c2751a0f0bf060dcda05cb07bfb1fe664f352be",
+  "wrong-argument.rs": "335918c1cd5f0cad17c6329714ac4081bd05fc7afd35e76b5954bd2cc585430a",
+  "native-runtime.rs": "9fa6dd71ddf5c9f8dd7dd8634d0a0708e84d5a72dfd3ac09e93c101c554881f3",
+  "native-ctfe.rs": "59598529f12156b80f49047a94450159245b17896cb7bd2d0c5c80c934fdbb50",
+  "default-owner.rs": "92c12b8527626331717393a713aa98cbc1230d9bde7216e3f7a949e72371a079",
+  "scaling-8.rs": "da954bf5205594d4a120355ba1165ed7f51b04c6b2ee62431e4b1aa40ff62949",
+  "scaling-32.rs": "6ff336fa1c68fb48804ec8f261a8cc844c6564fceccf05e75ca8e68585f630a9",
+  "scaling-128.rs": "62cf76b49f5ed786c592c945b8f1468c6d7227fa63d018de9a316a8ca5172c0b",
+  "observe.c": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14"
+ },
+ "profile": {
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false
+ },
+ "basis": {
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "source_path": "library/core/src/slice/cmp.rs",
+  "source_sha256": "b6df2890d8e3970994e610a110419c78d01e12c0a78385811c9ffe0ff5a78edf",
+  "shape": "PartialOrd::partial_cmp call inside actual const closure; reduced custom trait, no byte-exact original item claimed",
+  "license": "MIT OR Apache-2.0; third_party/sources.json"
+ }
+}

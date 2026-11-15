@@ -1,5 +1,10 @@
 # RustGM Programming Assignment 25: Constant evaluation
 
+The [const closure member checkpoint](../docs/pa25-closure-members.md) accepts
+actual closure-owned trait calls and clears six older prepared-lowering gaps.
+Concrete runtime execution qualifies; default premises, CTFE, ordinary imports
+and original-core artifacts remain required. Whole assignments remain planned.
+
 The [captured const-call checkpoint](../docs/pa25-captured-const-calls.md)
 authenticates actual closure ownership and complete enclosing arguments.
 Returned adapters and runtime execution qualify; cleanup, CTFE, ordinary imports
