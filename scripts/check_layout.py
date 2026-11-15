@@ -6,6 +6,7 @@ import sys
 import argparse
 from course import ROOT, SIDECARS
 from assignment_metadata import collect, collect_units
+from case_inputs import support_files
 import reference_batches
 
 
@@ -24,7 +25,7 @@ def check(root=ROOT, *, unit=None):
 def check_suite(root, stage, manifest, cases, *, unit=None):
     folder = root / stage
     recorded, recorded_auxiliary = reference_batches.validate(root, stage, manifest, cases, unit=unit)
-    expected_auxiliary = {p for case in cases for p in case.get("auxiliary", [])}
+    expected_auxiliary = {p for case in cases for p in support_files(case)}
     if set(recorded_auxiliary) != expected_auxiliary:
         raise ValueError(f"auxiliary receipt disagrees with manifest: {folder}")
     for path in expected_auxiliary:

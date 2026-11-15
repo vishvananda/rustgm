@@ -12,6 +12,7 @@ import subprocess
 import sys
 import time
 import reference_batches
+from case_inputs import source_bytes, support_files, validate as validate_inputs
 from course_suites import check_publishers, discovery, run_released, shared_outputs, suite_paths
 from storage import cleanup_roots
 
@@ -97,6 +98,7 @@ def load_cases(root, stage, *, unit=None):
                     or not child.is_relative_to((assignment / "tests").resolve())):
                 raise ValueError(f"{stage}: invalid auxiliary path {file}")
             auxiliary.add(file)
+        auxiliary.update(validate_inputs(root, stage, case, set(paths)))
         environment = case.get("environment", {})
         if (not isinstance(environment, dict)
                 or any(not isinstance(key, str) or not key or "=" in key or "\0" in key
@@ -147,7 +149,7 @@ def run_case(root, stage, mode, case, app, timeout):
     fixture = root / stage / case["path"]
     mode = case.get("mode", mode)
     command = [*app, mode, "--edition=2024", *case.get("args", []), *library_arguments(case, mode)]
-    data = fixture.read_bytes()
+    data = source_bytes(root, stage, case)
     if case.get("input") == "file":
         command.append(str(Path(stage) / case["path"]))
         data = b""
@@ -242,7 +244,7 @@ def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10, evidence_roo
                                 for p in sorted(paths.batches.glob("*.json"))}
             if previous_batches:
                 receipt["supersedes_reference_batches"] = previous_batches
-            auxiliary = sorted({p for case in cases for p in case.get("auxiliary", [])})
+            auxiliary = sorted({p for case in cases for p in support_files(case)})
             if auxiliary:
                 receipt["auxiliary"] = {p: hashlib.sha256((root / stage / p).read_bytes()).hexdigest()
                                         for p in auxiliary}

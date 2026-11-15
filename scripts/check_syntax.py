@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import sys
 
+from case_inputs import source_bytes
 from course import ROOT, load_cases, run_case, case_environment
 from course_suites import run_released, suite_paths
 
@@ -63,7 +64,7 @@ def independent_rustc(stage, mode, case, case_directory):
     if kind not in ("program", "library", "predicate", "expression"):
         raise ValueError(f"unknown independent check kind: {kind}")
     fixture = ROOT / stage / case["path"]
-    data = fixture.read_bytes()
+    data = source_bytes(ROOT, stage, case)
     if case_directory.exists():
         shutil.rmtree(case_directory)
     case_directory.mkdir(parents=True)

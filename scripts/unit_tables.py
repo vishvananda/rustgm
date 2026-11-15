@@ -17,6 +17,8 @@ EMPTY_UNIT_REASON = ("Entry-free source contract with no exported root: acceptan
 # Draft tables name the independent outcome in several historical ways, strongest first.
 RUST_STATUS_KEYS = ("rustc_expected", "rustc_status", "rustc_hypothesis")
 COPIED_KEYS = ("args", "auxiliary", "library", "source_provider", "warnings", "environment")
+CALLS_CHECK = re.compile(r"\bcheck\s*\(")
+DEFINES_CHECK = re.compile(r"\bfn\s+check\b")
 
 
 def load_config(root, unit):
@@ -77,8 +79,18 @@ def native_declaration(row, native_rows):
     return {"kind": "codegen", "reason": CODEGEN_REASON}
 
 
+def host_providers(row, table_provider):
+    """Host C sources a row links: its own `.c` companions, then the table's shared provider."""
+    named = [path for path in row.get("auxiliary", []) if path.endswith(".c")]
+    if "host_provider" in row:
+        named.append(row["host_provider"])
+    if table_provider is not None:
+        named.append(table_provider)
+    return list(dict.fromkeys(named))
+
+
 def normalize(root, row, *, pa, unit, table, default_feature, environment=None, native_rows=False,
-              entry_free=None):
+              entry_free=None, prelude=None, provider=None):
     """One draft row becomes (course case, draft candidate status, notes)."""
     notes = []
     path = row.get("path") or row.get("input")
@@ -108,12 +120,23 @@ def normalize(root, row, *, pa, unit, table, default_feature, environment=None, 
             "features": list(row.get("features") or [default_feature]), "work_units": [unit],
             "rustc": rustc}
     case.update({key: row[key] for key in COPIED_KEYS if key in row})
+    modules = [name for name in row.get("auxiliary", []) if not name.endswith(".c")]
+    if modules:
+        case["auxiliary"] = modules
+    else:
+        case.pop("auxiliary", None)
     if "mode" in row and row["mode"] != "--emit-lowir":
         case["mode"] = row["mode"]
     if environment is not None and "environment" not in case:
         case["environment"] = environment
     if status == 0:
         case["native"] = native_declaration(row, native_rows)
+    text = source.read_text()
+    if prelude is not None and CALLS_CHECK.search(text) and not DEFINES_CHECK.search(text):
+        # The maintainer native harness compiles these bodies behind its fixed check prelude.
+        case["prelude"] = prelude
+        del case["input"]
+        notes.append("compiled behind the declared check prelude")
     if entry_free is not None and re.search(r"\bfn\s+main\s*\(", source.read_text()) is None:
         # No root main: the established course shape is an explicit library identity (as in PA24).
         case["rustc"]["kind"] = "library"
@@ -121,6 +144,9 @@ def normalize(root, row, *, pa, unit, table, default_feature, environment=None, 
         if status == 0:
             case["native"] = {"kind": "object", "reason": ENTRY_FREE_REASON}
         notes.append("entry-free source declared as a library")
+    providers = host_providers(row, provider)
+    if providers and case.get("native", {}).get("kind") in ("execute", "codegen"):
+        case["native"]["providers"] = providers
     if legacy != status:
         notes.append(f"draft candidate status {legacy} differs from Rust {status} (recorded gap)")
     return case, legacy, notes
@@ -136,8 +162,15 @@ def merge(cases, case, table, notes, bindings):
         return
     if old["exit_status"] != case["exit_status"] or old["rustc"]["status"] != case["rustc"]["status"]:
         raise ValueError(f"conflicting declared outcomes for {path}")
-    if case.get("native", {}).get("kind") == "execute" and old.get("native", {}).get("kind") != "execute":
-        old["native"] = case["native"]
+    for key in ("prelude", "input"):
+        if old.get(key) != case.get(key):
+            raise ValueError(f"conflicting {key} declarations for {path}")
+    native, previous = case.get("native", {}), old.get("native", {})
+    providers = previous.get("providers") or native.get("providers")
+    if native.get("kind") == "execute" and previous.get("kind") != "execute":
+        old["native"] = previous = dict(native)
+    if providers and previous.get("kind") in ("execute", "codegen"):
+        previous["providers"] = providers
     old["features"].extend(feature for feature in case["features"] if feature not in old["features"])
     for key in COPIED_KEYS:
         if key in case and key not in old:
@@ -177,9 +210,13 @@ def inventory(root, unit):
                 observer = row["native"]
                 row = {key: value for key, value in row.items() if key != "native"}
             case, _, notes = normalize(root, row, table=label, environment=entry.get("environment"),
-                                       native_rows=entry.get("native_rows", False), **options)
+                                       native_rows=entry.get("native_rows", False),
+                                       prelude=entry.get("prelude"), provider=entry.get("provider"), **options)
             if case["path"] in config.get("default_lints", ()):
                 case["rustc"]["default_lints"] = True
+            named = config.get("providers", {}).get(case["path"])
+            if named and case.get("native", {}).get("kind") in ("execute", "codegen"):
+                case["native"]["providers"] = list(named)
             merge(cases, case, label, notes, bindings)
             if observer is not None and observer["path"] != named:
                 label_observer = label + " (native observer)"

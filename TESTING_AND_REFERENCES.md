@@ -95,6 +95,16 @@ python3 scripts/check_syntax.py paN --unit UNIT --app /immutable/qualified/rustg
 python3 scripts/check_native.py paN --unit UNIT --app /immutable/qualified/rustgm
 ```
 
+A case can declare two further inputs. `prelude` names one source under the
+assignment's tests whose bytes precede the fixture's: the compilers read the
+joined bytes as a single translation unit on standard input, so a prelude
+requires stdin input. `native.providers` lists host C sources for a program
+that imports C symbols: the native check compiles each with
+`cc -std=c11 -O0 -c` and links the same objects into both executables, the
+candidate's through the LowIR object bridge. Both kinds are validated with the
+manifest, claimed by discovery when they are Rust sources, and hashed in the
+reference receipt beside auxiliary sources.
+
 Use the resource/storage wrappers for execution, as for other validation.
 Generation uses the existing `--bless` and optional exact `--case` selectors
 after independent outcome review. Sidecars stay beside their source inputs;
@@ -139,7 +149,8 @@ python3 scripts/unit_release.py ledger 'ID=publication text'
 - `declare` publishes the candidates that passed and writes every other one to
   `deferred.json` with its observed message. A rejection that passes through
   implementation-gap wording is the right status for the wrong reason: it needs
-  a reviewed deferral in `unit_tables.json` (or `--exclude PATH=REASON`).
+  a reviewed deferral in `unit_tables.json` (or `--exclude PATH=REASON`). When
+  the flagged wording does name the Rust rule, `accepted` records why.
 - `checks` runs metadata, independent rustc, the course writer (with `--bless`),
   layout, text and native checks in that order and stops at the first failure.
 - `summary` prints the family and deferred tables for the one release record;

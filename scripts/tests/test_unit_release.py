@@ -99,6 +99,52 @@ class DraftTables(unittest.TestCase):
             self.assertEqual(passing["native"], {"kind": "execute", "outcome": "pass"})
             self.assertEqual(trapping["native"], {"kind": "execute", "outcome": "panic"})
 
+    def test_native_tables_declare_the_check_prelude_only_for_bodies_that_need_it(self):
+        with tempfile.TemporaryDirectory() as name:
+            tree = Tree(name)
+            tree.source("tests/spec/places/body.rs", "fn main(){check(true);}\n")
+            tree.source("tests/spec/places/own.rs", "fn check(ok:bool){}fn main(){check(true);}\n")
+            options = {"pa": "pa27", "unit": "places", "table": "t", "default_feature": "f", "native_rows": True,
+                       "prelude": "tests/prelude/check.rs"}
+            body, _, notes = unit_tables.normalize(tree.root, {"path": "tests/spec/places/body.rs", "status": 0}, **options)
+            self.assertEqual(body["prelude"], "tests/prelude/check.rs")
+            self.assertNotIn("input", body)
+            self.assertIn("compiled behind the declared check prelude", notes)
+            for path in ("tests/spec/places/own.rs", "tests/spec/places/accept.rs"):
+                case, _, _ = unit_tables.normalize(tree.root, {"path": path, "status": 0}, **options)
+                self.assertEqual((case.get("prelude"), case["input"]), (None, "file"))
+            cases, bindings = {}, {}
+            unit_tables.merge(cases, body, "native", [], bindings)
+            plain, _, _ = unit_tables.normalize(tree.root, {"path": "tests/spec/places/body.rs", "status": 0},
+                                                **(options | {"prelude": None}))
+            with self.assertRaises(ValueError):
+                unit_tables.merge(cases, plain, "source", [], bindings)
+
+    def test_host_providers_come_from_the_row_the_table_and_the_unit_for_programs_only(self):
+        config = {"providers": {"tests/spec/places/accept.rs": ["tests/spec/places/stub.c"]}}
+        with tempfile.TemporaryDirectory() as name:
+            tree = Tree(name, config=config)
+            options = {"pa": "pa27", "unit": "places", "table": "t", "default_feature": "f",
+                       "provider": "tests/spec/places/shared.c"}
+            row = {"path": "tests/spec/places/accept.rs", "rustc": 0, "native": True,
+                   "auxiliary": ["tests/spec/places/own.c", "tests/spec/places/module.rs"],
+                   "host_provider": "tests/spec/places/host.c"}
+            case, _, _ = unit_tables.normalize(tree.root, row, **options)
+            self.assertEqual(case["auxiliary"], ["tests/spec/places/module.rs"])
+            self.assertEqual(case["native"], {"kind": "execute", "outcome": "pass", "providers": [
+                "tests/spec/places/own.c", "tests/spec/places/host.c", "tests/spec/places/shared.c"]})
+            rejected, _, _ = unit_tables.normalize(tree.root, {"path": "tests/spec/places/reject.rs", "rustc": 1}, **options)
+            self.assertNotIn("native", rejected)
+            library, _, _ = unit_tables.normalize(
+                tree.root, {"path": "tests/spec/places/entry-free.rs", "rustc": 0},
+                entry_free={"crate_name": "fixture", "disambiguator": "pa27"}, **options)
+            self.assertEqual(library["native"]["kind"], "object")
+            self.assertNotIn("providers", library["native"])
+            document, _ = unit_tables.inventory(tree.root, "places")
+            natives = {case["path"]: case.get("native", {}) for case in document["cases"]}
+            self.assertEqual(natives["tests/spec/places/accept.rs"]["providers"], ["tests/spec/places/stub.c"])
+            self.assertNotIn("providers", natives["tests/spec/places/entry-free.rs"])
+
     def test_undeclared_missing_and_conflicting_rows_fail(self):
         with tempfile.TemporaryDirectory() as name:
             tree = Tree(name)
@@ -188,11 +234,19 @@ class Declaration(unittest.TestCase):
                              [{"path": "tests/spec/places/reject.rs", "rust": 1, "stage": "review",
                                "message": "wrong reason"}])
             self.assertIn("1 (1 undecided)", quiet(unit_release.run_review, tree.root, "places"))
+        for decision, published in (("review", 2), ("accepted", 3)):
+            with self.subTest(decision=decision), tempfile.TemporaryDirectory() as name:
+                tree = Tree(name, config={decision: {"tests/spec/places/reject.rs": "committed decision"}})
+                tree.probe({}, gap)
+                quiet(unit_release.run_declare, tree.root, "places")
+                manifest = json.loads((tree.root / "pa27/tests/units/places.json").read_text())
+                self.assertEqual(len(manifest["cases"]), published)
         with tempfile.TemporaryDirectory() as name:
-            tree = Tree(name, config={"review": {"tests/spec/places/reject.rs": "committed decision"}})
+            both = {"tests/spec/places/reject.rs": "contradictory"}
+            tree = Tree(name, config={"review": both, "accepted": both})
             tree.probe({}, gap)
-            quiet(unit_release.run_declare, tree.root, "places")
-            self.assertEqual(len(json.loads((tree.root / "pa27/tests/units/places.json").read_text())["cases"]), 2)
+            with self.assertRaises(ValueError):
+                unit_release.run_declare(tree.root, "places")
 
     def test_a_stale_or_missing_probe_cannot_declare(self):
         with tempfile.TemporaryDirectory() as name:

@@ -26,6 +26,7 @@ import subprocess
 import sys
 import time
 
+from case_inputs import support_files
 from course import ROOT, run_case
 from unit_tables import EMPTY_UNIT_REASON, discovery_claims, inventory, load_config
 
@@ -180,9 +181,14 @@ def decisions(root, unit, extra=()):
     return reviewed
 
 
+def right_reasons(root, unit):
+    """Flagged rejections reviewed as naming the Rust rule itself, with the reason on record."""
+    return load_config(root, unit)[1].get("accepted", {})
+
+
 def run_review(root, unit):
     flagged = gap_rejections(read(root, unit, "candidates.json"), read(root, unit, "probe.json"))
-    reviewed = decisions(root, unit)
+    reviewed = {**decisions(root, unit), **right_reasons(root, unit)}
     for message, paths in sorted(flagged.items(), key=lambda item: -len(item[1])):
         pending = [path for path in paths if path not in reviewed]
         print(f"{len(paths)} ({len(pending)} undecided) {message} :: {pending[:4] or paths[:4]}")
@@ -193,11 +199,15 @@ def run_declare(root, unit, extra=()):
     candidates, probe = read(root, unit, "candidates.json"), read(root, unit, "probe.json")
     stage = candidates["stage"]
     reviewed = decisions(root, unit, extra)
+    accepted = right_reasons(root, unit)
     undecided = sorted(path for paths in gap_rejections(candidates, probe).values() for path in paths
-                       if path not in reviewed)
+                       if path not in reviewed and path not in accepted)
     if undecided:
-        raise ValueError("rejections that pass through implementation-gap wording need a reviewed "
-                         f"deferral (unit_tables.json review, or --exclude PATH=REASON): {undecided}")
+        raise ValueError("rejections that read like an implementation gap need a reviewed decision in "
+                         "unit_tables.json: `review` defers one (or --exclude PATH=REASON), `accepted` "
+                         f"records why its wording is the Rust rule: {undecided}")
+    if set(reviewed) & set(accepted):
+        raise ValueError(f"a rejection cannot be both deferred and accepted: {sorted(set(reviewed) & set(accepted))}")
     observed = {record["path"]: record for record in probe["cases"]}
     if set(observed) != {case["path"] for case in candidates["cases"]}:
         raise ValueError("the probe does not cover the current candidates; probe again")
@@ -214,7 +224,7 @@ def run_declare(root, unit, extra=()):
                              "stage": record["stage"], "message": record["message"]})
     sources = {source.relative_to(root / stage).as_posix() for family in candidates["families"]
                for source in (root / stage / family).glob("*.rs")}
-    claimed = {case["path"] for case in kept} | {path for case in kept for path in case.get("auxiliary", [])
+    claimed = {case["path"] for case in kept} | {path for case in kept for path in support_files(case)
                                                   if path.endswith(".rs")}
     modes = sorted({case["mode"] for case in kept if "mode" in case} - {candidates["mode"]})
     manifest = {"schema": 1, "mode": candidates["mode"], **({"additional_modes": modes} if modes else {}),

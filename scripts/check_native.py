@@ -15,6 +15,7 @@ import time
 import reference_batches
 
 from backend import digest, emit_object, load_tools, verify_object
+from case_inputs import source_bytes
 from course import ROOT, case_environment, library_arguments, load_cases, run_case
 from course_suites import run_released, suite_paths
 from check_syntax import rustc_arguments
@@ -96,6 +97,8 @@ def classification(case):
             raise ValueError("library native checks require object emission; programs require executables")
         if "lowir" in native and (kind != "object" or native["lowir"] != "empty"):
             raise ValueError("only a library object may declare an empty LowIR unit, as lowir: empty")
+        if "providers" in native and (library or not native["providers"]):
+            raise ValueError("host providers link into program executables only")
         if kind in ("codegen", "object"):
             if (not isinstance(native.get("reason"), str) or not native["reason"].strip()
                     or "outcome" in native or "rustc_outcome" in native):
@@ -227,6 +230,20 @@ def native_selection(manifest, cases, case_paths, stage):
                       "selected_paths": [case["path"] for case in selected]}
 
 
+def host_objects(stage, case, folder, run):
+    """Compile each declared host C provider once; both executables link the same objects."""
+    objects = []
+    for index, provider in enumerate(case.get("native", {}).get("providers", [])):
+        output = folder / f"provider-{index}.o"
+        result = run(["cc", "-std=c11", "-O0", "-c", str(ROOT / stage / provider), "-o", str(output)],
+                     f"provider-{index}")
+        if result.returncode:
+            raise ValueError(f"host provider failed to compile: {provider}: {result.stderr.decode(errors='replace')}")
+        verify_object(output)
+        objects.append(output)
+    return objects
+
+
 def check_case(stage, mode, case, app, directory, tools, *, observed_warnings=False):
     """Check one native case in its own evidence folder; the result records every command and the verdict.
 
@@ -243,7 +260,7 @@ def check_case(stage, mode, case, app, directory, tools, *, observed_warnings=Fa
         folder.mkdir(parents=True)
         fixture = ROOT / stage / case["path"]
         source = folder / fixture.name
-        source.write_bytes(fixture.read_bytes())
+        source.write_bytes(source_bytes(ROOT, stage, case))
         for auxiliary in case.get("auxiliary", []):
             original = ROOT / stage / auxiliary
             destination = folder / original.relative_to(fixture.parent)
@@ -282,6 +299,10 @@ def check_case(stage, mode, case, app, directory, tools, *, observed_warnings=Fa
             command += ["--cap-lints", "allow"]
         if library:
             command += ["--crate-type=lib", "--emit=obj"]
+        providers = host_objects(stage, case, folder, run) if case["exit_status"] == 0 else []
+        command += [f"-Clink-arg={provider}" for provider in providers]
+        if providers:
+            evidence["providers"] = {name: digest(ROOT / stage / name) for name in case["native"]["providers"]}
         rust = run(command, "rustc")
         if rust.returncode != case["rustc"]["status"]:
             raise ValueError(f"rustc outcome differs: {rust.returncode}: {rust.stderr.decode(errors='replace')}")
@@ -289,17 +310,26 @@ def check_case(stage, mode, case, app, directory, tools, *, observed_warnings=Fa
             text = folder / "output.lowir"
             text.write_bytes(actual[0])
             native = folder / ("native-output.o" if library else "native-output")
+            def object_run(command):
+                result = run(command, "backend-object")
+                if result.returncode:
+                    raise ValueError(f"object backend failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
+
             if library:
                 verify_object(rustexe)
-                def object_run(command):
-                    result = run(command, "backend-object")
-                    if result.returncode:
-                        raise ValueError(f"object backend failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
                 # A declared empty unit still crosses the object bridge, proving the backend accepts it.
                 emit_object(text, native, tools, run=object_run)
                 if declares_empty_lowir(case):
                     empty_objects((("rustc", rustexe), ("cppgm", native)))
                 evidence["objects"] = {"rustc_sha256": digest(rustexe), "native_sha256": digest(native)}
+            elif providers:
+                # The standalone executable writer cannot link host objects: emit the program's
+                # object through the same bridge as a library and let the host linker join them.
+                unit = folder / "native-unit.o"
+                emit_object(text, unit, tools, run=object_run)
+                result = run(["cc", str(unit), *map(str, providers), "-lm", "-o", str(native)], "link")
+                if result.returncode:
+                    raise ValueError(f"host link failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
             else:
                 validated = folder / "validated.lowir"
                 for command, label in [([tools["lowir"], "-o", str(validated), str(text)], "validate"),
@@ -309,7 +339,8 @@ def check_case(stage, mode, case, app, directory, tools, *, observed_warnings=Fa
                         raise ValueError(f"{label} failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
             evidence["native"] = case["native"]
             run_executables(case["native"], rustexe, native, run)
-        for executable in (rustexe, folder / "native-output", folder / "native-output.o"):
+        for executable in (rustexe, folder / "native-output", folder / "native-output.o",
+                           folder / "native-unit.o", *providers):
             executable.unlink(missing_ok=True)
         evidence["passed"] = True
     except (ValueError, OSError, subprocess.SubprocessError) as error:
@@ -326,7 +357,7 @@ def check(app, jobs, stage="pa11", *, unit=None, case_paths=None):
         raise ValueError(f"expected pinned rustc 1.98.0: {version.strip()}")
     identity = candidate_identity(app)
     required = {"lowir", "lowir2native"} if any(c["rustc"]["kind"] == "program" for c in cases) else set()
-    if any(c.get("native", {}).get("kind") == "object" for c in cases):
+    if any(c.get("native", {}).get("kind") == "object" or "providers" in c.get("native", {}) for c in cases):
         required.add("cppgm++")
     tools = load_tools(tuple(sorted(required)))  # Hash each required immutable tool once.
     directory = ROOT / "obj/native" / paths.evidence
@@ -357,6 +388,9 @@ def check(app, jobs, stage="pa11", *, unit=None, case_paths=None):
     print(f"PASS: {stage.upper()}{scope}: {len(cases)} independent checks; {len(accepted) - compiled - objects} executable comparisons; {compiled} codegen-only comparisons; {objects} object comparisons"
           + (f", {empty} of them declared empty LowIR units" if empty else ""))
     print(f"Evidence: {directory.relative_to(ROOT)}")
+    linked = sum("providers" in native for native in accepted)
+    if linked:
+        print(f"  {linked} programs linked with their declared host C providers")
     differences = sum(c.get("native", {}).get("rustc_outcome", c.get("native", {}).get("outcome"))
                       != c.get("native", {}).get("outcome") for c in cases)
     if differences:

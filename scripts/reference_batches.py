@@ -3,6 +3,7 @@ import hashlib
 import json
 from pathlib import Path
 import time
+from case_inputs import support_files
 from course_suites import check_identity, suite_paths
 
 SUFFIXES = (".ref", ".ref.stderr", ".ref.exit_status")
@@ -53,7 +54,7 @@ def prepare(root, stage, manifest, all_cases, source_hashes, results, *, unit=No
             "case_sha256": case_digest(case, manifest["mode"]),
             "input_sha256": digest(fixture.read_bytes()),
             "auxiliary": {path: digest((folder / path).read_bytes())
-                          for path in case.get("auxiliary", [])},
+                          for path in support_files(case)},
             "outputs": {suffix: digest(value) for suffix, value in zip(SUFFIXES, actual)},
         }
     validate(root, stage, manifest, all_cases, pending=selected, unit=unit)
@@ -143,7 +144,7 @@ def validate(root, stage, manifest, cases, *, pending=None, unit=None):
             entry = latest[path]
             if set(entry.get("outputs", {})) != set(SUFFIXES):
                 raise ValueError(f"incomplete scoped output hashes: {path}")
-            if set(entry.get("auxiliary", {})) != set(case.get("auxiliary", [])):
+            if set(entry.get("auxiliary", {})) != set(support_files(case)):
                 raise ValueError(f"scoped auxiliary receipt disagrees with manifest: {path}")
             if pending is None or path not in pending:
                 for suffix, expected in entry["outputs"].items():
