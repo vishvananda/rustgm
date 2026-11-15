@@ -6,6 +6,7 @@ pub mod comparisons;
 pub mod constness;
 pub mod crates;
 pub(crate) mod decorations;
+pub(crate) mod digest;
 pub mod edition;
 pub mod hash;
 pub mod initial_assembly;

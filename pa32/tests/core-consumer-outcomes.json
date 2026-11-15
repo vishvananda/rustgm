@@ -80,10 +80,12 @@
         "integer, char, str and bool formatting",
         "width, fill, precision and radix",
         "Debug builders and pretty printing",
-        "u128 formatting"
+        "u128 formatting",
+        "thin and wide pointer formatting",
+        "type identity and Any downcasts"
       ],
-      "source_sha256": "4d4f096bc184824e8cfae1c1b80844b1ec0772de53e20e7cb5daef1d7ea257fd",
-      "stdout_sha256": "d2faae016b03a684f0e009ae2d143276ee313a3b2b26a5519c3605c0f8371270"
+      "source_sha256": "fb5f0b7c8fc9f71f2aa2a80f16f683765e4e34736b19268af58b6e1cebcbb137",
+      "stdout_sha256": "4eaeabc4ffc0fec9cf990ae950596c9559cb8806359e13a65078888a2f9bdc39"
     },
     {
       "name": "fmt-floats",

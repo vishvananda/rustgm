@@ -757,3 +757,156 @@ fn the_spin_wait_hint_returns_at_once_and_stays_fenced_when_strict() -> Result {
     );
     Ok(())
 }
+
+/// The reflected identity structure, its two intrinsics as core declares them
+/// and a comparison of two types as one constant.
+const IDENTITIES: &str = "\
+#[lang=\"type_id\"]pub struct TypeId{data:[*const ();2]}
+#[rustc_intrinsic]#[rustc_comptime]pub fn type_id<T:?Sized>()->TypeId;
+#[rustc_intrinsic]pub const fn type_id_eq(a:TypeId,b:TypeId)->bool{loop{}}
+pub struct Is<A:?Sized,B:?Sized>(*const A,*const B);
+impl<A:?Sized,B:?Sized> Is<A,B>{pub const SAME:bool=type_id_eq(type_id::<A>(),type_id::<B>());}
+pub trait IsUnit{const IS_UNIT:bool;}
+impl<T:?Sized> IsUnit for T{const IS_UNIT:bool=type_id_eq(type_id::<T>(),type_id::<()>());}
+pub struct Pair<A,B>(A,B);
+pub struct Twin<A,B>(A,B);
+pub struct Holder<'a>(&'a u8);
+pub trait Shape{}
+pub trait Other{}
+const fn pick(same:bool,yes:u32,no:u32)->u32{if same{yes}else{no}}
+const fn items<A,B>(_:&A,_:&B)->bool{Is::<A,B>::SAME}
+fn first(){}
+fn second(){}
+#[unsafe(no_mangle)]pub static mut UNIT:TypeId=type_id::<()>();
+#[unsafe(no_mangle)]pub static mut PAIR:TypeId=type_id::<Pair<u8,i8>>();
+";
+/// `(condition, holds)`, declared from Rust's type identity rules and then
+/// confirmed with rustc 1.98.0, which evaluated the same conditions with its
+/// own `type_id` and `type_id_eq`: equal types have one identity whatever
+/// their free lifetimes and however a binder names or orders its lifetimes;
+/// any other difference gives another identity. `'a` is a lifetime parameter
+/// of the constant's owner.
+const COMPARED: &[(&str, bool)] = &[
+    ("Is::<(),()>::SAME", true),
+    ("Is::<u8,u8>::SAME", true),
+    ("Is::<u8,i8>::SAME", false),
+    ("Is::<(u8,),u8>::SAME", false),
+    ("Is::<(u8,i8),(u8,i8)>::SAME", true),
+    ("Is::<(u8,i8),(i8,u8)>::SAME", false),
+    ("Is::<[u8;2],[u8;2]>::SAME", true),
+    ("Is::<[u8;2],[u8;3]>::SAME", false),
+    ("Is::<[u8],[u8;2]>::SAME", false),
+    ("Is::<*const u8,*mut u8>::SAME", false),
+    ("Is::<&'static u8,&'static mut u8>::SAME", false),
+    ("Is::<&'a u8,&'static u8>::SAME", true),
+    ("Is::<Pair<u8,i8>,Pair<u8,i8>>::SAME", true),
+    ("Is::<Pair<u8,i8>,Pair<i8,u8>>::SAME", false),
+    ("Is::<Pair<u8,u8>,Twin<u8,u8>>::SAME", false),
+    ("Is::<Holder<'a>,Holder<'static>>::SAME", true),
+    ("Is::<fn(u8)->u8,fn(u8)->u8>::SAME", true),
+    ("Is::<fn(u8)->u8,fn(i8)->u8>::SAME", false),
+    ("Is::<fn(u8)->u8,unsafe fn(u8)->u8>::SAME", false),
+    ("Is::<fn(u8)->u8,extern \"C\" fn(u8)->u8>::SAME", false),
+    ("Is::<fn(&'a u8),fn(&'static u8)>::SAME", true),
+    ("Is::<for<'b> fn(&'b u8),fn(&'static u8)>::SAME", false),
+    (
+        "Is::<for<'b> fn(&'b u8)->&'b u8,for<'c> fn(&'c u8)->&'c u8>::SAME",
+        true,
+    ),
+    (
+        "Is::<for<'b,'c> fn(&'b u8,&'c u8),for<'b,'c> fn(&'c u8,&'b u8)>::SAME",
+        true,
+    ),
+    (
+        "Is::<for<'b> fn(for<'c> fn(&'b u8,&'c u8)),for<'x> fn(for<'y> fn(&'x u8,&'y u8))>::SAME",
+        true,
+    ),
+    (
+        "Is::<for<'b> fn(for<'c> fn(&'b u8,&'c u8)),for<'b> fn(for<'c> fn(&'c u8,&'b u8))>::SAME",
+        false,
+    ),
+    ("Is::<for<'b> fn(u8),fn(u8)>::SAME", true),
+    (
+        "type_id_eq(type_id::<dyn Shape>(),type_id::<dyn Shape>())",
+        true,
+    ),
+    (
+        "type_id_eq(type_id::<dyn Shape>(),type_id::<dyn Other>())",
+        false,
+    ),
+    (
+        "Is::<&'static (dyn Shape+'static),*const (dyn Shape+'static)>::SAME",
+        false,
+    ),
+    ("items(&first,&first)", true),
+    ("items(&first,&second)", false),
+    ("<u8 as IsUnit>::IS_UNIT", false),
+    ("<() as IsUnit>::IS_UNIT", true),
+    ("<[u8] as IsUnit>::IS_UNIT", false),
+    ("<str as IsUnit>::IS_UNIT", false),
+];
+/// The two words of the identity of `()`, low half first.
+const UNIT_WORDS: [&str; 2] = ["17862064836387286480", "17912235704883107879"];
+
+#[test]
+fn type_identities_run_in_constants_and_stay_fenced_when_strict() -> Result {
+    let mut source = format!("{HEAD}{IDENTITIES}");
+    for (index, (condition, _)) in COMPARED.iter().enumerate() {
+        // Each comparison folds to its own number: 71.. when it holds, 72.. otherwise.
+        let (yes, no) = (7_100_000 + index, 7_200_000 + index);
+        if condition.contains("'a") {
+            writeln!(
+                source,
+                "pub struct C{index}<'a>(&'a u8);\
+                 impl<'a> C{index}<'a>{{const CODE:u32=pick({condition},{yes},{no});}}\
+                 #[unsafe(no_mangle)]pub fn c{index}<'a>(_:&'a u8)->u32{{C{index}::<'a>::CODE}}"
+            )?;
+        } else {
+            writeln!(
+                source,
+                "const C{index}:u32=pick({condition},{yes},{no});\
+                 #[unsafe(no_mangle)]pub fn c{index}()->u32{{C{index}}}"
+            )?;
+        }
+    }
+    let (strict, _) = library("identities-strict", &source, "identities", None, false)?;
+    let stderr = String::from_utf8(strict.stderr)?;
+    assert_eq!(strict.status.code(), Some(1), "{stderr}");
+    assert!(
+        stderr.contains("source intrinsic constant execution is not implemented")
+            && !stderr.contains("bringup-")
+            && strict.stdout.is_empty(),
+        "{stderr}"
+    );
+    let identity = "identities_bringup";
+    let (passed, _) = library("identities", &source, identity, Some(""), false)?;
+    let stderr = String::from_utf8(passed.stderr)?;
+    assert!(passed.status.success(), "{stderr}");
+    let fences = waived(&stderr);
+    for name in ["type_id", "type_id_eq"] {
+        let fence = format!("source intrinsic uses unqualified constant evaluation: {name}");
+        assert!(fences.contains(&fence.as_str()), "{stderr}");
+    }
+    let text = std::str::from_utf8(&passed.stdout)?;
+    for (index, &(condition, holds)) in COMPARED.iter().enumerate() {
+        let (yes, no) = (7_100_000 + index, 7_200_000 + index);
+        let (folded, other) = if holds { (yes, no) } else { (no, yes) };
+        assert!(
+            text.contains(&folded.to_string()) && !text.contains(&other.to_string()),
+            "{condition}: {text}"
+        );
+    }
+    assert!(!text.contains("rg.trap."), "{text}");
+    // The identity of `()` is the SipHash-2-4-128 digest, under the zero key,
+    // of its spelling: the tuple tag and a zero element count. OpenSSL 3.5
+    // gives these two little-endian words for those five bytes.
+    for word in UNIT_WORDS {
+        assert!(text.contains(word), "{word}: {text}");
+    }
+    // A second compilation gives every type the same identity, including
+    // the one of `Pair<u8,i8>`, which names a declaration of this crate.
+    assert!(text.contains("global @PAIR"), "{text}");
+    let (again, _) = library("identities-again", &source, identity, Some(""), false)?;
+    assert_eq!(again.stdout, passed.stdout);
+    Ok(())
+}

@@ -10,6 +10,7 @@ mod callables;
 mod caller_sites;
 mod computed;
 mod conversion_reads;
+mod digest_values;
 mod enumerations;
 mod environments;
 mod footprints;

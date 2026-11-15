@@ -1,6 +1,7 @@
 #![no_std]
 #![no_main]
 
+use core::any::{Any, TypeId};
 use core::fmt::{self, Write};
 
 #[link(name = "c")]
@@ -128,6 +129,16 @@ impl fmt::Display for Options {
     }
 }
 
+/// Whether two types have one identity.
+fn same<A: ?Sized + 'static, B: ?Sized + 'static>() -> bool {
+    TypeId::of::<A>() == TypeId::of::<B>()
+}
+
+/// The identity of a value's type.
+fn id<T: 'static>(_: &T) -> TypeId {
+    TypeId::of::<T>()
+}
+
 fn run(out: &mut Out) -> fmt::Result {
     writeln!(out, "{} {} {} {}", 0u8, 255u8, -128i8, 127i8)?;
     writeln!(out, "{} {} {} {}", u16::MAX, i16::MIN, u32::MAX, i32::MIN)?;
@@ -168,6 +179,15 @@ fn run(out: &mut Out) -> fmt::Result {
     writeln!(out, "{:_>+09.3}", Options)?;
     writeln!(out, "{:p}", core::ptr::null::<u8>())?;
     writeln!(out, "{:?} {:?}", core::ptr::null::<u8>(), 0x1234usize as *const u8)?;
+    let wide = core::ptr::slice_from_raw_parts(0x1000usize as *const u16, 3);
+    writeln!(out, "{:p} {:p}", 0x1234usize as *const u8, wide)?;
+    writeln!(out, "{:?} {:p}", wide as *mut [u16], 0x1234usize as *mut u8)?;
+    writeln!(out, "{} {} {} {}", same::<(), ()>(), same::<u8, i8>(), same::<&'static str, &'static str>(), same::<Point, Shape>())?;
+    writeln!(out, "{} {} {}", same::<dyn Any, dyn Any + Send>(), same::<fn(u8) -> u8, fn(u8) -> u8>(), same::<for<'a> fn(&'a u8), fn(&'static u8)>())?;
+    let (double, twice) = (|x: u8| x * 2, |x: u8| x * 2);
+    writeln!(out, "{} {} {} {}", id(&double) == id(&double), id(&double) == id(&twice), id(&run) == id(&run), id(&same::<(), ()>) == id(&same::<u8, i8>))?;
+    let any: &dyn Any = &7u8;
+    writeln!(out, "{} {} {:?} {:?}", any.is::<u8>(), any.is::<i8>(), any.downcast_ref::<u8>(), any.downcast_ref::<i8>())?;
     writeln!(out, "{}", format_args!("{}-{}", 1, format_args!("{:03}", 2)))?;
     out.write_fmt(format_args!("{:>4}|{:<4}|\n", 'a', 'b'))?;
     out.write_char('c')?;

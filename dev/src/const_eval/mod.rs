@@ -20,6 +20,7 @@ mod caller_locations;
 mod compare_calls;
 mod entry_policy;
 mod function_calls;
+mod identity_calls;
 mod invoked_values;
 mod knowledge_calls;
 mod operator_calls;

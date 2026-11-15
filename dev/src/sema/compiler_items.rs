@@ -59,6 +59,7 @@ pub(crate) mod assume_contract;
 pub(crate) mod bit_counts;
 mod cold_fallback;
 pub(crate) mod guaranteed_compare;
+pub(crate) mod identity_words;
 pub(crate) mod knowledge;
 mod subtraction_contract;
 mod wrapping_contract;

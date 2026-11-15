@@ -65,6 +65,12 @@ width=None precision=None fill=' ' plus=false zero=false
 width=Some(9) precision=Some(3) fill='_' plus=true zero=true
 0x0
 0x0 0x1234
+0x1234 Pointer { addr: 0x1000, metadata: 3 }
+Pointer { addr: 0x1000, metadata: 3 } 0x1234
+true false true false
+false true false
+true false true false
+true false Some(7) None
 1-002
    a|b   |
 char
