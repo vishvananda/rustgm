@@ -215,7 +215,8 @@
         "docs/pa26-iteration-checkpoint.md",
         "docs/pa26-mutable-iteration.md",
         "spec.md"
-      ]
+      ],
+      "manifest": "pa26/tests/units/iteration-kernel.json"
     },
     {
       "id": "raw-validity",

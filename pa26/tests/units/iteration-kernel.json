@@ -1,0 +1,4066 @@
+{
+ "schema": 1,
+ "mode": "--emit-lowir",
+ "language": "Rust 1.98.0",
+ "edition": "2024",
+ "target": "x86_64-unknown-linux-gnu",
+ "discovery": [
+  "tests/spec/iteration/aliased-iterator.rs",
+  "tests/spec/iteration/borrowed-item.rs",
+  "tests/spec/iteration/break-value-reject.rs",
+  "tests/spec/iteration/break.rs",
+  "tests/spec/iteration/const-for-runtime-reject.rs",
+  "tests/spec/iteration/continue.rs",
+  "tests/spec/iteration/crossed-associated-item.rs",
+  "tests/spec/iteration/evaluate-once.rs",
+  "tests/spec/iteration/explicit-into-iterator.rs",
+  "tests/spec/iteration/generic-into-iterator.rs",
+  "tests/spec/iteration/generic-iterator.rs",
+  "tests/spec/iteration/immutable-binding-reborrow-reject.rs",
+  "tests/spec/iteration/inherent-into-iter-shadow.rs",
+  "tests/spec/iteration/inherent-next-shadow.rs",
+  "tests/spec/iteration/irrefutable-pattern-reject.rs",
+  "tests/spec/iteration/item-reference-escape-reject.rs",
+  "tests/spec/iteration/iterator-loan-conflict.rs",
+  "tests/spec/iteration/iterator-orphan-reject.rs",
+  "tests/spec/iteration/missing-iterator-prerequisite.rs",
+  "tests/spec/iteration/moved-iterator-reject.rs",
+  "tests/spec/iteration/moved-mutable-reference.rs",
+  "tests/spec/iteration/mutable-reference.rs",
+  "tests/spec/iteration/nested-label.rs",
+  "tests/spec/iteration/nested-mutable-reference.rs",
+  "tests/spec/iteration/no-prelude-iterator.rs",
+  "tests/spec/iteration/ordinary-lookalike-method.rs",
+  "tests/spec/iteration/overlap-iterator-last.rs",
+  "tests/spec/iteration/overlap-source-first.rs",
+  "tests/spec/iteration/owned-iterator.rs",
+  "tests/spec/iteration/prelude-iterator.rs",
+  "tests/spec/iteration/qualified-next.rs",
+  "tests/spec/iteration/reified-next.rs",
+  "tests/spec/iteration/shared-reference-reject.rs",
+  "tests/spec/iteration/source-lookalike-reject.rs",
+  "tests/spec/iteration/source-reference-conflict-reverse.rs",
+  "tests/spec/iteration/source-reference-conflict.rs",
+  "tests/spec/iteration/source-reference-disjoint-reverse.rs",
+  "tests/spec/iteration/source-reference-impl.rs",
+  "tests/spec/iteration/source-reference-open.rs",
+  "tests/spec/iteration/temporary-into-iterator.rs",
+  "tests/spec/iteration/unsized-generic-reference.rs",
+  "tests/spec/iteration/wrong-item-bound.rs",
+  "tests/spec/iteration/wrong-next-receiver.rs",
+  "tests/spec/iteration/zero-iterations.rs",
+  "tests/spec/iteration-visibility",
+  "tests/spec/iteration/clone/abstract-generic.rs",
+  "tests/spec/iteration/clone/after-exhaustion.rs",
+  "tests/spec/iteration/clone/clone-const-reject.rs",
+  "tests/spec/iteration/clone/clone-foreign-pointer-reject.rs",
+  "tests/spec/iteration/clone/clone-supertrait-sized.rs",
+  "tests/spec/iteration/clone/competing-trait.rs",
+  "tests/spec/iteration/clone/generic-clone-bound.rs",
+  "tests/spec/iteration/clone/inherent-winner-with-iter.rs",
+  "tests/spec/iteration/clone/item-survives-clone-owner.rs",
+  "tests/spec/iteration/clone/iter-still-not-copy.rs",
+  "tests/spec/iteration/clone/live-borrowed-item.rs",
+  "tests/spec/iteration/clone/macro-canonical-origin.rs",
+  "tests/spec/iteration/clone/no-prelude-generic.rs",
+  "tests/spec/iteration/clone/no-prelude-import.rs",
+  "tests/spec/iteration/clone/no-prelude-missing.rs",
+  "tests/spec/iteration/clone/noncopy-drop.rs",
+  "tests/spec/iteration/clone/original-nonclone-elements.rs",
+  "tests/spec/iteration/clone/partial-state.rs",
+  "tests/spec/iteration/clone/plain-nonclone.rs",
+  "tests/spec/iteration/clone/qualified-clone.rs",
+  "tests/spec/iteration/clone/qualified-generic-bound.rs",
+  "tests/spec/iteration/clone/qualified-iter-clone.rs",
+  "tests/spec/iteration/clone/qualified-source-clone.rs",
+  "tests/spec/iteration/clone/reified-clone.rs",
+  "tests/spec/iteration/clone/source-escape.rs",
+  "tests/spec/iteration/clone/source-lookalike.rs",
+  "tests/spec/iteration/clone/source-mutation.rs",
+  "tests/spec/iteration/clone/source-shadow.rs",
+  "tests/spec/iteration/clone/source-winner-with-iter.rs",
+  "tests/spec/iteration/clone/std-alias-qualified.rs",
+  "tests/spec/iteration/generic-storage/checked-array-unsizing.rs",
+  "tests/spec/iteration/generic-storage/checked-shared-split.rs",
+  "tests/spec/iteration/generic-storage/checked-split-empty-zst.rs",
+  "tests/spec/iteration/generic-storage/checked-split-no-copy.rs",
+  "tests/spec/iteration/generic-storage/generic-function-option-ref.rs",
+  "tests/spec/iteration/generic-storage/inherent-generic-next.rs",
+  "tests/spec/iteration/generic-storage/item-escape-reject.rs",
+  "tests/spec/iteration/generic-storage/pointee-loan-reject.rs",
+  "tests/spec/iteration/generic-storage/qualified-generic-next.rs",
+  "tests/spec/iteration/generic-storage/reified-generic-next.rs",
+  "tests/spec/iteration/integer-ranges/alias-fields.rs",
+  "tests/spec/iteration/integer-ranges/body-selects-index.rs",
+  "tests/spec/iteration/integer-ranges/body-selects-u8.rs",
+  "tests/spec/iteration/integer-ranges/bound-selects-usize.rs",
+  "tests/spec/iteration/integer-ranges/break-continue.rs",
+  "tests/spec/iteration/integer-ranges/const-next-reject.rs",
+  "tests/spec/iteration/integer-ranges/constant-range.rs",
+  "tests/spec/iteration/integer-ranges/copy-range.rs",
+  "tests/spec/iteration/integer-ranges/default-inference.rs",
+  "tests/spec/iteration/integer-ranges/empty.rs",
+  "tests/spec/iteration/integer-ranges/exclusive-max.rs",
+  "tests/spec/iteration/integer-ranges/formation-once.rs",
+  "tests/spec/iteration/integer-ranges/generic-iterator.rs",
+  "tests/spec/iteration/integer-ranges/generic-no-step.rs",
+  "tests/spec/iteration/integer-ranges/integer-i128.rs",
+  "tests/spec/iteration/integer-ranges/integer-i16.rs",
+  "tests/spec/iteration/integer-ranges/integer-i32.rs",
+  "tests/spec/iteration/integer-ranges/integer-i64.rs",
+  "tests/spec/iteration/integer-ranges/integer-i8.rs",
+  "tests/spec/iteration/integer-ranges/integer-isize.rs",
+  "tests/spec/iteration/integer-ranges/integer-u128.rs",
+  "tests/spec/iteration/integer-ranges/integer-u16.rs",
+  "tests/spec/iteration/integer-ranges/integer-u32.rs",
+  "tests/spec/iteration/integer-ranges/integer-u64.rs",
+  "tests/spec/iteration/integer-ranges/integer-u8.rs",
+  "tests/spec/iteration/integer-ranges/integer-usize.rs",
+  "tests/spec/iteration/integer-ranges/method-ambiguity.rs",
+  "tests/spec/iteration/integer-ranges/mismatched-endpoint.rs",
+  "tests/spec/iteration/integer-ranges/mutable-blanket.rs",
+  "tests/spec/iteration/integer-ranges/named-alias.rs",
+  "tests/spec/iteration/integer-ranges/named-range.rs",
+  "tests/spec/iteration/integer-ranges/no-prelude-loop.rs",
+  "tests/spec/iteration/integer-ranges/nominal-no-step.rs",
+  "tests/spec/iteration/integer-ranges/qualified-next.rs",
+  "tests/spec/iteration/integer-ranges/range-bool-reject.rs",
+  "tests/spec/iteration/integer-ranges/range-exclusive.rs",
+  "tests/spec/iteration/integer-ranges/range-float-reject.rs",
+  "tests/spec/iteration/integer-ranges/range-reversed.rs",
+  "tests/spec/iteration/integer-ranges/reified-next.rs",
+  "tests/spec/iteration/integer-ranges/shared-range-not-iterator.rs",
+  "tests/spec/iteration/integer-ranges/source-lookalike-range.rs",
+  "tests/spec/iteration/integer-ranges/source-primitive-name-shadow.rs",
+  "tests/spec/iteration/integer-ranges/source-range-canonical-impl-conflict.rs",
+  "tests/spec/iteration/integer-ranges/source-range-iterator.rs",
+  "tests/spec/iteration/integer-ranges/source-shadow-syntax.rs",
+  "tests/spec/iteration/mutable-collections/array-trait-winner.rs",
+  "tests/spec/iteration/mutable-collections/empty-zst.rs",
+  "tests/spec/iteration/mutable-collections/formation-evaluated-once.rs",
+  "tests/spec/iteration/mutable-collections/generic-array-extent.rs",
+  "tests/spec/iteration/mutable-collections/item-outlives-iterator.rs",
+  "tests/spec/iteration/mutable-collections/iter-mut-not-clone.rs",
+  "tests/spec/iteration/mutable-collections/iter-mut-not-copy.rs",
+  "tests/spec/iteration/mutable-collections/mutable-array.rs",
+  "tests/spec/iteration/mutable-collections/mutable-slice.rs",
+  "tests/spec/iteration/mutable-collections/named-iter-mut.rs",
+  "tests/spec/iteration/mutable-collections/no-prelude-import.rs",
+  "tests/spec/iteration/mutable-collections/no-prelude-missing.rs",
+  "tests/spec/iteration/mutable-collections/noncopy-drop.rs",
+  "tests/spec/iteration/mutable-collections/pointee-invariance-reject.rs",
+  "tests/spec/iteration/mutable-collections/qualified-next.rs",
+  "tests/spec/iteration/mutable-collections/reified-next.rs",
+  "tests/spec/iteration/mutable-collections/slice-double-mutable-reject.rs",
+  "tests/spec/iteration/mutable-collections/slice-iter-mut.rs",
+  "tests/spec/iteration/mutable-collections/slice-moved-reference-reject.rs",
+  "tests/spec/iteration/mutable-collections/slice-reborrow.rs",
+  "tests/spec/iteration/mutable-collections/slice-rest-metadata.rs",
+  "tests/spec/iteration/mutable-collections/source-inherent-winner.rs",
+  "tests/spec/iteration/mutable-collections/source-lifetime-shortening.rs",
+  "tests/spec/iteration/mutable-collections/source-lifetime-widening-reject.rs",
+  "tests/spec/iteration/mutable-collections/source-lookalike.rs",
+  "tests/spec/iteration/mutable-collections/source-write-reject.rs",
+  "tests/spec/iteration/mutable-collections/successive-live-items.rs",
+  "tests/spec/iteration/shared-collections/array-qualified-reject.rs",
+  "tests/spec/iteration/shared-collections/array-trait-wins.rs",
+  "tests/spec/iteration/shared-collections/formation-evaluated-once.rs",
+  "tests/spec/iteration/shared-collections/generic-shared-array.rs",
+  "tests/spec/iteration/shared-collections/generic-source-lifetime.rs",
+  "tests/spec/iteration/shared-collections/item-outlives-iterator.rs",
+  "tests/spec/iteration/shared-collections/items-survive-next.rs",
+  "tests/spec/iteration/shared-collections/iter-clone-no-element-clone.rs",
+  "tests/spec/iteration/shared-collections/iter-method-generic-reject.rs",
+  "tests/spec/iteration/shared-collections/iter-not-copy.rs",
+  "tests/spec/iteration/shared-collections/iter-private-constructor.rs",
+  "tests/spec/iteration/shared-collections/iter-private-rest.rs",
+  "tests/spec/iteration/shared-collections/iterator-private-field.rs",
+  "tests/spec/iteration/shared-collections/iterator-source-escape.rs",
+  "tests/spec/iteration/shared-collections/named-slice-iter.rs",
+  "tests/spec/iteration/shared-collections/shared-array.rs",
+  "tests/spec/iteration/shared-collections/shared-empty-zst.rs",
+  "tests/spec/iteration/shared-collections/shared-item-conflicts-mutation.rs",
+  "tests/spec/iteration/shared-collections/shared-noncopy-drop.rs",
+  "tests/spec/iteration/shared-collections/shared-slice-no-copy-bound.rs",
+  "tests/spec/iteration/shared-collections/shared-slice.rs",
+  "tests/spec/iteration/shared-collections/shared-write-reject.rs",
+  "tests/spec/iteration/shared-collections/slice-iter-reified.rs",
+  "tests/spec/iteration/shared-collections/slice-iter.rs",
+  "tests/spec/iteration/shared-collections/slice-qualified.rs",
+  "tests/spec/iteration/shared-collections/slice-rest-length.rs"
+ ],
+ "cases": [
+  {
+   "path": "tests/spec/iteration/owned-iterator.rs",
+   "source_sha256": "d514370c0379fe66d3993dcbd50aae188aba48c8c67c87ec021da081861dae7d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/explicit-into-iterator.rs",
+   "source_sha256": "ff0e6cc5b6f538906758abb29f2a91e517d6d6f1cce8065f7fb3107020842040",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/generic-into-iterator.rs",
+   "source_sha256": "19e230bff1c5c21974f87bd17b7d15b42e700e019abfe22f555bcbe56519f9ec",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/generic-iterator.rs",
+   "source_sha256": "381215b9f8f0e469c41917f96b401331ff92ad787a5ac4d17cb03cc306e0b983",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/zero-iterations.rs",
+   "source_sha256": "5b4f2301cbc7fecfbc7cac1e749a31956da9d2d06959b76de30b7d1502d7c72f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/evaluate-once.rs",
+   "source_sha256": "4d421307b710e418d2fa722434eb731a03ffcbdaa3dd6570feb97eb78274da6e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/break.rs",
+   "source_sha256": "408e02e58e7df1bf1bde2b9be7da6d977295f14c7aa04ed2cb53b324d3b5e405",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/continue.rs",
+   "source_sha256": "69d5c279538e964907518258e4ffc514a94cf568a092852e29aef8363e43c865",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/nested-label.rs",
+   "source_sha256": "0792a77178444fe35b8300217b30d3ed2d470c91824facdc3452ec6370b1937b",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-reference.rs",
+   "source_sha256": "1db3ccf8a32b6ae3a7d579f2369b6f07fdfd224c29512e5d587aeb855f5d428e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/moved-mutable-reference.rs",
+   "source_sha256": "f07aeb0e4dcf8abdd4e2a0d609506f505cb5d444ea16b5b023343a6c1824253b",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/nested-mutable-reference.rs",
+   "source_sha256": "6ad7e584712b477df948de22fe7b177448769cbcc6a91380fff8c4402933a0f1",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-reference-reject.rs",
+   "source_sha256": "5e57d436716e156523da6111e4db1b9c82602a3e1bc90271c1b6c8b5863dba87",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/immutable-binding-reborrow-reject.rs",
+   "source_sha256": "697dbe8943de8b9b5cd61875019a96f2df48baedd542caeca5919e33677b05b5",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/moved-iterator-reject.rs",
+   "source_sha256": "426d7e3c46b613502b1825b66d85a771f66fe81ae739a35512a40b648d5c240c",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/break-value-reject.rs",
+   "source_sha256": "e41727bdc70b1ee1d7bc6b8a204005f5090860a84b702b93b73b387cec97a80f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/wrong-next-receiver.rs",
+   "source_sha256": "59ede1190bc7d7ecb7acdc2dcaa0b2f5912b4053ac9be92b72ae38b783239fb6",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/missing-iterator-prerequisite.rs",
+   "source_sha256": "35d0161811f7bd06ac9403fa5f21cda13b219d3cca9ea4da32f972fb7f27036e",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/crossed-associated-item.rs",
+   "source_sha256": "f548ecee52ecd547817831e9678bdf20a2f5a61ecac2a3aef209fecc3de69417",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/wrong-item-bound.rs",
+   "source_sha256": "c3fc9e2c57535f00cb06f74c19209cbd3ec401b3763a4d8b8ddd6e6da3564525",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/inherent-next-shadow.rs",
+   "source_sha256": "5f3a4dbe3a46e20fb4411d048be85989c88626558b318250621f8bdcb07dddf9",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/inherent-into-iter-shadow.rs",
+   "source_sha256": "536e9ab020c0ad653164268aa23df685985f2c5532edab4a86bdeaf7fa78498b",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/qualified-next.rs",
+   "source_sha256": "793440679b15e13ea395ac8084706ca35ca436ef2ce5b24ac688e037d460c359",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/reified-next.rs",
+   "source_sha256": "eb26dd859b7d31247f210cac4f2bb4ddba58dc68634fab4dd8fcbc6478e589f6",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/source-lookalike-reject.rs",
+   "source_sha256": "cf2401a569469a88b832cd43735dd490ed5651d1fb783446a312e6a30f472420",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/ordinary-lookalike-method.rs",
+   "source_sha256": "91dfd0fea2429b4f274e1b0303ec5527d459bfb03b581e91bd4a952e6e02d50a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/iterator-orphan-reject.rs",
+   "source_sha256": "2319e8860f2d1d25bfefcbfcd8d6a33c2a127095d537351c7c6b7af07ca9ee73",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/overlap-source-first.rs",
+   "source_sha256": "18ad66d60c355ae98bab9874e95c13dd430a5ffb011af903c8d2dd7c3bfd301c",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/overlap-iterator-last.rs",
+   "source_sha256": "f28d9e237bb5ec3de3933fb692ce784859a8d6348e067a75743dfd90002e8c98",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/item-reference-escape-reject.rs",
+   "source_sha256": "5320722c536ef6194e6dc0988501f2fedb6713a7194e483838099a571c1daaff",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/source-reference-impl.rs",
+   "source_sha256": "d92e858a7ac06613ca81c3f9afe437824da7a042414e583ce807ec724f228a20",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/source-reference-conflict.rs",
+   "source_sha256": "ab0c78f8c7ac5c5bdda5b3216b7d9219289e6cdfa0cf79c218d81ce3b345eaeb",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/source-reference-conflict-reverse.rs",
+   "source_sha256": "72c0c6dbde11ad4d9a48011524a2de4c183830777f87fec4affb7996c8433003",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/source-reference-open.rs",
+   "source_sha256": "bbae1a9c1aac61003b8071a3cf3cd6b3ae638e5e7dc6c8b2fadb61c9485e04db",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/source-reference-disjoint-reverse.rs",
+   "source_sha256": "cd645717b894a2f52ffe50bff52967d7e559ea68ff1313408da2af3f3003b262",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/aliased-iterator.rs",
+   "source_sha256": "8040048822c60047457da1299306814e8cf99e22e77697335b65763df13a7987",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/prelude-iterator.rs",
+   "source_sha256": "11d41e225be94cd439a75a44b54f7e1fa7a85947a779905e66794a6aa4924936",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/no-prelude-iterator.rs",
+   "source_sha256": "c5e1dc52a5a77fa1ccbf5519c3cf1c379a86b3a13ee514be22d89560f61c9541",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/irrefutable-pattern-reject.rs",
+   "source_sha256": "1c0dccb6bccb73d7862169703ce12ce4500833e76c6e61ece53290976015ecdf",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/unsized-generic-reference.rs",
+   "source_sha256": "f9fd90773cbbe24cc256960a74e2c86d856e419b9431775847efcb79e8b08c20",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/borrowed-item.rs",
+   "source_sha256": "8cdd6cd2405baeb173beb274d10c6d586de62899d981179f7d7d0bb4d22f9dcb",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/iterator-loan-conflict.rs",
+   "source_sha256": "4ab8854f37db5875b4b1bc877a19faedcd2e42399f23afbe93e6a95f88f5f3e5",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/temporary-into-iterator.rs",
+   "source_sha256": "be6767b241088da14aee8738fe110f2eb59953729928f81298bb0af6f3069000",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/const-for-runtime-reject.rs",
+   "source_sha256": "0ac0406584e11144682efe1b502e0c7a1c21f3b41176e693abe3c49cc9d7b499",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/generic-storage/checked-shared-split.rs",
+   "source_sha256": "db2a27197b3d1e61c275684c83a310d124c29cfb88851e6b9031e6c954646ed1",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/generic-storage/checked-split-no-copy.rs",
+   "source_sha256": "fbe78e12537e2d7d15ebd8c3e686532b2888312e8e6f046502e22e86b84f2b85",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/generic-storage/checked-split-empty-zst.rs",
+   "source_sha256": "f940c64c46b9c3fea859dc0aebb339a70fa38aee9980340621f6a60705b404b7",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/generic-storage/checked-array-unsizing.rs",
+   "source_sha256": "4a320ba26659df0bc82e63b45b8b5cbc4780cf9657dbe3812c77c8fec159d90f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/generic-storage/qualified-generic-next.rs",
+   "source_sha256": "3530d12077b3634588c42886ce16df8ffdbcd61ccb0c30aa43f9378890ea031b",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/generic-storage/inherent-generic-next.rs",
+   "source_sha256": "24d47d324f6f7859bf958c8bc426d0313df676b88bcd67ff33ea230424098f4d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/generic-storage/generic-function-option-ref.rs",
+   "source_sha256": "777ae6c31d1a98372b345e780b200405f7c4dc1a0655a0ae97979c9453b14de3",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/generic-storage/reified-generic-next.rs",
+   "source_sha256": "37bbdbe2811234ee77d783c6e51e77c9fa34a02f51e9002d71ec0e4d3dbb5894",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/generic-storage/item-escape-reject.rs",
+   "source_sha256": "57d0127fbe89b27f99df7c78f0c9741bb2195d323ff7e419e1055641a0de6013",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/generic-storage/pointee-loan-reject.rs",
+   "source_sha256": "9dc2399b33d48e6c4a3e5343711d68642b0995bf237a489813d023a133836ff7",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/mutable-array.rs",
+   "source_sha256": "6c7b5bd55e4623193b2a2515202975325cfd5d5c403437eec5416b439041600a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/mutable-slice.rs",
+   "source_sha256": "2c31c15471d3cc47819d5edf8474f66e959ff38f33edee649ed529fbe375cb03",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/slice-iter-mut.rs",
+   "source_sha256": "a880bcee7fa008643b663f32d41f6c6e9f28fbf2ddddc0170e4eac9bf2befc29",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/slice-reborrow.rs",
+   "source_sha256": "e996945cd1c2f97aae03e7df4869b5d200ad821ace488ec5941e5422953ac42f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/slice-moved-reference-reject.rs",
+   "source_sha256": "ccf526aaeeca4a5412db47d3ee9b67f2ec9b88b7ba11208cc2fb6037463801bf",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/slice-double-mutable-reject.rs",
+   "source_sha256": "da9b94796fecd6724cce27c2b1f41775d49ab3554207dcf4301a1fa61209b49f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/successive-live-items.rs",
+   "source_sha256": "283f914472e25c3266852e2b492988d504cccb76303c3abfdd9c8e582be117b9",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/item-outlives-iterator.rs",
+   "source_sha256": "481c33309b9d5df5e0dd04bb2abc9d7e8255e4ab4cd956d677b0f0c3309c48be",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/source-write-reject.rs",
+   "source_sha256": "1134f5db298972d2bc9fbca177a1b3727d801bc17145bb1bae4421d30dc1d42f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/named-iter-mut.rs",
+   "source_sha256": "1580e0b600a5fa92a38ec48a76cd58a8c259fcbb66c51e498b2d6193bbbf2985",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/qualified-next.rs",
+   "source_sha256": "3f38bc691f644398edcc2ad46ee923d570bdfccba1de2187805a6616aabe3aba",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/reified-next.rs",
+   "source_sha256": "2a736704a4f4d77198a6cdea0cb65d4380e3a732a58962480fc1f5b35e6e5772",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/empty-zst.rs",
+   "source_sha256": "61ba30c5533c1d05af1545a376ede380a9bda234a753a8b8e9c3b722b5685437",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/noncopy-drop.rs",
+   "source_sha256": "5b1361a519c02edf5056d394793d6d8caa34807cacf3203abad23bb334c7e636",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/source-lifetime-shortening.rs",
+   "source_sha256": "b6293bf44e052384fbaaa1908f09bb2a5f65cb551b3be5dca70c0642be2f3255",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/source-lifetime-widening-reject.rs",
+   "source_sha256": "885f1391d04b7c1eacdf9b4606e354076fcaabba789a14547bb03c94c0b4bf90",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/pointee-invariance-reject.rs",
+   "source_sha256": "d920c76cafd9a7ddcadd5bc47fda3be24e8145e29d823dacc024692dd1d812c9",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/iter-mut-not-copy.rs",
+   "source_sha256": "d9fe3b50371000b7d7f949172466dac42579064275a0df0a6556e107c4da3cd3",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/iter-mut-not-clone.rs",
+   "source_sha256": "e9819f7e8b44bf941e12fb30a8ea337a871b720467ed40fdc85a65a2010d01af",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/source-inherent-winner.rs",
+   "source_sha256": "70dff93ff9f4df49221d5e44189d2c4bbed5322751ee7944ab8aa67121929d0d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/array-trait-winner.rs",
+   "source_sha256": "36eb194fd8371eca8fbf92676f9fb228e4d6462d55a2ca33c9cde2fdc3f95d54",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/source-lookalike.rs",
+   "source_sha256": "18074e0e648ca8623c765e6db07b842c5b867a196256b98340b6eeb631093bdf",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/no-prelude-import.rs",
+   "source_sha256": "d64ff40b0feea04120d1a34a6881e05ccae6c81a1086db99ed95d528665663a9",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/no-prelude-missing.rs",
+   "source_sha256": "4fc24455cd3701444c04b364479b6ed226c9599b6c46cf880e5fb4dbbc06264a",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/generic-array-extent.rs",
+   "source_sha256": "80b0a5d13b5f14751dcaf4aae1ce8c0cc169106940ecb30dd8af2a4ff8118238",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/slice-rest-metadata.rs",
+   "source_sha256": "08fe754c63a12795b3c7dc46ae0795a203c7d29d078679841617d643dc5e5d72",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/mutable-collections/formation-evaluated-once.rs",
+   "source_sha256": "f3a22bdf89ac6438ee199ea3cb794579be7f52433546cc79d94785be0cfe5711",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/original-nonclone-elements.rs",
+   "source_sha256": "b7d67d27826887a631586fd828d0edadaa22ddbe5523785253686ac957f7125d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/partial-state.rs",
+   "source_sha256": "3811b3ace4120f6c58ddb8ae1eb6ee9f9e34755f8ba4633bda5cfec787437c19",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/generic-clone-bound.rs",
+   "source_sha256": "28f0000c70ebd3cf23853bbe4b94d0c82ea59b4469acf7a5f93ea81cea625956",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/qualified-clone.rs",
+   "source_sha256": "82bbacbd3ddbc3c14de7beafa94c7dae8ca4cf116f76f77fdc8f859c80948747",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/qualified-iter-clone.rs",
+   "source_sha256": "df8b72b12cb931525b9369230ac19f8aac8a5e76360b0a09f4a412ead1d8e361",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/reified-clone.rs",
+   "source_sha256": "c3d5ba6d88a2cab54792b257765c52b4870a3d2d884263a74a39ae37c17a32ea",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/item-survives-clone-owner.rs",
+   "source_sha256": "c827f234665076b4bab0a9e5eb4f91b21f7d4f5624ecda220809ca4ffab3f255",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/noncopy-drop.rs",
+   "source_sha256": "798817aea8b38961157517f4201f6a1d9cb82f445b4f679a06adcf132c01a05a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/no-prelude-import.rs",
+   "source_sha256": "3f61cf10fba4ef79b7c699ed1d2e03caab7d3c889346aa67c9505d54d0b6a07d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/no-prelude-missing.rs",
+   "source_sha256": "c5f8573b8e044ce35c041132e8173362387cb8c93cc52515834359ba57d24da6",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/source-shadow.rs",
+   "source_sha256": "7fe9f03587fd2ea3aea33202c550b07cdcf31f3cd14ad49f17a386516cdb7d85",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/source-lookalike.rs",
+   "source_sha256": "6c17e867fc2d97d5040f368f1ccdeaf9d33857a9a0d419594334bdeab38910f9",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/competing-trait.rs",
+   "source_sha256": "7822f01822fe333e42cf2ada60cbf766031283fbd251d94f883a89ffb57af056",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/source-mutation.rs",
+   "source_sha256": "fccd78f5362d56226e2f69f64abbb5c927e0666a4718245365e7c940ead64ac4",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/source-escape.rs",
+   "source_sha256": "34725a25794d9d087ccb04b4d638df2e5af84d7606a44745a1408334ebf68746",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/iter-still-not-copy.rs",
+   "source_sha256": "3ffedf08bfa102ea7650887c70d88894aa76dc9fe590a41ec4a4cd19d9ee20b4",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/plain-nonclone.rs",
+   "source_sha256": "780e07db41edf60f7b87b943179ba025dac0b629d1f87a8f27e92a01f30fb91e",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/after-exhaustion.rs",
+   "source_sha256": "9e5ec0194e7156e9bc2e7b85ef08f3a4a3a289d4500e21eb4a83af15e7d321c4",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/live-borrowed-item.rs",
+   "source_sha256": "b8097bd145e7b68ca1c1f1bea23d15be5442474cf2e5d9fbe32eea8b108ac52b",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/qualified-source-clone.rs",
+   "source_sha256": "1a6423e30219e7261d1b0d354b6a8362a41fd909366d57f2b29a313bfacf6b0d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/qualified-generic-bound.rs",
+   "source_sha256": "62da67ee22aabe56b395893341e16e0da634fc4a89004ece393d707bb6f2f18c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/clone-supertrait-sized.rs",
+   "source_sha256": "3189c6180efceed873409b1c8aaec0123d5f6f989cb665b3e8aa0dff1f89ecf0",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/abstract-generic.rs",
+   "source_sha256": "7adcd2a626057b3341b070d62629387ff690c8189accd2ce3db2deab1470bb73",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Abstract marker-bound body is type-checked; empty main does not instantiate clone."
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/no-prelude-generic.rs",
+   "source_sha256": "ae0aa7ab9cb4f01b8d256763604fbd3e6010bdbb5cc7beb6065b1488d221803a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/source-winner-with-iter.rs",
+   "source_sha256": "3026cd7525fc5dc686e2fef613956aa0e530d1384fc7ae71a558da8b0f12b759",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/inherent-winner-with-iter.rs",
+   "source_sha256": "e369158dc9ea5ec90dc88da106fcf43bc0fe92874e96b40e1d0d70dc0f358a98",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/clone-const-reject.rs",
+   "source_sha256": "54884b11a73914bec675a671e020ab34e14a36836d5c3be40772dbbbfe4c24a2",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/clone-foreign-pointer-reject.rs",
+   "source_sha256": "7039c9830c150099c19c9a23790cbe41c743587d06c3ae2def66c1ae695e6654",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/macro-canonical-origin.rs",
+   "source_sha256": "595c9d4d7fb199ce8dff478508aa18ffb509bf066e8eb8fdb2242e3382530b96",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/clone/std-alias-qualified.rs",
+   "source_sha256": "c043dc7b5455df79418c1a8ddecd9b8a358056e9329dbcf9eae53f1c1f260e50",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/range-exclusive.rs",
+   "source_sha256": "b2ed1ff1844c9611e08518598b000c82872188de06224fa310bf714b7b0e8465",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/range-reversed.rs",
+   "source_sha256": "eecf56ba89855e05178e68fcb1784acd339f445648d5dd6503e007c03199d137",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/named-range.rs",
+   "source_sha256": "b970b10e50b189e15d8f78f9f56b57ad3ff02d38cb2259573487aa5565c792b1",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/range-float-reject.rs",
+   "source_sha256": "ad3b9116f6e78b6200a84a9d8555324422b4e3fbc68606e14caac7847092dd0e",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/source-lookalike-range.rs",
+   "source_sha256": "ec815dc7771235c1c0426a568fc4be501e1138c6887ada07c6160785ab525be7",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/integer-u8.rs",
+   "source_sha256": "82207ee88c6215254580e79767534bdec5836cad1cbf4690a6ce7c213183da49",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/integer-u16.rs",
+   "source_sha256": "bef4f7b3f92a054285579d196e5c22b65d77fcec81660699c96a9bfceea8a419",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/integer-u32.rs",
+   "source_sha256": "4094aacbdf964a427d5b8f34045533a6bc0978f8ac0d2940e85d40e52b0fea0d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/integer-u64.rs",
+   "source_sha256": "b50c9203cec1549889ac4c6b5d8b4e4419e0f96e9dfdd8f6545bde82e2057c0f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/integer-u128.rs",
+   "source_sha256": "8e4b6967ab50d9f039d2f1b2479195dd03531a8af2a68042f6a732687e54c1b2",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/integer-usize.rs",
+   "source_sha256": "89dbb8141ca9e5008dc06a50d8603b3e9eec9a7e830d3b6e1b0df43c2896e456",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/integer-i8.rs",
+   "source_sha256": "10106c3ced2bdac76c2a4485c89a0976076ea405b22738f6cc43f35686840e20",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/integer-i16.rs",
+   "source_sha256": "2bb5c0dde441d965c05b4658854e3d869ba89c387919ac039ba16ff4e2485d3f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/integer-i32.rs",
+   "source_sha256": "cda8f287073a6b579456100b0d99ff32574266b9f7a2d074780fe7b6225fe04e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/integer-i64.rs",
+   "source_sha256": "7765bb29dd9f98bf24d8d508263dd62fa91829625134e2a4b00d3a10bf3943c2",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/integer-i128.rs",
+   "source_sha256": "197ac50438535da73b7271d5ac655d4ca10f4fbd53f0eac94ca53facda752e83",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/integer-isize.rs",
+   "source_sha256": "e3780d3e95b803211e2b3313d897f5e958af8eed17ec968b60bcd573de7f4e37",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/default-inference.rs",
+   "source_sha256": "4247d8c13310955531abd4ad36e6171a294eca87450e010f78f750809fc18df6",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/exclusive-max.rs",
+   "source_sha256": "c7a5c22eeab2914093cce6580105d852eeac20793452d59e3b04535a584968fc",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/qualified-next.rs",
+   "source_sha256": "a61ec3b76f4d45c7f67c92bf66c95686f1799d6df136e1a256412270b800d38c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/reified-next.rs",
+   "source_sha256": "e59b43de259c7192b5f8bcce4db919ff509ec360ea56bd8b9bf61047f23198bf",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/alias-fields.rs",
+   "source_sha256": "64ed0800dc9918d6ccade2dfc02094068983afb568931ecac3c4531ccc1b1795",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/generic-iterator.rs",
+   "source_sha256": "9edc2a2bc688d9d295983d0c7f2492ef48388809a46e7fd6ab1fa13964311793",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/mutable-blanket.rs",
+   "source_sha256": "3b9008557b08c0d894d64ae29eea42b5179f0ac9321ec6cc589b8441736e8e65",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/break-continue.rs",
+   "source_sha256": "c638b66b9ce8244d0a756bb25c8806fca671bd0f335cad8fe6c9ae6bbc49aeb8",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/formation-once.rs",
+   "source_sha256": "54b7bc176850aa2601054215ead614892ab74b187eacf54e07fa6ebb1455b80d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/copy-range.rs",
+   "source_sha256": "2397775918066d831e86e7d1a0525f219bf92cde1df32823c4282494e91132a9",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/source-shadow-syntax.rs",
+   "source_sha256": "f50acd232c1c3890cea7fa5427a0776ea9ad6550938c9a10884ca967baefd2fe",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/source-range-iterator.rs",
+   "source_sha256": "930cf88dfe4ba691275ad6ee8b705fab3f8faf20ec152e541985c3cafb093554",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/empty.rs",
+   "source_sha256": "606e8bf9c7182798d3f431586f5e47d61175ecb3242be5747291e08d8526f409",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/mismatched-endpoint.rs",
+   "source_sha256": "e0e5715d24674d03fb7c54ab5264a11b5fb0cb3d63378ef41e0cbca0ece7eea6",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/nominal-no-step.rs",
+   "source_sha256": "b2377effa7a797c6aa3fc6baf3953a8fce563c60459c51be74b9140c525321f9",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/generic-no-step.rs",
+   "source_sha256": "398643b967fdc60407d6caf5551e029c9ee6deb4c67578edb0dfd2b1547e37f0",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/shared-range-not-iterator.rs",
+   "source_sha256": "ba9245f7757f4ac423037f2d2044e2bab9459356d25ee1ddca8ccaf9a77ea77f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/source-range-canonical-impl-conflict.rs",
+   "source_sha256": "5bf44aee90ee6951ff31ecb26df44a09768c57d96b284c9cfc1babac9d7c627b",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/range-bool-reject.rs",
+   "source_sha256": "928e149ca9de404d5090284764d04e1c117dc23eec5787da212ba1161a29cf4c",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/body-selects-u8.rs",
+   "source_sha256": "2153b131211d1c1747550a46c060537d0a2a89c2c38eb099984e4c0bd71ae6cf",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/body-selects-index.rs",
+   "source_sha256": "999aaff44d14efbbaca267fffa239bab0f56786ccf2c39ae202c7d9a5b006cf4",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/bound-selects-usize.rs",
+   "source_sha256": "b0f3be7728c4f5eec0b35211ec47bd688c3abb9509f23eba197271143dd3f108",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/no-prelude-loop.rs",
+   "source_sha256": "eec8d74960425d9f449d070d560ace39722b18d61027bf8597bd5cea9e6e8d0c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/named-alias.rs",
+   "source_sha256": "3eab566f447ddd41b28fec3ece039f412d71f65f158816c8805bc9231fe9c8c0",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/method-ambiguity.rs",
+   "source_sha256": "37c9e6447403615f90cb56abc8915aef76e18beb28fff01e11d921eacca29c96",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/source-primitive-name-shadow.rs",
+   "source_sha256": "97950ae2fc8d9d6eb9c8087286be3986a3cfc14c1da87365216c09d77c4af453",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/constant-range.rs",
+   "source_sha256": "605bd26c821cad3854c2ec60efc959469e23507509093f0e0c6a27306ed2789c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/integer-ranges/const-next-reject.rs",
+   "source_sha256": "cde8093235e4dd238b545033d3bf715b49a7e6edf1732dbfb312408831c0d1c6",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/shared-array.rs",
+   "source_sha256": "0e458d84ee94785ebd90796b1bb02036e5480ee62c52c882b9d59aa18d6ace3b",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/generic-shared-array.rs",
+   "source_sha256": "734d2b91f15a0f9cd52bcd8a3828c47ebbdff404c751fbcd12c6ac867a9b93cb",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/shared-slice.rs",
+   "source_sha256": "ef55ba2f91d4b9302a5261e7571daf4f3a6e302c398bf57f797b275c22976f59",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/shared-slice-no-copy-bound.rs",
+   "source_sha256": "b7271eaa45190e168dca5dc17728506048a5f50e3d1c7e3233532fcd2e5186d6",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/slice-iter.rs",
+   "source_sha256": "50212b91e2dc98b3b8a8c1a7a18742ca59a1664ed1b9abc1df5011029c89fa15",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/shared-write-reject.rs",
+   "source_sha256": "9b6e60e27c4de29751edfb71a4da7dd011c84b1407bec6ae32032dcefb218490",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/named-slice-iter.rs",
+   "source_sha256": "c9c9ff04316359c18b94076797dc1c9b93c45521707aa3640ba5931b166b3bae",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/slice-rest-length.rs",
+   "source_sha256": "e350d1acb6491ef806b81912284ebb220dc3969682d34baeaa280e87be3ff012",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/slice-qualified.rs",
+   "source_sha256": "0baade82d52c197cbb888483b1a35a932a86df7fd1cf40cc24bf71ca59dd997a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/array-qualified-reject.rs",
+   "source_sha256": "57f485c3296c0c139e188b1ee622d1ff614df3d209ada99d62a825c5400bfd6c",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/array-trait-wins.rs",
+   "source_sha256": "ad9918acd3dbeef95450b7672d69838662df16f0d61e8cfdf8bec46ab4823d1c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/iter-private-constructor.rs",
+   "source_sha256": "f19953119267eb4d24d275bf42f7e8c933025b62661e9114683d1082a75c8c99",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/iter-private-rest.rs",
+   "source_sha256": "7e6e9fa6ac92df7cf140f6c31878fa40d5506bc19783840d73d219916df43a67",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/iter-not-copy.rs",
+   "source_sha256": "352cd81011689143d9767b4b4acd839f2c833356a6add8f530407ddc302a34b3",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/iter-clone-no-element-clone.rs",
+   "source_sha256": "739294ed8b78b92710571bdb45e8ab0eaf819462d8084722d98aa8f10ebaf613",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/item-outlives-iterator.rs",
+   "source_sha256": "ac676d7ab5479ed2720bf6c2be7710e2c063c748ebe3d36d8b18fa83b227b8a1",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/items-survive-next.rs",
+   "source_sha256": "8008450316d3494f73549bbe79c5b592ffaa1bbc9fda60fee3ba18f67fdf1518",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/generic-source-lifetime.rs",
+   "source_sha256": "3884db9f5c3f1069381d8ae5bb4f696797deefad435cf21c5bd1d8aecfb1c968",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/shared-item-conflicts-mutation.rs",
+   "source_sha256": "754bbc0fb239b899f40379c5bfa93e6219398f7f7af7a75fd67693931c920f54",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/iterator-source-escape.rs",
+   "source_sha256": "6edc9b414bddb3c558a6af8bf76fcfb221b92ddd461bdf7d674545f69fe46601",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/iterator-private-field.rs",
+   "source_sha256": "01b7633c3afc5d3713097457d2ce6f948c7da15bc8412d397318c5e1a8f3d286",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/slice-iter-reified.rs",
+   "source_sha256": "a27b212f33498045a650b11d3bf48a680f0a4f51a22eed766e1a602ce8779418",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/shared-empty-zst.rs",
+   "source_sha256": "97bec2211bf2a86bdfd80835e2da3e338e71732194a5c6aebf5004922c2956ec",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/iter-method-generic-reject.rs",
+   "source_sha256": "0a1db2984b612656121e9438c6e0f80f45041ccc6fa0daa5a9e0ff288d37344c",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/formation-evaluated-once.rs",
+   "source_sha256": "463542320d210d0353970c836c435fac46bbc846e000daec5a773546c5e2f438",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration/shared-collections/shared-noncopy-drop.rs",
+   "source_sha256": "022f14859d7f859ed499d312ee93ed6472649c5ba27a4c7d7fdbbf03f0455e4d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration-visibility/prelude-next.rs",
+   "source_sha256": "9651d74106c8b8d4f91657b4a26b43261a8c322c8f62ece19f5603e067b9fe2f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration-visibility/explicit-next.rs",
+   "source_sha256": "ba4c0222b538bc510e9007a4474c1c0f95afa772d775373a76945d8221e89a5e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration-visibility/aliased-next.rs",
+   "source_sha256": "2dfb8b965ab5c4de024d01e47d6396e48ba22a075e78571e0ca0d9c41040e2cf",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration-visibility/anonymous-next.rs",
+   "source_sha256": "68e0f022f37ac9acb5e2aab1ea4035a2ed6ff497cf83817f1e13ccf3c250588a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration-visibility/no-prelude-next.rs",
+   "source_sha256": "a00c0bb03ff63906eff400fdcfd9cc1ee01b5f621307ac910a3ab80a76e61f7d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration-visibility/no-prelude-missing-reject.rs",
+   "source_sha256": "d96ced5651aec6e846ece8c363e95da8e01e2ea3a33b841e46ac7a923dd1b19e",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration-visibility/source-lookalike.rs",
+   "source_sha256": "70e882b9ecd7b8896a5df7db2d3afaa2a4c26214c8dc53df2e0f82f05e5b1cad",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration-visibility/user-canonical-ambiguity-reject.rs",
+   "source_sha256": "0816f93991a612c789265db446201dc5a73535c079d4f1e091983377c9c24d08",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration-visibility/shadowed-prelude-ambiguity-reject.rs",
+   "source_sha256": "7e8091e41fa4dd5039fe198a73106e40eed433793d249f212c6249b519d07a68",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration-visibility/inherent-wins.rs",
+   "source_sha256": "a28dca7405f88e9c1021449f7bc233a089a65fd20dd863e46c9e197474bdb04a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration-visibility/generic-bound.rs",
+   "source_sha256": "11874ff11f323da5a7d0f7966f85b5df076da96d6988c5c797fc1ab23dfb9e66",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration-visibility/shared-receiver-reject.rs",
+   "source_sha256": "e2b20468731b6417872388858208a64dac71776562a7e7dbd3fd5efc0d43006b",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/iteration-visibility/prelude-into-iter.rs",
+   "source_sha256": "35f1a5a040cae743429b54b657fc5a8ad946e617acf980229dab5c9721b6d916",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/iteration-visibility/generic-reference-item.rs",
+   "source_sha256": "26a5b944dfbb258c1491646c5b581103ec1b3107bb88573cee36b5f411b911ee",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa26.iteration"
+   ],
+   "work_units": [
+    "iteration-kernel"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  }
+ ]
+}
