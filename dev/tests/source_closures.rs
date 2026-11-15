@@ -406,6 +406,8 @@ mod specializations;
 mod conditioned_items;
 #[path = "source_closures/defaulted_const_closures.rs"]
 mod defaulted_const_closures;
+#[path = "source_closures/dispatched_calls.rs"]
+mod dispatched_calls;
 #[path = "source_closures/identity.rs"]
 mod identity;
 #[path = "source_closures/implemented_copies.rs"]

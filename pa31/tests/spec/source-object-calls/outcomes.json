@@ -1,0 +1,32 @@
+{
+ "schema": 1,
+ "declared": "2026-11-15, before the frozen rustc 1.98.0 oracle of these exact bytes (obj/parallel/object-calls/core/declared.json). Two earlier byte sets changed only the prefix: the first declared no `dispatch_from_dyn` lang item, which rustc needs to dispatch on the call traits' receivers (E0038 in every case); the second declared it without core's `Sized` supertrait, where the candidate stopped (`source role requires its exact pinned supertrait`) before any object call. Declared outcomes never changed.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "cases": {
+  "shared.rs": {
+   "sha256": "8c3c0394fb797f3c4639748acab58228cb174c84989dae8e937b5dfe53194e13",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "shared"
+  },
+  "mutable.rs": {
+   "sha256": "53800a4e7c7f8c94f321dfaaed7ae1118c486479a9ead0ade05649ce45a2cda3",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "mutable"
+  },
+  "nested.rs": {
+   "sha256": "209600ff462e075404f9dd537c8e250ee96eb7c85367a07bb7ee9615f5a757a0",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "nested"
+  },
+  "shared-as-mutable.rs": {
+   "sha256": "45f94d6f106719305d090d18fb78a2db3613759461580d79772776702f0c3d19",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "shared-as-mutable"
+  }
+ }
+}

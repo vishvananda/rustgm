@@ -8,7 +8,7 @@ const CAPTURE_REJECTED: &str =
     "quantified body requirement needs a matching assumption or implementation";
 const REPEAT_REJECTED: &str = "repeated array element must implement Copy";
 
-fn cases(packet: &str, count: usize) -> Result<Vec<(String, bool)>> {
+pub(super) fn cases(packet: &str, count: usize) -> Result<Vec<(String, bool)>> {
     let mut cases = Vec::new();
     for line in crate::resolve::fixture(&format!("{packet}/cases.tsv"))?.lines() {
         let (path, expected) = line.split_once('\t').ok_or("source Copy outcome columns")?;
@@ -23,7 +23,7 @@ fn cases(packet: &str, count: usize) -> Result<Vec<(String, bool)>> {
     Ok(cases)
 }
 
-fn run(mode: &str, path: &str) -> Result<std::process::Output> {
+pub(super) fn run(mode: &str, path: &str) -> Result<std::process::Output> {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .ok_or("repository root")?;

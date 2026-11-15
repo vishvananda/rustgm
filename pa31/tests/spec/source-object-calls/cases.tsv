@@ -1,0 +1,4 @@
+pa31/tests/spec/source-object-calls/shared.rs	0
+pa31/tests/spec/source-object-calls/mutable.rs	0
+pa31/tests/spec/source-object-calls/nested.rs	0
+pa31/tests/spec/source-object-calls/shared-as-mutable.rs	1

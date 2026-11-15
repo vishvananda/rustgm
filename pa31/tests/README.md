@@ -953,6 +953,14 @@ premise operand into a const generic length beside a `Drop` implementation:
 one accepts, one lowers from a root `main`, and a `T: Clone` one rejects. The same maintainer test checks
 them through the CLI. There is no graded manifest.
 
+`spec/source-object-calls/` freezes four declared no_core programs that call a
+`dyn Fn` or `dyn FnMut` object whose call traits the source core declares. The
+object call selects its slot through the library's own `#[lang = "fn"]` and
+`#[lang = "fn_mut"]` traits. Shared, mutable and nested-reference calls lower
+from a root `main`, and a call through `&dyn FnMut` rejects (E0596). A
+maintainer integration test checks them through the CLI. There is no graded
+manifest.
+
 `spec/specialized-trait-inputs/` freezes nine declared no_core reductions of
 core's `Zip` `fold`. `ZImpl::size(..)` inside a specializing impl leaves the
 trait inputs to inference while two or three specializing impls all resolve

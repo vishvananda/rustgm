@@ -52,15 +52,15 @@ pub(crate) fn prepare_operator(
     };
     let tuple = facts.types.intern(Kind::Tuple(parameters))?;
     let arguments = facts.types.intern_arguments(&[Argument::Type(tuple)])?;
-    let declaration = report
-        .resolution
-        .builtin_traits
-        .callable(kind)
+    // A source core declares its own call traits; both kinds register here.
+    let declaration = facts
+        .associated
+        .callable_definition(kind)
         .ok_or("missing canonical callable trait")?;
     let parent = facts
         .types
         .intern_trait_application(crate::types::traits::Application {
-            item: crate::types::ItemId(declaration.definition.0),
+            item: crate::types::ItemId(declaration.0),
             arguments,
         })?;
     let slots = facts
