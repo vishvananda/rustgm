@@ -1,4 +1,6 @@
 //! Integer bit counts bind real source declarations, never unsafe/const permission.
+//! The bring-up profile also admits the two bit reversals, whose result has the
+//! input's own type; they are waived by name and stay fenced otherwise.
 use super::Catalog;
 use crate::{
     resolve::{body_origin::BodyOrigin, expansion::Report, model::DefId},
@@ -9,38 +11,59 @@ use crate::{
     },
 };
 
+const SWAPPED_BYTES: &str = "source intrinsic uses unqualified constant evaluation: bswap";
+const REVERSED_BITS: &str = "source intrinsic uses unqualified constant evaluation: bitreverse";
+
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub(crate) enum Count {
+enum Effect {
     Ones,
     LeadingZeros,
     TrailingZeros,
+    SwappedBytes,
+    ReversedBits,
 }
 /// The `_nonzero` declarations are unsafe and leave a zero input undefined.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) struct Operation {
-    count: Count,
+    effect: Effect,
     nonzero: bool,
+}
+impl Operation {
+    /// A count is a `u32`; a reversal keeps its input's type.
+    const fn output(self, input: TypeId) -> TypeId {
+        match self.effect {
+            Effect::SwappedBytes | Effect::ReversedBits => input,
+            Effect::Ones | Effect::LeadingZeros | Effect::TrailingZeros => {
+                TypeId::primitive(Primitive::U32)
+            }
+        }
+    }
 }
 
 pub(crate) fn operation(kind: SourceIntrinsic) -> Option<Operation> {
     let SourceIntrinsic::Declaration(identity) = kind else {
         return None;
     };
-    let (count, nonzero) = match identity.name() {
-        "ctpop" => (Count::Ones, false),
-        "ctlz" => (Count::LeadingZeros, false),
-        "ctlz_nonzero" => (Count::LeadingZeros, true),
-        "cttz" => (Count::TrailingZeros, false),
-        "cttz_nonzero" => (Count::TrailingZeros, true),
+    let (effect, nonzero) = match identity.name() {
+        "ctpop" => (Effect::Ones, false),
+        "ctlz" => (Effect::LeadingZeros, false),
+        "ctlz_nonzero" => (Effect::LeadingZeros, true),
+        "cttz" => (Effect::TrailingZeros, false),
+        "cttz_nonzero" => (Effect::TrailingZeros, true),
+        "bswap" if crate::support::bringup::waive(SWAPPED_BYTES) => (Effect::SwappedBytes, false),
+        "bitreverse" if crate::support::bringup::waive(REVERSED_BITS) => {
+            (Effect::ReversedBits, false)
+        }
         _ => return None,
     };
-    Some(Operation { count, nonzero })
+    Some(Operation { effect, nonzero })
 }
 
 pub(crate) struct Selection {
     definition: DefId,
     signature: TypeId,
     input: TypeId,
+    output: TypeId,
     width: u16,
     operation: Operation,
 }
@@ -54,28 +77,33 @@ impl Selection {
     pub(crate) const fn input(&self) -> TypeId {
         self.input
     }
+    pub(crate) const fn output(&self) -> TypeId {
+        self.output
+    }
     pub(crate) fn opened_matches(&self, facts: &Declarations, signature: TypeId) -> bool {
         super::intrinsic_contracts::opened_signature_matches(
             &facts.types,
             signature,
             &[self.input],
-            TypeId::primitive(Primitive::U32),
+            self.output,
             self.operation.nonzero,
             Convention::RUST,
         )
     }
-    /// Count an exact integer value of the selected width. `None` is the
+    /// Evaluate an exact integer value of the selected width. `None` is the
     /// undefined zero input of a `_nonzero` declaration.
-    pub(crate) fn count(&self, bits: u128) -> Option<u32> {
+    pub(crate) fn evaluate(&self, bits: u128) -> Option<u128> {
         let width = u32::from(self.width);
         let bits = bits & (u128::MAX >> (128 - width));
         if bits == 0 && self.operation.nonzero {
             return None;
         }
-        Some(match self.operation.count {
-            Count::Ones => bits.count_ones(),
-            Count::LeadingZeros => bits.leading_zeros() - (128 - width),
-            Count::TrailingZeros => bits.trailing_zeros().min(width),
+        Some(match self.operation.effect {
+            Effect::Ones => u128::from(bits.count_ones()),
+            Effect::LeadingZeros => u128::from(bits.leading_zeros() - (128 - width)),
+            Effect::TrailingZeros => u128::from(bits.trailing_zeros().min(width)),
+            Effect::SwappedBytes => bits.swap_bytes() >> (128 - width),
+            Effect::ReversedBits => bits.reverse_bits() >> (128 - width),
         })
     }
 }
@@ -134,7 +162,7 @@ impl Catalog {
         }) else {
             return Err("source bit count execution requires a closed integer type");
         };
-        let output = TypeId::primitive(Primitive::U32);
+        let output = operation.output(input);
         if !matches!(facts.types.kind(signature), Some(Kind::Function {
             bound_regions: 0, parameters, result, unsafe_, convention: Convention::RUST,
         }) if unsafe_ == operation.nonzero && result == output
@@ -155,6 +183,7 @@ impl Catalog {
             definition,
             signature,
             input,
+            output,
             width,
             operation,
         }))

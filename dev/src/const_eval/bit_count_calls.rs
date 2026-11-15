@@ -1,9 +1,6 @@
 //! A reached bit count consumes one exact evaluated integer and the actual source call.
 use super::{Constant, Failure, Frame, Machine, code::Code, executed_calls::Answer};
-use crate::{
-    sema::model::Scalar,
-    types::{Primitive, TypeId, instance::Instance},
-};
+use crate::{sema::model::Scalar, types::instance::Instance};
 impl Machine<'_, '_> {
     pub(super) fn source_bit_count(
         &mut self,
@@ -30,7 +27,7 @@ impl Machine<'_, '_> {
             frame,
             position,
             target,
-            (selected.definition(), TypeId::primitive(Primitive::U32)),
+            (selected.definition(), selected.output()),
             |actual, public| {
                 public == selected.signature()
                     && selected.opened_matches(self.evaluator.facts(), actual)
@@ -56,12 +53,12 @@ impl Machine<'_, '_> {
             return Err("source bit count changed its actual argument type".into());
         }
         let bits = super::values::integer(Self::value(frame, input)?)?;
-        let count = selected
-            .count(bits)
+        let result = selected
+            .evaluate(bits)
             .ok_or(Failure::Fault("a nonzero bit count was executed on zero"))?;
         self.work.calls += 1;
         Ok(Some(Answer::Ready(Constant::scalar(Scalar::Integer(
-            u128::from(count),
+            result,
         )))))
     }
 }

@@ -671,6 +671,51 @@ fn checked_addition_runs_in_constants_and_lowered_code_and_stays_fenced_when_str
     Ok(())
 }
 
+/// The two bit reversals in constants: `bswap` of `0x1234_5678` is
+/// `0x7856_3412`, `bswap` of a 16-bit 1 is 256 and `bitreverse` of an 8-bit 6
+/// is 96.
+const REVERSALS: &str = "\
+impl Clone for u8{fn clone(&self)->Self{*self}}impl Copy for u8{}
+impl Clone for i16{fn clone(&self)->Self{*self}}impl Copy for i16{}
+impl Clone for u32{fn clone(&self)->Self{*self}}impl Copy for u32{}
+#[rustc_intrinsic] const fn bswap<T:Copy>(x:T)->T;
+#[rustc_intrinsic] const fn bitreverse<T:Copy>(x:T)->T;
+const SWAPPED:u32=bswap(0x1234_5678u32);
+const NARROW:i16=bswap(1i16);
+const MIRRORED:u8=bitreverse(6u8);
+#[unsafe(no_mangle)]pub fn swapped()->u32{SWAPPED}
+#[unsafe(no_mangle)]pub fn narrow()->i16{NARROW}
+#[unsafe(no_mangle)]pub fn mirrored()->u8{MIRRORED}
+";
+
+#[test]
+fn bit_reversals_run_in_constants_and_stay_fenced_when_strict() -> Result {
+    let source = format!("{HEAD}{REVERSALS}");
+    let (strict, _) = library("reversals-strict", &source, "reversals", None, false)?;
+    let stderr = String::from_utf8(strict.stderr)?;
+    assert_eq!(strict.status.code(), Some(1), "{stderr}");
+    assert!(
+        stderr.contains("source intrinsic constant execution is not implemented")
+            && !stderr.contains("bringup-")
+            && strict.stdout.is_empty(),
+        "{stderr}"
+    );
+    let (passed, _) = library("reversals", &source, "reversals_bringup", Some(""), false)?;
+    let stderr = String::from_utf8(passed.stderr)?;
+    assert!(passed.status.success(), "{stderr}");
+    let fences = waived(&stderr);
+    for name in ["bswap", "bitreverse"] {
+        let fence = format!("source intrinsic uses unqualified constant evaluation: {name}");
+        assert!(fences.contains(&fence.as_str()), "{stderr}");
+    }
+    let text = std::str::from_utf8(&passed.stdout)?;
+    for folded in ["2018915346", "256", "96"] {
+        assert!(text.contains(folded), "{folded}: {text}");
+    }
+    assert!(!text.contains("rg.trap."), "{text}");
+    Ok(())
+}
+
 /// The x86 spin-wait hint that `core::hint::spin_loop` reaches through stdarch.
 const PAUSE: &str = "\
 #![allow(internal_features)]
