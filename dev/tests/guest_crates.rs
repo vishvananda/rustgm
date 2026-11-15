@@ -280,6 +280,33 @@ pub fn same() -> u8 {
     2
 }
 ";
+/// An inherent method on a primitive, as `alloc` declares for slices.
+const INCOHERENT_ALLOWED: &str = r"#![feature(no_core, rustc_attrs)]
+#![no_core]
+#![no_main]
+#![allow(internal_features, dead_code)]
+extern crate core;
+impl u8 {
+    #[rustc_allow_incoherent_impl]
+    pub fn twice(self) -> u8 {
+        self
+    }
+}
+pub fn uses() -> u8 {
+    7u8.twice()
+}
+";
+const INCOHERENT_PLAIN: &str = r"#![feature(no_core, rustc_attrs)]
+#![no_core]
+#![no_main]
+#![allow(internal_features, dead_code)]
+extern crate core;
+impl u8 {
+    pub fn twice(self) -> u8 {
+        self
+    }
+}
+";
 /// A crate that needs an allocator, as `alloc` declares itself.
 const NEEDS_ALLOCATOR: &str = r"#![feature(no_core, allocator_internals)]
 #![no_core]
@@ -517,6 +544,22 @@ fn lang_items_belong_to_the_session() -> Result {
     )?;
     accepted(&session("guest-lang", &[("app", GUEST_LANG)])?)?;
     Ok(())
+}
+
+/// rustc: accepts the method that carries the allowance and rejects the plain
+/// impl with E0390 (inherent impl for a primitive outside `core`).
+#[test]
+fn a_guest_extends_a_primitive_only_through_the_incoherent_allowance() -> Result {
+    accepted(&session(
+        "incoherent-allowed",
+        &[("app", INCOHERENT_ALLOWED)],
+    )?)?;
+    rejected(
+        &session("incoherent-plain", &[("app", INCOHERENT_PLAIN)])?,
+        (1, INCOHERENT_PLAIN),
+        "u8 {",
+        "inherent impl requires a local nominal type",
+    )
 }
 
 /// rustc: accepts the gated crate and rejects the ungated one with E0658. No
