@@ -1,6 +1,11 @@
 # PA28 fixture ownership
 
-Planned: no graded fixtures or generated reference outputs yet.
+The released `runtime-memory` component publishes `units/runtime-memory.json`
+and the reference sidecars of its 265 cases; see the
+[release record](../../docs/pa28-runtime-memory-release.md) for its deferred
+list. Every other family here is unpublished.
+
+Whole PA28 is planned: no graded whole-assignment suite yet.
 
 Remaining families: atomic source operations and orderings; compare-exchange;
 numeric and memory intrinsics; overlap rules.

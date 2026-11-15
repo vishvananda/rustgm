@@ -1,0 +1,212 @@
+function @rg.14() -> void {
+  slot $s0 : u32
+  slot $s1 : ptr
+  slot $s2 : ptr
+  slot $s3 : ptr
+  slot $s4 : ptr
+  slot $s5 : ptr
+  slot $s6 : ptr
+  slot $s7 : ptr
+  slot $s8 : ptr
+  slot $s9 : ptr
+  slot $s10 : ptr
+  slot $s11 : ptr
+  slot $s12 : ptr
+  slot $s13 : ptr
+  slot $s14 : ptr
+  slot $s15 : ptr
+  slot $s16 : ptr
+  slot $s17 : ptr
+  slot $s18 : ptr
+  slot $s19 : ptr
+  slot $s20 : ptr
+  slot $s21 : ptr
+  slot $s22 : ptr
+  slot $s23 : ptr
+  slot $s24 : ptr
+  slot $s25 : ptr
+  slot $s26 : ptr
+  slot $s27 : ptr
+  slot $s28 : ptr
+  slot $s29 : ptr
+  slot $s30 : ptr
+  slot $s31 : ptr
+  slot $s32 : ptr
+  block ^b0:
+    store u32 7, $s0
+    %t0 = addr $s0
+    %t1 = load volatile u32 %t0
+    %t2 = addr $s0
+    store volatile u32 9, %t2
+    %t3 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t3, $s1
+    %t4 = load ptr $s1
+    %t5 = addr $s0
+    %t6 = call u32 %t4(%t5) as (%p0 : ptr) -> u32
+    %t7 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t7, $s2
+    %t8 = load ptr $s2
+    %t9 = addr $s0
+    %t10 = call u32 %t8(%t9) as (%p0 : ptr) -> u32
+    %t11 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t11, $s3
+    %t12 = load ptr $s3
+    %t13 = addr $s0
+    %t14 = call u32 %t12(%t13) as (%p0 : ptr) -> u32
+    %t15 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t15, $s4
+    %t16 = load ptr $s4
+    %t17 = addr $s0
+    %t18 = call u32 %t16(%t17) as (%p0 : ptr) -> u32
+    %t19 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t19, $s5
+    %t20 = load ptr $s5
+    %t21 = addr $s0
+    %t22 = call u32 %t20(%t21) as (%p0 : ptr) -> u32
+    %t23 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t23, $s6
+    %t24 = load ptr $s6
+    %t25 = addr $s0
+    %t26 = call u32 %t24(%t25) as (%p0 : ptr) -> u32
+    %t27 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t27, $s7
+    %t28 = load ptr $s7
+    %t29 = addr $s0
+    %t30 = call u32 %t28(%t29) as (%p0 : ptr) -> u32
+    %t31 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t31, $s8
+    %t32 = load ptr $s8
+    %t33 = addr $s0
+    %t34 = call u32 %t32(%t33) as (%p0 : ptr) -> u32
+    %t35 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t35, $s9
+    %t36 = load ptr $s9
+    %t37 = addr $s0
+    %t38 = call u32 %t36(%t37) as (%p0 : ptr) -> u32
+    %t39 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t39, $s10
+    %t40 = load ptr $s10
+    %t41 = addr $s0
+    %t42 = call u32 %t40(%t41) as (%p0 : ptr) -> u32
+    %t43 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t43, $s11
+    %t44 = load ptr $s11
+    %t45 = addr $s0
+    %t46 = call u32 %t44(%t45) as (%p0 : ptr) -> u32
+    %t47 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t47, $s12
+    %t48 = load ptr $s12
+    %t49 = addr $s0
+    %t50 = call u32 %t48(%t49) as (%p0 : ptr) -> u32
+    %t51 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t51, $s13
+    %t52 = load ptr $s13
+    %t53 = addr $s0
+    %t54 = call u32 %t52(%t53) as (%p0 : ptr) -> u32
+    %t55 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t55, $s14
+    %t56 = load ptr $s14
+    %t57 = addr $s0
+    %t58 = call u32 %t56(%t57) as (%p0 : ptr) -> u32
+    %t59 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t59, $s15
+    %t60 = load ptr $s15
+    %t61 = addr $s0
+    %t62 = call u32 %t60(%t61) as (%p0 : ptr) -> u32
+    %t63 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t63, $s16
+    %t64 = load ptr $s16
+    %t65 = addr $s0
+    %t66 = call u32 %t64(%t65) as (%p0 : ptr) -> u32
+    %t67 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t67, $s17
+    %t68 = load ptr $s17
+    %t69 = addr $s0
+    %t70 = call u32 %t68(%t69) as (%p0 : ptr) -> u32
+    %t71 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t71, $s18
+    %t72 = load ptr $s18
+    %t73 = addr $s0
+    %t74 = call u32 %t72(%t73) as (%p0 : ptr) -> u32
+    %t75 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t75, $s19
+    %t76 = load ptr $s19
+    %t77 = addr $s0
+    %t78 = call u32 %t76(%t77) as (%p0 : ptr) -> u32
+    %t79 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t79, $s20
+    %t80 = load ptr $s20
+    %t81 = addr $s0
+    %t82 = call u32 %t80(%t81) as (%p0 : ptr) -> u32
+    %t83 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t83, $s21
+    %t84 = load ptr $s21
+    %t85 = addr $s0
+    %t86 = call u32 %t84(%t85) as (%p0 : ptr) -> u32
+    %t87 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t87, $s22
+    %t88 = load ptr $s22
+    %t89 = addr $s0
+    %t90 = call u32 %t88(%t89) as (%p0 : ptr) -> u32
+    %t91 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t91, $s23
+    %t92 = load ptr $s23
+    %t93 = addr $s0
+    %t94 = call u32 %t92(%t93) as (%p0 : ptr) -> u32
+    %t95 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t95, $s24
+    %t96 = load ptr $s24
+    %t97 = addr $s0
+    %t98 = call u32 %t96(%t97) as (%p0 : ptr) -> u32
+    %t99 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t99, $s25
+    %t100 = load ptr $s25
+    %t101 = addr $s0
+    %t102 = call u32 %t100(%t101) as (%p0 : ptr) -> u32
+    %t103 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t103, $s26
+    %t104 = load ptr $s26
+    %t105 = addr $s0
+    %t106 = call u32 %t104(%t105) as (%p0 : ptr) -> u32
+    %t107 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t107, $s27
+    %t108 = load ptr $s27
+    %t109 = addr $s0
+    %t110 = call u32 %t108(%t109) as (%p0 : ptr) -> u32
+    %t111 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t111, $s28
+    %t112 = load ptr $s28
+    %t113 = addr $s0
+    %t114 = call u32 %t112(%t113) as (%p0 : ptr) -> u32
+    %t115 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t115, $s29
+    %t116 = load ptr $s29
+    %t117 = addr $s0
+    %t118 = call u32 %t116(%t117) as (%p0 : ptr) -> u32
+    %t119 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t119, $s30
+    %t120 = load ptr $s30
+    %t121 = addr $s0
+    %t122 = call u32 %t120(%t121) as (%p0 : ptr) -> u32
+    %t123 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t123, $s31
+    %t124 = load ptr $s31
+    %t125 = addr $s0
+    %t126 = call u32 %t124(%t125) as (%p0 : ptr) -> u32
+    %t127 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t127, $s32
+    %t128 = load ptr $s32
+    %t129 = addr $s0
+    %t130 = call u32 %t128(%t129) as (%p0 : ptr) -> u32
+    return void
+}
+function @rg.intrinsic.read_volatile.t63(%p0 : ptr) -> u32 {
+  block ^b0:
+    %t0 = load volatile u32 %p0
+    return u32 %t0
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.14()
+    return i64 0
+}

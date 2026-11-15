@@ -1,0 +1,102 @@
+function @rg.18() -> void {
+  slot $s0 : u32
+  slot $s1 : obj<16x8>
+  slot $s2 : obj<16x8>
+  slot $s3 : obj<16x8>
+  slot $s4 : obj<16x8>
+  slot $s5 : obj<16x8>
+  block ^b0:
+    store u32 0, $s0
+    %t0 = addr $s0
+    store ptr %t0, $s3
+    %t1 = addr $s3
+    %t2 = index u8 %t1, 8
+    store u32 1, %t2
+    %t3 = addr $s3
+    %t4 = addr $s1
+    copyobj 16x8 %t3, %t4
+    %t5 = addr $s1
+    %t6 = addr $s4
+    call void @rg.16.i2(%t6, %t5)
+    %t7 = addr $s4
+    %t8 = addr $s2
+    copyobj 16x8 %t7, %t8
+    %t9 = addr $s1
+    %t10 = addr $s2
+    %t11 = addr $s5
+    copyobj 16x8 %t10, %t11
+    %t12 = addr $s5
+    call void @rg.17.i3(%t9, %t12)
+    %t13 = addr $s1
+    call void @rg.drop.0(%t13)
+    return void
+}
+function @rg.16.i2(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<16x8>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = addr $s1
+    call void @rg.intrinsic.read.t82(%t1, %t0)
+    %t2 = addr $s1
+    copyobj 16x8 %t2, %p0
+    return void
+}
+function @rg.17.i3(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<16x8>
+  slot $s2 : obj<16x8>
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = addr $s1
+    copyobj 16x8 %p1, %t0
+    %t1 = load ptr $s0
+    %t2 = addr $s1
+    %t3 = addr $s2
+    copyobj 16x8 %t2, %t3
+    %t4 = addr $s2
+    call void @rg.intrinsic.write.t83(%t1, %t4)
+    return void
+}
+function @rg.drop.0(%p0 : ptr) -> void {
+  block ^b0:
+    call void @rg.15(%p0)
+    return void
+}
+function @rg.intrinsic.read.t82(%p0 : ptr, %p1 : ptr) -> void {
+  block ^b0:
+    copyobj 16x8 %p1, %p0
+    return void
+}
+function @rg.intrinsic.write.t83(%p0 : ptr, %p1 : ptr) -> void {
+  block ^b0:
+    copyobj 16x8 %p1, %p0
+    return void
+}
+function @rg.15(%p0 : ptr) -> void {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = index u8 %t0, 8
+    %t2 = load u32 %t1
+    %t3 = load ptr $s0
+    %t4 = load ptr %t3
+    %t5 = load u32 %t4
+    %t6 = binary add u32 %t5, %t2
+    %t7 = cmp ult u32 %t6, %t5
+    branch %t7, ^b1, ^b2
+  block ^b2:
+    store u32 %t6, %t4
+    return void
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.18()
+    return i64 0
+}

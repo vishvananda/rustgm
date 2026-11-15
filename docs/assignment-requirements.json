@@ -692,7 +692,7 @@
         "docs/pa28-owned-memory-review.md",
         "docs/pa28-counted-memory.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "runtime-memory component released (docs/pa28-runtime-memory-release.md); const-memory share and whole PA28 unpublished",
       "units": [
         "runtime-memory",
         "const-memory"
@@ -716,7 +716,7 @@
       "evidence": [
         "pa28/README.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "runtime-memory component released (docs/pa28-runtime-memory-release.md); whole PA28 unpublished",
       "units": [
         "runtime-memory"
       ]

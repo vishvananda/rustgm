@@ -1,0 +1,50 @@
+function @rg.14() -> void {
+  slot $s0 : obj<5x1>
+  slot $s1 : ptr
+  slot $s2 : ptr
+  slot $s3 : obj<5x1>
+  block ^b0:
+    store u8 3, $s3
+    %t0 = addr $s3
+    %t1 = index u8 %t0, 1
+    store u32 7, %t1
+    %t2 = addr $s3
+    %t3 = addr $s0
+    copyobj 5x1 %t2, %t3
+    %t4 = addr @rg.intrinsic.read_unaligned.t66
+    store ptr %t4, $s1
+    %t5 = addr @rg.intrinsic.write_unaligned.t67
+    store ptr %t5, $s2
+    %t6 = load ptr $s2
+    %t7 = addr $s0
+    %t8 = index u8 %t7, 1
+    %t9 = load ptr $s1
+    %t10 = addr $s0
+    %t11 = index u8 %t10, 1
+    %t12 = call u32 %t9(%t11) as (%p0 : ptr) -> u32
+    %t13 = binary add u32 %t12, 30
+    %t14 = cmp ult u32 %t13, %t12
+    branch %t14, ^b1, ^b2
+  block ^b2:
+    call void %t6(%t8, %t13) as (%p0 : ptr, %p1 : u32) -> void
+    return void
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.intrinsic.read_unaligned.t66(%p0 : ptr) -> u32 {
+  block ^b0:
+    %t0 = load u32 %p0
+    return u32 %t0
+}
+function @rg.intrinsic.write_unaligned.t67(%p0 : ptr, %p1 : u32) -> void {
+  block ^b0:
+    store u32 %p1, %p0
+    return void
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.14()
+    return i64 0
+}

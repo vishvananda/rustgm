@@ -1,0 +1,18 @@
+function @rg.37() -> void {
+  slot $s0 : u32
+  block ^b0:
+    store u32 37, $s0
+    %t0 = addr $s0
+    %t1 = call u32 @rg.intrinsic.read_unaligned.t63(%t0)
+    return void
+}
+function @rg.intrinsic.read_unaligned.t63(%p0 : ptr) -> u32 {
+  block ^b0:
+    %t0 = load u32 %p0
+    return u32 %t0
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.37()
+    return i64 0
+}

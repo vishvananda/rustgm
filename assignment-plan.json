@@ -153,7 +153,7 @@
       "owner": "pa28",
       "title": "Runtime memory and scalar volatile kernels",
       "implementation": "implemented",
-      "publication": "unpublished",
+      "publication": "released",
       "depends_on": [
         "unsafe-places"
       ],
@@ -167,7 +167,9 @@
         "docs/pa28-counted-memory.md",
         "docs/pa28-owned-memory-review.md",
         "pa28/README.md"
-      ]
+      ],
+      "manifest": "pa28/tests/units/runtime-memory.json",
+      "release_evidence": "docs/pa28-runtime-memory-release.md"
     },
     {
       "id": "atomic-u32",

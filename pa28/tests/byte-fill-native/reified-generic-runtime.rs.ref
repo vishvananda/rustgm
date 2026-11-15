@@ -1,0 +1,149 @@
+function @rg.17() -> void {
+  slot $s0 : obj<8x4>
+  slot $s1 : obj<8x4>
+  slot $s2 : i64
+  block ^b0:
+    store i64 0, $s2
+    jump ^b1
+  block ^b1:
+    %t0 = load i64 $s2
+    %t1 = cmp ult i64 %t0, 2
+    branch %t1, ^b2, ^b3
+  block ^b2:
+    %t2 = binary mul i64 %t0, 4
+    %t3 = addr $s1
+    %t4 = index u8 %t3, %t2
+    store u32 0, %t4
+    %t5 = binary add i64 %t0, 1
+    store i64 %t5, $s2
+    jump ^b1
+  block ^b3:
+    %t6 = addr $s1
+    %t7 = addr $s0
+    copyobj 8x4 %t6, %t7
+    %t8 = addr $s0
+    call void @rg.16.i4(%t8)
+    %t9 = addr @rg.intrinsic.write_bytes.t77
+    %t10 = cmp uge i64 1, 2
+    branch %t10, ^b4, ^b5
+  block ^b5:
+    %t11 = binary mul i64 1, 4
+    %t12 = addr $s0
+    %t13 = index u8 %t12, %t11
+    call void %t9(%t13, 4, 1) as (%p0 : ptr, %p1 : u8, %p2 : i64) -> void
+    %t14 = cmp uge i64 0, 2
+    branch %t14, ^b4, ^b6
+  block ^b6:
+    %t15 = binary mul i64 0, 4
+    %t16 = addr $s0
+    %t17 = index u8 %t16, %t15
+    %t18 = load u32 %t17
+    %t19 = cmp eq u32 %t18, 50529027
+    %t20 = convert trunc i1 i64 %t19
+    call void @rg.13(%t20)
+    %t21 = cmp uge i64 1, 2
+    branch %t21, ^b4, ^b7
+  block ^b7:
+    %t22 = binary mul i64 1, 4
+    %t23 = addr $s0
+    %t24 = index u8 %t23, %t22
+    %t25 = load u32 %t24
+    %t26 = cmp eq u32 %t25, 67372036
+    %t27 = convert trunc i1 i64 %t26
+    call void @rg.13(%t27)
+    return void
+  block ^b4:
+    call void @abort()
+    unreachable
+}
+function @rg.16.i4(%p0 : ptr) -> void {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    call void @rg.intrinsic.write_bytes.t79(%t0, 3, 1)
+    return void
+}
+function @rg.intrinsic.write_bytes.t77(%p0 : ptr, %p1 : u8, %p2 : i64) -> void {
+  slot $s0 : i64
+  block ^b0:
+    %t0 = cmp ugt i64 %p2, 2305843009213693951
+    branch %t0, ^b1, ^b2
+  block ^b1:
+    unreachable
+  block ^b2:
+    %t1 = binary mul i64 %p2, 4
+    store i64 0, $s0
+    jump ^b3
+  block ^b3:
+    %t2 = load i64 $s0
+    %t3 = cmp ult i64 %t2, %t1
+    branch %t3, ^b4, ^b5
+  block ^b4:
+    %t4 = index u8 %p0, %t2
+    store u8 %p1, %t4
+    %t5 = binary add i64 %t2, 1
+    store i64 %t5, $s0
+    jump ^b3
+  block ^b5:
+    return void
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+declare function @abort() -> void [return=noreturn]
+function @rg.intrinsic.write_bytes.t79(%p0 : ptr, %p1 : u8, %p2 : i64) -> void {
+  slot $s0 : i64
+  block ^b0:
+    %t0 = cmp ugt i64 %p2, 1152921504606846975
+    branch %t0, ^b1, ^b2
+  block ^b1:
+    unreachable
+  block ^b2:
+    %t1 = binary mul i64 %p2, 8
+    store i64 0, $s0
+    jump ^b3
+  block ^b3:
+    %t2 = load i64 $s0
+    %t3 = cmp ult i64 %t2, %t1
+    branch %t3, ^b4, ^b5
+  block ^b4:
+    %t4 = index u8 %p0, %t2
+    store u8 %p1, %t4
+    %t5 = binary add i64 %t2, 1
+    store i64 %t5, $s0
+    jump ^b3
+  block ^b5:
+    return void
+}
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.17()
+    return i64 0
+}

@@ -1,0 +1,14 @@
+function @rg.16() -> void {
+  block ^b0:
+    %t0 = call u32 @rg.15()
+    return void
+}
+function @rg.15() -> u32 {
+  block ^b0:
+    return u32 37
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.16()
+    return i64 0
+}

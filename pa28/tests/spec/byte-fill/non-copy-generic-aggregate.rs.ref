@@ -1,0 +1,17 @@
+global @rg.data.0 : obj<8x4> [storage=readonly] = {
+  u32 50529027
+  u32 50529027
+}
+function @rg.16() -> void {
+  slot $s0 : obj<8x4>
+  block ^b0:
+    %t0 = addr @rg.data.0
+    %t1 = addr $s0
+    copyobj 8x4 %t0, %t1
+    return void
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.16()
+    return i64 0
+}

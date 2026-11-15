@@ -1,0 +1,68 @@
+function @rg.14() -> void {
+  slot $s0 : u32
+  slot $s1 : ptr
+  slot $s2 : ptr
+  slot $s3 : ptr
+  slot $s4 : ptr
+  slot $s5 : ptr
+  slot $s6 : ptr
+  slot $s7 : ptr
+  slot $s8 : ptr
+  block ^b0:
+    store u32 7, $s0
+    %t0 = addr $s0
+    %t1 = load volatile u32 %t0
+    %t2 = addr $s0
+    store volatile u32 9, %t2
+    %t3 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t3, $s1
+    %t4 = load ptr $s1
+    %t5 = addr $s0
+    %t6 = call u32 %t4(%t5) as (%p0 : ptr) -> u32
+    %t7 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t7, $s2
+    %t8 = load ptr $s2
+    %t9 = addr $s0
+    %t10 = call u32 %t8(%t9) as (%p0 : ptr) -> u32
+    %t11 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t11, $s3
+    %t12 = load ptr $s3
+    %t13 = addr $s0
+    %t14 = call u32 %t12(%t13) as (%p0 : ptr) -> u32
+    %t15 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t15, $s4
+    %t16 = load ptr $s4
+    %t17 = addr $s0
+    %t18 = call u32 %t16(%t17) as (%p0 : ptr) -> u32
+    %t19 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t19, $s5
+    %t20 = load ptr $s5
+    %t21 = addr $s0
+    %t22 = call u32 %t20(%t21) as (%p0 : ptr) -> u32
+    %t23 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t23, $s6
+    %t24 = load ptr $s6
+    %t25 = addr $s0
+    %t26 = call u32 %t24(%t25) as (%p0 : ptr) -> u32
+    %t27 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t27, $s7
+    %t28 = load ptr $s7
+    %t29 = addr $s0
+    %t30 = call u32 %t28(%t29) as (%p0 : ptr) -> u32
+    %t31 = addr @rg.intrinsic.read_volatile.t63
+    store ptr %t31, $s8
+    %t32 = load ptr $s8
+    %t33 = addr $s0
+    %t34 = call u32 %t32(%t33) as (%p0 : ptr) -> u32
+    return void
+}
+function @rg.intrinsic.read_volatile.t63(%p0 : ptr) -> u32 {
+  block ^b0:
+    %t0 = load volatile u32 %p0
+    return u32 %t0
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.14()
+    return i64 0
+}

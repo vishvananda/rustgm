@@ -1,0 +1,1 @@
+ERROR: file 0: 22: runtime-only intrinsic is not allowed during constant evaluation

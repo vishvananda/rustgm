@@ -1,0 +1,13 @@
+global @rg.data.0 : obj<4x4> [storage=readonly] = {
+  u32 37
+}
+function @rg.56() -> void {
+  block ^b0:
+    %t0 = load u32 @rg.data.0
+    return void
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.56()
+    return i64 0
+}

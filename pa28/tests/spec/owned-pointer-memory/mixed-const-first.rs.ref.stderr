@@ -1,0 +1,1 @@
+ERROR: file 0: 96: constant execution cannot read interior-mutable static storage

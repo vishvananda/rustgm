@@ -1,0 +1,87 @@
+function @rg.17() -> void {
+  slot $s0 : obj<5x1>
+  slot $s1 : obj<5x1>
+  block ^b0:
+    %t0 = cmp eq u32 16843009, 16843009
+    %t1 = convert trunc i1 i64 %t0
+    call void @rg.13(%t1)
+    store u8 0, $s1
+    %t2 = addr $s1
+    %t3 = index u8 %t2, 1
+    store u32 0, %t3
+    %t4 = addr $s1
+    %t5 = addr $s0
+    copyobj 5x1 %t4, %t5
+    %t6 = addr $s0
+    call void @rg.intrinsic.write_bytes.t68(%t6, 7, 1)
+    %t7 = load u8 $s0
+    %t8 = cmp eq u8 %t7, 7
+    %t9 = convert trunc i1 i64 %t8
+    call void @rg.13(%t9)
+    %t10 = addr $s0
+    %t11 = index u8 %t10, 1
+    %t12 = load u32 %t11
+    %t13 = cmp eq u32 %t12, 117901063
+    %t14 = convert trunc i1 i64 %t13
+    call void @rg.13(%t14)
+    return void
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.intrinsic.write_bytes.t68(%p0 : ptr, %p1 : u8, %p2 : i64) -> void {
+  slot $s0 : i64
+  block ^b0:
+    %t0 = cmp ugt i64 %p2, 1844674407370955161
+    branch %t0, ^b1, ^b2
+  block ^b1:
+    unreachable
+  block ^b2:
+    %t1 = binary mul i64 %p2, 5
+    store i64 0, $s0
+    jump ^b3
+  block ^b3:
+    %t2 = load i64 $s0
+    %t3 = cmp ult i64 %t2, %t1
+    branch %t3, ^b4, ^b5
+  block ^b4:
+    %t4 = index u8 %p0, %t2
+    store u8 %p1, %t4
+    %t5 = binary add i64 %t2, 1
+    store i64 %t5, $s0
+    jump ^b3
+  block ^b5:
+    return void
+}
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.17()
+    return i64 0
+}

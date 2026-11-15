@@ -1,0 +1,1 @@
+ERROR: file 0: 81: constant raw pointer write is derived from a shared reference

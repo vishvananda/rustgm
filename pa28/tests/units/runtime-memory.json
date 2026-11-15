@@ -1,0 +1,5389 @@
+{
+ "schema": 1,
+ "mode": "--emit-lowir",
+ "language": "Rust 1.98.0",
+ "edition": "2024",
+ "target": "x86_64-unknown-linux-gnu",
+ "discovery": [
+  "tests/byte-fill-native/argument-evaluation-once.rs",
+  "tests/byte-fill-native/byte-scalar.rs",
+  "tests/byte-fill-native/destructor-not-overwritten.rs",
+  "tests/byte-fill-native/invalid-bool-repair.rs",
+  "tests/byte-fill-native/invalid-bool-transport.rs",
+  "tests/byte-fill-native/invalid-char-transport-literal.rs",
+  "tests/byte-fill-native/non-copy-generic-aggregate.rs",
+  "tests/byte-fill-native/packed-whole-runtime.rs",
+  "tests/byte-fill-native/partial-initialization-repair.rs",
+  "tests/byte-fill-native/partial-provenance-restore.rs",
+  "tests/byte-fill-native/reference-bearing-repair.rs",
+  "tests/byte-fill-native/reified-generic-runtime.rs",
+  "tests/byte-fill-native/runtime-zero-zst.rs",
+  "tests/byte-fill-native/whole-provenance-overwrite.rs",
+  "tests/byte-fill-native/writable-after-shared-borrow.rs",
+  "tests/spec/byte-fill/argument-evaluation-once.rs",
+  "tests/spec/byte-fill/atomic-static-zero.rs",
+  "tests/spec/byte-fill/byte-scalar.rs",
+  "tests/spec/byte-fill/canonical-core-alias.rs",
+  "tests/spec/byte-fill/count-overflow-literal.rs",
+  "tests/spec/byte-fill/count-overflow.rs",
+  "tests/spec/byte-fill/destructor-not-overwritten.rs",
+  "tests/spec/byte-fill/invalid-bool-demand.rs",
+  "tests/spec/byte-fill/invalid-bool-repair.rs",
+  "tests/spec/byte-fill/invalid-bool-transport.rs",
+  "tests/spec/byte-fill/invalid-char-demand.rs",
+  "tests/spec/byte-fill/invalid-char-transport.rs",
+  "tests/spec/byte-fill/non-copy-generic-aggregate.rs",
+  "tests/spec/byte-fill/one-expired.rs",
+  "tests/spec/byte-fill/one-shared.rs",
+  "tests/spec/byte-fill/one-static.rs",
+  "tests/spec/byte-fill/out-of-bounds.rs",
+  "tests/spec/byte-fill/packed-base-zero.rs",
+  "tests/spec/byte-fill/packed-whole-runtime.rs",
+  "tests/spec/byte-fill/partial-initialization-repair.rs",
+  "tests/spec/byte-fill/partial-provenance-final.rs",
+  "tests/spec/byte-fill/partial-provenance-restore.rs",
+  "tests/spec/byte-fill/reference-bearing-repair.rs",
+  "tests/spec/byte-fill/reified-const-call.rs",
+  "tests/spec/byte-fill/reified-generic-runtime.rs",
+  "tests/spec/byte-fill/runtime-zero-zst.rs",
+  "tests/spec/byte-fill/shadowed-nonconst.rs",
+  "tests/spec/byte-fill/sized-required.rs",
+  "tests/spec/byte-fill/unsafe-required.rs",
+  "tests/spec/byte-fill/whole-provenance-overwrite.rs",
+  "tests/spec/byte-fill/writable-after-shared-borrow.rs",
+  "tests/spec/byte-fill/wrong-fill-type.rs",
+  "tests/spec/byte-fill/zero-expired.rs",
+  "tests/spec/byte-fill/zero-shared.rs",
+  "tests/spec/byte-fill/zero-static.rs",
+  "tests/spec/byte-fill/zst-expired-literal.rs",
+  "tests/spec/byte-fill/zst-expired.rs",
+  "tests/spec/byte-fill/zst-max-count-literal.rs",
+  "tests/spec/byte-fill/zst-max-count.rs",
+  "tests/spec/counted-memory/array-elements.rs",
+  "tests/spec/counted-memory/atomic-static-initializer.rs",
+  "tests/spec/counted-memory/atomic-static-one.rs",
+  "tests/spec/counted-memory/atomic-static-zero.rs",
+  "tests/spec/counted-memory/byte-count-overflow.rs",
+  "tests/spec/counted-memory/destination-bounds.rs",
+  "tests/spec/counted-memory/expired-one.rs",
+  "tests/spec/counted-memory/expired-zero.rs",
+  "tests/spec/counted-memory/generic.rs",
+  "tests/spec/counted-memory/mutable-static-destination-zero.rs",
+  "tests/spec/counted-memory/mutable-static-one.rs",
+  "tests/spec/counted-memory/mutable-static-source-zero.rs",
+  "tests/spec/counted-memory/noncopy.rs",
+  "tests/spec/counted-memory/overlap-zero.rs",
+  "tests/spec/counted-memory/packed-destination-zero.rs",
+  "tests/spec/counted-memory/packed-source-zero.rs",
+  "tests/spec/counted-memory/partial-field-profile.rs",
+  "tests/spec/counted-memory/partial-zero.rs",
+  "tests/spec/counted-memory/reference-elements.rs",
+  "tests/spec/counted-memory/reified-const.rs",
+  "tests/spec/counted-memory/same-root-disjoint.rs",
+  "tests/spec/counted-memory/same-root-overlap.rs",
+  "tests/spec/counted-memory/scalar-three.rs",
+  "tests/spec/counted-memory/scalar-zero.rs",
+  "tests/spec/counted-memory/shared-distinct-one.rs",
+  "tests/spec/counted-memory/shared-one.rs",
+  "tests/spec/counted-memory/shared-zero.rs",
+  "tests/spec/counted-memory/source-bounds.rs",
+  "tests/spec/counted-memory/static-one.rs",
+  "tests/spec/counted-memory/std-alias.rs",
+  "tests/spec/counted-memory/unsafe-required.rs",
+  "tests/spec/counted-memory/whole-image-uninitialized.rs",
+  "tests/spec/counted-memory/whole-image.rs",
+  "tests/spec/counted-memory/zst-expired.rs",
+  "tests/spec/counted-memory/zst-large.rs",
+  "tests/spec/counted-memory/zst-shared.rs",
+  "tests/spec/overlapping-memory/aggregate-overlap.rs",
+  "tests/spec/overlapping-memory/array-elements.rs",
+  "tests/spec/overlapping-memory/atomic-static-initializer.rs",
+  "tests/spec/overlapping-memory/atomic-static-one.rs",
+  "tests/spec/overlapping-memory/atomic-static-zero.rs",
+  "tests/spec/overlapping-memory/byte-count-overflow.rs",
+  "tests/spec/overlapping-memory/destination-bounds.rs",
+  "tests/spec/overlapping-memory/expired-one.rs",
+  "tests/spec/overlapping-memory/expired-zero.rs",
+  "tests/spec/overlapping-memory/generic.rs",
+  "tests/spec/overlapping-memory/identical.rs",
+  "tests/spec/overlapping-memory/intra-object-profile.rs",
+  "tests/spec/overlapping-memory/invalid-byte-demand.rs",
+  "tests/spec/overlapping-memory/invalid-byte-profile.rs",
+  "tests/spec/overlapping-memory/local-copy-shadow.rs",
+  "tests/spec/overlapping-memory/local-core-shadow.rs",
+  "tests/spec/overlapping-memory/mutable-static-destination-zero.rs",
+  "tests/spec/overlapping-memory/mutable-static-one.rs",
+  "tests/spec/overlapping-memory/mutable-static-source-zero.rs",
+  "tests/spec/overlapping-memory/nested-rest-overlap.rs",
+  "tests/spec/overlapping-memory/noncopy.rs",
+  "tests/spec/overlapping-memory/overlap-left.rs",
+  "tests/spec/overlapping-memory/overlap-right.rs",
+  "tests/spec/overlapping-memory/overlap-zero.rs",
+  "tests/spec/overlapping-memory/packed-destination-zero.rs",
+  "tests/spec/overlapping-memory/packed-source-zero.rs",
+  "tests/spec/overlapping-memory/partial-field-profile.rs",
+  "tests/spec/overlapping-memory/partial-zero.rs",
+  "tests/spec/overlapping-memory/reference-elements.rs",
+  "tests/spec/overlapping-memory/reified-const.rs",
+  "tests/spec/overlapping-memory/same-root-disjoint.rs",
+  "tests/spec/overlapping-memory/same-root-overlap.rs",
+  "tests/spec/overlapping-memory/scalar-three.rs",
+  "tests/spec/overlapping-memory/scalar-zero.rs",
+  "tests/spec/overlapping-memory/shared-distinct-one.rs",
+  "tests/spec/overlapping-memory/shared-one.rs",
+  "tests/spec/overlapping-memory/shared-zero.rs",
+  "tests/spec/overlapping-memory/source-bounds.rs",
+  "tests/spec/overlapping-memory/static-one.rs",
+  "tests/spec/overlapping-memory/std-alias.rs",
+  "tests/spec/overlapping-memory/unsafe-required.rs",
+  "tests/spec/overlapping-memory/whole-image-uninitialized.rs",
+  "tests/spec/overlapping-memory/whole-image.rs",
+  "tests/spec/overlapping-memory/zst-expired.rs",
+  "tests/spec/overlapping-memory/zst-large.rs",
+  "tests/spec/overlapping-memory/zst-shared.rs",
+  "tests/spec/owned-pointer-memory/const-direct-inline.rs",
+  "tests/spec/owned-pointer-memory/const-direct-reference-cell.rs",
+  "tests/spec/owned-pointer-memory/const-drop-forbidden.rs",
+  "tests/spec/owned-pointer-memory/const-interior-function.rs",
+  "tests/spec/owned-pointer-memory/const-interior-inactive.rs",
+  "tests/spec/owned-pointer-memory/const-interior-local.rs",
+  "tests/spec/owned-pointer-memory/const-interior-ordinary-field.rs",
+  "tests/spec/owned-pointer-memory/const-interior-reference-slot.rs",
+  "tests/spec/owned-pointer-memory/const-interior-reference.rs",
+  "tests/spec/owned-pointer-memory/const-interior-static.rs",
+  "tests/spec/owned-pointer-memory/const-interior-whole.rs",
+  "tests/spec/owned-pointer-memory/const-interior-zero-array.rs",
+  "tests/spec/owned-pointer-memory/const-interior-zst-field.rs",
+  "tests/spec/owned-pointer-memory/const-move-reinitialize.rs",
+  "tests/spec/owned-pointer-memory/const-moved-ptr-read.rs",
+  "tests/spec/owned-pointer-memory/const-moved-raw-field.rs",
+  "tests/spec/owned-pointer-memory/const-plain.rs",
+  "tests/spec/owned-pointer-memory/const-raw-field-transfer.rs",
+  "tests/spec/owned-pointer-memory/const-reference-alias-use.rs",
+  "tests/spec/owned-pointer-memory/const-reference-transfer.rs",
+  "tests/spec/owned-pointer-memory/const-shared-write.rs",
+  "tests/spec/owned-pointer-memory/const-stale-read.rs",
+  "tests/spec/owned-pointer-memory/const-static-drop-result.rs",
+  "tests/spec/owned-pointer-memory/const-union-mask.rs",
+  "tests/spec/owned-pointer-memory/const-union-preserve.rs",
+  "tests/spec/owned-pointer-memory/drop-discarded-read.rs",
+  "tests/spec/owned-pointer-memory/drop-read.rs",
+  "tests/spec/owned-pointer-memory/drop-write.rs",
+  "tests/spec/owned-pointer-memory/generic.rs",
+  "tests/spec/owned-pointer-memory/mixed-const-first.rs",
+  "tests/spec/owned-pointer-memory/mixed-static-first.rs",
+  "tests/spec/owned-pointer-memory/move-then-reinitialize.rs",
+  "tests/spec/owned-pointer-memory/ordinary-assignment.rs",
+  "tests/spec/owned-pointer-memory/plain-runtime.rs",
+  "tests/spec/owned-pointer-memory/read-preserves-source.rs",
+  "tests/spec/owned-pointer-memory/reified.rs",
+  "tests/spec/owned-pointer-memory/static-associated-const.rs",
+  "tests/spec/owned-pointer-memory/static-grouped-inline.rs",
+  "tests/spec/owned-pointer-memory/static-grouped-plain.rs",
+  "tests/spec/owned-pointer-memory/static-inline-reference.rs",
+  "tests/spec/owned-pointer-memory/static-interior-field-read.rs",
+  "tests/spec/owned-pointer-memory/static-interior-function.rs",
+  "tests/spec/owned-pointer-memory/static-interior-read.rs",
+  "tests/spec/owned-pointer-memory/static-nested-block-inline.rs",
+  "tests/spec/owned-pointer-memory/static-nested-const-function.rs",
+  "tests/spec/owned-pointer-memory/static-nested-inline-const.rs",
+  "tests/spec/owned-pointer-memory/static-nested-named-const.rs",
+  "tests/spec/owned-pointer-memory/uninitialized-address.rs",
+  "tests/spec/owned-pointer-memory/write-moves-source.rs",
+  "tests/spec/unaligned-memory",
+  "tests/spec/volatile/effects",
+  "tests/spec/volatile/native",
+  "tests/spec/volatile/source"
+ ],
+ "cases": [
+  {
+   "path": "tests/spec/volatile/source/reference-result-lifetime.rs",
+   "source_sha256": "7eaabba5ab590204ed212389e47d1ea9a109e52e814256e54b25baeefa509c81",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/reference-pointee-lifetime.rs",
+   "source_sha256": "122fee4f0289af8b6558797d731bbd7dc45f30544e9305f8fcd48e6e18872341",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/unsafe-loaded-function.rs",
+   "source_sha256": "c4bf9091c52a799f1319d79b0c02f5ac75dd3aa4539ce890519f0a7ddf3d6703",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/unsafe-loaded-function-call.rs",
+   "source_sha256": "f7d79312763b67d22d1410f47790ca32cb24d73483a0d473f49d57529395221e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/unsafe-read.rs",
+   "source_sha256": "1ec308f7c8d34ac039b4d4987acad87d9b81b8a41bdab412043f1f68addc739d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/unsafe-write.rs",
+   "source_sha256": "16d5e47df03e40717d41391b730a3db0d3a47258e00c3cee8270ebf6804dee1d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/safe-read.rs",
+   "source_sha256": "5005dd1f8f5fc858aaa54c45bbb9aa6ab041d00d046cefb82af6423cb98a58cc",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/safe-write.rs",
+   "source_sha256": "126000c65a40c0e6d15fa94c3f7b0980794275313283989ca937867f5a3ca875",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/implicit-unsafe-function.rs",
+   "source_sha256": "92b14a189272fbf6abec4fb9060af9fbe2a5631a938aa75c75873dbeea4d386c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+   },
+   "warnings": [
+    "unsafe_op_in_unsafe_fn"
+   ]
+  },
+  {
+   "path": "tests/spec/volatile/source/denied-unsafe-function.rs",
+   "source_sha256": "204cd2615fb1572460fefcc9bbc486dbec808ea7cbff7b3b9afe226f20844965",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/explicit-unsafe-function.rs",
+   "source_sha256": "9fd7be240311732c0a54d5f8550ad329772d03e37d2e00e0cdb0d4d2cf6adf5e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/mutable-read-pointer.rs",
+   "source_sha256": "1fe9e279153d61ca453f45f411e7fff747f4d83afdde9005af2d66f134cd13ac",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/immutable-write-pointer.rs",
+   "source_sha256": "3911c1a4b652585d8903281fa1f2e0c3eba01e485a605de89a497b1a357ac480",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/pointer-type-mismatch.rs",
+   "source_sha256": "7f6161b05816a63524da1d48dca808d7650ec9f658cfa546ffe3f95f8888bf8f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/stored-type-mismatch.rs",
+   "source_sha256": "667b0486bd30036a37de37dac1d7f9448fdbb60820eb323e6c94bacf971e4eda",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/import-alias.rs",
+   "source_sha256": "b4afb564b5027240ff5d34f591b930dfeb4a111743be66ab308f0a6542ee4e2d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/glob-import.rs",
+   "source_sha256": "e4ee93bfdb6d1347391d3189551ff5c5f62ded7eaa216280c58e86b2805cd041",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/crate-alias.rs",
+   "source_sha256": "d7c8aa58c75ba7a25a0388bc78de0ec36f0165af5707e47dea15eced7149089d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/local-name.rs",
+   "source_sha256": "2c39eb53c243a6962f160ebf78f71ce650b9c4514ff28fd1b44b83689ce5e3aa",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/module-shadow.rs",
+   "source_sha256": "a8664bef2cafe430defa36ed3e013f833ca175e1b0ab92af1de252c95045939f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/item-formation.rs",
+   "source_sha256": "b40f19109fd0b1ce648d1618ce4014fbed57e814ce0507d7c0c41041d8a188a2",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/unsafe-pointer.rs",
+   "source_sha256": "90d0540d9b46d96e82eff45f766d307541617afdf49dc21b9b0292d957313707",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/safe-pointer.rs",
+   "source_sha256": "d26493ba6e4b91f345166dd59ac42f5021ff213092cad48134cda4c90c7362cb",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/pointer-safe-call.rs",
+   "source_sha256": "ca55f7490fdcf5701826a7eec3122d658b0bfd3113ba92732f5afb556d9a2008",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/constant-pointer.rs",
+   "source_sha256": "ad77ca3fdb3ad83190bef313c66b75eed61bacbfa5c8d3d24587321ca89db73f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/const-initializer.rs",
+   "source_sha256": "c941489de80edb8fa923445524bb8ffa50a19aba85c91e8aeafaeb50d2ff703c",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/const-function.rs",
+   "source_sha256": "cb0b47283bc7efc90ccc5af81bda130ec6e0f4dc44a81af1032ae5ccf6417cb9",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/const-skipped-read.rs",
+   "source_sha256": "eaf2227135fb74de98ad8c89e2363da3c40e809898e8d5202ebcf3c7abd54934",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/generic-const-function.rs",
+   "source_sha256": "a87a40c2ff29269dd2c8745a383478d4ec155898997c748a2810b0a8f40e512c",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/generic-const-skipped-read.rs",
+   "source_sha256": "188937cc39c5d320392ff43a69b615aea84a74b879229ed33428d16386c9cc54",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/uninitialized-callee.rs",
+   "source_sha256": "102f4f0c926e68f50e523981160668a6bc485318ce03950809a8db2d13c4068e",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/const-skipped-write.rs",
+   "source_sha256": "14789a9b01522874f0090a1f82d0890baa2c8559016e30433009a5a29a4ae1e6",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/no-std.rs",
+   "source_sha256": "93b6ab94fc9ad0fb35e324aa294e903543fb0bf3b0542e402b9c0c9bdeebfb14",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/generic-wrapper.rs",
+   "source_sha256": "fc00c96d9e0443c57c9a3b706a0dae06e758440f6026bff138ff3f0a717f6b4d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/closure-inheritance.rs",
+   "source_sha256": "d26a881e8af65124525f8906739b9a2c66d8db6e256621eaabc74970fda174bb",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Checked callable identity, unsafe/const permissions and selected body; independent runtime controls are declared separately."
+   }
+  },
+  {
+   "path": "tests/spec/volatile/source/nested-item-boundary.rs",
+   "source_sha256": "7fd82b48f93e84d8c380a2dab5106107ee9d2fbf2dd8f47553c4d1d397a1ac2d",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/native/function-pointer-value.rs",
+   "source_sha256": "d590785a7e3bfd930a61512c82ef54cfc588d78171132952345167bd3df06db0",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/native/mutable-reference-value.rs",
+   "source_sha256": "bc7cd3908e4091032d63b827c2080622479e4ea3a9fa77167a71e52690beada0",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/native/read-write.rs",
+   "source_sha256": "d1462cd90c67a783dad9e74309b5c0b37fc9450622e655ce0fac42fba882daa3",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/native/function-pointers.rs",
+   "source_sha256": "b8728af01f1f9432dea0306e8cedb3492b80a0f6c03c3581cfdaceb0def302a1",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/native/integer-widths.rs",
+   "source_sha256": "54a45b4948feaf05aff64b0b6fec9843ec9f382667f527be4ffb9ee18c35aa14",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/native/float-and-validity-scalars.rs",
+   "source_sha256": "5aa192c1f91d964244665760c1f9ad6ad5a14ad2de491a37831f433e5d25b68e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/native/pointer-values.rs",
+   "source_sha256": "9e8da223328d52e2df1fe310132312eb858018aea0efb6ae3757cf91737ead6b",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/native/reference-value.rs",
+   "source_sha256": "82a32498827a307d4af153b0b8fd6b7954f6fc06e04f8e79c96b574eaac7662c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/native/unused-result-effect.rs",
+   "source_sha256": "1231dd90d4d38bd58e865a33229064c996763bf166925f64388d5a5edc8c4c11",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/volatile/effects/calls-1.rs",
+   "source_sha256": "24fe3cf2796a19e340aa56858e8668d48b3c53380cb7a1e0612027d304f9164f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile.effects"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Checks retained unused volatile accesses and one reified shim per canonical instance; this fixture makes no runtime result claim."
+   }
+  },
+  {
+   "path": "tests/spec/volatile/effects/calls-8.rs",
+   "source_sha256": "a2a198b4a732d665e42b9e473f53b1ec961e494d54755e8cf3bb099995578744",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile.effects"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Checks retained unused volatile accesses and one reified shim per canonical instance; this fixture makes no runtime result claim."
+   }
+  },
+  {
+   "path": "tests/spec/volatile/effects/calls-32.rs",
+   "source_sha256": "c3b44c6154a95d3885d862c7c3376126930a9da793143fe3f8ca477aa520c744",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.volatile.effects"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Checks retained unused volatile accesses and one reified shim per canonical instance; this fixture makes no runtime result claim."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/plain-runtime.rs",
+   "source_sha256": "a9dcff48455230b7c6a5764fe099b6e6e22ecc2fe2da2672272c71d71182c41c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/drop-write.rs",
+   "source_sha256": "5fe3429910dcbdba1e2232def0a09b7ce9003968f1f3ce45f3a784a44364c025",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/ordinary-assignment.rs",
+   "source_sha256": "798e4eddfbd12e32d26f4e46e1b113970595207ad1671ebdf51064ee67001292",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/drop-read.rs",
+   "source_sha256": "b1a2b4f4ea6ae572d2c908f0231a31914b439a6ad5c187b3f4995a0e4b3cb485",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/drop-discarded-read.rs",
+   "source_sha256": "895ff38cb78a44c66f1c58eb06da9e5b101e5675b25eed7656790b90e59d04d3",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/move-then-reinitialize.rs",
+   "source_sha256": "a98d8d9125912430cb408dbce33ee2fe91eacbc9c7de05cabf82f9f69e6b1020",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/generic.rs",
+   "source_sha256": "666ff5aff4852b30b3138a26c7ad2459eabeae31d7f8ba6dd130fbc983055955",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/reified.rs",
+   "source_sha256": "03d025b0aa8fdb7382db224d0758eb58a37b2a7a07c525889b0ea79fdd697c9d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/write-moves-source.rs",
+   "source_sha256": "3a68be03a162310232ba4565ff67133bc45d5e733aa993c9d0a9e16e58d6ddc9",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/read-preserves-source.rs",
+   "source_sha256": "ef48ff5a92c8527aebbe0e80fe335334e5b15037a9b09f1c8dc36fa9fccaad94",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/uninitialized-address.rs",
+   "source_sha256": "b7241a51e74563e31f4d70575dbe1bc984b5ed09d33849956c29ec42de2475dc",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-plain.rs",
+   "source_sha256": "23ccf7a959423675462c775ffc168526b381c7dfe36a245cebd8d7b90e68ed11",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-move-reinitialize.rs",
+   "source_sha256": "c83adbe2727e15a9df8dff19f5ea775349c0eb73889848c9aa62a62fe36709ca",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-moved-raw-field.rs",
+   "source_sha256": "ed822d32ef78f5060b2efcb7f09ed332cb19ce20732ddf544f4d16fc5f8dd4fa",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-moved-ptr-read.rs",
+   "source_sha256": "f9a032629781d840de886d9c83e9582d3a6fbd4dc9f60fd77797f91f463b1323",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-reference-transfer.rs",
+   "source_sha256": "931425f0970740112aa1e09329104832d8c834d26e036f1501e10098c423734e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-reference-alias-use.rs",
+   "source_sha256": "e0b10ccfaaa18abebad3f75aeb5b8dab9fceac398b213ebe4195e3b846f49434",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-raw-field-transfer.rs",
+   "source_sha256": "cac2c98c3836e219ffd1b54807dcf74dcba6e7a478a5009e98fe78963faae6b2",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-drop-forbidden.rs",
+   "source_sha256": "04a716d3986df3c093cf93e2494d879d72993744be5e3a3ad2746b45829f870f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-static-drop-result.rs",
+   "source_sha256": "b0ec79963db3dc434d73b1741c532021d06bf0f11f11abf20981d6d09934fb0e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-shared-write.rs",
+   "source_sha256": "d98971c9dc20936c9b806c3fa34604b90e74c5650d255c6b5408b6a4bcbfe63f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-stale-read.rs",
+   "source_sha256": "25ca32bd1a09cbe9c89665b37e08f4759a9ec7a1a624205197719325628a4161",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-interior-static.rs",
+   "source_sha256": "a694d1bc2db94c5e94bb4ef4fedcddfeb8749f4a6c5f5bc9a4d826a2d7ee0445",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-interior-whole.rs",
+   "source_sha256": "9ac1f67922f0219fdd19fe7a6134206791966ed0baec08fb1faf6dc6bc4aa3ce",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-interior-ordinary-field.rs",
+   "source_sha256": "ad70561e4bde6e166e41a2b0d8de6038c86b4271473e0c9182cd7d90c9bb6093",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-interior-inactive.rs",
+   "source_sha256": "48c2630f4c25c33e4961e9597f46b76cca9b214b711076a73f1994cb17a7862b",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-interior-zero-array.rs",
+   "source_sha256": "84f4f045cd0278d392e9ba31bcc881583698f664181ce1f2421c31f1eed53a51",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-interior-local.rs",
+   "source_sha256": "04fe137e82c3373f443239581a1fd91048e7bfd3ad5bb1c17b6ce24ca096946d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-interior-reference-slot.rs",
+   "source_sha256": "dda64290ace2a65a5719c0a33de7f6ba1db6a72a22d0e7cc9a62c1c9f219a241",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-union-mask.rs",
+   "source_sha256": "5c49930b33a7d09d6380b39b5525dd1f1d9d9097f1858558100793a7528380af",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-union-preserve.rs",
+   "source_sha256": "3dfeae2459376ca9ecc0ad4a30fc24627081cd1684b6fde3e94c8959376097cb",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/static-interior-read.rs",
+   "source_sha256": "f201c44ec96ff7c3d73359e7164c13f34591fa009fb483ff107e8a0a26064a72",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/static-interior-field-read.rs",
+   "source_sha256": "4272b350057099ccb569fe9d0ffed3741defe7ad7bb72687a8fe37d190263573",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-interior-reference.rs",
+   "source_sha256": "8a0d10eb49887f79e6d4380f7f851c29f822726e93c5bbca9633ac27eb5b84bd",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-interior-zst-field.rs",
+   "source_sha256": "bd7bbce8e35b2eb50d541b697a5886445b24da22806cf59c3d8bb4327c11cdbb",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/static-interior-function.rs",
+   "source_sha256": "4e4f8a31ec9e44911dc90f1932634eafd3206af51a0097ceb531db90588822a8",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-interior-function.rs",
+   "source_sha256": "90bc76ce9f361391ad97e735d6b8f843143036da1e96dff6e4d5dc980b8c8bb4",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/static-nested-named-const.rs",
+   "source_sha256": "f7b46b00a18cf67b57d2afdc6ed23cdc363df40b043f78cc2cc836b0413c752a",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/static-nested-inline-const.rs",
+   "source_sha256": "034147c54783e0cb100f6fb2bcf9bc2ce0653f09bb1ce3967436fa4d1086929d",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/static-nested-const-function.rs",
+   "source_sha256": "a29423dd2a581784065cc6f52a084cfd71501dee522d0c878693107038dd5e5a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-direct-reference-cell.rs",
+   "source_sha256": "cd07d7b26ee53f1463dd46634d9e0345bc54b7e8b98bead846ccbe72404f19ab",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/mixed-static-first.rs",
+   "source_sha256": "a1908e36f691727597dcf779e9d137d88bdf562fa66bff696569677ab5dd867e",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/mixed-const-first.rs",
+   "source_sha256": "171d6a63acdd9f8fd8973203c60db12ff78457f62c3959741a9e75690e82a04f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/const-direct-inline.rs",
+   "source_sha256": "60566e130052098a5d915fa699962401d05650d13fe39e05dda5d476e9ddf647",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/static-grouped-inline.rs",
+   "source_sha256": "287baf1ff553c5b9ae6363fbc0531cb0cb2acf88b447943665fc89df944c10c8",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/static-grouped-plain.rs",
+   "source_sha256": "102b45c517c93f436fc0a355005340001c9e17266b94db1f4c00ddf8485496e3",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/static-nested-block-inline.rs",
+   "source_sha256": "64050fea1e2ea876cc88e7d1a77728ddea2760eda827df126b633b3c384b17d9",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/static-inline-reference.rs",
+   "source_sha256": "ce0239068897535d9b9ad52ad90dfaa2780dd21aaa558bb2c97caae61da91544",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/owned-pointer-memory/static-associated-const.rs",
+   "source_sha256": "dcad2ee6612f26941284efb2496761755378ee54588075eda5287ffb3311f9c3",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/packed-read.rs",
+   "source_sha256": "ebf0d7bd6507b97803e091b2d4348eeca2ddb71dac9784ba431f9e8a62f32cfb",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/packed-write.rs",
+   "source_sha256": "34d65f838ce615c76630cf963707179273515f5eb1bb8fffc36b69566a3e6cfa",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/packed-nested.rs",
+   "source_sha256": "b470ad34b4cd70189a785aedd68ca6f0e1670aa6c6940c874901d206e26af363",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/const-generic.rs",
+   "source_sha256": "ede85da93cc03e90f6fc2d19d90673b2edc2138feab1ef9b3138bfd018351a88",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/packed-product.rs",
+   "source_sha256": "4bee804de62238113e769b2f6f7b6caf86cc20d24d35ab89301efeb049027fee",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/packed-array.rs",
+   "source_sha256": "17e4a0036be17fcf8e83916cd5605b93ee4d42b126adc138d9f13995ab342d39",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/packed-reference.rs",
+   "source_sha256": "b67630d76cc8039a810f98d64a9ecdbecbd8e5ef7b9f55752bca073337e5245f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/packed-pointer.rs",
+   "source_sha256": "f3ace2f0c56d544f5d43d7f55c701c5204b6b45022a7177ae7c3621f246c47e0",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/union-alias.rs",
+   "source_sha256": "3833d3212f5d94ba3a1138867e118f545824877305c09262dd0722fb3afa1911",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/union-repair.rs",
+   "source_sha256": "4c482a86e7937a146d7be2fa132b12116ff802b43501effb93969d4f8d312531",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/write-authority.rs",
+   "source_sha256": "75eb2a1c4a07ad2187d175c8fbe4a2b02874261a583246911ab08756e7dba71d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/shared-derived.rs",
+   "source_sha256": "abb03c6ce8aa2d36fbd92a582cf0ec8f745abb8ec9318c83019e3b984d4212e4",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/expired-read.rs",
+   "source_sha256": "34dcd759cb4e3f9758558e847d9b3466c02364661e17e951d274676a60287953",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/expired-write.rs",
+   "source_sha256": "9bd52fe8ee688bcb9faa906382e732a444563b7c810e7acd0803cdf8c0a7e429",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/uninitialized-source.rs",
+   "source_sha256": "bb286f40b20a671c7068f607bfd2bda0df94ef755ece58b215c32b0a5baf3b3f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/invalid-bool.rs",
+   "source_sha256": "40ed4e818a10b7ddbb25c0e91e05af4005d26b99c51fdaa3d14c3db0c11733b7",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/uninitialized-bytes.rs",
+   "source_sha256": "4bd9c8ddaf33b1b09df1e6187b0ef2431a8bca802eadd31fb0a5b762897b3cf2",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/ordinary-aligned-read.rs",
+   "source_sha256": "68ab58bd1023fe831edbc15ac9dee3f66b52b71492bec1d3bdf3270d0a810f0e",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/ordinary-aligned-write.rs",
+   "source_sha256": "973372c3dd8058b6ffebff0350575a87409aa34d12613cfe7dc5465388aeb1d7",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/packed-reference-forbidden.rs",
+   "source_sha256": "3512867b2da338260ea55ec469b87abe6c3ee1be0d06490ca00c390a8ee6b32d",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/read-unsafe.rs",
+   "source_sha256": "0ce61a185fa53e8bd72cf149dcf5ba040ed8aeea07ce89d42412b810cb07c952",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/write-unsafe.rs",
+   "source_sha256": "4454c668bad84285acc8c887694cf4747d94fca7f12593ba4cf0e7d62033d7f5",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/wrong-type.rs",
+   "source_sha256": "17fe41afdc6a28acc11203c02d927b15e3ea7e4414e9f376a90366737a813eee",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/wrong-arity.rs",
+   "source_sha256": "ffde8f158741ff07d3a27e5182c517751e2cb9964ad98a4aa2d9955780d013e1",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/reified.rs",
+   "source_sha256": "e42bca139d1a6fbf18945ebeaf1f9c685cc87dee7ca08269941a230cdafaea71",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/const-reified.rs",
+   "source_sha256": "2fe054cf5735d37838b1c28f79887b267766f2a57cc2a5c5083d9b6a7efe1379",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/identity.rs",
+   "source_sha256": "292857d1cbeb8a7943b4b6d4667d41027f5fc5f200045afb9efcde2a656a90cc",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/shadow.rs",
+   "source_sha256": "c0899613904ba8d3b89a4d03cd209996c594383034049916d0c7dfbf12206cc8",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/ordinary-control.rs",
+   "source_sha256": "2d1ec6f5cf732cb87e3e9bb2d3ff6f31660f347fa43233ac1aea16f5c3a08602",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/explicit-align-packed-invalid.rs",
+   "source_sha256": "8fea08915f5ca0e7eda7b8ce52a78e84d0acc73c60cd58ce4f8495b8e978ebea",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/symbolic-zst.rs",
+   "source_sha256": "146363a2b68b8325ab353896aa62171669f3fb65c38032bd937e534984a10b42",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/unaligned-memory/fresh-raw-anchor.rs",
+   "source_sha256": "9663284080ae165aa80bf7c48f27be944160978ea7610b5021c323cf6ad9846a",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/scalar-zero.rs",
+   "source_sha256": "6407b8df5f9f116a2c3a6c604df764f51e5f365035788278d6c7effee2d1d121",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/shared-zero.rs",
+   "source_sha256": "2444be36a71019b8f8e93cadbd34fdabd2be6a4a02409b37e33f468510ea9660",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/shared-one.rs",
+   "source_sha256": "dce2fcd10b4576742c7276397475bf9b0b8d5d65aa54ed70be6d6bef8fa44d19",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/partial-zero.rs",
+   "source_sha256": "3074adcab52ec70c309c141a8a649ad542ec1989101bd88f3ca94a93c200362b",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/overlap-zero.rs",
+   "source_sha256": "0258424fcf00a3a9a0a180b15d2d3269153a27042b810bf63c4d63d7e9e4fe51",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/packed-source-zero.rs",
+   "source_sha256": "bc1e54bcf2a3016ca86fc8504b2b4b8b686906ad88144457dc1cead0d46452ec",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/packed-destination-zero.rs",
+   "source_sha256": "bf8c3b25ec6b577b99a0c5659f13acbb08bbed3d165072c0c03f4ef3eb649382",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/zst-large.rs",
+   "source_sha256": "d7cef0dbd67ede5f88fbcabc6543d86613a6eb72127fc622f2186981857208e0",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/zst-shared.rs",
+   "source_sha256": "ca849101c4186e1d273cdd99f9d5fac72b344cfc6ff08db2b9be6df21271b577",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/atomic-static-zero.rs",
+   "source_sha256": "eca81eba83220f4e5b18d1d0388c8435b72c9bf10ec0ce76785ccf4fa35cc1ab",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/atomic-static-one.rs",
+   "source_sha256": "3d69076e8ae3018539276f8aded3504b90a29dab02e192b33716a7dbb7a19ce6",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/mutable-static-source-zero.rs",
+   "source_sha256": "38ec5ebfe02c3f789d8e041c53f72992e6e5143d73482754e0f9358ea7031c40",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/mutable-static-destination-zero.rs",
+   "source_sha256": "c6322e81587ab5927627635f9a9451955271b98fc693bfdbf13ecb64abb43164",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/expired-zero.rs",
+   "source_sha256": "7b5a1703f3b7033995d77e0ddd82f09dce877b946906be140b2b78f6385ab36a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/zst-expired.rs",
+   "source_sha256": "3e4f0d090050dbbfa2bdc77a179aa37ad37a8c480218a7dc2f77432c6ee42753",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/scalar-three.rs",
+   "source_sha256": "bf913040bbb163f19fe1571d9b56fc9d3574ad878fb6a47c2089ff12cfc8dc52",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/same-root-disjoint.rs",
+   "source_sha256": "2c06d854c442481073d1c70e2ff4fc427d1b3d0a149292c957e91207a67279f3",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/same-root-overlap.rs",
+   "source_sha256": "b2ae240b35413cb77f2e465b935a27c06410754c43ff0959ae70576aa53a50e5",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/source-bounds.rs",
+   "source_sha256": "698d93fe63c615823ee6be28818844334d5f287e662e9258229a04c4c606a304",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/destination-bounds.rs",
+   "source_sha256": "0547015abb877da7918e6f3440767c79208a7d6efb7b7380a4199481ca0f0352",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/byte-count-overflow.rs",
+   "source_sha256": "045b87cbb7ca961a5add58fa7699075fad75e92354bb78326ce7b11b3065d6a4",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/noncopy.rs",
+   "source_sha256": "e8378c35a7f0c58b4e78e3a596b7bc9ac543bd9e2c68776bc8072e24afca2ac5",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/array-elements.rs",
+   "source_sha256": "01a5c9df0fca87134e96423ecb4a5d379f6ca782fe133b02c1dc15d6e9e84dc8",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/reference-elements.rs",
+   "source_sha256": "ef24dd46f8e9b9c6782c3a7ce2c0c3252a729462eb35af565ec37146afaea124",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/generic.rs",
+   "source_sha256": "75a72fc9edab56138cb5fea9e60ca6397c2935e6aa4d8878cd8b11b7c8881045",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/std-alias.rs",
+   "source_sha256": "0afbb2a34b42bfa2a2917ee9718f0be371bcf870741ebad8927ba9aa1ad44ae3",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/unsafe-required.rs",
+   "source_sha256": "a2d69a1a950bef474174a47d0b25fffd3f62b872d277c3fed33cd5ef93de5dae",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/reified-const.rs",
+   "source_sha256": "9f83cbae6a9655c6b66449b3cea6ddb6ac4e009e9d45f909e400f37e4fe5d368",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/partial-field-profile.rs",
+   "source_sha256": "eeb1f8423f258cba7b2bad93892d3adcf07b2b25e04d4c1b2c789f2a0ac71d8f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/whole-image.rs",
+   "source_sha256": "fa8d1fb71d7ebc1bd3d58bbc0b70c71359f89c11e289119cae0ae547e7f2fd6e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/whole-image-uninitialized.rs",
+   "source_sha256": "e67879d63d8d10e460144629bb26ce46032ae96a8736fffb256a7ec602401e0e",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/expired-one.rs",
+   "source_sha256": "7b8f2316df0c10ac886dc82a29225f919f2113019041041628ce48fb1ba5e61e",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/shared-distinct-one.rs",
+   "source_sha256": "b09fca9c03707184a481bbe6bb4ba61d12bf67f1d3e7042e9630ad4bc53df835",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/static-one.rs",
+   "source_sha256": "7a248cf5d5d34b6a46d88946db8ee5f1db7ba7fc4d747118489645c6f0b298d9",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/mutable-static-one.rs",
+   "source_sha256": "2261033f05d121088c762962702a5fd795ef124ea1ce56b4aaa2ef2753fc4776",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/counted-memory/atomic-static-initializer.rs",
+   "source_sha256": "ad7b47f7e9e0b0bf17e4a6666e2de44b4b26d3698cba5f7ae37f83af8d47392c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/scalar-zero.rs",
+   "source_sha256": "fd6a31194c685d8f801d98d2a288ec0543239167bcab1134cbb88229649b03a6",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/shared-zero.rs",
+   "source_sha256": "f088078be594ffcddf55410b2625fc9e0ef0946f696ff438abf9744c4e71aa4b",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/shared-one.rs",
+   "source_sha256": "524001113ac0169937eb044c495fce83aec95b95ecfd19cce2401b1697ed52db",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/partial-zero.rs",
+   "source_sha256": "aa043c9d5f347904d84622fd5d73eda9937a4c0944717d5936a059d52dbb3fbb",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/overlap-zero.rs",
+   "source_sha256": "930e1f96559c713e2ffcebb0f5b95c75712164110c2686bf6ed2f7c2ac9b7c88",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/packed-source-zero.rs",
+   "source_sha256": "feda5b2b14434aa4e49e7c2027b29b7380b16523e4ca8d56b6d45b254d4294a1",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/packed-destination-zero.rs",
+   "source_sha256": "8f522873bea67535cc872b377eb62cc245525458181c2f5faa457719660f82e8",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/zst-large.rs",
+   "source_sha256": "66804a3843a872a2de687c72cdb9b8fbd7324709f982b4aaf8c01a986bc99d2f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/zst-shared.rs",
+   "source_sha256": "b73adc91ea49c2b444f23c789353e596c3fc0b6e45c2dd974e0380fc77446f71",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/atomic-static-zero.rs",
+   "source_sha256": "0a330af98d2230174438cc17ed558051572602515012677fd6ecd8b971aea4f4",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/atomic-static-one.rs",
+   "source_sha256": "26fd9d23a3aef8f162a137002108d59dcacfa73ec1542c79ed60aec2f556b930",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/mutable-static-source-zero.rs",
+   "source_sha256": "611f4c0f01d4a845933fccb391c27129c0a0d9957a50fdb5c3d67d9569cecf02",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/mutable-static-destination-zero.rs",
+   "source_sha256": "5dd72aca1993309df881422e21e421c4dcef581550d27cf3427e2fcb8efb1325",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/expired-zero.rs",
+   "source_sha256": "ba9220921f3ea125724312af9ffc9d35acf047039f29028cd7d2bc931690d4f0",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/zst-expired.rs",
+   "source_sha256": "774b2236d2a7bdee05b04283b083ea55b7f3fa10e2bfb21aa9034bb809b4bd0d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/scalar-three.rs",
+   "source_sha256": "a384a8f988c1e3ab31d0b97d86409fac0133bb70fe950aed6ddfe56acd10876d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/same-root-disjoint.rs",
+   "source_sha256": "2dbbe7ee4059090eeaefa7f92ec51cd688dc02df3680b230d6e60cd1e18c9de2",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/same-root-overlap.rs",
+   "source_sha256": "f05bbadaf4891bde852a8eae1c4da959ea71654716402c28b0a6668e013ac2c5",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/source-bounds.rs",
+   "source_sha256": "f2140185f1049dd2f29c1be1d3589f68e98014c78ae58c18aedec1862f24a0f0",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/destination-bounds.rs",
+   "source_sha256": "70f4453b72dea4b65a893b2d980467e76504f02cd15a26f774526416fdb4011d",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/byte-count-overflow.rs",
+   "source_sha256": "128ac04fd7bb6c3e6fc261cad05a634145ed126c5936f5b276312c7d48069433",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/noncopy.rs",
+   "source_sha256": "2e339d40c01291448f0680d53d7b734eb27e4422836f76701665ac7a04e54963",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/array-elements.rs",
+   "source_sha256": "5922592514f8f389e05afd49f494a7c46fc6dc2016fbfe12fcb77545717bc132",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/reference-elements.rs",
+   "source_sha256": "c04cd9b5033d3e5aaaf6a67243e3fd179952041f1a85ce602249c4829f22d2cd",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/generic.rs",
+   "source_sha256": "06bc1446fa36ff562c508076dce0bc71f2dbcd0aee0ed3110b0378d22b8f5233",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/std-alias.rs",
+   "source_sha256": "d5eaf6222a0f3861b2fcb3713ac3de2e79b220e85f42c05ea3b3dfaaea61a8c7",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/unsafe-required.rs",
+   "source_sha256": "8b0f92562059794d628b02f658135789d977ca2cade1aeb685e718a6809b0775",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/reified-const.rs",
+   "source_sha256": "734af989c3c09aa45a3aaf7b33deface85d9ed411ee0de7fdad5656f69158c5f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/partial-field-profile.rs",
+   "source_sha256": "35ed797296cc5e2bea6f0995a932958ed9f196db6dd1a1f1f9d777a120b67c8f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/whole-image.rs",
+   "source_sha256": "dbe1bd197ea724ff123445c71e3c2029afe11d8cf4052a328b48bd0ee0999411",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/whole-image-uninitialized.rs",
+   "source_sha256": "efbca7f83b3d1fe4b2fe5229ee5a4e7cd8728e80bd6fe2cafa8e96eed7402386",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/expired-one.rs",
+   "source_sha256": "177680d045d789e610ed0ee64bc055780a90057063f444701552b893126f8a11",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/shared-distinct-one.rs",
+   "source_sha256": "e8c3b7680fac4c3e1e36b962e929d0637ec115fcb1503fb388cb0d8dfbfdfc15",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/static-one.rs",
+   "source_sha256": "20585c429a353c54bebc489d8097ea271052fcca3c96f627f60a346435c53fe1",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/mutable-static-one.rs",
+   "source_sha256": "41a7fc5fef4221edd444142e802dc4d1884af8fb3eb73b4901d45194262c7eaf",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/atomic-static-initializer.rs",
+   "source_sha256": "87f0d4c2cb17b5ab9b410a9acec0932597a75146b0239540fee4677a0703edd6",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/overlap-left.rs",
+   "source_sha256": "4dab573ed53e6e0758bdc8b355d1e7905b8a1b303c3bed2ec19fcb090a20df58",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/overlap-right.rs",
+   "source_sha256": "fd986fb84b0f11d39670467e91d6dc543ca072c361313c4a6e6ad604416e3667",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/identical.rs",
+   "source_sha256": "931c0ca2f97a9105053d836eee383cff44c85828c2873c1e3f12410232498b88",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/aggregate-overlap.rs",
+   "source_sha256": "5d0f53a0195645ddfd6e4d128dce50a84099a91e6f0e275368b0f646ec82ff81",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/nested-rest-overlap.rs",
+   "source_sha256": "62f566ddba39e4c7df982efe0e92709e1a93d8b03a1e87442e149601bc4de2a0",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/intra-object-profile.rs",
+   "source_sha256": "b6c1f4e1d3d46721b4226c0f6ea26d9969ddd75bc03d280e1019a875e1a01a32",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/invalid-byte-profile.rs",
+   "source_sha256": "58e745d0a48094cc88634f11f66c4702cd3007d90e019a59dee8c7abe347dcf3",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/invalid-byte-demand.rs",
+   "source_sha256": "ca318f6c27b4302e4fb7e9b303d56d2cb915e9cdce18eedc45130b0e1ac2993d",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/local-copy-shadow.rs",
+   "source_sha256": "f8f6407ba1cfd48f05f7e947ec1a4c7a86f31bd17fbedfa71bd2b3fe4d25f624",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/overlapping-memory/local-core-shadow.rs",
+   "source_sha256": "53b105c5ba81fe8fcfb190bb3c5b3484f14720a01955045ee343d04644ad0c87",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/zero-shared.rs",
+   "source_sha256": "723855e659547398ac533f5e7340810e4f637c7c93fa408bd3217338f686ecc7",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/zero-expired.rs",
+   "source_sha256": "5b193f42f3ed0a42fdf557728796048c01069de72f9aac7764fdf083987fac59",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/one-expired.rs",
+   "source_sha256": "923f72b61838a17da6e252305685dd117774f4f69b3bb7cf471822eefe6b3fcd",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/one-shared.rs",
+   "source_sha256": "ad9c9402329d6de0f8d7735693863798649ef62418a4911c741415e08308a72d",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/zero-static.rs",
+   "source_sha256": "f43b4c63f5e37629effe7098f9e31bcd0ca959900bc0430e0b607168612a0174",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/one-static.rs",
+   "source_sha256": "dd925ed0d664eec6e4a9b3a08eb75657b0356e610bb9757070d6e5a93f8d327c",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/zst-max-count.rs",
+   "source_sha256": "64dba0b77d4c9f1780272f00990e4c1e0f6e2b6e99c0781ac01af65448098169",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/packed-base-zero.rs",
+   "source_sha256": "d88b802dd0df04e766fb332e0fb366717604c18d78a17ae03d8d54c0f71bcff1",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/zst-expired.rs",
+   "source_sha256": "28428dc7ce077e57d2da9ccfaa71fc7d78d330e1bf8441e48b1eab420df4a64f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/count-overflow.rs",
+   "source_sha256": "8aa9700f07ff854875cd21b1fe94ba7dbf3902491f8885bb817fbcbe237812e6",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/out-of-bounds.rs",
+   "source_sha256": "6d939ea5d8ea82107d589e383870e162b60b7821739932b8fe91c67b4a687b0c",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/byte-scalar.rs",
+   "source_sha256": "d75847ff12fe7ddf0b6dd098c92213bebbc7f7cf439e1af8fe85962bb7f9e4a0",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/byte-fill-native/byte-scalar.rs",
+   "source_sha256": "74bebbcfe46d2c68705c88041b56fa88387372052ce7cfe3096d53d1998bb5a1",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/invalid-bool-transport.rs",
+   "source_sha256": "269b508de773cfb1d4a56d0dc38e0f1ec2fc4333329b4b462875a928cce64de6",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/byte-fill-native/invalid-bool-transport.rs",
+   "source_sha256": "a2e1f6802042f9e4f271d2d48a71619f1519bcaf16ccf738db8f0854c5ce7ef6",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/invalid-bool-demand.rs",
+   "source_sha256": "0446439a05ef9765f0a629a1b5cadc3d8404635ad8314831c5cf23819125a638",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/partial-initialization-repair.rs",
+   "source_sha256": "231f465eb881c11bf8bd7d1fc48b3e2b8fb3f6ef5cf8382c9e857a7a2796cfac",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/byte-fill-native/partial-initialization-repair.rs",
+   "source_sha256": "b503a1157aced640c6e8d8149aa091d16d90430b65dcc55c406f185ac2f3de4f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/unsafe-required.rs",
+   "source_sha256": "13e49c62ae0fd54b25fde98c0b8439d2f4bba98846d5d8fd381fd115a940428d",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/wrong-fill-type.rs",
+   "source_sha256": "c31623a400097f404271a977913a503365c9f8556e347cf5b13a7affc0c7a769",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/non-copy-generic-aggregate.rs",
+   "source_sha256": "19837c51fcd920a9faa7145410d249326451bd2ae9d630c0cf93c6d3aca28745",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/byte-fill-native/non-copy-generic-aggregate.rs",
+   "source_sha256": "ed8fdcff6a66f332b489ee70013fe09fca078f7e09d4ffecfd4db58515ee0b58",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/invalid-char-transport.rs",
+   "source_sha256": "2d5c294791a2af746451edb2a89b5b51ecac5b3df9a7c0a613fc1db4514e40b2",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/byte-fill-native/invalid-char-transport-literal.rs",
+   "source_sha256": "ea71109f324384d8bfe8f2e12b042dc835e98dd505c714b16189f549f5f98bad",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/invalid-char-demand.rs",
+   "source_sha256": "35b7e9f52ef96c9eb5cf3a456eb24654b466b363b7602c100cd39eaebbb6f7a2",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/invalid-bool-repair.rs",
+   "source_sha256": "c2d189d8efbe0e070cd05145dca5e038c704077da8980fdad3eddb253da4dccd",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/byte-fill-native/invalid-bool-repair.rs",
+   "source_sha256": "c12890ad72fd2f57db563799901df879ef82c80e2960fe3189cf96b1f2141919",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/partial-provenance-final.rs",
+   "source_sha256": "1af990f174c452457294fce363e5d7a4c3f41b81e50d88ef3c718d186d8efbd1",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/partial-provenance-restore.rs",
+   "source_sha256": "3890ab71b54120144c48fc1b4d404134928c4f39602a5ed2112364da6516dd7c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/byte-fill-native/partial-provenance-restore.rs",
+   "source_sha256": "47c8113cfaed352753a494c8c0ef67a56eedb8feb32cb9314da4ea5b2dc0560d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/whole-provenance-overwrite.rs",
+   "source_sha256": "46a72ac96f015cd66aa9a8e6203ffa02c143742cdef5be2a1835e648458c9c1a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/byte-fill-native/whole-provenance-overwrite.rs",
+   "source_sha256": "9e5361a5be95644babf14a675bdf6c727ece0505acbc64aea76ce888fd07bc0a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/writable-after-shared-borrow.rs",
+   "source_sha256": "35db72d2a6c9ed9169048a90b397ee9cc2f45b0f719ef07e39b6a382c81dce1d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/byte-fill-native/writable-after-shared-borrow.rs",
+   "source_sha256": "eef602b4c67ae5f81f6460bef82d58c13bcdcea0ab719bfddadf115231bc9d50",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/reified-generic-runtime.rs",
+   "source_sha256": "122749404353937025d868d728c30cd2cd655a386471708e7160f040c8a33690",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/byte-fill-native/reified-generic-runtime.rs",
+   "source_sha256": "122749404353937025d868d728c30cd2cd655a386471708e7160f040c8a33690",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/reified-const-call.rs",
+   "source_sha256": "12955cf82cf6c9605f7967ab804ac1f2063f23d04c96698b07b9fd0203ddf214",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/destructor-not-overwritten.rs",
+   "source_sha256": "9de9d37c6e994c942062c6c1071eb3274b1a3d765377d76bc4e0f8d80f4199fc",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/byte-fill-native/destructor-not-overwritten.rs",
+   "source_sha256": "9de9d37c6e994c942062c6c1071eb3274b1a3d765377d76bc4e0f8d80f4199fc",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/argument-evaluation-once.rs",
+   "source_sha256": "f1358530d837b5bd9728dcb79e83d1d144977c9b6e6273716cb25701d8f51179",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/byte-fill-native/argument-evaluation-once.rs",
+   "source_sha256": "f1358530d837b5bd9728dcb79e83d1d144977c9b6e6273716cb25701d8f51179",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/reference-bearing-repair.rs",
+   "source_sha256": "79a51634e2bfc415cf273e1554ac5fc442adcacd8cc14d0bb7eeafa7b4ecd5f0",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/byte-fill-native/reference-bearing-repair.rs",
+   "source_sha256": "aaf9667cf9c22f68e15168c88e299a133b3c19da2d2158f1bf720eed85607e49",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/atomic-static-zero.rs",
+   "source_sha256": "2774e0334ffb8745ff54639ad1d91d5406aa23bc43400bf655e80cceaca4d544",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/sized-required.rs",
+   "source_sha256": "bdd9e80966019edc78b3cd7e91260d54653249979e951a22c0a6586aa1c053d0",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/shadowed-nonconst.rs",
+   "source_sha256": "42e6674bf86ecd4235ffaba573d23ba4540ab70a6f7df93516fd90ba6ce43bc3",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/canonical-core-alias.rs",
+   "source_sha256": "5d77cffbfb6607d6460e99d2bf7e37f75f6ea8e5f7163ed0cff3e09d607846b8",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/zst-max-count-literal.rs",
+   "source_sha256": "827a88060077ed8ec558abeacafb59604e9901858517f6128758a56dcb2ab403",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/zst-expired-literal.rs",
+   "source_sha256": "3c238efbd8ebb9c535df66e420588a3d4561e505ff15bd63ee29f5dc0d876d6a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/count-overflow-literal.rs",
+   "source_sha256": "6839cb425bd88c35fff730a4aec94741cd29ea75c212885a9b8bc1a3db8255a5",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/runtime-zero-zst.rs",
+   "source_sha256": "02875bd35247920bc8172df9c3fc28a35a120e30579354bba51da0350d43ed3e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/byte-fill-native/runtime-zero-zst.rs",
+   "source_sha256": "02875bd35247920bc8172df9c3fc28a35a120e30579354bba51da0350d43ed3e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/byte-fill/packed-whole-runtime.rs",
+   "source_sha256": "41dcf489de21ede7028c19ac5a2ae08bbcee98dd04350af70370141ac9586855",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/byte-fill-native/packed-whole-runtime.rs",
+   "source_sha256": "41dcf489de21ede7028c19ac5a2ae08bbcee98dd04350af70370141ac9586855",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa28.byte-fill"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  }
+ ]
+}

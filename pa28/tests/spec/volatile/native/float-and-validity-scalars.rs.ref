@@ -1,0 +1,73 @@
+function @rg.15() -> void {
+  slot $s0 : i1
+  slot $s1 : u32
+  slot $s2 : f32
+  slot $s3 : f64
+  block ^b0:
+    store i1 0, $s0
+    store u32 97, $s1
+    store f32 1.00000000000000000e0, $s2
+    store f64 2.00000000000000000e0, $s3
+    %t0 = addr $s0
+    store volatile i1 1, %t0
+    %t1 = addr $s1
+    store volatile u32 122, %t1
+    %t2 = addr $s2
+    store volatile f32 3.50000000000000000e0, %t2
+    %t3 = addr $s3
+    store volatile f64 7.25000000000000000e0, %t3
+    %t4 = addr $s0
+    %t5 = load volatile i1 %t4
+    call void @rg.13(%t5)
+    %t6 = addr $s1
+    %t7 = load volatile u32 %t6
+    %t8 = cmp eq u32 %t7, 122
+    %t9 = convert trunc i1 i64 %t8
+    call void @rg.13(%t9)
+    %t10 = addr $s2
+    %t11 = load volatile f32 %t10
+    %t12 = cmp eq f32 %t11, 3.50000000000000000e0
+    %t13 = convert trunc i1 i64 %t12
+    call void @rg.13(%t13)
+    %t14 = addr $s3
+    %t15 = load volatile f64 %t14
+    %t16 = cmp eq f64 %t15, 7.25000000000000000e0
+    %t17 = convert trunc i1 i64 %t16
+    call void @rg.13(%t17)
+    return void
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.15()
+    return i64 0
+}
