@@ -260,8 +260,8 @@
     "diagnostic": "source declaration kind is outside the initial source profile"
   },
   "backend": {
-    "lock_sha256": "b240edea2f8519bb1368f944e8e35bba79312666d82b11957ffc3abef491e493",
-    "object_sha256": "a6aa218c3b9f4eb902017fa57ee6c743f86a64f5ea5fe73210857ca330fa3acb",
+    "lock_sha256": "9fb6f4fa7285547c69ce2b7536460a3ed81d604a7935b3b0de4d8f02c866c5ca",
+    "object_sha256": "d59be152cc3d813a67208188602c2b9c78324d5dfbaf4a07ecb563a8489acf8f",
     "prebuilt_only": true
   },
   "native_driver": {
@@ -289,6 +289,11 @@
   "compatibility": "CLI always v1 only for actual SourceCore library; no user version flag or attribute-presence fallback. Legacy API/codec golden and non-SourceCore code path stay unchanged. No execution/nominal/Provided/UB policy expansion.",
   "client_metadata_tag": 4,
   "previous_backend": [
+    {
+      "lock_sha256": "b240edea2f8519bb1368f944e8e35bba79312666d82b11957ffc3abef491e493",
+      "object_sha256": "a6aa218c3b9f4eb902017fa57ee6c743f86a64f5ea5fe73210857ca330fa3acb",
+      "prebuilt_only": true
+    },
     {
       "lock_sha256": "6a70ac5be95e9a58a3345d2c7309962d4d16de6f66d09aa5bcfe3f0126a1dcb1",
       "object_sha256": "614689ec481576a83227076181eb165c038347cc4473a160d483f3654c8192c3",

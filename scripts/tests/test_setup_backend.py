@@ -10,7 +10,9 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import backend
-from setup_backend import install
+from setup_backend import install, locked_members
+
+ROOT = Path(__file__).resolve().parents[2]
 
 PREFIX = "cppgm-v9.9.9-linux-x86_64"
 TOOLS = ("lowir", "lowir2native", "cppgm")
@@ -33,7 +35,7 @@ class BackendDistribution(unittest.TestCase):
             "optional": {
                 "object": {"target": "x86_64-linux", "object_format": "elf64-x86-64",
                            "capabilities": ["lowir-to-object"], "sha256": {"cppgm": hashes["cppgm"]}},
-                "library": {"target": "x86_64-linux", "commit": "release-commit", "abi_version": 2,
+                "library": {"target": "x86_64-linux", "commit": "release-commit", "abi_version": 3,
                             "sha256": {name: hashes[name] for name in LIBRARY}}}}
 
     def members(self, payloads):
@@ -109,7 +111,8 @@ class BackendDistribution(unittest.TestCase):
         self.assertFalse((self.root / "backend.local.json").exists())
 
     def test_the_library_profile_must_belong_to_the_locked_release(self):
-        for change in ({"commit": "another-commit"}, {"abi_version": 3}, {"target": "aarch64-linux"},
+        for change in ({"commit": "another-commit"}, {"abi_version": 2}, {"abi_version": 4},
+                       {"abi_version": "3"}, {"target": "aarch64-linux"},
                        {"sha256": {"lowir_interface.h": "0" * 64}},
                        {"sha256": {"libcppgm_lowir.a": "0" * 64, "lowir_interface.h": "0" * 64,
                                    "../lowir_records.h": "0" * 64}}):
@@ -117,9 +120,33 @@ class BackendDistribution(unittest.TestCase):
             lock["optional"]["library"].update(change)
             with self.assertRaisesRegex(ValueError, "LowIR library capability is unavailable"):
                 backend.library_profile(lock)
-        self.assertEqual(backend.library_profile(self.lock)["abi_version"], 2)
+        self.assertEqual(backend.library_profile(self.lock)["abi_version"], 3)
         self.assertEqual(backend.library_member("lowir_interface.h"), "include/lowir_interface.h")
         self.assertEqual(backend.library_member("libcppgm_lowir.so"), "lib/libcppgm_lowir.so")
+
+    def test_the_library_reports_the_locked_release(self):
+        self.assertEqual(backend.library_release({"release": "v0.9.1"}), "0.9.1")
+        for release in (None, 91, "", "0.9.1", "v0.9", "v0.9.1-rc1", "v0.9.1\n", "release v0.9.1"):
+            with self.assertRaisesRegex(ValueError, "names no release"):
+                backend.library_release({"release": release})
+        with self.assertRaisesRegex(ValueError, "names no release"):
+            backend.library_release({})
+
+    def test_the_tracked_lock_and_distribution_name_one_release(self):
+        lock = json.loads((ROOT / "backend.lock.json").read_text())
+        distribution = json.loads((ROOT / "backend.distribution.json").read_text())
+        self.assertEqual(distribution["backend_lock_sha256"], sha256((ROOT / "backend.lock.json").read_bytes()))
+        release, prefix = lock["release"], distribution["prefix"]
+        self.assertEqual(prefix, f"cppgm-{release}-linux-x86_64")
+        self.assertEqual(distribution["url"], f"{lock['repository']}/releases/download/{release}/{prefix}.tar.gz")
+        # One commit for the tools and the library, at the reviewed interface version.
+        self.assertEqual({lock["commit"]}, {lock["optional"][name]["commit"] for name in ("object", "library")})
+        self.assertEqual(backend.library_profile(lock)["abi_version"], backend.LIBRARY_ABI_VERSION)
+        self.assertEqual(backend.library_release(lock), release[1:])
+        tools, library, members = locked_members(lock, prefix)
+        self.assertEqual(set(tools), set(TOOLS))
+        self.assertEqual({name for name, _ in members.values()}, set(tools) | set(library["sha256"]))
+        self.assertEqual(len({expected for _, expected in members.values()}), len(members))
 
 
 if __name__ == "__main__":

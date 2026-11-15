@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -11,6 +12,22 @@ import sys
 import native_links
 
 ROOT = Path(__file__).resolve().parents[1]
+# The one interface version of the in-process library that this bridge reviews.
+LIBRARY_ABI_VERSION = 3
+# What the library's text view of the handshake module must state: the
+# boundary forms of RustGM's writer. Interface version 2 carried only the
+# storage and the arity.
+LIBRARY_TEXT = (
+    "[classes=integer_sse]) -> obj<16x8> [result_classes=sse_integer, ",
+    ") as (",
+    "[classes=integer_sse]) -> obj<16x8> [result_classes=sse_integer]\n",
+    "[classes=1:integer_sse]",
+    "[arity=variadic",
+    "[return=noreturn",
+    "[storage=readonly",
+    " intel readwrite 1 0 0 2 {",
+    "    asm @",
+)
 
 
 def digest(path):
@@ -77,11 +94,19 @@ def library_profile(lock):
     profile = lock.get("optional", {}).get("library", {})
     hashes = profile.get("sha256", {})
     if (profile.get("target") != "x86_64-linux" or profile.get("commit") != lock.get("commit") or
-            profile.get("abi_version") != 2 or
+            profile.get("abi_version") != LIBRARY_ABI_VERSION or
             not {"libcppgm_lowir.a", "lowir_interface.h"} <= set(hashes) or
             any(Path(name).name != name or not name.endswith((".a", ".so", ".h")) for name in hashes)):
         raise ValueError("reviewed LowIR library capability is unavailable")
     return profile
+
+
+def library_release(lock):
+    """The release the pinned library must report: the lock's tag without its `v`."""
+    release = lock.get("release", "")
+    if not isinstance(release, str) or not re.fullmatch(r"v[0-9]+(\.[0-9]+){2}", release):
+        raise ValueError("backend lock names no release for the LowIR library")
+    return release[1:]
 
 
 def library_member(name):
@@ -336,26 +361,46 @@ def test_assembly():
 
 def test_library():
     library = load_library()
+    release = library_release(json.loads((ROOT / "backend.lock.json").read_text()))
+    tools = load_tools(("cppgm",))
     folder = ROOT / "obj" / "backend" / "library-handshake"
     folder.mkdir(parents=True, exist_ok=True)
     client, producer = folder / "producer.o", folder / "producer"
-    module, observer = folder / "module.o", folder / "observer"
     strict = ["cc", "-std=c11", "-Wall", "-Wextra", "-Werror"]
     invoke([*strict, "-I", str(library), "-c", str(ROOT / "tests" / "backend" / "library.c"),
             "-o", str(client)])
     # The library is C++ inside: its C client links with the C++ driver.
     invoke(["c++", str(client), str(library / "libcppgm_lowir.a"), "-pthread", "-o", str(producer)])
-    module.unlink(missing_ok=True)
-    result = subprocess.run([str(producer), str(module)], capture_output=True, timeout=30)
-    if result.returncode or result.stdout or result.stderr:
-        raise ValueError("LowIR library producer failed: " + result.stderr.decode(errors="replace"))
-    verify_object(module)
-    invoke([*strict, str(ROOT / "tests" / "backend" / "library-observer.c"), str(module),
-            "-o", str(observer)])
-    result = subprocess.run([str(observer)], capture_output=True, timeout=5)
-    if result.returncode or result.stdout or result.stderr:
-        raise ValueError("object compiled in process did not link and compute its declared results")
-    print("PASS: the LowIR library builds a module in process and returns a linkable object")
+    # Fixed code is what the object bridge's own command makes; the host C
+    # driver links position-independent code by default.
+    for form, flags in (("fixed", []), ("pic", ["-fPIC"])):
+        module, view, observer = (folder / (form + suffix) for suffix in (".o", ".lowir", "-observer"))
+        from_text = folder / (form + "-text.o")
+        for stale in (module, view, from_text):
+            stale.unlink(missing_ok=True)
+        result = subprocess.run([str(producer), str(module), str(view), release, form],
+                                capture_output=True, timeout=30)
+        if result.returncode or result.stdout or result.stderr:
+            raise ValueError(f"LowIR library producer failed ({result.returncode}): "
+                             + result.stderr.decode(errors="replace"))
+        verify_object(module)
+        stated = view.read_text()
+        missing = [words for words in LIBRARY_TEXT if words not in stated]
+        if missing:
+            raise ValueError(f"LowIR library text view lacks {missing}")
+        # The pinned driver must make the same object from that text: the
+        # library is the reviewed backend, not a second implementation.
+        invoke([tools["cppgm"], "-O0", *flags, "-c", str(view), "-o", str(from_text)])
+        if module.read_bytes() != from_text.read_bytes():
+            raise ValueError(f"object compiled in process differs from the driver's object ({form})")
+        require_instruction(module, "movntps", "0f 2b", ("rg_library_stream",))
+        invoke([*strict, str(ROOT / "tests" / "backend" / "library-observer.c"), str(module),
+                "-o", str(observer)])
+        result = subprocess.run([str(observer)], capture_output=True, timeout=5)
+        if result.returncode or result.stdout or result.stderr:
+            raise ValueError(f"object compiled in process did not link and compute its declared results ({form})")
+    print("PASS: the LowIR library builds a module with boundary classes, call boundaries, noreturn and "
+          "assembly in process; its objects equal the driver's and link")
 
 
 def main():

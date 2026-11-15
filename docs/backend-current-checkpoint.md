@@ -1,230 +1,352 @@
-# CPPGM backend v0.9.0 checkpoint (bb0980105)
+# CPPGM backend v0.9.1 checkpoint (c9b05c4c0)
 
-All three tools now pin release `v0.9.0` of
+All three tools and the LowIR library now pin release `v0.9.1` of
 [cppgm](https://github.com/vishvananda/cppgm), commit
-`bb09801053e48486beebe014071a71353ce9be0b`, replacing the v3 pins at
-`17b024f69` ([v3 checkpoint](backend-v3-checkpoint.md)). The user asked for
-this update on 2026-11-15. Two upstream names changed: the repository was
-`cppgm-extended`, and the compiler driver was `cppgm++` and is now `cppgm`.
-The release also ships the LowIR backend as a library, which the lock records
-as a new optional capability.
+`c9b05c4c0f7bb1294c717551c61145940b21125e`, replacing the v0.9.0 pins at
+`bb0980105` ([v0.9.0 checkpoint](backend-v0.9.0-checkpoint.md)). The user
+asked for this update on 2026-11-15. The release raises the library's C
+interface to version 3, which states the boundary facts, assembly templates
+and debug records that version 2 could not. The LowIR text contract is
+unchanged.
 
 ## Distribution
 
-Earlier pins were rebuilt here and published as a RustGM archive. Upstream now
-publishes versioned release packages, so the lock binds the package's own
-bytes and `backend.distribution.json` names the upstream asset:
+The lock binds the bytes of upstream's release package, as for v0.9.0, and
+`backend.distribution.json` names the upstream asset:
 
-- Asset: `cppgm-v0.9.0-linux-x86_64.tar.gz`, 12,775,959 bytes, SHA-256
-  `8448da3fbb55c13e5420f9e177261664b6d97df39090bc8348fd469786218a68`. Its one
-  release directory is `cppgm-v0.9.0-linux-x86_64`, recorded as `prefix`.
-- The published `SHA256SUMS` states the same archive digest. The package's
-  provenance record (`cppgm-v0.9.0-linux-x86_64-provenance.json`, `8cb5cc9d…`)
-  states the same digest, source `bb0980105`, host compiler g++ 13.3.0 on
-  Ubuntu 24.04, and a hash for every file. All eleven locked hashes equal it.
-- `scripts/setup_backend.py` checks the archive digest and then requires every
-  entry to be a plain file inside the release directory. It extracts only the
-  locked files, checks each against the lock, and publishes pins and
-  configuration only after all of them match. The package's other six tools,
-  its licence, notice and README are not installed.
+- Asset: `cppgm-v0.9.1-linux-x86_64.tar.gz`, 13,534,556 bytes, SHA-256
+  `90e45319e9d49c75726fe4859d9c59f79abdecb288d0fce5d9698f07defc3ea9`. Its one
+  release directory is `cppgm-v0.9.1-linux-x86_64`, recorded as `prefix`.
+- The published `SHA256SUMS` (`a9b07543…`) states the same archive digest.
+  The package's provenance record
+  (`cppgm-v0.9.1-linux-x86_64-provenance.json`, `e4e66af1…`) states the same
+  digest, source `c9b05c4c0` and a hash for every file. Tag `v0.9.1` (tag
+  object `5d1732bb4`) names that commit. The archive holds 20 plain files,
+  all inside the release directory, and each one's hash equals the record.
+  All eleven locked hashes equal it.
+- The packaging changed. The provenance record, now schema 2, names the
+  compiler as `cppgm c9b05c4c0`: the packaged tools are cppgm's second-stage
+  build of itself, and cppgm compiled the library. The host compiler,
+  g++ 13.3.0 on Ubuntu 24.04, builds the first stage, links and supplies the
+  standard library. The v0.9.0 package was built by g++ alone.
+- `scripts/setup_backend.py` is unchanged. It installs the same eleven files
+  and nothing else from the package.
 
 | File | Bytes | SHA-256 |
 |---|---|---|
-| `bin/lowir` | 497,600 | `a0dac6661a497ed3797dc4710d3514f93f0e76fd1ab145abbfbbf4eb6378c95c` |
-| `bin/lowir2native` | 5,024,560 | `a76101c81ad67c62fc12cc5738f4f43a2bd500ac139474bf52263a46c908a41b` |
-| `bin/cppgm` | 9,802,656 | `a6aa218c3b9f4eb902017fa57ee6c743f86a64f5ea5fe73210857ca330fa3acb` |
-| `lib/libcppgm_lowir.a` | 6,841,112 | `92b148da4763cf66296331025254f858bb185547f065ec15478e2860a662d880` |
-| `lib/libcppgm_lowir.so` | 3,878,472 | `71f2cb0c9bf3ecf7fe78a39757acb02d1c000c8088611d07748a31220fcdb3bd` |
-| `include/lowir_interface.h` | 5,449 | `48e09900667506f9e02885e22ff1a6a40dd1c8f7d2c6155be1b16e27b432dd3b` |
+| `bin/lowir` | 638,448 | `434f5223c2a96d6099461df0ec229c732f347e7e1a6299704a805b76bf290bba` |
+| `bin/lowir2native` | 6,174,304 | `c6068a0dcd669191313b98facb5f16247277a509fd939757d00cdf52b63d28cf` |
+| `bin/cppgm` | 11,239,496 | `d59be152cc3d813a67208188602c2b9c78324d5dfbaf4a07ecb563a8489acf8f` |
+| `lib/libcppgm_lowir.a` | 8,947,054 | `7ebd76316229ad7522d11d2538d7a6def6cf4a116ac5f84c427898131ff25f19` |
+| `lib/libcppgm_lowir.so` | 4,858,952 | `cd6c387f23184a9758c9b77213023705f04e9c7bf0e2ef827728273e8508159d` |
+| `include/lowir_interface.h` | 18,250 | `f94aea4cf86f7a2eef7a503c7106d72175bdf85375c5667fe96beb801eb08687` |
 | `include/lowir_records.h` | 5,263 | `60f1d822476bd3b9bc38d9441ddb943e3f5bef2e97ab0891a5280154f0dc1910` |
-| `include/lowir_c_vocabulary.h` | 9,589 | `ffcced61c048682c5a993470b97a1646a43cdb09cbf22c1682ec970eeb2d0294` |
+| `include/lowir_c_vocabulary.h` | 15,627 | `f4a3a55849d369f7fafd8e0442a34b3d0fc9f6ace0389cb11513c8976aea2542` |
 | `include/lowir_model.h` | 29,423 | `847a06baa6d92ca178f07698743e1b0a4f4080c30355640fdc3d3654193887bd` |
 | `include/lowir_local_model.h` | 7,012 | `c6cbe9d4f485cf4fe7c567d07fda7c84d51dbde9581aad07b17218bf022743ae` |
 | `include/ir_symbol_model.h` | 20,468 | `feda1b6df64e2263f327889b4684074fd91e46a36b78bccda48d5f73cb7ba93b` |
 
-The release bytes are upstream's, not a local rebuild. A local build of the
-tag with g++ 15.2.0 produces different bytes, as a different host compiler
-should, so `backend.py --configure CHECKOUT` no longer matches an ordinary
-local build. Install with `python3 scripts/setup_backend.py`, or with
-`--bundle PATH` for a package that is already downloaded. The v1, v2 and v3
-releases, locks and pins stay unchanged for historical reproduction.
+Four headers are byte-identical to v0.9.0: `lowir_records.h`,
+`lowir_model.h`, `lowir_local_model.h` and `ir_symbol_model.h`. Install with
+`python3 scripts/setup_backend.py`, or with `--bundle PATH` for a package
+that is already downloaded. The v1, v2, v3 and v0.9.0 releases, locks and
+pins stay unchanged for historical reproduction.
 
 ## Upstream CI at pin time
 
-- The Release workflow for the tag, run 43701650820, succeeded in all four
-  jobs: Linux x86-64 tools, library and source; Intel macOS; wasm; publish.
-- On the tagged commit's push to main, Tests (run 43701437981), Upstream
-  C++11 correctness (43701437985), Clang build (43701438200), Intel macOS
-  port (43701438003), the Wasm32, simdjson, Godot, index-cpp, self-build,
-  internal and public benchmark runs, Inception (43703494100) and Export
-  Assignments (43703494105) succeeded. The Boost benchmark run 43701438216
-  was still in progress when this was written.
+- The Release workflow for the tag, run 43752009450, succeeded in all four
+  jobs: Linux x86-64 tools, library and source; Intel macOS tools and
+  library; wasm; publish.
+- On the tagged commit's push to main, Tests (run 43750859130), Upstream
+  C++11 correctness (43750858858), Clang build (43750858924), Intel macOS
+  port (43750858883), the Wasm32, simdjson, Godot, index-cpp, self-build,
+  internal, public and Boost (43750858933) benchmark runs, Inception
+  (43753429844) and Export Assignments (43753429631) succeeded. No run on
+  the commit failed or is pending.
 - The same commit passed the pull-request runs before the merge, including
-  PA36 release qualification (43698118118).
+  Tests (43748150242) and the Release workflow (43748150237).
 
 ## LowIR contract changes
 
-There are 563 commits from `17b024f69` to the tag. The changes to the reviewed
-[LowIR contract](https://github.com/vishvananda/cppgm/blob/bb09801053e48486beebe014071a71353ce9be0b/pa8/lowir.md)
-add forms. Its 68 replaced lines renumber upstream assignments, rename the
-driver, or extend a rule with the additions below:
+There are 16 commits from `bb0980105` to the tag. None changes a form that
+RustGM emits:
 
-- Target profiles: an optional leading `target` line (for example
-  `target wasm32 1`) sets pointer storage, alignment and index scaling. A file
-  without one keeps the x86-64 profile. Wasm profiles add `import` and
-  `export` records, `memory_size` and `memory_grow`.
-- Function metadata `cold=yes`, and alias declarations that give an alias its
-  own binding and typed interface.
-- Boundary facts: `repeatable=yes`, `noalias_result=yes`, `return=nonnull`,
-  `this_return=yes`, `alias=exclusive_result`, and the aggregate layout facts
-  `shape=` and `result_shape=`.
-- Call facts `argument_type=` and `argument_shape=` for unnamed variadic
-  arguments.
-- Instruction facts `index inbounds` and `copy nonnull`.
-- `select` on `f32` and `f64`, and `frame_address`.
-- Two storage rules are now stated. An `i1` store writes a byte holding 0 or
-  1, and a read of a slot that nothing has written yields an unspecified
-  value. RustGM lowers `bool` to `i1` and never stores another value in one.
-- The assembly forms are now a required part of the upstream contract
-  ([the assembly boundary](https://github.com/vishvananda/cppgm/blob/bb09801053e48486beebe014071a71353ce9be0b/pa29/assembly.md))
-  instead of an optional extension. Their LowIR spelling is unchanged, and
-  the lock still records `assembly` as a capability of the object profile.
-
-There is no new arithmetic or bit operation. RustGM emits none of the new
-forms. Each one needs a real typed producer proof before use, as before.
+- The reviewed
+  [LowIR contract](https://github.com/vishvananda/cppgm/blob/c9b05c4c0f7bb1294c717551c61145940b21125e/pa8/lowir.md)
+  (`89233a22…`) and
+  [assembly boundary](https://github.com/vishvananda/cppgm/blob/c9b05c4c0f7bb1294c717551c61145940b21125e/pa29/assembly.md)
+  (`d8a49ac0…`) are byte-identical at the two commits.
+- The text reader now holds the metadata keys it has seen in 64 bits,
+  because `this_return` is the 33rd key. RustGM states `arity`, `return`,
+  `result_classes`, `storage`, `role` and `classes`, which were all below
+  the old limit. The reader's validation of debug records moved to a shared
+  file. RustGM writes no debug records.
+- Three optimizer changes do not apply at `-O0`, where RustGM compiles:
+  split-form aggregate slots are no longer split again, a small callee is
+  inlined at a cold site that passes a caller slot's address, and vectors of
+  literal lanes load from read-only data. The six frozen inputs of the
+  measurement below compile to the same bytes under both pins.
+- The driver finds the headers of another GCC installation when the build's
+  are absent. That concerns cppgm's C++ frontend only. `cppgm --version`
+  prints `cppgm 0.9.1 (host configuration: g++)`.
+- The remaining commits change upstream's workflows, packaging and README.
 
 ## The LowIR library
 
-The release ships `libcppgm_lowir` (static and shared) with a C interface,
-`lowir_interface.h`, at ABI version 2. A producer interns symbols and
-signatures, writes instruction, operand, literal and slot records directly
-into buffers that the library owns, and receives a host-linkable x86-64
-object in the same process. No LowIR text is written or parsed. Upstream's
+The release ships `libcppgm_lowir` (static and shared) with the C interface
+`lowir_interface.h` at version 3. Version 3 adds to version 2 and changes no
+function or record of it. The library accepts versions 2 and 3 from a
+client; RustGM's lock, profile check and handshake accept only 3. Upstream's
 instructions are
-[Embedding the LowIR backend](https://github.com/vishvananda/cppgm/blob/bb09801053e48486beebe014071a71353ce9be0b/docs/lowir-library.md).
+[Embedding the LowIR backend](https://github.com/vishvananda/cppgm/blob/c9b05c4c0f7bb1294c717551c61145940b21125e/docs/lowir-library.md).
 
-What this checkpoint does with it:
+What version 3 adds:
 
-- The lock's optional `library` profile records ABI version 2, the commit and
-  the hash of both library forms and the six headers.
-  `backend.library_profile` accepts it only for the locked commit and target.
-- The installer pins the library and its headers together in one folder under
-  `obj/backend/pins/` and records it as `library` in `backend.local.json`.
-- A fourth handshake, `backend.py --test-library`, is part of
-  `make test-backend`. An original C producer (`tests/backend/library.c`)
-  refuses any other ABI version, builds a read-only global and a function
-  that loads it, compiles them at `-O0` as position-independent code and
-  writes the object. The handshake checks the ELF header and links the object
-  with a C observer that must read the global and get the right sums.
+| Addition | Functions and records | LowIR text it states |
+|---|---|---|
+| Versions | `cppgm_lowir_abi_version`, `cppgm_lowir_version`, `CPPGM_LOWIR_ABI_VERSION_MIN` | none |
+| Named numbers | an enumerator for every argument and record field: `CPPGM_TARGET_*`, `CPPGM_FUNCTION_*`, `CPPGM_GLOBAL_*` and `CPPGM_CODE_*` in `lowir_interface.h`; `CPPGM_FLAG_*`, `CPPGM_DATA_*`, `CPPGM_BINDING_*`, `CPPGM_STORAGE_*`, `CPPGM_ARITY_*`, `CPPGM_KEY_*`, `CPPGM_ROLE_*`, `CPPGM_ASM_*` and the other metadata values in `lowir_c_vocabulary.h` | none |
+| Boundary metadata | `cppgm_lowir_boundary` with `CppgmParameter` (`object_bytes`, `pass`, `alias`, `classes`, `shape`) and `CppgmBoundary` (`arity`, `effects`, `unwind`, `returns`, `facts`, `result_classes`, `result_shape`); `CPPGM_CLASSES(first, second)` and `CPPGM_CLASSES_MEMORY` | a function's or a call boundary's `arity=`, `effects=`, `unwind=`, `return=`, `repeatable=`, `noalias_result=`, `this_return=`, `result_classes=`, `result_shape=`; a parameter's `pass=`, `alias=`, `object_bytes=`, `classes=`, `shape=` |
+| Symbol metadata | `cppgm_lowir_symbol_fact`, `cppgm_lowir_symbol_name` | `role=`, `linkage=`, `binding=`, `storage=`, `tls_for=`, the yes-valued keys `keep_alias=` to `cold=`; `object=`, `section=` |
+| Argument facts | `cppgm_lowir_body_argument_facts` with `CppgmArgumentFact` | a call's `classes=N:`, `argument_type=N:` and `argument_shape=N:`; a `va_arg`'s `classes=` and `shape=` |
+| Assembly templates | `cppgm_lowir_assembly` with `CppgmAssembly` and its register, group, immediate, alternative, operand and piece records; the `asm` instruction `CPPGM_OP_ASM` | `assembly @name ... { ... }` and `asm` |
+| Debug information | `cppgm_lowir_debug_file`, `cppgm_lowir_function_location`, `cppgm_lowir_body_locations`, `cppgm_lowir_debug_type`, `cppgm_lowir_debug_scope`, `cppgm_lowir_debug_local`; `CppgmDebugLocation`, `CppgmDebugType` | `!dbg(...)`, `debug_type`, `debug_scope`, `debug_local` |
 
-What it does not do: RustGM still reaches the backend through LowIR text and
-the subprocess bridge. An in-process bridge is separate work with two open
-points.
+A call states its boundary by setting `CPPGM_FLAG_SIGNATURE` and holding a
+`cppgm_lowir_boundary` ID in `immediate`. That is the text's
+`as (...) -> ...` form.
 
-- Calling the library from Rust is FFI. The crate forbids `unsafe` and the
-  audit rejects FFI, and the repository guide keeps the backend bridge outside
-  the frontend library. A bridge therefore needs its own reviewed boundary,
-  which is a rule change for the user to decide.
-- ABI version 2 states its own limits: no assembly templates, no debug
-  information, no Wasm objects and no complete aggregate ABI metadata. A
-  signature carries a result type, parameter types and a variadic flag only.
-  RustGM's writer also states `classes=` and `result_classes=` for object
-  parameters and results, explicit `as (...)` call boundaries and
-  `return=noreturn`, so each emitted form needs a fit check first.
+### Fit with RustGM's writer
+
+The v0.9.0 checkpoint listed four forms of RustGM's writer that version 2
+could not state. Version 3 states each one, and every other form the writer
+emits has a counterpart:
+
+| RustGM writes | Version 3 | Checked by |
+|---|---|---|
+| `[classes=...]` on an object parameter | `CppgmParameter::classes` | handshake |
+| `[result_classes=...]` | `CppgmBoundary::result_classes` | handshake |
+| `as (...) -> ... [...]` on a call through a value | `CPPGM_FLAG_SIGNATURE` and a boundary ID | handshake |
+| `[classes=N:...]` on a call argument | `cppgm_lowir_body_argument_facts` | handshake |
+| `[arity=variadic]` | `CppgmBoundary::arity` | handshake |
+| `[return=noreturn]` | `CppgmBoundary::returns` | handshake, by text and object equality |
+| `assembly` templates and `asm` | `cppgm_lowir_assembly`, `CPPGM_OP_ASM` | handshake |
+| `[storage=readonly]` globals | `cppgm_lowir_global` | handshake |
+| `[role=entry]` | `cppgm_lowir_symbol_fact` with `CPPGM_KEY_ROLE` | reading only |
+| global declarations, zero runs and address items | `CPPGM_GLOBAL_DECLARATION`, `CPPGM_DATA_ZERO`, `CPPGM_DATA_ADDRESS` | reading only |
+| `va_start`, `va_arg`, the atomic instructions, `unary`, `cmp`, `convert`, `copy`, `jump`, `branch`, `[volatile]`, `[exact]` | the `CPPGM_OP_*` and `CPPGM_FLAG_*` values of the same names | reading only |
+| debug records | the debug functions | RustGM writes none |
+
+What a bridge must still handle, because the library differs from the text
+path:
+
+- The library returns a relocatable object and nothing else. It has no
+  counterpart of `lowir2native`'s linked executable, so the executable
+  profile still needs a link step.
+- A library function has C language linkage unless a symbol fact states
+  another. RustGM's text states no linkage, so a bridge must state
+  `CPPGM_LINKAGE_DEFAULT` for every function to build the module that its
+  text describes.
+- The header names every number, but it states how an instruction uses its
+  record fields only for `convert`, `call` and `asm`. Upstream's text reader
+  is the reference for the others. For example, `copyobj` holds its size in
+  `immediate` and its alignment's logarithm in `sub`, and a compare-exchange
+  holds its failure order in `sub`. The check is the one the handshake uses:
+  write the module with `cppgm_lowir_write`, compile that text with the
+  pinned driver and require equal object bytes.
+- Temporaries are dense numbers with the parameters first, so a bridge
+  renumbers RustGM's `%pN`, `%tN` and `%oN`. Float literals are bit
+  patterns. An assembly template names a register by bank and number, not by
+  its spelling.
+- A module compiles once, a failure poisons it, and compilation is
+  serialized across the process. The static library is C++ inside and links
+  with the C++ runtime and pthread.
+- Upstream states three exclusions: assembly-defined functions, ordered
+  module assembly and Wasm objects. RustGM emits none of them.
+
+### What this checkpoint does
+
+- The lock's optional `library` profile records interface version 3, the
+  commit and the hash of both library forms and the six headers.
+  `backend.library_profile` accepts it only for the locked commit, target
+  and interface version 3. `backend.library_release` derives the release
+  that the library must report from the lock's tag.
+- The handshake `backend.py --test-library`, part of `make test-backend`, is
+  ported to version 3. The original C producer `tests/backend/library.c`
+  fails to compile against any header whose `CPPGM_LOWIR_ABI_VERSION` is
+  not 3, and refuses at run time a library that reports another interface
+  version or another release than the lock's. It also requires the library
+  to refuse a module created for version 4, for version 1 or for an unknown
+  target.
+- The producer builds one module in process: a read-only global, a function
+  that loads it, and five functions that use the additions of version 3.
+  `rg_library_swap` takes and returns 16-byte objects with
+  `classes=integer_sse` and `result_classes=sse_integer`, and states default
+  linkage through a symbol fact.
+  `rg_library_apply` calls a function pointer through a stated boundary with
+  both classes. `rg_library_tally` passes an object to a variadic host
+  function with `classes=1:integer_sse`. `rg_library_stream` invokes an
+  assembly template of the shape RustGM writes for `movntps`.
+  `rg_library_stop` is `return=noreturn`.
+- The handshake compiles the module twice, as fixed and as
+  position-independent code. Each time it requires the library's text view
+  to state every one of those forms, compiles that text with the pinned
+  driver (`cppgm -O0 -c`, with `-fPIC` for the second) and requires the
+  driver's object to equal the library's object byte for byte. It then
+  links the object with an independent C observer. The host compiler places
+  each argument and result by the psABI, so a class that did not reach the
+  object fails a check.
+- Six negative controls removed one fact each from the producer: the
+  parameter classes and the result classes of `rg_library_swap`, the
+  parameter classes of `rg_library_apply`, the parameter classes and the
+  result classes of its call boundary, and the classes of the variadic call
+  argument. The observer failed at the matching check every time.
+  `return=noreturn` has no observable effect at `-O0`, so the text view and
+  the equal objects are its evidence.
+
+### What it does not do
+
+RustGM still reaches the backend through LowIR text and the subprocess
+bridge. Nothing in the frontend uses the library.
+
+An in-process FFI bridge is approved by the user and is the next step. It
+belongs in its own crate outside the frontend library, which keeps its
+`unsafe` ban. This checkpoint does not build that bridge.
 
 ## Decisions
 
-- The distribution is upstream's release package. Rejected: repackaging the
-  three tools into a RustGM archive as v1 to v3 did. That would leave two
-  archives to keep equal and would drop upstream's provenance record.
-- The installer selects files by their full path inside the release
-  directory. An entry outside it, a link, a duplicate or a missing `prefix`
-  fails before anything is published.
-- The library is an optional capability beside the object profile. A lock
-  cannot advertise a library for another commit, target or ABI version.
-- The driver's key in `backend.local.json` is now `cppgm`. A worktree that
-  still holds the v3 configuration must run `scripts/setup_backend.py` again.
+- The library profile and the handshake accept exactly one interface
+  version. Rejected: accepting the range 2 to 3 that the library itself
+  accepts. The reviewed header set belongs to one version, and a client
+  written for it must not run against another.
+- The handshake compares the library's object with the pinned driver's
+  object for the same text. That proves the library is the reviewed backend
+  and gives a bridge a check for any form that only reading supports.
+  Rejected: checking behaviour alone, which cannot see `return=noreturn` and
+  missed a call boundary without classes in an earlier draft of the
+  producer.
+- The fixed code form is the one the object bridge's own command makes. The
+  position-independent form is checked too, because the host C driver links
+  position-independent executables by default.
+- The v0.9.0 lock, checkpoint and pins are kept. A worktree that still holds
+  the v0.9.0 configuration must run `scripts/setup_backend.py` again.
 
 ## Qualification
 
-Everything below ran on main `2ef44dfe3` plus this change, with the release
-package installed by `setup_backend.py`.
+Everything below ran on main `a576c7e96` plus this change, with the release
+package installed by `setup_backend.py`. Each Makefile target ran as
+`python3 scripts/resources.py run --wait-seconds 1800 --max-output-gib 24 -- make TARGET`.
+Each other command ran behind that prefix and
+`/usr/bin/python3 scripts/storage.py run --max-output-gib 24 --no-prune --`.
 
-- `make test-backend`: the executable, object, assembly and library
-  handshakes pass.
-- `make test-maintainer-native`: all 523 release maintainer native tests
-  (`--ignored`) pass. Its released native units pass too, with 2,059
+- `make test-backend`: all four handshakes pass.
+  - `PASS: CPPGM parses, validates and executes LowIR (exit 42)`
+  - `PASS: LowIR object interoperates with independent C calls, callbacks and globals`
+  - `PASS: LowIR assembly emits movntps in objects and executables with full bits and guards`
+  - `PASS: the LowIR library builds a module with boundary classes, call boundaries, noreturn and assembly in process; its objects equal the driver's and link`
+- `make test-maintainer-native`: all 529 release maintainer native tests
+  (`--ignored`) pass, in 16 `test result: ok` lines with no failure. Its
+  released native units pass too, in eight `PASS` lines with 2,059
   independent checks and 729 executable comparisons.
-- The broad native course sweep, `check_native.py` for PA11 to PA14 and PA16
-  to PA24 with the release compiler: all 13 stages pass, with 5,551
-  independent checks, 3,106 executable comparisons, 358 codegen-only
-  comparisons and 105 object comparisons. The seven failures that the v3
-  checkpoint recorded in PA13 and PA18 no longer occur.
-- A fresh root installed the published package from its URL. Every pinned
-  file matched the lock and all four handshakes passed there.
-- `make test-harness` passes.
+- `cargo build --manifest-path dev/Cargo.toml --release --locked`, then
+  `python3 scripts/check_native.py STAGE --app dev/rustgm` for PA11 to PA14
+  and PA16 to PA24: all 13 stages pass. The totals equal the v0.9.0 sweep's.
+  PA16, PA23 and PA24 were refused resource admission on the first pass and
+  passed when rerun.
+
+  | Stage | Independent checks | Executable | Codegen-only | Object |
+  |---|---|---|---|---|
+  | PA11 | 191 | 180 | 0 | 0 |
+  | PA12 | 113 | 64 | 0 | 0 |
+  | PA13 | 532 | 365 | 0 | 0 |
+  | PA14 | 12 | 12 | 0 | 0 |
+  | PA16 | 131 | 123 | 0 | 2 |
+  | PA17 | 205 | 135 | 0 | 0 |
+  | PA18 | 505 | 308 | 6 | 3 |
+  | PA19 | 768 | 334 | 2 | 0 |
+  | PA20 | 1,013 | 613 | 26 | 0 |
+  | PA21 | 525 | 311 | 0 | 0 |
+  | PA22 | 392 | 144 | 134 | 0 |
+  | PA23 | 420 | 89 | 185 | 0 |
+  | PA24 | 744 | 428 | 5 | 100 |
+  | Total | 5,551 | 3,106 | 358 | 105 |
+
+- A fresh root installed the published package from its URL with
+  `python3 scripts/setup_backend.py`. Every pinned file matched the lock and
+  all four handshakes passed there (`clean-install: PASS`).
+- `python3 scripts/bringup_linked.py` with an observe build of this tree:
+  the seven linked core consumers (`atomics`, `consts-statics`,
+  `duration-net`, `integers`, `intrinsic-ops`, `fmt-floats`, `fmt-integers`)
+  each report `native: exit 0; stdout matches`, and the run reports
+  `passed 7 of 7`.
+- `make test-upstream`: `Verified 128 pinned upstream fixtures` and
+  `Verified 126 Rust 1.98.0 Reference files`.
+- `make test-harness`: `Ran 375 tests` and `OK`, including the installer and
+  bridge unit tests; `Maintainer suites: 500 roots in 13 binaries`.
 
 Two contracts refuse any unreviewed lock, as before. Each now binds the
-v0.9.0 lock and keeps the earlier bindings as history:
+v0.9.1 lock and keeps the earlier bindings as history:
 
 - the PA28 atomic capability contract
   (`pa28/tests/backend/atomics/contract.json`), with the seven reviewed CPPGM
-  sources at the new commit
+  sources at the new commit. All seven are byte-identical to v0.9.0, so their
+  hashes did not change.
 - the PA31 source-attribute CLI contract
-  (`pa31/tests/spec/source-attribute-transport/cli-contract.json`)
+  (`pa31/tests/spec/source-attribute-transport/cli-contract.json`), with the
+  new lock and driver hashes.
 
-No declared case, outcome, encoding count or diagnostic changed. The PA28
-backend contract passes on the new pin with all 65 commands.
+Both are declared contracts without a generator. A script replaced the lock,
+the commit and the driver hash, recomputed the seven source hashes from
+upstream's files at the new commit and moved the v0.9.0 binding to the
+history list. No declared case, outcome, encoding count or diagnostic
+changed. Their own tools then checked them:
 
-All seven reviewed CPPGM sources changed between the pins:
+- `python3 scripts/atomic_capabilities.py backend obj/parallel/pa28/backend-v0.9.1-pin`
+  passes with all 65 commands.
+- The maintainer native tests include both consumers:
+  `intrinsic_backend::capabilities::atomic_width_pointer_bool_and_fence_backend_contracts`
+  and
+  `crate_linking::versioned_clients::cli_function_contracts_reach_fresh_native_consumers_returning_seven`.
 
-- `lowir_model.h`: adds `frame_address`, `memory_size`, `memory_grow`, the
-  `index` bounds property, the `nonnull` instruction fact and pointer-width
-  types. `frame_address` sits in the middle of the opcode table, so opcode
-  numbers moved. RustGM writes text and never depends on them; a library
-  client must use the constants of the pinned headers.
-- `instruction.h`: the instruction, value and slot records moved to the
-  shared `lowir_records.h`.
-- `text_parser_body.cpp`, `validator.cpp` and `pa8/lowir.md`: additions for
-  the new forms.
-- `emit_memory.cpp`: the atomic changes apply at optimization level 1 and
-  above, or to fused and tested flag forms. RustGM compiles at `-O0`.
-- `intrinsic_lowering.cpp`: changes to cppgm's own C++ frontend only.
+No generated reference changed.
 
-The atomic vocabulary is unchanged by name and order: the seven atomic opcode
-strings and the `MemoryOrder` enumeration.
-
-The measurement used immutable old and new tools on frozen inputs. Each input
-ran in six exclusive blocks of A A A B B A, with repeats so that each
-observation lasts roughly 0.04 to 0.2 s. The new backend generates different
-code, so output bytes differ between the pins; every observer and native
-behaviour matched.
+The measurement used immutable old and new tools on the frozen inputs of the
+v0.9.0 checkpoint, under an exclusive resource lease. Each input ran in six
+blocks of A A A B B A, with repeats so that each observation lasts roughly
+0.04 to 0.2 s. For all six inputs the new tools produce the same object or
+executable bytes as the old tools, and every observer and native behaviour
+matched.
 
 | Input | Kind | A/A range | Paired B/A median |
 |---|---|---|---|
-| `deref` (2,573 B) | object + observer | 0.867–1.066 | 1.013 |
-| `receivers-128` (182,027 B) | object + observer | 0.880–1.067 | 1.017 |
-| `f64-saturation` (20,999 B) | program | 0.945–1.105 | 1.022 |
-| `text-bytes` (14,250 B) | program | 0.849–1.247 | 1.035 |
-| `alias-callable` (1,312 B, control) | program | 0.886–1.085 | 1.026 |
-| `core-atomics` (1,377,713 B) | object | 0.823–1.246 | 1.040 |
+| `deref` (2,573 B) | object + observer | 0.923–1.040 | 1.016 |
+| `receivers-128` (182,027 B) | object + observer | 0.885–1.111 | 1.004 |
+| `f64-saturation` (20,999 B) | program | 0.948–1.129 | 1.005 |
+| `text-bytes` (14,250 B) | program | 0.393–1.186 | 0.942 |
+| `alias-callable` (1,312 B, control) | program | 0.959–1.100 | 1.014 |
+| `core-atomics` (1,377,713 B) | object | 1.010–1.295 | 1.009 |
 
-`core-atomics` is a bring-up compilation of real core with one consumer; one
-object build of it takes about 0.06 s. All six paired medians are above 1
-and all fall inside their A/A ranges. They show neither a speedup nor a
-reliable regression, and this is not a qualification of generated-code
-quality.
+The medians show neither a speedup nor a regression from the larger
+self-built tools. The run was noisy for two inputs: one A/A block of
+`text-bytes` fell to 0.393, and every A/A block of `core-atomics` was above
+1. This is not a qualification of generated-code quality.
 
-Retained evidence, under `obj/backend-pin-v4/` unless a path says otherwise:
+Retained evidence, under `obj/backend-pin-v5/` unless a path says otherwise:
 
 - `published/`: the downloaded asset, `SHA256SUMS` and provenance record
-- `native-qualification.log` (release build and course sweep):
-  `bb70d475905c12dba3753dcc9242ce187281626c44ca8c9b6dfd0e8f5c7ebf27`
-- `maintainer-native.log`:
-  `12304713ec95b679b06f5c1547145beddc5a09c62c3f3811419319651e4f0a88`
-- `clean-install.log`:
-  `4c3c2b6c720f266416734e5ea3fdb88f65dc59b7088ec70fb6a5b585652cd9a2`
+- `review/`: the contract documents, the library documentation and header
+  differences between the two commits
+- `logs/native-qualification.log` (release build and course sweep):
+  `209adc6928fc51e51107531a88ba3b954915b96d8687117cbdde68793f0cd1d3`
+- `logs/maintainer-native.log`:
+  `cf275f071a94daeeb3e11336e49dea601ee98a8ee35a96ddb39c53fdaefcc4e9`
+- `logs/clean-install.log`:
+  `913fd3ded83434c2b9a233708195fce15647208e56b64d82b8f08b6fbab14836`
+- `logs/handshake-negative-controls.log`:
+  `b22aecbc7c1cc1e5843f46d16cd438dd06f703172ba8878776546d287b9e06a0`
+- `logs/linked-consumers.log`:
+  `517b055a5a30f15b28040037df643407ea93b53fcd022234ff0d398b9cb72496`
 - `measure/run1/receipt.json`:
-  `5ab3f5efc8d9fbe1eed3bc8ca0cf477163a8af88ee69407332c9522fb8245c85`
-- `obj/parallel/pa28/backend-v0.9.0-pin/receipt.json`:
-  `ccadccfc5889fb8796977ecb30bf6e5ef2404e8fcdd8dc46f84b34e22fcaca85`
+  `6a9adcd936c43e0ed6ab3beb6878dd560279f6ab3276bbb4745437c55ac1633c`
+- `obj/parallel/pa28/backend-v0.9.1-pin/receipt.json`:
+  `bc546b345c53a071ecdd66409ce1278e329cbbdaaa1cfb853fd5cfb36108cf73`
