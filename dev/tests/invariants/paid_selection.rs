@@ -70,3 +70,46 @@ fn raw_declared_premise_selection_does_not_assume_its_own_lifetime_debt() -> Res
     }
     Ok(())
 }
+
+#[test]
+fn an_opaque_callable_first_interned_by_an_instance_is_stored_before_its_premise_is_read() -> Result
+{
+    // `drive` promises its callable's output under a caller lifetime, so its
+    // instance reads the callable's closure leaf. That callable is `compose`'s
+    // opaque result, and its application with the actual closures first exists
+    // when `total` is instantiated.
+    let text =
+        crate::test_source::fixture("pa31/tests/spec/user-callable-output/struct-output.rs")?
+            + "fn compose<T,B,Acc>(mut f:impl FnMut(T)->B,mut g:impl FnMut(Acc,B)->Acc)\
+           ->impl FnMut(Acc,T)->Acc{move|acc,value|g(acc,f(value))}\n\
+           fn drive<'a,B,F>(first:&'a i32,second:&'a i32,init:B,mut f:F)->B \
+           where F:FnMut(B,&'a i32)->B{let acc=f(init,first);f(acc,second)}\n\
+           fn total<'a,F,G>(first:&'a i32,second:&'a i32,f:F,g:G)->i32 \
+           where F:FnMut(&'a i32)->i32,G:FnMut(i32,i32)->i32{\
+           drive(first,second,0,compose(f,g))}\n\
+           #[unsafe(no_mangle)]pub extern \"C\" fn run()->i32{\
+           let first=1;let second=2;total(&first,&second,|value|*value,|_,value|value)}\n";
+    let report = crate::test_source::source_provider(&text, "opaque_callable_premise")?;
+    let crate::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = crate::pipeline::analyze_source(&report)?;
+    let program = crate::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        crate::lower::Roots {
+            entry: None,
+            exports: &[],
+        },
+        prepared,
+    )
+    .map_err(|error| error.to_string())?;
+    assert!(
+        program
+            .symbols
+            .iter()
+            .any(|symbol| symbol.name == "run" && symbol.body.is_some()),
+        "the exported caller was not lowered"
+    );
+    Ok(())
+}

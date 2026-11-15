@@ -30,6 +30,11 @@ pub(super) fn append(
         if facts.associated.callable_output() != Some(DefId(application.item.0)) {
             continue;
         }
+        // This instance's substitution may have interned the subject's opaque
+        // application only now, so its storage head is prepared before the read.
+        if facts.types.contains_opaques(application.subject) != Some(false) {
+            facts.prepare_opaque_storage()?;
+        }
         let (leaf, visits) =
             crate::types::closure::reference_leaf(&facts.types, application.subject)?;
         facts.body_work.canonical_steps += visits;
