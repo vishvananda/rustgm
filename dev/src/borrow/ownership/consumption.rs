@@ -226,16 +226,10 @@ fn operands<'a>(
                 ) => Disposition::Instantiate,
                 (Some(Kind::Array { length: 0, .. }), _) => Disposition::Discard,
                 (Some(Kind::Array { .. }), _) => Disposition::Transfer,
-                (Some(Kind::ArrayTerm { .. }), _) => {
-                    if body
-                        .owned
-                        .as_ref()
-                        .is_some_and(|o| o.creation(*operand).is_some())
-                    {
-                        return Err("unknown-length ordinary repeat owns a non-Copy operand");
-                    }
-                    return Ok((&[], Disposition::Transfer));
-                }
+                // Ownership preparation has already required the element to be
+                // Copy. A cleanup record here only means the symbolic drop query
+                // could not see that proof, so the operand stays where it is.
+                (Some(Kind::ArrayTerm { .. }), _) => return Ok((&[], Disposition::Transfer)),
                 _ => return Err("owned repeat has no array type"),
             };
             Ok((std::slice::from_ref(operand), disposition))

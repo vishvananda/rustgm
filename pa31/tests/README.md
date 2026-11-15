@@ -944,11 +944,13 @@ two of them lower from a root `main`. Three captures that are not Copy reject
 maintainer integration test checks them through the CLI. There is no graded
 manifest.
 
-`spec/source-copy-repeats/` freezes nine declared no_core reductions of core's
+`spec/source-copy-repeats/` freezes twelve declared no_core reductions of core's
 `DisplayBuffer::new` on the same prefix. A repeated operand that is Copy only
 through a source `impl Copy` is accepted, including a const generic length in a
 const fn, which also lowers from a root `main`. A length-one control accepts,
-and two Clone-only operands reject (E0277). The same maintainer test checks
+and two Clone-only operands reject (E0277). Three more repeat a `T: Copy`
+premise operand into a const generic length beside a `Drop` implementation:
+one accepts, one lowers from a root `main`, and a `T: Clone` one rejects. The same maintainer test checks
 them through the CLI. There is no graded manifest.
 
 `spec/specialized-trait-inputs/` freezes nine declared no_core reductions of

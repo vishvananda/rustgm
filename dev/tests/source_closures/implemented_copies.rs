@@ -74,10 +74,11 @@ fn source_copy_implementations_keep_copying_closures_callable_by_reference() -> 
 }
 
 /// Manual, conditional and premise Copy repeat operands, including a const
-/// generic length in a const fn as in core's `DisplayBuffer::new`.
+/// generic length in a const fn as in core's `DisplayBuffer::new`, and a
+/// premise operand of const generic length in a library with destructors.
 #[test]
 fn source_copy_implementations_allow_repeated_array_operands() -> Result {
-    check(REPEATS, 9, REPEAT_REJECTED)
+    check(REPEATS, 12, REPEAT_REJECTED)
 }
 
 #[derive(Clone, Copy, Debug)]

@@ -1,6 +1,6 @@
 # Source Copy repeats (source core)
 
-Nine no_core source-core libraries reduce pinned core's `DisplayBuffer::new`
+Twelve no_core source-core libraries reduce pinned core's `DisplayBuffer::new`
 (`net/display_buffer.rs:14`), checked against rustc 1.98. They share the
 `source-copy-captures` prefix: the `source-div` foundation, core's const `Fn`
 traits, and `UsizeInner` and `NonZero<T>` with manual `impl Copy`.
@@ -14,10 +14,15 @@ constant. A source `impl Copy` satisfies that.
 - `const-length` repeats into `[UsizeInner; N]` in a const fn, and
   `call-length` calls it from a root `main`, so `--emit-lowir` lowers it;
 - `length-one` repeats a non-Copy operand once, which needs no Copy;
-- `clone-only` and `clone-premise` repeat a Clone-only operand (E0277).
+- `clone-only` and `clone-premise` repeat a Clone-only operand (E0277);
+- `premise-length` repeats `x: G<T>` and `x: T` under `T: Copy` into a const
+  generic length, in a library that also declares `Drop` and implements it
+  for an unrelated type, so generic bodies carry cleanup records.
+  `call-premise-length` calls both from a root `main`, and
+  `clone-premise-length` has only `T: Clone` (E0277).
 
 Outcomes were declared before the frozen rustc 1.98.0 oracle and before any
-candidate run; both are recorded in `outcomes.json` (9/9 agree). It keeps
+candidate run; both are recorded in `outcomes.json` (12/12 agree). It keeps
 Rust's MIT/Apache-2.0 attribution; see root NOTICE and
 `third_party/sources.json`. `dev/tests/source_closures/implemented_copies.rs`
 checks every case. See `docs/pa24-source-copy-captures.md`.

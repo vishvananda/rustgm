@@ -207,6 +207,20 @@ capture prefix (`obj/parallel/repeat-copy/core/declared.json`) and pass rustc
 | `clone-only` | `[Owned(1); 3]` | E0277 | reject |
 | `clone-premise` | `[x; 3]` for `x: G<T>` under only `T: Clone` | E0277 | reject |
 
+Three later reductions (2026-11-15, `obj/parallel/repeat-length/core/declared.json`,
+3/3 with rustc 1.98.0) cover a premise operand of const generic length in a
+library that has a destructor. A generic body there carries cleanup records,
+and the symbolic drop query does not read a source `T: Copy` proof, so the
+repeated operand has one. The unknown-length repeat used to treat that record
+as a non-Copy operand. Ownership preparation has already required the element
+to be Copy, so the repeat now leaves the operand in place.
+
+| Case | Form | Rust | 3f1a4d046 |
+| --- | --- | --- | --- |
+| `premise-length` | `[x; N]` for `x: G<T>` and `x: T` under `T: Copy`, beside an `impl Drop` | accept | accept (types only) |
+| `call-premise-length` | the same, called from `main`, LowIR | accept | reject |
+| `clone-premise-length` | `[x; N]` for `x: G<T>` under only `T: Clone` | E0277 | reject |
+
 Focused receipt 1794483519530720203 passes in 113.4s. It covers formatting, the
 architecture audit, strict Clippy for the closures, frontend and ownership suites
 and the CLI, PA18's complete text oracle with the dev-fast CLI, and six exact

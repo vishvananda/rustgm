@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "declared": "2026-11-12, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run (obj/parallel/repeat-copy/core/declared.json). The prefix is the source-copy-captures prefix, whose prelude history is in obj/parallel/step-size/core/declared.json.",
+ "declared": "2026-11-12, before the frozen rustc 1.98.0 oracle of these exact bytes and before any candidate run (obj/parallel/repeat-copy/core/declared.json). The prefix is the source-copy-captures prefix, whose prelude history is in obj/parallel/step-size/core/declared.json. The three generic-length premise cases (premise-length, call-premise-length, clone-premise-length) were declared on 2026-11-15 in the same way (obj/parallel/repeat-length/core/declared.json). Their first bytes gave the packet's own `const trait Drop` no const stability attribute, which rustc rejects before the repeat; the declaration was corrected and the outcomes kept before any candidate run.",
  "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
  "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
  "cases": {
@@ -57,6 +57,24 @@
    "declared": 1,
    "rustc_status": 1,
    "reduction": "clone-premise"
+  },
+  "premise-length.rs": {
+   "sha256": "06407936c9745813ec9c7d7a30849802cf8354d0bf88e4e4f01087fb3e73f138",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "premise-length"
+  },
+  "call-premise-length.rs": {
+   "sha256": "ba72cad1730d9261481a36b05c11bfd81476ef388682382174e1ea2970618965",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "call-premise-length"
+  },
+  "clone-premise-length.rs": {
+   "sha256": "af631f0e0538dd67826c60bee69507b2b27f08918337f051867da479ffae1e65",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "clone-premise-length"
   }
  }
 }
