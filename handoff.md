@@ -3,29 +3,135 @@
 ## Current plan
 
 The user adopted the [self-hosting plan](docs/self-hosting-plan.md) on
-2026-11-15. It supersedes the single-worker, strict-artifact-only loop that
-this handoff described. Where the sections below conflict with that plan, the
-plan wins. In particular:
+2026-11-15. Where older sections below conflict with that plan, the plan wins:
 
-- Three lanes and agents are allowed again, on the three existing worktrees.
+- Three lanes and agents are allowed, on the three existing worktrees.
 - An unqualified bring-up profile may produce artifacts; strict mode is still
-  the only release gate.
+  the default and the only release gate.
 - The ordinary bootstrap profile is frozen at PA24. The "ordinary" items under
   "Requirements still open" are no longer work items.
-- The next step is the pipeline census and demand list, not the marked-call
-  promotion repair. That blocker becomes one census record.
+- Work is ordered by what the self-hosting ladder demands (M1 core and a no_std
+  consumer, M2 alloc, M3 std, M4 the three dependencies, M5 stage 1, M6 stage 2,
+  M7 strict ratchet), not by the next strict fence.
 
-## State at the 2026-11-15 wrap-up
+## State on 2026-11-15
 
-**Core does not build yet.** No genuine original-core metadata, complete LowIR or
-native consumer artifact exists. Whole PA25–PA44 remain planned; the separate
-released 113-case PA25 component is unchanged. PA20 remains implemented-draft.
+**Real core compiles in the bring-up profile, and a real no_std consumer
+compiles with it, passes the pinned backend, links with libc and runs** until
+it reaches an intrinsic that has no run-time lowering yet. Nothing here is a
+qualification: strict mode still stops at the first fence, and whole PA25–PA44
+remain planned.
 
-Current compiler product: `2e25fdba40428eb1d8564a100ba1015c358e5c5d`
-(`fix: retain defining permission for const closure members`). Previous product:
-`73eec244cb25f1a611a4b0cf134d8e8484ff5c83` (captured generic const invocations).
-Detailed historical handoff is retained in Git:
-`git show 0031a83d4:handoff.md`.
+- **Core alone:** the census stubs 1,130 functions
+  (`obj/parallel/bringup/core/core.skip.tsv`, summary in `summary.tsv`); about
+  1,045 are x86 SIMD functions whose constants need intrinsics that compile-time
+  evaluation lacks. Publication passes over nine metadata fences (`waived.tsv`)
+  and writes no usable metadata. A source library lowers nothing itself.
+- **Linked consumer:** `scripts/bringup_linked.py` mounts a consumer as a
+  private module of a writable copy of core, so one session compiles both and
+  no metadata is needed. This is how every result below was produced.
+- **M1 consumers:** all 17 staged programs
+  (`pa32/tests/spec/core-consumers/`) were run this way; **none passes yet**.
+  Six compile, pass the backend, link and run until their first unlowered
+  intrinsic: `atomics`, `chars-strs`, `duration-net`, `integers`, `panic-index`,
+  `panic-overflow`. Eleven stop while the program itself is type-checked or its
+  constants are evaluated, before any function can be stubbed (table below).
+
+### Bring-up profile
+
+`--bringup-skip-list FILE` selects it; a library also needs a crate
+disambiguator ending in `_bringup`. Everything below is refused without it.
+
+| Mechanism | Reported as |
+| --- | --- |
+| A listed function becomes a trapping stub; every stage sets aside the failures it can attribute to a function and names them | `bringup-blocker<TAB>path<TAB>offset<TAB>name<TAB>message` |
+| A failure with no owning function | `bringup-unattributed<TAB>message` |
+| A crate-level publication fence is passed over; metadata is withheld when it cannot be produced | `bringup-waived<TAB>fence` |
+| A constant that cannot be evaluated belongs to the body that demands it | blocker for that body |
+| Compiler-inserted checks keep the course abort although core installs panic hooks | waived fence |
+| A bodiless intrinsic without run-time lowering becomes a trapping shim; one with a fallback body runs it | waived fence naming the intrinsic |
+
+`scripts/bringup_census.py` grows a skip list until a crate compiles and writes
+`summary.tsv`, `waived.tsv` and `records.json`. A consumer's waived intrinsics
+are its remaining work list.
+
+```sh
+# Frontier worktree. Optimized incremental compiler; never release evidence.
+make observe && cp obj/rust/observe/rustgm obj/parallel/bringup/bin/rustgm-observe
+
+# One or more M1 consumers, end to end (census, backend, run, compare).
+python3 scripts/resources.py run --wait-seconds 900 --max-output-gib 24 -- \
+  /usr/bin/python3 scripts/storage.py run --max-output-gib 24 \
+  --prune-under obj/parallel/bringup/linked-work -- \
+  python3 scripts/bringup_linked.py \
+  --compiler obj/parallel/bringup/bin/rustgm-observe \
+  --library obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea/library \
+  --skip-list obj/parallel/bringup/core/core.skip.tsv \
+  --work obj/parallel/bringup/linked-work \
+  pa32/tests/spec/core-consumers/integers.rs
+```
+
+The frontier lane uses a justified 24 GiB output cap. Core's own census command
+is in `obj/parallel/bringup/core/records.json`.
+
+### Next work, in blocking order
+
+1. **Run-time lowering of the waived intrinsics.** Programs that waive each:
+   `offset` 6; `unreachable`, `ptr_offset_from_unsigned`, `exact_div`,
+   `cttz_nonzero`, `ctpop`, `add_with_overflow` 4 each; `black_box` 2; then
+   `read_via_copy`, `slice_get_unchecked`, `saturating_add/sub`, `ctlz`,
+   `ctlz_nonzero`, `cttz`, `bswap`, `bitreverse` and the sixteen `atomic_*`
+   operations. The hook is `Lower::trapped_call`
+   (`dev/src/lower/function/trapped_calls.rs`): add an unqualified lowering
+   there, reported as its own waiver, before the trap shim.
+2. **Frontend failures on consumer programs.** These stop the whole session
+   and are ordinary strict-profile bugs; each program is its reproducer.
+
+   | Program | Failure |
+   | --- | --- |
+   | `conversions`, `fmt-floats`, `option-result`, `sorting` | `constant execution reached panic` (core file 64, offset 3755) |
+   | `consts-statics` | `source intrinsic constant execution is not implemented` (core file 12) |
+   | `cells-mem` | `associated type projection requires normalization` |
+   | `fmt-integers` | `incompatible types` at `f.debug_map().entry(&"k", &1)` |
+   | `iterators` | `trait obligation requires an unambiguous matching assumption or implementation` |
+   | `patterns-ranges` | `assignment requires a place` |
+   | `slices` | `selected implementation is missing the associated type` |
+   | `traits-generics` | `dyn supertrait edge requires a trait bound` |
+
+   Failures of these stages are not yet attributed to a function, so the
+   census cannot stub around them (`dev/bin/modules.rs` attributes lowering
+   failures only).
+3. **Stubbed core functions that programs reach.** Joined with the rustc demand
+   list, only 36 of core's 1,130 stubs are reached by the M1 programs and 35 by
+   the compiler's own build. By cause: const `Destruct` cleanup proofs
+   (`Iterator::try_fold`, `fold`, `reduce`, `ControlFlow::break_value`,
+   `Option::insert`); borrow and lifetime proofs that reject valid code
+   (`quicksort`, `fmt::write`, `Chain::next`, `Flatten::next`, `str::split`);
+   and `opaque storage requires a checked defining type` in `Map::fold`, which
+   every program adds to its own list.
+4. `#![no_main]` with a C `main` (the driver rewrites the entry meanwhile).
+5. Metadata export, for the strict ratchet only: the linked route needs none.
+
+### Lanes
+
+- **Frontier** (`rustgm-pa26-work`, `lane/frontier-20261115`): the bring-up
+  profile, the census and the fixes above.
+- **Runtime** (`rustgm-backend-work`, `lane/runtime-20261115`): finished its
+  first assignment. `docs/self-hosting-runtime.md` holds the rustc-oracle demand
+  list, 47 staged consumer programs for M1 to M4, the run-time gap table with
+  nine open decisions, and the backend scale probe (4.2 million functions and
+  1.6 GB of LowIR pass at `-O0`; one self-hosting unit is estimated at 280 to
+  415 MB).
+- **Publication** (`rustgm-async-work`, `lane/publication-20261115`): eight
+  component units are released (2,078 cases). Open: `provided-profile` cannot be
+  released yet; PA7 and PA11 could be flipped to implemented; the handout totals
+  of PA8, PA10, PA12, PA13 and PA15 to PA18 are stale.
+
+Sections from "Latest genuine original-core attempt" onward describe the strict
+frontier as it stood before the plan changed. They are history, except
+"Requirements still open", which is the strict ratchet's list.
+
+Detailed earlier handoffs are retained in Git: `git show 0031a83d4:handoff.md`.
 
 ## Workspace, authorization and resources
 
