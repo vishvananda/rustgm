@@ -106,8 +106,16 @@ impl<'a> Batch<'a> {
         }
         Ok(())
     }
-    /// Pass over a body whose proof failed, so that a bring-up compilation
-    /// reports the remaining bodies. The caller must still fail the batch.
+    /// The body the next row proves, if any remains.
+    pub(crate) fn pending(&self) -> Option<&'a crate::body::ir::Body> {
+        (self.cursor < self.state.regions.bodies.len())
+            .then(|| self.template(self.cursor))
+            .flatten()
+            .map(|template| &template.body)
+    }
+    /// Pass over a bring-up stub, or over a body whose proof failed so that a
+    /// bring-up compilation reports the remaining bodies. After a failure the
+    /// caller must still fail the batch.
     pub(crate) fn skip(&mut self) {
         self.state.loans.push(loans::Analysis {
             loans: 0,

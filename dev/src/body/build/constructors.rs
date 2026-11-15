@@ -88,6 +88,11 @@ pub fn templates(
         let declaration = facts.members.variants[variant.0 as usize];
         let owner = DefId(declaration.owner.0);
         let source = anchor(report, declaration)?;
+        // A bring-up list entry at a constructor withholds its function body;
+        // every use of that constructor as a function value then fails.
+        if crate::body::bringup::stub(report, source) {
+            continue;
+        }
         let error = |message| report.body_error(source, message);
         let environment = match environments.entry(owner) {
             std::collections::hash_map::Entry::Occupied(entry) => Arc::clone(entry.get()),

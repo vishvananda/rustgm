@@ -243,6 +243,14 @@ pub(crate) fn templates<'a>(
     })?;
     let mut deferred = None;
     loop {
+        // A bring-up stub replaced this body; there is nothing of it to prove.
+        if batch
+            .pending()
+            .is_some_and(|body| body::bringup::stub_body(report, body))
+        {
+            batch.skip();
+            continue;
+        }
         match staged_row(facts, &mut copies, &mut batch, precise) {
             Ok(true) => {}
             Ok(false) => break,

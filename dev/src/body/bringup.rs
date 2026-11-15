@@ -1,5 +1,8 @@
 //! Bring-up attribution names the function item that owns a located failure.
-use super::{ir::ProofSite, regions::Contract};
+use super::{
+    ir::{Body, ProofSite},
+    regions::Contract,
+};
 use crate::{
     resolve::{
         expansion::Report,
@@ -39,6 +42,11 @@ pub(crate) fn stub(report: &Report, item: NodeKey) -> bool {
             .start;
         stubs.contains(&path(package, item.file), start)
     })
+}
+
+/// Whether the bring-up profile replaced this body by a trapping stub.
+pub(crate) fn stub_body(report: &Report, body: &Body) -> bool {
+    body.source.source().is_some_and(|key| stub(report, key))
 }
 
 /// The innermost function item containing a failure's unprojected position.
@@ -156,29 +164,29 @@ pub fn blockers(report: &Report, facts: &Declarations, error: &Error) -> Attribu
         None => attribution.unattributed.push(error.message.clone()),
     }
     for (file, at, message) in failures {
-        let Some((function, offset)) = owner(report, facts, file, at) else {
-            attribution.unattributed.push(message);
-            continue;
-        };
+        // Outside every function, the position itself is the entry: it only
+        // takes effect where it is the anchor of a synthesized body.
+        let (offset, name) = owner(report, facts, file, at).map_or((at, "<item>"), |found| {
+            let name = report
+                .resolution
+                .definitions
+                .get(found.0.definition.0 as usize)
+                .map_or("?", |definition| report.package.names.get(definition.name));
+            (found.1, name)
+        });
         let path = path(&report.package, file);
-        if attribution
+        if !attribution
             .blockers
             .iter()
             .any(|seen| seen.offset == offset && seen.path == path)
         {
-            continue;
+            attribution.blockers.push(Blocker {
+                path,
+                offset,
+                name: name.to_owned(),
+                message,
+            });
         }
-        let name = report
-            .resolution
-            .definitions
-            .get(function.definition.0 as usize)
-            .map_or("?", |definition| report.package.names.get(definition.name));
-        attribution.blockers.push(Blocker {
-            path,
-            offset,
-            name: name.to_owned(),
-            message,
-        });
     }
     attribution
 }
