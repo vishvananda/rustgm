@@ -332,6 +332,16 @@ fn consume_annotation<'unit>(
                 allowances,
             )?;
         }
+        Some(Consumer::AllocatorCodegen) => {
+            crate::sema::allocator_attributes::consume(
+                report,
+                facts,
+                declaration,
+                attribute,
+                forest,
+                allowances,
+            )?;
+        }
         Some(Consumer::DropCheckEyepatch) => {
             crate::sema::eyepatches::consume(
                 report,

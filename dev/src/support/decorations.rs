@@ -26,6 +26,7 @@ pub(crate) enum Consumer {
     IncoherentTarget,
     InsignificantDestructor,
     DropCheckEyepatch,
+    AllocatorCodegen,
     NonExhaustive,
     UnsafeSpecialization,
     SpecializationTrait,
@@ -145,6 +146,13 @@ impl Consumer {
             "rustc_has_incoherent_inherent_impls" => Self::IncoherentTarget,
             "rustc_insignificant_dtor" => Self::InsignificantDestructor,
             "may_dangle" => Self::DropCheckEyepatch,
+            "rustc_allocator"
+            | "rustc_deallocator"
+            | "rustc_reallocator"
+            | "rustc_allocator_zeroed"
+            | "rustc_allocator_zeroed_variant"
+            | "rustc_std_internal_symbol"
+            | "rustc_conversion_suggestion" => Self::AllocatorCodegen,
             _ => return None,
         })
     }

@@ -47,8 +47,6 @@ mod drop_identity;
 mod drop_initialization;
 #[path = "../../drop_value_scopes.rs"]
 mod drop_value_scopes;
-#[path = "../../eyepatch_parameters.rs"]
-mod eyepatch_parameters;
 #[path = "../../loans.rs"]
 mod loans;
 #[path = "../../moved_cleanup.rs"]
@@ -97,6 +95,8 @@ mod template_ownership;
 mod temporary_scopes;
 #[path = "../../value_liveness.rs"]
 mod value_liveness;
+#[path = "../../waived_attributes.rs"]
+mod waived_attributes;
 
 #[path = "../../unsized_calls.rs"]
 mod unsized_calls;
