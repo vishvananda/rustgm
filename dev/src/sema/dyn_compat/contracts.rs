@@ -7,7 +7,11 @@ use crate::{
         model::{DefId, DefKind},
     },
     sema::{associated::OwnerKind, model::Declarations},
-    types::{ItemId, Kind, TypeId, arguments::Argument, parameters::predicates::Bound},
+    types::{
+        ItemId, Kind, TypeId,
+        arguments::Argument,
+        parameters::{clauses::Clause, predicates::Bound},
+    },
 };
 use self_types::Occurrences;
 
@@ -151,8 +155,18 @@ fn callable(
     } else {
         Vec::new()
     };
+    // A bound on an argument, such as `Args: Tuple`, constrains every use of
+    // the trait; only bounds on the object type itself are supertrait edges.
+    let mut supertraits = Vec::new();
+    for input in header.inputs.view().iter() {
+        if !matches!(input.value, Clause::UnstableFeature(_))
+            && predicate(&facts.types, input.value)?.ty == header.self_type
+        {
+            supertraits.push(input.value);
+        }
+    }
     Ok(Contract {
-        supertraits: header.inputs.view().iter().map(|p| p.value).collect(),
+        supertraits,
         methods: Vec::new(),
         associated,
     })

@@ -131,6 +131,23 @@ const CASES: &[(&str, &str, bool)] = &[
         "trait T{}impl T for u8{}fn f(){let _: &dyn T=&7u8;}",
         true,
     ),
+    // An unsuffixed literal can never be the object itself: its reference is
+    // an unsizing source, also while its numeric type is still open.
+    (
+        "open-literal",
+        "trait T{}impl T for i32{}fn g(_:&dyn T){}fn f(){g(&1)}",
+        true,
+    ),
+    (
+        "open-literal-choice",
+        "trait T{}impl T for i32{}impl T for u8{}fn g(_:&dyn T){}fn f(){g(&1)}",
+        true,
+    ),
+    (
+        "open-float",
+        "trait T{}impl T for f64{}fn g(_:&dyn T){}fn f(){g(&1.5)}",
+        true,
+    ),
     (
         "branch",
         "trait T{}impl T for u8{}impl T for u16{}fn f<'a>(x:&'a u8,y:&'a u16,b:bool)->&'a dyn T{if b{x}else{y}}",

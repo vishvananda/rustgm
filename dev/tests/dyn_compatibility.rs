@@ -151,6 +151,29 @@ const CASES: &[(&str, &str, &str, bool)] = &[
     ),
 ];
 
+/// The callable language traits as core declares them: each bounds its
+/// argument by the tuple trait and `Fn` refines a conditionally const parent.
+const CALLABLES: &str = "\
+#![feature(unboxed_closures,no_core,lang_items,rustc_attrs,const_trait_impl)]
+#![no_core]
+#![allow(internal_features,dead_code,unused_variables)]
+#[lang=\"pointee_sized\"]pub trait PointeeSized{}
+#[lang=\"meta_sized\"]pub trait MetaSized:PointeeSized{}
+#[lang=\"sized\"]pub trait Sized:MetaSized{}
+#[lang=\"legacy_receiver\"]pub trait LegacyReceiver:PointeeSized{}
+impl<T:PointeeSized> LegacyReceiver for &T{}
+impl<T:PointeeSized> LegacyReceiver for &mut T{}
+#[lang=\"clone\"]pub trait Clone:Sized{#[lang=\"clone_fn\"]fn clone(&self)->Self;}
+#[lang=\"copy\"]pub trait Copy:Clone{}
+impl Clone for u8{fn clone(&self)->Self{*self}}impl Copy for u8{}
+#[lang=\"tuple_trait\"]#[rustc_deny_explicit_impl]pub trait Tuple{}
+#[lang=\"fn_once\"]pub const trait FnOnce<Args:Tuple>{#[lang=\"fn_once_output\"]type Output;extern \"rust-call\" fn call_once(self,args:Args)->Self::Output;}
+#[lang=\"fn_mut\"]pub const trait FnMut<Args:Tuple>:FnOnce<Args>{extern \"rust-call\" fn call_mut(&mut self,args:Args)->Self::Output;}
+#[lang=\"fn\"]pub const trait Fn<Args:Tuple>:[const]FnMut<Args>{extern \"rust-call\" fn call(&self,args:Args)->Self::Output;}
+pub trait Plain{}
+pub fn apply(call:&dyn Fn(u8)->u8)->u8{call(1)}
+";
+
 fn definition(report: &Report, name: &str) -> Result<DefId, &'static str> {
     report
         .resolution
@@ -182,6 +205,29 @@ fn completed_contracts_match_independent_object_compatibility()
             Err(error) => return Err(format!("{name}: {error}").into()),
         }
     }
+    Ok(())
+}
+
+#[test]
+fn source_callable_traits_keep_only_their_written_supertrait_edges() -> Result<(), String> {
+    let report = crate::resolve::source_provider(CALLABLES, "callable_objects")?;
+    // Checking `apply` already demands the object contract of `Fn`.
+    let mut facts = rustgm::pipeline::analyze_source(&report)
+        .map_err(|e| e.to_string())?
+        .facts;
+    let mut queries = Queries::default();
+    let mut edges = |name: &str| -> Result<usize, String> {
+        let id = definition(&report, name)?;
+        queries
+            .demand(&report, &mut facts, id)
+            .map(|contract| contract.supertraits.len())
+            .map_err(|e| format!("{name}: {e}"))
+    };
+    // A bound on the argument is no edge, and a conditionally const parent is one.
+    let implicit = edges("Plain")?;
+    assert_eq!(edges("FnOnce")?, implicit);
+    assert_eq!(edges("FnMut")?, implicit + 1);
+    assert_eq!(edges("Fn")?, implicit + 1);
     Ok(())
 }
 

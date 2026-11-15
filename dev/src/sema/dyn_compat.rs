@@ -8,10 +8,7 @@ use super::model::Declarations;
 use crate::support::hash::HashMap;
 use crate::{
     resolve::{expansion::Report, model::DefId},
-    types::{
-        Store,
-        parameters::{clauses::Clause, predicates::Bound},
-    },
+    types::{Store, parameters::clauses::Clause},
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -202,7 +199,8 @@ fn charge(steps: &mut usize, count: usize) -> Result<(), Error> {
     Ok(())
 }
 fn parent(types: &Store, clause: Clause) -> Result<DefId, Error> {
-    let Bound::Trait(id) = predicate(types, clause)?.bound else {
+    // A conditionally const supertrait is the same edge of the object graph.
+    let Some((id, _)) = predicate(types, clause)?.bound.trait_parts() else {
         return Err(Error::Invalid("dyn supertrait edge requires a trait bound"));
     };
     types

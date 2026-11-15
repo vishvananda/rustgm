@@ -1,6 +1,6 @@
 //! Detect a forced mismatch before choosing a function-item coercion join.
 use super::{
-    Constructor, Context, Error, Store, TermId,
+    Constructor, Context, Domain, Error, Store, TermId, Value,
     arguments::{ArgumentsId, Slot},
 };
 
@@ -44,10 +44,12 @@ impl Context {
             if a == b || !self.seen.insert((a, b)) {
                 continue;
             }
-            let (Some(left), Some(right)) = (
-                self.mismatch_head(store, a, unsizing)?,
-                self.mismatch_head(store, b, unsizing)?,
-            ) else {
+            let left = self.mismatch_head(store, a, unsizing)?;
+            let right = self.mismatch_head(store, b, unsizing)?;
+            let (Some(left), Some(right)) = (left, right) else {
+                if unsizing && (self.literal_object(a, right) || self.literal_object(b, left)) {
+                    return Ok(true);
+                }
                 continue;
             };
             if unsizing
@@ -161,6 +163,14 @@ impl Context {
             Err(Error::Mismatch) => Ok(true),
             Err(error) => Err(error),
         }
+    }
+    /// A numeric literal's variable can never become a trait object, so a
+    /// literal against an object type is a forced unsizing demand.
+    fn literal_object(&self, variable: TermId, other: Option<Constructor>) -> bool {
+        matches!(
+            self.terms[variable.0 as usize].value,
+            Value::Variable(Domain::Integer | Domain::Float)
+        ) && matches!(other, Some(Constructor::Dynamic { .. }))
     }
     fn mismatch_head(
         &mut self,
