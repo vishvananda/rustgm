@@ -10,6 +10,8 @@ pub enum Operation {
     Population,
     ReverseBits,
     SwapBytes,
+    /// The x86 spin-wait hint, which only the bring-up profile lowers.
+    Pause,
     Unsupported,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -21,6 +23,12 @@ impl Intrinsic {
     #[must_use]
     pub fn named(name: &str) -> Option<Self> {
         let name = name.strip_prefix("llvm.")?;
+        if name == "x86.sse2.pause" {
+            return Some(Self {
+                operation: Operation::Pause,
+                bits: 0,
+            });
+        }
         let parsed = name.rsplit_once(".i").and_then(|(name, width)| {
             let bits = match width {
                 "8" => 8,

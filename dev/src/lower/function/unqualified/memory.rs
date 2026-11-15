@@ -55,6 +55,8 @@ impl Lower<'_, '_, '_> {
                     selected => Ok(Some(selected)),
                 }
             }
+            // The value was moved into the call; nothing drops it.
+            ("forget", &[_]) => Ok((call.result == TypeId::UNIT).then_some(Selected::Unit)),
             ("volatile_load", &[pointer]) => {
                 let Some((pointer, scalar)) = self.volatile_input(pointer, call.result)? else {
                     return Ok(None);

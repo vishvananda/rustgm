@@ -475,7 +475,7 @@ const ATOMICS: &str = "\
 }
 ";
 /// Counted transfers and comparisons, a volatile read, a slice's size, a
-/// validity assertion that holds and a float's magnitude.
+/// validity assertion that holds, a float's magnitude and a forgotten value.
 const MEMORY: &str = "\
 #[rustc_intrinsic] const unsafe fn copy_nonoverlapping<T>(src:*const T,dst:*mut T,count:usize);
 #[rustc_intrinsic] const unsafe fn write_bytes<T>(dst:*mut T,val:u8,count:usize);
@@ -485,6 +485,7 @@ const MEMORY: &str = "\
 #[rustc_intrinsic] const unsafe fn size_of_val<T:?Sized>(ptr:*const T)->usize;
 #[rustc_intrinsic] const fn assert_zero_valid<T>();
 #[rustc_intrinsic] const fn fabs<T>(x:T)->T;
+#[rustc_intrinsic] const fn forget<T>(x:T);
 #[unsafe(no_mangle)]pub unsafe fn moved(s:*const u32,d:*mut u32){unsafe{copy_nonoverlapping(s,d,4usize)}}
 #[unsafe(no_mangle)]pub unsafe fn filled(d:*mut u16){unsafe{write_bytes(d,7u8,3usize)}}
 #[unsafe(no_mangle)]pub unsafe fn ordered(l:*const u8,r:*const u8)->i32{unsafe{compare_bytes(l,r,5usize)}}
@@ -493,6 +494,7 @@ const MEMORY: &str = "\
 #[unsafe(no_mangle)]pub unsafe fn extent(p:*const [u16])->usize{unsafe{size_of_val(p)}}
 #[unsafe(no_mangle)]pub fn zeroable(){assert_zero_valid::<(u32,[bool;2])>()}
 #[unsafe(no_mangle)]pub fn magnitude(x:f64)->f64{fabs(x)}
+#[unsafe(no_mangle)]pub fn kept(x:[u64;3]){forget(x)}
 ";
 /// An assertion that the lowering cannot decide for the asserted type.
 const UNDECIDED: &str = "#[unsafe(no_mangle)]pub fn refused(){assert_zero_valid::<&u8>()}\n";
@@ -524,6 +526,7 @@ const STORED: &[&str] = &[
     "size_of_val",
     "assert_zero_valid",
     "fabs",
+    "forget",
 ];
 /// Transfers and comparisons call one shim each; the rest is emitted in place.
 const SHIMS: &[&str] = &[
@@ -625,5 +628,47 @@ fn intrinsics_with_an_unqualified_lowering_are_named_and_stay_fenced_when_strict
             "{text}"
         );
     }
+    Ok(())
+}
+
+/// The x86 spin-wait hint that `core::hint::spin_loop` reaches through stdarch.
+const PAUSE: &str = "\
+#![allow(internal_features)]
+#![feature(link_llvm_intrinsics)]
+unsafe extern \"C\"{#[link_name=\"llvm.x86.sse2.pause\"]fn pause();}
+fn main(){unsafe{pause()}}
+";
+
+#[test]
+fn the_spin_wait_hint_returns_at_once_and_stays_fenced_when_strict() -> Result {
+    let fence = "selected LLVM intrinsic operation is not implemented";
+    let folder = folder_with("pause", PAUSE)?;
+    let strict = run(&folder, &[], &[])?;
+    let stderr = String::from_utf8(strict.stderr)?;
+    assert_eq!(strict.status.code(), Some(1), "{stderr}");
+    assert!(
+        stderr.contains(fence) && !stderr.contains("bringup-") && strict.stdout.is_empty(),
+        "{stderr}"
+    );
+    let passed = run(&folder, &[""], &[])?;
+    let stderr = String::from_utf8(passed.stderr)?;
+    assert!(passed.status.success(), "{stderr}");
+    let waiver = "selected LLVM intrinsic uses unqualified lowering: x86.sse2.pause";
+    assert_eq!(waived(&stderr), [waiver], "{stderr}");
+    let text = std::str::from_utf8(&passed.stdout)?;
+    assert!(
+        text.contains("rg.llvm.pause.t") && !text.contains("@abort") && !text.contains("llvm.x86"),
+        "{text}"
+    );
+    // A declaration with any other shape is not the hint and keeps the fence.
+    let other = PAUSE.replace("fn pause();", "fn pause(x:u32);");
+    let other = folder_with("pause-shape", &other.replace("pause()}", "pause(1u32)}"))?;
+    let failed = run(&other, &[""], &[])?;
+    let stderr = String::from_utf8(failed.stderr)?;
+    assert_eq!(failed.status.code(), Some(1), "{stderr}");
+    assert!(
+        stderr.contains(fence) && waived(&stderr).is_empty(),
+        "{stderr}"
+    );
     Ok(())
 }

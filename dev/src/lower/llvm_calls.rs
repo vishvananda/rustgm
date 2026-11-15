@@ -4,10 +4,13 @@ use super::{
     context::{Context, Representation},
 };
 use crate::{
-    lowir::program::SymbolId,
+    lowir::{
+        builder::Builder,
+        program::{SymbolId, Terminator},
+    },
     sema::foreign::Function,
     support::llvm_symbols::{Intrinsic, Operation},
-    types::{Kind, instance::Instance},
+    types::{Kind, TypeId, instance::Instance},
 };
 impl Context<'_> {
     pub(super) fn demand_llvm(
@@ -21,6 +24,9 @@ impl Context<'_> {
         }
         if intrinsic.operation == Operation::Unsupported {
             return Err("selected LLVM intrinsic operation is not implemented");
+        }
+        if intrinsic.operation == Operation::Pause {
+            return self.demand_pause(instance, function);
         }
         let Some(Kind::Function {
             parameters,
@@ -64,6 +70,42 @@ impl Context<'_> {
             false,
         )?;
         self.output.define(symbol, body)?;
+        self.intrinsic_symbols.insert(instance, symbol);
+        Ok(symbol)
+    }
+    /// Bring-up only: the spin-wait hint has no effect a program can observe,
+    /// so its shim returns at once. Elsewhere the operation stays fenced.
+    fn demand_pause(
+        &mut self,
+        instance: Instance,
+        function: Function,
+    ) -> Result<SymbolId, &'static str> {
+        let hint = matches!(
+            self.types.kind(function.signature),
+            Some(Kind::Function { parameters, result: TypeId::UNIT, convention, .. })
+                if !convention.variadic && self.types.list(parameters).is_some_and(<[_]>::is_empty)
+        );
+        if !hint
+            || !crate::support::bringup::waive(
+                "selected LLVM intrinsic uses unqualified lowering: x86.sse2.pause",
+            )
+        {
+            return Err("selected LLVM intrinsic operation is not implemented");
+        }
+        if self.intrinsic_symbols.len() >= 100_000 {
+            return Err("intrinsic shim count exceeds profile budget");
+        }
+        let mut builder = Builder::default();
+        let entry = builder.block()?;
+        builder.enter(entry)?;
+        builder.terminate(Terminator::Return(None))?;
+        let signature = self.signature(function.signature)?;
+        let symbol = self.output.declare(
+            self.internal_name(format!("rg.llvm.pause.t{}", instance.ty().0)),
+            signature,
+            false,
+        )?;
+        self.output.define(symbol, builder.finish()?)?;
         self.intrinsic_symbols.insert(instance, symbol);
         Ok(symbol)
     }

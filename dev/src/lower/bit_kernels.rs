@@ -13,7 +13,7 @@ pub(super) fn build(
     result: Type,
     bits: u16,
 ) -> Result<Function, &'static str> {
-    if operation == Operation::Unsupported
+    if matches!(operation, Operation::Unsupported | Operation::Pause)
         || !matches!(bits, 8 | 16 | 32 | 64 | 128)
         || u32::from(bits) != ty.bits()
         || result.bits() != ty.bits()
@@ -49,7 +49,7 @@ pub(super) fn emit(
         128 => 128,
         _ => return Err("invalid scalar LLVM kernel descriptor"),
     };
-    if operation == Operation::Unsupported {
+    if matches!(operation, Operation::Unsupported | Operation::Pause) {
         return Err("invalid scalar LLVM kernel descriptor");
     }
     let mut shift = if operation == Operation::SwapBytes {

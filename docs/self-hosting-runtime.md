@@ -248,9 +248,10 @@ row needs a backend change.
 | 3a | Bring-up lowering, integer arithmetic: `add_with_overflow`, `saturating_add/sub`, `exact_div` | M1 | Runtime lane | Lowered in place and waived by name; `intrinsic-ops.rs` matches rustc |
 | 3b | Bring-up lowering, bits: `ctpop`, `ctlz`, `cttz`, their `_nonzero` forms, `bswap`, `bitreverse` | M1 | Runtime lane | Same; shift-and-mask sequences at 8 to 128 bits |
 | 3c | Bring-up lowering, pointers: `offset`, `slice_get_unchecked`, `ptr_offset_from`, `ptr_offset_from_unsigned` | M1 | Runtime lane | Same; a zero-sized `ptr_offset_from` keeps its trap |
-| 3d | Bring-up lowering, moves: `read_via_copy`, `write_via_move`, `black_box`, `unreachable` | M1 | Runtime lane | Same; `unreachable` aborts |
+| 3d | Bring-up lowering, moves: `read_via_copy`, `write_via_move`, `black_box`, `forget`, `unreachable` | M1 | Runtime lane | Same; `unreachable` aborts |
 | 3e | Bring-up lowering, memory: `copy_nonoverlapping`, `copy`, `write_bytes`, `compare_bytes`, `raw_eq`, `volatile_load/store` | M1 | Runtime lane | One shim per instance for transfers and comparisons, scalar volatile accesses in place; an aggregate volatile access keeps its trap |
 | 3f | Bring-up lowering, layouts and floats: `size_of_val`, `align_of_val`, `assert_inhabited`, `assert_zero_valid`, `fabs`, `copysignf32/64` | M1 | Runtime lane | Sized values, slices and strings; an assertion lowers only when it holds, so a failing or undecided one, a trait object and an unsized tail keep their traps |
+| 3g | Bring-up lowering, spin-wait hint: the LLVM operation `llvm.x86.sse2.pause` behind `core::hint::spin_loop` | M1 `atomics.rs` | Runtime lane | A shim that returns at once, waived by name; any other LLVM operation or shape stays fenced |
 | 4 | Atomics other than `u32` | M1 `atomics.rs`, M2 `arc.rs` | Frontend | Fenced; backend already qualified for 8 to 64 bits and pointers |
 | 4a | Bring-up lowering, atomics: the fifteen `atomic_*` accesses and `atomic_fence` | M1 | Runtime lane | Lowered in place for 8 to 64 bits and pointers, always sequentially consistent; `intrinsic-ops.rs` matches rustc |
 | 5 | SIMD: 16-byte vectors for hashbrown and `str` search | M1 `chars-strs.rs`, M3 every `HashMap` | Frontend | No handler; backend has `v128` |
