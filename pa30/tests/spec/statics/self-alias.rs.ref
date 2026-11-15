@@ -1,0 +1,14 @@
+global @ffi_x : obj<4x4> = {
+  u32 7
+}
+function @rg.15() -> void {
+  block ^b0:
+    %t0 = load u32 @ffi_x
+    store u32 9, @ffi_x
+    return void
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.15()
+    return i64 0
+}

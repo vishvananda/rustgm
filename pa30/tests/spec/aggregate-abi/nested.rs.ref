@@ -1,0 +1,30 @@
+function @rg.16() -> void {
+  slot $s0 : obj<4x4>
+  slot $s1 : obj<4x4>
+  slot $s2 : obj<4x4>
+  block ^b0:
+    store u32 7, $s0
+    %t0 = addr $s0
+    %t1 = addr $s1
+    copyobj 4x4 %t0, %t1
+    %o0 = call obj<4x4> @rg.15($s1)
+    %t2 = addr $s2
+    copyobj 4x4 %o0, %t2
+    return void
+}
+function @rg.15(%p0 : obj<4x4> [classes=integer]) -> obj<4x4> [result_classes=integer] {
+  slot $s0 : obj<4x4>
+  slot $s1 : obj<4x4>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 4x4 %p0, %t0
+    %t1 = addr $s0
+    %t2 = addr $s1
+    copyobj 4x4 %t1, %t2
+    return obj<4x4> $s1
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.16()
+    return i64 0
+}

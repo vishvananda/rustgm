@@ -1,0 +1,21 @@
+function @rg.14() -> void {
+  slot $s0 : ptr
+  block ^b0:
+    %t0 = addr @rg.13
+    store ptr %t0, $s0
+    %t1 = load ptr $s0
+    %t2 = call i32 %t1(3) as (%p0 : i32) -> i32
+    return void
+}
+function @rg.13(%p0 : i32) -> i32 {
+  slot $s0 : i32
+  block ^b0:
+    store i32 %p0, $s0
+    %t0 = load i32 $s0
+    return i32 %t0
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.14()
+    return i64 0
+}

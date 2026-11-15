@@ -987,7 +987,7 @@
         "docs/pa30-callable-checkpoint.md",
         "docs/pa30-import-checkpoint.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "c-abi component released without the C-provider native matrix (docs/pa30-c-abi-release.md); whole PA30 unpublished",
       "units": [
         "c-abi"
       ]
@@ -1011,7 +1011,7 @@
         "docs/pa30-linkage-checkpoint.md",
         "docs/pa30-static-checkpoint.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "c-abi component released without the C-provider native matrix (docs/pa30-c-abi-release.md); whole PA30 unpublished",
       "units": [
         "c-abi"
       ]
@@ -1035,7 +1035,7 @@
         "docs/pa30-composite-abi.md",
         "docs/pa30-aggregate-abi.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "c-abi component released without the C-provider native matrix (docs/pa30-c-abi-release.md); whole PA30 unpublished",
       "units": [
         "c-abi"
       ]
@@ -1058,7 +1058,7 @@
       "evidence": [
         "docs/pa30-variadic-calls.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "c-abi component released without the C-provider native matrix (docs/pa30-c-abi-release.md); whole PA30 unpublished",
       "units": [
         "c-abi"
       ]
@@ -1132,7 +1132,7 @@
       "evidence": [
         "docs/pa30-object-bridge.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "c-abi component released without the C-provider native matrix (docs/pa30-c-abi-release.md); whole PA30 unpublished",
       "units": [
         "c-abi"
       ]

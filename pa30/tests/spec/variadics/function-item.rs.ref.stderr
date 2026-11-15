@@ -1,0 +1,1 @@
+ERROR: file 0: 91: variadic function item requires an explicit function pointer cast

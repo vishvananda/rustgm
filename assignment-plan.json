@@ -83,7 +83,7 @@
       "owner": "pa30",
       "title": "Local C ABI and linkage",
       "implementation": "implemented",
-      "publication": "unpublished",
+      "publication": "released",
       "depends_on": [
         "unsafe-places"
       ],
@@ -105,7 +105,9 @@
         "docs/pa30-object-bridge.md",
         "docs/pa30-static-checkpoint.md",
         "docs/pa30-variadic-calls.md"
-      ]
+      ],
+      "manifest": "pa30/tests/units/c-abi.json",
+      "release_evidence": "docs/pa30-c-abi-release.md"
     },
     {
       "id": "source-declarations",
