@@ -41,7 +41,7 @@
     {"table": "tests/capture-precision-outcomes.json", "feature": "pa27.capture-precision"},
     {"table": "tests/capture-integration-outcomes.json", "rows": "source", "feature": "pa27.capture-precision"},
     {"table": "tests/capture-integration-outcomes.json", "rows": "native", "feature": "pa27.capture-precision"},
-    {"table": "tests/capture-native-hypotheses.json", "rows": "native", "feature": "pa27.capture-precision"},
+    {"table": "tests/capture-native-hypotheses.json", "rows": "native", "feature": "pa27.capture-precision", "prelude": "tests/prelude/check.rs"},
     {"table": "tests/union-borrow-outcomes.json", "feature": "pa27.unions"}
    ],
    "skip_origins": ["dev/tests/image_storage.rs", "dev/tests/string_words.rs"]
@@ -66,13 +66,13 @@
    "tables": [
     {"table": "tests/manifest.draft.json", "feature": "pa28.volatile"},
     {"table": "tests/owned-memory-outcomes.json", "feature": "pa28.owned-memory"},
-    {"table": "tests/owned-memory-outcomes.json", "rows": "native_cases", "feature": "pa28.owned-memory", "native_rows": true},
+    {"table": "tests/owned-memory-outcomes.json", "rows": "native_cases", "feature": "pa28.owned-memory", "native_rows": true, "prelude": "tests/prelude/check.rs"},
     {"table": "tests/unaligned-memory-contract.json", "feature": "pa28.unaligned-memory"},
-    {"table": "tests/unaligned-memory-contract.json", "rows": "native", "feature": "pa28.unaligned-memory", "native_rows": true},
+    {"table": "tests/unaligned-memory-contract.json", "rows": "native", "feature": "pa28.unaligned-memory", "native_rows": true, "prelude": "tests/prelude/check.rs"},
     {"table": "tests/counted-memory-contract.json", "feature": "pa28.counted-memory"},
-    {"table": "tests/counted-memory-contract.json", "rows": "native", "feature": "pa28.counted-memory", "native_rows": true},
+    {"table": "tests/counted-memory-contract.json", "rows": "native", "feature": "pa28.counted-memory", "native_rows": true, "prelude": "tests/prelude/check.rs"},
     {"table": "tests/overlapping-memory-contract.json", "feature": "pa28.overlapping-memory"},
-    {"table": "tests/overlapping-memory-contract.json", "rows": "native", "feature": "pa28.overlapping-memory", "native_rows": true},
+    {"table": "tests/overlapping-memory-contract.json", "rows": "native", "feature": "pa28.overlapping-memory", "native_rows": true, "prelude": "tests/prelude/check.rs"},
     {"table": "tests/byte-fill-contract.json", "feature": "pa28.byte-fill"}
    ],
    "skip_paths_containing": ["source-transmute"],
@@ -92,18 +92,18 @@
    "note": "28.3. Entry-free sources are declared as libraries with one fixed identity.",
    "tables": [
     {"table": "tests/atomic-cas-outcomes.json", "feature": "pa28.atomic-cas"},
-    {"table": "tests/atomic-cas-outcomes.json", "rows": "native", "feature": "pa28.atomic-cas", "native_rows": true},
+    {"table": "tests/atomic-cas-outcomes.json", "rows": "native", "feature": "pa28.atomic-cas", "native_rows": true, "prelude": "tests/prelude/check.rs"},
     {"table": "tests/atomic-rmw-outcomes.json", "feature": "pa28.atomic-rmw"},
-    {"table": "tests/atomic-rmw-outcomes.json", "rows": "native", "feature": "pa28.atomic-rmw", "native_rows": true},
+    {"table": "tests/atomic-rmw-outcomes.json", "rows": "native", "feature": "pa28.atomic-rmw", "native_rows": true, "prelude": "tests/prelude/check.rs"},
     {"table": "tests/atomic-bitwise-outcomes.json", "feature": "pa28.atomic-bitwise"},
     {"table": "tests/atomic-subtract-outcomes.json", "feature": "pa28.atomic-subtract"},
     {"table": "tests/atomic-extrema-outcomes.json", "rows": "source_cases", "feature": "pa28.atomic-extrema"},
-    {"table": "tests/atomic-extrema-outcomes.json", "rows": "native_cases", "feature": "pa28.atomic-extrema", "native_rows": true},
+    {"table": "tests/atomic-extrema-outcomes.json", "rows": "native_cases", "feature": "pa28.atomic-extrema", "native_rows": true, "prelude": "tests/prelude/check.rs"},
     {"table": "tests/atomic-method-outcomes.json", "feature": "pa28.atomic-methods"},
-    {"table": "tests/atomic-method-outcomes.json", "rows": "native", "feature": "pa28.atomic-methods", "native_rows": true},
+    {"table": "tests/atomic-method-outcomes.json", "rows": "native", "feature": "pa28.atomic-methods", "native_rows": true, "prelude": "tests/prelude/check.rs"},
     {"table": "tests/atomic-method-outcomes.json", "rows": "boundaries", "feature": "pa28.atomic-methods"},
     {"table": "tests/atomic-storage-outcomes.json", "feature": "pa28.atomic-storage"},
-    {"table": "tests/atomic-storage-outcomes.json", "rows": "native_cases", "feature": "pa28.atomic-storage", "native_rows": true}
+    {"table": "tests/atomic-storage-outcomes.json", "rows": "native_cases", "feature": "pa28.atomic-storage", "native_rows": true, "prelude": "tests/prelude/check.rs"}
    ],
    "entry_free": {"crate_name": "atomic_fixture", "disambiguator": "pa28"}
   },
@@ -116,9 +116,27 @@
     {"table": "tests/static-outcomes.json", "feature": "pa30.static"},
     {"table": "tests/aggregate-outcomes.json", "feature": "pa30.aggregate"},
     {"table": "tests/composite-outcomes.json", "feature": "pa30.composite"},
-    {"table": "tests/variadic-outcomes.json", "feature": "pa30.variadic"},
-    {"table": "tests/variadic-tail-outcomes.json", "feature": "pa30.variadic-tail"}
+    {"table": "tests/variadic-outcomes.json", "feature": "pa30.variadic", "provider": "tests/spec/variadics/provider.c"},
+    {"table": "tests/variadic-tail-outcomes.json", "feature": "pa30.variadic-tail", "provider": "tests/spec/variadic-tails/provider.c"}
    ],
+   "providers": {
+    "tests/spec/aggregate-abi/interop.rs": ["tests/spec/aggregate-abi/interop.c"],
+    "tests/spec/aggregate-abi/aligned.rs": ["tests/spec/aggregate-abi/aligned.c"],
+    "tests/spec/aggregate-abi/indirect.rs": ["tests/spec/aggregate-abi/indirect.c"],
+    "tests/spec/imports/default.rs": ["tests/spec/imports/imported.c"],
+    "tests/spec/imports/safe.rs": ["tests/spec/imports/imported.c"],
+    "tests/spec/imports/unsafe-pointer.rs": ["tests/spec/imports/imported.c"],
+    "tests/spec/imports/rust-abi.rs": ["tests/spec/imports/imported.c"],
+    "tests/spec/imports/expanded-item.rs": ["tests/spec/imports/imported.c"],
+    "tests/spec/imports/expanded-block.rs": ["tests/spec/imports/imported.c"],
+    "tests/spec/linkage/alias.rs": ["tests/spec/linkage/alias.c"],
+    "tests/spec/statics/mutable.rs": ["tests/spec/statics/storage.c"],
+    "tests/spec/statics/const-address.rs": ["tests/spec/statics/storage.c"]
+   },
+   "accepted": {
+    "tests/spec/statics/const-read.rs": "Rust E0080: constant evaluation cannot access an extern static; the diagnostic names that rule",
+    "tests/spec/variadics/variadic-body.rs": "Rust E0658: a C-variadic definition is feature-gated; the diagnostic names that gate"
+   },
    "review": {
     "tests/spec/statics/interior-storage.rs": "Passes the probe, but declares pa28.atomic-storage; c-abi has no atomic-u32 prerequisite edge, so the unit validator rejects it as a future-stage feature"
    }

@@ -1,0 +1,646 @@
+function @rg.55() -> void {
+  slot $s0 : obj<4x4>
+  slot $s1 : obj<4x4>
+  slot $s2 : obj<4x4>
+  slot $s3 : obj<4x4>
+  slot $s4 : obj<4x4>
+  slot $s5 : obj<4x4>
+  slot $s6 : obj<1x1>
+  slot $s7 : obj<1x1>
+  slot $s8 : obj<1x1>
+  slot $s9 : obj<1x1>
+  slot $s10 : obj<1x1>
+  slot $s11 : obj<1x1>
+  slot $s12 : obj<1x1>
+  slot $s13 : obj<1x1>
+  slot $s14 : obj<4x4>
+  slot $s15 : obj<1x1>
+  slot $s16 : obj<1x1>
+  slot $s17 : obj<1x1>
+  slot $s18 : obj<1x1>
+  slot $s19 : obj<1x1>
+  slot $s20 : obj<1x1>
+  slot $s21 : obj<1x1>
+  slot $s22 : obj<1x1>
+  slot $s23 : obj<4x4>
+  slot $s24 : obj<1x1>
+  slot $s25 : obj<1x1>
+  slot $s26 : obj<1x1>
+  slot $s27 : obj<1x1>
+  slot $s28 : obj<1x1>
+  slot $s29 : obj<1x1>
+  slot $s30 : obj<1x1>
+  slot $s31 : obj<1x1>
+  slot $s32 : obj<4x4>
+  slot $s33 : obj<1x1>
+  slot $s34 : obj<1x1>
+  slot $s35 : obj<1x1>
+  slot $s36 : obj<1x1>
+  slot $s37 : obj<1x1>
+  slot $s38 : obj<1x1>
+  slot $s39 : obj<1x1>
+  slot $s40 : obj<1x1>
+  slot $s41 : obj<4x4>
+  slot $s42 : obj<1x1>
+  slot $s43 : obj<1x1>
+  slot $s44 : obj<1x1>
+  slot $s45 : obj<1x1>
+  slot $s46 : obj<1x1>
+  slot $s47 : obj<1x1>
+  slot $s48 : obj<1x1>
+  slot $s49 : obj<1x1>
+  block ^b0:
+    %t0 = addr $s5
+    call void @rg.22.i3(%t0, 2147483648)
+    %t1 = addr $s5
+    %t2 = addr $s0
+    copyobj 4x4 %t1, %t2
+    %t3 = addr $s0
+    store u8 0, $s6
+    %t4 = load u8 $s6
+    %t5 = call u32 @rg.intrinsic.fetch_min.t49(%t3, 4294967295, %t4)
+    %t6 = cmp eq u32 %t5, 2147483648
+    %t7 = convert trunc i1 i64 %t6
+    call void @rg.13(%t7)
+    %t8 = addr $s0
+    store u8 0, $s7
+    %t9 = load u8 $s7
+    %t10 = call u32 @rg.intrinsic.load.t34(%t8, %t9)
+    %t11 = cmp eq u32 %t10, 2147483648
+    %t12 = convert trunc i1 i64 %t11
+    call void @rg.13(%t12)
+    %t13 = addr $s0
+    store u8 0, $s8
+    %t14 = load u8 $s8
+    %t15 = call u32 @rg.intrinsic.fetch_min.t49(%t13, 37, %t14)
+    %t16 = cmp eq u32 %t15, 2147483648
+    %t17 = convert trunc i1 i64 %t16
+    call void @rg.13(%t17)
+    %t18 = addr $s0
+    store u8 0, $s9
+    %t19 = load u8 $s9
+    %t20 = call u32 @rg.intrinsic.fetch_max.t50(%t18, 2147483648, %t19)
+    %t21 = cmp eq u32 %t20, 37
+    %t22 = convert trunc i1 i64 %t21
+    call void @rg.13(%t22)
+    %t23 = addr $s0
+    store u8 0, $s10
+    %t24 = load u8 $s10
+    %t25 = call u32 @rg.intrinsic.fetch_max.t50(%t23, 4294967295, %t24)
+    %t26 = cmp eq u32 %t25, 2147483648
+    %t27 = convert trunc i1 i64 %t26
+    call void @rg.13(%t27)
+    %t28 = addr $s0
+    store u8 0, $s11
+    %t29 = load u8 $s11
+    %t30 = call u32 @rg.intrinsic.fetch_max.t50(%t28, 0, %t29)
+    %t31 = cmp eq u32 %t30, 4294967295
+    %t32 = convert trunc i1 i64 %t31
+    call void @rg.13(%t32)
+    %t33 = addr $s0
+    store u8 0, $s12
+    %t34 = load u8 $s12
+    %t35 = call u32 @rg.intrinsic.fetch_min.t49(%t33, 0, %t34)
+    %t36 = cmp eq u32 %t35, 4294967295
+    %t37 = convert trunc i1 i64 %t36
+    call void @rg.13(%t37)
+    %t38 = addr $s0
+    store u8 0, $s13
+    %t39 = load u8 $s13
+    %t40 = call u32 @rg.intrinsic.load.t34(%t38, %t39)
+    %t41 = cmp eq u32 %t40, 0
+    %t42 = convert trunc i1 i64 %t41
+    call void @rg.13(%t42)
+    %t43 = addr $s14
+    call void @rg.22.i3(%t43, 2147483648)
+    %t44 = addr $s14
+    %t45 = addr $s1
+    copyobj 4x4 %t44, %t45
+    %t46 = addr $s1
+    store u8 1, $s15
+    %t47 = load u8 $s15
+    %t48 = call u32 @rg.intrinsic.fetch_min.t49(%t46, 4294967295, %t47)
+    %t49 = cmp eq u32 %t48, 2147483648
+    %t50 = convert trunc i1 i64 %t49
+    call void @rg.13(%t50)
+    %t51 = addr $s1
+    store u8 0, $s16
+    %t52 = load u8 $s16
+    %t53 = call u32 @rg.intrinsic.load.t34(%t51, %t52)
+    %t54 = cmp eq u32 %t53, 2147483648
+    %t55 = convert trunc i1 i64 %t54
+    call void @rg.13(%t55)
+    %t56 = addr $s1
+    store u8 1, $s17
+    %t57 = load u8 $s17
+    %t58 = call u32 @rg.intrinsic.fetch_min.t49(%t56, 37, %t57)
+    %t59 = cmp eq u32 %t58, 2147483648
+    %t60 = convert trunc i1 i64 %t59
+    call void @rg.13(%t60)
+    %t61 = addr $s1
+    store u8 1, $s18
+    %t62 = load u8 $s18
+    %t63 = call u32 @rg.intrinsic.fetch_max.t50(%t61, 2147483648, %t62)
+    %t64 = cmp eq u32 %t63, 37
+    %t65 = convert trunc i1 i64 %t64
+    call void @rg.13(%t65)
+    %t66 = addr $s1
+    store u8 1, $s19
+    %t67 = load u8 $s19
+    %t68 = call u32 @rg.intrinsic.fetch_max.t50(%t66, 4294967295, %t67)
+    %t69 = cmp eq u32 %t68, 2147483648
+    %t70 = convert trunc i1 i64 %t69
+    call void @rg.13(%t70)
+    %t71 = addr $s1
+    store u8 1, $s20
+    %t72 = load u8 $s20
+    %t73 = call u32 @rg.intrinsic.fetch_max.t50(%t71, 0, %t72)
+    %t74 = cmp eq u32 %t73, 4294967295
+    %t75 = convert trunc i1 i64 %t74
+    call void @rg.13(%t75)
+    %t76 = addr $s1
+    store u8 1, $s21
+    %t77 = load u8 $s21
+    %t78 = call u32 @rg.intrinsic.fetch_min.t49(%t76, 0, %t77)
+    %t79 = cmp eq u32 %t78, 4294967295
+    %t80 = convert trunc i1 i64 %t79
+    call void @rg.13(%t80)
+    %t81 = addr $s1
+    store u8 0, $s22
+    %t82 = load u8 $s22
+    %t83 = call u32 @rg.intrinsic.load.t34(%t81, %t82)
+    %t84 = cmp eq u32 %t83, 0
+    %t85 = convert trunc i1 i64 %t84
+    call void @rg.13(%t85)
+    %t86 = addr $s23
+    call void @rg.22.i3(%t86, 2147483648)
+    %t87 = addr $s23
+    %t88 = addr $s2
+    copyobj 4x4 %t87, %t88
+    %t89 = addr $s2
+    store u8 2, $s24
+    %t90 = load u8 $s24
+    %t91 = call u32 @rg.intrinsic.fetch_min.t49(%t89, 4294967295, %t90)
+    %t92 = cmp eq u32 %t91, 2147483648
+    %t93 = convert trunc i1 i64 %t92
+    call void @rg.13(%t93)
+    %t94 = addr $s2
+    store u8 0, $s25
+    %t95 = load u8 $s25
+    %t96 = call u32 @rg.intrinsic.load.t34(%t94, %t95)
+    %t97 = cmp eq u32 %t96, 2147483648
+    %t98 = convert trunc i1 i64 %t97
+    call void @rg.13(%t98)
+    %t99 = addr $s2
+    store u8 2, $s26
+    %t100 = load u8 $s26
+    %t101 = call u32 @rg.intrinsic.fetch_min.t49(%t99, 37, %t100)
+    %t102 = cmp eq u32 %t101, 2147483648
+    %t103 = convert trunc i1 i64 %t102
+    call void @rg.13(%t103)
+    %t104 = addr $s2
+    store u8 2, $s27
+    %t105 = load u8 $s27
+    %t106 = call u32 @rg.intrinsic.fetch_max.t50(%t104, 2147483648, %t105)
+    %t107 = cmp eq u32 %t106, 37
+    %t108 = convert trunc i1 i64 %t107
+    call void @rg.13(%t108)
+    %t109 = addr $s2
+    store u8 2, $s28
+    %t110 = load u8 $s28
+    %t111 = call u32 @rg.intrinsic.fetch_max.t50(%t109, 4294967295, %t110)
+    %t112 = cmp eq u32 %t111, 2147483648
+    %t113 = convert trunc i1 i64 %t112
+    call void @rg.13(%t113)
+    %t114 = addr $s2
+    store u8 2, $s29
+    %t115 = load u8 $s29
+    %t116 = call u32 @rg.intrinsic.fetch_max.t50(%t114, 0, %t115)
+    %t117 = cmp eq u32 %t116, 4294967295
+    %t118 = convert trunc i1 i64 %t117
+    call void @rg.13(%t118)
+    %t119 = addr $s2
+    store u8 2, $s30
+    %t120 = load u8 $s30
+    %t121 = call u32 @rg.intrinsic.fetch_min.t49(%t119, 0, %t120)
+    %t122 = cmp eq u32 %t121, 4294967295
+    %t123 = convert trunc i1 i64 %t122
+    call void @rg.13(%t123)
+    %t124 = addr $s2
+    store u8 0, $s31
+    %t125 = load u8 $s31
+    %t126 = call u32 @rg.intrinsic.load.t34(%t124, %t125)
+    %t127 = cmp eq u32 %t126, 0
+    %t128 = convert trunc i1 i64 %t127
+    call void @rg.13(%t128)
+    %t129 = addr $s32
+    call void @rg.22.i3(%t129, 2147483648)
+    %t130 = addr $s32
+    %t131 = addr $s3
+    copyobj 4x4 %t130, %t131
+    %t132 = addr $s3
+    store u8 3, $s33
+    %t133 = load u8 $s33
+    %t134 = call u32 @rg.intrinsic.fetch_min.t49(%t132, 4294967295, %t133)
+    %t135 = cmp eq u32 %t134, 2147483648
+    %t136 = convert trunc i1 i64 %t135
+    call void @rg.13(%t136)
+    %t137 = addr $s3
+    store u8 0, $s34
+    %t138 = load u8 $s34
+    %t139 = call u32 @rg.intrinsic.load.t34(%t137, %t138)
+    %t140 = cmp eq u32 %t139, 2147483648
+    %t141 = convert trunc i1 i64 %t140
+    call void @rg.13(%t141)
+    %t142 = addr $s3
+    store u8 3, $s35
+    %t143 = load u8 $s35
+    %t144 = call u32 @rg.intrinsic.fetch_min.t49(%t142, 37, %t143)
+    %t145 = cmp eq u32 %t144, 2147483648
+    %t146 = convert trunc i1 i64 %t145
+    call void @rg.13(%t146)
+    %t147 = addr $s3
+    store u8 3, $s36
+    %t148 = load u8 $s36
+    %t149 = call u32 @rg.intrinsic.fetch_max.t50(%t147, 2147483648, %t148)
+    %t150 = cmp eq u32 %t149, 37
+    %t151 = convert trunc i1 i64 %t150
+    call void @rg.13(%t151)
+    %t152 = addr $s3
+    store u8 3, $s37
+    %t153 = load u8 $s37
+    %t154 = call u32 @rg.intrinsic.fetch_max.t50(%t152, 4294967295, %t153)
+    %t155 = cmp eq u32 %t154, 2147483648
+    %t156 = convert trunc i1 i64 %t155
+    call void @rg.13(%t156)
+    %t157 = addr $s3
+    store u8 3, $s38
+    %t158 = load u8 $s38
+    %t159 = call u32 @rg.intrinsic.fetch_max.t50(%t157, 0, %t158)
+    %t160 = cmp eq u32 %t159, 4294967295
+    %t161 = convert trunc i1 i64 %t160
+    call void @rg.13(%t161)
+    %t162 = addr $s3
+    store u8 3, $s39
+    %t163 = load u8 $s39
+    %t164 = call u32 @rg.intrinsic.fetch_min.t49(%t162, 0, %t163)
+    %t165 = cmp eq u32 %t164, 4294967295
+    %t166 = convert trunc i1 i64 %t165
+    call void @rg.13(%t166)
+    %t167 = addr $s3
+    store u8 0, $s40
+    %t168 = load u8 $s40
+    %t169 = call u32 @rg.intrinsic.load.t34(%t167, %t168)
+    %t170 = cmp eq u32 %t169, 0
+    %t171 = convert trunc i1 i64 %t170
+    call void @rg.13(%t171)
+    %t172 = addr $s41
+    call void @rg.22.i3(%t172, 2147483648)
+    %t173 = addr $s41
+    %t174 = addr $s4
+    copyobj 4x4 %t173, %t174
+    %t175 = addr $s4
+    store u8 4, $s42
+    %t176 = load u8 $s42
+    %t177 = call u32 @rg.intrinsic.fetch_min.t49(%t175, 4294967295, %t176)
+    %t178 = cmp eq u32 %t177, 2147483648
+    %t179 = convert trunc i1 i64 %t178
+    call void @rg.13(%t179)
+    %t180 = addr $s4
+    store u8 0, $s43
+    %t181 = load u8 $s43
+    %t182 = call u32 @rg.intrinsic.load.t34(%t180, %t181)
+    %t183 = cmp eq u32 %t182, 2147483648
+    %t184 = convert trunc i1 i64 %t183
+    call void @rg.13(%t184)
+    %t185 = addr $s4
+    store u8 4, $s44
+    %t186 = load u8 $s44
+    %t187 = call u32 @rg.intrinsic.fetch_min.t49(%t185, 37, %t186)
+    %t188 = cmp eq u32 %t187, 2147483648
+    %t189 = convert trunc i1 i64 %t188
+    call void @rg.13(%t189)
+    %t190 = addr $s4
+    store u8 4, $s45
+    %t191 = load u8 $s45
+    %t192 = call u32 @rg.intrinsic.fetch_max.t50(%t190, 2147483648, %t191)
+    %t193 = cmp eq u32 %t192, 37
+    %t194 = convert trunc i1 i64 %t193
+    call void @rg.13(%t194)
+    %t195 = addr $s4
+    store u8 4, $s46
+    %t196 = load u8 $s46
+    %t197 = call u32 @rg.intrinsic.fetch_max.t50(%t195, 4294967295, %t196)
+    %t198 = cmp eq u32 %t197, 2147483648
+    %t199 = convert trunc i1 i64 %t198
+    call void @rg.13(%t199)
+    %t200 = addr $s4
+    store u8 4, $s47
+    %t201 = load u8 $s47
+    %t202 = call u32 @rg.intrinsic.fetch_max.t50(%t200, 0, %t201)
+    %t203 = cmp eq u32 %t202, 4294967295
+    %t204 = convert trunc i1 i64 %t203
+    call void @rg.13(%t204)
+    %t205 = addr $s4
+    store u8 4, $s48
+    %t206 = load u8 $s48
+    %t207 = call u32 @rg.intrinsic.fetch_min.t49(%t205, 0, %t206)
+    %t208 = cmp eq u32 %t207, 4294967295
+    %t209 = convert trunc i1 i64 %t208
+    call void @rg.13(%t209)
+    %t210 = addr $s4
+    store u8 0, $s49
+    %t211 = load u8 $s49
+    %t212 = call u32 @rg.intrinsic.load.t34(%t210, %t211)
+    %t213 = cmp eq u32 %t212, 0
+    %t214 = convert trunc i1 i64 %t213
+    call void @rg.13(%t214)
+    return void
+}
+function @rg.22.i3(%p0 : ptr, %p1 : u32) -> void {
+  slot $s0 : u32
+  slot $s1 : obj<4x4>
+  block ^b0:
+    store u32 %p1, $s0
+    %t0 = load u32 $s0
+    store u32 %t0, $s1
+    %t1 = addr $s1
+    copyobj 4x4 %t1, %p0
+    return void
+}
+declare function @abort() -> void [return=noreturn]
+function @rg.intrinsic.fetch_min.t49(%p0 : ptr, %p1 : u32, %p2 : u8) -> u32 {
+  slot $s0 : u32
+  block ^b0:
+    %t0 = cmp eq u8 %p2, 0
+    branch %t0, ^b2, ^b3
+  block ^b2:
+    %t1 = atomic_load u32 %p0, 0
+    store u32 %t1, $s0
+    %t2 = addr $s0
+    jump ^b4
+  block ^b4:
+    %t3 = load u32 $s0
+    %t4 = cmp ugt u32 %t3, %p1
+    %t5 = convert trunc exact u32 i64 %t4
+    %t6 = binary sub u32 0, %t5
+    %t7 = binary xor u32 %t3, %p1
+    %t8 = binary and u32 %t7, %t6
+    %t9 = binary xor u32 %t3, %t8
+    %t10 = atomic_compare_exchange u32 %p0, %t2, %t9, 0, 0
+    branch %t10, ^b5, ^b4
+  block ^b5:
+    return u32 %t3
+  block ^b3:
+    %t11 = cmp eq u8 %p2, 1
+    branch %t11, ^b6, ^b7
+  block ^b6:
+    %t12 = atomic_load u32 %p0, 0
+    store u32 %t12, $s0
+    %t13 = addr $s0
+    jump ^b8
+  block ^b8:
+    %t14 = load u32 $s0
+    %t15 = cmp ugt u32 %t14, %p1
+    %t16 = convert trunc exact u32 i64 %t15
+    %t17 = binary sub u32 0, %t16
+    %t18 = binary xor u32 %t14, %p1
+    %t19 = binary and u32 %t18, %t17
+    %t20 = binary xor u32 %t14, %t19
+    %t21 = atomic_compare_exchange u32 %p0, %t13, %t20, 3, 0
+    branch %t21, ^b9, ^b8
+  block ^b9:
+    return u32 %t14
+  block ^b7:
+    %t22 = cmp eq u8 %p2, 2
+    branch %t22, ^b10, ^b11
+  block ^b10:
+    %t23 = atomic_load u32 %p0, 0
+    store u32 %t23, $s0
+    %t24 = addr $s0
+    jump ^b12
+  block ^b12:
+    %t25 = load u32 $s0
+    %t26 = cmp ugt u32 %t25, %p1
+    %t27 = convert trunc exact u32 i64 %t26
+    %t28 = binary sub u32 0, %t27
+    %t29 = binary xor u32 %t25, %p1
+    %t30 = binary and u32 %t29, %t28
+    %t31 = binary xor u32 %t25, %t30
+    %t32 = atomic_compare_exchange u32 %p0, %t24, %t31, 2, 0
+    branch %t32, ^b13, ^b12
+  block ^b13:
+    return u32 %t25
+  block ^b11:
+    %t33 = cmp eq u8 %p2, 3
+    branch %t33, ^b14, ^b15
+  block ^b14:
+    %t34 = atomic_load u32 %p0, 0
+    store u32 %t34, $s0
+    %t35 = addr $s0
+    jump ^b16
+  block ^b16:
+    %t36 = load u32 $s0
+    %t37 = cmp ugt u32 %t36, %p1
+    %t38 = convert trunc exact u32 i64 %t37
+    %t39 = binary sub u32 0, %t38
+    %t40 = binary xor u32 %t36, %p1
+    %t41 = binary and u32 %t40, %t39
+    %t42 = binary xor u32 %t36, %t41
+    %t43 = atomic_compare_exchange u32 %p0, %t35, %t42, 4, 0
+    branch %t43, ^b17, ^b16
+  block ^b17:
+    return u32 %t36
+  block ^b15:
+    %t44 = cmp eq u8 %p2, 4
+    branch %t44, ^b18, ^b19
+  block ^b18:
+    %t45 = atomic_load u32 %p0, 0
+    store u32 %t45, $s0
+    %t46 = addr $s0
+    jump ^b20
+  block ^b20:
+    %t47 = load u32 $s0
+    %t48 = cmp ugt u32 %t47, %p1
+    %t49 = convert trunc exact u32 i64 %t48
+    %t50 = binary sub u32 0, %t49
+    %t51 = binary xor u32 %t47, %p1
+    %t52 = binary and u32 %t51, %t50
+    %t53 = binary xor u32 %t47, %t52
+    %t54 = atomic_compare_exchange u32 %p0, %t46, %t53, 5, 0
+    branch %t54, ^b21, ^b20
+  block ^b21:
+    return u32 %t47
+  block ^b19:
+    jump ^b1
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.intrinsic.load.t34(%p0 : ptr, %p1 : u8) -> u32 {
+  block ^b0:
+    %t0 = cmp eq u8 %p1, 0
+    branch %t0, ^b2, ^b3
+  block ^b2:
+    %t1 = atomic_load u32 %p0, 0
+    return u32 %t1
+  block ^b3:
+    %t2 = cmp eq u8 %p1, 2
+    branch %t2, ^b4, ^b5
+  block ^b4:
+    %t3 = atomic_load u32 %p0, 2
+    return u32 %t3
+  block ^b5:
+    %t4 = cmp eq u8 %p1, 4
+    branch %t4, ^b6, ^b7
+  block ^b6:
+    %t5 = atomic_load u32 %p0, 5
+    return u32 %t5
+  block ^b7:
+    jump ^b1
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.intrinsic.fetch_max.t50(%p0 : ptr, %p1 : u32, %p2 : u8) -> u32 {
+  slot $s0 : u32
+  block ^b0:
+    %t0 = cmp eq u8 %p2, 0
+    branch %t0, ^b2, ^b3
+  block ^b2:
+    %t1 = atomic_load u32 %p0, 0
+    store u32 %t1, $s0
+    %t2 = addr $s0
+    jump ^b4
+  block ^b4:
+    %t3 = load u32 $s0
+    %t4 = cmp ult u32 %t3, %p1
+    %t5 = convert trunc exact u32 i64 %t4
+    %t6 = binary sub u32 0, %t5
+    %t7 = binary xor u32 %t3, %p1
+    %t8 = binary and u32 %t7, %t6
+    %t9 = binary xor u32 %t3, %t8
+    %t10 = atomic_compare_exchange u32 %p0, %t2, %t9, 0, 0
+    branch %t10, ^b5, ^b4
+  block ^b5:
+    return u32 %t3
+  block ^b3:
+    %t11 = cmp eq u8 %p2, 1
+    branch %t11, ^b6, ^b7
+  block ^b6:
+    %t12 = atomic_load u32 %p0, 0
+    store u32 %t12, $s0
+    %t13 = addr $s0
+    jump ^b8
+  block ^b8:
+    %t14 = load u32 $s0
+    %t15 = cmp ult u32 %t14, %p1
+    %t16 = convert trunc exact u32 i64 %t15
+    %t17 = binary sub u32 0, %t16
+    %t18 = binary xor u32 %t14, %p1
+    %t19 = binary and u32 %t18, %t17
+    %t20 = binary xor u32 %t14, %t19
+    %t21 = atomic_compare_exchange u32 %p0, %t13, %t20, 3, 0
+    branch %t21, ^b9, ^b8
+  block ^b9:
+    return u32 %t14
+  block ^b7:
+    %t22 = cmp eq u8 %p2, 2
+    branch %t22, ^b10, ^b11
+  block ^b10:
+    %t23 = atomic_load u32 %p0, 0
+    store u32 %t23, $s0
+    %t24 = addr $s0
+    jump ^b12
+  block ^b12:
+    %t25 = load u32 $s0
+    %t26 = cmp ult u32 %t25, %p1
+    %t27 = convert trunc exact u32 i64 %t26
+    %t28 = binary sub u32 0, %t27
+    %t29 = binary xor u32 %t25, %p1
+    %t30 = binary and u32 %t29, %t28
+    %t31 = binary xor u32 %t25, %t30
+    %t32 = atomic_compare_exchange u32 %p0, %t24, %t31, 2, 0
+    branch %t32, ^b13, ^b12
+  block ^b13:
+    return u32 %t25
+  block ^b11:
+    %t33 = cmp eq u8 %p2, 3
+    branch %t33, ^b14, ^b15
+  block ^b14:
+    %t34 = atomic_load u32 %p0, 0
+    store u32 %t34, $s0
+    %t35 = addr $s0
+    jump ^b16
+  block ^b16:
+    %t36 = load u32 $s0
+    %t37 = cmp ult u32 %t36, %p1
+    %t38 = convert trunc exact u32 i64 %t37
+    %t39 = binary sub u32 0, %t38
+    %t40 = binary xor u32 %t36, %p1
+    %t41 = binary and u32 %t40, %t39
+    %t42 = binary xor u32 %t36, %t41
+    %t43 = atomic_compare_exchange u32 %p0, %t35, %t42, 4, 0
+    branch %t43, ^b17, ^b16
+  block ^b17:
+    return u32 %t36
+  block ^b15:
+    %t44 = cmp eq u8 %p2, 4
+    branch %t44, ^b18, ^b19
+  block ^b18:
+    %t45 = atomic_load u32 %p0, 0
+    store u32 %t45, $s0
+    %t46 = addr $s0
+    jump ^b20
+  block ^b20:
+    %t47 = load u32 $s0
+    %t48 = cmp ult u32 %t47, %p1
+    %t49 = convert trunc exact u32 i64 %t48
+    %t50 = binary sub u32 0, %t49
+    %t51 = binary xor u32 %t47, %p1
+    %t52 = binary and u32 %t51, %t50
+    %t53 = binary xor u32 %t47, %t52
+    %t54 = atomic_compare_exchange u32 %p0, %t46, %t53, 5, 0
+    branch %t54, ^b21, ^b20
+  block ^b21:
+    return u32 %t47
+  block ^b19:
+    jump ^b1
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.55()
+    return i64 0
+}

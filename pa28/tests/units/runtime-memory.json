@@ -20,6 +20,10 @@
   "tests/byte-fill-native/runtime-zero-zst.rs",
   "tests/byte-fill-native/whole-provenance-overwrite.rs",
   "tests/byte-fill-native/writable-after-shared-borrow.rs",
+  "tests/counted-memory-native",
+  "tests/overlapping-memory-native",
+  "tests/owned-memory-native",
+  "tests/prelude",
   "tests/spec/byte-fill/argument-evaluation-once.rs",
   "tests/spec/byte-fill/atomic-static-zero.rs",
   "tests/spec/byte-fill/byte-scalar.rs",
@@ -193,7 +197,8 @@
   "tests/spec/unaligned-memory",
   "tests/spec/volatile/effects",
   "tests/spec/volatile/native",
-  "tests/spec/volatile/source"
+  "tests/spec/volatile/source",
+  "tests/unaligned-memory-native"
  ],
  "cases": [
   {
@@ -2090,6 +2095,300 @@
    }
   },
   {
+   "path": "tests/owned-memory-native/const-plain.rs",
+   "source_sha256": "739868455ba32f73964ea9bbf11501a136584f31c3a1abe03cda3327fc5deb11",
+   "exit_status": 0,
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/owned-memory-native/direct-reference-cell.rs",
+   "source_sha256": "1b68b3cf2017f5d769959b12ed2cfcfa58c4ad8612e6b896679267811c342e2e",
+   "exit_status": 0,
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/owned-memory-native/generic.rs",
+   "source_sha256": "7552b894dad54bd7b642e09069da18cd1256c920b50b2c2d93fd83bd1d8a3a08",
+   "exit_status": 0,
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/owned-memory-native/ignored-read.rs",
+   "source_sha256": "314fa8aabb3ac2df5dcb7b87c60b4e67f6480f3157bcf47cd2a9c00a8a7e73ca",
+   "exit_status": 0,
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/owned-memory-native/move-reinitialize.rs",
+   "source_sha256": "91c701f76122bee7924087bb94e18a492f03b34190f717135a8c5c332524825b",
+   "exit_status": 0,
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/owned-memory-native/nested-fields.rs",
+   "source_sha256": "9ff229242ceacf68e7a0212b83536d1e0fce426f16dc81c42d8e39b6e6773694",
+   "exit_status": 0,
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/owned-memory-native/ordinary-assignment.rs",
+   "source_sha256": "349be2b73dc6abf6ba8da2d845e507a7954f0aab799579dc035209313835a0ca",
+   "exit_status": 0,
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/owned-memory-native/overwrite-no-drop.rs",
+   "source_sha256": "de8ef7c034f0cf2c61cd1823c933d9bfaabf527b2fc1f8b5e7d969098e058533",
+   "exit_status": 0,
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/owned-memory-native/read-forget.rs",
+   "source_sha256": "ceaade396d3a4c5e509075cf99604d514e2b36406981aaf9c71a19bdc356cd88",
+   "exit_status": 0,
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/owned-memory-native/read-replace.rs",
+   "source_sha256": "4579208ccfdc66cadf1f60999e5ddb4224224d57655e2bc23518775e21c09000",
+   "exit_status": 0,
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/owned-memory-native/reified.rs",
+   "source_sha256": "9219326ac28e5c2f544b3f888d65a6026f60ef786d5b1ecae3d7a79bdc225e1d",
+   "exit_status": 0,
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/owned-memory-native/static-context.rs",
+   "source_sha256": "5a548c3d76aef2e15c8b2576d4dc4ca89e373408fbdade52aa9b1101d07328ef",
+   "exit_status": 0,
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/owned-memory-native/static-reference.rs",
+   "source_sha256": "6d1bc92be3893a86ac795f0dfef9be3ebd01d04a522ac5ee544a31c08126e8a8",
+   "exit_status": 0,
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/owned-memory-native/zero-sized-drop.rs",
+   "source_sha256": "b5a2052b6519397d3ad9105f0652436ff82e7916965364d5e70feaf9ec9b5937",
+   "exit_status": 0,
+   "features": [
+    "pa28.owned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
    "path": "tests/spec/unaligned-memory/packed-read.rs",
    "source_sha256": "ebf0d7bd6507b97803e091b2d4348eeca2ddb71dac9784ba431f9e8a62f32cfb",
    "exit_status": 0,
@@ -2696,6 +2995,216 @@
     "status": 1,
     "emit": "obj"
    }
+  },
+  {
+   "path": "tests/unaligned-memory-native/const-results.rs",
+   "source_sha256": "c852b25fc27011fe2e46430439e3eb351677e4467d0422c035ae84aa84efcc4d",
+   "exit_status": 0,
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/unaligned-memory-native/once-operands.rs",
+   "source_sha256": "60e1bbcb74f19620396ae020d3b2058da953430ce92a08e729df6a46d753dfff",
+   "exit_status": 0,
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/unaligned-memory-native/overwrite-no-drop.rs",
+   "source_sha256": "967f5fa421202f7a6e0c4555c5e42161e87e9daf2fcf304a7215d810eea11ad3",
+   "exit_status": 0,
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/unaligned-memory-native/owned-products.rs",
+   "source_sha256": "d58f759ee3eb4c8ab4310766409512e8750e9b51856d0465f37b87698114f915",
+   "exit_status": 0,
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/unaligned-memory-native/read-forget.rs",
+   "source_sha256": "9df11dd2fe232c0ad58337294ac0f5a021c441f306f30d4cdee9d754055c4cf5",
+   "exit_status": 0,
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/unaligned-memory-native/reference-values.rs",
+   "source_sha256": "a0e1467d8232c086f2d24683eed42ad527ba79fe6fc5b59ddec3f7927649342b",
+   "exit_status": 0,
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/unaligned-memory-native/reified-generic.rs",
+   "source_sha256": "e7a117617f9150a48a49e42fb5a9b5eb0488dbfbb95404c40501afd3fa89a9ea",
+   "exit_status": 0,
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/unaligned-memory-native/scalar-widths.rs",
+   "source_sha256": "db8906b233f8c01e79eef0147d8239683df7be7b888c4b41987ed7cb88a4dc1a",
+   "exit_status": 0,
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/unaligned-memory-native/self-snapshot.rs",
+   "source_sha256": "de2c2c2d810ee5badcd977af5d85433c128af389ad2b386d2cf4899b518e42b6",
+   "exit_status": 0,
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/unaligned-memory-native/wide-reference.rs",
+   "source_sha256": "2f6ce5f662f2872b933c19d33e53798abbbe25c604bb180bdd1a9f9c9ab63406",
+   "exit_status": 0,
+   "features": [
+    "pa28.unaligned-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
   },
   {
    "path": "tests/spec/counted-memory/scalar-zero.rs",
@@ -3396,6 +3905,237 @@
     "kind": "codegen",
     "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
    }
+  },
+  {
+   "path": "tests/counted-memory-native/backend-loop.rs",
+   "source_sha256": "c47e2bdb190a0b6c1cd1b2968dcd0bc2c512947a2cd47df994bb45dec35be725",
+   "exit_status": 0,
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/counted-memory-native/scalars.rs",
+   "source_sha256": "a888f51da018a92aa3fe5e7e8ddb7827dfd19ea2ced7e3ea153b77f02ff49016",
+   "exit_status": 0,
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/counted-memory-native/disjoint.rs",
+   "source_sha256": "9edcfb654fbc48db5b9b05a2d2b844cad4d9ca61b8055ce25ada3d47650f2b72",
+   "exit_status": 0,
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/counted-memory-native/generic.rs",
+   "source_sha256": "3d21d51a2ec876695fb39f6716c0bf8695ac41e88035ba03655ad09feb106f07",
+   "exit_status": 0,
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/counted-memory-native/reified.rs",
+   "source_sha256": "aaea22c70d6d1da7af0fdb86cc5e9c5f2afb5f87ae59f0c663e4834b6b3ac139",
+   "exit_status": 0,
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/counted-memory-native/argument-once.rs",
+   "source_sha256": "75d1dab0c00689f403abc623ab67d94d52288ec4d4dfbaa5a68c9e550fdf8603",
+   "exit_status": 0,
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/counted-memory-native/reference-elements.rs",
+   "source_sha256": "94a00571488d053d021146de0d0bee4d7340be68c1884f43c511796513a5add7",
+   "exit_status": 0,
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/counted-memory-native/rest-destination.rs",
+   "source_sha256": "f3e598dea3057b761b788f7f709bb79005af918159f550209e9b908c4de18447",
+   "exit_status": 0,
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/counted-memory-native/owned-drops.rs",
+   "source_sha256": "e8a482d7d23a3e31a3a30cce54ea864c922829525910a693707cf4968b71b183",
+   "exit_status": 0,
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/counted-memory-native/zst-large.rs",
+   "source_sha256": "1cd6d31617cdf19c9748ec3fc8d0e773e38cf1bddf2689d69fdd7081dee6fca4",
+   "exit_status": 0,
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/counted-memory-native/shared-zero.rs",
+   "source_sha256": "858f710c3758e03f27f009bbeac7f8c4c2ceec3c0b35a14f53bf0c377e312180",
+   "exit_status": 0,
+   "features": [
+    "pa28.counted-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
   },
   {
    "path": "tests/spec/overlapping-memory/scalar-zero.rs",
@@ -4306,6 +5046,489 @@
     "kind": "codegen",
     "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
    }
+  },
+  {
+   "path": "tests/overlapping-memory-native/backend-loop.rs",
+   "source_sha256": "c47e2bdb190a0b6c1cd1b2968dcd0bc2c512947a2cd47df994bb45dec35be725",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/overlapping-memory-native/scalars.rs",
+   "source_sha256": "c90130bf3acfb5f3ee349b2c950bc226bcc1b855c9d0f1179c0325c1652d038b",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/overlapping-memory-native/disjoint.rs",
+   "source_sha256": "8bffb4c2546a3823910b7ed4446f50f6697f065819a61e12dc0fefddd633ca72",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/overlapping-memory-native/generic.rs",
+   "source_sha256": "a9d3ccdb5a6a94e224498f92c2d9993714d9f291d3126a45c453d873c9fcb746",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/overlapping-memory-native/reified.rs",
+   "source_sha256": "414a5ecb13af87c53bbe6441741ac43c5e5f51c9a1fc51262316fca429e796a5",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/overlapping-memory-native/argument-once.rs",
+   "source_sha256": "14f936b79118bd9647650994b937b2e7afca3f16cf54b70abe317051d9a28f5b",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/overlapping-memory-native/reference-elements.rs",
+   "source_sha256": "5bb5b2ed01754462a1d603d6099b9a9f7c0f37af5abb6321b1c91fd9e647d87c",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/overlapping-memory-native/rest-destination.rs",
+   "source_sha256": "814c02b0e0819275175ac44e443008180d5619cfe0ec935fbc05604792d79c05",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/overlapping-memory-native/owned-drops.rs",
+   "source_sha256": "6693aceee28bfbe85b69d7f95e2ec29de8e6b071c6e024bf08b6ae662c77a985",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/overlapping-memory-native/zst-large.rs",
+   "source_sha256": "30a6f05ab9a7958ed85c7d00568330a8990fc2497a4dc26bc24667f73db4e803",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/overlapping-memory-native/shared-zero.rs",
+   "source_sha256": "bd0537f3108e48619a53d30d62cc167575226dccb85daaaf06df1cd661c4b159",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/overlapping-memory-native/overlap-left.rs",
+   "source_sha256": "eea35ca90ceb1cc9c3cb6558c7cc75ebf90d13e9bf990959cf9fed64a23ad2b1",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/overlapping-memory-native/overlap-right.rs",
+   "source_sha256": "667c346d9ef2c27f3085d1c97f97cdd745553a20295129a487929a5ee7f2804a",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/overlapping-memory-native/identical.rs",
+   "source_sha256": "e5cd9fc30ad3a6b9b505e0a6a087e068a364c95f22581eccef1e1cc79b4a3ce1",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/overlapping-memory-native/intra-object-left.rs",
+   "source_sha256": "dc4370a2bc1d90053c5c69b94b9e01472ade8e563d4f399a9efd120211bea916",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/overlapping-memory-native/intra-object-right.rs",
+   "source_sha256": "d4d48e3f88ca110446d47f197b433017a8af27d0d4152ede81fb45db3c7c4aaa",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/overlapping-memory-native/overlap-owned-drops.rs",
+   "source_sha256": "00a651db469182afc3efb4a1bf225317fa8c1a29856257eca9b4feb3630a32a3",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/overlapping-memory-native/rest-overlap.rs",
+   "source_sha256": "562ba46bc658e3e2d32801f2d7e63fdc981eb26d2e4aeef395dc8e131e8d424d",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/overlapping-memory-native/invalid-bool-byte.rs",
+   "source_sha256": "6d63f17f0d2fe971fdc8e081881e16c7c8fa92f20515fce31e2d80e32eb8931f",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/overlapping-memory-native/invalid-char-byte.rs",
+   "source_sha256": "1f3f8f7baddf0ffc463acee7dfdc03a18e47f85749e5ce683ab9595f0da2ab33",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/overlapping-memory-native/nonoverlap-invalid-bool-control.rs",
+   "source_sha256": "a5cc6e128357684d6a963c101dc6199245030b59c87ff39028d9ef53b4143611",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/overlapping-memory-native/nonoverlap-nan-bits-control.rs",
+   "source_sha256": "88af087fd760863ee39a37b6dc08378a5273f5a179b6980b9652b0894ea26dac",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/overlapping-memory-native/nonoverlap-reference-bits-control.rs",
+   "source_sha256": "4f3e7f5ecf5b5dbab2715bbb87a3ac146e1815002c099b858052f575ce3cdd15",
+   "exit_status": 0,
+   "features": [
+    "pa28.overlapping-memory"
+   ],
+   "work_units": [
+    "runtime-memory"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
   },
   {
    "path": "tests/spec/byte-fill/zero-shared.rs",

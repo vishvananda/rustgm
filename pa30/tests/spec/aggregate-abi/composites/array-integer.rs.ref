@@ -1,0 +1,522 @@
+function @rg.24() -> void {
+  slot $s0 : obj<16x4>
+  slot $s1 : i1
+  slot $s2 : i1
+  slot $s3 : i1
+  slot $s4 : obj<16x4>
+  slot $s5 : i1
+  slot $s6 : i1
+  slot $s7 : i1
+  slot $s8 : obj<16x4>
+  slot $s9 : i1
+  slot $s10 : i1
+  slot $s11 : i1
+  slot $s12 : obj<16x4>
+  slot $s13 : i1
+  slot $s14 : i1
+  slot $s15 : i1
+  slot $s16 : obj<12x4>
+  slot $s17 : obj<16x4>
+  slot $s18 : obj<16x4>
+  slot $s19 : obj<12x4>
+  slot $s20 : obj<16x4>
+  slot $s21 : obj<16x4>
+  slot $s22 : obj<12x4>
+  slot $s23 : obj<16x4>
+  slot $s24 : obj<16x4>
+  slot $s25 : obj<12x4>
+  slot $s26 : obj<16x4>
+  slot $s27 : obj<16x4>
+  block ^b0:
+    store u32 11, $s16
+    %t0 = addr $s16
+    %t1 = index u8 %t0, 4
+    store u32 22, %t1
+    %t2 = addr $s16
+    %t3 = index u8 %t2, 8
+    store u32 33, %t3
+    %t4 = addr $s16
+    %t5 = addr $s17
+    copyobj 12x4 %t4, %t5
+    %t6 = addr $s17
+    %t7 = index u8 %t6, 12
+    store u32 44, %t7
+    %o0 = call obj<16x4> @host_echo($s17)
+    %t8 = addr $s18
+    copyobj 16x4 %o0, %t8
+    %t9 = addr $s18
+    %t10 = addr $s0
+    copyobj 16x4 %t9, %t10
+    %t11 = cmp uge i64 0, 3
+    branch %t11, ^b37, ^b38
+  block ^b38:
+    %t12 = binary mul i64 0, 4
+    %t13 = addr $s0
+    %t14 = index u8 %t13, %t12
+    %t15 = load u32 %t14
+    %t16 = cmp eq u32 %t15, 11
+    %t17 = convert trunc i1 i64 %t16
+    branch %t17, ^b7, ^b8
+  block ^b8:
+    store i1 %t17, $s3
+    jump ^b9
+  block ^b7:
+    %t18 = cmp uge i64 1, 3
+    branch %t18, ^b37, ^b39
+  block ^b39:
+    %t19 = binary mul i64 1, 4
+    %t20 = addr $s0
+    %t21 = index u8 %t20, %t19
+    %t22 = load u32 %t21
+    %t23 = cmp eq u32 %t22, 22
+    %t24 = convert trunc i1 i64 %t23
+    store i1 %t24, $s3
+    jump ^b9
+  block ^b9:
+    %t25 = load i1 $s3
+    branch %t25, ^b4, ^b5
+  block ^b5:
+    store i1 %t25, $s2
+    jump ^b6
+  block ^b4:
+    %t26 = cmp uge i64 2, 3
+    branch %t26, ^b37, ^b40
+  block ^b40:
+    %t27 = binary mul i64 2, 4
+    %t28 = addr $s0
+    %t29 = index u8 %t28, %t27
+    %t30 = load u32 %t29
+    %t31 = cmp eq u32 %t30, 33
+    %t32 = convert trunc i1 i64 %t31
+    store i1 %t32, $s2
+    jump ^b6
+  block ^b6:
+    %t33 = load i1 $s2
+    branch %t33, ^b1, ^b2
+  block ^b2:
+    store i1 %t33, $s1
+    jump ^b3
+  block ^b1:
+    %t34 = addr $s0
+    %t35 = index u8 %t34, 12
+    %t36 = load u32 %t35
+    %t37 = cmp eq u32 %t36, 44
+    %t38 = convert trunc i1 i64 %t37
+    store i1 %t38, $s1
+    jump ^b3
+  block ^b3:
+    %t39 = load i1 $s1
+    call void @rg.13(%t39)
+    %t40 = addr @export_echo
+    store u32 11, $s19
+    %t41 = addr $s19
+    %t42 = index u8 %t41, 4
+    store u32 22, %t42
+    %t43 = addr $s19
+    %t44 = index u8 %t43, 8
+    store u32 33, %t44
+    %t45 = addr $s19
+    %t46 = addr $s20
+    copyobj 12x4 %t45, %t46
+    %t47 = addr $s20
+    %t48 = index u8 %t47, 12
+    store u32 44, %t48
+    %o1 = call obj<16x4> @host_callback(%t40, $s20)
+    %t49 = addr $s21
+    copyobj 16x4 %o1, %t49
+    %t50 = addr $s21
+    %t51 = addr $s4
+    copyobj 16x4 %t50, %t51
+    %t52 = cmp uge i64 0, 3
+    branch %t52, ^b37, ^b41
+  block ^b41:
+    %t53 = binary mul i64 0, 4
+    %t54 = addr $s4
+    %t55 = index u8 %t54, %t53
+    %t56 = load u32 %t55
+    %t57 = cmp eq u32 %t56, 11
+    %t58 = convert trunc i1 i64 %t57
+    branch %t58, ^b16, ^b17
+  block ^b17:
+    store i1 %t58, $s7
+    jump ^b18
+  block ^b16:
+    %t59 = cmp uge i64 1, 3
+    branch %t59, ^b37, ^b42
+  block ^b42:
+    %t60 = binary mul i64 1, 4
+    %t61 = addr $s4
+    %t62 = index u8 %t61, %t60
+    %t63 = load u32 %t62
+    %t64 = cmp eq u32 %t63, 22
+    %t65 = convert trunc i1 i64 %t64
+    store i1 %t65, $s7
+    jump ^b18
+  block ^b18:
+    %t66 = load i1 $s7
+    branch %t66, ^b13, ^b14
+  block ^b14:
+    store i1 %t66, $s6
+    jump ^b15
+  block ^b13:
+    %t67 = cmp uge i64 2, 3
+    branch %t67, ^b37, ^b43
+  block ^b43:
+    %t68 = binary mul i64 2, 4
+    %t69 = addr $s4
+    %t70 = index u8 %t69, %t68
+    %t71 = load u32 %t70
+    %t72 = cmp eq u32 %t71, 33
+    %t73 = convert trunc i1 i64 %t72
+    store i1 %t73, $s6
+    jump ^b15
+  block ^b15:
+    %t74 = load i1 $s6
+    branch %t74, ^b10, ^b11
+  block ^b11:
+    store i1 %t74, $s5
+    jump ^b12
+  block ^b10:
+    %t75 = addr $s4
+    %t76 = index u8 %t75, 12
+    %t77 = load u32 %t76
+    %t78 = cmp eq u32 %t77, 44
+    %t79 = convert trunc i1 i64 %t78
+    store i1 %t79, $s5
+    jump ^b12
+  block ^b12:
+    %t80 = load i1 $s5
+    call void @rg.13(%t80)
+    store u32 11, $s22
+    %t81 = addr $s22
+    %t82 = index u8 %t81, 4
+    store u32 22, %t82
+    %t83 = addr $s22
+    %t84 = index u8 %t83, 8
+    store u32 33, %t84
+    %t85 = addr $s22
+    %t86 = addr $s23
+    copyobj 12x4 %t85, %t86
+    %t87 = addr $s23
+    %t88 = index u8 %t87, 12
+    store u32 44, %t88
+    %o2 = call obj<16x4> @host_integer(1, 2, 3, 4, 5, 6, $s23, 9.50000000000000000e0)
+    %t89 = addr $s24
+    copyobj 16x4 %o2, %t89
+    %t90 = addr $s24
+    %t91 = addr $s8
+    copyobj 16x4 %t90, %t91
+    %t92 = cmp uge i64 0, 3
+    branch %t92, ^b37, ^b44
+  block ^b44:
+    %t93 = binary mul i64 0, 4
+    %t94 = addr $s8
+    %t95 = index u8 %t94, %t93
+    %t96 = load u32 %t95
+    %t97 = cmp eq u32 %t96, 11
+    %t98 = convert trunc i1 i64 %t97
+    branch %t98, ^b25, ^b26
+  block ^b26:
+    store i1 %t98, $s11
+    jump ^b27
+  block ^b25:
+    %t99 = cmp uge i64 1, 3
+    branch %t99, ^b37, ^b45
+  block ^b45:
+    %t100 = binary mul i64 1, 4
+    %t101 = addr $s8
+    %t102 = index u8 %t101, %t100
+    %t103 = load u32 %t102
+    %t104 = cmp eq u32 %t103, 22
+    %t105 = convert trunc i1 i64 %t104
+    store i1 %t105, $s11
+    jump ^b27
+  block ^b27:
+    %t106 = load i1 $s11
+    branch %t106, ^b22, ^b23
+  block ^b23:
+    store i1 %t106, $s10
+    jump ^b24
+  block ^b22:
+    %t107 = cmp uge i64 2, 3
+    branch %t107, ^b37, ^b46
+  block ^b46:
+    %t108 = binary mul i64 2, 4
+    %t109 = addr $s8
+    %t110 = index u8 %t109, %t108
+    %t111 = load u32 %t110
+    %t112 = cmp eq u32 %t111, 33
+    %t113 = convert trunc i1 i64 %t112
+    store i1 %t113, $s10
+    jump ^b24
+  block ^b24:
+    %t114 = load i1 $s10
+    branch %t114, ^b19, ^b20
+  block ^b20:
+    store i1 %t114, $s9
+    jump ^b21
+  block ^b19:
+    %t115 = addr $s8
+    %t116 = index u8 %t115, 12
+    %t117 = load u32 %t116
+    %t118 = cmp eq u32 %t117, 44
+    %t119 = convert trunc i1 i64 %t118
+    store i1 %t119, $s9
+    jump ^b21
+  block ^b21:
+    %t120 = load i1 $s9
+    call void @rg.13(%t120)
+    store u32 11, $s25
+    %t121 = addr $s25
+    %t122 = index u8 %t121, 4
+    store u32 22, %t122
+    %t123 = addr $s25
+    %t124 = index u8 %t123, 8
+    store u32 33, %t124
+    %t125 = addr $s25
+    %t126 = addr $s26
+    copyobj 12x4 %t125, %t126
+    %t127 = addr $s26
+    %t128 = index u8 %t127, 12
+    store u32 44, %t128
+    %o3 = call obj<16x4> @host_sse(1.00000000000000000e0, 2.00000000000000000e0, 3.00000000000000000e0, 4.00000000000000000e0, 5.00000000000000000e0, 6.00000000000000000e0, 7.00000000000000000e0, $s26, 8.00000000000000000e0)
+    %t129 = addr $s27
+    copyobj 16x4 %o3, %t129
+    %t130 = addr $s27
+    %t131 = addr $s12
+    copyobj 16x4 %t130, %t131
+    %t132 = cmp uge i64 0, 3
+    branch %t132, ^b37, ^b47
+  block ^b47:
+    %t133 = binary mul i64 0, 4
+    %t134 = addr $s12
+    %t135 = index u8 %t134, %t133
+    %t136 = load u32 %t135
+    %t137 = cmp eq u32 %t136, 11
+    %t138 = convert trunc i1 i64 %t137
+    branch %t138, ^b34, ^b35
+  block ^b35:
+    store i1 %t138, $s15
+    jump ^b36
+  block ^b34:
+    %t139 = cmp uge i64 1, 3
+    branch %t139, ^b37, ^b48
+  block ^b48:
+    %t140 = binary mul i64 1, 4
+    %t141 = addr $s12
+    %t142 = index u8 %t141, %t140
+    %t143 = load u32 %t142
+    %t144 = cmp eq u32 %t143, 22
+    %t145 = convert trunc i1 i64 %t144
+    store i1 %t145, $s15
+    jump ^b36
+  block ^b36:
+    %t146 = load i1 $s15
+    branch %t146, ^b31, ^b32
+  block ^b32:
+    store i1 %t146, $s14
+    jump ^b33
+  block ^b31:
+    %t147 = cmp uge i64 2, 3
+    branch %t147, ^b37, ^b49
+  block ^b49:
+    %t148 = binary mul i64 2, 4
+    %t149 = addr $s12
+    %t150 = index u8 %t149, %t148
+    %t151 = load u32 %t150
+    %t152 = cmp eq u32 %t151, 33
+    %t153 = convert trunc i1 i64 %t152
+    store i1 %t153, $s14
+    jump ^b33
+  block ^b33:
+    %t154 = load i1 $s14
+    branch %t154, ^b28, ^b29
+  block ^b29:
+    store i1 %t154, $s13
+    jump ^b30
+  block ^b28:
+    %t155 = addr $s12
+    %t156 = index u8 %t155, 12
+    %t157 = load u32 %t156
+    %t158 = cmp eq u32 %t157, 44
+    %t159 = convert trunc i1 i64 %t158
+    store i1 %t159, $s13
+    jump ^b30
+  block ^b30:
+    %t160 = load i1 $s13
+    call void @rg.13(%t160)
+    %t161 = call u32 @host_check()
+    %t162 = cmp eq u32 %t161, 1
+    %t163 = convert trunc i1 i64 %t162
+    call void @rg.13(%t163)
+    return void
+  block ^b37:
+    call void @abort()
+    unreachable
+}
+function @export_echo(%p0 : obj<16x4> [classes=integer_integer]) -> obj<16x4> [result_classes=integer_integer] {
+  slot $s0 : obj<16x4>
+  slot $s1 : obj<16x4>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 16x4 %p0, %t0
+    %t1 = addr $s0
+    %t2 = addr $s1
+    copyobj 16x4 %t1, %t2
+    return obj<16x4> $s1
+}
+function @export_integer(%p0 : i64, %p1 : i64, %p2 : i64, %p3 : i64, %p4 : i64, %p5 : i64, %p6 : obj<16x4> [classes=integer_integer], %p7 : f64) -> obj<16x4> [result_classes=integer_integer] {
+  slot $s0 : i64
+  slot $s1 : i64
+  slot $s2 : i64
+  slot $s3 : i64
+  slot $s4 : i64
+  slot $s5 : i64
+  slot $s6 : obj<16x4>
+  slot $s7 : f64
+  slot $s8 : i1
+  slot $s9 : obj<16x4>
+  block ^b0:
+    store i64 %p0, $s0
+    store i64 %p1, $s1
+    store i64 %p2, $s2
+    store i64 %p3, $s3
+    store i64 %p4, $s4
+    store i64 %p5, $s5
+    %t0 = addr $s6
+    copyobj 16x4 %p6, %t0
+    store f64 %p7, $s7
+    %t1 = load i64 $s0
+    %t2 = load i64 $s1
+    %t3 = binary add i64 %t1, %t2
+    %t4 = cmp ult i64 %t3, %t1
+    branch %t4, ^b4, ^b5
+  block ^b5:
+    %t5 = load i64 $s2
+    %t6 = binary add i64 %t3, %t5
+    %t7 = cmp ult i64 %t6, %t3
+    branch %t7, ^b4, ^b6
+  block ^b6:
+    %t8 = load i64 $s3
+    %t9 = binary add i64 %t6, %t8
+    %t10 = cmp ult i64 %t9, %t6
+    branch %t10, ^b4, ^b7
+  block ^b7:
+    %t11 = load i64 $s4
+    %t12 = binary add i64 %t9, %t11
+    %t13 = cmp ult i64 %t12, %t9
+    branch %t13, ^b4, ^b8
+  block ^b8:
+    %t14 = load i64 $s5
+    %t15 = binary add i64 %t12, %t14
+    %t16 = cmp ult i64 %t15, %t12
+    branch %t16, ^b4, ^b9
+  block ^b9:
+    %t17 = cmp eq i64 %t15, 21
+    %t18 = convert trunc i1 i64 %t17
+    branch %t18, ^b1, ^b2
+  block ^b2:
+    store i1 %t18, $s8
+    jump ^b3
+  block ^b1:
+    %t19 = load f64 $s7
+    %t20 = cmp eq f64 %t19, 9.50000000000000000e0
+    %t21 = convert trunc i1 i64 %t20
+    store i1 %t21, $s8
+    jump ^b3
+  block ^b3:
+    %t22 = load i1 $s8
+    call void @rg.13(%t22)
+    %t23 = addr $s6
+    %t24 = addr $s9
+    copyobj 16x4 %t23, %t24
+    return obj<16x4> $s9
+  block ^b4:
+    call void @abort()
+    unreachable
+}
+function @export_sse(%p0 : f64, %p1 : f64, %p2 : f64, %p3 : f64, %p4 : f64, %p5 : f64, %p6 : f64, %p7 : obj<16x4> [classes=integer_integer], %p8 : f64) -> obj<16x4> [result_classes=integer_integer] {
+  slot $s0 : f64
+  slot $s1 : f64
+  slot $s2 : f64
+  slot $s3 : f64
+  slot $s4 : f64
+  slot $s5 : f64
+  slot $s6 : f64
+  slot $s7 : obj<16x4>
+  slot $s8 : f64
+  slot $s9 : obj<16x4>
+  block ^b0:
+    store f64 %p0, $s0
+    store f64 %p1, $s1
+    store f64 %p2, $s2
+    store f64 %p3, $s3
+    store f64 %p4, $s4
+    store f64 %p5, $s5
+    store f64 %p6, $s6
+    %t0 = addr $s7
+    copyobj 16x4 %p7, %t0
+    store f64 %p8, $s8
+    %t1 = load f64 $s0
+    %t2 = load f64 $s1
+    %t3 = binary add f64 %t1, %t2
+    %t4 = load f64 $s2
+    %t5 = binary add f64 %t3, %t4
+    %t6 = load f64 $s3
+    %t7 = binary add f64 %t5, %t6
+    %t8 = load f64 $s4
+    %t9 = binary add f64 %t7, %t8
+    %t10 = load f64 $s5
+    %t11 = binary add f64 %t9, %t10
+    %t12 = load f64 $s6
+    %t13 = binary add f64 %t11, %t12
+    %t14 = load f64 $s8
+    %t15 = binary add f64 %t13, %t14
+    %t16 = cmp eq f64 %t15, 3.60000000000000000e1
+    %t17 = convert trunc i1 i64 %t16
+    call void @rg.13(%t17)
+    %t18 = addr $s7
+    %t19 = addr $s9
+    copyobj 16x4 %t18, %t19
+    return obj<16x4> $s9
+}
+declare function @host_echo(%p0 : obj<16x4> [classes=integer_integer]) -> obj<16x4> [result_classes=integer_integer]
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+declare function @host_callback(%p0 : ptr, %p1 : obj<16x4> [classes=integer_integer]) -> obj<16x4> [result_classes=integer_integer]
+declare function @host_integer(%p0 : i64, %p1 : i64, %p2 : i64, %p3 : i64, %p4 : i64, %p5 : i64, %p6 : obj<16x4> [classes=integer_integer], %p7 : f64) -> obj<16x4> [result_classes=integer_integer]
+declare function @host_sse(%p0 : f64, %p1 : f64, %p2 : f64, %p3 : f64, %p4 : f64, %p5 : f64, %p6 : f64, %p7 : obj<16x4> [classes=integer_integer], %p8 : f64) -> obj<16x4> [result_classes=integer_integer]
+declare function @host_check() -> u32
+declare function @abort() -> void [return=noreturn]
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.24()
+    return i64 0
+}

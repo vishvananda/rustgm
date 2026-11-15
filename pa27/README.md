@@ -14,7 +14,7 @@ no released manifest claims is not graded, whatever this brief says about it.
 
 | Component | Manifest | Cases | Deferred list |
 | --- | --- | --- | --- |
-| `unsafe-places` | [unsafe-places.json](tests/units/unsafe-places.json) | 253 | [11 fixtures](../docs/pa27-unsafe-places-release.md#deferred-list) |
+| `unsafe-places` | [unsafe-places.json](tests/units/unsafe-places.json) | 262 | [2 fixtures](../docs/pa27-unsafe-places-release.md#deferred-list) |
 
 From the repository root, `python3 scripts/course.py pa27 --unit unsafe-places --app BIN`
 runs one component and `make test` runs every released component.

@@ -14,13 +14,12 @@ no released manifest claims is not graded, whatever this brief says about it.
 
 | Component | Manifest | Cases | Deferred list |
 | --- | --- | --- | --- |
-| `c-abi` | [c-abi.json](tests/units/c-abi.json) | 85 | [73 fixtures](../docs/pa30-c-abi-release.md#deferred-list) |
+| `c-abi` | [c-abi.json](tests/units/c-abi.json) | 143 | [15 fixtures](../docs/pa30-c-abi-release.md#deferred-list) |
 
 From the repository root, `python3 scripts/course.py pa30 --unit c-abi --app BIN`
 runs one component and `make test` runs every released component.
 
-Not released: `ffi-closure` is partial. Of the 73 deferred `c-abi` fixtures, 58
-need a host C provider, which the course native checker cannot link yet.
+Not released: `ffi-closure` is partial.
 
 Deferred and unclaimed fixtures are not waived. Everything the self-hosting
 corpus needs stays required through PA32–PA36, PA44 and PA45. The whole

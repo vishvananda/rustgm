@@ -14,8 +14,8 @@ no released manifest claims is not graded, whatever this brief says about it.
 
 | Component | Manifest | Cases | Deferred list |
 | --- | --- | --- | --- |
-| `runtime-memory` | [runtime-memory.json](tests/units/runtime-memory.json) | 265 | [90 fixtures](../docs/pa28-runtime-memory-release.md#deferred-list) |
-| `atomic-u32` | [atomic-u32.json](tests/units/atomic-u32.json) | 246 | [28 fixtures](../docs/pa28-atomic-u32-release.md#deferred-list) |
+| `runtime-memory` | [runtime-memory.json](tests/units/runtime-memory.json) | 323 | [32 fixtures](../docs/pa28-runtime-memory-release.md#deferred-list) |
+| `atomic-u32` | [atomic-u32.json](tests/units/atomic-u32.json) | 271 | [3 fixtures](../docs/pa28-atomic-u32-release.md#deferred-list) |
 
 From the repository root, `python3 scripts/course.py pa28 --unit runtime-memory --app BIN`
 runs one component and `make test` runs every released component.

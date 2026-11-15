@@ -3973,7 +3973,7 @@
     "dev/tests/wrapper_sources.rs": "9d50a37a73fcaf431b0ca64add4142cf38d85237d07557d0a786c0f2217f49cb",
     "dev/tests/zero_sized_niche_companions.rs": "560ed324f5c781c2585b712e0e56c9baa0243837ae0460036dfef11e4baba009"
   },
-  "manifest_sha256": "7e0605e1ba7cdddb114bd04fab3a6ee60a288433ac6722b3fcd37f8fd03971ef",
+  "manifest_sha256": "1f8ac95bf47d780f1f8a62138eba850693edcbd960c1494fee82fe708a38bb70",
   "case_contracts": {
     "tests/spec/volatile/source/reference-result-lifetime.rs": "117d5ba86972b511ee0ca7edae6452afc6300accf86963365f9af49a049963cf",
     "tests/spec/volatile/source/reference-pointee-lifetime.rs": "2a7bc7363ee87900fe7c243a167bf9c2846e274022c67e937767e0d2ddcaa0a7",
@@ -4072,6 +4072,20 @@
     "tests/spec/owned-pointer-memory/static-nested-block-inline.rs": "b300c6d716dcb2aa2bd1a3fae92f2e9b9a24b649f630f9a34ecdf83db8fcc3b5",
     "tests/spec/owned-pointer-memory/static-inline-reference.rs": "dbf831cf25f4f725f2b10354459a98e63aa006f8cf619310c740edf355c85880",
     "tests/spec/owned-pointer-memory/static-associated-const.rs": "ec6b656ea0b891c3134e2c02c82983ae02345507d0159008b13174ed3177aa27",
+    "tests/owned-memory-native/const-plain.rs": "1003f4c7acea2f73b06e5fa3bb65be73a59de6346ca8724ab1ba126ef237782c",
+    "tests/owned-memory-native/direct-reference-cell.rs": "908f06d9f8519273a9d32b66e1dd8cb58896241383f4f40807c736f4d4b67b6e",
+    "tests/owned-memory-native/generic.rs": "04c858f58216a29b3e52de18ba129c64a457e36ace8e6a263ddc908bf3b16db8",
+    "tests/owned-memory-native/ignored-read.rs": "b71869b61bb5d38f884b4d4cca9be0fd497a66554a14a182154e40d605c00353",
+    "tests/owned-memory-native/move-reinitialize.rs": "4be69fccf65c5b3eab095e35e712bd2b5157f219671aaf54fccd41500f7773c7",
+    "tests/owned-memory-native/nested-fields.rs": "4bf987f977e86a8f1de70f70b2d00debfb58a0147909946eb655365008b1cc20",
+    "tests/owned-memory-native/ordinary-assignment.rs": "317b8a8356a03dd43902072ac36a5baa1f24078611783dfdceb4ec233f43c433",
+    "tests/owned-memory-native/overwrite-no-drop.rs": "5c5dab6bdb02d389c9b7a5ced22306e098f7952b06794314d04117e62bb026ff",
+    "tests/owned-memory-native/read-forget.rs": "6c918687c5656afd3d20cd97beece07b4ba049b181162b7dff446a79d4f98a56",
+    "tests/owned-memory-native/read-replace.rs": "2b2a551a75c1eb064c7c6c57b7965f55945d222d1070acf6d84237753f0c7f93",
+    "tests/owned-memory-native/reified.rs": "b86c938dc01a1637ac146729e04d1cca001d1661a9a0baf24e42762b9857a732",
+    "tests/owned-memory-native/static-context.rs": "430aa8334ede30007adbe3dd73b9fb7647a1b5d2969bd526d9c17f7ff8baaba4",
+    "tests/owned-memory-native/static-reference.rs": "369e239b8c82d72dc38e3f526d874907162e6408d4cceefcae7d13ae61db61d4",
+    "tests/owned-memory-native/zero-sized-drop.rs": "558fd4d104883925f406efde5f62d65e767dd0833501d38c09269ea0d9b1bef5",
     "tests/spec/unaligned-memory/packed-read.rs": "2786a3ecbdb595aefd623bfec09825f8dcd727ff7e457f67fff47ff6b0fac0eb",
     "tests/spec/unaligned-memory/packed-write.rs": "6144adb7b2b01d9d588ca66558bed44ac738a4aeafd083969cacfa121e3f8d24",
     "tests/spec/unaligned-memory/packed-nested.rs": "7ccf17fb4bdf4229bb9056a5a167ff6b9120eaffc99ebff4ab94ce4361ebb282",
@@ -4104,6 +4118,16 @@
     "tests/spec/unaligned-memory/explicit-align-packed-invalid.rs": "658c3891e5fc1c71eee45d4c66d33448595c6f07b909e9d14254629464d4bf34",
     "tests/spec/unaligned-memory/symbolic-zst.rs": "b2737c88a793b2847108ba306576dc1ef359d3526adfc78970f1fb400ffd8460",
     "tests/spec/unaligned-memory/fresh-raw-anchor.rs": "417123b906dd012a503d3eaf7d56b9d8e1d986565703ea6d911a527edbc04dbd",
+    "tests/unaligned-memory-native/const-results.rs": "64a6e9583b196b6d8c316e958097ffca57405ba4788fefee337cebe3ccf6e86e",
+    "tests/unaligned-memory-native/once-operands.rs": "8b672437e694d34d29880f0fbde3e04372c371dc81ab49f2c8b6c5939a2f62bb",
+    "tests/unaligned-memory-native/overwrite-no-drop.rs": "04e777d3103d2645f6c4c0f9488bbb70d13f4ad66a86ed85391d911a2542096f",
+    "tests/unaligned-memory-native/owned-products.rs": "77d8860bebea7d172378dfcc600c4bccb16b7691bda0c96ae0ac9c855950b645",
+    "tests/unaligned-memory-native/read-forget.rs": "7e87973c65b7f2024ad805943697ade66df02c4a8a384dd0cf6710d4079d451a",
+    "tests/unaligned-memory-native/reference-values.rs": "983451f0dcaf8265c6eb99e79bc3a4be668293a45e685d7b331ca2d88ad6bc2e",
+    "tests/unaligned-memory-native/reified-generic.rs": "c05c4e61da449a743029ac6ab2fe5c8f8063aad95ab314846cbb3c0ef555ed31",
+    "tests/unaligned-memory-native/scalar-widths.rs": "859bebbd0bb2ddb976adbafe16e0392ea863871d4ae0f35a35db17d76cf57fa5",
+    "tests/unaligned-memory-native/self-snapshot.rs": "4ebc1eebaab8478e02833115071416c3bf1b307a8e6c4362a91fdbf6e5493bbd",
+    "tests/unaligned-memory-native/wide-reference.rs": "59d2caef342edf27a91a9a299b3e969ce95e285c136a0641763c850d34666e20",
     "tests/spec/counted-memory/scalar-zero.rs": "30d9f20d7b02bb35b6b688bd3c2116c1b8d72d74b27d4086ec92aff30c451453",
     "tests/spec/counted-memory/shared-zero.rs": "dff45b3b2427fbb6341bc1bf5e4868e75c1921373f14411d56d5276460c65a33",
     "tests/spec/counted-memory/shared-one.rs": "5007326cc228e2f7b9d376512e8caa01f8408b0b532a09e7f4098a70cd54f978",
@@ -4140,6 +4164,17 @@
     "tests/spec/counted-memory/static-one.rs": "636d077199022466fefd55b329391556400394e35568c4178fcebc28233b6a11",
     "tests/spec/counted-memory/mutable-static-one.rs": "64bc7529faccf75a45d20c50bcd284a724eccb03dee889b1febb31d510d154db",
     "tests/spec/counted-memory/atomic-static-initializer.rs": "afb8743770364ff913d129a805bf30d2fc3de1e207f55b5dd1421d12ff194b59",
+    "tests/counted-memory-native/backend-loop.rs": "b17d12d9d18216fd3ad2a9a7daf793c890eb46886b483e716704cefb930c765d",
+    "tests/counted-memory-native/scalars.rs": "f5b9089af3423d9b7c77f177bc8f0115a54095ed0a1f2247f8fa94005c45684a",
+    "tests/counted-memory-native/disjoint.rs": "ad8a9e13a2e56e0378085a35ad2cd837426a65420ba18a6697d92b544724163f",
+    "tests/counted-memory-native/generic.rs": "a806211e5a498629d2deb33da4cb1fad415831c8d74f66eca509af6bf347d388",
+    "tests/counted-memory-native/reified.rs": "483185e894b50c283f4f9cb3155667ae27c2cdc87e8fbc617496d9c76c6405b2",
+    "tests/counted-memory-native/argument-once.rs": "409830ca9b965af03af06a96a641f39ac20bb5e380acfbc7b09e81d33c0632fd",
+    "tests/counted-memory-native/reference-elements.rs": "fcd6b50354ad8773a823a1f5dd2f703588e30ba2fcda70f13795e2783cfe2365",
+    "tests/counted-memory-native/rest-destination.rs": "3f2071a1791857177b4aa7b5ce874a98c1238a881e6564e79957bd86b9036de4",
+    "tests/counted-memory-native/owned-drops.rs": "345b1a389a4e158edd16f03ed7590fa5a7a71890bedb900a393fd58d9e85ffc4",
+    "tests/counted-memory-native/zst-large.rs": "1138394469c0045aa918725d277d5d7f185b51b3c6bc0c2da329404df201624d",
+    "tests/counted-memory-native/shared-zero.rs": "8e24446aa911aaf739ffdf3bb383beca958a13e370f01589c26695b04b281dbc",
     "tests/spec/overlapping-memory/scalar-zero.rs": "e1a49c32a91810b6b69aec8ad78719507a644b0faec235f84c6de315ea2a4618",
     "tests/spec/overlapping-memory/shared-zero.rs": "e6505b5d76459d3145ea33c78d3a99efc39b2517bc4013344bca6b62f53bda9a",
     "tests/spec/overlapping-memory/shared-one.rs": "6a43e672fe76d4e820d3fe15a2f3035316c1b9d37ae0b221fb1b6e8ae3039656",
@@ -4186,6 +4221,29 @@
     "tests/spec/overlapping-memory/invalid-byte-demand.rs": "f84776c9786319d1e729ebfc4d11d851b57914cb3a3e9e554f1ee330a04d7ccf",
     "tests/spec/overlapping-memory/local-copy-shadow.rs": "3e9b1a8cebca458993a37c0fb96fa7c3e740536311aae9360ca72fd3db0a5856",
     "tests/spec/overlapping-memory/local-core-shadow.rs": "4308dadc73b3dd116f75bd82087c387024de07f73cc296684047995ad21afa47",
+    "tests/overlapping-memory-native/backend-loop.rs": "fd22dad4fd6290d293317e89ae20cc60023a9c86b66de2efe7ecd9d3e86c9876",
+    "tests/overlapping-memory-native/scalars.rs": "fc227b57353cbfdbd2b7359dfdf970a0037e816cada6439c7cb2889e9c882cec",
+    "tests/overlapping-memory-native/disjoint.rs": "480775a8e6ccb29f12879cce3c23ec14fd147356f1cd782c79b65983c2e5a9f4",
+    "tests/overlapping-memory-native/generic.rs": "d6e56a1691d21c2abe7f9364b6517ea3117d0bc2eccbd37147704790a4e086ad",
+    "tests/overlapping-memory-native/reified.rs": "f4e483faf142138c37a0f021fef24153e82c38510653c17aa3e479a5c1361673",
+    "tests/overlapping-memory-native/argument-once.rs": "51995d465d6bf21355c29f5567006ac254519cb504ccab4d7cc1812ecca2f111",
+    "tests/overlapping-memory-native/reference-elements.rs": "8021b91b7ed1bb8fb8442b67703f8de59bb6efc7de4a4952a1fb3653366e55f8",
+    "tests/overlapping-memory-native/rest-destination.rs": "10dc8175a8f41140301420ef41813ae248424afa45c4f910e46ae93a0cb2ed63",
+    "tests/overlapping-memory-native/owned-drops.rs": "180ab817d5cabf87cd301440c40ba43d2e27d109fe55b1e52dc53d1101673796",
+    "tests/overlapping-memory-native/zst-large.rs": "a57ba5beb9efc37e39db89685dffa3a53b908126159ae6a766e8dd510d02f4e3",
+    "tests/overlapping-memory-native/shared-zero.rs": "2e3706db29341589e0be90f0bdd8c4893eda709dde24787bd6067695a075181c",
+    "tests/overlapping-memory-native/overlap-left.rs": "d073cfc9126d35b5b90ee1ff7e1e9f6216fc705ada0da2758d1e9afeb08fa207",
+    "tests/overlapping-memory-native/overlap-right.rs": "dc06e985256bdedc68d3cf9edea7a4bb198e176b4010108689c004654f96f647",
+    "tests/overlapping-memory-native/identical.rs": "464c57417d36213ec1410d94fe6a6111152e4acfffa6e57e36c134c3cbcd8e5a",
+    "tests/overlapping-memory-native/intra-object-left.rs": "9eb3ee0621644fd3a7b35ca63adae85f0df696e1323053d8b9875e8effcc1e6f",
+    "tests/overlapping-memory-native/intra-object-right.rs": "d35d081b62ccda652c9bedcdbfb205b9b4d8ad8d8af042942faf026ca46cc3b7",
+    "tests/overlapping-memory-native/overlap-owned-drops.rs": "f0849f8223382b11cee0e91cbf9faafc790bbb68f1f26f43c062e79bb9204199",
+    "tests/overlapping-memory-native/rest-overlap.rs": "38c617eb551850e6b0ad4379f9b6db7ff8e3d13c605e025a75094e4b5bf866fe",
+    "tests/overlapping-memory-native/invalid-bool-byte.rs": "73a7d905296f8392d2f00efeae1bc644055df3c74bc18538db83c428a3c4d76f",
+    "tests/overlapping-memory-native/invalid-char-byte.rs": "f405d744399e3f6a49ff29e4db77959a7e4e2f518da342728897855adbad75f6",
+    "tests/overlapping-memory-native/nonoverlap-invalid-bool-control.rs": "3a7481533bddd9a36ff586fd306c191450ec74402740962fb9497e8797da157e",
+    "tests/overlapping-memory-native/nonoverlap-nan-bits-control.rs": "6c91920752acdce98ff697e45ec667dc5e4839d52ed81f37b7083b8f69117851",
+    "tests/overlapping-memory-native/nonoverlap-reference-bits-control.rs": "484dc00964bcae5c3f5a1c6e73bae4ddafe680a11883b7106dc74cc71a87d5ed",
     "tests/spec/byte-fill/zero-shared.rs": "da22fcdf12b270d044e651bd644266f60094eff3fb96435052f80ad43ddd3cbf",
     "tests/spec/byte-fill/zero-expired.rs": "cabc6dee3c22b8ba67af8df4c0ed2312b81ef120fb7af4f2a5be74ee6328bed5",
     "tests/spec/byte-fill/one-expired.rs": "40d703fb6de563d3e8a55e160c2ddc61298ec20dd5b42d6b44543bc282fe61b9",
@@ -4339,6 +4397,20 @@
     "tests/spec/owned-pointer-memory/static-nested-block-inline.rs": "64050fea1e2ea876cc88e7d1a77728ddea2760eda827df126b633b3c384b17d9",
     "tests/spec/owned-pointer-memory/static-inline-reference.rs": "ce0239068897535d9b9ad52ad90dfaa2780dd21aaa558bb2c97caae61da91544",
     "tests/spec/owned-pointer-memory/static-associated-const.rs": "dcad2ee6612f26941284efb2496761755378ee54588075eda5287ffb3311f9c3",
+    "tests/owned-memory-native/const-plain.rs": "739868455ba32f73964ea9bbf11501a136584f31c3a1abe03cda3327fc5deb11",
+    "tests/owned-memory-native/direct-reference-cell.rs": "1b68b3cf2017f5d769959b12ed2cfcfa58c4ad8612e6b896679267811c342e2e",
+    "tests/owned-memory-native/generic.rs": "7552b894dad54bd7b642e09069da18cd1256c920b50b2c2d93fd83bd1d8a3a08",
+    "tests/owned-memory-native/ignored-read.rs": "314fa8aabb3ac2df5dcb7b87c60b4e67f6480f3157bcf47cd2a9c00a8a7e73ca",
+    "tests/owned-memory-native/move-reinitialize.rs": "91c701f76122bee7924087bb94e18a492f03b34190f717135a8c5c332524825b",
+    "tests/owned-memory-native/nested-fields.rs": "9ff229242ceacf68e7a0212b83536d1e0fce426f16dc81c42d8e39b6e6773694",
+    "tests/owned-memory-native/ordinary-assignment.rs": "349be2b73dc6abf6ba8da2d845e507a7954f0aab799579dc035209313835a0ca",
+    "tests/owned-memory-native/overwrite-no-drop.rs": "de8ef7c034f0cf2c61cd1823c933d9bfaabf527b2fc1f8b5e7d969098e058533",
+    "tests/owned-memory-native/read-forget.rs": "ceaade396d3a4c5e509075cf99604d514e2b36406981aaf9c71a19bdc356cd88",
+    "tests/owned-memory-native/read-replace.rs": "4579208ccfdc66cadf1f60999e5ddb4224224d57655e2bc23518775e21c09000",
+    "tests/owned-memory-native/reified.rs": "9219326ac28e5c2f544b3f888d65a6026f60ef786d5b1ecae3d7a79bdc225e1d",
+    "tests/owned-memory-native/static-context.rs": "5a548c3d76aef2e15c8b2576d4dc4ca89e373408fbdade52aa9b1101d07328ef",
+    "tests/owned-memory-native/static-reference.rs": "6d1bc92be3893a86ac795f0dfef9be3ebd01d04a522ac5ee544a31c08126e8a8",
+    "tests/owned-memory-native/zero-sized-drop.rs": "b5a2052b6519397d3ad9105f0652436ff82e7916965364d5e70feaf9ec9b5937",
     "tests/spec/unaligned-memory/packed-read.rs": "ebf0d7bd6507b97803e091b2d4348eeca2ddb71dac9784ba431f9e8a62f32cfb",
     "tests/spec/unaligned-memory/packed-write.rs": "34d65f838ce615c76630cf963707179273515f5eb1bb8fffc36b69566a3e6cfa",
     "tests/spec/unaligned-memory/packed-nested.rs": "b470ad34b4cd70189a785aedd68ca6f0e1670aa6c6940c874901d206e26af363",
@@ -4371,6 +4443,16 @@
     "tests/spec/unaligned-memory/explicit-align-packed-invalid.rs": "8fea08915f5ca0e7eda7b8ce52a78e84d0acc73c60cd58ce4f8495b8e978ebea",
     "tests/spec/unaligned-memory/symbolic-zst.rs": "146363a2b68b8325ab353896aa62171669f3fb65c38032bd937e534984a10b42",
     "tests/spec/unaligned-memory/fresh-raw-anchor.rs": "9663284080ae165aa80bf7c48f27be944160978ea7610b5021c323cf6ad9846a",
+    "tests/unaligned-memory-native/const-results.rs": "c852b25fc27011fe2e46430439e3eb351677e4467d0422c035ae84aa84efcc4d",
+    "tests/unaligned-memory-native/once-operands.rs": "60e1bbcb74f19620396ae020d3b2058da953430ce92a08e729df6a46d753dfff",
+    "tests/unaligned-memory-native/overwrite-no-drop.rs": "967f5fa421202f7a6e0c4555c5e42161e87e9daf2fcf304a7215d810eea11ad3",
+    "tests/unaligned-memory-native/owned-products.rs": "d58f759ee3eb4c8ab4310766409512e8750e9b51856d0465f37b87698114f915",
+    "tests/unaligned-memory-native/read-forget.rs": "9df11dd2fe232c0ad58337294ac0f5a021c441f306f30d4cdee9d754055c4cf5",
+    "tests/unaligned-memory-native/reference-values.rs": "a0e1467d8232c086f2d24683eed42ad527ba79fe6fc5b59ddec3f7927649342b",
+    "tests/unaligned-memory-native/reified-generic.rs": "e7a117617f9150a48a49e42fb5a9b5eb0488dbfbb95404c40501afd3fa89a9ea",
+    "tests/unaligned-memory-native/scalar-widths.rs": "db8906b233f8c01e79eef0147d8239683df7be7b888c4b41987ed7cb88a4dc1a",
+    "tests/unaligned-memory-native/self-snapshot.rs": "de2c2c2d810ee5badcd977af5d85433c128af389ad2b386d2cf4899b518e42b6",
+    "tests/unaligned-memory-native/wide-reference.rs": "2f6ce5f662f2872b933c19d33e53798abbbe25c604bb180bdd1a9f9c9ab63406",
     "tests/spec/counted-memory/scalar-zero.rs": "6407b8df5f9f116a2c3a6c604df764f51e5f365035788278d6c7effee2d1d121",
     "tests/spec/counted-memory/shared-zero.rs": "2444be36a71019b8f8e93cadbd34fdabd2be6a4a02409b37e33f468510ea9660",
     "tests/spec/counted-memory/shared-one.rs": "dce2fcd10b4576742c7276397475bf9b0b8d5d65aa54ed70be6d6bef8fa44d19",
@@ -4407,6 +4489,17 @@
     "tests/spec/counted-memory/static-one.rs": "7a248cf5d5d34b6a46d88946db8ee5f1db7ba7fc4d747118489645c6f0b298d9",
     "tests/spec/counted-memory/mutable-static-one.rs": "2261033f05d121088c762962702a5fd795ef124ea1ce56b4aaa2ef2753fc4776",
     "tests/spec/counted-memory/atomic-static-initializer.rs": "ad7b47f7e9e0b0bf17e4a6666e2de44b4b26d3698cba5f7ae37f83af8d47392c",
+    "tests/counted-memory-native/backend-loop.rs": "c47e2bdb190a0b6c1cd1b2968dcd0bc2c512947a2cd47df994bb45dec35be725",
+    "tests/counted-memory-native/scalars.rs": "a888f51da018a92aa3fe5e7e8ddb7827dfd19ea2ced7e3ea153b77f02ff49016",
+    "tests/counted-memory-native/disjoint.rs": "9edcfb654fbc48db5b9b05a2d2b844cad4d9ca61b8055ce25ada3d47650f2b72",
+    "tests/counted-memory-native/generic.rs": "3d21d51a2ec876695fb39f6716c0bf8695ac41e88035ba03655ad09feb106f07",
+    "tests/counted-memory-native/reified.rs": "aaea22c70d6d1da7af0fdb86cc5e9c5f2afb5f87ae59f0c663e4834b6b3ac139",
+    "tests/counted-memory-native/argument-once.rs": "75d1dab0c00689f403abc623ab67d94d52288ec4d4dfbaa5a68c9e550fdf8603",
+    "tests/counted-memory-native/reference-elements.rs": "94a00571488d053d021146de0d0bee4d7340be68c1884f43c511796513a5add7",
+    "tests/counted-memory-native/rest-destination.rs": "f3e598dea3057b761b788f7f709bb79005af918159f550209e9b908c4de18447",
+    "tests/counted-memory-native/owned-drops.rs": "e8a482d7d23a3e31a3a30cce54ea864c922829525910a693707cf4968b71b183",
+    "tests/counted-memory-native/zst-large.rs": "1cd6d31617cdf19c9748ec3fc8d0e773e38cf1bddf2689d69fdd7081dee6fca4",
+    "tests/counted-memory-native/shared-zero.rs": "858f710c3758e03f27f009bbeac7f8c4c2ceec3c0b35a14f53bf0c377e312180",
     "tests/spec/overlapping-memory/scalar-zero.rs": "fd6a31194c685d8f801d98d2a288ec0543239167bcab1134cbb88229649b03a6",
     "tests/spec/overlapping-memory/shared-zero.rs": "f088078be594ffcddf55410b2625fc9e0ef0946f696ff438abf9744c4e71aa4b",
     "tests/spec/overlapping-memory/shared-one.rs": "524001113ac0169937eb044c495fce83aec95b95ecfd19cce2401b1697ed52db",
@@ -4453,6 +4546,29 @@
     "tests/spec/overlapping-memory/invalid-byte-demand.rs": "ca318f6c27b4302e4fb7e9b303d56d2cb915e9cdce18eedc45130b0e1ac2993d",
     "tests/spec/overlapping-memory/local-copy-shadow.rs": "f8f6407ba1cfd48f05f7e947ec1a4c7a86f31bd17fbedfa71bd2b3fe4d25f624",
     "tests/spec/overlapping-memory/local-core-shadow.rs": "53b105c5ba81fe8fcfb190bb3c5b3484f14720a01955045ee343d04644ad0c87",
+    "tests/overlapping-memory-native/backend-loop.rs": "c47e2bdb190a0b6c1cd1b2968dcd0bc2c512947a2cd47df994bb45dec35be725",
+    "tests/overlapping-memory-native/scalars.rs": "c90130bf3acfb5f3ee349b2c950bc226bcc1b855c9d0f1179c0325c1652d038b",
+    "tests/overlapping-memory-native/disjoint.rs": "8bffb4c2546a3823910b7ed4446f50f6697f065819a61e12dc0fefddd633ca72",
+    "tests/overlapping-memory-native/generic.rs": "a9d3ccdb5a6a94e224498f92c2d9993714d9f291d3126a45c453d873c9fcb746",
+    "tests/overlapping-memory-native/reified.rs": "414a5ecb13af87c53bbe6441741ac43c5e5f51c9a1fc51262316fca429e796a5",
+    "tests/overlapping-memory-native/argument-once.rs": "14f936b79118bd9647650994b937b2e7afca3f16cf54b70abe317051d9a28f5b",
+    "tests/overlapping-memory-native/reference-elements.rs": "5bb5b2ed01754462a1d603d6099b9a9f7c0f37af5abb6321b1c91fd9e647d87c",
+    "tests/overlapping-memory-native/rest-destination.rs": "814c02b0e0819275175ac44e443008180d5619cfe0ec935fbc05604792d79c05",
+    "tests/overlapping-memory-native/owned-drops.rs": "6693aceee28bfbe85b69d7f95e2ec29de8e6b071c6e024bf08b6ae662c77a985",
+    "tests/overlapping-memory-native/zst-large.rs": "30a6f05ab9a7958ed85c7d00568330a8990fc2497a4dc26bc24667f73db4e803",
+    "tests/overlapping-memory-native/shared-zero.rs": "bd0537f3108e48619a53d30d62cc167575226dccb85daaaf06df1cd661c4b159",
+    "tests/overlapping-memory-native/overlap-left.rs": "eea35ca90ceb1cc9c3cb6558c7cc75ebf90d13e9bf990959cf9fed64a23ad2b1",
+    "tests/overlapping-memory-native/overlap-right.rs": "667c346d9ef2c27f3085d1c97f97cdd745553a20295129a487929a5ee7f2804a",
+    "tests/overlapping-memory-native/identical.rs": "e5cd9fc30ad3a6b9b505e0a6a087e068a364c95f22581eccef1e1cc79b4a3ce1",
+    "tests/overlapping-memory-native/intra-object-left.rs": "dc4370a2bc1d90053c5c69b94b9e01472ade8e563d4f399a9efd120211bea916",
+    "tests/overlapping-memory-native/intra-object-right.rs": "d4d48e3f88ca110446d47f197b433017a8af27d0d4152ede81fb45db3c7c4aaa",
+    "tests/overlapping-memory-native/overlap-owned-drops.rs": "00a651db469182afc3efb4a1bf225317fa8c1a29856257eca9b4feb3630a32a3",
+    "tests/overlapping-memory-native/rest-overlap.rs": "562ba46bc658e3e2d32801f2d7e63fdc981eb26d2e4aeef395dc8e131e8d424d",
+    "tests/overlapping-memory-native/invalid-bool-byte.rs": "6d63f17f0d2fe971fdc8e081881e16c7c8fa92f20515fce31e2d80e32eb8931f",
+    "tests/overlapping-memory-native/invalid-char-byte.rs": "1f3f8f7baddf0ffc463acee7dfdc03a18e47f85749e5ce683ab9595f0da2ab33",
+    "tests/overlapping-memory-native/nonoverlap-invalid-bool-control.rs": "a5cc6e128357684d6a963c101dc6199245030b59c87ff39028d9ef53b4143611",
+    "tests/overlapping-memory-native/nonoverlap-nan-bits-control.rs": "88af087fd760863ee39a37b6dc08378a5273f5a179b6980b9652b0894ea26dac",
+    "tests/overlapping-memory-native/nonoverlap-reference-bits-control.rs": "4f3e7f5ecf5b5dbab2715bbb87a3ac146e1815002c099b858052f575ce3cdd15",
     "tests/spec/byte-fill/zero-shared.rs": "723855e659547398ac533f5e7340810e4f637c7c93fa408bd3217338f686ecc7",
     "tests/spec/byte-fill/zero-expired.rs": "5b193f42f3ed0a42fdf557728796048c01069de72f9aac7764fdf083987fac59",
     "tests/spec/byte-fill/one-expired.rs": "923f72b61838a17da6e252305685dd117774f4f69b3bb7cf471822eefe6b3fcd",
@@ -4507,6 +4623,9 @@
     "tests/byte-fill-native/runtime-zero-zst.rs": "02875bd35247920bc8172df9c3fc28a35a120e30579354bba51da0350d43ed3e",
     "tests/spec/byte-fill/packed-whole-runtime.rs": "41dcf489de21ede7028c19ac5a2ae08bbcee98dd04350af70370141ac9586855",
     "tests/byte-fill-native/packed-whole-runtime.rs": "41dcf489de21ede7028c19ac5a2ae08bbcee98dd04350af70370141ac9586855"
+  },
+  "auxiliary": {
+    "tests/prelude/check.rs": "b8fcd695e0782eccfda1be95e763e691517535a14eafd06a87fd433acc0021ae"
   },
   "outputs": {
     "tests/spec/volatile/source/reference-result-lifetime.rs": {
@@ -4994,6 +5113,76 @@
       ".ref.stderr": "cf55688f2d142a01d0db845a84a9dccc71b1cf29c357a858f89d2731f3e23300",
       ".ref.exit_status": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
     },
+    "tests/owned-memory-native/const-plain.rs": {
+      ".ref": "935be2371122f85cf1a0c41c3cde08856bdc904e595bb54a726d7e18e24826c5",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/owned-memory-native/direct-reference-cell.rs": {
+      ".ref": "00d9f894f2197ac5c410ba7e78f35c0da9000943cc5635f0a531e5d8db91c792",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/owned-memory-native/generic.rs": {
+      ".ref": "9a8a0022651fdc30ee7f4ccd9140d453bd913795057a60b00e13b4eb9e5394ea",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/owned-memory-native/ignored-read.rs": {
+      ".ref": "7996aa82f6b36d7cba2644dabd726fe38386dd72208b1d98fe9cb49af3a31345",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/owned-memory-native/move-reinitialize.rs": {
+      ".ref": "5c47854d947234a031c59c3b6f56e7fe79db0849db5432fa1a23d2fa2effd71e",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/owned-memory-native/nested-fields.rs": {
+      ".ref": "2c947bfcc45733a13ea889fa10ad18a0a4516bf44162c93233cbb68eaf683b7b",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/owned-memory-native/ordinary-assignment.rs": {
+      ".ref": "1d907d8a348dcca2218e77237642e039d5323c951b2e1d39b3edf481efb22fe1",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/owned-memory-native/overwrite-no-drop.rs": {
+      ".ref": "9f81695bb0d55bb19b4a6c60814a1998589f5fb24132016aa42fb0838fc23f17",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/owned-memory-native/read-forget.rs": {
+      ".ref": "47d95596588521fdd65187996460f6b4f8e68076fb84c1419ad06b3222a182c5",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/owned-memory-native/read-replace.rs": {
+      ".ref": "d864cc16be9eaec5ebf6602c339e001785799790cd20defafa5732f775ba7486",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/owned-memory-native/reified.rs": {
+      ".ref": "faa7b898eef9b1ce35ba13c5a7c63c8d494d0ca9068a77c39ccdb908131e736a",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/owned-memory-native/static-context.rs": {
+      ".ref": "186102f5a271b90e73098ff0d13efd0d5285a1b8e862510669b5dbd89525fcba",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/owned-memory-native/static-reference.rs": {
+      ".ref": "91a1811ed2a4118e1944b92a3da6b45b2c3a4916860f58dae902c133af147ee8",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/owned-memory-native/zero-sized-drop.rs": {
+      ".ref": "fe6fa59beae448db33e5167bff41f8f6349cc335e661940e582a5ef946e31a25",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
     "tests/spec/unaligned-memory/packed-read.rs": {
       ".ref": "0685e3e7fa8bc6702e12151635f79cda886e46c4ac356329856201d9489662aa",
       ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -5153,6 +5342,56 @@
       ".ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       ".ref.stderr": "79cd75fcdb88c1f0dab535855b163be0668780e4d30206cd3145eafce7be1d8e",
       ".ref.exit_status": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    "tests/unaligned-memory-native/const-results.rs": {
+      ".ref": "d955cd8d252c6360345ebfd516c56bd786fc68d6e2bbd52663c153eae37aa599",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/unaligned-memory-native/once-operands.rs": {
+      ".ref": "ba4216f18c397202c3e7b9f8de0f2f2443084ac34541b4d30a7cffd7d1e13ff4",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/unaligned-memory-native/overwrite-no-drop.rs": {
+      ".ref": "a31874d14198afeb2b28a67ded5f88e53d8d90611c212bbce2b02e1456bac89d",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/unaligned-memory-native/owned-products.rs": {
+      ".ref": "39512438c9847fb2df69bf54511f831baa4b647f6a132966c48883d52cdde9e3",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/unaligned-memory-native/read-forget.rs": {
+      ".ref": "c78d31ced02d129ee0a77a586d42df7d2fc294bebe856f6b03589b4691884408",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/unaligned-memory-native/reference-values.rs": {
+      ".ref": "f801682816929eb6f0073a2f21beb76f70dfed7b00d2ba9d72868c16742796c8",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/unaligned-memory-native/reified-generic.rs": {
+      ".ref": "d387208a29dc8747bb679bdc235fe10018e8fe3298ab654d35166252a8db0e67",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/unaligned-memory-native/scalar-widths.rs": {
+      ".ref": "a6b6e72830a90bf9af44788175f6a9af5307597be72a274e0aefa59fccee0578",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/unaligned-memory-native/self-snapshot.rs": {
+      ".ref": "532979ceb3bc140e6a9b88f8d5fea9e282ddda993cefed2e21caab91a3746360",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/unaligned-memory-native/wide-reference.rs": {
+      ".ref": "22df85c961c032f07096ba461be1000b0d6211997f5a38533db947ae3b682847",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
     },
     "tests/spec/counted-memory/scalar-zero.rs": {
       ".ref": "a70506043be7f5f004207f3094db4a53639cd78b78fe87bae38788ddfccda263",
@@ -5331,6 +5570,61 @@
     },
     "tests/spec/counted-memory/atomic-static-initializer.rs": {
       ".ref": "c3feac2703cbf6e4f2a036b4b51e1a3aa1ddf5983c7bccdde3c722307c4e45c5",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/counted-memory-native/backend-loop.rs": {
+      ".ref": "2351341c8072e9ffc641fae2a096fbe18c2c55557cf7fb3f2552319bed1f9fca",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/counted-memory-native/scalars.rs": {
+      ".ref": "99c8c2f05a8d11458f71fe7dd64922dd0d260b3e1da9ced6234457067531aa22",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/counted-memory-native/disjoint.rs": {
+      ".ref": "f98f2b5e8a8f036b42dee278c5984e78090038f46fdc0c21c7d910ce686788b9",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/counted-memory-native/generic.rs": {
+      ".ref": "c7cdd367334f8c82a5551e74976c83b48d1fd6c09f90d8e3a59cfed7ad4588f1",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/counted-memory-native/reified.rs": {
+      ".ref": "44ccdb8cbae25da8622ec0d536f4eb2fb3c278663ce7172abffffbb898627122",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/counted-memory-native/argument-once.rs": {
+      ".ref": "e2ef0e1f055d6cf71e96f41ad13015e9b8ad13d939aecbd3f9f81950ca5e754d",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/counted-memory-native/reference-elements.rs": {
+      ".ref": "24a3989855e90ceba2e9bf701122781d6e45ae0d75a629adcd67f0c55fa13624",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/counted-memory-native/rest-destination.rs": {
+      ".ref": "50db83ae0fddcbf53db9337ab01fc8735538e6fa11bbbefaf4e7d4b75d57eb60",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/counted-memory-native/owned-drops.rs": {
+      ".ref": "decb27e26f7339013929c52228ead877ca1f1924da184e2a21af112492f8acf5",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/counted-memory-native/zst-large.rs": {
+      ".ref": "29a27f4a8951c34d0b76d5c7e6fad3f3a0e809483c8bf130a41731c8959110fa",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/counted-memory-native/shared-zero.rs": {
+      ".ref": "01c2de7db275e4cfefa368fa02bc22902b0cf269fd735f965743a7205971a953",
       ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
     },
@@ -5561,6 +5855,121 @@
     },
     "tests/spec/overlapping-memory/local-core-shadow.rs": {
       ".ref": "596d8766abbf3921e695b5106f60e44119b4af696fba66fc04657a9a26df8506",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/backend-loop.rs": {
+      ".ref": "2351341c8072e9ffc641fae2a096fbe18c2c55557cf7fb3f2552319bed1f9fca",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/scalars.rs": {
+      ".ref": "8075f78a3c03bdd74d191a607a723af5b18c53ef770dcfcc1bf57c062bf1d298",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/disjoint.rs": {
+      ".ref": "c2d23189a41850267cea05cff7dd53473c7a45676e8846e2fa067cde032a150b",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/generic.rs": {
+      ".ref": "f6aa907cbe9f77eda700a891727ad29fa415af9de5885053c18f86d5bea6002b",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/reified.rs": {
+      ".ref": "ac3aaebb72e07b4585f5d9291fe26b167991177e0acc3bd29ab7f2293aea7dd3",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/argument-once.rs": {
+      ".ref": "2fd020cd802a37354a0630b2c06a8636d5a7408b4a7da93026a33b6cfa676ce8",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/reference-elements.rs": {
+      ".ref": "f4a8babe8ba8030385f89e4009d0035f5ee299e1cf3ffe04c7ea4a60fc22350f",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/rest-destination.rs": {
+      ".ref": "6677a694e914b8a0c452fd6fdbf66cc3726f1bd0956479a3242bc4b679afb1c8",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/owned-drops.rs": {
+      ".ref": "35b52b387fac14a44365846c883902d3aa4887e4830278872872185e221605f2",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/zst-large.rs": {
+      ".ref": "5bc82b0aa8ac2712aaacd03d332326440d162cba42477a2d2dc5e42684dc9ec8",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/shared-zero.rs": {
+      ".ref": "97a930203bf0d4a1b472c980b2df4d75fdeaca9f6bcc536c87eb94d692c04603",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/overlap-left.rs": {
+      ".ref": "a33dea815db65923f169eee545861cc707715e11cb21bf90001e8f16bd1bcb34",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/overlap-right.rs": {
+      ".ref": "9b8206cf51e196c651ea21548a4326c56c7cdc9e500643615437f480218c1e8a",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/identical.rs": {
+      ".ref": "3179040f4dba38a1bbf0f996130af9d2e210990add799e8acf43064b6f81159c",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/intra-object-left.rs": {
+      ".ref": "5e85fe3cc561a9b17bc2cb6df14891aa40f334c0f824302abe8d65c5636eea0b",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/intra-object-right.rs": {
+      ".ref": "f2c2d6ff6b180f40061d9c5c82391bf273d0866273688909adb1dba35ed264be",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/overlap-owned-drops.rs": {
+      ".ref": "75ee33febb65f690c0c546ac97061cfeee83540312914a9857f466b9f696817d",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/rest-overlap.rs": {
+      ".ref": "eccf64fb97c927fb8e027573e23abd980ac0e71e5026a6f16a19a9559aaf5d00",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/invalid-bool-byte.rs": {
+      ".ref": "a5afaa7a93307f0d93ac478e5377b58c325b8e27e3d8ac17d819787c7c0c7045",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/invalid-char-byte.rs": {
+      ".ref": "7d31975aba1e1d4c39ea891cdfc5002785362e9d65b3290c66013a52a6c1a7c9",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/nonoverlap-invalid-bool-control.rs": {
+      ".ref": "55b38d3cb990ffff5c15f0423010d0e438d735da5016092a1b937bec1090dc63",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/nonoverlap-nan-bits-control.rs": {
+      ".ref": "fb22a3bd753110bfb9a0e377703bf112fbf9c6634f05f0ed293684aa3a6e2d04",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/overlapping-memory-native/nonoverlap-reference-bits-control.rs": {
+      ".ref": "fd57d94d8c18b5300d21b3d0609e3e811589649413e24f5cd32ce52398f7c564",
       ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
     },

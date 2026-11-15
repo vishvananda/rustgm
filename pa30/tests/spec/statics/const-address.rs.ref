@@ -1,0 +1,14 @@
+global @rg.data.0 : obj<8x8> [storage=readonly] = {
+  ptr addr @X
+}
+declare global @X : obj<4x4> [storage=readonly]
+function @rg.15() -> void {
+  block ^b0:
+    %t0 = load ptr @rg.data.0
+    return void
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.15()
+    return i64 0
+}

@@ -1,0 +1,124 @@
+function @rg.17() -> void {
+  slot $s0 : u32
+  slot $s1 : obj<17x1>
+  slot $s2 : obj<16x8>
+  slot $s3 : i1
+  slot $s4 : ptr
+  slot $s5 : ptr
+  slot $s6 : obj<16x8>
+  slot $s7 : obj<17x1>
+  slot $s8 : obj<16x8>
+  slot $s9 : obj<16x8>
+  block ^b0:
+    store u32 37, $s0
+    %t0 = addr $s0
+    store ptr %t0, $s5
+    %t1 = load ptr $s5
+    %t2 = addr $s0
+    store ptr %t1, $s6
+    %t3 = addr $s6
+    %t4 = index u8 %t3, 8
+    store ptr %t2, %t4
+    store u8 3, $s7
+    %t5 = addr $s7
+    %t6 = index u8 %t5, 1
+    %t7 = addr $s6
+    copyobj 16x1 %t7, %t6
+    %t8 = addr $s7
+    %t9 = addr $s1
+    copyobj 17x1 %t8, %t9
+    %t10 = addr $s1
+    %t11 = index u8 %t10, 1
+    %t12 = addr $s8
+    call void @rg.intrinsic.read_unaligned.t80(%t12, %t11)
+    %t13 = addr $s8
+    %t14 = addr $s2
+    copyobj 16x8 %t13, %t14
+    %t15 = load ptr $s2
+    %t16 = load u32 %t15
+    %t17 = cmp eq u32 %t16, 37
+    %t18 = convert trunc i1 i64 %t17
+    branch %t18, ^b1, ^b2
+  block ^b2:
+    store i1 %t18, $s3
+    jump ^b3
+  block ^b1:
+    %t19 = addr $s2
+    %t20 = index u8 %t19, 8
+    %t21 = load ptr %t20
+    %t22 = load u32 %t21
+    %t23 = cmp eq u32 %t22, 37
+    %t24 = convert trunc i1 i64 %t23
+    store i1 %t24, $s3
+    jump ^b3
+  block ^b3:
+    %t25 = load i1 $s3
+    call void @rg.13(%t25)
+    %t26 = addr $s1
+    %t27 = index u8 %t26, 1
+    %t28 = addr $s2
+    %t29 = addr $s9
+    copyobj 16x8 %t28, %t29
+    %t30 = addr $s9
+    call void @rg.intrinsic.write_unaligned.t83(%t27, %t30)
+    %t31 = addr $s1
+    %t32 = index u8 %t31, 1
+    %t33 = call ptr @rg.intrinsic.read_unaligned.t87(%t32)
+    store ptr %t33, $s4
+    %t34 = load ptr $s4
+    %t35 = load u32 %t34
+    %t36 = cmp eq u32 %t35, 37
+    %t37 = convert trunc i1 i64 %t36
+    call void @rg.13(%t37)
+    return void
+}
+function @rg.intrinsic.read_unaligned.t80(%p0 : ptr, %p1 : ptr) -> void {
+  block ^b0:
+    copyobj 16x1 %p1, %p0
+    return void
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.intrinsic.write_unaligned.t83(%p0 : ptr, %p1 : ptr) -> void {
+  block ^b0:
+    copyobj 16x1 %p1, %p0
+    return void
+}
+function @rg.intrinsic.read_unaligned.t87(%p0 : ptr) -> ptr {
+  block ^b0:
+    %t0 = load ptr %p0
+    return ptr %t0
+}
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.17()
+    return i64 0
+}

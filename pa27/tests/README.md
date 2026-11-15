@@ -1,9 +1,14 @@
 # PA27 fixture ownership
 
 The released `unsafe-places` component publishes `units/unsafe-places.json` and
-the reference sidecars of its 253 cases; see the
+the reference sidecars of its 262 cases; see the
 [release record](../../docs/pa27-unsafe-places-release.md) for its deferred
 list. Every other family here is unpublished.
+
+The nine `spec/capture-native` cases declare `prelude: tests/prelude/check.rs`.
+The compiler reads that file's bytes followed by the fixture's on standard
+input, as one translation unit; `prelude/check.rs` defines the `check` function
+those bodies call and is a byte copy of the maintainer native harness prelude.
 
 Whole PA27 is planned: no graded whole-assignment suite yet. The draft source
 programs are listed in `manifest.draft.json`; the public `manifest.json` and

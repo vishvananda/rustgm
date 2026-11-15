@@ -7,15 +7,17 @@ deferred list below.
 ## Released contract
 
 The canonical manifest is [unsafe-places.json](../pa27/tests/units/unsafe-places.json):
-253 declared outcomes, 140 accept/113 reject, all `--emit-lowir` with file
-input, under Rust 1.98.0, edition 2024, x86-64 Linux, checked overflow and
-aborting panics. Seventeen accepted programs execute and 123 are
-code-generation-only.
+262 declared outcomes, 149 accept/113 reject, all `--emit-lowir`, under Rust
+1.98.0, edition 2024, x86-64 Linux, checked overflow and aborting panics. 26
+accepted programs execute and pass, and 123 are code-generation-only. 253
+cases use file input; the nine `capture-native` programs use standard input
+behind the declared check prelude.
 
 | Family (`tests/spec/`) | Cases | Accept | Reject | Executed |
 | --- | --- | --- | --- | --- |
 | `callable-safety` | 4 | 2 | 2 | 0 |
 | `capture-integration-native` | 2 | 2 | 0 | 2 |
+| `capture-native` | 9 | 9 | 0 | 9 |
 | `capture-precision` | 45 | 31 | 14 | 0 |
 | `contexts` | 46 | 25 | 21 | 0 |
 | `native` | 5 | 5 | 0 | 5 |
@@ -30,7 +32,7 @@ Outcomes come from committed draft tables: the `manifest.draft.json` rows that
 originate in the suites named by requirements 27.1 to 27.3, and the
 `capture-precision`, `capture-integration`, `capture-native` and `union-borrow`
 tables. No fixture was authored or edited. Each contract outcome is the
-table's pinned-Rust outcome. Two schema conversions apply:
+table's pinned-Rust outcome. Three schema conversions apply:
 
 - The draft tables were qualified with default lints, and the course checker
   caps lints unless told. The 29 cases whose rejection is a lint level
@@ -41,6 +43,11 @@ table's pinned-Rust outcome. Two schema conversions apply:
   `contexts/nested-unsafe-item.rs`, `statics/unsafe-function-store.rs`,
   `policies/operation-warn.rs` (`unsafe_op_in_unsafe_fn`) and
   `policies/reference-warn.rs` (`static_mut_refs`).
+- The nine `capture-native` bodies call the maintainer native harness's
+  `check`, which that harness supplies as a fixed prelude. Each case declares
+  `prelude: tests/prelude/check.rs`, a byte copy of that prelude, and both
+  compilers read the prelude followed by the fixture as one translation unit.
+  The joined bytes reproduce the draft table's `qualified_input_sha256`.
 
 Two `union-borrows` rows that the draft recorded as candidate boundaries
 (`pointer-family-boundary.rs`, `unit-family-boundary.rs`) are accepted by the
@@ -52,7 +59,6 @@ current compiler and are published as accepted, code-generation-only.
 | --- | --- | --- |
 | `union-borrows/partial-write-only-boundary.rs` | accept | `ERROR: file 0: 38: constant union scalar read uses uninitialized bytes` |
 | `union-borrows/repair-bool-boundary.rs` | accept | `ERROR: file 0: 41: constant union scalar read has invalid bool representation` |
-| `capture-native/{packed,packed-move,raw-write,raw-move,raw-cancellation,union,nested,shared-before-boundary,pointer-slot}.rs` (9) | accept, as declared runs | Not standalone programs: each needs the maintainer suite's `check` prelude, so pinned rustc reports `E0425: cannot find function check`. They stay maintainer observers in `dev/tests/unsafe_precision.rs` |
 
 Not owned by this unit and unchanged: the draft-manifest rows from
 `image_storage` and `string_words` (`scalar-union`, `string-byte-words` and six
@@ -70,17 +76,19 @@ storage guards:
 
 | Check | Result |
 | --- | --- |
-| `assignment_metadata.py --unit unsafe-places` | 253 cases valid |
-| `check_syntax.py pa27 --unit unsafe-places` | 253 independent rustc checks agree (21.5 s) |
-| `course.py pa27 --unit unsafe-places --bless` | 253/253 declared outcomes, then references written (18.4 s) |
+| `assignment_metadata.py --unit unsafe-places` | 262 cases valid |
+| `check_syntax.py pa27 --unit unsafe-places` | 262 independent rustc checks agree (10.5 s) |
+| `course.py pa27 --unit unsafe-places --bless` | 262/262 declared outcomes, then references written (2.3 s) |
 | `check_layout.py --unit unsafe-places` | complete oracle provenance |
-| `course.py pa27 --unit unsafe-places` | 253/253 against the committed text (17.8 s) |
-| `check_native.py pa27 --unit unsafe-places` | 253 checks; 17 executable and 123 code-generation comparisons (23.8 s) |
+| `course.py pa27 --unit unsafe-places` | 262/262 against the committed text (1.1 s) |
+| `check_native.py pa27 --unit unsafe-places` | 262 checks; 26 executable and 123 code-generation comparisons (7.5 s) |
 
-A probe ran all 264 candidates through the frontend, pinned rustc and the
-native backend before the manifest was declared. A review of the 37 distinct
-rejection diagnostics found no implementation-gap wording. Receipts are under
-`obj/publication/unsafe-places/`.
+The first release published 253 cases and deferred 11, of which nine needed
+the check prelude. The prelude input was added to the course runner and the
+checkers the same day and the unit was probed, declared and checked again:
+all 264 candidates ran, the nine passed, and no declaration or sidecar of the
+253 earlier cases changed. A review of the rejection diagnostics found no
+implementation-gap wording. Receipts are under `obj/publication/unsafe-places/`.
 
 ## Requirements
 

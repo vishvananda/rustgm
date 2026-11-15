@@ -1,0 +1,58 @@
+function @rg.16() -> void {
+  slot $s0 : u8
+  slot $s1 : i16
+  slot $s2 : f32
+  block ^b0:
+    store u8 7, $s0
+    %t0 = unary neg i16 3
+    store i16 %t0, $s1
+    store f32 1.50000000000000000e0, $s2
+    %t1 = load u8 $s0
+    %t2 = convert zext i32 u8 %t1
+    %t3 = load i16 $s1
+    %t4 = convert sext i32 i16 %t3
+    %t5 = convert zext i32 i1 1
+    %t6 = load f32 $s2
+    %t7 = convert fpext f64 f32 %t6
+    %t8 = call u32 @promoted(0, %t2, %t4, %t5, %t7)
+    %t9 = cmp eq u32 %t8, 1
+    %t10 = convert trunc i1 i64 %t9
+    call void @rg.14(%t10)
+    return void
+}
+declare function @promoted(%p0 : u32) -> u32 [arity=variadic]
+function @rg.14(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.15(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.15(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.16()
+    return i64 0
+}

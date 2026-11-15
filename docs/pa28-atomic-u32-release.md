@@ -7,30 +7,34 @@ deferred list below.
 ## Released contract
 
 The canonical manifest is [atomic-u32.json](../pa28/tests/units/atomic-u32.json):
-246 declared outcomes, 139 accept/107 reject, all `--emit-lowir` with file
-input, under Rust 1.98.0, edition 2024, x86-64 Linux, checked overflow and
-aborting panics. Twelve accepted programs execute, each a declared
-invalid-ordering panic. Ninety-nine are code-generation-only and 28 are
-entry-free libraries compared as objects.
+271 declared outcomes, 164 accept/107 reject, all `--emit-lowir`, under Rust
+1.98.0, edition 2024, x86-64 Linux, checked overflow and aborting panics. 37
+accepted programs execute: 25 pass and 12 are declared invalid-ordering
+panics. Ninety-nine are code-generation-only and 28 are entry-free libraries
+compared as objects. 246 cases use file input; the 25 passing native
+observers use standard input behind the declared check prelude.
 
 | Family (`tests/spec/`) | Cases | Accept | Reject | Executed |
 | --- | --- | --- | --- | --- |
 | `atomic-preparation` | 11 | 11 | 0 | 0 |
 | `atomic-cas` | 17 | 7 | 10 | 0 |
 | `atomic-cas-orders` | 50 | 30 | 20 | 0 |
-| `atomic-cas-native` | 4 | 4 | 0 | 4 |
+| `atomic-cas-native` | 8 | 8 | 0 | 8 |
 | `atomic-rmw` | 21 | 10 | 11 | 0 |
+| `atomic-rmw-native` | 4 | 4 | 0 | 4 |
 | `atomic-subtract` | 21 | 10 | 11 | 0 |
 | `atomic-bitwise` | 27 | 13 | 14 | 0 |
 | `atomic-extrema` | 28 | 18 | 10 | 0 |
+| `atomic-extrema-native` (under `tests/`) | 6 | 6 | 0 | 6 |
 | `atomic-methods` | 33 | 15 | 18 | 0 |
-| `atomic-method-native` | 8 | 8 | 0 | 8 |
+| `atomic-method-native` | 14 | 14 | 0 | 14 |
 | `atomic-storage` | 26 | 13 | 13 | 0 |
+| `atomic-storage-native` | 5 | 5 | 0 | 5 |
 
 Outcomes come from the seven committed draft tables for requirement 28.3:
 `atomic-cas`, `atomic-rmw`, `atomic-subtract`, `atomic-bitwise`,
 `atomic-extrema`, `atomic-method` and `atomic-storage`. No fixture was authored
-or edited. Each contract outcome is the table's pinned-Rust outcome. Three
+or edited. Each contract outcome is the table's pinned-Rust outcome. Four
 schema conversions apply:
 
 - Fifty-nine `atomic-methods` and `atomic-storage` sources have no root `main`.
@@ -43,20 +47,22 @@ schema conversions apply:
 - Twenty-nine cases whose rejection is the deny-by-default
   `invalid_atomic_ordering` or `unreachable_patterns` lint level declare
   `default_lints`.
-- The twelve executed programs are the tables' `panic: true` rows. Rows that
-  expect a normal exit are on the deferred list.
+- Twelve executed programs are the tables' `panic: true` rows.
+- The 25 native observers that expect a normal exit call the maintainer
+  native harness's `check`, which that harness supplies as a fixed prelude.
+  Each case declares `prelude: tests/prelude/check.rs`, a byte copy of that
+  prelude, and both compilers read the prelude followed by the fixture as one
+  translation unit.
 
 ## Deferred list
 
 | Fixtures (`tests/`) | Rust | Observed with the candidate |
 | --- | --- | --- |
-| `spec/atomic-cas-native/`: strong-matrix, weak-matrix, reified, shared-storage; `spec/atomic-rmw-native/`: orders, wrapping, reified, effects-storage; `atomic-extrema-native/`: all-orders-unsigned, equal-and-unused, operands-once, reified, static-nested, aliased-order; `spec/atomic-method-native/`: legal-orders, variable-orders, reified-methods, nested-shared-static, local-roundtrip, ordering-tags; `spec/atomic-storage-native/`: shared-static, nested-static, readonly-slot, projected-constant, transient-const (25) | accept, as declared runs | Not standalone programs: each needs the maintainer `check` prelude, so pinned rustc reports `E0425: cannot find function check`. They stay maintainer observers |
 | `spec/atomic-methods/ordering-tags.rs` (1) | accept | `ERROR: file 0: 57: unresolved macro is not in textual scope or path scope`. The draft table already records this boundary |
 | `spec/atomic-methods/warn-invalid-order.rs` (1) | accept | Accepted with `warning[invalid_atomic_ordering]`. That code is not in the course's reviewed warning vocabulary (`REVIEWED_WARNING_CODES`), so the successful-warning contract cannot be declared |
 | `spec/atomic-storage/const-reference-static.rs` (1) | accept | The candidate emits an empty library unit, but the pinned rustc object defines the private static `A`. The native checker rejects the empty declaration |
 
-The first row is a harness limit, not a compiler result. No Rust-valid program
-is published as an expected rejection.
+No Rust-valid program is published as an expected rejection.
 
 Not owned by this unit and unchanged:
 `spec/atomic-storage/shared-derived-raw-store.rs`, which no atomic table
@@ -72,19 +78,22 @@ storage guards:
 
 | Check | Result |
 | --- | --- |
-| `assignment_metadata.py --unit atomic-u32` | 246 cases valid |
-| `check_syntax.py pa28 --unit atomic-u32` | 246 independent rustc checks agree (24.4 s) |
-| `course.py pa28 --unit atomic-u32 --bless` | 246/246 declared outcomes, then references written (23.2 s) |
+| `assignment_metadata.py --unit atomic-u32` | 271 cases valid |
+| `check_syntax.py pa28 --unit atomic-u32` | 271 independent rustc checks agree (4.3 s) |
+| `course.py pa28 --unit atomic-u32 --bless` | 271/271 declared outcomes, then references written (1.9 s) |
 | `check_layout.py --unit atomic-u32` | complete oracle provenance |
-| `course.py pa28 --unit atomic-u32` | 246/246 against the committed text (30.9 s) |
-| `check_native.py pa28 --unit atomic-u32` | 246 checks; 12 executable, 99 code-generation and 28 object comparisons, all 28 declared empty units (25.6 s) |
+| `course.py pa28 --unit atomic-u32` | 271/271 against the committed text (0.8 s) |
+| `check_native.py pa28 --unit atomic-u32` | 271 checks; 37 executable, 99 code-generation and 28 object comparisons, all 28 declared empty units (7.4 s) |
 
-A probe ran all 274 candidates through the frontend, pinned rustc and the
-native backend before the manifest was declared. A review of the 21 distinct
-rejection diagnostics found no implementation-gap wording and no missing-`main`
-rejection. The first native run failed on `const-reference-static.rs`; that
-case was moved to the deferred list, its sidecars were removed and every check
-was rerun. Receipts are under `obj/publication/atomic-u32/`.
+The first release published 246 cases and deferred 28, of which 25 needed the
+check prelude. The prelude input was added to the course runner and the
+checkers the same day and the unit was probed, declared and checked again:
+all 274 candidates ran, the 25 passed, and no declaration or sidecar of the
+246 earlier cases changed. A review of the rejection diagnostics found no
+implementation-gap wording and no missing-`main` rejection. The probe now runs
+the native checker's own empty-object test, so `const-reference-static.rs` is
+deferred before any reference is written. Receipts are under
+`obj/publication/atomic-u32/`.
 
 ## Requirements
 

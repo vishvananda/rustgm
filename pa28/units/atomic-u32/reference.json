@@ -3973,7 +3973,7 @@
     "dev/tests/wrapper_sources.rs": "9d50a37a73fcaf431b0ca64add4142cf38d85237d07557d0a786c0f2217f49cb",
     "dev/tests/zero_sized_niche_companions.rs": "560ed324f5c781c2585b712e0e56c9baa0243837ae0460036dfef11e4baba009"
   },
-  "manifest_sha256": "07585fbbeab9203a53045a44f69e53627b66b3e5c98952e4011b5f9403bb11e2",
+  "manifest_sha256": "aa708a8d0ce554ffe3472a8e570a799260b8ee90bcbe39168c1e79f34a2ef531",
   "case_contracts": {
     "tests/spec/atomic-cas-orders/compare_exchange-relaxed-relaxed.rs": "c67cc9d2f073611e7211141bb7f9077d5d59bba6352d731ae10a63de6ea5edcd",
     "tests/spec/atomic-cas-orders/compare_exchange-relaxed-release.rs": "66f509a94f12bdb6b445a44de38b10847ffc57613159b1776bb620d2cc1f0b12",
@@ -4053,6 +4053,10 @@
     "tests/spec/atomic-preparation/local-core.rs": "66042a690e6c97200228e0f99212a45d56459b661fd3efd9a8905256d77c36b4",
     "tests/spec/atomic-preparation/local-types.rs": "7cfb0d672081bd34dec8f225b3ca66a8e0a618a837495627ad46b4b64b588bc5",
     "tests/spec/atomic-preparation/ordinary.rs": "f749814cb1bb113799ce4070b492f9cb1eaea0c3f2e6cb6a5926877fec2c02f9",
+    "tests/spec/atomic-cas-native/strong-matrix.rs": "84c131b79ed90f5ef32e3dd2927cb6d1466e2ece4edbfdf934695de18ae79996",
+    "tests/spec/atomic-cas-native/weak-matrix.rs": "2fc98a3660de63311d0bc4e50b66f417b3d15a7678fb1e0f4b721c731acb1279",
+    "tests/spec/atomic-cas-native/reified.rs": "48be8b3f849cca68a7c4564fedcec5ceea839a4ab6f48d6e0dcdcfea285f31d7",
+    "tests/spec/atomic-cas-native/shared-storage.rs": "42b68134a9866650f75aa33dcc13c43afe59054bcfa360d98ebcca4e83c6c58d",
     "tests/spec/atomic-cas-native/dynamic-invalid.rs": "c99e7c4fa421cbd850f2448abdb9d1eb99781aae64d34e3c128d75ce1a669b18",
     "tests/spec/atomic-cas-native/weak-invalid.rs": "e36231dc88a21e5b121c613b6d0bc20b899ec9ed964710d4b67fbd2a9b402479",
     "tests/spec/atomic-cas-native/reified-invalid.rs": "6daa28f73c664759854f846ad36d2de2d0e082160924b8f9126977d784ce1178",
@@ -4078,6 +4082,10 @@
     "tests/spec/atomic-rmw/local-shadow.rs": "bb69d52b02aee4b3f12d907a843ef22569748e0a621e860190246fd4a170145a",
     "tests/spec/atomic-rmw/const-swap-alias.rs": "d83f0fc656d55053fbdb3882f8f551b7c2265f1bdc9e3db4058dd1330d898766",
     "tests/spec/atomic-rmw/const-add-alias.rs": "615e201552782a13026f2823af89e17e1422368ba493495c97d92140a9638416",
+    "tests/spec/atomic-rmw-native/orders.rs": "adbf419140ee8f49a9d9d50e62b1a1423fe297893ecb9283c8bd97b66789c8e4",
+    "tests/spec/atomic-rmw-native/wrapping.rs": "bfbd79a6bf962361ac035a36a3f19959f31e66c04842566cb72b248f7cf29084",
+    "tests/spec/atomic-rmw-native/reified.rs": "3be0df63bc28cdca37c2d6a1bc8599c11487f7c775aa680a377f7a5bb58e8cd1",
+    "tests/spec/atomic-rmw-native/effects-storage.rs": "f3eb7bef2ea0a7de440170f3589d1652038079f600bb8aab2678310c8e0889b6",
     "tests/spec/atomic-bitwise/and-orders.rs": "e5684275fe785f34eecd4bd1da6ba338dfaef713ff237c7416c4bd4e3da52c39",
     "tests/spec/atomic-bitwise/variable-order.rs": "7e5ad74df76db17c9c650c767af6b5511de3fa634720f9b842c71d6b2f3bd930",
     "tests/spec/atomic-bitwise/aliased-order.rs": "06ab455f4dd67b50f40820c79d0832d055982a477f53edb2a181b5bf06fed8ba",
@@ -4154,6 +4162,12 @@
     "tests/spec/atomic-extrema/wrong-order.rs": "b81d20462e277fc09a943f2960bd1ea79fcfc658e49a1c1895c0a5576c897531",
     "tests/spec/atomic-extrema/wrong-arity.rs": "9aef49d5498f59f1c26a963bb6f22bc0ab288fc7ee106fc10051548dc0a60638",
     "tests/spec/atomic-extrema/generic-argument.rs": "68d75deab85797aa4a1bed55c3786594ab543267e10aaf62adedfebb47287692",
+    "tests/atomic-extrema-native/all-orders-unsigned.rs": "916b5fb370d4c1ea8a60164a13815cc10fe43324ee6c6016da825fb8599b4caa",
+    "tests/atomic-extrema-native/equal-and-unused.rs": "d7d8290cd6d69ec53015cb824858baecaef473a08373a183e1012711cf88a293",
+    "tests/atomic-extrema-native/operands-once.rs": "474691a770bba8d46d104763b8fa1dc197ffcefa1e9b6334448832599d1838eb",
+    "tests/atomic-extrema-native/reified.rs": "1f66f49bd2f7f5d1165e947a615658d85a017d7fb0e73a9454bdd738c146ac69",
+    "tests/atomic-extrema-native/static-nested.rs": "5db5d5ec56a3b890e9eaad22a631f5f863539cda58c0ef6e87fbae0a7d54d078",
+    "tests/atomic-extrema-native/aliased-order.rs": "483a7c9aa95de9476c9b82bc03ebcb5190cf6bb02948cb0507882fa7eda20262",
     "tests/spec/atomic-methods/load-store.rs": "f24ed434b4b80935b204beea181b842aff8df00e57eab665e297655e0fc5b238",
     "tests/spec/atomic-methods/variable-order.rs": "cb449044bbe58a836f5a0aa60f2fc3db7800da1007032500fc5508209cc80341",
     "tests/spec/atomic-methods/ufcs-order.rs": "290c53f40e2837ad5c49d7c6067f26a335c82e0df48984d76ce2b9d130428dfa",
@@ -4187,6 +4201,11 @@
     "tests/spec/atomic-methods/wrong-store-type.rs": "a0ab8aeef950d1b28e076682396a28d8b4a69ed37b87a85a12018774fa87ef65",
     "tests/spec/atomic-methods/shadowed-method.rs": "d544d6443e0bb9e93acd68b91626d7564a6789440a4c231365422cd408dc575c",
     "tests/spec/atomic-methods/ordering-constant-tags.rs": "636497bd4c7d738bf05b1c6a77364cdd0cebb9ede8adb8ab8d993fc9a778ee2b",
+    "tests/spec/atomic-method-native/legal-orders.rs": "e0b5d6f3b6d6dee17dd91d8eaec007226029505873dbd25a928239b41de01498",
+    "tests/spec/atomic-method-native/variable-orders.rs": "1372792ee246ca0c20a025168187bef27cea237b81cc9a2607a321519aa6cf6f",
+    "tests/spec/atomic-method-native/reified-methods.rs": "9f79a783fca1c73b4863cd56bab3d7269bb555f2df9bc3d45c3d6a9728b696ea",
+    "tests/spec/atomic-method-native/nested-shared-static.rs": "8c26e7b44a00ac1a520b4d1ede02272e097ad86e501e0226166d47da28e69afd",
+    "tests/spec/atomic-method-native/local-roundtrip.rs": "4c0c847dcda2d526a16bd7d1b6647ecfb13e15f786470480cab93dd5cb797895",
     "tests/spec/atomic-method-native/dynamic-release-load.rs": "56c13358268eaaaed8fa0763ae4311072d0f4cf201f36952afcc57134d093f67",
     "tests/spec/atomic-method-native/dynamic-acqrel-load.rs": "42f979637b5bb0bf2eef372bac53092b480c954bb60384a5aabcae261546bf7d",
     "tests/spec/atomic-method-native/dynamic-acquire-store.rs": "5154e42e86ceb346ca2171b11aa6a0dd364b221892c7a55779e452647dd7a4c5",
@@ -4195,6 +4214,7 @@
     "tests/spec/atomic-method-native/reified-invalid.rs": "09f273c864afedfbd7510349ac4686fad68290a1e70406ac84a284221e2df787",
     "tests/spec/atomic-method-native/const-alias-invalid.rs": "4063b8c62c9d2663464b74696a1931d492b897e288737b674a7f9d0036276bb6",
     "tests/spec/atomic-method-native/allowed-invalid.rs": "9f737ca2af940837c79d71779bc09c1353c71a6889c9f1c79bdf5ad624e84df8",
+    "tests/spec/atomic-method-native/ordering-tags.rs": "b2bdfe48bd804526ba27889c58ebae72f7f32bd86c075ede99c56b94cc91e317",
     "tests/spec/atomic-storage/new.rs": "3ab0885728de8bd741093162a6269d35bc18c20257facc460cd9083a2208fd99",
     "tests/spec/atomic-storage/alias-new.rs": "d01385a5d383dcd19ff1da5a5815e558b65671268897cafc8ace09221c0cdaf0",
     "tests/spec/atomic-storage/no-prelude.rs": "75a04dee64a80e66c6d546bc39d06090f17395d4a57dcb93c2ec14fe1ce99141",
@@ -4220,7 +4240,12 @@
     "tests/spec/atomic-storage/const-field-reference.rs": "d3aea6055227496836908277dfaf05ef84d374bab681e7edf1416362498d8f0b",
     "tests/spec/atomic-storage/temporary-field-reference.rs": "44d6a6e726d92e20c44967361b7430303b0a284405d6472445498e24b5e02814",
     "tests/spec/atomic-storage/runtime-named-field-reference.rs": "11a5446538fd18a104d954172dfaa3a1f69f1656f06bbe9ecdb2f15fa8971e85",
-    "tests/spec/atomic-storage/runtime-temporary-field-reference.rs": "a64b7c81e752c1d59879b59e2eaafbc59308733e76409f174445fa38cd24b67b"
+    "tests/spec/atomic-storage/runtime-temporary-field-reference.rs": "a64b7c81e752c1d59879b59e2eaafbc59308733e76409f174445fa38cd24b67b",
+    "tests/spec/atomic-storage-native/shared-static.rs": "7bc74f6137e27833e8da168b9b3a004f608622ff5f8d472f10da849cc28c6033",
+    "tests/spec/atomic-storage-native/nested-static.rs": "fceb14cbd280d9c14009b5d43de7a515e71b800d4737c3cbe66337632d353399",
+    "tests/spec/atomic-storage-native/readonly-slot.rs": "f70a4c14533a45bc21564c2f2aad6e2dde8afcdefd5ab9db548463bd8521d4cf",
+    "tests/spec/atomic-storage-native/projected-constant.rs": "c57cdd0754535920dccbcb4372fe97261cb66829cb2459c12f2f955a1b682bad",
+    "tests/spec/atomic-storage-native/transient-const.rs": "103186e935cab043b3ea710790129992c85584f4e5318f871a04dc940a07fb2a"
   },
   "fixtures": {
     "tests/spec/atomic-cas-orders/compare_exchange-relaxed-relaxed.rs": "efe7dfdef6563ad144588172d55981c461acb1b20f234c02e76c6cf0b748a277",
@@ -4301,6 +4326,10 @@
     "tests/spec/atomic-preparation/local-core.rs": "9b752a1e820999741696cba7cb22108a42eeac766aa653c890c9541fd0528eb8",
     "tests/spec/atomic-preparation/local-types.rs": "1f681aee964d674ee284af074fa2cbddb226f4b22285148d2229a60363ed627b",
     "tests/spec/atomic-preparation/ordinary.rs": "49a9c9db947d5ba0e2af2b370a06ec28ec53659141a47b6c6cdc3fd1c2c8adc4",
+    "tests/spec/atomic-cas-native/strong-matrix.rs": "dcbd9738a04f2de8001797fa74a28bd42ae99b95f3e82e320d244b5b1d9fc663",
+    "tests/spec/atomic-cas-native/weak-matrix.rs": "929612839088d045cd7eeedb0e810c9bbce435136f326913b24d8abd3a586866",
+    "tests/spec/atomic-cas-native/reified.rs": "f910ca62cef6e9b2856a696046ff80456f66d8d9fb678bfc1acda5e96d5f5c67",
+    "tests/spec/atomic-cas-native/shared-storage.rs": "147a10dc0ad47c9bf9d8d3f3786e6d0107e9150658fa63767daa2e32b8e36b86",
     "tests/spec/atomic-cas-native/dynamic-invalid.rs": "f19c590dbd63e99d86ee6a6136beac192b718699e91186e1524ce59cedc91821",
     "tests/spec/atomic-cas-native/weak-invalid.rs": "d2a714cf478f41ed417c50957e8169c482b8183be2c0a5e3e2a7f9304d097771",
     "tests/spec/atomic-cas-native/reified-invalid.rs": "70bae36b7d1237f82697894bf64b3db14187ff2129e7b1cd0681b933e0552486",
@@ -4326,6 +4355,10 @@
     "tests/spec/atomic-rmw/local-shadow.rs": "fb00bae64a8425894a79706cbf12f9491125aebb9d70e4d1e3e3d56bcb9e1408",
     "tests/spec/atomic-rmw/const-swap-alias.rs": "72e2a1ee7c9084ad97c441edec03cfd56b6be3d0c479b63e873176d8cb2ff5b7",
     "tests/spec/atomic-rmw/const-add-alias.rs": "51f5d3c967cfa38e48c611d9b83845ee08c1b723ab0b085fe1a3e849c6abd49c",
+    "tests/spec/atomic-rmw-native/orders.rs": "728d27df1153c41d1667d475c41829f8018cb48afbdd6a79554047f7190e97d4",
+    "tests/spec/atomic-rmw-native/wrapping.rs": "fa3a63c303497ba1e84eefd7182a582d109972d05cef6ef6e9c5684d141f5748",
+    "tests/spec/atomic-rmw-native/reified.rs": "22ddc60dd99696a5e76ea656878fd17ae874cece35597d6e27d7a8a4976a2af6",
+    "tests/spec/atomic-rmw-native/effects-storage.rs": "94db5d74ab28acfb8f89ff1e7a000ca77549e42287796391d853bed6664c2ebf",
     "tests/spec/atomic-bitwise/and-orders.rs": "50ad97ca9eb4fdf43ebca454d77b6317368e7cef07f9c88ca9ca4593c38c76bc",
     "tests/spec/atomic-bitwise/variable-order.rs": "cdd3e4096cb26dd669b6eabfa65be47d2b4be583cc057d4c8e5a5b8f10685dd6",
     "tests/spec/atomic-bitwise/aliased-order.rs": "b5f8fddd674cd5ad80a2146a37b87630c607f4bdf5de2ff4848e6665530d2dfa",
@@ -4402,6 +4435,12 @@
     "tests/spec/atomic-extrema/wrong-order.rs": "c2ba758a4bf6b1efd13a7fab7f8058247c23d47600e7ff3fb55acb729bbeb29a",
     "tests/spec/atomic-extrema/wrong-arity.rs": "06ec9e46df6b0928c7294c7d1140c9836e808f90231c43b2a8394becd4e382ec",
     "tests/spec/atomic-extrema/generic-argument.rs": "3deea9492585028abf748b2c0ddd6b4a2babf01ae2f032a06858dc2c4363d3e3",
+    "tests/atomic-extrema-native/all-orders-unsigned.rs": "c6cac596030aaa8166c2138764a2a613e5c1d0403fd305b92b81825212c4d9de",
+    "tests/atomic-extrema-native/equal-and-unused.rs": "b94d95f0e1f92c9e43c8d7893d6ca86e01030b230be7d8b6895496e920e5467d",
+    "tests/atomic-extrema-native/operands-once.rs": "e15a652270da48523893f56d1d31834522fac9686f2dda598abcdddf225d8209",
+    "tests/atomic-extrema-native/reified.rs": "bc3d40868d69f87a804034fe4cd6eb1b40de3b0eccedac40e656e60ef8099897",
+    "tests/atomic-extrema-native/static-nested.rs": "09cdc9148a53aa798de2feddfaabcdede710e3080e1107adb704fdb1c067376b",
+    "tests/atomic-extrema-native/aliased-order.rs": "0193dc4d9aeaa93c203101d960c133ec087b9d3c92c29b1ba629ed8e1a44067e",
     "tests/spec/atomic-methods/load-store.rs": "22bfd3214777162ad5b002da3705ebfabce4b94d657a0117ba3e017a5af1006f",
     "tests/spec/atomic-methods/variable-order.rs": "492df20e1eb9789f4f8e600b17c5d26c7d00839b96b5c3524053f01a15fd4b31",
     "tests/spec/atomic-methods/ufcs-order.rs": "3ad591e3a4ea465db02a781f308647c391e7a7e40a172a162a7bc03412b3e531",
@@ -4435,6 +4474,11 @@
     "tests/spec/atomic-methods/wrong-store-type.rs": "8a38afc1c466e0924223bfa4f8e58dfbb452708e2545b6620cac87c09872b3bf",
     "tests/spec/atomic-methods/shadowed-method.rs": "e42cc7f073136abe6c535a7a52f585b4919964d78e3ed5f9ea82ec23fc356bd7",
     "tests/spec/atomic-methods/ordering-constant-tags.rs": "3845b3894582c490db1724ddef04e8500d664e8f19cdf5075f934a66eff15cc2",
+    "tests/spec/atomic-method-native/legal-orders.rs": "8e1bd6223454aad48c5157252cf7c126cde3b5f6946e557e34646e05e08ae281",
+    "tests/spec/atomic-method-native/variable-orders.rs": "76ee9104a67327efd9edd85509c2ceb267b48e905d28d9539b9ffeaec3350dfa",
+    "tests/spec/atomic-method-native/reified-methods.rs": "3281d5b2d1b5e68b8220d0d36d52bb813f42e78b448c9965dc355fc2798e24b6",
+    "tests/spec/atomic-method-native/nested-shared-static.rs": "a8a82e75304d2d8a39e009024e0129871053768c98bc502004d31cce66d3952b",
+    "tests/spec/atomic-method-native/local-roundtrip.rs": "6ca75906714f63529e6abc733f93a2bfb5c94911c452bb21728798916add8edf",
     "tests/spec/atomic-method-native/dynamic-release-load.rs": "2cd7369e1d4bf3347d5170b041da42b41850ba7f87aae34c2a0bce82c8f4a1e8",
     "tests/spec/atomic-method-native/dynamic-acqrel-load.rs": "5ce6d5cea75e5441eb3ea3050ca08f80787391e6e84e0650de0fbd6f04560d6d",
     "tests/spec/atomic-method-native/dynamic-acquire-store.rs": "bf288edc3a1c57db254583d0b90b6f6d42871cd68c1776974a47721af25f8d32",
@@ -4443,6 +4487,7 @@
     "tests/spec/atomic-method-native/reified-invalid.rs": "bf0c4021d18df735d80ecfc9be1ae26eefdf23758ad095a4f64787e975e71a92",
     "tests/spec/atomic-method-native/const-alias-invalid.rs": "2e42b523aeb8d21da1276649aeabe167caa8aadfae97eb03cfd07ec45404df22",
     "tests/spec/atomic-method-native/allowed-invalid.rs": "f5e65d4955d0d13a01d752ba423cf4c3b7720b78c2542ab64ec30fa782904abf",
+    "tests/spec/atomic-method-native/ordering-tags.rs": "05eb153326839ad0ff8ea7114e0a33230248ebf9344c983ec5c6e53eb7d5f736",
     "tests/spec/atomic-storage/new.rs": "d894f1a81c05070261c4aa7b3ce14fa12b8bc564cf282b819b3de01e9bf1fc88",
     "tests/spec/atomic-storage/alias-new.rs": "b08b0055542b5147d9cf82b9eae26e682904084204da817bed735edc3a95a84f",
     "tests/spec/atomic-storage/no-prelude.rs": "a6ad3f77935229f1894274e290bc82fa6cfc70b748a7854dc2387be3c4d7ae27",
@@ -4468,7 +4513,15 @@
     "tests/spec/atomic-storage/const-field-reference.rs": "91efbc0d91a9c65132499a361976c9d3cfef74a36e27756f27cd6ba587688ed2",
     "tests/spec/atomic-storage/temporary-field-reference.rs": "bd2d4d8936f261840df74bf662e0c7caf50584468b1a404614198e178fd10bfa",
     "tests/spec/atomic-storage/runtime-named-field-reference.rs": "284a935a4871eab16755398495562650e37a2a8a825d84bbd4d581888180cb11",
-    "tests/spec/atomic-storage/runtime-temporary-field-reference.rs": "9189389079cfb65ed8e3f12fba266e4e72d32d1c4a17010e9c524aef96212556"
+    "tests/spec/atomic-storage/runtime-temporary-field-reference.rs": "9189389079cfb65ed8e3f12fba266e4e72d32d1c4a17010e9c524aef96212556",
+    "tests/spec/atomic-storage-native/shared-static.rs": "e342f37bd8cc1635af83ccb6b248965f137df4ad425b04b4910f260b41bd3ff8",
+    "tests/spec/atomic-storage-native/nested-static.rs": "4a55ca90b4f4aa5b55032cd12ed4639df82e97bfc119fc8a29ee7e669399f601",
+    "tests/spec/atomic-storage-native/readonly-slot.rs": "50a1c5ad278be9f5e5324706fc162c53d05395116b1d3c97e75e87878aa4a381",
+    "tests/spec/atomic-storage-native/projected-constant.rs": "743fdddb963c4c8188b05af2e0cf083f79c7daaeb6e3cc635c93f1e42d64d88d",
+    "tests/spec/atomic-storage-native/transient-const.rs": "b782d546faf2a1309d4148017674bb30e80cdd689cb071429a90a69af88547e6"
+  },
+  "auxiliary": {
+    "tests/prelude/check.rs": "b8fcd695e0782eccfda1be95e763e691517535a14eafd06a87fd433acc0021ae"
   },
   "outputs": {
     "tests/spec/atomic-cas-orders/compare_exchange-relaxed-relaxed.rs": {
@@ -4861,6 +4914,26 @@
       ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
     },
+    "tests/spec/atomic-cas-native/strong-matrix.rs": {
+      ".ref": "a85e5643c207369c225ea8689691784ab502fc2f876fee5280c910bb24b058fa",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/atomic-cas-native/weak-matrix.rs": {
+      ".ref": "a7916afcd024d26c515642d5fd39f867a59b6596ee02b11f38532ea0e8ef4e27",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/atomic-cas-native/reified.rs": {
+      ".ref": "1840e1eb7fbad126023832bcf934744f01eb9f5a7db21f23809c7f66f7238637",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/atomic-cas-native/shared-storage.rs": {
+      ".ref": "a08c5278820f4f41a6f35fa15a11e5583875d233717ed99989a211505b1b9b9b",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
     "tests/spec/atomic-cas-native/dynamic-invalid.rs": {
       ".ref": "d0c17b10e15f2b93f59884c8e0394e49dc02bfb56b77eea0c0e359bf883757e3",
       ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -4985,6 +5058,26 @@
       ".ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       ".ref.stderr": "5335649a9708fac6db1de8a2cad4bf248fae68fd00f0bc4cf7aae1ca91cfc4cb",
       ".ref.exit_status": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    "tests/spec/atomic-rmw-native/orders.rs": {
+      ".ref": "ace2c514e7e8810f647363fadfab9615bfdd26f3ff8394bbf66997ab3a1f3725",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/atomic-rmw-native/wrapping.rs": {
+      ".ref": "11ab38dbfef2ce9cb73f1e445ca41dd73806f1415758d53653a570d1a454d92e",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/atomic-rmw-native/reified.rs": {
+      ".ref": "4952389b9fafbad04ff9804b9513cc61c0be44c778e5cd8698fcd2f4f84e2365",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/atomic-rmw-native/effects-storage.rs": {
+      ".ref": "150e1c533d3f9781ef3c62c898e64799190fdffe0a133398c80e68fd4d5492a6",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
     },
     "tests/spec/atomic-bitwise/and-orders.rs": {
       ".ref": "5618241ccd8721e824cf9cddc41a94a251af25ac8fd7d140131e1dd4d7a61cbb",
@@ -5366,6 +5459,36 @@
       ".ref.stderr": "08a3b8c987c230967e4c70a0ed5a49e28377e460dca33b8d427c9cdc1e60f487",
       ".ref.exit_status": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
     },
+    "tests/atomic-extrema-native/all-orders-unsigned.rs": {
+      ".ref": "bd1d198ee12128411584919260099a6e8ae2726c18561a754b747caf0896d6ee",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/atomic-extrema-native/equal-and-unused.rs": {
+      ".ref": "2f583f424c48b36b168120dceb17961ba24a5b2652cc525994d1fbe47bd9d239",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/atomic-extrema-native/operands-once.rs": {
+      ".ref": "15354197b19f444262abe562cd42dde77964c088148ab72b8118eaa7a633247a",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/atomic-extrema-native/reified.rs": {
+      ".ref": "1ca2a6b8814c3d357daa95c05bf6e0ae092ce62b7d8931034d26510da36cfbb2",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/atomic-extrema-native/static-nested.rs": {
+      ".ref": "b4f0952a3431a9532a283e22d78b0c516b400e4ba29b9b91bbad655bbea5d241",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/atomic-extrema-native/aliased-order.rs": {
+      ".ref": "56d497793b8f34c188c8fd1dec557284e6c185cb8b7dc59c73c884c57535fca4",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
     "tests/spec/atomic-methods/load-store.rs": {
       ".ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -5531,6 +5654,31 @@
       ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
     },
+    "tests/spec/atomic-method-native/legal-orders.rs": {
+      ".ref": "d6cdc0a279ff46201a7f7e4213344d46163b6275b0568b55a0cfbfddfd6fe5c1",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/atomic-method-native/variable-orders.rs": {
+      ".ref": "bc53f0040c57f92f7c4a6b805184bd6889414d0618b99e701f7998355d32a130",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/atomic-method-native/reified-methods.rs": {
+      ".ref": "40857e799d006c6fa581d2b93716aeb090658b61537588f53961d0c14d1653fe",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/atomic-method-native/nested-shared-static.rs": {
+      ".ref": "0e2b3b888d63faae126e843ed44b97768200ab776438609abb6c7ad2309a1f18",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/atomic-method-native/local-roundtrip.rs": {
+      ".ref": "649c1c123ee1711d0e6e2875368441e35b518c9a27e7f6d2eba99c4eb1f580ec",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
     "tests/spec/atomic-method-native/dynamic-release-load.rs": {
       ".ref": "3101da0dfe8e5dda7c09ca57c7dc905ba7ac1644d449a2615ef4beadc9fbbce1",
       ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -5568,6 +5716,11 @@
     },
     "tests/spec/atomic-method-native/allowed-invalid.rs": {
       ".ref": "50a8f72d49b399791e8980c3ecf25368b3958f84a1455a4e17c392e71a8c2742",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/atomic-method-native/ordering-tags.rs": {
+      ".ref": "e1a15d650760889c78a86450e13709632dc13b2036b00f3f169f4558a173e94f",
       ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
     },
@@ -5700,6 +5853,31 @@
       ".ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       ".ref.stderr": "2e3eaabb3f9c5b4409154916d39d2cd891e4e56660e346b3a2bf6e2dd08c740b",
       ".ref.exit_status": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    "tests/spec/atomic-storage-native/shared-static.rs": {
+      ".ref": "53ce3990b68b98261c42d05d6cf838b7fd25a7bd1267c088d66b48c6e3a2db87",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/atomic-storage-native/nested-static.rs": {
+      ".ref": "53befeb11665a4b3d9c94b98bac0a0b992e535ed711f26b29f0266e2a7691f64",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/atomic-storage-native/readonly-slot.rs": {
+      ".ref": "79d3ae5e5406ce615ec151a6b5b35e782f2a66f5fffe19d6b454c243b367b7b4",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/atomic-storage-native/projected-constant.rs": {
+      ".ref": "2afdbfd6a3f0bc99d6ac05b7100de3c773c30be951c3133bd782034205c0efb1",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/atomic-storage-native/transient-const.rs": {
+      ".ref": "05ab2abc353451e67fad93254ae2e0aa2540402bb70479c745b9b10554850f68",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
     }
   }
 }

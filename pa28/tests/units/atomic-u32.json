@@ -5,22 +5,14 @@
  "edition": "2024",
  "target": "x86_64-unknown-linux-gnu",
  "discovery": [
+  "tests/atomic-extrema-native",
+  "tests/prelude",
   "tests/spec/atomic-bitwise",
   "tests/spec/atomic-cas",
-  "tests/spec/atomic-cas-native/dynamic-invalid.rs",
-  "tests/spec/atomic-cas-native/reified-invalid.rs",
-  "tests/spec/atomic-cas-native/ufcs-invalid.rs",
-  "tests/spec/atomic-cas-native/weak-invalid.rs",
+  "tests/spec/atomic-cas-native",
   "tests/spec/atomic-cas-orders",
   "tests/spec/atomic-extrema",
-  "tests/spec/atomic-method-native/allowed-invalid.rs",
-  "tests/spec/atomic-method-native/const-alias-invalid.rs",
-  "tests/spec/atomic-method-native/dynamic-acqrel-load.rs",
-  "tests/spec/atomic-method-native/dynamic-acqrel-store.rs",
-  "tests/spec/atomic-method-native/dynamic-acquire-store.rs",
-  "tests/spec/atomic-method-native/dynamic-release-load.rs",
-  "tests/spec/atomic-method-native/reified-invalid.rs",
-  "tests/spec/atomic-method-native/ufcs-invalid.rs",
+  "tests/spec/atomic-method-native",
   "tests/spec/atomic-methods/allow-invalid-order.rs",
   "tests/spec/atomic-methods/block-order.rs",
   "tests/spec/atomic-methods/closure-inherits.rs",
@@ -56,6 +48,7 @@
   "tests/spec/atomic-methods/wrong-store-type.rs",
   "tests/spec/atomic-preparation",
   "tests/spec/atomic-rmw",
+  "tests/spec/atomic-rmw-native",
   "tests/spec/atomic-storage/active-option-return.rs",
   "tests/spec/atomic-storage/alias-new.rs",
   "tests/spec/atomic-storage/atomic-markers.rs",
@@ -82,6 +75,7 @@
   "tests/spec/atomic-storage/zero-array-not-copy.rs",
   "tests/spec/atomic-storage/zero-array-repeat-return.rs",
   "tests/spec/atomic-storage/zero-array-return.rs",
+  "tests/spec/atomic-storage-native",
   "tests/spec/atomic-subtract"
  ],
  "cases": [
@@ -1624,6 +1618,90 @@
    }
   },
   {
+   "path": "tests/spec/atomic-cas-native/strong-matrix.rs",
+   "source_sha256": "dcbd9738a04f2de8001797fa74a28bd42ae99b95f3e82e320d244b5b1d9fc663",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/spec/atomic-cas-native/weak-matrix.rs",
+   "source_sha256": "929612839088d045cd7eeedb0e810c9bbce435136f326913b24d8abd3a586866",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/spec/atomic-cas-native/reified.rs",
+   "source_sha256": "f910ca62cef6e9b2856a696046ff80456f66d8d9fb678bfc1acda5e96d5f5c67",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/spec/atomic-cas-native/shared-storage.rs",
+   "source_sha256": "147a10dc0ad47c9bf9d8d3f3786e6d0107e9150658fa63767daa2e32b8e36b86",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-cas"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
    "path": "tests/spec/atomic-cas-native/dynamic-invalid.rs",
    "source_sha256": "f19c590dbd63e99d86ee6a6136beac192b718699e91186e1524ce59cedc91821",
    "exit_status": 0,
@@ -2103,6 +2181,90 @@
     "status": 1,
     "emit": "obj"
    }
+  },
+  {
+   "path": "tests/spec/atomic-rmw-native/orders.rs",
+   "source_sha256": "728d27df1153c41d1667d475c41829f8018cb48afbdd6a79554047f7190e97d4",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/spec/atomic-rmw-native/wrapping.rs",
+   "source_sha256": "fa3a63c303497ba1e84eefd7182a582d109972d05cef6ef6e9c5684d141f5748",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/spec/atomic-rmw-native/reified.rs",
+   "source_sha256": "22ddc60dd99696a5e76ea656878fd17ae874cece35597d6e27d7a8a4976a2af6",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/spec/atomic-rmw-native/effects-storage.rs",
+   "source_sha256": "94db5d74ab28acfb8f89ff1e7a000ca77549e42287796391d853bed6664c2ebf",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-rmw"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
   },
   {
    "path": "tests/spec/atomic-bitwise/and-orders.rs",
@@ -3561,6 +3723,132 @@
    }
   },
   {
+   "path": "tests/atomic-extrema-native/all-orders-unsigned.rs",
+   "source_sha256": "c6cac596030aaa8166c2138764a2a613e5c1d0403fd305b92b81825212c4d9de",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/atomic-extrema-native/equal-and-unused.rs",
+   "source_sha256": "b94d95f0e1f92c9e43c8d7893d6ca86e01030b230be7d8b6895496e920e5467d",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/atomic-extrema-native/operands-once.rs",
+   "source_sha256": "e15a652270da48523893f56d1d31834522fac9686f2dda598abcdddf225d8209",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/atomic-extrema-native/reified.rs",
+   "source_sha256": "bc3d40868d69f87a804034fe4cd6eb1b40de3b0eccedac40e656e60ef8099897",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/atomic-extrema-native/static-nested.rs",
+   "source_sha256": "09cdc9148a53aa798de2feddfaabcdede710e3080e1107adb704fdb1c067376b",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/atomic-extrema-native/aliased-order.rs",
+   "source_sha256": "0193dc4d9aeaa93c203101d960c133ec087b9d3c92c29b1ba629ed8e1a44067e",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-extrema"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
    "path": "tests/spec/atomic-methods/load-store.rs",
    "source_sha256": "22bfd3214777162ad5b002da3705ebfabce4b94d657a0117ba3e017a5af1006f",
    "exit_status": 0,
@@ -4338,6 +4626,111 @@
    }
   },
   {
+   "path": "tests/spec/atomic-method-native/legal-orders.rs",
+   "source_sha256": "8e1bd6223454aad48c5157252cf7c126cde3b5f6946e557e34646e05e08ae281",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/spec/atomic-method-native/variable-orders.rs",
+   "source_sha256": "76ee9104a67327efd9edd85509c2ceb267b48e905d28d9539b9ffeaec3350dfa",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/spec/atomic-method-native/reified-methods.rs",
+   "source_sha256": "3281d5b2d1b5e68b8220d0d36d52bb813f42e78b448c9965dc355fc2798e24b6",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/spec/atomic-method-native/nested-shared-static.rs",
+   "source_sha256": "a8a82e75304d2d8a39e009024e0129871053768c98bc502004d31cce66d3952b",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/spec/atomic-method-native/local-roundtrip.rs",
+   "source_sha256": "6ca75906714f63529e6abc733f93a2bfb5c94911c452bb21728798916add8edf",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
    "path": "tests/spec/atomic-method-native/dynamic-release-load.rs",
    "source_sha256": "2cd7369e1d4bf3347d5170b041da42b41850ba7f87aae34c2a0bce82c8f4a1e8",
    "exit_status": 0,
@@ -4504,6 +4897,27 @@
     "kind": "execute",
     "outcome": "panic"
    }
+  },
+  {
+   "path": "tests/spec/atomic-method-native/ordering-tags.rs",
+   "source_sha256": "05eb153326839ad0ff8ea7114e0a33230248ebf9344c983ec5c6e53eb7d5f736",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-methods"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
   },
   {
    "path": "tests/spec/atomic-storage/new.rs",
@@ -5115,6 +5529,111 @@
     "crate_name": "atomic_fixture",
     "disambiguator": "pa28"
    }
+  },
+  {
+   "path": "tests/spec/atomic-storage-native/shared-static.rs",
+   "source_sha256": "e342f37bd8cc1635af83ccb6b248965f137df4ad425b04b4910f260b41bd3ff8",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/spec/atomic-storage-native/nested-static.rs",
+   "source_sha256": "4a55ca90b4f4aa5b55032cd12ed4639df82e97bfc119fc8a29ee7e669399f601",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/spec/atomic-storage-native/readonly-slot.rs",
+   "source_sha256": "50a1c5ad278be9f5e5324706fc162c53d05395116b1d3c97e75e87878aa4a381",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/spec/atomic-storage-native/projected-constant.rs",
+   "source_sha256": "743fdddb963c4c8188b05af2e0cf083f79c7daaeb6e3cc635c93f1e42d64d88d",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
+  },
+  {
+   "path": "tests/spec/atomic-storage-native/transient-const.rs",
+   "source_sha256": "b782d546faf2a1309d4148017674bb30e80cdd689cb071429a90a69af88547e6",
+   "exit_status": 0,
+   "features": [
+    "pa28.atomic-storage"
+   ],
+   "work_units": [
+    "atomic-u32"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   },
+   "prelude": "tests/prelude/check.rs"
   }
  ]
 }

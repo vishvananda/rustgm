@@ -1,12 +1,18 @@
 # PA28 fixture ownership
 
 The released `runtime-memory` component publishes `units/runtime-memory.json`
-and the reference sidecars of its 265 cases; see the
+and the reference sidecars of its 323 cases; see the
 [release record](../../docs/pa28-runtime-memory-release.md) for its deferred
 list. The released `atomic-u32` component publishes `units/atomic-u32.json` and
-the sidecars of its 246 cases; see its
+the sidecars of its 271 cases; see its
 [release record](../../docs/pa28-atomic-u32-release.md). Every other family
 here is unpublished.
+
+The 83 native observers that expect a normal exit declare
+`prelude: tests/prelude/check.rs`. The compiler reads that file's bytes
+followed by the fixture's on standard input, as one translation unit;
+`prelude/check.rs` defines the `check` function those bodies call and is a byte
+copy of the maintainer native harness prelude.
 
 Whole PA28 is planned: no graded whole-assignment suite yet.
 

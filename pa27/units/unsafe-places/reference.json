@@ -3973,7 +3973,7 @@
     "dev/tests/wrapper_sources.rs": "9d50a37a73fcaf431b0ca64add4142cf38d85237d07557d0a786c0f2217f49cb",
     "dev/tests/zero_sized_niche_companions.rs": "560ed324f5c781c2585b712e0e56c9baa0243837ae0460036dfef11e4baba009"
   },
-  "manifest_sha256": "9fcd8fd850f00237337491daa17ac992bce43a9b394c9eb9853cb09c834e1945",
+  "manifest_sha256": "b75480f47c202c414ff6be40d2ee5afcd4d280d1e883edaeb8ceeeffc21f5475",
   "case_contracts": {
     "tests/spec/contexts/unsafe-block-value.rs": "39c18474c57e8ee9e0bc935420ff43fbc2f7f920e3f7c9e30a4b6efc07f8bab3",
     "tests/spec/contexts/unsafe-constant-block.rs": "4e70c8c736aa20930d83cde7e0fc2602517cdd3753f13a482916cf7a964a28ea",
@@ -4208,6 +4208,15 @@
     "tests/spec/capture-precision/packed-unaligned-local-borrow.rs": "ed770e8a46eaad920bab302660ea4d108c35da669ff71e5c7a36b1181eb3aca7",
     "tests/spec/capture-integration-native/packed-reference.rs": "aad7e8e1ed4bf2cdfd6d2ea0fa62f719f5b0e99b68578f42b84a49fb5ec89dfc",
     "tests/spec/capture-integration-native/union-reference.rs": "e60cb19b1bcccc928e153fee63a0c622a7e580f5ad637629d3a12bf86c3f6440",
+    "tests/spec/capture-native/packed.rs": "bedda040e55b272ed2ac541295ce1e366d0a385fe70ae72b5c0924e4111b0ad3",
+    "tests/spec/capture-native/packed-move.rs": "789d6209f0413ad8cdc38550cecaf998bb2df7b93aa6bce9887cc02f03574823",
+    "tests/spec/capture-native/raw-write.rs": "4686dc9bf9d7cea69b1ac5b8a3fcff4c7fb1d3cd54dc3e3c2f181293fe8426ad",
+    "tests/spec/capture-native/raw-move.rs": "8b2f47fb6df78a335e5596fae6759630ac45124d83eab15833091a7cc7c33b89",
+    "tests/spec/capture-native/raw-cancellation.rs": "63b79572e33a3bb49547969c0f99a3494a63193210efedb06ad085ae2f7a0643",
+    "tests/spec/capture-native/union.rs": "4089f17a9399e9e70c8405d5237088ae03d89b8c7fa5f494f31ad808f6ae6533",
+    "tests/spec/capture-native/nested.rs": "af9511f2129b7649005053af8c410eaebfea68bcd007ffdeb61c5bb0ee3c43ea",
+    "tests/spec/capture-native/shared-before-boundary.rs": "f7d26e274aef4be62c8c0a9226ce2fc71a664a9ee8d82f875d48952133036202",
+    "tests/spec/capture-native/pointer-slot.rs": "0c3f160bd029cb363305cb16c34b4e9953a8dbbe11ae3ccb9287e5f56ea3f5f7",
     "tests/spec/union-borrows/shared-local.rs": "2095b21cd787f885148b76034e15182b48b07735b81b0e1b47e845e59802cca2",
     "tests/spec/union-borrows/mutable-local.rs": "291c76389a2d7fa5fecfc4d28b0447099dd75a8fbdefe0dbc58ec9aca240dbd2",
     "tests/spec/union-borrows/cross-field-aliases.rs": "55b2b222110ed8adb7ea677df2eb08b7df39d7ded3ce22c7c40bbf2a6cf73ad1",
@@ -4463,6 +4472,15 @@
     "tests/spec/capture-precision/packed-unaligned-local-borrow.rs": "71c894bd4783a9a365fbe7b3cf00b49f71278bf0fd732a320e66e3c56b498c13",
     "tests/spec/capture-integration-native/packed-reference.rs": "0dc988a448a3882a6a9c9f8734b51781ebf3cb6772d97ee35cd746d4842d173c",
     "tests/spec/capture-integration-native/union-reference.rs": "a7d6bed1f5e92842d8020df477a6a37be793c93d294187ac2cd14287daa0d467",
+    "tests/spec/capture-native/packed.rs": "e77cfa600b1a51c7ee78b3b0581b63fe349de8d79eeb9816166b811a264683e6",
+    "tests/spec/capture-native/packed-move.rs": "3232dac4c927eb5f60b93f60b74fde11ae5ff5454a36ff56fc03eda80c69911d",
+    "tests/spec/capture-native/raw-write.rs": "2ae08effc02616329fd1f33247a4d07d41ee1a8f86ecd82258e4d09bc7e521c8",
+    "tests/spec/capture-native/raw-move.rs": "5e92ded557fb16fa8c40a35425a38a48ef1b1119b07a6225f4c19971328a5ea4",
+    "tests/spec/capture-native/raw-cancellation.rs": "d30bd5ae35647d7af45fb4857ef80ec15c027e9a1292d82e6abc1dbdfdc472ac",
+    "tests/spec/capture-native/union.rs": "a79cf936caa213ed1413e9f5e378e5ddf6189e047eda2aef7a33bada426fbb1a",
+    "tests/spec/capture-native/nested.rs": "a96e430cf800be76dd7b5c6456f30b5bec77b9b8b56a91d7db20ae786eca9066",
+    "tests/spec/capture-native/shared-before-boundary.rs": "2626e09b542062e61c61a0de426f0a1fba4aaa1b2b42ea1981364cb979dd4727",
+    "tests/spec/capture-native/pointer-slot.rs": "5a115b39394e7b27bb51ca32de20a4f8101ebfe237b115dc826608c064e465f0",
     "tests/spec/union-borrows/shared-local.rs": "2ca87f4b77f5053899e900df03fc38958a8114cf96bc6f96076b2c17f24ade53",
     "tests/spec/union-borrows/mutable-local.rs": "b6a52264625602e41f1742c5b888521588399d66021d7595b5c8cefe27850a7d",
     "tests/spec/union-borrows/cross-field-aliases.rs": "d4735ca6134829d17e3ea9d8c632f45b261b0f54634f22e70337999a66dec6e8",
@@ -4485,6 +4503,7 @@
     "tests/spec/union-borrows/packed-raw-base-aligned-source.rs": "e630832c9ca1287932a5073de96a04874bd65980f8d2856ad8cc199e3271e85b"
   },
   "auxiliary": {
+    "tests/prelude/check.rs": "b8fcd695e0782eccfda1be95e763e691517535a14eafd06a87fd433acc0021ae",
     "tests/spec/policies/modules/external-forbid/m.rs": "2222f38e6b925df1f76cb3aea2903f1416de2f936f3baa6e16519f7b5f44e2c9",
     "tests/spec/policies/modules/external-inherit/m.rs": "e697b5bdb6b32745e60d9d1c99683917ada4fd1018408e498394a9f6af89c2a0",
     "tests/spec/policies/modules/external-inner-override/m.rs": "b932ccee259bb33a903b6b93f6b2b449104be36a329c6829dc3e1d8b3f21e840",
@@ -5653,6 +5672,51 @@
     },
     "tests/spec/capture-integration-native/union-reference.rs": {
       ".ref": "40146bee229116e0e4bebdbf9b69468a910d396f7bb0bcd512c17540f6c30ade",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/capture-native/packed.rs": {
+      ".ref": "0f46048f7b09b45c063dc943e2de58e5e95700b4721a53afb3614049e62f53f2",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/capture-native/packed-move.rs": {
+      ".ref": "cfe77220347358ebe17fe291f01bb8da00a11cf265b70afd2ee0c29e563af71c",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/capture-native/raw-write.rs": {
+      ".ref": "8c28ca5a4ca0125f3bf2717475f80e0e1cbc4105e00d178c974d3c004e179786",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/capture-native/raw-move.rs": {
+      ".ref": "04d9b2eb9f6a5b17d4636ebb277b2630ba3bfb12d67778dc9ca9ee3e0f8dcc25",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/capture-native/raw-cancellation.rs": {
+      ".ref": "64b7dd928f0f36d8cd465f720d828712dc6d30048d8f91dfb5604113c4a2efc4",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/capture-native/union.rs": {
+      ".ref": "21ce07dd93c42dd22674d272bd2a4f8972b1541d63daae2164787b9fbed50bdb",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/capture-native/nested.rs": {
+      ".ref": "4693fcfb3c96025a7c7c70809dfca10313302dbae560f5a4e15a159eb7d6fbe1",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/capture-native/shared-before-boundary.rs": {
+      ".ref": "e87ef7e7c62714c317d2a3364aeb896d21b65e96333556e3b106802bf724fc23",
+      ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "tests/spec/capture-native/pointer-slot.rs": {
+      ".ref": "49a37ea4a1313fd466f786d9216bc6c4abd8d7f895327824a5d826016ababe3a",
       ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
     },
