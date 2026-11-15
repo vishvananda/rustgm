@@ -1,3 +1,39 @@
+# Latest original-core progress — candidate41
+
+Published2e25fdba4/main synced. Clean optimized41:3967 hashes/empty patch,7m48s,
+CLI1dd358581384e4783248db169ec99cc722c23626609d117d277afffd7a495fdf.
+Actual original v14 core41 CLEARS slice/cmp.rs PartialOrd const closure calls.
+It next FAILS slice/mod.rs:4667/file210:176765, as_simd body (assert_eq borrows
+size_of calls), with `marked function-call promotion requires its actual evaluation
+profile`. Exact marked callee NOT traced yet; don't assume or bypass attribute.
+20.600939011899754s/status1/no timeout/RSS772712KiB; no core.rgm/0-byte core.lowir.
+Postcheck41 terminal PASS722 originals375opens/six reviewedpins/all3967/cleanpin/
+120s/unchanged14500624work/1GiB attempted/64MiB retained. Raw closure-members/
+{build41-release,core-artifact41,artifact-postcheck41}.log +original-library-
+candidate41/. Diagnostic progress only, no artifact/native/speed claim.
+
+NEXT real marked-call promotion profile. body/promote/queries.rs dependencies:
+nonconstructor RvalueCall invokes require_call_promotion_profile then returnsfalse.
+values.rs guard errors on ANY KnownPresent promotable_contract. Need trace actual
+callee, read existing promotion/const-eval policy and source marker contract, then
+reduce in PA25/31. Existing dev/tests/invariants/promotable_headers.rs and
+pa31/tests/spec/source-promotable/ preserve valid runtime+requiredCTFE vs marked
+borrow/profile boundary. Don't merely remove guard or ignore source attribute;
+marked function calls must honor real overflow/effect/failure/borrow/static rules.
+No new reductions or production changes for this frontier yet.
+
+Full43669171589 exact73eec FULLGREEN every stage:3088 debug45.91s; raw
+closure-members/ci43669171589.log (release timing below in raw). Earlier malformed
+signature guard repair verified. ONE successor43672166930 exact2e25fdba4 queued,
+expanded member/Invoke private guard pending; don't duplicate/restart for docs.
+40/capturedreplay RETIRED unavailable per closure-members/retired-pins.json.
+Current41 and memberreplay5bbc391f…a08994 available. Pendingperformance21–24 keep.
+All6 old unannotatedconstclosure prepared-lowering gaps are NOW COMPLETE; all
+other named native/CTFE/adapter/import requirements remain. No coreartifact or
+wholePA25–44 completion;113component unchanged. Sameoneworker/Bonly/mainGit-only/
+2jobs150GiBreserve16GiBcap/frozenbackend17b024f69. This supersedes older NEXT/CI/
+pin and six-case gap classifications below.
+
 # Current continuation — const closure member calls
 
 Checkpoint: shared actual closure contract now permits its own conditional source

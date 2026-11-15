@@ -67,3 +67,23 @@ native qualification. It must finish before a successor is launched.
 Clean optimized41 and an unchanged original-core retry are next. Full original
 metadata/LowIR/native consumers, all other named accepting requirements, whole
 PA25–44 and the separate113-case PA25 component retain their previous status.
+
+Clean optimized41 on published2e25fdba4 confirms the original comparison closure
+blocker is cleared.3967 hashes/empty patch; CLI
+1dd358581384e4783248db169ec99cc722c23626609d117d277afffd7a495fdf;
+7m48s build. Genuine original v14 core41 next rejects `slice/mod.rs:4667`,
+file210:176765, in `as_simd` (which borrows size_of calls through assert_eq), with
+`marked function-call promotion requires its actual evaluation profile`.
+The exact marked callee still needs tracing; no attribute bypass is authorized.
+20.600939011899754s/status1/no timeout/RSS772712KiB; no metadata/zero-byte LowIR.
+Postcheck passes722 originals/375 opens/six reviewed pins/all3967/clean pin/fixed
+120s/unchanged contract limits. Raw `core-artifact41.log`,
+`artifact-postcheck41.log` and `original-library-candidate41/`. Diagnostic progress
+only.40 and captured replay executables are retired/unavailable;41 and member
+replay remain available; performance21–24 pins stay preserved.
+
+Full43669171589 exact73eec244c is entirely green, including release/course,
+maintainer and broad course native, debug invariants, independent Rust and PA25
+component checks.3088 debug tests pass in45.91s. Raw `ci43669171589.log`.
+ONE successor43672166930 exact2e25fdba4 is queued for this member checkpoint;
+its expanded private guard is still pending. Do not duplicate it for docs.
