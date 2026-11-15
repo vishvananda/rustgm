@@ -4,7 +4,8 @@ The [const Try protocol checkpoint](docs/pa25-const-try-calls.md) authenticates
 implicit calls through their existing source plans and preserves residual effect,
 conversion and destruction duties.18 source outcomes, one ordinary opponent and
 ten native programs pass. Original core and unfinished CTFE/bootstrap contracts
-remain required; whole assignments retain their prior planned status.
+remain required; whole assignments retain their prior planned status. Clean37
+clears try_from_fn and reaches the unsafe SlicePartialEq conditional-call fence.
 
 
 The [borrowed const-callable checkpoint](docs/pa25-borrowed-callables.md)

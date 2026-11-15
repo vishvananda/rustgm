@@ -1,5 +1,45 @@
 # RustGM handoff — 2026-11-14
 
+LATEST genuine original: clean candidate37-release on published694738c4e,
+3966 hashes/empty patch,8m27s build. CLI
+811564513e4453f8807b7aa4175056ae6934b9bd399e7c78172caf15aba3781d.
+Original v14 library37 CLEARS try_from_fn/Try-plan fence, then FAILS
+slice/cmp.rs:19/file225:534 in const PartialEq<[U]> for [T], T:[const]PartialEq<U>:
+`const function member lacks its current conditional trait premise`.
+Actual call: unsafe { SlicePartialEq::equal_same_length(self.as_ptr(),
+other.as_ptr(),len) }. SlicePartialEq<B> declares unsafe method with two raw
+pointer inputs; blanket const impl<A:[const]PartialEq<B>,B> for A supplies a
+specializable implementation.21.58684038813226s/status1/no timeout/RSS731712KiB.
+No core.rgm/0-byte core.lowir. Postcheck37 terminal PASS722 originals/375 opens/
+six reviewed pins/all3966/clean pin/fixed120s and unchanged14500624work/1GiB
+attempted/64MiB retained. Raw const-try-calls/{build37-release,core-artifact37,
+artifact-postcheck37}.log and original-library-candidate37/. Diagnostic only,
+no speed claim/native consumers false.
+
+NEXT reduce unsafe generic const member selected through conditional blanket
+impl, paired with safe/direct-premise/ordinary/missing-bound/outside-unsafe/wrong
+application controls. Current provided source request's member_signature requires
+safe Rust; unsafe requests fall back to DefiningCalls exact premise, which cannot
+consume the semantically selected blanket proof. This is a hypothesis to prove
+in reductions, not an instruction to relax all unsafe signatures. Preserve actual
+unsafe source proof, current full call/effect/owner/signature/impl/borrow/Code and
+complete trait applications. Reuse semantic results; no source frontend oracle.
+Earliest ordinary const minima PA25, source roles PA31. No new reduction or
+production edit for this frontier yet.
+
+Published694738c4e/main synced. Fast push43657804335 PASS. ONE prior full
+43656293922 exact8560c4dbb (borrowed product05d1beedd) has passed release/course
+and is running maintainer native; expected3085 private. New Try full successor
+waits for terminal prior run(expected3086). Do not duplicate/cancel/restart.
+No original artifact/wholePA25–44 completion; released113 component unchanged.
+Current clean37, prior36 and Try replay2 ac7bf92e…1e5c4c35 remain; 36 may be
+retired after replacement baseline qualification. Borrowed replay and failed Try
+replay1 binaries are retired/unavailable (const-try-calls/retired-pins.json).
+Pending performance21–24 remain pinned; all older retirement records still apply.
+Same one worker/B only/main Git-only/2jobs150GiB reserve16GiB cap/frozen17b024f69.
+This continuation supersedes older NEXT/current-original/availability statements.
+
+
 LATEST checkpoint: generic const Try protocol calls. Production50-line addition
 in body/constants/provided_calls.rs reuses protocol_plans::checked for actual
 Block/Branch source/gate/role/application/signature/owner/effect, requires exactly

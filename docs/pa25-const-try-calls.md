@@ -73,3 +73,12 @@ reviewed configuration pins/120s/unchanged quotas, then authenticate postcheck.
 There is still no original metadata/LowIR/native consumer artifact. WholePA25–44,
 originalv13/v14, Future/async, all older positive requirements and the separate
 released113-case PA25 component retain their prior status.
+
+Clean release37 on published694738c4e verifies the original try_from_fn/Try-plan
+fence is cleared.3966 hashes/empty patch, CLI81156451…aba3781d,8m27s build.
+Original v14 next rejects slice/cmp.rs:19/file225:534, the unsafe SlicePartialEq
+member call under a conditional PartialEq premise.21.58684038813226s/status1/
+no timeout/RSS731712KiB; no metadata/0-byte LowIR. Postcheck passes722 originals/
+375 opens/six reviewed pins/all3966/clean pin/fixed120s/unchanged limits. No speed
+or artifact claim. Prior full43656293922 passes release/course and is in native
+maintainer qualification; new Try full successor remains pending its terminal.
