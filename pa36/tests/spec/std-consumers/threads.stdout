@@ -1,0 +1,11 @@
+spawned [(0, 669), (1, 560), (2, 525), (3, 508)] total 2262
+shared 8000 17982000 1
+scoped [5239625, 36552125, 99114625, 192927125] 333833500 Some(1000)
+channel 15 [0, 1, 2, 3, 4, 100] Some(204)
+rendezvous [1, 4, 9, 16, 25] served 5
+thread locals [10, 40, 90] main 0
+named Some("worker-seven") main Some("main") distinct ids true
+condvar signalled
+barrier leaders 1 rwlock [0, 8, 16, 24, 32, 40, 48, 56]
+parallelism known true
+joined Some(7)

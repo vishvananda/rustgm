@@ -1,0 +1,40 @@
+empty "" 0 true
+build ">> hello, world" 15 true
+pop Some('d') '>' "> hello, worl"
+retain "> heo,"
+drain ">[" "mid]eo,"
+clear "" true
+len 28 chars 22 upper "GRÜSSE, JÜRGEN ❤ STRASSE"
+lower "àéî σ όσος i\u{307}" ascii "GRüßE, JüRGEN ❤ STRAßE"
+replace "Grueße, Juergen ❤ straße" "GRüße, Jürgen ❤ straße" ""
+repeat "ababab" ""
+reversed "eßarts ❤ negrüJ ,eßürG"
+split ["Grüße,", "Jürgen", "❤", "straße"] "Grüße,+Jürgen+❤+straße" 25
+initials "GJ❤s" "The Quick Brown-Fox SStraße"
+normalize "a_b_c" "plain"
+cow x_y! true lit 4
+rle "3ab2c5de" "" "3é!"
+to_string 42 -7 2.5 c true
+to_string 39 str 0.0000001
+parse Ok("12!") Ok("1.5") Err("invalid digit found in string")
+utf8 Ok("❤") Err(0)
+lossy "ok��!" true
+utf16 Ok("H😀") true "a�"
+bytes 28 [71, 114, 195, 188] 795
+boxed 28 true true
+from slice abc xyz 12 q
+extend 0123456789
+write "w-007-Some(\"x\")   1.5|\n✓"
+compare true true true Greater
+concat abcd
+ 1: one
+ 2: two
+ 3: 
+ 4: four
+find Some(9) Some((4, 'ß')) Some((7, 19))
+trim "x" "ab"
+capacity true true a
+big 2000 "opqrstuvwx" 76
+chunks [700, 700, 600] true
+escape tab\t\"quote\" é\n \u{e9}
+heap: 0 blocks, 0 bytes live

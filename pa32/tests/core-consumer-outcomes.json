@@ -1,0 +1,318 @@
+{
+  "schema": 1,
+  "stage": "planned",
+  "rung": "M1: core plus a no_std consumer runs natively",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "oracle": "scripts/consumer_oracle.py: rustc 1.98.0 with opt-level 0, overflow checks, panic=abort and std rebuilt from the pinned library sources; a second build at opt-level 2 must print the same bytes",
+  "expectation_frozen_before_candidate": true,
+  "entry": "#![no_std] #![no_main]; an unmangled C `main`; a panic handler that aborts; libc `write` and `abort` only",
+  "run": {
+    "working_directory": "fresh and empty; the program must leave it empty",
+    "environment": "only the declared variables",
+    "repeats": 3
+  },
+  "status": "an exit status, or \"abort\": rustc output dies of SIGABRT; RustGM's course runtime reports exit status 134",
+  "stderr": "the exact text, or {\"contains\": [...]} when the text names a thread id or source path",
+  "cases": [
+    {
+      "name": "option-result",
+      "path": "tests/spec/core-consumers/option-result.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/core-consumers/option-result.stdout",
+      "features": [
+        "Option and Result combinators",
+        "the ? operator",
+        "derived Debug"
+      ],
+      "source_sha256": "d2a53a8e454ba17e1534850db4e2e6594252acb340ea4fb411b61ddcfd23aca0",
+      "stdout_sha256": "157ad6a64ae95be6fadc3c555ecd95e83df0af3f4eeb84422866b0c9969bd234"
+    },
+    {
+      "name": "slices",
+      "path": "tests/spec/core-consumers/slices.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/core-consumers/slices.stdout",
+      "features": [
+        "slice methods and iterators",
+        "slice patterns",
+        "binary search"
+      ],
+      "source_sha256": "16bf03fc668333f8e7ecf3c34a1f6cc5de2709c785c10bf8c5460e41551dd64f",
+      "stdout_sha256": "827fe6e3de4e3d33f0bfef2eb3ff38c79261d383f143462b272a93bb5c523767"
+    },
+    {
+      "name": "iterators",
+      "path": "tests/spec/core-consumers/iterators.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/core-consumers/iterators.stdout",
+      "features": [
+        "iterator adapters and consumers",
+        "ranges",
+        "custom and dyn iterators"
+      ],
+      "source_sha256": "d4afeda69af55d739c698368aa4cc186eed7a7dbc23ce9d6cfd641bbc3a5927b",
+      "stdout_sha256": "3206bcb61a26c66c88f245105bb5743da6eb7d67ce5da5943577d4f55f3dd4f3"
+    },
+    {
+      "name": "fmt-integers",
+      "path": "tests/spec/core-consumers/fmt-integers.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/core-consumers/fmt-integers.stdout",
+      "features": [
+        "integer, char, str and bool formatting",
+        "width, fill, precision and radix",
+        "Debug builders and pretty printing",
+        "u128 formatting"
+      ],
+      "source_sha256": "4d4f096bc184824e8cfae1c1b80844b1ec0772de53e20e7cb5daef1d7ea257fd",
+      "stdout_sha256": "d2faae016b03a684f0e009ae2d143276ee313a3b2b26a5519c3605c0f8371270"
+    },
+    {
+      "name": "fmt-floats",
+      "path": "tests/spec/core-consumers/fmt-floats.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/core-consumers/fmt-floats.stdout",
+      "features": [
+        "float formatting and parsing",
+        "float arithmetic and classification",
+        "float and integer casts including i128"
+      ],
+      "source_sha256": "de8d553597312f8ecf5ff48dd6d3a1032624a3126aefea4b83b10cee69e6328b",
+      "stdout_sha256": "4e9cba28069acea74a12ed560ed8a9df53924b37558b0e389c925ccbe9d5311a"
+    },
+    {
+      "name": "conversions",
+      "path": "tests/spec/core-consumers/conversions.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/core-consumers/conversions.stdout",
+      "features": [
+        "From, Into, TryFrom and FromStr",
+        "integer parsing errors",
+        "UTF-8 and UTF-16 conversion",
+        "NonZero, Wrapping and Saturating"
+      ],
+      "source_sha256": "0ed0c78ec655b8c03ffe3661b03378810dc167b4d4933cbc3c6dd747cd2ba9e1",
+      "stdout_sha256": "5f712a89771014033448252a8931aca658ef980f69fe8d3b19d11630ed00d1f4"
+    },
+    {
+      "name": "consts-statics",
+      "path": "tests/spec/core-consumers/consts-statics.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/core-consumers/consts-statics.stdout",
+      "features": [
+        "const items and const fn",
+        "statics and static mut",
+        "const generics and associated consts",
+        "inline const and promotion"
+      ],
+      "source_sha256": "6838fb731525043f974d3e1f2c7be233e76b32799a2269291e8b8be1bf9aee34",
+      "stdout_sha256": "61c0ede207e4c7ecf3d7b47180fc82f99220e71b8913b9af2b2585c8e626189f"
+    },
+    {
+      "name": "atomics",
+      "path": "tests/spec/core-consumers/atomics.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/core-consumers/atomics.stdout",
+      "features": [
+        "atomic integers of 8, 16, 32 and 64 bits, usize, bool and pointer",
+        "every ordering",
+        "compare-exchange strong and weak",
+        "fence and spin loop"
+      ],
+      "source_sha256": "394fe851514955c9080fd0cb420553036d06cc586bb3872ed6940af46b8f52d0",
+      "stdout_sha256": "a83625f1f99e3074cca6d8efcf84e42c5255b1db7a7ca3fba3dd7875fbd31300"
+    },
+    {
+      "name": "sorting",
+      "path": "tests/spec/core-consumers/sorting.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/core-consumers/sorting.stdout",
+      "features": [
+        "sort_unstable family and select_nth_unstable",
+        "Ord, PartialOrd and Reverse",
+        "generic sorts through closures"
+      ],
+      "source_sha256": "8ca6c14ea0e5fe126da1c3c06ae4e92bae3c21db935d02626bbf30838fc085d3",
+      "stdout_sha256": "9ea4556a8048904e58734de2e722f6cc91eaad2f51d15d496bd12da71a0785cd"
+    },
+    {
+      "name": "chars-strs",
+      "path": "tests/spec/core-consumers/chars-strs.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/core-consumers/chars-strs.stdout",
+      "features": [
+        "char classification and case mapping",
+        "str search, split and trim",
+        "non-ASCII text",
+        "substring search that takes the SSE2 path"
+      ],
+      "source_sha256": "81a65c47e440bd206f2db3f893cf1eaa221c0a8ba7774419b1cdca4d593e5001",
+      "stdout_sha256": "2612a83c60d129baf50f1a516bc127f4bd6ad95a78e1946f5e6056370db168c5"
+    },
+    {
+      "name": "traits-generics",
+      "path": "tests/spec/core-consumers/traits-generics.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/core-consumers/traits-generics.stdout",
+      "features": [
+        "trait objects and supertraits",
+        "operator traits",
+        "Hash and Hasher",
+        "closures, fn pointers and impl Trait",
+        "drop order"
+      ],
+      "source_sha256": "31411e3c972db93beac8c974b13bf039887ce63eefdbc97815955fb0c47a3bf8",
+      "stdout_sha256": "de73b16626f521fb0347be7b5f1b63cbbad12abe07cb7643229de78600cb69a9"
+    },
+    {
+      "name": "cells-mem",
+      "path": "tests/spec/core-consumers/cells-mem.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/core-consumers/cells-mem.stdout",
+      "features": [
+        "Cell, RefCell, OnceCell and LazyCell",
+        "mem and ptr functions",
+        "MaybeUninit, unions and transmute",
+        "type sizes, alignments and field offsets"
+      ],
+      "source_sha256": "a2832410bd3289110de757b1cfc16d1b8afbccab136a261b2931a79f0cd82d05",
+      "stdout_sha256": "40d8f0142471da4cee33381c743ce3049d0f440987f981f5957676904bc4d16a"
+    },
+    {
+      "name": "integers",
+      "path": "tests/spec/core-consumers/integers.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/core-consumers/integers.stdout",
+      "features": [
+        "checked, wrapping, saturating and overflowing arithmetic",
+        "bit operations",
+        "u128 and i128 arithmetic including division"
+      ],
+      "source_sha256": "abb254cb2cc75161fd85faa7a72278cf71793f7a25b1b5513fe2847ce6059e3f",
+      "stdout_sha256": "0ab4d4e0278e366b81e2cc34e1acdb8f1a384a63282d5c4d9b3f58661b1789a6"
+    },
+    {
+      "name": "patterns-ranges",
+      "path": "tests/spec/core-consumers/patterns-ranges.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/core-consumers/patterns-ranges.stdout",
+      "features": [
+        "match patterns, guards and bindings",
+        "let-else and let chains",
+        "labelled loops and blocks",
+        "range types and bounds",
+        "recursion"
+      ],
+      "source_sha256": "c7a790d40fde6fc1babe330adb95cb7327df6a377801533300a5317bf734ad81",
+      "stdout_sha256": "6f09139f4824b11373a1ae612e154c7c845c0fa1d2ac4cd16d008f2867330e36"
+    },
+    {
+      "name": "duration-net",
+      "path": "tests/spec/core-consumers/duration-net.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/core-consumers/duration-net.stdout",
+      "features": [
+        "Duration arithmetic and formatting",
+        "IP and socket address formatting and parsing"
+      ],
+      "source_sha256": "86d76ade08c026bd6ed71836991d78f7219de48d06ac7cd4140e95486815d4f0",
+      "stdout_sha256": "93cc7b13e72857e27f27e4eeef70f32853d888c5d298c888ec53a25979f40a2f"
+    },
+    {
+      "name": "panic-index",
+      "path": "tests/spec/core-consumers/panic-index.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": "abort",
+      "stderr": "",
+      "stdout": "tests/spec/core-consumers/panic-index.stdout",
+      "features": [
+        "bounds-check panic",
+        "panic handler",
+        "abort"
+      ],
+      "source_sha256": "d20d594eacf15cfc7453d6a1bec2a1292d7bf5d2017b28dc1abf68da744edf63",
+      "stdout_sha256": "2f61bb23264ee84297c54ccfdac360451a5cccb7913f45ab37dcf11a64e99c3d"
+    },
+    {
+      "name": "panic-overflow",
+      "path": "tests/spec/core-consumers/panic-overflow.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": "abort",
+      "stderr": "",
+      "stdout": "tests/spec/core-consumers/panic-overflow.stdout",
+      "features": [
+        "overflow-check panic",
+        "panic handler",
+        "abort"
+      ],
+      "source_sha256": "4736bf26731fa57df53e51085dc846ee27997de290c3060c838c43ea94ea5780",
+      "stdout_sha256": "01df093a303a3904ef31e027a208e8e57734f205601bc72303df5991dc4ea328"
+    }
+  ]
+}

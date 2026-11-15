@@ -1,0 +1,51 @@
+'a' 97 alpha=true num=false alnum=true ws=false upper=false lower=true ctrl=false ascii=true len=1
+'Z' 90 alpha=true num=false alnum=true ws=false upper=true lower=false ctrl=false ascii=true len=1
+'7' 55 alpha=false num=true alnum=true ws=false upper=false lower=false ctrl=false ascii=true len=1
+' ' 32 alpha=false num=false alnum=false ws=true upper=false lower=false ctrl=false ascii=true len=1
+'\n' 10 alpha=false num=false alnum=false ws=true upper=false lower=false ctrl=true ascii=true len=1
+'é' 233 alpha=true num=false alnum=true ws=false upper=false lower=true ctrl=false ascii=false len=2
+'ß' 223 alpha=true num=false alnum=true ws=false upper=false lower=true ctrl=false ascii=false len=2
+'Σ' 931 alpha=true num=false alnum=true ws=false upper=true lower=false ctrl=false ascii=false len=2
+'中' 20013 alpha=true num=false alnum=true ws=false upper=false lower=false ctrl=false ascii=false len=3
+'😀' 128512 alpha=false num=false alnum=false ws=false upper=false lower=false ctrl=false ascii=false len=4
+'\u{301}' 769 alpha=false num=false alnum=false ws=false upper=false lower=false ctrl=false ascii=false len=2
+'٣' 1635 alpha=false num=true alnum=true ws=false upper=false lower=false ctrl=false ascii=false len=2
+case a>A/a Z>Z/z ß>SS/ß ǆ>Ǆ/ǆ İ>İ/i̇ Σ>Σ/σ ﬁ>FI/ﬁ 1>1/1
+ascii Q q false true true false
+digit Some(9) Some(35) None None
+escape \n \u{e9} \" \u{e9}
+order true '\u{10ffff}' Some('d')
+len 43 words 9 chars 43
+find Some(16) Some(4) Some(31) None
+find Some(0) Some(37)
+contains true false true false
+affix true false Some("quick brown fox jumps over the lazy dog") None
+slice "quick" Some("dog") None
+split quick brown jumps
+rsplit [dog] [lazy] [The quick brown fox jumps over the]
+split_once Some(("key", "value=more")) Some(("key=value", "more")) None
+csv <a> <b> <> <d> <> (a) (b) () (d)
+multi one two three four a b c 1. . 2. . . 3
+lines 0:"first" 1:"second" 2:"" 3:"fourth"
+trim "padded" "padded  " "hi" "7"
+matches 2 Some(5)
+rmatch Some((4, "bc"))
+palindrome true false true
+cmp Less false true true
+parse Ok(42) true Ok(-7)
+unicode len 32 chars 19 words 5
+indices 1:é 8:ö 14:∑ 18:日 21:本 24:語 28:😀
+boundary true false None Some("é")
+rev 😀 語本日 ∑ dlröw olléh
+bytes 20 [c3, a9, e2, 88, 91, f0, 9f, 98, 80]
+find Some(14) Some(18) true
+utf16 20 Some(55357)
+escape tab\t\"q\" é | \u{e9}\n | \u{61}\u{62}
+ascii false true Some(true)
+long Some(40) Some(40) 2
+caesar Khoor, Zruog!
+upper KHOOR, ZRUOG! ("KHOOR", ", ZRUOG!")
+lossy "ok"+1 "bad"+2 "tail"+0
+empty true None 1 0
+repeat-free Some((2, 'c')) Some(('b', 'y'))
+bytes eq true true

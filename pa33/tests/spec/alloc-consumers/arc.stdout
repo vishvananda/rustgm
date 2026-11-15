@@ -1,0 +1,22 @@
+counts 2 1 true true
+upgrade Some(6) 2 1
+try_unwrap Err(2)
+unwrapped Ok("shared") None 0
+make_mut [1, 2, 3, 4] [1, 2, 3] false
+get_mut true false
+into_inner None Some([1, 2, 3])
+atomic 36 9
+after drop 1
+plugins ["doubler", "offset", "doubler", "offset"] 55 15
+calls 4 3
+released 1
+guard false Some(3)
+guard true None 0
+intern alpha beta true false 3
+unsized [1, 2, 3] ["0", "1", "2"] from string 6
+callable 4 0
+cyclic 4 Some(4) 1
+raw 123 2 1
+ordered [1, 2, 3] 2 true
+dangling None 0
+heap: 0 blocks, 0 bytes live

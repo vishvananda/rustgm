@@ -1,0 +1,16 @@
+12 "const str" [1, 4, 16, 64] 2880067194370816120
+265252859812191058636308480000000 6765
+crc 00000000 cbf43926 d39cc0d5
+table 77073096 edb88320 2d02ef8d
+squares [0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121] 3
+config default 3 0.5
+config eager 9 0.5
+names ["zero", "one", "two"] zero 3
+assoc 2 4 5 11
+generic 32 104
+yes 4 None -8 5.75 'd'
+(7, true, "const str") [104, 101, 108, 108, 111] 14
+inline 4 67 8
+promoted [10, 20, 30] three
+limits 255 -32768 32 64
+static mut [4, 42, 3, 1]

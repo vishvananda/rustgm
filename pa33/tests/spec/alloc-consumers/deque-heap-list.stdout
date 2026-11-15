@@ -1,0 +1,24 @@
+deque [-1, 0, 1, 2] 4 Some(-1) Some(2)
+index 0 Some(2) None true
+pop Some(-1) Some(2) [0, 1]
+ring [44, 45, 46, 47, 48, 49] 279
+rotate [46, 47, 48, 49, 44, 45]
+sorted [49, 48, 47, 46, 45, 44] [49, 48, 47, 46, 45, 44]
+insert [49, 100, 48, 47, 46, 45, 44, 1, 2, 3]
+remove Some(49) Some(100) [3, 48, 47, 46, 45, 44, 1, 2]
+retain [3, 47, 45, 1] [1, 45, 47, 3]
+drain [47, 45, 1] [3, 94, 90, 2] [94, 90]
+convert ['a', 'b', 'c'] ['a', 'b', 'c'] true "abc"
+mix [5, 6, 7, 8, 9, 0, 1, 2, 3, 4] Some(5)
+maze Some(10) None
+heap 7 Some(9) [1, 2, 3, 5, 8, 8, 9]
+popped [9, 8, 8, 5, 3, 2, 1] true
+min-heap [3, 4, 7] Some(Reverse(8))
+tasks 5:review 2:write 2:test 1:fix
+top [16771479, 16761778, 16755933, 16750480, 16738410]
+dijkstra [Some(0), Some(7), Some(9), Some(20), Some(20), Some(11), None]
+list ["a", "b", "c"] 3 Some("a") Some("c")
+split ["a", "b", "c"] ["x", "y"] true
+pop Some("a") Some("c") ["B"] true
+fold {1: 3} ["y", "x"]
+heap: 0 blocks, 0 bytes live

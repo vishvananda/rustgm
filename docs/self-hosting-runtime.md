@@ -119,4 +119,76 @@ Largest demanded modules by source functions: `core::num` 431, `core::iter`
 
 ### Milestone corpora
 
-Pending the consumer programs below.
+The same analysis over the consumer programs below, one directory per rung
+(`obj/parallel/demand/m1` to `m4`). Counts are functions + closures.
+
+| Corpus | Programs | Instances (linked) | core | alloc | std | Other crates |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| m1 | 17 | 8,454 (8,339) | 2,369 + 161 | 0 | 0 | compiler_builtins 38 |
+| m2 | 12 | 23,021 (22,920) | 1,705 + 109 | 976 + 101 | 0 | none |
+| m3 | 14 | 18,191 (18,110) | 2,028 + 112 | 457 + 26 | 1,332 + 218 | hashbrown 182 + 14, compiler_builtins 125 + 8 |
+| m4 | 4 | 7,547 (7,443) | 1,333 + 76 | 357 + 21 | 376 + 55 | tinyvec 94 + 2, unicode_normalization 66 + 12, unicode_ident 2 |
+
+The consumers reach 3,658 of the 4,209 core, alloc and std functions and
+closures RustGM itself demands (87%): 1,690 after M1, 2,572 after M2, 3,645
+after M3. By crate: core 2,204 of 2,606; alloc 698 of 764; std 756 of 839;
+hashbrown 190 of 237. The uncovered remainder is mostly more instances of the
+same families (`core::iter` 92, `core::num` 69, `core::cmp` 52,
+`std::collections` 46).
+
+## Consumer programs
+
+Each rung has a directory of single-file programs, an outcomes file and one
+`NAME.stdout` per program. The outcomes file declares arguments, environment,
+standard input, exit status and standard error per program; it was written
+before any output was recorded.
+
+| Rung | Programs | Outcomes | Count |
+| --- | --- | --- | ---: |
+| M1 | `pa32/tests/spec/core-consumers/` | `pa32/tests/core-consumer-outcomes.json` | 17 |
+| M2 | `pa33/tests/spec/alloc-consumers/` | `pa33/tests/alloc-consumer-outcomes.json` | 12 |
+| M3 | `pa36/tests/spec/std-consumers/` | `pa36/tests/std-consumer-outcomes.json` | 14 |
+| M4 | `pa35/tests/spec/unicode-consumers/` | `pa35/tests/unicode-consumer-outcomes.json` | 4 |
+
+```sh
+python3 scripts/resources.py run --wait-seconds 600 --max-output-gib 16 -- \
+  /usr/bin/python3 scripts/storage.py run --max-output-gib 16 --no-prune -- \
+  python3 scripts/consumer_oracle.py m1 m2 m3 m4
+```
+
+`scripts/consumer_oracle.py` builds each rung twice with rustc 1.98.0: the
+course profile with std rebuilt from the pinned sources, and opt-level 2 (the
+toolchain's prebuilt std for M3 and M4, rebuilt core and alloc for M1 and M2).
+It runs every program three times per build in a fresh empty directory with
+only the declared environment. All six runs must meet the declared status and
+standard error and print identical bytes. `--record` writes the `.stdout` files
+and hashes and refuses when a declaration is not met. All 47 programs pass in
+check mode.
+
+Conventions the frontier needs:
+
+- **M1** programs are `#![no_std] #![no_main]`. They export an unmangled C
+  `main`, format through `core::fmt::Write` into a 256-byte buffer and call
+  only libc `write` and `abort`. The panic handler aborts without printing.
+- **M2** programs add `extern crate alloc` and a `#[global_allocator]` over
+  libc `malloc`, `posix_memalign` and `free`. It counts live blocks and bytes,
+  and every program's last line is `heap: N blocks, M bytes live`, so a leak or
+  double free changes the output.
+- **M3** and **M4** programs are ordinary `fn main` programs. M4 links the
+  compiler's own locked dependencies; the oracle fails if Cargo resolves any
+  other version.
+- An aborting program is declared `"status": "abort"`. rustc's binary dies of
+  SIGABRT; RustGM's course runtime reports exit status 134.
+- Atomics have their own M1 program (`atomics.rs`). 128-bit arithmetic is in
+  `integers.rs`, `fmt-integers.rs` and `fmt-floats.rs`. `chars-strs.rs`
+  reaches the SSE2 substring search. `threads.rs` is the only program that
+  spawns threads.
+- Output never depends on hash iteration order, addresses, time or thread
+  scheduling. `float-math.rs` prints libm results to twelve significant digits.
+
+The stages stay planned: there is no `manifest.json`, `scripts/course.py` still
+fails for PA32, PA33, PA35 and PA36, and `make test-harness` passes.
+`scripts/tests/test_consumer_oracle.py` keeps declarations, sources and recorded
+output consistent without building anything. Nothing runs these programs
+through RustGM yet; that needs a runner that compares standard output (today's
+native check rejects any output).

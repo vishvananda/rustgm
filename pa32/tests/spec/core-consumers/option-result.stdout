@@ -1,0 +1,31 @@
+map Some(21) None
+and_then Some(40) None
+or Some(7) Some(8) Some(20)
+unwrap_or 5 6 0
+filter Some(20) None
+zip Some((20, 'z')) None
+ok_or Ok(20) Err("none")
+map_or 60 -1
+is true true false
+take Some(3) None
+replace None Some(9)
+get_or_insert Some(10)
+get_or_insert_with Some(42)
+as_mut Some(100) as_ref Some(101)
+flatten Some(4) copied Some(6)
+transpose Ok(Some(12))
+iter 1 20
+parse "42" -> Ok(42)
+parse "" -> Err(Empty)
+parse "25x" -> Err(BadDigit(120))
+parse "256" -> Err(Overflow)
+parse "255" -> Ok(255)
+sum Ok(300) Err(BadDigit(63)) Err(Empty)
+result map Ok(6) Err(Empty)
+map_err Err(true)
+and_then Ok(12) Err(Empty)
+or_else Ok(77) unwrap_or 1
+ok Some(3) err Some(Empty) None
+is true false true
+sum results Ok(6) Err(BadDigit(120))
+sum options None Some(10)

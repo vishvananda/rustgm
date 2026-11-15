@@ -1,0 +1,19 @@
+square:16 shape:21 square:1 total 38
+largest 25 shape
+blanket small big
+ops Vec2 { x: 16, y: 24 } -5 16 24 Flags(90)
+derive false false Vec2 { x: 0, y: 0 } Vec2 { x: 3, y: -4 } Greater
+hash 9fc18cd90cb4d2b1 fc182483ee0806dc true
+hash f6a2186ad0144c2f 2c0945c714317276 1a2742e842fb0203
+stack Ok(()) Ok(()) Ok(()) Err(8)
+stack Some(7) Some(5) 8 9
+phantom 2.5 8
+drop order 25431
+closures 49 17 21
+closures 30 5 1
+compose 12 0 true false
+triple=-18 negate=-2 abs=2 
+dyn 101 1 2
+impl iter 5 Some(8)
+dog says woof / dog woof
+sizes 16 8 48

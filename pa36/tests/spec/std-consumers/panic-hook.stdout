@@ -1,0 +1,3 @@
+parsed 42
+before the panic
+hook: Some("the text was not a number: ParseIntError { kind: InvalidDigit }") at Some((true, 6, 18))

@@ -66,7 +66,9 @@ PROFILE = {
 RUSTFLAGS = ['-Csymbol-mangling-version=v0', '-Cno-prepopulate-passes',
              '--emit=llvm-ir', '-Zprint-mono-items', '--print=link-args']
 BUILD_STD = ['-Zbuild-std=std,panic_abort', '-Zbuild-std-features=']
-UNICODE = {'unicode-ident': '=1.0.24', 'unicode-normalization': '=0.1.25'}
+# The compiler's own locked dependencies; tinyvec as unicode-normalization enables it.
+UNICODE = {'unicode-ident': '"=1.0.24"', 'unicode-normalization': '"=0.1.25"',
+           'tinyvec': '{ version = "=1.10.0", features = ["alloc"] }'}
 CORPORA = {
     'rustgm': {'manifest': 'dev/Cargo.toml', 'bins': ['rustgm'], 'own': ['rustgm']},
     'm1': {'programs': 'pa32/tests/spec/core-consumers'},
@@ -74,6 +76,10 @@ CORPORA = {
     'm3': {'programs': 'pa36/tests/spec/std-consumers'},
     'm4': {'programs': 'pa35/tests/spec/unicode-consumers', 'dependencies': UNICODE},
 }
+# Crate names a consumer program must not reuse: the std graph and unicode-normalization's tinyvec_macros.
+LIBRARY_CRATES = {'alloc', 'cfg_if', 'compiler_builtins', 'core', 'hashbrown', 'libc', 'panic_abort',
+                  'panic_unwind', 'proc_macro', 'rustc_demangle', 'rustc_std_workspace_alloc',
+                  'rustc_std_workspace_core', 'std', 'std_detect', 'test', 'tinyvec_macros', 'unwind'}
 LINKAGES = {'internal', 'private', 'hidden', 'weak', 'weak_odr', 'linkonce_odr', 'protected'}
 ORDERINGS = {'unordered': 'Unordered', 'monotonic': 'Relaxed', 'acquire': 'Acquire',
              'release': 'Release', 'acq_rel': 'AcqRel', 'seq_cst': 'SeqCst'}
@@ -211,8 +217,11 @@ def program_package(name, corpus):
         raise SystemExit(f'{name}: no programs under {corpus["programs"]}')
     lines = ['[package]', f'name = "demand-{name}"', 'version = "0.0.0"', 'edition = "2024"',
              'publish = false', '', '[workspace]', '', '[dependencies]']
-    lines += [f'{crate} = "{version}"' for crate, version in corpus.get('dependencies', {}).items()]
+    lines += [f'{crate} = {requirement}' for crate, requirement in corpus.get('dependencies', {}).items()]
+    taken = LIBRARY_CRATES | {crate.replace('-', '_') for crate in corpus.get('dependencies', {})}
     for program in programs:
+        if program.stem.replace('-', '_') in taken:
+            raise SystemExit(f'{name}: {program.name} would shadow a library crate; rename it')
         lines += ['', '[[bin]]', f'name = "{program.stem}"', f'path = "{program}"']
     (folder / 'Cargo.toml').write_text('\n'.join(lines) + '\n')
     if corpus.get('dependencies') and not (folder / 'Cargo.lock').exists():
@@ -254,8 +263,24 @@ def build(name, corpus, pin, library):
                                 stderr=subprocess.STDOUT, check=False).returncode
     if status:
         raise SystemExit(f'{name}: cargo build failed with status {status}; see {log}')
+    if corpus.get('dependencies'):
+        check_lock(name, manifest.with_name('Cargo.lock'))
     folder = WORK / 'target' / TARGET / 'debug'
     return [folder / item for item in bins], command
+
+
+def locked_packages(path):
+    """Registry packages of a lockfile as {name: (version, checksum)}."""
+    return {package['name']: (package['version'], package.get('checksum'))
+            for package in tomllib.loads(path.read_text()).get('package', []) if 'source' in package}
+
+
+def check_lock(name, lock):
+    """A consumer package must resolve to exactly the compiler's locked dependencies."""
+    ours, theirs = locked_packages(lock), locked_packages(ROOT / 'dev/Cargo.lock')
+    if ours != theirs:
+        raise SystemExit(f'{name}: {lock} resolves {sorted(ours.items())}, '
+                         f'not dev/Cargo.lock\'s {sorted(theirs.items())}')
 
 
 # ---------------------------------------------------------------- crate graph

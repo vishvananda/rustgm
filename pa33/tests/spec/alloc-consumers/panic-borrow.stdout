@@ -1,0 +1,4 @@
+drop scoped
+len 1
+len 2
+before the conflicting borrow

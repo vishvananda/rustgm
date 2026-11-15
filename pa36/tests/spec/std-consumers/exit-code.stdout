@@ -1,0 +1,3 @@
+success true failure true
+unit reports true
+exit code 42drop main guard

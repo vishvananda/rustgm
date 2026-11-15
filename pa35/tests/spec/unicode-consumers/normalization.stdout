@@ -1,0 +1,83 @@
+ascii: "plain ASCII text" [0070 006C 0061 0069 006E 0020 0041 0053 0043 0049 0049 0020 0074 0065 0078 0074]
+  nfc  "plain ASCII text" [0070 006C 0061 0069 006E 0020 0041 0053 0043 0049 0049 0020 0074 0065 0078 0074] true
+  nfd  "plain ASCII text" [0070 006C 0061 0069 006E 0020 0041 0053 0043 0049 0049 0020 0074 0065 0078 0074] true
+  nfkc "plain ASCII text" [0070 006C 0061 0069 006E 0020 0041 0053 0043 0049 0049 0020 0074 0065 0078 0074] true
+  nfkd "plain ASCII text" [0070 006C 0061 0069 006E 0020 0041 0053 0043 0049 0049 0020 0074 0065 0078 0074] true
+  round trips true
+precomposed: "é Å ñ ü" [00E9 0020 00C5 0020 00F1 0020 00FC]
+  nfc  "é Å ñ ü" [00E9 0020 00C5 0020 00F1 0020 00FC] true
+  nfd  "e\u{301} A\u{30a} n\u{303} u\u{308}" [0065 0301 0020 0041 030A 0020 006E 0303 0020 0075 0308] false
+  nfkc "é Å ñ ü" [00E9 0020 00C5 0020 00F1 0020 00FC] true
+  nfkd "e\u{301} A\u{30a} n\u{303} u\u{308}" [0065 0301 0020 0041 030A 0020 006E 0303 0020 0075 0308] false
+  round trips true
+decomposed: "e\u{301} A\u{30a} n\u{303}" [0065 0301 0020 0041 030A 0020 006E 0303]
+  nfc  "é Å ñ" [00E9 0020 00C5 0020 00F1] false
+  nfd  "e\u{301} A\u{30a} n\u{303}" [0065 0301 0020 0041 030A 0020 006E 0303] true
+  nfkc "é Å ñ" [00E9 0020 00C5 0020 00F1] false
+  nfkd "e\u{301} A\u{30a} n\u{303}" [0065 0301 0020 0041 030A 0020 006E 0303] true
+  round trips true
+ordering: "q\u{307}\u{323} a\u{315}\u{300}\u{5ae}\u{300}b" [0071 0307 0323 0020 0061 0315 0300 05AE 0300 0062]
+  nfc  "q\u{323}\u{307} à\u{5ae}\u{300}\u{315}b" [0071 0323 0307 0020 00E0 05AE 0300 0315 0062] false
+  nfd  "q\u{323}\u{307} a\u{5ae}\u{300}\u{300}\u{315}b" [0071 0323 0307 0020 0061 05AE 0300 0300 0315 0062] false
+  nfkc "q\u{323}\u{307} à\u{5ae}\u{300}\u{315}b" [0071 0323 0307 0020 00E0 05AE 0300 0315 0062] false
+  nfkd "q\u{323}\u{307} a\u{5ae}\u{300}\u{300}\u{315}b" [0071 0323 0307 0020 0061 05AE 0300 0300 0315 0062] false
+  round trips true
+hangul: "한글 한 각" [D55C AE00 0020 1112 1161 11AB 0020 AC01]
+  nfc  "한글 한 각" [D55C AE00 0020 D55C 0020 AC01] false
+  nfd  "한글 한 각" [1112 1161 11AB 1100 1173 11AF 0020 1112 1161 11AB 0020 1100 1161 11A8] false
+  nfkc "한글 한 각" [D55C AE00 0020 D55C 0020 AC01] false
+  nfkd "한글 한 각" [1112 1161 11AB 1100 1173 11AF 0020 1112 1161 11AB 0020 1100 1161 11A8] false
+  round trips true
+compatibility: "ﬁ ² ㎏ Ⅷ ｶ \u{ff9e} ℌ ①" [FB01 0020 00B2 0020 338F 0020 2167 0020 FF76 0020 FF9E 0020 210C 0020 2460]
+  nfc  "ﬁ ² ㎏ Ⅷ ｶ \u{ff9e} ℌ ①" [FB01 0020 00B2 0020 338F 0020 2167 0020 FF76 0020 FF9E 0020 210C 0020 2460] true
+  nfd  "ﬁ ² ㎏ Ⅷ ｶ \u{ff9e} ℌ ①" [FB01 0020 00B2 0020 338F 0020 2167 0020 FF76 0020 FF9E 0020 210C 0020 2460] true
+  nfkc "fi 2 kg VIII カ \u{3099} H 1" [0066 0069 0020 0032 0020 006B 0067 0020 0056 0049 0049 0049 0020 30AB 0020 3099 0020 0048 0020 0031] false
+  nfkd "fi 2 kg VIII カ \u{3099} H 1" [0066 0069 0020 0032 0020 006B 0067 0020 0056 0049 0049 0049 0020 30AB 0020 3099 0020 0048 0020 0031] false
+  round trips true
+singletons: "Ω K Å Å Ω" [03A9 0020 004B 0020 00C5 0020 212B 0020 2126]
+  nfc  "Ω K Å Å Ω" [03A9 0020 004B 0020 00C5 0020 00C5 0020 03A9] false
+  nfd  "Ω K A\u{30a} A\u{30a} Ω" [03A9 0020 004B 0020 0041 030A 0020 0041 030A 0020 03A9] false
+  nfkc "Ω K Å Å Ω" [03A9 0020 004B 0020 00C5 0020 00C5 0020 03A9] false
+  nfkd "Ω K A\u{30a} A\u{30a} Ω" [03A9 0020 004B 0020 0041 030A 0020 0041 030A 0020 03A9] false
+  round trips true
+exclusions: "क़ יִ ⫝̸" [0958 0020 FB1D 0020 2ADC]
+  nfc  "क\u{93c} י\u{5b4} ⫝\u{338}" [0915 093C 0020 05D9 05B4 0020 2ADD 0338] false
+  nfd  "क\u{93c} י\u{5b4} ⫝\u{338}" [0915 093C 0020 05D9 05B4 0020 2ADD 0338] false
+  nfkc "क\u{93c} י\u{5b4} ⫝\u{338}" [0915 093C 0020 05D9 05B4 0020 2ADD 0338] false
+  nfkd "क\u{93c} י\u{5b4} ⫝\u{338}" [0915 093C 0020 05D9 05B4 0020 2ADD 0338] false
+  round trips true
+mixed: "Åström ﬁancé 한국어 x\u{303}\u{304}" [00C5 0073 0074 0072 00F6 006D 0020 FB01 0061 006E 0063 00E9 0020 D55C AD6D C5B4 0020 0078 0303 0304]
+  nfc  "Åström ﬁancé 한국어 x\u{303}\u{304}" [00C5 0073 0074 0072 00F6 006D 0020 FB01 0061 006E 0063 00E9 0020 D55C AD6D C5B4 0020 0078 0303 0304] true
+  nfd  "A\u{30a}stro\u{308}m ﬁance\u{301} 한국어 x\u{303}\u{304}" [0041 030A 0073 0074 0072 006F 0308 006D 0020 FB01 0061 006E 0063 0065 0301 0020 1112 1161 11AB 1100 116E 11A8 110B 1165 0020 0078 0303 0304] false
+  nfkc "Åström fiancé 한국어 x\u{303}\u{304}" [00C5 0073 0074 0072 00F6 006D 0020 0066 0069 0061 006E 0063 00E9 0020 D55C AD6D C5B4 0020 0078 0303 0304] false
+  nfkd "A\u{30a}stro\u{308}m fiance\u{301} 한국어 x\u{303}\u{304}" [0041 030A 0073 0074 0072 006F 0308 006D 0020 0066 0069 0061 006E 0063 0065 0301 0020 1112 1161 11AB 1100 116E 11A8 110B 1165 0020 0078 0303 0304] false
+  round trips true
+empty: "" []
+  nfc  "" [] true
+  nfd  "" [] true
+  nfkc "" [] true
+  nfkd "" [] true
+  round trips true
+quick "abc" nfc yes nfd yes
+quick "é" nfc yes nfd no
+quick "e\u{301}" nfc maybe nfd yes
+quick "가" nfc maybe nfd yes
+quick "ﬁ" nfc yes nfd yes
+quick "a\u{300}\u{301}" nfc maybe nfd yes
+quick "\u{301}" nfc maybe nfd yes
+char U+0061 class 0 mark false
+char U+0301 class 230 mark true
+char U+0323 class 220 mark true
+char U+05AE class 228 mark true
+char U+00E9 class 0 mark false
+char U+1161 class 0 mark false
+char U+20DD class 0 mark true
+compose Some('é') None Some('가') Some('각')
+decompose 'é' [0065 0301] [0065 0301]
+decompose 'ǆ' [01C6] [0064 007A 030C]
+decompose '각' [1100 1161 11A8] [1100 1161 11A8]
+decompose 'ﬃ' [FB03] [0066 0066 0069]
+decompose 'ẛ' [017F 0307] [0073 0307]
+sweep nfc 1120 nfd 13253 nfkc 4965 longest (4, 8066) checksum 99746f179b1cae2d
+stream safe 40 42 Some(31)
+cjk variants [4E3D FE00 4E38 FE00]

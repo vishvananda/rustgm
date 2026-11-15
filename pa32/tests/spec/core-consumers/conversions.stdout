@@ -1,0 +1,47 @@
+into 7 60000 1 65
+from -5 18446744073709551615 -9223372036854775808 9
+from 8364 0 'A'
+try_from Ok(255) true true true
+try_from Ok(18446744073709551615) Err(true) true
+try_into Ok(67305985)
+try_into true
+as 44 4294967295 -1 -1
+as 65535 127 -56 0
+as 97 a '\0' 1
+char Some('A') None None
+digit Some('7') Some('b') None Some(15)
+bytes [18, 52, 86, 120] [52, 18] 4
+bytes 16909060 32767 72057594037927937
+parse "42" u8=Ok(42) i8=Some(42) u128=true
+parse "-17" u8=Err(InvalidDigit) i8=Some(-17) u128=false
+parse "+8" u8=Ok(8) i8=Some(8) u128=true
+parse "0" u8=Ok(0) i8=Some(0) u128=true
+parse "" u8=Err(Empty) i8=None u128=false
+parse "-" u8=Err(InvalidDigit) i8=None u128=false
+parse "12a" u8=Err(InvalidDigit) i8=None u128=false
+parse "256" u8=Err(PosOverflow) i8=None u128=true
+parse "-129" u8=Err(InvalidDigit) i8=None u128=false
+parse " 1" u8=Err(InvalidDigit) i8=None u128=false
+parse "00012" u8=Ok(12) i8=Some(12) u128=true
+parse "340282366920938463463374607431768211456" u8=Err(PosOverflow) i8=None u128=false
+error number too large to fit in target type | ParseIntError { kind: PosOverflow } | true
+error cannot parse integer from empty string | invalid digit found in string
+radix Ok(255) Ok(-10) true Ok(511)
+bool Ok(true) Ok(false) provided string was not `true` or `false`
+char Ok('é') too many characters in string cannot parse char from empty string
+custom Ok(Celsius(21)) Ok(Celsius(-300)) true
+custom Celsius(27) Ok(Kelvin(0)) Err("below absolute zero")
+custom Ok(Kelvin(300)) Celsius(-273)
+as_ref 294 6 500
+utf8 Ok("€!")
+utf8 error invalid utf-8 sequence of 1 bytes from index 2 | 2 Some(1)
+utf8 error incomplete utf-8 byte sequence from index 1 | 1 None
+encode [226, 130, 172] 4 2
+utf16 [55348, 56606] Some(Some('𝄞'))
+nonzero Some(12) None Some(144)
+nonzero 8 0
+wrapping 248 -2147483648 -128
+saturating 255 -128 2147483647
+option Some(3) Some(4) None
+aggregate (1, 'x') [1, 2, 3] [5, 6]
+str x [98, 121, 116, 101, 115] raw

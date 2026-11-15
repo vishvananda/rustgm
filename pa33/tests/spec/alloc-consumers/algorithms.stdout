@@ -1,0 +1,16 @@
+tokens 14 [Name("let"), Name("total_1"), Symbol('='), Symbol('('), Name("price")]
+names {"done", "let", "price", "tax2", "total_1"} symbols "=(*)+;//"
+vm Ok(137) [10, 90, 720, 5040, 30240, 151200, 604800, 1814400, 3628800, 3628800]
+vm errors Err("stack underflow") Err("pc 9 out of range")
+permutations 24 ["abcd", "abdc", "acbd"] Some("dcba")
+order Ok(["core", "libc", "alloc", "unicode", "std", "rustgm"])
+cycle Err("cycle after [\"libc\"]")
+distance 3 3 2 0
+factorial 82 8320987112741390144276341183223364380754172606361245952449277696409600000000000000
+digit sum 1404
+fibonacci 9969216677189303386214405760200 149
+ranked [("it", 3), ("of", 3), ("the", 3), ("was", 3)] Some([5, 11])
+groups {2: {"it", "of"}, 3: {"age", "the", "was"}, 4: {"best"}, 5: {"times", "worst"}, 6: {"wisdom"}}
+runs [('a', 3), ('b', 1), ('c', 2), ('d', 4)] aaabccdddd
+pascal [1, 10, 45, 120, 210, 252, 210, 120, 45, 10, 1] 524288
+heap: 0 blocks, 0 bytes live

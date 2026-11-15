@@ -1,0 +1,26 @@
+thread Some("main") true
+local 1 2 2 2
+local 42 "first+second" 2
+lazy local 0 24 1
+lazy local initialised on first use 1
+mutex [1, 2, 3, 4] true false
+mutex Some(4) Mutex { data: [1, 2, 3, 4], poisoned: false, .. }
+mutex [9]
+global [1, 2, 3]
+rwlock 12 true true
+rwlock "shared and written" false
+rwlock "shared and written"
+once lock true 1
+once lock Some(4) None 101
+once lock true 2
+once lock None Ok(()) Err(6) Some(5)
+lazy lock 101 81 111
+lazy lock [0, 1, 4, 9] 285
+once 1 true
+ids 1 2 3 4
+arc mutex [(0, "entry 0"), (1, "entry 1"), (2, "entry 2")] 4
+channel Ok(0) Ok(0)
+channel [1, 10, 2, 20] true
+bounded true true true
+bounded Ok('a') "b"
+disconnected true

@@ -1,0 +1,24 @@
+count 9 program named true
+arg 1 "first" bytes 5 chars 5
+arg 2 "second arg" bytes 10 chars 10
+arg 3 "--flag=value" bytes 12 chars 12
+arg 4 "--jobs=4" bytes 8 chars 8
+arg 5 "42" bytes 2 chars 2
+arg 6 "-7" bytes 2 chars 2
+arg 7 "ünïcödé" bytes 11 chars 7
+arg 8 "" bytes 0 chars 0
+len 9 last Some("") nth Some("second arg")
+os 8 Some("first")
+flags [("flag", "value"), ("jobs", "4")] numbers [42, -7] sum 35
+var Ok("rustgm") Ok("")
+missing: environment variable not found / NotPresent
+var_os Some("rustgm") None
+vars [("CONSUMER_EMPTY", ""), ("CONSUMER_NAME", "rustgm"), ("CONSUMER_PATH", "/usr/bin:/opt/consumer bin:relative")] total 3
+set Ok("set at run time") 4
+replaced Ok("replaced") removed true
+paths ["/usr/bin", "/opt/consumer bin", "relative"]
+joined Ok(Ok("relative:/opt/consumer bin:/usr/bin")) true
+consts linux x86_64 unix "" so
+cwd Some(true) Some(true)
+exe Some(true)
+temp /tmp

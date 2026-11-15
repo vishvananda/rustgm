@@ -1,0 +1,29 @@
+cell 10 99 99 0
+refcell 4 true true
+refcell true true
+refcell RefCell { value: [7, 8, 9] } [101, 20, 3]
+refcell [7, 8, 9]
+once None Ok(()) Err(4) 3
+lazy 0 42 43 1
+list 33
+list 3
+unsafe cell 1 2 2
+mem [50, 8, 7] [1, 2, 0] 9 3
+sizes 12 4 4 8 8 10
+sizes 24 8 16 5 8
+offsets 0 4 8
+discriminant true false [Quit, Move { x: 1, y: -1 }, Write("hi"), Quit]
+needs_drop false false
+union 0x3f800000 [0, 0, 128, 63]
+transmute 0xc0200000 [513, 1027] -2.5
+uninit Header { tag: 7, length: 1000, flags: 3 } [0, 11, 22, 33, 44, 55]
+zeroed Header { tag: 0, length: 0, flags: 0 }
+pointers [50, 25, 25, 60, 10] 4 25
+copies [50, 25, 25, 4294967295, 0]
+raw slice [25, 25, 60] true
+non-null 18 8 true
+raw field 1000 1000
+addresses true 8
+wide 5 10
+manual [1, 2] true
+erased 18

@@ -1,0 +1,23 @@
+ids 0 1 2 3
+flag false true true
+total -5 -15 3
+exchange Ok(3) Err(40) 40
+small 200 44 12
+small 140 127
+word 0xfffffff0 0x10
+update Ok(16) 1 48
+weak 21
+ptr true
+ptr 77 true
+into_inner 5 true
+lock true 21 false 2
+wide 18446744073709551614 1 1
+wide Ok(1099511627776) 9
+signed -128 127 127
+signed -128 0
+size -1 9223372036854775806 254
+narrow -2147483648 2147483647 -2147483648
+short -2 -1 300
+local 10 11 13 13
+owned 42 true
+sizes 1 2 8 8

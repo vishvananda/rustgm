@@ -1,0 +1,283 @@
+{
+  "schema": 1,
+  "stage": "planned",
+  "rung": "M3: std (rlib, abort) plus a println/fs/env/HashMap consumer",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "oracle": "scripts/consumer_oracle.py: rustc 1.98.0 with opt-level 0, overflow checks, panic=abort and std rebuilt from the pinned library sources; a build against the prebuilt std at opt-level 2 must print the same bytes",
+  "expectation_frozen_before_candidate": true,
+  "entry": "an ordinary `fn main` linked against std",
+  "run": {
+    "working_directory": "fresh and empty; the program must leave it empty",
+    "environment": "only the declared variables",
+    "repeats": 3
+  },
+  "status": "an exit status, or \"abort\": rustc output dies of SIGABRT; RustGM's course runtime reports exit status 134",
+  "stderr": "the exact text, or {\"contains\": [...]} when the text names a thread id or source path",
+  "cases": [
+    {
+      "name": "println",
+      "path": "tests/spec/std-consumers/println.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "this line goes to standard error\nso does this, without interleaving into standard output\n",
+      "stdout": "tests/spec/std-consumers/println.stdout",
+      "features": [
+        "print macros",
+        "stdout locking, line buffering and flush at exit",
+        "stderr"
+      ],
+      "source_sha256": "257f887940ba08162fd236a476ce089f1ae0eec145db10bc25cce778a8bbf4e6",
+      "stdout_sha256": "65476e0ce5192ed5be58971c850c8d70ab93dc22859bb0b00213c2b04550e4e5"
+    },
+    {
+      "name": "hashmap",
+      "path": "tests/spec/std-consumers/hashmap.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/std-consumers/hashmap.stdout",
+      "features": [
+        "HashMap and HashSet with RandomState",
+        "entry API",
+        "custom BuildHasher",
+        "20000 inserts with rehashing"
+      ],
+      "source_sha256": "79b683639c659a9c32f0627448b1501e72769462f73f9dae50c3789867d8bdd5",
+      "stdout_sha256": "6cd9d6197ea8f9b5099bbacfbcda791642f9222b537ccb911aabcd539f5b0ed6"
+    },
+    {
+      "name": "env-args",
+      "path": "tests/spec/std-consumers/env-args.rs",
+      "args": [
+        "first",
+        "second arg",
+        "--flag=value",
+        "--jobs=4",
+        "42",
+        "-7",
+        "ünïcödé",
+        ""
+      ],
+      "env": {
+        "CONSUMER_NAME": "rustgm",
+        "CONSUMER_EMPTY": "",
+        "CONSUMER_PATH": "/usr/bin:/opt/consumer bin:relative"
+      },
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/std-consumers/env-args.stdout",
+      "features": [
+        "env::args",
+        "env::var, vars, set_var and remove_var",
+        "split_paths and join_paths"
+      ],
+      "source_sha256": "aa429f9fcd6124e5d86c8a4dc94cda7c1ef7386e17a97ec2fbe77e499e10d6c3",
+      "stdout_sha256": "3fb0df879f6b3bf9c4711137929eb73227a0b63bd961ca5fbf12f23a6ed31945"
+    },
+    {
+      "name": "fs",
+      "path": "tests/spec/std-consumers/fs.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/std-consumers/fs.stdout",
+      "features": [
+        "fs read, write, copy, rename and remove",
+        "directories and read_dir",
+        "File with seek and set_len",
+        "BufReader and BufWriter",
+        "io::Error kinds"
+      ],
+      "source_sha256": "fd0a732281de73c54add4150fdb80ade6b52165228e5d503eacb2d559578125f",
+      "stdout_sha256": "8855a450a0cc5708355c16829985b13e2d77f6463b3d38ef3a753291d38e66af"
+    },
+    {
+      "name": "io-stdin",
+      "path": "tests/spec/std-consumers/io-stdin.rs",
+      "args": [],
+      "env": {},
+      "stdin": "3 4 5 x 6\nhello  wide   world\n\n42\n  indented\nlast line without a newline",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/std-consumers/io-stdin.stdout",
+      "features": [
+        "stdin lines",
+        "Read and BufRead adapters",
+        "Cursor",
+        "Write implementations",
+        "io::Error"
+      ],
+      "source_sha256": "169c70d3e57b2b90670efcb4b9d1b8532bba7683232098e4fd1a54d6d2ac62c0",
+      "stdout_sha256": "a77ac23c95ad5f777a7a1b01abbb7f1233f2dc08114ed687718b8a4c94267da7"
+    },
+    {
+      "name": "process-exit",
+      "path": "tests/spec/std-consumers/process-exit.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 7,
+      "stderr": "",
+      "stdout": "tests/spec/std-consumers/process-exit.stdout",
+      "features": [
+        "process::exit status",
+        "stdout flushed at exit",
+        "no destructors"
+      ],
+      "source_sha256": "3d93d354cb2d19637bfa25bea8202a900ab14a503cd36e6a57d017c8be791906",
+      "stdout_sha256": "ce184f96c8c0ab4d0bc12d177d5459d44bd316597b8f8589b3452fe4ae3488b9"
+    },
+    {
+      "name": "main-result",
+      "path": "tests/spec/std-consumers/main-result.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 1,
+      "stderr": "Error: Invalid { key: \"height\", source: ParseIntError { kind: InvalidDigit } }\n",
+      "stdout": "tests/spec/std-consumers/main-result.stdout",
+      "features": [
+        "main returning Err",
+        "Error trait, sources and Box<dyn Error>",
+        "destructors before exit"
+      ],
+      "source_sha256": "7bcc3ab706c52cfbd2e9bad1645e25aa8be8025797a472e0fe82d9ef48c95b17",
+      "stdout_sha256": "1e06daf848551d2640235671219fbebaa971c605e39fca45af3bbac9a2722d87"
+    },
+    {
+      "name": "exit-code",
+      "path": "tests/spec/std-consumers/exit-code.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 42,
+      "stderr": "",
+      "stdout": "tests/spec/std-consumers/exit-code.stdout",
+      "features": [
+        "main returning ExitCode",
+        "Termination"
+      ],
+      "source_sha256": "aa92d938f6b7d785ef4a75a81ad1f0163d87c7c3f0b8b80d2620ec2cf7de17b7",
+      "stdout_sha256": "7ef1af4d750764a2367d633a6b91487017525c69be61fa3e5e13ea93ef47874f"
+    },
+    {
+      "name": "sync-local",
+      "path": "tests/spec/std-consumers/sync-local.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/std-consumers/sync-local.stdout",
+      "features": [
+        "thread_local!",
+        "Mutex, RwLock, OnceLock, LazyLock and Once",
+        "mpsc channels",
+        "main thread only"
+      ],
+      "source_sha256": "9dd90958788afcf0005799df78008886dfb523532210d9e4493a4945146cf6d2",
+      "stdout_sha256": "aeb59ea30868afda6362df064b2960e46d978d96667ce525baa7dd3e2fb1152a"
+    },
+    {
+      "name": "threads",
+      "path": "tests/spec/std-consumers/threads.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/std-consumers/threads.stdout",
+      "features": [
+        "thread::spawn and join",
+        "scoped threads",
+        "channels across threads",
+        "Condvar and Barrier",
+        "per-thread storage"
+      ],
+      "source_sha256": "e799eb7c8a3d94feaf5dd41205b3e2c8645835195fa4faf6d0b6863995e48430",
+      "stdout_sha256": "878d0eff082e2aee6a15b167be20b2a6c44ebbb56a270ccc118d0c5c518b4e7f"
+    },
+    {
+      "name": "path-ffi-time",
+      "path": "tests/spec/std-consumers/path-ffi-time.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/std-consumers/path-ffi-time.stdout",
+      "features": [
+        "Path and PathBuf",
+        "OsStr, OsString, CStr and CString",
+        "Instant and SystemTime"
+      ],
+      "source_sha256": "f1a8a5b4db6fbe29e58b0669a45c91ce2167d16d63bf4c3e17521307153204d0",
+      "stdout_sha256": "d5397b2c45afc4b1c21724a10cb83a822e3c0b7d9ae06208be564c5bd0f5e74b"
+    },
+    {
+      "name": "float-math",
+      "path": "tests/spec/std-consumers/float-math.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/std-consumers/float-math.stdout",
+      "features": [
+        "float rounding, sqrt and mul_add",
+        "libm functions through std",
+        "f32 and f64"
+      ],
+      "source_sha256": "e0dda59dd39f98b1010f34b9ea93d4b6570ef4bad977a550bc19a33662cb9dcc",
+      "stdout_sha256": "b1d38dbe12af77c5a71ce0a2412b06b7e908d553cb56e956890a86078fe95ef7"
+    },
+    {
+      "name": "panic-default",
+      "path": "tests/spec/std-consumers/panic-default.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": "abort",
+      "stderr": {
+        "contains": [
+          "panicked at",
+          "index 3 is out of range for 3 values"
+        ]
+      },
+      "stdout": "tests/spec/std-consumers/panic-default.stdout",
+      "features": [
+        "panic with the default hook",
+        "message on stderr",
+        "abort without flushing a partial line"
+      ],
+      "source_sha256": "cca5ea57c81cb760a9b1ddfd99de64c7f4cd83a96d5f6f1629eddb693828e9b1",
+      "stdout_sha256": "0cab2a995dcd725c6ba86a711beab84bba613cd439e45497c243b01d0228b8a6"
+    },
+    {
+      "name": "panic-hook",
+      "path": "tests/spec/std-consumers/panic-hook.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": "abort",
+      "stderr": "",
+      "stdout": "tests/spec/std-consumers/panic-hook.stdout",
+      "features": [
+        "panic::set_hook",
+        "payload and location",
+        "abort"
+      ],
+      "source_sha256": "f2dee2f33278f020af9062efcf9ecc4d0f9b899d444081eae7387264e548763e",
+      "stdout_sha256": "889219f4949ea187281930b205aca44b2e508ce1e05dc1de9c8d1176c6b060fd"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+1.5s 3661.5s 42µs 7ns
+0ns 86400s 18446744073709551615.999999999s
+3661.50s 1.5s    | 5ms       | 2ms
+parts 3661 500 500000000 1500
+float 1.5 3661.5 2750000
+arith 3663s 3660s 6s 1220.5s
+checked None Some(3660s) None
+saturating 0ns true
+compare true true Less
+ratio 2441 2.25s 1830.75s
+abs_diff 3660s zero true sum 3664.5s
+try true cannot convert float seconds to Duration: value is either too big or NaN
+127.0.0.1 192.168.10.250 255.255.255.255 10.0.0.1
+[    192.168.10.250] [127.0.0.1         ] [192, 168, 10, 250]
+v4 true true true true true 3232238330
+v4 order true ::ffff:192.168.10.250
+parse v4 "10.1.2.3" -> Some(10.1.2.3)
+parse v4 "255.255.255.255" -> Some(255.255.255.255)
+parse v4 "256.1.1.1" -> None
+parse v4 "1.2.3" -> None
+parse v4 "1.2.3.4.5" -> None
+parse v4 "01.2.3.4" -> None
+parse v4 " 1.2.3.4" -> None
+parse v4 "a.b.c.d" -> None
+parse v4 "" -> None
+2001:db8::8a2e:7334 ::1 :: 1:0:0:2::3
+::ffff:192.168.0.1 fe80::1:2:3:4 [8193, 3512, 0, 0, 0, 0, 35374, 29492]
+v6 true false Some(1.2.3.4) None
+parse v6 "::1" -> Some(::1)
+parse v6 "2001:db8::8a2e:7334" -> Some(2001:db8::8a2e:7334)
+parse v6 "::ffff:10.0.0.1" -> Some(::ffff:10.0.0.1)
+parse v6 "1:2:3:4:5:6:7:8" -> Some(1:2:3:4:5:6:7:8)
+parse v6 "1::2::3" -> None
+parse v6 "12345::" -> None
+parse v6 "fe80::1%eth0" -> None
+parse v6 "::" -> Some(::)
+parse v6 "1:2:3:4:5:6:7" -> None
+192.168.10.250:8080 [2001:db8::8a2e:7334]:443 192.168.10.250:8080 8080
+socket true true 127.0.0.1
+parse socket "127.0.0.1:80" -> Some(127.0.0.1:80)
+parse socket "[::1]:65535" -> Some([::1]:65535)
+parse socket "127.0.0.1" -> None
+parse socket "[::1]" -> None
+parse socket "1.2.3.4:65536" -> None
+parse socket "::1:80" -> None
+error invalid IP address syntax | AddrParseError(Ip) | invalid socket address syntax
+ip Ok(::1) 1.2.3.4 false

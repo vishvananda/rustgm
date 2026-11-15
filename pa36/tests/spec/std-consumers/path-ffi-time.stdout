@@ -1,0 +1,34 @@
+/usr/local/lib/rustlib/src/lib.rs "/usr/local/lib/rustlib/src/lib.rs"
+parts Some("/usr/local/lib/rustlib/src") Some("lib.rs") Some("lib") Some("rs")
+kind true false true true
+ends true false false
+strip Ok("lib/rustlib/src/lib.rs") true
+with "/usr/local/lib/rustlib/src/lib.rlib" "/usr/local/lib/rustlib/src/main.rs"
+components [RootDir, Normal("usr"), Normal("local"), Normal("lib"), Normal("rustlib"), Normal("src"), Normal("lib.rs")]
+ancestors ["/usr/local/lib/rustlib/src/lib.rs", "/usr/local/lib/rustlib/src", "/usr/local/lib/rustlib", "/usr/local/lib", "/usr/local", "/usr", "/"]
+odd [CurDir, Normal("a"), Normal("b"), ParentDir, Normal("c"), Normal("d.tar.gz")] Some("d.tar") Some("gz")
+normal ["a", "b", "c", "d.tar.gz"] 6
+join "a/b/c" "/abs" "x"
+edge None None Some("dir") None
+edge None None Some("")
+compare true true Greater
+buf "/var/log/app.log"
+buf true "/var/log/app.txt"
+buf true "/var/log"
+buf "/absolute/replaces" "x/y/z.rs" "x/y/z.rs"
+lossy "naïve/日本.txt" Some("a/b")
+os "os string" 9 "growingos string" Some("growingos string")
+os "OS STRING" true false
+unix "ba\xFFd" None "ba�d" [111, 107]
+unix true
+cstring "for C" 5 [102, 111, 114, 32, 67, 0] Ok("for C")
+cstring error nul byte found in provided data at position: 2 | 2 | [105, 110, 0, 115, 105, 100, 101]
+cstr "literal" "bytes" "stop" 7 false
+cstr true true
+cstr "for C" true Ok("for C")
+instant 9024581596163622560 true true true
+instant true 5s
+instant Some(true) true
+system true true true
+system Ok(31536000.000000005s) Some(true) true
+system Err(31536000.000000005s)

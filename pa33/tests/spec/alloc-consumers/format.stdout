@@ -1,0 +1,73 @@
+"1 two 3.5" "bab" "   inline|inline   | inline  |+2.00"
+-0042 0xff/0o10/0b101 1.2345e3
+"quote\"d" 'c' "line\n"
+18446744073709551615-170141183460469231731687303715884105728 2
+[1, 2, 3] ["a", "b c"] [(1, Some("x")), (2, None)] []
+[2, 3] 5 "rc"
+[
+    (
+        1,
+        Some(
+            "x",
+        ),
+    ),
+    (
+        2,
+        None,
+    ),
+]
+{"one": [1], "two": [2, 2]} {'e', 'h', 'l', 'o'} [-1, 0, 1]
+{
+    "one": [
+        1,
+    ],
+    "two": [
+        2,
+        2,
+    ],
+}
+[0a, ff] [AB] [    1,     2] Some(1   )|
+Config { name: "base", retries: 3, tags: ["a", "b"], limits: {"cpu": 0.5}, parent: None }
+Config {
+    name: "child",
+    retries: 0,
+    tags: [],
+    limits: {},
+    parent: Some(
+        Config {
+            name: "base",
+            retries: 3,
+            tags: [
+                "a",
+                "b",
+            ],
+            limits: {
+                "cpu": 0.5,
+            },
+            parent: None,
+        },
+    ),
+}
+[Start, Data([1, 2]), Error { code: -2, message: "bad" }]
+1 | "s" | Some(2.5) | ["a", "b"] | () | Start
+[$1234.56] [  $1234.56] [$1234.56  ] [ $1234.56 ] [-$0.05] [    -$0.05] [-$0.05    ] [  -$0.05  ] [$0.00] [     $0.00] [$0.00     ] [  $0.00   ] 
+<str> <7> <$1234.56>
+1.5, text, c, $2.50
+[   1  -20  300]
+[4000    5   -6]
+name    |    price|  qty
+--------+---------+-----
+widget  |     2.50|    4
+gadget  |    10.12|    1
+bolt    |     0.05|  250
+total   |    32.62|  255
+cow-1 "cow-1"        b|
+format_args!
+Some("static") Some("1")
+0:  0, 1:  1, 2:  4, 3:  9, 4: 16
+["0.1", "0.3333333333333333", "1000000000000000000000", "0.0000001", "-0", "inf"] [Ok(true), Ok(true), Ok(true), Ok(true), Ok(true), Ok(true)]
+0.667    1.235e5| +7
+300 400 y
+Some("1") (1, "a", [Some(1.5)], 'x', ())
+   日本    |     é|😀     | 24
+heap: 0 blocks, 0 bytes live

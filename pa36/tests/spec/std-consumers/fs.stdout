@@ -1,0 +1,23 @@
+exists false Some(NotFound)
+create_dir true Err(AlreadyExists)
+read_to_string "hello, file\nsecond line\n" 2
+metadata 24 true false false
+binary 400 328350 [9409, 9604, 9801]
+line 1: hello, file
+line 2: second line
+line 3: appended 3
+create_new Err(AlreadyExists)
+seek 100 396 9801 400
+rewrite 400 [7, 0, 0, 0] 0
+truncate 16
+table 2686700 100 2650
+copy 35 false true
+read_dir ["a/", "greeting.txt", "numbers.bin"] ["b/"] ["c/", "renamed.txt", "table.csv"]
+canonical true Some("renamed.txt") Some("b")
+missing NotFound No such file or directory (os error 2) Some(2)
+errors Err(IsADirectory) Err(DirectoryNotEmpty)
+errors Err(NotADirectory) Err(false)
+invalid Err(InvalidData) [255, 254, 97]
+empty 0 Ok("")
+remove_dir Err(DirectoryNotEmpty)
+removed true Err(NotFound)

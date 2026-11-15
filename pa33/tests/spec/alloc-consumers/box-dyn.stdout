@@ -1,0 +1,16 @@
+box 42 42 true
+circle=12 rect 3x4.5=13.5 circle=0.75 total 26.25 largest Some("rect 3x4.5")
+list 15 1999000
+expr 12 12 Add(Number(7), Number(5))
+tree [20, 30, 35, 40, 45, 50, 60, 65, 70, 80] depth 4
+closures 5 10 100 15
+add=13 mul=42 offset=41 
+consumed 42
+[i32 5] [string "five"] [unknown] 
+downcast Some(5)
+drops ["b", "t0", "assign", "old", "end of scope", "new", "t1", "v0", "v1", "a"]
+unsized [1, 2, 3, 4, 5] boxed str 1000 7000
+raw raw pointer leak 100
+clone [12.0, 13.5, 0.75] nested -3 eq true
+uninit [1, 2, 3, 4] default None
+heap: 1 blocks, 8 bytes live

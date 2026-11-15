@@ -1,0 +1,38 @@
+'a' U+0061 start
+'Z' U+005A start
+'_' U+005F continue
+'0' U+0030 continue
+'9' U+0039 continue
+' ' U+0020 neither
+'-' U+002D neither
+'$' U+0024 neither
+'é' U+00E9 start
+'ß' U+00DF start
+'Σ' U+03A3 start
+'д' U+0434 start
+'中' U+4E2D start
+'あ' U+3042 start
+'한' U+D55C start
+'ا' U+0627 start
+'😀' U+1F600 neither
+'\u{301}' U+0301 continue
+'\u{200d}' U+200D continue
+'٣' U+0663 continue
+'²' U+00B2 neither
+'ǅ' U+01C5 start
+'ⅷ' U+2177 start
+'℮' U+212E start
+'·' U+00B7 continue
+'ͺ' U+037A neither
+'ำ' U+0E33 continue
+'\0' U+0000 neither
+'\u{10ffff}' U+10FFFF neither
+ascii start "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+ascii continue only "0123456789_"
+sweep starts 145893 continues 149221 start-only 0 runs 806
+checksum 5ffadb6eef91a34d last start Some(210041)
+latin-1 128 65 66
+greek 144 128 129
+cjk 20992 20992 20992
+emoji 80 0 0
+astral letters 42720 42720 42720

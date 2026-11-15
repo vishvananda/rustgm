@@ -1,0 +1,30 @@
+start 0 0
+box u64 (1, 8) 0
+box array (2, 108)
+dropped (0, 0)
+with_capacity (1, 20) 10
+filled (1, 20)
+grown 1 true true
+shrunk (1, 22) 11
+boxed slice (1, 22) 11
+strings (2, 24) 12 true
+no allocation (0, 0) 0 0 100
+aligned (2, 4160) 0 0 448 1
+aligned vec 0 64 4
+released (0, 0)
+layout 8 8 48 4 Layout { size: 24, align: 8 (1 << 3) }
+layout errors true true true
+extend Layout { size: 8, align: 4 (1 << 2) } 4 Layout { size: 8, align: 4 (1 << 2) }
+for_value Layout { size: 14, align: 2 (1 << 1) } Layout { size: 5, align: 1 (1 << 0) }
+manual (1, 4000) true 0
+manual (1, 8) 171
+zeroed true (0, 0)
+reserve Ok(1000)
+overflow Err("memory allocation failed because the computed capacity exceeded the collection's maximum")
+refused Err("memory allocation failed because the memory allocator returned an error")
+try_reserve true true
+string true Ok(true)
+churn 668 12824900 false
+end (0, 0)
+leaked 100 (2, 112)
+heap: 2 blocks, 112 bytes live

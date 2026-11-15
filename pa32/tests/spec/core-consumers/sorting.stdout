@@ -1,0 +1,28 @@
+sort_unstable [1, 2, 3, 3, 5, 7, 8, 9]
+descending [9, 8, 7, 5, 3, 3, 2, 1]
+by key [3, 3, 9, 1, 7, 2, 5, 8]
+reverse [9, 8, 7, 5, 3, 3, 2, 1] sorted true
+random before 133be0320b86b125 sorted false
+random after 7b9a3097c0d497bd sorted true
+agree true true
+extremes 1 2 998 median 498
+distinct 256
+search Ok(253) Err(300) 151
+big sorted true xor preserved true c4a22d5f54c8c5e9
+pattern true [0, 1, 2, 3] [508, 509, 510, 511]
+descending input 1 100 true
+select true 5 true
+words ["", "Apple", "Fig", "apple", "banana", "fig", "pear"]
+by length ["", "fig", "Fig", "pear", "apple", "Apple", "banana"]
+first letters ['-', 'a', 'A', 'b', 'f', 'F', 'p']
+floats [-inf, -1.0, -0.0, 0.0, 1e-9, 2.5, 7.25, inf]
+floats max inf min -inf
+1Diamonds 3Clubs 3Spades 12Clubs 12Hearts 
+top Card { rank: 3, suit: Spades } max Some(Card { rank: 12, suit: Hearts })
+suit order Less Hearts true
+tuples [(1, 'a'), (1, 'z'), (2, 'a'), (2, 'b')]
+0.9a 1.0b 1.2c 1.4d 
+cmp Less Greater Equal Some(Less)
+ordering Greater Greater Greater true
+minmax 3 b 10 0
+by key -7 1.5

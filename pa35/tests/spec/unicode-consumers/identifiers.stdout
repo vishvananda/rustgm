@@ -1,0 +1,46 @@
+Identifier("let")
+Identifier("café")
+Punctuation('=')
+Identifier("naïve_count")
+Punctuation('+')
+Identifier("東京2")
+Punctuation('*')
+Identifier("_tmp")
+Punctuation(';')
+Identifier("fn")
+Identifier("Ångström")
+Punctuation('(')
+Identifier("été")
+Punctuation(':')
+Identifier("u8")
+Punctuation(')')
+Punctuation('{')
+Identifier("ﬁx")
+Punctuation('=')
+Number("1")
+Punctuation(';')
+Punctuation('}')
+Number("9lives")
+Invalid("\u{301}bad")
+Invalid("２")
+Identifier("x·y")
+interned {"_tmp": (1, 0), "café": (1, 0), "fn": (1, 0), "let": (1, 0), "naïve_count": (1, 0), "u8": (1, 0), "x·y": (1, 0), "Ångström": (1, 0), "été": (1, 1), "東京2": (1, 0), "ﬁx": (1, 0)}
+same identifier false true true true
+"x" valid true nfc-valid true nfkc "x" nfkc-valid true
+"_" valid true nfc-valid true nfkc "_" nfkc-valid true
+"__init__" valid true nfc-valid true nfkc "__init__" nfkc-valid true
+"été" valid true nfc-valid true nfkc "été" nfkc-valid true
+"e\u{301}" valid true nfc-valid true nfkc "é" nfkc-valid true
+"\u{301}e" valid false nfc-valid false nfkc "\u{301}e" nfkc-valid false
+"2x" valid false nfc-valid false nfkc "2x" nfkc-valid false
+"x2" valid true nfc-valid true nfkc "x2" nfkc-valid true
+"a-b" valid false nfc-valid false nfkc "a-b" nfkc-valid false
+"" valid false nfc-valid false nfkc "" nfkc-valid false
+"ℌello" valid true nfc-valid true nfkc "Hello" nfkc-valid true
+"ｆｕｌｌ" valid true nfc-valid true nfkc "full" nfkc-valid true
+"a\u{200d}b" valid true nfc-valid true nfkc "a\u{200d}b" nfkc-valid true
+"🦀" valid false nfc-valid false nfkc "🦀" nfkc-valid false
+"r#type" valid false nfc-valid false nfkc "r#type" nfkc-valid false
+"Ⅷ" valid true nfc-valid true nfkc "VIII" nfkc-valid true
+"ﬁ" valid true nfc-valid true nfkc "fi" nfkc-valid true
+lengths {5: ["wörds", "größe", "naïve"], 6: ["façade", "ǅungla"], 7: ["Ünïcödé"], 8: ["ÅNGSTRÖM"]}

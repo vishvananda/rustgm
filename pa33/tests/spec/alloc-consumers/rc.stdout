@@ -1,0 +1,24 @@
+new shared 1 0
+clone 2 1 true true
+upgrade Some(6) 2
+drop 1 Err(2)
+unwrap Ok("shared") None 0
+make_mut [1, 2, 3, 4] [1, 2, 3] false
+make_mut unique [1, 2, 3, 4, 5] true
+get_mut Some(5) true
+into_inner None Some([1, 2, 3])
+unsized unsized str 11 [10, 20, 30] 24 2
+collected ["a", "b"] 2
+tree root/usr/bin 5 2 2
+parents Some("usr") true
+detached usr ["drop root", "drop tmp"]
+log ["drop root", "drop tmp", "drop usr", "drop bin", "drop lib"] 1
+transfer true false true
+accounts 35 85 [-70, 5] RefCell { value: [70, -5] } 3
+owner ada [1] 2 3
+survivor Some((1, "ada"))
+cyclic 9 Some(9) 1
+dangling None 0
+aliases [1, 11, 21, 31] 2 true
+raw 77 Less "x"
+heap: 0 blocks, 0 bytes live

@@ -1,0 +1,28 @@
+sum 9 product 12
+min Some(-9) max Some(6)
+min_by_key Some(-1) max_by Some(3)
+count 3 last Some(6) nth Some(4)
+any true all true find Some(4)
+position Some(4) find_map Some(5)
+fold 446 try_fold Some(9) None
+map filter enumerate 0:9 3:1 6:4
+zip rev chain (3,6) (-1,2) (4,-9) (10,20)
+skip step_by -1 -1 -9 6
+take_while skip_while 3 -1 4 -1 -9 2 6
+scan 3 2 6 5 10 1 3 9
+flat_map 10 20 21 30 31 32
+flatten 21
+peekable sign changes 6
+cycle inspect 1 2 3 1 2 3 1 seen 7
+ranges 55 4 0 4
+from_fn 30
+successors 10 last Some(1000000000)
+repeat once empty 21 9 0
+custom len 5 first Some(5)
+dyn 4321
+by_ref 206
+partition sums 12 -3
+cmp Greater eq true lt true
+unzip-free max_by_key Some((7, 6))
+double ended Some(6) Some(-9)
+is_sorted false true

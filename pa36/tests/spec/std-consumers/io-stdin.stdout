@@ -1,0 +1,23 @@
+first line "3 4 5 x 6\n" 10 numbers [3, 4, 5, 6] sum 18
+second line "hello  wide   world" words 3
+rest ["", "42", "  indented", "last line without a newline"]
+at end 0 ""
+read_to_end 0
+[alpha][beta][gamma] position 17
+read_exact Ok("beta") Err(UnexpectedEof)
+split ["a", "b", "", "c"]
+checksum (1000, 1333639668) (1000, 1333639668)
+take (10, 165029893) chain (4, 2987074)
+bytes [250, 251, 252, 253, 254, 255, 0, 1, 2, 3]
+read_to_string Ok(5) café
+invalid Err(InvalidData)
+empty (0, 0) repeat (20, 908308672)
+vec writer 100 113 "vec-007 bytes"
+slice writer Err(WriteZero) [116, 111, 111, 32, 108, 111, 110, 103]
+cursor writer Ok("hello there!")
+WRITTEN THROUGH AN ADAPTER: MIXED CASE
+discarded 1000
+error custom failure | InvalidData | Some("custom failure")
+os error No such file or directory (os error 2) | NotFound | Some(2)
+simple unexpected end of file | Kind(UnexpectedEof) | permission denied
+other formatted 5 Other

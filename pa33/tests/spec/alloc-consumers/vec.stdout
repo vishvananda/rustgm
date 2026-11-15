@@ -1,0 +1,38 @@
+empty 0 true None None
+push [1, 4, 9, 16, 25, 36, 49, 64, 81, 100] 10 true
+pop Some(100) Some(81) None
+insert [-1, 1, 4, 9, 16, -5, 25, 36, 49, 64, 81]
+remove -5 -1 [81, 1, 4, 9, 16, 25, 36, 49, 64]
+extend [81, 1, 4, 9, 16, 25, 7, 7, 7, 8, 8, 9, 7]
+dedup [81, 1, 4, 9, 16, 25, 7, 8, 9, 7]
+retain [81, 1, 9, 25, 7, 9, 7]
+drain [1, 9] [81, 25, 7, 9, 7]
+split_off [81, 25] [7, 9, 7]
+append [7, 9, 7, 81, 25] []
+resize [7, 9, 7, 81, 25, 0, 0, 0, -3, -3]
+splice [9, 7, 81] [7, 100, 200, 25, 0, 0, 0, -3, -3]
+sort [-3, -3, 0, 0, 0, 7, 25, 100, 200] Ok(7)
+sort_by [200, 100, 25]
+clear 0 true
+shrink 0
+with_capacity 100 true 4950
+reserve true 99
+growth 5000 moves<=20 true checksum 1826922948
+collect [1, 4, 9, 16, 25, 36] [4, 16, 36] [1, 4, 9] [16, 25, 36]
+unzip [0, 1, 2, 3, 4, 5] [2, 8, 18, 32, 50, 72]
+into_iter 77
+nested [[1, 2], [], [3], [4, 5, 6]] [1, 2, 3, 4, 5, 6] [1, 2, 3, 4, 5, 6] 3
+words ["charlie", "delta", "alpha", "bravo"] "delta-alpha-charlie-bravo" 22 [1, 2, 0, 3, 4]
+stable [(1, 'b'), (1, 'd'), (1, 'f'), (2, 'a'), (2, 'c'), (2, 'e')]
+apple:7 apple:9 fig:8 pear:10 
+records 3 Some(10) Record { key: 7, name: "apple" } false
+contains false Some(2)
+boxed [1, 2, 3] [1, 2, 3] true
+zst 1000 true
+from [104, 101, 108, 108, 111] [104, 105] [1.5, 2.5]
+primes 25 [2, 3, 5, 7, 11] Some(97)
+matrix [[6, 12, 18, 24], [12, 24, 36, 48], [18, 36, 54, 72], [24, 48, 72, 96]]
+compare true true Greater
+windows [10, 16] [12, 20, 6] Some((2, [10, 4, 16, 6]))
+leak [8, 8]
+heap: 1 blocks, 4 bytes live

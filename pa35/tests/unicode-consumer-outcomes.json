@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "stage": "planned",
+  "rung": "M4: unicode-ident, tinyvec, unicode-normalization",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "oracle": "scripts/consumer_oracle.py: rustc 1.98.0 with opt-level 0, overflow checks, panic=abort and std rebuilt from the pinned library sources; a build against the prebuilt std at opt-level 2 must print the same bytes",
+  "expectation_frozen_before_candidate": true,
+  "entry": "an ordinary `fn main` linked against std and the compiler's own locked dependencies: unicode-ident 1.0.24, unicode-normalization 0.1.25, tinyvec 1.10.0 (feature alloc) and tinyvec_macros 0.1.1",
+  "run": {
+    "working_directory": "fresh and empty; the program must leave it empty",
+    "environment": "only the declared variables",
+    "repeats": 3
+  },
+  "status": "an exit status, or \"abort\": rustc output dies of SIGABRT; RustGM's course runtime reports exit status 134",
+  "stderr": "the exact text, or {\"contains\": [...]} when the text names a thread id or source path",
+  "cases": [
+    {
+      "name": "xid",
+      "path": "tests/spec/unicode-consumers/xid.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/unicode-consumers/xid.stdout",
+      "features": [
+        "unicode-ident is_xid_start and is_xid_continue",
+        "sweep of every scalar value"
+      ],
+      "source_sha256": "6d076375cc3955d2190d9f681f6e6b712362eb78dbbd98ab4f4418e646438c97",
+      "stdout_sha256": "062287869c9bfd61540755ff3dd3428b1e7e5d77efa35d565808adf0ccfa40ea"
+    },
+    {
+      "name": "normalization",
+      "path": "tests/spec/unicode-consumers/normalization.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/unicode-consumers/normalization.stdout",
+      "features": [
+        "NFC, NFD, NFKC and NFKD",
+        "quick checks",
+        "composition and decomposition",
+        "stream-safe and CJK variants"
+      ],
+      "source_sha256": "a8642556fdd403529538e131cf6fa342e54c30b936be705794001478bf9ebcb5",
+      "stdout_sha256": "919ad39fc7188010434a44f783680e396e5b5ad4ea3faac95ca0da389cb28498"
+    },
+    {
+      "name": "identifiers",
+      "path": "tests/spec/unicode-consumers/identifiers.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/unicode-consumers/identifiers.stdout",
+      "features": [
+        "identifier lexing with XID classes",
+        "NFC interning as in RustGM's lexer and macro transcription"
+      ],
+      "source_sha256": "e71960d5e14da48df51f4f6099e7d3d1b5c31ad3d29f954d1605b3b2a2c949fe",
+      "stdout_sha256": "ae7b00b28e32aaa8020383652f8de092b6afb7a05ca9bf33662d7bad5a3ea294"
+    },
+    {
+      "name": "small-vectors",
+      "path": "tests/spec/unicode-consumers/small-vectors.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/unicode-consumers/small-vectors.stdout",
+      "features": [
+        "tinyvec ArrayVec, TinyVec and SliceVec",
+        "inline to heap transition"
+      ],
+      "source_sha256": "2abe087efa055873c92d3c8419c431c3bb0b22c362f82dde6e9c8f37e956ffbc",
+      "stdout_sha256": "d5ab44dc9ec6faf79b661f0a12335e38e9a45c14b0e9a3a20beef88abeb84427"
+    }
+  ]
+}

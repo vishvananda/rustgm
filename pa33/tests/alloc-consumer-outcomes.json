@@ -1,0 +1,233 @@
+{
+  "schema": 1,
+  "stage": "planned",
+  "rung": "M2: alloc plus a Vec/String/BTreeMap/Rc/Arc consumer",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "oracle": "scripts/consumer_oracle.py: rustc 1.98.0 with opt-level 0, overflow checks, panic=abort and std rebuilt from the pinned library sources; a second build at opt-level 2 must print the same bytes",
+  "expectation_frozen_before_candidate": true,
+  "entry": "#![no_std] #![no_main] with `extern crate alloc`; an unmangled C `main`; a #[global_allocator] over libc `malloc`, `posix_memalign` and `free` that counts live blocks and bytes, printed as the last line; a panic handler that aborts",
+  "run": {
+    "working_directory": "fresh and empty; the program must leave it empty",
+    "environment": "only the declared variables",
+    "repeats": 3
+  },
+  "status": "an exit status, or \"abort\": rustc output dies of SIGABRT; RustGM's course runtime reports exit status 134",
+  "stderr": "the exact text, or {\"contains\": [...]} when the text names a thread id or source path",
+  "cases": [
+    {
+      "name": "vec",
+      "path": "tests/spec/alloc-consumers/vec.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/alloc-consumers/vec.stdout",
+      "features": [
+        "Vec growth, editing, sorting and draining",
+        "collect, partition and unzip",
+        "nested and zero-sized element vectors",
+        "Vec::leak"
+      ],
+      "source_sha256": "0445365f2344bf64a745aaa30334e218a382a02b3c98d177360b4af678711ceb",
+      "stdout_sha256": "65e3d11f65850682b3f487dcc99368d99555677ff59334e750a443d81a1b0d5d"
+    },
+    {
+      "name": "string",
+      "path": "tests/spec/alloc-consumers/string.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/alloc-consumers/string.stdout",
+      "features": [
+        "String editing",
+        "case mapping and replace",
+        "UTF-8 and UTF-16 conversion",
+        "Cow and ToString"
+      ],
+      "source_sha256": "6919b6c87d1f07b1065fbc3cf5643156ee1c82b609d753c4b078c2f96a18c8f5",
+      "stdout_sha256": "8b623bd83b004d9d99d9ee3b2a7265cd86d538e5513d4dd163c66b747294b871"
+    },
+    {
+      "name": "box-dyn",
+      "path": "tests/spec/alloc-consumers/box-dyn.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/alloc-consumers/box-dyn.stdout",
+      "features": [
+        "Box of values, slices, str and trait objects",
+        "recursive enums",
+        "boxed closures",
+        "Any downcasts",
+        "drop order"
+      ],
+      "source_sha256": "08e6e4c67698f56636f60131b45c461ea9812ba8675f5fd1ad28bffe728d2d72",
+      "stdout_sha256": "76a7167743944dfc2804134551dd29080aa4aa03d51f4a3f936216679c674c3a"
+    },
+    {
+      "name": "btree",
+      "path": "tests/spec/alloc-consumers/btree.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/alloc-consumers/btree.stdout",
+      "features": [
+        "BTreeMap and BTreeSet",
+        "entry API and ranges",
+        "node splits and merges under 4000 inserts and 6000 removals"
+      ],
+      "source_sha256": "d661883328e22812ab603458e57306a748e53c0f53063ce90323d360f109d82f",
+      "stdout_sha256": "3d873bc92e13ec7dad24e4ed2c49aac43b41847e8292b04cde1102af4dcd4668"
+    },
+    {
+      "name": "deque-heap-list",
+      "path": "tests/spec/alloc-consumers/deque-heap-list.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/alloc-consumers/deque-heap-list.stdout",
+      "features": [
+        "VecDeque",
+        "BinaryHeap",
+        "LinkedList",
+        "breadth-first search and Dijkstra"
+      ],
+      "source_sha256": "49fe6b7c976784c1c579b25ac1f0319cebbea9432a382e6512135d7683cc2b90",
+      "stdout_sha256": "d27212cfaca1822decf2e7f13ebc3a087a563d0f56fce6a4c54e3130c370a0e4"
+    },
+    {
+      "name": "rc",
+      "path": "tests/spec/alloc-consumers/rc.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/alloc-consumers/rc.stdout",
+      "features": [
+        "Rc and Weak counts",
+        "Rc<RefCell<T>> trees",
+        "make_mut, try_unwrap and new_cyclic",
+        "unsized Rc"
+      ],
+      "source_sha256": "7e445cb47e5af24d36d3c788c0c6f380ea6dc08f716b2b34b19e4e4f0f24e190",
+      "stdout_sha256": "103362c5f17afd5c7e77a809cde5e438122c04b0238d979484bc26e6957d6208"
+    },
+    {
+      "name": "arc",
+      "path": "tests/spec/alloc-consumers/arc.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/alloc-consumers/arc.stdout",
+      "features": [
+        "Arc and Weak counts",
+        "Arc<dyn Trait>",
+        "atomics behind Arc",
+        "raw pointer round trips"
+      ],
+      "source_sha256": "df52ad4efaf6b7502669ca92a952ed3dd103d86af8756052bd4a360d834d4273",
+      "stdout_sha256": "b3c785636cff3117f67b17f2bfdde42c9dcc108bced87c402108d314268ad284"
+    },
+    {
+      "name": "format",
+      "path": "tests/spec/alloc-consumers/format.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/alloc-consumers/format.stdout",
+      "features": [
+        "format! and ToString",
+        "Debug of collections",
+        "Display implementations with padding",
+        "pretty printing"
+      ],
+      "source_sha256": "8d9cff4e71465e10ef2e2c50e9d9f39a7596d1d4bf510a79e6f3d12144fd3ddc",
+      "stdout_sha256": "50138b50119cb9ce35d2b5568ee3db37838f759818717b12a663f83cb64d7df8"
+    },
+    {
+      "name": "algorithms",
+      "path": "tests/spec/alloc-consumers/algorithms.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/alloc-consumers/algorithms.stdout",
+      "features": [
+        "tokenizer, stack machine and topological sort over collections",
+        "big-number arithmetic in Vec<u32>",
+        "memoization"
+      ],
+      "source_sha256": "fed023626db3def332c042b7710dcd166bd249911d8540e286f1dcc48165fdb4",
+      "stdout_sha256": "feef940d9c57e5ff4f552e890a5e6bafa366e0a895a20806c6b08af29f2dfc75"
+    },
+    {
+      "name": "allocator",
+      "path": "tests/spec/alloc-consumers/allocator.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": 0,
+      "stderr": "",
+      "stdout": "tests/spec/alloc-consumers/allocator.stdout",
+      "features": [
+        "allocation sizes and alignments seen by the global allocator",
+        "over-aligned types",
+        "Layout",
+        "manual alloc, realloc and dealloc",
+        "try_reserve failures"
+      ],
+      "source_sha256": "3c1a35382db30bba03c91a160eb1833c7c808c898ec1bb4cb8d9481ff6d58cd7",
+      "stdout_sha256": "f0237118114938265350bae585ee18b9470c5d476856710b2ca990c6bf5e654a"
+    },
+    {
+      "name": "alloc-failure",
+      "path": "tests/spec/alloc-consumers/alloc-failure.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": "abort",
+      "stderr": "",
+      "stdout": "tests/spec/alloc-consumers/alloc-failure.stdout",
+      "features": [
+        "refused allocation",
+        "default allocation error handler",
+        "abort"
+      ],
+      "source_sha256": "5532ca26f4e80951caeac7c5a90767e91cb9125cfbe6456a4681852ebaf28228",
+      "stdout_sha256": "5cf6495a12bc366a6a776705c9fa4665b4db7ec3d65c1fbeaa63955e4f314ca2"
+    },
+    {
+      "name": "panic-borrow",
+      "path": "tests/spec/alloc-consumers/panic-borrow.rs",
+      "args": [],
+      "env": {},
+      "stdin": "",
+      "status": "abort",
+      "stderr": "",
+      "stdout": "tests/spec/alloc-consumers/panic-borrow.stdout",
+      "features": [
+        "RefCell borrow panic",
+        "no destructors after abort"
+      ],
+      "source_sha256": "fcb005006c8bba64b7bd49cd2f8fc2f3ab43ac8f086ef63ebe765feee8ebafdb",
+      "stdout_sha256": "678b062d8aa05edb29cda15f588e9a34021e452344825b2968c9ec704e1cc9d7"
+    }
+  ]
+}

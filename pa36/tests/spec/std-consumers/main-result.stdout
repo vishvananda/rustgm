@@ -1,0 +1,8 @@
+total Ok(126)
+overflow Err("volume overflow")
+error missing key height | Missing("height") | chain ["missing key height"]
+error invalid value for height | Invalid { key: "height", source: ParseIntError { kind: InvalidDigit } } | chain ["invalid value for height", "invalid digit found in string"]
+boxed plain message true Ok("invalid value for width")
+converted Err("number too large to fit in target type")
+returning the error
+drop main guard
