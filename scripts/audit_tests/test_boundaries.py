@@ -62,9 +62,10 @@ class AuditBoundaries(unittest.TestCase):
         called = ("fn version() -> u32 {\n    // SAFETY: the function takes no argument.\n"
                   "    unsafe { cppgm_lowir_abi_version() }\n}\n")
         self.assertEqual(self.inspect(boundary, declared + called), [])
+        exported = 'pub unsafe extern "C" fn version() -> u32 {\n    0\n}\n'
         for relative in ("dev/backend-bridge/src/lib.rs", "dev/backend-bridge/bin/inprocess.rs",
                          "dev/src/lowir/writer.rs", "dev/bin/emission.rs"):
-            for source in (declared, called):
+            for source in (declared, called, exported):
                 with self.subTest(path=relative, source=source):
                     self.assertTrue(any("unsafe/FFI implementation is prohibited" in finding
                                         for finding in self.inspect(relative, source)))
@@ -75,7 +76,7 @@ class AuditBoundaries(unittest.TestCase):
         self.assertTrue(any("lacks a // SAFETY: justification" in finding
                             for finding in self.inspect(boundary, bare)))
         for source in ("unsafe fn read() {}\n", "unsafe impl Send for Module {}\n",
-                       "unsafe trait Raw {}\n"):
+                       "unsafe trait Raw {}\n", 'pub unsafe extern "C" fn read() {}\n'):
             with self.subTest(source=source):
                 self.assertTrue(any("unsafe/FFI implementation is prohibited" in finding
                                     for finding in self.inspect(boundary, source)))

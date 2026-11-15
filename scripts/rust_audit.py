@@ -92,10 +92,11 @@ def justified(lines, row):
 def inspect_file(path, root, roles):
     data = path.read_bytes()
     relative = path.relative_to(root).as_posix()
-    # Edition 2024 spells a foreign block `unsafe extern`, which the pinned
-    # grammar cannot parse: files are parsed with that keyword blanked
-    # (offsets unchanged), so such a block is the foreign module it is.
-    tree = PARSER.parse(re.sub(rb"\bunsafe(\s+extern\s+\")", rb"      \1", data)).root_node
+    # Edition 2024 spells a foreign block `unsafe extern "ABI" {`, which the
+    # pinned grammar cannot parse: files are parsed with that keyword blanked
+    # (offsets unchanged), so such a block is the foreign module it is. Only a
+    # block loses it; an `unsafe extern "ABI" fn` keeps its unsafe modifier.
+    tree = PARSER.parse(re.sub(rb'\bunsafe(\s+extern\s+"[^"\n]*"\s*\{)', rb"      \1", data)).root_node
     errors = []
     if tree.has_error:
         errors.append("Rust syntax could not be audited")
