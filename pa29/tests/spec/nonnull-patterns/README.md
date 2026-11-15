@@ -29,7 +29,7 @@ return 42: `nonnull`, `nonnull-str`, `holder` (a local struct over
 `NonNull<u8>`), `nanoseconds`, `nonzero-char`, `code-point`, `nonzero-u8` and
 `percent`. rustc accepts all eight. RustGM accepts `nonnull`, `nonnull-str`,
 `holder` and `nonzero-u8`. The other four are pending its niche layout for
-scalar ranges other than zero-excluded unsigned: RustGM rejects them by name,
+scalar ranges other than those excluding only zero: RustGM rejects them by name,
 in a fresh consumer and in one source-core crate alike.
 
 Two opponents are rejected:

@@ -268,8 +268,7 @@ before the run it governs.
   The control asserted that rejection, a pending body-transport gap. The
   equality claim waited for it, and two cross-consumer equalities stood in
   meanwhile: the `Nanoseconds` and `CodePointInner` witnesses (one u32 base)
-  have identical LowIR, and so do the wrapped-Percent and honest Percent
-  witnesses. One feasibility probe of the witness form, for `Nanoseconds`, ran
+  have identical LowIR. One feasibility probe of the witness form, for `Nanoseconds`, ran
   before its declaration (`obj/parallel/nonnull/explore/c2/c-fp.rs`).
 
   Amended at 2026-11-09T04:04:04Z, with fn-item reification
@@ -283,11 +282,26 @@ before the run it governs.
   not an honest export": Percent rewritten to `1..=0xff`, the bits of
   `i8 is ..0 | 1..`. Its `Opt<Percent>` client reaches the niche fence before
   the interval matters, so its client is now the Percent witness. The
-  rewritten packet is accepted, and its witness LowIR equals the honest
-  packet's. The lib invariant
+  rewritten packet is accepted. The lib invariant
   `wrapped_rows_intern_the_local_connected_alternative` still shows that the
   consumer interns exactly the interval a local `..0 | 1..` interns. Its
   honest witness arrives with RangePattern role transport (item 5b).
+
+  Amended at 2026-11-15T23:13:12Z, after main's qualification run at
+  8b2e98948. A range that excludes only zero now has a scalar carrier at
+  either signedness, so the rewritten Percent is a 1-byte carrier like
+  NonZeroU8, and the honest `0..=100` still has none. The witness equality
+  with the honest Percent held only while signed ranges had no carrier. The
+  rewritten witness's `hold` takes an `i8`, where the honest Percent's takes
+  its value by object. It equals the honest NonZeroU8 witness once that
+  witness's `u8` is spelled `i8`; the first run of the amendment predicted
+  plain equality, but LowIR spells signedness. The frozen `percent` client is
+  accepted against the rewritten packet, with `o` at obj<1x1> and the honest
+  `nonzero-u8` entry, signedness aside, which is the originally declared
+  shared niche. rustc gives every one of these 1x1 and passes each
+  as an i8 immediate. RustGM's by-object passing of a carrier-less range
+  wrapper is an internal convention that both sides of an honest packet
+  share.
 - **The scaling client.** `Opt<base::R005>` reaches the same niche fence, so
   the fresh client is the `R005` witness. Packet bytes still grow exactly
   linearly, and the client's LowIR stays within 64 bytes.

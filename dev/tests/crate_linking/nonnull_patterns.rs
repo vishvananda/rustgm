@@ -458,17 +458,42 @@ fn forged_pattern_rows_reject_in_fresh_consumers() -> Result {
         packet.rejected(name, &mut consumer, diagnostic)?;
     }
     // A well-formed rewritten row, not an honest export: Percent as the bits
-    // of `i8 is ..0 | 1..`, witnessed beside the honest packet.
-    let client = entry(&packet, "percent-witness", &witness("Percent"))?;
-    let mut honest = packet.consumer(&client, "honest", &packet.metadata, &packet.owner());
-    super::artifacts::checked("honest", &packet.folder, &mut honest)?;
+    // of `i8 is ..0 | 1..`. The consumer interns exactly that interval, which
+    // excludes only zero, so the rewritten Percent is a scalar carrier as
+    // NonZeroU8 is, signed where NonZeroU8's is unsigned; the honest
+    // `0..=100` has none and passes by object. rustc gives each 1x1 and
+    // passes each as an i8 immediate.
     let metadata = packet.folder.join("wrapped.rgcrate");
     std::fs::write(&metadata, endpoints(bytes, percent, 1, 0xff))?;
-    let mut wrapped = packet.consumer(&client, "wrapped", &metadata, &packet.owner());
-    super::artifacts::checked("wrapped", &packet.folder, &mut wrapped)?;
+    let mut witnessed = Vec::new();
+    for (label, name, metadata) in [
+        ("honest", "Percent", &packet.metadata),
+        ("wrapped", "Percent", &metadata),
+        ("zero-excluded", "NonZeroU8", &packet.metadata),
+    ] {
+        let client = entry(&packet, &format!("{label}-witness"), &witness(name))?;
+        let mut consumer = packet.consumer(&client, label, metadata, &packet.owner());
+        super::artifacts::checked(label, &packet.folder, &mut consumer)?;
+        witnessed.push(held(&lowir(&packet, label)?, "entry", 1, 1)?);
+    }
+    assert!(witnessed[1].contains("@hold(%p0 : i8)"), "{}", witnessed[1]);
+    assert_eq!(witnessed[1], witnessed[2].replace("u8", "i8"));
+    assert_ne!(witnessed[1], witnessed[0]);
+    // So `Opt<Percent>` takes the niche NonZeroU8's takes.
+    let mut niche = packet.consumer(
+        &packet.fixture("percent"),
+        "wrapped-percent",
+        &metadata,
+        &packet.owner(),
+    );
+    super::artifacts::checked("wrapped-percent", &packet.folder, &mut niche)?;
+    let mut unsigned = packet.client("nonzero-u8");
+    super::artifacts::checked("nonzero-u8", &packet.folder, &mut unsigned)?;
+    let opt = function(&lowir(&packet, "wrapped-percent")?, "entry")?;
+    assert!(opt.contains("slot $s0 : obj<1x1>\n"), "{opt}");
     assert_eq!(
-        held(&lowir(&packet, "wrapped")?, "entry", 1, 1)?,
-        held(&lowir(&packet, "honest")?, "entry", 1, 1)?
+        opt,
+        function(&lowir(&packet, "nonzero-u8")?, "entry")?.replace("u8", "i8")
     );
     for length in 0..bytes.len() {
         assert!(crates::decode(&bytes[..length]).is_err(), "prefix {length}");
