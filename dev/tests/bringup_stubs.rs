@@ -498,10 +498,22 @@ const MEMORY: &str = "\
 ";
 /// An assertion that the lowering cannot decide for the asserted type.
 const UNDECIDED: &str = "#[unsafe(no_mangle)]pub fn refused(){assert_zero_valid::<&u8>()}\n";
+/// A validity assertion that holds for a struct of zeroable fields.
+const RECORD: &str = "\
+pub struct Header{pub tag:u8,pub length:u32,pub flags:u16,pub pair:(bool,[char;2])}
+#[unsafe(no_mangle)]pub fn zeroable_record(){assert_zero_valid::<Header>()}
+";
+/// A struct whose reference field rules out all-zero bytes.
+const REFERENCED: &str = "\
+pub struct Borrowed(pub u8,pub &'static u8);
+#[unsafe(no_mangle)]pub fn refused_record(){assert_zero_valid::<Borrowed>()}
+";
 const UNQUALIFIED: &str = "source intrinsic uses unqualified lowering: ";
 const UNLOWERED: &str = "source intrinsic executable lowering is not implemented: ";
 /// Where a strict library with such declarations has always stopped.
 const DECLARED: &str = "source intrinsic declaration semantics require a wider metadata profile";
+/// Where a strict library that also declares a struct stops.
+const DECLARED_KIND: &str = "source declaration kind is outside the initial source profile";
 const PARAMETERS: &str = "source const parameters are outside the initial source profile";
 
 /// One library: its source after `HEAD`, the strict profile's fence, the
@@ -586,6 +598,24 @@ const LOWERINGS: &[Lowering] = &[
         name: "undecided",
         source: [MEMORY, UNDECIDED],
         fence: DECLARED,
+        lowered: STORED,
+        emitted: SHIMS,
+        trapped: Some("assert_zero_valid"),
+    },
+    // A struct holds when each field does, as in rustc's default check; one
+    // with a reference field keeps its trap.
+    Lowering {
+        name: "record",
+        source: [MEMORY, RECORD],
+        fence: DECLARED_KIND,
+        lowered: STORED,
+        emitted: SHIMS,
+        trapped: None,
+    },
+    Lowering {
+        name: "undecided-record",
+        source: [MEMORY, REFERENCED],
+        fence: DECLARED_KIND,
         lowered: STORED,
         emitted: SHIMS,
         trapped: Some("assert_zero_valid"),

@@ -7,7 +7,7 @@ use super::{
 use crate::{
     body::ir,
     lowir::vocabulary::{Binary, Type},
-    types::{Kind, Primitive, TypeId, arguments::Argument},
+    types::{Kind, Primitive, TypeId, aggregate, arguments::Argument},
 };
 
 impl Lower<'_, '_, '_> {
@@ -80,25 +80,45 @@ impl Lower<'_, '_, '_> {
         Ok(self.zero_valid(ty)?.then_some(Selected::Unit))
     }
     /// Whether all-zero bytes are a value of a type built from numbers,
-    /// booleans, characters, thin raw pointers, arrays and tuples. Any other
-    /// type is left undecided.
+    /// booleans, characters, thin raw pointers, arrays, tuples and structs.
+    /// As in rustc's default check, a struct holds when each of its fields
+    /// does. Any other type, an enum or a union among them, is left undecided.
     fn zero_valid(&mut self, ty: TypeId) -> Result<bool, &'static str> {
         let types = self.context.types;
         let mut pending = vec![ty];
         let mut visited = 0_u32;
         while let Some(ty) = pending.pop() {
             visited += 1;
-            match types.kind(ty) {
-                Some(Kind::Primitive(primitive)) if primitive != Primitive::Str => {}
-                Some(Kind::Pointer { pointee, .. }) if !self.context.wide_referent(pointee)? => {}
-                Some(Kind::Array { element, .. }) => pending.push(element),
-                Some(Kind::Tuple(fields)) if visited < 1024 => pending.extend_from_slice(
-                    types
-                        .list(fields)
-                        .ok_or("asserted tuple type lost its fields")?,
-                ),
+            let fields = match types.kind(ty) {
+                Some(Kind::Primitive(primitive)) if primitive != Primitive::Str => continue,
+                Some(Kind::Pointer { pointee, .. }) if !self.context.wide_referent(pointee)? => {
+                    continue;
+                }
+                Some(Kind::Array { element, .. }) => {
+                    pending.push(element);
+                    continue;
+                }
+                Some(Kind::Tuple(fields)) if visited < 1024 => fields,
+                Some(Kind::Adt(..)) if visited < 1024 => {
+                    let shape = self.context.aggregates.shape(types, ty)?;
+                    if !matches!(
+                        shape.definition.kind,
+                        aggregate::Kind::Struct | aggregate::Kind::PhantomData
+                    ) {
+                        return Ok(false);
+                    }
+                    shape
+                        .variant(0)
+                        .ok_or("asserted struct has no field group")?
+                        .fields
+                }
                 _ => return Ok(false),
-            }
+            };
+            pending.extend_from_slice(
+                types
+                    .list(fields)
+                    .ok_or("asserted aggregate type lost its fields")?,
+            );
         }
         Ok(true)
     }
