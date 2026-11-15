@@ -9,7 +9,7 @@ single-field variant. A unit field does not satisfy that policy.
 The source policy now also admits two single-field variants. For each concrete
 instantiation, layout tries the declared orientation, then the reverse. One field
 must be zero-sized, with alignment no greater than the other field's alignment;
-the other must supply an existing pointer or zero-excluded unsigned carrier.
+the other must supply an existing pointer or zero-excluded integer carrier.
 The retained niche records the chosen empty and payload variants. Constant reads,
 construction and static initialization use those actual identities and preserve
 the companion's zero-sized field. The typed-header importer re-derives the same

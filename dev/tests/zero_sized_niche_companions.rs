@@ -4,6 +4,8 @@
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const PACKET: &str = "pa31/tests/spec/zero-sized-niche-companions";
 const TAG: &str = "zero_sized_niche_companions";
+#[path = "zero_sized_niche_companions/signed_niches.rs"]
+mod signed_niches;
 
 /// The CLI's typing status and its stderr for one packet file.
 fn cli_types(path: &std::path::Path) -> Result<(bool, String)> {

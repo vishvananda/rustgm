@@ -416,8 +416,9 @@ For owner review:
 
 - **Local layout: niches.** Frontend layout work, with an owner assigned when
   bodies reach it.
-  - Scalar-range niches other than zero-excluded unsigned, such as `Option` of
-    the signed `NonZero` types and the four pending clients.
+  - Scalar-range niches other than zero-excluded integers, such as the four
+    pending clients. Signed zero-excluded ranges have since gained the carrier
+    (`source-integer-niches/signed`).
   - Niche placement through non-transparent struct fields, which rustc uses
     but does not guarantee (holder).
 

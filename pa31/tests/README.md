@@ -500,6 +500,8 @@ claim of full Formatter/handler execution.
 original niche constructor/accessor bodies and a separate standard NonZero layout/
 FFI observer. `cleanup/contract.json` separately freezes a non-Copy transparent
 payload and actual source destructor trace; inactive None must not run Drop.
+`signed/contract.json` separately freezes the six signed widths written
+`..=-1 | 1..`, with the same invalid Some0 and unsupported partial-range opponents.
 The exact source intervals and authored protocol boundaries are retained in
 `source-provenance.json`. These fixtures do not replace the original generic
 NonZero/ZeroablePrimitive or full Option/Drop source graphs.

@@ -1,0 +1,47 @@
+{
+  "state": "outcomes declared before any Rust or candidate run of these files; two authoring errors in the first bytes were then corrected, as recorded under corrections",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "scope": "The zero-excluded niche of the parent contract for i8/i16/i32/i64/i128/isize, written `..=-1 | 1..` as pinned core/num/niche_types.rs writes its signed NonZero inners. Authored canonical RangePattern endpoints, Neg implementations and the minimal Option roles; the constructor/accessor bodies are the parent contract's. NOT the original generic NonZero/ZeroablePrimitive graph.",
+  "foundation": {
+    "path": "pa31/tests/spec/source-pattern-endpoints/authored-runtime.rs",
+    "sha256": "f24563db92c3cbea289bc284dae873820ccaa879cfddcc9535b4c63573cc7dba",
+    "end": 12696,
+    "prefix": "#![feature(core_intrinsics)]\n"
+  },
+  "rust_object_predictions": {
+    "source-runtime": 0,
+    "some-zero": 1,
+    "partial-range": 0
+  },
+  "rust_rejection": {
+    "some-zero": "E0080"
+  },
+  "native_predictions": {
+    "provider": "source-runtime.rs",
+    "observer": "observer.c",
+    "stdout": "expected.stdout",
+    "status": 0,
+    "separate_objects": true,
+    "values": "per width: None is 0; Some(1) is 1; Some(-1) is all ones; MIN transmuted to Option is Some(MIN); 0/1/-1/MIN/MAX cross extern \"C\" unchanged; size and alignment equal the integer's"
+  },
+  "candidate_opponents": {
+    "some-zero": "hard invalid Some payload (value is outside its scalar pattern range); must not silently encode as None",
+    "partial-range": "`1..=127` excludes more than zero: finite unsupported niche profile (scalar pattern enum niches require their complete ABI profile); NOT a Rust rejection"
+  },
+  "corrections": [
+    "`if let ..=-1|1..=val` lexed `1..=val` as one range; the authored pattern now ends in a space. Rust and the candidate both rejected the first bytes at parsing.",
+    "Rust rejected the const use of the const-unstable layout intrinsics; the crate now enables core_intrinsics as the parent foundation does. No declared outcome changed."
+  ],
+  "required": [
+    "Partial ranges/char/general Rust repr niches and source metadata transport",
+    "Full original generic NonZero/ZeroablePrimitive source associated-type projection/method graph"
+  ],
+  "files": {
+    "source-runtime.rs": "0880414de1adb2df3d074c629265368149fd6ebce4eb2a8c9063e49b63d946e3",
+    "some-zero.rs": "a84a54e063f1dd322f9552e2556490428bc23a2498ba2d193f76169d16d33146",
+    "partial-range.rs": "cb9e619e9e7e17eed3f3069494e7383a89550b623c457aecafe1c0cb217c8d56",
+    "observer.c": "662f2ef2ae746adde8607a54b75c64ff9fc71af5bdbfa46f7b7f117bc23c695c",
+    "expected.stdout": "2e3d41097e950b58ceb5d8e591ac8c27e97bc0785708aed1c32c2431ed3ceedf"
+  }
+}

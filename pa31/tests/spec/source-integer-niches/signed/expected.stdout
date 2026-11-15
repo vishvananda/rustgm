@@ -1,0 +1,7 @@
+i8 none0 some1 minus min max round size align
+i16 none0 some1 minus min max round size align
+i32 none0 some1 minus min max round size align
+i64 none0 some1 minus min max round size align
+i128 none0 some1 minus min max round size align
+isize none0 some1 minus min max round size align
+nested mixed packet -7 1234567

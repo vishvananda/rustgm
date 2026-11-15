@@ -154,7 +154,7 @@ impl Niches {
                     constraint: crate::types::Constraint::ScalarRange(id),
                     ..
                 } => {
-                    break Carrier::unsigned(types, ty, base, id, layout.size)?
+                    break Carrier::integer(types, ty, base, id, layout.size)?
                         .map_or(Answer::WiderScalar, Answer::Carrier);
                 }
                 Kind::Reference { .. } | Kind::Function { .. }

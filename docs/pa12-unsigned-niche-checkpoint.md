@@ -57,8 +57,23 @@ Cold-build timeout after strict checks, static/selection failures and initial
 independent disagreements remain retained with exact source receipts. They are
 not qualification passes.
 
+## Signed widths
+
+A signed `..=-1 | 1..` range is interned as the same raw interval, one through
+the all-ones mask, so i8/i16/i32/i64/i128/isize share the carrier, now named
+`ZeroExcludedInteger`. Only the carrier's admission and byte width read the
+signedness; every consumer already used the exact scalar type. Carrier, answer
+and table widths are unchanged. A signed range that excludes anything else
+(`1..=127`, `..=-2 | 0..`, `..=-1 | 2..`) keeps the wider-profile report. The
+two-field zero-sized companion policy shares the carrier search, so a unit
+variant beside a signed carrier niche-fills as well. Fixtures and predictions are
+in the cluster's `signed/contract.json`; the public controls are
+`zero_sized_niche_companions::signed_niches`.
+
+## Remaining
+
 Original open range helpers, full NonZero/ZeroablePrimitive/Option/Drop source
-contexts, signed/char/partial niches, metadata and full core/alloc/std artifacts
+contexts, char/partial niches, metadata and full core/alloc/std artifacts
 remain required. In particular, original `NonZero::new`/`get` in `nonzero.rs`
 call actual `transmute_unchecked`, which is a separate unimplemented intrinsic
 prerequisite; this checkpoint does not replace those calls. This checkpoint does not close an assignment or original library
