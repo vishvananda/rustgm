@@ -5,6 +5,7 @@ mod fill;
 mod memory;
 mod offsets;
 mod overlapping;
+mod trap;
 use super::context::{Context, Representation};
 use crate::{
     lowir::{

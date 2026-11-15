@@ -10,6 +10,31 @@ impl Reader<'_> {
     ) -> Result<(), &'static str> {
         crate::sema::compiler_items::guard_panics::require_guard(self.facts, role)
     }
+    /// Bring-up only: the name of a declared source intrinsic that has no body,
+    /// whose direct calls trap when reached until its lowering exists.
+    pub(crate) fn source_trap(
+        self,
+        definition: crate::resolve::model::DefId,
+    ) -> Result<Option<&'static str>, &'static str> {
+        if crate::support::bringup::selected().is_none() {
+            return Ok(None);
+        }
+        let Some(catalog) = self.facts.source_bindings.as_deref() else {
+            return Ok(None);
+        };
+        let Some(crate::support::bindings::SourceIntrinsic::Declaration(identity)) =
+            catalog.intrinsic_kind(definition)?
+        else {
+            return Ok(None);
+        };
+        let bodiless = self
+            .facts
+            .function_indices
+            .get(&definition)
+            .and_then(|&index| self.facts.functions.get(index))
+            .is_some_and(|function| function.body.is_none());
+        Ok(bodiless.then(|| identity.name()))
+    }
     pub(crate) fn require_source_future_assertion(self) -> Result<(), &'static str> {
         crate::sema::compiler_items::guard_panics::require_future_guard(self.facts)
     }

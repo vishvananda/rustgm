@@ -166,6 +166,14 @@ fn source_call(
             }
             Ok(Some(SourceIntrinsic::Abort))
         }
+        // The bring-up profile calls a trapping shim for a bodiless declaration.
+        Some(kind @ SourceIntrinsic::Declaration(_))
+            if Reader::new(facts)
+                .source_trap(crate::resolve::model::DefId(item.0))?
+                .is_some() =>
+        {
+            Ok(Some(kind))
+        }
         _ => Ok(None),
     }
 }

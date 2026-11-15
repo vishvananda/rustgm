@@ -86,6 +86,17 @@ fn require_source_body(
             .ok_or("source vararg fallback catalog is missing")?
             .vararg_fallback(facts, instance)?
     {
+        // A fallback body is the declared behaviour of an intrinsic that the
+        // compiler does not implement; the bring-up profile runs it and says so.
+        if let crate::support::bindings::SourceIntrinsic::Declaration(identity) = kind
+            && crate::support::bringup::selected().is_some()
+            && crate::support::bringup::waive(&format!(
+                "source intrinsic runs its fallback body: {}",
+                identity.name()
+            ))
+        {
+            return Ok(());
+        }
         return Err(match kind {
             crate::support::bindings::SourceIntrinsic::Declaration(_) => {
                 "source intrinsic executable lowering is not implemented"

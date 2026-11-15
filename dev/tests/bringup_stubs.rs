@@ -313,3 +313,49 @@ fn an_unevaluable_constant_stubs_the_function_that_demands_it() -> Result {
     assert_eq!(stubbed.matches("call void @abort()").count(), 1);
     Ok(())
 }
+
+#[test]
+fn unlowered_intrinsics_trap_or_run_their_fallback_bodies_and_are_named() -> Result {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../pa31/tests/spec/type-reflection/setup-v3/actual-pair.rs");
+    let base = std::fs::read_to_string(fixture)?
+        .replace("no_core,lang_items,", "no_core,lang_items,intrinsics,");
+    let user =
+        "#[unsafe(no_mangle)]pub fn reflected_identity(value:Identity)->u8{type_of(value).kind}";
+    for (name, declaration, fence, trapped) in [
+        (
+            "fallback",
+            "#[rustc_intrinsic] const fn type_of(_:Identity)->Reflected{Reflected{kind:7}}",
+            "source intrinsic runs its fallback body: type_of",
+            false,
+        ),
+        (
+            "bodiless",
+            "#[rustc_intrinsic] const fn type_of(_:Identity)->Reflected;",
+            "source intrinsic executable lowering is not implemented: type_of",
+            true,
+        ),
+    ] {
+        let source = format!("{base}\n{declaration}\n{user}\n");
+        let (strict, _) = library(
+            &format!("intrinsic-{name}-strict"),
+            &source,
+            "traps",
+            None,
+            false,
+        )?;
+        assert_eq!(strict.status.code(), Some(1));
+        assert!(!String::from_utf8(strict.stderr)?.contains("bringup-"));
+        let folder = format!("intrinsic-{name}");
+        let (passed, _) = library(&folder, &source, "traps_bringup", Some(""), false)?;
+        let stderr = String::from_utf8(passed.stderr)?;
+        assert!(passed.status.success(), "{stderr}");
+        assert!(waived(&stderr).contains(&fence), "{stderr}");
+        // Only the bodiless declaration becomes a shim that aborts when reached;
+        // its caller keeps its own body either way.
+        let lowered = std::str::from_utf8(&passed.stdout)?;
+        assert_eq!(lowered.contains("rg.trap.type_of"), trapped, "{lowered}");
+        assert_eq!(lowered.contains("call void @abort()"), trapped, "{lowered}");
+    }
+    Ok(())
+}

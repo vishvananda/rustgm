@@ -25,6 +25,7 @@ mod slices;
 mod subtraction_runtime;
 mod termination_call;
 mod text;
+mod trapped_calls;
 mod vararg;
 mod wrapper_transfers;
 mod wrapping_runtime;
@@ -953,6 +954,9 @@ impl Lower<'_, '_, '_> {
                 }
                 if let Some(call) = self.runtime_select(id)? {
                     return self.selected_callback(call);
+                }
+                if let Some(value) = self.trapped_call(id)? {
+                    return Ok(value);
                 }
                 return self.call(signature, callee, arguments, value.ty);
             }
