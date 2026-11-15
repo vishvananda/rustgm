@@ -1,5 +1,26 @@
 //! Closed source member requests retain exact typed facts; executable entry is separate.
 use super::*;
+
+fn checked_function_body(
+    report: &crate::resolve::expansion::Report,
+    facts: &Declarations,
+    prepared: &mut crate::pipeline::Prepared,
+    name: &str,
+) -> Result<Body> {
+    let function = facts
+        .functions
+        .iter()
+        .find(|f| {
+            report
+                .package
+                .names
+                .get(report.resolution.definitions[f.definition.0 as usize].name)
+                == name
+        })
+        .ok_or("actual checked function")?;
+    Ok(prepared.templates.function(report, facts, function)?.body)
+}
+
 #[test]
 fn closed_const_member_requests_reject_forged_owner_site_signature_and_selection() -> Result {
     let source =
@@ -130,7 +151,11 @@ fn runtime_member_calls_cannot_acquire_const_permission_from_a_body_flag() -> Re
 fn const_index_operand_and_expected_receiver_remain_distinct_authenticated_inputs() -> Result {
     let source = crate::test_source::fixture("pa31/tests/spec/source-index-places/const-valid.rs")?;
     let report = crate::test_source::source_provider(&source, "const_index_operands")?;
-    let crate::pipeline::Analysis { mut facts, .. } = crate::pipeline::analyze_source(&report)?;
+    let crate::pipeline::Analysis {
+        mut facts,
+        mut prepared,
+    } = crate::pipeline::analyze_source(&report)?;
+    let body = checked_function_body(&report, &facts, &mut prepared, "calc")?;
     let (site, original) = facts
         .methods
         .calls
@@ -165,7 +190,15 @@ fn const_index_operand_and_expected_receiver_remain_distinct_authenticated_input
     };
     let node_type = facts.node(site).and_then(|node| node.ty);
     let mut work = Work::new(1_000_000);
-    place_result(&report, &facts, call, node_type, &mut work)?;
+    let proof = signatures::checked(
+        &facts,
+        &body,
+        body.source.source().ok_or("source owner")?,
+        call,
+        &mut work,
+    )?
+    .ok_or("actual safe member signature")?;
+    place_result(&report, &facts, call, node_type, proof, &mut work)?;
     assert_ne!(original.borrow, Some(original.receiver));
     let Some(Kind::Reference {
         mutable,
@@ -194,11 +227,11 @@ fn const_index_operand_and_expected_receiver_remain_distinct_authenticated_input
             _ => changed.borrow = None,
         }
         facts.methods.calls.insert(site, changed);
-        assert!(place_result(&report, &facts, call, node_type, &mut work).is_err());
+        assert!(place_result(&report, &facts, call, node_type, proof, &mut work).is_err());
     }
     facts.methods.calls.insert(site, original);
     assert!(place_operand(&facts, site, site.node, original.borrow, mutable, &mut work).is_err());
-    place_result(&report, &facts, call, node_type, &mut work)?;
+    place_result(&report, &facts, call, node_type, proof, &mut work)?;
     Ok(())
 }
 
@@ -282,18 +315,7 @@ fn explicit_deref_place_keeps_its_actual_receiver_signature_and_referent() -> Re
         mut facts,
         mut prepared,
     } = crate::pipeline::analyze_source(&report)?;
-    let function = facts
-        .functions
-        .iter()
-        .find(|f| {
-            report
-                .package
-                .names
-                .get(report.resolution.definitions[f.definition.0 as usize].name)
-                == "field"
-        })
-        .ok_or("actual explicit deref function")?;
-    let body = prepared.templates.function(&report, &facts, function)?.body;
+    let body = checked_function_body(&report, &facts, &mut prepared, "field")?;
     let index = statement(&body)?;
     let mut work = Work::new(1_000_000);
     let call = source_call(&facts, &body, &body.statements[index], &mut work)?;
@@ -303,7 +325,15 @@ fn explicit_deref_place_keeps_its_actual_receiver_signature_and_referent() -> Re
         .calls
         .get(&call.site)
         .ok_or("actual selected deref")?;
-    place_result(&report, &facts, call, node_type, &mut work)?;
+    let proof = signatures::checked(
+        &facts,
+        &body,
+        body.source.source().ok_or("source owner")?,
+        call,
+        &mut work,
+    )?
+    .ok_or("actual safe member signature")?;
+    place_result(&report, &facts, call, node_type, proof, &mut work)?;
     for mutation in 0..3 {
         let mut changed = original;
         match mutation {
@@ -312,7 +342,7 @@ fn explicit_deref_place_keeps_its_actual_receiver_signature_and_referent() -> Re
             _ => changed.callable = crate::types::TypeId::UNIT,
         }
         facts.methods.calls.insert(call.site, changed);
-        assert!(place_result(&report, &facts, call, node_type, &mut work).is_err());
+        assert!(place_result(&report, &facts, call, node_type, proof, &mut work).is_err());
     }
     facts.methods.calls.insert(call.site, original);
     assert!(
@@ -321,6 +351,7 @@ fn explicit_deref_place_keeps_its_actual_receiver_signature_and_referent() -> Re
             &facts,
             call,
             Some(crate::types::TypeId::UNIT),
+            proof,
             &mut work,
         )
         .is_err()
@@ -348,11 +379,12 @@ fn explicit_deref_place_keeps_its_actual_receiver_signature_and_referent() -> Re
             &facts,
             Call { signature, ..call },
             node_type,
+            proof,
             &mut work
         )
         .is_err()
     );
-    place_result(&report, &facts, call, node_type, &mut work)?;
+    place_result(&report, &facts, call, node_type, proof, &mut work)?;
     Ok(())
 }
 

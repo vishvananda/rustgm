@@ -1,5 +1,41 @@
 # RustGM handoff — 2026-11-14
 
+LATEST genuine original: clean candidate38-release on published638369a03,
+3967 hashes/empty patch,6m57s build. CLI
+951d14737beb79ccd004e96fcdcb429cc57a95790775f40386bcd8c3afc65a3e.
+Original v14 library38 CLEARS unsafe SlicePartialEq and FAILS
+slice/index.rs:1035/file226:34591 in SliceIndex<[T]> for tuple(Bound<usize>,Bound<usize>)
+get method: try_into_slice_range(slice.len(),self)?.get(slice), with
+`generic aggregate requires instantiated fields`.18.82637868099846s/status1/
+no timeout/RSS732340KiB. No core.rgm/0-byte core.lowir. Postcheck38 terminal PASS
+722 originals/375 opens/six reviewed pins/all3967/clean pin/fixed120s and unchanged
+14500624work/1GiB attempted/64MiB retained. Raw unsafe-const-members/{build38-release,
+core-artifact38,artifact-postcheck38}.log and original-library-candidate38/.
+No speed/artifact/native-consumer claim. Types aggregate.rs::shape or instances::get
+emits this error; identify the actual missing nominal instance/consumer beforefix.
+No reduction or production edit for this new frontier yet. Reuse typed demand/
+instantiated fields; never substitute declaration fields for generic instances.
+
+Full43660831620 on638369a03 FAILED before tests:8 E0061 private calls in two
+initializer_members tests omit the new Signature argument. No semantic tests ran.
+Raw unsafe-const-members/ci43660831620-failed.log. Fixed only that private testfile:
+actual prepared calc/field bodies provide witnesses; all8 callers and existing
+rejection mutations retained. ci-repair-fast=1794704897192954334 two exact37.08s
+passesallstatic/publiccontrols. ci-repair-equivalence.json proves onlyone test-only
+Rust hash changes; all production hashes and CLI1ccf4aff…efb2c1d0 stay identical.
+Original38 retains original producer/testhashes; no fresh optimizedbuild/native/
+original repeat for test-only fix. Private execution still pending(new full3087).
+NEXT publish test-only repair and dispatch ONE full successor (failed runterminal),
+then reduce genuine generic aggregate frontier. Prior full43656293922 staysfully
+green3085 release4.97s/debug45.56s. Source/ordinary unsafe34 outcomes and12native
+programs remain qualified; priorTry/newunsafeprivateguards stillawait3087fullCI.
+No coreartifact or wholePA25–44 completion; released113component unchanged.
+Clean38/current37 and unsafe replay available;36/Tryreplay2 binaries RETIRED/
+UNAVAILABLE via unsafe-const-members/retired-pins.json. Pendingperf21–24 preserved.
+Sameoneworker/B/mainGit-only/2jobs150GiBreserve16GiBcap/frozenbackend17b024f69.
+This continuation supersedes older NEXT/current-original/CI/availability text.
+
+
 LATEST checkpoint: unsafe generic const members through actual blanket proof.
 See docs/pa25-unsafe-const-members.md. New transient Signature witness binds full
 selected target/opened signature; unsafe Rust additionally consumes exact typed

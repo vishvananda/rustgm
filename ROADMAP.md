@@ -4,6 +4,7 @@ The [unsafe const-member checkpoint](docs/pa25-unsafe-const-members.md) consumes
 exact discharged safety rows and complete source calls.34 ordinary/source outcomes
 and twelve native programs pass, including the new simple CTFE consumer. Original
 core, earlier payment/bootstrap contracts and whole assignments remain required.
+Clean38 clears the unsafe helper and reaches generic aggregate field instantiation.
 
 
 The [const Try protocol checkpoint](docs/pa25-const-try-calls.md) authenticates

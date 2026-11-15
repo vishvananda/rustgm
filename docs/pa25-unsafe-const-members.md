@@ -68,3 +68,19 @@ metadata/LowIR/native consumer artifact exists. WholePA25–44, originalv13/v14,
 Future/async, all older CTFE/bootstrap/native/closure/ABI requirements and the
 released113-case PA25 component retain their prior status. New simple unsafe CTFE
 payment does not close earlier aggregate/open/lifetime-bearing accepting consumers.
+
+Clean release38 on published638369a03 clears the original unsafe SlicePartialEq
+fence.3967 hashes/empty patch, CLI951d1473…fc65a3e,6m57s build. Original v14 now
+rejects slice/index.rs:1035/file226:34591 with `generic aggregate requires
+instantiated fields`.18.82637868099846s/status1/no timeout/RSS732340KiB;
+no metadata/0-byte LowIR. Postcheck passes722 originals/375 opens/six reviewed
+pins/all3967/clean pin/fixed120s/unchanged limits. Diagnostic only/no speed claim.
+
+Combined43660831620 failed before tests on eight outdated private place_result
+calls in two initializer tests. Their actual prepared fixtures now supply the
+signature witness; all opponents remain unchanged. Test-only repair passes two
+exact/static controls in37.08s (1794704897192954334). Equivalence receipt proves
+only that private Rust file changes, while every production hash and dev-fast
+CLI1ccf4aff…efb2c1d0 remain identical. Original38 keeps its original producer and
+source hashes. New full CI remains required; no redundant optimized/native/original
+run was added for this private adapter correction.
