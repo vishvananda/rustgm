@@ -33,7 +33,8 @@ pub struct Methods {
     names: Option<Box<names::Index>>,
     library: Option<Box<slices::Library>>,
     pointers: Option<Box<pointers::Library>>,
-    comparison_borrows: Option<Box<ComparisonBorrows>>,
+    /// Cold operand facts of comparisons and index expressions.
+    pub(super) operands: Option<Box<Operands>>,
     pub(super) trait_names: HashSet<NameId>,
     /// Inherent method names whose validated source receiver wraps Self, as
     /// `self: Pin<&mut Self>` does. Only these discover owners through the
@@ -48,10 +49,6 @@ pub struct Methods {
     pub(super) bound_uses: HashMap<NodeKey, DefId>,
     pub(super) receivers: HashMap<DefId, (TypeId, u32)>,
     pub calls: HashMap<NodeKey, Call>,
-    /// An index expression whose operand reaches its indexed place through
-    /// Deref calls keeps their plan beside its own index selection. Cold:
-    /// only a source core that declares `Deref` and `Index` has any.
-    pub(super) index_operands: Option<Box<HashMap<NodeKey, super::bodies::ProtocolPlanId>>>,
     /// Unique owner-pair probes, shared across names and independent of call demand.
     pub overlap_pairs: usize,
     pub overlap_steps: usize,
@@ -77,26 +74,25 @@ pub struct Call {
     pub receiver: TypeId,
 }
 
+/// Operand facts that only some bodies have, behind one cold pointer.
 #[derive(Default)]
-struct ComparisonBorrows {
+pub(super) struct Operands {
+    /// The borrowed type of a comparison's right operand.
     right: HashMap<NodeKey, TypeId>,
+    /// An index expression whose operand reaches its indexed place through
+    /// Deref calls keeps their plan beside its own index selection. Only a
+    /// source core that declares `Deref` and `Index` has any.
+    pub(super) indexed: HashMap<NodeKey, super::bodies::ProtocolPlanId>,
 }
 impl Methods {
     /// The plan of the Deref calls an index expression's operand takes.
     pub(crate) fn index_operand(&self, node: NodeKey) -> Option<super::bodies::ProtocolPlanId> {
-        self.index_operands.as_deref()?.get(&node).copied()
+        self.operands.as_deref()?.indexed.get(&node).copied()
     }
     pub(super) fn retain_comparison_borrow(&mut self, node: NodeKey, ty: TypeId) {
-        self.comparison_borrows
-            .get_or_insert_default()
-            .right
-            .insert(node, ty);
+        self.operands.get_or_insert_default().right.insert(node, ty);
     }
     pub(crate) fn comparison_borrow(&self, node: NodeKey) -> Option<TypeId> {
-        self.comparison_borrows
-            .as_deref()?
-            .right
-            .get(&node)
-            .copied()
+        self.operands.as_deref()?.right.get(&node).copied()
     }
 }

@@ -246,13 +246,9 @@ impl Checker<'_> {
             return Ok(());
         }
         // The cold table's owner is paid with its first plan.
-        let (length, capacity, owner) = self.facts.methods.index_operands.as_deref().map_or(
-            (
-                0,
-                0,
-                size_of::<crate::support::hash::HashMap<NodeKey, ProtocolPlanId>>(),
-            ),
-            |rows| (rows.len(), rows.capacity(), 0),
+        let (length, capacity, owner) = self.facts.methods.operands.as_deref().map_or(
+            (0, 0, size_of::<crate::sema::methods::Operands>()),
+            |operands| (operands.indexed.len(), operands.indexed.capacity(), 0),
         );
         let growth = crate::support::retained::Growth::map::<NodeKey, ProtocolPlanId>(
             length, capacity, count,
@@ -264,8 +260,9 @@ impl Checker<'_> {
         )?;
         self.facts
             .methods
-            .index_operands
+            .operands
             .get_or_insert_with(Box::default)
+            .indexed
             .try_reserve(count)
             .map_err(|_| self.error(self.state.body.node, "index operand plan allocation failed"))
     }
@@ -361,8 +358,9 @@ impl Checker<'_> {
             if matches!(plan.kind, Kind::Index { .. }) {
                 self.facts
                     .methods
-                    .index_operands
+                    .operands
                     .get_or_insert_with(Box::default)
+                    .indexed
                     .insert(plan.node, id);
                 continue;
             }
