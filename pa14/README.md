@@ -1,6 +1,6 @@
 # RustGM Programming Assignment 14: Moves and initialization
 
-Status: **implemented-draft**. Prerequisite: PA13. The profile is Rust 1.98.0,
+Status: **implemented**. Prerequisite: PA13. The profile is Rust 1.98.0,
 edition 2024, Linux x86-64. This assignment publishes the ownership proof already
 required beneath the earlier executable subset. Later lifetime, loan and
 destruction proofs remain separate.

@@ -1,6 +1,7 @@
 # PA14 validation
 
-PA14 is implemented-draft for Rust 1.98.0, edition 2024, Linux x86-64. The
+PA14 is implemented for its documented course profile: Rust 1.98.0, edition
+2024, Linux x86-64. The 2026-11-15 reconciliation is at the end of this record. The
 [handout](../pa14/README.md) specifies the ownership view and its proof boundary;
 the [manifest](../pa14/tests/manifest.json) declares every outcome before oracle
 generation. The implementation already existed beneath the earlier executable
@@ -93,3 +94,17 @@ no earlier oracle changes. `obj/pa14-course/release-summary.json`, `release.log`
 `installed-independent.log`, `installed-native.log` and
 `obj/native/pa14/evidence.json` retain these results. Debug/release compiler
 invariants are unchanged from PA13's 347-test runs and successful hosted CI.
+
+## Reconciliation, 2026-11-15
+
+This record still describes the published suite. The current manifest has the
+same 124 cases, the same 112 ownership inspections (58 accept, 54 reject) and
+twelve executable programs, and the same seven cluster counts. The handout
+states the same total and no open pre-release item.
+
+With the release CLI built from clean `80229d28d` (SHA-256
+`9717800a61fce3779a9ca7b0715fdc2e2594672365191bb778477bbbb140a2b9`) and the
+locked CPPGM v3 backend, `course.py pa14` passes 124/124 against the committed
+text, `check_syntax.py pa14` agrees on all 124 independent rustc checks and
+`check_native.py pa14` passes all twelve executable comparisons. On that
+evidence the status changed from implemented-draft to implemented.

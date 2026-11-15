@@ -215,13 +215,16 @@
       "additional_modes": [
         "--emit-lowir"
       ],
-      "status": "implemented-draft",
+      "status": "implemented",
       "scope": "Owned move paths, Copy/Clone obligations, definite initialization and maybe-written joins; user-reference loans, outlives and destruction remain separate proofs",
       "test_families": [
         "partial moves",
         "disjoint fields",
         "reinitialization",
         "branch/loop joins"
+      ],
+      "release_evidence": [
+        "docs/pa14-validation.md"
       ]
     },
     {

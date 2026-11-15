@@ -82,10 +82,11 @@ post-lowering work. It addresses original DropGuard::dismiss's generic const
 member check; clean original-library verification is next. Three reduced library
 metadata positives remain open; no whole PA or original artifact is complete.
 
-PA1–PA24 have active, independently qualified text-oracle suites. PA21–PA24 are
-**implemented**, with their completed release evidence recorded in
-assignments.json. PA1–PA20 retain implemented-draft while individual release
-records are reconciled. PA25–PA45 remain planned as whole assignments. No
+PA1–PA24 have active, independently qualified text-oracle suites. PA14 and
+PA21–PA24 are **implemented**, with their completed release evidence recorded in
+assignments.json. The other PA1–PA20 stages retain implemented-draft; the
+[reconciliation table](docs/assignment-order.md#pa1pa20-record-reconciliation)
+lists what each record lacks. PA25–PA45 remain planned as whole assignments. No
 planned or empty suite counts as passing.
 
 The [wide constant product checkpoint](docs/pa25-wide-constant-products.md)
@@ -456,7 +457,7 @@ unit manifest plus the deferred list in its release record):
 | [11](pa11/README.md) | Procedural LowIR | implemented-draft |
 | [12](pa12/README.md) | Aggregates and layout | implemented-draft |
 | [13](pa13/README.md) | Pattern semantics | implemented-draft |
-| [14](pa14/README.md) | Moves and initialization | implemented-draft |
+| [14](pa14/README.md) | Moves and initialization | implemented |
 | [15](pa15/README.md) | Lifetime contracts | implemented-draft |
 | [16](pa16/README.md) | Borrow checking | implemented-draft |
 | [17](pa17/README.md) | Destruction | implemented-draft |

@@ -68,19 +68,58 @@ assignments.json. This recognizes their already completed course releases:
 
 | PA | Existing release evidence |
 | --- | --- |
+| 14 | [Ownership validation](pa14-validation.md), reconciled 2026-11-15 |
 | 21 | [Generic relationship qualification](pa21-validation.md) |
 | 22 | [Unsized release](pa22-release.md) |
 | 23 | [Trait-object release](pa23-release.md) |
 | 24 | [Closure release and publication](pa24-release-review.md), [performance](pa24-final-performance.md) |
 
 These statuses describe the documented pinned course profiles, not arbitrary
-Rust compatibility or a new full qualification of the current compiler. PA1–PA20
-remain implemented-draft pending their individual release-record reconciliation.
+Rust compatibility or a new full qualification of the current compiler. PA14
+joined them on 2026-11-15. The other PA1–PA20 stages remain implemented-draft;
+[the reconciliation below](#pa1pa20-record-reconciliation) lists what each lacks.
 The ordinary PA6/PA19 module-versus-primitive lookup regression has an actual
 independently observed reducer and a separate repair lane; it is not excused as
 SourceCore-only behavior. Internal/SourceCore shared numeric solver evidence
 still needs an ordinary reproducer before changing its published PA21 profile
 conclusion. Preserve PA13 and PA19's documented Reference/rustc differences.
+
+### PA1–PA20 record reconciliation
+
+Reviewed 2026-11-15 against the current manifests. A stage's existing evidence
+supports `implemented` when a per-stage release record exists, the record
+documents a release of the handout's profile with independent qualification,
+the record and handout describe the suite that is published now, and neither
+names an open pre-release item. With the release CLI built from `80229d28d`,
+all 6,934 committed PA1–PA20 text cases pass, so no stage is blocked by a
+failing oracle. Only PA14 meets every condition.
+
+| PA | Record | Record total | Manifest | What the record lacks |
+| --- | --- | ---: | ---: | --- |
+| 1 | none; [buildout handoff](buildout.md) only | 51 | 51 | A release record. The handout calls the lexer the first buildout slice and names three open items: the grammar-edge matrix, the deferred-invalid-token boundary with PA2/PA3 and an independent reference audit |
+| 2 | none; buildout handoff only | 139 | 142 | A release record for the current suite. The handout carries an unqualified wide floating extension |
+| 3 | none; buildout handoff only | 88 | 93 | A release record for the current suite |
+| 4 | none; buildout handoff only | 181 | 200 | A release record for the current suite |
+| 5 | none; buildout handoff only | 213 | 231 | A release record for the current suite. The handout defers attribute placement beyond its cases to PA40 |
+| 6 | [pa6-validation](pa6-validation.md) | 153 | 259 | Qualification of the 106 cases added since. The module-versus-primitive lookup regression named above has no closing record |
+| 7 | [pa7-validation](pa7-validation.md) | 181 | 183 | Qualification of the current suite |
+| 8 | [pa8-validation](pa8-validation.md) | 87 | 126 | Qualification of the current suite |
+| 9 | [pa9-validation](pa9-validation.md) | 198, later 200 | 203 | Qualification of the current suite. The record calls PA9 an implemented draft |
+| 10 | [pa10-validation](pa10-validation.md) | 47 | 81 | Qualification of the current suite. The handout still says 47 |
+| 11 | [pa11-validation](pa11-validation.md) | 194 | 191 | An account of the current suite |
+| 12 | [pa12-validation](pa12-validation.md) | 110, later 109 | 125 | Qualification of the current suite |
+| 13 | [pa13-validation](pa13-validation.md) | 803 | 805 | Qualification of the current suite. The record says implemented-draft and the handout says 802 |
+| 14 | [pa14-validation](pa14-validation.md) | 124 | 124 | Nothing: reconciled and implemented |
+| 15 | [pa15-pa16-validation](pa15-pa16-validation.md) | 191 | 202 | Qualification of the current suite |
+| 16 | [pa15-pa16-validation](pa15-pa16-validation.md) | 292 | 340 | Qualification of the current suite. The handout says 329 |
+| 17 | [pa17-validation](pa17-validation.md) | 207 | 205 | An account of the current suite |
+| 18 | [pa18-validation](pa18-validation.md) | 441 | 510 | Qualification of the current suite. The handout says 502 |
+| 19 | [pa19-validation](pa19-validation.md) | 1,070 | 1,236 | Qualification of the current suite. The lookup regression has no closing record, and the handout keeps three redundant-binder differences as part of its draft contract |
+| 20 | [pa20-validation](pa20-validation.md) | 1,343 | 1,627 | Qualification of the current suite. The handout lists its own conditions for a status change |
+
+"Qualification of the current suite" means one dated entry in the stage's
+record that states the current totals and the independent rustc and native
+results for them, as the PA14 record now does.
 
 **None of PA25–PA30 is complete as written.** They contain implemented finite
 components and real remaining production gaps, as well as missing publication.
