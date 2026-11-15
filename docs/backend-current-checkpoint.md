@@ -204,14 +204,149 @@ path:
   `return=noreturn` has no observable effect at `-O0`, so the text view and
   the equal objects are its evidence.
 
-### What it does not do
+### The in-process bridge
 
-RustGM still reaches the backend through LowIR text and the subprocess
-bridge. Nothing in the frontend uses the library.
+RustGM can now hand its typed LowIR to the library directly. Nothing that
+already exists changed: `rustgm`, every script and every test still reach
+the backend through LowIR text and the subprocess bridge.
 
-An in-process FFI bridge is approved by the user and is the next step. It
-belongs in its own crate outside the frontend library, which keeps its
-`unsafe` ban. This checkpoint does not build that bridge.
+- `dev/backend-bridge/` is a separate crate, `rustgm-backend-bridge`, with
+  its own lock file. The frontend does not depend on it and keeps
+  `unsafe_code = "forbid"`. Its build script reads the verified pin from
+  `scripts/backend.py --library-config`, which checks the hashes the lock
+  records. It refuses an interface version other than 3 and links
+  `libcppgm_lowir.a` with the C++ runtime, pthread and libm. With no
+  installed library the crate does not build, and nothing else is affected.
+- Every foreign declaration and unsafe block is in `src/ffi.rs`. Each block
+  states why it is sound in a `// SAFETY:` comment. `scripts/rust_audit.py`
+  accepts FFI in that one file only, requires the comment there and still
+  refuses unsafe functions, impls and traits.
+- At run time the bridge refuses a library that reports another interface
+  version or another release than the lock's.
+- The bridge states the module that the pinned text reader would build from
+  RustGM's text for the same program. Symbols, signatures, blocks,
+  temporaries, slots, literals and templates are created in the order the
+  text first mentions them. Each literal carries the bits the reader gives
+  its spelling in that context. The writer's typed checks run first
+  (`lowir::validation::instruction` and `terminator`).
+- It states every form the writer writes:
+  - globals with scalar, zero and address items, including
+    `storage=readonly`;
+  - `classes=` and `result_classes=`;
+  - call boundaries `as (...)`, through `FLAG_SIGNATURE` and a boundary;
+  - call-site `classes=N:`, through argument facts;
+  - `arity=variadic` and `return=noreturn`;
+  - assembly templates and `asm`.
+
+  Every function has default linkage through a symbol fact, and the entry
+  has the entry role. The bridge states no debug records.
+- A form it does not state sends the program down the text path, and says
+  so. The forms and their counts go to standard error. The program's text is
+  written beside the output and compiled by `backend.py --emit-object`, and
+  that object is written. Most of these forms are refused by the text reader
+  too: a literal it cannot read in its context, an object alignment that is
+  not a power of two, a register outside the writer's tables, inconsistent
+  identities, a call through a slot or a literal, and call-site classes of
+  one eightbyte. The bridge alone also refuses an integer literal of more
+  than 64 bits in a float context.
+- `rustgm-inprocess` is `rustgm`'s command line with `--emit-object`, plus
+  `--library-view PATH`, `--object-pic` and `--emission-timing`. Both
+  binaries share `dev/bin/driver.rs`. `rustgm` emits through
+  `dev/bin/emission.rs`, which is the writer exactly as before.
+- `backend.py --test-bridge` joins `make test-backend`. It builds the crate,
+  states `tests/backend/library.c`'s module through RustGM's own `Program`
+  and checks it in fixed and position-independent form:
+  - the library view must show every form;
+  - the object must equal, byte for byte, the driver's objects from that view
+    and from RustGM's own text;
+  - `movntps` must be in `rg_library_stream`;
+  - the object must link with `tests/backend/library-observer.c` and pass it.
+
+  Without an installed library the handshake reports `SKIP`. With an
+  installed library whose bytes changed, it fails.
+
+What still does not use the bridge: linking, which the object bridge still
+does; optimization, since the bridge compiles at level 0 only, matching the
+driver's `-O0`; and the defaults. The text path cannot compile
+position-independent code, so a fallback under `--object-pic` is an error.
+
+The bridge's evidence, on the lane branch `lane/frontier-20261115` over main
+`10995ebcd`, with the commands behind the same resource and storage prefixes
+as below:
+
+- `make test-backend`: all five handshakes pass, the fifth being
+  `PASS: the in-process bridge states RustGM's LowIR to the library; its
+  objects equal the driver's objects of the library view and of RustGM's
+  text, and link`.
+- Two temporary negative controls, reverted afterwards:
+  - Swapping the handshake's call-site classes to `1:sse_integer` failed
+    the view check. Bypassing that check, the observer still failed (exit 6)
+    in both forms.
+  - Forcing a fallback at every `branch` sent seven of eight sampled
+    programs down the text path. Each reported the count of the form
+    (`negative control: branch x4`, for example), left no temporary file,
+    produced the driver's object of its text byte for byte and behaved the
+    same.
+- An equivalence corpus compiled each program twice with
+  `rustgm-inprocess`: as text, and in process with the library view. The
+  driver compiled the view and the text with `cppgm -O0 -c`. Both objects
+  were linked, with the case's C providers, and run.
+
+  | Corpus | Programs | Equal to view object | Equal to text object | Same behaviour | Fallbacks |
+  |---|---|---|---|---|---|
+  | PA11 to PA24 executed cases, every 25th | 131 | 131 | 131 | 131 | 0 |
+  | PA30 `c-abi`, PA28 `atomic-u32`, PA27 `unsafe-places`, all | 103 | 103 | 103 | 103 | 0 |
+  | PA25 `const-machine`, PA26 `operator-kernel` and `iteration-kernel`, PA28 `runtime-memory`, every 10th | 64 | 64 | 64 | 64 | 0 |
+  | PA41 `asm-native/native.rs` with its C observer | 1 | 1 | 1 | 1 | 0 |
+  | Linked core consumers (release build) | 7 | 7 | 7 | 7 | 0 |
+
+  The texts of these programs state `arity=variadic` in 23, call-site
+  `classes=N:` in 5, call boundaries `as (...)` in 29 and `result_classes=`
+  in 17. The PA41 program states six assembly templates; its object has six
+  `movntps` stores and prints `expected.stdout`. All seven linked consumers
+  print their recorded standard output: `atomics`, `consts-statics`,
+  `duration-net`, `integers`, `intrinsic-ops`, `fmt-floats` and
+  `fmt-integers`.
+
+  The in-process object equals the driver's object from RustGM's text
+  because the bridge creates every identity in the reader's order. A bridge
+  with its own numbering would link and behave the same, but its bytes
+  would differ.
+
+The measurement compared text plus a subprocess with in-process emission on
+the largest of those modules. The module was `intrinsic-ops`, whose text is
+3,443,718 bytes, built against core with the census's skip list. One
+immutable release `rustgm-inprocess` served both arms (SHA-256 `6b48fc27`),
+so the frontend was the same and only the transport differed:
+
+- text: `--emit-lowir -o t.lowir`, then `cppgm -O0 -c t.lowir`;
+- in process: `--emit-object`.
+
+`--emission-timing` timed the emission step inside the binary. The input
+tree was frozen read-only (tree hash `cb49e107`). The run was two A/A pairs
+followed by three A B B A blocks. Every run produced the same LowIR and the
+same object (`fe163f3f`) in both arms. The observations are in
+`obj/bridge-measure/run-2.log`.
+
+| Six A B B A runs per arm, median (range) | Text and subprocess | In process |
+|---|---|---|
+| Emission inside `rustgm` | 23.8 ms (23.2–25.6), the writer | 87.4 ms (80.5–145.9), statement and library compile |
+| Driver process | 109.6 ms (105.0–125.0) | none |
+| Transport | 134.3 ms (128.5–148.5) | 87.4 ms (80.5–145.9) |
+| End to end | 25.7 s (23.4–33.8) | 27.6 s (24.7–32.6) |
+| Peak RSS of `rustgm` | 901 MiB | 901 MiB |
+| Peak RSS of the driver | 207 MiB | none |
+
+Per A B B A block, in-process transport was 17.0, 44.0 and 55.4 ms faster.
+The A/A emission differences were 0.5 ms (text) and 8.2 ms (in process).
+
+End to end, the blocks differed by +1.66, −1.25 and −3.24 s, and the A/A
+pairs by 0.44 and 1.86 s. That is the noise of a 24 to 34 s frontend on a
+machine at load average 56, which is larger than the whole transport. The
+bridge saves about a third of the transport, roughly 0.2 % of this build,
+and adds no peak memory: the frontend's peak comes before emission. The
+text arm called the driver directly, without `backend.py`'s Python start-up,
+so in normal use the text path costs more than shown here.
 
 ## Decisions
 
@@ -228,6 +363,16 @@ belongs in its own crate outside the frontend library, which keeps its
 - The fixed code form is the one the object bridge's own command makes. The
   position-independent form is checked too, because the host C driver links
   position-independent executables by default.
+- The bridge creates identities in the text reader's order, so that its
+  object equals the driver's object from RustGM's text. Rejected: numbering
+  in the bridge's own order, which links and behaves the same but cannot be
+  checked byte for byte against the text path.
+- A statement that meets a form the bridge does not state is skipped, not
+  sent with a placeholder. One pass therefore counts every such form, and
+  the library never holds a partial record.
+- The fallback is automatic and printed, so a program the bridge cannot
+  state still builds. Rejected: failing the build, which would make
+  `--emit-object` less capable than the text path.
 - The v0.9.0 lock, checkpoint and pins are kept. A worktree that still holds
   the v0.9.0 configuration must run `scripts/setup_backend.py` again.
 
