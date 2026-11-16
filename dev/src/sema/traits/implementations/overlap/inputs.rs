@@ -280,7 +280,14 @@ impl Inputs {
             else {
                 continue;
             };
-            if predicate.bound.trait_parts().is_some() {
+            if let Some((application, constness)) = predicate.bound.trait_parts() {
+                // rustc 1.98 elaborates `predicates_of`, where core's
+                // `I: [const] Iterator` is the plain trait predicate; its
+                // const condition is no obligation of the intersection.
+                let mut predicate = predicate;
+                if constness == crate::support::constness::Constness::Conditional {
+                    predicate.bound = Bound::Trait(application);
+                }
                 let premise = sizing_clause(facts, predicate.bound)?;
                 let predicate = header.lifetimes.predicate(&mut facts.types, predicate)?;
                 let goal = context
