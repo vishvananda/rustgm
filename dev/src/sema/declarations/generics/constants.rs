@@ -198,17 +198,32 @@ impl Checker<'_> {
     pub(in super::super) fn const_parameter(&self, key: NodeKey) -> Option<ConstId> {
         self.facts.const_parameter(self.report, key)
     }
+    /// The lexical module that types the constant at `key`: a block's own,
+    /// otherwise that of its site.
     pub(in super::super) fn constant_module(
         &mut self,
         key: NodeKey,
-        owner: DefId,
+        site: super::super::evaluation::Site,
     ) -> Result<ModuleId, Error> {
-        // Non-block arguments are standalone literals/paths. Their references
-        // already passed visibility checking; named initializers own their scopes.
+        use super::super::evaluation::Site;
         if !matches!(self.kind(key), Kind::Block { .. }) {
-            let scope = self.report.resolution.definitions[owner.0 as usize].scope;
-            return Ok(self.report.resolution.scopes[scope.0 as usize].module);
+            let report = self.report;
+            let crate_root = || report.package.file_crate_root(key.file);
+            return Ok(match site {
+                Site::Declaration(owner) => {
+                    let scope = report.resolution.definitions[owner.0 as usize].scope;
+                    report.resolution.scopes[scope.0 as usize].module
+                }
+                Site::Scope(node) => self.scope_module(node).unwrap_or_else(crate_root),
+                Site::CrateRoot => crate_root(),
+            });
         }
+        self.scope_module(key)
+            .ok_or_else(|| self.error(key, "shape constant requires an unambiguous lexical module"))
+    }
+    /// The module of the scope that the node at `key` opens, unless several
+    /// modules record that node.
+    fn scope_module(&mut self, key: NodeKey) -> Option<ModuleId> {
         let modules = self.constant_modules.get_or_insert_with(|| {
             let mut modules = crate::support::hash::HashMap::default();
             for &(module, node) in self.report.resolution.node_scopes.keys() {
@@ -224,17 +239,14 @@ impl Checker<'_> {
             }
             modules
         });
-        modules
-            .get(&key)
-            .copied()
-            .flatten()
-            .ok_or_else(|| self.error(key, "shape constant requires an unambiguous lexical module"))
+        modules.get(&key).copied().flatten()
     }
     pub(in super::super) fn constant_dependencies(
         &mut self,
         root: NodeKey,
         context: regions::Context,
     ) -> Result<(), Error> {
+        self.retain_constant_site(root, context);
         let context = regions::Context {
             position: regions::Position::Constant(root.node),
             ..context

@@ -1,10 +1,12 @@
 //! Declaration-time constants: their body publishes its types only after the
 //! declaration requirements of every nominal in them are complete, so an
 //! array length may name an associated constant of a type declared after it.
+//! Each such constant is typed in its own lexical module.
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
-/// A minimal core; the generic `Wrap` makes nominal requirements live.
-const HEAD: &str = r#"#![feature(no_core, lang_items)]
+/// A minimal core with the callable family a closure needs; the generic
+/// `Wrap` makes nominal requirements live.
+const HEAD: &str = r#"#![feature(no_core, lang_items, unboxed_closures, rustc_attrs, const_trait_impl)]
 #![no_core]
 #![allow(dead_code, unused_variables, internal_features)]
 #[lang = "pointee_sized"]
@@ -16,6 +18,7 @@ pub trait Sized: MetaSized {}
 #[lang = "legacy_receiver"]
 pub trait LegacyReceiver: PointeeSized {}
 impl<T: PointeeSized> LegacyReceiver for &T {}
+impl<T: PointeeSized> LegacyReceiver for &mut T {}
 #[lang = "clone"]
 pub trait Clone: Sized {
     #[lang = "clone_fn"]
@@ -29,6 +32,23 @@ impl Clone for u8 {
     }
 }
 impl Copy for u8 {}
+#[lang = "tuple_trait"]
+#[rustc_deny_explicit_impl]
+pub trait Tuple {}
+#[lang = "fn_once"]
+pub const trait FnOnce<Args: Tuple> {
+    #[lang = "fn_once_output"]
+    type Output;
+    extern "rust-call" fn call_once(self, args: Args) -> Self::Output;
+}
+#[lang = "fn_mut"]
+pub const trait FnMut<Args: Tuple>: FnOnce<Args> {
+    extern "rust-call" fn call_mut(&mut self, args: Args) -> Self::Output;
+}
+#[lang = "fn"]
+pub const trait Fn<Args: Tuple>: [const] FnMut<Args> {
+    extern "rust-call" fn call(&self, args: Args) -> Self::Output;
+}
 pub const fn size<T>() -> usize {
     1
 }
@@ -94,4 +114,146 @@ fn outcomes(cases: &[(&str, &str, Option<&str>)], tag: &str) -> TestResult {
         }
     }
     Ok(())
+}
+
+/// Each constant is typed in its own lexical module, also where its position
+/// has no binder: a nominal's field, a body, a const item's initializer, a
+/// local item or a closure. Outcomes as for `CASES`; the rejected controls
+/// are rustc's E0624 and type privacy errors.
+const SITES: [(&str, &str, Option<&str>); 9] = [
+    (
+        "nested-field",
+        "pub mod m {
+    struct P(u8);
+    impl P {
+        const N: usize = 2;
+    }
+    pub struct S([u8; P::N]);
+}
+",
+        None,
+    ),
+    (
+        "nested-body",
+        "pub mod m {
+    struct P(u8);
+    impl P {
+        const N: usize = 2;
+    }
+    pub fn f() {
+        let _a = [0u8; P::N];
+        let _b: [u8; crate::size::<P>()] = [0];
+    }
+}
+",
+        None,
+    ),
+    (
+        "nested-const",
+        "pub mod m {
+    struct P(u8);
+    impl P {
+        const N: usize = 2;
+    }
+    pub const C: [u8; 2] = {
+        let a = [7u8; P::N];
+        a
+    };
+}
+",
+        None,
+    ),
+    (
+        "nested-local-item",
+        "pub mod m {
+    struct P(u8);
+    impl P {
+        const N: usize = 2;
+    }
+    pub fn f() {
+        struct Local([u8; P::N]);
+        let _l = Local([0; P::N]);
+    }
+}
+",
+        None,
+    ),
+    (
+        "nested-closure",
+        "pub mod m {
+    struct P(u8);
+    impl P {
+        const N: usize = 2;
+    }
+    pub fn f() {
+        let _c = || [0u8; P::N];
+    }
+}
+",
+        None,
+    ),
+    (
+        "root-private-assoc",
+        "pub mod m {
+    pub struct Q(u8);
+    impl Q {
+        const N: usize = 2;
+    }
+}
+pub fn f() {
+    let _a = [0u8; m::Q::N];
+}
+",
+        Some(PRIVATE_MEMBER),
+    ),
+    (
+        "sibling-private-type",
+        "pub mod a {
+    pub(super) mod b {
+        pub(super) struct P(u8);
+    }
+    pub type A = b::P;
+}
+pub mod c {
+    pub fn f() {
+        let _a = [0u8; crate::size::<crate::a::A>()];
+    }
+}
+",
+        Some("semantic type or associated item is private"),
+    ),
+    (
+        "sibling-visible-field",
+        "pub mod a {
+    pub struct Q(u8);
+    impl Q {
+        pub(super) const N: usize = 2;
+    }
+}
+pub mod c {
+    pub struct S([u8; crate::a::Q::N]);
+}
+",
+        None,
+    ),
+    (
+        "sibling-private-field",
+        "pub mod a {
+    pub struct Q(u8);
+    impl Q {
+        const N: usize = 2;
+    }
+}
+pub mod c {
+    pub struct S([u8; crate::a::Q::N]);
+}
+",
+        Some(PRIVATE_MEMBER),
+    ),
+];
+const PRIVATE_MEMBER: &str = "inherent method is private";
+
+#[test]
+fn constants_are_typed_in_their_own_lexical_module() -> TestResult {
+    outcomes(&SITES, "constant_sites")
 }

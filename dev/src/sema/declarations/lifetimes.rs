@@ -312,10 +312,11 @@ impl Checker<'_> {
         Ok(result)
     }
 
+    /// A generic nominal's binder, or the item itself when it has none.
     pub(super) fn nominal_context(&self, item: ItemId) -> regions::Context {
         self.nominal_regions
             .get(&item)
             .copied()
-            .unwrap_or(regions::Context::ALIAS)
+            .unwrap_or(regions::Context::nominal(DefId(item.0)))
     }
 }

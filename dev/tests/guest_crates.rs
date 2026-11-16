@@ -46,6 +46,14 @@ impl Clone for i32 {
 }
 impl Copy for i32 {}
 pub struct Marker;
+impl Marker {
+    pub(crate) const HIDDEN: usize = 1;
+}
+pub(crate) struct Hidden;
+pub type Alias = Hidden;
+pub const fn size<T>() -> usize {
+    1
+}
 pub fn host_value() -> u8 {
     7
 }
@@ -356,6 +364,62 @@ pub extern "C" fn main() -> i32 {
 }
 "#;
 
+/// Constants typed in the guest's own crate: a `pub(crate)` associated
+/// constant in a field length, a nested function's result length and body
+/// lengths.
+const LENGTHS: &str = r#"#![feature(no_core)]
+#![no_core]
+#![no_main]
+#![allow(dead_code, unused_variables)]
+extern crate core;
+pub(crate) struct Group(u8);
+impl Group {
+    pub(crate) const WIDTH: usize = 2;
+}
+struct Aligned([u8; Group::WIDTH]);
+pub mod inner {
+    pub(crate) fn tags() -> [u8; crate::Group::WIDTH] {
+        [0; crate::Group::WIDTH]
+    }
+}
+fn checks() -> u8 {
+    let tags: [u8; Group::WIDTH] = [0; Group::WIDTH];
+    let aligned = Aligned(inner::tags());
+    0
+}
+#[unsafe(no_mangle)]
+pub extern "C" fn main() -> i32 {
+    checks();
+    0
+}
+"#;
+/// A guest constant naming the host's `pub(crate)` associated constant, in
+/// a body and in a field length.
+const HIDDEN_BODY: &str = r"#![feature(no_core)]
+#![no_core]
+#![no_main]
+extern crate core;
+fn checks() {
+    let tags = [0u8; core::Marker::HIDDEN];
+}
+";
+const HIDDEN_FIELD: &str = r"#![feature(no_core)]
+#![no_core]
+#![no_main]
+extern crate core;
+struct Shape([u8; core::Marker::HIDDEN]);
+";
+/// A guest body length naming the host's `pub(crate)` type through its
+/// public alias.
+const HIDDEN_TYPE: &str = r"#![feature(no_core)]
+#![no_core]
+#![no_main]
+extern crate core;
+fn checks() {
+    let tags = [0u8; core::size::<core::Alias>()];
+}
+";
+
 const IDENTITY: &str = "guests_bringup";
 
 /// Compile `HOST` with the named guests, in order, as one bring-up session.
@@ -409,6 +473,42 @@ fn rejected(
         .ok_or_else(|| format!("the source has no `{construct}`"))?;
     let expected = format!("ERROR: file {file}: {offset}: {message}");
     assert!(stderr.contains(&expected), "{expected}\n{stderr}");
+    Ok(())
+}
+
+/// rustc: accepts `LENGTHS`; rejects `HIDDEN_BODY` and `HIDDEN_FIELD` with
+/// E0624 (associated constant `HIDDEN` is private) and `HIDDEN_TYPE` with
+/// "type `core::Hidden` is private".
+#[test]
+fn guest_constants_are_typed_in_their_own_crate() -> Result {
+    accepted(&session("constant-lengths", &[("app", LENGTHS)])?)?;
+    for (name, program, site, message) in [
+        (
+            "hidden-body",
+            HIDDEN_BODY,
+            "core::Marker::HIDDEN",
+            "inherent method is private",
+        ),
+        (
+            "hidden-field",
+            HIDDEN_FIELD,
+            "core::Marker::HIDDEN",
+            "inherent method is private",
+        ),
+        (
+            "hidden-type",
+            HIDDEN_TYPE,
+            "core::Alias",
+            "semantic type or associated item is private",
+        ),
+    ] {
+        rejected(
+            &session(name, &[("app", program)])?,
+            (1, program),
+            site,
+            message,
+        )?;
+    }
     Ok(())
 }
 

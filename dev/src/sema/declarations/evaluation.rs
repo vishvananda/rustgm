@@ -10,9 +10,21 @@ use crate::{
 pub(super) struct Request {
     key: NodeKey,
     ty: TypeId,
-    owner: DefId,
+    site: Site,
     array_length: bool,
     privacy: TypePrivacy,
+}
+/// Where the lexical module that types a constant is found.
+#[derive(Clone, Copy)]
+pub(super) enum Site {
+    /// The scope of a declaration: a binder's owner, an item of its own
+    /// annotation, or the item whose arguments a constant supplies.
+    Declaration(DefId),
+    /// The scope that a body, closure or constant block opens.
+    Scope(NodeKey),
+    /// The root of the crate that loaded the constant's file: the module
+    /// that sees least, for a constant whose position names no owner.
+    CrateRoot,
 }
 struct Suspended {
     input: constants::ArgumentInput,
@@ -26,6 +38,9 @@ pub(super) struct Pending {
     ready_initializers: HashSet<DefId>,
     /// Anonymous constants nested in a body, whose own nested constants are too.
     in_bodies: HashSet<NodeKey>,
+    /// The site of each constant without a binder owner, which the constants
+    /// nested in it share.
+    sites: HashMap<NodeKey, Site>,
 }
 
 #[cfg(test)]
@@ -39,17 +54,41 @@ mod length_tests;
 mod module_tests;
 
 impl Checker<'_> {
-    /// The declaration whose lexical module types a constant: the binder's owner,
-    /// or the const or static item of its own annotation.
-    fn constant_owner(&self, context: regions::Context) -> DefId {
-        context
+    /// Where the lexical module that types the constant at `key` is found: the
+    /// binder's owner; the item of a binderless const, static, nominal or
+    /// alias annotation; the scope of a binderless body; or the site of the
+    /// constant that encloses a nested one.
+    pub(super) fn constant_site(&self, key: NodeKey, context: regions::Context) -> Site {
+        if let Some(owner) = context.binder.and_then(|binder| self.regions.owner(binder)) {
+            return Site::Declaration(owner);
+        }
+        match context.position {
+            regions::Position::Static(item)
+            | regions::Position::Nominal(item)
+            | regions::Position::Alias(item)
+            | regions::Position::Default(item) => Site::Declaration(item),
+            regions::Position::Local(body) => Site::Scope(NodeKey { node: body, ..key }),
+            regions::Position::Constant(root) => self
+                .constant_evaluations
+                .sites
+                .get(&NodeKey { node: root, ..key })
+                .copied()
+                .unwrap_or(Site::CrateRoot),
+            regions::Position::Input | regions::Position::Impl | regions::Position::Output => {
+                Site::CrateRoot
+            }
+        }
+    }
+    /// Keep a binderless constant's site for the constants nested in it.
+    pub(super) fn retain_constant_site(&mut self, root: NodeKey, context: regions::Context) {
+        if context
             .binder
             .and_then(|binder| self.regions.owner(binder))
-            .or(match context.position {
-                regions::Position::Static(item) => Some(item),
-                _ => None,
-            })
-            .unwrap_or(DefId(0))
+            .is_none()
+        {
+            let site = self.constant_site(root, context);
+            self.constant_evaluations.sites.insert(root, site);
+        }
     }
     /// A constant nested in a body is type-privacy checked like that body; one
     /// in a signature, discriminant or item annotation is not, nor are the
@@ -79,13 +118,13 @@ impl Checker<'_> {
         if self.constant_evaluations.completed.contains_key(&(key, ty)) {
             return Ok(());
         }
-        let owner = self.constant_owner(context);
+        let site = self.constant_site(key, context);
         let privacy = self.constant_privacy(key, context);
         self.work.push(Work::EvaluateConstant(
             Request {
                 key,
                 ty,
-                owner,
+                site,
                 array_length: false,
                 privacy,
             },
@@ -113,7 +152,7 @@ impl Checker<'_> {
             Request {
                 key,
                 ty,
-                owner,
+                site: Site::Declaration(owner),
                 array_length: false,
                 privacy,
             },
@@ -130,13 +169,13 @@ impl Checker<'_> {
             return Ok(());
         }
         let ty = TypeId::primitive(crate::types::Primitive::Usize);
-        let owner = self.constant_owner(context);
+        let site = self.constant_site(key, context);
         let privacy = self.constant_privacy(key, context);
         self.work.push(Work::EvaluateConstant(
             Request {
                 key,
                 ty,
-                owner,
+                site,
                 array_length: true,
                 privacy,
             },
@@ -161,7 +200,7 @@ impl Checker<'_> {
         let Request {
             key,
             ty,
-            owner,
+            site,
             array_length,
             privacy,
         } = request;
@@ -182,7 +221,7 @@ impl Checker<'_> {
             let module = if self.const_parameter(key).is_some() {
                 None
             } else {
-                Some(self.constant_module(key, owner)?)
+                Some(self.constant_module(key, site)?)
             };
             let input = arguments::Constants {
                 report: self.report,

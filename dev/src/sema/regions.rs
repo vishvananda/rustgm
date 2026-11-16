@@ -11,6 +11,9 @@ pub(super) enum Position {
     /// A const or static item's own annotation; it names its item for constant
     /// evaluation even when the item has no binder.
     Static(DefId),
+    /// A nominal's own fields and bounds when it has no binder: no lifetime
+    /// is elided there, and it names its item for constant evaluation.
+    Nominal(DefId),
     Local(crate::syntax::ast::NodeId),
     Constant(crate::syntax::ast::NodeId),
     Default(DefId),
@@ -26,6 +29,12 @@ impl Context {
         Self {
             binder: None,
             position: Position::Static(item),
+        }
+    }
+    pub const fn nominal(item: DefId) -> Self {
+        Self {
+            binder: None,
+            position: Position::Nominal(item),
         }
     }
     pub const ALIAS: Self = Self {
@@ -190,10 +199,12 @@ impl Regions {
             }
             Position::Static(_) => Ok(RegionId::STATIC),
             Position::Input | Position::Impl => RegionId::bound(0, self.fresh(id)?),
-            Position::Output | Position::Default(_) | Position::Alias(_) => self.binders[id.0]
-                .receiver
-                .or(self.binders[id.0].output)
-                .ok_or("cannot infer an output lifetime from these parameters"),
+            Position::Output | Position::Nominal(_) | Position::Default(_) | Position::Alias(_) => {
+                self.binders[id.0]
+                    .receiver
+                    .or(self.binders[id.0].output)
+                    .ok_or("cannot infer an output lifetime from these parameters")
+            }
         }
     }
     pub fn named(

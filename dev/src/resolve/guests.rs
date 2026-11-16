@@ -223,6 +223,15 @@ impl Package {
         }
         self.member(slot).map_or(ModuleId(0), |member| member.root)
     }
+    /// The root module of the crate whose module tree loaded `file`.
+    #[must_use]
+    pub fn file_crate_root(&self, file: FileId) -> ModuleId {
+        let slot = self.file_crate(file);
+        if slot == CrateSlot::HOST {
+            return ModuleId(0);
+        }
+        self.member(slot).map_or(ModuleId(0), |member| member.root)
+    }
     /// Whether `key` is the root node of some guest crate.
     pub(crate) fn guest_root(&self, key: NodeKey) -> bool {
         self.crate_members().iter().skip(1).any(|member| {
