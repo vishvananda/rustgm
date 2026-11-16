@@ -404,7 +404,14 @@ pthread, file system); the rustgm corpus 57. See the table above.
   the `#![default_lib_allocator]` forwarders when there is no global
   allocator (otherwise rustc's error), the error-handler forwarder to
   `__rdl_alloc_error_handler`, and `__rust_no_alloc_shim_is_unstable_v2`.
-  The allocator attributes themselves change no lowering.
+  The allocator attributes themselves change no lowering. Over real core,
+  real alloc's allocator declarations, entry points and default handler link
+  and run under the shim with a `#[global_allocator]`. The link keeps every
+  shim function, so the handler forwarder needs `__rdl_alloc_error_handler`
+  where rustc's `--gc-sections` would drop it. Whole real alloc still stops
+  before any body: Deref-chain lookup misses incoherent `[T]` methods
+  (`Box<[I], A>` `into_vec`), then unsizing `&T` to `&Dyn` under a
+  `T: Unsize<Dyn>` bound (`boxed/thin.rs`).
 - Backend: nothing special is needed.
 
 **8. Panic runtime.**
