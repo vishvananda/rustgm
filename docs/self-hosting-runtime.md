@@ -258,7 +258,8 @@ row needs a backend change.
 | 3h | Bring-up constants, type identity: `type_id`, `type_id_eq` | M1 `fmt-integers.rs` | Runtime lane | Evaluated in constants only and waived by name. An identity is the SipHash-2-4 128-bit digest of the type's spelling (lifetimes erased, binder lifetimes in order of first use, declarations by crate identity and number), held as two address words without provenance, so the run-time fallback body of `type_id_eq` agrees with every constant; `type_id` itself is compile-time only. Another crate's declaration and an opaque, future or pattern type stay fenced |
 | 4 | Atomics other than `u32` | M1 `atomics.rs`, M2 `arc.rs` | Frontend | Fenced; backend already qualified for 8 to 64 bits and pointers |
 | 4a | Bring-up lowering, atomics: the fifteen `atomic_*` accesses and `atomic_fence` | M1 | Runtime lane | Lowered in place for 8 to 64 bits and pointers, always sequentially consistent; `intrinsic-ops.rs` matches rustc |
-| 5 | SIMD: 16-byte vectors for hashbrown and `str` search | M1 `chars-strs.rs`, M3 every `HashMap` | Frontend | No handler; backend has `v128` |
+| 5 | SIMD: 16-byte vectors for hashbrown and `str` search | M1 `chars-strs.rs`, M3 every `HashMap` | Runtime lane | `v128` and seven SSE2 `vector` operations in LowIR, stated by the bridge; the nine intrinsics lowered on 16-byte integer vectors in both profiles, rustc's monomorphization errors kept (`dev/tests/sse_lanes.rs`); `simd_splat` in constants; any other shape fenced by name |
+| 5a | Bring-up constants, zeroing: `mem::zeroed`'s `assert_zero_valid` and `write_bytes` | M1 | Runtime lane | Evaluated in constants and waived by name; the assertion holds for numbers, booleans, characters, and arrays, tuples and structs of them, so any other type keeps the error. Core's skip list falls from 1,063 to 20 rows |
 | 6 | `compiler_builtins` | M1 | Integrator decision | Its symbols are provided at link time; its sources need assembly RustGM fences |
 | 7 | Allocator shims and `#[global_allocator]` | M2 | Runtime lane | Implemented as rustc 1.98 does: mangled internal symbols, both attribute expansions, the shim in the program crate (`dev/tests/global_allocators.rs`) |
 | 8 | Panic runtime under panic=abort | M1 handler, M3 std | Frontend | Abort works; handler shapes, `catch_unwind` and messages do not |
@@ -354,11 +355,34 @@ pthread, file system); the rustgm corpus 57. See the table above.
   `simd_contains` and `spin_loop`. The first two are selected by
   `cfg(target_feature = "sse2")`, which RustGM's fixed target sets as rustc
   does (`dev/src/expand/config.rs:25-27`).
-- RustGM has `repr(simd)` layout (`dev/src/abi/layout/simd.rs`) and the C
-  class for 128-bit vectors, but its LowIR has no vector type
-  (`dev/src/lowir/vocabulary.rs:3-17`), `simd_*` have no handler, and
-  `llvm.x86.*` names reach "selected LLVM intrinsic operation is not
-  implemented" (`dev/src/lower/llvm_calls.rs:23`).
+- Done (2026-11-16): RustGM's LowIR has `v128` and the `vector` operations
+  `pcmpeqb`, `pcmpgtb`, `pand`, `por`, `pmovmskb`, `pshufd` and `fromi32`,
+  written as text and stated by the in-process bridge through ABI 4
+  (`rg_library_match` in `make test-backend`). Per intrinsic on 16-byte
+  vectors: `simd_eq` is `pcmpeqb`; `simd_gt` is `pcmpgtb` and `simd_lt` the
+  same with its operands swapped, on signed bytes; `simd_and` and `simd_or`
+  are `pand` and `por` for any integer lanes; `simd_bitmask` to `u16` is
+  `pmovmskb`; `simd_reduce_all` is `pmovmskb == 0xffff`, the lanes' sign bits
+  as rustc reads them; `simd_splat` of a byte is a multiply by `0x01010101`,
+  `fromi32` and `pshufd 0`; `simd_shuffle` copies lanes on memory by the
+  constant indices it reads at compile time, for any integer lanes. A shape
+  rustc rejects gets its E0511 rule in both profiles; any other shape (more
+  or wider lanes, unsigned order, floats) is a named fence, which bring-up
+  turns into a trap. The 8-, 32- and 64-lane instances that
+  `Mask::to_bitmask` keeps beside its 16-lane one are such traps and are
+  never reached.
+- Measured with the linked driver: without the 1,043 rows that only constant
+  evaluation needed (every one a stdarch function), core plus a program
+  compiles with the 20 others. `core::str` search (`simd_contains`) and
+  hashbrown 0.17.1's SSE2 `Group` match rustc byte for byte natively; the
+  hashbrown probe needs `Group::static_empty` removed because a struct field
+  `[Tag; Group::WIDTH]` stops RustGM's frontend ("nominal declaration
+  requirements are not complete"). `chars-strs` still aborts in a stubbed
+  function that is not SIMD; its census adds `Map::next`, `Filter::next`
+  and `type_name` to the 20 rows.
+- Other `llvm.x86.*` names, and `pause` outside bring-up (row 3g), reach
+  "selected LLVM intrinsic operation is not implemented"
+  (`dev/src/lower/llvm_calls.rs:23`).
 - Backend: `v128` and about 200 SSE operations, among them `pcmpeqb`,
   `pcmpgtb`, `pmovmskb`, `por`, `pand` and `pshufb`
   (`cppgm:pa8/lowir.md:1384-1435`; observed `sse2-byte-compare` on both
@@ -677,7 +701,7 @@ initialised data of that size on the bridge; an idle machine.
 
 ## Open decisions
 
-For the integrator. The lane has not acted on any of them.
+For the integrator. The lane has acted only on item 4.
 
 1. **Consumer runner.** It must link through the object bridge also for one
    unit, compare standard output and accept SIGABRT for `"status": "abort"`.
@@ -690,6 +714,7 @@ For the integrator. The lane has not acted on any of them.
    `__udivti3` and its family from the link.
 4. **SIMD.** `v128` in RustGM's LowIR, lane-by-lane lowering, or no `sse2`
    in `cfg`. The last one changes which library functions are demanded.
+   Decided 2026-11-16: `v128` in RustGM's LowIR (row 5).
 5. **Thread-locals.** Plain statics for a single-threaded bring-up, or real
    TLS at once. With plain statics `threads.rs` cannot be in M3's exit test.
 6. **std features.** `_Unwind_Backtrace` and `_Unwind_GetIP` are demanded with
