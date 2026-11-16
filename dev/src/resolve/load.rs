@@ -287,6 +287,7 @@ impl<'a, S: Sources> Loader<'a, S> {
             let unit = Unit::parse(source.source, self.config, &mut self.package.names)
                 .map_err(|e| Error::at(file, e.offset, e.message))?;
             let root = guests.admit(&mut self.package.names, input, &unit, (file, module))?;
+            let slot = root.krate;
             self.package.units.push(unit);
             self.package
                 .file_paths
@@ -298,7 +299,9 @@ impl<'a, S: Sources> Loader<'a, S> {
             });
             self.identities.push(source.identity);
             self.admit(file)?;
-            super::bindings::policy::admit_guest(&mut self.package, file)?;
+            if super::bindings::policy::admit_guest(&mut self.package, file)? {
+                guests.mark_staged(slot)?;
+            }
         }
         self.package.install_guests(guests)
     }

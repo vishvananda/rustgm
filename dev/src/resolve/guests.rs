@@ -67,6 +67,9 @@ pub struct Member {
     pub library: Library,
     /// `#![no_main]`: the crate supplies no Rust entry point.
     pub no_main: bool,
+    /// `#![feature(staged_api)]`: the crate's deprecations follow the
+    /// staged rules.
+    staged: bool,
 }
 
 /// The crates of a session that has guests, the crate of each source file,
@@ -96,6 +99,9 @@ impl Guests {
             macro_root,
             library: Library::None,
             no_main: false,
+            staged: package
+                .library_policy()
+                .is_some_and(crate::resolve::stability::Library::is_staged),
         });
         Ok(guests)
     }
@@ -149,6 +155,7 @@ impl Guests {
                 Library::Std
             },
             no_main: word("no_main")?,
+            staged: false,
         });
         self.note_file(file, slot);
         Ok(Module {
@@ -160,6 +167,14 @@ impl Guests {
             file,
             root,
         })
+    }
+    /// Record that the crate in `slot` requests `staged_api`.
+    pub(super) fn mark_staged(&mut self, slot: CrateSlot) -> Result<(), Error> {
+        self.members
+            .get_mut(slot.index())
+            .ok_or_else(|| Error::unlocated("guest crate slot is missing"))?
+            .staged = true;
+        Ok(())
     }
     fn note_file(&mut self, file: FileId, slot: CrateSlot) {
         let index = file.0 as usize;
@@ -279,6 +294,21 @@ impl Package {
                 };
                 (module, key)
             })
+    }
+    /// Whether the crate whose module tree loaded `file` requests
+    /// `staged_api`; the session's request when it has no guests, whose
+    /// joined request opens gates in every crate.
+    #[must_use]
+    pub(crate) fn staged_crate(&self, file: FileId) -> bool {
+        match self.guest_state() {
+            Some(guests) => guests
+                .members
+                .get(self.file_crate(file).index())
+                .is_some_and(|member| member.staged),
+            None => self
+                .library_policy()
+                .is_some_and(crate::resolve::stability::Library::is_staged),
+        }
     }
     /// The crate whose module tree loaded `file`.
     #[must_use]

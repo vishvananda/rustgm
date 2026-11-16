@@ -419,12 +419,65 @@ fn checks() {
     let tags = [0u8; core::size::<core::Alias>()];
 }
 ";
+/// A host that requests `staged_api` and is stable, as the real core is.
+const STAGED_HOST: &str = r#"#![feature(no_core, lang_items, rustc_attrs, staged_api)]
+#![no_core]
+#![stable(feature = "probe_core", since = "1.0.0")]
+#![allow(internal_features)]
+#[lang = "pointee_sized"]
+#[stable(feature = "probe_core", since = "1.0.0")]
+pub trait PointeeSized {}
+#[lang = "meta_sized"]
+#[stable(feature = "probe_core", since = "1.0.0")]
+pub trait MetaSized: PointeeSized {}
+#[lang = "sized"]
+#[stable(feature = "probe_core", since = "1.0.0")]
+pub trait Sized: MetaSized {}
+"#;
+/// A guest that requests `staged_api`, with a deprecation that names no
+/// release.
+const STAGED_UNSPECIFIED: &str = r#"#![feature(no_core, staged_api)]
+#![no_core]
+#![stable(feature = "staged_probe", since = "1.0.0")]
+extern crate core;
+#[stable(feature = "staged_probe", since = "1.0.0")]
+pub fn staged() -> u8 {
+    1
+}
+#[stable(feature = "staged_probe", since = "1.0.0")]
+#[deprecated(note = "use staged")]
+pub fn old() -> u8 {
+    1
+}
+"#;
+/// A guest without `staged_api`, whose deprecations need no release.
+const PLAIN_DEPRECATIONS: &str = r#"#![feature(no_core)]
+#![no_core]
+#![no_main]
+extern crate core;
+#[deprecated(note = "use current")]
+pub fn old() -> u8 {
+    1
+}
+#[deprecated]
+pub fn bare() -> u8 {
+    1
+}
+pub fn current() -> u8 {
+    2
+}
+"#;
 
 const IDENTITY: &str = "guests_bringup";
 
 /// Compile `HOST` with the named guests, in order, as one bring-up session.
 fn session(name: &str, guests: &[(&str, &str)]) -> Result<Output> {
+    hosted_session(HOST, name, guests)
+}
+/// As [`session`], with `host` as the host's source.
+fn hosted_session(host: &str, name: &str, guests: &[(&str, &str)]) -> Result<Output> {
     let (folder, mut command) = prepare(name, guests)?;
+    std::fs::write(folder.join("core.rs"), host)?;
     let list = folder.join("skip.tsv");
     std::fs::write(&list, "")?;
     command.arg("--bringup-skip-list").arg(list);
@@ -510,6 +563,25 @@ fn guest_constants_are_typed_in_their_own_crate() -> Result {
         )?;
     }
     Ok(())
+}
+
+/// rustc: accepts `plain` after the staged `core` and after `HOST`; rejects
+/// the staged deprecation without `since` with E0542 (missing 'since').
+#[test]
+fn deprecations_follow_the_staged_rules_of_their_own_crate() -> Result {
+    let plain = [("plain", PLAIN_DEPRECATIONS)];
+    accepted(&hosted_session(STAGED_HOST, "deprecations", &plain)?)?;
+    accepted(&session("plain-deprecations", &plain)?)?;
+    rejected(
+        &hosted_session(
+            STAGED_HOST,
+            "staged-deprecations",
+            &[("staged", STAGED_UNSPECIFIED)],
+        )?,
+        (1, STAGED_UNSPECIFIED),
+        "#[deprecated(note",
+        "staged deprecation requires its since field",
+    )
 }
 
 /// rustc: accepts `core`, `first` and `app` as three crates.

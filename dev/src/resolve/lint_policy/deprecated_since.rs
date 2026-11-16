@@ -1,4 +1,5 @@
 //! Deprecation release data does not grant API availability or imported absence.
+//! The staged rules are those of the crate that declares the deprecation.
 use super::{Violation, expectations::Deprecation};
 use crate::resolve::{package::Package, stability, unit::NodeKey};
 
@@ -28,10 +29,7 @@ impl Since {
 }
 impl Deprecation {
     pub(super) fn validate_staged(&self, package: &Package, key: NodeKey) -> Result<(), Violation> {
-        if !package
-            .library_policy()
-            .is_some_and(stability::Library::is_staged)
-        {
+        if !package.staged_crate(key.file) {
             return Ok(());
         }
         let message = match self.release {
@@ -48,11 +46,7 @@ impl Deprecation {
             })
         })
     }
-    pub(super) fn active(&self, package: &Package) -> bool {
-        self.release.active(
-            package
-                .library_policy()
-                .is_some_and(stability::Library::is_staged),
-        )
+    pub(super) fn active(&self, package: &Package, key: NodeKey) -> bool {
+        self.release.active(package.staged_crate(key.file))
     }
 }

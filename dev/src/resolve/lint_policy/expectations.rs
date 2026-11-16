@@ -456,7 +456,7 @@ impl Producer {
             .as_ref()
             .ok_or_else(|| invalid(key, "deprecation origin lost its annotation"))?;
         row.validate_staged(package, owner.key)?;
-        Ok(row.active(package).then(|| {
+        Ok(row.active(package, owner.key).then(|| {
             row.note
                 .as_deref()
                 .unwrap_or("use of deprecated declaration")

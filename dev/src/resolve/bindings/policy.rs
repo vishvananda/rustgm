@@ -488,10 +488,11 @@ pub(in crate::resolve) fn prepare_with_admission(
 
 /// A bring-up guest's root requests join the session's. The session keeps one
 /// feature set, so a gate that any of its crates requests is open in all.
+/// Answers whether the guest itself requests `staged_api`.
 pub(in crate::resolve) fn admit_guest(
     package: &mut crate::resolve::package::Package,
     file: FileId,
-) -> Result<(), Error> {
+) -> Result<bool, Error> {
     let unit = package.unit(file);
     let (features, library) = features(unit, file)?;
     super::root_options::validate_loader_words(unit, file, &features)?;
@@ -502,14 +503,16 @@ pub(in crate::resolve) fn admit_guest(
         *session |= guest;
     }
     package.macro_features.0 |= features.macros().0;
-    if let Some(requests) = library {
-        package
-            .library
-            .get_or_insert_default()
-            .absorb(*requests)
-            .map_err(|message| Error::at(file, 0, message))?;
-    }
-    Ok(())
+    let Some(requests) = library else {
+        return Ok(false);
+    };
+    let staged = requests.is_staged();
+    package
+        .library
+        .get_or_insert_default()
+        .absorb(*requests)
+        .map_err(|message| Error::at(file, 0, message))?;
+    Ok(staged)
 }
 
 fn features(unit: &Unit, file: FileId) -> Result<(Features, Option<Box<Library>>), Error> {
