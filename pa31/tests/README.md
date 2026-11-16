@@ -1096,6 +1096,15 @@ rustc's core `&F` and `&mut F` impls, the reference forwards to its referent's
 `Fn` rejects (E0277). A maintainer integration test checks every case. There
 is no graded manifest.
 
+`spec/type-names/` freezes two declared no_core programs that call
+`type_name::<T>()` in statics and through a generic `const fn`'s inline
+constant, as core's `any::type_name` does. Under the bring-up profile the
+names are those rustc 1.98.0 prints, which a C observer compares, including
+`'_` for a path's lifetime argument and no lifetime for a reference; strict
+compilation stays fenced, and a function pointer's name fails closed as one
+bring-up blocker. A maintainer integration test checks every case. There is
+no graded manifest.
+
 `spec/abstract-cleanup/` freezes six declared no_core programs that move an
 abstract value conditionally in a generic body, as core's `TakeWhile::next`
 does with `x: I::Item`. A rigid projection or opaque value has no structure to

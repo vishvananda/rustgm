@@ -61,6 +61,7 @@ mod cold_fallback;
 pub(crate) mod guaranteed_compare;
 pub(crate) mod identity_words;
 pub(crate) mod knowledge;
+pub(crate) mod printed_names;
 mod subtraction_contract;
 mod wrapping_contract;
 pub(crate) use subtraction_contract::SubtractionSelection;

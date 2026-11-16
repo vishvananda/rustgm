@@ -45,6 +45,7 @@ impl Machine<'_, '_> {
                 if crate::sema::compiler_items::scalar_arithmetic(kind)
                     || crate::sema::compiler_items::bit_counts::operation(kind).is_some()
                     || crate::sema::compiler_items::identity_words::is_operation(kind)
+                    || crate::sema::compiler_items::printed_names::is_operation(kind)
                     || crate::sema::compiler_items::assume_contract::is_assumption(kind)
                     || crate::sema::compiler_items::guaranteed_compare::is_operation(kind)
                     || crate::sema::compiler_items::knowledge::is_operation(kind)
@@ -163,6 +164,9 @@ impl Machine<'_, '_> {
             return Ok(answer);
         }
         if let Some(answer) = self.source_type_identity(body, frame, position, target)? {
+            return Ok(answer);
+        }
+        if let Some(answer) = self.source_type_name(body, frame, position, target)? {
             return Ok(answer);
         }
         if let Some(answer) = self.source_assume(body, frame, position, target)? {

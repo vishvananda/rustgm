@@ -1,0 +1,28 @@
+u8
+bool
+char
+i128
+f64
+str
+()
+(u8,)
+(u8, i8, bool)
+[u8; 4]
+[u16]
+&u8
+&mut [u8]
+*const u8
+*mut (u8, bool)
+&&str
+minicore::Pair<u8, i8>
+minicore::inner::Wrapper<&str>
+minicore::Holder<'_>
+minicore::Option<minicore::Pair<u8, u8>>
+minicore::Stack<u8, 4>
+minicore::Signed<-3>
+minicore::Flag<true>
+[minicore::Option<u8>; 2]
+minicore::inner::deeper::Leaf
+minicore::Mixed<'_, u8>
+minicore::Pair<u8, i8>
+minicore::Option<u16>

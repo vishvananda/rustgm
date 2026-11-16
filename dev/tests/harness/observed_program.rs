@@ -102,11 +102,21 @@ pub(crate) fn execute(
     expected: &[u8],
 ) -> Result {
     std::fs::create_dir_all(folder)?;
+    let ir = folder.join("native.lowir");
+    rustgm::lowir::writer::write(program, &mut std::fs::File::create(&ir)?)?;
+    execute_lowir(folder, &ir, observer, expected)
+}
+
+/// Execute `LowIR` text, such as the command-line compiler's output, through
+/// the locked object backend and its declared C observer.
+#[allow(
+    dead_code,
+    reason = "suite groups select ordinary comparison and prepared source execution independently"
+)]
+pub(crate) fn execute_lowir(folder: &Path, ir: &Path, observer: &Path, expected: &[u8]) -> Result {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .ok_or("repository root")?;
-    let ir = folder.join("native.lowir");
-    rustgm::lowir::writer::write(program, &mut std::fs::File::create(&ir)?)?;
     let object = folder.join("native.o");
     checked(
         folder,
@@ -114,7 +124,7 @@ pub(crate) fn execute(
         Command::new("python3")
             .arg(root.join("scripts/backend.py"))
             .arg("--emit-object")
-            .arg(&ir)
+            .arg(ir)
             .arg("-o")
             .arg(&object),
     )?;

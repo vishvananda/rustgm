@@ -1,0 +1,24 @@
+{
+ "schema": 1,
+ "declared": "2026-11-16, before the frozen rustc 1.98.0 oracle of these exact bytes (obj/parallel/frontier/repro17/declared.json). Round 1 declared minicore::Holder for Holder<'static>; rustc printed minicore::Holder<'_>, so rustc's output stands and the round-2 case Mixed<'static,u8> was declared as minicore::Mixed<'_, u8> before rustc confirmed it.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "observer_sha256": "e8aff0f12903810c3e2ad031d9dc6d6a44413a296dcc967f79ed4ec46407b08a",
+ "native_stdout_sha256": "1dfda80702e5c026468d858ce31229151b3678a2548c0b15ca74523d0c46e87b",
+ "cases": {
+  "names.rs": {
+   "sha256": "f3c80c6c3ee255b2f43cf456953f887126766fd83dd61601e2ef515e1557d23c",
+   "rustc_status": 0,
+   "rustc_native_stdout": "names.stdout",
+   "rustgm_strict": "rejected: source intrinsic constant execution is not implemented",
+   "rustgm_bringup": "accepted; native stdout is names.stdout",
+   "rustgm_before": "bring-up rejected: source intrinsic constant execution is not implemented"
+  },
+  "refused.rs": {
+   "sha256": "47eebaec84c763343c60f75015482c90dc4b73a57090ce233def5cb61a3f41b5",
+   "rustc_status": 0,
+   "rustgm_bringup": "fails closed: name_of, whose inline constant names fn(u8) -> u8, is the one bring-up blocker",
+   "rustgm_before": "bring-up rejected: source intrinsic constant execution is not implemented"
+  }
+ }
+}

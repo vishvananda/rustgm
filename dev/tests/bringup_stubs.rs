@@ -1099,3 +1099,98 @@ fn type_identities_run_in_constants_and_stay_fenced_when_strict() -> Result {
     assert_eq!(again.stdout, passed.stdout);
     Ok(())
 }
+
+const TYPE_NAMES: &str = "pa31/tests/spec/type-names";
+/// Compile a type-names fixture as rustc's oracle names its crate, `minicore`,
+/// under the bring-up profile when `list` is given; the `LowIR` goes to a file.
+fn type_names(case: &str, list: Option<&str>) -> Result<(Output, PathBuf)> {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let folder = root
+        .join("obj/bringup-stubs")
+        .join(format!("type-names-{case}-{}", list.is_some()))
+        .join(std::process::id().to_string());
+    std::fs::create_dir_all(&folder)?;
+    let lowir = folder.join("names.lowir");
+    let identity = if list.is_some() {
+        "type_names_bringup"
+    } else {
+        "type_names"
+    };
+    let mut command = Command::new(env!("CARGO_BIN_EXE_rustgm"));
+    command
+        .args(["--emit-lowir", "--cap-lints=allow", "--edition=2024"])
+        .args(["--crate-type=lib", "--crate-name", "minicore"])
+        .args(["--crate-disambiguator", identity])
+        .args(["--source-core", &format!("minicore@{identity}")]);
+    if let Some(list) = list {
+        let path = folder.join("skip.tsv");
+        std::fs::write(&path, list)?;
+        command.arg("--bringup-skip-list").arg(path);
+    }
+    let output = command
+        .arg(root.join(TYPE_NAMES).join(format!("{case}.rs")))
+        .arg("-o")
+        .arg(&lowir)
+        .output()?;
+    Ok((output, lowir))
+}
+
+/// `type_name` runs in constants under the bring-up profile only, and a type
+/// it does not spell stops the generic function whose constant names it.
+#[test]
+fn type_names_run_in_constants_and_stay_fenced_when_strict() -> Result {
+    let (strict, _) = type_names("names", None)?;
+    let stderr = String::from_utf8(strict.stderr)?;
+    assert_eq!(strict.status.code(), Some(1), "{stderr}");
+    assert!(
+        stderr.contains("source intrinsic constant execution is not implemented")
+            && !stderr.contains("bringup-"),
+        "{stderr}"
+    );
+    let (passed, lowir) = type_names("names", Some(""))?;
+    let stderr = String::from_utf8(passed.stderr)?;
+    assert!(passed.status.success(), "{stderr}");
+    assert!(
+        waived(&stderr)
+            .contains(&"source intrinsic uses unqualified constant evaluation: type_name"),
+        "{stderr}"
+    );
+    assert!(!std::fs::read_to_string(lowir)?.contains("rg.trap."));
+    let (refused, _) = type_names("refused", Some(""))?;
+    let stderr = String::from_utf8(refused.stderr)?;
+    assert_eq!(refused.status.code(), Some(1), "{stderr}");
+    let rows = stderr
+        .lines()
+        .filter_map(|line| line.strip_prefix("bringup-blocker\t"))
+        .collect::<Vec<_>>();
+    let &[row] = rows.as_slice() else {
+        return Err(format!("expected one blocker: {stderr}").into());
+    };
+    assert!(
+        row.contains("\tname_of\t")
+            && row.ends_with(
+                "type name of a function, closure, object, opaque or foreign type is not implemented"
+            ),
+        "{row}"
+    );
+    Ok(())
+}
+/// Every name, printed by a C observer, is the one rustc 1.98.0 prints.
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn type_names_execute_as_rustc_prints_them() -> Result {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let (passed, lowir) = type_names("names", Some(""))?;
+    assert!(
+        passed.status.success(),
+        "{}",
+        String::from_utf8_lossy(&passed.stderr)
+    );
+    let folder = lowir.parent().ok_or("type names output folder")?;
+    crate::observed_program::execute_lowir(
+        folder,
+        &lowir,
+        &root.join(TYPE_NAMES).join("observe.c"),
+        &std::fs::read(root.join(TYPE_NAMES).join("names.stdout"))?,
+    )
+}

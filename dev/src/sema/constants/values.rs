@@ -17,6 +17,7 @@ mod footprints;
 mod guaranteed_pointers;
 mod interned_products;
 mod knowledge_values;
+mod name_values;
 mod niches;
 mod physical_types;
 mod ptr_values;
