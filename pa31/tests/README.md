@@ -1436,3 +1436,9 @@ The [anonymous associated-value borrow packet](spec/anonymous-associated-borrows
 The [anonymous implied-bound packet](spec/anonymous-implied-bounds/README.md)
 retains eleven independent receiver/input lifetime contracts and actual native
 output7. Its ordinary counterparts belong to PA25.
+
+`spec/capture-dereferences/` declares six source-core inputs in
+`outcomes.json`: `shared.rs`, `generic.rs`, `method.rs`, `mutable.rs`,
+`rejected.rs` and `rejected-alloc.rs`. The shared `observe.c` prints
+`41 59` for each accepted case. The two opponents retain conflicting loans.
+The registered `bringup_stubs` root checks compilation and native behavior.

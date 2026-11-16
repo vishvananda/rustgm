@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "declared": "2026-11-16 before the original independent oracle; copied unchanged from obj/parallel/frontier3/capderef/declared.json for resumed validation",
+  "rustc": "1.98.0",
+  "native_stdout": "41 59\n",
+  "cases": {
+    "shared.rs": {
+      "sha256": "0ce45e7d32f21e6e5d02b1c8c6b3fe2e22b4b37f3b1f8e9dc5af3477a79c1b0b",
+      "status": 0,
+      "rustc_status": 0,
+      "rustgm_before": "capture dereference requires a reference or raw pointer"
+    },
+    "generic.rs": {
+      "sha256": "17e9ec9297d485da4fee187eff060bfcc5d11af0f6f06dac911d812267d89295",
+      "status": 0,
+      "rustc_status": 0,
+      "rustgm_before": "capture dereference requires a reference or raw pointer"
+    },
+    "method.rs": {
+      "sha256": "355069070aed68853650aa47f8bcb02f01f91e09a50b27ccf9562612ae8ab454",
+      "status": 0,
+      "rustc_status": 0,
+      "rustgm_before": "capture dereference requires a reference or raw pointer"
+    },
+    "mutable.rs": {
+      "sha256": "33debff558e89046c1b4f08c42be50d029c0d2c3696f1146700a1f7d4742393b",
+      "status": 0,
+      "rustc_status": 0,
+      "rustgm_before": "capture dereference requires a reference or raw pointer"
+    },
+    "rejected.rs": {
+      "sha256": "2e60dcab59130629bd5e028ecf75dbc2ff77bb610d8e430db8312510a5240d5f",
+      "status": 1,
+      "rustc_status": 1,
+      "rustgm_before": "capture dereference requires a reference or raw pointer"
+    },
+    "rejected-alloc.rs": {
+      "sha256": "4a110398d151ef21bfe5912a1dbc7b3af676e07020947a0cd761cc59dbaa0180",
+      "status": 1,
+      "rustc_status": 1,
+      "rustgm_before": "capture dereference requires a reference or raw pointer"
+    }
+  },
+  "observer": "observe.c",
+  "observer_sha256": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+  "validation": {
+    "regular": "obj/qualification/fast/1794857840100373362",
+    "native": "obj/qualification/fast/1794857961353893467",
+    "accepted": "no blocker, no unproven body; exact native stdout 41 59",
+    "rejected": "replace retains the conflicting-loan rejection as an unproven bring-up body"
+  }
+}

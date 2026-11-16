@@ -178,6 +178,17 @@ impl Checker<'_> {
         }
         Err(self.error(node, "mutable language place work budget exceeded"))
     }
+    /// Whether a unary dereference selected a source `Deref` (false) or
+    /// `DerefMut` (true) call instead of a built-in dereference.
+    pub(in crate::sema::bodies) fn language_dereference(&self, node: NodeId) -> Option<bool> {
+        match self.state.language_places.as_ref()?.selected.get(&node)? {
+            Selected::Call {
+                kind: Selection::Dereference { mutable },
+                ..
+            } => Some(*mutable),
+            Selected::Call { .. } | Selected::Field { .. } | Selected::Receiver { .. } => None,
+        }
+    }
     pub(in crate::sema::bodies) fn language_index_method(&self, node: NodeId) -> Option<usize> {
         match self.state.language_places.as_ref()?.selected.get(&node)? {
             Selected::Call { method, .. } => Some(*method as usize),

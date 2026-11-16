@@ -1484,3 +1484,31 @@ fn replacements_request_their_destination_qualification() -> Result {
 fn replacements_execute() -> Result {
     execute_cases(REPLACEMENTS, &["field", "reference", "variant", "generic"])
 }
+
+const CAPTURE_DEREFERENCES: &str = "pa31/tests/spec/capture-dereferences";
+/// A source Deref call borrows its operand; the closure captures that operand
+/// rather than projecting a built-in dereference through the wrapper.
+#[test]
+fn captures_stop_at_overloaded_dereferences() -> Result {
+    lower_completely(
+        CAPTURE_DEREFERENCES,
+        &["shared", "generic", "method", "mutable"],
+    )?;
+    for case in ["rejected", "rejected-alloc"] {
+        one_unproven_body(
+            CAPTURE_DEREFERENCES,
+            case,
+            "\treplace\taccess conflicts with a live reference loan",
+        )?;
+    }
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn captured_dereferences_execute() -> Result {
+    execute_cases(
+        CAPTURE_DEREFERENCES,
+        &["shared", "generic", "method", "mutable"],
+    )
+}

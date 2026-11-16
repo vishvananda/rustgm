@@ -225,7 +225,10 @@ impl Places {
                 let Some(place) = self.cache[&operand] else {
                     return Ok(None);
                 };
-                if self.boxed(checker, node, place)? {
+                // An overloaded dereference borrows its operand; Box also
+                // retains its existing owning capture boundary.
+                if self.boxed(checker, node, place)? || checker.language_dereference(node).is_some()
+                {
                     return Ok(None);
                 }
                 self.dereference(checker, node, place).map(Some)

@@ -352,6 +352,12 @@ impl Collector<'_> {
                 match op {
                     Unary::Borrow | Unary::RawConst => Use::Shared,
                     Unary::BorrowMut | Unary::RawMut => Use::Mutable,
+                    // A selected `Deref`/`DerefMut` call borrows its operand.
+                    Unary::Dereference => match checker.language_dereference(node) {
+                        Some(false) => Use::Shared,
+                        Some(true) => Use::Mutable,
+                        None => Use::Value,
+                    },
                     _ => Use::Value,
                 },
             ),
