@@ -18,6 +18,14 @@
 //! staged crate's own feature request never meets a feature bound, and the
 //! case now declares that rejection. `RustGM`'s messages for the two uses
 //! and for `stable-impl-bound` were pinned after their first run.
+//!
+//! A trait with the bound, as core's `TransmuteFrom<Src, const ASSUME>`,
+//! demands the clause wherever a where-clause names it; alloc's `Recyclable`
+//! impl carries the same bound for its `TransmuteFrom` clauses. The four
+//! `gated-*` cases were declared later, before either compiler ran: rustc
+//! accepts the plain and quantified clause in an impl with the bound and
+//! rejects both without it ("unstable feature `fixture_probe` is used
+//! without being enabled").
 use std::{path::Path, process::Command};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
@@ -29,6 +37,12 @@ const NEEDS: &str = "fn needs<T: Recyclable>() {}\n";
 const CALLER: &str = "fn caller() {\n    needs::<u8>();\n}\n";
 const UNMET: &str =
     "trait obligation requires an unambiguous matching assumption or implementation";
+const GATE: &str = "#[unstable_feature_bound(fixture_probe)]\ntrait Gate<T: ?Sized, const SAFE: bool = false> {}\ntrait Recyclable<F> {}\n";
+const BOUND: &str = "#[unstable_feature_bound(fixture_probe)]\n";
+const GATED: &str = "impl<F, T> Recyclable<F> for T where T: Gate<F> {}\n";
+const QUANTIFIED: &str =
+    "impl<F, T> Recyclable<F> for T\nwhere\n    for<'a> &'a T: Gate<&'a F, { true }>,\n{\n}\n";
+const UNGATED: &str = "trait argument does not satisfy its declaration requirements";
 
 /// One ordinary crate and its rejection, or `None` when it is accepted.
 struct Case {
@@ -36,7 +50,7 @@ struct Case {
     items: &'static [&'static str],
     rejected: Option<&'static str>,
 }
-const CASES: [Case; 6] = [
+const CASES: [Case; 10] = [
     Case {
         name: "private-impl-bound",
         items: &[ROOT, TRAIT],
@@ -78,6 +92,26 @@ const CASES: [Case; 6] = [
             "#[stable(feature = \"fixture_root\", since = \"1.0.0\")]\npub trait Shared {}\n#[stable(feature = \"fixture_root\", since = \"1.0.0\")]\npub struct Value;\n#[stable(feature = \"fixture_root\", since = \"1.0.0\")]\n#[unstable_feature_bound(fixture_probe)]\nimpl Shared for Value {}\n",
         ],
         rejected: Some(STABLE_IMPL),
+    },
+    Case {
+        name: "gated-bound-in-bound-impl",
+        items: &[ROOT, GATE, BOUND, GATED],
+        rejected: None,
+    },
+    Case {
+        name: "gated-quantified-bound-in-bound-impl",
+        items: &[ROOT, GATE, BOUND, QUANTIFIED],
+        rejected: None,
+    },
+    Case {
+        name: "gated-bound-in-unbound-impl",
+        items: &[ROOT, GATE, GATED],
+        rejected: Some(UNGATED),
+    },
+    Case {
+        name: "gated-quantified-bound-in-unbound-impl",
+        items: &[ROOT, GATE, QUANTIFIED],
+        rejected: Some(UNGATED),
     },
 ];
 const STABLE_IMPL: &str = "unstable_feature_bound requires an actual regular unstable owner";
