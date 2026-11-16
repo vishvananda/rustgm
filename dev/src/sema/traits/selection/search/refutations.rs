@@ -22,6 +22,40 @@ impl Search<'_> {
         Ok(Decision::Absent)
     }
 
+    /// A completed child is an ordinary positive obligation of its parent,
+    /// and rustc 1.98 never answers a positive goal with a negative impl. A
+    /// child frame refutes only when it proved and deferred no positive
+    /// candidate, so an ordinary trait's refuted child is simply unproven,
+    /// whatever its scoped debts: `[I]: Iterator` under core's
+    /// `impl<T> !Iterator for [T]` inside `Box<[I], A>: Iterator`. The
+    /// intercrate check still asks whether a downstream crate could prove
+    /// it; a negated where clause is proven outside intercrate mode, where
+    /// a positive candidate's unproven child is just absent. An auto trait's
+    /// refuted child keeps its debt payment.
+    pub(super) fn positive_child(
+        &self,
+        facts: &mut Declarations,
+        child: &mut super::Frame,
+        decision: Decision,
+    ) -> Result<Decision, String> {
+        if !matches!(decision, Decision::Refuted(_))
+            || matches!(
+                child.goal.builtin_bound(),
+                Some(crate::types::parameters::predicates::Bound::Auto(_))
+            )
+            || Self::source_auto_goal(facts, &child.goal)?
+        {
+            return Ok(decision);
+        }
+        if matches!(
+            self.query.purpose,
+            crate::sema::traits::implementations::Purpose::NegativeCoherence(_)
+        ) {
+            return Ok(Decision::Absent);
+        }
+        self.coherence_absence(facts, child, Decision::Absent)
+    }
+
     pub(super) fn accept_negative(
         &mut self,
         facts: &Declarations,

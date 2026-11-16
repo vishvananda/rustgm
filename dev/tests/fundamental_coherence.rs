@@ -8,7 +8,9 @@
 //! it can make local, and `&`, `&mut` and `#[fundamental]` `Box` are the only
 //! types it can see through: `Box<[T; N]>: From<Box<[T]>>` and
 //! `Box<dyn Error>: Error` are knowably absent, `Box<dyn Error, A>` with an
-//! open allocator is not.
+//! open allocator is not. A negative `Iterator` impl, negated under the other
+//! header's own clauses, separates `IntoIterator for &Box<[I], A>` from
+//! `impl<I: Iterator> IntoIterator for I`.
 use std::{
     path::PathBuf,
     process::{Command, Output},
@@ -63,6 +65,71 @@ pub trait Error{}
 /// One declared case: its name, its source after the prelude, and for a
 /// rejection the implementation header the overlap is reported at.
 type Case = (&'static str, &'static str, Option<&'static str>);
+
+const REF: &str = "impl<'a,I,A:Allocator> IntoIterator for &'a Box<[I],A>";
+
+/// Items 13 and 14 of the alloc list.
+const ITERATORS: [Case; 10] = [
+    // rustc: accepts.
+    (
+        "ref-negative",
+        "impl<'a,I,A:Allocator> !Iterator for &'a Box<[I],A>{}impl<'a,I,A:Allocator> IntoIterator for &'a Box<[I],A>{type Item=&'a I;type IntoIter=Iter<'a,I>;}",
+        None,
+    ),
+    (
+        "mut-negative",
+        "impl<I,A:Allocator> !Iterator for Box<[I],A>{}impl<'a,I,A:Allocator> !Iterator for &'a mut Box<[I],A>{}impl<'a,I,A:Allocator> IntoIterator for &'a mut Box<[I],A>{type Item=&'a I;type IntoIter=Iter<'a,I>;}",
+        None,
+    ),
+    (
+        "owned-negative",
+        "impl<I,A:Allocator> !Iterator for Box<[I],A>{}impl<I,A:Allocator> IntoIterator for Box<[I],A>{type Item=I;type IntoIter=IntoIter<I,A>;}",
+        None,
+    ),
+    // The negative impl's `A: Extra` is the other header's own premise.
+    (
+        "premise-pays-condition",
+        "impl<'a,I,A:Allocator+Extra> !Iterator for &'a Box<[I],A>{}impl<'a,I,A:Allocator+Extra> IntoIterator for &'a Box<[I],A>{type Item=&'a I;type IntoIter=Iter<'a,I>;}",
+        None,
+    ),
+    // No downstream crate can name `&Box<[I], Global>` for itself.
+    (
+        "closed-global",
+        "impl<'a,I> IntoIterator for &'a Box<[I],Global>{type Item=&'a I;type IntoIter=Iter<'a,I>;}",
+        None,
+    ),
+    // rustc: E0119, a downstream allocator may make `&Box<[I], A>` an iterator.
+    (
+        "no-negative",
+        "impl<'a,I,A:Allocator> IntoIterator for &'a Box<[I],A>{type Item=&'a I;type IntoIter=Iter<'a,I>;}",
+        Some(REF),
+    ),
+    // rustc: E0119, the negative impl covers only the global allocator.
+    (
+        "narrow-negative",
+        "impl<'a,I> !Iterator for &'a Box<[I],Global>{}impl<'a,I,A:Allocator> IntoIterator for &'a Box<[I],A>{type Item=&'a I;type IntoIter=Iter<'a,I>;}",
+        Some(REF),
+    ),
+    // rustc: E0119, nothing proves the negative impl's `A: Extra`.
+    (
+        "uncovered-condition",
+        "impl<'a,I,A:Allocator+Extra> !Iterator for &'a Box<[I],A>{}impl<'a,I,A:Allocator> IntoIterator for &'a Box<[I],A>{type Item=&'a I;type IntoIter=Iter<'a,I>;}",
+        Some(REF),
+    ),
+    // rustc: E0119, the negative impls name the other references.
+    (
+        "other-reference",
+        "impl<I,A:Allocator> !Iterator for Box<[I],A>{}impl<'a,I,A:Allocator> !Iterator for &'a mut Box<[I],A>{}impl<'a,I,A:Allocator> IntoIterator for &'a Box<[I],A>{type Item=&'a I;type IntoIter=Iter<'a,I>;}",
+        Some(REF),
+    ),
+    // rustc: E0751, `impl Iterator for &mut I` holds unless `Box<[I], A>`
+    // is known not to be an iterator.
+    (
+        "mut-without-owned",
+        "impl<'a,I,A:Allocator> !Iterator for &'a mut Box<[I],A>{}impl<'a,I,A:Allocator> IntoIterator for &'a mut Box<[I],A>{type Item=&'a I;type IntoIter=Iter<'a,I>;}",
+        Some("impl<'a,I,A:Allocator> !Iterator for &'a mut Box<[I],A>"),
+    ),
+];
 
 /// Items 15 and 16 of the alloc list.
 const CONVERSIONS: [Case; 9] = [
@@ -171,6 +238,13 @@ fn disagreements(label: &str, prelude: &str, cases: &[Case]) -> Result<Vec<Strin
         }
     }
     Ok(failures)
+}
+
+#[test]
+fn negative_iterator_impls_separate_box_slice_iteration_from_the_blanket() -> Result {
+    let failures = disagreements("plain", CORE, &ITERATORS)?;
+    assert!(failures.is_empty(), "{failures:#?}");
+    Ok(())
 }
 
 #[test]

@@ -47,9 +47,18 @@ pub(in crate::sema) fn may_overlap(
         |_, _, _, _, _| Ok(false),
     )
 }
-/// A negative coherence query with `premises`, the other header's own Sized
-/// and `MetaSized` sets shared by every condition of one side of a pair,
-/// decides a rigid parameter's sizing only from them. `pay` receives the
+/// The other header's premises that one negative coherence query assumes, as
+/// rustc 1.98 negates a where clause under that impl's whole `param_env`: its
+/// Sized and `MetaSized` sets and its own trait clauses, frozen with the
+/// pair's rigid parameters. Every condition of one side shares them.
+#[derive(Clone, Copy)]
+pub(in crate::sema) struct NegativePremises<'p> {
+    pub placeholders: &'p crate::types::parameters::shape::Placeholders,
+    pub assumptions: &'p Assumptions,
+}
+/// A negative coherence query with `premises` decides a rigid parameter's
+/// sizing only from their Sized and `MetaSized` sets, and proves a negative
+/// impl's trait conditions from their trait clauses. `pay` receives the
 /// proof's Sized debts, then its `MetaSized` debts.
 pub(in crate::sema) fn may_overlap_with(
     facts: &mut Declarations,
@@ -57,7 +66,7 @@ pub(in crate::sema) fn may_overlap_with(
     goal: &Goal,
     mode: crate::sema::coherence_policy::Mode,
     perspective: Perspective,
-    premises: Option<&crate::types::parameters::shape::Placeholders>,
+    premises: Option<NegativePremises<'_>>,
     pay: impl FnOnce(
         &mut Declarations,
         &mut Context,
@@ -75,9 +84,10 @@ pub(in crate::sema) fn may_overlap_with(
         return Ok(false);
     }
     let empty = Assumptions::default();
-    let placeholders = premises.filter(|_| mode.negative());
+    let premises = premises.filter(|_| mode.negative());
+    let placeholders = premises.map(|premises| premises.placeholders);
     let caller = Caller {
-        assumptions: &empty,
+        assumptions: premises.map_or(&empty, |premises| premises.assumptions),
         environment: None,
         first_region: 1,
         retain_sized: true,

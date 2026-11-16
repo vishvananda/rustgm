@@ -232,7 +232,10 @@ impl Inputs {
                     goal,
                     crate::sema::coherence_policy::Mode::Strict,
                     perspective,
-                    Some(assumed.negative()),
+                    Some(crate::sema::traits::selection::NegativePremises {
+                        placeholders: assumed.negative(),
+                        assumptions: &assumed.traits,
+                    }),
                     |facts, context, proof, sized, meta_sized| {
                         self.pay_negative(facts, context, proof, sized, meta_sized, Some(assumed))
                     },
@@ -525,7 +528,53 @@ impl Inputs {
         let (placeholders, work) =
             crate::types::parameters::shape::Placeholders::new(sized, meta_sized)?;
         context.account_work(work).map_err(|e| e.to_string())?;
-        Ok(Premises { side, placeholders })
+        let traits = self.trait_premises(facts, context, side)?;
+        Ok(Premises {
+            side,
+            placeholders,
+            traits,
+        })
+    }
+
+    /// One header's own trait clauses, written and elaborated, resolved
+    /// after the pair is frozen: rustc 1.98 proves the other header's negated
+    /// clause, and so a negative impl's conditions, under this header's
+    /// `param_env`. Its sizing clauses are its placeholder premises instead,
+    /// and a clause that does not resolve is not assumed.
+    fn trait_premises(
+        &self,
+        facts: &mut Declarations,
+        context: &mut Context,
+        side: Side,
+    ) -> Result<crate::sema::traits::assumptions::Assumptions, String> {
+        let mut clauses = Vec::new();
+        for (goal, &owner) in self.traits.iter().zip(&self.trait_sides) {
+            context.account_work(1).map_err(|e| e.to_string())?;
+            if owner != side {
+                continue;
+            }
+            let predicate = match context.resolved_predicate(&mut facts.types, goal) {
+                Ok(predicate) => predicate,
+                Err(infer::Error::Unresolved | infer::Error::Normalization) => continue,
+                Err(error) => return Err(error.to_string()),
+            };
+            if sizing_clause(facts, predicate.bound)?.is_none() {
+                clauses.push(predicate);
+            }
+        }
+        let empty = crate::sema::traits::assumptions::Assumptions::default();
+        if clauses.is_empty() {
+            return Ok(empty);
+        }
+        let spent = std::cell::Cell::new(0_usize);
+        let assumptions = empty.extended(&facts.types, &clauses, &|work, bytes| {
+            spent.set(spent.get().saturating_add(work).saturating_add(bytes));
+            Ok(())
+        })?;
+        context
+            .account_work(spent.get())
+            .map_err(|e| e.to_string())?;
+        Ok(assumptions)
     }
 
     /// A negative payment with `premises` assumes only that other header's
@@ -647,11 +696,13 @@ fn negative_queries() -> [usize; 2] {
     NEGATIVE_QUERIES.with(std::cell::Cell::get)
 }
 
-/// One header's own sizing premises, each set sorted by identity in one
-/// handle shared by the negative queries of the other header's conditions.
+/// One header's own sizing premises, each set sorted by identity, and its
+/// trait clauses, in one handle shared by the negative queries of the other
+/// header's conditions.
 pub(super) struct Premises {
     side: Side,
     placeholders: crate::types::parameters::shape::Placeholders,
+    traits: crate::sema::traits::assumptions::Assumptions,
 }
 impl Premises {
     fn negative(&self) -> &crate::types::parameters::shape::Placeholders {

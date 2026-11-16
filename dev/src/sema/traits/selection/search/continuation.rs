@@ -302,7 +302,7 @@ impl<'a> Search<'a> {
                     if !matches!(decision, Decision::Proven(_)) {
                         self.query.invalidate_auto(frame);
                     }
-                    let completed = stack.pop().ok_or("missing completed selection frame")?;
+                    let mut completed = stack.pop().ok_or("missing completed selection frame")?;
                     let Some(parent) = stack.last_mut() else {
                         if self.query.universal.is_some() {
                             stack.push(completed);
@@ -315,6 +315,7 @@ impl<'a> Search<'a> {
                         self.remember(facts, &completed, decision)?;
                         self.query.export_completed(facts, decision)?;
                     }
+                    let decision = self.positive_child(facts, &mut completed, decision)?;
                     self.accept(facts, parent, decision)?;
                 }
             }
