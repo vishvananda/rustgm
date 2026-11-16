@@ -15,6 +15,14 @@
 //! lacked `Copy`, which rustc needs to move a constructor's argument, and then
 //! `clone_fn`, which `RustGM` needs for a source `Clone`. Both were added
 //! before any verdict was compared.
+//!
+//! A staged library's availability inherits through the parameter rib like
+//! any lexical parent. The staged cases are ordinary crates checked by
+//! `rustc --crate-type=lib --cap-lints=allow`: it accepts each one except
+//! `staged-unmarked-variant-like-parameter`, which it rejects with "enum has
+//! missing stability attribute". Its rejection was declared first; the full
+//! `RustGM` message was pinned after the first run, which ended in
+//! "attribute" where the declaration did not.
 use std::{path::Path, process::Command};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
@@ -127,6 +135,46 @@ const CASES: [Case; 11] = [
     },
 ];
 
+const STAGED: &str =
+    "#![feature(staged_api)]\n#![stable(feature = \"fixture_root\", since = \"1.0.0\")]\n";
+const STABLE: &str = "#[stable(feature = \"fixture_root\", since = \"1.0.0\")]\n";
+const STAGED_CASES: [Case; 4] = [
+    Case {
+        name: "staged-variant-like-parameter",
+        items: &[
+            STAGED,
+            STABLE,
+            FORCE_RESULT,
+            STABLE,
+            "pub fn leaf(x: u8) -> ForceResult<u8, ()> {\n    ForceResult::Leaf(x)\n}\n",
+        ],
+        rejected: None,
+    },
+    Case {
+        name: "staged-unstable-variant-like-parameter",
+        items: &[
+            STAGED,
+            "#[unstable(feature = \"fixture_force\", issue = \"none\")]\n",
+            FORCE_RESULT,
+        ],
+        rejected: None,
+    },
+    Case {
+        name: "staged-associated-like-parameter",
+        items: &[
+            STAGED,
+            STABLE,
+            "pub trait Tr<T> {\n    #[stable(feature = \"fixture_root\", since = \"1.0.0\")]\n    type T;\n    #[stable(feature = \"fixture_root\", since = \"1.0.0\")]\n    fn get(&self, value: T) -> Self::T;\n}\n",
+        ],
+        rejected: None,
+    },
+    Case {
+        name: "staged-unmarked-variant-like-parameter",
+        items: &[STAGED, FORCE_RESULT],
+        rejected: Some("public declaration has missing library stability attribute"),
+    },
+];
+
 fn rejects(stderr: &str, message: &str) -> bool {
     stderr.lines().any(|line| {
         line.strip_prefix("ERROR: file 0: ")
@@ -135,25 +183,29 @@ fn rejects(stderr: &str, message: &str) -> bool {
     })
 }
 
-/// Lexical names inside an item find its parameters and qualified names its
-/// members, so a shared name is no collision; a repeated variant or parameter
-/// and a default that names a later parameter still are.
-#[test]
-fn parameters_and_members_of_one_item_may_share_a_name() -> Result {
+/// Type every case, after `core` as a source core or as an ordinary crate;
+/// the cases that differ from their declared outcome.
+fn check(folder: &str, cases: &[Case], core: Option<&str>) -> Result<Vec<String>> {
     let folder = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../obj/separated-parameters")
-        .join(std::process::id().to_string());
+        .join(std::process::id().to_string())
+        .join(folder);
     std::fs::create_dir_all(&folder)?;
     let mut failures = Vec::new();
-    for case in CASES {
+    for case in cases {
         let path = folder.join(format!("{}.rs", case.name));
-        std::fs::write(&path, format!("{CORE}{}", case.items.concat()))?;
-        let output = Command::new(env!("CARGO_BIN_EXE_rustgm"))
-            .args(["--emit-types", "--edition=2024", "--cap-lints=allow"])
-            .args(["--crate-name", "core", "--crate-disambiguator"])
-            .args(["separated", "--source-core", "core@separated"])
-            .arg(&path)
-            .output()?;
+        std::fs::write(
+            &path,
+            format!("{}{}", core.unwrap_or_default(), case.items.concat()),
+        )?;
+        let mut command = Command::new(env!("CARGO_BIN_EXE_rustgm"));
+        command.args(["--emit-types", "--edition=2024", "--cap-lints=allow"]);
+        if core.is_some() {
+            command
+                .args(["--crate-name", "core", "--crate-disambiguator"])
+                .args(["separated", "--source-core", "core@separated"]);
+        }
+        let output = command.arg(&path).output()?;
         let stderr = String::from_utf8_lossy(&output.stderr);
         let matches = match case.rejected {
             None => output.status.success(),
@@ -167,6 +219,25 @@ fn parameters_and_members_of_one_item_may_share_a_name() -> Result {
             ));
         }
     }
+    Ok(failures)
+}
+
+/// Lexical names inside an item find its parameters and qualified names its
+/// members, so a shared name is no collision; a repeated variant or parameter
+/// and a default that names a later parameter still are.
+#[test]
+fn parameters_and_members_of_one_item_may_share_a_name() -> Result {
+    let failures = check("source-core", &CASES, Some(CORE))?;
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
+/// A staged library's availability passes through the rib that separates a
+/// parameter from a member of the same name, and still requires every public
+/// declaration's stability.
+#[test]
+fn staged_parameters_and_members_inherit_availability_through_their_rib() -> Result {
+    let failures = check("staged", &STAGED_CASES, None)?;
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())
 }

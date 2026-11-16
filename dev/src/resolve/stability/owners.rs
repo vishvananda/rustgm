@@ -59,18 +59,14 @@ pub(super) fn collect(
         .map_err(|_| Error::unlocated("library policy ownership allocation failed"))?;
     modules(package, facts, draft, &mut scopes, &mut used)?;
     definition_scopes(package, facts, draft, &mut scopes, &mut used)?;
-    // Lexical scope IDs are append-only and parent-first. Module scopes were
-    // seeded separately because their lexical parent is intentionally absent.
+    // Lexical scope IDs are append-only and parent-first, except for an item
+    // body's parameter rib. Module scopes were seeded separately because their
+    // lexical parent is intentionally absent.
     let mut has_const = false;
     for (index, scope) in facts.scopes.iter().enumerate() {
         draft.charge(1, 0)?;
         if let Some(parent) = scope.parent {
-            if parent.0 as usize >= index {
-                return Err(Error::unlocated(
-                    "library scope parent is not earlier than its child",
-                ));
-            }
-            let inherited = scopes[parent.0 as usize];
+            let inherited = parent_frame(facts, draft, &mut scopes, index, parent)?;
             scopes[index].inherit(draft, inherited);
         }
         has_const |=
@@ -101,6 +97,34 @@ pub(super) fn collect(
         ));
     }
     Ok(owners)
+}
+
+/// The completed frame of scope `index`'s parent. A parameter rib is
+/// created after the body it encloses (see `resolve::parameter_ribs`), but it
+/// takes the body's earlier parent, so the rib's frame is completed here
+/// from that parent first; completing it again in its own turn is idempotent.
+fn parent_frame(
+    facts: &Resolution,
+    draft: &Draft<'_>,
+    scopes: &mut [Frame],
+    index: usize,
+    parent: ScopeId,
+) -> Result<Frame, Error> {
+    let parent = parent.0 as usize;
+    if parent < index {
+        return Ok(scopes[parent]);
+    }
+    let outer = facts
+        .parameter_rib(ScopeId(
+            u32::try_from(index)
+                .map_err(|_| Error::unlocated("library scope identity overflow"))?,
+        ))
+        .and_then(|rib| facts.scopes[rib.0 as usize].parent)
+        .filter(|outer| (outer.0 as usize) < index)
+        .ok_or_else(|| Error::unlocated("library scope parent is not earlier than its child"))?;
+    let inherited = scopes[outer.0 as usize];
+    scopes[parent].inherit(draft, inherited);
+    Ok(scopes[parent])
 }
 
 fn declaration_rows(
