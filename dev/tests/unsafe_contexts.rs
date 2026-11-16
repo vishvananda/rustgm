@@ -309,3 +309,87 @@ fn raw_access_and_unsafe_calls_execute() -> Result<(), Box<dyn std::error::Error
         ],
     )
 }
+
+/// A source-core provider whose `Outer` dereferences to `Inner` through its
+/// own `Deref`, as alloc's guards and wrappers do.
+const DEREF_PROVIDER: &str = "#![feature(no_core,lang_items)]#![no_core]#![allow(internal_features,dead_code,unused_variables)]
+#[lang=\"pointee_sized\"]pub trait PointeeSized{}
+#[lang=\"meta_sized\"]pub trait MetaSized:PointeeSized{}
+#[lang=\"sized\"]pub trait Sized:MetaSized{}
+#[lang=\"legacy_receiver\"]pub trait LegacyReceiver:PointeeSized{}
+impl<T:PointeeSized> LegacyReceiver for &T{}
+#[lang=\"clone\"]pub trait Clone:Sized{#[lang=\"clone_fn\"]fn clone(&self)->Self;}
+#[lang=\"copy\"]pub trait Copy:Clone{}
+impl Clone for u8{fn clone(&self)->u8{*self}}impl Copy for u8{}
+#[lang=\"deref\"]pub trait Deref:PointeeSized{#[lang=\"deref_target\"]type Target:?Sized;fn deref(&self)->&Self::Target;}
+pub struct Inner{v:u8}pub struct Outer{inner:Inner}
+impl Deref for Outer{type Target=Inner;fn deref(&self)->&Inner{&self.inner}}
+";
+/// rustc 1.98.0 accepts each case marked `true` and rejects the other
+/// (E0133).
+const DEREF_CASES: [(&str, bool, &str); 4] = [
+    (
+        "unsafe-method",
+        true,
+        "impl Inner{pub unsafe fn get(&self)->u8{self.v}}pub fn first(o:&Outer)->u8{unsafe{o.get()}}",
+    ),
+    (
+        "unsafe-fn-body",
+        true,
+        "impl Inner{pub unsafe fn get(&self)->u8{self.v}}pub unsafe fn first(o:&Outer)->u8{unsafe{o.get()}}",
+    ),
+    (
+        "safe-method",
+        true,
+        "impl Inner{pub fn get(&self)->u8{self.v}}pub fn first(o:&Outer)->u8{o.get()}",
+    ),
+    (
+        "outside-unsafe",
+        false,
+        "impl Inner{pub unsafe fn get(&self)->u8{self.v}}pub fn first(o:&Outer)->u8{o.get()}",
+    ),
+];
+fn deref_provider(body: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let mut config = rustgm::expand::config::Config::default();
+    config.set_lint_cap(rustgm::support::diagnostics::LintCap::Allow);
+    let report = crate::resolve::source_provider_config(
+        &format!("{DEREF_PROVIDER}{body}"),
+        "deref",
+        &config,
+    )?;
+    let rustgm::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = rustgm::pipeline::analyze_source(&report)?;
+    rustgm::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        rustgm::lower::Roots {
+            entry: None,
+            exports: &[],
+        },
+        prepared,
+    )?;
+    Ok(())
+}
+/// An unsafe method reached through an overloaded `Deref` shares its call
+/// node with the safe `deref` call; only the unsafe callee takes the block's
+/// permission, and a call outside `unsafe` stays rejected.
+#[test]
+fn unsafe_methods_through_overloaded_deref_take_their_own_permission()
+-> Result<(), Box<dyn std::error::Error>> {
+    for (name, accepted, body) in DEREF_CASES {
+        match (accepted, deref_provider(body)) {
+            (true, Err(error)) => return Err(format!("{name}: {error}").into()),
+            (false, Ok(())) => return Err(format!("accepted {name}").into()),
+            (false, Err(error)) => assert!(
+                error
+                    .to_string()
+                    .contains("call to unsafe function requires an unsafe context"),
+                "{name}: {error}"
+            ),
+            (true, Ok(())) => {}
+        }
+    }
+    Ok(())
+}

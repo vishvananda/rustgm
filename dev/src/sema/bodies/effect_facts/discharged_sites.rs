@@ -8,7 +8,10 @@ use crate::{
     sema::model::Declarations,
     support::{crates::generics::source::CallSafety, retained},
     syntax::ast::NodeId,
-    types::{TypeId, infer::Solved},
+    types::{
+        TypeId,
+        infer::{Solved, TermId},
+    },
 };
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -210,11 +213,9 @@ impl Checker<'_> {
             if kind == CallSafety::Safe {
                 return Err(self.error(node, "unsafe call retained an absent lexical obligation"));
             }
-            let signature = solved
-                .types
-                .get(term.0 as usize)
-                .copied()
-                .ok_or_else(|| self.error(node, "unsafe call lost its completed signature"))?;
+            let Some(signature) = self.unsafe_callee(solved, node, term)? else {
+                continue;
+            };
             if sites.len() == sites.capacity() {
                 return Err(self.error(node, "unsafe call request duplicated its actual node"));
             }
@@ -236,6 +237,27 @@ impl Checker<'_> {
         Ok(sites)
     }
 
+    /// The completed signature of a call at an unsafe call's node, unless it
+    /// is safe: a method reached through an overloaded `Deref` shares its
+    /// node with each safe `deref` call of its receiver, and only the unsafe
+    /// callee takes the lexical context.
+    fn unsafe_callee(
+        &self,
+        solved: &Solved,
+        node: NodeId,
+        term: TermId,
+    ) -> Result<Option<TypeId>, Error> {
+        let signature = solved
+            .types
+            .get(term.0 as usize)
+            .copied()
+            .ok_or_else(|| self.error(node, "unsafe call lost its completed signature"))?;
+        let safe = matches!(
+            self.facts.types.kind(signature),
+            Some(crate::types::Kind::Function { unsafe_: false, .. })
+        );
+        Ok((!safe).then_some(signature))
+    }
     pub(in crate::sema::bodies::effect_facts) fn preflight_safety_sites(
         &mut self,
         context: Option<SourceCallUse>,
