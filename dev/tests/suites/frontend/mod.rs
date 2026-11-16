@@ -41,6 +41,8 @@ mod cstr_sources;
 mod ctfe_selector;
 #[path = "../../declarative_macros.rs"]
 mod declarative_macros;
+#[path = "../../defaulted_availability.rs"]
+mod defaulted_availability;
 #[path = "../../deref_contracts.rs"]
 mod deref_contracts;
 #[path = "../../derived_field_bounds.rs"]
