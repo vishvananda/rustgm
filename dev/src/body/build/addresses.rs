@@ -25,7 +25,7 @@ impl Builder<'_> {
                 Place::Local(_) | Place::Static(_) => return Ok(()),
                 Place::Projection(id) => {
                     let projection = &self.body.projections[id.0 as usize];
-                    if projection.kind.is_dereference() {
+                    if projection.kind.loads_pointer() {
                         return Ok(());
                     }
                     place = projection.base;

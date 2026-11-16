@@ -24,7 +24,7 @@ impl Storage {
             }
         }
         for projection in &body.projections {
-            if projection.kind.is_dereference() {
+            if projection.kind.loads_pointer() {
                 result.mark(body, projection.base)?;
             }
         }
@@ -120,6 +120,21 @@ impl Lower<'_, '_, '_> {
             return self.unsize(operand, target_ty);
         }
         self.value(operand)
+    }
+    /// The pointer storage a dereference loads: a box's leading pointer
+    /// field, or the reference or raw pointer itself.
+    pub(super) fn box_pointer(
+        &mut self,
+        projection: &ir::Projection,
+        base: Address,
+    ) -> Result<Address, &'static str> {
+        if !matches!(projection.kind, ir::ProjectionKind::BoxDereference) {
+            return Ok(base);
+        }
+        let offset = self
+            .context
+            .box_pointer_offset(self.place_type(projection.base)?)?;
+        self.offset(base, offset)
     }
     pub(super) fn dereference(
         &mut self,

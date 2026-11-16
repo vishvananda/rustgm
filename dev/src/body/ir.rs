@@ -57,6 +57,9 @@ pub enum ProjectionKind {
     RawDereference {
         mutable: bool,
     },
+    /// A box's content: an owned place behind the pointer its leading fields
+    /// hold, which keeps the box's own move path, mutability and loans.
+    BoxDereference,
     Field(crate::sema::members::Selection),
     /// Different union fields overlap before any descendant disjointness test.
     UnionField(crate::sema::members::Selection),
@@ -98,6 +101,12 @@ impl ProjectionKind {
     #[must_use]
     pub const fn is_dereference(self) -> bool {
         matches!(self, Self::Dereference { .. } | Self::RawDereference { .. })
+    }
+    /// Code generation reaches every one of these referents through a
+    /// pointer it loads: a box's from the pointer its leading fields hold.
+    #[must_use]
+    pub const fn loads_pointer(self) -> bool {
+        self.is_dereference() || matches!(self, Self::BoxDereference)
     }
 }
 #[derive(Clone, Copy)]

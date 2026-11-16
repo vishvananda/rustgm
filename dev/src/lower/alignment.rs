@@ -107,7 +107,7 @@ impl Check<'_> {
                 break align;
             }
             let projection = &self.body.projections[id.0 as usize];
-            if projection.kind.is_dereference() {
+            if projection.kind.loads_pointer() {
                 let align = self.required(projection.ty)?;
                 self.projections[id.0 as usize] = Some(align);
                 break align;

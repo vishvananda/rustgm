@@ -65,10 +65,17 @@ impl Checker<'_> {
             let mut ty = self.ty(base)?;
             for _ in 0..dereferences {
                 self.alignment_step(node, 1)?;
-                let Some(Type::Reference { referent, .. }) = self.facts.types.kind(ty) else {
-                    return Err(self.error(node, "invalid aligned place dereference"));
+                // A box's content, as a referent, has its own allocation's alignment.
+                ty = match self.facts.types.kind(ty) {
+                    Some(Type::Reference { referent, .. }) => referent,
+                    _ => crate::sema::compiler_items::boxes::content(
+                        &self.facts.types,
+                        &self.facts.aggregates,
+                        ty,
+                    )
+                    .map_err(|e| self.error(node, e))?
+                    .ok_or_else(|| self.error(node, "invalid aligned place dereference"))?,
                 };
-                ty = referent;
             }
             let cap = if field { self.packed_type(ty) } else { None };
             self.state.alignment.place_work.push((node, cap));

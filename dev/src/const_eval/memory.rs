@@ -544,8 +544,9 @@ impl Machine<'_, '_> {
             address.union = None;
         }
         let result = match projection.kind {
-            ProjectionKind::FutureField(_) => {
-                return Err("future frame execution is not a constant operation".into());
+            // Constant evaluation has no future frame, nor a heap a box could own.
+            ProjectionKind::FutureField(_) | ProjectionKind::BoxDereference => {
+                return Err("future frames and box contents are not constant places".into());
             }
             ProjectionKind::CaptureBoundary { .. } => {
                 let code = self

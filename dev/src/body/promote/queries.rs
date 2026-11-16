@@ -150,6 +150,7 @@ impl Engine<'_, '_> {
                     | ProjectionKind::Dereference { .. }
                     | ProjectionKind::UnionField(_)
                     | ProjectionKind::RawDereference { .. }
+                    | ProjectionKind::BoxDereference
                     | ProjectionKind::Subarray { .. }
                     | ProjectionKind::Subslice { .. }
                     | ProjectionKind::FromEnd { .. } => Ok(false),

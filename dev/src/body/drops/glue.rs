@@ -28,6 +28,11 @@ pub enum Shape {
     Slice { element: Id },
     /// The caller's proved vtable supplies the complete concrete cleanup entry.
     Dynamic,
+    /// A box whose content needs cleanup: the `content` recipe through the
+    /// pointer its leading fields hold, then the box's own destructor and
+    /// these fields. A box records `Fields` until its content's recipe is
+    /// completed, since a box may own its own type.
+    Boxed { fields: Range, content: Id },
 }
 /// Generic recipes require a concrete method selection before emission.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -202,11 +207,65 @@ impl<'a> Catalog<'a> {
         if let Some(State::Ready(_) | State::Failed(_)) = self.cache.states.get(&key) {
             return self.result(ty);
         }
-        if let Err(message) = self.cache.push_work((ty, false)).and_then(|()| self.run()) {
+        if let Err(message) = self
+            .cache
+            .push_work((ty, false))
+            .and_then(|()| self.run())
+            .and_then(|()| self.contents())
+        {
             self.cache.fail(key, message);
             return Err(message);
         }
         self.result(ty)
+    }
+    /// Complete each new box's content recipe once every recipe that owns it
+    /// is ready, so a box may own its own type. A failed content fails every
+    /// box still waiting on it.
+    fn contents(&mut self) -> Result<(), &'static str> {
+        while let Some(&(recipe, content)) = self.cache.boxes.last() {
+            if let Err(message) = self.complete_content(content).and_then(|completed| {
+                let entry = self
+                    .cache
+                    .storage
+                    .entries
+                    .get_mut(recipe.0 as usize)
+                    .ok_or("box cleanup lost its recipe")?;
+                match (entry.kind, completed) {
+                    (Shape::Fields(fields), Some(content)) => {
+                        entry.kind = Shape::Boxed { fields, content };
+                        Ok(())
+                    }
+                    (Shape::Fields(_), None) => Ok(()),
+                    _ => Err("box cleanup changed its struct fields"),
+                }
+            }) {
+                for (recipe, _) in std::mem::take(&mut self.cache.boxes) {
+                    let ty = self
+                        .cache
+                        .storage
+                        .entries
+                        .get(recipe.0 as usize)
+                        .map(|r| r.ty);
+                    if let Some(key) = ty.and_then(|ty| self.key(ty).ok()) {
+                        self.cache.states.insert(key, State::Failed(message));
+                    }
+                }
+                return Err(message);
+            }
+            self.cache.boxes.pop();
+        }
+        Ok(())
+    }
+    fn complete_content(&mut self, content: TypeId) -> Result<Option<Id>, &'static str> {
+        self.cache.charge(1)?;
+        if !matches!(
+            self.cache.states.get(&self.key(content)?),
+            Some(State::Ready(_))
+        ) {
+            self.cache.push_work((content, false))?;
+            self.run()?;
+        }
+        self.result(content)
     }
     fn key(&self, ty: TypeId) -> Result<Key, &'static str> {
         recipe_key(self.types, ty)
@@ -360,9 +419,18 @@ impl<'a> Catalog<'a> {
             }
             _ => return Err("invalid completed destruction type"),
         };
+        let content =
+            crate::sema::compiler_items::boxes::content(self.types, self.definitions, ty)?;
+        if content.is_some() && !matches!(kind, Shape::Fields(_)) {
+            return Err("box cleanup requires its struct fields");
+        }
         self.cache.retain::<Recipe>(1)?;
         let id = Id(compact(self.cache.storage.entries.len())?);
         self.cache.storage.entries.push(Recipe { ty, method, kind });
+        if let Some(content) = content {
+            self.cache.retain::<(Id, TypeId)>(1)?;
+            self.cache.boxes.push((id, content));
+        }
         Ok(id)
     }
     fn tuple_fields(&mut self, list: crate::types::ListId) -> Result<Shape, &'static str> {

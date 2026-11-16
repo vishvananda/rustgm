@@ -20,8 +20,13 @@ pub enum Root {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Component {
     Field(Selection),
+    /// A box's owned content, moved and reinitialized as a field of its box.
+    Boxed,
     Index(u64),
-    Subarray { start: u64, end: u64 },
+    Subarray {
+        start: u64,
+        end: u64,
+    },
 }
 pub struct Path {
     pub root: Root,
@@ -259,6 +264,7 @@ impl Paths {
                 None
             }
             ProjectionKind::Field(field) => Some(Component::Field(field)),
+            ProjectionKind::BoxDereference => Some(Component::Boxed),
             ProjectionKind::UnionField(_) => {
                 info.union = true;
                 None
@@ -315,7 +321,7 @@ impl Paths {
         }
         let root = self.entries[parent.0 as usize].root;
         let id = self.insert(root, Some(parent), Some(component), ty)?;
-        if !matches!(component, Component::Field(_)) {
+        if !matches!(component, Component::Field(_) | Component::Boxed) {
             let Some(Kind::Array { length, .. }) = types.kind(self.entries[parent.0 as usize].ty)
             else {
                 return Err("pattern move path requires a fixed array");

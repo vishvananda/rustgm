@@ -225,6 +225,9 @@ impl Places {
                 let Some(place) = self.cache[&operand] else {
                     return Ok(None);
                 };
+                if self.boxed(checker, node, place)? {
+                    return Ok(None);
+                }
                 self.dereference(checker, node, place).map(Some)
             }
             Kind::Field { value, .. } => {
@@ -244,6 +247,9 @@ impl Places {
                     .copied()
                     .unwrap_or(0);
                 for _ in 0..count {
+                    if self.boxed(checker, node, place)? {
+                        return Ok(None);
+                    }
                     place = self.dereference(checker, node, place)?;
                 }
                 let Some(Operation::Field { field, plan }) = checker
@@ -267,6 +273,16 @@ impl Places {
             }
             _ => Ok(None),
         }
+    }
+    /// A box's content is no capture projection here: as with a `Deref`
+    /// call, the capture stops at the box itself.
+    fn boxed(&self, checker: &mut Checker<'_>, node: NodeId, place: Place) -> Result<bool, Error> {
+        let term = self.types[place.path.index()];
+        let boxed = checker.facts.aggregates.owned_box();
+        Ok(matches!(
+            checker.head(node, term)?,
+            Some(Constructor::Adt(item, _) | Constructor::AdtArgs(item, _)) if boxed == Some(item)
+        ))
     }
     pub(super) fn dereference(
         &mut self,

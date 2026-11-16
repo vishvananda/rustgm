@@ -37,6 +37,7 @@ pub fn write_with_origins(
                 Some(Component::Field(Selection::Nominal(id))) => {
                     write!(out, " nominal-field={}", id.0)?;
                 }
+                Some(Component::Boxed) => write!(out, " boxed")?,
                 Some(Component::Index(index)) => write!(out, " array-index={index}")?,
                 Some(Component::Subarray { start, end }) => {
                     write!(out, " subarray={start}..{end}")?;

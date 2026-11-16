@@ -154,11 +154,17 @@ impl Checker<'_> {
                         let new = self.source_dereference(node, operand, true)?;
                         self.equate(node, old, new)?;
                     }
+                    // A box's content is mutable only through a mutable box.
+                    let boxed = self.facts.aggregates.owned_box();
                     let reference = if let Some(term) = self.state.terms.get(self.key(operand)) {
-                        matches!(
-                            self.head(node, term)?,
-                            Some(super::Constructor::Reference { mutable: true, .. })
-                        )
+                        match self.head(node, term)? {
+                            Some(super::Constructor::Reference { mutable: true, .. }) => true,
+                            Some(
+                                super::Constructor::Adt(item, _)
+                                | super::Constructor::AdtArgs(item, _),
+                            ) => boxed == Some(item),
+                            _ => false,
+                        }
                     } else {
                         false
                     };

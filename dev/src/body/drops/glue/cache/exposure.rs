@@ -20,6 +20,7 @@ impl Cache {
             states: HashMap::default(),
             storage: Recipes::default(),
             work: Vec::new(),
+            boxes: Vec::new(),
             retained: 0,
             steps: 0,
         };

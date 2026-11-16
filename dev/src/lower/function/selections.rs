@@ -29,6 +29,7 @@ impl Lower<'_, '_, '_> {
             ProjectionKind::FutureField(_) => self.future_offset(id).map(Step::Offset),
             ProjectionKind::Dereference { .. }
             | ProjectionKind::RawDereference { .. }
+            | ProjectionKind::BoxDereference
             | ProjectionKind::FromEnd { .. }
             | ProjectionKind::Subslice { .. } => Ok(Step::Dynamic(id)),
             ProjectionKind::Field(field) | ProjectionKind::UnionField(field) => {

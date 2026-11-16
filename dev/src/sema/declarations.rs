@@ -610,6 +610,7 @@ impl Checker<'_> {
     fn complete_compiler_value_headers(&mut self) -> Result<(), Error> {
         super::compiler_items::complete_field_headers(self.report, &mut self.facts)?;
         super::compiler_items::phantom::complete(self.report, &mut self.facts)?;
+        super::compiler_items::boxes::complete(self.report, &mut self.facts)?;
         super::compiler_items::pointee::prepare(self.report, &mut self.facts)?;
         super::compiler_items::discriminant::prepare(self.report, &mut self.facts)?;
         super::compiler_items::site_records::complete(self.report, &mut self.facts)?;

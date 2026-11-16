@@ -11,12 +11,12 @@
 //! `rustc_std_internal_symbol` names a symbol, which declaration linkage
 //! implements, and `rustc_conversion_suggestion` only feeds rustc's
 //! diagnostics, so both profiles accept all of them without a waiver once
-//! their form, owner and gate hold. The lang items `owned_box`,
-//! `global_alloc_ty` and `String` have no role here; bring-up admits their
-//! structs as ordinary ones after rustc's target and generic requirement.
-//! Without that role no intrinsic signature position can be proved to be
-//! `Box`, so bring-up lets any nominal type stand in a `Box` position of
-//! `write_box_via_move`, which alloc's `vec!` calls.
+//! their form, owner and gate hold. The lang items `global_alloc_ty` and
+//! `String` have no role here; bring-up admits their structs as ordinary ones
+//! after rustc's target and generic requirement. `owned_box` is the built-in
+//! owning pointer in both profiles, so a `Box` position of
+//! `write_box_via_move`, which alloc's `vec!` calls, matches exactly that
+//! struct.
 //!
 //! Every outcome was declared before either compiler ran. rustc 1.98.0 is the
 //! oracle (`RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib
@@ -89,11 +89,6 @@ enum Outcome {
     Accepted,
     /// Both profiles reject it with this message and record no waiver.
     Rejected(&'static str),
-    /// Bring-up rejects it with `bringup` and strict mode with `strict`.
-    Distinct {
-        bringup: &'static str,
-        strict: &'static str,
-    },
 }
 
 /// One case: its crate feature header, the items it appends to the core and
@@ -230,7 +225,6 @@ const ALLOCATORS: [Case; 7] = [
     },
 ];
 
-const OWNED_BOX_WAIVER: &str = "lang item `owned_box` is admitted as an ordinary struct: Box's built-in dereference, move-out, drop and allocation semantics are not implemented";
 const GLOBAL_ALLOC_WAIVER: &str = "lang item `global_alloc_ty` is admitted as an ordinary struct: the global allocator's Box layout and calling convention are not implemented";
 const STRING_WAIVER: &str = "lang item `String` is admitted as an ordinary struct: its diagnostics and the uniqueness of its role are not checked";
 const UNSUPPORTED: &str = "unsupported source language item";
@@ -240,10 +234,7 @@ const LANG_ROLES: [Case; 6] = [
         name: "owned-box",
         header: INTERNAL,
         items: "pub struct Global;\n#[lang = \"owned_box\"]\npub struct Box<T: ?Sized, A = Global>(*const T, A);\n",
-        outcome: Outcome::Waived {
-            waiver: OWNED_BOX_WAIVER,
-            strict: UNSUPPORTED,
-        },
+        outcome: Outcome::Accepted,
     },
     Case {
         name: "global-allocator",
@@ -286,36 +277,28 @@ const LANG_ROLES: [Case; 6] = [
 ];
 
 /// The core items `write_box_via_move` names: `MaybeUninit` and its parts,
-/// and the `owned_box` struct, which only bring-up admits.
+/// and the `owned_box` struct.
 const UNINIT: &str = "#[lang = \"clone\"]\npub trait Clone: Sized {\n    #[lang = \"clone_fn\"]\n    fn clone(&self) -> Self;\n}\n#[lang = \"copy\"]\npub trait Copy: Clone {}\n#[lang = \"manually_drop\"]\n#[repr(transparent)]\npub struct ManuallyDrop<T>(T);\n#[lang = \"bikeshed_guaranteed_no_drop\"]\npub trait NoDrop {}\n#[lang = \"maybe_uninit\"]\n#[repr(transparent)]\npub union MaybeUninit<T> {\n    empty: (),\n    value: ManuallyDrop<T>,\n}\n#[lang = \"owned_box\"]\npub struct Box<T>(*mut T);\n#[rustc_intrinsic]\n";
-const BOX_POSITIONS_WAIVER: &str = "source intrinsic Box positions are admitted without the owned-box language role: any nominal type matches them";
 const BOX_INTRINSICS: [Case; 3] = [
     Case {
         name: "write-box-via-move",
         header: BOXED,
         items: "pub fn write_box_via_move<T>(b: Box<MaybeUninit<T>>, x: T) -> Box<MaybeUninit<T>>;\n",
-        outcome: Outcome::Waived {
-            waiver: BOX_POSITIONS_WAIVER,
-            strict: UNSUPPORTED,
-        },
+        outcome: Outcome::Accepted,
     },
     Case {
         name: "write-box-wrong-output",
         header: BOXED,
         items: "pub fn write_box_via_move<T>(b: Box<MaybeUninit<T>>, x: T) -> u8;\n",
-        outcome: Outcome::Distinct {
-            bringup: "source intrinsic Box signature requires its real owned-box producer",
-            strict: UNSUPPORTED,
-        },
+        outcome: Outcome::Rejected("source intrinsic Box position requires the declared owned box"),
     },
     Case {
         name: "write-box-wrong-value",
         header: BOXED,
         items: "pub fn write_box_via_move<T>(b: Box<MaybeUninit<T>>, x: u8) -> Box<MaybeUninit<T>>;\n",
-        outcome: Outcome::Distinct {
-            bringup: "source intrinsic signature differs from its pinned declaration",
-            strict: UNSUPPORTED,
-        },
+        outcome: Outcome::Rejected(
+            "source intrinsic signature differs from its pinned declaration",
+        ),
     },
 ];
 
@@ -393,15 +376,6 @@ fn check(folder: &str, cases: &[Case], prelude: &str) -> Result<Vec<String>> {
                     && rejects(&bringup_err, message)
                     && !waived(&bringup_err, None)
             }
-            Outcome::Distinct {
-                bringup: expected,
-                strict: message,
-            } => {
-                !strict
-                    && rejects(&strict_err, message)
-                    && !bringup
-                    && rejects(&bringup_err, expected)
-            }
         };
         if !matches {
             failures.push(format!(
@@ -432,20 +406,21 @@ fn allocator_attributes_are_accepted_in_both_profiles_after_validation() -> Resu
     Ok(())
 }
 
-/// alloc's `owned_box`, `global_alloc_ty` and `String` declarations pass only
-/// in bring-up and only with a recorded waiver, after rustc's target and
-/// generic requirement; a misplaced or unknown role is rejected in both.
+/// alloc's `global_alloc_ty` and `String` declarations pass only in bring-up
+/// and only with a recorded waiver, after rustc's target and generic
+/// requirement; `owned_box` passes in both profiles without one; a
+/// misplaced or unknown role is rejected in both.
 #[test]
-fn unimplemented_lang_roles_are_waived_in_bringup_and_rejected_in_strict_mode() -> Result {
+fn lang_roles_are_validated_and_unimplemented_ones_waived_in_bringup() -> Result {
     let failures = check("lang-roles", &LANG_ROLES, "")?;
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())
 }
 
-/// `write_box_via_move` passes only in bring-up, with a recorded waiver for
-/// its `Box` positions; its other positions are still matched exactly.
+/// `write_box_via_move` passes in both profiles: its `Box` positions match
+/// the declared owned box, and every position is matched exactly.
 #[test]
-fn box_intrinsic_positions_are_waived_in_bringup_and_rejected_in_strict_mode() -> Result {
+fn box_intrinsic_positions_match_the_declared_owned_box() -> Result {
     let failures = check("box-intrinsics", &BOX_INTRINSICS, UNINIT)?;
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())

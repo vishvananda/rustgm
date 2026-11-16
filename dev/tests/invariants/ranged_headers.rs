@@ -316,8 +316,8 @@ fn layouts() {
     let (bindings, imported, role) = Catalog::binding_layouts();
     let provider = Catalog::provider_binding_bytes();
     // The complete declaration inventory grows cold role slots; ordinary records stay fixed.
-    assert_eq!(provider, 3344);
-    assert_eq!(imported, 3416);
+    assert_eq!(provider, 3360);
+    assert_eq!(imported, 3432);
     assert!(provider.abs_diff(imported) <= 256);
     assert!(bindings >= provider);
     eprintln!(

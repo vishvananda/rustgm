@@ -396,7 +396,8 @@ pub(crate) const DECLARATIONS_SIZE: usize = 7048
     + 6 * size_of::<usize>()
     + 2 * size_of::<usize>()
     + size_of::<usize>()
-    + 5 * size_of::<Option<Box<()>>>();
+    + 5 * size_of::<Option<Box<()>>>()
+    + size_of::<Option<crate::types::ItemId>>();
 pub struct Declarations {
     pub(super) must_use_contracts: Option<Box<super::must_use::Contracts>>,
     /// Snapshotted before any header charge from this crate's input graph.

@@ -1167,6 +1167,17 @@ accept and run against a C observer, and borrowing `x` after the conditional
 move rejects (E0382). A maintainer integration test checks every case. There is
 no graded manifest.
 
+`spec/owned-boxes/` freezes thirteen declared no_core programs over a mini
+alloc whose `#[lang = "owned_box"]` `Box` keeps alloc's `(Unique<T>, A)`
+shape. `*b` is a place of its own: moving the content out, a partial move out
+of a boxed struct, reassigning moved content, a nested box, a field move out
+of `self: Box<Self>`, an unsized slice content and a borrowed content
+accept and run against a C observer that prints each allocation, free and
+drop. Using a moved content (E0382), moving out of a `&Box` (E0507), using a
+partially moved box (E0382), moving a field out of a `Drop` content (E0509)
+and assigning through an immutable box (E0594) reject. A maintainer
+integration test checks every case. There is no graded manifest.
+
 `spec/pointer-ordering/` freezes six declared no_core programs that order raw
 pointers, as core's quicksort partition does with `state.right < right_end`.
 Every comparison of two raw pointers is a builtin scalar operation, ordered

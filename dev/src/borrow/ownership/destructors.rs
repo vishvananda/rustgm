@@ -22,7 +22,11 @@ pub(super) fn check(
                 .copied()
                 .ok_or_else(|| error("destruction path precedes its parent"))?;
             let ty = facts.paths.entries[parent.0 as usize].ty;
-            inherited || matches!(types.kind(ty), Some(Kind::Adt(item, _)) if custom(item))
+            // As in rustc, a box's own destructor frees only its allocation,
+            // so moving out of its content leaves nothing for it to drop.
+            inherited
+                || path.component != Some(super::Component::Boxed)
+                    && matches!(types.kind(ty), Some(Kind::Adt(item, _)) if custom(item))
         } else {
             false
         };

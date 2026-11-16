@@ -588,10 +588,20 @@ impl Checker<'_> {
             self.selected(node, Operation::AddressDereference)?;
             return self.child(node, term, 0);
         }
+        let boxed = self.facts.aggregates.owned_box();
         match self.head(node, term)? {
             Some(Constructor::Reference { .. }) => {}
             Some(Constructor::Pointer { .. }) => {
                 self.require_unsafe(node, "raw pointer dereference requires an unsafe context")?;
+            }
+            // As rustc's built-in dereference, a box's content is an owned
+            // place of its own, never a `Deref` call.
+            Some(Constructor::Adt(item, _) | Constructor::AdtArgs(item, _))
+                if boxed == Some(item) =>
+            {
+                if self.mutable_language_place(node) {
+                    self.mark_mutable_language_place(operand)?;
+                }
             }
             _ if crate::sema::compiler_items::dereferencing::available(self.facts) => {
                 return self.source_dereference(node, operand, self.mutable_language_place(node));

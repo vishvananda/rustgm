@@ -33,6 +33,7 @@ const fn ordinary_declaration(role: LangItem) -> bool {
         role,
         LangItem::CoroutineState
             | LangItem::CStr
+            | LangItem::OwnedBox
             | LangItem::Reborrow
             | LangItem::CoerceShared
             | LangItem::FieldRepresentingType

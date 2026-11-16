@@ -76,6 +76,10 @@ impl Dependencies {
                         }
                         glue::Shape::Slice { element } => work.push(Work::Recipe(element)),
                         glue::Shape::Fields(fields) => self.fields(recipes, fields, &mut work)?,
+                        glue::Shape::Boxed { fields, content } => {
+                            self.fields(recipes, fields, &mut work)?;
+                            work.push(Work::Recipe(content));
+                        }
                         glue::Shape::Variants(variants) => {
                             for variant in recipes
                                 .variants(variants)
@@ -103,6 +107,10 @@ impl Dependencies {
         match operation {
             Operation::Empty => {}
             Operation::Glue(id) => work.push(Work::Recipe(id)),
+            Operation::Boxed { content, recipe } => {
+                work.push(Work::Recipe(recipe));
+                work.push(Work::Node(content));
+            }
             Operation::Fields(range) => {
                 for field in plan
                     .fields

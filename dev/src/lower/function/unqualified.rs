@@ -78,8 +78,8 @@ impl Lower<'_, '_, '_> {
             "offset" | "slice_get_unchecked" | "ptr_offset_from" | "ptr_offset_from_unsigned" => {
                 self.unqualified_offset(call)?
             }
-            "read_via_copy" | "write_via_move" | "black_box" | "forget" | "volatile_load"
-            | "volatile_store" => self.unqualified_memory(call)?,
+            "read_via_copy" | "write_via_move" | "write_box_via_move" | "black_box" | "forget"
+            | "volatile_load" | "volatile_store" => self.unqualified_memory(call)?,
             "copy_nonoverlapping" | "copy" | "write_bytes" | "compare_bytes" | "raw_eq" => {
                 self.unqualified_transfer(call)?
             }

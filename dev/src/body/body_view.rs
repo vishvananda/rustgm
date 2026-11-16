@@ -221,6 +221,7 @@ fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
             ProjectionKind::RawDereference { mutable } => {
                 write!(out, " raw-dereference mutable={mutable}")?;
             }
+            ProjectionKind::BoxDereference => write!(out, " box-dereference")?,
             ProjectionKind::FutureField(index) => write!(out, " future-field={index}")?,
             ProjectionKind::Field(field) => write!(out, " field={field:?}")?,
             ProjectionKind::UnionField(field) => write!(out, " union-field={field:?}")?,

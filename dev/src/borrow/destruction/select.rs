@@ -34,6 +34,8 @@ struct Builder<'a, 'b> {
     catalog: &'a mut glue::Catalog<'b>,
     paths: &'a Paths,
     fields: HashMap<(PathId, Selection), PathId>,
+    /// Each tracked box path's content path.
+    boxes: HashMap<PathId, PathId>,
     plan: Plan,
     work: Vec<Work>,
     retained: usize,
@@ -89,6 +91,7 @@ fn select_inside(
         catalog,
         paths: &facts.ownership.paths,
         fields: HashMap::default(),
+        boxes: HashMap::default(),
         plan: Plan::default(),
         work: Vec::new(),
         retained: 0,
@@ -102,6 +105,12 @@ fn select_inside(
             builder
                 .fields
                 .insert((parent, field), PathId(compact(index).map_err(error)?));
+        }
+        if let (Some(parent), Some(Component::Boxed)) = (path.parent, path.component) {
+            builder.retain::<(PathId, PathId)>(2).map_err(error)?;
+            builder
+                .boxes
+                .insert(parent, PathId(compact(index).map_err(error)?));
         }
     }
     let mut recording = super::flags::Recording::for_body(body, std::mem::take(transitions));
@@ -275,6 +284,13 @@ impl Builder<'_, '_> {
             return Ok(());
         }
         let data = self.catalog.get(recipe).ok_or("missing cleanup recipe")?;
+        if status != Status::Always
+            && let (glue::Shape::Boxed { content: inner, .. }, Tracking::Path(path)) =
+                (data.kind, tracked)
+            && let Some(&content) = self.boxes.get(&path)
+        {
+            return self.boxed(node, (recipe, inner), tracked, content, point);
+        }
         if status == Status::Always
             || data.method.is_some()
             || !matches!(tracked, Tracking::Path(_))
@@ -336,7 +352,36 @@ impl Builder<'_, '_> {
             glue::Shape::Slice { .. } | glue::Shape::Dynamic => {
                 return Err("partial owned slice cleanup requires retained wide metadata");
             }
+            glue::Shape::Boxed { .. } => {
+                return Err("partial box cleanup requires its tracked content");
+            }
         }
+        Ok(())
+    }
+    /// A box whose content may be moved from frees its allocation whenever
+    /// the box itself is initialized; only the content's cleanup is selected.
+    fn boxed(
+        &mut self,
+        node: NodeId,
+        (recipe, inner): (glue::Id, glue::Id),
+        tracked: Tracking,
+        content: PathId,
+        point: &mut Point<'_>,
+    ) -> Result<(), &'static str> {
+        let condition = self.condition(tracked, point)?;
+        let child = self.node()?;
+        self.plan.nodes[node.0 as usize] = Node {
+            condition,
+            operation: Operation::Boxed {
+                content: child,
+                recipe,
+            },
+        };
+        self.work.push(Work::Enter {
+            node: child,
+            recipe: inner,
+            tracked: Tracking::Path(content),
+        });
         Ok(())
     }
     fn fields(

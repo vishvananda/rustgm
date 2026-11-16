@@ -455,7 +455,7 @@ impl Checker<'_> {
         original: super::aggregates::Field,
     ) -> Result<Option<super::Dependency>, Error> {
         self.advance_projections(node)?;
-        let (receiver, dereferences) = self
+        let (mut receiver, mut dereferences) = self
             .state
             .infer
             .reference_target(&self.facts.types, original.receiver)
@@ -466,20 +466,43 @@ impl Checker<'_> {
         if dereferences != 0 {
             self.check_union_receiver(node, value)?;
         }
-        let field = super::aggregates::Field {
-            receiver,
-            name: original.name,
+        let (field, kind) = loop {
+            let field = super::aggregates::Field {
+                receiver,
+                name: original.name,
+            };
+            let kind = self.head(node, receiver)?.ok_or_else(|| {
+                self.error(node, "field access requires a known tuple or struct type")
+            })?;
+            if let Some(item) = self.field_dependency(kind) {
+                self.state.work.push(super::Work::Field(node, original));
+                return Ok(Some(super::Dependency {
+                    requirement: super::Requirement::Nominal(item),
+                    source: self.key(node),
+                }));
+            }
+            // As rustc's autoderef, a box without the field steps into its
+            // content through the built-in dereference, never a `Deref` call.
+            if let super::Constructor::Adt(item, _) | super::Constructor::AdtArgs(item, _) = kind
+                && self.facts.aggregates.owned_box() == Some(item)
+                && !self.present_field(node, field, kind)?
+            {
+                let content = self.child(node, receiver, 0)?;
+                let (next, count) = self
+                    .state
+                    .infer
+                    .reference_target(&self.facts.types, content)
+                    .map_err(|e| self.error(node, e))?;
+                receiver = next;
+                dereferences = count
+                    .checked_add(dereferences)
+                    .and_then(|total| total.checked_add(1))
+                    .filter(|&total| total <= 1_000_000)
+                    .ok_or_else(|| self.error(node, "field autodereference budget exceeded"))?;
+                continue;
+            }
+            break (field, kind);
         };
-        let kind = self.head(node, receiver)?.ok_or_else(|| {
-            self.error(node, "field access requires a known tuple or struct type")
-        })?;
-        if let Some(item) = self.field_dependency(kind) {
-            self.state.work.push(super::Work::Field(node, original));
-            return Ok(Some(super::Dependency {
-                requirement: super::Requirement::Nominal(item),
-                source: self.key(node),
-            }));
-        }
         if self.present_field(node, field, kind)?
             || !crate::sema::compiler_items::dereferencing::available(self.facts)
         {

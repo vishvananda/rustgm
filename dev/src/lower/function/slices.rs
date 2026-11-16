@@ -17,7 +17,8 @@ impl Lower<'_, '_, '_> {
         metadata: Option<Value>,
     ) -> Result<(Address, Option<Value>), &'static str> {
         let projection = &self.body.projections[id.0 as usize];
-        if projection.kind.is_dereference() {
+        if projection.kind.loads_pointer() {
+            let base = self.box_pointer(projection, base)?;
             let address = self.dereference(base, projection.ty)?;
             return Ok((address, self.load_metadata(base, projection.ty)?));
         }

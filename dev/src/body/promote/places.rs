@@ -117,6 +117,7 @@ impl Engine<'_, '_> {
             | ProjectionKind::UnionField(_)
             | ProjectionKind::Dereference { .. }
             | ProjectionKind::RawDereference { .. }
+            | ProjectionKind::BoxDereference
             | ProjectionKind::Subarray { .. }
             | ProjectionKind::Subslice { .. }
             | ProjectionKind::FromEnd { .. }

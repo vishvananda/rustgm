@@ -84,8 +84,8 @@ fn pinned_declaration_targets_formals_and_weak_only_policy_match_all_source_outc
 }
 #[test]
 fn append_only_vocabulary_preserves_ordinals_spellings_and_checked_profiles() -> TestResult {
-    assert_eq!(LangItem::ALL.len(), 209);
-    assert_eq!(LangItem::DECLARATIONS.len(), 122);
+    assert_eq!(LangItem::ALL.len(), 210);
+    assert_eq!(LangItem::DECLARATIONS.len(), 123);
     for (index, role) in LangItem::ALL.into_iter().enumerate() {
         assert_eq!(role.index(), index);
         assert_eq!(role.declaration_profile().is_some(), index >= 87);

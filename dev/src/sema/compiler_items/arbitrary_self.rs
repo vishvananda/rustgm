@@ -80,6 +80,11 @@ pub(in crate::sema) fn next(
         }
         _ => {}
     }
+    // As rustc's autoderef, a box steps to its content by its built-in
+    // dereference, never by an overloaded `Deref`.
+    if let Some(content) = super::boxes::content(&facts.types, &facts.aggregates, current)? {
+        return Ok(Some(content));
+    }
     let (role, member) = if level == Level::Legacy {
         (LangItem::Deref, LangItem::DerefTarget)
     } else {

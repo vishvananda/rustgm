@@ -1,9 +1,8 @@
 //! Lang items that rustc 1.98.0 defines on a struct and alloc declares, but
-//! that this compiler's vocabulary gives no role. `owned_box` makes `Box`
-//! the built-in owning pointer: dereference, move-out, drop and allocation
-//! all change. `global_alloc_ty` lets layout and calling conventions treat a
-//! `Box` over the global allocator as a plain pointer. `String` only feeds
-//! rustc's diagnostics and lints. None of these meanings exists here, so a
+//! that this compiler's vocabulary gives no role. `global_alloc_ty` lets
+//! layout and calling conventions treat a `Box` over the global allocator as
+//! a plain pointer. `String` only feeds rustc's diagnostics and lints. None
+//! of these meanings exists here, so a
 //! bring-up session admits each declaration as an ordinary struct with a
 //! recorded waiver, once it meets rustc's target and generic requirement,
 //! and a strict session still rejects it as unsupported.
@@ -22,12 +21,7 @@ struct Role {
     minimum: usize,
     waiver: &'static str,
 }
-const ROLES: [Role; 3] = [
-    Role {
-        name: "owned_box",
-        minimum: 1,
-        waiver: "lang item `owned_box` is admitted as an ordinary struct: Box's built-in dereference, move-out, drop and allocation semantics are not implemented",
-    },
+const ROLES: [Role; 2] = [
     Role {
         name: "global_alloc_ty",
         minimum: 0,

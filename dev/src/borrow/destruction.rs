@@ -26,6 +26,12 @@ pub enum Operation {
     Fields(glue::Range),
     Array(glue::Range),
     Variants(glue::Range),
+    /// A box whose content was moved from: the content's own selected
+    /// cleanup, then the box recipe's destructor and fields without it.
+    Boxed {
+        content: NodeId,
+        recipe: glue::Id,
+    },
 }
 pub struct Node {
     pub condition: Condition,

@@ -237,9 +237,10 @@ impl Lower<'_, '_, '_> {
     pub(super) fn project(&mut self, id: ProjectionId) -> Result<(), &'static str> {
         let projection = &self.body.projections[id.0 as usize];
         let base = self.place(projection.base)?;
-        if projection.kind.is_dereference() {
-            return self
-                .project_reference(id, base.ok_or("reference place has no pointer storage")?);
+        if projection.kind.loads_pointer() {
+            let base = base.ok_or("reference place has no pointer storage")?;
+            let base = self.box_pointer(projection, base)?;
+            return self.project_reference(id, base);
         }
         if let ProjectionKind::SliceIndex { index } = projection.kind {
             return self.project_slice_index(id, index);
@@ -278,6 +279,7 @@ impl Lower<'_, '_, '_> {
             }
             ProjectionKind::Dereference { .. }
             | ProjectionKind::RawDereference { .. }
+            | ProjectionKind::BoxDereference
             | ProjectionKind::SliceIndex { .. }
             | ProjectionKind::FromEnd { .. }
             | ProjectionKind::Subslice { .. } => {

@@ -228,7 +228,16 @@ impl Builder<'_> {
             Some(Type::Pointer { mutable, pointee }) => {
                 (pointee, ProjectionKind::RawDereference { mutable })
             }
-            _ => return Err(self.error(node, "selected dereference requires a pointer place")),
+            _ => {
+                let content = crate::sema::compiler_items::boxes::content(
+                    &self.facts.types,
+                    &self.facts.aggregates,
+                    ty,
+                )
+                .map_err(|e| self.error(node, e))?
+                .ok_or_else(|| self.error(node, "selected dereference requires a pointer place"))?;
+                (content, ProjectionKind::BoxDereference)
+            }
         };
         self.projection(node, referent, base, kind)
     }

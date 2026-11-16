@@ -1,6 +1,7 @@
 //! Actual source compiler declarations remain distinct from bootstrap identities.
 pub(in crate::sema) mod arbitrary_self;
 mod binding_views;
+pub(crate) mod boxes;
 pub(crate) mod c_strings;
 mod calls;
 pub(crate) mod clone_shims;

@@ -58,6 +58,9 @@ impl Tags {
                 Component::Index(_) | Component::Subarray { .. } if matches!(form, Form::Array) => {
                     (Step::Element, true)
                 }
+                // A box's content is a separate allocation outside its box's
+                // structural parts; its variant decisions refine nothing.
+                Component::Boxed => continue,
                 _ => return Err("cleanup tag projection changed its structural form"),
             };
             let Some(coordinate) = self.child(located.coordinate, step)? else {

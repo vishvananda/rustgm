@@ -9,14 +9,25 @@ use crate::support::hash::HashMap;
 pub(super) struct Id(pub usize);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 enum Step {
-    Dereference { mutable: bool },
+    Dereference {
+        mutable: bool,
+    },
+    /// A box's owned content: reached by deep access to its box, as rustc's
+    /// box dereference, but by no shallow or storage access.
+    Boxed,
     Field(Selection),
     FutureField(u32),
     UnionField(Selection),
     Element(u64),
     Range(u64, u64),
-    FromEnd { offset: u64, minimum: u64 },
-    Subslice { prefix: u64, suffix: u64 },
+    FromEnd {
+        offset: u64,
+        minimum: u64,
+    },
+    Subslice {
+        prefix: u64,
+        suffix: u64,
+    },
     Dynamic(ValueId),
 }
 #[derive(Clone, Copy)]
@@ -102,6 +113,7 @@ impl Index {
                     return Err("capture boundary escaped transparent loan dispatch");
                 }
                 ProjectionKind::Dereference { mutable, .. } => Step::Dereference { mutable },
+                ProjectionKind::BoxDereference => Step::Boxed,
                 ProjectionKind::RawDereference { .. } => {
                     return Err("raw loan root escaped dispatch");
                 }
@@ -406,7 +418,7 @@ impl Index {
             if depth != Depth::Deep
                 && remaining
                     .iter()
-                    .any(|s| matches!(s, Step::Dereference { .. }))
+                    .any(|s| matches!(s, Step::Dereference { .. } | Step::Boxed))
             {
                 return Ok(false);
             }

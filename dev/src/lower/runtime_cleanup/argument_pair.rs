@@ -64,7 +64,10 @@ impl Input {
             (self, recipe.kind),
             (
                 Self::Sized,
-                glue::Shape::Fields(_) | glue::Shape::Variants(_) | glue::Shape::Array { .. }
+                glue::Shape::Fields(_)
+                    | glue::Shape::Variants(_)
+                    | glue::Shape::Array { .. }
+                    | glue::Shape::Boxed { .. }
             ) | (Self::Slice, glue::Shape::Slice { .. })
                 | (Self::Dynamic, glue::Shape::Dynamic)
         ) || (!matches!(self, Self::Sized) && recipe.ty != selected)

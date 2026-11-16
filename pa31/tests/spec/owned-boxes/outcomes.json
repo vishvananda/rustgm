@@ -1,0 +1,114 @@
+{
+ "schema": 1,
+ "declared": "2026-11-16, before either compiler ran on these programs (obj/parallel/alloc-m3/box/declared.txt). The first oracle run showed the shared prefix lacked lang items rustc requires (freeze; dispatch_from_dyn for &T, without which a trait object's trait is not dyn compatible); the prefix gained them and the drop_glue and destruct items before the oracle ran again, and Box::new reads size_of in a const block, as rustc's codegen requires of that nullary intrinsic. RustGM's first run then rejected every case at the prefix's Unsize declaration, which RustGM pins to core's exact `T: PointeeSized` form; the prefix took core's PointeeSized bounds for its pointer, marker and conversion items, and the oracle ran again on these bytes. Declared outcomes did not change. 13/13 statuses and error codes agree; nested's declared allocation size (16) was wrong: this NonNull has no niche, so its List is 24 bytes, as rustc's build prints.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minialloc --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "observer_sha256": "a3d959c0f8d1b6a2c24ba5a88381ac99f737c7e37af9b6c32c59a510033247e4",
+ "cases": {
+  "move-out.rs": {
+   "sha256": "649e6180c284d1e4e9db7d2d55cda145905674e267d5c764ef709beda6f0aec2",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "unsupported source language item",
+   "declared_stdout": "alloc 1\ndrop 7\nfree\nvalue 7\n",
+   "native_stdout": "alloc 1\ndrop 7\nfree\nvalue 7\n"
+  },
+  "drop-whole.rs": {
+   "sha256": "601aa55e30a0b7af8826c26e16274e158531ba28c801e3a5ef415f17ac375b27",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "unsupported source language item",
+   "declared_stdout": "alloc 1\ndrop 5\nfree\nvalue 5\n",
+   "native_stdout": "alloc 1\ndrop 5\nfree\nvalue 5\n"
+  },
+  "partial-move.rs": {
+   "sha256": "1891eef259d72a53c8c24ebacfeba4611e2d7992aa5e9ac8712fbc82e1693f72",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "unsupported source language item",
+   "declared_stdout": "alloc 2\ndrop 1\ndrop 2\nfree\nvalue 1\n",
+   "native_stdout": "alloc 2\ndrop 1\ndrop 2\nfree\nvalue 1\n"
+  },
+  "reinitialize.rs": {
+   "sha256": "5b5fac814a1dd78733403ac57c37c837620242fac007a1ca584bfaf86ace2864",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "unsupported source language item",
+   "declared_stdout": "alloc 1\ndrop 1\ndrop 2\nfree\nvalue 2\n",
+   "native_stdout": "alloc 1\ndrop 1\ndrop 2\nfree\nvalue 2\n"
+  },
+  "nested.rs": {
+   "sha256": "9c4a399cac3543729938e2e7235e1d5ece177a28dd03bbdb1dc71092e438cb18",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "unsupported source language item",
+   "declared_stdout": "alloc 16\nalloc 16\ndrop 1\ndrop 2\nfree\nfree\nvalue 1\n",
+   "native_stdout": "alloc 24\nalloc 24\ndrop 1\ndrop 2\nfree\nfree\nvalue 1\n"
+  },
+  "method-move.rs": {
+   "sha256": "bcc9326b29a0911cb8b0a73b7eed4d44231c93bc42d308e86a415932699d1f24",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "unsupported source language item",
+   "declared_stdout": "alloc 2\ndrop 2\nfree\ndrop 1\nvalue 1\n",
+   "native_stdout": "alloc 2\ndrop 2\nfree\ndrop 1\nvalue 1\n"
+  },
+  "slice-content.rs": {
+   "sha256": "6e229bd3ac28a155ada729a2c370b50e85cd229231c15094098500e958720054",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "unsupported source language item",
+   "declared_stdout": "alloc 2\ndrop 3\ndrop 6\nfree\nvalue 9\n",
+   "native_stdout": "alloc 2\ndrop 3\ndrop 6\nfree\nvalue 9\n"
+  },
+  "borrowed-content.rs": {
+   "sha256": "6fb0c23465cf94d93610c1cd1337d79a94c083ebb61948dd4760eb21dce754e9",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "unsupported source language item",
+   "declared_stdout": "alloc 1\ndrop 8\nfree\nvalue 8\n",
+   "native_stdout": "alloc 1\ndrop 8\nfree\nvalue 8\n"
+  },
+  "use-after-move.rs": {
+   "sha256": "54c98b2e671025a194bb4e8bdcde26979960805a80847dfaae3f47d234746954",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustgm_before": "unsupported source language item",
+   "declared_error": "E0382",
+   "rustc_error": "E0382 use of moved value: `*b`"
+  },
+  "move-from-borrowed-box.rs": {
+   "sha256": "75b1cb70f221c4fd77111394562a5a529a986df97734aaabc9f0465bc8157719",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustgm_before": "unsupported source language item",
+   "declared_error": "E0507",
+   "rustc_error": "E0507 cannot move out of `**b` which is behind a shared reference"
+  },
+  "use-whole-after-partial.rs": {
+   "sha256": "79b78103cee34252f2caad0307d63e471801c6d74a067a714b498aa2cf625d08",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustgm_before": "unsupported source language item",
+   "declared_error": "E0382",
+   "rustc_error": "E0382 use of partially moved value: `b`"
+  },
+  "move-from-drop-content.rs": {
+   "sha256": "bfeb037a39ad09b028aabe8f0737a0165f315b6cf91a2c131b8482fcca2dcb3d",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustgm_before": "unsupported source language item",
+   "declared_error": "E0509",
+   "rustc_error": "E0509 cannot move out of type `Guard`, which implements the `Drop` trait"
+  },
+  "immutable-box.rs": {
+   "sha256": "b600100fd558eda0f761740db28a871f6948c64ef0f12da26116cc6749bae186",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustgm_before": "unsupported source language item",
+   "declared_error": "E0594",
+   "rustc_error": "E0594 cannot assign to `*b`, as `b` is not declared as mutable"
+  }
+ },
+ "rustgm_before": "050a72a9b's strict source profile (obj/rust/observe/rustgm, sha256 4b7b18f840a55805d0869cf530f98b64fc2640bb00f63b26869551a46a39a140) rejects every case at its owned_box lang item"
+}

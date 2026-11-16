@@ -35,6 +35,8 @@ pub struct Cache {
     pub(super) states: HashMap<Key, State>,
     pub(super) storage: Recipes,
     pub(super) work: Vec<(TypeId, bool)>,
+    /// Box recipes whose content recipe is not yet completed.
+    pub(super) boxes: Vec<(super::Id, TypeId)>,
     retained: usize,
     pub(super) steps: usize,
 }
@@ -63,6 +65,7 @@ impl Cache {
             states: HashMap::default(),
             storage: Recipes::default(),
             work: Vec::new(),
+            boxes: Vec::new(),
             retained,
             steps: 0,
         })

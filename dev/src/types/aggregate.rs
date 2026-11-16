@@ -114,6 +114,8 @@ pub struct Definitions {
     interior_storage: crate::support::hash::HashSet<ItemId>,
     nullable_enums: Option<Box<nullable::Policies>>,
     simd_limits: Option<Box<lane_limits::Limits>>,
+    /// The struct that the session's validated `owned_box` role names.
+    owned_box: Option<ItemId>,
 }
 impl Definitions {
     pub(crate) fn existing_arena_identity(&self) -> Option<&super::arena::Identity> {
@@ -238,6 +240,23 @@ impl Definitions {
         }
         policy.may_dangle = true;
         Ok(())
+    }
+    /// Record the validated built-in owning pointer, once per session.
+    pub(crate) fn declare_owned_box(&mut self, item: ItemId) -> Result<(), &'static str> {
+        self.get(item).ok_or("missing owned box declaration")?;
+        match self.owned_box {
+            None => {
+                self.owned_box = Some(item);
+                Ok(())
+            }
+            Some(existing) if existing == item => Ok(()),
+            Some(_) => Err("owned box role names two declarations"),
+        }
+    }
+    /// The built-in owning pointer, when the session declares one.
+    #[must_use]
+    pub const fn owned_box(&self) -> Option<ItemId> {
+        self.owned_box
     }
     pub(crate) fn permits_dangling_pointers(&self, item: ItemId) -> Option<bool> {
         self.get(item)?;

@@ -4,6 +4,7 @@ pub mod alignment;
 mod allocator_shim;
 mod arithmetic;
 mod bit_kernels;
+mod boxes;
 mod casts;
 mod cleanup;
 pub mod constant_view;

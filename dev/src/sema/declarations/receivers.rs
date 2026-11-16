@@ -280,6 +280,14 @@ impl Checker<'_> {
                     }
                     terminal = referent;
                 }
+                // `self: Box<Self>` reaches Self through the box's built-in
+                // dereference; validation proves the chain once the box's
+                // role completes.
+                (Some(Type::Adt(item, _)), _)
+                    if crate::sema::compiler_items::boxes::declared(&self.facts) == Some(item) =>
+                {
+                    break;
+                }
                 (Some(Type::Adt(..)), _)
                     if crate::sema::compiler_items::dereferencing::available(&self.facts) =>
                 {

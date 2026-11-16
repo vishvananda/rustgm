@@ -53,10 +53,13 @@ impl Extended {
                         .get(id.0 as usize)
                         .ok_or("extended borrow has no typed projection")?;
                     // A dereference borrows the separately owned referent, not
-                    // the temporary pointer's storage.
+                    // the temporary pointer's storage. As in rustc, a box's
+                    // content is no extending operand of its box either.
                     if matches!(
                         projection.kind,
-                        ProjectionKind::Dereference { .. } | ProjectionKind::RawDereference { .. }
+                        ProjectionKind::Dereference { .. }
+                            | ProjectionKind::RawDereference { .. }
+                            | ProjectionKind::BoxDereference
                     ) {
                         self.projections[id.0 as usize] = Some(false);
                         break false;

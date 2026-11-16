@@ -27,6 +27,8 @@ pub(super) struct Sequence {
 }
 pub(super) enum Work {
     Drop(Target, TypeId, Address),
+    /// A box recipe's destructor and fields, after its content.
+    Shell(glue::Id, Address),
     Fields(Sequence),
     Variants(Sequence, Option<Value>, BlockId),
     Intervals(glue::Range, TypeId, Address),
@@ -91,6 +93,15 @@ impl Emitter<'_, '_> {
             operand: Operand::Parameter(0),
             align: layout.align,
         };
+        if let glue::Shape::Boxed { content, .. } = recipe.kind {
+            self.box_content(recipe.ty, base, content)?;
+        }
+        self.shell(id, base)?;
+        self.run()
+    }
+    /// Run a recipe's destructor, then queue its fields or elements.
+    fn shell(&mut self, id: glue::Id, base: Address) -> Result<(), &'static str> {
+        let recipe = *self.recipes()?.get(id).ok_or("invalid cleanup recipe")?;
         if let Some(method) = recipe.method {
             let symbol = match method {
                 glue::Method::Definition(method) => self.context.demand_definition(method)?,
@@ -116,12 +127,14 @@ impl Emitter<'_, '_> {
                 .call(signature, Type::Void, Operand::Symbol(symbol), &[pointer])?;
         }
         match recipe.kind {
-            glue::Shape::Fields(range) => self.state.work.push(Work::Fields(Sequence {
-                source: Source::Glue,
-                range,
-                ty: recipe.ty,
-                base,
-            })),
+            glue::Shape::Fields(range) | glue::Shape::Boxed { fields: range, .. } => {
+                self.state.work.push(Work::Fields(Sequence {
+                    source: Source::Glue,
+                    range,
+                    ty: recipe.ty,
+                    base,
+                }));
+            }
             glue::Shape::Variants(range) => self.variants(Sequence {
                 source: Source::Glue,
                 range,
@@ -135,7 +148,66 @@ impl Emitter<'_, '_> {
                 return Err("cleanup lost its wide entry");
             }
         }
-        self.run()
+        Ok(())
+    }
+    /// The content pointer a box's leading fields hold, at the box `base`.
+    fn box_pointer(&mut self, ty: TypeId, base: Address) -> Result<Address, &'static str> {
+        let offset = self.context.box_pointer_offset(ty)?;
+        base.offset(self.builder, offset)
+    }
+    /// Call the content recipe of a box of `ty` on the content it owns,
+    /// passing the box pointer's metadata to an unsized content's recipe.
+    fn box_content(
+        &mut self,
+        ty: TypeId,
+        base: Address,
+        content: glue::Id,
+    ) -> Result<(), &'static str> {
+        let pointer = self.box_pointer(ty, base)?;
+        let data = self.builder.load(Type::Ptr, pointer.operand)?;
+        let metadata = match self.recipes()?.get(content).map(|recipe| recipe.kind) {
+            Some(glue::Shape::Slice { .. }) => Some(Type::I64),
+            Some(glue::Shape::Dynamic) => Some(Type::Ptr),
+            Some(_) => None,
+            None => return Err("box cleanup lost its content recipe"),
+        };
+        let mut arguments = vec![data];
+        if let Some(metadata) = metadata {
+            let tail = pointer.offset(self.builder, 8)?;
+            arguments.push(self.builder.load(metadata, tail.operand)?);
+        }
+        let symbol = self.context.demand_drop(content)?;
+        let signature = self.context.output.symbols[symbol.0 as usize].signature;
+        self.builder
+            .call(signature, Type::Void, Operand::Symbol(symbol), &arguments)?;
+        Ok(())
+    }
+    /// A partly moved box: the content's selected cleanup, then the box's
+    /// destructor and fields.
+    fn boxed(
+        &mut self,
+        content: NodeId,
+        recipe: glue::Id,
+        ty: TypeId,
+        base: Address,
+    ) -> Result<(), &'static str> {
+        let inner = crate::sema::compiler_items::boxes::content(
+            self.context.types,
+            self.context.aggregates,
+            ty,
+        )?
+        .ok_or("box cleanup requires an owned box")?;
+        let pointer = self.box_pointer(ty, base)?;
+        let data = self.builder.load(Type::Ptr, pointer.operand)?;
+        let address = Address {
+            operand: data.operand,
+            align: self.context.layout(inner)?.align,
+        };
+        self.state.work.push(Work::Shell(recipe, base));
+        self.state
+            .work
+            .push(Work::Drop(Target::Selected(content), inner, address));
+        Ok(())
     }
     fn dynamic(&mut self) -> Result<(), &'static str> {
         let drop = self.builder.load(Type::Ptr, Operand::Parameter(1))?;
@@ -169,6 +241,7 @@ impl Emitter<'_, '_> {
             self.state.charge(1)?;
             match work {
                 Work::Drop(target, ty, base) => self.drop(target, ty, base)?,
+                Work::Shell(recipe, base) => self.shell(recipe, base)?,
                 Work::Fields(sequence) => self.field(sequence)?,
                 Work::Variants(sequence, tag, join) => self.variant(sequence, tag, join)?,
                 Work::Intervals(range, ty, base) => self.interval(range, ty, base)?,
@@ -250,6 +323,7 @@ impl Emitter<'_, '_> {
                 base,
             })?,
             Operation::Array(range) => self.state.work.push(Work::Intervals(range, ty, base)),
+            Operation::Boxed { content, recipe } => self.boxed(content, recipe, ty, base)?,
         }
         Ok(())
     }
