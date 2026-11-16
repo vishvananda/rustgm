@@ -23,6 +23,7 @@ mod function_calls;
 mod identity_calls;
 mod invoked_values;
 mod knowledge_calls;
+mod lane_calls;
 mod name_calls;
 mod operator_calls;
 mod panicking;

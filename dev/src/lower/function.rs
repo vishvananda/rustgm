@@ -13,6 +13,7 @@ mod inhabited_runtime;
 mod intrinsics;
 mod invocations;
 mod logical_values;
+mod packed_lanes;
 mod pointers;
 mod ptr_values;
 mod reborrow_values;
@@ -954,6 +955,9 @@ impl Lower<'_, '_, '_> {
                     return Ok(value);
                 }
                 if let Some(value) = self.runtime_check(id)? {
+                    return Ok(value);
+                }
+                if let Some(value) = self.source_lanes(id)? {
                     return Ok(value);
                 }
                 if let Some(call) = self.runtime_select(id)? {

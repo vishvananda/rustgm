@@ -59,6 +59,12 @@ impl Machine<'_, '_> {
             Some(kind) if crate::sema::compiler_items::field_offset_intrinsic(kind) => {
                 return Ok(Selected::Unrelated);
             }
+            Some(kind)
+                if crate::sema::compiler_items::SimdOperation::of(kind)
+                    == Some(crate::sema::compiler_items::SimdOperation::Splat) =>
+            {
+                return Ok(Selected::Unrelated);
+            }
             Some(crate::support::bindings::SourceIntrinsic::Declaration(_)) => {
                 return Err("source intrinsic constant execution is not implemented".into());
             }
@@ -161,6 +167,9 @@ impl Machine<'_, '_> {
             return Ok(answer);
         }
         if let Some(answer) = self.source_bit_count(body, frame, position, target)? {
+            return Ok(answer);
+        }
+        if let Some(answer) = self.source_splat(body, frame, position, target)? {
             return Ok(answer);
         }
         if let Some(answer) = self.source_type_identity(body, frame, position, target)? {

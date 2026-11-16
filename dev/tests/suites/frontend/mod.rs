@@ -181,6 +181,8 @@ mod separated_parameters;
 mod smart_receivers;
 #[path = "../../splice_destructors.rs"]
 mod splice_destructors;
+#[path = "../../sse_lanes.rs"]
+mod sse_lanes;
 #[path = "../../stateframe.rs"]
 mod stateframe;
 #[path = "../../syntax_transfer.rs"]

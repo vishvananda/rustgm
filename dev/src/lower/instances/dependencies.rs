@@ -20,6 +20,7 @@ pub(super) struct Dependencies {
     locations: HashSet<LocationId>,
     steps: usize,
 }
+mod lane_dependencies;
 mod ptr_values;
 mod subtraction_dependencies;
 mod tag_dependencies;
@@ -109,6 +110,9 @@ fn source_call(
         Some(kind) if crate::sema::compiler_items::scalar_arithmetic(kind) => {
             subtraction_dependencies::require(report, facts, body, value, ty).map(|()| Some(kind))
         }
+        Some(kind) if crate::sema::compiler_items::SimdOperation::of(kind).is_some() => {
+            lane_dependencies::require(report, facts, body, value, ty).map(|()| Some(kind))
+        }
         Some(SourceIntrinsic::ArithOffset) => {
             wrapping_dependencies::require(report, facts, body, value, ty)
                 .map(|()| Some(SourceIntrinsic::ArithOffset))
@@ -132,22 +136,8 @@ fn source_call(
             Ok(Some(kind))
         }
         Some(SourceIntrinsic::CallerLocation) => {
-            let selected = Reader::new(facts)
-                .source_caller_location(Instance::new(&facts.types, ty)?, body.source)?
-                .ok_or("source caller_location lost its dependency descriptor")?;
-            catalog.require_caller_location_report(report, facts, &selected)?;
-            if signature != selected.signature
-                || value.ty != selected.result
-                || !body
-                    .arguments
-                    .get(arguments.start as usize..arguments.end as usize)
-                    .is_some_and(<[crate::body::ir::ValueId]>::is_empty)
-            {
-                return Err(
-                    "source caller_location dependency differs from its complete direct Call",
-                );
-            }
-            Ok(Some(SourceIntrinsic::CallerLocation))
+            caller_location_call(report, facts, body, value, (ty, signature, arguments))
+                .map(|()| Some(SourceIntrinsic::CallerLocation))
         }
         Some(SourceIntrinsic::Abort) => {
             let selection = Reader::new(facts)
@@ -176,6 +166,33 @@ fn source_call(
         }
         _ => Ok(None),
     }
+}
+
+fn caller_location_call(
+    report: &crate::resolve::expansion::Report,
+    facts: &Declarations,
+    body: &Body,
+    value: &crate::body::ir::Value,
+    (ty, signature, arguments): (TypeId, TypeId, crate::body::ir::ValueList),
+) -> Result<(), &'static str> {
+    let selected = Reader::new(facts)
+        .source_caller_location(Instance::new(&facts.types, ty)?, body.source)?
+        .ok_or("source caller_location lost its dependency descriptor")?;
+    facts
+        .source_bindings
+        .as_deref()
+        .ok_or("source caller_location lost its catalog")?
+        .require_caller_location_report(report, facts, &selected)?;
+    if signature != selected.signature
+        || value.ty != selected.result
+        || !body
+            .arguments
+            .get(arguments.start as usize..arguments.end as usize)
+            .is_some_and(<[crate::body::ir::ValueId]>::is_empty)
+    {
+        return Err("source caller_location dependency differs from its complete direct Call");
+    }
+    Ok(())
 }
 
 fn transmute_call(

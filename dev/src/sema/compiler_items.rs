@@ -62,8 +62,10 @@ pub(crate) mod guaranteed_compare;
 pub(crate) mod identity_words;
 pub(crate) mod knowledge;
 pub(crate) mod printed_names;
+mod simd_contract;
 mod subtraction_contract;
 mod wrapping_contract;
+pub(crate) use simd_contract::{SimdOperation, SimdSelection};
 pub(crate) use subtraction_contract::SubtractionSelection;
 pub(crate) use subtraction_contract::{
     overflowing_operator, scalar_arithmetic, unchecked_operator, unchecked_shift, wrapping_operator,
