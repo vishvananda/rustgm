@@ -133,3 +133,13 @@ performance claim or wall/RSS measurement is made for this correction. Nonempty
 context-debt rebasing, specialized conditional output interfaces and the other
 recorded PA25 completeness frontiers remain open. No references, assignment
 activation or public refs changed.
+
+## Function pointer values
+
+Instance discovery follows an evaluated inline constant's value as it follows a
+named constant's, so a function pointer it holds demands that instance. This is
+core's `(const { inst_partition::<T, F>() })(v, pivot, is_less)` in
+`slice::sort::unstable::quicksort::partition`. `function-pointer` and
+`selected-pointer` (a const generic picks one of two generic functions) accept
+and execute; `pointer-mismatch` rejects. Before the change both positives failed
+with "generic callable execution requires demanded instances".

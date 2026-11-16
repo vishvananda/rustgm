@@ -142,6 +142,21 @@
       "source": "inline-specialized/captured-late.rs",
       "accepted": true,
       "source_sha256": "839cac53fc367071a7e4a0f540a54cd8086d07e73a7a0c8d8e6048e55b5c1883"
+    },
+    {
+      "source": "inline-specialized/function-pointer.rs",
+      "accepted": true,
+      "source_sha256": "70606006f3512bc7c7d186adc2e6f8e10ca09db174b571f722d4351b28caae9a"
+    },
+    {
+      "source": "inline-specialized/selected-pointer.rs",
+      "accepted": true,
+      "source_sha256": "6dfdf72f1b56eac168fd9f9c50be8856ee8de78ca1989beae26b887667935e56"
+    },
+    {
+      "source": "inline-specialized/pointer-mismatch.rs",
+      "accepted": false,
+      "source_sha256": "adf531141b6e188c35494fe143e8b78c5d793cf3233c5ac81760d4f566053713"
     }
   ]
 }

@@ -597,6 +597,37 @@ impl Dependencies {
         }
         Ok(())
     }
+    /// An evaluated inline constant's value is followed like a named one: a
+    /// function pointer it holds, such as the partition instance core's
+    /// `inst_partition::<T, F>()` selects, is a demanded instance.
+    fn inline_values(
+        &mut self,
+        reader: Reader<'_>,
+        body: &Body,
+        work: &mut Vec<Work>,
+    ) -> Result<(), &'static str> {
+        for statement in &body.statements {
+            let crate::body::ir::Action::Evaluate(id) = statement.action else {
+                continue;
+            };
+            self.charge(1)?;
+            let value = body
+                .values
+                .get(id.0 as usize)
+                .ok_or("invalid evaluated constant value")?;
+            let constant = match value.kind {
+                Rvalue::InlineConstant(source) => reader
+                    .inline(source)
+                    .ok_or("missing completed inline constant")?,
+                Rvalue::InlineInstance(instance) => reader
+                    .inline_instance(instance, value.ty)
+                    .ok_or("missing completed anonymous instance")?,
+                _ => continue,
+            };
+            work.push(Work::Value(value.ty, constant));
+        }
+        Ok(())
+    }
     fn run(
         &mut self,
         report: &crate::resolve::expansion::Report,
@@ -690,6 +721,7 @@ impl Dependencies {
                 work.push(Work::Value(ty, value));
             }
         }
+        self.inline_values(reader, body, &mut work)?;
         self.follow(facts, layouts, work, &mut result)?;
         Ok(result)
     }

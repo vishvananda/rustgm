@@ -28,6 +28,9 @@ const CASES: &[(&str, bool)] = &[
     ("unused-nonconst", false),
     ("division", false),
     ("local-capture", false),
+    ("function-pointer", true),
+    ("selected-pointer", true),
+    ("pointer-mismatch", false),
 ];
 fn fixture(name: &str) -> Result<String, std::io::Error> {
     std::fs::read_to_string(
