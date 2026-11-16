@@ -374,12 +374,13 @@ pthread, file system); the rustgm corpus 57. See the table above.
 - Measured with the linked driver: without the 1,043 rows that only constant
   evaluation needed (every one a stdarch function), core plus a program
   compiles with the 20 others. `core::str` search (`simd_contains`) and
-  hashbrown 0.17.1's SSE2 `Group` match rustc byte for byte natively; the
-  hashbrown probe needs `Group::static_empty` removed because a struct field
-  `[Tag; Group::WIDTH]` stops RustGM's frontend ("nominal declaration
-  requirements are not complete"). `chars-strs` still aborts in a stubbed
-  function that is not SIMD; its census adds `Map::next`, `Filter::next`
-  and `type_name` to the 20 rows.
+  hashbrown 0.17.1's SSE2 `Group` match rustc byte for byte natively. In
+  that crate a struct field `[Tag; Group::WIDTH]` stops RustGM's frontend
+  ("nominal declaration requirements are not complete"), so the probe drops
+  `Group::static_empty` and writes its own lengths out; a one-file
+  reduction compiles, so the cause is not yet isolated. `chars-strs` still
+  aborts in a stubbed function that is not SIMD; its census adds
+  `Map::next`, `Filter::next` and `type_name` to the 20 rows.
 - Other `llvm.x86.*` names, and `pause` outside bring-up (row 3g), reach
   "selected LLVM intrinsic operation is not implemented"
   (`dev/src/lower/llvm_calls.rs:23`).
