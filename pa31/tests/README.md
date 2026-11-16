@@ -1076,6 +1076,15 @@ T`, under the builtin pointer rule (E0308). A second `PartialEq` impl for
 test checks them through the CLI and lowers each positive. There is no graded
 manifest.
 
+`spec/abstract-cleanup/` freezes six declared no_core programs that move an
+abstract value conditionally in a generic body, as core's `TakeWhile::next`
+does with `x: I::Item`. A rigid projection or opaque value has no structure to
+move from, so its possible cleanup is the whole value, as for a parameter:
+projected, `TakeWhile`, opaque, drop-observing and parameter-control forms
+accept and run against a C observer, and borrowing `x` after the conditional
+move rejects (E0382). A maintainer integration test checks every case. There is
+no graded manifest.
+
 `spec/pointer-ordering/` freezes six declared no_core programs that order raw
 pointers, as core's quicksort partition does with `state.right < right_end`.
 Every comparison of two raw pointers is a builtin scalar operation, ordered

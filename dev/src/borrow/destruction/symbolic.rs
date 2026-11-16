@@ -267,8 +267,12 @@ impl<C: Fn(ItemId) -> bool> Builder<'_, C> {
             };
             let bit = self.paths.entries[path.0 as usize].start;
             let kind = self.types.kind(ty).ok_or("invalid abstract cleanup type")?;
-            if matches!(kind, Kind::Parameter(_))
-                || matches!(kind, Kind::Adt(item, _) if (self.custom)(item))
+            // A rigid projection or opaque value, like a parameter, has no
+            // structure a generic body can move from: `I::Item` is moved whole.
+            if matches!(
+                kind,
+                Kind::Parameter(_) | Kind::Projection(_) | Kind::Opaque(..)
+            ) || matches!(kind, Kind::Adt(item, _) if (self.custom)(item))
             {
                 if point.bit(bit)? == Status::Never {
                     return Err("partly initialized object has no initialized structure");

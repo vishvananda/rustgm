@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "declared": "2026-11-16, before the frozen rustc 1.98.0 oracle of these exact bytes (obj/parallel/frontier/repro12/declared.json). take-while first used a bool flag, which this prefix gives no Copy impl (rustc E0507); it became u8 and was re-declared before the oracle ran again. A mis-designed opaque case (rejected by rustc for a missing future_trait lang item) was dropped for opaque-kept. Declared outcomes did not change.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "observer_sha256": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+ "cases": {
+  "projected.rs": {
+   "sha256": "c040f75460044569b98592d3045072a736c80dc88da6d946f80b956d79bfa68c",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "unexpected abstract destructible type",
+   "native_stdout": "41 59\n"
+  },
+  "take-while.rs": {
+   "sha256": "cc88914777890bbf292d049918d356e91469bd55d39e1d7e494661fe9da27a18",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "unexpected abstract destructible type",
+   "native_stdout": "41 59\n"
+  },
+  "parameter.rs": {
+   "sha256": "40b217b94e3fba9d33739a99acd49e2583dbeb847277621115b069665e378a9f",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "accepted",
+   "native_stdout": "41 59\n"
+  },
+  "opaque-kept.rs": {
+   "sha256": "fd11c83712643c340dc58b9f7f5415212894f12402007c2f625547d9a2bae25f",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "unexpected abstract destructible type",
+   "native_stdout": "41 59\n"
+  },
+  "dropped.rs": {
+   "sha256": "7081481002737425123ecafa4e051c5050ad4f955cd346b2f1bdd0f133f5f021",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "unexpected abstract destructible type",
+   "native_stdout": "41 59\n"
+  },
+  "moved-read.rs": {
+   "sha256": "839255f3412d646c32b6ac37e76f49651ea1baca61a4a1eebeb93669253f287f",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustgm_before": "borrowed place may be uninitialized or moved",
+   "rustc_error": "E0382 borrow of moved value: `x`"
+  }
+ }
+}
