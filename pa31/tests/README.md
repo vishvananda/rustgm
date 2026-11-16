@@ -1126,6 +1126,17 @@ profile and run against a C observer, and passing the opaque callable after
 moving it rejects (E0382). A maintainer integration test checks every case. There is no
 graded manifest.
 
+`spec/struct-update-fields/` freezes four declared no_core programs that build
+a struct with functional update syntax, as core's `str::split_terminator`
+builds `SplitInternal { allow_trailing_empty: false, ..self.split(pat).0 }`.
+Each field taken from the base is moved at the constructed struct's instance
+type, which type checking records with the update, not at the declaration's
+template type: a generic struct, core's generic shape with an associated type
+projection field and its concrete instance accept under the bring-up profile
+and run against a C observer, and reading the base's moved field afterwards
+rejects (E0382). A maintainer integration test checks every case. There is no
+graded manifest.
+
 `spec/abstract-cleanup/` freezes six declared no_core programs that move an
 abstract value conditionally in a generic body, as core's `TakeWhile::next`
 does with `x: I::Item`. A rigid projection or opaque value has no structure to

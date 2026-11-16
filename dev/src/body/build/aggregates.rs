@@ -480,7 +480,16 @@ impl Builder<'_> {
                 if self.scratch.field_values[ordinal].is_some() {
                     continue;
                 }
-                let ty = self.facts.members.fields[index as usize].ty;
+                let ty = self
+                    .facts
+                    .update_field(
+                        super::NodeKey {
+                            node,
+                            ..self.source
+                        },
+                        FieldId(index),
+                    )
+                    .ok_or_else(|| self.error(node, "missing checked functional update field"))?;
                 let place = self.project(
                     node,
                     ty,

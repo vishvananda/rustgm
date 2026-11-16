@@ -418,18 +418,28 @@ impl Checker<'_> {
             }
         }
     }
+    /// The fields a functional update takes from its base keep the constructed
+    /// struct's own instance types; the declaration's template names the
+    /// struct's parameters, not this body's.
     fn check_update_fields(
-        &self,
+        &mut self,
         node: NodeId,
         base: NodeId,
         variant: VariantId,
+        term: TermId,
     ) -> Result<(), Error> {
         let variant = self.facts.members.variants[variant.0 as usize];
-        let mut omitted = (variant.start..variant.end)
-            .filter(|index| !self.state.field_seen[(index - variant.start) as usize]);
-        let Some(first) = omitted.next() else {
+        let omitted: Vec<u32> = (variant.start..variant.end)
+            .filter(|index| !self.state.field_seen[(index - variant.start) as usize])
+            .collect();
+        let Some(&first) = omitted.first() else {
             return Ok(());
         };
+        self.state.update_fields.reserve(omitted.len());
+        for &index in &omitted {
+            let ty = self.instance_field(node, term, FieldId(index))?;
+            self.state.update_fields.push((node, FieldId(index), ty));
+        }
         let span = self
             .report
             .package
@@ -442,10 +452,24 @@ impl Checker<'_> {
             .field_adjustment(base, variant.owner, span.start)?
             .privacy;
         self.accessible_from(node, FieldId(first), privacy)?;
-        for index in omitted {
+        for &index in &omitted[1..] {
             self.accessible_from(node, FieldId(index), privacy)?;
         }
         Ok(())
+    }
+    pub(super) fn publish_update_fields(&mut self, solved: &crate::types::infer::Solved) {
+        if self.state.update_fields.is_empty() {
+            return;
+        }
+        let file = self.state.file;
+        let fields = self
+            .facts
+            .update_fields
+            .get_or_insert_with(Default::default);
+        for (node, field, term) in self.state.update_fields.drain(..) {
+            let key = crate::resolve::unit::NodeKey { file, node };
+            fields.insert((key, field), solved.types[term.0 as usize]);
+        }
     }
     pub(super) fn enter_struct(
         &mut self,
@@ -532,7 +556,7 @@ impl Checker<'_> {
             return Err(self.error(node, "union initializer requires exactly one field"));
         }
         if let Some(base) = base {
-            self.check_update_fields(node, base, variant_id)?;
+            self.check_update_fields(node, base, variant_id, term)?;
         }
         if !union && base.is_none() && self.state.field_seen.contains(&false) {
             return Err(self.error(node, "missing aggregate field initializer"));

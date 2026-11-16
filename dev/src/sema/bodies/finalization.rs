@@ -283,6 +283,7 @@ impl Checker<'_> {
         self.publish_constant_callables()?;
         let callable_dependencies = self.dependency_append(&callable_dependencies)?;
         self.publish_index_bounds(&solved)?;
+        self.publish_update_fields(&solved);
         self.publish_adjustments(&solved, body_key, &predicates, &evidence)?;
         self.publish_calls(&solved)?;
         self.validate_type_privacy()?;

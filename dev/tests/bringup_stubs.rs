@@ -1374,3 +1374,41 @@ fn opaque_captures_meet_their_output_premises() -> Result {
 fn opaque_captures_execute() -> Result {
     execute_cases(OPAQUE_CAPTURES, &["wrapped", "generic"])
 }
+
+const UPDATE_FIELDS: &str = "pa31/tests/spec/struct-update-fields";
+/// A functional update moves each field it takes from its base at the
+/// constructed struct's instance type, as core's `split_terminator` does with
+/// `..self.split(pat).0`; reading the base's moved field afterwards rejects.
+#[test]
+fn struct_updates_move_fields_at_their_instance_types() -> Result {
+    let (rejected, _) = minicore(UPDATE_FIELDS, "rejected", Some(""))?;
+    let stderr = String::from_utf8(rejected.stderr)?;
+    assert_eq!(rejected.status.code(), Some(1), "{stderr}");
+    match rows(&stderr, "bringup-blocker\t").as_slice() {
+        [row] => assert!(
+            row.ends_with("\tupdate\tlocal may be uninitialized or moved at this read"),
+            "{row}"
+        ),
+        _ => return Err(format!("rejected: one blocker expected: {stderr}").into()),
+    }
+    for case in ["generic", "projected", "concrete"] {
+        let (passed, lowir) = minicore(UPDATE_FIELDS, case, Some(""))?;
+        let stderr = String::from_utf8(passed.stderr)?;
+        assert!(passed.status.success(), "{case}: {stderr}");
+        assert!(
+            rows(&stderr, "bringup-blocker\t").is_empty()
+                && rows(&stderr, "bringup-unproven\t").is_empty(),
+            "{case}: {stderr}"
+        );
+        assert!(
+            !std::fs::read_to_string(lowir)?.contains("rg.trap."),
+            "{case}"
+        );
+    }
+    Ok(())
+}
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn struct_updates_execute() -> Result {
+    execute_cases(UPDATE_FIELDS, &["generic", "projected", "concrete"])
+}

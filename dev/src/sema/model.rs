@@ -396,7 +396,7 @@ pub(crate) const DECLARATIONS_SIZE: usize = 7048
     + 6 * size_of::<usize>()
     + 2 * size_of::<usize>()
     + size_of::<usize>()
-    + 4 * size_of::<Option<Box<()>>>();
+    + 5 * size_of::<Option<Box<()>>>();
 pub struct Declarations {
     pub(super) must_use_contracts: Option<Box<super::must_use::Contracts>>,
     /// Snapshotted before any header charge from this crate's input graph.
@@ -449,6 +449,10 @@ pub struct Declarations {
     pub generics: super::generics::Generics,
     /// Repeat operands selected as constant paths before runtime coercion wrappers.
     pub constant_repeats: crate::support::hash::HashSet<NodeKey>,
+    /// Each field a functional update moves out of its base, at the
+    /// constructed struct's own field type.
+    pub(crate) update_fields:
+        Option<Box<crate::support::hash::HashMap<(NodeKey, super::members::FieldId), TypeId>>>,
     pub(crate) constant_targets:
         crate::support::hash::HashMap<super::values::Instance, super::values::Instance>,
     pub(crate) dispatch_dependencies: super::dispatch::Dependencies,
@@ -750,6 +754,7 @@ impl Declarations {
             constant_annotation_bodies: crate::support::hash::HashSet::default(),
             generics: super::generics::Generics::default(),
             constant_repeats: crate::support::hash::HashSet::default(),
+            update_fields: None,
             constant_targets: crate::support::hash::HashMap::default(),
             dispatch_dependencies: super::dispatch::Dependencies::default(),
             objects: super::vtable_plans::Objects::default(),
@@ -800,23 +805,26 @@ impl Declarations {
             initializers: Vec::new(),
             types: Store::default(),
             definitions: vec![None; report.resolution.definitions.len()],
-            nodes: report
-                .package
-                .units
-                .iter()
-                .map(|unit| {
-                    vec![
-                        NodeFacts::default();
-                        if unit.include_context.is_none() {
-                            unit.configured.ast.nodes.len()
-                        } else {
-                            0
-                        }
-                    ]
-                })
-                .collect(),
+            nodes: Self::node_tables(report),
             functions: Vec::new(),
         }
+    }
+    /// One fact slot per configured node of each unit; a unit with an include
+    /// context keeps an empty table.
+    fn node_tables(report: &Report) -> Vec<Vec<NodeFacts>> {
+        report
+            .package
+            .units
+            .iter()
+            .map(|unit| {
+                let nodes = if unit.include_context.is_none() {
+                    unit.configured.ast.nodes.len()
+                } else {
+                    0
+                };
+                vec![NodeFacts::default(); nodes]
+            })
+            .collect()
     }
     /// Complete current-consumer source facts, retaining its already reserved
     /// imported catalog/semantic arena and all unrequested imported declarations.
@@ -929,6 +937,16 @@ impl Declarations {
                 .binding = Some(definition);
         }
         required_features.finish()
+    }
+    /// The checked type of a field that the functional update at `key` moves
+    /// out of its base.
+    #[must_use]
+    pub(crate) fn update_field(
+        &self,
+        key: NodeKey,
+        field: super::members::FieldId,
+    ) -> Option<TypeId> {
+        self.update_fields.as_ref()?.get(&(key, field)).copied()
     }
     #[must_use]
     pub fn node(&self, key: NodeKey) -> Option<&NodeFacts> {

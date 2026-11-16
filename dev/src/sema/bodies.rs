@@ -391,6 +391,8 @@ pub(super) struct State {
     discarded_adjustments: crate::support::hash::HashMap<usize, (TermId, TermId)>,
     calls: Vec<(NodeId, TermId)>,
     pending_indexes: crate::support::hash::HashMap<NodeId, TermId>,
+    /// Each field a functional update takes from its base, at its instance term.
+    update_fields: Vec<(NodeId, crate::sema::members::FieldId, TermId)>,
     /// Source comparisons whose right operand coerces to its selected `Rhs`.
     coerced_operands: crate::support::hash::HashMap<NodeId, TermId>,
     call_types: Box<calls::CallTypes>,
@@ -493,6 +495,7 @@ impl State {
             discarded_adjustments: crate::support::hash::HashMap::default(),
             calls: Vec::new(),
             pending_indexes: crate::support::hash::HashMap::default(),
+            update_fields: Vec::new(),
             coerced_operands: crate::support::hash::HashMap::default(),
             call_types: scratch.call_types.unwrap_or_default(),
             parameter_copies: None,

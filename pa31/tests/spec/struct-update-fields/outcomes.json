@@ -1,0 +1,39 @@
+{
+ "schema": 1,
+ "declared": "2026-11-16, before the frozen rustc 1.98.0 oracle of these exact bytes (obj/parallel/frontier3/fru/declared.json); first attempt, no correction.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "native_stdout": "41 59\n",
+ "observer_sha256": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+ "cases": {
+  "generic.rs": {
+   "sha256": "6cbcf428f79869f30ad034731973d5338e202a04e6fa652889e8b9fa479d18d8",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_bringup": "accepted with no blocker or unproven body; native stdout 41 59",
+   "rustgm_before": "bring-up blocker update: destruction parameter is outside its environment"
+  },
+  "projected.rs": {
+   "sha256": "bed02672d2b7e76be27679be704287b18e788860477100cee98b26d547fb5406",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_bringup": "accepted with no blocker or unproven body; native stdout 41 59",
+   "rustgm_before": "bring-up blocker split_terminator: missing live type-parameter identity"
+  },
+  "concrete.rs": {
+   "sha256": "09e695031f8b7ed93f1387038e537aa1e87010ba7850c8ce9563c9454604e7f7",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_bringup": "accepted with no blocker or unproven body; native stdout 41 59",
+   "rustgm_before": "bring-up blocker split_terminator_byte: associated type layout requires normalization"
+  },
+  "rejected.rs": {
+   "sha256": "3971dc3db401711621c3f2dcdec15427b0307e0406f561d8294bcadd1a8bacf0",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "E0382",
+   "rustgm_bringup": "rejected: update is the one bring-up blocker, local may be uninitialized or moved at this read",
+   "rustgm_before": "rejected: bring-up blocker update, destruction parameter is outside its environment"
+  }
+ }
+}
