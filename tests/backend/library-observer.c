@@ -16,6 +16,19 @@ struct rg_second {
 	double d;
 	long n;
 };
+/* SSE, INTEGER (the two floats share the first eightbyte) and INTEGER, SSE. */
+struct rg_two {
+	float x;
+	float y;
+};
+struct rg_floats {
+	struct rg_two two;
+	long n;
+};
+struct rg_tail {
+	long n;
+	float f[2];
+};
 
 extern const long rg_library_seed;
 long rg_library_answer(long);
@@ -23,6 +36,7 @@ struct rg_second rg_library_swap(struct rg_first);
 struct rg_second rg_library_apply(struct rg_second (*)(struct rg_first), double, struct rg_first);
 double rg_library_tally(long, double);
 void rg_library_stream(float*, const __m128*);
+struct rg_tail rg_library_turn(struct rg_floats);
 /* Not declared noreturn here: a return must reach the failure below. */
 void rg_library_stop(int);
 
@@ -84,6 +98,10 @@ int main(void)
 		return 6;
 	if (!streamed())
 		return 7;
+	struct rg_floats floats = { { 1.5f, -2.25f }, 9 };
+	struct rg_tail tail = rg_library_turn(floats);
+	if (tail.n != 9 || tail.f[0] != 1.5f || tail.f[1] != -2.25f)
+		return 9;
 	/* Success is the exit status that the noreturn function passes on. */
 	rg_library_stop(0);
 	return 8;

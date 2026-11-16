@@ -18,6 +18,9 @@
 //! - `rg_library_tally(n, d)`: the variadic `rg_host_tally(1, {n, d})`, by
 //!   `arity=variadic` and a call-site `classes=1:`;
 //! - `rg_library_stream(d, s)`: one `movntps` through an assembly template;
+//! - `rg_library_turn(r)`: `{{f32, f32}, i64}` to `{i64, f32[2]}`, by the
+//!   `classes=` and `result_classes=` that `RustGM` states and that the
+//!   library derives for `library.c`'s record types;
 //! - `rg_library_stop(code)`: `return=noreturn`, calling `exit(code)`.
 use rustgm::lowir::{
     asm::{self, Kind},
@@ -212,6 +215,50 @@ fn stream(program: &mut Program) -> Result<(), &'static str> {
     program.define(symbol, body.finish()?)
 }
 
+/// `rg_library_turn`: the two floats after the integer. The floats share the
+/// first eightbyte of the parameter, which C passes in an SSE register.
+fn turn(program: &mut Program) -> Result<(), &'static str> {
+    let signature = program.object_signature(
+        &[pair(Class::Sse, Class::Integer)],
+        pair(Class::Integer, Class::Sse),
+        false,
+    )?;
+    let symbol = program.declare("rg_library_turn".into(), signature, false)?;
+    let mut body = program.body_builder();
+    let entry = body.block()?;
+    body.enter(entry)?;
+    let incoming = body.object_slot(PAIR)?;
+    let outgoing = body.object_slot(PAIR)?;
+    let from = body.address(Operand::Slot(incoming))?;
+    let argument = ObjectValue {
+        operand: Operand::Parameter(0),
+        span: PAIR,
+    };
+    body.copy_object_value(program, signature, argument, from)?;
+    let first = body.load(Type::F32, from.operand)?;
+    let four = body.integer(Type::I64, 4)?;
+    let at = body.index(Type::U8, from, four)?;
+    let second = body.load(Type::F32, at.operand)?;
+    let eight = body.integer(Type::I64, 8)?;
+    let at = body.index(Type::U8, from, eight)?;
+    let integer = body.load(Type::I64, at.operand)?;
+    let to = body.address(Operand::Slot(outgoing))?;
+    body.store(integer, to.operand)?;
+    let eight = body.integer(Type::I64, 8)?;
+    let at = body.index(Type::U8, to, eight)?;
+    body.store(first, at.operand)?;
+    let twelve = body.integer(Type::I64, 12)?;
+    let at = body.index(Type::U8, to, twelve)?;
+    body.store(second, at.operand)?;
+    let result = ObjectValue {
+        operand: Operand::Slot(outgoing),
+        span: PAIR,
+    };
+    body.return_object(program, signature, result)?;
+    let function = body.finish()?;
+    program.define(symbol, function)
+}
+
 /// `exit` and `rg_library_stop`, both `return=noreturn`.
 fn stop(program: &mut Program) -> Result<(), &'static str> {
     let signature = program.signature(&[Type::I32], Type::Void, true)?;
@@ -242,6 +289,7 @@ fn module() -> Result<Program, &'static str> {
     apply(&mut program, swapped)?;
     tally(&mut program)?;
     stream(&mut program)?;
+    turn(&mut program)?;
     stop(&mut program)?;
     Ok(program)
 }

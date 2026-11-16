@@ -8,7 +8,7 @@
 use std::{env, path::PathBuf, process::Command};
 
 /// The interface version of `src/records.rs`.
-const ABI_VERSION: &str = "3";
+const ABI_VERSION: &str = "4";
 
 fn main() {
     if let Err(message) = link() {

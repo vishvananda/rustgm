@@ -14,12 +14,14 @@ import native_links
 
 ROOT = Path(__file__).resolve().parents[1]
 # The one interface version of the in-process library that this bridge reviews.
-LIBRARY_ABI_VERSION = 3
+LIBRARY_ABI_VERSION = 4
 # What the library's text view of the handshake module must state: the
 # boundary forms of RustGM's writer. Interface version 2 carried only the
-# storage and the arity.
+# storage and the arity. The classes of rg_library_turn are the ones the
+# library derives from record types (interface version 4).
 LIBRARY_TEXT = (
     "[classes=integer_sse]) -> obj<16x8> [result_classes=sse_integer, ",
+    "[classes=sse_integer]) -> obj<16x8> [result_classes=integer_sse",
     ") as (",
     "[classes=integer_sse]) -> obj<16x8> [result_classes=sse_integer]\n",
     "[classes=1:integer_sse]",
@@ -33,6 +35,7 @@ LIBRARY_TEXT = (
 # from RustGM's model (tests/backend/library-observer.c calls it).
 BRIDGE_TEXT = (
     "[classes=integer_sse]) -> obj<16x8> [result_classes=sse_integer] {",
+    "[classes=sse_integer]) -> obj<16x8> [result_classes=integer_sse] {",
     ") as (",
     "[classes=1:integer_sse]",
     "[arity=variadic]",
@@ -424,8 +427,8 @@ def test_library():
         result = subprocess.run([str(observer)], capture_output=True, timeout=5)
         if result.returncode or result.stdout or result.stderr:
             raise ValueError(f"object compiled in process did not link and compute its declared results ({form})")
-    print("PASS: the LowIR library builds a module with boundary classes, call boundaries, noreturn and "
-          "assembly in process; its objects equal the driver's and link")
+    print("PASS: the LowIR library builds a module with boundary classes, call boundaries, noreturn, "
+          "assembly and record types in process; its objects equal the driver's and link")
 
 
 def build_bridge():

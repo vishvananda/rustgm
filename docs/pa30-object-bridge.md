@@ -4,7 +4,7 @@ This records the first object profile. Since the
 [v0.9.0 pin](backend-v0.9.0-checkpoint.md) the driver is named `cppgm` and is
 installed by `scripts/setup_backend.py`. The
 [current checkpoint](backend-current-checkpoint.md) records the pin in use,
-release v0.9.1.
+release v0.9.3.
 
 The executable bridge keeps its reviewed `lowir` and `lowir2native` tools,
 configuration and invocation sequence. The optional object profile separately

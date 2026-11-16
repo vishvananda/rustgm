@@ -1,6 +1,6 @@
 # CPPGM backend v0.9.0 checkpoint (bb0980105)
 
-The [current checkpoint](backend-current-checkpoint.md) superseded this pin on
+The [v0.9.1 checkpoint](backend-v0.9.1-checkpoint.md) superseded this pin on
 2026-11-15. This record of the v0.9.0 qualification is otherwise unchanged.
 
 All three tools now pin release `v0.9.0` of

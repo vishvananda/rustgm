@@ -1,5 +1,7 @@
 //! The records and numbers of the pinned CPPGM `LowIR` library, interface
-//! version 3: the single place that states their layout.
+//! version 4: the single place that states their layout. Version 4 adds
+//! record types, which the bridge does not state: `RustGM`'s model gives each
+//! object its classes, as its text does.
 //!
 //! Each record is the fixed-width C projection declared by the pinned
 //! `lowir_records.h` and `lowir_interface.h`; each number is an enumerator of
@@ -10,7 +12,7 @@
 use std::mem::size_of;
 
 /// The only interface version this bridge states records for.
-pub const ABI_VERSION: u32 = 3;
+pub const ABI_VERSION: u32 = 4;
 /// `CPPGM_NO_ID`: the absent identity.
 pub const NO_ID: u32 = u32::MAX;
 /// `CPPGM_TARGET_LINUX`: an ELF object for x86-64 Linux.

@@ -154,14 +154,14 @@ Detailed earlier handoffs are retained in Git: `git show 0031a83d4:handoff.md`.
   `rustgm-async-work` (publication). Main `/home/vishvananda/rustgm` is Git-only.
 - No new worktrees. Coherent relevant commits/pushes are authorized;
   use single-line subjects without trailers.
-- CPPGM backend: release v0.9.1, `c9b05c4c0`, of `vishvananda/cppgm` (the
+- CPPGM backend: release v0.9.3, `41e06a23e`, of `vishvananda/cppgm` (the
   renamed cppgm-extended; the driver is `cppgm`). Install it in a worktree
-  with `python3 scripts/setup_backend.py`; a `backend.local.json` from v0.9.0
+  with `python3 scripts/setup_backend.py`; a `backend.local.json` from v0.9.1
   or earlier no longer works. The release's in-process LowIR library is pinned
-  at interface version 3, which carries the boundary facts that RustGM's
-  writer states, and has a handshake. Nothing uses it yet. The user approved
-  an in-process FFI bridge on 2026-11-15: it is the next backend step, in its
-  own crate outside the frontend library
+  at interface version 4, which adds record types to the boundary facts of
+  version 3, and has a handshake. The optional bridge crate
+  `dev/backend-bridge` (FFI in `src/ffi.rs` only) states RustGM's LowIR to it;
+  the text path stays the default
   ([checkpoint](docs/backend-current-checkpoint.md)).
 - Do not modify C++/v5rust checkouts or another checkout's outputs. Rustc is a
   test oracle, never a frontend substitute.

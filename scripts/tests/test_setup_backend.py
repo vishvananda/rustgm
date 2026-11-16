@@ -35,7 +35,7 @@ class BackendDistribution(unittest.TestCase):
             "optional": {
                 "object": {"target": "x86_64-linux", "object_format": "elf64-x86-64",
                            "capabilities": ["lowir-to-object"], "sha256": {"cppgm": hashes["cppgm"]}},
-                "library": {"target": "x86_64-linux", "commit": "release-commit", "abi_version": 3,
+                "library": {"target": "x86_64-linux", "commit": "release-commit", "abi_version": 4,
                             "sha256": {name: hashes[name] for name in LIBRARY}}}}
 
     def members(self, payloads):
@@ -111,8 +111,8 @@ class BackendDistribution(unittest.TestCase):
         self.assertFalse((self.root / "backend.local.json").exists())
 
     def test_the_library_profile_must_belong_to_the_locked_release(self):
-        for change in ({"commit": "another-commit"}, {"abi_version": 2}, {"abi_version": 4},
-                       {"abi_version": "3"}, {"target": "aarch64-linux"},
+        for change in ({"commit": "another-commit"}, {"abi_version": 3}, {"abi_version": 5},
+                       {"abi_version": "4"}, {"target": "aarch64-linux"},
                        {"sha256": {"lowir_interface.h": "0" * 64}},
                        {"sha256": {"libcppgm_lowir.a": "0" * 64, "lowir_interface.h": "0" * 64,
                                    "../lowir_records.h": "0" * 64}}):
@@ -120,7 +120,7 @@ class BackendDistribution(unittest.TestCase):
             lock["optional"]["library"].update(change)
             with self.assertRaisesRegex(ValueError, "LowIR library capability is unavailable"):
                 backend.library_profile(lock)
-        self.assertEqual(backend.library_profile(self.lock)["abi_version"], 3)
+        self.assertEqual(backend.library_profile(self.lock)["abi_version"], 4)
         self.assertEqual(backend.library_member("lowir_interface.h"), "include/lowir_interface.h")
         self.assertEqual(backend.library_member("libcppgm_lowir.so"), "lib/libcppgm_lowir.so")
 

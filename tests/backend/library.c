@@ -1,5 +1,5 @@
 /* Original RustGM maintainer input. It follows the public C interface of the
- * pinned CPPGM LowIR library (lowir_interface.h, ABI version 3); no upstream
+ * pinned CPPGM LowIR library (lowir_interface.h, ABI version 4); no upstream
  * source is copied.
  *
  * Usage: producer OBJECT TEXT RELEASE fixed|pic
@@ -22,6 +22,9 @@
  *   rg_library_tally(n, d)   calls the variadic rg_host_tally(1, {n, d}):
  *                            `arity=variadic` and a call-site `classes=1:`
  *   rg_library_stream(d, s)  one `movntps` through an assembly template
+ *   rg_library_turn(r)       takes {{f32, f32}, i64}, returns {i64, f32[2]}:
+ *                            record types, whose `classes=` and
+ *                            `result_classes=` the library derives
  *   rg_library_stop(code)    `return=noreturn`: calls exit(code)
  */
 #include "lowir_interface.h"
@@ -30,13 +33,14 @@
 #include <string.h>
 
 /* The one interface version this producer is written for. */
-#define RG_ABI_VERSION 3u
+#define RG_ABI_VERSION 4u
 _Static_assert(CPPGM_LOWIR_ABI_VERSION == RG_ABI_VERSION, "interface version");
 _Static_assert(sizeof(LowirValue) == 8, "value record");
 _Static_assert(sizeof(LowirInstruction) == 64, "instruction record");
 _Static_assert(sizeof(CppgmParameter) == 24, "parameter record");
 _Static_assert(sizeof(CppgmBoundary) == 12, "boundary record");
 _Static_assert(sizeof(CppgmArgumentFact) == 16, "argument fact record");
+_Static_assert(sizeof(CppgmField) == 24, "record field");
 
 #define NAME(text) text, (uint32_t)(sizeof text - 1)
 /* obj<16x8>: the kind, the alignment's log2 and the size. */
@@ -347,6 +351,58 @@ static int stream(void)
 	return cppgm_lowir_body_commit(module, symbol, &counts, 2);
 }
 
+/* function @rg_library_turn(%r : obj<16x8> [classes=sse_integer])
+ *     -> obj<16x8> [result_classes=integer_sse]
+ * The same function as rg_library_swap's kind, stated without classes: its
+ * parameter is the record {{f32, f32}, i64}, a nested record, and its result
+ * the record {i64, f32[2]}, an array field. Their slots and the return name
+ * the records too. The library gives each the classes C gives a struct with
+ * those fields: the two floats share an SSE eightbyte. Without the records
+ * both eightbytes would be INTEGER. */
+static int turn(void)
+{
+	CppgmField two_fields[2] = { { 0, CPPGM_TYPE_F32, 0 }, { 4, CPPGM_TYPE_F32, 0 } };
+	CppgmType two = cppgm_lowir_record(module, 8, 4, two_fields, 2);
+	CppgmField floats_fields[2] = { { 0, two, 0 }, { 8, CPPGM_TYPE_I64, 0 } };
+	CppgmType floats = two == 0 ? 0 : cppgm_lowir_record(module, 16, 8, floats_fields, 2);
+	CppgmField tail_fields[2] = { { 0, CPPGM_TYPE_I64, 0 }, { 8, CPPGM_TYPE_F32, 2 } };
+	CppgmType tail = cppgm_lowir_record(module, 16, 8, tail_fields, 2);
+	if (floats == 0 || tail == 0)
+		return 0;
+	uint32_t symbol = function(NAME("rg_library_turn"),
+		cppgm_lowir_signature(module, tail, &floats, 1, CPPGM_ARITY_FIXED), CPPGM_FUNCTION_DEFINITION);
+	LowirBodyCounts counts = { 14, 0, 3, 2, 1 };
+	LowirBodyBuffers buffers;
+	if (!reserve(symbol, &counts, &buffers))
+		return 0;
+	buffers.slots[0] = pair_slot();
+	buffers.slots[0].type = floats;
+	buffers.slots[1] = pair_slot();
+	buffers.slots[1].type = tail;
+	buffers.literals[0].low = 4;
+	buffers.literals[1].low = 8;
+	buffers.literals[2].low = 12;
+	LowirInstruction* code = buffers.instructions;
+	code[0] = unary(CPPGM_OP_ADDR, 1, CPPGM_TYPE_PTR, value(CPPGM_VALUE_SLOT, 0));
+	code[1] = copy_pair(value(CPPGM_VALUE_TEMP, 0), value(CPPGM_VALUE_TEMP, 1));
+	code[2] = unary(CPPGM_OP_LOAD, 2, CPPGM_TYPE_F32, value(CPPGM_VALUE_TEMP, 1));
+	code[3] = binary(CPPGM_OP_INDEX, 3, CPPGM_TYPE_U8, value(CPPGM_VALUE_TEMP, 1), value(CPPGM_VALUE_INTEGER, 0));
+	code[4] = unary(CPPGM_OP_LOAD, 4, CPPGM_TYPE_F32, value(CPPGM_VALUE_TEMP, 3));
+	code[5] = binary(CPPGM_OP_INDEX, 5, CPPGM_TYPE_U8, value(CPPGM_VALUE_TEMP, 1), value(CPPGM_VALUE_INTEGER, 1));
+	code[6] = unary(CPPGM_OP_LOAD, 6, CPPGM_TYPE_I64, value(CPPGM_VALUE_TEMP, 5));
+	code[7] = unary(CPPGM_OP_ADDR, 7, CPPGM_TYPE_PTR, value(CPPGM_VALUE_SLOT, 1));
+	code[8] = binary(CPPGM_OP_STORE, CPPGM_NO_ID, CPPGM_TYPE_I64, value(CPPGM_VALUE_TEMP, 6),
+		value(CPPGM_VALUE_TEMP, 7));
+	code[9] = binary(CPPGM_OP_INDEX, 8, CPPGM_TYPE_U8, value(CPPGM_VALUE_TEMP, 7), value(CPPGM_VALUE_INTEGER, 1));
+	code[10] = binary(CPPGM_OP_STORE, CPPGM_NO_ID, CPPGM_TYPE_F32, value(CPPGM_VALUE_TEMP, 2),
+		value(CPPGM_VALUE_TEMP, 8));
+	code[11] = binary(CPPGM_OP_INDEX, 9, CPPGM_TYPE_U8, value(CPPGM_VALUE_TEMP, 7), value(CPPGM_VALUE_INTEGER, 2));
+	code[12] = binary(CPPGM_OP_STORE, CPPGM_NO_ID, CPPGM_TYPE_F32, value(CPPGM_VALUE_TEMP, 4),
+		value(CPPGM_VALUE_TEMP, 9));
+	code[13] = unary(CPPGM_OP_RETURN, CPPGM_NO_ID, tail, value(CPPGM_VALUE_SLOT, 1));
+	return cppgm_lowir_body_commit(module, symbol, &counts, 10);
+}
+
 /* declare function @exit(%code : i32) -> void [return=noreturn]
  * function @rg_library_stop(%code : i32) -> void [return=noreturn] */
 static int stop(void)
@@ -387,8 +443,9 @@ int main(int argc, char** argv)
 	if (module == NULL)
 		return 3;
 	/* The text view must precede compilation, which consumes the module. */
-	if (!answer() || !swap() || !apply() || !tally() || !stream() || !stop() || !cppgm_lowir_validate(module) ||
-		!cppgm_lowir_write(module, argv[2]) || !cppgm_lowir_compile(module, 0, form))
+	if (!answer() || !swap() || !apply() || !tally() || !stream() || !turn() || !stop() ||
+		!cppgm_lowir_validate(module) || !cppgm_lowir_write(module, argv[2]) ||
+		!cppgm_lowir_compile(module, 0, form))
 	{
 		fprintf(stderr, "%s\n", cppgm_lowir_error(module));
 		cppgm_lowir_destroy(module);
