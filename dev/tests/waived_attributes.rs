@@ -7,10 +7,11 @@
 //! collection destructors do; drop checking here has no opt-out for it. The
 //! allocator attributes (`rustc_allocator`, `rustc_deallocator`,
 //! `rustc_reallocator`, `rustc_allocator_zeroed`,
-//! `rustc_allocator_zeroed_variant`) and `rustc_std_internal_symbol` direct
-//! code generation that this compiler has no allocator shim for.
-//! `rustc_conversion_suggestion` only feeds rustc's diagnostics, so both
-//! profiles accept it without a waiver. The lang items `owned_box`,
+//! `rustc_allocator_zeroed_variant`) only inform rustc's LLVM backend,
+//! `rustc_std_internal_symbol` names a symbol, which declaration linkage
+//! implements, and `rustc_conversion_suggestion` only feeds rustc's
+//! diagnostics, so both profiles accept all of them without a waiver once
+//! their form, owner and gate hold. The lang items `owned_box`,
 //! `global_alloc_ty` and `String` have no role here; bring-up admits their
 //! structs as ordinary ones after rustc's target and generic requirement.
 //! Without that role no intrinsic signature position can be proved to be
@@ -74,7 +75,6 @@ const DANGLE_WAIVER: &str = "`#[may_dangle]` is admitted without its drop-check 
 const DANGLE_STRICT: &str = "`#[may_dangle]` drop-check opt-out is not implemented";
 const MISPLACED: &str =
     "`#[may_dangle]` must be applied to a lifetime or type generic parameter in `Drop` impl";
-const ALLOCATOR_WAIVER: &str = "allocator and internal-symbol attributes are admitted without their code generation: no allocator shim or internal symbol mangling is generated";
 
 /// What both profiles do with one case.
 #[derive(Clone, Copy)]
@@ -188,19 +188,13 @@ const ALLOCATORS: [Case; 7] = [
     fn __rust_alloc_zeroed(size: usize, align: usize) -> *mut u8;
 }
 "#,
-        outcome: Outcome::Waived {
-            waiver: ALLOCATOR_WAIVER,
-            strict: "rustc_allocator requires allocator shim code generation, which is not implemented",
-        },
+        outcome: Outcome::Accepted,
     },
     Case {
         name: "internal-definition",
         header: INTERNAL,
         items: "#[rustc_std_internal_symbol]\npub unsafe fn __rdl_oom(size: usize, align: usize) {}\n",
-        outcome: Outcome::Waived {
-            waiver: ALLOCATOR_WAIVER,
-            strict: "rustc_std_internal_symbol requires allocator shim code generation, which is not implemented",
-        },
+        outcome: Outcome::Accepted,
     },
     Case {
         name: "conversion-suggestion",
@@ -428,11 +422,11 @@ fn eyepatches_are_waived_in_bringup_and_rejected_in_strict_mode() -> Result {
     Ok(())
 }
 
-/// Allocator entries and internal symbols pass only in bring-up and only with
-/// a recorded waiver; a conversion suggestion passes in both profiles; an
-/// ungated, misplaced or malformed use is rejected in both.
+/// Allocator entries, internal symbols and conversion suggestions pass in
+/// both profiles without a waiver, as rustc accepts them; an ungated,
+/// misplaced or malformed use is rejected in both.
 #[test]
-fn allocator_attributes_are_waived_in_bringup_and_rejected_in_strict_mode() -> Result {
+fn allocator_attributes_are_accepted_in_both_profiles_after_validation() -> Result {
     let failures = check("allocator", &ALLOCATORS, "")?;
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())

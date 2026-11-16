@@ -301,3 +301,6 @@ mod unannotated_bounds;
 mod unchecked_arithmetic;
 #[path = "../../unchecked_shifts.rs"]
 mod unchecked_shifts;
+
+#[path = "../../global_allocators.rs"]
+mod global_allocators;

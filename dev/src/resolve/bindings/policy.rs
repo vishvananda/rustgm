@@ -152,9 +152,7 @@ impl Request {
             "must_not_suspend" => Self::Capability(Feature::MustNotSuspend),
             "no_core" => Self::Capability(Feature::NoCore),
             "compiler_builtins" => Self::Capability(Feature::CompilerBuiltins),
-            "allocator_internals" if crate::support::bringup::selected().is_some() => {
-                Self::Capability(Feature::AllocatorInternals)
-            }
+            "allocator_internals" => Self::Capability(Feature::AllocatorInternals),
             "dropck_eyepatch" => Self::Capability(Feature::DropckEyepatch),
             "abi_unadjusted" => Self::Capability(Feature::AbiUnadjusted),
             "lang_items" => Self::Capability(Feature::LangItems),

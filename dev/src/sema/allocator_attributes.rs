@@ -1,13 +1,16 @@
 //! The allocator attributes (`rustc_allocator`, `rustc_deallocator`,
 //! `rustc_reallocator`, `rustc_allocator_zeroed` and
-//! `rustc_allocator_zeroed_variant = "..."`) tell code generation which
-//! allocator entry a function is, and `rustc_std_internal_symbol` gives a
-//! function the session-internal symbol that the allocator shim defines or
-//! calls. Neither meaning exists here: there is no allocator shim and no
-//! internal symbol mangling. A bring-up session admits them with a recorded
-//! waiver and every strict session rejects them. `rustc_conversion_suggestion`
-//! only marks a method that rustc's type-mismatch diagnostics may suggest, so
-//! it is admitted in every profile.
+//! `rustc_allocator_zeroed_variant = "..."`) tell rustc's LLVM backend which
+//! allocator entry a function is, so that it may assume a fresh, unaliased
+//! result and pair allocations with their frees. `LowIR` has no allocator
+//! annotations and this compiler's lowering draws no conclusion from them,
+//! so after validation they have no further effect.
+//! `rustc_std_internal_symbol` gives a function rustc's version-mangled
+//! internal symbol, which declaration linkage reads
+//! (`crate::support::linkage::internal_symbol`); the allocator shim and a
+//! global allocator's functions meet alloc's declarations through it.
+//! `rustc_conversion_suggestion` only marks a method that rustc's
+//! type-mismatch diagnostics may suggest. All are admitted in every profile.
 use crate::{
     resolve::{
         expansion::{MacroAllowanceSession, Report},
@@ -23,14 +26,10 @@ use crate::{
     },
 };
 
-/// The waiver that admits the allocator and internal-symbol attributes.
-const WAIVER: &str = "allocator and internal-symbol attributes are admitted without their code generation: no allocator shim or internal symbol mangling is generated";
-
 /// Validate one allocator, internal-symbol or conversion-suggestion attribute
 /// on its function and admit it.
 /// # Errors
-/// Rejects another form or owner, an ungated use, and the allocator and
-/// internal-symbol attributes outside the bring-up profile.
+/// Rejects another form or owner and an ungated use.
 pub(super) fn consume(
     report: &Report,
     facts: &mut Declarations,
@@ -75,12 +74,7 @@ pub(super) fn consume(
     {
         return Err(error(format!("{name} requires a function")));
     }
-    if name == "rustc_conversion_suggestion" || crate::support::bringup::waive(WAIVER) {
-        return Ok(());
-    }
-    Err(error(format!(
-        "{name} requires allocator shim code generation, which is not implemented"
-    )))
+    Ok(())
 }
 
 /// Whether the attribute's input is `= "..."`, one string literal; the

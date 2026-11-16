@@ -258,7 +258,7 @@ impl Checker<'_> {
             .contains_key(&definition);
         let attributes = self.linkage_sources.get(&key).copied().unwrap_or_default();
         let export = attributes.no_mangle || attributes.export.is_some();
-        if !imported && !export {
+        if !imported && !export && !attributes.internal {
             return Ok(None);
         }
         if imported && export {
@@ -275,9 +275,19 @@ impl Checker<'_> {
         let name = self.report.resolution.definitions[definition.0 as usize].name;
         let spelling = self.report.package.names.get(name);
         let registry = self.facts.foreign.get_or_insert_default();
-        let exact = exact
-            .map_or_else(|| registry.names_mut().intern(spelling), Ok)
-            .map_err(|e| self.error(key, e))?;
+        let exact = if attributes.internal {
+            // rustc mangles the item's own or explicit name as an internal
+            // symbol, which every crate of the program spells alike.
+            let unmangled = exact
+                .and_then(|id| registry.names().get(id))
+                .unwrap_or(spelling)
+                .to_owned();
+            crate::support::linkage::internal_symbol(&unmangled)
+                .and_then(|mangled| registry.names_mut().intern(&mangled))
+        } else {
+            exact.map_or_else(|| registry.names_mut().intern(spelling), Ok)
+        }
+        .map_err(|e| self.error(key, e))?;
         Ok(Some((
             Naming::Exact(exact),
             if imported {

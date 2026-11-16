@@ -24,6 +24,9 @@ pub(in crate::sema::declarations) struct Attributes {
     pub link: Option<SymbolNameId>,
     pub export: Option<SymbolNameId>,
     pub no_mangle: bool,
+    /// `#[rustc_std_internal_symbol]`: the item links under rustc's
+    /// version-mangled internal name. Its own consumer validates the form.
+    pub internal: bool,
 }
 pub(in crate::sema::declarations) fn collect(
     report: &Report,
@@ -52,6 +55,13 @@ pub(in crate::sema::declarations) fn collect(
                 let Some(name) = attribute.name(forest, unit.source.text()) else {
                     continue;
                 };
+                if name == "rustc_std_internal_symbol" {
+                    sources
+                        .entry(NodeKey { file, node })
+                        .or_insert_with(Attributes::default)
+                        .internal = true;
+                    continue;
+                }
                 if crate::support::decorations::Consumer::named(name)
                     != Some(crate::support::decorations::Consumer::Linkage)
                 {

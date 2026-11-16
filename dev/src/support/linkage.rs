@@ -110,3 +110,39 @@ impl SymbolNames {
         self.names.byte_len()
     }
 }
+
+/// The path root rustc 1.98.0 gives every `#[rustc_std_internal_symbol]`
+/// item: v0's `__rustc::NAME` in a synthetic crate whose disambiguator hashes
+/// the compiler version alone (`rustc_symbol_mangling::v0::mangle_internal_symbol`),
+/// so all crates of a program agree on it. Observed with `nm` in rustc 1.98.0's
+/// objects, for example `_RNvCs6rREvFdRhLb_7___rustc12___rust_alloc`.
+const INTERNAL_SYMBOL_ROOT: &str = "_RNvCs6rREvFdRhLb_7___rustc";
+
+/// The symbol of a `#[rustc_std_internal_symbol]` item whose unmangled name is
+/// `name`: its own name or its `export_name`/`link_name`.
+/// # Errors
+/// Rejects an empty or non-ASCII name, which v0 would spell in Punycode.
+pub fn internal_symbol(name: &str) -> Result<String, &'static str> {
+    // LLVM hard-codes the personality routine's name, and C callers name
+    // Apple's availability checks, so rustc keeps these names.
+    if matches!(
+        name,
+        "rust_eh_personality" | "__isPlatformVersionAtLeast" | "__isOSVersionAtLeast"
+    ) {
+        return Ok(name.to_owned());
+    }
+    if name.is_empty() || !name.is_ascii() {
+        return Err("internal symbol name must be nonempty ASCII");
+    }
+    // v0 separates a decimal length from an identifier that starts with `_`
+    // or a digit by one `_`.
+    let separator = if name.starts_with(|first: char| first == '_' || first.is_ascii_digit()) {
+        "_"
+    } else {
+        ""
+    };
+    Ok(format!(
+        "{INTERNAL_SYMBOL_ROOT}{}{separator}{name}",
+        name.len()
+    ))
+}
