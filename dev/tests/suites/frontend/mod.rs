@@ -287,6 +287,8 @@ mod interchange_images;
 mod preparation_accounts;
 #[path = "../../qualification_roots.rs"]
 mod qualification_roots;
+#[path = "../../unannotated_bounds.rs"]
+mod unannotated_bounds;
 #[path = "../../unchecked_arithmetic.rs"]
 mod unchecked_arithmetic;
 #[path = "../../unchecked_shifts.rs"]

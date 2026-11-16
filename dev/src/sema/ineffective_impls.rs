@@ -81,8 +81,10 @@ fn check(
     let policy = inventory
         .local_declaration(self_definition)
         .map_err(|e| Declarations::error(report, key, e))?;
+    // A bound needs no availability on its impl, as on alloc's impl of its
+    // private `Recyclable`; rustc rejects only a stable one.
     if annotation.bound.is_some()
-        && !policy.is_some_and(|policy| matches!(policy.level, Level::Unstable { .. }))
+        && policy.is_some_and(|policy| !matches!(policy.level, Level::Unstable { .. }))
     {
         return Err(Declarations::error(
             report,

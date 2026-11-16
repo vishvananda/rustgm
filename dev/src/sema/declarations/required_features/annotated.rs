@@ -64,11 +64,16 @@ pub(in crate::sema::declarations) fn declaration_clauses(
         .library_policy()
         .and_then(crate::resolve::stability::Library::staged_inventory)
         .ok_or_else(|| error("unstable_feature_bound requires completed staged_api policies"))?;
-    let policy = inventory
+    // rustc forms the clause whatever the owner's availability: a private
+    // trait's impl, as alloc's `Recyclable` impl, has none. Only a stable
+    // owner is rejected.
+    if inventory
         .local_declaration(owner)
         .map_err(error)?
-        .ok_or_else(|| error("unstable_feature_bound requires its actual unstable owner"))?;
-    if policy.kind != PolicyKind::Regular || !matches!(policy.level, Level::Unstable { .. }) {
+        .is_some_and(|policy| {
+            policy.kind != PolicyKind::Regular || !matches!(policy.level, Level::Unstable { .. })
+        })
+    {
         return Err(error(
             "unstable_feature_bound requires an actual regular unstable owner",
         ));
