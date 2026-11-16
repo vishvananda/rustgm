@@ -29,6 +29,8 @@ mod coerce_validation_source;
 mod coercion_provider;
 #[path = "../../configured_tails.rs"]
 mod configured_tails;
+#[path = "../../constrained_nominals.rs"]
+mod constrained_nominals;
 #[path = "../../crate_expansion.rs"]
 mod crate_expansion;
 #[path = "../../crate_syntax.rs"]

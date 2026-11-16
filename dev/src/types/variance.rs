@@ -1,4 +1,5 @@
 //! Variance of lifetime/type parameters from completed nominal field templates.
+pub(crate) mod constraining;
 mod payments;
 mod reachable;
 mod rigidity;

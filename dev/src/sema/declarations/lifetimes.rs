@@ -80,31 +80,73 @@ impl Checker<'_> {
         )
         .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
         for (item, _) in parameters {
-            if self
-                .facts
-                .lifetimes
-                .variances
-                .get(item)
-                .is_some_and(|values| values.contains(&crate::types::variance::Variance::Bivariant))
-            {
-                // Every exporter rejects a bivariant formal, so an imported
-                // nominal with one comes from a forged or corrupted packet.
-                let key = self.report.resolution.definitions[item.0 as usize]
-                    .node
-                    .ok_or_else(|| {
-                        Error::at(
-                            crate::resolve::unit::FileId(0),
-                            0,
-                            "imported source nominal has a bivariant formal: its packet is forged or corrupted",
-                        )
-                    })?;
-                return Err(self.error(
-                    key,
-                    "nominal lifetime parameter is unused or only used recursively",
-                ));
+            if !self.unconstrained_parameter(item)? {
+                continue;
             }
+            // Every exporter rejects a bivariant formal, so an imported
+            // nominal with one comes from a forged or corrupted packet.
+            let key = self.report.resolution.definitions[item.0 as usize]
+                .node
+                .ok_or_else(|| {
+                    Error::at(
+                        crate::resolve::unit::FileId(0),
+                        0,
+                        "imported source nominal has a bivariant formal: its packet is forged or corrupted",
+                    )
+                })?;
+            return Err(self.error(
+                key,
+                "nominal lifetime parameter is unused or only used recursively",
+            ));
         }
         Ok(())
+    }
+    /// Whether a parameter of `item` is bivariant and constrained by none of
+    /// its projection-equality clauses (rustc's E0392).
+    fn unconstrained_parameter(&self, item: ItemId) -> Result<bool, Error> {
+        use crate::types::{
+            parameters::{clauses::Clause, predicates::Bound},
+            variance::Variance,
+        };
+        let Some(values) = self.facts.lifetimes.variances.get(item) else {
+            return Ok(false);
+        };
+        let mut constrained: Vec<bool> = values
+            .iter()
+            .map(|value| *value != Variance::Bivariant)
+            .collect();
+        if constrained.iter().all(|used| *used) {
+            return Ok(false);
+        }
+        let clauses: Vec<_> = self
+            .facts
+            .generics
+            .predicates
+            .get(&DefId(item.0))
+            .into_iter()
+            .flatten()
+            .filter_map(|predicate| match predicate.value {
+                Clause::Predicate(crate::types::parameters::predicates::Predicate {
+                    ty,
+                    bound: Bound::ProjectionEqual(result),
+                }) if matches!(
+                    self.facts.types.kind(ty),
+                    Some(crate::types::Kind::Projection(_))
+                ) =>
+                {
+                    Some((ty, result))
+                }
+                _ => None,
+            })
+            .collect();
+        crate::types::variance::constraining::constrain(
+            &self.facts.types,
+            item,
+            &mut constrained,
+            &clauses,
+        )
+        .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
+        Ok(constrained.contains(&false))
     }
     pub(super) fn template_context(
         &mut self,
