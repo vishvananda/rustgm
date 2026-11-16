@@ -17,7 +17,7 @@ type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 const PACKET: &str = "pa31/tests/spec/owned-boxes";
 /// Programs rustc accepts, with what rustc's build of each prints.
-const ACCEPTED: [(&str, &str); 12] = [
+const ACCEPTED: [(&str, &str); 13] = [
     ("move-out", "alloc 1\ndrop 7\nfree\nvalue 7\n"),
     ("drop-whole", "alloc 1\ndrop 5\nfree\nvalue 5\n"),
     ("partial-move", "alloc 2\ndrop 1\ndrop 2\nfree\nvalue 1\n"),
@@ -33,6 +33,10 @@ const ACCEPTED: [(&str, &str); 12] = [
     ("pattern-move", "alloc 1\ndrop 7\nfree\nvalue 7\n"),
     ("pattern-dyn", "alloc 1\ndrop 4\nfree\nvalue 4\n"),
     ("pattern-slice", "alloc 2\ndrop 3\ndrop 6\nfree\nvalue 9\n"),
+    (
+        "box-in-box",
+        "alloc 1\nalloc 8\ndrop 3\nfree\nfree\nvalue 3\n",
+    ),
 ];
 /// Programs rustc rejects, with the message `RustGM` rejects each with.
 const REJECTED: [(&str, &str); 6] = [

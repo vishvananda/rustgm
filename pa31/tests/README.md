@@ -1167,10 +1167,10 @@ accept and run against a C observer, and borrowing `x` after the conditional
 move rejects (E0382). A maintainer integration test checks every case. There is
 no graded manifest.
 
-`spec/owned-boxes/` freezes eighteen declared no_core programs over a mini
+`spec/owned-boxes/` freezes nineteen declared no_core programs over a mini
 alloc whose `#[lang = "owned_box"]` `Box` keeps alloc's `(Unique<T>, A)`
 shape. `*b` is a place of its own: moving the content out, a partial move out
-of a boxed struct, reassigning moved content, a nested box, a field move out
+of a boxed struct, reassigning moved content, nested boxes, a field move out
 of `self: Box<Self>`, an unsized slice content, a borrowed content and
 conversions to trait-object and slice boxes, including through core's
 `*const T is !null` pattern type, accept and run against a C observer that

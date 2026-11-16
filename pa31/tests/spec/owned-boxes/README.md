@@ -1,6 +1,6 @@
 # Owned boxes (source core)
 
-Eighteen no_core source-core programs exercise `#[lang = "owned_box"]`, which
+Nineteen no_core source-core programs exercise `#[lang = "owned_box"]`, which
 rustc 1.98.0 makes the built-in owning pointer. Their shared prefix is a mini
 core and a mini alloc written for this packet: its `Box<T: ?Sized, A = Global>`
 keeps alloc's `(Unique<T>, A)` field shape, `Unique` holds a `NonNull` around
@@ -21,6 +21,7 @@ call, and dropping a box drops the remaining content, then runs the box's own
   dropped with the box;
 - `reinitialize` moves `*b` out and assigns it again;
 - `nested` drops a boxed list that owns a box of its own type;
+- `box-in-box` drops a box whose content is another box;
 - `method-move` moves a field out of `self: Box<Self>`;
 - `slice-content` drops an unsized content through its length;
 - `borrowed-content` writes through `&mut *b`;
@@ -37,7 +38,7 @@ call, and dropping a box drops the remaining content, then runs the box's own
 
 Outcomes were declared before either compiler ran and checked against rustc
 1.98.0, whose status, errors and native output are recorded in
-`outcomes.json`: all 18 statuses and error codes agree, and `nested`'s declared
+`outcomes.json`: all 19 statuses and error codes agree, and `nested`'s declared
 allocation size was wrong (this `NonNull` has no niche, so `List` is 24 bytes).
 `dev/tests/box_contents.rs` checks every case and runs the accepted ones
 natively.

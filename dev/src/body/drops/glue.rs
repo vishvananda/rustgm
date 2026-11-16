@@ -219,10 +219,11 @@ impl<'a> Catalog<'a> {
         self.result(ty)
     }
     /// Complete each new box's content recipe once every recipe that owns it
-    /// is ready, so a box may own its own type. A failed content fails every
-    /// box still waiting on it.
+    /// is ready, so a box may own its own type. Completing a content may add
+    /// the boxes its own recipe holds, which are completed in turn. A failed
+    /// content fails its box and every box still waiting.
     fn contents(&mut self) -> Result<(), &'static str> {
-        while let Some(&(recipe, content)) = self.cache.boxes.last() {
+        while let Some((recipe, content)) = self.cache.boxes.pop() {
             if let Err(message) = self.complete_content(content).and_then(|completed| {
                 let entry = self
                     .cache
@@ -239,6 +240,7 @@ impl<'a> Catalog<'a> {
                     _ => Err("box cleanup changed its struct fields"),
                 }
             }) {
+                self.cache.boxes.push((recipe, content));
                 for (recipe, _) in std::mem::take(&mut self.cache.boxes) {
                     let ty = self
                         .cache
@@ -252,7 +254,6 @@ impl<'a> Catalog<'a> {
                 }
                 return Err(message);
             }
-            self.cache.boxes.pop();
         }
         Ok(())
     }
