@@ -318,13 +318,22 @@ impl Search<'_> {
         let proof = &self.query.nodes[child];
         match proof.source {
             Some(Source::Callable { output }) => return Ok(output),
+            // Like rustc's `impl FnOnce<A> for &mut F`, whose Output is
+            // `F::Output`: a referent's own impl, as for core's `IsNotEmpty`,
+            // normalizes it through that referent's `FnOnce` impl.
             Some(
                 Source::Assumption(_)
                 | Source::ResultBound(_)
                 | Source::QuantifiedAssumption { .. }
-                | Source::QuantifiedResultBound { .. },
+                | Source::QuantifiedResultBound { .. }
+                | Source::Implementation { .. },
             ) => {}
-            _ => return Err("reference callable requires callable or caller evidence".into()),
+            _ => {
+                return Err(
+                    "reference callable requires callable, caller or implementation evidence"
+                        .into(),
+                );
+            }
         }
         let Some((application, _)) = proof.goal.bound.trait_parts() else {
             return Err("forwarded call proof has no application".into());

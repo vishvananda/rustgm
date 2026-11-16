@@ -91,8 +91,8 @@ impl Lower<'_, '_, '_> {
             result,
         )
     }
-    /// The selected source member takes the unchanged receiver and one owned
-    /// `Args` tuple built from the evaluated call operands.
+    /// The selected source member takes the receiver and one owned `Args`
+    /// tuple built from the evaluated call operands.
     fn invoke_member(
         &mut self,
         member: crate::body::invocation_entries::tupled::Member,
@@ -110,11 +110,24 @@ impl Lower<'_, '_, '_> {
             ..arguments
         };
         let tuple = self.aggregate(member.tuple(), None, operands)?;
+        // A forwarded call reads the innermost reference through the outer ones.
+        let mut value = self.value(receiver)?;
+        for _ in 0..member.loads() {
+            let pointer = value.runtime()?;
+            value = Selected::Runtime(self.builder.load(Type::Ptr, pointer.operand)?);
+        }
+        let Some(Kind::Function { parameters, .. }) = self.context.types.kind(member.execution())
+        else {
+            return Err("call operator member lost its opened signature");
+        };
+        let Some(&[receiver_type, _]) = self.context.types.list(parameters) else {
+            return Err("call operator member lost its opened receiver");
+        };
         self.call_arguments(
             member.execution(),
             crate::lowir::program::Operand::Symbol(symbol),
             super::argument_sources::Arguments::Tupled {
-                receiver,
+                receiver: (receiver_type, value),
                 tuple: member.tuple(),
                 value: tuple,
             },

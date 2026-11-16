@@ -1,0 +1,47 @@
+{
+ "schema": 1,
+ "declared": "2026-11-16, before the frozen rustc 1.98.0 oracle of these exact bytes (obj/parallel/frontier/repro15/declared.json). Declared outcomes did not change.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "native_stdout": "41 59\n",
+ "observer_sha256": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+ "cases": {
+  "mutable.rs": {
+   "sha256": "e53fe57e1174d1d146b7db3f8517f520426e5bab7f7edb5f394444fd0df140be",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "invalid canonical trait selection"
+  },
+  "once.rs": {
+   "sha256": "a6e6c47b65dc15574190a005813bfba8a808abf89e572be5a80ce822259202d9",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "invalid canonical trait selection"
+  },
+  "nested.rs": {
+   "sha256": "18948fa33e726fe7c80956be816ea17da1269ed44667a808a45dffbd8cab9661",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "invalid canonical trait selection"
+  },
+  "shared.rs": {
+   "sha256": "8c674fd9cd224ad3301de6f640d201dee0c377fbdcbcbc86030b4aa8423f9d38",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "reference callable requires callable or caller evidence"
+  },
+  "filter.rs": {
+   "sha256": "200badb1b76ff32784713de949c8a5b9503fc03de04c3e9191cee5e3e0eb7da7",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "invalid canonical trait selection"
+  },
+  "mutable-shared.rs": {
+   "sha256": "bd54779daf7b721fdf61e4e94c249a6180fdf2986bda6f0b4fbbf6ec57471fbe",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustgm_before": "invalid canonical trait selection",
+   "rustc_error": "E0277: the trait bound `&mut Count: Fn<(u8,)>` is not satisfied"
+  }
+ }
+}

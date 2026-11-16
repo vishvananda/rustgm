@@ -13,6 +13,7 @@ pub struct Member {
     instance: Instance,
     execution: TypeId,
     tuple: TypeId,
+    loads: u32,
 }
 impl Member {
     #[must_use]
@@ -28,18 +29,46 @@ impl Member {
     pub const fn tuple(self) -> TypeId {
         self.tuple
     }
+    /// The pointer loads from the call operand to the member's receiver.
+    #[must_use]
+    pub const fn loads(self) -> u32 {
+        self.loads
+    }
+}
+
+/// One candidate member of a call operator: its unselected trait item, the
+/// opened signature its call site passes, and the receiver loads before it.
+#[derive(Clone, Copy)]
+struct Call {
+    item: TypeId,
+    execution: TypeId,
+    loads: u32,
 }
 
 /// One call operator whose member the caller's dispatcher must still select.
 pub(crate) struct Request {
     value: ValueId,
-    item: TypeId,
-    execution: TypeId,
     tuple: TypeId,
+    call: Call,
+    /// The referent's member, as rustc's core `&F` and `&mut F` call impls
+    /// call it, when the receiver is a reference to a nominal callable.
+    forwarded: Option<Call>,
 }
 impl Request {
     pub(crate) const fn item(&self) -> TypeId {
-        self.item
+        self.call.item
+    }
+    pub(crate) const fn forwards(&self) -> bool {
+        self.forwarded.is_some()
+    }
+    /// Execute the referent's member, once dispatch proves the reference's
+    /// call forwards to its referent rather than to an impl of its own.
+    pub(crate) fn forward(&mut self) -> Result<TypeId, &'static str> {
+        self.call = self
+            .forwarded
+            .take()
+            .ok_or("call operator has no referent member")?;
+        Ok(self.call.item)
     }
     /// The selection must be an implementation's own method, never the
     /// trait declaration or a compiler-provided callable.
@@ -51,7 +80,7 @@ impl Request {
         let Some(Type::FunctionItem { item, .. }) = facts.types.kind(selected) else {
             return Err("call operator member selected no function item");
         };
-        if selected == self.item
+        if selected == self.call.item
             || facts
                 .associated
                 .trait_owner(crate::resolve::model::DefId(item.0))
@@ -63,8 +92,9 @@ impl Request {
             self.value,
             Member {
                 instance: Instance::new(&facts.types, selected)?,
-                execution: self.execution,
+                execution: self.call.execution,
                 tuple: self.tuple,
+                loads: self.call.loads,
             },
         ))
     }
@@ -141,22 +171,94 @@ pub(crate) fn requests(
         }
         let tuple = facts.types.intern(Type::Tuple(parameters))?;
         facts.aggregates.prepare(&mut facts.types, tuple)?;
-        let inputs = facts.types.intern_list(&[receiver, tuple])?;
-        let execution = facts.types.intern(Type::Function {
-            parameters: inputs,
-            result,
-            bound_regions: 0,
-            unsafe_: false,
-            convention: Convention::RUST_CALL,
-        })?;
+        let call = Call {
+            item: crate::sema::compiler_items::callable_operator(facts, kind, subject, tuple)?,
+            execution: execution(facts, receiver, tuple, result)?,
+            loads: 0,
+        };
+        let forwarded = match referent(&facts.types, subject, kind)? {
+            Some(referent) => Some(Call {
+                item: crate::sema::compiler_items::callable_operator(
+                    facts,
+                    referent.kind,
+                    referent.subject,
+                    tuple,
+                )?,
+                execution: execution(facts, referent.receiver, tuple, result)?,
+                loads: referent.loads,
+            }),
+            None => None,
+        };
         requests.push(Request {
             value: ValueId(u32::try_from(index).map_err(|_| "too many call operator values")?),
-            item: crate::sema::compiler_items::callable_operator(facts, kind, subject, tuple)?,
-            execution,
             tuple,
+            call,
+            forwarded,
         });
     }
     Ok(requests)
+}
+
+fn execution(
+    facts: &mut Declarations,
+    receiver: TypeId,
+    tuple: TypeId,
+    result: TypeId,
+) -> Result<TypeId, &'static str> {
+    let inputs = facts.types.intern_list(&[receiver, tuple])?;
+    facts.types.intern(Type::Function {
+        parameters: inputs,
+        result,
+        bound_regions: 0,
+        unsafe_: false,
+        convention: Convention::RUST_CALL,
+    })
+}
+
+/// A nominal referent's member reached through references.
+struct Referent {
+    subject: TypeId,
+    kind: CallTrait,
+    /// The innermost reference, which the referent's `call` or `call_mut` takes.
+    receiver: TypeId,
+    loads: u32,
+}
+
+/// The referent call rustc's core `&F` and `&mut F` impls make, as trait
+/// selection forwards a reference's call trait: `&mut F` calls `F: FnMut`
+/// and `&F` calls `F: Fn`, through every reference to the nominal leaf.
+/// A borrowed call operator's receiver is one more reference to load.
+fn referent(
+    types: &Store,
+    subject: TypeId,
+    mut kind: CallTrait,
+) -> Result<Option<Referent>, &'static str> {
+    let mut loads = u32::from(kind != CallTrait::FnOnce);
+    let mut found = None;
+    let mut ty = subject;
+    while let Some(Type::Reference {
+        referent, mutable, ..
+    }) = types.kind(ty)
+    {
+        // Selection answers that reference absent; its own request reports it.
+        let Some(next) = kind.referent(mutable) else {
+            return Ok(None);
+        };
+        if found.is_some() {
+            loads = loads
+                .checked_add(1)
+                .ok_or("call operator receiver exceeds its work budget")?;
+        }
+        found = Some(ty);
+        kind = next;
+        ty = types.storage_head(referent)?;
+    }
+    Ok(found.map(|receiver| Referent {
+        subject: ty,
+        kind,
+        receiver,
+        loads,
+    }))
 }
 
 fn receiver(body: &Body, arguments: crate::body::ir::ValueList) -> Result<TypeId, &'static str> {

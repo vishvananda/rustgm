@@ -554,3 +554,41 @@ fn capturing_closures_copy_values_execute() -> Result {
     }
     Ok(())
 }
+
+const FORWARDED: &str = "pa31/tests/spec/forwarded-calls";
+const FORWARDED_CASES: [&str; 5] = ["mutable", "once", "nested", "shared", "filter"];
+/// A reference forwards its call to a nominal referent's impl, as core's
+/// `Filter::next` calls `&mut IsNotEmpty` for `split_whitespace`.
+#[test]
+fn references_forward_calls_to_their_nominal_referents() -> Result {
+    for name in FORWARDED_CASES {
+        packet_report(FORWARDED, name)
+            .and_then(|report| program(&report))
+            .map_err(|error| format!("{name}: {error}"))?;
+    }
+    let error = packet_report(FORWARDED, "mutable-shared")
+        .and_then(|report| program(&report))
+        .err()
+        .ok_or("accepted mutable-shared")?;
+    assert!(
+        error.to_string().contains(
+            "trait obligation requires an unambiguous matching assumption or implementation"
+        ),
+        "mutable-shared: {error}"
+    );
+    Ok(())
+}
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn references_forward_calls_to_their_nominal_referents_execute() -> Result {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    for name in FORWARDED_CASES {
+        crate::observed_program::execute(
+            &root.join(format!("obj/parallel/forwarded-calls/native/{name}")),
+            &program(&packet_report(FORWARDED, name)?)?,
+            &root.join(FORWARDED).join("observe.c"),
+            b"41 59\n",
+        )?;
+    }
+    Ok(())
+}

@@ -86,6 +86,40 @@ impl super::Dispatcher {
             .map_err(Into::into)
     }
 
+    /// Whether a concrete reference's call-trait member forwards to its
+    /// referent, as rustc's core `&F` and `&mut F` impls do, rather than
+    /// selecting an impl of the reference itself, such as core's `&mut
+    /// Drain`. Either proof joins this dispatch proof.
+    pub(crate) fn forwards_call(
+        &mut self,
+        facts: &mut Declarations,
+        item: crate::types::TypeId,
+        mut preparation: Option<&mut dyn super::Preparation>,
+    ) -> Result<bool, super::Failure> {
+        if let Some(actual) = &mut preparation {
+            actual
+                .prepay(facts, 1, 0)
+                .map_err(super::Failure::Preparation)?;
+        }
+        let Some(crate::types::Kind::FunctionItem { item: method, .. }) = facts.types.kind(item)
+        else {
+            return Err("forwarded call requires a function item".into());
+        };
+        let owner = facts
+            .associated
+            .trait_owner(DefId(method.0))
+            .ok_or("forwarded call requires a trait member")?;
+        let predicate = super::arguments::Arguments::new(facts, item)?.goal(facts, owner)?;
+        let evidence = self.source_evidence(facts, predicate, preparation)?;
+        let forwarded = match evidence.source {
+            selection::Source::Callable { .. } => true,
+            selection::Source::Implementation { .. } => false,
+            _ => return Err("forwarded call requires referent or implementation evidence".into()),
+        };
+        self.extend_evidence(evidence.proof)?;
+        Ok(forwarded)
+    }
+
     /// Reuse the same caller opening and normalization for every actual source selection.
     pub(super) fn source_evidence(
         &mut self,

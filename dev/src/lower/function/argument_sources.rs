@@ -17,10 +17,11 @@ pub(super) enum Arguments {
         owner: TypeId,
         value: Selected,
     },
-    /// A call operator's unchanged receiver operand and its owned `Args` tuple,
-    /// as a selected source call-trait member takes them.
+    /// A call operator's receiver, read through any forwarding references,
+    /// and its owned `Args` tuple, as a selected source call-trait member
+    /// takes them.
     Tupled {
-        receiver: ir::ValueId,
+        receiver: (TypeId, Selected),
         tuple: TypeId,
         value: Selected,
     },
@@ -73,15 +74,7 @@ impl Arguments {
                 Ok((ty, lower.value(id)?))
             }
             Self::Tuple { owner, value } => tuple_field(lower, owner, value, index),
-            Self::Tupled { receiver, .. } if index == 0 => {
-                let ty = lower
-                    .body
-                    .values
-                    .get(receiver.0 as usize)
-                    .ok_or("call operator receiver disappeared")?
-                    .ty;
-                Ok((ty, lower.value(receiver)?))
-            }
+            Self::Tupled { receiver, .. } if index == 0 => Ok(receiver),
             Self::Tupled { tuple, value, .. } if index == 1 => Ok((tuple, value)),
             Self::Tupled { .. } => Err("call operator member has only receiver and Args"),
         }

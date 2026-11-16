@@ -1086,6 +1086,16 @@ itself and core's `Take::try_fold` over it accept and run against a C
 observer, and `copy_fold` without the bound rejects (E0507). A maintainer
 integration test checks every case. There is no graded manifest.
 
+`spec/forwarded-calls/` freezes six declared no_core programs that call a
+generic callable whose actual type is a reference to a nominal callable, as
+core's `Filter::next` calls `&mut IsNotEmpty` for `split_whitespace`. Like
+rustc's core `&F` and `&mut F` impls, the reference forwards to its referent's
+`FnMut` or `Fn` impl, whose `Output` and member it uses: `&mut Count` as
+`FnMut` and `FnOnce`, `&mut &mut Count`, `&NonZero` and `&&NonZero`, and the
+`Filter::next` shape accept and run against a C observer, and `&mut Count` as
+`Fn` rejects (E0277). A maintainer integration test checks every case. There
+is no graded manifest.
+
 `spec/abstract-cleanup/` freezes six declared no_core programs that move an
 abstract value conditionally in a generic body, as core's `TakeWhile::next`
 does with `x: I::Item`. A rigid projection or opaque value has no structure to

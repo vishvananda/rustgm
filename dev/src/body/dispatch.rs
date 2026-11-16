@@ -180,7 +180,8 @@ fn resolve_using(
 }
 
 /// Call operators read their receivers after the selected items are folded;
-/// each selected member's proof joins this body's dispatch proof.
+/// each selected member's proof joins this body's dispatch proof. A reference
+/// whose call forwards to its nominal referent executes the referent's member.
 fn select_members(
     facts: &mut Declarations,
     dispatcher: &mut crate::sema::dispatch::Dispatcher,
@@ -194,11 +195,23 @@ fn select_members(
     crate::sema::dispatch::Failure,
 > {
     let mut members = Vec::new();
-    for request in super::invocation_entries::tupled::requests(facts, body)? {
-        let selected = if let Some(service) = preparation {
-            dispatcher.select_prepared(facts, request.item(), &mut **service)?
+    for mut request in super::invocation_entries::tupled::requests(facts, body)? {
+        let forwarded = request.forwards()
+            && match preparation {
+                Some(service) => {
+                    dispatcher.forwards_call(facts, request.item(), Some(&mut **service))?
+                }
+                None => dispatcher.forwards_call(facts, request.item(), None)?,
+            };
+        let item = if forwarded {
+            request.forward()?
         } else {
-            dispatcher.select(facts, request.item())?
+            request.item()
+        };
+        let selected = if let Some(service) = preparation {
+            dispatcher.select_prepared(facts, item, &mut **service)?
+        } else {
+            dispatcher.select(facts, item)?
         };
         members.push(request.finish(facts, selected)?);
     }
