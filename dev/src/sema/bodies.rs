@@ -2576,6 +2576,8 @@ impl Checker<'_> {
                 && let Some(expected) =
                     self.unsizing_constructor_context(node, result, Some(expected))?
                 && (constructor
+                    || !self.unsized_input_expectation(node, term, parameters, result, expected)?)
+                && (constructor
                     || match self
                         .state
                         .infer

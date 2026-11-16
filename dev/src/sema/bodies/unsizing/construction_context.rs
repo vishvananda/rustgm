@@ -3,6 +3,75 @@ use super::{Argument, Checker, Constructor, Error, NodeId, TermId};
 use crate::types::{Primitive, TypeId};
 
 impl Checker<'_> {
+    /// Whether the expected result of a call gives a by-value formal input an
+    /// unsized type, as `Box::new(array)` expected as `Box<[T]>` does. rustc
+    /// then checks that argument against its formal type alone, so the result
+    /// is inferred from the argument and coerced afterwards; equating the
+    /// result with the expectation would wrongly make the input unsized.
+    pub(in crate::sema::bodies) fn unsized_input_expectation(
+        &mut self,
+        node: NodeId,
+        signature: TermId,
+        parameters: u32,
+        result: TermId,
+        expected: TermId,
+    ) -> Result<bool, Error> {
+        if !matches!(
+            self.contextual_head(node, expected)?,
+            Some(Constructor::Adt(..) | Constructor::AdtArgs(..))
+        ) {
+            return Ok(false);
+        }
+        let formal = self
+            .state
+            .infer
+            .item_arguments(&self.facts.types, result)
+            .map_err(|e| self.error(node, e))?;
+        let hinted = self
+            .state
+            .infer
+            .item_arguments(&self.facts.types, expected)
+            .map_err(|e| self.error(node, e))?;
+        if formal.len() != hinted.len() {
+            return Ok(false);
+        }
+        for index in 0..parameters as usize {
+            let input = self.child(node, signature, index)?;
+            if self.contextual_head(node, input)?.is_some() {
+                continue;
+            }
+            let input = self
+                .state
+                .infer
+                .root(input)
+                .map_err(|e| self.error(node, e))?;
+            for (slot, argument) in formal.iter().enumerate() {
+                let (Argument::Type(formal), Some(Argument::Type(hint))) =
+                    (*argument, hinted.get(slot).copied())
+                else {
+                    continue;
+                };
+                if self
+                    .state
+                    .infer
+                    .root(formal)
+                    .map_err(|e| self.error(node, e))?
+                    == input
+                    && matches!(
+                        self.contextual_head(node, hint)?,
+                        Some(
+                            Constructor::Slice
+                                | Constructor::Dynamic { .. }
+                                | Constructor::Primitive(Primitive::Str)
+                        )
+                    )
+                {
+                    return Ok(true);
+                }
+            }
+        }
+        Ok(false)
+    }
     pub(in crate::sema::bodies) fn unsizing_constructor_context(
         &mut self,
         node: NodeId,

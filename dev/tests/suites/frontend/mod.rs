@@ -27,6 +27,8 @@ mod cleared_parameter_attributes;
 mod closureconst;
 #[path = "../../coerce_validation_source.rs"]
 mod coerce_validation_source;
+#[path = "../../coerced_results.rs"]
+mod coerced_results;
 #[path = "../../coercion_provider.rs"]
 mod coercion_provider;
 #[path = "../../configured_tails.rs"]
