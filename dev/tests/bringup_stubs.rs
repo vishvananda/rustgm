@@ -1412,3 +1412,43 @@ fn struct_updates_move_fields_at_their_instance_types() -> Result {
 fn struct_updates_execute() -> Result {
     execute_cases(UPDATE_FIELDS, &["generic", "projected", "concrete"])
 }
+
+const COERCION_TARGETS: &str = "pa31/tests/spec/coercion-target-storage";
+/// A coercion to another lifetime instance of a nominal with a projected
+/// field, as core's `str::lines` passes its adapter to `Lines(..)`, reads
+/// that instance's normalized fields, and an invariant result lengthened to
+/// `'static` stays an unproven lifetime proof.
+#[test]
+fn coercion_targets_have_normalized_field_storage() -> Result {
+    let (rejected, _) = minicore(COERCION_TARGETS, "rejected", Some(""))?;
+    let stderr = String::from_utf8(rejected.stderr)?;
+    assert!(rejected.status.success(), "{stderr}");
+    assert!(rows(&stderr, "bringup-blocker\t").is_empty(), "{stderr}");
+    match rows(&stderr, "bringup-unproven\t").as_slice() {
+        [row] => assert!(
+            row.ends_with("\tlengthen\trequired lifetime does not outlive its target"),
+            "{row}"
+        ),
+        _ => return Err(format!("rejected: one unproven body expected: {stderr}").into()),
+    }
+    for case in ["constructor", "adapter"] {
+        let (passed, lowir) = minicore(COERCION_TARGETS, case, Some(""))?;
+        let stderr = String::from_utf8(passed.stderr)?;
+        assert!(passed.status.success(), "{case}: {stderr}");
+        assert!(
+            rows(&stderr, "bringup-blocker\t").is_empty()
+                && rows(&stderr, "bringup-unproven\t").is_empty(),
+            "{case}: {stderr}"
+        );
+        assert!(
+            !std::fs::read_to_string(lowir)?.contains("rg.trap."),
+            "{case}"
+        );
+    }
+    Ok(())
+}
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn coercion_targets_execute() -> Result {
+    execute_cases(COERCION_TARGETS, &["constructor", "adapter"])
+}

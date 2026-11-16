@@ -1137,6 +1137,16 @@ and run against a C observer, and reading the base's moved field afterwards
 rejects (E0382). A maintainer integration test checks every case. There is no
 graded manifest.
 
+`spec/coercion-target-storage/` freezes three declared no_core programs that
+coerce a value whose nominal type has an associated type projection field to
+another lifetime instance of that type, as core's `str::lines` passes its
+`Map<SplitInclusive<'_, char>, LinesMap>` to the `Lines` constructor. The
+coercion's target instance gets the same field normal form as the body's
+value types: a constructor argument and core's adapter shape accept under the
+bring-up profile and run against a C observer, and lengthening the invariant
+result to `'static` leaves its lifetime proof unproven, as rustc rejects it.
+A maintainer integration test checks every case. There is no graded manifest.
+
 `spec/abstract-cleanup/` freezes six declared no_core programs that move an
 abstract value conditionally in a generic body, as core's `TakeWhile::next`
 does with `x: I::Item`. A rigid projection or opaque value has no structure to

@@ -82,6 +82,17 @@ impl Checker<'_> {
         for (_, method) in &self.state.call_types.methods {
             roots.extend(method.value_types(solved));
         }
+        // An equality coercion evaluates its value again at the expected type.
+        // A distinct lifetime instance of a nominal there has no expression
+        // node of its own, and its fields need the same normal form.
+        for adjustment in &self.state.adjustments {
+            let target = solved.types[adjustment.expected.0 as usize];
+            if adjustment.kind == super::AdjustmentKind::Equality
+                && target != solved.types[adjustment.actual.0 as usize]
+            {
+                roots.push(target);
+            }
+        }
         Ok(roots)
     }
 

@@ -1,0 +1,32 @@
+{
+ "schema": 1,
+ "declared": "2026-11-16, before the frozen rustc 1.98.0 oracle of these exact bytes (obj/parallel/frontier3/coerce-fixture/declared.json); one recorded correction: the first bytes' split(haystack: &u8) -> Split<'_, u8> normalized the field instance in split's own body, so RustGM accepted them before the fix; split's result lifetime became its second and rustc was rerun, with the declared outcomes unchanged.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "native_stdout": "41 59\n",
+ "observer_sha256": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+ "cases": {
+  "constructor.rs": {
+   "sha256": "1c40eed5925ef36f4976de82ca810f6b0d4036f31a6be44da8c5656e83268465",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_bringup": "accepted with no blocker or unproven body; native stdout 41 59",
+   "rustgm_before": "bring-up blocker lines: concrete aggregate fields require associated type normalization"
+  },
+  "adapter.rs": {
+   "sha256": "aed7102f6142615256c4cbd621bc4082f3d11864dce7f4a8885323e98ffd5a56",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_bringup": "accepted with no blocker or unproven body; native stdout 41 59",
+   "rustgm_before": "bring-up blocker lines: concrete aggregate fields require associated type normalization"
+  },
+  "rejected.rs": {
+   "sha256": "fac9bda55e7d1f6689727f8c813e454d1ccafbf0ce723b0cf9410ce7f42a07fa",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "lifetime may not live long enough (Lines is invariant over 'a)",
+   "rustgm_bringup": "rejected: lengthen is the one unproven body, required lifetime does not outlive its target; no blocker",
+   "rustgm_before": "bring-up blocker lengthen: concrete aggregate fields require associated type normalization"
+  }
+ }
+}
