@@ -321,10 +321,10 @@ impl Checker<'_> {
         right: TypeId,
         result: TypeId,
     ) -> Result<bool, Error> {
-        if left == right
-            && matches!(self.facts.types.kind(left), Some(Type::Pointer { .. }))
-            && matches!(op, Punctuation::EqualEqual | Punctuation::BangEqual)
-        {
+        // rustc's builtin rule covers every comparison of two raw pointers,
+        // ordered ones included: core's `*self < *other` in its raw pointer
+        // `PartialOrd` impl is this scalar comparison, never a call to itself.
+        if left == right && matches!(self.facts.types.kind(left), Some(Type::Pointer { .. })) {
             if self.facts.types.kind(result) != Some(Type::Primitive(crate::types::Primitive::Bool))
             {
                 return Err(self.error(node, "source pointer comparison result must be bool"));

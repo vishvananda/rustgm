@@ -3,10 +3,13 @@ use rustgm::{expand::config::Config, pipeline, support::diagnostics::LintCap};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const ROOT: &str = "pa31/tests/spec/source-guaranteed-compare";
 fn report_file(name: &str) -> Result<rustgm::resolve::expansion::Report> {
+    packet_report(ROOT, name)
+}
+fn packet_report(packet: &str, name: &str) -> Result<rustgm::resolve::expansion::Report> {
     let mut config = Config::default();
     config.set_lint_cap(LintCap::Allow);
     Ok(crate::resolve::source_provider_config(
-        &crate::resolve::fixture(&format!("{ROOT}/{name}.rs"))?,
+        &crate::resolve::fixture(&format!("{packet}/{name}.rs"))?,
         "guaranteed_pointers",
         &config,
     )?)
@@ -18,13 +21,15 @@ fn program(name: &str) -> Result<rustgm::lowir::program::Program> {
     program_file(&format!("{name}-source-profile"))
 }
 fn program_file(name: &str) -> Result<rustgm::lowir::program::Program> {
-    let report = report_file(name)?;
+    lowered(&report_file(name)?)
+}
+fn lowered(report: &rustgm::resolve::expansion::Report) -> Result<rustgm::lowir::program::Program> {
     let pipeline::Analysis {
         mut facts,
         prepared,
-    } = pipeline::analyze_source(&report)?;
+    } = pipeline::analyze_source(report)?;
     Ok(rustgm::lower::instances::build_roots_prepared(
-        &report,
+        report,
         &mut facts,
         rustgm::lower::Roots {
             entry: None,
@@ -220,4 +225,75 @@ fn native_operator_syntax_and_explicit_method_keep_distinct_semantics() -> Resul
         "operator-observer",
         "primitive-pointer 1 0 0 0\n",
     )
+}
+
+const ORDERING: &str = "pa31/tests/spec/pointer-ordering";
+const ORDERING_CASES: [(&str, &str); 4] = [
+    ("operators", "3 10 12\n"),
+    ("explicit", "3 10 12\n"),
+    ("generic", "3 10 12\n"),
+    ("nominal", "12 10 3\n"),
+];
+/// Functions whose body calls their own symbol.
+fn self_calls(text: &str) -> Vec<&str> {
+    let mut current = None;
+    let mut calls = Vec::new();
+    for line in text.lines() {
+        if let Some(header) = line.strip_prefix("function @") {
+            current = header.split('(').next();
+        } else if let (Some(name), Some((_, callee))) = (current, line.split_once(" call ")) {
+            let target = callee
+                .split_once('@')
+                .and_then(|(_, symbol)| symbol.split('(').next());
+            if target == Some(name) && calls.last() != Some(&name) {
+                calls.push(name);
+            }
+        }
+    }
+    calls
+}
+/// Every comparison of two raw pointers is builtin, as rustc's
+/// `is_builtin_binop` makes it, so core's raw pointer `PartialOrd` bodies
+/// `*self < *other` compare addresses instead of calling themselves.
+#[test]
+fn ordered_raw_pointer_operators_are_builtin_comparisons() -> Result {
+    for (name, _) in ORDERING_CASES {
+        let program =
+            lowered(&packet_report(ORDERING, name)?).map_err(|error| format!("{name}: {error}"))?;
+        let mut text = Vec::new();
+        rustgm::lowir::writer::write(&program, &mut text)?;
+        let text = String::from_utf8(text)?;
+        assert_eq!(self_calls(&text), Vec::<&str>::new(), "{name}");
+        assert!(
+            text.contains(" cmp ult ptr "),
+            "{name}: no ordered comparison"
+        );
+    }
+    for (name, cause) in [
+        ("const-operator", "can't compare `*const T` with `*const T`"),
+        ("mismatch", "incompatible types"),
+    ] {
+        let error = packet_report(ORDERING, name)
+            .and_then(|report| lowered(&report))
+            .err()
+            .ok_or_else(|| format!("accepted {name}"))?;
+        assert!(error.to_string().contains(cause), "{name}: {error}");
+    }
+    Ok(())
+}
+#[test]
+#[ignore = "requires the pinned CPPGM object backend and a C compiler"]
+fn native_ordered_raw_pointer_operators_compare_addresses() -> Result {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let folder = root.join(format!(
+        "obj/parallel/pointer-ordering/native-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let observer = crate::resolve::fixture(&format!("{ORDERING}/observe.c"))?;
+    for (name, expected) in ORDERING_CASES {
+        let program = lowered(&packet_report(ORDERING, name)?)?;
+        crate::ffi_program::check(&root, &folder, name, &program, &observer, expected)?;
+    }
+    Ok(())
 }

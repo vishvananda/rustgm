@@ -1,0 +1,45 @@
+{
+ "schema": 1,
+ "declared": "2026-11-16, before the frozen rustc 1.98.0 oracle of these exact bytes (obj/parallel/frontier/repro11/declared.json). Three earlier prefixes were revised before any case was compared: a reduced PartialOrd (RustGM requires core's complete member family), a prefix without the probe's integer PartialOrd impls (rustc E0369) and without raw pointer Copy (rustc E0507); nominal first omitted partial_cmp (rustc E0046). Declared outcomes never changed.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "observer_sha256": "794dd5e7d78e628175d1c35fc11157a5c943cb6814efff3e0c6f91a5b4cba529",
+ "cases": {
+  "operators.rs": {
+   "sha256": "098d432e8790612cd749fcaf49f0264480271b4ed7f6889de916419e20a6aa8b",
+   "declared": 0,
+   "rustc_status": 0,
+   "native_stdout": "3 10 12\n"
+  },
+  "explicit.rs": {
+   "sha256": "4810f03a763d4b320cf8521edf373aaa91ad35c0f9d8c4fc98009f977a627a7a",
+   "declared": 0,
+   "rustc_status": 0,
+   "native_stdout": "3 10 12\n"
+  },
+  "generic.rs": {
+   "sha256": "3ff78a93329307a95af404ecbd5f30c292c53ee2510b28a66f960054dc065441",
+   "declared": 0,
+   "rustc_status": 0,
+   "native_stdout": "3 10 12\n"
+  },
+  "nominal.rs": {
+   "sha256": "afcf7937ecb3e7b995ff12e4852037e3bf350c91006c20187c9462a0f2da9dc1",
+   "declared": 0,
+   "rustc_status": 0,
+   "native_stdout": "12 10 3\n"
+  },
+  "const-operator.rs": {
+   "sha256": "65e730df9028cc299c62c9d174044cd8c77a1a2ecc5c5742e672dfacda5caf87",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "E0277: *const T: [const] PartialOrd is not satisfied"
+  },
+  "mismatch.rs": {
+   "sha256": "54f129cf3526e7d85fc5789cd90fe2a50969ff685824af8e22469ce2020615bb",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "E0308"
+  }
+ }
+}

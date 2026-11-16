@@ -1076,6 +1076,17 @@ T`, under the builtin pointer rule (E0308). A second `PartialEq` impl for
 test checks them through the CLI and lowers each positive. There is no graded
 manifest.
 
+`spec/pointer-ordering/` freezes six declared no_core programs that order raw
+pointers, as core's quicksort partition does with `state.right < right_end`.
+Every comparison of two raw pointers is a builtin scalar operation, ordered
+ones included, so core's raw pointer `PartialOrd` bodies `*self < *other`
+compare addresses rather than call themselves. Operators on `*const T` and
+`*mut T`, explicit `lt`/`le`/`gt`/`ge` calls, a generic `T: PartialOrd` caller
+and a nominal control with reversed impls accept and run against a C observer.
+The operator in a `const fn` rejects (E0277), as does `*const u8 < *const u16`
+(E0308). A maintainer integration test checks every case. There is no graded
+manifest.
+
 `spec/destructuring-assignment/` freezes seventeen declared no_core reductions
 of core's `bidirectional_merge` assignment, `(left, right, dst) = merge_up(...)`.
 Eleven positives accept: core's form, a swap, nested and grouped tuples, `_`
