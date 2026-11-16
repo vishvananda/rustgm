@@ -157,6 +157,11 @@
       "source": "inline-specialized/pointer-mismatch.rs",
       "accepted": false,
       "source_sha256": "adf531141b6e188c35494fe143e8b78c5d793cf3233c5ac81760d4f566053713"
+    },
+    {
+      "source": "inline-specialized/captured-pointer.rs",
+      "accepted": true,
+      "source_sha256": "c5692a50b1484cb87981dd23f751b291f7f6f7aa5a74598d32d9f3f254c73fa4"
     }
   ]
 }

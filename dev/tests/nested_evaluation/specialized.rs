@@ -31,6 +31,7 @@ const CASES: &[(&str, bool)] = &[
     ("function-pointer", true),
     ("selected-pointer", true),
     ("pointer-mismatch", false),
+    ("captured-pointer", true),
 ];
 fn fixture(name: &str) -> Result<String, std::io::Error> {
     std::fs::read_to_string(

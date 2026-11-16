@@ -885,6 +885,12 @@ fn field(
     index: u64,
 ) -> Result<TypeId, &'static str> {
     let index = usize::try_from(index).map_err(|_| "constant field exceeds host size")?;
+    // A closure value, such as an inline constant's `move || x`, is the
+    // product of its captures, stored as its environment.
+    let ty = match facts.types.kind(ty) {
+        Some(Kind::Closure { environment, .. }) => environment,
+        _ => ty,
+    };
     match facts.types.kind(ty) {
         Some(Kind::Array { element, .. }) => Ok(element),
         Some(Kind::Tuple(list)) => facts

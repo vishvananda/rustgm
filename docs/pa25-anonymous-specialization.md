@@ -143,3 +143,9 @@ core's `(const { inst_partition::<T, F>() })(v, pivot, is_less)` in
 `selected-pointer` (a const generic picks one of two generic functions) accept
 and execute; `pointer-mismatch` rejects. Before the change both positives failed
 with "generic callable execution requires demanded instances".
+
+A closure value is the product of its captures: the walk reads its fields as
+its environment's. `captured-pointer` returns `move |v: T| g(v)` from an inline
+constant whose captured `g` is `ident::<T>`, and accepts and executes. Before,
+its value, like `pa27`'s `owned-capture`, failed with "constant product has no
+field types".
