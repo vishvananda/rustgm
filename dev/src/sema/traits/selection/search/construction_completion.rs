@@ -15,7 +15,14 @@ impl Search<'_> {
             .as_mut()
             .ok_or("missing nominal formation")?;
         let key = formation.nominal_key(frame.scope)?;
-        if let Some(decision) = formation.stopped {
+        if let Some(mut decision) = formation.stopped {
+            if decision == Decision::Absent && self.query.purpose.perspective().is_some() {
+                // rustc 1.98's coherence never proves its hypothetical
+                // intersection well-formed: `Box<dyn Error, A>: Sized` under
+                // a header without `A: Allocator` is merely unknown there.
+                decision = Decision::Deferred;
+                formation.stopped = Some(decision);
+            }
             if formation.registered {
                 self.query.families.remove(&key);
                 formation.registered = false;

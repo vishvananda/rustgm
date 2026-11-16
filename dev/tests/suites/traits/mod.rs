@@ -33,6 +33,8 @@ mod existential_methods;
 mod explicit_markers;
 #[path = "../../harness/foreign_frontend.rs"]
 pub(crate) mod foreign_frontend;
+#[path = "../../fundamental_coherence.rs"]
+mod fundamental_coherence;
 #[path = "../../global_clause_premises.rs"]
 mod global_clause_premises;
 #[path = "../../guarantees.rs"]

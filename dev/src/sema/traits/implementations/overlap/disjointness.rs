@@ -57,8 +57,9 @@ pub(super) fn has_unsized(
 /// `FieldRepresentingType` and alloc's `Box`; imported, only the sizing
 /// traits' transported flag is read, which is conservative. rustc takes
 /// the first owned input, Self then the trait arguments, with no uncovered
-/// parameter before it. Closed inputs have none, so any owned input is that
-/// first one; a widening to open inputs must restore the order. Apply this at
+/// parameter before it. Closed inputs have none, not even under a
+/// fundamental nominal, so any owned input is that first one; a widening to
+/// open inputs must restore the order. Apply this at
 /// every ordinary trait child, not just the outer goal: a matching conditional
 /// impl may depend on a downstream-local trait argument.
 pub(in crate::sema) fn absence_closed(
@@ -161,31 +162,51 @@ fn owns_input(
     Ok(false)
 }
 
-/// A downstream crate cannot make a nonfundamental upstream nominal local by
-/// choosing one of its arguments. Check only orphan-relevant roots; walking
-/// every nested generic argument both loses this fact and repeats shared work.
+/// rustc 1.98's orphan check for a downstream crate (`InCrate::Remote`): an
+/// input is open only if an unknown type is reachable through `&`, `&mut` and
+/// every type argument of a `#[fundamental]` nominal, as `Box<[T], ?A>`'s
+/// allocator is. A downstream crate cannot make any other nominal, a
+/// primitive, pointer, tuple, array, slice, function pointer, `dyn` or
+/// foreign type local by choosing its arguments, so they are never walked:
+/// `Box<[?T]>` and `Box<dyn Error + '?a>` are closed. Check only these
+/// orphan-relevant roots; walking every nested argument both loses this fact
+/// and repeats shared work.
 fn closed_inputs(
     facts: &Declarations,
     context: &mut Context,
     goal: &infer::predicates::Predicate,
 ) -> Result<bool, String> {
-    for mut term in goal.input_roots() {
-        loop {
+    let mut pending = Vec::new();
+    for root in goal.input_roots() {
+        pending.push(root);
+        while let Some(term) = pending.pop() {
             context.account_work(1).map_err(|e| e.to_string())?;
             match context.head(&facts.types, term) {
                 Ok(Some(Constructor::Reference { .. })) => {
-                    term = context
-                        .child(&facts.types, term, 0)
-                        .map_err(|e| e.to_string())?;
+                    pending.push(
+                        context
+                            .child(&facts.types, term, 0)
+                            .map_err(|e| e.to_string())?,
+                    );
                 }
                 Ok(Some(Constructor::Adt(item, _) | Constructor::AdtArgs(item, _))) => {
-                    if crate::sema::header_attributes::fundamental_policy(
+                    if !crate::sema::header_attributes::fundamental_policy(
                         facts,
                         crate::resolve::model::DefId(item.0),
                     )? {
-                        return Ok(false);
+                        continue;
                     }
-                    break;
+                    let arity = context
+                        .arity(&facts.types, term)
+                        .map_err(|e| e.to_string())?
+                        .unwrap_or(0);
+                    for index in 0..arity {
+                        pending.push(
+                            context
+                                .child(&facts.types, term, index)
+                                .map_err(|e| e.to_string())?,
+                        );
+                    }
                 }
                 Ok(Some(
                     Constructor::Primitive(_)
@@ -196,8 +217,10 @@ fn closed_inputs(
                     | Constructor::ArrayInfer(_)
                     | Constructor::Slice
                     | Constructor::Function { .. }
-                    | Constructor::Never,
-                )) => break,
+                    | Constructor::Never
+                    | Constructor::Dynamic { .. }
+                    | Constructor::Foreign(_),
+                )) => {}
                 Ok(_) | Err(infer::Error::Unresolved | infer::Error::Normalization) => {
                     return Ok(false);
                 }
@@ -232,7 +255,13 @@ impl Storage {
                 Err(error) => return Err(error.to_string()),
             };
             match head {
-                Some(Constructor::Slice | Constructor::Primitive(Primitive::Str)) => break true,
+                // As in rustc, `dyn Trait` and an extern type are never Sized.
+                Some(
+                    Constructor::Slice
+                    | Constructor::Primitive(Primitive::Str)
+                    | Constructor::Dynamic { .. }
+                    | Constructor::Foreign(_),
+                ) => break true,
                 Some(Constructor::Tuple) => {
                     let count = context
                         .arity(&facts.types, term)

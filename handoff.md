@@ -61,7 +61,10 @@ are its remaining work list.
 guest has its own `crate` and `$crate` root, restricted visibility, exported
 macros, extern prelude (the host and the guests before it) and the prelude its
 root attributes select; lang items, feature gates, coherence and the edition
-stay the session's. Its files are keyed `NAME:PATH` in skip lists and
+stay the session's. Coherence knowability is session-wide too: every source
+trait counts as owned, so a goal rustc leaves ambiguous from `alloc` because
+only upstream core could implement it (`[Local]: Iterator`) is decided as if
+one crate owned the trait. Its files are keyed `NAME:PATH` in skip lists and
 `bringup-*` lines. The last guest is the program: under `#![no_main]` its
 exported C `main` is the entry point. `scripts/bringup_linked.py --guest`
 passes a consumer this way instead of mounting it in a copy of core. A guest
