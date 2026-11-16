@@ -82,6 +82,18 @@ impl Partition {
                 queries.push(&self.tags.parts, ty)?;
             }
         }
+        // Every store is a replacement cleanup candidate, asked about its
+        // destination's exact place type. Behind a reference that type need
+        // not be any root's, as `*slot = rest` replaces a `&'a T`.
+        self.tags.parts.charge(body.statements.len())?;
+        for statement in &body.statements {
+            if let crate::body::ir::Action::Store { place, .. } = statement.action {
+                let ty = body
+                    .place_type(place)
+                    .ok_or("qualification replacement place type is missing")?;
+                queries.push(&self.tags.parts, ty)?;
+            }
+        }
         self.tags.parts.pay(Growth {
             bytes: size_of::<Queries>(),
             work: 1,

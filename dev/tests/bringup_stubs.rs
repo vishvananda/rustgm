@@ -1420,19 +1420,36 @@ const COERCION_TARGETS: &str = "pa31/tests/spec/coercion-target-storage";
 /// `'static` stays an unproven lifetime proof.
 #[test]
 fn coercion_targets_have_normalized_field_storage() -> Result {
-    let (rejected, _) = minicore(COERCION_TARGETS, "rejected", Some(""))?;
+    one_unproven_body(
+        COERCION_TARGETS,
+        "rejected",
+        "\tlengthen\trequired lifetime does not outlive its target",
+    )?;
+    lower_completely(COERCION_TARGETS, &["constructor", "adapter"])
+}
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn coercion_targets_execute() -> Result {
+    execute_cases(COERCION_TARGETS, &["constructor", "adapter"])
+}
+
+/// The case compiles with no blocker and exactly one unproven body, whose
+/// row ends with `suffix`: its rejection is a soundness proof that fails.
+fn one_unproven_body(fixture: &str, case: &str, suffix: &str) -> Result {
+    let (rejected, _) = minicore(fixture, case, Some(""))?;
     let stderr = String::from_utf8(rejected.stderr)?;
-    assert!(rejected.status.success(), "{stderr}");
+    assert!(rejected.status.success(), "{case}: {stderr}");
     assert!(rows(&stderr, "bringup-blocker\t").is_empty(), "{stderr}");
     match rows(&stderr, "bringup-unproven\t").as_slice() {
-        [row] => assert!(
-            row.ends_with("\tlengthen\trequired lifetime does not outlive its target"),
-            "{row}"
-        ),
-        _ => return Err(format!("rejected: one unproven body expected: {stderr}").into()),
+        [row] => assert!(row.ends_with(suffix), "{row}"),
+        _ => return Err(format!("{case}: one unproven body expected: {stderr}").into()),
     }
-    for case in ["constructor", "adapter"] {
-        let (passed, lowir) = minicore(COERCION_TARGETS, case, Some(""))?;
+    Ok(())
+}
+/// Each case compiles with no blocker, no unproven body and no trapping stub.
+fn lower_completely(fixture: &str, cases: &[&str]) -> Result {
+    for case in cases {
+        let (passed, lowir) = minicore(fixture, case, Some(""))?;
         let stderr = String::from_utf8(passed.stderr)?;
         assert!(passed.status.success(), "{case}: {stderr}");
         assert!(
@@ -1447,8 +1464,23 @@ fn coercion_targets_have_normalized_field_storage() -> Result {
     }
     Ok(())
 }
+
+const REPLACEMENTS: &str = "pa31/tests/spec/replacement-qualification";
+/// A const fn's store through a reference asks const qualification about
+/// its destination's exact place type, as core's `FormattingOptions::width`,
+/// `split_off_first` and `ascii::Char::make_uppercase` store, and replacing
+/// a value with a non-const destructor stays an unproven const cleanup.
+#[test]
+fn replacements_request_their_destination_qualification() -> Result {
+    one_unproven_body(
+        REPLACEMENTS,
+        "rejected",
+        "\treplace\tactive cleanup requires const Destruct in its actual defining environment",
+    )?;
+    lower_completely(REPLACEMENTS, &["field", "reference", "variant", "generic"])
+}
 #[test]
 #[ignore = "requires the locked CPPGM object backend and a C compiler"]
-fn coercion_targets_execute() -> Result {
-    execute_cases(COERCION_TARGETS, &["constructor", "adapter"])
+fn replacements_execute() -> Result {
+    execute_cases(REPLACEMENTS, &["field", "reference", "variant", "generic"])
 }

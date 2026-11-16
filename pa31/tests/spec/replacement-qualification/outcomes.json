@@ -1,0 +1,46 @@
+{
+ "schema": 1,
+ "declared": "2026-11-16, before the frozen rustc 1.98.0 oracle of these exact bytes (obj/parallel/frontier3/qual/declared.json, where field, reference and variant are field-noisy, reference-noisy and enum-noisy); recorded corrections: field and reference first used u8 == and u8 + (E0369 with this prefix) and were rewritten before RustGM ran; the concrete cases were first declared without a destructor, which RustGM accepted before the fix, and an unused Drop impl was added in new files, with the declared outcomes unchanged.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "native_stdout": "41 59\n",
+ "observer_sha256": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+ "cases": {
+  "field.rs": {
+   "sha256": "58cfcc5959499023faee3d8c3de5aa0e34cd5ae0fc7253748244b54ef926f14f",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_bringup": "accepted with no blocker or unproven body; native stdout 41 59",
+   "rustgm_before": "bring-up blocker width: qualification has no exact type request"
+  },
+  "reference.rs": {
+   "sha256": "60790b692982129fc49abeedb218659af7f82ff29733b402b4d8d09e6f9ac9bd",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_bringup": "accepted with no blocker or unproven body; native stdout 41 59",
+   "rustgm_before": "bring-up blocker shift: qualification has no exact type request"
+  },
+  "variant.rs": {
+   "sha256": "2ee50493a268d8ee5d17d5cc433387bd48b69e09bdd072062e1ea840fc00a6f1",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_bringup": "accepted with no blocker or unproven body; native stdout 41 59",
+   "rustgm_before": "bring-up blocker make_upper: qualification has no exact type request"
+  },
+  "generic.rs": {
+   "sha256": "00ab1821f0e0294e8c68068fa9c767448788c33a2623b7b1be366d7717c4d0be",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_bringup": "accepted with no blocker or unproven body; native stdout 41 59",
+   "rustgm_before": "bring-up blocker shift: qualification has no exact type request"
+  },
+  "rejected.rs": {
+   "sha256": "3b5c6ce63050fc32183aa81816eeaa1eaa001f4e94ad783c7df82588c532aec4",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "E0493: destructor of `Guard` cannot be evaluated at compile-time",
+   "rustgm_bringup": "rejected: replace is the one unproven body, active cleanup requires const Destruct in its actual defining environment; no blocker",
+   "rustgm_before": "rejected: replace is the one unproven body, active cleanup requires const Destruct in its actual defining environment; no blocker"
+  }
+ }
+}

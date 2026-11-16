@@ -1147,6 +1147,17 @@ bring-up profile and run against a C observer, and lengthening the invariant
 result to `'static` leaves its lifetime proof unproven, as rustc rejects it.
 A maintainer integration test checks every case. There is no graded manifest.
 
+`spec/replacement-qualification/` freezes five declared no_core programs that
+assign through a reference in a const fn, as core's
+`FormattingOptions::width`, `split_off_first` and `ascii::Char::make_uppercase`
+do. Const qualification asks about each store destination's exact place
+type, which behind a reference need not be any local's: field stores, a
+reference replacement, an enum replacement and a generic `&'a T` replacement
+accept under the bring-up profile and run against a C observer, and
+replacing a value with a non-const destructor leaves its const cleanup
+unproven, as rustc rejects it (E0493). A maintainer integration test checks
+every case. There is no graded manifest.
+
 `spec/abstract-cleanup/` freezes six declared no_core programs that move an
 abstract value conditionally in a generic body, as core's `TakeWhile::next`
 does with `x: I::Item`. A rigid projection or opaque value has no structure to
