@@ -96,6 +96,9 @@ than rustc over a prebuilt core (0.2 s). Script and records:
 
 ## Integrated lane batch and remaining drafts
 
+All three lane branches are aligned with main. Their pre-integration heads are
+retained as `checkpoint/publication-before-integration-20261116` and
+`checkpoint/runtime-before-integration-20261116`; the WIP branches remain intact.
 The former unpublished lane heads are integrated in `b9c0a9a8b`:
 
 - Frontier: exact store-destination qualification, plus capture boundaries for
@@ -256,11 +259,11 @@ The 2026-11-15 state of this file is `git show e31379b29:handoff.md`.
   assignments; the self-hosting plan's three lanes take precedence.
 - Shared controller: 3 heavy jobs globally, 150 GiB free-space reserve, CPU 800%,
   RAM 12 GiB, tasks 256. Lanes use a 24 GiB output cap per worktree (each
-  worktree holds 16–22 GiB). Admission requires the reserve plus the job's own
-  unused cap plus **every running peer's full cap**
-  (`scripts/resource_runner.py:181`). With about 169 GiB free at wrap-up, only
-  one guarded job fits at a time across all lanes; about 30 GiB more free space
-  would let all three run. `/mnt/vizier` is shared with the user's other
+  worktree includes its caches and pins). Admission requires the reserve plus
+  the job's own unused cap plus **every running peer's full cap**
+  (`scripts/resource_runner.py:181`). At this wrap-up about 185 GiB is free
+  after generated-output cleanup. Let the controller admit jobs; three configured
+  slots do not guarantee that three simultaneous reservations fit. `/mnt/vizier` is shared with the user's other
   projects: never clean outside RustGM's worktrees, and do not lower reserves.
 - Every build/test/frontend/debugger probe/measurement uses resource and storage
   guards. `make fastcheck` supplies its own guards and has a 300s feedback budget.
