@@ -1,7 +1,7 @@
 //! Compact typed identities and function-owned `LowIR` arenas.
 use super::{
     asm::{Assemblies, AssemblyId, Draft},
-    vocabulary::{Binary, Convert, Predicate, Type, Unary},
+    vocabulary::{Binary, Convert, Predicate, Type, Unary, Vector},
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -160,6 +160,14 @@ pub enum Operation {
     Convert {
         op: Convert,
         value: Value,
+    },
+    /// One SSE operation; `right` is the second `v128` of a binary shape and
+    /// `immediate` the byte of an immediate shape (zero otherwise).
+    Vector {
+        op: Vector,
+        left: Operand,
+        right: Option<Operand>,
+        immediate: u8,
     },
     Call {
         signature: SignatureId,

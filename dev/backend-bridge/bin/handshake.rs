@@ -22,12 +22,15 @@
 //!   `classes=` and `result_classes=` that `RustGM` states and that the
 //!   library derives for `library.c`'s record types;
 //! - `rg_library_stop(code)`: `return=noreturn`, calling `exit(code)`.
+//! - `rg_library_match(a, b, x)`: the sign bits of the bytes equal in two
+//!   `v128` values and in `x`'s dword broadcast, by `vector` `pcmpeqb`,
+//!   `fromi32`, `pshufd 0`, `pand` and `pmovmskb`.
 use rustgm::lowir::{
     asm::{self, Kind},
     boundary::{self, Class, Classes, ObjectValue, ResultValue},
     data::Item,
     program::{MemorySpan, Operand, Program, SignatureId, Terminator, Value},
-    vocabulary::{Binary, Type},
+    vocabulary::{Binary, Type, Vector},
     writer,
 };
 use rustgm_backend_bridge::Request;
@@ -277,6 +280,23 @@ fn stop(program: &mut Program) -> Result<(), &'static str> {
     program.define(symbol, body.finish()?)
 }
 
+/// `rg_library_match`: every vector shape the SIMD lowering states.
+fn matched(program: &mut Program) -> Result<(), &'static str> {
+    let signature = program.signature(&[Type::V128, Type::V128, Type::I32], Type::I32, false)?;
+    let symbol = program.declare("rg_library_match".into(), signature, false)?;
+    let mut body = program.body_builder();
+    let entry = body.block()?;
+    body.enter(entry)?;
+    let left = parameter(Type::V128, 0);
+    let equal = body.vector(Vector::Pcmpeqb, left, Some(parameter(Type::V128, 1)), 0)?;
+    let low = body.vector(Vector::FromI32, parameter(Type::I32, 2), None, 0)?;
+    let all = body.vector(Vector::Pshufd, low, None, 0)?;
+    let both = body.vector(Vector::Pand, equal, Some(all), 0)?;
+    let mask = body.vector(Vector::Pmovmskb, both, None, 0)?;
+    body.terminate(Terminator::Return(Some(mask)))?;
+    program.define(symbol, body.finish()?)
+}
+
 fn module() -> Result<Program, &'static str> {
     let mut program = Program::default();
     answer(&mut program)?;
@@ -291,6 +311,7 @@ fn module() -> Result<Program, &'static str> {
     stream(&mut program)?;
     turn(&mut program)?;
     stop(&mut program)?;
+    matched(&mut program)?;
     Ok(program)
 }
 

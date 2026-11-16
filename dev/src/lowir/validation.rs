@@ -328,6 +328,20 @@ pub(super) fn scalar_operation(
             scalar_operand(base)?;
             scalar_operand(offset)?;
         }
+        Operation::Vector {
+            op, left, right, ..
+        } => {
+            scalar(Value {
+                ty: op.operand(),
+                operand: left,
+            })?;
+            if let Some(right) = right {
+                scalar(Value {
+                    ty: super::vocabulary::Type::V128,
+                    operand: right,
+                })?;
+            }
+        }
         Operation::Asm { arguments, .. } => {
             for &value in function
                 .arguments

@@ -43,6 +43,7 @@ pub(crate) fn scalar(ty: Scalar) -> Type {
         Scalar::F32 => TYPE_F32,
         Scalar::F64 => TYPE_F64,
         Scalar::Ptr => TYPE_PTR,
+        Scalar::V128 => TYPE_V128,
     }
 }
 

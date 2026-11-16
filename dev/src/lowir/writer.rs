@@ -469,6 +469,23 @@ fn instruction(
             )?;
             value.operand
         }
+        Operation::Vector {
+            op,
+            left,
+            right,
+            immediate,
+        } => {
+            write!(out, "vector {} ", op.name())?;
+            operand(program, function, left, out)?;
+            if let Some(right) = right {
+                write!(out, ", ")?;
+                operand(program, function, right, out)?;
+            }
+            if op.shape() == super::vocabulary::VectorShape::UnaryImmediate {
+                write!(out, ", {immediate}")?;
+            }
+            return Ok(());
+        }
         Operation::Call { .. } => return objects::call(program, function, signature, inst, out),
         Operation::Asm {
             template,

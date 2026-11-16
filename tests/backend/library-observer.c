@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <string.h>
+#include <emmintrin.h>
 #include <xmmintrin.h>
 
 /* Eightbyte classes INTEGER, SSE and SSE, INTEGER. */
@@ -36,6 +37,7 @@ struct rg_second rg_library_swap(struct rg_first);
 struct rg_second rg_library_apply(struct rg_second (*)(struct rg_first), double, struct rg_first);
 double rg_library_tally(long, double);
 void rg_library_stream(float*, const __m128*);
+int rg_library_match(__m128i, __m128i, int);
 struct rg_tail rg_library_turn(struct rg_floats);
 /* Not declared noreturn here: a return must reach the failure below. */
 void rg_library_stop(int);
@@ -77,6 +79,16 @@ static int streamed(void)
 		out.after[1] == 0xaa55aa55aa55aa55ull;
 }
 
+/* The bytes are the SIMD lowering's edge lanes: equal and unequal, the sign
+ * bit set and clear, and a pattern that only one dword lane of x covers. */
+static int matched(void)
+{
+	__m128i a = _mm_setr_epi8(0, 1, -1, 127, -128, 5, 5, 0, 1, 2, 3, 4, -5, -6, 7, 8);
+	__m128i b = _mm_setr_epi8(0, 2, -1, -128, 127, 5, 6, 0, 1, 2, 3, 4, -5, 6, -7, 8);
+	return rg_library_match(a, b, 0x80808080) == 0x9fa5 && rg_library_match(a, b, 0x7f7f7f7f) == 0 &&
+		rg_library_match(a, a, 0x1ff) == 0x1111;
+}
+
 int main(void)
 {
 	if (rg_library_seed != 40)
@@ -98,6 +110,8 @@ int main(void)
 		return 6;
 	if (!streamed())
 		return 7;
+	if (!matched())
+		return 10;
 	struct rg_floats floats = { { 1.5f, -2.25f }, 9 };
 	struct rg_tail tail = rg_library_turn(floats);
 	if (tail.n != 9 || tail.f[0] != 1.5f || tail.f[1] != -2.25f)

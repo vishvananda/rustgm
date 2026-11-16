@@ -26,6 +26,10 @@
  *                            record types, whose `classes=` and
  *                            `result_classes=` the library derives
  *   rg_library_stop(code)    `return=noreturn`: calls exit(code)
+ *   rg_library_match(a, b, x)
+ *                            the sign bits of the bytes equal in two v128
+ *                            values and in x's dword broadcast: `vector`
+ *                            pcmpeqb, fromi32, pshufd 0, pand and pmovmskb
  */
 #include "lowir_interface.h"
 
@@ -424,6 +428,34 @@ static int stop(void)
 	return cppgm_lowir_body_commit(module, symbol, &counts, 1);
 }
 
+/* function @rg_library_match(%a : v128, %b : v128, %x : i32) -> i32 */
+static int match(void)
+{
+	CppgmType arguments[3] = { CPPGM_TYPE_V128, CPPGM_TYPE_V128, CPPGM_TYPE_I32 };
+	uint32_t symbol = function(NAME("rg_library_match"),
+		cppgm_lowir_signature(module, CPPGM_TYPE_I32, arguments, 3, CPPGM_ARITY_FIXED), CPPGM_FUNCTION_DEFINITION);
+	LowirBodyCounts counts = { 6, 0, 1, 0, 1 };
+	LowirBodyBuffers buffers;
+	if (!reserve(symbol, &counts, &buffers))
+		return 0;
+	/* The pshufd immediate is the i32 literal 0 in its third operand. */
+	memset(&buffers.literals[0], 0, sizeof buffers.literals[0]);
+	LowirInstruction* code = buffers.instructions;
+	code[0] = binary(CPPGM_OP_VECTOR, 3, CPPGM_TYPE_V128, value(CPPGM_VALUE_TEMP, 0), value(CPPGM_VALUE_TEMP, 1));
+	code[0].sub = CPPGM_VECTOR_PCMPEQB;
+	code[1] = unary(CPPGM_OP_VECTOR, 4, CPPGM_TYPE_V128, value(CPPGM_VALUE_TEMP, 2));
+	code[1].sub = CPPGM_VECTOR_FROMI32;
+	code[2] = unary(CPPGM_OP_VECTOR, 5, CPPGM_TYPE_V128, value(CPPGM_VALUE_TEMP, 4));
+	code[2].sub = CPPGM_VECTOR_PSHUFD;
+	code[2].ops[2] = value(CPPGM_VALUE_INTEGER, 0);
+	code[3] = binary(CPPGM_OP_VECTOR, 6, CPPGM_TYPE_V128, value(CPPGM_VALUE_TEMP, 3), value(CPPGM_VALUE_TEMP, 5));
+	code[3].sub = CPPGM_VECTOR_PAND;
+	code[4] = unary(CPPGM_OP_VECTOR, 7, CPPGM_TYPE_I32, value(CPPGM_VALUE_TEMP, 6));
+	code[4].sub = CPPGM_VECTOR_PMOVMSKB;
+	code[5] = unary(CPPGM_OP_RETURN, CPPGM_NO_ID, CPPGM_TYPE_I32, value(CPPGM_VALUE_TEMP, 7));
+	return cppgm_lowir_body_commit(module, symbol, &counts, 8);
+}
+
 int main(int argc, char** argv)
 {
 	if (argc != 5 || (strcmp(argv[4], "fixed") != 0 && strcmp(argv[4], "pic") != 0))
@@ -443,7 +475,7 @@ int main(int argc, char** argv)
 	if (module == NULL)
 		return 3;
 	/* The text view must precede compilation, which consumes the module. */
-	if (!answer() || !swap() || !apply() || !tally() || !stream() || !turn() || !stop() ||
+	if (!answer() || !swap() || !apply() || !tally() || !stream() || !turn() || !stop() || !match() ||
 		!cppgm_lowir_validate(module) || !cppgm_lowir_write(module, argv[2]) ||
 		!cppgm_lowir_compile(module, 0, form))
 	{

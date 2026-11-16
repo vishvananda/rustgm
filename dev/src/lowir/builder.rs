@@ -11,6 +11,7 @@ use super::{
 use crate::support::hash::HashMap;
 mod objects;
 mod vararg;
+mod vector;
 
 /// A block whose instruction range is still unset; real ranges never start
 /// after they end.

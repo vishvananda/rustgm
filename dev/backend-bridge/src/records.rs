@@ -49,6 +49,7 @@ pub const OP_UNARY: u8 = 7;
 pub const OP_BINARY: u8 = 8;
 pub const OP_COMPARE: u8 = 9;
 pub const OP_CONVERT: u8 = 11;
+pub const OP_VECTOR: u8 = 12;
 pub const OP_ATOMIC_ADD_FETCH: u8 = 13;
 pub const OP_ATOMIC_EXCHANGE: u8 = 14;
 pub const OP_ATOMIC_COMPARE_EXCHANGE: u8 = 15;
@@ -103,6 +104,15 @@ pub const CONVERT_FP_TO_SI: u8 = 5;
 pub const CONVERT_FP_TO_UI: u8 = 6;
 pub const CONVERT_FP_EXT: u8 = 7;
 pub const CONVERT_FP_TRUNC: u8 = 8;
+
+/// The `CppgmVectorOp` enumerators of the SSE2 operations `RustGM` emits.
+pub const VECTOR_PAND: u8 = 92;
+pub const VECTOR_POR: u8 = 94;
+pub const VECTOR_PCMPEQB: u8 = 96;
+pub const VECTOR_PCMPGTB: u8 = 100;
+pub const VECTOR_PSHUFD: u8 = 183;
+pub const VECTOR_PMOVMSKB: u8 = 201;
+pub const VECTOR_FROMI32: u8 = 208;
 
 pub const VALUE_TEMP: u8 = 1;
 pub const VALUE_SLOT: u8 = 2;

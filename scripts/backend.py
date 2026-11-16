@@ -30,6 +30,7 @@ LIBRARY_TEXT = (
     "[storage=readonly",
     " intel readwrite 1 0 0 2 {",
     "    asm @",
+    " = vector pshufd ",
 )
 # The same forms in the library's view of the module the Rust bridge states
 # from RustGM's model (tests/backend/library-observer.c calls it).

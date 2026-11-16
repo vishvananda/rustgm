@@ -20,9 +20,10 @@ use crate::{
         OP_ASM, OP_ATOMIC_ADD_FETCH, OP_ATOMIC_COMPARE_EXCHANGE, OP_ATOMIC_EXCHANGE,
         OP_ATOMIC_LOAD, OP_ATOMIC_STORE, OP_BINARY, OP_BRANCH, OP_CALL, OP_COMPARE, OP_CONVERT,
         OP_COPY, OP_COPY_OBJECT, OP_INDEX, OP_JUMP, OP_LOAD, OP_RETURN, OP_STORE, OP_UNARY,
-        OP_UNREACHABLE, OP_VA_ARG, OP_VA_START, Slot, TYPE_PTR, TYPE_VOID, Type, UNARY_BIT_NOT,
-        UNARY_COUNT_LEADING_ZEROS, UNARY_NEG, UNARY_NOT, VALUE_BLOCK, VALUE_SLOT, VALUE_SYMBOL,
-        VALUE_TEMP, Value,
+        OP_UNREACHABLE, OP_VA_ARG, OP_VA_START, OP_VECTOR, Slot, TYPE_PTR, TYPE_VOID, Type,
+        UNARY_BIT_NOT, UNARY_COUNT_LEADING_ZEROS, UNARY_NEG, UNARY_NOT, VALUE_BLOCK, VALUE_SLOT,
+        VALUE_SYMBOL, VALUE_TEMP, VECTOR_FROMI32, VECTOR_PAND, VECTOR_PCMPEQB, VECTOR_PCMPGTB,
+        VECTOR_PMOVMSKB, VECTOR_POR, VECTOR_PSHUFD, Value,
     },
     stater::{self, Stater},
 };
@@ -33,7 +34,7 @@ use rustgm::lowir::{
         Operation, Range, ResultId, SignatureId, Storage, Terminator,
     },
     validation,
-    vocabulary::{Binary, Convert, Predicate, Type as Scalar, Unary},
+    vocabulary::{Binary, Convert, Predicate, Type as Scalar, Unary, Vector, VectorShape},
 };
 
 /// The construction vectors of one body, reused from function to function.
@@ -325,22 +326,30 @@ impl Body<'_, '_> {
                     .literals
                     .get(id.0 as usize)
                     .ok_or("invalid LowIR literal")?;
-                match literals::read(literal, context) {
-                    Ok(read) => {
-                        let index = index(self.scratch.literals.len())?;
-                        self.scratch.literals.push(read.bits);
-                        Value {
-                            kind: read.kind,
-                            float_kind: read.float_kind,
-                            reserved: 0,
-                            index,
-                        }
-                    }
-                    Err(form) => {
-                        self.unsupported(form);
-                        Value::default()
-                    }
+                self.pooled(literal, context)?
+            }
+        })
+    }
+    /// A literal, one pool entry per occurrence, as the reader reads it in `context`.
+    fn pooled(
+        &mut self,
+        literal: rustgm::lowir::program::Literal,
+        context: Context,
+    ) -> Result<Value, Failure> {
+        Ok(match literals::read(literal, context) {
+            Ok(read) => {
+                let index = index(self.scratch.literals.len())?;
+                self.scratch.literals.push(read.bits);
+                Value {
+                    kind: read.kind,
+                    float_kind: read.float_kind,
+                    reserved: 0,
+                    index,
                 }
+            }
+            Err(form) => {
+                self.unsupported(form);
+                Value::default()
             }
         })
     }
@@ -400,6 +409,12 @@ impl Body<'_, '_> {
             | Operation::Binary { .. }
             | Operation::Compare { .. }
             | Operation::Convert { .. } => self.arithmetic(instruction)?,
+            Operation::Vector {
+                op,
+                left,
+                right,
+                immediate,
+            } => self.vector(op, left, right, immediate)?,
             _ => self.memory(instruction.operation)?,
         };
         self.append(record, result);
@@ -462,6 +477,29 @@ impl Body<'_, '_> {
             }
             _ => return Err("expected an arithmetic LowIR instruction".into()),
         })
+    }
+    /// `vector op`: the operands in text order, a shape's immediate last as
+    /// the `i32` literal the reader reads.
+    fn vector(
+        &mut self,
+        op: Vector,
+        left: Operand,
+        right: Option<Operand>,
+        immediate: u8,
+    ) -> Result<Record, Failure> {
+        let mut record = self.record(OP_VECTOR, stater::scalar(op.result()));
+        record.sub = vector(op);
+        record.ops[0] = self.value(left, Context::of(op.operand()))?;
+        if let Some(right) = right {
+            record.ops[1] = self.value(right, Context::of(Scalar::V128))?;
+        }
+        if op.shape() == VectorShape::UnaryImmediate {
+            record.ops[2] = self.pooled(
+                rustgm::lowir::program::Literal::Integer(u128::from(immediate)),
+                Context::of(Scalar::I32),
+            )?;
+        }
+        Ok(record)
     }
     fn memory(&mut self, operation: Operation) -> Result<Record, Failure> {
         let pointer = Context::Scalar(Scalar::Ptr);
@@ -812,6 +850,18 @@ fn compare(predicate: Predicate) -> u8 {
         Predicate::Ule => CMP_ULE,
         Predicate::Ugt => CMP_UGT,
         Predicate::Uge => CMP_UGE,
+    }
+}
+
+fn vector(op: Vector) -> u8 {
+    match op {
+        Vector::Pand => VECTOR_PAND,
+        Vector::Por => VECTOR_POR,
+        Vector::Pcmpeqb => VECTOR_PCMPEQB,
+        Vector::Pcmpgtb => VECTOR_PCMPGTB,
+        Vector::Pmovmskb => VECTOR_PMOVMSKB,
+        Vector::Pshufd => VECTOR_PSHUFD,
+        Vector::FromI32 => VECTOR_FROMI32,
     }
 }
 
