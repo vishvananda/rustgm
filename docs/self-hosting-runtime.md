@@ -374,11 +374,15 @@ pthread, file system); the rustgm corpus 57. See the table above.
 - Measured with the linked driver: without the 1,043 rows that only constant
   evaluation needed (every one a stdarch function), core plus a program
   compiles with the 20 others. `core::str` search (`simd_contains`) and
-  hashbrown 0.17.1's SSE2 `Group` match rustc byte for byte natively. In
-  that crate a struct field `[Tag; Group::WIDTH]` stops RustGM's frontend
-  ("nominal declaration requirements are not complete"), so the probe drops
-  `Group::static_empty` and writes its own lengths out; a one-file
-  reduction compiles, so the cause is not yet isolated. `chars-strs` still
+  hashbrown 0.17.1's SSE2 `Group` match rustc byte for byte natively, now
+  unmodified (2026-11-16: a length waits for a later nominal's declaration
+  requirements and is typed in its own module and crate,
+  `dev/tests/invariants/lengths_before_types.rs`). A real
+  `HashMap<u32, u32>` over core, alloc and hashbrown as guests stops at an
+  unlocated "invalid canonical trait selection", with 27 alloc and 5
+  hashbrown bodies stubbed: three `reserve_rehash` paths at "source Unsize
+  quantified object goals are not implemented", `rehash_in_place` at a
+  typed capture use, `ScopeGuard::into_inner` at a private field. `chars-strs` still
   aborts in a stubbed function that is not SIMD; its census adds
   `Map::next`, `Filter::next` and `type_name` to the 20 rows.
 - Other `llvm.x86.*` names, and `pause` outside bring-up (row 3g), reach
