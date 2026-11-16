@@ -17,6 +17,9 @@ pub enum Effect {
     ConditionalLink(bool),
     /// This exact list installed all of its real source derive expansions.
     ExpandedDerive,
+    /// This exact `#[global_allocator]` or `#[alloc_error_handler]` installed
+    /// its generated items beside its owner, which it keeps.
+    ExpandedAllocator,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

@@ -1,4 +1,5 @@
 //! Builtin expansion consumes classified inputs and constructs typed syntax directly.
+pub(crate) mod allocator_output;
 pub(crate) mod assertion;
 pub(crate) mod bytes_concat;
 pub(crate) mod choice;
@@ -61,6 +62,10 @@ pub fn expand(
         Builtin::Test => Err(error(
             0,
             "test attribute requires its actual configured function owner",
+        )),
+        Builtin::GlobalAllocator | Builtin::AllocErrorHandler => Err(error(
+            0,
+            "allocator attribute requires its actual configured item owner",
         )),
         Builtin::ConcatBytes
         | Builtin::OptionEnv

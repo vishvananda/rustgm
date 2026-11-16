@@ -219,7 +219,10 @@ impl Request {
             "pattern_types" => Self::Capability(Feature::PatternTypes),
             // Requests alone grant no operation permission. Const-drop/assembly
             // execution and documentation/advisory producers need their own proof.
+            // rustc checks `alloc_error_handler` only as the stability of
+            // core's attribute macro; the expansion needs no capability.
             "coroutines"
+            | "alloc_error_handler"
             | "const_destruct"
             | "asm_experimental_arch"
             | "multiple_supertrait_upcastable"

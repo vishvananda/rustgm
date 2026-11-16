@@ -79,6 +79,10 @@ impl Registry {
             Item::Function(_) => None,
         }
     }
+    /// The definition that exports the exact symbol `name`, if any.
+    pub(crate) fn exporter(&self, name: SymbolNameId) -> Option<DefId> {
+        self.export_names.get(&name).copied()
+    }
     #[must_use]
     pub fn imports_global(&self, definition: DefId) -> bool {
         self.global(definition)

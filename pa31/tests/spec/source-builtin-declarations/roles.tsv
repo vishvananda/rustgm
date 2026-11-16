@@ -27,7 +27,7 @@ role_25	std_panic	Bang	1
 role_26	stringify	Bang	1
 role_27	trace_macros	Bang	0
 role_28	unreachable	Bang	1
-role_29	alloc_error_handler	Attribute	0
+role_29	alloc_error_handler	Attribute	1
 role_30	autodiff_forward	Attribute	0
 role_31	autodiff_reverse	Attribute	0
 role_32	bench	Attribute	0
@@ -39,7 +39,7 @@ role_37	derive_const	Attribute	1
 role_38	eii	Attribute	0
 role_39	eii_declaration	Attribute	0
 role_40	eii_shared_macro	Attribute	0
-role_41	global_allocator	Attribute	0
+role_41	global_allocator	Attribute	1
 role_42	offload_kernel	Attribute	0
 role_43	test	Attribute	1
 role_44	test_case	Attribute	0

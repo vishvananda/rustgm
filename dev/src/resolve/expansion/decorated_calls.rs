@@ -217,7 +217,7 @@ pub(super) fn validate(
     facts: &crate::resolve::model::Resolution,
     call: &Call,
 ) -> Result<(), Error> {
-    validate_effect(package, facts, call, false)
+    validate_effect(package, facts, call, Effect::Keep)
 }
 
 pub(super) fn validate_derived(
@@ -225,14 +225,23 @@ pub(super) fn validate_derived(
     facts: &crate::resolve::model::Resolution,
     call: &Call,
 ) -> Result<(), Error> {
-    validate_effect(package, facts, call, true)
+    validate_effect(package, facts, call, Effect::ExpandedDerive)
+}
+
+/// An allocator attribute that installed its expansion.
+pub(super) fn validate_allocator(
+    package: &Package,
+    facts: &crate::resolve::model::Resolution,
+    call: &Call,
+) -> Result<(), Error> {
+    validate_effect(package, facts, call, Effect::ExpandedAllocator)
 }
 
 fn validate_effect(
     package: &Package,
     facts: &crate::resolve::model::Resolution,
     call: &Call,
-    expanded: bool,
+    expected: Effect,
 ) -> Result<(), Error> {
     let error = |message| call.diagnostic(message);
     charge(package, call.file, call.offset, 1, 0)?;
@@ -267,12 +276,7 @@ fn validate_effect(
     if owner.enabled != active
         || owner.node != call.visit.node
         || !owner.attributes.contains(&index)
-        || effect.attribute.effect
-            != if expanded {
-                Effect::ExpandedDerive
-            } else {
-                Effect::Keep
-            }
+        || effect.attribute.effect != expected
         || effect.attribute.attribute.span.start != call.offset
         || unit.configured.active.get(call.visit.node.get() as usize) != Some(&active)
     {

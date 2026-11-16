@@ -1,4 +1,5 @@
 //! Foreign ABI and safety come from the retained declaration's actual block.
+mod allocator_conflicts;
 mod linkage_attributes;
 mod llvm_permissions;
 mod simd;
@@ -153,7 +154,10 @@ impl Checker<'_> {
                     linkage,
                 },
             )
-            .map_err(|e| self.error(key, e))
+            .map_err(|e| {
+                self.allocator_conflict(definition, naming)
+                    .map_or_else(|| self.error(key, e), |message| self.error(key, message))
+            })
     }
     /// A concrete impl's Self schema is not a generic argument. Preserve the
     /// inherited scope and actual owner instead of treating every method as generic.

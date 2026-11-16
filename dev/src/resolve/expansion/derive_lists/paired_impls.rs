@@ -215,7 +215,8 @@ impl<S: Sources> Engine<'_, S> {
             .map_err(|message| self.calls[index].diagnostic(message))?;
         Ok(generated)
     }
-    fn resume_derived_owner(
+    /// Visit generated items under `parent`, then their kept owner.
+    pub(in crate::resolve::expansion) fn resume_derived_owner(
         &mut self,
         index: usize,
         root: super::super::NodeId,
@@ -243,14 +244,18 @@ impl<S: Sources> Engine<'_, S> {
         self.scan()?;
         self.completed(index)
     }
+    /// Place every derive's and allocator attribute's generated items after
+    /// their kept owners.
     pub(in crate::resolve::expansion) fn attach_derives(&mut self) -> Result<(), Error> {
-        let Some(transactions) = self
+        let entries = self
             .attribute_effects
             .as_deref()
             .and_then(|effects| effects.derives.as_deref())
-        else {
+            .map_or(&[][..], |transactions| transactions.entries.as_slice());
+        let count = entries.len() + self.allocators.len();
+        if count == 0 {
             return Ok(());
-        };
+        }
         let Some(crate::resolve::bindings::Source::Core(source)) =
             self.loader.package.source.as_deref()
         else {
@@ -259,15 +264,11 @@ impl<S: Sources> Engine<'_, S> {
         source
             .macros
             .charge(
-                transactions.entries.len(),
-                transactions
-                    .entries
-                    .len()
-                    .saturating_mul(8 * size_of::<(super::super::NodeId, super::super::NodeId)>()),
+                count,
+                count.saturating_mul(8 * size_of::<(super::super::NodeId, super::super::NodeId)>()),
             )
             .map_err(Error::unlocated)?;
-        let mut outputs: Vec<_> = transactions
-            .entries
+        let mut outputs: Vec<_> = entries
             .iter()
             .map(|entry| {
                 entry
@@ -275,6 +276,10 @@ impl<S: Sources> Engine<'_, S> {
                     .map(|root| (entry.owner.file, entry.owner.node, root))
                     .ok_or_else(|| Error::unlocated("derive transaction is incomplete"))
             })
+            .chain(
+                self.allocator_outputs()
+                    .map(|(owner, root)| Ok((owner.file, owner.node, root))),
+            )
             .collect::<Result<_, _>>()?;
         source
             .macros

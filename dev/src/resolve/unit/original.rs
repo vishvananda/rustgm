@@ -156,8 +156,11 @@ impl Unit {
                 .iter()
                 .cloned()
                 .map(|mut effect| {
-                    if effect.attribute.effect == crate::expand::configured::Effect::ExpandedDerive
-                    {
+                    if matches!(
+                        effect.attribute.effect,
+                        crate::expand::configured::Effect::ExpandedDerive
+                            | crate::expand::configured::Effect::ExpandedAllocator
+                    ) {
                         effect.attribute.effect = crate::expand::configured::Effect::Keep;
                     }
                     effect

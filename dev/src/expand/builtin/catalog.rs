@@ -248,6 +248,8 @@ impl Builtin {
                 | Self::Unreachable
                 | Self::ConcatBytes
                 | Self::Test
+                | Self::GlobalAllocator
+                | Self::AllocErrorHandler
                 | Self::PatternType
                 | Self::Derive
                 | Self::DeriveConst

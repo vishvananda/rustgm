@@ -33,6 +33,7 @@ use crate::{
     },
 };
 use std::collections::VecDeque;
+mod allocator_items;
 mod application_kind;
 pub(crate) mod attribute_effects;
 pub(super) mod attributes;
@@ -249,6 +250,7 @@ struct Engine<'a, S> {
     builtin_definitions: Vec<Option<usize>>,
     cfg_memo: Option<Box<permission_session::Memo>>,
     attribute_effects: Option<Box<attribute_effects::Effects>>,
+    allocators: Vec<allocator_items::Expanded>,
 }
 /// Expand textual macro invocations, including generated syntax and modules.
 /// PA8's path-resolution and hygiene integration builds on this retained state.
@@ -431,6 +433,7 @@ impl<'a, S: Sources> Engine<'a, S> {
             builtin_definitions: vec![None; Builtin::BOOTSTRAP.len()],
             attribute_effects: None,
             cfg_memo: None,
+            allocators: Vec::new(),
         };
         engine.import_macros()?;
         // The worklist is a stack: each guest waits below the crates before it.
@@ -751,17 +754,15 @@ impl<'a, S: Sources> Engine<'a, S> {
             self.calls[index].selected = Some(definition);
             return self.completed(index);
         }
-        if matches!(
-            self.definitions[definition].body,
-            Body::Builtin(Builtin::Derive | Builtin::DeriveConst)
-        ) {
-            return self.begin_derive(index, definition);
-        }
-        if matches!(
-            self.definitions[definition].body,
-            Body::Builtin(Builtin::Test)
-        ) {
-            return self.remove_test_function(index, definition);
+        match self.definitions[definition].body {
+            Body::Builtin(Builtin::Derive | Builtin::DeriveConst) => {
+                return self.begin_derive(index, definition);
+            }
+            Body::Builtin(Builtin::Test) => return self.remove_test_function(index, definition),
+            Body::Builtin(Builtin::GlobalAllocator | Builtin::AllocErrorHandler) => {
+                return self.expand_allocator(index, definition);
+            }
+            _ => {}
         }
         self.calls[index].state = State::InProgress;
         if matches!(self.definitions[definition].body, Body::Builtin(builtin) if builtin.eager()) {
@@ -1202,6 +1203,12 @@ impl<'a, S: Sources> Engine<'a, S> {
         if matches!(call.grammar, CallGrammar::Attribute | CallGrammar::Derive) {
             if self.derive_consumed(index)? {
                 decorated_calls::validate_derived(
+                    &self.loader.package,
+                    &self.paths.state.facts,
+                    call,
+                )?;
+            } else if self.allocator_expanded(index) {
+                decorated_calls::validate_allocator(
                     &self.loader.package,
                     &self.paths.state.facts,
                     call,

@@ -5,8 +5,10 @@ prefix or a metadata exemption. Bang, attribute and derive invocation kinds are
 separate from source declaration syntax. The original 24 role ordinals and
 ordinary synthetic slot allocation remain fixed. Added roles initially had no
 execution consumer; no placeholder body may run. The current availability table
-now admits the independently qualified pointer-pattern consumer for pattern_type.
-Its actual source feature, ownership and input checks still apply.
+now admits the independently qualified pointer-pattern consumer for pattern_type,
+and rustc's `global_allocator` and `alloc_error_handler` expansions
+(`dev/tests/global_allocators.rs`). Their actual source feature, ownership and
+input checks still apply.
 
 `roles.tsv` binds the 61 exact names, kinds and existing execution availability;
 `all-known-roles.rs` retains a genuine declaration for each. Other inputs oppose
@@ -24,7 +26,7 @@ the private consumer control rejects that use before expansion work.
 
 The declaration producer grants no execution permission. Assertion expansion
 and the registered derive families now have separate source-owned consumers;
-tracing, attribute rewriting, allocator glue, contracts, EII, assembly,
+tracing, attribute rewriting, contracts, EII, assembly,
 procedural-macro hosting and foreign macro transport remain separate work.
 Ordinary supported derives keep their current real consumer.
 

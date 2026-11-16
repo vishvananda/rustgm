@@ -161,8 +161,10 @@ fn cold_storage_and_enclosing_layouts() -> TestResult {
     // One cold lineage pointer and its nine-counter budget belong to import
     // Work, and the lineage ledger's admitted-byte grant (census batch 3).
     assert_eq!(size_of::<Report>(), 3104);
-    // The engine's import Work holds the same lineage grant.
-    assert_eq!(size_of::<Engine<'_, NoFiles>>(), 4152);
+    // The engine's import Work holds the same lineage grant, and the engine
+    // records each `#[global_allocator]`/`#[alloc_error_handler]` expansion
+    // until its kept item's outputs are attached (24).
+    assert_eq!(size_of::<Engine<'_, NoFiles>>(), 4176);
     assert_eq!(size_of::<crate::resolve::expansion::Body>(), 96);
     assert_eq!(size_of::<crate::resolve::expansion::Definition>(), 136);
     // The boxed error record also holds the unprojected position it was raised

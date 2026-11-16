@@ -45,7 +45,7 @@ fn derive_ledger(
     package.source_contract_payer()
 }
 /// The derive ledger a step requires, or `missing` by name.
-fn required_ledger<'a>(
+pub(super) fn required_ledger<'a>(
     package: &'a super::Package,
     missing: &'static str,
 ) -> Result<&'a panic_contracts::Contracts, &'static str> {
@@ -368,7 +368,8 @@ impl<S: Sources> Engine<'_, S> {
         }
         Ok(())
     }
-    fn derive_invocation(
+    /// Register the invocation of a selected attribute-position builtin.
+    pub(super) fn derive_invocation(
         &mut self,
         index: usize,
         definition: usize,
