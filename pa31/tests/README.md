@@ -1105,6 +1105,17 @@ compilation stays fenced, and a function pointer's name fails closed as one
 bring-up blocker. A maintainer integration test checks every case. There is
 no graded manifest.
 
+`spec/closure-entry-roots/` freezes four declared no_core programs that pass
+a closure to core's `Option::and_then`, as pinned core's generic callers pass
+`|slot| slot.as_ref()`. A closure created in a generic body reads its public
+and specialized execution signatures at its entry, and their nominal roots
+are prepared with the instantiated closure body: concrete, generic-function
+and generic-method creators accept under the bring-up profile and run against
+a C observer, and returning the closure's input reference where an `Option` is
+expected rejects (E0308). The generic creators remain unproven bodies for a
+region proof rustc accepts. A maintainer integration test checks every case.
+There is no graded manifest.
+
 `spec/abstract-cleanup/` freezes six declared no_core programs that move an
 abstract value conditionally in a generic body, as core's `TakeWhile::next`
 does with `x: I::Item`. A rigid projection or opaque value has no structure to

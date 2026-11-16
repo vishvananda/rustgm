@@ -1101,26 +1101,28 @@ fn type_identities_run_in_constants_and_stay_fenced_when_strict() -> Result {
 }
 
 const TYPE_NAMES: &str = "pa31/tests/spec/type-names";
-/// Compile a type-names fixture as rustc's oracle names its crate, `minicore`,
-/// under the bring-up profile when `list` is given; the `LowIR` goes to a file.
-fn type_names(case: &str, list: Option<&str>) -> Result<(Output, PathBuf)> {
+/// Compile a fixture as rustc's oracle names its crate, `minicore`, under the
+/// bring-up profile when `list` is given; the `LowIR` goes to a file.
+fn minicore(fixture: &str, case: &str, list: Option<&str>) -> Result<(Output, PathBuf)> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let family = fixture.rsplit('/').next().ok_or("fixture family")?;
     let folder = root
         .join("obj/bringup-stubs")
-        .join(format!("type-names-{case}-{}", list.is_some()))
+        .join(format!("{family}-{case}-{}", list.is_some()))
         .join(std::process::id().to_string());
     std::fs::create_dir_all(&folder)?;
-    let lowir = folder.join("names.lowir");
+    let lowir = folder.join(format!("{case}.lowir"));
+    let identity = family.replace('-', "_");
     let identity = if list.is_some() {
-        "type_names_bringup"
+        format!("{identity}_bringup")
     } else {
-        "type_names"
+        identity
     };
     let mut command = Command::new(env!("CARGO_BIN_EXE_rustgm"));
     command
         .args(["--emit-lowir", "--cap-lints=allow", "--edition=2024"])
         .args(["--crate-type=lib", "--crate-name", "minicore"])
-        .args(["--crate-disambiguator", identity])
+        .args(["--crate-disambiguator", &identity])
         .args(["--source-core", &format!("minicore@{identity}")]);
     if let Some(list) = list {
         let path = folder.join("skip.tsv");
@@ -1128,11 +1130,14 @@ fn type_names(case: &str, list: Option<&str>) -> Result<(Output, PathBuf)> {
         command.arg("--bringup-skip-list").arg(path);
     }
     let output = command
-        .arg(root.join(TYPE_NAMES).join(format!("{case}.rs")))
+        .arg(root.join(fixture).join(format!("{case}.rs")))
         .arg("-o")
         .arg(&lowir)
         .output()?;
     Ok((output, lowir))
+}
+fn type_names(case: &str, list: Option<&str>) -> Result<(Output, PathBuf)> {
+    minicore(TYPE_NAMES, case, list)
 }
 
 /// `type_name` runs in constants under the bring-up profile only, and a type
@@ -1193,4 +1198,73 @@ fn type_names_execute_as_rustc_prints_them() -> Result {
         &root.join(TYPE_NAMES).join("observe.c"),
         &std::fs::read(root.join(TYPE_NAMES).join("names.stdout"))?,
     )
+}
+
+const ENTRY_ROOTS: &str = "pa31/tests/spec/closure-entry-roots";
+/// The rows a bring-up compilation set aside with `prefix`.
+fn rows<'a>(stderr: &'a str, prefix: &str) -> Vec<&'a str> {
+    stderr
+        .lines()
+        .filter_map(|line| line.strip_prefix(prefix))
+        .collect()
+}
+/// A closure created in a generic function and called through core's
+/// `and_then` lowers once its entry signatures' roots are prepared. Its
+/// creator still fails only a region proof that rustc accepts.
+#[test]
+fn generic_closure_entries_prepare_their_signature_roots() -> Result {
+    let (rejected, _) = minicore(ENTRY_ROOTS, "rejected", Some(""))?;
+    let stderr = String::from_utf8(rejected.stderr)?;
+    assert_eq!(rejected.status.code(), Some(1), "{stderr}");
+    assert!(stderr.contains("incompatible types"), "{stderr}");
+    for (case, unproven) in [
+        ("concrete", false),
+        ("generic-fn", true),
+        ("generic-method", true),
+    ] {
+        let (passed, lowir) = minicore(ENTRY_ROOTS, case, Some(""))?;
+        let stderr = String::from_utf8(passed.stderr)?;
+        assert!(passed.status.success(), "{case}: {stderr}");
+        assert!(
+            rows(&stderr, "bringup-blocker\t").is_empty(),
+            "{case}: {stderr}"
+        );
+        match rows(&stderr, "bringup-unproven\t").as_slice() {
+            [] => assert!(!unproven, "{case}: {stderr}"),
+            [row] => assert!(
+                unproven
+                    && row.contains("\tfirst\t")
+                    && row.ends_with("required lifetime does not outlive its target"),
+                "{case}: {row}"
+            ),
+            _ => return Err(format!("{case}: more than one unproven body: {stderr}").into()),
+        }
+        assert!(
+            !std::fs::read_to_string(lowir)?.contains("rg.trap."),
+            "{case}"
+        );
+    }
+    Ok(())
+}
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn generic_closure_entries_execute() -> Result {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    for case in ["concrete", "generic-fn", "generic-method"] {
+        let (passed, lowir) = minicore(ENTRY_ROOTS, case, Some(""))?;
+        assert!(
+            passed.status.success(),
+            "{case}: {}",
+            String::from_utf8_lossy(&passed.stderr)
+        );
+        let folder = lowir.parent().ok_or("closure entry output folder")?;
+        crate::observed_program::execute_lowir(
+            folder,
+            &lowir,
+            &root.join(ENTRY_ROOTS).join("observe.c"),
+            b"41 59\n",
+        )
+        .map_err(|error| format!("{case}: {error}"))?;
+    }
+    Ok(())
 }

@@ -1,0 +1,39 @@
+{
+ "schema": 1,
+ "declared": "2026-11-16, before the frozen rustc 1.98.0 oracle of these exact bytes (obj/parallel/frontier/repro18/declared.json). Attempt 1 needed core's const_precise_live_drops feature (E0493) and a pattern binding instead of generic-length array indexing (E0608); declared outcomes did not change.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "native_stdout": "41 59\n",
+ "observer_sha256": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+ "cases": {
+  "concrete.rs": {
+   "sha256": "9237dc8593174e9fef472f136d97dc48ad0faad9597f820199d0daf0934a64fa",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_bringup": "accepted with no blocker or unproven body; native stdout 41 59",
+   "rustgm_before": "accepted"
+  },
+  "generic-fn.rs": {
+   "sha256": "d655b793ad2f32289c1a1ac4b11859da75b9c4768099bf14376e3bc01e1683c3",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_bringup": "accepted; first is the one unproven body (required lifetime does not outlive its target); native stdout 41 59",
+   "rustgm_before": "bring-up blocker and_then: generic aggregate requires instantiated fields"
+  },
+  "generic-method.rs": {
+   "sha256": "ca9adf33c25edc58c6f8fdc5ac9762536b1f3f4ba1f8641d553934ec602a2ad9",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_bringup": "accepted; first is the one unproven body (required lifetime does not outlive its target); native stdout 41 59",
+   "rustgm_before": "bring-up blocker and_then: generic aggregate requires instantiated fields"
+  },
+  "rejected.rs": {
+   "sha256": "384d4e089e8bd60f8072ee58beff67b8e2ccfe9f95acde34bb5256bcc9442835",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "E0308",
+   "rustgm_bringup": "rejected: incompatible types",
+   "rustgm_before": "rejected: incompatible types"
+  }
+ }
+}

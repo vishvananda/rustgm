@@ -50,14 +50,28 @@ pub(super) fn prepare_signature(
     facts: &mut Declarations,
     owner: Owner,
 ) -> Result<(), &'static str> {
-    let Owner::Function { signature, .. } = owner else {
-        return Ok(());
-    };
+    match owner {
+        Owner::Function { signature, .. } => prepare_roots(facts, signature),
+        // A closure's entry ABI reads its public callable and its specialized
+        // execution, whose captured lifetimes stay bound beneath the public
+        // binder, so neither is a type of the body itself.
+        Owner::Closure {
+            signature,
+            execution,
+            ..
+        } => {
+            prepare_roots(facts, signature)?;
+            execution.map_or(Ok(()), |execution| prepare_roots(facts, execution))
+        }
+        _ => Ok(()),
+    }
+}
+fn prepare_roots(facts: &mut Declarations, signature: TypeId) -> Result<(), &'static str> {
     let Some(Kind::Function {
         parameters, result, ..
     }) = facts.types.kind(signature)
     else {
-        return Err("selected function owner has no public signature");
+        return Err("selected callable owner has no public signature");
     };
     let count = facts
         .types
