@@ -687,7 +687,10 @@ fn attribute_claim(
         return Ok(Some(claim));
     }
     let claim = match name {
-        Some("lang") => language_claim(sources, key, attribute, forest)?,
+        Some("lang") => match language_claim(sources, key, attribute, forest)? {
+            Some(claim) => claim,
+            None => return Ok(None),
+        },
         Some("panic_handler") => {
             if attribute.input != Input::Empty || attribute.unsafe_wrapper {
                 return Err(error("panic_handler requires a word attribute"));
@@ -711,12 +714,14 @@ fn attribute_claim(
     Ok(Some(claim))
 }
 
+/// The role a `lang` attribute claims; none for a role that bring-up admits
+/// as an ordinary struct.
 fn language_claim(
     sources: &ClaimSources<'_>,
     key: NodeKey,
     attribute: Attribute,
     forest: &Forest,
-) -> Result<Claim, Error> {
+) -> Result<Option<Claim>, Error> {
     let error = |message| Error::at(key.file, attribute.span.start, message);
     if attribute.unsafe_wrapper {
         return Err(error("language identity cannot use an unsafe wrapper"));
@@ -743,9 +748,13 @@ fn language_claim(
     };
     let name =
         std::str::from_utf8(&bytes).map_err(|_| error("language item name requires UTF-8"))?;
-    Ok(Claim::Language(LangItem::from_name(name).ok_or_else(
-        || error("unsupported source language item"),
-    )?))
+    if let Some(role) = LangItem::from_name(name) {
+        return Ok(Some(Claim::Language(role)));
+    }
+    if super::unimplemented_roles::admit(sources.package, key, attribute.span.start, name)? {
+        return Ok(None);
+    }
+    Err(error("unsupported source language item"))
 }
 
 fn language_string<'a>(

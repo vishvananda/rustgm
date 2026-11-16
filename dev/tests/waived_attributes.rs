@@ -10,7 +10,9 @@
 //! `rustc_allocator_zeroed_variant`) and `rustc_std_internal_symbol` direct
 //! code generation that this compiler has no allocator shim for.
 //! `rustc_conversion_suggestion` only feeds rustc's diagnostics, so both
-//! profiles accept it without a waiver.
+//! profiles accept it without a waiver. The lang items `owned_box`,
+//! `global_alloc_ty` and `String` have no role here; bring-up admits their
+//! structs as ordinary ones after rustc's target and generic requirement.
 //!
 //! Every outcome was declared before either compiler ran. rustc 1.98.0 is the
 //! oracle (`RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib
@@ -25,6 +27,10 @@
 //!   `ungated` E0658, `struct-owner` with "`#[rustc_allocator]` attribute
 //!   cannot be used on structs", `variant-without-value` E0539 and
 //!   `word-with-arguments` E0565.
+//! - Lang roles: it accepts `owned-box`, `global-allocator` and `string` and
+//!   rejects `box-without-parameter` E0718, `string-on-enum` with
+//!   "`#[lang = "String"]` attribute cannot be used on enums" and
+//!   `unknown-role` E0522.
 use std::{path::Path, process::Command};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
@@ -215,6 +221,61 @@ const ALLOCATORS: [Case; 7] = [
     },
 ];
 
+const OWNED_BOX_WAIVER: &str = "lang item `owned_box` is admitted as an ordinary struct: Box's built-in dereference, move-out, drop and allocation semantics are not implemented";
+const GLOBAL_ALLOC_WAIVER: &str = "lang item `global_alloc_ty` is admitted as an ordinary struct: the global allocator's Box layout and calling convention are not implemented";
+const STRING_WAIVER: &str = "lang item `String` is admitted as an ordinary struct: its diagnostics and the uniqueness of its role are not checked";
+const UNSUPPORTED: &str = "unsupported source language item";
+
+const LANG_ROLES: [Case; 6] = [
+    Case {
+        name: "owned-box",
+        header: INTERNAL,
+        items: "pub struct Global;\n#[lang = \"owned_box\"]\npub struct Box<T: ?Sized, A = Global>(*const T, A);\n",
+        outcome: Outcome::Waived {
+            waiver: OWNED_BOX_WAIVER,
+            strict: UNSUPPORTED,
+        },
+    },
+    Case {
+        name: "global-allocator",
+        header: INTERNAL,
+        items: "#[lang = \"global_alloc_ty\"]\npub struct Global;\n",
+        outcome: Outcome::Waived {
+            waiver: GLOBAL_ALLOC_WAIVER,
+            strict: UNSUPPORTED,
+        },
+    },
+    Case {
+        name: "string",
+        header: INTERNAL,
+        items: "#[lang = \"String\"]\npub struct String;\n",
+        outcome: Outcome::Waived {
+            waiver: STRING_WAIVER,
+            strict: UNSUPPORTED,
+        },
+    },
+    Case {
+        name: "box-without-parameter",
+        header: INTERNAL,
+        items: "#[lang = \"owned_box\"]\npub struct Box;\n",
+        outcome: Outcome::Rejected(
+            "`owned_box` lang item must be applied to a struct with at least 1 generic argument",
+        ),
+    },
+    Case {
+        name: "string-on-enum",
+        header: INTERNAL,
+        items: "#[lang = \"String\"]\npub enum String {}\n",
+        outcome: Outcome::Rejected("`String` lang item must be applied to a struct"),
+    },
+    Case {
+        name: "unknown-role",
+        header: INTERNAL,
+        items: "#[lang = \"no_such_item\"]\npub struct Unknown;\n",
+        outcome: Outcome::Rejected(UNSUPPORTED),
+    },
+];
+
 /// Type `path` as a source core, in the bring-up profile when `skip` names
 /// its (empty) skip list.
 fn typed(path: &Path, skip: Option<&Path>) -> Result<(bool, String)> {
@@ -312,6 +373,16 @@ fn eyepatches_are_waived_in_bringup_and_rejected_in_strict_mode() -> Result {
 #[test]
 fn allocator_attributes_are_waived_in_bringup_and_rejected_in_strict_mode() -> Result {
     let failures = check("allocator", &ALLOCATORS)?;
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
+/// alloc's `owned_box`, `global_alloc_ty` and `String` declarations pass only
+/// in bring-up and only with a recorded waiver, after rustc's target and
+/// generic requirement; a misplaced or unknown role is rejected in both.
+#[test]
+fn unimplemented_lang_roles_are_waived_in_bringup_and_rejected_in_strict_mode() -> Result {
+    let failures = check("lang-roles", &LANG_ROLES)?;
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())
 }
