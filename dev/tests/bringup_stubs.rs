@@ -905,6 +905,71 @@ fn bit_reversals_run_in_constants_and_stay_fenced_when_strict() -> Result {
     Ok(())
 }
 
+/// `mem::zeroed`'s two steps in constants, with a visible byte: rustc 1.98.0
+/// gives the filled tuple `90 1515870810 23130 23130` and the filled word
+/// 2880154539.
+const ZEROING: &str = "\
+impl Clone for u8{fn clone(&self)->Self{*self}}impl Copy for u8{}
+impl Clone for i16{fn clone(&self)->Self{*self}}impl Copy for i16{}
+impl Clone for u32{fn clone(&self)->Self{*self}}impl Copy for u32{}
+#[rustc_intrinsic] const fn assert_zero_valid<T>();
+#[rustc_intrinsic] const unsafe fn write_bytes<T>(dst:*mut T,val:u8,count:usize);
+const fn cleared()->(u8,u32,[i16;2]){
+    let mut v=(7u8,0x1234_5678u32,[3i16,4i16]);
+    unsafe{assert_zero_valid::<(u8,u32,[i16;2])>();write_bytes(&mut v as *mut (u8,u32,[i16;2]),0x5au8,1usize)}
+    v
+}
+const CLEARED:(u8,u32,[i16;2])=cleared();
+const FILLED:u32={let mut w=0u32;unsafe{write_bytes(&mut w as *mut u32,0xabu8,1usize)};w};
+#[unsafe(no_mangle)]pub fn word()->u32{let (_,w,_)=CLEARED;w}
+#[unsafe(no_mangle)]pub fn lane()->i16{let (_,_,[_,l])=CLEARED;l}
+#[unsafe(no_mangle)]pub fn filled()->u32{FILLED}
+";
+/// rustc rejects zero bytes for a reference; here the type stays undecided.
+const UNZEROABLE: &str = "\
+#[rustc_intrinsic] const fn assert_zero_valid<T>();
+#[unsafe(no_mangle)]pub fn refused(){const{assert_zero_valid::<&'static u8>()}}
+";
+
+#[test]
+fn zeroing_runs_in_constants_and_stays_fenced_when_strict() -> Result {
+    let unimplemented = "source intrinsic constant execution is not implemented";
+    let source = format!("{HEAD}{ZEROING}");
+    let (strict, _) = library("zeroing-strict", &source, "zeroing", None, false)?;
+    let stderr = String::from_utf8(strict.stderr)?;
+    assert_eq!(strict.status.code(), Some(1), "{stderr}");
+    assert!(
+        stderr.contains(unimplemented) && !stderr.contains("bringup-") && strict.stdout.is_empty(),
+        "{stderr}"
+    );
+    let (passed, _) = library("zeroing", &source, "zeroing_bringup", Some(""), false)?;
+    let stderr = String::from_utf8(passed.stderr)?;
+    assert!(passed.status.success(), "{stderr}");
+    let fences = waived(&stderr);
+    for name in ["assert_zero_valid", "write_bytes"] {
+        let fence = format!("source intrinsic uses unqualified constant evaluation: {name}");
+        assert!(fences.contains(&fence.as_str()), "{stderr}");
+    }
+    let text = std::str::from_utf8(&passed.stdout)?;
+    for folded in ["1515870810", "23130", "2880154539"] {
+        assert!(text.contains(folded), "{folded}: {text}");
+    }
+    assert!(!text.contains("rg.trap."), "{text}");
+    let source = format!("{HEAD}{UNZEROABLE}");
+    let (refused, _) = library("unzeroable", &source, "unzeroable_bringup", Some(""), false)?;
+    let stderr = String::from_utf8(refused.stderr)?;
+    assert_eq!(refused.status.code(), Some(1), "{stderr}");
+    let rows = stderr
+        .lines()
+        .filter_map(|line| line.strip_prefix("bringup-blocker\t"))
+        .collect::<Vec<_>>();
+    assert!(
+        matches!(rows.as_slice(), [row] if row.contains("\trefused\t") && row.ends_with(unimplemented)),
+        "{stderr}"
+    );
+    Ok(())
+}
+
 /// The x86 spin-wait hint that `core::hint::spin_loop` reaches through stdarch.
 const PAUSE: &str = "\
 #![allow(internal_features)]

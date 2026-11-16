@@ -46,6 +46,7 @@ mod transfers;
 mod transmute_calls;
 mod values;
 mod wrapping_calls;
+mod zeroing_calls;
 
 use crate::sema::values::execution::{Progress, Requirement};
 use crate::support::hash::{HashMap, HashSet};

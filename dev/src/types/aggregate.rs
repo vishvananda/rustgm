@@ -15,6 +15,7 @@ pub(crate) use preparation::PendingFields;
 mod prepared_shapes;
 pub(crate) use prepared_shapes::{ImportedEnum, Prepared as PreparedShapes};
 mod simd;
+mod zero_bytes;
 use super::{ItemId, ListId, Primitive, Store, TypeId};
 pub use instances::Shape;
 pub use metadata::MetadataPreparation;

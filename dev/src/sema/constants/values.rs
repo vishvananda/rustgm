@@ -26,6 +26,7 @@ mod subtraction_values;
 mod va_src;
 mod variant_queries;
 mod wrapping_values;
+mod zeroing_values;
 pub(crate) use footprints::{ProjectionStorage, StorageLayout, StoredShape};
 pub mod execution;
 mod memory;
