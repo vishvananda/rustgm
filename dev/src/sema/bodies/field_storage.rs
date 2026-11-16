@@ -26,6 +26,11 @@ pub(super) struct FieldWaits {
     nominals: Option<Vec<crate::types::ItemId>>,
     reached: usize,
     reach: Option<crate::types::variance::PendingReach>,
+    /// The nominals of the published types whose declaration requirements
+    /// were not complete, the next one to check, and the last one waited for.
+    contracts: Option<Vec<crate::types::ItemId>>,
+    contracted: usize,
+    contract: Option<crate::types::ItemId>,
 }
 
 impl Checker<'_> {
@@ -247,6 +252,68 @@ impl Checker<'_> {
                 .map_err(|error| self.error(node, error))?;
         }
         waits.nominals = Some(nominals);
+        Ok(None)
+    }
+
+    /// Publication proves the declaration requirements of every nominal in
+    /// its value and call types. A declaration-time body can reach a nominal
+    /// whose declaration has not completed them yet, as an array length that
+    /// names an associated constant of a later type does; it waits once per
+    /// such nominal, and a second miss means that declaration cannot.
+    pub(super) fn nominal_contract_dependency(
+        &mut self,
+        solved: &crate::types::infer::Solved,
+        waits: &mut FieldWaits,
+    ) -> Result<Option<Requirement>, Error> {
+        if !matches!(
+            self.availability,
+            crate::sema::traits::implementations::Availability::Declarations
+        ) || !self.facts.generics.has_nominal_requirements
+        {
+            return Ok(None);
+        }
+        let node = self.state.body.node;
+        if waits.contracts.is_none() {
+            let mut roots = Vec::with_capacity(self.state.touched.len());
+            for &touched in &self.state.touched {
+                roots.push(solved.types[self.term(touched)?.0 as usize]);
+            }
+            for (_, method) in &self.state.call_types.methods {
+                roots.extend(method.value_types(solved));
+            }
+            roots.extend(
+                self.state
+                    .call_types
+                    .invocations
+                    .iter()
+                    .map(|(_, pending)| solved.types[pending.receiver.0 as usize]),
+            );
+            roots.extend(
+                self.state
+                    .calls
+                    .iter()
+                    .map(|&(_, term)| solved.types[term.0 as usize]),
+            );
+            let pending = crate::sema::nominals::pending_contracts(self.facts, roots)
+                .map_err(|error| self.error(node, error))?;
+            waits.contracts = Some(pending);
+        }
+        while let Some(&item) = waits
+            .contracts
+            .as_deref()
+            .and_then(|items| items.get(waits.contracted))
+        {
+            let owner = crate::resolve::model::DefId(item.0);
+            if !self.facts.generics.nominal_contracts.contains(&owner) {
+                if waits.contract.replace(item) == Some(item) {
+                    return Err(
+                        self.error(node, "nominal declaration requirements are not complete")
+                    );
+                }
+                return Ok(Some(Requirement::NominalContract(item)));
+            }
+            waits.contracted += 1;
+        }
         Ok(None)
     }
 

@@ -32,6 +32,9 @@ pub(super) struct Pending {
 #[path = "../../../tests/invariants/waited_copy_selections.rs"]
 mod copy_wait_tests;
 #[cfg(test)]
+#[path = "../../../tests/invariants/lengths_before_types.rs"]
+mod length_tests;
+#[cfg(test)]
 #[path = "../../../tests/invariants/binderless_constant_modules.rs"]
 mod module_tests;
 

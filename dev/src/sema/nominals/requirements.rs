@@ -184,6 +184,49 @@ pub(in crate::sema) fn immediate(
     )
 }
 
+/// The nominals reached from `roots` along the edges that requirement
+/// collection follows, in reach order, whose instances are not cached yet
+/// and whose declaration requirements are not complete. A declaration-time
+/// body waits for each of them before it publishes its types.
+pub(in crate::sema) fn pending_contracts(
+    facts: &Declarations,
+    roots: impl IntoIterator<Item = TypeId>,
+) -> Result<Vec<ItemId>, &'static str> {
+    let mut seen = HashSet::default();
+    let mut work = Vec::new();
+    let mut pending = Vec::new();
+    for root in roots {
+        work.push((root, 0));
+        while let Some((ty, depth)) = work.pop() {
+            if facts.types.contains_nominals(ty) == Some(false) || !seen.insert(ty) {
+                continue;
+            }
+            if seen.len().saturating_add(work.len()) > 1_000_000 {
+                return Err("nominal contract wait work budget exceeded");
+            }
+            match facts
+                .types
+                .kind(ty)
+                .ok_or("invalid nominal requirement type")?
+            {
+                Kind::Adt(item, arguments) => {
+                    if !facts.generics.nominal_requirements.contains_key(&ty)
+                        && !facts.generics.nominal_contracts.contains(&DefId(item.0))
+                        && !pending.contains(&item)
+                    {
+                        pending.push(item);
+                    }
+                    arguments_work::<false>(facts, arguments, depth, &mut work, &|_, _| Ok(()))?;
+                }
+                kind => {
+                    structural_children::<false>(facts, kind, depth, &mut work, &|_, _| Ok(()))?;
+                }
+            }
+        }
+    }
+    Ok(pending)
+}
+
 /// Equality results and outlives subjects recurse beneath their whole-clause binder.
 pub(super) fn requirements_inside(
     facts: &mut Declarations,
