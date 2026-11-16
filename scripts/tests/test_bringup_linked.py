@@ -80,11 +80,18 @@ class Linked(unittest.TestCase):
             program.write_text(PROGRAM)
             work = folder / "work"
             work.mkdir()
-            options = argparse.Namespace(guest=True, work=work,
+            options = argparse.Namespace(guest=True, work=work, dependency=[],
                                          library=folder / "frozen" / "library")
             root, extra = linked.session(options, program)
             self.assertEqual(root, source / "lib.rs")
             self.assertEqual(extra, ["--bringup-guest", f"app={program}"])
+            # Dependencies are further guests before the program, in order.
+            options.dependency = ["alloc=/a/lib.rs", "extra=/b/lib.rs"]
+            _, extra = linked.session(options, program)
+            self.assertEqual(extra, ["--bringup-guest", "alloc=/a/lib.rs",
+                                     "--bringup-guest", "extra=/b/lib.rs",
+                                     "--bringup-guest", f"app={program}"])
+            options.dependency = []
             # Nothing is copied, mounted or rewritten.
             self.assertEqual(list(work.iterdir()), [])
             self.assertEqual((source / "lib.rs").read_text(), "//! core\n")

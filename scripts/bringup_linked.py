@@ -8,6 +8,8 @@ qualification.
 With ``--guest`` the unchanged program is a guest crate of the session
 (``--bringup-guest app=PROGRAM``) over core's frozen sources: its crate-level
 attributes stay its own and its exported C ``main`` is the executable's entry.
+Each ``--dependency NAME=ROOT.rs`` (with ``--guest``, in dependency order) is a
+further guest crate before the program, such as alloc.
 
 Otherwise the consumer is mounted as a private module of a writable copy of
 core's sources. The exported C ``main`` of the program becomes ``guest_main``,
@@ -93,8 +95,9 @@ def prepare(work, library, program):
 def session(options, program):
     """Return core's root and the options that add this program to its session."""
     if options.guest:
+        guests = [*options.dependency, f"{GUEST}={program}"]
         return (options.library / "core" / "src" / "lib.rs",
-                ["--bringup-guest", f"{GUEST}={program}"])
+                [argument for guest in guests for argument in ("--bringup-guest", guest)])
     return prepare(options.work, options.library, program), []
 
 
@@ -156,10 +159,14 @@ def main():
     parser.add_argument("--work", required=True, type=pathlib.Path)
     parser.add_argument("--guest", action="store_true",
                         help="pass each program as a guest crate instead of mounting it in core")
+    parser.add_argument("--dependency", action="append", default=[], metavar="NAME=ROOT.rs",
+                        help="with --guest, a guest crate before each program, in dependency order")
     parser.add_argument("--timeout", type=float, default=900.0)
     parser.add_argument("--max-iterations", type=int, default=30)
     parser.add_argument("programs", nargs="+", type=pathlib.Path)
     options = parser.parse_args()
+    if options.dependency and not options.guest:
+        parser.error("--dependency requires --guest")
     options.work.mkdir(parents=True, exist_ok=True)
     summary, failed = [], 0
     for program in options.programs:
