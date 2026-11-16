@@ -652,3 +652,137 @@ fn guest_functions_have_their_own_census_keys_and_symbols() -> Result {
     assert_eq!(accepted(&unkeyed)?, whole);
     Ok(())
 }
+
+/// A guest program whose bodies `mistyped` and `hidden` do not type. `caller`
+/// calls the first; `holds` keeps a value of the opaque type that the second
+/// would define. `main` reaches `caller` only when given an argument.
+const MISTYPED_APP: &str = r#"#![feature(no_core)]
+#![no_core]
+#![no_main]
+#![allow(dead_code, unused_variables)]
+extern crate core;
+fn mistyped() -> u8 {
+    let value: u8 = 1i32;
+    value
+}
+fn caller(reached: bool) -> u8 {
+    if reached { mistyped() } else { 0 }
+}
+fn hidden() -> impl core::Copy {
+    let value: u8 = 2i32;
+    value
+}
+fn holds() -> u8 {
+    let held = hidden();
+    3
+}
+#[unsafe(no_mangle)]
+pub extern "C" fn main(argc: i32, argv: *const *const u8) -> i32 {
+    match argc {
+        1 => 0,
+        2 => caller(true) as i32,
+        _ => holds() as i32,
+    }
+}
+"#;
+
+/// Grow the session's skip list as the census driver does until it compiles:
+/// each failing round names only functions that are not listed yet. Returns
+/// every round's blocker rows, the session's folder and its `LowIR`.
+fn census(name: &str, guests: &[(&str, &str)]) -> Result<(Vec<Vec<String>>, PathBuf, String)> {
+    let mut rounds: Vec<Vec<String>> = Vec::new();
+    let mut listed = String::new();
+    while rounds.len() < 5 {
+        let (folder, mut command) = prepare(name, guests)?;
+        let list = folder.join("skip.tsv");
+        std::fs::write(&list, &listed)?;
+        command.arg("--bringup-skip-list").arg(list);
+        let output = command.arg(folder.join("core.rs")).output()?;
+        if output.status.success() {
+            return Ok((rounds, folder, String::from_utf8(output.stdout)?));
+        }
+        let stderr = String::from_utf8(output.stderr)?;
+        assert_eq!(output.status.code(), Some(1), "{stderr}");
+        assert!(!stderr.contains("bringup-unattributed"), "{stderr}");
+        let rows = stderr
+            .lines()
+            .filter_map(|line| line.strip_prefix("bringup-blocker\t"))
+            .map(str::to_owned)
+            .collect::<Vec<_>>();
+        assert!(!rows.is_empty(), "no new function: {stderr}");
+        for row in &rows {
+            let key = row.splitn(3, '\t').take(2).collect::<Vec<_>>().join("\t");
+            assert!(!listed.contains(&format!("{key}\t")), "{row} failed again");
+            listed.push_str(row);
+            listed.push('\n');
+        }
+        rounds.push(rows);
+    }
+    Err(format!("the census did not converge: {rounds:?}").into())
+}
+
+/// rustc: rejects `app` with E0308 (mismatched types) in `mistyped` and in
+/// `hidden`. One round names both: each keeps its checked signature and
+/// becomes a trapping stub, so `caller` and `holds` still type. The next
+/// round names `holds`, whose local needs the hidden type that `hidden`
+/// would define: it fails closed instead of guessing that type.
+#[test]
+fn guest_bodies_that_do_not_type_are_named_and_stubbed() -> Result {
+    let (rounds, _, lowir) = census("mistyped", &[("app", MISTYPED_APP)])?;
+    let row = |item: &str, name: &str, message: &str| -> Result<String> {
+        let offset = MISTYPED_APP
+            .find(item)
+            .ok_or_else(|| format!("the program has no `{item}`"))?;
+        Ok(format!("app:app.rs\t{offset}\t{name}\t{message}"))
+    };
+    let opaque = "opaque storage requires a checked defining type";
+    assert_eq!(
+        rounds,
+        [
+            vec![
+                row("fn mistyped", "mistyped", "incompatible types")?,
+                row("fn hidden", "hidden", "incompatible types")?,
+            ],
+            vec![row("fn holds", "holds", opaque)?],
+        ]
+    );
+    // `main` and `caller` keep their bodies; the two reached stubs trap.
+    let trapping = lowir
+        .split("\nfunction @")
+        .filter(|function| function.contains("call void @abort()"))
+        .count();
+    assert_eq!(trapping, 2, "{lowir}");
+    assert!(lowir.contains("function @main"), "{lowir}");
+    Ok(())
+}
+
+/// rustc: no analog (it rejects the program). The stubbed program returns 0
+/// when `main` reaches no stub and aborts when `caller` reaches `mistyped`.
+#[test]
+#[ignore = "requires the pinned CPPGM backend"]
+fn a_reached_guest_stub_traps_at_run_time() -> Result {
+    let (_, folder, lowir) = census("mistyped-native", &[("app", MISTYPED_APP)])?;
+    let source = folder.join("app.lowir");
+    let binary = folder.join("app");
+    std::fs::write(&source, lowir)?;
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("the manifest has no parent")?;
+    let built = Command::new("python3")
+        .arg(root.join("scripts/backend.py"))
+        .arg(&source)
+        .arg("-o")
+        .arg(&binary)
+        .output()?;
+    assert!(
+        built.status.success(),
+        "{}",
+        String::from_utf8_lossy(&built.stderr)
+    );
+    assert_eq!(Command::new(&binary).output()?.status.code(), Some(0));
+    // The course runtime's `abort` exits with status 134, as SIGABRT would.
+    let trapped = Command::new(&binary).arg("reach").output()?;
+    assert_eq!(trapped.status.code(), Some(134), "{trapped:?}");
+    assert!(trapped.stdout.is_empty() && trapped.stderr.is_empty());
+    Ok(())
+}

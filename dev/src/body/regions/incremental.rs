@@ -112,7 +112,17 @@ impl Collector {
     /// Finish in declaration order, reusing every previously built contract.
     /// # Errors
     /// Rejects missing/duplicate owners, late facts and invalid declaration contracts.
-    pub fn finish(mut self, facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
+    pub fn finish(self, facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
+        self.finish_except(facts, |_| false)
+    }
+    /// Like `finish`, dropping the facts of every nested body for which
+    /// `dropped` holds and that has no owner: one inside a bring-up stub whose
+    /// body did not type, which proves nothing.
+    pub(crate) fn finish_except(
+        mut self,
+        facts: &Declarations,
+        dropped: impl Fn(NodeKey) -> bool,
+    ) -> Result<Contracts<'_>, &'static str> {
         self.update(facts)?;
         let mut bodies = Vec::new();
         let mut index = HashMap::default();
@@ -158,6 +168,7 @@ impl Collector {
         for contract in &mut bodies[start..] {
             self.populate(facts, contract)?;
         }
+        self.pending.retain(|&body, _| !dropped(body));
         if !self.pending.is_empty() || !self.completed.is_empty() {
             return Err("lifetime obligation has no body owner");
         }

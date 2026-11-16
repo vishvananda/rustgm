@@ -64,12 +64,20 @@ impl Context {
                 "constant provider is active during inline body checking",
             )
         })?;
+        // A bring-up stub replaces a body that did not type, and with it every
+        // inline constant inside that body: none of them completed typing.
+        let untyped = body::bringup::Untyped::new(report, facts);
         for index in 0..count {
-            let (source, result) = facts
+            let entry = facts
                 .inline_constants
                 .as_deref()
                 .and_then(|registry| registry.at(index))
-                .and_then(|body| body.result.map(|result| (body.source, result)))
+                .map(|body| (body.source, body.result));
+            if entry.is_some_and(|(source, _)| untyped.contains(report, source)) {
+                continue;
+            }
+            let (source, result) = entry
+                .and_then(|(source, result)| result.map(|result| (source, result)))
                 .ok_or_else(|| Error::at(FileId(0), 0, "inline body type did not complete"))?;
             if let Some(registry) = facts.inline_constants.as_mut() {
                 registry.preparation_visits += 1;

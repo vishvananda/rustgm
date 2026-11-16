@@ -178,6 +178,40 @@ pub(crate) fn concrete_selected(
     )?;
     Ok(program)
 }
+/// The bring-up stub of a listed function whose body did not type: no fact of
+/// that body exists, so the stub binds each parameter at its checked signature
+/// type and traps. A result whose hidden type the failed body would have
+/// defined stays opaque; whatever needs its hidden type fails in turn.
+fn signature_stub(
+    report: &Report,
+    facts: &Declarations,
+    scratch: &mut Scratch,
+    function: &crate::sema::model::Function,
+    query: Option<&mut crate::types::destruction::NeedsDrop>,
+) -> Result<Body, Error> {
+    let source = function
+        .body
+        .ok_or_else(|| report.body_error(function.node, "missing function body"))?;
+    let Some(Type::Function { result, .. }) = facts.types.kind(function.signature) else {
+        return Err(report.body_error(function.node, "missing function signature"));
+    };
+    let owner = Owner::Function {
+        definition: function.definition,
+        signature: function.signature,
+        execution: None,
+    };
+    let mut body = Body::new(owner, source, result);
+    body.const_context = facts.is_const_function(function.definition)
+        && facts
+            .source_function_context(report, function.definition, source)
+            .map_err(|error| report.body_error(source, error))?
+            .checks_const();
+    let scope_plan = scopes::Facts::synthetic(source.node);
+    Builder::new(report, facts, scratch, body, scope_plan, query)?
+        .stubbed(true)
+        .run(Some(function.parameters))
+        .map_err(|e| report.diagnostic(e))
+}
 fn function_body(
     report: &Report,
     facts: &Declarations,
@@ -185,6 +219,11 @@ fn function_body(
     function: &crate::sema::model::Function,
     query: Option<&mut crate::types::destruction::NeedsDrop>,
 ) -> Result<Body, Error> {
+    if super::bringup::stub(report, function.node)
+        && !facts.typed_function_bodies.contains(&function.definition)
+    {
+        return signature_stub(report, facts, scratch, function, query);
+    }
     crate::sema::compiler_items::require_async_glue_body(report, facts, function)?;
     let asynchronous = facts
         .async_body_output(report, function)?
@@ -823,6 +862,57 @@ impl<'a> Builder<'a> {
             _ => Err(self.error(node, "unsupported body binding pattern")),
         }
     }
+    /// Whether this function's body did not type, so that no fact of it exists.
+    fn untyped(&self) -> bool {
+        matches!(self.body.owner, Owner::Function { definition, .. }
+            if !self.facts.typed_function_bodies.contains(&definition))
+    }
+    /// Bind a stub's parameters at the types of its checked signature, in
+    /// order, without reading any fact of the body it replaces. A C-variadic
+    /// tail is not a declared parameter.
+    fn declared_parameters(&mut self, list: List) -> Result<(), Error> {
+        let Owner::Function { signature, .. } = self.body.owner else {
+            return Err(self.error(self.source.node, "a signature stub requires a function"));
+        };
+        let declared = match self.facts.types.kind(signature) {
+            Some(Type::Function { parameters, .. }) => self.facts.types.list(parameters),
+            _ => None,
+        }
+        .ok_or_else(|| self.error(self.source.node, "missing function signature"))?
+        .to_vec();
+        let mut types = declared.into_iter();
+        let nodes = self.unit.configured.ast.list(list);
+        let mut index = 0;
+        for &node in nodes {
+            let mut parameter = node;
+            while let Kind::Attributed { value, .. } = self.kind(parameter) {
+                parameter = value;
+            }
+            let variadic = match self.kind(parameter) {
+                Kind::Variadic => true,
+                Kind::Parameter { ty: Some(ty), .. } => matches!(self.kind(ty), Kind::Variadic),
+                _ => false,
+            };
+            if !self.active(node) || variadic {
+                continue;
+            }
+            let ty = types.next().ok_or_else(|| {
+                self.error(
+                    parameter,
+                    "stub parameters disagree with the checked signature",
+                )
+            })?;
+            self.local(parameter, ty, LocalKind::Parameter(index), None, false)?;
+            index += 1;
+        }
+        if types.next().is_some() {
+            return Err(self.error(
+                self.source.node,
+                "stub parameters disagree with the checked signature",
+            ));
+        }
+        Ok(())
+    }
     fn parameters(&mut self, list: List) -> Result<(), Error> {
         let mut index = u32::from(matches!(
             self.body.owner,
@@ -904,7 +994,11 @@ impl<'a> Builder<'a> {
         self.switch(root, entry)?;
         self.prepare_capture_receiver()?;
         if let Some(parameters) = parameters {
-            self.parameters(parameters)?;
+            if self.stub && self.untyped() {
+                self.declared_parameters(parameters)?;
+            } else {
+                self.parameters(parameters)?;
+            }
         }
         if self.stub {
             self.terminate(root, Terminator::Panic);

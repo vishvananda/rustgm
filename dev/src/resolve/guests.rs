@@ -300,6 +300,40 @@ impl Package {
             self.file_paths[root.0 as usize].parent()?,
         ))
     }
+    /// A source file's bring-up skip-list key: its path below the crate
+    /// root's directory, or its whole path when it lies elsewhere. A guest
+    /// crate's file is keyed `NAME:PATH`, its path below that guest's own root
+    /// directory, which no host key can spell.
+    #[must_use]
+    pub fn skip_list_path(&self, file: FileId) -> String {
+        let path = &self.file_paths[file.0 as usize];
+        if let Some((guest, root)) = self.guest_origin(file) {
+            let below = path.strip_prefix(root).unwrap_or(path);
+            return format!("{guest}:{}", below.to_string_lossy());
+        }
+        self.file_paths
+            .first()
+            .and_then(|root| root.parent())
+            .and_then(|root| path.strip_prefix(root).ok())
+            .unwrap_or(path)
+            .to_string_lossy()
+            .into_owned()
+    }
+    /// Whether the bring-up profile's skip list names this function item, so
+    /// that a trapping stub replaces its body. Never in a strict compilation.
+    #[must_use]
+    pub fn bringup_listed(&self, item: NodeKey) -> bool {
+        crate::support::bringup::selected().is_some_and(|stubs| {
+            let start = self
+                .unit(item.file)
+                .configured
+                .ast
+                .node(item.node)
+                .span
+                .start;
+            stubs.contains(&self.skip_list_path(item.file), start)
+        })
+    }
     /// The guest crates' slots in driver order; none in a strict session.
     pub(crate) fn guest_slots(&self) -> impl DoubleEndedIterator<Item = CrateSlot> + use<> {
         let count = u32::try_from(self.crate_members().len()).unwrap_or(u32::MAX);

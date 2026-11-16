@@ -16,39 +16,14 @@ use crate::{
 };
 use std::collections::HashSet;
 
-/// A source file's skip-list key: its path below the crate root's directory,
-/// or its whole path when it lies elsewhere. A guest crate's file is keyed
-/// `NAME:PATH`, its path below that guest's own root directory, which no
-/// host key can spell.
+/// A source file's skip-list key; see `Package::skip_list_path`.
 fn path(package: &Package, file: FileId) -> String {
-    let path = &package.file_paths[file.0 as usize];
-    if let Some((guest, root)) = package.guest_origin(file) {
-        let below = path.strip_prefix(root).unwrap_or(path);
-        return format!("{guest}:{}", below.to_string_lossy());
-    }
-    package
-        .file_paths
-        .first()
-        .and_then(|root| root.parent())
-        .and_then(|root| path.strip_prefix(root).ok())
-        .unwrap_or(path)
-        .to_string_lossy()
-        .into_owned()
+    package.skip_list_path(file)
 }
 
 /// Whether the bring-up profile replaces this function item by a trapping stub.
 pub(crate) fn stub(report: &Report, item: NodeKey) -> bool {
-    selected().is_some_and(|stubs| {
-        let package = &report.package;
-        let start = package
-            .unit(item.file)
-            .configured
-            .ast
-            .node(item.node)
-            .span
-            .start;
-        stubs.contains(&path(package, item.file), start)
-    })
+    report.package.bringup_listed(item)
 }
 
 /// The body nodes of the functions that the bring-up profile replaced by
@@ -63,6 +38,49 @@ pub(crate) fn stub_bodies(report: &Report, facts: &Declarations) -> HashSet<Node
         .filter(|function| stub(report, function.node))
         .filter_map(|function| function.body)
         .collect()
+}
+
+/// The listed functions whose bodies did not type, by source span. Nothing
+/// typed inside such a body completed, so no later stage may read it: its
+/// stub replaces the closures and inline constants it contains.
+pub(crate) struct Untyped(Vec<(FileId, u32, u32)>);
+impl Untyped {
+    pub(crate) fn new(report: &Report, facts: &Declarations) -> Self {
+        if selected().is_none_or(Stubs::is_empty) {
+            return Self(Vec::new());
+        }
+        let spans = facts
+            .functions
+            .iter()
+            .filter(|function| {
+                function.body.is_some()
+                    && !facts.typed_function_bodies.contains(&function.definition)
+                    && stub(report, function.node)
+            })
+            .map(|function| {
+                let unit = report.package.unit(function.node.file);
+                let span = unit.configured.ast.node(function.node.node).span;
+                (function.node.file, span.start, span.end)
+            });
+        Self(spans.collect())
+    }
+    /// Whether a syntax node lies inside one of these functions.
+    pub(crate) fn contains(&self, report: &Report, key: NodeKey) -> bool {
+        if self.0.is_empty() {
+            return false;
+        }
+        let at = report
+            .package
+            .unit(key.file)
+            .configured
+            .ast
+            .node(key.node)
+            .span
+            .start;
+        self.0
+            .iter()
+            .any(|&(file, start, end)| file == key.file && start <= at && at <= end)
+    }
 }
 
 /// The innermost function item containing a failure's unprojected position.
@@ -179,10 +197,13 @@ fn owner<'a>(
 
 /// Name the functions that own this compilation's failures, for the bring-up
 /// skip list: the failures its stages set aside, then the one that stopped it.
-/// Unlocated and imported failures, and positions outside every function item
-/// that has a body, are unattributed. Empty outside the bring-up profile.
+/// A failure whose stage named its owning function belongs to that function;
+/// any other belongs to the innermost function item with a body that contains
+/// its position, which only `facts` can name. Unlocated and imported failures,
+/// and positions outside every such function, are unattributed. Empty outside
+/// the bring-up profile.
 #[must_use]
-pub fn blockers(report: &Report, facts: &Declarations, error: &Error) -> Attribution {
+pub fn blockers(report: &Report, facts: Option<&Declarations>, error: &Error) -> Attribution {
     let mut attribution = Attribution::default();
     if selected().is_none() {
         return attribution;
@@ -190,20 +211,27 @@ pub fn blockers(report: &Report, facts: &Declarations, error: &Error) -> Attribu
     let mut failures = Vec::new();
     for failure in crate::support::bringup::deferred() {
         match offset(report, &failure) {
-            Some(at) => failures.push((FileId(failure.file), at, failure.message)),
+            Some(at) => failures.push((FileId(failure.file), at, failure.message, failure.owner)),
             None => attribution.unattributed.push(failure.message),
         }
     }
     match error.origin {
         Some((file, at)) => {
             if !failures.iter().any(|seen| seen.0 == file && seen.1 == at) {
-                failures.push((file, at, error.message.clone()));
+                failures.push((file, at, error.message.clone(), None));
             }
         }
         None => attribution.unattributed.push(error.message.clone()),
     }
-    for (file, at, message) in failures {
-        let blocker = blocker(report, facts, file, at, message);
+    for (file, at, message, owner) in failures {
+        let blocker = match (owner, facts) {
+            (Some(owner), _) => owned(report, owner, message),
+            (None, Some(facts)) => blocker(report, facts, file, at, message),
+            (None, None) => {
+                attribution.unattributed.push(message);
+                continue;
+            }
+        };
         if !attribution
             .blockers
             .iter()
@@ -213,6 +241,31 @@ pub fn blockers(report: &Report, facts: &Declarations, error: &Error) -> Attribu
         }
     }
     attribution
+}
+/// The function item that a stage named as a failure's owner.
+fn owned(report: &Report, owner: crate::support::bringup::Owner, message: String) -> Blocker {
+    let file = FileId(owner.file);
+    let offset = NodeId::checked(owner.node).map_or(0, |node| {
+        report
+            .package
+            .unit(file)
+            .configured
+            .ast
+            .node(node)
+            .span
+            .start
+    });
+    let name = report
+        .resolution
+        .definitions
+        .get(owner.definition as usize)
+        .map_or("?", |definition| report.package.names.get(definition.name));
+    Blocker {
+        path: path(&report.package, file),
+        offset,
+        name: name.to_owned(),
+        message,
+    }
 }
 /// The byte offset of a failure set aside, if its position still exists.
 fn offset(report: &Report, failure: &crate::support::bringup::Deferred) -> Option<u32> {

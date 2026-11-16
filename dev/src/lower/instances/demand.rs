@@ -987,6 +987,26 @@ pub(super) fn specialize(
         .map_err(|e| diagnostic(report, e.node, e.message))
 }
 
+/// A root without an ordinary body. A function that defines an opaque result
+/// type has one only once its hidden type is known; a bring-up stub of such a
+/// function whose body did not type has none, and fails closed at the root.
+fn missing_root(report: &Report, facts: &Declarations, definition: DefId) -> Error {
+    let stub = facts
+        .function_indices
+        .get(&definition)
+        .and_then(|&index| facts.functions.get(index))
+        .filter(|function| {
+            report.package.bringup_listed(function.node)
+                && !facts.typed_function_bodies.contains(&definition)
+        });
+    match stub {
+        Some(function) => report.body_error(
+            function.node,
+            "a bring-up stub of a body that did not type cannot stand for a root that defines an opaque result type",
+        ),
+        None => diagnostic(report, None, "missing root body".into()),
+    }
+}
 fn initial_work(
     report: &Report,
     facts: &mut Declarations,
@@ -1009,7 +1029,7 @@ fn initial_work(
             .functions
             .get(&ItemId(definition.0))
             .and_then(|&i| program.body(i).ok().map(|body| body.source))
-            .ok_or_else(|| diagnostic(report, None, "missing root body".into()))?;
+            .ok_or_else(|| missing_root(report, facts, definition))?;
         let ty = facts
             .definitions
             .get(definition.0 as usize)

@@ -230,20 +230,16 @@ fn malformed_lists_and_unmarked_bring_up_libraries_are_usage_errors() -> Result 
     Ok(())
 }
 
-#[test]
-fn rejected_functions_are_named_until_the_list_compiles_the_rest() -> Result {
-    let folder = folder_with("named", REJECTED)?;
-    // Strict compilation fails without naming anything for a skip list.
-    let strict = run(&folder, &[], &[])?;
-    assert_eq!(strict.status.code(), Some(1));
-    assert!(!String::from_utf8_lossy(&strict.stderr).contains("bringup-"));
-    // Grow the list as the census driver does: every failing run names a new function.
+/// Grow the list as the census driver does until the program compiles: every
+/// failing run names a new function at the offset of its item, never one that
+/// is already listed. Returns the names in the order met and the `LowIR`.
+fn census(folder: &Path, source: &str) -> Result<(Vec<String>, String)> {
     let mut list = String::new();
     let mut names = Vec::new();
-    let stubbed = loop {
-        let output = run(&folder, &[&list], &[])?;
+    loop {
+        let output = run(folder, &[&list], &[])?;
         if output.status.success() {
-            break String::from_utf8(output.stdout)?;
+            return Ok((names, String::from_utf8(output.stdout)?));
         }
         assert_eq!(output.status.code(), Some(1));
         let stderr = String::from_utf8(output.stderr)?;
@@ -258,9 +254,11 @@ fn rejected_functions_are_named_until_the_list_compiles_the_rest() -> Result {
                 return Err(format!("malformed blocker row: {row}").into());
             };
             assert_eq!(path, "main.rs");
-            assert_eq!(
-                REJECTED.find(&format!("fn {name}")),
-                Some(offset.parse::<usize>()?)
+            let item = source.get(offset.parse::<usize>()?..).unwrap_or_default();
+            assert!(
+                item.trim_start_matches("const ")
+                    .starts_with(&format!("fn {name}")),
+                "{row}"
             );
             assert!(!message.is_empty() && stderr.contains("ERROR: "));
             assert!(!names.contains(&name.to_owned()), "{name} failed again");
@@ -268,12 +266,104 @@ fn rejected_functions_are_named_until_the_list_compiles_the_rest() -> Result {
             writeln!(list, "{path}\t{offset}\t{name}\t{message}")?;
         }
         assert!(names.len() > before, "no new function: {stderr}");
-    };
+    }
+}
+
+#[test]
+fn rejected_functions_are_named_until_the_list_compiles_the_rest() -> Result {
+    let folder = folder_with("named", REJECTED)?;
+    // Strict compilation fails without naming anything for a skip list.
+    let strict = run(&folder, &[], &[])?;
+    assert_eq!(strict.status.code(), Some(1));
+    assert!(!String::from_utf8_lossy(&strict.stderr).contains("bringup-"));
+    let (mut names, stubbed) = census(&folder, REJECTED)?;
     names.sort_unstable();
     assert_eq!(names, ["moved_twice", "stolen"]);
     // The accepted function keeps its body; both rejected ones trap instead.
     assert!(stubbed.contains("binary and"));
     assert_eq!(stubbed.matches("call void @abort()").count(), 2);
+    Ok(())
+}
+
+/// Function bodies that do not type beside one that does: a closure and an
+/// inline constant inside failed bodies, a `const fn` that fails and a body
+/// whose constant evaluates it, and a generic body. rustc 1.98.0 rejects
+/// each mistyped `let` with E0308 (mismatched types).
+const MISTYPED: &str = "\
+fn mistyped() -> u8 {
+    let value: u8 = 1i32;
+    value
+}
+fn with_closure(x: u8) -> u8 {
+    let add = |y: u8| y & x;
+    let wrong: u8 = 2i32;
+    add(wrong)
+}
+fn with_inline() -> usize {
+    let size = const { 3usize };
+    let wrong: usize = 4i32;
+    size & wrong
+}
+const fn mistyped_const() -> u8 {
+    let value: u8 = 5i32;
+    value
+}
+fn evaluates() -> u8 {
+    const { mistyped_const() }
+}
+fn generic<T>(value: T) -> T {
+    let wrong: u8 = 6i32;
+    value
+}
+fn kept(x: u8) -> u8 {
+    x | 3
+}
+fn main() {
+    let _ = kept(1);
+    let _ = mistyped();
+    let _ = with_closure(2);
+    let _ = with_inline();
+    let _ = evaluates();
+    let _ = generic(7u8);
+}
+";
+
+#[test]
+fn bodies_that_do_not_type_are_named_together_and_become_stubs() -> Result {
+    let folder = folder_with("mistyped", MISTYPED)?;
+    // Strict compilation stops at the first such body, exactly as before.
+    let strict = run(&folder, &[], &[])?;
+    assert_eq!(strict.status.code(), Some(1));
+    let first = MISTYPED
+        .find("1i32")
+        .ok_or("fixture lost its first mismatch")?;
+    assert_eq!(
+        String::from_utf8(strict.stderr)?,
+        format!("ERROR: file 0: {first}: incompatible types\n")
+    );
+    // One bring-up compilation names every function whose body does not
+    // type; nothing typed inside them is completed, so the body whose
+    // constant evaluates the failed `const fn` is named in turn.
+    let (names, stubbed) = census(&folder, MISTYPED)?;
+    assert_eq!(
+        names,
+        [
+            "mistyped",
+            "with_closure",
+            "with_inline",
+            "mistyped_const",
+            "generic",
+            "evaluates"
+        ]
+    );
+    // Callers keep their bodies and the checked signatures of the stubs.
+    assert!(stubbed.contains("binary or"), "{stubbed}");
+    assert!(!stubbed.contains("binary and"), "{stubbed}");
+    let trapping = stubbed
+        .split("\nfunction @")
+        .filter(|function| function.contains("call void @abort()"))
+        .count();
+    assert_eq!(trapping, 5, "{stubbed}");
     Ok(())
 }
 

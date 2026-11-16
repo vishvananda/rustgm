@@ -124,6 +124,15 @@ pub struct Contracts<'a> {
 /// # Errors
 /// Rejects missing body owners and overflowing inference identities.
 pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
+    collect_except(facts, |_| false)
+}
+/// Like `collect`, dropping the facts of every nested body for which `dropped`
+/// holds and that has no owner: one inside a bring-up stub whose body did not
+/// type, which proves nothing.
+pub(crate) fn collect_except(
+    facts: &Declarations,
+    dropped: impl Fn(NodeKey) -> bool,
+) -> Result<Contracts<'_>, &'static str> {
     let mut bodies = Vec::new();
     let mut index = HashMap::default();
     let mut creators = creator::Creators::default();
@@ -159,10 +168,13 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
         output_interface(facts, contract)?;
     }
     incremental::Cursor::default().visit(facts, |body, source, fact| {
-        let target = index
-            .get(&body)
-            .copied()
-            .ok_or("lifetime obligation has no body owner")?;
+        let Some(&target) = index.get(&body) else {
+            return if dropped(body) {
+                Ok(())
+            } else {
+                Err("lifetime obligation has no body owner")
+            };
+        };
         match fact {
             incremental::Fact::Obligation(_, kind) => {
                 bodies[target].obligations.push(Obligation {

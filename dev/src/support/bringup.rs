@@ -135,10 +135,32 @@ pub struct Deferred {
     pub file: u32,
     pub position: Position,
     pub message: String,
+    /// The function that owns the failure wherever it was raised, when the
+    /// stage that set it aside knows it; otherwise the innermost function
+    /// containing the position owns it.
+    pub owner: Option<Owner>,
+}
+/// A function item by its source file index, syntax node and definition.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Owner {
+    pub file: u32,
+    pub node: u32,
+    pub definition: u32,
 }
 /// Set a located failure aside. Refused outside the bring-up profile, where
 /// every failure stops its stage at once.
+#[must_use]
 pub fn defer(file: u32, position: Position, message: &str) -> bool {
+    push_deferred(file, position, message, None)
+}
+/// Set aside a failure that belongs to the function `owner` wherever it was
+/// raised: a body that failed to type keeps its checked signature and becomes
+/// a trapping stub. Refused outside the bring-up profile.
+#[must_use]
+pub fn defer_owned(file: u32, position: Position, message: &str, owner: Owner) -> bool {
+    push_deferred(file, position, message, Some(owner))
+}
+fn push_deferred(file: u32, position: Position, message: &str, owner: Option<Owner>) -> bool {
     if selected().is_none() {
         return false;
     }
@@ -149,6 +171,7 @@ pub fn defer(file: u32, position: Position, message: &str) -> bool {
             file,
             position,
             message: message.to_owned(),
+            owner,
         });
     true
 }
@@ -179,6 +202,7 @@ pub fn unproven(file: u32, position: Position, message: &str) -> bool {
             file,
             position,
             message: message.to_owned(),
+            owner: None,
         });
     }
     true

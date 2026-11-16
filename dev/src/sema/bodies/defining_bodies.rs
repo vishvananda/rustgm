@@ -1,11 +1,9 @@
 //! Hidden-type dependencies retain callers while each defining body is typed once.
-use super::{Checker, Declarations, DefiningRequest, Error, Requirement, State};
-use crate::support::hash::HashMap;
-use crate::{
-    resolve::expansion::Report,
-    sema::census::{Census, Phase},
-    types::opaque::OpaqueId,
+use super::{
+    Checker, Declarations, DefiningRequest, Error, Requirement, State, isolation::Isolation,
 };
+use crate::support::hash::HashMap;
+use crate::{resolve::expansion::Report, types::opaque::OpaqueId};
 #[cfg(test)]
 #[path = "../../../tests/invariants/importscheduling.rs"]
 mod importscheduling;
@@ -16,8 +14,8 @@ enum Status {
     Active,
     Complete,
     Checked,
-    /// Census only: the body failed or reached a failed body. Names the
-    /// root-cause record; the body is never typed, completed or resumed.
+    /// Isolated only: the body failed or reached a failed body. Names the
+    /// root cause; the body is never typed, completed or resumed.
     Failed(usize),
 }
 struct Suspended {
@@ -61,7 +59,7 @@ impl Schedule {
 /// The continuation of one scheduling step.
 enum Step {
     Next(Option<usize>),
-    /// Census only: a hidden-type dependency names a failed body.
+    /// Isolated only: a hidden-type dependency names a failed body.
     Blocked(usize),
     /// The hidden-type proof of a completed defining body failed.
     Hidden(usize, Error),
@@ -99,10 +97,10 @@ impl Checker<'_> {
     pub(super) fn functions(
         &mut self,
         close: &mut impl FnMut(&Report, &mut Declarations, DefiningRequest) -> Result<(), Error>,
-        mut census: Option<&mut Census>,
+        mut isolation: Option<Isolation<'_>>,
     ) -> Result<(), Error> {
         if self.facts.opaques.owners.is_empty() {
-            return self.plain_functions(close, census);
+            return self.plain_functions(close, isolation);
         }
         let mut schedule = Schedule::new(self.facts);
         let imported = schedule.checked();
@@ -112,12 +110,12 @@ impl Checker<'_> {
                 index
             } else {
                 if let Err(error) = self.advance_completed(&mut schedule, close) {
-                    let Some(census) = census.as_deref_mut() else {
+                    let Some(isolation) = isolation.as_mut() else {
                         return Err(error);
                     };
-                    let owner = self.facts.functions[schedule.cursor].definition;
+                    let function = self.facts.functions[schedule.cursor];
                     schedule.states[schedule.cursor] =
-                        Status::Failed(self.isolate_body(census, owner, error)?);
+                        Status::Failed(self.isolate_body(isolation, function, error)?);
                     continue;
                 }
                 if schedule.cursor == schedule.states.len() {
@@ -126,51 +124,46 @@ impl Checker<'_> {
                 schedule.cursor
             };
             if matches!(schedule.states[index], Status::Unseen)
-                && let Some(census) = census.as_deref_mut()
+                && let Some(isolation) = isolation.as_mut()
             {
                 let function = self.facts.functions[index];
-                census.progress_item(
-                    self.report,
-                    crate::sema::census::ItemKind::Function,
-                    function.definition,
-                    function.body,
-                )?;
+                isolation.progress_item(self.report, function.definition, function.body)?;
             }
             let step = self.schedule(index, current, &mut schedule, close);
-            current = match (step, census.as_deref_mut()) {
+            current = match (step, isolation.as_mut()) {
                 (Ok(Step::Next(next)), _) => next,
                 (Err(error) | Ok(Step::Hidden(_, error)), None) => return Err(error),
                 (Ok(Step::Blocked(_)), None) => {
                     return Err(self.error(
                         self.state.body.node,
-                        "a census-failed body was reached outside a census",
+                        "an isolated failed body was reached without isolation",
                     ));
                 }
-                (Err(error), Some(census)) => {
-                    let owner = self.facts.functions[index].definition;
-                    let cause = self.isolate_body(census, owner, error)?;
-                    self.unwind(census, &mut schedule, index, cause);
+                (Err(error), Some(isolation)) => {
+                    let function = self.facts.functions[index];
+                    let cause = self.isolate_body(isolation, function, error)?;
+                    self.unwind(isolation, &mut schedule, index, cause);
                     None
                 }
-                (Ok(Step::Blocked(cause)), Some(census)) => {
-                    self.block_body(census, self.facts.functions[index].definition, cause);
+                (Ok(Step::Blocked(cause)), Some(isolation)) => {
+                    self.block_body(isolation, self.facts.functions[index], cause);
                     self.discard_body();
-                    self.unwind(census, &mut schedule, index, cause);
+                    self.unwind(isolation, &mut schedule, index, cause);
                     None
                 }
-                (Ok(Step::Hidden(target, error)), Some(census)) => {
-                    let owner = self.facts.functions[target].definition;
-                    let cause = self.isolate_body(census, owner, error)?;
+                (Ok(Step::Hidden(target, error)), Some(isolation)) => {
+                    let failed = self.facts.functions[target];
+                    let cause = self.isolate_body(isolation, failed, error)?;
                     schedule.states[target] = Status::Failed(cause);
                     schedule.patterns[target] = None;
-                    self.block_body(census, self.facts.functions[index].definition, cause);
-                    self.unwind(census, &mut schedule, index, cause);
+                    self.block_body(isolation, self.facts.functions[index], cause);
+                    self.unwind(isolation, &mut schedule, index, cause);
                     None
                 }
             };
         }
-        if let Some(census) = census {
-            census.checked(Phase::Bodies, schedule.checked().saturating_sub(imported));
+        if let Some(isolation) = isolation.as_mut() {
+            isolation.checked(schedule.checked().saturating_sub(imported));
         }
         for pending in schedule.patterns.into_iter().flatten() {
             self.state
@@ -247,39 +240,39 @@ impl Checker<'_> {
         }
     }
     /// Every suspended body waits on the failed one through its hidden types.
-    fn unwind(&mut self, census: &mut Census, schedule: &mut Schedule, index: usize, cause: usize) {
+    fn unwind(
+        &mut self,
+        isolation: &mut Isolation<'_>,
+        schedule: &mut Schedule,
+        index: usize,
+        cause: usize,
+    ) {
         schedule.states[index] = Status::Failed(cause);
         schedule.patterns[index] = None;
         for suspended in std::mem::take(&mut schedule.stack) {
             schedule.states[suspended.index] = Status::Failed(cause);
-            let owner = self.facts.functions[suspended.index].definition;
-            self.block_body(census, owner, cause);
+            self.block_body(isolation, self.facts.functions[suspended.index], cause);
         }
     }
     fn plain_functions(
         &mut self,
         close: &mut impl FnMut(&Report, &mut Declarations, DefiningRequest) -> Result<(), Error>,
-        mut census: Option<&mut Census>,
+        mut isolation: Option<Isolation<'_>>,
     ) -> Result<(), Error> {
         for index in 0..self.facts.functions.len() {
             let function = self.facts.functions[index];
-            if let Some(census) = census.as_deref_mut() {
-                census.progress_item(
-                    self.report,
-                    crate::sema::census::ItemKind::Function,
-                    function.definition,
-                    function.body,
-                )?;
+            if let Some(isolation) = isolation.as_mut() {
+                isolation.progress_item(self.report, function.definition, function.body)?;
             }
             let result = self.plain_function(function, close);
-            let Some(census) = census.as_deref_mut() else {
+            let Some(isolation) = isolation.as_mut() else {
                 result?;
                 continue;
             };
             match result {
-                Ok(()) => census.checked(Phase::Bodies, 1),
+                Ok(()) => isolation.checked(1),
                 Err(error) => {
-                    self.isolate_body(census, function.definition, error)?;
+                    self.isolate_body(isolation, function, error)?;
                 }
             }
         }

@@ -295,7 +295,8 @@ fn semantic(
     let rustgm::pipeline::Analysis {
         mut facts,
         prepared,
-    } = rustgm::pipeline::analyze_source(&report).map_err(|error| semantic_error(&error))?;
+    } = rustgm::pipeline::analyze_source(&report)
+        .map_err(|error| analysis_error(&report, &error))?;
     if matches!(mode, Mode::Semantics | Mode::Relationships) {
         rustgm::sema::semantic_view::check_ordinary_profile(&report, &facts)
             .map_err(|error| semantic_error(&facts.retain_error_warnings(error)))?;
@@ -418,9 +419,19 @@ fn lowering_error(
     facts: &mut rustgm::sema::model::Declarations,
     error: resolve::package::Error,
 ) -> String {
-    let attribution = crate::bringup::attribute(report, facts, &error)
+    let attribution = crate::bringup::attribute(report, Some(facts), &error)
         .and_then(|()| crate::bringup::unproven(report, facts));
     let message = semantic_error(&facts.retain_error_warnings(error));
+    match attribution {
+        Ok(()) => message,
+        Err(failure) => format!("{message}; bring-up attribution failed: {failure}"),
+    }
+}
+/// Render an analysis failure; the bring-up profile also names the functions
+/// whose bodies did not type, which the typing stage set aside.
+fn analysis_error(report: &resolve::expansion::Report, error: &resolve::package::Error) -> String {
+    let attribution = crate::bringup::attribute(report, None, error);
+    let message = semantic_error(error);
     match attribution {
         Ok(()) => message,
         Err(failure) => format!("{message}; bring-up attribution failed: {failure}"),

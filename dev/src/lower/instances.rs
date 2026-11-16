@@ -773,10 +773,12 @@ fn prepare_template_inputs(
     templates
         .attach(prepared.imported.take())
         .map_err(|e| diagnostic(report, None, e.into()))?;
+    let untyped = body::bringup::Untyped::new(report, facts);
+    let dropped = |key| untyped.contains(report, key);
     let mut inputs = if let Some(collector) = prepared.contracts.take() {
-        collector.finish(facts)
+        collector.finish_except(facts, dropped)
     } else {
-        body::regions::collect(facts)
+        body::regions::collect_except(facts, dropped)
     }
     .map_err(|e| diagnostic(report, None, e.into()))?
     .bodies;

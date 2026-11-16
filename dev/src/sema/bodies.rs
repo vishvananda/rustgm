@@ -59,6 +59,7 @@ mod addresses;
 mod displacement_inputs;
 mod intrinsic_items;
 mod isolation;
+use isolation::{Isolation, SetAside};
 mod pointer_casts;
 mod pointers;
 mod privacy;
@@ -165,13 +166,19 @@ pub(crate) fn analyze_defining(
     super::compiler_items::field_protocol::authenticate(report, &facts)
         .map_err(|error| facts.retain_error_warnings(report.diagnostic(error)))?;
     let mut checker = Checker::new(report, &mut facts);
-    checker
-        .functions(&mut close, census.as_deref_mut())
-        .map_err(|error| {
-            checker
-                .facts
-                .retain_error_warnings(report.diagnostic(error))
-        })?;
+    // The bring-up profile sets every failed function body aside when no
+    // census isolates it; the stage still fails once every body was checked.
+    let mut set_aside = census.is_none().then(SetAside::selected).flatten();
+    let isolation = match (census.as_deref_mut(), set_aside.as_mut()) {
+        (Some(census), _) => Some(Isolation::Census(census)),
+        (None, Some(set_aside)) => Some(Isolation::Stubs(set_aside)),
+        (None, None) => None,
+    };
+    checker.functions(&mut close, isolation).map_err(|error| {
+        checker
+            .facts
+            .retain_error_warnings(report.diagnostic(error))
+    })?;
     for index in 0..checker.facts.initializers.len() {
         if !checker.facts.initializers[index].type_checked() {
             checker
@@ -189,6 +196,11 @@ pub(crate) fn analyze_defining(
     {
         drop(checker);
         return Ok(facts);
+    }
+    if let Some(error) = set_aside.and_then(SetAside::finish) {
+        return Err(checker
+            .facts
+            .retain_error_warnings(report.diagnostic(error)));
     }
     checker.complete_constant_patterns().map_err(|error| {
         checker
