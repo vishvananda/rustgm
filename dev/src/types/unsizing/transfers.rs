@@ -1,11 +1,35 @@
 //! Closed public-layout recipes are data; selection and lifetime debts stay in bodies.
-use super::{ItemId, Rules, Store, TypeId};
+use super::{ItemId, Kind, Rules, Store, TypeId};
 use crate::support::retained::{self, Growth, Payment};
+
+/// The pointee of a nominal conversion's changed pointer field: a reference
+/// or raw pointer, bare or under a pattern type such as core's
+/// `*const T is !null`, which keeps its base's representation.
+pub(crate) fn terminal_pointee(types: &Store, ty: TypeId) -> Option<TypeId> {
+    let ty = match types.kind(ty)? {
+        Kind::Pattern { base, .. } => base,
+        _ => ty,
+    };
+    match types.kind(ty)? {
+        Kind::Reference { referent, .. } => Some(referent),
+        Kind::Pointer { pointee, .. } => Some(pointee),
+        _ => None,
+    }
+}
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Step {
     Slice(TypeId),
-    Nested { source: TypeId, target: TypeId },
+    /// A thin pointer to `concrete` becomes a pointer to the trait object
+    /// `object`, whose metadata is the concrete type's vtable.
+    Object {
+        concrete: TypeId,
+        object: TypeId,
+    },
+    Nested {
+        source: TypeId,
+        target: TypeId,
+    },
 }
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) struct Span {

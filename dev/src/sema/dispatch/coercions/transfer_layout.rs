@@ -143,17 +143,33 @@ fn step(
     source: TypeId,
     target: TypeId,
 ) -> Result<CoercionStep, &'static str> {
-    match (types.kind(source), types.kind(target)) {
-        (Some(Kind::Adt(a, _)), Some(Kind::Adt(b, _))) if a == b => {
-            Ok(CoercionStep::Nested { source, target })
+    if let (Some(Kind::Adt(a, _)), Some(Kind::Adt(b, _))) = (types.kind(source), types.kind(target))
+        && a == b
+    {
+        return Ok(CoercionStep::Nested { source, target });
+    }
+    let (Some(a), Some(b)) = (
+        crate::types::unsizing::terminal_pointee(types, source),
+        crate::types::unsizing::terminal_pointee(types, target),
+    ) else {
+        return Err("nominal changed field lacks its checked physical conversion profile");
+    };
+    match (types.kind(a), types.kind(b)) {
+        (Some(Kind::Array { .. }), Some(Kind::Slice(_))) => Ok(CoercionStep::Slice(a)),
+        // The selected `Unsize` proof made `a` a sized implementor of `b`.
+        (Some(kind), Some(Kind::Dynamic { .. }))
+            if !matches!(
+                kind,
+                Kind::Dynamic { .. }
+                    | Kind::Slice(_)
+                    | Kind::Primitive(crate::types::Primitive::Str)
+            ) =>
+        {
+            Ok(CoercionStep::Object {
+                concrete: a,
+                object: b,
+            })
         }
-        (Some(Kind::Reference { referent: a, .. }), Some(Kind::Reference { referent: b, .. }))
-        | (Some(Kind::Pointer { pointee: a, .. }), Some(Kind::Pointer { pointee: b, .. })) => {
-            match (types.kind(a), types.kind(b)) {
-                (Some(Kind::Array { .. }), Some(Kind::Slice(_))) => Ok(CoercionStep::Slice(a)),
-                _ => Err("nominal pointer terminal requires its wider checked conversion profile"),
-            }
-        }
-        _ => Err("nominal changed field lacks its checked physical conversion profile"),
+        _ => Err("nominal pointer terminal requires its wider checked conversion profile"),
     }
 }

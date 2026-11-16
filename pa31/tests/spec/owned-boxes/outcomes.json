@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "declared": "2026-11-16, before either compiler ran on these programs (obj/parallel/alloc-m3/box/declared.txt). The first oracle run showed the shared prefix lacked lang items rustc requires (freeze; dispatch_from_dyn for &T, without which a trait object's trait is not dyn compatible); the prefix gained them and the drop_glue and destruct items before the oracle ran again, and Box::new reads size_of in a const block, as rustc's codegen requires of that nullary intrinsic. RustGM's first run then rejected every case at the prefix's Unsize declaration, which RustGM pins to core's exact `T: PointeeSized` form; the prefix took core's PointeeSized bounds for its pointer, marker and conversion items, and the oracle ran again on these bytes. Declared outcomes did not change. 13/13 statuses and error codes agree; nested's declared allocation size (16) was wrong: this NonNull has no niche, so its List is 24 bytes, as rustc's build prints.",
+ "declared": "2026-11-16, before either compiler ran on these programs (obj/parallel/alloc-m3/box/declared.txt). The first oracle run showed the shared prefix lacked lang items rustc requires (freeze; dispatch_from_dyn for &T, without which a trait object's trait is not dyn compatible); the prefix gained them and the drop_glue and destruct items before the oracle ran again, and Box::new reads size_of in a const block, as rustc's codegen requires of that nullary intrinsic. RustGM's first run then rejected every case at the prefix's Unsize declaration, which RustGM pins to core's exact `T: PointeeSized` form; the prefix took core's PointeeSized bounds for its pointer, marker and conversion items, and the oracle ran again on these bytes. Declared outcomes did not change. 13/13 statuses and error codes agree; nested's declared allocation size (16) was wrong: this NonNull has no niche, so its List is 24 bytes, as rustc's build prints. The nominal-terminal cases were declared on 2026-11-16 before either compiler ran on them (obj/parallel/alloc-m3/dyn/declared.txt): dyn-content with the plain prefix, and pattern-move, pattern-dyn, pattern-slice and unimplemented-dyn with a prefix whose NonNull is #[repr(transparent)] over crate::pattern_type!(*const T is !null) with core's CoerceUnsized impl for it. rustc's first run rejected that prefix with E0635 (pattern_type_macro is core's library feature on its own macro) and E0512 (Box's Drop transmuted NonNull<T> to *mut T for T: ?Sized), its second with E0507 (this core's *mut T is not Copy); Box's Drop now reads the data pointer through *(&self.0.pointer as *const NonNull<T> as *const *const u8). Then all 5 statuses, the error code and the native output agree with the declarations.",
  "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
  "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minialloc --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
  "observer_sha256": "a3d959c0f8d1b6a2c24ba5a88381ac99f737c7e37af9b6c32c59a510033247e4",
@@ -108,7 +108,48 @@
    "rustgm_before": "unsupported source language item",
    "declared_error": "E0594",
    "rustc_error": "E0594 cannot assign to `*b`, as `b` is not declared as mutable"
+  },
+  "dyn-content.rs": {
+   "sha256": "2f2a85bb0b9f7b9b0e7a06664f393dc559190c7b364318b4df1e01df5d8596bf",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "nominal pointer terminal requires its wider checked conversion profile",
+   "declared_stdout": "alloc 1\ndrop 4\nfree\nvalue 4\n",
+   "native_stdout": "alloc 1\ndrop 4\nfree\nvalue 4\n"
+  },
+  "pattern-move.rs": {
+   "sha256": "b29eb75ce9612f0432c82128e78b53100dcd2fcfc53d75e1c87930b7a72a2749",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "accepted: it converts no pointer",
+   "declared_stdout": "alloc 1\ndrop 7\nfree\nvalue 7\n",
+   "native_stdout": "alloc 1\ndrop 7\nfree\nvalue 7\n"
+  },
+  "pattern-dyn.rs": {
+   "sha256": "5932f629c1cec6087480334fd8a16bcfae1e131a22b0f25c1acca6dd812fabdc",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "nominal changed field lacks its checked physical conversion profile",
+   "declared_stdout": "alloc 1\ndrop 4\nfree\nvalue 4\n",
+   "native_stdout": "alloc 1\ndrop 4\nfree\nvalue 4\n"
+  },
+  "pattern-slice.rs": {
+   "sha256": "835e133e23acf9850539b0a4064b0910ece156b50c1db3397b169fe9ef348757",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "nominal changed field lacks its checked physical conversion profile",
+   "declared_stdout": "alloc 2\ndrop 3\ndrop 6\nfree\nvalue 9\n",
+   "native_stdout": "alloc 2\ndrop 3\ndrop 6\nfree\nvalue 9\n"
+  },
+  "unimplemented-dyn.rs": {
+   "sha256": "214db1610823b81485bdcffb3c2af146019d1c33a9dc201517888f6612f3e85d",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustgm_before": "trait obligation requires an unambiguous matching assumption or implementation",
+   "declared_error": "E0277",
+   "rustc_error": "E0277 the trait bound `Noisy: Other` is not satisfied"
   }
  },
- "rustgm_before": "050a72a9b's strict source profile (obj/rust/observe/rustgm, sha256 4b7b18f840a55805d0869cf530f98b64fc2640bb00f63b26869551a46a39a140) rejects every case at its owned_box lang item"
+ "rustgm_before": "050a72a9b's strict source profile (obj/rust/observe/rustgm, sha256 4b7b18f840a55805d0869cf530f98b64fc2640bb00f63b26869551a46a39a140) rejects every case at its owned_box lang item",
+ "rustgm_before_nominal_terminals": "d3ed974a1's maintainer test (box_contents::owned_boxes_lower_and_their_controls_reject) rejects each accepted nominal-terminal case with the message recorded as its rustgm_before"
 }

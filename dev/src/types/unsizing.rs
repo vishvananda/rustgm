@@ -9,7 +9,9 @@ use super::{
     parameters::{ParameterId, uses::Uses},
 };
 use crate::support::hash::{HashMap, HashSet};
-pub(crate) use transfers::{Plan as CoercionPlan, Span as CoercionSpan, Step as CoercionStep};
+pub(crate) use transfers::{
+    Plan as CoercionPlan, Span as CoercionSpan, Step as CoercionStep, terminal_pointee,
+};
 pub(crate) use wrappers::{Field as CoercionField, Schema as CoercionSchema};
 
 /// A selected terminal conversion survives structural wrappers and specialization.

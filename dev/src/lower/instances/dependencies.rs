@@ -398,7 +398,22 @@ impl Discovered {
                         u32::try_from(index).map_err(|_| "too many nominal conversions")?,
                     ),
                 )?;
-                Reader::new(facts).nominal_conversion(row.source, row.from, row.to)?;
+                let mut plan =
+                    Reader::new(facts).nominal_conversion(row.source, row.from, row.to)?;
+                // A trait-object terminal, however deeply nested, needs its table.
+                for _ in 0..1_000_000 {
+                    match plan.step {
+                        crate::types::unsizing::CoercionStep::Nested { source, target } => {
+                            plan = Reader::new(facts).nominal_plan(source, target)?;
+                        }
+                        crate::types::unsizing::CoercionStep::Object { concrete, object } => {
+                            self.tables.push((concrete, object));
+                            return Ok(());
+                        }
+                        crate::types::unsizing::CoercionStep::Slice(_) => return Ok(()),
+                    }
+                }
+                return Err("nested nominal conversion work budget exceeded");
             }
         }
         Ok(())

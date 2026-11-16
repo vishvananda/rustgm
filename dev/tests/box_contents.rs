@@ -8,13 +8,16 @@
 //!
 //! The `owned-boxes` packet is a mini core and mini alloc whose `Box` keeps
 //! alloc's field shape and allocates and frees through a C observer, which
-//! prints every allocation, free and drop. Outcomes were declared before
-//! either compiler ran; rustc 1.98.0's are recorded in its `outcomes.json`.
+//! prints every allocation, free and drop. The `pattern-*` programs hold the
+//! content pointer as core does, in `*const T is !null`, which converts to a
+//! trait object or slice pointer through its own `CoerceUnsized`. Outcomes
+//! were declared before either compiler ran; rustc 1.98.0's are recorded in
+//! its `outcomes.json`.
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 const PACKET: &str = "pa31/tests/spec/owned-boxes";
 /// Programs rustc accepts, with what rustc's build of each prints.
-const ACCEPTED: [(&str, &str); 8] = [
+const ACCEPTED: [(&str, &str); 12] = [
     ("move-out", "alloc 1\ndrop 7\nfree\nvalue 7\n"),
     ("drop-whole", "alloc 1\ndrop 5\nfree\nvalue 5\n"),
     ("partial-move", "alloc 2\ndrop 1\ndrop 2\nfree\nvalue 1\n"),
@@ -26,9 +29,13 @@ const ACCEPTED: [(&str, &str); 8] = [
     ("method-move", "alloc 2\ndrop 2\nfree\ndrop 1\nvalue 1\n"),
     ("slice-content", "alloc 2\ndrop 3\ndrop 6\nfree\nvalue 9\n"),
     ("borrowed-content", "alloc 1\ndrop 8\nfree\nvalue 8\n"),
+    ("dyn-content", "alloc 1\ndrop 4\nfree\nvalue 4\n"),
+    ("pattern-move", "alloc 1\ndrop 7\nfree\nvalue 7\n"),
+    ("pattern-dyn", "alloc 1\ndrop 4\nfree\nvalue 4\n"),
+    ("pattern-slice", "alloc 2\ndrop 3\ndrop 6\nfree\nvalue 9\n"),
 ];
 /// Programs rustc rejects, with the message `RustGM` rejects each with.
-const REJECTED: [(&str, &str); 5] = [
+const REJECTED: [(&str, &str); 6] = [
     ("use-after-move", MOVED),
     (
         "move-from-borrowed-box",
@@ -40,6 +47,10 @@ const REJECTED: [(&str, &str); 5] = [
         "cannot move a non-Copy field out of a type that implements Drop",
     ),
     ("immutable-box", "cannot assign through an immutable local"),
+    (
+        "unimplemented-dyn",
+        "trait obligation requires an unambiguous matching assumption or implementation",
+    ),
 ];
 const MOVED: &str = "local may be uninitialized or moved at this read";
 

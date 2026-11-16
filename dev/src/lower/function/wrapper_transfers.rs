@@ -52,6 +52,9 @@ impl Lower<'_, '_, '_> {
                 if index == plan.changed as usize {
                     match plan.step {
                         CoercionStep::Slice(array) => self.transfer_slice(span, array, a, b)?,
+                        CoercionStep::Object { concrete, object } => {
+                            self.transfer_object(span, (concrete, object), a, b)?;
+                        }
                         CoercionStep::Nested { source, target } => {
                             if (span.source, span.target) != (source, target) {
                                 return Err("nested nominal transfer changed its actual field");
@@ -140,11 +143,7 @@ impl Lower<'_, '_, '_> {
         source: Address,
         target: Address,
     ) -> Result<(), &'static str> {
-        let pointee = |ty| match self.context.types.kind(ty) {
-            Some(Kind::Reference { referent, .. }) => Some(referent),
-            Some(Kind::Pointer { pointee, .. }) => Some(pointee),
-            _ => None,
-        };
+        let pointee = |ty| crate::types::unsizing::terminal_pointee(self.context.types, ty);
         if pointee(span.source) != Some(array)
             || pointee(span.target)
                 .is_none_or(|ty| !matches!(self.context.types.kind(ty), Some(Kind::Slice(_))))
@@ -161,5 +160,31 @@ impl Lower<'_, '_, '_> {
         self.builder.store(data, target.operand)?;
         let metadata = self.offset(target, 8)?;
         self.builder.store(length, metadata.operand)
+    }
+    /// Store the thin pointer at `source` as a pointer to the trait object,
+    /// with the concrete type's vtable as its metadata.
+    fn transfer_object(
+        &mut self,
+        span: CoercionSpan,
+        (concrete, object): (TypeId, TypeId),
+        source: Address,
+        target: Address,
+    ) -> Result<(), &'static str> {
+        let pointee = |ty| crate::types::unsizing::terminal_pointee(self.context.types, ty);
+        if pointee(span.source) != Some(concrete)
+            || pointee(span.target) != Some(object)
+            || self.context.layout(span.source)?.size != 8
+            || self.context.layout(span.target)?.size != 16
+        {
+            return Err("nominal object transfer changed its actual pointer terminal");
+        }
+        let data = self.builder.load(Type::Ptr, source.operand)?;
+        let table = self.context.object_table(concrete, object)?;
+        let table = self
+            .builder
+            .address(crate::lowir::program::Operand::Global(table))?;
+        self.builder.store(data, target.operand)?;
+        let metadata = self.offset(target, 8)?;
+        self.builder.store(table, metadata.operand)
     }
 }
