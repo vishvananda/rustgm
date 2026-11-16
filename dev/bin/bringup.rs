@@ -50,7 +50,7 @@ pub(super) fn validate(crates: &crate::crates::Options) -> Result<(), String> {
 
 /// Name every function that owns a failure, for the driver that maintains the
 /// list, and every failure that no list entry can remove. Without `facts`,
-/// only failures whose stage named their function are attributed.
+/// a failure belongs to a function item that the resolver declared.
 pub(super) fn attribute(
     report: &Report,
     facts: Option<&Declarations>,

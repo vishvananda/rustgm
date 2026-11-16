@@ -6,13 +6,16 @@ use super::{
 use crate::{
     resolve::{
         expansion::Report,
-        model::DefId,
+        model::{DefId, DefKind},
         package::{Error, Package},
         unit::{FileId, NodeKey},
     },
     sema::model::{Declarations, Function},
     support::bringup::{Position, Stubs, selected},
-    syntax::ast::NodeId,
+    syntax::{
+        ast::{Kind, NodeId},
+        item::ItemKind,
+    },
 };
 use std::collections::HashSet;
 
@@ -40,12 +43,22 @@ pub(crate) fn stub_bodies(report: &Report, facts: &Declarations) -> HashSet<Node
         .collect()
 }
 
-/// The listed functions whose bodies did not type, by source span. Nothing
-/// typed inside such a body completed, so no later stage may read it: its
-/// stub replaces the closures and inline constants it contains.
-pub(crate) struct Untyped(Vec<(FileId, u32, u32)>);
-impl Untyped {
-    pub(crate) fn new(report: &Report, facts: &Declarations) -> Self {
+/// Listed functions by source span. A stub replaces its function's body and
+/// with it the closures and inline constants inside, which no later stage
+/// evaluates; nothing typed inside a body that did not type even completed.
+pub(crate) struct Stubbed(Vec<(FileId, u32, u32)>);
+impl Stubbed {
+    /// Every listed function with a body.
+    pub(crate) fn listed(report: &Report, facts: &Declarations) -> Self {
+        Self::select(report, facts, |_| true)
+    }
+    /// The listed functions whose bodies did not type.
+    pub(crate) fn untyped(report: &Report, facts: &Declarations) -> Self {
+        Self::select(report, facts, |function| {
+            !facts.typed_function_bodies.contains(&function.definition)
+        })
+    }
+    fn select(report: &Report, facts: &Declarations, keep: impl Fn(&Function) -> bool) -> Self {
         if selected().is_none_or(Stubs::is_empty) {
             return Self(Vec::new());
         }
@@ -53,9 +66,7 @@ impl Untyped {
             .functions
             .iter()
             .filter(|function| {
-                function.body.is_some()
-                    && !facts.typed_function_bodies.contains(&function.definition)
-                    && stub(report, function.node)
+                function.body.is_some() && keep(function) && stub(report, function.node)
             })
             .map(|function| {
                 let unit = report.package.unit(function.node.file);
@@ -195,13 +206,43 @@ fn owner<'a>(
         .map(|(_, start, function)| (function, start))
 }
 
+/// Like `owner`, among the function items with a body that the resolver
+/// declared: for a failure raised where no body facts were returned.
+fn declared_owner(report: &Report, file: FileId, at: u32) -> Option<(DefId, u32)> {
+    let ast = &report.package.unit(file).configured.ast;
+    report
+        .resolution
+        .definitions
+        .iter()
+        .zip(0..)
+        .filter(|(definition, _)| definition.kind == DefKind::Function)
+        .filter_map(|(definition, index)| {
+            let key = definition.node.filter(|key| key.file == file)?;
+            let node = ast.node(key.node);
+            let Kind::Item(item) = node.kind else {
+                return None;
+            };
+            let body = matches!(
+                ast.items.get(item as usize)?.kind,
+                ItemKind::Function { body: Some(_), .. }
+            );
+            (body && node.span.start <= at && at <= node.span.end).then_some((
+                node.span.end - node.span.start,
+                node.span.start,
+                DefId(index),
+            ))
+        })
+        .min_by_key(|&(length, start, _)| (length, start))
+        .map(|(_, start, definition)| (definition, start))
+}
+
 /// Name the functions that own this compilation's failures, for the bring-up
 /// skip list: the failures its stages set aside, then the one that stopped it.
 /// A failure whose stage named its owning function belongs to that function;
 /// any other belongs to the innermost function item with a body that contains
-/// its position, which only `facts` can name. Unlocated and imported failures,
-/// and positions outside every such function, are unattributed. Empty outside
-/// the bring-up profile.
+/// its position, among the body facts when given and otherwise among the
+/// resolver's declarations. Unlocated and imported failures are unattributed.
+/// Empty outside the bring-up profile.
 #[must_use]
 pub fn blockers(report: &Report, facts: Option<&Declarations>, error: &Error) -> Attribution {
     let mut attribution = Attribution::default();
@@ -224,13 +265,9 @@ pub fn blockers(report: &Report, facts: Option<&Declarations>, error: &Error) ->
         None => attribution.unattributed.push(error.message.clone()),
     }
     for (file, at, message, owner) in failures {
-        let blocker = match (owner, facts) {
-            (Some(owner), _) => owned(report, owner, message),
-            (None, Some(facts)) => blocker(report, facts, file, at, message),
-            (None, None) => {
-                attribution.unattributed.push(message);
-                continue;
-            }
+        let blocker = match owner {
+            Some(owner) => owned(report, owner, message),
+            None => blocker(report, facts, file, at, message),
         };
         if !attribution
             .blockers
@@ -282,18 +319,24 @@ fn offset(report: &Report, failure: &crate::support::bringup::Deferred) -> Optio
 /// of a synthesized body.
 fn blocker(
     report: &Report,
-    facts: &Declarations,
+    facts: Option<&Declarations>,
     file: FileId,
     at: u32,
     message: String,
 ) -> Blocker {
-    let (offset, name) = owner(report, facts, file, at).map_or((at, "<item>"), |found| {
+    let found = match facts {
+        Some(facts) => {
+            owner(report, facts, file, at).map(|(function, start)| (function.definition, start))
+        }
+        None => declared_owner(report, file, at),
+    };
+    let (offset, name) = found.map_or((at, "<item>"), |(definition, start)| {
         let name = report
             .resolution
             .definitions
-            .get(found.0.definition.0 as usize)
+            .get(definition.0 as usize)
             .map_or("?", |definition| report.package.names.get(definition.name));
-        (found.1, name)
+        (start, name)
     });
     Blocker {
         path: path(&report.package, file),
@@ -311,7 +354,13 @@ pub fn unproven_bodies(report: &Report, facts: &Declarations) -> Vec<Blocker> {
         let Some(at) = offset(report, &failure) else {
             continue;
         };
-        let body = blocker(report, facts, FileId(failure.file), at, failure.message);
+        let body = blocker(
+            report,
+            Some(facts),
+            FileId(failure.file),
+            at,
+            failure.message,
+        );
         if !bodies.iter().any(|seen| {
             seen.offset == body.offset && seen.path == body.path && seen.message == body.message
         }) {

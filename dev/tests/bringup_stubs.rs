@@ -232,14 +232,16 @@ fn malformed_lists_and_unmarked_bring_up_libraries_are_usage_errors() -> Result 
 
 /// Grow the list as the census driver does until the program compiles: every
 /// failing run names a new function at the offset of its item, never one that
-/// is already listed. Returns the names in the order met and the `LowIR`.
-fn census(folder: &Path, source: &str) -> Result<(Vec<String>, String)> {
+/// is already listed. Returns each run's names in the order met and the
+/// `LowIR`.
+fn census(folder: &Path, source: &str) -> Result<(Vec<Vec<String>>, String)> {
     let mut list = String::new();
     let mut names = Vec::new();
+    let mut rounds = Vec::new();
     loop {
         let output = run(folder, &[&list], &[])?;
         if output.status.success() {
-            return Ok((names, String::from_utf8(output.stdout)?));
+            return Ok((rounds, String::from_utf8(output.stdout)?));
         }
         assert_eq!(output.status.code(), Some(1));
         let stderr = String::from_utf8(output.stderr)?;
@@ -266,6 +268,7 @@ fn census(folder: &Path, source: &str) -> Result<(Vec<String>, String)> {
             writeln!(list, "{path}\t{offset}\t{name}\t{message}")?;
         }
         assert!(names.len() > before, "no new function: {stderr}");
+        rounds.push(names[before..].to_vec());
     }
 }
 
@@ -276,7 +279,8 @@ fn rejected_functions_are_named_until_the_list_compiles_the_rest() -> Result {
     let strict = run(&folder, &[], &[])?;
     assert_eq!(strict.status.code(), Some(1));
     assert!(!String::from_utf8_lossy(&strict.stderr).contains("bringup-"));
-    let (mut names, stubbed) = census(&folder, REJECTED)?;
+    let (rounds, stubbed) = census(&folder, REJECTED)?;
+    let mut names = rounds.concat();
     names.sort_unstable();
     assert_eq!(names, ["moved_twice", "stolen"]);
     // The accepted function keeps its body; both rejected ones trap instead.
@@ -288,7 +292,11 @@ fn rejected_functions_are_named_until_the_list_compiles_the_rest() -> Result {
 /// Function bodies that do not type beside one that does: a closure and an
 /// inline constant inside failed bodies, a `const fn` that fails and a body
 /// whose constant evaluates it, and a generic body. rustc 1.98.0 rejects
-/// each mistyped `let` with E0308 (mismatched types).
+/// each mistyped `let` with E0308 (mismatched types), and the constant of
+/// `overflows`, which types, with E0080 (its evaluation overflows). It
+/// accepts `chooses`, whose generic inline constant `RustGM` evaluates
+/// before any instance, as alloc's `SpecFromIter` selection for in-place
+/// collection does, and fails.
 const MISTYPED: &str = "\
 fn mistyped() -> u8 {
     let value: u8 = 1i32;
@@ -315,6 +323,21 @@ fn generic<T>(value: T) -> T {
     let wrong: u8 = 6i32;
     value
 }
+fn overflows() -> u8 {
+    const { 1u8 - 2 }
+}
+trait Make {
+    fn make() -> u8;
+}
+impl Make for u8 {
+    fn make() -> u8 {
+        1
+    }
+}
+fn chooses<T: Make>() -> u8 {
+    let make: fn() -> u8 = const { T::make };
+    make()
+}
 fn kept(x: u8) -> u8 {
     x | 3
 }
@@ -325,6 +348,8 @@ fn main() {
     let _ = with_inline();
     let _ = evaluates();
     let _ = generic(7u8);
+    let _ = overflows();
+    let _ = chooses::<u8>();
 }
 ";
 
@@ -343,19 +368,24 @@ fn bodies_that_do_not_type_are_named_together_and_become_stubs() -> Result {
     );
     // One bring-up compilation names every function whose body does not
     // type; nothing typed inside them is completed, so the body whose
-    // constant evaluates the failed `const fn` is named in turn.
-    let (names, stubbed) = census(&folder, MISTYPED)?;
+    // constant evaluates the failed `const fn` is named in turn, as are the
+    // bodies whose constants fail. A listed body's constants are never
+    // evaluated, so none fails again.
+    let (rounds, stubbed) = census(&folder, MISTYPED)?;
+    let (typing, later) = rounds.split_first().ok_or("nothing was named")?;
     assert_eq!(
-        names,
-        [
+        typing,
+        &[
             "mistyped",
             "with_closure",
             "with_inline",
             "mistyped_const",
-            "generic",
-            "evaluates"
+            "generic"
         ]
     );
+    let mut later = later.concat();
+    later.sort_unstable();
+    assert_eq!(later, ["chooses", "evaluates", "overflows"]);
     // Callers keep their bodies and the checked signatures of the stubs.
     assert!(stubbed.contains("binary or"), "{stubbed}");
     assert!(!stubbed.contains("binary and"), "{stubbed}");
@@ -363,7 +393,7 @@ fn bodies_that_do_not_type_are_named_together_and_become_stubs() -> Result {
         .split("\nfunction @")
         .filter(|function| function.contains("call void @abort()"))
         .count();
-    assert_eq!(trapping, 5, "{stubbed}");
+    assert_eq!(trapping, 7, "{stubbed}");
     Ok(())
 }
 
