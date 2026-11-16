@@ -1,0 +1,46 @@
+{
+ "schema": 1,
+ "declared": "2026-11-16, before the frozen rustc 1.98.0 oracle of these exact bytes (obj/parallel/frontier/repro2/declared.json). pair.rs and capturing.rs first used + and +=, which this no_core prefix does not declare (rustc E0369); they were rewritten without operators and re-declared before the oracle ran again. Their declared outcomes did not change.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "native_stdout": "41 59\n",
+ "observer_sha256": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+ "cases": {
+  "ordinary.rs": {
+   "sha256": "0d8bb132b189cc01b8efe750692aafd7f8ad8079a96c0a904debc4070c8996d4",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "ordinary"
+  },
+  "pair.rs": {
+   "sha256": "36d84f2cb5dca25714270647c41259aca55a74f82cf1f6cd20f13043a0779e5f",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "pair"
+  },
+  "capturing.rs": {
+   "sha256": "29009df3875bce8c41f2741bc9b2b81829d1518bdfcaab78dcb2bcbebde3b5e9",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "capturing"
+  },
+  "direct.rs": {
+   "sha256": "80147e59ca3b8d4618d279e71d7acba1a087dfce74fd04870cae7cdfa869c28d",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "direct"
+  },
+  "ctfe-callee.rs": {
+   "sha256": "92db685c21d2b9c286f76ce04c0b3fff1e11901aed6d5630c8aa1433e47218e0",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "local-ordinary"
+  },
+  "plain-callee.rs": {
+   "sha256": "88f01902e988ace1d3d3c648d59953cc7e13c3eb215b8ca2e81f80a3580a793c",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "plain-callee"
+  }
+ }
+}

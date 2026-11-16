@@ -410,6 +410,50 @@ fn call_operators_on_nominal_receivers_execute_their_source_members() -> Result 
     Ok(())
 }
 
+const RUNTIME_CONST: &str = "pa31/tests/spec/runtime-const-closures";
+const RUNTIME_CONST_CASES: [&str; 4] = ["ordinary", "pair", "capturing", "direct"];
+/// A const closure executed natively, as core's `wrap_mut_1(f)` is from
+/// `Iterator::fold`, may call an ordinary closure; const evaluation may not.
+#[test]
+fn native_const_closures_call_ordinary_closures_that_const_evaluation_rejects() -> Result {
+    for name in RUNTIME_CONST_CASES {
+        packet_report(RUNTIME_CONST, name)
+            .and_then(|report| program(&report))
+            .map_err(|error| format!("{name}: {error}"))?;
+    }
+    for (name, cause) in [
+        (
+            "ctfe-callee",
+            "trait obligation requires an unambiguous matching assumption or implementation",
+        ),
+        (
+            "plain-callee",
+            "non-const calls are not allowed in constant initializers",
+        ),
+    ] {
+        let error = packet_report(RUNTIME_CONST, name)
+            .and_then(|report| program(&report))
+            .err()
+            .ok_or_else(|| format!("accepted {name}"))?;
+        assert!(error.to_string().contains(cause), "{name}: {error}");
+    }
+    Ok(())
+}
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn native_const_closures_execute_their_ordinary_callees() -> Result {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    for name in RUNTIME_CONST_CASES {
+        crate::observed_program::execute(
+            &root.join(format!("obj/parallel/runtime-const-closures/native/{name}")),
+            &program(&packet_report(RUNTIME_CONST, name)?)?,
+            &root.join(RUNTIME_CONST).join("observe.c"),
+            b"41 59\n",
+        )?;
+    }
+    Ok(())
+}
+
 #[test]
 fn const_closure_ctfe_and_default_premises_remain_accepting_requirements() -> Result {
     for (name, cause) in [

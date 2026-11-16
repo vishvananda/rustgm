@@ -958,7 +958,12 @@ pub(super) fn specialize(
     // checked original, instance and caller above. Its ordinary cleanup still
     // needs the full materialized region/loan proof. The original template and
     // separate CTFE materializations retain their actual const obligations.
-    if matches!(materialized.body.owner, body::ir::Owner::Function { .. }) {
+    // A const closure executed natively is likewise an ordinary closure: its
+    // `[const]` callees may be ordinary closures, as `wrap_mut_1(|x| ..)` does.
+    if matches!(
+        materialized.body.owner,
+        body::ir::Owner::Function { .. } | body::ir::Owner::Closure { .. }
+    ) {
         materialized.body.const_context = false;
     }
     materialized.resolve(facts).map_err(|e| error(&e))?;

@@ -972,6 +972,14 @@ owned forms accept and run natively against a C observer, and a `&Relay` that
 implements no call trait rejects (E0277). A maintainer integration test checks
 every case. There is no graded manifest.
 
+`spec/runtime-const-closures/` freezes six declared no_core programs whose
+const closure calls an ordinary closure, as core's `NeverShortCircuit::wrap_mut_1`
+and `wrap_mut_2` do. Executed natively, the const closure is an ordinary
+closure: one- and two-argument, capturing and direct forms accept and run
+against a C observer. An ordinary closure for a `[const]` bound in a const item
+(E0277) and an ordinary function called inside a const closure (E0015) reject.
+A maintainer integration test checks every case. There is no graded manifest.
+
 `spec/source-index-deref/` freezes eighteen declared no_core programs that
 index a value whose type reaches its indexed place through source `Deref`
 implementations, as `shared.borrow()[0]` does. The operand takes one actual
