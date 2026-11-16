@@ -95,6 +95,9 @@ fn bind(
     let mut declared = Obligations::new(1);
     let formal = normalize(facts, &mut declared, execution.self_ty)?;
     let leaf = normalize(facts, proof, leaf)?;
+    // The actual execution's substitution may have interned an opaque
+    // application a capture names, such as `&mut F` for an opaque `F`, only now.
+    matching::prepare_heads(facts, formal, leaf)?;
     let (bindings, work) =
         matching::bind_instance_counted(&facts.types, execution.universals, formal, leaf)?;
     facts.body_work.canonical_steps += work;

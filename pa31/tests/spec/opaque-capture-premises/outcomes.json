@@ -1,0 +1,32 @@
+{
+ "schema": 1,
+ "declared": "2026-11-16, before the frozen rustc 1.98.0 oracle of these exact bytes (obj/parallel/frontier/repro19/declared.json). The rejected control was rewritten before rustc ran, from an unresolved name to a move of the opaque callable; declared outcomes did not change.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "native_stdout": "41 59\n",
+ "observer_sha256": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+ "cases": {
+  "wrapped.rs": {
+   "sha256": "23ba18bd9a36a2d34e2f0802a69010705b980c02eec83ec1fc850a190bf138c4",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_bringup": "accepted with no blocker or unproven body; native stdout 41 59",
+   "rustgm_before": "accepted"
+  },
+  "generic.rs": {
+   "sha256": "bd43e02214f0096f72ba972529f41d7ff509f3e04461ed8eeb406ad39e8c4d29",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_bringup": "accepted with no blocker or unproven body; native stdout 41 59",
+   "rustgm_before": "bring-up blocker try_fold: opaque storage requires a checked defining type"
+  },
+  "rejected.rs": {
+   "sha256": "f823b5fd22ced0b7d0b38a462098b2ae0f19decf89d3447a27938976df21da9a",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustc_error": "E0382",
+   "rustgm_bringup": "rejected: fold is the one bring-up blocker, local may be uninitialized or moved at this read",
+   "rustgm_before": "rejected the same way"
+  }
+ }
+}

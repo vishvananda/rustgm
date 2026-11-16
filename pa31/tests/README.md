@@ -1116,6 +1116,16 @@ expected rejects (E0308). The generic creators remain unproven bodies for a
 region proof rustc accepts. A maintainer integration test checks every case.
 There is no graded manifest.
 
+`spec/opaque-capture-premises/` freezes three declared no_core programs that
+reduce core's `GenericShunt::try_fold` under its `fold`, which passes the
+opaque `NeverShortCircuit::wrap_mut_2(fold)` to a closure capturing it as
+`&mut F`. The opaque application that the closure's actual execution names
+gets its storage head before the declared `Output` premise is matched against
+it: non-generic and core-shaped generic forms accept under the bring-up
+profile and run against a C observer, and passing the opaque callable after
+moving it rejects (E0382). A maintainer integration test checks every case. There is no
+graded manifest.
+
 `spec/abstract-cleanup/` freezes six declared no_core programs that move an
 abstract value conditionally in a generic body, as core's `TakeWhile::next`
 does with `x: I::Item`. A rigid projection or opaque value has no structure to

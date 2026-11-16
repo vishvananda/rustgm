@@ -1246,25 +1246,66 @@ fn generic_closure_entries_prepare_their_signature_roots() -> Result {
     }
     Ok(())
 }
-#[test]
-#[ignore = "requires the locked CPPGM object backend and a C compiler"]
-fn generic_closure_entries_execute() -> Result {
+/// Compile each accepted case of `fixture` under the bring-up profile with no
+/// listed function, then link and run it against the fixture's C observer.
+fn execute_cases(fixture: &str, cases: &[&str]) -> Result {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
-    for case in ["concrete", "generic-fn", "generic-method"] {
-        let (passed, lowir) = minicore(ENTRY_ROOTS, case, Some(""))?;
+    for &case in cases {
+        let (passed, lowir) = minicore(fixture, case, Some(""))?;
         assert!(
             passed.status.success(),
             "{case}: {}",
             String::from_utf8_lossy(&passed.stderr)
         );
-        let folder = lowir.parent().ok_or("closure entry output folder")?;
+        let folder = lowir.parent().ok_or("fixture output folder")?;
         crate::observed_program::execute_lowir(
             folder,
             &lowir,
-            &root.join(ENTRY_ROOTS).join("observe.c"),
+            &root.join(fixture).join("observe.c"),
             b"41 59\n",
         )
         .map_err(|error| format!("{case}: {error}"))?;
     }
     Ok(())
+}
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn generic_closure_entries_execute() -> Result {
+    execute_cases(ENTRY_ROOTS, &["concrete", "generic-fn", "generic-method"])
+}
+
+const OPAQUE_CAPTURES: &str = "pa31/tests/spec/opaque-capture-premises";
+/// A closure capturing `&mut F` for an opaque callable `F`, as core's
+/// `GenericShunt::try_fold` does under `fold`'s `NeverShortCircuit::wrap_mut_2`,
+/// meets its declared `Output` premise once the opaque application its actual
+/// execution names has a storage head.
+#[test]
+fn opaque_captures_meet_their_output_premises() -> Result {
+    let (rejected, _) = minicore(OPAQUE_CAPTURES, "rejected", Some(""))?;
+    let stderr = String::from_utf8(rejected.stderr)?;
+    assert_eq!(rejected.status.code(), Some(1), "{stderr}");
+    assert!(
+        stderr.contains("\tfold\tlocal may be uninitialized or moved at this read"),
+        "{stderr}"
+    );
+    for case in ["wrapped", "generic"] {
+        let (passed, lowir) = minicore(OPAQUE_CAPTURES, case, Some(""))?;
+        let stderr = String::from_utf8(passed.stderr)?;
+        assert!(passed.status.success(), "{case}: {stderr}");
+        assert!(
+            rows(&stderr, "bringup-blocker\t").is_empty()
+                && rows(&stderr, "bringup-unproven\t").is_empty(),
+            "{case}: {stderr}"
+        );
+        assert!(
+            !std::fs::read_to_string(lowir)?.contains("rg.trap."),
+            "{case}"
+        );
+    }
+    Ok(())
+}
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn opaque_captures_execute() -> Result {
+    execute_cases(OPAQUE_CAPTURES, &["wrapped", "generic"])
 }
