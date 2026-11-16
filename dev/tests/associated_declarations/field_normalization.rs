@@ -231,6 +231,26 @@ const CASES: &[(&str, &str, bool)] = &[
         "trait A{type Out;}impl A for u8{type Out=u16;}#[repr(transparent)]struct W<T:A>{v:T::Out,z:((),[();0])}fn main(){let w=W::<u8>{v:7,z:((),[])};check(w.v==7);}",
         true,
     ),
+    (
+        "recursive-pointer-argument",
+        "trait A{type Out;}impl A for u8{type Out=u16;}struct W<T:A>{v:T::Out}struct P<T>(*const T);struct Node<T>{next:P<Node<T>>,value:T}fn value<T:Copy>(n:&Node<T>)->T{n.value}fn main(){let n=Node{next:P(0usize as *const Node<u8>),value:5u8};check(value(&n)==5);let w=W::<u8>{v:7};check(w.v==7);}",
+        true,
+    ),
+    (
+        "recursive-projected-pointer-argument",
+        "trait A{type Out;}impl A for u8{type Out=u16;}struct P<T>(*const T);struct Node<T:A>{next:P<Node<T>>,value:T::Out}fn value<T:A>(n:&Node<T>)->&T::Out{&n.value}fn main(){let n=Node::<u8>{next:P(0usize as *const Node<u8>),value:7};check(*value(&n)==7);}",
+        true,
+    ),
+    (
+        "mutual-pointer-arguments",
+        "trait A{type Out;}impl A for u8{type Out=u16;}struct P<T>(*const T);struct Leaf<T:A>{parent:P<Internal<T>>,value:T::Out}struct Internal<T:A>{data:Leaf<T>,edge:P<Leaf<T>>}fn get<T:A>(i:&Internal<T>)->&T::Out{&i.data.value}fn main(){let l=Leaf::<u8>{parent:P(0usize as *const Internal<u8>),value:7};let i=Internal{data:l,edge:P(0usize as *const Leaf<u8>)};check(*get(&i)==7);}",
+        true,
+    ),
+    (
+        "owned-cycle-rejected",
+        "trait A{type Out;}impl A for u8{type Out=u16;}struct Bad<T:A>{inner:Bad2<T>}struct Bad2<T:A>{outer:Bad<T>,v:T::Out}fn get<T:A>(b:&Bad2<T>)->&T::Out{&b.v}fn main(){}",
+        false,
+    ),
 ];
 
 #[test]

@@ -4,7 +4,11 @@ use crate::types::{Kind, ListId, arguments::Argument};
 
 #[derive(Default)]
 pub(super) struct Dependencies {
+    /// The types whose storage this one owns, then a nominal's type
+    /// arguments, which it may reach only through pointers.
     pub children: Vec<TypeId>,
+    /// How many of `children` this type owns.
+    pub owned: usize,
     pub fields: Vec<(TypeId, TypeId)>,
     pub shape: Option<Vec<ListId>>,
 }
@@ -128,6 +132,7 @@ impl Reader {
             }
             self.nominal = None;
         }
+        self.edges.owned = self.edges.children.len();
         self.edges.children.append(&mut self.arguments);
         Ok(None)
     }

@@ -801,13 +801,16 @@ The test requires both interleaving and linear retained scope storage; late-only
 annotations cannot establish that contract. Unit tests check private ownership,
 caller substitution, sibling binders, template rebasing rejection and a foreign
 interval exceeding 500 million IDs that must allocate no private variables.
-The 37 independently qualified cases in
-`associated_declarations/field_normalization.rs` include 28 native positives for
+The 43 independently qualified cases in
+`associated_declarations/field_normalization.rs` include 32 native positives for
 projected nominal fields: records, tuples, enums, nested and distinct instances,
 aliases, lifetime-only arguments, arrays, references, function pointers, Copy,
-Drop and transparent layout. Generic constructors cover explicit and omitted
+Drop and transparent layout, and nominals that reach themselves through a
+pointer's type argument, as alloc's list and B-tree nodes do; such a cycle's
+types share one storage recipe. Generic constructors cover explicit and omitted
 lifetimes, annotated locals and nested expected types. Negative controls retain
-field typing, lifetime, variance and moved-value failures.
+field typing, lifetime, variance and moved-value failures and a pair of
+nominals that own each other's storage.
 `invariants/stored_fields.rs` checks that raw
 fields remain available after storage publication, independent callers retain
 separate erased lifetime debts, and repeated shared fields take linear work

@@ -97,50 +97,133 @@ impl Registry {
             _ => self.push(Recipe::Join(children)),
         }
     }
+    /// Publish one strongly connected component of the dependency graph. Its
+    /// types reach one another, as a list node reaches itself through the
+    /// pointer argument of its link, so they share one recipe: the fields of
+    /// every member and the roots of every dependency outside it.
     fn publish(
         &mut self,
         facts: &mut Declarations,
-        finish: Finish,
+        mut members: Vec<Finish>,
         premise_free: bool,
     ) -> Result<(), &'static str> {
-        if let Some(fields) = finish.shape {
-            facts
-                .aggregates
-                .complete_storage(&facts.types, finish.ty, fields)?;
+        if owns_itself(&members) {
+            return Err("cycle in storage dependencies");
         }
-        // Each child finished first, so this subtree needs no premise-free
-        // re-entry.
-        if premise_free
-            && facts.types.contains_parameters(finish.ty) == Some(true)
-            && self.premise_free.insert(finish.ty)
+        for member in &mut members {
+            if let Some(fields) = member.shape.take() {
+                facts
+                    .aggregates
+                    .complete_storage(&facts.types, member.ty, fields)?;
+            }
+            // Each dependency outside the component finished first, so this
+            // subtree needs no premise-free re-entry.
+            if premise_free
+                && facts.types.contains_parameters(member.ty) == Some(true)
+                && self.premise_free.insert(member.ty)
+            {
+                self.retain(64)?;
+            }
+        }
+        // Another query may have completed these roots while a field resolver
+        // was suspended. Their stable recipes already name the same shapes.
+        if members
+            .iter()
+            .all(|member| self.roots.contains_key(&member.ty))
         {
-            self.retain(64)?;
-        }
-        // Another query may have completed this root while its field resolver
-        // was suspended. Its stable recipe already names the same checked shape.
-        if self.roots.contains_key(&finish.ty) {
             return Ok(());
         }
-        let mut recipes = finish.recipes;
-        for child in finish.children {
-            recipes.push(
-                *self
-                    .roots
-                    .get(&child)
-                    .ok_or("unfinished storage dependency")?,
-            );
+        let inside = members
+            .iter()
+            .map(|member| member.ty)
+            .collect::<HashSet<_>>();
+        let mut recipes = Vec::new();
+        for member in &mut members {
+            recipes.append(&mut member.recipes);
+            self.charge(member.children.len())?;
+            for child in member
+                .children
+                .iter()
+                .filter(|child| !inside.contains(child))
+            {
+                recipes.push(
+                    *self
+                        .roots
+                        .get(child)
+                        .ok_or("unfinished storage dependency")?,
+                );
+            }
         }
         let recipe = self.join(recipes)?;
-        self.retain(64)?;
-        self.roots.insert(finish.ty, recipe);
+        for member in &members {
+            if !self.roots.contains_key(&member.ty) {
+                self.retain(64)?;
+                self.roots.insert(member.ty, recipe);
+            }
+        }
         Ok(())
     }
+}
+/// Whether a component's members own one another's storage in a cycle, as
+/// an infinitely sized type does. A nominal's arguments are never owned
+/// storage: they are reached through pointers, if at all.
+fn owns_itself(members: &[Finish]) -> bool {
+    if let [member] = members {
+        return member
+            .children
+            .iter()
+            .take(member.owned)
+            .any(|&child| child == member.ty);
+    }
+    let positions = members
+        .iter()
+        .zip(0..)
+        .map(|(member, position)| (member.ty, position))
+        .collect::<HashMap<_, usize>>();
+    let owned = |member: &Finish| {
+        member
+            .children
+            .iter()
+            .take(member.owned)
+            .filter_map(|child| positions.get(child).copied())
+            .collect::<Vec<_>>()
+    };
+    let mut incoming = vec![0_usize; members.len()];
+    for member in members {
+        for position in owned(member) {
+            incoming[position] += 1;
+        }
+    }
+    let mut ready = (0..members.len())
+        .filter(|&position| incoming[position] == 0)
+        .collect::<Vec<_>>();
+    let mut removed = 0;
+    while let Some(position) = ready.pop() {
+        removed += 1;
+        for next in owned(&members[position]) {
+            incoming[next] -= 1;
+            if incoming[next] == 0 {
+                ready.push(next);
+            }
+        }
+    }
+    removed < members.len()
 }
 struct Finish {
     ty: TypeId,
     children: Vec<TypeId>,
+    owned: usize,
     recipes: Vec<RecipeId>,
     shape: Option<Vec<ListId>>,
+}
+/// A type on the depth-first path: its discovery index, the lowest index
+/// that its dependencies reach, and where the members of its component that
+/// already finished begin.
+struct Entry {
+    ty: TypeId,
+    index: usize,
+    low: usize,
+    deferred: usize,
 }
 enum Work {
     Enter(TypeId),
@@ -158,7 +241,13 @@ pub(super) struct Build {
     premise_free: bool,
     started: bool,
     work: Vec<Work>,
-    active: HashSet<TypeId>,
+    /// The types whose dependencies are being read, outermost first.
+    path: Vec<Entry>,
+    /// The discovery index of each type on the path or in `deferred`.
+    indices: HashMap<TypeId, usize>,
+    /// Finished types whose component's first type is still on the path.
+    deferred: Vec<Finish>,
+    discovered: usize,
     reader: Option<(TypeId, Reader)>,
 }
 /// A published root needs no further traversal. An ordinary build publishes a
@@ -171,6 +260,51 @@ fn reusable(premise_free: bool, registry: &Registry, facts: &Declarations, ty: T
             || registry.premise_free.contains(&ty))
 }
 impl Build {
+    fn enter(&mut self, ty: TypeId) {
+        let index = self.discovered;
+        self.discovered += 1;
+        self.indices.insert(ty, index);
+        self.path.push(Entry {
+            ty,
+            index,
+            low: index,
+            deferred: self.deferred.len(),
+        });
+    }
+    /// Abandon a type that another query published while it was being read.
+    fn leave(&mut self, ty: TypeId) -> Result<(), &'static str> {
+        let entry = self
+            .path
+            .pop()
+            .filter(|entry| entry.ty == ty && entry.low == entry.index)
+            .ok_or("storage dependency path lost its reader")?;
+        self.indices.remove(&entry.ty);
+        Ok(())
+    }
+    /// A type whose dependencies all finished: the members of its component
+    /// once it is that component's first type, else nothing yet.
+    fn finish(&mut self, finish: Finish) -> Result<Option<Vec<Finish>>, &'static str> {
+        let entry = self
+            .path
+            .pop()
+            .filter(|entry| entry.ty == finish.ty)
+            .ok_or("storage dependency path lost its type")?;
+        if entry.low < entry.index {
+            let parent = self
+                .path
+                .last_mut()
+                .ok_or("storage dependency component has no first type")?;
+            parent.low = parent.low.min(entry.low);
+            self.deferred.push(finish);
+            return Ok(None);
+        }
+        let mut members = self.deferred.split_off(entry.deferred);
+        members.push(finish);
+        for member in &members {
+            self.indices.remove(&member.ty);
+        }
+        Ok(Some(members))
+    }
     pub fn new(root: TypeId) -> Self {
         Self::with(root, false)
     }
@@ -183,7 +317,10 @@ impl Build {
             premise_free,
             started: false,
             work: Vec::new(),
-            active: HashSet::default(),
+            path: Vec::new(),
+            indices: HashMap::default(),
+            deferred: Vec::new(),
+            discovered: 0,
             reader: None,
         }
     }
@@ -214,8 +351,9 @@ impl Build {
                 // Finish an outstanding normalization before reusing interleaved
                 // structural publication; its caller evidence must not be dropped.
                 if !reader.pending() && reusable(premise_free, registry, facts, *ty) {
-                    self.active.remove(ty);
+                    let ty = *ty;
                     self.reader = None;
+                    self.leave(ty)?;
                     continue;
                 }
                 if let Some(raw) = reader.advance(registry, facts)? {
@@ -234,6 +372,7 @@ impl Build {
                 let finish = Finish {
                     ty,
                     children: dependencies.children,
+                    owned: dependencies.owned,
                     recipes,
                     shape: dependencies.shape,
                 };
@@ -251,24 +390,33 @@ impl Build {
                         if reusable(premise_free, registry, facts, ty) {
                             continue;
                         }
+                        // A type met again before its component completed
+                        // belongs to the component of the type that met it.
+                        if let Some(&index) = self.indices.get(&ty) {
+                            let top = self
+                                .path
+                                .last_mut()
+                                .ok_or("storage dependency has no reader")?;
+                            top.low = top.low.min(index);
+                            continue;
+                        }
                         if let Some(Kind::Adt(item, _)) = facts.types.kind(ty)
                             && facts.aggregates.get(item).is_none()
                         {
                             self.work.push(Work::Enter(ty));
                             return Ok(Progress::Nominal(item));
                         }
-                        if !self.active.insert(ty) {
-                            return Err("cycle in storage dependencies");
-                        }
+                        self.enter(ty);
                         self.reader = Some((ty, Reader::new(registry, facts, ty, premise_free)?));
                     }
                     Work::Finish(finish) => {
-                        self.active.remove(&finish.ty);
-                        registry.publish(facts, finish, premise_free)?;
+                        if let Some(members) = self.finish(finish)? {
+                            registry.publish(facts, members, premise_free)?;
+                        }
                     }
                 }
             }
-            if self.work.len().saturating_add(self.active.len()) > 1_000_000 {
+            if self.work.len().saturating_add(self.indices.len()) > 1_000_000 {
                 return Err("storage dependency pending graph budget exceeded");
             }
         }
