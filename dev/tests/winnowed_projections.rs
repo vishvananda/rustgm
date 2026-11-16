@@ -215,3 +215,61 @@ fn unconditional_family_scan_stops_at_the_second_header() -> Result {
     }
     Ok(())
 }
+
+/// A negative implementation is never positive evidence, so rustc never
+/// assembles one for a positive goal or a projection. Core's
+/// `impl<T> !Iterator for [T]` met a symbolic result at
+/// `sorted[..2].partial_cmp(&sorted[1..3])`: the by-value
+/// `Iterator::partial_cmp` asks for `<[?int] as Iterator>::Item`, whose only
+/// candidate is that impl. The one-tuple stands in for the slice.
+const NEGATIVE: &str = "\
+#![feature(no_core,lang_items,negative_impls,rustc_attrs,auto_traits)]
+#![no_core]
+#![allow(internal_features,dead_code,unused_variables)]
+#[lang=\"pointee_sized\"]pub trait PointeeSized{}
+#[lang=\"meta_sized\"]pub trait MetaSized:PointeeSized{}
+#[lang=\"sized\"]pub trait Sized:MetaSized{}
+#[lang=\"legacy_receiver\"]pub trait LegacyReceiver:PointeeSized{}
+impl<T:PointeeSized> LegacyReceiver for &T{}
+#[lang=\"clone\"]pub trait Clone:Sized{#[lang=\"clone_fn\"]fn clone(&self)->Self;}
+#[lang=\"copy\"]pub trait Copy:Clone{}
+#[lang=\"freeze\"]pub unsafe auto trait Freeze{}
+pub trait Iterator{type Item;fn same<I>(self,other:I)->bool where Self:Sized,Self::Item:Same;}
+pub trait Same{fn same(&self,other:&Self)->bool;}
+impl<T> Same for (T,){fn same(&self,other:&Self)->bool{true}}
+";
+const SAME: &str =
+    "#[unsafe(no_mangle)]pub fn probe()->bool{let one=(1,);let other=(2,);one.same(&other)}\n";
+/// Each case's lines after `NEGATIVE` and its rejection. rustc 1.98.0 accepts
+/// the call under the negative impl, as with no impl at all, because autoref
+/// then picks `Same::same`; it rejects an explicit `Iterator::same` (E0277).
+const REFUTED: [(&str, &str, &str, Option<&str>); 3] = [
+    ("negative", "impl<T> !Iterator for (T,){}\n", SAME, None),
+    ("absent", "", SAME, None),
+    (
+        "explicit",
+        "impl<T> !Iterator for (T,){}\n",
+        "#[unsafe(no_mangle)]pub fn probe()->bool{Iterator::same((1,),(2,))}\n",
+        Some("associated type requires an unambiguous validated implementation"),
+    ),
+];
+
+#[test]
+fn negative_implementations_are_never_positive_candidates() {
+    let mut failures = Vec::new();
+    for (name, implementation, call, rejected) in REFUTED {
+        let source = format!("{NEGATIVE}{implementation}{call}fn main(){{let _=probe();}}\n");
+        let outcome = program(&source)
+            .map(drop)
+            .map_err(|error| error.to_string());
+        let matches = match (&outcome, rejected) {
+            (Ok(()), None) => true,
+            (Err(error), Some(text)) => error.contains(text),
+            _ => false,
+        };
+        if !matches {
+            failures.push(format!("{name}: {outcome:?}"));
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}

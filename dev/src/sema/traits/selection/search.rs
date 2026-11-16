@@ -415,7 +415,17 @@ impl Search<'_> {
             if super::refutation::implementation_negative(facts, owner)?
                 && frame.canonical.is_none()
             {
-                frame.deferred = true;
+                // rustc never assembles a negative impl for a positive goal, so
+                // `[?int]: Iterator` has no candidate under core's
+                // `impl<T> !Iterator for [T]`. An auto trait's negative impl
+                // also suppresses its structural rule, so that goal waits.
+                if matches!(
+                    frame.goal.builtin_bound(),
+                    Some(crate::types::parameters::predicates::Bound::Auto(_))
+                ) || Self::source_auto_goal(facts, &frame.goal)?
+                {
+                    frame.deferred = true;
+                }
                 return Ok(Action::Continue);
             }
             let mut trial = Trial::new(facts, frame, owner, self.query.allocations.floor())?;

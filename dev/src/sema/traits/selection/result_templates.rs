@@ -93,6 +93,9 @@ pub(in crate::sema) fn symbolic_result(
     else {
         return Ok(None);
     };
+    let Some(owners) = positive(facts, source, root, caller, owners)? else {
+        return Ok(None);
+    };
     if let ResultId::Associated(item) = application.result
         && let [owner] = owners.as_slice()
         && let Some(inputs) =
@@ -140,6 +143,34 @@ pub(in crate::sema) fn symbolic_result(
         .account_work(selected.probe.context().steps.saturating_sub(before))
         .map_err(inference)?;
     Ok(result?.map(|term| (term, selected.proof)))
+}
+
+/// The positive candidates. A negative implementation is never positive
+/// evidence, so rustc never selects one for a projection: core's
+/// `impl<T> !Iterator for [T]` leaves `<[?int] as Iterator>::Item` without an
+/// implementation. A compatible negative header may refute the goal, which
+/// only the ordinary selector decides, so it prevents a symbolic result.
+fn positive(
+    facts: &mut Declarations,
+    source: &mut Context,
+    root: TermId,
+    caller: &Caller<'_>,
+    owners: Vec<DefId>,
+) -> Result<Option<Vec<DefId>>, String> {
+    let mut positive = Vec::with_capacity(owners.len());
+    for owner in owners {
+        if !super::refutation::implementation_negative(facts, owner)? {
+            positive.push(owner);
+            continue;
+        }
+        if !matches!(
+            Candidate::new(facts, source, root, owner, caller.first_region)?,
+            ControlFlow::Continue(None)
+        ) {
+            return Ok(None);
+        }
+    }
+    Ok(Some(positive))
 }
 
 /// The one compatible candidate, as rustc's winnowing leaves it. With more

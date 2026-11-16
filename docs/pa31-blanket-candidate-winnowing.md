@@ -221,3 +221,30 @@ all 35,120 item attempts, 8 failed and 13 blocked bodies, against
 candidate6's 27 and 14. Every candidate8 record is a candidate6 record, so no
 previously passing body failed. `_mm512_movm_epi16` 14975 passes. The `Iter` `default` 26599 and the `IterMut` `default` 26633 it
 blocked both pass.
+
+## Negative implementations
+
+Core's `impl<T> !Iterator for [T]` stopped the linked `slices` consumer at
+`sorted[..2].cmp(&sorted[1..3])` with "selected implementation is missing the
+associated type". Method lookup tries the by-value `Iterator::cmp` first, which
+asks for `<[?int] as Iterator>::Item`. Two things kept that candidate:
+
+- `symbolic_result` took the negative impl as the goal's unique header;
+- the selection search deferred a negative candidate for every goal with
+  inference variables, so `[?int]: Iterator` never failed.
+
+rustc never assembles a negative impl for a positive goal or a projection.
+Now a compatible negative header prevents a symbolic result. A non-canonical
+goal of an ordinary trait skips a negative candidate instead of deferring. An
+auto trait's negative candidate still defers, because it also suppresses that
+trait's structural rule. A canonical goal is still refuted as before.
+
+`negative_implementations_are_never_positive_candidates` checks three strict
+source-core cases against rustc 1.98.0, with a one-tuple standing in for the
+slice:
+
+- under the negative impl, the call is accepted and autoref picks the
+  receiver's own method;
+- the no-impl control is accepted;
+- an explicit `Iterator::same` is rejected. rustc reports E0277, and RustGM
+  reports "associated type requires an unambiguous validated implementation".
