@@ -127,6 +127,8 @@ mod matchability;
 mod modular_primitives;
 #[path = "../../modules.rs"]
 mod modules;
+#[path = "../../move_directives.rs"]
+mod move_directives;
 #[path = "../../name_storage.rs"]
 mod name_storage;
 #[path = "../../harness/native_references.rs"]

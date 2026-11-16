@@ -9,33 +9,50 @@ use crate::{
     },
 };
 
+/// The directives whose crate feature makes rustc read them.
+#[derive(Clone, Copy)]
+enum Directive {
+    Const,
+    UnmatchedArgs,
+    Move,
+}
+
 /// Crate requests only control diagnostic metadata; no operation is authorized.
 #[derive(Default)]
-pub(super) struct Requests([Option<bool>; 2]);
+pub(super) struct Requests([Option<bool>; 3]);
 impl Requests {
-    fn enabled(&mut self, report: &Report, unmatched: bool) -> Result<bool, Error> {
-        let index = usize::from(unmatched);
+    fn enabled(&mut self, report: &Report, directive: Directive) -> Result<bool, Error> {
+        let index = directive as usize;
         if let Some(enabled) = self.0[index] {
             return Ok(enabled);
         }
-        let enabled = report
-            .package
-            .requested_diagnostic_directive(unmatched)
-            .map_err(Error::unlocated)?;
+        let package = &report.package;
+        let enabled = match directive {
+            Directive::Const => package.requested_diagnostic_directive(false),
+            Directive::UnmatchedArgs => package.requested_diagnostic_directive(true),
+            Directive::Move => package.requested_move_directive(),
+        }
+        .map_err(Error::unlocated)?;
         self.0[index] = Some(enabled);
         Ok(enabled)
     }
 }
 
-fn recognized(attribute: Attribute, forest: &Forest, source: &str) -> bool {
+fn recognized(attribute: Attribute, forest: &Forest, source: &str) -> Option<Directive> {
     let path = attribute.path;
-    path.end == path.start + 3
-        && forest.name(source, path.start) == Some("diagnostic")
-        && forest.punctuation(path.start + 1, Punctuation::ColonColon)
-        && matches!(
-            forest.name(source, path.start + 2),
-            Some("on_const" | "on_unmatched_args")
-        )
+    if path.end != path.start + 3
+        || forest.name(source, path.start) != Some("diagnostic")
+        || !forest.punctuation(path.start + 1, Punctuation::ColonColon)
+    {
+        return None;
+    }
+    match forest.name(source, path.start + 2)? {
+        "on_const" => Some(Directive::Const),
+        "on_unmatched_args" => Some(Directive::UnmatchedArgs),
+        // `#[diagnostic::on_move]` only rewords a use-after-move error.
+        "on_move" => Some(Directive::Move),
+        _ => None,
+    }
 }
 
 pub(super) fn validate_literals(
@@ -71,9 +88,9 @@ pub(super) fn defer(
     requests: &mut Requests,
 ) -> Result<bool, Error> {
     let source = report.package.units[file.0 as usize].source.text();
-    if !recognized(attribute, forest, source) {
+    let Some(directive) = recognized(attribute, forest, source) else {
         return Ok(false);
-    }
+    };
     if attribute.unsafe_wrapper {
         return Err(Error::at(
             file,
@@ -84,16 +101,19 @@ pub(super) fn defer(
     validate_literals(file, source, attribute, forest)?;
     facts.require_lint_context(report)?;
     if !report.package.lint_cap().suppresses_lints() {
-        let unmatched = forest.name(source, attribute.path.start + 2) == Some("on_unmatched_args");
         // The pinned handlers ignore metadata when their crate feature is absent;
-        // allow_internal_unstable does not enable either diagnostic handler.
-        if !requests.enabled(report, unmatched)? {
+        // allow_internal_unstable does not enable any diagnostic handler.
+        if !requests.enabled(report, directive)? {
             return Ok(true);
         }
         return Err(Error::at(
             file,
             attribute.span.start,
-            "uncapped const/macro diagnostic directive profile is not implemented",
+            if matches!(directive, Directive::Move) {
+                "uncapped move diagnostic directive profile is not implemented"
+            } else {
+                "uncapped const/macro diagnostic directive profile is not implemented"
+            },
         ));
     }
     // No diagnostic table, feature capability, obligation or body permission.

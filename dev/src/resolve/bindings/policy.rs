@@ -98,6 +98,9 @@ pub(in crate::resolve) enum Feature {
     /// The language feature that admits `#[may_dangle]` on a parameter of a
     /// `Drop` impl.
     DropckEyepatch = 78,
+    /// The diagnostic feature that enables `#[diagnostic::on_move]`
+    /// directives on a type's declaration.
+    DiagnosticMove = 79,
 }
 
 #[cfg(test)]
@@ -172,6 +175,7 @@ impl Request {
             "doc_notable_trait" => Self::Capability(Feature::DocNotableTrait),
             "diagnostic_on_const" => Self::Capability(Feature::DiagnosticConst),
             "diagnostic_on_unmatched_args" => Self::Capability(Feature::DiagnosticUnmatched),
+            "diagnostic_on_move" => Self::Capability(Feature::DiagnosticMove),
             "never_type" => Self::Capability(Feature::NeverType),
             "stmt_expr_attributes" => Self::Capability(Feature::ExpressionAttributes),
             "const_trait_impl" => Self::Capability(Feature::ConstTrait),
@@ -266,6 +270,7 @@ impl Features {
             || self.has(Feature::DocNotableTrait)
             || self.has(Feature::DiagnosticConst)
             || self.has(Feature::DiagnosticUnmatched)
+            || self.has(Feature::DiagnosticMove)
             || self.has(Feature::BuiltinSyntax)
             || self.has(Feature::OffsetOfEnum)
             || self.has(Feature::DeprecatedSuggestion)
