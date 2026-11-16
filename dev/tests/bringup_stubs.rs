@@ -289,8 +289,9 @@ fn rejected_functions_are_named_until_the_list_compiles_the_rest() -> Result {
     Ok(())
 }
 
-/// Function bodies that do not type beside one that does: a closure and an
-/// inline constant inside failed bodies, a `const fn` that fails and a body
+/// Function bodies that do not type beside one that does: closures, one
+/// that a macro writes, and an inline constant inside failed bodies, a
+/// `const fn` that fails and a body
 /// whose constant evaluates it, and generic bodies, one of whose parameters
 /// holds a nominal that nothing else instantiates and one of which fails in
 /// its inline constant. rustc 1.98.0 rejects each mistyped `let` with E0308
@@ -338,6 +339,16 @@ fn keeps_holder<T>(holder: Holder<T>) -> u8 {
     let wrong: u8 = 7i32;
     0
 }
+macro_rules! adder {
+    ($x:ident) => {
+        |y: u8| y & $x
+    };
+}
+fn macro_closure(x: u8) -> u8 {
+    let add = adder!(x);
+    let wrong: u8 = 10i32;
+    add(wrong)
+}
 fn cast_in_inline<T>() -> usize {
     const {
         let unit = &() as *const ();
@@ -374,6 +385,7 @@ fn main() {
     let _ = chooses::<u8>();
     let _ = keeps_holder(Holder { inner: Inner { value: 8u8 } });
     let _ = cast_in_inline::<u8>();
+    let _ = macro_closure(9);
 }
 ";
 
@@ -406,6 +418,7 @@ fn bodies_that_do_not_type_are_named_together_and_become_stubs() -> Result {
             "mistyped_const",
             "generic",
             "keeps_holder",
+            "macro_closure",
             "cast_in_inline"
         ]
     );
@@ -419,7 +432,7 @@ fn bodies_that_do_not_type_are_named_together_and_become_stubs() -> Result {
         .split("\nfunction @")
         .filter(|function| function.contains("call void @abort()"))
         .count();
-    assert_eq!(trapping, 9, "{stubbed}");
+    assert_eq!(trapping, 10, "{stubbed}");
     Ok(())
 }
 

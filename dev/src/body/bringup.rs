@@ -7,7 +7,7 @@ use crate::{
     resolve::{
         expansion::Report,
         model::{DefId, DefKind},
-        package::{Error, Package},
+        package::{DiagnosticFile, Error, Package},
         unit::{FileId, NodeKey},
     },
     sema::model::{Declarations, Function},
@@ -81,30 +81,53 @@ impl Stubbed {
             });
         Self(spans.collect())
     }
-    /// Whether a syntax node belongs to one of these functions: lies inside
-    /// one and inside no function item nested in it.
+    /// Whether a syntax node belongs to one of these functions: was written
+    /// inside one and inside no function item nested in it.
     pub(crate) fn contains(&self, report: &Report, facts: &Declarations, key: NodeKey) -> bool {
         if self.0.is_empty() {
             return false;
         }
-        let at = report
-            .package
-            .unit(key.file)
-            .configured
-            .ast
-            .node(key.node)
-            .span
-            .start;
         // Only the few positions inside a listed item pay for the exact owner.
-        self.0
-            .iter()
-            .any(|&(file, start, end, _)| file == key.file && start <= at && at <= end)
-            && owner(report, facts, key.file, at).is_some_and(|(function, _)| {
-                self.0
-                    .iter()
-                    .any(|&(.., definition)| definition == function.definition)
-            })
+        written(report, key).into_iter().any(|(file, at)| {
+            self.0
+                .iter()
+                .any(|&(listed, start, end, _)| listed == file && start <= at && at <= end)
+                && owner(report, facts, file, at).is_some_and(|(function, _)| {
+                    self.0
+                        .iter()
+                        .any(|&(.., definition)| definition == function.definition)
+                })
+        })
     }
+}
+/// Where a syntax node was written: its own position and, for a node that a
+/// macro generated, where the expansion projects it and each macro call
+/// that led to it, innermost first.
+fn written(report: &Report, key: NodeKey) -> Vec<(FileId, u32)> {
+    let at = report
+        .package
+        .unit(key.file)
+        .configured
+        .ast
+        .node(key.node)
+        .span
+        .start;
+    let mut positions = vec![(key.file, at)];
+    // Only a node that a macro generated pays for its projection.
+    if report.package.origin(key.file, at).is_none() {
+        return positions;
+    }
+    let projected = report.diagnostic(Error::at(key.file, at, String::new()));
+    if let DiagnosticFile::Source(file) = projected.file {
+        positions.push((file, projected.span.start));
+    }
+    positions.extend(
+        projected
+            .expansions
+            .iter()
+            .map(|trace| (trace.call.file, trace.call.span.start)),
+    );
+    positions
 }
 
 /// The innermost function item containing a failure's unprojected position.
