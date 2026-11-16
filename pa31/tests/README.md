@@ -980,6 +980,15 @@ against a C observer. An ordinary closure for a `[const]` bound in a const item
 (E0277) and an ordinary function called inside a const closure (E0015) reject.
 A maintainer integration test checks every case. There is no graded manifest.
 
+`spec/projected-captures/` freezes five declared no_core programs that return a
+closure capturing `&mut Option<T::IntoIter>`, as core's `flatten` does for
+`Fuse::try_fold`. Callers store the revealed closure with that environment
+normalized, so its checked execution matches the call: direct, assigned-capture,
+trait-default `fold` and unprojected control forms accept and run against a C
+observer, and reading the captured `Option` while the closure holds it rejects
+(E0503). A maintainer integration test checks every case. There is no graded
+manifest.
+
 `spec/source-index-deref/` freezes eighteen declared no_core programs that
 index a value whose type reaches its indexed place through source `Deref`
 implementations, as `shared.borrow()[0]` does. The operand takes one actual

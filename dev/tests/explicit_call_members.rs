@@ -454,6 +454,44 @@ fn native_const_closures_execute_their_ordinary_callees() -> Result {
     Ok(())
 }
 
+const PROJECTED: &str = "pa31/tests/spec/projected-captures";
+const PROJECTED_CASES: [&str; 4] = ["front", "written", "flatten", "plain"];
+/// A returned closure capturing `&mut Option<T::IntoIter>`, as core's
+/// `flatten` does, is called with its environment normalized.
+#[test]
+fn returned_closures_with_projected_captures_match_their_checked_execution() -> Result {
+    for name in PROJECTED_CASES {
+        packet_report(PROJECTED, name)
+            .and_then(|report| program(&report))
+            .map_err(|error| format!("{name}: {error}"))?;
+    }
+    let error = packet_report(PROJECTED, "borrowed")
+        .and_then(|report| program(&report))
+        .err()
+        .ok_or("accepted borrowed")?;
+    assert!(
+        error
+            .to_string()
+            .contains("access conflicts with a live reference loan"),
+        "borrowed: {error}"
+    );
+    Ok(())
+}
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn returned_closures_with_projected_captures_execute() -> Result {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    for name in PROJECTED_CASES {
+        crate::observed_program::execute(
+            &root.join(format!("obj/parallel/projected-captures/native/{name}")),
+            &program(&packet_report(PROJECTED, name)?)?,
+            &root.join(PROJECTED).join("observe.c"),
+            b"41 59\n",
+        )?;
+    }
+    Ok(())
+}
+
 #[test]
 fn const_closure_ctfe_and_default_premises_remain_accepting_requirements() -> Result {
     for (name, cause) in [

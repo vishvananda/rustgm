@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "declared": "2026-11-16, before the frozen rustc 1.98.0 oracle of these exact bytes (obj/parallel/frontier/repro4/declared.json). The first fold reductions gave One a bool field, which this no_core prefix gives no Copy impl (rustc E0507); it became u8 and every case was re-declared before the oracle ran again. Declared outcomes did not change.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "native_stdout": "41 59\n",
+ "observer_sha256": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+ "cases": {
+  "front.rs": {
+   "sha256": "d2e53bbcac04e85290549d9fbc24370b1a3884b6ff27a308979faeee4c9cf6f4",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "v9-returned-front"
+  },
+  "written.rs": {
+   "sha256": "f515d9c3fdb03669d9a5f20c1bc2f0199b41c8554f7aa835253efeb97cf537f0",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "v12-front-written"
+  },
+  "flatten.rs": {
+   "sha256": "97a7b16239e8852bdd36b4c524e73690d6bf80ea36e1152cb9dae006d1a8fe63",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "flatten"
+  },
+  "plain.rs": {
+   "sha256": "9f981efd0ca276c53b10fc535ec2dfe3033eb81c27144e89eab2d55c8321eebc",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "v8-returned-projection-ref"
+  },
+  "borrowed.rs": {
+   "sha256": "b92e832b132ca771c6d59470c8045aa10e665e716b363717ca72ae2c4e9857d4",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "v13-front-borrowed"
+  }
+ }
+}

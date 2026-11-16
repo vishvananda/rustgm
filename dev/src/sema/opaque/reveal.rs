@@ -124,6 +124,7 @@ impl Declarations {
                 let mut substitution = declaration.substitution(&self.types, arguments)?;
                 let hidden = substitution.apply(&mut self.types, hidden)?;
                 preparation.charge(substitution.steps)?;
+                let hidden = self.normalized_hidden(preparation, hidden)?;
                 self.aggregates.prepare(&mut self.types, hidden)?;
                 Ok(Some(hidden))
             })();
@@ -136,6 +137,27 @@ impl Declarations {
             roots.push(ty);
         }
         Ok((pending, roots))
+    }
+    /// A concrete hidden type is stored as rustc reveals it, normalized: a
+    /// returned closure capturing `&mut Option<T::IntoIter>` stores
+    /// `&mut Option<I>`, the type its caller's checked execution also has.
+    /// Users still prove that normalization; storage grants no permission.
+    fn normalized_hidden(
+        &mut self,
+        preparation: &mut Preparation,
+        hidden: TypeId,
+    ) -> Result<TypeId, &'static str> {
+        use crate::types::lifetime_proof::{Obligations, ScopeId};
+        if self.types.contains_projections(hidden) != Some(true)
+            || self.types.contains_parameters(hidden) != Some(false)
+        {
+            return Ok(hidden);
+        }
+        let mut proof = Obligations::new(1);
+        let mut session = crate::sema::projections::concrete(&mut proof, ScopeId::ROOT)?;
+        let (normalized, steps) = session.normalize(self, hidden)?;
+        preparation.charge(steps)?;
+        Ok(normalized)
     }
     fn opaque_storage_failure(&self, ty: TypeId, message: &'static str) -> StorageFailure {
         let owner = match self.types.kind(ty) {
