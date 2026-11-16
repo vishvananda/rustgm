@@ -264,7 +264,7 @@ row needs a backend change.
 | 7 | Allocator shims and `#[global_allocator]` | M2 | Runtime lane | Implemented as rustc 1.98 does: mangled internal symbols, both attribute expansions, the shim in the program crate (`dev/tests/global_allocators.rs`) |
 | 8 | Panic runtime under panic=abort | M1 handler, M3 std | Frontend | Abort works; handler shapes, `catch_unwind` and messages do not |
 | 9 | Compiler-inserted checks when core installs its panic hooks | M1 | Frontier | Fenced; the bring-up profile is reported to waive the fence and keep the abort |
-| 10 | Thread-locals | M3 | Frontend | Unknown attribute; backend has thread-local globals |
+| 10 | Thread-locals | M3 | Runtime lane | `#[thread_local]` statics are `storage=thread_local` globals under rustc's rules; two threads match rustc (`dev/tests/thread_locals.rs`); crate metadata refuses them |
 | 11 | Weak and placed statics: `#[linkage]`, `#[link_section]`, `#[used]`, link modifiers | M3 | Frontend | Unknown attributes; backend has weak references and sections |
 | 12 | Float math intrinsics | M3 `float-math.rs` | Frontend | No handler; libm is on the bridge's link line |
 | 13 | Memory builtins | M1 for `compare_bytes`, otherwise speed | Frontend | Loops instead of `memcpy`; compare has no handler |
@@ -490,14 +490,21 @@ pthread, file system); the rustgm corpus 57. See the table above.
   `thread::current::CURRENT`; `thread::current::id::ID`) and 13 in M3;
   `__tls_get_addr`; weak `__cxa_thread_atexit_impl`. The rustgm corpus has no
   `thread::spawn` instance. M3 `threads.rs` is the only consumer with threads.
-- RustGM: `#[thread_local]` is an unknown attribute (observed `thread-local`).
-  A LowIR global carries only read-only and declaration flags
-  (`dev/src/lowir/data.rs:28-38`, `dev/src/lowir/writer.rs:111-118`).
+- Done (2026-11-16): `#[thread_local]`, gated by `thread_local` or a
+  macro's allowance, applies to statics and foreign statics only, as an outer
+  word attribute (`dev/src/sema/thread_locals.rs`). Such a static needs no
+  `Sync`; reading or addressing it in a constant, a static's initializer or a
+  `const fn` is rustc's E0625; a borrow of it ends with its function (E0712).
+  It lowers to a `[storage=thread_local]` global, which the bridge states as
+  `CPPGM_STORAGE_THREAD_LOCAL` (`rg_library_tick` in `make test-backend`);
+  constant data never addresses one. `dev/tests/thread_locals.rs` runs
+  three thread-locals and a shared `static mut` on two threads and prints
+  what rustc's build prints. Crate metadata refuses to export one, so a
+  thread-local stays inside its crate or bring-up session.
 - Backend: `storage=thread_local` globals, local-exec or initial-exec in host
   objects (`cppgm:dev/src/native/select/operands.cpp:262-300`; observed
   `thread-local-global`, one thread only). The standalone and course images
   address them as ordinary data.
-- A single-threaded bring-up can treat thread-locals as plain statics.
 
 **11. Weak and placed statics.**
 - Demand: weak `#[linkage = "extern_weak"]` statics for
@@ -696,8 +703,8 @@ initialised data of that size on the bridge; an idle machine.
 - Frontend probes ran under the ordinary library profile only.
 - Row 9's fence was read, not run, and the bring-up waiver is the frontier
   lane's report.
-- The thread-local probe has one thread. Thread-locals with `pthread_create`
-  through the object bridge were not run.
+- The backend thread-local probe has one thread; `dev/tests/thread_locals.rs`
+  and `make test-backend` run two threads through the object bridge.
 - Whether RustGM's link-modifier fence is reached before `cfg` removes std's
   uses (row 11).
 - The backend was read at the pinned commit only. The local checkout is 512
@@ -722,6 +729,7 @@ For the integrator. The lane has acted only on item 4.
    Decided 2026-11-16: `v128` in RustGM's LowIR (row 5).
 5. **Thread-locals.** Plain statics for a single-threaded bring-up, or real
    TLS at once. With plain statics `threads.rs` cannot be in M3's exit test.
+   Decided 2026-11-16: real TLS (row 10).
 6. **std features.** `_Unwind_Backtrace` and `_Unwind_GetIP` are demanded with
    an empty feature list. Link libgcc_s, or cut the backtrace path.
 7. **`ub_checks()` branches.** If RustGM does not fold the constant branch, it

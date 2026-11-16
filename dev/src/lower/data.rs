@@ -8,7 +8,7 @@ use crate::{
     body::ir::ValueId,
     lowir::{
         builder::Builder,
-        data::{GlobalId, Target},
+        data::{GlobalId, GlobalStorage, Target},
         program::{MemorySpan, Operand},
         vocabulary::Type,
     },
@@ -78,14 +78,14 @@ impl Context<'_> {
         {
             let layout = self.layout(record.ty)?;
             let name = self.data_name(Key::Definition(id))?;
-            let readonly = self.storage_readonly(record.ty, !record.mutable)?;
+            let storage = self.data_storage(Key::Definition(id), record.ty, !record.mutable)?;
             let global = self.output.declare_global(
                 name,
                 MemorySpan {
                     bytes: layout.size.max(u64::from(layout.align)),
                     align: layout.align,
                 },
-                readonly,
+                storage,
             )?;
             self.data.globals.insert(Key::Definition(id), global);
             return Ok(global);
@@ -124,7 +124,7 @@ impl Context<'_> {
             return Ok(global);
         }
         let layout = self.layout(ty)?;
-        let readonly = self.storage_readonly(ty, readonly)?;
+        let storage = self.data_storage(key, ty, readonly)?;
         self.data.charge(1)?;
         let name = self.data_name(key)?;
         let global = self.output.global(
@@ -133,7 +133,7 @@ impl Context<'_> {
                 bytes: layout.size.max(u64::from(layout.align)),
                 align: layout.align,
             },
-            readonly,
+            storage,
         )?;
         self.data.globals.insert(key, global);
         self.data.pending.push(Pending { global, value, ty });
@@ -151,6 +151,25 @@ impl Context<'_> {
             );
         }
         Ok(self.internal_name(format!("rg.data.{}", self.output.globals.len())))
+    }
+    /// A thread-local static's own storage; otherwise read-only placement as
+    /// [`Self::storage_readonly`] decides it.
+    fn data_storage(
+        &mut self,
+        key: Key,
+        ty: TypeId,
+        readonly: bool,
+    ) -> Result<GlobalStorage, &'static str> {
+        if let Key::Definition(id) = key
+            && self.thread_local_static(id)
+        {
+            return Ok(GlobalStorage::ThreadLocal);
+        }
+        Ok(if self.storage_readonly(ty, readonly)? {
+            GlobalStorage::Readonly
+        } else {
+            GlobalStorage::Writable
+        })
     }
     // Placement belongs to this allocation's own stored type. A readonly
     // reference slot may point to independently writable interior storage.

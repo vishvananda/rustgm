@@ -118,6 +118,9 @@ fn entry(
     definition: DefId,
     public: bool,
 ) -> Result<Entry, Error> {
+    if facts.thread_local_static(definition) {
+        return Err(error("crate metadata does not record thread-local statics"));
+    }
     let ty = facts.definitions[definition.0 as usize]
         .ok_or_else(|| error("missing exported static type"))?;
     let previous = facts

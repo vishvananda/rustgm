@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <string.h>
+#include <threads.h>
 #include <emmintrin.h>
 #include <xmmintrin.h>
 
@@ -38,6 +39,7 @@ struct rg_second rg_library_apply(struct rg_second (*)(struct rg_first), double,
 double rg_library_tally(long, double);
 void rg_library_stream(float*, const __m128*);
 int rg_library_match(__m128i, __m128i, int);
+long rg_library_tick(void);
 struct rg_tail rg_library_turn(struct rg_floats);
 /* Not declared noreturn here: a return must reach the failure below. */
 void rg_library_stop(int);
@@ -89,6 +91,24 @@ static int matched(void)
 		rg_library_match(a, a, 0x1ff) == 0x1111;
 }
 
+static int other_thread(void* result)
+{
+	*(long*)result = rg_library_tick();
+	return 0;
+}
+
+/* Each thread counts in its own instance, from the initializer. */
+static int ticked(void)
+{
+	long first = rg_library_tick();
+	long second = rg_library_tick();
+	long other = 0;
+	thrd_t thread;
+	if (thrd_create(&thread, other_thread, &other) != thrd_success || thrd_join(thread, NULL) != thrd_success)
+		return 0;
+	return first == 11 && second == 12 && other == 11 && rg_library_tick() == 13;
+}
+
 int main(void)
 {
 	if (rg_library_seed != 40)
@@ -112,6 +132,8 @@ int main(void)
 		return 7;
 	if (!matched())
 		return 10;
+	if (!ticked())
+		return 11;
 	struct rg_floats floats = { { 1.5f, -2.25f }, 9 };
 	struct rg_tail tail = rg_library_turn(floats);
 	if (tail.n != 9 || tail.f[0] != 1.5f || tail.f[1] != -2.25f)

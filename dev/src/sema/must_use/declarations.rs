@@ -26,6 +26,8 @@ struct AnnotationState<'unit> {
     documentation_options: crate::sema::documentation_options::Draft,
     insignificant_dtor: bool,
     native_links: crate::sema::link_dependencies::Draft,
+    /// The statics `#[thread_local]` names, bound after every owner.
+    thread_locals: Vec<NodeKey>,
 }
 
 impl AnnotationState<'_> {
@@ -118,6 +120,7 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
             }
         }
     }
+    crate::sema::thread_locals::bind(report, facts, &flags.thread_locals)?;
     bind_definitions(
         report,
         facts,
@@ -391,6 +394,17 @@ fn consume_annotation<'unit>(
                 (attribute, effect),
                 forest,
                 allowances,
+            )?;
+        }
+        Some(Consumer::ThreadLocal) => {
+            crate::sema::thread_locals::consume(
+                report,
+                facts,
+                declaration,
+                attribute,
+                forest,
+                allowances,
+                &mut flags.thread_locals,
             )?;
         }
         Some(Consumer::SkippedMethodDispatch) => {

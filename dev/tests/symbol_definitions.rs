@@ -1,6 +1,7 @@
 //! Canonical declarations share one symbol and admit exactly one body.
 use rustgm::lowir::{
     builder::Builder,
+    data::GlobalStorage,
     program::{Function, Literal, Program, SignatureId, Symbol, SymbolId, Terminator},
     vocabulary::Type,
 };
@@ -119,18 +120,21 @@ fn function_and_storage_names_share_one_kind_checked_namespace()
         let signature = program.signature(&[], Type::I32, false)?;
         let span = MemorySpan { bytes: 4, align: 4 };
         if global_first {
-            let global = program.declare_global("shared".into(), span, true)?;
+            let global = program.declare_global("shared".into(), span, GlobalStorage::Readonly)?;
             assert_eq!(
                 program.declare("shared".into(), signature, false),
                 Err("LowIR symbol kind conflicts with prior declaration")
             );
             assert!(program.symbols.is_empty());
-            assert_eq!(program.global("shared".into(), span, true)?, global);
+            assert_eq!(
+                program.global("shared".into(), span, GlobalStorage::Readonly)?,
+                global
+            );
             program.initialize(global, &[rustgm::lowir::data::Item::Zero(4)])?;
         } else {
             let function = program.declare("shared".into(), signature, false)?;
             assert_eq!(
-                program.declare_global("shared".into(), span, true),
+                program.declare_global("shared".into(), span, GlobalStorage::Readonly),
                 Err("LowIR symbol kind conflicts with prior declaration")
             );
             assert!(program.globals.is_empty());
@@ -148,14 +152,14 @@ fn storage_aliases_validate_before_upgrading_or_installing_data()
     };
     let mut program = Program::default();
     let span = MemorySpan { bytes: 8, align: 4 };
-    let imported = program.declare_global("storage".into(), span, true)?;
-    for (incompatible, readonly) in [
-        (MemorySpan { bytes: 4, align: 4 }, true),
-        (MemorySpan { bytes: 8, align: 8 }, true),
-        (span, false),
+    let imported = program.declare_global("storage".into(), span, GlobalStorage::Readonly)?;
+    for (incompatible, storage) in [
+        (MemorySpan { bytes: 4, align: 4 }, GlobalStorage::Readonly),
+        (MemorySpan { bytes: 8, align: 8 }, GlobalStorage::Readonly),
+        (span, GlobalStorage::Writable),
     ] {
         assert_eq!(
-            program.global("storage".into(), incompatible, readonly),
+            program.global("storage".into(), incompatible, storage),
             Err("incompatible LowIR global declarations")
         );
         assert_eq!(program.globals[0].kind, GlobalKind::Declaration);
@@ -170,7 +174,7 @@ fn storage_aliases_validate_before_upgrading_or_installing_data()
         Err("invalid LowIR global identity")
     );
     assert!(program.data.is_empty());
-    let definition = program.global("storage".into(), span, true)?;
+    let definition = program.global("storage".into(), span, GlobalStorage::Readonly)?;
     assert_eq!(imported, definition);
     assert_eq!(
         program.initialize(definition, &[Item::Zero(9)]),
@@ -185,7 +189,7 @@ fn storage_aliases_validate_before_upgrading_or_installing_data()
     );
     assert_eq!(program.data.len(), 1);
     assert_eq!(
-        program.declare_global("storage".into(), span, true)?,
+        program.declare_global("storage".into(), span, GlobalStorage::Readonly)?,
         definition
     );
     assert_eq!(program.globals[0].kind, GlobalKind::Definition);

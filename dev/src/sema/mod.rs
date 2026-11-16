@@ -63,6 +63,7 @@ pub mod scopes;
 pub mod semantic_view;
 mod specialization;
 pub(crate) mod stored_fields;
+mod thread_locals;
 mod traits;
 #[cfg(test)]
 pub(crate) use traits::selection::copy_trace;

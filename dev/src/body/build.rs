@@ -322,7 +322,7 @@ impl Body {
     ) -> Self {
         Self {
             assembly: None,
-            mutable_statics: None,
+            static_permissions: None,
             static_types: None,
             const_context: matches!(
                 owner,
@@ -579,7 +579,8 @@ impl<'a> Builder<'a> {
             .source
             .source()
             .ok_or_else(|| Error::unlocated("syntax construction requires a real source body"))?;
-        body.mutable_statics.clone_from(&facts.mutable_statics);
+        body.static_permissions
+            .clone_from(&facts.static_permissions);
         let cfg = &mut scratch.cfg;
         lend(&mut body.statements, &mut cfg.statements);
         lend(&mut body.values, &mut cfg.values);

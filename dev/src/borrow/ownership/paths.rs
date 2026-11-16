@@ -127,7 +127,7 @@ impl TemporaryPaths {
     }
 }
 pub struct Paths {
-    mutable_statics: Option<std::sync::Arc<crate::support::hash::HashSet<crate::body::ir::DefId>>>,
+    static_permissions: Option<std::sync::Arc<crate::body::ir::StaticPermissions>>,
     partitions: Option<Box<arrays::Partitions>>,
     pub entries: Vec<Path>,
     pub bits: u32,
@@ -143,7 +143,7 @@ impl Paths {
         retain_initialization: bool,
     ) -> Result<Self, &'static str> {
         let mut paths = Self {
-            mutable_statics: body.mutable_statics.clone(),
+            static_permissions: body.static_permissions.clone(),
             partitions: None,
             entries: Vec::with_capacity(body.locals.len() + body.projections.len()),
             bits: 0,
@@ -438,9 +438,9 @@ impl Paths {
                     path: None,
                     indexed: false,
                     access: if self
-                        .mutable_statics
+                        .static_permissions
                         .as_ref()
-                        .is_some_and(|ids| ids.contains(&id))
+                        .is_some_and(|statics| statics.mutable.contains(&id))
                     {
                         Access::StaticMutable
                     } else {

@@ -552,6 +552,10 @@ impl<'a> Context<'a> {
         }
         Ok(())
     }
+    /// Whether a static is `#[thread_local]`.
+    pub(super) fn thread_local_static(&self, id: DefId) -> bool {
+        self.ledger.thread_local_static(id)
+    }
     /// The emission boundary retains the original proved owner/instance header.
     pub(super) fn source_body_site(&self, index: usize) -> Option<crate::body::ir::ProofSite> {
         self.bodies

@@ -143,19 +143,19 @@ fn writable_allocations_and_readonly_reference_slots_are_distinct()
         program
             .globals
             .iter()
-            .any(|g| g.span.bytes == 4 && !g.readonly)
+            .any(|g| g.span.bytes == 4 && g.storage != rustgm::lowir::data::GlobalStorage::Readonly)
     );
     assert!(
         program
             .globals
             .iter()
-            .any(|g| g.span.bytes == 8 && g.readonly)
+            .any(|g| g.span.bytes == 8 && g.storage == rustgm::lowir::data::GlobalStorage::Readonly)
     );
     assert!(
         program
             .globals
             .iter()
-            .any(|g| g.span.bytes == 4 && g.readonly)
+            .any(|g| g.span.bytes == 4 && g.storage == rustgm::lowir::data::GlobalStorage::Readonly)
     );
     Ok(())
 }

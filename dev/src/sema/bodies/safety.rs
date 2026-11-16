@@ -123,9 +123,9 @@ impl Checker<'_> {
     }
     pub(super) fn mutable_static(&self, id: super::DefId) -> bool {
         self.facts
-            .mutable_statics
+            .static_permissions
             .as_ref()
-            .is_some_and(|ids| ids.contains(&id))
+            .is_some_and(|statics| statics.mutable.contains(&id))
     }
     pub(super) fn check_static_binding(
         &mut self,
@@ -152,7 +152,13 @@ impl Checker<'_> {
         mut place: NodeId,
     ) -> Result<(), Error> {
         let level = self.facts.safety_policies.reference(self.key(source));
-        if self.facts.mutable_statics.is_none() || level == Level::Allow {
+        if self
+            .facts
+            .static_permissions
+            .as_ref()
+            .is_none_or(|statics| statics.mutable.is_empty())
+            || level == Level::Allow
+        {
             return Ok(());
         }
         for _ in 0..1_000_000 {
@@ -190,6 +196,14 @@ impl Checker<'_> {
         node: NodeId,
         id: super::DefId,
     ) -> Result<(), Error> {
+        if self.facts.thread_local_static(id)
+            && self.callee_use_effect()? != crate::support::constness::Constness::Ordinary
+        {
+            return Err(self.error(
+                node,
+                "thread-local statics cannot be accessed at compile-time",
+            ));
+        }
         if self
             .facts
             .foreign

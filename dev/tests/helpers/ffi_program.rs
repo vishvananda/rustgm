@@ -2,6 +2,25 @@
 use crate::provider_traits::{TestResult, native::run};
 use std::{path::Path, process::Command};
 
+/// One source-provider crate, its lints capped, lowered from its exports.
+pub(crate) fn exported(
+    source: &str,
+    tag: &str,
+) -> Result<rustgm::lowir::program::Program, Box<dyn std::error::Error>> {
+    let mut config = rustgm::expand::config::Config::default();
+    config.set_lint_cap(rustgm::support::diagnostics::LintCap::Allow);
+    let report = crate::resolve::source_provider_config(source, tag, &config)?;
+    let analysis = rustgm::pipeline::analyze_source(&report)?;
+    let (mut facts, prepared) = (analysis.facts, analysis.prepared);
+    let roots = rustgm::lower::Roots {
+        entry: None,
+        exports: &[],
+    };
+    Ok(rustgm::lower::instances::build_roots_prepared(
+        &report, &mut facts, roots, prepared,
+    )?)
+}
+
 pub(crate) fn check(
     root: &Path,
     folder: &Path,

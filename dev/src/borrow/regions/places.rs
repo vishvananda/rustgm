@@ -41,6 +41,8 @@ struct Link {
 }
 struct Places<'a> {
     promotions: Option<&'a crate::body::promote::Facts>,
+    /// Statics with one instance per thread: borrowed like locals.
+    thread_locals: Option<&'a crate::support::hash::HashSet<crate::body::ir::DefId>>,
     extended: crate::support::hash::HashSet<ValueId>,
     projections: Vec<Origin>,
     links: Vec<Link>,
@@ -50,6 +52,10 @@ impl<'a> Places<'a> {
     fn new(body: &'a Body, sink: &mut impl PlaceBoundsSink) -> Result<Self, &'static str> {
         let mut this = Self {
             promotions: body.promotions.as_ref(),
+            thread_locals: body
+                .static_permissions
+                .as_deref()
+                .map(|statics| &statics.thread_local),
             extended: crate::support::hash::HashSet::default(),
             projections: Vec::new(),
             links: Vec::new(),
@@ -93,6 +99,9 @@ impl<'a> Places<'a> {
     fn origin(&self, place: Place) -> Result<Origin, &'static str> {
         Ok(match place {
             Place::Local(_) => Origin::Local,
+            Place::Static(id) if self.thread_locals.is_some_and(|ids| ids.contains(&id)) => {
+                Origin::Local
+            }
             Place::Static(_) => Origin::Static,
             Place::Temporary(id) if self.extended.contains(&id) => Origin::Static,
             Place::Temporary(id) => Origin::Temporary(id),

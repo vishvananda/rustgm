@@ -28,6 +28,7 @@ LIBRARY_TEXT = (
     "[arity=variadic",
     "[return=noreturn",
     "[storage=readonly",
+    "[storage=thread_local",
     " intel readwrite 1 0 0 2 {",
     "    asm @",
     " = vector pshufd ",
@@ -42,6 +43,7 @@ BRIDGE_TEXT = (
     "[arity=variadic]",
     "[return=noreturn]",
     "[storage=readonly]",
+    "[storage=thread_local]",
     " intel readwrite 1 0 0 2 {",
     "    asm @",
 )

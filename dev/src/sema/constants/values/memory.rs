@@ -201,11 +201,12 @@ impl Evaluator<'_> {
     /// # Errors
     /// Rejects unknown types and exhausted storage identities.
     pub fn static_address(&mut self, definition: DefId, ty: TypeId) -> Result<Constant, Failure> {
+        let thread_local = self.queries.typing.facts.thread_local_static(definition);
         self.queries
             .typing
             .facts
             .constant_references
-            .static_place(definition, ty)
+            .static_place(definition, ty, thread_local)
             .map(Constant)
             .map_err(Failure::Invalid)
     }

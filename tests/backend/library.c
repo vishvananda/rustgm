@@ -30,6 +30,9 @@
  *                            the sign bits of the bytes equal in two v128
  *                            values and in x's dword broadcast: `vector`
  *                            pcmpeqb, fromi32, pshufd 0, pand and pmovmskb
+ *   rg_library_tick()        counts in the thread-local rg_library_ticks,
+ *                            which starts at 10 in each thread:
+ *                            `storage=thread_local`
  */
 #include "lowir_interface.h"
 
@@ -456,6 +459,36 @@ static int match(void)
 	return cppgm_lowir_body_commit(module, symbol, &counts, 8);
 }
 
+/* global @rg_library_ticks [storage=thread_local] = { i64 10 }
+ * function @rg_library_tick() -> i64: its thread's instance, incremented. */
+static int tick(void)
+{
+	uint32_t ticks = cppgm_lowir_symbol(module, NAME("rg_library_ticks"));
+	uint32_t symbol = function(NAME("rg_library_tick"),
+		cppgm_lowir_signature(module, CPPGM_TYPE_I64, NULL, 0, CPPGM_ARITY_FIXED), CPPGM_FUNCTION_DEFINITION);
+	CppgmDataItem data = { 0 };
+	data.type = CPPGM_TYPE_I64;
+	data.bits.low = 10;
+	data.kind = CPPGM_DATA_SCALAR;
+	LowirBodyCounts counts = { 5, 0, 1, 0, 1 };
+	LowirBodyBuffers buffers;
+	if (ticks == CPPGM_NO_ID ||
+		!cppgm_lowir_global(module, ticks, CPPGM_TYPE_VOID, CPPGM_BINDING_STRONG, CPPGM_STORAGE_THREAD_LOCAL, &data,
+			1, CPPGM_GLOBAL_DEFINITION) ||
+		!reserve(symbol, &counts, &buffers))
+		return 0;
+	buffers.literals[0].low = 1;
+	LowirInstruction* code = buffers.instructions;
+	code[0] = unary(CPPGM_OP_ADDR, 0, CPPGM_TYPE_PTR, value(CPPGM_VALUE_SYMBOL, ticks));
+	code[1] = unary(CPPGM_OP_LOAD, 1, CPPGM_TYPE_I64, value(CPPGM_VALUE_TEMP, 0));
+	code[2] = binary(CPPGM_OP_BINARY, 2, CPPGM_TYPE_I64, value(CPPGM_VALUE_TEMP, 1), value(CPPGM_VALUE_INTEGER, 0));
+	code[2].sub = CPPGM_BINARY_ADD;
+	code[3] = binary(CPPGM_OP_STORE, CPPGM_NO_ID, CPPGM_TYPE_I64, value(CPPGM_VALUE_TEMP, 2),
+		value(CPPGM_VALUE_TEMP, 0));
+	code[4] = unary(CPPGM_OP_RETURN, CPPGM_NO_ID, CPPGM_TYPE_I64, value(CPPGM_VALUE_TEMP, 2));
+	return cppgm_lowir_body_commit(module, symbol, &counts, 3);
+}
+
 int main(int argc, char** argv)
 {
 	if (argc != 5 || (strcmp(argv[4], "fixed") != 0 && strcmp(argv[4], "pic") != 0))
@@ -475,7 +508,7 @@ int main(int argc, char** argv)
 	if (module == NULL)
 		return 3;
 	/* The text view must precede compilation, which consumes the module. */
-	if (!answer() || !swap() || !apply() || !tally() || !stream() || !turn() || !stop() || !match() ||
+	if (!answer() || !swap() || !apply() || !tally() || !stream() || !turn() || !stop() || !match() || !tick() ||
 		!cppgm_lowir_validate(module) || !cppgm_lowir_write(module, argv[2]) ||
 		!cppgm_lowir_compile(module, 0, form))
 	{

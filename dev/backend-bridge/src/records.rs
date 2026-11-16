@@ -136,6 +136,7 @@ pub const LINKAGE_DEFAULT: u32 = 0;
 pub const BINDING_DEFAULT: u32 = 0;
 pub const STORAGE_DEFAULT: u32 = 0;
 pub const STORAGE_READONLY: u32 = 1;
+pub const STORAGE_THREAD_LOCAL: u32 = 2;
 pub const ARITY_VARIADIC: u8 = 1;
 pub const RETURN_NORETURN: u8 = 1;
 

@@ -92,7 +92,7 @@ fn parameters(
 }
 
 fn globals(program: &Program, out: &mut impl Write) -> io::Result<()> {
-    use super::data::{GlobalKind, Item};
+    use super::data::{GlobalKind, GlobalStorage, Item};
     for global in &program.globals {
         let items = if global.kind == GlobalKind::Declaration {
             write!(out, "declare ")?;
@@ -113,8 +113,10 @@ fn globals(program: &Program, out: &mut impl Write) -> io::Result<()> {
             "global @{} : obj<{}x{}>",
             global.name, global.span.bytes, global.span.align
         )?;
-        if global.readonly {
-            write!(out, " [storage=readonly]")?;
+        match global.storage {
+            GlobalStorage::Writable => {}
+            GlobalStorage::Readonly => write!(out, " [storage=readonly]")?,
+            GlobalStorage::ThreadLocal => write!(out, " [storage=thread_local]")?,
         }
         let Some(items) = items else {
             writeln!(out)?;

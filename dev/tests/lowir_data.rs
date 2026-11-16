@@ -1,6 +1,6 @@
 use rustgm::lowir::{
     builder::Builder,
-    data::{GlobalId, Item, Target},
+    data::{GlobalId, GlobalStorage, Item, Target},
     program::{MemorySpan, Operand, Program, Terminator},
     vocabulary::{Convert, Predicate, Type},
     writer,
@@ -9,8 +9,16 @@ use std::{path::Path, process::Command};
 
 fn relocation(addend: i64) -> Result<Program, &'static str> {
     let mut p = Program::default();
-    let ptr = p.global("pointer".into(), MemorySpan { bytes: 8, align: 8 }, true)?;
-    let data = p.global("bytes".into(), MemorySpan { bytes: 2, align: 1 }, true)?;
+    let ptr = p.global(
+        "pointer".into(),
+        MemorySpan { bytes: 8, align: 8 },
+        GlobalStorage::Readonly,
+    )?;
+    let data = p.global(
+        "bytes".into(),
+        MemorySpan { bytes: 2, align: 1 },
+        GlobalStorage::Readonly,
+    )?;
     p.initialize(
         ptr,
         &[Item::Address {
@@ -55,7 +63,7 @@ fn function_address() -> Result<Program, &'static str> {
     let g = p.global(
         "function_pointer".into(),
         MemorySpan { bytes: 8, align: 8 },
-        true,
+        GlobalStorage::Readonly,
     )?;
     p.initialize(
         g,
@@ -84,8 +92,8 @@ fn function_address() -> Result<Program, &'static str> {
 fn cyclic_addresses() -> Result<Program, &'static str> {
     let mut p = Program::default();
     let span = MemorySpan { bytes: 8, align: 8 };
-    let a = p.global("a".into(), span, true)?;
-    let c = p.global("c".into(), span, true)?;
+    let a = p.global("a".into(), span, GlobalStorage::Readonly)?;
+    let c = p.global("c".into(), span, GlobalStorage::Readonly)?;
     p.initialize(
         a,
         &[Item::Address {
@@ -122,7 +130,7 @@ fn exact_bits(ty: Type, bits: u128) -> Result<Program, &'static str> {
             bytes: 64,
             align: 64,
         },
-        true,
+        GlobalStorage::Readonly,
     )?;
     p.initialize(g, &[Item::Bits { ty, bits }])?;
     let sig = p.signature(&[], Type::I64, false)?;
@@ -189,10 +197,18 @@ fn persistent_objects_and_relocations_execute_through_the_pinned_backend()
 fn data_validation_rejects_invalid_or_partial_storage() -> Result<(), &'static str> {
     let mut p = Program::default();
     assert!(
-        p.global("bad".into(), MemorySpan { bytes: 0, align: 1 }, true)
-            .is_err()
+        p.global(
+            "bad".into(),
+            MemorySpan { bytes: 0, align: 1 },
+            GlobalStorage::Readonly
+        )
+        .is_err()
     );
-    let g = p.global("g".into(), MemorySpan { bytes: 8, align: 8 }, true)?;
+    let g = p.global(
+        "g".into(),
+        MemorySpan { bytes: 8, align: 8 },
+        GlobalStorage::Readonly,
+    )?;
     for items in [
         vec![],
         vec![Item::Zero(0)],
@@ -217,7 +233,11 @@ fn data_validation_rejects_invalid_or_partial_storage() -> Result<(), &'static s
     assert!(writer::write(&p, &mut Vec::new()).is_err());
     p.initialize(g, &[Item::Zero(8)])?;
     assert!(p.initialize(g, &[Item::Zero(8)]).is_err());
-    let packed = p.global("packed".into(), MemorySpan { bytes: 9, align: 1 }, true)?;
+    let packed = p.global(
+        "packed".into(),
+        MemorySpan { bytes: 9, align: 1 },
+        GlobalStorage::Readonly,
+    )?;
     assert!(
         p.initialize(
             packed,

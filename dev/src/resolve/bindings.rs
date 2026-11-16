@@ -438,6 +438,13 @@ impl super::package::Package {
             "arbitrary receiver client identity changed",
         )
     }
+    /// Permission for `#[thread_local]`, never its storage.
+    pub(crate) fn requested_thread_local(&self) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            policy::Feature::ThreadLocal,
+            "thread-local client identity changed",
+        )
+    }
     pub(crate) fn requested_llvm_linkage(&self) -> Result<bool, &'static str> {
         self.requested_expression_feature(
             policy::Feature::LinkLlvmIntrinsics,

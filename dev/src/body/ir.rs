@@ -2,6 +2,7 @@
 pub use crate::resolve::body_origin::{BodyOrigin, BodySite, ImportedBodyId, ProofSite};
 pub use crate::resolve::{model::DefId, unit::NodeKey};
 pub use crate::sema::members::{Selection, VariantId};
+pub use crate::sema::model::StaticPermissions;
 use crate::{
     lex::token::Punctuation,
     sema::model::{Cast, InitializerKind, RegionEquality, Scalar},
@@ -505,7 +506,7 @@ pub struct Body {
     /// Canonical types of static places actually referenced by this CFG.
     pub static_types: Option<std::sync::Arc<crate::support::hash::HashMap<DefId, TypeId>>>,
     /// Immutable declaration permissions, shared by checked bodies and instances.
-    pub mutable_statics: Option<std::sync::Arc<crate::support::hash::HashSet<DefId>>>,
+    pub static_permissions: Option<std::sync::Arc<crate::sema::model::StaticPermissions>>,
     /// Constant eligibility applies independently of whether execution is demanded.
     pub const_context: bool,
     /// Concrete specialization identity; diagnostics keep the original source owner.
@@ -563,7 +564,7 @@ impl Body {
         Self {
             assembly: None,
             static_types: None,
-            mutable_statics: None,
+            static_permissions: None,
             const_context: self.const_context,
             instance: self.instance,
             owned: None,

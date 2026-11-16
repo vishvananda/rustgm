@@ -103,7 +103,7 @@ impl Permit {
     pub(crate) fn require_current(&self, types: &Store, body: &Body) -> Result<(), &'static str> {
         self.family(types)?;
         if body.static_types.is_some()
-            || body.mutable_statics.is_some()
+            || body.static_permissions.is_some()
             || body.promotions.is_some()
             || body.closure_calls.is_some()
             || body.has_resolved_callables()

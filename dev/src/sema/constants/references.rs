@@ -93,7 +93,16 @@ impl References {
         self.literals.insert((text, ty), Self::id(value)?);
         Ok(value)
     }
-    pub(super) fn static_place(&mut self, id: DefId, ty: TypeId) -> Result<Value, &'static str> {
+    /// The place of a static; a thread-local one has none at compile time.
+    pub(super) fn static_place(
+        &mut self,
+        id: DefId,
+        ty: TypeId,
+        thread_local: bool,
+    ) -> Result<Value, &'static str> {
+        if thread_local {
+            return Err("thread-local statics cannot be accessed at compile-time");
+        }
         if let Some(&place) = self.statics.get(&id) {
             return Ok(Value::Reference(Pointer::new(place)));
         }

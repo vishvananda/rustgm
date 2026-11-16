@@ -156,7 +156,7 @@ fn instrument(program: &mut Program, observer: &str, expected: &[u8]) -> Result<
     let index = program.global(
         "test.trace.index".into(),
         MemorySpan { bytes: 8, align: 8 },
-        false,
+        rustgm::lowir::data::GlobalStorage::Writable,
     )?;
     program.initialize(index, &[Item::Zero(8)])?;
     let abort = if let Some(i) = program.symbols.iter().position(|s| s.name == "abort") {

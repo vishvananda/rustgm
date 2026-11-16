@@ -40,8 +40,7 @@ fn declarations(
                 .insert(definition, entry.mutable());
         }
         if entry.mutable() {
-            std::sync::Arc::make_mut(facts.mutable_statics.get_or_insert_default())
-                .insert(definition);
+            facts.static_permissions_mut().mutable.insert(definition);
         }
         let registry = facts.foreign.get_or_insert_default();
         let naming = match entry.symbol() {

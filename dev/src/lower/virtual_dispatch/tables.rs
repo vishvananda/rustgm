@@ -42,7 +42,7 @@ impl Context<'_> {
         let global = self.output.global(
             self.internal_name(format!("rg.vtable.{}", id.0)),
             MemorySpan { bytes, align: 8 },
-            true,
+            crate::lowir::data::GlobalStorage::Readonly,
         )?;
         self.table_symbols.insert(id, global);
         self.table_queue.push(id);

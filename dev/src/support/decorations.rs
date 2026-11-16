@@ -57,6 +57,7 @@ pub(crate) enum Consumer {
     LegacyConstGenerics,
     ReservationImpl,
     NonConstTraitMethod,
+    ThreadLocal,
 }
 impl Consumer {
     pub(crate) fn tool_member(tool: &str, name: &str) -> Option<Self> {
@@ -125,6 +126,7 @@ impl Consumer {
             "rustc_legacy_const_generics" => Self::LegacyConstGenerics,
             "rustc_reservation_impl" => Self::ReservationImpl,
             "rustc_non_const_trait_method" => Self::NonConstTraitMethod,
+            "thread_local" => Self::ThreadLocal,
             "link" => Self::NativeLink,
             "rustc_strict_coherence" => Self::StrictCoherence,
             "fundamental" | "rustc_dyn_incompatible_trait" => Self::DeclarationPolicy,

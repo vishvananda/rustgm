@@ -13,8 +13,7 @@
 use crate::records::{
     ABI_VERSION, ASM_DIALECT_INTEL, ASM_MEMORY_READ_WRITE, ArgumentFact, AsmAlternative, AsmGroup,
     AsmOperand, AsmPiece, AsmRegister, BINDING_DEFAULT, BodyCounts, Boundary, DataItem,
-    Instruction, Literal, NO_ID, Parameter, STORAGE_DEFAULT, STORAGE_READONLY, Slot, TARGET_LINUX,
-    Type, Value,
+    Instruction, Literal, NO_ID, Parameter, Slot, TARGET_LINUX, Type, Value,
 };
 use std::{
     ffi::{CStr, CString, c_char, c_int, c_void},
@@ -295,7 +294,8 @@ impl Module {
         };
         self.status(status)
     }
-    /// Declare or define a global with the default binding.
+    /// Declare or define a global with the default binding and a
+    /// `STORAGE_*` storage.
     ///
     /// # Errors
     /// Reports the library's refusal.
@@ -303,16 +303,11 @@ impl Module {
         &mut self,
         symbol: u32,
         ty: Type,
-        readonly: bool,
+        storage: u32,
         items: &[DataItem],
         declaration: bool,
     ) -> Result<(), Rejected> {
         let length = count(items.len())?;
-        let storage = if readonly {
-            STORAGE_READONLY
-        } else {
-            STORAGE_DEFAULT
-        };
         // SAFETY: `items` is live for `length` records; the library copies them.
         let status = unsafe {
             cppgm_lowir_global(

@@ -99,7 +99,7 @@ fn require_source(body: &Body) -> Result<(), &'static str> {
         || !body.guard_places.is_empty()
         || body.assembly.is_some()
         || body.static_types.is_some()
-        || body.mutable_statics.is_some()
+        || body.static_permissions.is_some()
         || body
             .promotions
             .as_ref()

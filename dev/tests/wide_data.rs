@@ -91,7 +91,7 @@ fn persistent_text_metadata_counts_bytes_and_points_to_exact_utf8()
             (bytes.span.bytes, bytes.span.align),
             (expected.len().max(1) as u64, 1)
         );
-        assert!(bytes.readonly);
+        assert_eq!(bytes.storage, rustgm::lowir::data::GlobalStorage::Readonly);
         let range = bytes.items.ok_or("byte initializer")?;
         let mut actual = Vec::new();
         for item in &program.data[range.start as usize..range.end as usize] {

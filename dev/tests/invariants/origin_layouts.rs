@@ -10,7 +10,7 @@ use std::sync::Arc;
 struct OriginBody<O> {
     assembly: Option<Box<crate::body::assembly::Payload>>,
     static_types: Option<Arc<crate::support::hash::HashMap<ir::DefId, TypeId>>>,
-    mutable_statics: Option<Arc<crate::support::hash::HashSet<ir::DefId>>>,
+    static_permissions: Option<Arc<ir::StaticPermissions>>,
     const_context: bool,
     instance: Option<crate::types::instance::Instance>,
     owned: Option<Box<crate::body::drops::values::Facts>>,

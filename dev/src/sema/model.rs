@@ -199,6 +199,24 @@ impl Initializer {
         matches!(self.typing, InitializerTyping::Complete)
     }
 }
+/// The statics whose accesses differ from shared immutable storage. Checked
+/// bodies and their instances share one copy with their declarations.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct StaticPermissions {
+    /// `static mut` items: an access needs unsafe, and constant evaluation
+    /// never reads them.
+    pub mutable: crate::support::hash::HashSet<DefId>,
+    /// `#[thread_local]` statics: one instance per thread, never accessed
+    /// during constant evaluation and never borrowed beyond the borrowing
+    /// function (rustc's E0625 and E0712).
+    pub thread_local: crate::support::hash::HashSet<DefId>,
+}
+impl StaticPermissions {
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.mutable.is_empty() && self.thread_local.is_empty()
+    }
+}
 #[derive(Clone, Copy)]
 pub struct RegionEquality {
     pub body: NodeKey,
@@ -411,7 +429,7 @@ pub struct Declarations {
     pub union_work: UnionWork,
     pub(super) safety_policies: super::safety::Policies,
     /// Immutable declaration permissions, shared by checked bodies and instances.
-    pub mutable_statics: Option<std::sync::Arc<crate::support::hash::HashSet<DefId>>>,
+    pub static_permissions: Option<std::sync::Arc<StaticPermissions>>,
     pub constant_work: super::values::execution::Work,
     pub(crate) constant_executor: Option<Box<dyn super::values::execution::Executor>>,
     /// The one queued declaration fact the latest failed source Copy decision
@@ -570,6 +588,16 @@ impl Declarations {
     #[must_use]
     pub fn safety_work(&self) -> SafetyWork {
         self.safety_policies.work()
+    }
+    /// Whether a static is `#[thread_local]`.
+    #[must_use]
+    pub fn thread_local_static(&self, definition: DefId) -> bool {
+        self.static_permissions
+            .as_deref()
+            .is_some_and(|statics| statics.thread_local.contains(&definition))
+    }
+    pub(crate) fn static_permissions_mut(&mut self) -> &mut StaticPermissions {
+        std::sync::Arc::make_mut(self.static_permissions.get_or_insert_default())
     }
     #[must_use]
     pub fn is_const_function(&self, definition: DefId) -> bool {
@@ -733,7 +761,7 @@ impl Declarations {
             intrinsics: report.resolution.intrinsics,
             union_work: UnionWork::default(),
             safety_policies: policies,
-            mutable_statics: None,
+            static_permissions: None,
             constant_functions: crate::support::hash::HashSet::default(),
             target_feature_functions: super::target_features::Functions::default(),
             closures: super::closures::Bodies::default(),
@@ -844,7 +872,7 @@ impl Declarations {
             .map_err(Error::unlocated)?;
         if self.foreign.is_some()
             || self.must_use_contracts.is_some()
-            || self.mutable_statics.is_some()
+            || self.static_permissions.is_some()
             || !self.functions.is_empty()
         {
             return Err(Error::unlocated(
@@ -914,8 +942,7 @@ impl Declarations {
                     u32::try_from(index)
                         .map_err(|_| Self::error(report, key, "too many static declarations"))?,
                 );
-                std::sync::Arc::make_mut(self.mutable_statics.get_or_insert_with(Default::default))
-                    .insert(id);
+                self.static_permissions_mut().mutable.insert(id);
             }
             if (matches!(
                 definition.kind,

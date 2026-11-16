@@ -15,7 +15,7 @@ fn table(program: &Program) -> Result<(GlobalId, SymbolId), Box<dyn std::error::
         .enumerate()
         .find(|(_, g)| g.name.starts_with("rg.vtable."))
         .ok_or("missing destructor table")?;
-    assert!(global.readonly);
+    assert_eq!(global.storage, rustgm::lowir::data::GlobalStorage::Readonly);
     assert_eq!((global.span.bytes, global.span.align), (24, 8));
     let items = global.items.ok_or("uninitialized destructor table")?;
     let entries = &program.data[items.start as usize..items.end as usize];

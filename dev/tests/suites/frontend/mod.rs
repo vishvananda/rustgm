@@ -308,3 +308,6 @@ mod unchecked_shifts;
 
 #[path = "../../global_allocators.rs"]
 mod global_allocators;
+
+#[path = "../../thread_locals.rs"]
+mod thread_locals;

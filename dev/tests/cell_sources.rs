@@ -90,18 +90,10 @@ fn cell_policy_uses_the_actual_nominal_and_preserves_field_destruction() -> Test
 #[test]
 fn shared_cell_globals_are_writable_and_plain_globals_remain_readonly() -> TestResult {
     let program = lower(&fixture("runtime.rs")?)?;
-    assert!(
-        program
-            .globals
-            .iter()
-            .any(|global| global.span.bytes == 4 && !global.readonly)
-    );
-    assert!(
-        program
-            .globals
-            .iter()
-            .any(|global| global.span.bytes == 4 && global.readonly)
-    );
+    assert!(program.globals.iter().any(|global| global.span.bytes == 4
+        && global.storage != rustgm::lowir::data::GlobalStorage::Readonly));
+    assert!(program.globals.iter().any(|global| global.span.bytes == 4
+        && global.storage == rustgm::lowir::data::GlobalStorage::Readonly));
     Ok(())
 }
 
@@ -178,18 +170,10 @@ fn pinned_storage_uses_its_actual_owner_and_retains_field_cleanup() -> TestResul
         Some(aggregate::SharedMutation::Ordinary)
     );
     let program = lower(&pinned_fixture("runtime.rs")?)?;
-    assert!(
-        program
-            .globals
-            .iter()
-            .any(|global| global.span.bytes == 4 && !global.readonly)
-    );
-    assert!(
-        program
-            .globals
-            .iter()
-            .any(|global| global.span.bytes == 4 && global.readonly)
-    );
+    assert!(program.globals.iter().any(|global| global.span.bytes == 4
+        && global.storage != rustgm::lowir::data::GlobalStorage::Readonly));
+    assert!(program.globals.iter().any(|global| global.span.bytes == 4
+        && global.storage == rustgm::lowir::data::GlobalStorage::Readonly));
     Ok(())
 }
 

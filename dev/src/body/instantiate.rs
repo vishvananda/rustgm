@@ -249,7 +249,7 @@ fn materialize(
     }
     let mut body = Body {
         assembly: source.assembly.clone(),
-        mutable_statics: source.mutable_statics.clone(),
+        static_permissions: source.static_permissions.clone(),
         static_types: source.static_types.clone(),
         const_context: source.const_context,
         instance,

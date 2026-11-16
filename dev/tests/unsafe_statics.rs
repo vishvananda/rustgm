@@ -177,15 +177,15 @@ fn mutable_static_permissions_are_shared_across_unrelated_bodies()
             }
             let (report, facts) = semantic::analyze(&text)?;
             let declared = facts
-                .mutable_statics
+                .static_permissions
                 .as_ref()
                 .ok_or("missing static permissions")?;
-            assert_eq!(declared.len(), statics);
+            assert_eq!(declared.mutable.len(), statics);
             let program = rustgm::body::build(&report, &facts)?;
             assert_eq!(program.bodies.len(), statics + callers);
             for body in &program.bodies {
                 let permissions = body
-                    .mutable_statics
+                    .static_permissions
                     .as_ref()
                     .ok_or("missing body permissions")?;
                 assert!(Arc::ptr_eq(declared, permissions));

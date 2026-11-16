@@ -164,7 +164,10 @@ fn validate(body: &Body, calls: bool) -> Result<(), &'static str> {
         || body.closure_calls.is_some()
         || body.resolved_callables.is_some()
         || body.static_types.as_ref().is_some_and(|m| !m.is_empty())
-        || body.mutable_statics.as_ref().is_some_and(|s| !s.is_empty())
+        || body
+            .static_permissions
+            .as_ref()
+            .is_some_and(|s| !s.is_empty())
         || body
             .owned
             .as_ref()

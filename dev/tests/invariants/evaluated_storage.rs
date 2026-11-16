@@ -242,7 +242,11 @@ fn references_require_actual_static_backing_and_raw_slots_stay_terminal() -> Res
         Reader::new(&facts).shared_reference_storage(raw, owned)?,
         Answer::Ordinary
     );
-    let static_address = Constant(facts.constant_references.static_place(DefId(17), atomic)?);
+    let static_address = Constant(facts.constant_references.static_place(
+        DefId(17),
+        atomic,
+        false,
+    )?);
     assert_eq!(
         Reader::new(&facts).shared_reference_storage(reference, static_address)?,
         Answer::Ordinary

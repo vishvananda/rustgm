@@ -145,7 +145,10 @@ fn imported_shared_storage_uses_its_owned_mutation_contract()
         assert_eq!(global.kind, rustgm::lowir::data::GlobalKind::Declaration);
         assert_eq!(global.span.bytes, 4);
         assert_eq!(global.span.align, 4);
-        assert_eq!(global.readonly, readonly);
+        assert_eq!(
+            global.storage == rustgm::lowir::data::GlobalStorage::Readonly,
+            readonly
+        );
     }
     Ok(())
 }

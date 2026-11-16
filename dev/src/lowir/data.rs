@@ -29,10 +29,18 @@ pub enum GlobalKind {
     Declaration,
     Definition,
 }
+/// Where a global's bytes live: `[storage=readonly]`, `[storage=thread_local]`
+/// (one instance per thread) or ordinary writable data.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum GlobalStorage {
+    Writable,
+    Readonly,
+    ThreadLocal,
+}
 pub struct Global {
     pub name: String,
     pub span: MemorySpan,
-    pub readonly: bool,
+    pub storage: GlobalStorage,
     pub kind: GlobalKind,
     pub items: Option<Range>,
 }
@@ -44,9 +52,9 @@ impl Program {
         &mut self,
         name: String,
         span: MemorySpan,
-        readonly: bool,
+        storage: GlobalStorage,
     ) -> Result<GlobalId, &'static str> {
-        self.global_symbol(name, span, readonly, GlobalKind::Definition)
+        self.global_symbol(name, span, storage, GlobalKind::Definition)
     }
     /// Declare external storage without an initializer or a local definition.
     /// # Errors
@@ -55,15 +63,15 @@ impl Program {
         &mut self,
         name: String,
         span: MemorySpan,
-        readonly: bool,
+        storage: GlobalStorage,
     ) -> Result<GlobalId, &'static str> {
-        self.global_symbol(name, span, readonly, GlobalKind::Declaration)
+        self.global_symbol(name, span, storage, GlobalKind::Declaration)
     }
     fn global_symbol(
         &mut self,
         name: String,
         span: MemorySpan,
-        readonly: bool,
+        storage: GlobalStorage,
         kind: GlobalKind,
     ) -> Result<GlobalId, &'static str> {
         if span.bytes == 0
@@ -79,7 +87,7 @@ impl Program {
                 return Err("LowIR symbol kind conflicts with prior declaration");
             };
             let previous = &mut self.globals[id.0 as usize];
-            if previous.span != span || previous.readonly != readonly {
+            if previous.span != span || previous.storage != storage {
                 return Err("incompatible LowIR global declarations");
             }
             if kind == GlobalKind::Definition {
@@ -92,7 +100,7 @@ impl Program {
         self.globals.push(Global {
             name,
             span,
-            readonly,
+            storage,
             kind,
             items: None,
         });
@@ -136,6 +144,11 @@ impl Program {
                 }
                 Item::Address { target, .. } => {
                     self.data_target(target)?;
+                    if let Target::Global(id) = target
+                        && self.globals[id.0 as usize].storage == GlobalStorage::ThreadLocal
+                    {
+                        return Err("a thread-local LowIR global has no constant address");
+                    }
                     (8, 8)
                 }
             };

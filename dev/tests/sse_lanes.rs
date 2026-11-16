@@ -9,7 +9,6 @@
 //! oracle. One declaration was wrong: `simd_reduce_all` was declared to read
 //! each lane's low bit, and rustc prints `all 1 0 0 1 0 0` because it reads
 //! the sign bit; this compiler follows rustc.
-use rustgm::{expand::config::Config, pipeline, support::diagnostics::LintCap};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 const CORE: &str = r#"#![feature(no_core, lang_items, rustc_attrs, intrinsics, repr_simd, auto_traits)]
@@ -403,18 +402,7 @@ stored ff0000ffffffffff ff00ff0000ff00ff
 
 /// One crate lowered from its exports as an executable.
 fn program(source: &str) -> Result<rustgm::lowir::program::Program> {
-    let mut config = Config::default();
-    config.set_lint_cap(LintCap::Allow);
-    let report = crate::resolve::source_provider_config(source, "sse_lanes", &config)?;
-    let analysis = pipeline::analyze_source(&report)?;
-    let (mut facts, prepared) = (analysis.facts, analysis.prepared);
-    let roots = rustgm::lower::Roots {
-        entry: None,
-        exports: &[],
-    };
-    Ok(rustgm::lower::instances::build_roots_prepared(
-        &report, &mut facts, roots, prepared,
-    )?)
+    crate::ffi_program::exported(source, "sse_lanes")
 }
 /// The program with one exported control function after it.
 fn control(body: &str) -> String {

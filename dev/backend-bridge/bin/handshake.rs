@@ -24,11 +24,13 @@
 //! - `rg_library_stop(code)`: `return=noreturn`, calling `exit(code)`.
 //! - `rg_library_match(a, b, x)`: the sign bits of the bytes equal in two
 //!   `v128` values and in `x`'s dword broadcast, by `vector` `pcmpeqb`,
-//!   `fromi32`, `pshufd 0`, `pand` and `pmovmskb`.
+//!   `fromi32`, `pshufd 0`, `pand` and `pmovmskb`;
+//! - `rg_library_tick()`: its thread's instance of the thread-local
+//!   `rg_library_ticks`, which starts at 10, incremented.
 use rustgm::lowir::{
     asm::{self, Kind},
     boundary::{self, Class, Classes, ObjectValue, ResultValue},
-    data::Item,
+    data::{GlobalStorage, Item},
     program::{MemorySpan, Operand, Program, SignatureId, Terminator, Value},
     vocabulary::{Binary, Type, Vector},
     writer,
@@ -63,7 +65,7 @@ fn answer(program: &mut Program) -> Result<(), &'static str> {
     let seed = program.global(
         "rg_library_seed".into(),
         MemorySpan { bytes: 8, align: 8 },
-        true,
+        GlobalStorage::Readonly,
     )?;
     program.initialize(
         seed,
@@ -79,6 +81,34 @@ fn answer(program: &mut Program) -> Result<(), &'static str> {
     body.enter(entry)?;
     let loaded = body.load(Type::I64, Operand::Global(seed))?;
     let sum = body.binary(Binary::Add, loaded, parameter(Type::I64, 0))?;
+    body.terminate(Terminator::Return(Some(sum)))?;
+    program.define(symbol, body.finish()?)
+}
+
+/// `rg_library_tick`: a counter with one instance per thread.
+fn tick(program: &mut Program) -> Result<(), &'static str> {
+    let ticks = program.global(
+        "rg_library_ticks".into(),
+        MemorySpan { bytes: 8, align: 8 },
+        GlobalStorage::ThreadLocal,
+    )?;
+    program.initialize(
+        ticks,
+        &[Item::Bits {
+            ty: Type::I64,
+            bits: 10,
+        }],
+    )?;
+    let signature = program.signature(&[], Type::I64, false)?;
+    let symbol = program.declare("rg_library_tick".into(), signature, false)?;
+    let mut body = program.body_builder();
+    let entry = body.block()?;
+    body.enter(entry)?;
+    let address = body.address(Operand::Global(ticks))?;
+    let loaded = body.load(Type::I64, address.operand)?;
+    let one = body.integer(Type::I64, 1)?;
+    let sum = body.binary(Binary::Add, loaded, one)?;
+    body.store(sum, address.operand)?;
     body.terminate(Terminator::Return(Some(sum)))?;
     program.define(symbol, body.finish()?)
 }
@@ -312,6 +342,7 @@ fn module() -> Result<Program, &'static str> {
     turn(&mut program)?;
     stop(&mut program)?;
     matched(&mut program)?;
+    tick(&mut program)?;
     Ok(program)
 }
 

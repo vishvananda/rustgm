@@ -4,7 +4,7 @@ use super::{Context, Fixup, Key, Target, Type};
 use crate::{
     abi::layout::{Layout, Shape},
     literal::value::FloatBits,
-    lowir::data::Item,
+    lowir::data::{GlobalStorage, Item},
     sema::{
         model::Scalar,
         values::{Constant, Metadata, View},
@@ -283,7 +283,7 @@ impl Context<'_> {
                 bytes: size,
                 align: 1,
             },
-            true,
+            GlobalStorage::Readonly,
         )?;
         let mut init = Initializer {
             global,
@@ -326,7 +326,11 @@ impl Context<'_> {
             init.items.push(Item::Address { target, addend });
             init.cursor += 8;
         } else {
-            self.output.globals[init.global.0 as usize].readonly = false;
+            let storage = &mut self.output.globals[init.global.0 as usize].storage;
+            if *storage == GlobalStorage::ThreadLocal {
+                return Err("thread-local data cannot hold an unaligned address");
+            }
+            *storage = GlobalStorage::Writable;
             self.data.fixups.push(Fixup {
                 global: init.global,
                 offset,

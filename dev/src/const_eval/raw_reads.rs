@@ -44,9 +44,9 @@ impl Machine<'_, '_> {
             return Err("constant execution cannot read external static contents".into());
         }
         if facts
-            .mutable_statics
+            .static_permissions
             .as_ref()
-            .is_some_and(|ids| ids.contains(&id))
+            .is_some_and(|statics| statics.mutable.contains(&id))
         {
             return Err("constant execution cannot read mutable static storage".into());
         }

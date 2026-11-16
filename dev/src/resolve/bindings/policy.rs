@@ -101,6 +101,7 @@ pub(in crate::resolve) enum Feature {
     /// The diagnostic feature that enables `#[diagnostic::on_move]`
     /// directives on a type's declaration.
     DiagnosticMove = 79,
+    ThreadLocal = 80,
 }
 
 #[cfg(test)]
@@ -174,6 +175,7 @@ impl Request {
             "diagnostic_on_const" => Self::Capability(Feature::DiagnosticConst),
             "diagnostic_on_unmatched_args" => Self::Capability(Feature::DiagnosticUnmatched),
             "diagnostic_on_move" => Self::Capability(Feature::DiagnosticMove),
+            "thread_local" => Self::Capability(Feature::ThreadLocal),
             "never_type" => Self::Capability(Feature::NeverType),
             "stmt_expr_attributes" => Self::Capability(Feature::ExpressionAttributes),
             "const_trait_impl" => Self::Capability(Feature::ConstTrait),

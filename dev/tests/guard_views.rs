@@ -22,7 +22,7 @@ impl Fixture {
             body: Body {
                 assembly: None,
                 const_context: false,
-                mutable_statics: None,
+                static_permissions: None,
                 static_types: None,
                 instance: None,
                 owned: None,

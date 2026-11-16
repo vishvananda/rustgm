@@ -63,11 +63,12 @@ impl Queries<'_> {
                     .copied()
                     .flatten()
                     .ok_or_else(|| self.error(Query::Place(key), "missing foreign static type"))?;
+                let thread_local = self.typing.facts.thread_local_static(id);
                 let value = self
                     .typing
                     .facts
                     .constant_references
-                    .static_place(id, ty)
+                    .static_place(id, ty, thread_local)
                     .map_err(|e| self.error(Query::Place(key), e))?;
                 self.states
                     .insert(self.state_key(Query::Place(key)), State::Ready(value));
@@ -99,11 +100,15 @@ impl Queries<'_> {
                 let (source, access) = match initializer.kind {
                     InitializerKind::Const => (Query::Constant(index), Access::Owned),
                     InitializerKind::Static { mutable: false } => {
+                        let thread_local = self
+                            .typing
+                            .facts
+                            .thread_local_static(initializer.definition);
                         let value = self
                             .typing
                             .facts
                             .constant_references
-                            .static_place(initializer.definition, initializer.ty)
+                            .static_place(initializer.definition, initializer.ty, thread_local)
                             .map_err(|e| self.error(Query::Place(key), e))?;
                         self.states
                             .insert(self.state_key(Query::Place(key)), State::Ready(value));

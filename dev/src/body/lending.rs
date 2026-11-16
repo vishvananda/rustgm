@@ -342,7 +342,7 @@ fn validate_graph(
         || !body.guard_places.is_empty()
         || body.assembly.is_some()
         || body.static_types.is_some()
-        || body.mutable_statics.is_some()
+        || body.static_permissions.is_some()
         || body.const_context
         || body.owned.is_some()
         || body.promotions.is_some()

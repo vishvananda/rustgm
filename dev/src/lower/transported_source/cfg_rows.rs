@@ -332,7 +332,7 @@ fn validate(
         return Err("source static type facts require a wider transport profile");
     }
     if body
-        .mutable_statics
+        .static_permissions
         .as_ref()
         .is_some_and(|values| !values.is_empty())
     {

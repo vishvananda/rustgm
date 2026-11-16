@@ -15,14 +15,15 @@ use crate::{
         AsmRegister, Boundary, CLASS_MEMORY, CLASS_STATED, DATA_ADDRESS, DATA_SCALAR, DATA_ZERO,
         DataItem, EIGHTBYTE_INTEGER, EIGHTBYTE_NONE, EIGHTBYTE_SSE, EIGHTBYTE_SSEUP, KEY_LINKAGE,
         KEY_ROLE, LINKAGE_DEFAULT, Literal, NO_ID, Parameter, RETURN_NORETURN, ROLE_ENTRY,
-        TYPE_F32, TYPE_F64, TYPE_I1, TYPE_I8, TYPE_I16, TYPE_I32, TYPE_I64, TYPE_I128, TYPE_PTR,
-        TYPE_U8, TYPE_U16, TYPE_U32, TYPE_V128, TYPE_VOID, Type, object,
+        STORAGE_DEFAULT, STORAGE_READONLY, STORAGE_THREAD_LOCAL, TYPE_F32, TYPE_F64, TYPE_I1,
+        TYPE_I8, TYPE_I16, TYPE_I32, TYPE_I64, TYPE_I128, TYPE_PTR, TYPE_U8, TYPE_U16, TYPE_U32,
+        TYPE_V128, TYPE_VOID, Type, object,
     },
 };
 use rustgm::lowir::{
     asm::{Kind, Part},
     boundary::{self, Class, Classes},
-    data::{GlobalId, GlobalKind, Item, Target},
+    data::{GlobalId, GlobalKind, GlobalStorage, Item, Target},
     program::{Literal as Constant, MemorySpan, Program, Signature, SignatureId, SymbolId},
     vocabulary::Type as Scalar,
 };
@@ -247,9 +248,14 @@ impl<'p> Stater<'p> {
                     items.push(self.item(item)?);
                 }
             }
+            let storage = match global.storage {
+                GlobalStorage::Writable => STORAGE_DEFAULT,
+                GlobalStorage::Readonly => STORAGE_READONLY,
+                GlobalStorage::ThreadLocal => STORAGE_THREAD_LOCAL,
+            };
             if self.forms.total() == noted {
                 self.module
-                    .global(symbol, ty, global.readonly, &items, declaration)?;
+                    .global(symbol, ty, storage, &items, declaration)?;
             }
         }
         Ok(())

@@ -502,7 +502,7 @@ pub(super) fn validate(
         || body.blocks.len() != record.blocks.len()
         || body.temporaries.len() != record.temporaries.len()
         || body.static_types.is_some()
-        || body.mutable_statics.is_some()
+        || body.static_permissions.is_some()
         || body.resolved_callables.is_some()
         || body.closure_calls.is_some()
         || !same_guards(view, body)?

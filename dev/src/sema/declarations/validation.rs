@@ -122,10 +122,12 @@ impl Checker<'_> {
                     "constant and static types must be well-formed and sized",
                 ));
             }
+            // A thread-local static is never shared between threads.
             if matches!(
                 initializer.kind,
                 crate::sema::model::InitializerKind::Static { mutable: false }
-            ) {
+            ) && !self.facts.thread_local_static(initializer.definition)
+            {
                 self.require_shared_static_sync(&initializer, &mut proof)?;
             }
             self.retain_trait_proof(initializer.definition, initializer.node, &mut proof);
