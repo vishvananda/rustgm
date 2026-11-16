@@ -30,12 +30,22 @@ remain planned.
 - **Linked consumer:** `scripts/bringup_linked.py` mounts a consumer as a
   private module of a writable copy of core, so one session compiles both and
   no metadata is needed. This is how every result below was produced.
-- **M1 consumers:** all 17 staged programs
-  (`pa32/tests/spec/core-consumers/`) were run this way; **none passes yet**.
-  Six compile, pass the backend, link and run until their first unlowered
-  intrinsic: `atomics`, `chars-strs`, `duration-net`, `integers`, `panic-index`,
-  `panic-overflow`. Eleven stop while the program itself is type-checked or its
-  constants are evaluated, before any function can be stubbed (table below).
+- **M1 consumers (2026-11-16, frontier lane at `dc8bdf630`):** 17 of the 18
+  staged programs (`pa32/tests/spec/core-consumers/`) behave as
+  `pa32/tests/core-consumer-outcomes.json` declares under the bring-up profile:
+  15 exit 0 with rustc's exact stdout, and `panic-index` and `panic-overflow`
+  abort (SIGABRT) after rustc's stdout. Each was compiled linked with real core
+  over the 1,058-row core skip list (`obj/parallel/frontier/core.skip.fix11.tsv`:
+  1,043 stdarch and portable-simd rows whose constants need SIMD intrinsics, and
+  15 core rows that the census restored when they were removed, for each of
+  the six programs tried), with no program-specific row, and run three times
+  in a fresh empty directory with an empty environment, matching status,
+  standard error and output. `chars-strs` prints part of its output and then
+  aborts in the `simd_splat` trap of `str::pattern::simd_contains` (gap row 5,
+  the runtime lane's). This is bring-up evidence only: about 50
+  bodies per program are unproven, strict mode still stops at its first fence,
+  and the stage stays planned. The failure tables under "Next work" below are
+  the 2026-11-15 state.
 
 ### Bring-up profile
 

@@ -194,9 +194,12 @@ Conventions the frontier needs:
 The stages stay planned: there is no `manifest.json`, `scripts/course.py` still
 fails for PA32, PA33, PA35 and PA36, and `make test-harness` passes.
 `scripts/tests/test_consumer_oracle.py` keeps declarations, sources and recorded
-output consistent without building anything. Nothing runs these programs
-through RustGM yet; that needs a runner that compares standard output (today's
-native check rejects any output) and links through the object bridge.
+output consistent without building anything. Only the bring-up profile runs
+the M1 programs through RustGM: `scripts/bringup_linked.py` compiles each one
+linked with real core, links it through the object bridge and compares its
+standard output. On 2026-11-16, 17 of 18 behaved as declared (three runs each,
+status, standard error and output); `chars-strs` aborts in a SIMD trap (row 5).
+That is not qualification, and no strict run exists.
 
 ## Runtime and backend gaps
 
@@ -657,7 +660,8 @@ initialised data of that size on the bridge; an idle machine.
 
 ## Not verified
 
-- Nothing runs a consumer program through RustGM yet.
+- Consumer programs run through RustGM only under the bring-up profile (M1,
+  see above); nothing runs them in strict mode.
 - Gap rows that say "no handler" rest on the absence of code in `dev/src`,
   not on a failing run: the ordinary profile cannot express those programs.
 - Frontend probes ran under the ordinary library profile only.
