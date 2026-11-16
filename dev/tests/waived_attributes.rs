@@ -13,6 +13,9 @@
 //! profiles accept it without a waiver. The lang items `owned_box`,
 //! `global_alloc_ty` and `String` have no role here; bring-up admits their
 //! structs as ordinary ones after rustc's target and generic requirement.
+//! Without that role no intrinsic signature position can be proved to be
+//! `Box`, so bring-up lets any nominal type stand in a `Box` position of
+//! `write_box_via_move`, which alloc's `vec!` calls.
 //!
 //! Every outcome was declared before either compiler ran. rustc 1.98.0 is the
 //! oracle (`RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib
@@ -31,12 +34,19 @@
 //!   rejects `box-without-parameter` E0718, `string-on-enum` with
 //!   "`#[lang = "String"]` attribute cannot be used on enums" and
 //!   `unknown-role` E0522.
+//! - Box intrinsics: with `--emit=metadata`, which stops before the MIR pass
+//!   that requires a `Unique` field in `Box` and so ends `write-box-via-move`
+//!   with an internal error at `--emit=obj`, it accepts `write-box-via-move`
+//!   and rejects `write-box-wrong-output` and `write-box-wrong-value` with
+//!   E0308.
 use std::{path::Path, process::Command};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 const EYEPATCH: &str = "#![feature(no_core, lang_items, rustc_attrs, dropck_eyepatch)]\n";
 const INTERNAL: &str = "#![feature(no_core, lang_items, rustc_attrs)]\n";
 const PLAIN: &str = "#![feature(no_core, lang_items)]\n";
+const BOXED: &str =
+    "#![feature(no_core, lang_items, rustc_attrs, intrinsics, transparent_unions)]\n";
 const CORE: &str = r#"#![no_core]
 #![allow(internal_features, dead_code)]
 #[lang = "pointee_sized"]
@@ -79,6 +89,11 @@ enum Outcome {
     Accepted,
     /// Both profiles reject it with this message and record no waiver.
     Rejected(&'static str),
+    /// Bring-up rejects it with `bringup` and strict mode with `strict`.
+    Distinct {
+        bringup: &'static str,
+        strict: &'static str,
+    },
 }
 
 /// One case: its crate feature header, the items it appends to the core and
@@ -276,6 +291,40 @@ const LANG_ROLES: [Case; 6] = [
     },
 ];
 
+/// The core items `write_box_via_move` names: `MaybeUninit` and its parts,
+/// and the `owned_box` struct, which only bring-up admits.
+const UNINIT: &str = "#[lang = \"clone\"]\npub trait Clone: Sized {\n    #[lang = \"clone_fn\"]\n    fn clone(&self) -> Self;\n}\n#[lang = \"copy\"]\npub trait Copy: Clone {}\n#[lang = \"manually_drop\"]\n#[repr(transparent)]\npub struct ManuallyDrop<T>(T);\n#[lang = \"bikeshed_guaranteed_no_drop\"]\npub trait NoDrop {}\n#[lang = \"maybe_uninit\"]\n#[repr(transparent)]\npub union MaybeUninit<T> {\n    empty: (),\n    value: ManuallyDrop<T>,\n}\n#[lang = \"owned_box\"]\npub struct Box<T>(*mut T);\n#[rustc_intrinsic]\n";
+const BOX_POSITIONS_WAIVER: &str = "source intrinsic Box positions are admitted without the owned-box language role: any nominal type matches them";
+const BOX_INTRINSICS: [Case; 3] = [
+    Case {
+        name: "write-box-via-move",
+        header: BOXED,
+        items: "pub fn write_box_via_move<T>(b: Box<MaybeUninit<T>>, x: T) -> Box<MaybeUninit<T>>;\n",
+        outcome: Outcome::Waived {
+            waiver: BOX_POSITIONS_WAIVER,
+            strict: UNSUPPORTED,
+        },
+    },
+    Case {
+        name: "write-box-wrong-output",
+        header: BOXED,
+        items: "pub fn write_box_via_move<T>(b: Box<MaybeUninit<T>>, x: T) -> u8;\n",
+        outcome: Outcome::Distinct {
+            bringup: "source intrinsic Box signature requires its real owned-box producer",
+            strict: UNSUPPORTED,
+        },
+    },
+    Case {
+        name: "write-box-wrong-value",
+        header: BOXED,
+        items: "pub fn write_box_via_move<T>(b: Box<MaybeUninit<T>>, x: u8) -> Box<MaybeUninit<T>>;\n",
+        outcome: Outcome::Distinct {
+            bringup: "source intrinsic signature differs from its pinned declaration",
+            strict: UNSUPPORTED,
+        },
+    },
+];
+
 /// Type `path` as a source core, in the bring-up profile when `skip` names
 /// its (empty) skip list.
 fn typed(path: &Path, skip: Option<&Path>) -> Result<(bool, String)> {
@@ -310,9 +359,9 @@ fn waived(stderr: &str, waiver: Option<&str>) -> bool {
     })
 }
 
-/// Run every case in both profiles; the failures that differ from their
-/// declared outcome.
-fn check(folder: &str, cases: &[Case]) -> Result<Vec<String>> {
+/// Run every case, after the core and `prelude`, in both profiles; the
+/// failures that differ from their declared outcome.
+fn check(folder: &str, cases: &[Case], prelude: &str) -> Result<Vec<String>> {
     let folder = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../obj/waived-attributes")
         .join(std::process::id().to_string())
@@ -323,7 +372,10 @@ fn check(folder: &str, cases: &[Case]) -> Result<Vec<String>> {
     let mut failures = Vec::new();
     for case in cases {
         let path = folder.join(format!("{}.rs", case.name));
-        std::fs::write(&path, format!("{}{CORE}{}", case.header, case.items))?;
+        std::fs::write(
+            &path,
+            format!("{}{CORE}{prelude}{}", case.header, case.items),
+        )?;
         let (strict, strict_err) = typed(&path, None)?;
         let (bringup, bringup_err) = typed(&path, Some(&skip))?;
         let matches = match case.outcome {
@@ -347,6 +399,15 @@ fn check(folder: &str, cases: &[Case]) -> Result<Vec<String>> {
                     && rejects(&bringup_err, message)
                     && !waived(&bringup_err, None)
             }
+            Outcome::Distinct {
+                bringup: expected,
+                strict: message,
+            } => {
+                !strict
+                    && rejects(&strict_err, message)
+                    && !bringup
+                    && rejects(&bringup_err, expected)
+            }
         };
         if !matches {
             failures.push(format!(
@@ -362,7 +423,7 @@ fn check(folder: &str, cases: &[Case]) -> Result<Vec<String>> {
 /// every misplaced, ungated or mismatched use is rejected in both profiles.
 #[test]
 fn eyepatches_are_waived_in_bringup_and_rejected_in_strict_mode() -> Result {
-    let failures = check("eyepatch", &EYEPATCHES)?;
+    let failures = check("eyepatch", &EYEPATCHES, "")?;
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())
 }
@@ -372,7 +433,7 @@ fn eyepatches_are_waived_in_bringup_and_rejected_in_strict_mode() -> Result {
 /// ungated, misplaced or malformed use is rejected in both.
 #[test]
 fn allocator_attributes_are_waived_in_bringup_and_rejected_in_strict_mode() -> Result {
-    let failures = check("allocator", &ALLOCATORS)?;
+    let failures = check("allocator", &ALLOCATORS, "")?;
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())
 }
@@ -382,7 +443,16 @@ fn allocator_attributes_are_waived_in_bringup_and_rejected_in_strict_mode() -> R
 /// generic requirement; a misplaced or unknown role is rejected in both.
 #[test]
 fn unimplemented_lang_roles_are_waived_in_bringup_and_rejected_in_strict_mode() -> Result {
-    let failures = check("lang-roles", &LANG_ROLES)?;
+    let failures = check("lang-roles", &LANG_ROLES, "")?;
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
+/// `write_box_via_move` passes only in bring-up, with a recorded waiver for
+/// its `Box` positions; its other positions are still matched exactly.
+#[test]
+fn box_intrinsic_positions_are_waived_in_bringup_and_rejected_in_strict_mode() -> Result {
+    let failures = check("box-intrinsics", &BOX_INTRINSICS, UNINIT)?;
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())
 }

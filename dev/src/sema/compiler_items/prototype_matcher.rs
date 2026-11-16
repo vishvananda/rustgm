@@ -119,6 +119,16 @@ impl<'a> Matcher<'a> {
                 )?;
                 self.ty(*output, result)
             }
+            // `owned_box` has no language role here (bring-up admits alloc's
+            // `Box` as an ordinary struct), so no position can be proved to be
+            // that struct; bring-up admits a nominal type there instead.
+            (Term::OwnedBox, Kind::Adt(..))
+                if crate::support::bringup::waive(
+                    "source intrinsic Box positions are admitted without the owned-box language role: any nominal type matches them",
+                ) =>
+            {
+                Ok(())
+            }
             (Term::OwnedBox, _) => {
                 Err("source intrinsic Box signature requires its real owned-box producer")
             }
