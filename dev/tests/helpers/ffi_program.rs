@@ -22,12 +22,26 @@ pub(crate) fn check_status(
     expected: &str,
     status: i32,
 ) -> TestResult {
+    let mut text = Vec::new();
+    rustgm::lowir::writer::write(program, &mut text)?;
+    check_lowir(root, folder, name, &text, client_source, expected, status)
+}
+
+/// As `check_status`, for the `LowIR` text of a program that the compiler
+/// command wrote.
+pub(crate) fn check_lowir(
+    root: &Path,
+    folder: &Path,
+    name: &str,
+    text: &[u8],
+    client_source: &str,
+    expected: &str,
+    status: i32,
+) -> TestResult {
     let ir = folder.join(format!("{name}.lowir"));
     let object = folder.join(format!("{name}.o"));
     let binary = folder.join(format!("{name}.native"));
     let client = folder.join(format!("{name}.c"));
-    let mut text = Vec::new();
-    rustgm::lowir::writer::write(program, &mut text)?;
     std::fs::write(&ir, text)?;
     std::fs::write(&client, client_source)?;
     run(

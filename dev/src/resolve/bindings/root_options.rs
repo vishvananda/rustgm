@@ -1,4 +1,5 @@
 //! Compiler crate options retain checked root ownership, not operation authority.
+use super::policy::{Feature, Features};
 use crate::{
     resolve::{
         bindings::FeatureName,
@@ -84,9 +85,35 @@ pub(super) fn prepare(unit: &Unit, internal: bool) -> Result<Options, Error> {
 /// The attribute naming the crate that rustc's crate loader injects.
 const BUILTINS: &str = "compiler_builtins";
 
-/// `#![compiler_builtins]` is one inner word attribute of the crate root,
-/// admitted only by its internal feature, as in rustc 1.98.
-pub(super) fn validate_compiler_builtins(unit: &Unit, requested: bool) -> Result<(), Error> {
+/// The inner word attributes of a crate root that rustc 1.98's crate loader
+/// reads, each with the internal feature that admits it and the failure
+/// without that feature. `needs_allocator` (alloc) and
+/// `default_lib_allocator` (std) select the program's allocator shim.
+const LOADER_WORDS: [(&str, Feature, &str); 3] = [
+    (
+        BUILTINS,
+        Feature::CompilerBuiltins,
+        "the `compiler_builtins` attribute requires its internal feature",
+    ),
+    (
+        "needs_allocator",
+        Feature::AllocatorInternals,
+        "`#![needs_allocator]` requires `#![feature(allocator_internals)]`",
+    ),
+    (
+        "default_lib_allocator",
+        Feature::AllocatorInternals,
+        "`#![default_lib_allocator]` requires `#![feature(allocator_internals)]`",
+    ),
+];
+
+/// Each crate-loader word is one inner word attribute of the crate root in
+/// `file`, admitted only by its internal feature, as in rustc 1.98.
+pub(super) fn validate_loader_words(
+    unit: &Unit,
+    file: FileId,
+    features: &Features,
+) -> Result<(), Error> {
     let root = unit.configured.ast.root;
     let Some(index) = unit.owner_indices[root.get() as usize] else {
         return Ok(());
@@ -95,27 +122,30 @@ pub(super) fn validate_compiler_builtins(unit: &Unit, requested: bool) -> Result
     if !owner.enabled || owner.node != root {
         return Ok(());
     }
-    let mut found = false;
+    let mut found = [false; LOADER_WORDS.len()];
     for (attribute, forest) in unit.retained_attributes(owner.attributes.clone()) {
-        if attribute.name(forest, unit.source.text()) != Some(BUILTINS) {
+        let name = attribute.name(forest, unit.source.text());
+        let Some(word) = LOADER_WORDS
+            .iter()
+            .position(|(word, ..)| Some(*word) == name)
+        else {
             continue;
-        }
-        let error = |message| Error::at(FileId(0), attribute.span.start, message);
+        };
+        let (name, feature, ungated) = LOADER_WORDS[word];
+        let error = |message| Error::at(file, attribute.span.start, message);
         if attribute.style != Style::Inner
             || attribute.input != Input::Empty
             || attribute.unsafe_wrapper
         {
-            return Err(error("malformed `compiler_builtins` attribute input"));
+            return Err(error(format!("malformed `{name}` attribute input")));
         }
-        if found {
-            return Err(error("multiple `compiler_builtins` attributes"));
+        if found[word] {
+            return Err(error(format!("multiple `{name}` attributes")));
         }
-        if !requested {
-            return Err(error(
-                "the `compiler_builtins` attribute requires its internal feature",
-            ));
+        if !features.has(feature) {
+            return Err(error(ungated.to_owned()));
         }
-        found = true;
+        found[word] = true;
     }
     Ok(())
 }
@@ -156,9 +186,15 @@ pub(in crate::resolve) fn validate(report: &Report) -> Result<(), Error> {
                 // A bring-up guest's root is a crate root of its own. Its
                 // options are checked here, but the session keeps the host's.
                 let guest = key != expected && report.package.guest_root(key);
-                if name == Some(BUILTINS) && key != expected && !guest {
-                    return Err(error(
-                        "the `#![compiler_builtins]` attribute can only be used at the crate root",
+                if let Some(word) =
+                    name.filter(|name| LOADER_WORDS.iter().any(|(word, ..)| word == name))
+                    && key != expected
+                    && !guest
+                {
+                    return Err(Error::at(
+                        file,
+                        attribute.span.start,
+                        format!("the `#![{word}]` attribute can only be used at the crate root"),
                     ));
                 }
                 let Some(kind) = name.and_then(OptionKind::named) else {

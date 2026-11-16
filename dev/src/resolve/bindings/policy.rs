@@ -92,8 +92,8 @@ pub(in crate::resolve) enum Feature {
     InherentAssociatedTypes = 75,
     /// The internal language feature that admits `#![compiler_builtins]`.
     CompilerBuiltins = 76,
-    /// The internal language feature that admits a bring-up guest crate's
-    /// `#![needs_allocator]`; no strict session knows the request.
+    /// The internal language feature that admits `#![needs_allocator]` and
+    /// `#![default_lib_allocator]`.
     AllocatorInternals = 77,
     /// The language feature that admits `#[may_dangle]` on a parameter of a
     /// `Drop` impl.
@@ -406,7 +406,7 @@ pub(in crate::resolve) fn prepare_with_admission(
         .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
     let (features, library) = features(unit, FileId(0))?;
     let options = super::root_options::prepare(unit, features.has(Feature::RustcAttributes))?;
-    super::root_options::validate_compiler_builtins(unit, features.has(Feature::CompilerBuiltins))?;
+    super::root_options::validate_loader_words(unit, FileId(0), &features)?;
     if let Some(request) = admission {
         let mut prepared = super::consumer_policy::prepare(
             unit, context, no_core, features, library, request, limits,
@@ -494,16 +494,7 @@ pub(in crate::resolve) fn admit_guest(
 ) -> Result<(), Error> {
     let unit = package.unit(file);
     let (features, library) = features(unit, file)?;
-    let needs_allocator = unit
-        .word_attribute(Some(unit.configured.ast.root), "needs_allocator")
-        .map_err(|error| Error::at(file, error.offset, error.message))?;
-    if needs_allocator && !features.has(Feature::AllocatorInternals) {
-        return Err(Error::at(
-            file,
-            0,
-            "`#![needs_allocator]` requires `#![feature(allocator_internals)]`",
-        ));
-    }
+    super::root_options::validate_loader_words(unit, file, &features)?;
     let Some(Source::Core(source)) = package.source.as_deref_mut() else {
         return Err(Error::at(file, 0, "guest crates require a source core"));
     };

@@ -68,9 +68,9 @@ one crate owned the trait. Its files are keyed `NAME:PATH` in skip lists and
 `bringup-*` lines. The last guest is the program: under `#![no_main]` its
 exported C `main` is the entry point. `scripts/bringup_linked.py --guest`
 passes a consumer this way instead of mounting it in a copy of core. A guest
-session publishes no metadata, and there is no allocator shim (a
-`#![needs_allocator]` guest is reported as waived), `#[global_allocator]`,
-runtime start or `std` prelude yet.
+session publishes no metadata. When a crate declares `#![needs_allocator]`
+(alloc), the program gets rustc's allocator shim and must have a
+`#[global_allocator]`. There is no runtime start or `std` prelude yet.
 
 ```sh
 # Frontier worktree. Optimized incremental compiler; never release evidence.

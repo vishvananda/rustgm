@@ -257,7 +257,7 @@ row needs a backend change.
 | 4a | Bring-up lowering, atomics: the fifteen `atomic_*` accesses and `atomic_fence` | M1 | Runtime lane | Lowered in place for 8 to 64 bits and pointers, always sequentially consistent; `intrinsic-ops.rs` matches rustc |
 | 5 | SIMD: 16-byte vectors for hashbrown and `str` search | M1 `chars-strs.rs`, M3 every `HashMap` | Frontend | No handler; backend has `v128` |
 | 6 | `compiler_builtins` | M1 | Integrator decision | Its symbols are provided at link time; its sources need assembly RustGM fences |
-| 7 | Allocator shims and `#[global_allocator]` | M2 | Frontend | Fenced |
+| 7 | Allocator shims and `#[global_allocator]` | M2 | Runtime lane | Implemented as rustc 1.98 does: mangled internal symbols, both attribute expansions, the shim in the program crate (`dev/tests/global_allocators.rs`) |
 | 8 | Panic runtime under panic=abort | M1 handler, M3 std | Frontend | Abort works; handler shapes, `catch_unwind` and messages do not |
 | 9 | Compiler-inserted checks when core installs its panic hooks | M1 | Frontier | Fenced; the bring-up profile is reported to waive the fence and keep the abort |
 | 10 | Thread-locals | M3 | Frontend | Unknown attribute; backend has thread-local globals |
@@ -397,10 +397,14 @@ pthread, file system); the rustgm corpus 57. See the table above.
   programs get `__rdl_alloc` and its family behind them. Below: `malloc`,
   `calloc`, `realloc`, `free`, `posix_memalign`. M2 declares its own
   `#[global_allocator]`.
-- RustGM: `#[global_allocator]` and `#[alloc_error_handler]` are catalogued
-  but not executable (`dev/src/expand/builtin/catalog.rs:175-180,224-264`);
-  observed as an unresolved attribute (`global-allocator`). No shim
-  generation and no reader of `rustc_std_internal_symbol` were found.
+- RustGM (2026-11-16): a `rustc_std_internal_symbol` item takes rustc's
+  name `_RNvCs6rREvFdRhLb_7___rustc<len><name>`. `#[global_allocator]` and
+  `#[alloc_error_handler]` expand as rustc's do. An executable whose crates
+  declare `#![needs_allocator]` gets the shim (`dev/src/lower/allocator_shim.rs`):
+  the `#![default_lib_allocator]` forwarders when there is no global
+  allocator (otherwise rustc's error), the error-handler forwarder to
+  `__rdl_alloc_error_handler`, and `__rust_no_alloc_shim_is_unstable_v2`.
+  The allocator attributes themselves change no lowering.
 - Backend: nothing special is needed.
 
 **8. Panic runtime.**

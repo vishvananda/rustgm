@@ -562,19 +562,22 @@ fn a_guest_extends_a_primitive_only_through_the_incoherent_allowance() -> Result
     )
 }
 
-/// rustc: accepts the gated crate and rejects the ungated one with E0658. No
-/// allocator shim is generated here, which the session reports.
+/// rustc (the guest as `--crate-type=bin`): rejects the gated crate, a
+/// program that needs an allocator and has no `#[global_allocator]`, with
+/// "no global memory allocator found but one is required; ...", and the
+/// ungated one with E0658 at `#![needs_allocator]`. The program gets the
+/// allocator shim; `global_allocators.rs` runs programs that have one.
 #[test]
-fn a_guest_that_needs_an_allocator_is_reported_as_waived() -> Result {
+fn a_guest_program_that_needs_an_allocator_must_have_one() -> Result {
     let output = session("needs-allocator", &[("app", NEEDS_ALLOCATOR)])?;
-    accepted(&output)?;
     let stderr = String::from_utf8_lossy(&output.stderr);
-    let waiver = "bringup-waived\tguest crate `app` needs an allocator";
-    assert!(stderr.contains(waiver), "{stderr}");
+    assert_eq!(output.status.code(), Some(1), "{stderr}");
+    let missing = "no global memory allocator found but one is required; link to std or add `#[global_allocator]` to a static item that implements the GlobalAlloc trait";
+    assert!(stderr.contains(missing), "{stderr}");
     rejected(
         &session("ungated-allocator", &[("app", UNGATED_ALLOCATOR)])?,
         (1, UNGATED_ALLOCATOR),
-        "#![feature(no_core)]",
+        "#![needs_allocator]",
         "`#![needs_allocator]` requires `#![feature(allocator_internals)]`",
     )
 }

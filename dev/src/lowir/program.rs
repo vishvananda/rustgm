@@ -396,6 +396,14 @@ impl Program {
         }));
         Ok(id)
     }
+    /// The function symbol declared under the backend spelling `name`.
+    #[must_use]
+    pub fn function(&self, name: &str) -> Option<SymbolId> {
+        match self.names.get(name) {
+            Some(&Name::Function(id)) => Some(id),
+            _ => None,
+        }
+    }
     /// # Errors
     /// Rejects invalid signatures, incompatible aliases and exhausted identities.
     pub fn declare(

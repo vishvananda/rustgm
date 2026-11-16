@@ -213,10 +213,16 @@ pub fn build_roots_prepared(
     roots: super::Roots<'_>,
     prepared: crate::pipeline::Prepared,
 ) -> Result<crate::lowir::program::Program, Error> {
-    inspect_roots(report, facts, roots, prepared, |facts, assembled, roots| {
+    let mut program = inspect_roots(report, facts, roots, prepared, |facts, assembled, roots| {
         super::build_assembled(facts, assembled, roots)
     })?
-    .map_err(|e| diagnostic(report, e.node, e.message.into()))
+    .map_err(|e| diagnostic(report, e.node, e.message.into()))?;
+    // An executable's final crate gets rustc's allocator shim.
+    let requests = super::allocator_shim::Requests::read(&report.package)
+        .map_err(|message| diagnostic(report, None, message.into()))?;
+    super::allocator_shim::install(&mut program, requests)
+        .map_err(|message| diagnostic(report, None, message))?;
+    Ok(program)
 }
 
 /// Prove source originals before forming the library's transport interface and roots.

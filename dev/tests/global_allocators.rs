@@ -288,9 +288,114 @@ const HANDLER_UNIT: &str = r"pub mod handler {
 }
 ";
 const GATE: &str = "#![feature(alloc_error_handler)]\n";
+const MAIN: &str = r#"pub mod program {
+    use crate::{heap, rt_alloc};
+    #[link(name = "c")]
+    unsafe extern "C" {
+        fn printf(format: *const u8, ...) -> i32;
+    }
+    #[unsafe(no_mangle)]
+    pub extern "C" fn main() -> i32 {
+        unsafe {
+            let p = rt_alloc::alloc(24, 8);
+            *p = 7;
+            let q = rt_alloc::realloc(p, 24, 8, 48);
+            let z = rt_alloc::alloc_zeroed(16, 16);
+            printf(
+                b"%d %d %zu %zu %zu\n\0" as *const [u8; 19] as *const u8,
+                *q as i32,
+                *z as i32,
+                heap::LAST_ALLOC,
+                heap::LAST_GROWN,
+                heap::LAST_ZEROED,
+            );
+            rt_alloc::dealloc(q, 48, 8);
+            printf(b"%zu\n\0" as *const [u8; 5] as *const u8, heap::LAST_FREE);
+            rt_alloc::dealloc(z, 16, 16);
+            printf(b"%zu\n\0" as *const [u8; 5] as *const u8, heap::LAST_FREE);
+        }
+        0
+    }
+}
+"#;
+const OOM: &str = r#"pub mod program {
+    use crate::rt_alloc;
+    #[unsafe(no_mangle)]
+    pub extern "C" fn main() -> i32 {
+        rt_alloc::handle_alloc_error(99, 8)
+    }
+}
+"#;
+const DEFAULT: &str = r#"pub mod default_lib {
+    #[link(name = "c")]
+    unsafe extern "C" {
+        fn malloc(size: usize) -> *mut u8;
+        fn calloc(count: usize, size: usize) -> *mut u8;
+        fn realloc(ptr: *mut u8, size: usize) -> *mut u8;
+        fn free(ptr: *mut u8);
+        fn printf(format: *const u8, ...) -> i32;
+    }
+    #[rustc_std_internal_symbol]
+    pub unsafe extern "C" fn __rdl_alloc(size: usize, _align: usize) -> *mut u8 {
+        unsafe {
+            printf(b"rdl alloc %zu\n\0" as *const [u8; 15] as *const u8, size);
+            malloc(size)
+        }
+    }
+    #[rustc_std_internal_symbol]
+    pub unsafe extern "C" fn __rdl_dealloc(ptr: *mut u8, size: usize, _align: usize) {
+        unsafe {
+            printf(b"rdl dealloc %zu\n\0" as *const [u8; 17] as *const u8, size);
+            free(ptr)
+        }
+    }
+    #[rustc_std_internal_symbol]
+    pub unsafe extern "C" fn __rdl_realloc(ptr: *mut u8, _old_size: usize, _align: usize, new_size: usize) -> *mut u8 {
+        unsafe {
+            printf(b"rdl realloc %zu\n\0" as *const [u8; 17] as *const u8, new_size);
+            realloc(ptr, new_size)
+        }
+    }
+    #[rustc_std_internal_symbol]
+    pub unsafe extern "C" fn __rdl_alloc_zeroed(size: usize, _align: usize) -> *mut u8 {
+        unsafe {
+            printf(b"rdl zeroed %zu\n\0" as *const [u8; 16] as *const u8, size);
+            calloc(1, size)
+        }
+    }
+}
+"#;
+const PLAIN: &str = r#"pub mod program {
+    use crate::rt_alloc;
+    #[link(name = "c")]
+    unsafe extern "C" {
+        fn printf(format: *const u8, ...) -> i32;
+    }
+    #[unsafe(no_mangle)]
+    pub extern "C" fn main() -> i32 {
+        unsafe {
+            let p = rt_alloc::alloc(24, 8);
+            *p = 7;
+            let q = rt_alloc::realloc(p, 24, 8, 48);
+            let z = rt_alloc::alloc_zeroed(16, 16);
+            printf(b"%d %d\n\0" as *const [u8; 7] as *const u8, *q as i32, *z as i32);
+            rt_alloc::dealloc(q, 48, 8);
+            rt_alloc::dealloc(z, 16, 16);
+        }
+        0
+    }
+}
+"#;
+const HEADER: &str = "#![needs_allocator]\n";
 
-/// The `LowIR` of one crate lowered from its exports, without an entry.
+/// The `LowIR` text of one crate lowered from its exports, without an entry.
 fn lowered(source: &str) -> Result<String> {
+    let mut text = Vec::new();
+    rustgm::lowir::writer::write(&program(source)?, &mut text)?;
+    Ok(String::from_utf8(text)?)
+}
+/// One crate lowered from its exports, without an entry, as an executable.
+fn program(source: &str) -> Result<rustgm::lowir::program::Program> {
     let mut config = Config::default();
     config.set_lint_cap(LintCap::Allow);
     let report = crate::resolve::source_provider_config(source, "global_allocators", &config)?;
@@ -307,9 +412,7 @@ fn lowered(source: &str) -> Result<String> {
         },
         prepared,
     )?;
-    let mut text = Vec::new();
-    rustgm::lowir::writer::write(&program, &mut text)?;
-    Ok(String::from_utf8(text)?)
+    Ok(program)
 }
 /// Whether `text` defines (`declared` false) or only declares `symbol`.
 fn has_symbol(text: &str, symbol: &str, declared: bool) -> bool {
@@ -391,55 +494,280 @@ fn allocator_attributes_generate_rustcs_internal_functions() -> Result {
     Ok(())
 }
 
-/// rustc rejects each library form: `two-lib` "cannot define multiple global
-/// allocators", `two-handlers-lib` "cannot define multiple allocation error
-/// handlers", `non-static-lib` "allocators must be statics",
-/// `handler-non-fn-lib` "`alloc_error_handler` must be a function",
-/// `global-form-lib` "malformed `global_allocator` attribute input",
-/// `not-globalalloc-lib` E0277 (`Plain: GlobalAlloc` is not satisfied) and
-/// `handler-signature-lib` E0308 (mismatched types). This compiler reports the last
-/// two as its unsatisfied obligation and type mismatch inside the expansion.
+/// rustc rejects each library form and each program form (the library
+/// with `#![needs_allocator]` and a C `main`, built as a staticlib):
+/// `two`/`two-lib` "cannot define multiple global allocators",
+/// `two-handlers`/`two-handlers-lib` "cannot define multiple allocation error
+/// handlers", `non-static`/`non-static-lib` "allocators must be statics",
+/// `handler-non-fn`/`handler-non-fn-lib` "`alloc_error_handler` must be a
+/// function", `global-form`/`global-form-lib` "malformed `global_allocator`
+/// attribute input", `not-globalalloc`/`not-globalalloc-lib` E0277
+/// (`Plain: GlobalAlloc` is not satisfied) and
+/// `handler-signature`/`handler-signature-lib` E0308 (mismatched types). This
+/// compiler reports the last two as its unsatisfied obligation and type
+/// mismatch inside the expansion.
 #[test]
 fn misplaced_or_repeated_allocator_attributes_are_rejected() {
+    let form = HEAP.replace("    #[global_allocator]\n", "    #[global_allocator(x)]\n");
     let cases = [
         (
-            format!("{CORE}{ALLOC}{HEAP}{SECOND}"),
+            "",
+            format!("{HEAP}{SECOND}"),
+            MAIN,
             "cannot define multiple global allocators",
         ),
         (
-            format!("{GATE}{CORE}{ALLOC}{HEAP}{HANDLER}{SECOND_HANDLER}"),
+            GATE,
+            format!("{HEAP}{HANDLER}{SECOND_HANDLER}"),
+            OOM,
             "cannot define multiple allocation error handlers",
         ),
         (
-            format!("{CORE}{ALLOC}{HEAP}{NOT_STATIC}"),
+            "",
+            format!("{HEAP}{NOT_STATIC}"),
+            MAIN,
             "allocators must be statics",
         ),
         (
-            format!("{GATE}{CORE}{ALLOC}{HEAP}{HANDLER_STATIC}"),
+            GATE,
+            format!("{HEAP}{HANDLER_STATIC}"),
+            OOM,
             "alloc_error_handler must be a function",
         ),
         (
-            format!(
-                "{CORE}{ALLOC}{}",
-                HEAP.replace("    #[global_allocator]\n", "    #[global_allocator(x)]\n")
-            ),
+            "",
+            form,
+            MAIN,
             "malformed `global_allocator` attribute input",
         ),
         (
-            format!("{CORE}{ALLOC}{}", plain_heap()),
+            "",
+            plain_heap(),
+            PLAIN,
             "trait obligation requires an unambiguous matching assumption or implementation\", expansions: [ExpansionTrace { macro_name: \"global_allocator\"",
         ),
         (
-            format!("{GATE}{CORE}{ALLOC}{HEAP}{HANDLER_UNIT}"),
+            GATE,
+            format!("{HEAP}{HANDLER_UNIT}"),
+            OOM,
             "incompatible types\", expansions: [ExpansionTrace { macro_name: \"alloc_error_handler\"",
         ),
     ];
     let mut failures = Vec::new();
-    for (source, expected) in &cases {
-        let error = rejected(source);
-        if !error.contains(expected) {
-            failures.push(format!("{expected}: {error}"));
+    for (gate, body, tail, expected) in &cases {
+        let library = format!("{gate}{CORE}{ALLOC}{body}");
+        let program = format!("{gate}{HEADER}{CORE}{ALLOC}{body}{tail}");
+        for source in [library, program] {
+            let error = rejected(&source);
+            if !error.contains(expected) {
+                failures.push(format!("{expected}: {error}"));
+            }
         }
     }
     assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+/// The shim's own functions, as `nm` shows them in rustc's objects.
+const SHIM_MARK: &str = "_RNvCs6rREvFdRhLb_7___rustc35___rust_no_alloc_shim_is_unstable_v2";
+const DEFAULT_FUNCTIONS: [&str; 4] = [
+    "_RNvCs6rREvFdRhLb_7___rustc11___rdl_alloc",
+    "_RNvCs6rREvFdRhLb_7___rustc13___rdl_dealloc",
+    "_RNvCs6rREvFdRhLb_7___rustc13___rdl_realloc",
+    "_RNvCs6rREvFdRhLb_7___rustc18___rdl_alloc_zeroed",
+];
+/// rustc's error for a program that needs an allocator and has none.
+const MISSING: &str = "no global memory allocator found but one is required; link to std or add `#[global_allocator]` to a static item that implements the GlobalAlloc trait";
+/// The single-crate programs, as rustc built them (staticlibs that export
+/// a C `main`), with rustc's exit status and output.
+fn single_programs() -> [(&'static str, String, i32, &'static str); 4] {
+    [
+        (
+            "single-global",
+            format!("{HEADER}{CORE}{ALLOC}{HEAP}{MAIN}"),
+            0,
+            "7 0 24 48 16\n48\n16\n",
+        ),
+        (
+            "single-oom",
+            format!("{HEADER}{CORE}{ALLOC}{HEAP}{OOM}"),
+            3,
+            "default oom 99\n",
+        ),
+        (
+            "single-handler",
+            format!("{GATE}{HEADER}{CORE}{ALLOC}{HEAP}{HANDLER}{OOM}"),
+            4,
+            "handler oom 99 8\n",
+        ),
+        (
+            "single-default",
+            format!("{HEADER}#![default_lib_allocator]\n{CORE}{ALLOC}{DEFAULT}{PLAIN}"),
+            0,
+            "rdl alloc 24\nrdl realloc 48\nrdl zeroed 16\n7 0\nrdl dealloc 48\nrdl dealloc 16\n",
+        ),
+    ]
+}
+
+/// rustc (`single-global`): the program defines the expansion's four
+/// functions, alloc's `__rdl_alloc_error_handler`, and the shim's
+/// `__rust_alloc_error_handler` and `__rust_no_alloc_shim_is_unstable_v2`.
+/// (`single-handler`) the handler is the expansion's. (`single-default`,
+/// `#![default_lib_allocator]` without a global allocator) the shim defines
+/// the four functions over the `__rdl_*` ones. (`missing`) rejected with
+/// rustc's error; (`guest-crates-ungated`) an ungated `#![needs_allocator]`
+/// is E0658.
+#[test]
+fn a_program_that_needs_an_allocator_gets_rustcs_shim() -> Result {
+    let [global, _, handler, default] = single_programs();
+    let defines = |source: &str, symbols: &[&str]| -> Result {
+        let text = lowered(source)?;
+        for symbol in symbols {
+            assert!(has_symbol(&text, symbol, false), "{symbol}\n{text}");
+        }
+        Ok(())
+    };
+    let shim = [DEFAULT_HANDLER, HANDLER_FUNCTION, SHIM_MARK];
+    defines(&global.1, &[GLOBAL_FUNCTIONS.as_slice(), &shim].concat())?;
+    defines(&handler.1, &[HANDLER_FUNCTION, SHIM_MARK])?;
+    let forwarded = [GLOBAL_FUNCTIONS, DEFAULT_FUNCTIONS].concat();
+    defines(&default.1, &[forwarded.as_slice(), &shim].concat())?;
+    let missing = rejected(&format!("{HEADER}{CORE}{ALLOC}{PLAIN}"));
+    assert!(missing.contains(MISSING), "{missing}");
+    let ungated = CORE.replace("#![feature(allocator_internals)]\n", "");
+    let ungated = rejected(&format!("{HEADER}{ungated}{ALLOC}{PLAIN}"));
+    let gate = "`#![needs_allocator]` requires `#![feature(allocator_internals)]`";
+    assert!(ungated.contains(gate), "{ungated}");
+    Ok(())
+}
+
+/// rustc's runs of the single-crate programs (`run` in its results).
+#[test]
+#[ignore = "requires the pinned CPPGM backend and a C compiler"]
+fn single_crate_programs_allocate_through_the_shim_as_rustcs_do() -> Result {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let folder = root.join(format!(
+        "obj/parallel/global-allocators/single-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    for (name, source, status, expected) in single_programs() {
+        let built = program(&source)?;
+        crate::ffi_program::check_status(&root, &folder, name, &built, CLIENT, expected, status)?;
+    }
+    Ok(())
+}
+/// The programs export C `main`; the client only completes the link.
+const CLIENT: &str = "/* The Rust program exports `main`. */\n";
+
+/// The three-crate programs: the oracle's core, alloc and app sources.
+fn guest_sources(heap_in_alloc: bool, app: &str) -> [String; 3] {
+    let core = CORE.replace("#![feature(allocator_internals)]\n", "");
+    let mut alloc = format!(
+        "#![feature(no_core, rustc_attrs, allocator_internals)]\n#![no_core]\n#![needs_allocator]\n#![allow(internal_features, dead_code, unused_unsafe)]\nextern crate core;\n{}",
+        ALLOC.replace("crate::mem::", "core::mem::")
+    );
+    let heap = HEAP
+        .replace("crate::alloc::", "core::alloc::")
+        .replace("crate::Sync", "core::Sync")
+        .replace("crate::macros::", "core::macros::");
+    if heap_in_alloc {
+        alloc.push_str(&heap);
+    }
+    let app = format!(
+        "#![feature(no_core)]\n#![no_core]\n#![no_main]\n#![allow(dead_code, unused_unsafe)]\nextern crate core;\nextern crate alloc;\n{}{}",
+        if app == PLAIN { "" } else { heap.as_str() },
+        app.replace(
+            "use crate::{heap, rt_alloc};",
+            "use crate::heap;\n    use alloc::rt_alloc;"
+        )
+        .replace("use crate::rt_alloc;", "use alloc::rt_alloc;")
+    );
+    [core, alloc, app]
+}
+/// Compile core with alloc and the app as bring-up guests, writing the
+/// session's `LowIR` beside its sources.
+fn guest_session(
+    name: &str,
+    sources: &[String; 3],
+) -> Result<(std::path::PathBuf, std::process::Output)> {
+    let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../obj/parallel/global-allocators")
+        .join(format!("{name}-{}", std::process::id()));
+    std::fs::create_dir_all(&folder)?;
+    for (file, text) in ["core.rs", "alloc.rs", "app.rs", "skip.tsv"]
+        .iter()
+        .zip(sources.iter().map(String::as_str).chain([""]))
+    {
+        std::fs::write(folder.join(file), text)?;
+    }
+    let identity = "allocators_bringup";
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_rustgm"))
+        .args(["--emit-lowir", "--cap-lints=allow", "--edition=2024"])
+        .args(["--crate-name", "core", "--crate-disambiguator", identity])
+        .args(["--source-core", &format!("core@{identity}")])
+        .arg("--bringup-skip-list")
+        .arg(folder.join("skip.tsv"))
+        .arg("--native-links-output")
+        .arg(folder.join("session.native-links.json"))
+        .arg("--bringup-guest")
+        .arg(format!("alloc={}", folder.join("alloc.rs").display()))
+        .arg("--bringup-guest")
+        .arg(format!("app={}", folder.join("app.rs").display()))
+        .arg("-o")
+        .arg(folder.join("session.lowir"))
+        .arg(folder.join("core.rs"))
+        .output()?;
+    Ok((folder, output))
+}
+
+/// rustc (`guest-global`): accepted, the app's object holds the expansion's
+/// four functions and the shim. (`guest-missing`, the app without
+/// `#[global_allocator]`) the no-global-allocator error. (`guest-conflict`,
+/// alloc also has one) "the `#[global_allocator]` in this crate conflicts
+/// with global allocator in: alloc".
+#[test]
+fn the_program_crate_of_a_guest_session_gets_the_shim() -> Result {
+    let (folder, output) = guest_session("global", &guest_sources(false, MAIN))?;
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(output.status.success(), "{stderr}");
+    let text = std::fs::read_to_string(folder.join("session.lowir"))?;
+    for symbol in GLOBAL_FUNCTIONS
+        .into_iter()
+        .chain([HANDLER_FUNCTION, SHIM_MARK])
+    {
+        assert!(has_symbol(&text, symbol, false), "{symbol}\n{text}");
+    }
+    let conflict =
+        "the `#[global_allocator]` in this crate conflicts with global allocator in: alloc";
+    for (name, sources, message) in [
+        ("missing", guest_sources(false, PLAIN), MISSING),
+        ("conflict", guest_sources(true, MAIN), conflict),
+    ] {
+        let (_, output) = guest_session(name, &sources)?;
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert_eq!(output.status.code(), Some(1), "{name}: {stderr}");
+        assert!(stderr.contains(message), "{name}: {stderr}");
+    }
+    Ok(())
+}
+
+/// rustc's runs of `guest-global` and `guest-oom`.
+#[test]
+#[ignore = "requires the pinned CPPGM backend and a C compiler"]
+fn guest_programs_allocate_through_the_shim_as_rustcs_do() -> Result {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    for (name, app, status, expected) in [
+        ("guest-global", MAIN, 0, "7 0 24 48 16\n48\n16\n"),
+        ("guest-oom", OOM, 3, "default oom 99\n"),
+    ] {
+        let (folder, output) = guest_session(name, &guest_sources(false, app))?;
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let text = std::fs::read(folder.join("session.lowir"))?;
+        crate::ffi_program::check_lowir(&root, &folder, name, &text, CLIENT, expected, status)?;
+    }
+    Ok(())
 }

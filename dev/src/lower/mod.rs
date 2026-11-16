@@ -1,6 +1,7 @@
 //! Mechanical lowering consumes typed body selections and emits each demanded function once.
 mod address;
 pub mod alignment;
+mod allocator_shim;
 mod arithmetic;
 mod bit_kernels;
 mod casts;

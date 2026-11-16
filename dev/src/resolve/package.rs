@@ -248,6 +248,36 @@ impl Package {
         })
     }
 
+    /// Whether the root of some crate of the session, the host's alone in a
+    /// session without guests, has the inner word attribute `name`, which
+    /// loading validated.
+    /// # Errors
+    /// Propagates a malformed root attribute or a missing crate root.
+    pub fn any_root_word(&self, name: &str) -> Result<bool, &'static str> {
+        let members = self.crate_members();
+        let host = members.is_empty().then_some(ModuleId(0));
+        for root in host
+            .into_iter()
+            .chain(members.iter().map(|member| member.root))
+        {
+            let module = self
+                .modules
+                .get(root.0 as usize)
+                .ok_or("crate root module is missing")?;
+            let unit = self
+                .units
+                .get(module.file.0 as usize)
+                .ok_or("crate root source is missing")?;
+            if unit
+                .word_attribute(Some(module.root), name)
+                .map_err(|error| error.message)?
+            {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
     /// The source loader copies this immutable compilation input once.
     #[must_use]
     pub const fn runtime_checks(&self) -> crate::support::runtime_checks::RuntimeCheckConfig {

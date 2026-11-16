@@ -137,13 +137,6 @@ impl Guests {
         );
         let name = self.name(names, input.name())?;
         let macro_root = self.macro_root(names)?;
-        if word("needs_allocator")? {
-            // A program that reaches the global allocator stops at its link.
-            crate::support::bringup::waive(&format!(
-                "guest crate `{}` needs an allocator and no allocator shim is generated",
-                input.name()
-            ));
-        }
         self.members.push(Member {
             name,
             root: module,
@@ -238,9 +231,9 @@ impl Package {
         })
     }
     /// Whether `name` is a crate attribute that a guest root owns at `key`:
-    /// its program selection and the session's waivers read these.
+    /// its program selection reads it.
     pub(crate) fn guest_root_attribute(&self, key: NodeKey, name: &str) -> bool {
-        matches!(name, "no_main" | "needs_allocator") && self.guest_root(key)
+        name == "no_main" && self.guest_root(key)
     }
     /// The crate id that a macro defined in `module` gives its `$crate`.
     /// Zero, the using crate's own root, in every session without guests.
