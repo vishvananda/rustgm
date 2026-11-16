@@ -9,9 +9,12 @@ pub(super) fn check(
     environment: Option<&Arc<Environment>>,
 ) -> Result<(), &'static str> {
     facts.body_work.canonical_steps += 1;
+    // A receiver adapter shares its closure's source but is a generated body
+    // of its own: the closure's creator premises are not its producer's.
     let actual = body
         .source
         .source()
+        .filter(|_| !matches!(body.owner, Owner::ClosureAdapter { .. }))
         .and_then(|source| facts.generics.builtin_requirements.get(&source))
         .and_then(|requirements| requirements.environment.as_ref());
     if environment.is_none_or(|environment| environment.body_aliases().is_none())

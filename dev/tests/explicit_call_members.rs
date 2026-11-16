@@ -509,3 +509,48 @@ fn const_closure_ctfe_and_default_premises_remain_accepting_requirements() -> Re
     }
     Ok(())
 }
+
+const COPIES: &str = "pa31/tests/spec/captured-copies";
+const COPY_CASES: [&str; 6] = [
+    "captured-read",
+    "captured-reference",
+    "captured-callee",
+    "once",
+    "copy-fold",
+    "take-copied",
+];
+/// A capturing closure keeps its creator's `T: Copy`, as core's `copy_fold`
+/// needs for `move |acc, &elt| f(acc, elt)`.
+#[test]
+fn capturing_closures_copy_values_their_creator_bounds_copy() -> Result {
+    for name in COPY_CASES {
+        packet_report(COPIES, name)
+            .and_then(|report| program(&report))
+            .map_err(|error| format!("{name}: {error}"))?;
+    }
+    let error = packet_report(COPIES, "not-copy")
+        .and_then(|report| program(&report))
+        .err()
+        .ok_or("accepted not-copy")?;
+    assert!(
+        error
+            .to_string()
+            .contains("cannot move a non-Copy value out of a reference"),
+        "not-copy: {error}"
+    );
+    Ok(())
+}
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn capturing_closures_copy_values_execute() -> Result {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    for name in COPY_CASES {
+        crate::observed_program::execute(
+            &root.join(format!("obj/parallel/captured-copies/native/{name}")),
+            &program(&packet_report(COPIES, name)?)?,
+            &root.join(COPIES).join("observe.c"),
+            b"41 59\n",
+        )?;
+    }
+    Ok(())
+}

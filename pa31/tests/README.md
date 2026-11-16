@@ -1076,6 +1076,16 @@ T`, under the builtin pointer rule (E0308). A second `PartialEq` impl for
 test checks them through the CLI and lowers each positive. There is no graded
 manifest.
 
+`spec/captured-copies/` freezes seven declared no_core programs that copy a
+`T: Copy` value in a capturing closure of a generic function, as core's
+`copy_fold` does with `move |acc, &elt| f(acc, elt)`. Like rustc, the closure
+keeps its creator's where-clauses whether or not it captures, including when
+its execution borrows a receiver: a pattern copy beside another capture, `move
+|| *x`, a copy passed to a captured callee, a `FnOnce` closure, `copy_fold`
+itself and core's `Take::try_fold` over it accept and run against a C
+observer, and `copy_fold` without the bound rejects (E0507). A maintainer
+integration test checks every case. There is no graded manifest.
+
 `spec/abstract-cleanup/` freezes six declared no_core programs that move an
 abstract value conditionally in a generic body, as core's `TakeWhile::next`
 does with `x: I::Item`. A rigid projection or opaque value has no structure to

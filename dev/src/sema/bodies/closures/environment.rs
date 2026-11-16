@@ -12,15 +12,16 @@ use crate::{
 };
 
 impl Checker<'_> {
-    /// Noncapturing reads retain creator premises without an independent body
-    /// trait goal. Captured execution has a separate receiver scope. Instances
-    /// discard this child-owned alias context and reprove their own reads.
+    /// A closure's reads retain creator premises without an independent body
+    /// trait goal, as rustc's closures share their creator's where-clauses.
+    /// Instances discard this child-owned alias context and reprove their own
+    /// reads.
     pub(super) fn retain_closure_copy_context(
         &mut self,
         body: crate::sema::closures::Body,
     ) -> Result<(), Error> {
         let node = body.source.node;
-        if self.facts.source_bindings.is_none() || body.execution.is_some() {
+        if self.facts.source_bindings.is_none() {
             return Ok(());
         }
         let Some(owner) = body.owner else {
@@ -41,7 +42,21 @@ impl Checker<'_> {
             return Err(self.error(node, "closure Copy premises have a foreign lifetime scope"));
         }
         self.prepare_universals(node)?;
-        let aliases = self.state.call_types.universal_arguments();
+        let mut aliases = self.state.call_types.universal_arguments();
+        // A captured execution borrowing its receiver opens one more universal,
+        // the receiver's lifetime, after the body's own. No creator premise can
+        // name it; its alias only completes the execution's slot vector.
+        if let Some(execution) = body.execution
+            && execution.universals != body.universals
+        {
+            if execution.universals != body.universals.saturating_add(1)
+                || aliases.len() != body.universals as usize
+                || execution.receiver == CallKind::Once
+            {
+                return Err(self.error(node, "closure execution changed its creator's universals"));
+            }
+            aliases.push(self.body_region(node, BodyRegionOrigin::UniversalAlias)?);
+        }
         let growth = environment
             .body_alias_finish_bound(aliases.len())
             .map_err(|e| self.error(node, e))?;

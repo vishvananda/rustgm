@@ -1,0 +1,60 @@
+{
+ "schema": 1,
+ "declared": "2026-11-16, before the frozen rustc 1.98.0 oracle of these exact bytes (obj/parallel/frontier/repro13/declared.json and repro14/declared.json). Declared outcomes did not change.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "native_stdout": "41 59\n",
+ "observer_sha256": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+ "cases": {
+  "captured-read.rs": {
+   "sha256": "3320fa209b59e5e57021953f3eb623b8cfde382a22119c8e75518d942b9fce72",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "cannot move a non-Copy value out of a reference",
+   "reduction": "c1-captured-read"
+  },
+  "captured-reference.rs": {
+   "sha256": "be55842b66425158541961b4ff8ce328f6fd66532641817a3828f707f0509d68",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "cannot move a non-Copy value out of a reference",
+   "reduction": "c3-captured-ref"
+  },
+  "captured-callee.rs": {
+   "sha256": "fb6f999f2696679b56253c4959f51c4069e64dea5bec5d34550eea58801dc0de",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "cannot move a non-Copy value out of a reference",
+   "reduction": "r1-named"
+  },
+  "once.rs": {
+   "sha256": "051f008ea70d1fdc9d5420346e4b0b89446896de89970435e7e88bec42d09646",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "cannot move a non-Copy value out of a reference",
+   "reduction": "c4-once"
+  },
+  "copy-fold.rs": {
+   "sha256": "888f523c6fd0438dbb34521ccda22a82f0abcb373b18da98bbea007b5fb2915b",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "cannot move a non-Copy value out of a reference",
+   "reduction": "returned"
+  },
+  "take-copied.rs": {
+   "sha256": "d0a47a74b1e7a1c59965ae0ebae3fdc628197f2d64a47e9e871ca228ada53ab2",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "cannot move a non-Copy value out of a reference",
+   "reduction": "repro13/copied"
+  },
+  "not-copy.rs": {
+   "sha256": "980cfe3b062356dad55edbd6448b94f28704d284d2045d0870220ea39fb672a7",
+   "declared": 1,
+   "rustc_status": 1,
+   "rustgm_before": "cannot move a non-Copy value out of a reference",
+   "reduction": "not-copy",
+   "rustc_error": "E0507 cannot move out of a shared reference"
+  }
+ }
+}
