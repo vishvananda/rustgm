@@ -45,8 +45,9 @@ pub(crate) fn stub_bodies(report: &Report, facts: &Declarations) -> HashSet<Node
 
 /// Listed functions by source span. A stub replaces its function's body and
 /// with it the closures and inline constants inside, which no later stage
-/// evaluates; nothing typed inside a body that did not type even completed.
-pub(crate) struct Stubbed(Vec<(FileId, u32, u32)>);
+/// builds or evaluates; nothing typed inside a body that did not type even
+/// completed. A function item nested in a stub is a function of its own.
+pub(crate) struct Stubbed(Vec<(FileId, u32, u32, DefId)>);
 impl Stubbed {
     /// Every listed function with a body.
     pub(crate) fn listed(report: &Report, facts: &Declarations) -> Self {
@@ -71,12 +72,18 @@ impl Stubbed {
             .map(|function| {
                 let unit = report.package.unit(function.node.file);
                 let span = unit.configured.ast.node(function.node.node).span;
-                (function.node.file, span.start, span.end)
+                (
+                    function.node.file,
+                    span.start,
+                    span.end,
+                    function.definition,
+                )
             });
         Self(spans.collect())
     }
-    /// Whether a syntax node lies inside one of these functions.
-    pub(crate) fn contains(&self, report: &Report, key: NodeKey) -> bool {
+    /// Whether a syntax node belongs to one of these functions: lies inside
+    /// one and inside no function item nested in it.
+    pub(crate) fn contains(&self, report: &Report, facts: &Declarations, key: NodeKey) -> bool {
         if self.0.is_empty() {
             return false;
         }
@@ -88,9 +95,15 @@ impl Stubbed {
             .node(key.node)
             .span
             .start;
+        // Only the few positions inside a listed item pay for the exact owner.
         self.0
             .iter()
-            .any(|&(file, start, end)| file == key.file && start <= at && at <= end)
+            .any(|&(file, start, end, _)| file == key.file && start <= at && at <= end)
+            && owner(report, facts, key.file, at).is_some_and(|(function, _)| {
+                self.0
+                    .iter()
+                    .any(|&(.., definition)| definition == function.definition)
+            })
     }
 }
 

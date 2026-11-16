@@ -532,14 +532,16 @@ impl Prepared {
             }
         }
         deferral.finish()?;
+        let stubbed = crate::body::bringup::Stubbed::listed(report, facts);
         for (source, _) in facts.constant_bodies() {
-            if facts
-                .inline_constants
-                .as_deref()
-                .and_then(|r| r.get(source))
-                .is_some_and(|b| {
-                    b.evaluation == crate::sema::inline_constants::Evaluation::DeferredTemplate
-                })
+            if !stubbed.contains(report, facts, source)
+                && facts
+                    .inline_constants
+                    .as_deref()
+                    .and_then(|r| r.get(source))
+                    .is_some_and(|b| {
+                        b.evaluation == crate::sema::inline_constants::Evaluation::DeferredTemplate
+                    })
             {
                 bodies.push(self.anonymous(report, facts, source)?);
             }

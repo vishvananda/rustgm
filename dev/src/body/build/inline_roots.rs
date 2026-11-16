@@ -68,14 +68,17 @@ pub(super) fn concrete(
     prepared: &mut crate::support::hash::HashMap<crate::body::ir::BodyKey, super::Body>,
     mut query: Option<&mut crate::types::destruction::NeedsDrop>,
 ) -> Result<(), super::Error> {
+    // A bring-up stub replaces its function's body with the constants inside.
+    let stubbed = crate::body::bringup::Stubbed::listed(report, facts);
     for (source, ty) in facts.constant_bodies() {
-        if facts
-            .inline_constants
-            .as_deref()
-            .and_then(|r| r.get(source))
-            .is_some_and(|b| {
-                b.evaluation == crate::sema::inline_constants::Evaluation::DeferredTemplate
-            })
+        if stubbed.contains(report, facts, source)
+            || facts
+                .inline_constants
+                .as_deref()
+                .and_then(|r| r.get(source))
+                .is_some_and(|b| {
+                    b.evaluation == crate::sema::inline_constants::Evaluation::DeferredTemplate
+                })
         {
             continue;
         }

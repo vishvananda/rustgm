@@ -73,7 +73,7 @@ impl Context {
                 .as_deref()
                 .and_then(|registry| registry.at(index))
                 .map(|body| (body.source, body.result));
-            if entry.is_some_and(|(source, _)| stubbed.contains(report, source)) {
+            if entry.is_some_and(|(source, _)| stubbed.contains(report, facts, source)) {
                 continue;
             }
             let (source, result) = entry
