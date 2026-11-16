@@ -1,5 +1,6 @@
 //! Discover target-chain owners; applicability still consumes the actual receiver.
 use super::{
+    buckets::Bucket,
     names::Use,
     selection::{self, Caller, Found},
 };
@@ -12,8 +13,9 @@ use crate::{
     },
     support::{hash::HashSet, retained},
     types::{
-        Kind, TypeId,
+        TypeId,
         infer::{self, Context, TermId},
+        subject_head::Head,
     },
 };
 
@@ -82,15 +84,17 @@ pub(super) fn collect(
                 .map_err(|_| error("receiver owner allocation failed"))?;
         }
         visited.insert(current);
-        if let Some(Kind::Adt(item, _)) = facts.types.kind(current)
-            && facts.methods.inherent.contains_key(&(item, name))
+        // A structural Target owns inherent members too, as alloc's
+        // `<[T]>::into_vec(self: Box<Self, A>)`.
+        if let Some(kind) = facts.types.kind(current)
+            && let Some(bucket) = Bucket::lookup(&facts.types, Head::canonical(kind), name)
+            && facts.methods.has_inherent(bucket)
         {
             let target = context
                 .known(&facts.types, current)
                 .map_err(|e| error(selection::inference(e)))?;
-            let candidates =
-                selection::candidates(report, facts, context, target, (item, name), site)
-                    .map_err(error)?;
+            let candidates = selection::candidates(report, facts, context, target, bucket, site)
+                .map_err(error)?;
             found.filtered |= candidates.filtered;
             found.members.extend(candidates.members);
         }

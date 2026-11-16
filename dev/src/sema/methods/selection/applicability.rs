@@ -12,7 +12,7 @@ use crate::{
     types::{
         infer::{self, Context, Instantiation, TermId, arguments::Argument, properties::Query},
         parameters::{
-            ParameterKind,
+            ParameterId, ParameterKind,
             clauses::Clause,
             environment::Environment,
             predicates::{Bound, Predicate},
@@ -105,6 +105,7 @@ pub(super) fn prepare(
         }
         bindings.push((id, argument));
     }
+    bind_method_parameters(facts, context, receiver.as_ref(), &mut bindings)?;
     let mut substitution =
         Instantiation::new(context, &facts.types, &bindings).map_err(inference)?;
     let target = context
@@ -157,6 +158,26 @@ pub(super) fn prepare(
         return Ok(None);
     }
     Ok(Some(conditions))
+}
+
+/// As rustc's probe does, match a declared receiver with the method's own
+/// parameters fresh, as `A` in `self: Box<Self, A>`; the method's own clauses
+/// are proved once it is chosen.
+fn bind_method_parameters(
+    facts: &Declarations,
+    context: &mut Context,
+    receiver: Option<&Receiver>,
+    bindings: &mut Vec<(ParameterId, Argument)>,
+) -> Result<(), &'static str> {
+    if let Some(method) = receiver.and_then(|r| r.method) {
+        for id in facts.generics.parameter_ids(&facts.types, method)? {
+            let argument = context
+                .parameter_variable(&facts.types, id)
+                .map_err(inference)?;
+            bindings.push((id, argument));
+        }
+    }
+    Ok(())
 }
 
 /// Relate an instantiated candidate header to its actual shape. A projected

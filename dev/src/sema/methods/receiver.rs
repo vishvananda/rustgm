@@ -9,7 +9,7 @@ use crate::{
     },
     sema::model::Declarations,
     types::{
-        RegionId,
+        RegionId, TypeId,
         infer::{Constructor, Context, TermId},
     },
 };
@@ -341,6 +341,12 @@ impl Search<'_> {
                 // Receiver::Target is never an executable conversion to Self.
                 return Ok(None);
             }
+        } else if let Some(&(receiver, references)) = self.facts.methods.receivers.get(&method)
+            && !self.plain_receiver(receiver, references, Some(ty))
+        {
+            // A smart receiver of a structural Self, as `self: Box<[T]>`,
+            // infers that Self from its own equations.
+            return Ok(None);
         }
         Ok(Some(self.base))
     }
@@ -397,7 +403,10 @@ impl Search<'_> {
             )?;
             let subject = if matches!(lane, Lane::Bound) {
                 Some(self.import_receiver(&mut probe, self.base, 0)?)
-            } else if matches!(lane, Lane::Inherent) && !nominal {
+            } else if matches!(lane, Lane::Inherent)
+                && !nominal
+                && self.plain_receiver(receiver, references, owner_self)
+            {
                 let mut subject = actual;
                 let mut possible = true;
                 for _ in 0..references {
@@ -427,6 +436,7 @@ impl Search<'_> {
                 Some(selection::Receiver {
                     ty: receiver,
                     subject,
+                    method: Some(method),
                 }),
                 self.caller,
             )?;
@@ -438,6 +448,20 @@ impl Search<'_> {
         Ok(selected)
     }
 
+    /// Whether a declared receiver is `Self` behind its references, not a
+    /// smart receiver such as `self: Box<Self>`, whose outer operand is no
+    /// `Self` but whose own equations relate it.
+    fn plain_receiver(&self, mut receiver: TypeId, references: u32, owner: Option<TypeId>) -> bool {
+        for _ in 0..references {
+            let Some(crate::types::Kind::Reference { referent, .. }) =
+                self.facts.types.kind(receiver)
+            else {
+                return false;
+            };
+            receiver = referent;
+        }
+        owner == Some(receiver)
+    }
     /// The actual caller completed the base before receiver search read its head.
     /// Reuse only that type shape in this caller's disposable candidate; ordinary
     /// selected-call proof still owns every formation, argument and lifetime debt.
@@ -552,6 +576,7 @@ impl Search<'_> {
                 Some(selection::Receiver {
                     ty: receiver,
                     subject: None,
+                    method: None,
                 }),
                 self.caller,
             )?

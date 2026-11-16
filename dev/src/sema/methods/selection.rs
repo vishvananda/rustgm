@@ -41,6 +41,9 @@ pub(super) struct Receiver {
     pub ty: TypeId,
     /// Bound-priority lookup must use the parameter that supplies that bound.
     pub subject: Option<TermId>,
+    /// The method whose own parameters the declared receiver may name, as
+    /// `self: Box<Self, A>` names `A`.
+    pub method: Option<DefId>,
 }
 
 struct Prefix<'a> {
