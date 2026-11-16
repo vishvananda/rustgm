@@ -187,6 +187,8 @@ mod sse_lanes;
 mod stateframe;
 #[path = "../../syntax_transfer.rs"]
 mod syntax_transfer;
+#[path = "../../tagged_option_constants.rs"]
+mod tagged_option_constants;
 #[path = "../../target_requests.rs"]
 mod target_requests;
 #[path = "../../temporary_editions.rs"]

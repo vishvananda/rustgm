@@ -286,7 +286,12 @@ impl<'a> Reader<'a> {
                         {
                             return Ok(shape);
                         }
-                        return Self::enumeration_shape(definition, layout);
+                        let fallback = self
+                            .facts
+                            .aggregates
+                            .nullable_enum(item)
+                            .and_then(|policy| policy.fallback_tag);
+                        return Self::enumeration_shape(definition, layout, fallback);
                     }
                 };
                 let [id] = self.facts.members.variants(item) else {

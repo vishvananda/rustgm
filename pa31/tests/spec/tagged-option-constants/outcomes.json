@@ -1,0 +1,39 @@
+{
+ "schema": 1,
+ "declared": "2026-11-16, before either compiler ran on these programs (obj/parallel/alloc-m3/tags/declared.txt). The zeroed case first read its option with `x+40`, which this mini core gives no Add impl, and rustc required the freeze lang item the first head lacked; it now uses this packet's prefix and matches Some(1). Then all 3 statuses, the error code and both native outputs agree with the declarations.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "observer_sha256": {
+  "observe.c": "cf3a81fbd8a2e4c7501a4dbbd1d4e970d5bac09bf79bab2e0d0e20bd8b3905e9",
+  "zeroed-observe.c": "e22e2ad1cd3f13cfa4cd63f2ddc0ecc0b2ae0bd204aeadc8da401bac9987f15d"
+ },
+ "rustgm_before": "79475718d's observe binary (obj/parallel/alloc-m3/tags/red/compiler.sha256) rejects every case with rustgm_before",
+ "cases": {
+  "transmuted.rs": {
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "stored Rust enum differs from its retained target integer tag",
+   "declared_stdout": "none8 200\nsome8 9\nnone32 200\nsome32 7\nbytes 1281\n",
+   "native_stdout": "none8 200\nsome8 9\nnone32 200\nsome32 7\nbytes 1281\n",
+   "sha256": "a7862a98ed694db756cc8b7bf22d9d4172975fbc82131efedb7f95b9cde5d96e"
+  },
+  "invalid-tag.rs": {
+   "declared": 1,
+   "rustc_status": 1,
+   "rustgm_before": "stored Rust enum differs from its retained target integer tag",
+   "rustgm": "constant enum read has an invalid discriminant",
+   "declared_error": "E0080",
+   "rustc_error": "E0080 enum value has invalid tag: 0x02",
+   "sha256": "cb47403323dbb1486fd51abe0b10f1323a04f710d128242b1b370f3d450c9470"
+  },
+  "zeroed.rs": {
+   "declared": 0,
+   "rustc_status": 0,
+   "profile": "bring-up; the strict profile keeps write_bytes fenced in constants",
+   "rustgm_before": "stored Rust enum differs from its retained target integer tag",
+   "declared_stdout": "zeroed 200\nones 41\n",
+   "native_stdout": "zeroed 200\nones 41\n",
+   "sha256": "ddd8272829196031e6b40f684e7a5a991ab76addb6047e989cbe5f8b9a21be1b"
+  }
+ }
+}

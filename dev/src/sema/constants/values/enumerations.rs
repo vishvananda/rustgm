@@ -23,9 +23,13 @@ struct PhysicalEnumeration<'a> {
     identities: &'a [VariantId],
 }
 impl<'a> Reader<'a> {
+    /// `fallback` is the tag of the enum's nullable policy, which its layout
+    /// keeps when an instantiation's payload has no niche, as rustc's one-byte
+    /// tag for `Option<u8>`; any other repr(Rust) enum's tag is `i64`.
     pub(super) fn enumeration_shape(
         definition: &Definition,
         layout: &Layout,
+        fallback: Option<crate::types::Primitive>,
     ) -> Result<StoredShape<'a>, &'static str> {
         let expected = definition.repr.tag;
         if expected.is_none()
@@ -45,6 +49,7 @@ impl<'a> Reader<'a> {
         if expected.is_none()
             && definition.repr.representation == Representation::Rust
             && tag.ty != crate::types::Primitive::I64
+            && fallback != Some(tag.ty)
         {
             return Err("stored Rust enum differs from its retained target integer tag");
         }

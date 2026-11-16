@@ -1180,6 +1180,15 @@ out of a `Drop` content (E0509), assigning through an immutable box (E0594)
 and converting to a trait the content does not implement (E0277) reject. A maintainer
 integration test checks every case. There is no graded manifest.
 
+`spec/tagged-option-constants/` freezes three declared no_core programs that
+read `Option<u8>` and `Option<u32>`, whose one-byte tag rustc keeps where the
+payload has no niche, from bytes in constants: integers transmuted to both
+options, and a local option filled by `write_bytes` as core's
+`MaybeUninit::zeroed` fills one, which only the bring-up profile executes.
+They accept and run against C observers. Transmuting tag byte 2 rejects
+(E0080). A maintainer integration test checks every case. There is no graded
+manifest.
+
 `spec/pointer-ordering/` freezes six declared no_core programs that order raw
 pointers, as core's quicksort partition does with `state.right < right_end`.
 Every comparison of two raw pointers is a builtin scalar operation, ordered

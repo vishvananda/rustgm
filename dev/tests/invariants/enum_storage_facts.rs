@@ -17,7 +17,7 @@ fn enum_storage_facade_rejects_malformed_tags_bounds_counts_and_owners() -> Resu
     let layout = *facts.layouts.get(ty).ok_or("layout")?;
     let definition = *facts.aggregates.get(item).ok_or("definition")?;
     assert!(matches!(
-        Reader::enumeration_shape(&definition, &layout)?,
+        Reader::enumeration_shape(&definition, &layout, None)?,
         StoredShape::Enumeration { .. }
     ));
     let Shape::Aggregate { variants, .. } = layout.shape else {
@@ -50,11 +50,11 @@ fn enum_storage_facade_rejects_malformed_tags_bounds_counts_and_owners() -> Resu
         let mut wrong = layout;
         wrong.shape = Shape::Aggregate { variants, tag };
         wrong.size = size;
-        assert!(Reader::enumeration_shape(&definition, &wrong).is_err());
+        assert!(Reader::enumeration_shape(&definition, &wrong, None).is_err());
     }
     let mut unsupported = definition;
     unsupported.repr.tag = None;
-    assert!(Reader::enumeration_shape(&unsupported, &layout).is_err());
+    assert!(Reader::enumeration_shape(&unsupported, &layout, None).is_err());
     for tag in [
         Primitive::Bool,
         Primitive::Char,
@@ -62,7 +62,7 @@ fn enum_storage_facade_rejects_malformed_tags_bounds_counts_and_owners() -> Resu
         Primitive::I32,
     ] {
         unsupported.repr.tag = Some(tag);
-        assert!(Reader::enumeration_shape(&unsupported, &layout).is_err());
+        assert!(Reader::enumeration_shape(&unsupported, &layout, None).is_err());
     }
     let first = facts.members.variants(item)[0];
     facts.members.variants[first.0 as usize].owner = ItemId(u32::MAX);
@@ -150,7 +150,7 @@ fn c_enum_storage_facade_rejects_non_abi_tags_and_preserves_written_repr_checks(
     let original = *facts.layouts.get(ty).ok_or("layout")?;
     let definition = *facts.aggregates.get(owner).ok_or("definition")?;
     assert!(matches!(
-        Reader::enumeration_shape(&definition, &original)?,
+        Reader::enumeration_shape(&definition, &original, None)?,
         StoredShape::Enumeration {
             tag: Tag {
                 ty: Primitive::U32,
@@ -180,19 +180,30 @@ fn c_enum_storage_facade_rejects_non_abi_tags_and_preserves_written_repr_checks(
                 offset: 0,
             }),
         };
-        assert!(Reader::enumeration_shape(&definition, &layout).is_err());
+        assert!(Reader::enumeration_shape(&definition, &layout, None).is_err());
     }
     let mut written = definition;
     written.repr.tag = Some(Primitive::U8);
-    assert!(Reader::enumeration_shape(&written, &original).is_err());
+    assert!(Reader::enumeration_shape(&written, &original, None).is_err());
     written.repr.tag = Some(Primitive::U32);
     assert!(matches!(
-        Reader::enumeration_shape(&written, &original)?,
+        Reader::enumeration_shape(&written, &original, None)?,
         StoredShape::Enumeration { .. }
     ));
     let mut rust = definition;
     rust.repr.representation = Representation::Rust;
-    assert!(Reader::enumeration_shape(&rust, &original).is_err());
+    assert!(Reader::enumeration_shape(&rust, &original, None).is_err());
+    // Only the nullable policy's own fallback tag replaces `i64`.
+    assert!(Reader::enumeration_shape(&rust, &original, Some(Primitive::U8)).is_err());
+    assert!(matches!(
+        Reader::enumeration_shape(&rust, &original, Some(Primitive::U32))?,
+        StoredShape::Enumeration {
+            tag: Tag {
+                ty: Primitive::U32,
+                ..
+            }
+        }
+    ));
     let mut retained = original;
     retained.size = 8;
     retained.shape = Shape::Aggregate {
@@ -203,11 +214,11 @@ fn c_enum_storage_facade_rejects_non_abi_tags_and_preserves_written_repr_checks(
         }),
     };
     assert!(matches!(
-        Reader::enumeration_shape(&rust, &retained)?,
+        Reader::enumeration_shape(&rust, &retained, None)?,
         StoredShape::Enumeration { .. }
     ));
     retained.size = 7;
-    assert!(Reader::enumeration_shape(&rust, &retained).is_err());
+    assert!(Reader::enumeration_shape(&rust, &retained, None).is_err());
     Ok(())
 }
 #[test]
