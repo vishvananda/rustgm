@@ -138,9 +138,10 @@ pub(super) fn check_bounds(
     predicates: impl Iterator<Item = crate::types::parameters::clauses::Clause>,
     evidence: Option<&super::traits::obligations::Obligations>,
 ) -> Result<(), String> {
-    if !assumptions.projections.is_empty() {
-        return Err("projected destructor bounds require scoped nominal contracts".into());
-    }
+    // The nominal's projected assumptions, as `I::Item: 'a` for alloc's
+    // `Splice<'a, I, A>`, say nothing about a region or parameter, so none is
+    // assumed from them. An impl clause that bounds a projection's own
+    // lifetime still fails closed in strict mode where it is decomposed below.
     let mut graph = region_graph::Graph::new(1_000_000);
     let universals: HashSet<_> = arguments.iter().copied().collect();
     let mut slots = Vec::with_capacity(implementation.parameters as usize);

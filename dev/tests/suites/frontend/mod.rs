@@ -175,6 +175,8 @@ mod selected_references;
 mod separated_parameters;
 #[path = "../../smart_receivers.rs"]
 mod smart_receivers;
+#[path = "../../splice_destructors.rs"]
+mod splice_destructors;
 #[path = "../../stateframe.rs"]
 mod stateframe;
 #[path = "../../syntax_transfer.rs"]

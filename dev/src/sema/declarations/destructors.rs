@@ -126,6 +126,19 @@ impl Checker<'_> {
                 trait_proofs.insert(index, proof);
             }
         }
+        // A target whose nominal has projected requirements, as alloc's
+        // `Splice<'_, I, A>` with its `Drain<'a, I::Item, A>` field, needs them
+        // instantiated for the impl's own arguments before they are queried;
+        // only each nominal's identity instance was prepared with its fields.
+        for index in 0..self.facts.destructors.implementations().len() {
+            let implementation = &self.facts.destructors.implementations()[index];
+            let (key, target) = (implementation.source, implementation.target);
+            self.facts
+                .lifetimes
+                .nominal_requirements
+                .prepare(&mut self.facts.types, target)
+                .map_err(|e| self.error(key, e))?;
+        }
         let mut queries = Queries::new(
             &self.facts.types,
             &self.facts.lifetimes.nominal_requirements,
