@@ -11,6 +11,8 @@ mod async_signatures;
 mod asynccleanup;
 #[path = "../../automatic_sources.rs"]
 mod automatic_sources;
+#[path = "../../block_const_policies.rs"]
+mod block_const_policies;
 #[path = "../../callback_addresses.rs"]
 mod callback_addresses;
 #[path = "../../callback_provider.rs"]

@@ -64,10 +64,12 @@ impl Frame {
         if self.constant.is_some() {
             return;
         }
-        if matches!(self.role, Role::Function(true))
-            || matches!(self.role, Role::Function(false))
-                && matches!(parent.role, Role::InherentImpl(true))
-        {
+        // Only a syntactically const fn takes an unstable regular policy as its
+        // implicit, recursively checked const policy. A member made const by
+        // its `const impl` block, as alloc's `RawVecInner::with_capacity_in` in
+        // the unstable `raw_vec` module, inherits the block's const-unstable
+        // policy below instead, and without one stays unmarked.
+        if matches!(self.role, Role::Function(true)) {
             self.constant = draft.inherit(self.regular);
         }
         // Associated API policy follows its actual container, independently of
