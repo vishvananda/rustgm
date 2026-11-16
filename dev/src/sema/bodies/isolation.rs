@@ -6,6 +6,7 @@ use crate::{
     resolve::{expansion::Report, model::DefId, unit::NodeKey},
     sema::census::{self, Census, ItemKind, Phase},
     support::bringup::{self, Owner, Position},
+    types::Kind as Type,
 };
 
 /// What a function body that reached a failed body records as its own failure.
@@ -127,7 +128,8 @@ impl Checker<'_> {
     /// Name a failed function for the bring-up skip list unless the list
     /// already replaces it. The failure keeps where it was raised; one without
     /// a position is placed at the function.
-    fn set_aside(&self, set_aside: &mut SetAside, function: Function, error: Error) -> usize {
+    fn set_aside(&mut self, set_aside: &mut SetAside, function: Function, error: Error) -> usize {
+        self.prepare_stub_parameters(function);
         let error = if error.origin.is_some() {
             error
         } else {
@@ -146,6 +148,29 @@ impl Checker<'_> {
         }
         set_aside.functions.push(function.definition);
         set_aside.functions.len() - 1
+    }
+    /// A stub binds each parameter at its signature type, as typing the
+    /// parameter's pattern would have. Prepare those types' fields as that
+    /// typing does, so the stub's cleanup can read them; a failure here
+    /// resurfaces where the stub is built and is named there.
+    fn prepare_stub_parameters(&mut self, function: Function) {
+        let Some(Type::Function { parameters, .. }) = self.facts.types.kind(function.signature)
+        else {
+            return;
+        };
+        let Some(parameters) = self.facts.types.list(parameters).map(<[_]>::to_vec) else {
+            return;
+        };
+        for parameter in parameters {
+            if self
+                .facts
+                .aggregates
+                .prepare(&mut self.facts.types, parameter)
+                .is_err()
+            {
+                return;
+            }
+        }
     }
     /// Replace every per-body field; a failed body's slots are never reused.
     pub(super) fn discard_body(&mut self) {

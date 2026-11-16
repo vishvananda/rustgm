@@ -291,7 +291,8 @@ fn rejected_functions_are_named_until_the_list_compiles_the_rest() -> Result {
 
 /// Function bodies that do not type beside one that does: a closure and an
 /// inline constant inside failed bodies, a `const fn` that fails and a body
-/// whose constant evaluates it, and a generic body. rustc 1.98.0 rejects
+/// whose constant evaluates it, and generic bodies, one of whose parameters
+/// holds a nominal that nothing else instantiates. rustc 1.98.0 rejects
 /// each mistyped `let` with E0308 (mismatched types), and the constant of
 /// `overflows`, which types, with E0080 (its evaluation overflows). It
 /// accepts `chooses`, whose generic inline constant `RustGM` evaluates
@@ -323,6 +324,19 @@ fn generic<T>(value: T) -> T {
     let wrong: u8 = 6i32;
     value
 }
+struct Inner<T> {
+    value: T,
+}
+impl<T> Drop for Inner<T> {
+    fn drop(&mut self) {}
+}
+struct Holder<T> {
+    inner: Inner<T>,
+}
+fn keeps_holder<T>(holder: Holder<T>) -> u8 {
+    let wrong: u8 = 7i32;
+    0
+}
 fn overflows() -> u8 {
     const { 1u8 - 2 }
 }
@@ -350,6 +364,7 @@ fn main() {
     let _ = generic(7u8);
     let _ = overflows();
     let _ = chooses::<u8>();
+    let _ = keeps_holder(Holder { inner: Inner { value: 8u8 } });
 }
 ";
 
@@ -380,7 +395,8 @@ fn bodies_that_do_not_type_are_named_together_and_become_stubs() -> Result {
             "with_closure",
             "with_inline",
             "mistyped_const",
-            "generic"
+            "generic",
+            "keeps_holder"
         ]
     );
     let mut later = later.concat();
@@ -393,7 +409,7 @@ fn bodies_that_do_not_type_are_named_together_and_become_stubs() -> Result {
         .split("\nfunction @")
         .filter(|function| function.contains("call void @abort()"))
         .count();
-    assert_eq!(trapping, 7, "{stubbed}");
+    assert_eq!(trapping, 8, "{stubbed}");
     Ok(())
 }
 
