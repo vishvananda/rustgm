@@ -1,4 +1,4 @@
-# RustGM handoff — 2026-11-15
+# RustGM handoff — 2026-11-16
 
 ## Current plan
 
@@ -13,39 +13,194 @@ The user adopted the [self-hosting plan](docs/self-hosting-plan.md) on
 - Work is ordered by what the self-hosting ladder demands (M1 core and a no_std
   consumer, M2 alloc, M3 std, M4 the three dependencies, M5 stage 1, M6 stage 2,
   M7 strict ratchet), not by the next strict fence.
+- Open design calls are decided by the implementer and reported afterwards;
+  destructive or outward-facing actions still need the user.
 
-## State on 2026-11-15
+## State on 2026-11-16
 
-**Real core compiles in the bring-up profile, and a real no_std consumer
-compiles with it, passes the pinned backend, links with libc and runs** until
-it reaches an intrinsic that has no run-time lowering yet. Nothing here is a
-qualification: strict mode still stops at the first fence, and whole PA25–PA44
-remain planned.
+Main is `e31379b29`. Push CI and full qualification are green on it
+([43925422216](https://github.com/vishvananda/rustgm/actions/runs/43925422216)).
+Nothing here is a qualification of PA25–PA44: strict mode still stops at its
+first fence, and those stages stay planned.
 
-- **Core alone:** the census stubs 1,130 functions
-  (`obj/parallel/bringup/core/core.skip.tsv`, summary in `summary.tsv`); about
-  1,045 are x86 SIMD functions whose constants need intrinsics that compile-time
-  evaluation lacks. Publication passes over nine metadata fences (`waived.tsv`)
-  and writes no usable metadata. A source library lowers nothing itself.
-- **Linked consumer:** `scripts/bringup_linked.py` mounts a consumer as a
-  private module of a writable copy of core, so one session compiles both and
-  no metadata is needed. This is how every result below was produced.
-- **M1 consumers (2026-11-16, frontier lane at `dc8bdf630`):** 17 of the 18
-  staged programs (`pa32/tests/spec/core-consumers/`) behave as
-  `pa32/tests/core-consumer-outcomes.json` declares under the bring-up profile:
-  15 exit 0 with rustc's exact stdout, and `panic-index` and `panic-overflow`
-  abort (SIGABRT) after rustc's stdout. Each was compiled linked with real core
-  over the 1,058-row core skip list (`obj/parallel/frontier/core.skip.fix11.tsv`:
-  1,043 stdarch and portable-simd rows whose constants need SIMD intrinsics, and
-  15 core rows that the census restored when they were removed, for each of
-  the six programs tried), with no program-specific row, and run three times
-  in a fresh empty directory with an empty environment, matching status,
-  standard error and output. `chars-strs` prints part of its output and then
-  aborts in the `simd_splat` trap of `str::pattern::simd_contains` (gap row 5,
-  the runtime lane's). This is bring-up evidence only: about 50
-  bodies per program are unproven, strict mode still stops at its first fence,
-  and the stage stays planned. The failure tables under "Next work" below are
-  the 2026-11-15 state.
+**M1 is reached under the bring-up profile.** All 18 staged programs
+(`pa32/tests/spec/core-consumers/`) behave as
+`pa32/tests/core-consumer-outcomes.json` declares. 16 exit 0 with rustc's exact
+stdout; `panic-index` and `panic-overflow` abort after rustc's stdout. Each was
+compiled together with real Rust 1.98 `core` in one session, built by the pinned
+backend, linked with libc, and run three times in a fresh empty directory with
+an empty environment. Core needed a 12-row skip list
+(`rustgm-pa26-work/obj/parallel/frontier3/core.skip.m1-12.tsv`):
+- `mem/drop_guard.rs` `new` and `dismiss`;
+- `num/niche_types.rs` `default`;
+- nine "qualification has no exact type request" rows: `slice` `split_off_first`,
+  `split_off_first_mut`, `split_off_last` and `split_off_last_mut`; `ascii_char`
+  `make_uppercase` and `make_lowercase`; `socket_addr` `set_ip`; `fmt` `width`
+  and `precision`.
+
+About 50 bodies per program are still unproven (`bringup-unproven`), so this is
+bring-up evidence only.
+
+**Landed on main on 2026-11-15/16:**
+- **Backend:** the CPPGM pin moved to v0.9.3 (in-process library interface 4).
+  The optional in-process bridge crate `dev/backend-bridge` exists; the text path
+  stays the default.
+- **Guest crates:** `--bringup-guest`, and `bringup_linked.py --guest
+  --dependency NAME=ROOT.rs`.
+- **alloc:** its 16 crate-level stoppers are fixed, including coherence items
+  13–16. The bring-up census now names every alloc body that fails to type and
+  stubs it, keeping its checked signature.
+- **Allocation:** `#[global_allocator]`, `#[alloc_error_handler]`, rustc's
+  internal-symbol names and the allocator shim (`dev/src/lower/allocator_shim.rs`).
+- **SIMD:** 16-byte vectors (LowIR `v128`, nine `simd_*` intrinsics).
+  `simd_splat`, `mem::zeroed` and `type_name` are evaluated in constants. This
+  removed the 1,043 stdarch skip rows.
+- **M1 fixes:** the closure-family, struct-update and coercion-storage fixes.
+
+**Timing (one rough data point, 2026-11-16):**
+
+| Compiling core plus `fmt-floats` from source | Wall time |
+| --- | --- |
+| RustGM (release frontend at 952dfae84) | ≈24.6 s |
+| rustc | ≈17.7 s |
+
+Both ran on effectively one core. Because RustGM cannot yet publish core's
+metadata, every program recompiles core, so per program RustGM is ≈120× slower
+than rustc over a prebuilt core (0.2 s). Script and records:
+`/mnt/vizier/rustgm-scratch/integrator-20261116/scripts/timing.py` and
+`rustgm-backend-work/obj/parallel/timing-20261116/`.
+
+## Unpublished lane work
+
+None of this is on main. Every lane commit passed the whole private binary, but
+none has had the integrator's full check (below).
+
+**Frontier** (`rustgm-pa26-work`)
+- Lane `lane/frontier-20261115` is at `5a243b4bf`, one commit over main. Const
+  qualification now asks about each store's exact destination type. It is proven
+  on its fixture (`pa31/tests/spec/replacement-qualification`, 5/5 equal to
+  rustc), but not yet on real core, where it should remove the nine
+  qualification rows (12 → 3).
+- WIP branch `wip/frontier-20261116` is at `5d0c550fc`. It holds three
+  unvalidated drafts for alloc rows:
+  - a capture stops at an overloaded `Deref`/`DerefMut`;
+  - a closure's `T: 'a` requirement passes to the function that creates it
+    (the `linked_list` rows);
+  - `FnOnce(T)` sugar's empty binder (`DropGuard`).
+- Reductions, staged fixtures and the `std` census script are in
+  `obj/parallel/frontier3/`.
+
+**Publication** (`rustgm-async-work`)
+- Lane `lane/publication-20261115` is at `27fa8a47e`, four commits over
+  `2bc077ebe`; rebase it onto main first. Each commit passed the whole private
+  binary and the ownership suite.
+  - `7e16d3409`: `owned_box` is the built-in owning pointer (move out of `*b`;
+    content drops before Box's `Drop`).
+  - `79475718d`: Box-to-trait-object and slice unsizing.
+  - `983e09945`: a one-byte `Option<u8>` tag in constant bytes, fixing the 12
+    `vec/is_zero` rows.
+  - `27fa8a47e`: dropping `Box<Box<T>>`.
+- WIP branch `wip/publication-20261116` is at `6d423e28c`: `#[rustc_promotable]`
+  call promotion. Its fixture agrees with rustc 3/3. The private test
+  `source_marker_keeps_const_unsafe_and_promotion_boundaries_distinct` and the
+  whole private binary have not run on it.
+- This worktree is at its 24 GiB output cap. Run `make tidy-build` (or `make
+  tidy-archive`) there before the next heavy job.
+
+**Runtime** (`rustgm-backend-work`)
+- Lane `lane/runtime-20261115` is at `fc517aaf7`, five commits over `2bc077ebe`;
+  rebase it onto main first.
+  - `d18777e6c`, `072c0dcb9`, `9e7ac86be`: declaration-time typing fixes. With
+    them, the unmodified hashbrown 0.17.1 `Group` runs natively and matches
+    rustc.
+  - `1ee0d23ba`: docs.
+  - `fc517aaf7`: `#[thread_local]` statics lowered to thread-local globals. It
+    also changes the bridge, the handshake C code and `scripts/backend.py`, none
+    of which has been compiled yet. Before integrating, run `make test-backend`
+    and the native test `thread_locals::each_thread_sees_its_own_instances_as_rustcs_program_does`
+    (`--ignored`; expected output in `obj/parallel/runtime-m3/tls/before4.log`).
+- WIP branch `wip/runtime-20261116` is at `1f2d5d443`: gap-table row 10 text,
+  whose claims are not yet proven.
+- A real `hashbrown::HashMap<u32, u32>` probe stops unattributed with "invalid
+  canonical trait selection" after reaching 32 stubs (27 alloc, 5 hashbrown,
+  listed in row 5 of `docs/self-hosting-runtime.md`).
+
+## Integration procedure
+
+Each step of the 2026-11-16 integration ran in a lane worktree while its agent
+was idle:
+1. Rebase the lane onto main.
+2. Run the whole private binary (~3 min warm, 3,108 tests). In the worktree,
+   with `W` its absolute path:
+
+   ```sh
+   python3 scripts/resources.py run --wait-seconds 1800 --max-output-gib 24 -- \
+     /usr/bin/python3 scripts/storage.py run --max-output-gib 24 --no-prune -- \
+     env CARGO_INCREMENTAL=1 CARGO_BUILD_JOBS=4 CARGO_TARGET_DIR=$W/obj/rust/private-lint \
+     RUSTC_WORKSPACE_WRAPPER=/usr/local/bin/clippy-driver CLIPPY_ARGS=-Dwarnings \
+     cargo test --manifest-path dev/Cargo.toml --locked --profile dev-fast --lib
+   ```
+3. Run every root of **all 13** suites with
+   `/mnt/vizier/rustgm-scratch/integrator-20261116/scripts/suite_check.sh WORKTREE LOGDIR closures constants declarations frontend inference linking lowering memory ownership patterns projections regions traits`.
+   It drops roots that hold only ignored tests and retries admission refusals.
+4. Run `make test-upstream` and the script tests. Add `make test-backend` when
+   LowIR or the bridge changes.
+5. In `/home/vishvananda/rustgm`, fast-forward and push:
+   `git fetch -q WORKTREE BRANCH && git merge --ff-only FETCH_HEAD`, then
+   `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push https://github.com/vishvananda/rustgm.git main:main`
+   and `git update-ref refs/remotes/origin/main main`.
+6. Dispatch qualification with `gh workflow run check.yml --ref main`.
+
+Running only the suites a change seemed to affect let three failures through to
+qualification on 2026-11-16 (size pins, linking tests, a memory-suite
+regression). Every commit must pass on its own: fold test repairs into the
+commit that needs them. The lane briefs used this session are in
+`/mnt/vizier/rustgm-scratch/integrator-20261116/briefs/`.
+
+## Next work, by lane
+
+- **Frontier:**
+  1. Build observe at `5a243b4bf`, then rerun the core census with the nine
+     qualification rows removed, and the alloc census.
+  2. Validate the three WIP drafts one at a time against
+     `obj/parallel/frontier3/{capderef,r1,guard}` (declared outcomes in each
+     `declared.json`).
+  3. Two known gaps:
+     - `guard/consumed.rs`: rustc accepts it, but a const `Drop` stays unproven.
+     - `niche_types` `default`: needs integer niches beyond nonzero ranges, an
+       ABI change. `dev/tests/invariants/integer_niches.rs` pins the current
+       rejection.
+  4. The `std` guest census (`obj/parallel/frontier3/std-census.sh`). libc is
+     expected to stop first: guests take the session's edition (2024), and
+     libc's 2021 `extern` blocks are not `unsafe`, so guests need their own
+     edition.
+- **Publication (M2):**
+  1. Finish the promotion WIP and run census c13.
+  2. The alloc census has 44 alloc rows (59 in total, list
+     `obj/parallel/alloc-m2/goal1/c12/skip.tsv`). Its largest groups:
+
+     | Group | Rows |
+     | --- | --- |
+     | lifetime (11 closure rows are frontier's, 4 promotion) | 15 |
+     | generic aggregate requires instantiated fields | 5 |
+     | trait obligation requires an unambiguous matching assumption | 3 |
+     | each of several messages, including two `Option<Option<bool>>` transmutes that need nested niche layout | 2 |
+
+  3. M2 programs (`obj/parallel/alloc-m3/consumers-c12/summary.txt`): only
+     first-allocation passes.
+
+     | Program | Stops at |
+     | --- | --- |
+     | `vec` | "no applicable method for this receiver" |
+     | `string` | a trait-obligation and an associated-type selection |
+     | `box-dyn` | "captured object target lacks checked conversion entry evidence" |
+- **Runtime (M3):**
+  1. Finish validating thread-locals (see above).
+  2. Then gap rows 11 (linkage and section statics), 2 (`lang_start` and
+     `Termination`) and 12 (float math).
+  3. The HashMap probe's trait-selection stop.
+
+Lane briefs and agents are free to change; the plan's milestone order is not.
 
 ### Bring-up profile
 
@@ -54,7 +209,7 @@ disambiguator ending in `_bringup`. Everything below is refused without it.
 
 | Mechanism | Reported as |
 | --- | --- |
-| A listed function becomes a trapping stub; every stage sets aside the failures it can attribute to a function and names them | `bringup-blocker<TAB>path<TAB>offset<TAB>name<TAB>message` |
+| A listed function becomes a trapping stub; every stage sets aside the failures it can attribute to a function (typing failures too, keeping the checked signature) and names them | `bringup-blocker<TAB>path<TAB>offset<TAB>name<TAB>message` |
 | A failure with no owning function | `bringup-unattributed<TAB>message` |
 | A crate-level publication fence is passed over; metadata is withheld when it cannot be produced | `bringup-waived<TAB>fence` |
 | A constant that cannot be evaluated belongs to the body that demands it | blocker for that body |
@@ -84,82 +239,26 @@ session publishes no metadata. When a crate declares `#![needs_allocator]`
 `#[global_allocator]`. There is no runtime start or `std` prelude yet.
 
 ```sh
-# Frontier worktree. Optimized incremental compiler; never release evidence.
-make observe && cp obj/rust/observe/rustgm obj/parallel/bringup/bin/rustgm-observe
+# A lane worktree. Optimized incremental compiler; never release evidence.
+make observe && cp obj/rust/observe/rustgm obj/parallel/LANE/bin/rustgm-observe
 
-# One or more M1 consumers, end to end (census, backend, run, compare).
-python3 scripts/resources.py run --wait-seconds 900 --max-output-gib 24 -- \
-  /usr/bin/python3 scripts/storage.py run --max-output-gib 24 \
-  --prune-under obj/parallel/bringup/linked-work -- \
+# M1 consumers, end to end (census, backend, run, compare).
+python3 scripts/resources.py run --wait-seconds 1800 --max-output-gib 24 -- \
+  /usr/bin/python3 scripts/storage.py run --max-output-gib 24 --no-prune -- \
   python3 scripts/bringup_linked.py \
-  --compiler obj/parallel/bringup/bin/rustgm-observe \
-  --library obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea/library \
-  --skip-list obj/parallel/bringup/core/core.skip.tsv \
-  --work obj/parallel/bringup/linked-work \
-  pa32/tests/spec/core-consumers/integers.rs
+  --compiler obj/parallel/LANE/bin/rustgm-observe \
+  --library /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea/library \
+  --skip-list /mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/frontier3/core.skip.m1-12.tsv \
+  --work obj/parallel/LANE/linked pa32/tests/spec/core-consumers/*.rs
 ```
 
-The frontier lane uses a justified 24 GiB output cap. Core's own census command
-is in `obj/parallel/bringup/core/records.json`.
-
-### Next work, in blocking order
-
-1. **Run-time lowering of the waived intrinsics.** Programs that waive each:
-   `offset` 6; `unreachable`, `ptr_offset_from_unsigned`, `exact_div`,
-   `cttz_nonzero`, `ctpop`, `add_with_overflow` 4 each; `black_box` 2; then
-   `read_via_copy`, `slice_get_unchecked`, `saturating_add/sub`, `ctlz`,
-   `ctlz_nonzero`, `cttz`, `bswap`, `bitreverse` and the sixteen `atomic_*`
-   operations. The hook is `Lower::trapped_call`
-   (`dev/src/lower/function/trapped_calls.rs`): add an unqualified lowering
-   there, reported as its own waiver, before the trap shim.
-2. **Frontend failures on consumer programs.** These stop the whole session
-   and are ordinary strict-profile bugs; each program is its reproducer.
-
-   | Program | Failure |
-   | --- | --- |
-   | `conversions`, `fmt-floats`, `option-result`, `sorting` | `constant execution reached panic` (core file 64, offset 3755) |
-   | `consts-statics` | `source intrinsic constant execution is not implemented` (core file 12) |
-   | `cells-mem` | `associated type projection requires normalization` |
-   | `fmt-integers` | `incompatible types` at `f.debug_map().entry(&"k", &1)` |
-   | `iterators` | `trait obligation requires an unambiguous matching assumption or implementation` |
-   | `patterns-ranges` | `assignment requires a place` |
-   | `slices` | `selected implementation is missing the associated type` |
-   | `traits-generics` | `dyn supertrait edge requires a trait bound` |
-
-   Failures of these stages are not yet attributed to a function, so the
-   census cannot stub around them (`dev/bin/modules.rs` attributes lowering
-   failures only).
-3. **Stubbed core functions that programs reach.** Joined with the rustc demand
-   list, only 36 of core's 1,130 stubs are reached by the M1 programs and 35 by
-   the compiler's own build. By cause: const `Destruct` cleanup proofs
-   (`Iterator::try_fold`, `fold`, `reduce`, `ControlFlow::break_value`,
-   `Option::insert`); borrow and lifetime proofs that reject valid code
-   (`quicksort`, `fmt::write`, `Chain::next`, `Flatten::next`, `str::split`);
-   and `opaque storage requires a checked defining type` in `Map::fold`, which
-   every program adds to its own list.
-4. `#![no_main]` with a C `main` (the driver rewrites the entry meanwhile).
-5. Metadata export, for the strict ratchet only: the linked route needs none.
-
-### Lanes
-
-- **Frontier** (`rustgm-pa26-work`, `lane/frontier-20261115`): the bring-up
-  profile, the census and the fixes above.
-- **Runtime** (`rustgm-backend-work`, `lane/runtime-20261115`): finished its
-  first assignment. `docs/self-hosting-runtime.md` holds the rustc-oracle demand
-  list, 47 staged consumer programs for M1 to M4, the run-time gap table with
-  nine open decisions, and the backend scale probe (4.2 million functions and
-  1.6 GB of LowIR pass at `-O0`; one self-hosting unit is estimated at 280 to
-  415 MB).
-- **Publication** (`rustgm-async-work`, `lane/publication-20261115`): eight
-  component units are released (2,078 cases). Open: `provided-profile` cannot be
-  released yet; PA7 and PA11 could be flipped to implemented; the handout totals
-  of PA8, PA10, PA12, PA13 and PA15 to PA18 are stale.
-
-Sections from "Latest genuine original-core attempt" onward describe the strict
-frontier as it stood before the plan changed. They are history, except
-"Requirements still open", which is the strict ratchet's list.
+`bringup_linked.py` counts only exit 0 as a pass. A declared-outcome checker
+(status, stderr and stdout, three runs) is
+`rustgm-backend-work/obj/parallel/m1-verify/check_declared.py`; edit its `ROOT`
+and `WORK` paths before using it elsewhere.
 
 Detailed earlier handoffs are retained in Git: `git show 0031a83d4:handoff.md`.
+The 2026-11-15 state of this file is `git show e31379b29:handoff.md`.
 
 ## Workspace, authorization and resources
 
@@ -176,51 +275,54 @@ Detailed earlier handoffs are retained in Git: `git show 0031a83d4:handoff.md`.
   version 3, and has a handshake. The optional bridge crate
   `dev/backend-bridge` (FFI in `src/ffi.rs` only) states RustGM's LowIR to it;
   the text path stays the default
-  ([checkpoint](docs/backend-current-checkpoint.md)).
+  ([checkpoint](docs/backend-current-checkpoint.md)). A LowIR change must keep
+  the bridge in step (state the form or refuse it) and pass `make test-backend`.
 - Do not modify C++/v5rust checkouts or another checkout's outputs. Rustc is a
   test oracle, never a frontend substitute.
 - Read AGENTS.md, spec.md, ROADMAP.md, the owning handout and
   TESTING_AND_REFERENCES.md. `docs/parallel-work.md` contains historical worker
   assignments; the self-hosting plan's three lanes take precedence.
 - Shared controller: 3 heavy jobs globally, 150 GiB free-space reserve, CPU 800%,
-  RAM 12 GiB, tasks 256. Output cap 16 GiB per worktree; one heavy job per worktree.
-  Shared free space was about 278 GiB at wrap-up. The former headroom blocker is
-  resolved. Do not lower reserves or clean other checkouts.
+  RAM 12 GiB, tasks 256. Lanes use a 24 GiB output cap per worktree (each
+  worktree holds 16–22 GiB). Admission requires the reserve plus the job's own
+  unused cap plus **every running peer's full cap**
+  (`scripts/resource_runner.py:181`). With about 169 GiB free at wrap-up, only
+  one guarded job fits at a time across all lanes; about 30 GiB more free space
+  would let all three run. `/mnt/vizier` is shared with the user's other
+  projects: never clean outside RustGM's worktrees, and do not lower reserves.
 - Every build/test/frontend/debugger probe/measurement uses resource and storage
   guards. `make fastcheck` supplies its own guards and has a 300s feedback budget.
   Wait for a wrapper's actual terminal result before editing or starting the next
   heavy command. Do not change tracked files during builds or validation.
+- Never use variable or command substitution in an `rm` command; write literal,
+  inspected paths. When stopping a long run, also stop every wait loop started
+  for it.
 
 ```sh
 # Direct validation/probe; declare all disposable roots, or omit --prune-under
 # for scattered outputs and let storage perform its full scan.
-python3 scripts/resources.py run --wait-seconds 0 --max-output-gib 16 -- \
-  /usr/bin/python3 scripts/storage.py run --max-output-gib 16 \
+python3 scripts/resources.py run --wait-seconds 1800 --max-output-gib 24 -- \
+  /usr/bin/python3 scripts/storage.py run --max-output-gib 24 \
   --prune-under obj/KNOWN_PARENT -- COMMAND
 
 # Build-only: use --no-prune, never combine it with --prune-under.
-python3 scripts/resources.py run --wait-seconds 0 --max-output-gib 16 -- \
-  /usr/bin/python3 scripts/storage.py run --max-output-gib 16 --no-prune -- COMMAND
+python3 scripts/resources.py run --wait-seconds 1800 --max-output-gib 24 -- \
+  /usr/bin/python3 scripts/storage.py run --max-output-gib 24 --no-prune -- COMMAND
 
-# Focused selection syntax: root::test, not --case.
-make fastcheck FAST_ARGS='root::test --prune-under obj/KNOWN_PARENT'
+# Focused selection syntax: exact libtest paths root::module::test or a bare
+# root; a prefix matches nothing. A root holding only ignored tests needs
+# --ignored.
+make fastcheck FAST_ARGS='--max-output-gib 24 root::test --prune-under obj/KNOWN_PARENT'
 ```
 
-Do not cold-build the private unit harness locally: prior attempts exceed the
-feedback budget. Use focused public controls and let full CI execute private
-invariants. Private fast selections lint/link once with clippy-driver; do not
-repeat that compilation using cargo test --lib. Do not run broad release/native
-matrices per edit. Use `make tidy` between batches, preserving active pins.
+Fastcheck selections cover only what they name. Before publishing, run the
+whole private binary and all suites (see "Integration procedure"). Do not run
+broad release/native matrices per edit. Use `make tidy` between batches; it
+keeps pinned (`.keep-artifacts`) directories.
 
-Publish from B, then synchronize main using Git only:
-
-```sh
-git -c credential.helper= -c 'credential.helper=!gh auth git-credential' \
-  push https://github.com/vishvananda/rustgm.git HEAD:main
-# In /home/vishvananda/rustgm:
-git fetch /mnt/vizier/rustgm-scratch/rustgm-pa26-work HEAD:refs/remotes/origin/main
-git merge --ff-only --quiet origin/main
-```
+The sections from here on describe the strict frontier as it stood before
+the plan changed (2026-11-15 and earlier). They are history, except
+"Requirements still open", which is the strict ratchet's list.
 
 ## Latest genuine original-core attempt: candidate41
 
