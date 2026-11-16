@@ -126,6 +126,14 @@ impl DefKind {
                 | Self::SelfType
         )
     }
+    /// Whether a definition of this kind is a member that only qualified
+    /// lookup names: a variant, or an associated type, constant or function
+    /// in an `associated` scope.
+    #[must_use]
+    pub const fn is_member(self, associated: bool) -> bool {
+        matches!(self, Self::Variant)
+            || associated && matches!(self, Self::TypeAlias | Self::Const | Self::Function)
+    }
 }
 pub struct Definition {
     pub name: NameId,
@@ -176,12 +184,9 @@ impl Binding {
     /// names. Their qualified member lookup uses the scope directly.
     pub(crate) fn is_lexical(self, definitions: &[Definition], associated: bool) -> bool {
         self.origin != Origin::Direct
-            || (definitions[self.target.0 as usize].kind != DefKind::Variant
-                && !(associated
-                    && matches!(
-                        definitions[self.target.0 as usize].kind,
-                        DefKind::TypeAlias | DefKind::Const | DefKind::Function
-                    )))
+            || !definitions[self.target.0 as usize]
+                .kind
+                .is_member(associated)
     }
 }
 pub struct Scope {

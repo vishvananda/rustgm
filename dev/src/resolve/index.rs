@@ -338,7 +338,7 @@ impl Resolver<'_> {
             false,
         )
     }
-    pub fn define(&mut self, definition: Definition, shadow: bool) -> Result<DefId, Error> {
+    pub fn define(&mut self, mut definition: Definition, shadow: bool) -> Result<DefId, Error> {
         let id = DefId(
             u32::try_from(self.facts.definitions.len())
                 .map_err(|_| Error::at(FileId(0), 0, "too many definitions"))?,
@@ -379,6 +379,10 @@ impl Resolver<'_> {
             .declare_key(key, binding, shadow)
             .map_err(|e| Error::at(FileId(0), 0, e))?
         {
+            self.facts.definitions.push(definition);
+            return Ok(id);
+        }
+        if self.separates_parameter(&mut definition, binding, key)? {
             self.facts.definitions.push(definition);
             return Ok(id);
         }

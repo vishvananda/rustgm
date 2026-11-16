@@ -24,6 +24,7 @@ mod index;
 pub mod load;
 mod lookup;
 pub mod model;
+mod parameter_ribs;
 mod prelude_scope;
 mod standard_imports;
 pub use crate::support::names;

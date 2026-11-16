@@ -350,7 +350,8 @@ impl Resolver<'_> {
                     if let Target::Definition(target) = reference.target {
                         let definition = &self.facts.definitions[target.0 as usize];
                         if definition.kind == DefKind::Generic
-                            && definition.scope == c.scope
+                            && (definition.scope == c.scope
+                                || Some(definition.scope) == self.facts.parameter_rib(c.scope))
                             && definition
                                 .node
                                 .is_some_and(|key| key.node.get() >= node.get())

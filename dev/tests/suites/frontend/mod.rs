@@ -165,6 +165,8 @@ mod resuming_sources;
 mod rhs_body_lifetimes;
 #[path = "../../selected_references.rs"]
 mod selected_references;
+#[path = "../../separated_parameters.rs"]
+mod separated_parameters;
 #[path = "../../smart_receivers.rs"]
 mod smart_receivers;
 #[path = "../../stateframe.rs"]
