@@ -963,6 +963,15 @@ from a root `main`, and a call through `&dyn FnMut` rejects (E0596). A
 maintainer integration test checks them through the CLI. There is no graded
 manifest.
 
+`spec/source-call-members/` freezes six declared no_core programs that call a
+generic callable parameter whose actual type is a nominal receiver with source
+call-trait impls, as core's `try_from_fn_erased` calls `&mut Drain`. The call
+executes the impl member that ordinary dispatch selects, with the operands
+passed as one `Args` tuple: `FnMut`, `FnOnce`, const-fn, nested-reference and
+owned forms accept and run natively against a C observer, and a `&Relay` that
+implements no call trait rejects (E0277). A maintainer integration test checks
+every case. There is no graded manifest.
+
 `spec/source-index-deref/` freezes eighteen declared no_core programs that
 index a value whose type reaches its indexed place through source `Deref`
 implementations, as `shared.borrow()[0]` does. The operand takes one actual

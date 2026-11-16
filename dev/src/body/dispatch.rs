@@ -65,16 +65,8 @@ fn resolve_with_original(
         .map_err(crate::sema::dispatch::Failure::message)
 }
 
-fn resolve_using(
-    facts: &mut Declarations,
-    body: &mut Body,
-    contract: &mut Contract,
-    mut original: Option<originals::Parameters>,
-    mut scope: Option<&mut super::copy_requirements::materialized::InstanceScope>,
-    mut preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
-) -> Result<(), crate::sema::dispatch::Failure> {
-    body.validate_nominal_inputs(facts)?;
-    let dispatch = !body.nominal_uses().is_empty()
+fn needs_dispatch(facts: &Declarations, body: &Body) -> Result<bool, &'static str> {
+    Ok(!body.nominal_uses().is_empty()
         || body.values.iter().any(|value| {
             matches!(
                 value.kind,
@@ -85,8 +77,20 @@ fn resolve_using(
                         ..
                     }
             ) || trait_function(facts, value)
-        });
-    if !dispatch {
+        })
+        || super::invocation_entries::tupled::needed(facts, body)?)
+}
+
+fn resolve_using(
+    facts: &mut Declarations,
+    body: &mut Body,
+    contract: &mut Contract,
+    mut original: Option<originals::Parameters>,
+    mut scope: Option<&mut super::copy_requirements::materialized::InstanceScope>,
+    mut preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
+) -> Result<(), crate::sema::dispatch::Failure> {
+    body.validate_nominal_inputs(facts)?;
+    if !needs_dispatch(facts, body)? {
         return finish_using(facts, body, contract, scope.as_deref(), preparation);
     }
     let (mut caller, mut dispatcher) = callers::prepare(facts, body, contract)?;
@@ -169,8 +173,36 @@ fn resolve_using(
         rewrite(facts, body, contract, &mut fold)?;
         retain_initializer_targets(facts, body, &originals, &mut fold)?;
     }
+    let members = select_members(facts, &mut dispatcher, body, &mut preparation)?;
     retain_proof(body, contract, dispatcher.finish());
-    finish_using(facts, body, contract, scope.as_deref(), preparation)
+    finish_using(facts, body, contract, scope.as_deref(), preparation)?;
+    super::invocation_entries::install_members(facts, body, members).map_err(Into::into)
+}
+
+/// Call operators read their receivers after the selected items are folded;
+/// each selected member's proof joins this body's dispatch proof.
+fn select_members(
+    facts: &mut Declarations,
+    dispatcher: &mut crate::sema::dispatch::Dispatcher,
+    body: &Body,
+    preparation: &mut Option<&mut dyn crate::sema::dispatch::Preparation>,
+) -> Result<
+    Vec<(
+        super::ir::ValueId,
+        super::invocation_entries::tupled::Member,
+    )>,
+    crate::sema::dispatch::Failure,
+> {
+    let mut members = Vec::new();
+    for request in super::invocation_entries::tupled::requests(facts, body)? {
+        let selected = if let Some(service) = preparation {
+            dispatcher.select_prepared(facts, request.item(), &mut **service)?
+        } else {
+            dispatcher.select(facts, request.item())?
+        };
+        members.push(request.finish(facts, selected)?);
+    }
+    Ok(members)
 }
 
 fn retain_proof(body: &Body, contract: &mut Contract, proof: crate::sema::dispatch::Obligations) {

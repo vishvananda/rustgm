@@ -372,6 +372,44 @@ fn const_closure_member_executes_its_selected_implementation() -> Result {
     native(MEMBERS, "obj/parallel/closure-members/native")
 }
 
+const OPERATORS: &str = "pa31/tests/spec/source-call-members";
+const OPERATOR_CASES: [&str; 5] = ["mutable", "once", "nested", "const-generator", "owned"];
+/// Call syntax on a generic callable whose actual type is a nominal receiver,
+/// as core's `try_from_fn_erased` calls `&mut Drain`, runs the selected impl.
+#[test]
+fn call_operators_on_nominal_receivers_select_their_source_members() -> Result {
+    for name in OPERATOR_CASES {
+        packet_report(OPERATORS, name)
+            .and_then(|report| program(&report))
+            .map_err(|error| format!("{name}: {error}"))?;
+    }
+    let error = packet_report(OPERATORS, "shared")
+        .and_then(|report| program(&report))
+        .err()
+        .ok_or("accepted shared")?;
+    assert!(
+        error
+            .to_string()
+            .contains("associated type requires an unambiguous validated implementation"),
+        "shared: {error}"
+    );
+    Ok(())
+}
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn call_operators_on_nominal_receivers_execute_their_source_members() -> Result {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    for name in OPERATOR_CASES {
+        crate::observed_program::execute(
+            &root.join(format!("obj/parallel/source-call-members/native/{name}")),
+            &program(&packet_report(OPERATORS, name)?)?,
+            &root.join(OPERATORS).join("observe.c"),
+            b"41 59\n",
+        )?;
+    }
+    Ok(())
+}
+
 #[test]
 fn const_closure_ctfe_and_default_premises_remain_accepting_requirements() -> Result {
     for (name, cause) in [

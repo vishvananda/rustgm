@@ -3,6 +3,7 @@ mod borrowed;
 mod candidates;
 mod matching;
 mod shaping;
+pub(crate) mod tupled;
 mod vtable_entries;
 mod vtable_scopes;
 pub(crate) use candidates::select_execution;
@@ -154,6 +155,7 @@ impl Entry {
 pub struct Entries {
     values: HashMap<ValueId, Entry>,
     conversions: HashMap<ValueId, [Option<Entry>; 2]>,
+    members: HashMap<ValueId, tupled::Member>,
     adapters: bool,
 }
 impl Entries {
@@ -167,11 +169,39 @@ impl Entries {
     pub(crate) fn conversion(&self, value: ValueId) -> Option<[Option<Entry>; 2]> {
         self.conversions.get(&value).copied()
     }
+    /// The selected source call-trait member of a call operator on a nominal receiver.
+    pub(crate) fn member(&self, value: ValueId) -> Option<tupled::Member> {
+        self.members.get(&value).copied()
+    }
     pub(crate) fn retained_bytes(&self) -> usize {
         size_of::<Self>()
             .saturating_add(crate::support::retained::map(&self.values))
             .saturating_add(crate::support::retained::map(&self.conversions))
+            .saturating_add(crate::support::retained::map(&self.members))
     }
+}
+/// Members are selected by the caller's own dispatch proof, after closure entries.
+pub(crate) fn install_members(
+    facts: &Declarations,
+    body: &mut Body,
+    members: Vec<(ValueId, tupled::Member)>,
+) -> Result<(), &'static str> {
+    if members.is_empty() {
+        return Ok(());
+    }
+    facts.charge_caller_inputs(
+        members.len(),
+        members
+            .len()
+            .saturating_mul(size_of::<(ValueId, tupled::Member)>()),
+    )?;
+    let entries = body.closure_calls.get_or_insert_with(Default::default);
+    for (value, member) in members {
+        if entries.values.contains_key(&value) || entries.members.insert(value, member).is_some() {
+            return Err("call operator selected both a closure entry and a source member");
+        }
+    }
+    Ok(())
 }
 pub(crate) fn select(
     facts: &mut Declarations,

@@ -58,6 +58,66 @@ pub(crate) fn member(
         .map(|_| kind))
 }
 
+/// The unselected trait callable a call operator names on a concrete `Self`
+/// and tuple `Args`. Identity only: dispatch still selects and proves the
+/// implementation whose body executes the call.
+pub(crate) fn operator_item(
+    facts: &mut Declarations,
+    kind: CallTrait,
+    subject: TypeId,
+    tuple: TypeId,
+) -> Result<TypeId, &'static str> {
+    let parent = definition(facts, kind)?;
+    let method = facts
+        .source_bindings
+        .as_deref()
+        .and_then(|catalog| catalog.traits.as_deref())
+        .and_then(|roles| roles.methods[kind as usize])
+        .ok_or("source call operator requires its actual call-trait method")?;
+    let self_type = facts
+        .associated
+        .schema(parent)
+        .ok_or("source call operator lacks its call-trait schema")?
+        .self_type;
+    let [parameter] = facts
+        .generics
+        .parameters
+        .get(&parent)
+        .map_or(&[][..], Vec::as_slice)
+    else {
+        return Err("source call operator requires its one call-trait Args parameter");
+    };
+    let Argument::Type(args) = parameter.argument else {
+        return Err("source call operator Args must be a type");
+    };
+    let (template, formals) = facts
+        .lifetimes
+        .callables
+        .registration(crate::types::ItemId(method.0))
+        .ok_or("source call operator method has no generic template")?;
+    if template.parameters != 0 {
+        return Err("source call operator method has early lifetime parameters");
+    }
+    let formal =
+        |ty, id| matches!(facts.types.kind(ty), Some(Kind::Parameter(actual)) if actual == id);
+    let arguments = formals
+        .iter()
+        .map(|&id| {
+            if formal(self_type, id) {
+                Ok(Argument::Type(subject))
+            } else if formal(args, id) {
+                Ok(Argument::Type(tuple))
+            } else {
+                Err("source call operator method has an unexpected generic parameter")
+            }
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    let mut work = 0;
+    let item = crate::sema::dispatch::instantiate_callable(facts, method, &arguments, &mut work);
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work);
+    item
+}
+
 /// The validated `FnOnce::Output` declaration of the completed family.
 pub(crate) fn output(facts: &Declarations) -> Result<DefId, &'static str> {
     let declaration = facts

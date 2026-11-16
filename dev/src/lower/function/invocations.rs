@@ -14,12 +14,8 @@ impl Lower<'_, '_, '_> {
         arguments: ValueList,
         result: TypeId,
     ) -> Result<Selected, &'static str> {
-        if let Some(entry) = self
-            .body
-            .closure_calls
-            .as_deref()
-            .and_then(|entries| entries.get(id))
-        {
+        let entries = self.body.closure_calls.as_deref();
+        if let Some(entry) = entries.and_then(|entries| entries.get(id)) {
             let symbol = self.context.demand_closure_entry(entry)?;
             return self.call_operand(
                 entry.execution(),
@@ -27,6 +23,9 @@ impl Lower<'_, '_, '_> {
                 arguments,
                 result,
             );
+        }
+        if let Some(member) = entries.and_then(|entries| entries.member(id)) {
+            return self.invoke_member(member, arguments, result);
         }
         let receiver = *self
             .body
@@ -88,6 +87,36 @@ impl Lower<'_, '_, '_> {
             ValueList {
                 start: arguments.start + 1,
                 ..arguments
+            },
+            result,
+        )
+    }
+    /// The selected source member takes the unchanged receiver and one owned
+    /// `Args` tuple built from the evaluated call operands.
+    fn invoke_member(
+        &mut self,
+        member: crate::body::invocation_entries::tupled::Member,
+        arguments: ValueList,
+        result: TypeId,
+    ) -> Result<Selected, &'static str> {
+        let symbol = self.context.demand(member.instance())?;
+        let receiver = *self
+            .body
+            .arguments(arguments)
+            .first()
+            .ok_or("missing call operator receiver")?;
+        let operands = ValueList {
+            start: arguments.start + 1,
+            ..arguments
+        };
+        let tuple = self.aggregate(member.tuple(), None, operands)?;
+        self.call_arguments(
+            member.execution(),
+            crate::lowir::program::Operand::Symbol(symbol),
+            super::argument_sources::Arguments::Tupled {
+                receiver,
+                tuple: member.tuple(),
+                value: tuple,
             },
             result,
         )

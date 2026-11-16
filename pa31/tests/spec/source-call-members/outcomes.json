@@ -1,0 +1,46 @@
+{
+ "schema": 1,
+ "declared": "2026-11-16, before the frozen rustc 1.98.0 oracle of these exact bytes (obj/parallel/frontier/repro/declared.json). owned.rs first called its generic through `&mut Count`; that form reaches a separate check-time gap (a reference forwarding its call to a source impl referent), so its probe now passes `Count` by value. Its declared outcome did not change.",
+ "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+ "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --crate-name minicore --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+ "native_stdout": "41 59\n",
+ "observer_sha256": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+ "cases": {
+  "mutable.rs": {
+   "sha256": "946f357ecbcab2e084229e96dd6d1fefc00728302a43bd07e410decd99233dcd",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "mutable"
+  },
+  "once.rs": {
+   "sha256": "e63ff1bed33c37a6df753eea6287ac4cf6ef2fd1ef8398427195b540e9d54d13",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "once"
+  },
+  "nested.rs": {
+   "sha256": "953921950cc44dfe0ccfd755561e62fa699f258f3b52214077d16192de1f2c89",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "nested"
+  },
+  "const-generator.rs": {
+   "sha256": "7cb49c6657ac5a4cedff4913065e09179155637a9768431f870cb567164fe23a",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "const-generator"
+  },
+  "owned.rs": {
+   "sha256": "8f2bed3c4574353a7bfec577fd2150048afeedbc61c5db0e7e2823add9099b0a",
+   "declared": 0,
+   "rustc_status": 0,
+   "reduction": "owned"
+  },
+  "shared.rs": {
+   "sha256": "612e6162dd326440d496880726a1a6ef3ba27747916c0bfc98a1f406457116bd",
+   "declared": 1,
+   "rustc_status": 1,
+   "reduction": "shared"
+  }
+ }
+}

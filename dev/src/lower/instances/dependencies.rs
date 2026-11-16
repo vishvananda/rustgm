@@ -705,13 +705,15 @@ impl Dependencies {
         ),
         result: &mut Discovered,
     ) -> Result<(), &'static str> {
-        if let Some(entry) = body
-            .closure_calls
-            .as_deref()
-            .and_then(|entries| entries.get(id))
+        let entries = body.closure_calls.as_deref();
+        if let Some(entry) = entries.and_then(|entries| entries.get(id))
             && entry.adapter().is_some()
         {
             result.adapters.push(entry);
+            return Ok(());
+        }
+        if let Some(member) = entries.and_then(|entries| entries.member(id)) {
+            result.calls.push(member.instance());
             return Ok(());
         }
         let (kind, signature, arguments) = invocation;
