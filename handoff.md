@@ -18,9 +18,14 @@ The user adopted the [self-hosting plan](docs/self-hosting-plan.md) on
 
 ## State on 2026-11-16
 
-Main is `e31379b29`. Push CI and full qualification are green on it
+Latest compiler checkpoint: `b9c0a9a8b`, integrating all three lanes and the
+capture-Deref fix. Final local validation: 3,112 private tests pass (3 ignored),
+2,778 regular tests across all 13 suites pass, source/native promotion and capture
+controls pass, and the backend handshake is checked. Full qualification:
+[43965840797](https://github.com/vishvananda/rustgm/actions/runs/43965840797) (dispatched; pending).
+The previous full green qualification was on `e31379b29`
 ([43925422216](https://github.com/vishvananda/rustgm/actions/runs/43925422216)).
-Nothing here is a qualification of PA25–PA44: strict mode still stops at its
+Nothing here is a qualification of PA25–PA45: strict mode still stops at its
 first fence, and those stages stay planned.
 
 **M1 is reached under the bring-up profile.** All 18 staged programs
@@ -29,7 +34,7 @@ first fence, and those stages stay planned.
 stdout; `panic-index` and `panic-overflow` abort after rustc's stdout. Each was
 compiled together with real Rust 1.98 `core` in one session, built by the pinned
 backend, linked with libc, and run three times in a fresh empty directory with
-an empty environment. Core needed a 12-row skip list
+an empty environment. That full 18-program observation used a 12-row skip list
 (`rustgm-pa26-work/obj/parallel/frontier3/core.skip.m1-12.tsv`):
 - `mem/drop_guard.rs` `new` and `dismiss`;
 - `num/niche_types.rs` `default`;
@@ -40,6 +45,25 @@ an empty environment. Core needed a 12-row skip list
 
 About 50 bodies per program are still unproven (`bringup-unproven`), so this is
 bring-up evidence only.
+
+The latest compiler removes all nine qualification rows: core now needs only
+`DropGuard::new`, `DropGuard::dismiss` and `niche_types::default` (3 rows).
+`atomics`, `fmt-floats` and `slices` compile with that list and each matches its
+declared status, stderr and stdout three times in fresh empty directories with
+an empty environment. This is a focused replay, not a new 18-program receipt.
+
+**M2 remains open.** The repeated real-alloc census compiles with 37 alloc rows
+(down from 44), plus the 3 core rows, and 55 unproven bodies. Cleared alloc rows:
+B-tree `replace` and `get_or_insert_with`, linked-list `clone`, and the four
+`raw_waker`/`local_raw_waker`/`clone_waker` rows. Vec, String and Box-to-dyn still
+abort in their consumer stubs; none counts as a passing consumer.
+
+Evidence is in the frontier worktree under `obj/parallel/resume-20261116/`:
+`alloc/c14/`, `alloc-consumers/`, `core-consumers-fixed/`, `core-runs/`,
+`private-final.log` and `integration/`. The current optimized observation binary
+is `bin/rustgm-fixed`, SHA-256
+`1a1ef1735a300b3c3c73e53c21c101973edd87e32392064177c6dae3fab36701`.
+It is not release or performance qualification evidence.
 
 **Landed on main on 2026-11-15/16:**
 - **Backend:** the CPPGM pin moved to v0.9.3 (in-process library interface 4).
@@ -70,67 +94,39 @@ than rustc over a prebuilt core (0.2 s). Script and records:
 `/mnt/vizier/rustgm-scratch/integrator-20261116/scripts/timing.py` and
 `rustgm-backend-work/obj/parallel/timing-20261116/`.
 
-## Unpublished lane work
+## Integrated lane batch and remaining drafts
 
-None of this is on main. Every lane commit passed the whole private binary, but
-none has had the integrator's full check (below).
+The former unpublished lane heads are integrated in `b9c0a9a8b`:
 
-**Frontier** (`rustgm-pa26-work`)
-- Lane `lane/frontier-20261115` is at `5a243b4bf`, one commit over main. Const
-  qualification now asks about each store's exact destination type. It is proven
-  on its fixture (`pa31/tests/spec/replacement-qualification`, 5/5 equal to
-  rustc), but not yet on real core, where it should remove the nine
-  qualification rows (12 → 3).
-- WIP branch `wip/frontier-20261116` is at `5d0c550fc`. It holds three
-  unvalidated drafts for alloc rows:
-  - a capture stops at an overloaded `Deref`/`DerefMut`;
-  - a closure's `T: 'a` requirement passes to the function that creates it
-    (the `linked_list` rows);
-  - `FnOnce(T)` sugar's empty binder (`DropGuard`).
-- Reductions, staged fixtures and the `std` census script are in
-  `obj/parallel/frontier3/`.
+- Frontier: exact store-destination qualification, plus capture boundaries for
+  source `Deref`/`DerefMut`; four accepted native programs and two loan opponents.
+- Publication: owning Box moves/drop order, trait-object/slice unsizing,
+  `Option<u8>` tag decoding, nested Box cleanup and marked const-call promotion.
+  Promotion has a separate authenticated entry for closed generic callees;
+  ordinary generic roots and conditional/intrinsic/drop-glue fences remain.
+  A real-core atomics regression exposed the missing generic-callee case; it is
+  fixed in the promotion commit, with six source outcomes and two native controls.
+- Runtime: delayed nominal requirements, declaration-time lexical module/crate
+  identity, per-crate deprecation policy and TLS globals in text and ABI-4 bridge
+  paths. Two-thread TLS output and fixed/PIC object equality pass.
 
-**Publication** (`rustgm-async-work`)
-- Lane `lane/publication-20261115` is at `27fa8a47e`, four commits over
-  `2bc077ebe`; rebase it onto main first. Each commit passed the whole private
-  binary and the ownership suite.
-  - `7e16d3409`: `owned_box` is the built-in owning pointer (move out of `*b`;
-    content drops before Box's `Drop`).
-  - `79475718d`: Box-to-trait-object and slice unsizing.
-  - `983e09945`: a one-byte `Option<u8>` tag in constant bytes, fixing the 12
-    `vec/is_zero` rows.
-  - `27fa8a47e`: dropping `Box<Box<T>>`.
-- WIP branch `wip/publication-20261116` is at `6d423e28c`: `#[rustc_promotable]`
-  call promotion. Its fixture agrees with rustc 3/3. The private test
-  `source_marker_keeps_const_unsafe_and_promotion_boundaries_distinct` and the
-  whole private binary have not run on it.
-- This worktree is at its 24 GiB output cap. Run `make tidy-build` (or `make
-  tidy-archive`) there before the next heavy job.
+Only two frontier drafts from `wip/frontier-20261116` (`5d0c550fc`) remain:
+closure `T: 'a` output requirements (three region/relations files) and empty
+callable binders (`member_conditions.rs`). The capture part of that draft has
+landed; do not replay its three closure/mutation files over the new Box logic.
+The publication promotion WIP and runtime row-10 WIP have been superseded.
+Precise Box capture paths remain outside the current Box fixture coverage.
 
-**Runtime** (`rustgm-backend-work`)
-- Lane `lane/runtime-20261115` is at `fc517aaf7`, five commits over `2bc077ebe`;
-  rebase it onto main first.
-  - `d18777e6c`, `072c0dcb9`, `9e7ac86be`: declaration-time typing fixes. With
-    them, the unmodified hashbrown 0.17.1 `Group` runs natively and matches
-    rustc.
-  - `1ee0d23ba`: docs.
-  - `fc517aaf7`: `#[thread_local]` statics lowered to thread-local globals. It
-    also changes the bridge, the handshake C code and `scripts/backend.py`, none
-    of which has been compiled yet. Before integrating, run `make test-backend`
-    and the native test `thread_locals::each_thread_sees_its_own_instances_as_rustcs_program_does`
-    (`--ignored`; expected output in `obj/parallel/runtime-m3/tls/before4.log`).
-- WIP branch `wip/runtime-20261116` is at `1f2d5d443`: gap-table row 10 text,
-  whose claims are not yet proven.
-- A real `hashbrown::HashMap<u32, u32>` probe stops unattributed with "invalid
-  canonical trait selection" after reaching 32 stubs (27 alloc, 5 hashbrown,
-  listed in row 5 of `docs/self-hosting-runtime.md`).
+The original reductions and std census remain in `obj/parallel/frontier3/`.
+Superseded compiler pins were retired; historical binary paths below may be
+pruned. Rebuild or restore and verify a recorded hash before a new run.
 
 ## Integration procedure
 
 Each step of the 2026-11-16 integration ran in a lane worktree while its agent
 was idle:
 1. Rebase the lane onto main.
-2. Run the whole private binary (~3 min warm, 3,108 tests). In the worktree,
+2. Run the whole private binary (3,112 passing tests and 3 ignored). In the worktree,
    with `W` its absolute path:
 
    ```sh
@@ -159,48 +155,24 @@ commit that needs them. The lane briefs used this session are in
 
 ## Next work, by lane
 
-- **Frontier:**
-  1. Build observe at `5a243b4bf`, then rerun the core census with the nine
-     qualification rows removed, and the alloc census.
-  2. Validate the three WIP drafts one at a time against
-     `obj/parallel/frontier3/{capderef,r1,guard}` (declared outcomes in each
-     `declared.json`).
-  3. Two known gaps:
-     - `guard/consumed.rs`: rustc accepts it, but a const `Drop` stays unproven.
-     - `niche_types` `default`: needs integer niches beyond nonzero ranges, an
-       ABI change. `dev/tests/invariants/integer_niches.rs` pins the current
-       rejection.
-  4. The `std` guest census (`obj/parallel/frontier3/std-census.sh`). libc is
-     expected to stop first: guests take the session's edition (2024), and
-     libc's 2021 `extern` blocks are not `unsafe`, so guests need their own
-     edition.
-- **Publication (M2):**
-  1. Finish the promotion WIP and run census c13.
-  2. The alloc census has 44 alloc rows (59 in total, list
-     `obj/parallel/alloc-m2/goal1/c12/skip.tsv`). Its largest groups:
+- **Frontier:** validate the remaining closure-output and vacuous-binder drafts
+  one at a time against `obj/parallel/frontier3/{r1,guard}/declared.json`.
+  Eleven alloc lifetime rows remain. `guard/consumed.rs` still has an unproven
+  const Drop. Core `niche_types::default` needs wider integer niche ABI support;
+  `dev/tests/invariants/integer_niches.rs` pins its current rejection.
+- **Publication (M2):** start from `obj/parallel/resume-20261116/alloc/c14/skip.tsv`.
+  Four generic aggregate rows remain (Box drop, two B-tree node methods and
+  VecDeque Drain drop), plus three ambiguous trait obligations and other named
+  rows. Vec still stops at "no applicable method for this receiver"; String at
+  a trait obligation and an associated-type selection; Box-to-dyn at "captured
+  object target lacks checked conversion entry evidence". Their actual census
+  and native failures are in `alloc-consumers/`; no consumer is counted as passed.
+- **Runtime (M3):** TLS is validated. Next are gap rows 11 (linkage/sections),
+  2 (`lang_start`/`Termination`), 12 (float math), and the real HashMap probe's
+  unattributed trait selection. Std guest census is still blocked by guest
+  editions: libc's 2021 extern blocks are parsed in the session's 2024 edition.
 
-     | Group | Rows |
-     | --- | --- |
-     | lifetime (11 closure rows are frontier's, 4 promotion) | 15 |
-     | generic aggregate requires instantiated fields | 5 |
-     | trait obligation requires an unambiguous matching assumption | 3 |
-     | each of several messages, including two `Option<Option<bool>>` transmutes that need nested niche layout | 2 |
-
-  3. M2 programs (`obj/parallel/alloc-m3/consumers-c12/summary.txt`): only
-     first-allocation passes.
-
-     | Program | Stops at |
-     | --- | --- |
-     | `vec` | "no applicable method for this receiver" |
-     | `string` | a trait-obligation and an associated-type selection |
-     | `box-dyn` | "captured object target lacks checked conversion entry evidence" |
-- **Runtime (M3):**
-  1. Finish validating thread-locals (see above).
-  2. Then gap rows 11 (linkage and section statics), 2 (`lang_start` and
-     `Termination`) and 12 (float math).
-  3. The HashMap probe's trait-selection stop.
-
-Lane briefs and agents are free to change; the plan's milestone order is not.
+Lane briefs may change; milestone order stays M2 before M3/M4 and self-hosting.
 
 ### Bring-up profile
 
