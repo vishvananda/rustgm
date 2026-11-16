@@ -340,6 +340,12 @@ impl Machine<'_, '_> {
                     crate::types::unsizing::Conversion::Nominal { .. } => {
                         return Err("constant nominal coercion requires its checked aggregate conversion plan".into());
                     }
+                    crate::types::unsizing::Conversion::Bound { .. } => {
+                        return Err(
+                            "constant bound unsizing requires its resolved instance conversion"
+                                .into(),
+                        );
+                    }
                 }
             }
             Rvalue::Validate(place) => {

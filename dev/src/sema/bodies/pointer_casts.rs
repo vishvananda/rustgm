@@ -171,7 +171,22 @@ impl Checker<'_> {
             let nominal = matches!(heads,
                 (Some(Constructor::Adt(a, _) | Constructor::AdtArgs(a, _)),
                  Some(Constructor::Adt(b, _) | Constructor::AdtArgs(b, _))) if a == b);
-            if array || nominal {
+            // A reference cast is valid only as a coercion cast: to an object,
+            // to a parameter that its referent unsizes to, as alloc's
+            // `&value as &Dyn` under `T: Unsize<Dyn>`, or to its own referent.
+            let unsizing = heads.0.is_some()
+                && matches!(
+                    heads.1,
+                    Some(Constructor::Parameter(_) | Constructor::Dynamic { .. })
+                );
+            let identity = heads.0.is_some()
+                && heads.0 == heads.1
+                && !self
+                    .state
+                    .infer
+                    .incompatible(&self.facts.types, referent, pointee)
+                    .map_err(|e| self.error(node, e))?;
+            if array || nominal || unsizing || identity {
                 // The existing selection owns the actual tail and reborrow proof.
                 return self.coerce(value, target);
             }
@@ -275,7 +290,11 @@ impl Checker<'_> {
             .and_then(|f| f.adjustment)
             .map_or(original, |adjustment| adjustment.target);
         let target = self.ty(target)?;
-        if source == target && self.reference_unsizing_cast(value, target)? {
+        if source == target
+            && (self.reference_unsizing_cast(value, target)?
+                || original == target
+                    && matches!(self.facts.types.kind(target), Some(Type::Reference { .. })))
+        {
             return Ok(Some(Cast::Pointer));
         }
         let (from, to) = (self.facts.types.kind(source), self.facts.types.kind(target));
@@ -356,6 +375,8 @@ impl Checker<'_> {
         Ok(selected_reference_cast(self.facts, self.key(value), target))
     }
 }
+/// A reference cast is valid only through the child's own selected
+/// coercion, which each shape checks against its exact record.
 fn selected_reference_cast(
     facts: &crate::sema::model::Declarations,
     source: crate::resolve::unit::NodeKey,
@@ -367,12 +388,7 @@ fn selected_reference_cast(
     let Some(adjustment) = fact.adjustment else {
         return false;
     };
-    if adjustment.target != target
-        || !matches!(
-            adjustment.kind,
-            AdjustmentKind::ArrayToSlice | AdjustmentKind::Unsize | AdjustmentKind::Reborrow
-        )
-    {
+    if adjustment.target != target {
         return false;
     }
     let (
@@ -396,13 +412,54 @@ fn selected_reference_cast(
     if to_mutable && !from_mutable {
         return false;
     }
-    match (facts.types.kind(from), facts.types.kind(to)) {
-        (Some(Type::Array { .. } | Type::ArrayTerm { .. }), Some(Type::Slice(_))) => true,
-        (Some(Type::Adt(a, _)), Some(Type::Adt(b, _))) if a == b && from != to => {
-            facts.unsizing_adjustments.contains_key(&source)
+    let terminal = facts.unsizing_adjustments.get(&source).copied();
+    match adjustment.kind {
+        AdjustmentKind::ArrayToSlice | AdjustmentKind::Unsize | AdjustmentKind::Reborrow => {
+            match (facts.types.kind(from), facts.types.kind(to)) {
+                (Some(Type::Array { .. } | Type::ArrayTerm { .. }), Some(Type::Slice(_))) => true,
+                (Some(Type::Adt(a, _)), Some(Type::Adt(b, _))) if a == b && from != to => {
+                    terminal.is_some()
+                }
+                (_, Some(kind @ (Type::Dynamic { .. } | Type::Parameter(_)))) if from != to => {
+                    adjustment.kind != AdjustmentKind::ArrayToSlice
+                        && terminal.is_some_and(|terminal| {
+                            selected_referent_pair(terminal, kind, from, to)
+                        })
+                }
+                // Only a plain reborrow keeps its referent; an unsizing never does.
+                _ => {
+                    from == to && adjustment.kind == AdjustmentKind::Reborrow && terminal.is_none()
+                }
+            }
         }
+        // The same referent, with only a directed lifetime relation retained.
+        AdjustmentKind::Equality => from == to && terminal.is_none(),
         _ => false,
     }
+}
+/// Whether the selected terminal conversion relates exactly these referents:
+/// an object or upcast for an object target, and a clause-proved bound
+/// unsizing for a type parameter target.
+fn selected_referent_pair(
+    terminal: crate::types::unsizing::Conversion<TypeId>,
+    target_kind: Type,
+    from: TypeId,
+    to: TypeId,
+) -> bool {
+    use crate::types::unsizing::Conversion;
+    let pair = match (terminal, target_kind) {
+        (
+            Conversion::Object {
+                concrete: source,
+                target,
+            }
+            | Conversion::Upcast { source, target },
+            Type::Dynamic { .. },
+        )
+        | (Conversion::Bound { source, target }, Type::Parameter(_)) => (source, target),
+        _ => return false,
+    };
+    pair == (from, to)
 }
 #[cfg(test)]
 #[path = "../../../tests/invariants/unsizing_casts.rs"]

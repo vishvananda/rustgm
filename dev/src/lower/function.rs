@@ -834,6 +834,9 @@ impl Lower<'_, '_, '_> {
                     crate::types::unsizing::Conversion::Nominal { source, target } => {
                         self.nominal_coercion(id, operand, source, target)
                     }
+                    crate::types::unsizing::Conversion::Bound { .. } => {
+                        Err("bound unsizing reached lowering unresolved")
+                    }
                 };
             }
             Rvalue::Unary {

@@ -371,6 +371,9 @@ impl Discovered {
                 self.upcasts.push((source, target));
             }
             crate::types::unsizing::Conversion::Slice(_) => {}
+            crate::types::unsizing::Conversion::Bound { .. } => {
+                return Err("bound unsizing reached instance dependencies unresolved");
+            }
             crate::types::unsizing::Conversion::Nominal { .. } => {
                 let row = body.nominal_use(
                     &facts.types,

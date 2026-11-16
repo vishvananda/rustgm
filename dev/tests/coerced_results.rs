@@ -5,6 +5,14 @@
 //! inferred as `Box<[T; N]>` and then unsized by `CoerceUnsized`. A sized
 //! hint, such as `&[T]` for a reference input, is kept.
 //!
+//! An `as` cast is likewise first tried as a coercion of its operand, and a
+//! cast between references is valid only as such a coercion cast, as to an
+//! object or to the same referent. alloc's `ThinBox::new_unsize` writes
+//! `ptr::metadata(&value as &Dyn)` under `T: Unsize<Dyn>`: a reference to a
+//! type parameter that the caller's own clause unsizes to. Each instance
+//! resolves that conversion once its referents are known, here to an object
+//! and to a slice.
+//!
 //! Every outcome was declared before either compiler ran. rustc 1.98.0 is the
 //! oracle (`RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib
 //! --crate-name core --cap-lints=allow`). It accepts every case but
@@ -17,6 +25,25 @@
 //! four had run. `unsizeless-call-rejected` was rejected as "incompatible
 //! types" before the change; it is now rejected where its result coerces,
 //! since `T: Unsize<[T]>` cannot hold, and that message was pinned then.
+//!
+//! The `CASTS` were declared later, before either compiler ran. rustc
+//! accepts every one but `generic-unsizeless-reference-cast`, which it
+//! rejects with E0605 ("non-primitive cast"). Their core first lacked the
+//! mutable-reference `CoerceUnsized` impl, which `MUTABLE` adds; the
+//! declarations were kept and `RustGM`'s rejection message was pinned after
+//! the change. The two `T: Unsize<U>` casts were first rejected by `RustGM`
+//! and accepted once a clause-proved unsizing existed. `generic-unsize-coercion`,
+//! the same unsizing written as a coercion, was declared after them; rustc
+//! accepts it and `RustGM` rejected it as "incompatible types" before.
+//! `generic-unsize-raw-pointer-cast` was declared later still, when census
+//! movement showed alloc's `ptr::dangling::<T>() as *const Dyn` passing; rustc
+//! accepts it and `RustGM` rejected it as "pointer cast cannot invent or
+//! change metadata" before.
+//!
+//! The `INSTANCES` were declared before either compiler ran; rustc accepts
+//! both. `instance-object`'s core first lacked the reference
+//! `DispatchFromDyn` impl, without which rustc rejects `Shape` with E0038;
+//! it was added and the declaration kept.
 use std::{path::Path, process::Command};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
@@ -55,10 +82,12 @@ const CORE: &str = concat!(
     "}\n",
     "impl<T: PointeeSized + Unsize<U>, U: PointeeSized> CoerceUnsized<Ptr<U>> for Ptr<T> {}\n",
 );
+const MUTABLE: &str = "impl<'a, 'b: 'a, T: PointeeSized + Unsize<U>, U: PointeeSized> CoerceUnsized<&'a mut U> for &'b mut T {}\n";
 const UNSIZE: &str =
     "trait obligation requires an unambiguous matching assumption or implementation";
+const UNSIZE_CAST: &str = "incompatible types";
 
-/// One call after `CORE` and its rejection, or `None` when it is accepted.
+/// One item after the core and its rejection, or `None` when it is accepted.
 struct Case {
     name: &'static str,
     source: &'static str,
@@ -96,6 +125,43 @@ const CASES: [Case; 6] = [
         rejected: Some(UNSIZE),
     },
 ];
+const CASTS: [Case; 7] = [
+    Case {
+        name: "generic-unsize-raw-pointer-cast",
+        source: "pub fn raw<T: Unsize<U>, U: PointeeSized>(p: *const T) -> *const U {\n    p as *const U\n}\n",
+        rejected: None,
+    },
+    Case {
+        name: "generic-unsize-coercion",
+        source: "pub fn view<T: Unsize<U>, U: PointeeSized>(value: &T) -> &U {\n    let unsized_value: &U = value;\n    unsized_value\n}\n",
+        rejected: None,
+    },
+    Case {
+        name: "generic-unsize-reference-cast",
+        source: "pub fn view<T: Unsize<U>, U: PointeeSized>(value: &T) -> &U {\n    value as &U\n}\n",
+        rejected: None,
+    },
+    Case {
+        name: "generic-unsize-mut-reference-cast",
+        source: "pub fn view<T: Unsize<U>, U: PointeeSized>(value: &mut T) -> &mut U {\n    value as &mut U\n}\n",
+        rejected: None,
+    },
+    Case {
+        name: "object-reference-cast",
+        source: "pub trait Shape {}\nimpl Shape for u8 {}\npub fn object(value: &u8) -> &dyn Shape {\n    value as &dyn Shape\n}\n",
+        rejected: None,
+    },
+    Case {
+        name: "same-parameter-reference-cast",
+        source: "pub fn same<T: PointeeSized>(value: &T) -> &T {\n    value as &T\n}\n",
+        rejected: None,
+    },
+    Case {
+        name: "generic-unsizeless-reference-cast",
+        source: "pub fn view<T, U: PointeeSized>(value: &T) -> &U {\n    value as &U\n}\n",
+        rejected: Some(UNSIZE_CAST),
+    },
+];
 
 fn rejects(stderr: &str, message: &str) -> bool {
     stderr.lines().any(|line| {
@@ -105,18 +171,16 @@ fn rejects(stderr: &str, message: &str) -> bool {
     })
 }
 
-/// A by-value input whose hint is unsized takes its type from its argument,
-/// and the call result then coerces to the expected type.
-#[test]
-fn unsized_input_hints_leave_the_call_result_to_its_coercion() -> Result {
+fn check(folder: &str, prelude: &str, cases: &[Case]) -> Result {
     let folder = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../obj/coerced-results")
+        .join("../obj")
+        .join(folder)
         .join(std::process::id().to_string());
     std::fs::create_dir_all(&folder)?;
     let mut failures = Vec::new();
-    for case in CASES {
+    for case in cases {
         let path = folder.join(format!("{}.rs", case.name));
-        std::fs::write(&path, format!("{CORE}{}", case.source))?;
+        std::fs::write(&path, format!("{CORE}{prelude}{}", case.source))?;
         let output = Command::new(env!("CARGO_BIN_EXE_rustgm"))
             .args(["--emit-types", "--edition=2024", "--cap-lints=allow"])
             .args(["--crate-name", "core", "--crate-disambiguator", "unsizing"])
@@ -138,4 +202,90 @@ fn unsized_input_hints_leave_the_call_result_to_its_coercion() -> Result {
     }
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())
+}
+
+/// A by-value input whose hint is unsized takes its type from its argument,
+/// and the call result then coerces to the expected type.
+#[test]
+fn unsized_input_hints_leave_the_call_result_to_its_coercion() -> Result {
+    check("coerced-results", "", &CASES)
+}
+
+/// A reference cast is accepted exactly where its operand coerces to it.
+#[test]
+fn reference_casts_are_coercion_casts() -> Result {
+    check("coerced-casts", MUTABLE, &CASTS)
+}
+
+/// `view` casts under its own `T: Unsize<U>` clause and `twice` forwards to
+/// it generically; each exported instance resolves the conversion.
+const INSTANCES: &str = concat!(
+    "impl Clone for u8 {\n    fn clone(&self) -> u8 {\n        *self\n    }\n}\n",
+    "impl Copy for u8 {}\n",
+    "#[lang = \"dispatch_from_dyn\"]\n",
+    "pub trait DispatchFromDyn<T>: Sized {}\n",
+    "impl<'a, T: PointeeSized + Unsize<U>, U: PointeeSized> DispatchFromDyn<&'a U> for &'a T {}\n",
+    "pub trait Shape {\n    fn area(&self) -> u8;\n}\n",
+    "impl Shape for u8 {\n    fn area(&self) -> u8 {\n        *self\n    }\n}\n",
+    "pub fn view<T: Unsize<U>, U: PointeeSized>(value: &T) -> &U {\n    value as &U\n}\n",
+    "pub fn twice<T: Unsize<U>, U: PointeeSized>(value: &T) -> &U {\n    view::<T, U>(value)\n}\n",
+    "#[unsafe(no_mangle)]\n",
+    "pub extern \"C\" fn entry(x: &u8) -> u8 {\n    twice::<u8, dyn Shape>(x).area()\n}\n",
+    "#[unsafe(no_mangle)]\n",
+    "pub extern \"C\" fn first(a: &[u8; 3]) -> u8 {\n",
+    "    let s: &[u8] = twice::<[u8; 3], [u8]>(a);\n",
+    "    unsafe { *(s as *const [u8] as *const u8) }\n",
+    "}\n",
+);
+fn instances() -> Result<rustgm::lowir::program::Program> {
+    let source = format!("{CORE}{INSTANCES}");
+    let mut config = rustgm::expand::config::Config::default();
+    config.set_lint_cap(rustgm::support::diagnostics::LintCap::Allow);
+    let report = crate::resolve::source_provider_config(&source, "bound_unsizing", &config)?;
+    let rustgm::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = rustgm::pipeline::analyze_source(&report)?;
+    let exports = facts
+        .functions
+        .iter()
+        .filter(|function| {
+            let name = report.resolution.definitions[function.definition.0 as usize].name;
+            ["entry", "first"].contains(&report.package.names.get(name))
+        })
+        .map(|function| function.definition)
+        .collect::<Vec<_>>();
+    assert_eq!(exports.len(), 2);
+    Ok(rustgm::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        rustgm::lower::Roots {
+            entry: None,
+            exports: &exports,
+        },
+        prepared,
+    )?)
+}
+
+/// Instances of a clause-proved unsizing lower to an object and a slice.
+#[test]
+fn bound_unsizing_instances_select_their_conversions() -> Result {
+    instances().map(drop)
+}
+
+/// The object instance dispatches through its vtable and the slice instance
+/// reads through its wide pointer.
+#[test]
+#[ignore = "requires the qualified CPPGM native backend"]
+fn bound_unsizing_instances_execute() -> Result {
+    let folder = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../obj/coerced-instances")
+        .join(std::process::id().to_string());
+    std::fs::create_dir_all(&folder)?;
+    let observer = folder.join("observe.c");
+    std::fs::write(
+        &observer,
+        "#include <stdint.h>\n#include <stdio.h>\nextern uint8_t entry(const uint8_t *);\nextern uint8_t first(const uint8_t *);\nint main(void){uint8_t x=7;uint8_t a[3]={4,5,6};printf(\"%u %u\\n\",entry(&x),first(a));return 0;}\n",
+    )?;
+    crate::observed_program::execute(&folder, &instances()?, &observer, b"7 4\n")
 }

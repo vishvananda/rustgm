@@ -302,16 +302,18 @@ impl Checker<'_> {
         let unsize = matches!(self.head(node, source)?, Some(Constructor::Array(_)))
             && self.head(node, target)? == Some(Constructor::Slice);
         let pending = if !unsize
-            && (matches!(self.head(node, target)?, Some(Constructor::Dynamic { .. }))
-                || matches!(
-                    self.head(node, source)?,
-                    Some(
-                        Constructor::Adt(..)
-                            | Constructor::AdtArgs(..)
-                            | Constructor::ArrayTerm(_)
-                            | Constructor::ArrayInfer(_)
-                    )
-                )) {
+            && (matches!(
+                self.head(node, target)?,
+                Some(Constructor::Dynamic { .. } | Constructor::Parameter(_))
+            ) || matches!(
+                self.head(node, source)?,
+                Some(
+                    Constructor::Adt(..)
+                        | Constructor::AdtArgs(..)
+                        | Constructor::ArrayTerm(_)
+                        | Constructor::ArrayInfer(_)
+                )
+            )) {
             self.unsizing_referent(node, source, target)?
         } else {
             None

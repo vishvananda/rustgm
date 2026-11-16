@@ -30,6 +30,12 @@ pub enum Conversion<T> {
         source: T,
         target: T,
     },
+    /// A referent pair that a `source: Unsize<target>` clause relates, as
+    /// alloc's `&value as &Dyn`: an instance resolves it to one of the others.
+    Bound {
+        source: T,
+        target: T,
+    },
 }
 impl<T> Conversion<T> {
     /// Transport every retained type through the same specialization environment.
@@ -50,6 +56,41 @@ impl<T> Conversion<T> {
                 source: map(source)?,
                 target: map(target)?,
             },
+            Self::Bound { source, target } => Conversion::Bound {
+                source: map(source)?,
+                target: map(target)?,
+            },
+        })
+    }
+}
+impl Conversion<TypeId> {
+    /// Resolve an instantiated bound unsizing to the conversion its referents
+    /// now select; any other conversion, and a still generic pair, is kept.
+    /// # Errors
+    /// Rejects a pair that no built-in unsizing relates, and a nominal pair,
+    /// whose tail plan a bound alone does not supply.
+    pub fn resolved(self, store: &Store) -> Result<Self, &'static str> {
+        let Self::Bound { source, target } = self else {
+            return Ok(self);
+        };
+        Ok(match (store.kind(source), store.kind(target)) {
+            (
+                Some(Kind::Array { element, .. } | Kind::ArrayTerm { element, .. }),
+                Some(Kind::Slice(item)),
+            ) if element == item => Self::Slice(source),
+            (Some(Kind::Dynamic { .. }), Some(Kind::Dynamic { .. })) => {
+                Self::Upcast { source, target }
+            }
+            (Some(_), Some(Kind::Dynamic { .. })) => Self::Object {
+                concrete: source,
+                target,
+            },
+            (Some(Kind::Parameter(_) | Kind::Projection(_)), _)
+            | (_, Some(Kind::Parameter(_) | Kind::Projection(_))) => self,
+            (Some(Kind::Adt(..)), Some(Kind::Adt(..))) => {
+                return Err("a bound nominal unsizing requires its selected tail plan");
+            }
+            _ => return Err("bound unsizing selected no built-in unsizing"),
         })
     }
 }

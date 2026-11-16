@@ -205,8 +205,8 @@ The companion `pa28/tests/relocation-outcomes.json` distinguishes invalid source
 outcomes from profile boundaries. Three raw slice-index positives still reach
 `constant raw whole-range access is not implemented`; an ordinary counterfactual
 has the existing raw reinterpretation boundary. Original object reference-cast
-inputs stop at the scalar-cast boundary; typed-let equivalents qualify this
-transport family without claiming that PA23 route. A dynamic-reference escape
+inputs reach this transport as coercion casts, with the same outcomes as their
+typed-let equivalents. A dynamic-reference escape
 also stops at existing raw reinterpretation, so it is not counted as lifetime
 validity evidence; the sized reference-cell escape is the opposing semantic
 control. The interior-reference temporary rejects for expired backing before the

@@ -309,7 +309,9 @@ fn rewrite(
                 *instance = crate::types::instance::Instance::new(&facts.types, ty)?;
             }
             Rvalue::Unsize { conversion, .. } => {
-                *conversion = conversion.try_map(|ty| fold.apply(&mut facts.types, ty))?;
+                *conversion = conversion
+                    .try_map(|ty| fold.apply(&mut facts.types, ty))?
+                    .resolved(&facts.types)?;
             }
             _ => {}
         }

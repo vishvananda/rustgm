@@ -255,6 +255,12 @@ impl Queries<'_> {
                     "nominal constant coercion requires its actual aggregate conversion plan",
                 ));
             }
+            crate::types::unsizing::Conversion::Bound { .. } => {
+                return Err(self.error(
+                    query,
+                    "bound constant unsizing requires its resolved instance conversion",
+                ));
+            }
         };
         super::address_values::unsize(value, metadata).map_err(|e| self.error(query, e.message()))
     }

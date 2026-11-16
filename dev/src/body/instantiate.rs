@@ -376,11 +376,13 @@ fn substitute(
                 *instance = crate::types::instance::Instance::new(&facts.types, ty)?;
             }
             Rvalue::Unsize { conversion, .. } => {
-                *conversion = conversion.try_map(|ty| {
-                    let ty = bound.apply(&mut facts.types, ty)?;
-                    projected |= facts.types.contains_projections(ty) == Some(true);
-                    Ok::<_, &'static str>(ty)
-                })?;
+                *conversion = conversion
+                    .try_map(|ty| {
+                        let ty = bound.apply(&mut facts.types, ty)?;
+                        projected |= facts.types.contains_projections(ty) == Some(true);
+                        Ok::<_, &'static str>(ty)
+                    })?
+                    .resolved(&facts.types)?;
             }
             Rvalue::Call { signature, .. } | Rvalue::Invoke { signature, .. } => {
                 if !matches!(

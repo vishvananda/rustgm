@@ -108,6 +108,9 @@ impl Checker<'_> {
     }
     fn unsizing_input(&mut self, node: NodeId, pair: Pair) -> Result<Input, Error> {
         let heads = (self.head(node, pair.0)?, self.head(node, pair.1)?);
+        if matches!(heads.1, Some(Constructor::Parameter(_))) {
+            return self.bound_input(node, pair);
+        }
         if matches!(heads.1, Some(Constructor::Dynamic { .. })) {
             let upcast = matches!(heads.0, Some(Constructor::Dynamic { .. }));
             return self.object_input(node, pair, upcast);
@@ -197,6 +200,93 @@ impl Checker<'_> {
         self.projected_unsizing_input(node, item, pair, arguments, &targets, &candidates)
     }
 
+    /// An unsizing to a type parameter has only one proof, a caller clause
+    /// `source: Unsize<target>`, as alloc's `ThinBox::new_unsize` states for
+    /// `&value as &Dyn`. Its instances select the conversion. The obligation
+    /// is retained for the ordinary solver, which proves it by that clause.
+    fn bound_input(&mut self, node: NodeId, pair: Pair) -> Result<Input, Error> {
+        let Some(catalog) = self.facts.source_bindings.as_deref() else {
+            return Ok(Input::Unsupported);
+        };
+        let Some(unsize) = catalog
+            .validated_language(crate::support::bindings::LangItem::Unsize)
+            .map_err(|e| self.error(node, e))?
+            .map(|role| ItemId(role.definition.0))
+        else {
+            return Ok(Input::Unsupported);
+        };
+        if !self.environment_unsizes(node, pair, unsize)? {
+            return Ok(Input::Unsupported);
+        }
+        let predicate = crate::types::infer::predicates::Predicate::trait_application(
+            pair.0,
+            unsize,
+            vec![Argument::Type(pair.1)],
+        );
+        self.defer_bound_inputs(node, &predicate)?;
+        self.state.call_types.obligations.push((node, predicate));
+        Ok(Input::Ready(Selected {
+            view: pair.1,
+            conversion: crate::types::unsizing::Conversion::Bound {
+                source: pair.0,
+                target: pair.1,
+            },
+        }))
+    }
+    /// Whether the body's environment states `source: Unsize<target>` for
+    /// these exact resolved referents.
+    fn environment_unsizes(
+        &mut self,
+        node: NodeId,
+        pair: Pair,
+        unsize: ItemId,
+    ) -> Result<bool, Error> {
+        let Some(owner) = self.state.environment_owner else {
+            return Ok(false);
+        };
+        let mut resolved = [None; 2];
+        for (slot, term) in resolved.iter_mut().zip([pair.0, pair.1]) {
+            *slot = match self.state.infer.resolved(&mut self.facts.types, term) {
+                Ok(ty) => Some(ty),
+                Err(crate::types::infer::Error::Unresolved) => None,
+                Err(error) => return Err(self.error(node, error)),
+            };
+        }
+        let [Some(source), Some(target)] = resolved else {
+            return Ok(false);
+        };
+        let types = &self.facts.types;
+        Ok(self
+            .facts
+            .generics
+            .predicates_in_scope(owner)
+            .any(|predicate| {
+                let crate::types::parameters::clauses::Clause::Predicate(predicate) =
+                    predicate.value
+                else {
+                    return false;
+                };
+                let crate::types::parameters::predicates::Bound::Trait(application) =
+                    predicate.bound
+                else {
+                    return false;
+                };
+                predicate.ty == source
+                    && types
+                        .trait_application(application)
+                        .is_some_and(|application| {
+                            application.item == unsize
+                                && types.arguments(application.arguments).is_some_and(
+                                    |mut arguments| {
+                                        arguments.any(|argument| {
+                                            argument
+                                                == crate::types::arguments::Argument::Type(target)
+                                        })
+                                    },
+                                )
+                        })
+            }))
+    }
     fn object_input(&mut self, node: NodeId, pair: Pair, upcast: bool) -> Result<Input, Error> {
         self.object_conversion_requirements(node, pair.0, pair.1, upcast)?;
         let conversion = if upcast {

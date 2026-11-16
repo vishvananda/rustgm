@@ -283,7 +283,9 @@ fn operand(
             *signature = fold.signature(&mut facts.types, *signature, 0)?;
         }
         Rvalue::Unsize { conversion, .. } => {
-            *conversion = conversion.try_map(|ty| fold.apply(&mut facts.types, ty))?;
+            *conversion = conversion
+                .try_map(|ty| fold.apply(&mut facts.types, ty))?
+                .resolved(&facts.types)?;
         }
         Rvalue::SourceAssociated(_) => {
             return Err("source operand was not recovered before namespace transport");

@@ -149,9 +149,9 @@
       "path": "pa28/tests/spec/relocation-transport/object-split.rs",
       "sha256": "4f70907bc48551047e6da671201c1fbc153d78e93bcbd5c4fb74eaedca535337",
       "rustc_expected": 0,
-      "frontend_expected": 1,
-      "reason": "operation requires a scalar type",
-      "boundary": true,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
       "independent_manifest": "declared-v2.json"
     },
     {
@@ -220,9 +220,9 @@
       "path": "pa28/tests/spec/relocation-transport/object-separate-vtable-word.rs",
       "sha256": "136b01834741a7db209e155265ea46870e5e4ab27804510ebdd7a4567d62f4df",
       "rustc_expected": 0,
-      "frontend_expected": 1,
-      "reason": "operation requires a scalar type",
-      "boundary": true,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
       "independent_manifest": "declared-vtable.json"
     },
     {
@@ -230,9 +230,9 @@
       "path": "pa28/tests/spec/relocation-transport/object-same-vtable-halves.rs",
       "sha256": "e5d07467731b4dc379b18144ce0cb85369af6ed8bc34a9622a70d4e51f889493",
       "rustc_expected": 0,
-      "frontend_expected": 1,
-      "reason": "operation requires a scalar type",
-      "boundary": true,
+      "frontend_expected": 0,
+      "reason": "",
+      "boundary": false,
       "independent_manifest": "declared-vtable.json"
     },
     {
@@ -241,8 +241,8 @@
       "sha256": "c2084710a150eee71b0709e6e335c9de57f20e5a1683dabba5b47fade5ca6749",
       "rustc_expected": 1,
       "frontend_expected": 1,
-      "reason": "operation requires a scalar type",
-      "boundary": true,
+      "reason": "provenance word",
+      "boundary": false,
       "independent_manifest": "declared-vtable.json"
     },
     {
@@ -251,8 +251,8 @@
       "sha256": "0f38f786c0b2da7dcd40cb3f3228e25d695425833941204804be3e706ab389a2",
       "rustc_expected": 1,
       "frontend_expected": 1,
-      "reason": "operation requires a scalar type",
-      "boundary": true,
+      "reason": "symbolic pointer bytes",
+      "boundary": false,
       "independent_manifest": "declared-vtable.json"
     },
     {

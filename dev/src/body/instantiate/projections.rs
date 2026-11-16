@@ -175,8 +175,9 @@ pub(super) fn normalize_with_owner(
             *signature = ty(facts, &mut session, &mut storage, normalized)?;
         }
         if let Rvalue::Unsize { conversion, .. } = &mut value.kind {
-            *conversion =
-                conversion.try_map(|input| ty(facts, &mut session, &mut storage, input))?;
+            *conversion = conversion
+                .try_map(|input| ty(facts, &mut session, &mut storage, input))?
+                .resolved(&facts.types)?;
         }
     }
     body.map_nominal_inputs(|input| ty(facts, &mut session, &mut storage, input))?;

@@ -518,5 +518,10 @@ fn unsizing(
             "nominal-unsize v{} source={} target={}",
             value.0, source.0, target.0
         ),
+        crate::types::unsizing::Conversion::Bound { source, target } => write!(
+            out,
+            "bound-unsize v{} source={} target={}",
+            value.0, source.0, target.0
+        ),
     }
 }

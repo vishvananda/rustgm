@@ -28,6 +28,9 @@ impl Engine<'_, '_> {
             crate::types::unsizing::Conversion::Nominal { .. } => Err(
                 "nominal coercion promotion requires its checked aggregate conversion plan".into(),
             ),
+            crate::types::unsizing::Conversion::Bound { .. } => {
+                Err("bound unsizing promotion requires its resolved instance conversion".into())
+            }
         }
     }
     pub(super) fn constructor(&self, callee: ValueId) -> Result<Option<(DefId, VariantId)>, Error> {
