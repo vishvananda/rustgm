@@ -147,3 +147,154 @@ fn provider_roots_require_their_actual_prepared_catalog_and_ordinary_mode_needs_
     assert_eq!(result.as_scalar()?, crate::sema::model::Scalar::Integer(7));
     Ok(())
 }
+
+fn promoted_generic() -> TestResult<(crate::resolve::expansion::Report, Declarations, Body)> {
+    let source = crate::test_source::fixture("pa31/tests/spec/promoted-calls/generic-callee.rs")?;
+    let report = crate::test_source::source_provider(&source, "promoted_generic_root")?;
+    let definition = report
+        .resolution
+        .definitions
+        .iter()
+        .position(|definition| report.package.names.get(definition.name) == "word")
+        .and_then(|index| u32::try_from(index).ok())
+        .map(crate::resolve::model::DefId)
+        .ok_or("generic marked word")?;
+    let (facts, mut bodies) =
+        crate::pipeline::execution::materialized_bodies::during(&[definition], || {
+            let crate::pipeline::Analysis {
+                mut facts,
+                prepared,
+            } = crate::pipeline::analyze_source(&report)?;
+            crate::lower::instances::build_roots_prepared(
+                &report,
+                &mut facts,
+                crate::lower::Roots {
+                    entry: None,
+                    exports: &[],
+                },
+                prepared,
+            )?;
+            Ok(facts)
+        })?;
+    let body = bodies.pop().ok_or("checked marked generic body")?;
+    Ok((report, facts, body))
+}
+
+#[test]
+fn generic_marked_promotions_do_not_open_ordinary_function_roots() -> TestResult {
+    let (report, mut facts, body) = promoted_generic()?;
+    let target = body.instance.ok_or("complete marked generic instance")?;
+    let mut catalog = Catalog::default();
+    let index = catalog.insert(&body)?;
+    catalog.functions.insert(target, index);
+    for warm in [false, true] {
+        let evaluator = crate::sema::values::Evaluator::new(&report, &mut facts);
+        let mut machine =
+            const_eval::Machine::catalog(evaluator, &catalog, const_eval::Limits::default());
+        if warm {
+            machine.begin_promoted(&report, index, target, &[])?;
+            let crate::sema::values::execution::Progress::Complete(value) =
+                machine.advance().map_err(|error| error.message)?
+            else {
+                return Err("closed marked promotion did not finish".into());
+            };
+            assert_eq!(value.as_scalar()?, crate::sema::model::Scalar::Integer(7));
+        }
+        let error = machine
+            .begin(index, &[])
+            .err()
+            .ok_or("ordinary generic root executed")?;
+        assert!(
+            error
+                .message
+                .contains("source generic function root execution without a reached caller"),
+            "{}",
+            error.message
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn promoted_roots_reject_open_unmarked_wrong_instances_and_argument_arity() -> TestResult {
+    use crate::types::{Kind, arguments::Argument, instance::Instance};
+    let (report, mut facts, body) = promoted_generic()?;
+    let target = body.instance.ok_or("complete marked generic instance")?;
+    let Kind::FunctionItem {
+        item, signature, ..
+    } = facts.types.kind(target.ty()).ok_or("function item")?
+    else {
+        return Err("function item".into());
+    };
+    let missing = Instance::new(
+        &facts.types,
+        facts.definitions[item.0 as usize].ok_or("open item")?,
+    )?;
+    let parameter = facts
+        .generics
+        .parameters_in_scope(crate::resolve::model::DefId(item.0))
+        .next()
+        .map(|parameter| parameter.argument)
+        .ok_or("generic parameter")?;
+    let open_arguments = facts.types.intern_arguments(&[parameter])?;
+    let open_type = facts.types.intern(Kind::FunctionItem {
+        item,
+        signature,
+        arguments: open_arguments,
+    })?;
+    let open = Instance::new(&facts.types, open_type)?;
+    let unmarked = report
+        .resolution
+        .definitions
+        .iter()
+        .position(|definition| report.package.names.get(definition.name) == "unmarked")
+        .and_then(|index| facts.definitions.get(index).copied().flatten())
+        .ok_or("unmarked function")?;
+    let unmarked = Instance::new(&facts.types, unmarked)?;
+    let arguments =
+        facts
+            .types
+            .intern_arguments(&[Argument::Type(crate::types::TypeId::primitive(
+                crate::types::Primitive::I8,
+            ))])?;
+    let wrong = facts.types.intern(Kind::FunctionItem {
+        item,
+        signature,
+        arguments,
+    })?;
+    let wrong = Instance::new(&facts.types, wrong)?;
+    let mut catalog = Catalog::default();
+    let index = catalog.insert(&body)?;
+    catalog.functions.insert(target, index);
+    catalog.functions.insert(wrong, index);
+    for (instance, expected) in [
+        (open, "closed complete instance"),
+        (missing, "another callable body or complete instance"),
+        (unmarked, "authentic source const promise"),
+        (wrong, "another callable body or complete instance"),
+    ] {
+        let evaluator = crate::sema::values::Evaluator::new(&report, &mut facts);
+        let mut machine =
+            const_eval::Machine::catalog(evaluator, &catalog, const_eval::Limits::default());
+        let error = machine
+            .begin_promoted(&report, index, instance, &[])
+            .err()
+            .ok_or("invalid promoted root executed")?;
+        assert!(error.message.contains(expected), "{error}");
+    }
+    let evaluator = crate::sema::values::Evaluator::new(&report, &mut facts);
+    let mut machine =
+        const_eval::Machine::catalog(evaluator, &catalog, const_eval::Limits::default());
+    let argument = crate::sema::values::Constant::scalar(crate::sema::model::Scalar::Integer(1));
+    let error = machine
+        .begin_promoted(&report, index, target, &[argument])
+        .err()
+        .ok_or("extra promoted argument executed")?;
+    assert!(
+        error
+            .message
+            .contains("constant call argument arity mismatch"),
+        "{error}"
+    );
+    Ok(())
+}

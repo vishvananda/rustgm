@@ -67,6 +67,8 @@ mod owned_operands;
 mod ownership;
 #[path = "../../place_mentions.rs"]
 mod place_mentions;
+#[path = "../../promoted_calls.rs"]
+mod promoted_calls;
 #[path = "../../promotions.rs"]
 mod promotions;
 #[path = "../../helpers/qualify.rs"]

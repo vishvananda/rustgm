@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "declared": "2026-11-16, before either compiler ran on these programs (obj/parallel/alloc-m3/promote/declared.txt). All 3 statuses, both error codes and the native output agree with the declarations.",
+  "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+  "rustc_argv": "RUSTC_BOOTSTRAP=1 rustc +1.98.0 --edition=2024 --crate-type=lib --emit=obj --cap-lints=allow -Cpanic=abort -Copt-level=0",
+  "observer_sha256": {
+    "observe.c": "cf1d7d3c52a6ad5ddcb34b544a0cb7cd5f64c3b590b1578b19dd296b73a1f1d1"
+  },
+  "prefix": "pa31/tests/spec/source-promotable/borrow-required.rs up to its word() declaration",
+  "rustgm_before": "27fa8a47e's maintainer test (promoted_calls::promoted_calls_keep_marked_constant_calls_and_reject_temporaries) rejects marked with rustgm_before at its generic table's borrow; no call was promoted",
+  "cases": {
+    "marked.rs": {
+      "declared": 0,
+      "rustc_status": 0,
+      "rustgm_before": "required lifetime does not outlive its target",
+      "declared_stdout": "5 7 7\n",
+      "native_stdout": "5 7 7\n",
+      "sha256": "2dc93fc3297d5258683972e9da6d7a5b3d2331648de939fd7749ea25faf526b9"
+    },
+    "unmarked.rs": {
+      "declared": 1,
+      "rustc_status": 1,
+      "rustgm_before": "required lifetime does not outlive its target",
+      "rustgm": "required lifetime does not outlive its target",
+      "declared_error": "E0515",
+      "rustc_error": "E0515 cannot return reference to temporary value",
+      "sha256": "216509cea22891d93058f188bc52e70deb21c387e75ee9294b13247c581f0880"
+    },
+    "runtime-argument.rs": {
+      "declared": 1,
+      "rustc_status": 1,
+      "rustgm_before": "required lifetime does not outlive its target",
+      "rustgm": "required lifetime does not outlive its target",
+      "declared_error": "E0515",
+      "rustc_error": "E0515 cannot return reference to temporary value",
+      "sha256": "5a24ee28b1f4428265be34d7c2965eb16966686bda88be6de76f862d2c286762"
+    },
+    "generic-callee.rs": {
+      "declared": 0,
+      "sha256": "59b1d8ee1bd1c5817ee35b5f65e2c3018b1e16ebe6aa763857de9d222ad82b8a",
+      "declared_stdout": "5 7 7\n",
+      "rustc_status": 0
+    },
+    "generic-unmarked.rs": {
+      "declared": 1,
+      "sha256": "02d7da4928cdc0657af19148ff4abe0b37c4eb97c29a4bd88eaf5521bad8aaba",
+      "declared_error": "E0515",
+      "rustc_status": 1
+    },
+    "generic-runtime-argument.rs": {
+      "declared": 1,
+      "sha256": "3219f3c0b952505bb3ad60f6bb044cbbfd7dc68a6a85a31dc679afed4ae6e767",
+      "declared_error": "E0515",
+      "rustc_status": 1
+    }
+  },
+  "generic_callee_declared": "2026-11-16 before independent rustc and candidate execution: closed marked generic callee must promote and print 5 7 7; its unmarked and runtime-argument opponents must reject E0515. Ordinary generic execution roots retain their existing rejection.",
+  "generic_entry_validation": "Private ordinary/conditional/foreign-instance/arity controls: obj/qualification/fast/1794862027886923046; source acceptance/rejection: obj/qualification/fast/1794862193844202614; real core atomics, fmt-floats and slices: 3 declared fresh-directory/empty-environment runs each, obj/parallel/resume-20261116/core-runs/records.json."
+}

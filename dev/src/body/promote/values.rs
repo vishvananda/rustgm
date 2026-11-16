@@ -401,9 +401,77 @@ impl Engine<'_, '_> {
             _ => Evaluated::Deferred,
         }))
     }
+    /// Whether the callee is a `#[rustc_promotable]` const function. A marker
+    /// that is not known present, as an imported one, is not promoted.
+    pub(super) fn promotable(&self, callee: ValueId) -> Result<bool, Error> {
+        let facts = self.evaluator.facts();
+        let Some(Type::FunctionItem { item, .. }) = facts.types.kind(self.value(callee)?.ty) else {
+            return Ok(false);
+        };
+        let definition = DefId(item.0);
+        if !facts.is_const_function(definition) {
+            return Ok(false);
+        }
+        let marker = facts
+            .promotable_contract(self.report, definition)
+            .map_err(Error::Constant)?;
+        Ok(matches!(
+            marker,
+            crate::sema::header_attributes::ContractKnowledge::KnownPresent(_)
+        ))
+    }
+    /// A promotable call with constant arguments executes its const body once
+    /// per closed instance, as rustc evaluates a promoted constant; a generic
+    /// caller defers it to each instance. Without the checked execution
+    /// service the borrow keeps its temporary storage.
+    fn promoted_call(
+        &mut self,
+        callee: ValueId,
+        arguments: ValueList,
+    ) -> Result<Option<Evaluated>, Error> {
+        if !self.promotable(callee)? {
+            return Ok(None);
+        }
+        let Some(function) = self.ready(Key::Value(callee))? else {
+            return Ok(None);
+        };
+        let ids = self
+            .body
+            .arguments
+            .get(arguments.start as usize..arguments.end as usize)
+            .ok_or("invalid promotion argument range")?;
+        self.charge(ids.len())?;
+        let mut values = Vec::with_capacity(ids.len());
+        for &id in ids {
+            let Some(value) = self.ready(Key::Value(id))? else {
+                return Ok(None);
+            };
+            values.extend(value.value.constant());
+        }
+        let types = &self.evaluator.facts().types;
+        let instance = match function.value.constant().and_then(Constant::as_function) {
+            Some(instance)
+                if values.len() == ids.len()
+                    && types.contains_parameters(instance.ty()) == Some(false)
+                    && !self.associated_value_deferred()? =>
+            {
+                instance
+            }
+            _ => return Ok(Some(Evaluated::Deferred)),
+        };
+        if self.evaluator.facts().constant_executor.is_none() {
+            return Ok(None);
+        }
+        let value = self
+            .evaluator
+            .promoted_call(instance, values)
+            .map_err(Error::Constant)?
+            .ok_or("promoted call awaits an incomplete declaration fact")?;
+        Ok(Some(Evaluated::Constant(value)))
+    }
     fn call(&mut self, callee: ValueId, arguments: ValueList) -> Result<Option<Evaluated>, Error> {
         let Some((definition, variant)) = self.constructor(callee)? else {
-            return Ok(None);
+            return self.promoted_call(callee, arguments);
         };
         let Some(value) = self.ready(Key::Value(callee))? else {
             return Ok(None);

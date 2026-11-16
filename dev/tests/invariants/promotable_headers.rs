@@ -1,4 +1,5 @@
-//! Real source promises retain owner/const witnesses without authorizing borrow promotion.
+//! Real source promises retain owner/const witnesses; only the promotion
+//! engine promotes a marked call's borrow.
 use super::*;
 use crate::{
     pipeline,
@@ -101,14 +102,31 @@ fn source_marker_keeps_const_unsafe_and_promotion_boundaries_distinct() -> TestR
             assert!(message.contains(expected), "{name}: {message}");
         }
     }
-    let source = input("borrow-required")?;
+    // The marked call's constant result is promoted to permanent storage, as
+    // rustc promotes it; without the marker the borrow keeps temporary
+    // storage and the lifetime proof rejects the static return (E0515).
+    lower_borrowed("borrow-required")?;
+    let error = lower_borrowed("borrow-unmarked")
+        .err()
+        .ok_or("an unmarked call's borrow was promoted")?;
+    assert!(
+        error
+            .to_string()
+            .contains("required lifetime does not outlive its target"),
+        "{error}"
+    );
+    Ok(())
+}
+/// Lower the packet case's `borrowed` function.
+fn lower_borrowed(name: &str) -> TestResult {
+    let source = input(name)?;
     let report = report(&source, "promotable_borrow")?;
     let pipeline::Analysis {
         mut facts,
         prepared,
     } = pipeline::analyze_source(&report)?;
     let borrowed = function(&report, "borrowed")?;
-    let error = crate::lower::instances::build_roots_prepared(
+    crate::lower::instances::build_roots_prepared(
         &report,
         &mut facts,
         crate::lower::Roots {
@@ -116,17 +134,7 @@ fn source_marker_keeps_const_unsafe_and_promotion_boundaries_distinct() -> TestR
             exports: &[borrowed],
         },
         prepared,
-    )
-    .err()
-    .ok_or("borrow promotion silently granted")?;
-    // The marked call is not evaluated for promotion, so its borrow keeps
-    // temporary storage and the lifetime proof rejects the static return.
-    assert!(
-        error
-            .to_string()
-            .contains("required lifetime does not outlive its target"),
-        "{error}"
-    );
+    )?;
     Ok(())
 }
 #[test]

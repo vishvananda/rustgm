@@ -331,6 +331,9 @@ impl Engine {
             })();
             checked.map_err(|e| Error::at(FileId(0), 0, e))?;
         }
+        if let Target::PromotedFunction(instance) = request.target {
+            Evaluator::new(report, facts).check_promoted_instance(instance)?;
+        }
         if let Some(&value) = self.completed.get(request) {
             self.check_completed_expression(facts, request.target)
                 .map_err(|e| Error::at(FileId(0), 0, e))?;
@@ -345,8 +348,7 @@ impl Engine {
                 }
                 session.waiting = None;
             }
-            let target = request.target;
-            let root = match awaiting(facts, |facts| self.root(report, facts, target))? {
+            let root = match awaiting(facts, |facts| self.root(report, facts, request.target))? {
                 Ok(root) => root,
                 Err(waiting) => {
                     session.waiting = Some(waiting);
@@ -365,6 +367,8 @@ impl Engine {
             );
             if let Some(state) = session.state {
                 machine.restore(state);
+            } else if let Target::PromotedFunction(instance) = request.target {
+                machine.begin_promoted(report, root, instance, &request.arguments)?;
             } else {
                 machine
                     .begin(root, &request.arguments)
@@ -385,11 +389,7 @@ impl Engine {
                         facts.constant_work.peak_frames.max(work.peak_frames);
                     facts.constant_work.peak_slots =
                         facts.constant_work.peak_slots.max(work.peak_slots);
-                    facts.constant_work.code_bytes = self.catalog.bytes.saturating_add(
-                        self.const_calls
-                            .as_deref()
-                            .map_or(0, const_eval::use_inputs::Inputs::retained_bytes),
-                    );
+                    self.refresh_code_bytes(facts);
 
                     self.completed.insert(request.clone(), value);
                     return Ok(Progress::Complete(value));

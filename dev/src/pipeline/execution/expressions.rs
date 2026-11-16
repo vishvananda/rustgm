@@ -57,6 +57,19 @@ impl Engine {
             // source, type, kind and canonical Code before reusing proof.
             return self.initializer_root(report, facts, definition);
         }
+        if let Target::Function(instance) | Target::PromotedFunction(instance) = target {
+            // A promoted call runs its checked const body with its arguments.
+            let error = |message| Error::at(crate::resolve::unit::FileId(0), 0, message);
+            if !self.function(report, facts, instance)? {
+                return Err(error("promoted call body is not ready"));
+            }
+            return self
+                .catalog
+                .functions
+                .get(&instance)
+                .copied()
+                .ok_or_else(|| error("promoted call lost its executable body"));
+        }
         if let Target::Expression {
             source,
             context: Some(_),

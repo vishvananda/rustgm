@@ -40,6 +40,7 @@ pub(crate) use structure::FieldRecipe;
 pub use structure::FieldTypes;
 mod array_storage;
 mod inline;
+mod promoted_calls;
 mod union_storage;
 mod validation;
 pub(crate) use super::instances::Completed;

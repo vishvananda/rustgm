@@ -7,9 +7,9 @@ functions are ordinary authored bodies, not replacements for mem::size_of or SIZ
 Required CTFE and ordinary calls must still execute those bodies and enforce unsafe,
 const and API checks. Separate C observation expects 7 8 9.
 
-Pinned Rust accepts returning a static reference to the marked call. That valid
-borrow-promotion exit remains explicitly Required in the initial RustGM source-header
-checkpoint; no permanent storage or fake promotion is granted. The missing-pair,
+Pinned Rust accepts returning a static reference to the marked call. The header
+promise itself grants no permanent storage; the promotion engine promotes that
+borrow by executing the marked call (see `../promoted-calls/`). The missing-pair,
 nonconst and unsafe-call controls remain language failures. Other const-policy owners
 and foreign promotion transport retain their existing explicit unsupported boundaries.
 
@@ -17,5 +17,6 @@ and foreign promotion transport retain their existing explicit unsupported bound
 initializer. The marked form is Rust-positive; `borrow-unmarked.rs` retains the
 explicit const initializer but removes only the actual `word` marker and fails
 E0515. Candidate tests must demand the `borrowed` function body through lowering;
-header/source analysis alone is not a promotion observation. Genuine marked
-function-call promotion remains an explicit consumer requirement.
+header/source analysis alone is not a promotion observation. The private guard
+lowers `borrowed` from both: the marked borrow is promoted and the unmarked one
+is rejected. `contract.json` records the files at its revision.

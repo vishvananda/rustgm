@@ -98,11 +98,12 @@ impl Engine<'_, '_> {
                 Rvalue::Call {
                     callee, arguments, ..
                 } => {
-                    if self.constructor(callee)?.is_none() {
-                        // No call is promoted yet, marked promotable or not.
-                        // Its borrow keeps ordinary temporary storage, so the
-                        // lifetime and loan proofs reject every use that
-                        // needed the promotion; nothing is granted here.
+                    if self.constructor(callee)?.is_none() && !self.promotable(callee)? {
+                        // As rustc's `validate_call`, runtime code promotes
+                        // only `#[rustc_promotable]` const functions. Any
+                        // other call's borrow keeps ordinary temporary
+                        // storage, so the lifetime and loan proofs reject
+                        // every use that needed the promotion.
                         return Ok(false);
                     }
                     self.push(Key::Value(callee))?;

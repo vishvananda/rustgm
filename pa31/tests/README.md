@@ -1180,6 +1180,17 @@ out of a `Drop` content (E0509), assigning through an immutable box (E0594)
 and converting to a trait the content does not implement (E0277) reject. A maintainer
 integration test checks every case. There is no graded manifest.
 
+`spec/promoted-calls/` freezes six declared no_core programs that return a
+borrowed const function call as `'static`. A `#[rustc_promotable]` call with
+constant arguments, in a concrete and in a generic function, is promoted, as
+rustc promotes alloc's `&RawWakerVTable::new(..)`, and runs against a C
+observer. An unmarked const function and a marked call with a runtime argument
+keep their temporaries and reject (E0515). A maintainer integration test checks
+every case. `generic-callee.rs`, `generic-unmarked.rs` and
+`generic-runtime-argument.rs` repeat the contract with a type parameter on
+the callee itself. Every input is declared in `outcomes.json`. There is no
+graded manifest.
+
 `spec/tagged-option-constants/` freezes three declared no_core programs that
 read `Option<u8>` and `Option<u32>`, whose one-byte tag rustc keeps where the
 payload has no niche, from bytes in constants: integers transmuted to both
