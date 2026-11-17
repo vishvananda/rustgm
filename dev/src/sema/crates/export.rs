@@ -188,6 +188,7 @@ fn validate_profile(
     facts: &Declarations,
     identity: &CrateIdentity,
 ) -> Result<(), Error> {
+    facts.require_deprecated_safe_transport()?;
     facts
         .require_declaration_policy_transport(report)
         .map_err(error)?;

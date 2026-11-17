@@ -230,8 +230,7 @@ impl Checker<'_> {
         let result = self.child(node, signature, 1)?;
         self.equate(node, result, pending.subject)?;
         self.retain_language_method(node, method, callable, pending.subject);
-        let target_function = self.selected_target_function(node, callable)?;
-        self.retain_active_call(node, signature, target_function)?;
+        self.retain_active_call(node, signature, callable)?;
         self.finish_call(node)
     }
     fn formatting_selector(&self, node: NodeId) -> Result<(LangItem, &'static str), Error> {

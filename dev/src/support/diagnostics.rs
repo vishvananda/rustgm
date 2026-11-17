@@ -40,6 +40,7 @@ pub enum WarningCode {
     UnsafeOpInUnsafeFn,
     StaticMutRefs,
     DangerousImplicitAutorefs,
+    DeprecatedSafe2024,
 }
 impl WarningCode {
     #[must_use]
@@ -63,6 +64,7 @@ impl WarningCode {
             Self::UnsafeOpInUnsafeFn => "unsafe_op_in_unsafe_fn",
             Self::StaticMutRefs => "static_mut_refs",
             Self::DangerousImplicitAutorefs => "dangerous_implicit_autorefs",
+            Self::DeprecatedSafe2024 => "deprecated_safe_2024",
         }
     }
 }

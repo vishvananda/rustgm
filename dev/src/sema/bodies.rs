@@ -2418,7 +2418,7 @@ impl Checker<'_> {
         else {
             return Err(self.error(node, "call requires a known function type"));
         };
-        self.target_call_permission(node, active.target_function, unsafe_)?;
+        self.target_call_permission(node, active.policy_function, unsafe_)?;
         if bound_regions != 0 {
             return Err(self.error(node, "lifetime-polymorphic call retains an unopened binder"));
         }
@@ -2606,8 +2606,7 @@ impl Checker<'_> {
         } else {
             self.invocation_signature(node, callee, arguments)?
         };
-        let target_function = self.selected_target_function(node, receiver)?;
-        self.retain_active_call(node, term, target_function)?;
+        self.retain_active_call(node, term, receiver)?;
         let Some(Constructor::Function { parameters, .. }) = self.head(node, term)? else {
             return Err(self.error(node, "call requires a known function type"));
         };

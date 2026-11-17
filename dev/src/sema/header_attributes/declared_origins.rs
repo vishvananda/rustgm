@@ -18,7 +18,9 @@ mod tracking;
 pub(in crate::sema) use tracking::{consume_tracking, inherit_tracking};
 mod internal_constness;
 pub(in crate::sema) use internal_constness::{consume_const_panic, consume_inherited_overflow};
+mod deprecated_safe;
 mod implicit_receivers;
+pub(in crate::sema) use deprecated_safe::consume as consume_deprecated_safe_2024;
 pub(in crate::sema) use implicit_receivers::{
     consume_no_implicit_autorefs, consume_pointer_lint, consume_query_instability,
 };
@@ -65,6 +67,7 @@ struct Promises {
     dispatch: Option<Box<skipped_traits::Marker>>,
     optimization: Option<Box<optimization::Marker>>,
     policy: Option<Box<definition_policy::Marker>>,
+    deprecated_safe_2024: Option<Box<deprecated_safe::Marker>>,
 }
 struct Owner {
     key: NodeKey,
@@ -82,6 +85,7 @@ pub(super) struct Headers {
     first_skipped_trait: Option<DefId>,
     first_optimization: Option<NodeKey>,
     first_policy: Option<DefId>,
+    first_deprecated_safe_2024: Option<NodeKey>,
     bytes: Cell<usize>,
     pub(super) steps: Cell<usize>,
     bound: InputBound,
@@ -422,6 +426,7 @@ pub(in crate::sema) fn bind_definition(
         return Ok(());
     }
     tracking::validate_intrinsic_annotations(report, facts, definition, declaration)?;
+    deprecated_safe::bind(report, facts, definition, declaration)?;
     promotability::bind(report, facts, definition, declaration)?;
     comptime::bind(report, facts, definition, declaration)?;
     nonconst_members::bind(report, facts, definition, declaration)?;

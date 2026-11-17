@@ -217,7 +217,10 @@ impl<S: Sources> Engine<'_, S> {
             )?;
             return Ok(true);
         }
-        if name.and_then(Consumer::named) == Some(Consumer::QueryInstabilityAdvisory) {
+        if matches!(
+            name.and_then(Consumer::named),
+            Some(Consumer::QueryInstabilityAdvisory | Consumer::DeprecatedSafe2024)
+        ) {
             return Ok(self.loader.package.source_core().is_some());
         }
         Ok(matches!(input, Input::Doc(_))

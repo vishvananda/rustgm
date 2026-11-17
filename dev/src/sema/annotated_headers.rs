@@ -14,11 +14,12 @@ pub(in crate::sema) use local::optimization::check_inline;
 pub use local::optimization::{Optimization, OptimizationView};
 pub use local::skipped_traits::{DispatchPolicy, DispatchPolicyView};
 pub(in crate::sema) use local::{
-    consume_comptime, consume_const_panic, consume_declaration_policy, consume_incoherent_target,
-    consume_inherited_overflow, consume_legacy_indices, consume_no_implicit_autorefs,
-    consume_nonconst_member, consume_optimization, consume_pointer_lint, consume_promotable,
-    consume_query_instability, consume_skipped_dispatch, consume_tracking, forced_dyn_policy,
-    fundamental_policy, inherit_tracking, marker_trait,
+    consume_comptime, consume_const_panic, consume_declaration_policy,
+    consume_deprecated_safe_2024, consume_incoherent_target, consume_inherited_overflow,
+    consume_legacy_indices, consume_no_implicit_autorefs, consume_nonconst_member,
+    consume_optimization, consume_pointer_lint, consume_promotable, consume_query_instability,
+    consume_skipped_dispatch, consume_tracking, forced_dyn_policy, fundamental_policy,
+    inherit_tracking, marker_trait,
 };
 #[cfg(test)]
 pub(crate) use local::{lowering_costs, source_contract_bound, source_contract_costs};

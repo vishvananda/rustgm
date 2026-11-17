@@ -157,8 +157,7 @@ impl Checker<'_> {
         else {
             return Err(self.error(node, "inclusive constructor requires two actual inputs"));
         };
-        let target = self.selected_target_function(node, callable)?;
-        self.retain_active_call(node, signature, target)?;
+        self.retain_active_call(node, signature, callable)?;
         let result = self.child(node, signature, 2)?;
         if let Some(expected) = expected {
             self.shape_equation(node, result, expected)?;

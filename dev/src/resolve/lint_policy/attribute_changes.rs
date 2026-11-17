@@ -581,6 +581,7 @@ fn lints(forest: &Forest, source: &str, index: u32) -> &'static [Lint] {
         Some("ineffective_unstable_trait_impl") => &[Lint::IneffectiveUnstableTraitImpl],
         Some("unfulfilled_lint_expectations") => &[Lint::UnfulfilledExpectations],
         Some("unsafe_op_in_unsafe_fn") => &[Lint::Operation],
+        Some("deprecated_safe_2024" | "deprecated_safe") => &[Lint::DeprecatedSafe2024],
         Some("static_mut_refs") => &[Lint::Reference],
         Some("dangerous_implicit_autorefs") => &[Lint::DangerousImplicitAutorefs],
         Some("invalid_atomic_ordering") => &[Lint::AtomicOrdering],

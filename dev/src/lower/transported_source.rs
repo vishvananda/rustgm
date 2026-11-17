@@ -255,6 +255,7 @@ impl Source {
         profile: super::instances::SourcePublication,
     ) -> Result<(Self, Option<s::ModuleContractRows>), crate::resolve::package::Error> {
         let legacy_error = |message: &'static str| report.body_optional_error(None, message);
+        facts.require_deprecated_safe_transport()?;
         match profile {
             super::instances::SourcePublication::ProvidedContracts => Ok((
                 Self::begin_trait_numbered(report, facts, checked, identity)?,

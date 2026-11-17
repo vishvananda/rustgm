@@ -26,6 +26,8 @@ pub(crate) struct Policy {
     pub(crate) operation: Level,
     pub(crate) reference: Level,
     pub(crate) dangerous_autorefs: Level,
+    pub(crate) deprecated_safe_2024: Level,
+    pub(crate) operation_explicit: bool,
     pub(crate) atomic_ordering: Level,
     pub(crate) unreachable_patterns: Level,
     pub(crate) must_use: Level,
@@ -38,7 +40,7 @@ pub(crate) struct Policy {
     pub(crate) unfulfilled: Level,
     pub(crate) hidden_glob_reexports: Level,
     pub(crate) ineffective_unstable_trait_impl: Level,
-    expectations: [Option<ExpectationId>; 17],
+    expectations: [Option<ExpectationId>; 18],
     pub(crate) deprecated_origin: Option<producer::Tail>,
     pub(crate) deprecation_explicit: bool,
 }
@@ -53,6 +55,7 @@ impl Policy {
             operation: Level::Allow,
             reference: Level::Allow,
             dangerous_autorefs: Level::Allow,
+            deprecated_safe_2024: Level::Allow,
             atomic_ordering: Level::Allow,
             unreachable_patterns: Level::Allow,
             must_use: Level::Allow,
@@ -72,6 +75,8 @@ impl Policy {
         operation: Level::Warn,
         reference: Level::Deny,
         dangerous_autorefs: Level::Deny,
+        deprecated_safe_2024: Level::Allow,
+        operation_explicit: false,
         atomic_ordering: Level::Deny,
         unreachable_patterns: Level::Warn,
         must_use: Level::Warn,
@@ -84,7 +89,7 @@ impl Policy {
         unfulfilled: Level::Warn,
         hidden_glob_reexports: Level::Warn,
         ineffective_unstable_trait_impl: Level::Deny,
-        expectations: [None; 17],
+        expectations: [None; 18],
         deprecated_origin: None,
         deprecation_explicit: false,
     };
@@ -111,6 +116,7 @@ pub(crate) enum Lint {
     HiddenGlobReexports,
     IneffectiveUnstableTraitImpl,
     DangerousImplicitAutorefs,
+    DeprecatedSafe2024,
 }
 pub(crate) struct Change {
     pub(crate) lint: Lint,
@@ -140,6 +146,9 @@ impl Policy {
         if change.lint == Lint::Deprecated {
             self.deprecation_explicit = true;
         }
+        if change.lint == Lint::Operation {
+            self.operation_explicit = true;
+        }
         let level = match change.lint {
             Lint::Deprecated => &mut self.deprecated,
             Lint::HiddenGlobReexports => &mut self.hidden_glob_reexports,
@@ -148,6 +157,7 @@ impl Policy {
             Lint::Operation => &mut self.operation,
             Lint::Reference => &mut self.reference,
             Lint::DangerousImplicitAutorefs => &mut self.dangerous_autorefs,
+            Lint::DeprecatedSafe2024 => &mut self.deprecated_safe_2024,
             Lint::AtomicOrdering => &mut self.atomic_ordering,
             Lint::UnreachablePatterns => &mut self.unreachable_patterns,
             Lint::MustUse => &mut self.must_use,
@@ -232,6 +242,7 @@ impl Lint {
             Self::HiddenGlobReexports => 14,
             Self::IneffectiveUnstableTraitImpl => 15,
             Self::DangerousImplicitAutorefs => 16,
+            Self::DeprecatedSafe2024 => 17,
         }
     }
 }
@@ -265,6 +276,7 @@ impl Lint {
             W::UnsafeOpInUnsafeFn => Self::Operation,
             W::StaticMutRefs => Self::Reference,
             W::DangerousImplicitAutorefs => Self::DangerousImplicitAutorefs,
+            W::DeprecatedSafe2024 => Self::DeprecatedSafe2024,
             W::UnstableSyntaxPreExpansion => return None,
         })
     }
@@ -276,4 +288,4 @@ impl Lint {
     }
 }
 
-const _: [(); 160] = [(); size_of::<Policy>()];
+const _: [(); 168] = [(); size_of::<Policy>()];

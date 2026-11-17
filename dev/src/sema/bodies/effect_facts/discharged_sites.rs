@@ -19,7 +19,26 @@ pub(super) struct Site {
     pub context: SourceCallUse,
     pub node: NodeId,
     pub signature: TypeId,
-    pub kind: CallSafety,
+    kind: Authority,
+}
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Authority {
+    Lexical(CallSafety),
+    DeprecatedSafe2024(crate::resolve::model::DefId),
+}
+impl Authority {
+    fn completed(kind: PendingKind) -> Result<Self, &'static str> {
+        match kind {
+            PendingKind::Discharged(CallSafety::Safe) => {
+                Err("unsafe call retained an absent lexical obligation")
+            }
+            PendingKind::Discharged(kind) => Ok(Self::Lexical(kind)),
+            PendingKind::DeprecatedSafe2024(definition) => Ok(Self::DeprecatedSafe2024(definition)),
+            PendingKind::IndexContext(_) => {
+                Err("index lexical context was not discharged for its actual call")
+            }
+        }
+    }
 }
 impl Site {
     fn key(self) -> (u32, u32, u32) {
@@ -65,14 +84,23 @@ impl SourceCallUse {
             .call_contexts()
             .and_then(|contexts| contexts.safety.as_deref());
         let key = (self.0.get(), node.get(), signature.0);
-        Ok(rows
-            .and_then(|rows| {
-                rows.sites
-                    .binary_search_by_key(&key, |site| site.key())
-                    .ok()
-                    .map(|i| rows.sites[i].kind)
-            })
-            .unwrap_or(CallSafety::Safe))
+        match rows.and_then(|rows| {
+            rows.sites
+                .binary_search_by_key(&key, |site| site.key())
+                .ok()
+                .map(|i| rows.sites[i].kind)
+        }) {
+            None => Ok(CallSafety::Safe),
+            Some(Authority::Lexical(kind)) => Ok(kind),
+            Some(Authority::DeprecatedSafe2024(definition))
+                if facts.is_deprecated_safe_2024(definition) =>
+            {
+                Err("deprecated_safe_2024 call requires its selected declaration and edition proof")
+            }
+            Some(Authority::DeprecatedSafe2024(_)) => {
+                Err("deprecated_safe_2024 call lost its selected source marker")
+            }
+        }
     }
 }
 
@@ -204,15 +232,7 @@ impl Checker<'_> {
                 continue;
             };
             let row = pending.rows[index];
-            let PendingKind::Discharged(kind) = row.kind else {
-                return Err(self.error(
-                    node,
-                    "index lexical context was not discharged for its actual call",
-                ));
-            };
-            if kind == CallSafety::Safe {
-                return Err(self.error(node, "unsafe call retained an absent lexical obligation"));
-            }
+            let kind = Authority::completed(row.kind).map_err(|reason| self.error(node, reason))?;
             let Some(signature) = self.unsafe_callee(solved, node, term)? else {
                 continue;
             };

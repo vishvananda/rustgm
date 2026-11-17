@@ -356,6 +356,17 @@ impl Policies {
     pub(super) fn operation(&self, key: NodeKey) -> Level {
         self.at(key).operation
     }
+    pub(super) fn old_unsafe_operation(&self, key: NodeKey) -> Level {
+        let policy = self.at(key);
+        if policy.operation_explicit {
+            policy.operation
+        } else {
+            Level::Allow
+        }
+    }
+    pub(super) fn deprecated_safe_2024(&self, key: NodeKey) -> Level {
+        self.at(key).deprecated_safe_2024
+    }
     pub(super) fn dangerous_autorefs(&self, key: NodeKey) -> Level {
         self.at(key).dangerous_autorefs
     }

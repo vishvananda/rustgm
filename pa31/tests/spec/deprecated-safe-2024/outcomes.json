@@ -1,0 +1,199 @@
+{
+  "state": "Pinned independent outcomes passed. RustGM local Source compatibility and publication boundary passed focused checks.",
+  "profile": "Pinned installed Rust 88d9 edition per case, metadata only, never execute calls; preserve lint levels (do not cap to allow).",
+  "cases": [
+    {
+      "name": "direct-2021",
+      "input": "cases/direct-2021.rs",
+      "edition": 2021,
+      "status": 0,
+      "cause": null,
+      "sha256": "968b30b3f606cf2ec56add1fc25a8516197fe9c0df30f9cb5b447185baae4727",
+      "rustgm_scope": "actual local Source headers and bodies"
+    },
+    {
+      "name": "direct-2024",
+      "input": "cases/direct-2024.rs",
+      "edition": 2024,
+      "status": 1,
+      "cause": "E0133",
+      "sha256": "968b30b3f606cf2ec56add1fc25a8516197fe9c0df30f9cb5b447185baae4727",
+      "rustgm_scope": "actual local Source headers and bodies"
+    },
+    {
+      "name": "deny-migration-2021",
+      "input": "cases/deny-migration-2021.rs",
+      "edition": 2021,
+      "status": 1,
+      "cause": "deprecated_safe_2024",
+      "sha256": "32409b4d8ec8de98f9bab7d44e05f852945b33ba10d5ac132a608beaca6e82c5",
+      "rustgm_scope": "actual local Source headers and bodies"
+    },
+    {
+      "name": "explicit-2024",
+      "input": "cases/explicit-2024.rs",
+      "edition": 2024,
+      "status": 0,
+      "cause": null,
+      "sha256": "7c8e8de79590c1b191c1306b12948cba38a825c3a0c542e4e765edeea1b4d609",
+      "rustgm_scope": "actual local Source headers and bodies"
+    },
+    {
+      "name": "pointer-2021",
+      "input": "cases/pointer-2021.rs",
+      "edition": 2021,
+      "status": 1,
+      "cause": "E0133",
+      "sha256": "770108142c860ec7418c50c4045774e91de601f88dd1ffd6faf73e726e2c5943",
+      "rustgm_scope": "actual local Source headers and bodies"
+    },
+    {
+      "name": "safe-pointer-conversion-2021",
+      "input": "cases/safe-pointer-conversion-2021.rs",
+      "edition": 2021,
+      "status": 1,
+      "cause": "E0308",
+      "sha256": "e8167f29c5e048edc5dbad4d3178d6c371016f624e16f0d5442fcdf1daf20bcc",
+      "rustgm_scope": "actual local Source headers and bodies"
+    },
+    {
+      "name": "unmarked-2021",
+      "input": "cases/unmarked-2021.rs",
+      "edition": 2021,
+      "status": 1,
+      "cause": "E0133",
+      "sha256": "d035bdc248b55c39b016640372772367457b5343f60034f8e5d2933cb7d6d7cc",
+      "rustgm_scope": "actual local Source headers and bodies"
+    },
+    {
+      "name": "associated-2021",
+      "input": "cases/associated-2021.rs",
+      "edition": 2021,
+      "status": 0,
+      "cause": null,
+      "sha256": "c27e25dff92d99d42ea03b6c40e6f1e27d84a19025a128ddb5cf21f531a7abfb",
+      "rustgm_scope": "actual local Source headers and bodies"
+    },
+    {
+      "name": "associated-2024",
+      "input": "cases/associated-2024.rs",
+      "edition": 2024,
+      "status": 1,
+      "cause": "E0133",
+      "sha256": "c27e25dff92d99d42ea03b6c40e6f1e27d84a19025a128ddb5cf21f531a7abfb",
+      "rustgm_scope": "actual local Source headers and bodies"
+    },
+    {
+      "name": "missing-request",
+      "input": "cases/missing-request.rs",
+      "edition": 2024,
+      "status": 1,
+      "cause": "rustc_attrs",
+      "sha256": "0b400709a37706d139b36db0f9e1e8b1bb23536288763652a888f51226b1377a",
+      "rustgm_scope": "actual local Source headers and bodies"
+    },
+    {
+      "name": "missing-list",
+      "input": "cases/missing-list.rs",
+      "edition": 2024,
+      "status": 1,
+      "cause": "rustc_deprecated_safe_2024",
+      "sha256": "e8f60c89314e4dfbf5637b7018ad199d6772cdc1b0cdf80526f517b1c2cf0686",
+      "rustgm_scope": "actual local Source headers and bodies"
+    },
+    {
+      "name": "wrong-key",
+      "input": "cases/wrong-key.rs",
+      "edition": 2024,
+      "status": 1,
+      "cause": "audit_that",
+      "sha256": "319a1109f4fdca8477a7f2d00ea2da5f7759f6c385a3bb81e67f409a7a9f5417",
+      "rustgm_scope": "actual local Source headers and bodies"
+    },
+    {
+      "name": "non-string",
+      "input": "cases/non-string.rs",
+      "edition": 2024,
+      "status": 1,
+      "cause": "string",
+      "sha256": "3e5f2afdef020b0e9d1361fe453ca09be592009b3dc95f308ba1a437f2c9e5ac",
+      "rustgm_scope": "actual local Source headers and bodies"
+    },
+    {
+      "name": "wrong-owner",
+      "input": "cases/wrong-owner.rs",
+      "edition": 2024,
+      "status": 1,
+      "cause": "rustc_deprecated_safe_2024",
+      "sha256": "f62fa8ce4a9f806a7f40fe3399458d552c565c144f2abcc703edbd3f87e489c4",
+      "rustgm_scope": "actual local Source headers and bodies"
+    },
+    {
+      "name": "foreign-owner",
+      "input": "cases/foreign-owner.rs",
+      "edition": 2024,
+      "status": 1,
+      "cause": "rustc_deprecated_safe_2024",
+      "sha256": "8079867c608a9ba260087db7ee5171bb4276a9a85917fe69b38eb22d751afc49",
+      "rustgm_scope": "actual local Source headers and bodies"
+    },
+    {
+      "name": "disabled",
+      "input": "cases/disabled.rs",
+      "edition": 2024,
+      "status": 0,
+      "cause": null,
+      "sha256": "8c3f52646153f6ae84b8a937c046faf774bc1182db9d3af772b0cc98d0bc57e4",
+      "rustgm_scope": "actual local Source headers and bodies"
+    },
+    {
+      "name": "imported-std-2021",
+      "input": "cases/imported-std-2021.rs",
+      "edition": 2021,
+      "status": 0,
+      "cause": null,
+      "sha256": "f50428b102d8c04519727851d2a95a915b62d7f963103a5f1bf15e90bbeaa455",
+      "rustgm_scope": "future imported std transport"
+    },
+    {
+      "name": "imported-std-2024",
+      "input": "cases/imported-std-2024.rs",
+      "edition": 2024,
+      "status": 1,
+      "cause": "E0133",
+      "sha256": "f50428b102d8c04519727851d2a95a915b62d7f963103a5f1bf15e90bbeaa455",
+      "rustgm_scope": "future imported std transport"
+    }
+  ],
+  "independent_qualification": {
+    "declared_sha256": "21146f6066dc1311cdbf3dfb880e649a5fd10926527713c7c9850e392cffb7c1",
+    "receipt_sha256": "285813513b8b6ec90696998ccda280ebfa4da52bccf26fe8ae604a02b72c55d4",
+    "statuses": {
+      "direct-2021": 0,
+      "direct-2024": 1,
+      "deny-migration-2021": 1,
+      "explicit-2024": 0,
+      "pointer-2021": 1,
+      "safe-pointer-conversion-2021": 1,
+      "unmarked-2021": 1,
+      "associated-2021": 0,
+      "associated-2024": 1,
+      "missing-request": 1,
+      "missing-list": 1,
+      "wrong-key": 1,
+      "non-string": 1,
+      "wrong-owner": 1,
+      "foreign-owner": 1,
+      "disabled": 0,
+      "imported-std-2021": 0,
+      "imported-std-2024": 1
+    }
+  },
+  "candidate_qualification": {
+    "fastcheck": "1794949151363946005",
+    "status": 0,
+    "scope": "16 local physical Source cases including all reached positive lowering, and actual authored and scalar publication boundary.",
+    "controls": "Existing scoped unsafe lints and overloaded Deref unsafe method controls passed in 1794949026634815699. That batch's new fixture setup did not match the Source role contract.",
+    "pending": "Imported std metadata, macro-composed call origins and const compatibility transport."
+  }
+}

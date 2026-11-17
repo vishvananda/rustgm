@@ -2,6 +2,153 @@
 use crate::semantic;
 use crate::source_cases as source;
 
+fn deprecated_safe_source(
+    name: &str,
+    edition: rustgm::support::edition::Edition,
+) -> Result<rustgm::resolve::expansion::Report, Box<dyn std::error::Error>> {
+    let fixture = crate::resolve::fixture(&format!(
+        "pa31/tests/spec/deprecated-safe-2024/cases/{name}.rs"
+    ))?;
+    let source = if name == "missing-request" {
+        format!("#![feature(no_core)]\n#![no_core]\n{fixture}")
+    } else {
+        let provider = crate::resolve::fixture(
+            "pa31/tests/spec/source-functions-transport/minimal-provider.rs",
+        )?;
+        let attributes = fixture
+            .split_inclusive('\n')
+            .take_while(|line| line.starts_with("#!["))
+            .map(str::len)
+            .sum();
+        let (attributes, declarations) = fixture.split_at(attributes);
+        format!("{attributes}{provider}{declarations}")
+    };
+    let config = rustgm::expand::config::Config::in_edition(edition);
+    Ok(crate::resolve::source_provider_config(
+        &source,
+        "deprecated_safe_2024",
+        &config,
+    )?)
+}
+
+#[test]
+fn deprecated_safe_2024_requires_the_actual_direct_callee_and_call_edition()
+-> Result<(), Box<dyn std::error::Error>> {
+    use rustgm::support::edition::Edition::{Rust2021, Rust2024};
+
+    const UNSAFE_CALL: &str = "call to unsafe function requires an unsafe context";
+    for (name, edition, expected) in [
+        ("direct-2021", Rust2021, None),
+        ("direct-2024", Rust2024, Some(UNSAFE_CALL)),
+        (
+            "deny-migration-2021",
+            Rust2021,
+            Some("deprecated_safe_2024 call"),
+        ),
+        ("explicit-2024", Rust2024, None),
+        ("pointer-2021", Rust2021, Some(UNSAFE_CALL)),
+        ("safe-pointer-conversion-2021", Rust2021, Some("callable")),
+        ("unmarked-2021", Rust2021, Some(UNSAFE_CALL)),
+        ("associated-2021", Rust2021, None),
+        ("associated-2024", Rust2024, Some(UNSAFE_CALL)),
+        (
+            "missing-request",
+            Rust2024,
+            Some("requires the rustc_attrs source profile"),
+        ),
+        ("missing-list", Rust2024, Some("requires one audit_that")),
+        ("wrong-key", Rust2024, Some("requires one audit_that")),
+        ("non-string", Rust2024, Some("requires a string literal")),
+        (
+            "wrong-owner",
+            Rust2024,
+            Some("requires a function or method"),
+        ),
+        (
+            "foreign-owner",
+            Rust2024,
+            Some("requires a nonforeign function or method"),
+        ),
+        ("disabled", Rust2024, None),
+    ] {
+        let report = deprecated_safe_source(name, edition)?;
+        let outcome = rustgm::pipeline::analyze_source(&report);
+        if let Some(expected) = expected {
+            let message = outcome
+                .err()
+                .ok_or("expected deprecated-safe rejection")?
+                .to_string();
+            assert!(message.contains(expected), "{name}: {message}");
+        } else {
+            let rustgm::pipeline::Analysis {
+                mut facts,
+                prepared,
+            } = outcome?;
+            if let Some((index, _)) =
+                report
+                    .resolution
+                    .definitions
+                    .iter()
+                    .enumerate()
+                    .find(|(_, definition)| {
+                        definition.kind == rustgm::resolve::model::DefKind::Function
+                            && report.package.names.get(definition.name) == "call"
+                    })
+            {
+                rustgm::lower::instances::build_prepared(
+                    &report,
+                    &mut facts,
+                    rustgm::resolve::model::DefId(u32::try_from(index)?),
+                    prepared,
+                )
+                .map_err(|error| format!("{name}: {error}"))?;
+            } else {
+                assert_eq!(name, "disabled");
+            }
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn deprecated_safe_2024_metadata_cannot_erase_the_migration_contract()
+-> Result<(), Box<dyn std::error::Error>> {
+    use rustgm::lower::instances::{SourcePublication, build_source_library_profile};
+    let report =
+        deprecated_safe_source("direct-2021", rustgm::support::edition::Edition::Rust2021)?;
+    let identity = report
+        .package
+        .source_core()
+        .ok_or("source provider")?
+        .provider
+        .clone();
+    let rustgm::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = rustgm::pipeline::analyze_source(&report)?;
+    let scalar = rustgm::sema::crates::export(&report, &mut facts, identity.clone())
+        .err()
+        .ok_or("scalar metadata published a migration contract")?;
+    let source = build_source_library_profile(
+        &report,
+        &mut facts,
+        identity,
+        prepared,
+        SourcePublication::ModuleBodyOperations,
+    )
+    .err()
+    .ok_or("legacy metadata published a migration contract")?;
+    for error in [scalar, source] {
+        assert!(
+            error
+                .to_string()
+                .contains("requires declaration and call-origin transport"),
+            "{error}"
+        );
+    }
+    Ok(())
+}
+
 #[test]
 fn successful_source_diagnostics_require_exact_named_nonempty_contracts()
 -> Result<(), Box<dyn std::error::Error>> {

@@ -85,6 +85,7 @@ impl Source {
         facts: &Declarations,
         contracts: bool,
     ) -> Result<(CollectedRows, Option<s::HeaderModifierColumns>), Error> {
+        facts.require_deprecated_safe_transport()?;
         let Source {
             mut stage,
             openings,

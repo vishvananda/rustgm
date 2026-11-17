@@ -1,11 +1,15 @@
 //! Paid calls and deferred Index contexts stay distinct until actual use is known.
-use super::{Checker, Error, NodeId};
-use crate::support::{crates::generics::source::CallSafety, retained};
+use super::{Checker, Error, Kind, NodeId};
+use crate::{
+    resolve::{lint_policy::Level, model::DefId},
+    support::{crates::generics::source::CallSafety, diagnostics::WarningCode, retained},
+};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(in crate::sema::bodies) enum PendingKind {
     Discharged(CallSafety),
     IndexContext(CallSafety),
+    DeprecatedSafe2024(DefId),
 }
 #[derive(Clone, Copy)]
 pub(in crate::sema::bodies) struct Record {
@@ -25,13 +29,74 @@ impl Checker<'_> {
     pub(in crate::sema::bodies) fn require_unsafe_call(
         &mut self,
         node: NodeId,
+        definition: Option<DefId>,
     ) -> Result<(), Error> {
-        self.require_unsafe(node, "call to unsafe function requires an unsafe context")?;
         let kind = self.lexical_call_context();
+        if let Some(definition) = definition
+            && kind != CallSafety::ExplicitUnsafeBlock
+            && self.deprecated_safe_call(node, definition, kind)?
+        {
+            return self.retain_safety_record(
+                node,
+                if kind == CallSafety::Safe {
+                    PendingKind::DeprecatedSafe2024(definition)
+                } else {
+                    PendingKind::Discharged(kind)
+                },
+            );
+        }
+        self.require_unsafe(node, "call to unsafe function requires an unsafe context")?;
         if kind == CallSafety::Safe {
             return Err(self.error(node, "completed unsafe call lost its lexical context"));
         }
         self.retain_safety_record(node, PendingKind::Discharged(kind))
+    }
+
+    fn deprecated_safe_call(
+        &mut self,
+        node: NodeId,
+        definition: DefId,
+        kind: CallSafety,
+    ) -> Result<bool, Error> {
+        if !matches!(
+            self.kind(node),
+            Kind::Call { .. } | Kind::MethodCall { .. } | Kind::GenericMethodCall { .. }
+        ) || !self.pre_2024_physical_call(node)
+        {
+            return Ok(false);
+        }
+        let Some(audit) = self
+            .facts
+            .deprecated_safe_2024_audit(self.report, definition)?
+        else {
+            return Ok(false);
+        };
+        let site = self.key(node);
+        let policy = &self.facts.safety_policies;
+        if !(kind == CallSafety::UnsafeFunction
+            && policy.old_unsafe_operation(site) == Level::Allow)
+            && policy.deprecated_safe_2024(site) != Level::Allow
+        {
+            let message = format!(
+                "deprecated_safe_2024 call to unsafe function requires an unsafe block. Audit that {audit}"
+            );
+            self.safety_warning(node, WarningCode::DeprecatedSafe2024, message)?;
+        }
+        Ok(true)
+    }
+
+    fn pre_2024_physical_call(&self, node: NodeId) -> bool {
+        let key = self.key(node);
+        let unit = self.report.package.unit(key.file);
+        let span = unit.configured.ast.node(node).span;
+        // A call assembled from expansion tokens needs the edition of its
+        // combined span. A single captured token cannot certify that edition.
+        unit.edition().before_2024()
+            && unit.include_context.is_none()
+            && span.start < span.end
+            && span.end as usize <= unit.source.physical_len()
+            && unit.source.text().is_char_boundary(span.start as usize)
+            && unit.source.text().is_char_boundary(span.end as usize)
     }
     /// Version thirteen: a source provider retains each inline assembly's
     /// lexical unsafe context for export. A replay finds the same context.

@@ -14,14 +14,11 @@ enum Permission {
     MissingFeatures,
 }
 impl Checker<'_> {
-    pub(super) fn selected_target_function(
+    fn direct_function(
         &mut self,
         node: NodeId,
         mut callable: TermId,
     ) -> Result<Option<DefId>, Error> {
-        if self.facts.target_feature_functions.is_empty() {
-            return Ok(None);
-        }
         loop {
             self.state
                 .infer
@@ -32,12 +29,7 @@ impl Checker<'_> {
                 Some(
                     Constructor::FunctionItem(item, _) | Constructor::FunctionItemArgs(item, _),
                 ) => {
-                    let id = DefId(item.0);
-                    return Ok(self
-                        .facts
-                        .target_feature_functions
-                        .contains_key(&id)
-                        .then_some(id));
+                    return Ok(Some(DefId(item.0)));
                 }
                 _ => return Ok(None),
             }
@@ -47,15 +39,25 @@ impl Checker<'_> {
         &mut self,
         node: NodeId,
         signature: TermId,
-        target_function: Option<DefId>,
+        callable: TermId,
     ) -> Result<(), Error> {
+        let policy_function = if self.facts.target_feature_functions.is_empty()
+            && !self.facts.has_deprecated_safe_2024()
+        {
+            None
+        } else {
+            self.direct_function(node, callable)?.filter(|id| {
+                self.facts.target_feature_functions.contains_key(id)
+                    || self.facts.is_deprecated_safe_2024(*id)
+            })
+        };
         let active = &self.state.call_types.active;
         let growth = Growth::map::<NodeId, ActiveCall>(active.len(), active.capacity(), 1);
         self.state
             .infer
             .account_work(growth.work.saturating_add(1))
             .map_err(|e| self.error(node, e))?;
-        if target_function.is_some() {
+        if policy_function.is_some() {
             header_attributes::charge_attribute_retention(self.facts, 1, growth.bytes)?;
         }
         self.state
@@ -71,7 +73,7 @@ impl Checker<'_> {
                 node,
                 ActiveCall {
                     signature,
-                    target_function,
+                    policy_function,
                 },
             )
             .is_some()
@@ -162,10 +164,12 @@ impl Checker<'_> {
         target: Option<DefId>,
         unsafe_: bool,
     ) -> Result<(), Error> {
-        if let Some(target) = target {
+        if let Some(target) =
+            target.filter(|id| self.facts.target_feature_functions.contains_key(id))
+        {
             return match self.target_function_permission(node, target)? {
                 Permission::Safe => Ok(()),
-                Permission::UnsafeFunction => self.require_unsafe_call(node),
+                Permission::UnsafeFunction => self.require_unsafe_call(node, Some(target)),
                 Permission::MissingFeatures => self.require_unsafe(
                     node,
                     "call requires an unsafe context or the callee's target features",
@@ -173,7 +177,7 @@ impl Checker<'_> {
             };
         }
         if unsafe_ {
-            self.require_unsafe_call(node)?;
+            self.require_unsafe_call(node, target)?;
         }
         Ok(())
     }
@@ -183,7 +187,13 @@ impl Checker<'_> {
         callable: TermId,
         signature: TermId,
     ) -> Result<TermId, Error> {
-        let Some(target) = self.selected_target_function(node, callable)? else {
+        if self.facts.target_feature_functions.is_empty() {
+            return Ok(signature);
+        }
+        let Some(target) = self
+            .direct_function(node, callable)?
+            .filter(|id| self.facts.target_feature_functions.contains_key(id))
+        else {
             return Ok(signature);
         };
         if self.target_function_permission(node, target)? != Permission::Safe {

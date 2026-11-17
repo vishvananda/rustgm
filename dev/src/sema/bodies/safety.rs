@@ -258,7 +258,7 @@ impl Checker<'_> {
         &mut self,
         node: NodeId,
         code: WarningCode,
-        message: &'static str,
+        message: impl Into<String>,
     ) -> Result<(), Error> {
         let key = self.key(node);
         let offset = self
@@ -271,6 +271,6 @@ impl Checker<'_> {
             .span
             .start;
         self.facts
-            .must_use_diagnostic(self.report, key, offset, 0, code, message.to_owned())
+            .must_use_diagnostic(self.report, key, offset, 0, code, message.into())
     }
 }

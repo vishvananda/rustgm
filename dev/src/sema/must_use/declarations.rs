@@ -262,6 +262,16 @@ fn consume_annotation<'unit>(
                 allowances,
             )?;
         }
+        Some(Consumer::DeprecatedSafe2024) => {
+            crate::sema::header_attributes::consume_deprecated_safe_2024(
+                report,
+                facts,
+                (owner, declaration),
+                (attribute, effect),
+                forest,
+                allowances,
+            )?;
+        }
         Some(Consumer::NoImplicitAutorefs) => {
             crate::sema::header_attributes::consume_no_implicit_autorefs(
                 report,

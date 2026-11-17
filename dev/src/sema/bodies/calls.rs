@@ -11,7 +11,7 @@ use crate::{
 #[derive(Clone, Copy)]
 pub(super) struct ActiveCall {
     pub signature: TermId,
-    pub target_function: Option<DefId>,
+    pub policy_function: Option<DefId>,
 }
 #[derive(Default)]
 pub(super) struct CallTypes {
