@@ -1,4 +1,6 @@
 //! Receiver wrappers require their exact source proof and retain ordinary lifetime debts.
+#[path = "adapter_births.rs"]
+mod cleanup_cases;
 use super::{Fixture, TestResult, fixture, fixture_with_report, originals};
 use crate::{
     body::{
@@ -10,6 +12,14 @@ use crate::{
     sema::model::Declarations,
     types::{self, RegionId, instance::Instance},
 };
+fn build_adapter(
+    facts: &mut Declarations,
+    entry: body::invocation_entries::Entry,
+    original: &body::ir::Body,
+) -> Result<body::adapters::Prepared, &'static str> {
+    let mut cleanup = body::instantiate::Cleanup::new(facts);
+    body::adapters::build(facts, entry, original, &mut cleanup)
+}
 const SOURCE: &str =
     "fn call<F:FnOnce()->u8>(f:F)->u8{f()}fn main(){let n=7u8;let f=||n;let _=call(f);}";
 fn generic_entry(
@@ -136,8 +146,8 @@ fn generic_adapter_requires_its_exact_specialized_source() -> TestResult {
     assert_ne!(entries[0].instance(), entries[1].instance());
     let (mut builder, _) = super::super::Builder::new(&report, &facts, program)?;
     let indices = specialized_sources(&report, &mut facts, &checked, &mut builder, &entries)?;
-    assert!(body::adapters::build(&mut facts, entries[0], builder.body(indices[1])?).is_err());
-    let prepared = body::adapters::build(&mut facts, entries[0], builder.body(indices[0])?)?;
+    assert!(build_adapter(&mut facts, entries[0], builder.body(indices[1])?).is_err());
+    let prepared = build_adapter(&mut facts, entries[0], builder.body(indices[0])?)?;
     assert!(
         builder
             .push_adapter(
@@ -150,7 +160,7 @@ fn generic_adapter_requires_its_exact_specialized_source() -> TestResult {
             )
             .is_err()
     );
-    let prepared = body::adapters::build(&mut facts, entries[0], builder.body(indices[0])?)?;
+    let prepared = build_adapter(&mut facts, entries[0], builder.body(indices[0])?)?;
     let mut unpaid = prepared;
     unpaid.input.obligations.push(Obligation {
         source: unpaid.body.source.into(),
@@ -168,7 +178,7 @@ fn generic_adapter_requires_its_exact_specialized_source() -> TestResult {
             )
             .is_err()
     );
-    let mut injected = body::adapters::build(&mut facts, entries[0], builder.body(indices[0])?)?;
+    let mut injected = build_adapter(&mut facts, entries[0], builder.body(indices[0])?)?;
     injected
         .input
         .assumptions
@@ -185,7 +195,7 @@ fn generic_adapter_requires_its_exact_specialized_source() -> TestResult {
             )
             .is_err()
     );
-    let prepared = body::adapters::build(&mut facts, entries[0], builder.body(indices[0])?)?;
+    let prepared = build_adapter(&mut facts, entries[0], builder.body(indices[0])?)?;
     builder.push_adapter(
         &report,
         &mut facts,
@@ -273,7 +283,7 @@ fn receiver_adapter_requires_the_exact_sealed_source() -> TestResult {
     )?;
     let (mut builder, source, wrong) =
         proved_sources(&report, facts, &checked, fixture.program, &fixture.inputs)?;
-    let prepared = body::adapters::build(facts, entry, builder.body(source)?)?;
+    let prepared = build_adapter(facts, entry, builder.body(source)?)?;
     let error = builder
         .push(
             &report,
@@ -286,13 +296,13 @@ fn receiver_adapter_requires_the_exact_sealed_source() -> TestResult {
         .err()
         .ok_or("ordinary proof authorized an adapter")?;
     assert!(error.message.contains("checked original source"), "{error}");
-    let prepared = body::adapters::build(facts, entry, builder.body(source)?)?;
+    let prepared = build_adapter(facts, entry, builder.body(source)?)?;
     let error = builder
         .push_adapter(&report, facts, &checked, wrong, prepared, &mut budget)
         .err()
         .ok_or("wrong source index authorized an adapter")?;
     assert!(error.message.contains("different proved source"), "{error}");
-    let mut prepared = body::adapters::build(facts, entry, builder.body(source)?)?;
+    let mut prepared = build_adapter(facts, entry, builder.body(source)?)?;
     let Owner::ClosureAdapter { adapter, .. } = prepared.body.owner else {
         return Err("adapter owner".into());
     };
@@ -308,7 +318,7 @@ fn receiver_adapter_requires_the_exact_sealed_source() -> TestResult {
         error.message.contains("different materialized wrapper"),
         "{error}"
     );
-    let mut prepared = body::adapters::build(facts, entry, builder.body(source)?)?;
+    let mut prepared = build_adapter(facts, entry, builder.body(source)?)?;
     let forged = types::closure::Adapter::new(
         &facts.types,
         entry.instance(),
@@ -330,7 +340,7 @@ fn receiver_adapter_requires_the_exact_sealed_source() -> TestResult {
         error.message.contains("different materialized wrapper"),
         "{error}"
     );
-    let prepared = body::adapters::build(facts, entry, builder.body(source)?)?;
+    let prepared = build_adapter(facts, entry, builder.body(source)?)?;
     let previous = builder.bodies.len();
     let work = facts.body_work.canonical_steps;
     let mut exhausted = 64_000_000;
@@ -342,7 +352,7 @@ fn receiver_adapter_requires_the_exact_sealed_source() -> TestResult {
     assert!(exhausted > 64_000_000 && facts.body_work.canonical_steps > work);
     assert_eq!(builder.bodies.len(), previous);
     assert!(builder.forwarding.is_empty());
-    let prepared = body::adapters::build(facts, entry, builder.body(source)?)?;
+    let prepared = build_adapter(facts, entry, builder.body(source)?)?;
     let index = builder.push_adapter(&report, facts, &checked, source, prepared, &mut budget)?;
     assert!(std::ptr::eq(
         builder
@@ -373,7 +383,7 @@ fn private_receiver_borrow_cannot_pay_a_static_lifetime() -> TestResult {
     let checked = originals(&mut facts, &templates, &inputs)?;
     let entry = selected(&mut facts, &checked, *instances.first().ok_or("instance")?)?;
     let (mut builder, source, _) = proved_sources(&report, &mut facts, &checked, program, &inputs)?;
-    let mut prepared = body::adapters::build(&mut facts, entry, builder.body(source)?)?;
+    let mut prepared = build_adapter(&mut facts, entry, builder.body(source)?)?;
     prepared.input.obligations.push(Obligation {
         source: prepared.body.source.into(),
         kind: Kind::Outlives((RegionId(1), RegionId::STATIC)),
@@ -599,7 +609,7 @@ fn borrowed_self_is_part_of_the_key_and_of_the_checked_execution() -> TestResult
         types::closure::Adapter::new(&facts.types, adapter.instance(), adapter.requested())?;
     assert_ne!(owned, adapter);
     let (mut builder, source, _) = proved_sources(&report, &mut facts, &checked, program, &inputs)?;
-    let mut prepared = body::adapters::build(&mut facts, entry, builder.body(source)?)?;
+    let mut prepared = build_adapter(&mut facts, entry, builder.body(source)?)?;
     let Owner::ClosureAdapter { signature, .. } = prepared.body.owner else {
         return Err("owner".into());
     };

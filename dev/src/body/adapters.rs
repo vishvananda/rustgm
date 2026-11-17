@@ -91,6 +91,7 @@ pub(crate) fn build(
     facts: &mut Declarations,
     selected: Entry,
     original: &Body,
+    cleanup: &mut super::instantiate::Cleanup,
 ) -> Result<Prepared, &'static str> {
     let adapter = selected
         .adapter()
@@ -174,7 +175,7 @@ pub(crate) fn build(
         result,
         convention,
     )?;
-    finish(facts, &mut writer.body, result)?;
+    finish(facts, &mut writer.body, result, cleanup)?;
     super::invocation_entries::select(facts, &mut writer.body, &mut contract)?;
     super::copy_requirements::prepare(facts, &writer.body, &mut contract)
         .map_err(|_| "receiver adapter source Copy preparation failed")?;
@@ -203,6 +204,7 @@ fn finish(
     facts: &mut Declarations,
     body: &mut Body,
     result: crate::body::ir::ValueId,
+    cleanup: &mut super::instantiate::Cleanup,
 ) -> Result<(), &'static str> {
     super::build::finish_factory(body, result)?;
     let types = (body.locals.iter().map(|local| local.ty))
@@ -212,7 +214,7 @@ fn finish(
     for ty in types {
         facts.aggregates.prepare(&mut facts.types, ty)?;
     }
-    Ok(())
+    cleanup.factory_values(facts, body)
 }
 
 fn contract(

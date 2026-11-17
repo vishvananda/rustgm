@@ -252,37 +252,6 @@ impl Budget {
         work.push(value);
         Ok(())
     }
-    fn adapter(
-        &mut self,
-        report: &Report,
-        facts: &mut Declarations,
-        templates: &Checked<'_>,
-        program: &mut proof::Builder,
-        original: usize,
-        request: (body::invocation_entries::Entry, body::ir::ProofSite),
-    ) -> Result<Option<(usize, BodyKey)>, Error> {
-        let (entry, source) = request;
-        let error = |e: &str| diagnostic(report, Some(source), e.into());
-        let adapter = entry
-            .adapter()
-            .ok_or_else(|| error("missing adapter demand identity"))?;
-        if !self.adapters.insert(adapter) {
-            return Ok(None);
-        }
-        let source = original;
-        let original = program
-            .body(source)
-            .map_err(|e| diagnostic(report, None, e.into()))?;
-        let prepared = body::adapters::build(facts, entry, original)
-            .map_err(|e| diagnostic(report, Some(original.source.into()), e.into()))?;
-        let family = prepared.body.key();
-        self.enter(family, &prepared.body, &prepared.input)
-            .map_err(|e| diagnostic(report, Some(prepared.body.source.into()), e.into()))?;
-        let index = program
-            .push_adapter(report, facts, templates, source, prepared, &mut self.bytes)
-            .map_err(|e| diagnostic(report, e.node, e.message))?;
-        Ok(Some((index, family)))
-    }
     fn leave(&mut self, report: &Report, item: BodyKey) -> Result<(), Error> {
         let error = |message: &str| diagnostic(report, None, message.into());
         let active = self
@@ -624,6 +593,46 @@ struct Traversal<'a> {
     cleanup: body::instantiate::Cleanup,
 }
 impl Traversal<'_> {
+    fn append_adapter(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        templates: &Checked<'_>,
+        original: usize,
+        request: (body::invocation_entries::Entry, body::ir::ProofSite),
+    ) -> Result<Option<(usize, BodyKey)>, Error> {
+        let (entry, source) = request;
+        let error = |e: &str| diagnostic(report, Some(source), e.into());
+        let adapter = entry
+            .adapter()
+            .ok_or_else(|| error("missing adapter demand identity"))?;
+        if !self.budget.adapters.insert(adapter) {
+            return Ok(None);
+        }
+        let source = original;
+        let original = self
+            .program
+            .body(source)
+            .map_err(|e| diagnostic(report, None, e.into()))?;
+        let prepared = body::adapters::build(facts, entry, original, &mut self.cleanup)
+            .map_err(|e| diagnostic(report, Some(original.source.into()), e.into()))?;
+        let family = prepared.body.key();
+        self.budget
+            .enter(family, &prepared.body, &prepared.input)
+            .map_err(|e| diagnostic(report, Some(prepared.body.source.into()), e.into()))?;
+        let index = self
+            .program
+            .push_adapter(
+                report,
+                facts,
+                templates,
+                source,
+                prepared,
+                &mut self.budget.bytes,
+            )
+            .map_err(|e| diagnostic(report, e.node, e.message))?;
+        Ok(Some((index, family)))
+    }
     fn adapter(
         &mut self,
         report: &Report,
@@ -651,14 +660,9 @@ impl Traversal<'_> {
                 .map_err(error)?;
             return Ok(());
         };
-        if let Some((index, family)) = self.budget.adapter(
-            report,
-            facts,
-            templates,
-            &mut self.program,
-            original,
-            (entry, source),
-        )? {
+        if let Some((index, family)) =
+            self.append_adapter(report, facts, templates, original, (entry, source))?
+        {
             self.budget
                 .push_work(facts, &mut self.work, Work::Leave(family))
                 .map_err(error)?;

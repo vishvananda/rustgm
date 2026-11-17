@@ -62,6 +62,64 @@ impl Cleanup {
             needed: NeedsDrop::new(facts.destructors.implementations().iter().map(|i| i.item)),
         }
     }
+    /// Register a selected factory's values with the traversal's concrete query.
+    /// Its original source bodies and immutable destructor registry are unchanged.
+    pub(crate) fn factory_values(
+        &mut self,
+        facts: &mut Declarations,
+        body: &mut Body,
+    ) -> Result<(), &'static str> {
+        let blocks = body.blocks.len();
+        // Factories belong to demanded lowering, including ordinary closures
+        // that have no open producer-header account. Retention is paid by the
+        // demand budget when it enters the completed body.
+        facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(blocks);
+        let statements = body.blocks.iter().try_fold(0usize, |total, block| {
+            if block.end as usize > body.statements.len() {
+                return Err("invalid factory statement range");
+            }
+            let length = block
+                .end
+                .checked_sub(block.start)
+                .ok_or("invalid factory statement range")?;
+            Ok(total.saturating_add(length as usize))
+        })?;
+        let exits = body
+            .storage
+            .as_ref()
+            .ok_or("missing factory storage")?
+            .exits
+            .len();
+        let (created, returned) = body
+            .owned
+            .as_ref()
+            .map_or((0, 0), |owned| (owned.created.len(), owned.returned.len()));
+        // Summing block ranges pays overlap too. The factory visits each block,
+        // statement and evaluated value; its monotone exit cursor visits at most
+        // exits + statements + blocks rows. Return checks add one per block.
+        let visits = statements
+            .saturating_mul(3)
+            .saturating_add(blocks.saturating_mul(3))
+            .saturating_add(exits);
+        // Sequential growth under retained::Growth's geometric policy costs at
+        // most 10 visits per map entry and two per vector element. Created values
+        // use a map and vector; returned transfers use a vector only.
+        let growth = created
+            .saturating_add(statements)
+            .saturating_mul(12)
+            .saturating_add(returned.saturating_add(blocks).saturating_mul(2));
+        facts.body_work.canonical_steps = facts
+            .body_work
+            .canonical_steps
+            .saturating_add(visits.saturating_add(growth));
+        let before = self.needed.steps;
+        let result = super::build::factory_owned_values(facts, body, &mut self.needed);
+        facts.body_work.canonical_steps = facts
+            .body_work
+            .canonical_steps
+            .saturating_add(self.needed.steps.saturating_sub(before));
+        result
+    }
     #[cfg(test)]
     pub(crate) const fn steps(&self) -> usize {
         self.needed.steps

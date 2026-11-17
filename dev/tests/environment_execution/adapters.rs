@@ -1,5 +1,5 @@
 //! Owned receiver adaptations preserve the proved source and normal cleanup.
-use super::{native, rustc};
+use super::{checked_sources, native, rustc};
 const CASES: &[(&str, bool, bool)] = &[
     ("shared-to-mutable", true, true),
     ("shared-to-once", true, true),
@@ -103,5 +103,58 @@ fn owned_receiver_adaptations_execute() -> Result<(), Box<dyn std::error::Error>
         }
     }
     assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
+const VALUE_CASES: &[(&str, bool)] = &[
+    ("tiny-copy", true),
+    ("tiny-owned", true),
+    ("tiny-transfer", true),
+    ("tiny-move-twice", false),
+];
+fn value_fixture(name: &str) -> std::path::PathBuf {
+    std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
+        "../pa24/tests/spec/receiver-value-cleanup/{name}.rs"
+    ))
+}
+
+#[test]
+fn receiver_adapter_values_keep_births_and_transfers() -> Result<(), Box<dyn std::error::Error>> {
+    let evidence = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
+        "../obj/parallel/pa24/receiver-value-cleanup/source/{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&evidence)?;
+    for &(name, accepted) in VALUE_CASES {
+        let modes: &[(&str, i32)] = if accepted {
+            &[("--emit-types", 0), ("--emit-lowir", 0)]
+        } else {
+            &[("--emit-lowir", 1)]
+        };
+        checked_sources::check_views(
+            &value_fixture(name),
+            &evidence,
+            name,
+            i32::from(!accepted),
+            modes,
+            if accepted { "" } else { "uninitialized" },
+        )?;
+    }
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the qualified external CPPGM LowIR backend"]
+fn receiver_adapter_values_execute_with_one_drop_after_transfer()
+-> Result<(), Box<dyn std::error::Error>> {
+    for &(name, accepted) in VALUE_CASES {
+        if accepted {
+            let source = std::fs::read_to_string(value_fixture(name))?;
+            native::check_literal_cases(
+                "parallel/pa24/receiver-value-cleanup/native",
+                &[(name, &source, false)],
+            )?;
+        }
+    }
     Ok(())
 }

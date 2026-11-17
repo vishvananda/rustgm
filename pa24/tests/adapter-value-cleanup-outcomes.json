@@ -1,0 +1,132 @@
+{
+  "schema": 1,
+  "owner": "pa24",
+  "state": "Declared source bytes/outcomes preserved; focused source, native and all 748 PA24 text comparisons pass. New private controls and full qualification remain pending.",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false
+  },
+  "original_declaration": {
+    "path": "obj/parallel/vec-method-lookup/destruction-adapter/tiny-declared.json",
+    "sha256": "432b65341d7d971be7fe5e1be0cedfa252169b76ce4e2ff5ce03d9fe133623d1",
+    "source_bytes_preserved": true
+  },
+  "scope": "Shared-source Fn called through a requested FnMut receiver adapter. Copy outputs, owned custom-Drop outputs and owned argument/result transfer require complete ordinary proof and native behavior; moved result use must still reject.",
+  "attribution": "RustGM-authored reductions; source bytes and expected statuses/native outputs copied unchanged from the pre-oracle tiny declaration.",
+  "cases": [
+    {
+      "name": "tiny-copy",
+      "path": "tests/spec/receiver-value-cleanup/tiny-copy.rs",
+      "source_sha256": "d406f502243871e969157f3f2a0ab946d34f08757c76dc9915b95139b4cf838b",
+      "rustc_status": 0,
+      "rustgm_lowir_status": 0,
+      "purpose": "Actual shared-to-mutable selected closure entry with Copy result; zero owned adapter temporaries.",
+      "rustgm_types_status": 0,
+      "native": {
+        "status": 0,
+        "stdout": "",
+        "stderr": "",
+        "panic": false
+      }
+    },
+    {
+      "name": "tiny-owned",
+      "path": "tests/spec/receiver-value-cleanup/tiny-owned.rs",
+      "source_sha256": "c6b1f98a0d07669101fc7a97d4880fe090745db176ecf6bad797164c9ea1d775",
+      "rustc_status": 0,
+      "rustgm_lowir_status": 0,
+      "purpose": "Same selected adapter but custom Drop result; one Invoke creation and one return transfer.",
+      "rustgm_types_status": 0,
+      "native": {
+        "status": 0,
+        "stdout": "",
+        "stderr": "",
+        "panic": false
+      }
+    },
+    {
+      "name": "tiny-transfer",
+      "path": "tests/spec/receiver-value-cleanup/tiny-transfer.rs",
+      "source_sha256": "5dd3d1eaeb515306bc219a48afb93a31cc3942d455390a5494682345ad7340f8",
+      "rustc_status": 0,
+      "rustgm_lowir_status": 0,
+      "purpose": "Non-Copy argument forwarded and returned through the adapter; two owned rvalues, one returned result, zero drops before return, one afterward.",
+      "rustgm_types_status": 0,
+      "native": {
+        "status": 0,
+        "stdout": "",
+        "stderr": "",
+        "panic": false
+      }
+    },
+    {
+      "name": "tiny-move-twice",
+      "path": "tests/spec/receiver-value-cleanup/tiny-move-twice.rs",
+      "source_sha256": "78aa2852da339691c82e9ede1c305de62425d65fd80bea25a2ecf324758beef3",
+      "rustc_status": 1,
+      "rustgm_lowir_status": 1,
+      "purpose": "Reject result use after moving to first; an internal destruction coverage failure cannot satisfy this negative.",
+      "semantic_rejection": {
+        "phase": "borrow/ownership",
+        "rustgm_required_substring": "uninitialized",
+        "rustc_expected_class": "borrow of moved value or use of moved value",
+        "forbidden_substitute": "owned value lacks its destruction scope"
+      }
+    }
+  ],
+  "qualification": {
+    "independent": {
+      "receipt": "obj/parallel/vec-method-lookup/destruction-adapter/tiny-qualification/results-first/receipt.json",
+      "sha256": "78e706d28af963de6161cf81392c10a55b39b8743b49947cc7716eaf94c8ce04",
+      "rustc_object_statuses": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "native_programs": 3,
+      "native_status": 0,
+      "native_stdout": "",
+      "native_stderr": "",
+      "negative_code": "E0382"
+    },
+    "candidate": {
+      "receipt": "obj/qualification/fast/1794919666062119035/receipt.json",
+      "sha256": "4d45bfec584dedefee284c36d72f366ca4dbd53761ea808e836d623013c21ba8",
+      "regular_tests": 3,
+      "course_cases": 748,
+      "strict_selected_clippy": true,
+      "format": true,
+      "architecture": true
+    },
+    "native": {
+      "receipt": "obj/qualification/fast/1794919886695120262/receipt.json",
+      "sha256": "2b3b9eb32cb9796aebc1c8aea55a5d82f8a2d356e845b27114234fec3fe5302a",
+      "exact_tests": 2,
+      "programs": 23,
+      "new_programs": 3,
+      "backend": "pinned CPPGM v0.9.3 ABI4 text path"
+    },
+    "references": {
+      "scoped_batch": "pa24/reference-batches/1794918206450495417-dc11228e4d62.json",
+      "new_cases": 4,
+      "unchanged_prior_cases": 744,
+      "old_sidecar_files_checked_against_HEAD": 2232,
+      "new_sidecars": 12,
+      "independent_review": "All statuses and intended E0382/moved cause match; candidate native Copy/owned/one-drop-transfer pass. No old reference bytes changed."
+    },
+    "private": {
+      "state": "Pending CI; local Clippy-linked private harness exceeded225s compile phase/five-minute total before test execution. Known filename/raw-literal lints corrected.",
+      "source_regression": "Captured adapters must not require an optional caller-header budget; materialization work uses existing canonical counter, retained bodies keep existing 64 MB demand cap."
+    }
+  },
+  "retained_requirements": [
+    "No acceptance or native claim from declarations alone.",
+    "No invalid ownership-coverage error can satisfy the moved-value opponent.",
+    "Source-core/alloc shared-owned vs mutable-owned baseline and original Vec native remain separate required actual-consumer checks."
+  ]
+}

@@ -65,3 +65,9 @@ reference/closure input contracts and their lifetime opponents. See its manifest
 and README; qualification is recorded with the implementation checkpoint.
 
 The [inferred-input repair](../../docs/pa24-inferred-inputs.md) records the new packet contracts, declared outcomes, focused/native evidence and remaining qualification.
+
+The `spec/receiver-value-cleanup/` packet preserves four predeclared ordinary
+receiver-adapter contracts: three executable Copy/owned/transfer cases and one
+moved-result rejection. Its separate outcome manifest retains the original input
+hashes and pending qualification; the main manifest declares every input/native
+classification. New references require independent review and generated receipts.
