@@ -42,15 +42,18 @@ impl Checker<'_> {
         result?;
         Ok(roots)
     }
-    /// `header_attributes::InputBound::of` counted every admitted unit's AST
-    /// nodes and edges before body checking. These selected patterns, scrutinees
-    /// and adjustments belong to those bodies, so reuse that existing payer.
-    /// Each root, selected pair and outgoing edge pays before traversal;
-    /// duplicate queued pairs pay too. No second whole-crate limit is introduced,
-    /// and failed attempts remain charged to that existing sticky payer.
+    /// Local bodies reuse the header producer's input-graph bound. A staged
+    /// consumer has no local header producer: its installed source-header owner
+    /// pays these queries through the existing selected-work account instead.
+    /// Each root, pair and edge pays before traversal, including duplicates and
+    /// failed attempts. Neither path creates a ledger or borrows another payer.
     pub(super) fn storage_visit(&self, work: &mut usize, count: usize) -> Result<(), Error> {
         *work = work.saturating_add(count);
-        crate::sema::header_attributes::charge_source_contract_query(self.facts, count)
+        if self.report.package.staged_consumer().is_some() {
+            crate::sema::crates::charge_source_header_query(self.facts, count)
+        } else {
+            crate::sema::header_attributes::charge_source_contract_query(self.facts, count)
+        }
     }
     pub(super) fn storage_referent(
         &self,

@@ -213,6 +213,11 @@ fn actual_normalization_owner(
             assert!(owner.replace(candidate).is_none());
         }
     }
+    assert_eq!(
+        crate::sema::header_attributes::source_contract_costs(facts),
+        (0, 0),
+        "staged storage must use its installed header payer"
+    );
     let owner = owner.ok_or_else(|| Error::unlocated("actual imported borrow declaration"))?;
     actual_caller_policy(facts, owner)?;
     let mut steps = 0;
