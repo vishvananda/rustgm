@@ -28,6 +28,7 @@ impl<S: Sources> Engine<'_, S> {
                 input,
                 &inputs,
                 self.config,
+                package.uses_source_bindings(),
             )
             .map_err(|e| {
                 Error::at(

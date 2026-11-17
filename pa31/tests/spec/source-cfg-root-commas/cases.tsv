@@ -1,0 +1,19 @@
+atom	0	true	-
+outer-comma	0	true	-
+inner-comma	0	true	-
+nested	0	true	-
+both-commas	0	true	-
+false	0	false	-
+negated	0	true	-
+empty-all	0	true	-
+empty-any	0	false	-
+forwarded	0	true	-
+forwarded-outer	0	true	-
+original-allocator	0	false	-
+empty	1	-	expected cfg predicate
+multiple	1	-	expected cfg predicate arguments
+double-outer	1	-	expected cfg predicate arguments
+empty-inner	1	-	expected cfg predicate
+not-arity	1	-	not requires exactly one cfg predicate
+missing-group	1	-	expected cfg predicate arguments
+double-inner	1	-	expected cfg predicate

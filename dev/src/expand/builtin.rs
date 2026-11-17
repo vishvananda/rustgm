@@ -140,6 +140,7 @@ pub(crate) fn cfg_evaluation(
     input: &Input,
     inputs: &dyn Inputs,
     config: &Config,
+    source_profile: bool,
 ) -> Result<config::Evaluation, LexError> {
     let mut builder = ForestBuilder::default();
     for token in &input.tokens {
@@ -158,11 +159,31 @@ pub(crate) fn cfg_evaluation(
         builder.push(source, *token)?;
     }
     let forest = builder.finish(input.tokens.last().map_or(0, |t| t.end))?;
+    let range = cfg_input_range(&forest, source_profile);
+    config::predicate_checked(&forest, source, range, config, inputs)
+}
+
+fn cfg_input_range(
+    forest: &crate::syntax::token_tree::Forest,
+    source_profile: bool,
+) -> crate::syntax::token_tree::TreeRange {
     let mut range = forest.roots();
-    if range.start < range.end && forest.punctuation(range.end - 1, Punctuation::Comma) {
+    if source_profile {
+        // Only a root can be the macro's optional comma. The final flattened
+        // node may instead be the last child of a complete predicate group.
+        let mut cursor = range.start;
+        while cursor < range.end {
+            let next = forest.after(cursor);
+            if next == range.end && forest.punctuation(cursor, Punctuation::Comma) {
+                range.end = cursor;
+                break;
+            }
+            cursor = next;
+        }
+    } else if range.start < range.end && forest.punctuation(range.end - 1, Punctuation::Comma) {
         range.end -= 1;
     }
-    config::predicate_checked(&forest, source, range, config, inputs)
+    range
 }
 
 fn cfg(
@@ -175,7 +196,7 @@ fn cfg(
     let inputs =
         crate::syntax::edition_context::WithEditions::new(inputs, |_| Ok(config.edition()));
     cfg_value(
-        cfg_evaluation(source, input, &inputs, config)?.value,
+        cfg_evaluation(source, input, &inputs, config, false)?.value,
         context,
         config,
     )

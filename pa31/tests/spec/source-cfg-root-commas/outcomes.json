@@ -1,0 +1,295 @@
+{
+  "state": "Declared before any oracle or candidate execution",
+  "cases": [
+    {
+      "name": "atom",
+      "path": "atom.rs",
+      "sha256": "bfed0485fe2c7334e85337ae7c38caa91a406c7b4d96edd61c600da2f492a8de",
+      "rustc_status": 0,
+      "source_status": 0,
+      "value": true,
+      "negative_diagnostic_any": [],
+      "candidate_diagnostic": "-"
+    },
+    {
+      "name": "outer-comma",
+      "path": "outer-comma.rs",
+      "sha256": "63c581f96bebe156ddcbcbc46d32661380b88382f023aa6ae1214c5917e11fff",
+      "rustc_status": 0,
+      "source_status": 0,
+      "value": true,
+      "negative_diagnostic_any": [],
+      "candidate_diagnostic": "-"
+    },
+    {
+      "name": "inner-comma",
+      "path": "inner-comma.rs",
+      "sha256": "5f2eb39e5fcf7db99830ae5ea91936c0fef826b4a2b243bc42494a8a63886e04",
+      "rustc_status": 0,
+      "source_status": 0,
+      "value": true,
+      "negative_diagnostic_any": [],
+      "candidate_diagnostic": "-"
+    },
+    {
+      "name": "nested",
+      "path": "nested.rs",
+      "sha256": "f081650c155ae837e173942110daa1130865cd78b4ddcb1d68eafcec97b57c1d",
+      "rustc_status": 0,
+      "source_status": 0,
+      "value": true,
+      "negative_diagnostic_any": [],
+      "candidate_diagnostic": "-"
+    },
+    {
+      "name": "both-commas",
+      "path": "both-commas.rs",
+      "sha256": "ed977faee6ef6b6ff6aac2aa62a727db8646fab1b083186326ead33026d7465e",
+      "rustc_status": 0,
+      "source_status": 0,
+      "value": true,
+      "negative_diagnostic_any": [],
+      "candidate_diagnostic": "-"
+    },
+    {
+      "name": "false",
+      "path": "false.rs",
+      "sha256": "48afc0d7ac8e4eb57bc48429d767b4e100a169d7f5a999cc2328d87f2a5732e3",
+      "rustc_status": 0,
+      "source_status": 0,
+      "value": false,
+      "negative_diagnostic_any": [],
+      "candidate_diagnostic": "-"
+    },
+    {
+      "name": "negated",
+      "path": "negated.rs",
+      "sha256": "009da13361b33345f34307626754b78846b779e2f88fd95dfd425d9ecc3a48c9",
+      "rustc_status": 0,
+      "source_status": 0,
+      "value": true,
+      "negative_diagnostic_any": [],
+      "candidate_diagnostic": "-"
+    },
+    {
+      "name": "empty-all",
+      "path": "empty-all.rs",
+      "sha256": "2c90d4d7b31fe91ff5d53e2422d6a2525438c60e981c64cc40b8d1afc6100cec",
+      "rustc_status": 0,
+      "source_status": 0,
+      "value": true,
+      "negative_diagnostic_any": [],
+      "candidate_diagnostic": "-"
+    },
+    {
+      "name": "empty-any",
+      "path": "empty-any.rs",
+      "sha256": "e931ab9c398e1e4a662f393bc55a6532af6d0d30fbd0ab9483115eb7765daa23",
+      "rustc_status": 0,
+      "source_status": 0,
+      "value": false,
+      "negative_diagnostic_any": [],
+      "candidate_diagnostic": "-"
+    },
+    {
+      "name": "forwarded",
+      "path": "forwarded.rs",
+      "sha256": "77d77c50cddffbc5bf22b9857a2d2e2659d1b8ed6faaa3b46a5b4b0807327719",
+      "rustc_status": 0,
+      "source_status": 0,
+      "value": true,
+      "negative_diagnostic_any": [],
+      "candidate_diagnostic": "-"
+    },
+    {
+      "name": "forwarded-outer",
+      "path": "forwarded-outer.rs",
+      "sha256": "efa2c72638819139a32f516fa6cd073285d45ea91445bf6f6b92700af00e6365",
+      "rustc_status": 0,
+      "source_status": 0,
+      "value": true,
+      "negative_diagnostic_any": [],
+      "candidate_diagnostic": "-"
+    },
+    {
+      "name": "original-allocator",
+      "path": "original-allocator.rs",
+      "sha256": "23a9ff9a5cf4b1d1707faec7a348f1a5ffaf542465403224ede2520381818e88",
+      "rustc_status": 0,
+      "source_status": 0,
+      "value": false,
+      "negative_diagnostic_any": [],
+      "candidate_diagnostic": "-"
+    },
+    {
+      "name": "empty",
+      "path": "empty.rs",
+      "sha256": "97ed10cef24d4f6060d77aae2443bacc5b9b65c2a7c0710d3e2a9b925ed01553",
+      "rustc_status": 1,
+      "source_status": 1,
+      "value": null,
+      "negative_diagnostic_any": [
+        "expected",
+        "cfg-pattern",
+        "cfg pattern",
+        "predicate",
+        "configuration"
+      ],
+      "candidate_diagnostic": "expected cfg predicate"
+    },
+    {
+      "name": "multiple",
+      "path": "multiple.rs",
+      "sha256": "12f23f2c1b7b5c3f92c95e6a198db7a362660e45bb62b7ea7a844d525303bde7",
+      "rustc_status": 1,
+      "source_status": 1,
+      "value": null,
+      "negative_diagnostic_any": [
+        "expected",
+        "cfg-pattern",
+        "cfg pattern",
+        "predicate",
+        "configuration"
+      ],
+      "candidate_diagnostic": "expected cfg predicate arguments"
+    },
+    {
+      "name": "double-outer",
+      "path": "double-outer.rs",
+      "sha256": "2b81d65a9ae24202dabe2eb1ca826bdebf95b53faf2f26d0f7eb52e5f5f3c12c",
+      "rustc_status": 1,
+      "source_status": 1,
+      "value": null,
+      "negative_diagnostic_any": [
+        "expected",
+        "cfg-pattern",
+        "cfg pattern",
+        "predicate",
+        "configuration"
+      ],
+      "candidate_diagnostic": "expected cfg predicate arguments"
+    },
+    {
+      "name": "empty-inner",
+      "path": "empty-inner.rs",
+      "sha256": "95ee33f56b1a1b28937d5f8fed467c493329a058a819a135a232bc8a4adb7c3f",
+      "rustc_status": 1,
+      "source_status": 1,
+      "value": null,
+      "negative_diagnostic_any": [
+        "expected",
+        "cfg-pattern",
+        "cfg pattern",
+        "predicate",
+        "configuration"
+      ],
+      "candidate_diagnostic": "expected cfg predicate"
+    },
+    {
+      "name": "not-arity",
+      "path": "not-arity.rs",
+      "sha256": "053e81b8103d7f1d4345a73e8547f4335efd64c0100de6dc31738c6bb4b05951",
+      "rustc_status": 1,
+      "source_status": 1,
+      "value": null,
+      "negative_diagnostic_any": [
+        "expected",
+        "cfg-pattern",
+        "cfg pattern",
+        "predicate",
+        "configuration"
+      ],
+      "candidate_diagnostic": "not requires exactly one cfg predicate"
+    },
+    {
+      "name": "missing-group",
+      "path": "missing-group.rs",
+      "sha256": "d093c1b74e6b6a01acc1005b3d4b3ae573a81b2f5380b1e653ac012591d0a1ed",
+      "rustc_status": 1,
+      "source_status": 1,
+      "value": null,
+      "negative_diagnostic_any": [
+        "expected",
+        "cfg-pattern",
+        "cfg pattern",
+        "predicate",
+        "configuration"
+      ],
+      "candidate_diagnostic": "expected cfg predicate arguments"
+    },
+    {
+      "name": "double-inner",
+      "path": "double-inner.rs",
+      "sha256": "5bcda6b96ccc59f64b05f12aff12de2edccf806665525a996df52812ffe11b5e",
+      "rustc_status": 1,
+      "source_status": 1,
+      "value": null,
+      "negative_diagnostic_any": [
+        "expected",
+        "cfg-pattern",
+        "cfg pattern",
+        "predicate",
+        "configuration"
+      ],
+      "candidate_diagnostic": "expected cfg predicate"
+    }
+  ],
+  "setup": {
+    "path": "setup.rs",
+    "sha256": "bfed0485fe2c7334e85337ae7c38caa91a406c7b4d96edd61c600da2f492a8de",
+    "status": 0
+  },
+  "foundation": {
+    "path": "foundation.rs",
+    "sha256": "c871506da245ab6ea367cf5f21d6244f992404f8eceac4a95523465f81755f7c"
+  },
+  "ordinary": {
+    "path": "ordinary.rs",
+    "sha256": "4579e9e6fedae74cc645a672da0e06f40dcc052ee57231560bed1628ee70f4b7",
+    "rustc_status": 0,
+    "candidate_status": 1,
+    "diagnostic": "expected cfg predicate arguments",
+    "claim": "frozen ordinary profile gap"
+  },
+  "primary": {
+    "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/frontier3/library/std/src/sys/alloc/mod.rs",
+    "sha256": "d7be5b7c291a7251961192c61272f0cf5c8be8bd749f0f3d320708faa45fcaa2",
+    "invocation": "cfg!(any(\n    all(target_arch = \"riscv32\", any(target_os = \"espidf\", target_os = \"zkvm\")),\n    all(target_arch = \"xtensa\", target_os = \"espidf\"),\n))",
+    "invocation_sha256": "d1041f4c0335a5623785b76c80a1b4806d286a48678d462ad8baf4c1fbde0c31"
+  },
+  "scope": "source cfg builtin root-tree boundary only; nested commas remain inside predicates, at most one outer comma; no CTFE/native/library artifact claim",
+  "grammar": "Pinned Rust Reference conditional-compilation.md and rustc88d9 cfg.rs parse_cfg consumes optional outer comma only after one predicate",
+  "independent_evidence": {
+    "combined_sha256": "ce182c7f6ae9b7812f9c11b684e64eaf58af2765202e28c6183c14957b59dd7e",
+    "metadata_cases": 19,
+    "accepts": 12,
+    "rejects": 7,
+    "value_observer": "Each accepted metadata case checks its declared bool through a compile-time array-length equation.",
+    "native": "none required: cfg expands a typed bool, no backend contract changes",
+    "authoring_history": "All19 metadata observations passed. First baseline source CLI used an unsupported view and exited2, qualifying zero baseline cases; corrected only view to --emit-expanded-crate and independently authenticated/reused19exact metadata observations."
+  },
+  "candidate_state": "All19 source grammar/value outcomes and frozen ordinary gap passed; unchanged actual std replay pending",
+  "candidate_validation": {
+    "receipt": "obj/qualification/fast/1794933588907033905/receipt.json",
+    "receipt_sha256": "b6d0c2f1505c77af7c0de901e10fdf5663606348ee566f6ebf8728be9fff38ad",
+    "status": 0,
+    "selected_tests": 4,
+    "source_cases": 19,
+    "bounded_predicate_widths": [
+      8,
+      32,
+      128
+    ],
+    "controls": "Existing ordinary cfg literal/opaque metadata and malformed-input controls; all27named-opaque cases retained. Ordinary nested-comma gap unchanged.",
+    "static": "strict Clippy, full formatting, architecture and assignment metadata passed",
+    "fixture_checks": {
+      "python_tests": 376,
+      "registered_roots": 530,
+      "binaries": 13,
+      "pinned_upstream": 128,
+      "pinned_reference_files": 126,
+      "log_sha256": "4f665896ac55cdd1c45c33b9de3f16860d6bafed73c47e80d463bee507920383"
+    },
+    "scope": "Typed source expansion and preserved grammar/feature checks only; no native, actual-library artifact or whole-assignment qualification."
+  }
+}

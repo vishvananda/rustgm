@@ -336,3 +336,6 @@ mod retired_features;
 
 #[path = "../../tait_aliases.rs"]
 mod tait_aliases;
+
+#[path = "../../predicate_roots.rs"]
+mod predicate_roots;

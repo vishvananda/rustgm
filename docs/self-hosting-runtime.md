@@ -214,13 +214,23 @@ records the immutable compiler, exact skip history and frontend/native receipts.
 This is one bring-up consumer; other M2 consumers, strict qualification and full
 core/alloc/std artifacts remain required.
 
-The source-only named opaque prerequisite for std now passes all 27 declared
+The source-only named opaque prerequisite for std passes all 27 declared
 [alias cases](../pa34/tests/spec/named-opaques/outcomes.json), including the
 backtrace and nested path-iterator shapes, plus six existing regression controls.
-Defining attributes retain actual alias and function identities, check capture
-remapping and compare hidden types before publication. The private harness timed
-out during compilation before executing tests; CI and the unchanged original std
-graph replay remain pending. No source-library artifact is qualified by this check.
+The private harness timed out during compilation before executing tests; full CI
+on `d32edb529` remains pending. Its clean immutable observation compiler
+(`eb0612bcec1bfd1915c6508c773af7d12cd1c16c979a1a6a43b2a125b8e957a9`)
+advanced the unchanged ten-root std graph beyond the old defining-attribute
+expansion blocker to `std/src/sys/alloc/mod.rs:9`: the nested cfg predicate was
+rejected at `any`. All twelve source pins, configuration and original 20-alloc/0-core
+skip rows are unchanged. No std semantic or artifact qualification follows.
+
+The [source cfg root-comma cases](../pa31/tests/spec/source-cfg-root-commas/outcomes.json)
+now pass all 19 declared outcomes and exact boolean observations, plus ordinary
+cfg/named-opaque regressions and bounded 8/32/128-predicate controls. The source
+builtin preserves commas inside predicate groups and removes at most one outer
+comma. The frozen ordinary path retains its prior gap. An unchanged actual std
+replay with a fresh compiler pin is still required.
 
 ## Runtime and backend gaps
 

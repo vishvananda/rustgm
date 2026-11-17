@@ -1481,3 +1481,6 @@ observer. The manifest records required source/full-proof/native outcomes before
 candidate execution. Actual Box casts require their selected source CoerceUnsized
 proof and retained adjustment; no scalar aggregate cast or bootstrap authority is
 introduced. Candidate and two native traces remain pending qualification.
+
+Source cfg root-comma inputs and independent outcomes are registered in
+[spec/source-cfg-root-commas/README.md](spec/source-cfg-root-commas/README.md).
