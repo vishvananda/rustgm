@@ -249,14 +249,18 @@ fn source_binary_headers_reject_wrong_formals_members_and_replayed_images() -> T
     // Use the separately accepted runtime prefix to reach this exact bad call.
     let wrong = input("const-followup/custom-runtime-only")?
         + "\npub fn wrong_rhs(n:usize)->usize{n<<true}";
-    let error = analyze(&wrong)
+    let report = crate::test_source::source_provider(&wrong, "source_binary")?;
+    let error = pipeline::analyze_source(&report)
         .err()
-        .ok_or("boolean shift RHS accepted")?
-        .to_string();
-    assert!(
-        error.contains("associated type requires an unambiguous validated implementation"),
-        "actual wrong-Rhs cause: {error}"
+        .ok_or("boolean shift RHS accepted")?;
+    let rhs = u32::try_from(wrong.rfind("true").ok_or("actual Boolean RHS")?)?;
+    assert_eq!(
+        error.file.source(),
+        Some(crate::support::source::FileId(0)),
+        "{error}"
     );
+    assert_eq!(error.span.start, rhs, "{error}");
+    assert_eq!(error.message, "incompatible types", "{error}");
     let (mut report, Analysis { mut facts, .. }) = analyze(&original)?;
     let site = report.resolution.definitions
         [named(&report, "encoded", DefKind::Function)?.0 as usize]
