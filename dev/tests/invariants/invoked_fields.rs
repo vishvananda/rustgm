@@ -1,7 +1,10 @@
 //! Calls retain actual callee/generic/argument identities, never const-execution permission.
 use super::constant_tests::{selected, typed};
 use super::*;
-use crate::{lex::token::Punctuation, syntax::ast::TypeFlavor};
+use crate::{
+    lex::token::Punctuation,
+    syntax::{ast::TypeFlavor, token_tree::Span},
+};
 use std::cell::Cell;
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 fn generic_pointer_call(
@@ -262,5 +265,125 @@ fn malformed_call_children_and_failed_payment_publish_no_selected_tree() -> Test
             .count(),
         1
     );
+    Ok(())
+}
+
+fn callable_span(
+    unit: &crate::resolve::unit::Unit,
+    root: NodeId,
+    spelling: &str,
+    accepted: bool,
+) -> TestResult<Span> {
+    let ast = &unit.configured.ast;
+    let outer = ast.node(root).span;
+    let actual = ast
+        .nodes
+        .iter()
+        .find(|node| {
+            matches!(node.kind, Kind::FunctionType(_))
+                && node.span.start >= outer.start
+                && node.span.end <= outer.end
+        })
+        .ok_or("actual callable field node")?;
+    assert_eq!(
+        &unit.source.text()[actual.span.start as usize..actual.span.end as usize],
+        spelling
+    );
+    assert!(actual.span.start > 0);
+    let copied = field(ast, root, &|_, _| Ok(()));
+    if accepted {
+        let copied = copied.map_err(|error| error.message)?;
+        let actual_copy = copied
+            .ast
+            .nodes
+            .iter()
+            .find(|node| matches!(node.kind, Kind::FunctionType(_)))
+            .ok_or("copied Rust callable")?;
+        assert_eq!(actual_copy.span, actual.span);
+        assert_eq!(copied.ast.function_types.len(), 1);
+        assert_eq!(
+            copied.ast.function_types[0].abi,
+            crate::syntax::item::Abi::Rust
+        );
+        assert_eq!(
+            copied.ast.function_types[0].binders.start,
+            copied.ast.function_types[0].binders.end
+        );
+    } else {
+        let rejected = copied.err().ok_or("unsupported callable was copied")?;
+        assert_eq!(rejected.offset, actual.span.start);
+        assert_eq!(
+            rejected.message,
+            "derived callable ABI or explicit binders require a wider field profile"
+        );
+    }
+    Ok(actual.span)
+}
+
+#[test]
+fn callable_field_diagnostics_use_original_and_appended_type_spans() -> TestResult {
+    use crate::{
+        expand::{config::Config, crate_syntax},
+        syntax::{expression::fragment, item::ItemContext},
+    };
+    for (source, spelling, accepted) in [
+        ("struct Holder((fn(u8)->u8,));", "fn(u8)->u8", true),
+        (
+            "struct Holder((Option<extern \"C\" fn()>,));",
+            "extern \"C\" fn()",
+            false,
+        ),
+        (
+            "struct Holder((for<'a> fn(&'a u8)->&'a u8,));",
+            "for<'a> fn(&'a u8)->&'a u8",
+            false,
+        ),
+    ] {
+        let (original, root) = selected(source)?;
+        let physical = callable_span(&original, root, spelling, accepted)?;
+        let (mut appended, _) = selected("struct Prior((u8,));")?;
+        let parsed = fragment::parse_include_in_edition(
+            source,
+            MacroContext::Items(ItemContext::Module),
+            None,
+            crate::support::edition::Edition::Rust2024,
+        )
+        .map_err(|error| error.message)?;
+        let configured = crate_syntax::configure(source, parsed, &Config::default())
+            .map_err(|error| error.message)?;
+        let (generated, _) = appended
+            .append_derived(source, configured, &[])
+            .map_err(|error| error.message)?;
+        let (index, node) = appended
+            .configured
+            .ast
+            .nodes
+            .iter()
+            .enumerate()
+            .rev()
+            .find(|(_, node)| {
+                matches!(
+                    node.kind,
+                    Kind::Type {
+                        flavor: TypeFlavor::Tuple,
+                        ..
+                    }
+                ) && node.span.start >= generated.start
+                    && node.span.end <= generated.end
+            })
+            .ok_or("appended tuple field")?;
+        assert_eq!(
+            node.span.start,
+            generated.start + original.configured.ast.node(root).span.start
+        );
+        let installed = callable_span(
+            &appended,
+            NodeId::new(u32::try_from(index)?),
+            spelling,
+            accepted,
+        )?;
+        assert_eq!(installed.start, generated.start + physical.start);
+        assert_eq!(installed.end, generated.start + physical.end);
+    }
     Ok(())
 }

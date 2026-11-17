@@ -88,7 +88,9 @@ pub(super) fn node(
             *path = node(source, *path, target, charge, depth + 1)?;
             *capture = macro_capture(source, *capture, target, charge)?;
         }
-        Kind::FunctionType(index) => *index = callable(source, *index, target, charge, depth + 1)?,
+        Kind::FunctionType(index) => {
+            *index = callable(source, *index, actual.span.start, target, charge, depth + 1)?;
+        }
         Kind::Constraint {
             target: binding,
             value,
@@ -178,6 +180,7 @@ fn macro_capture(
 fn callable(
     source: &Syntax<StoredValue>,
     index: u32,
+    at: u32,
     target: &mut Syntax<StoredValue>,
     charge: &Charge<'_>,
     depth: usize,
@@ -186,12 +189,12 @@ fn callable(
     let mut function = *source
         .function_types
         .get(index as usize)
-        .ok_or_else(|| error(0, "derived callable field lost its parsed signature"))?;
+        .ok_or_else(|| error(at, "derived callable field lost its parsed signature"))?;
     if function.abi != crate::syntax::item::Abi::Rust
         || function.binders.start != function.binders.end
     {
         return Err(error(
-            0,
+            at,
             "derived callable ABI or explicit binders require a wider field profile",
         ));
     }
@@ -201,7 +204,7 @@ fn callable(
         *result = node(source, *result, target, charge, depth + 1)?;
     }
     let result = u32::try_from(target.function_types.len())
-        .map_err(|_| error(0, "derived callable field arena overflow"))?;
+        .map_err(|_| error(at, "derived callable field arena overflow"))?;
     target.function_types.push(function);
     Ok(result)
 }
