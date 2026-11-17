@@ -61,7 +61,15 @@
       "rustc_size": 4,
       "rustc_align": 4,
       "sha256": "093797bbed28261c534b32ab59e5da89b902021bab4547fa5a74a0194ab8922f",
-      "amended": "at 2026-11-08T11:03:38Z, after the first candidate run reached the client: rustc accepts it and exits 42, but RustGM rejects it with `scalar pattern enum niches require their complete ABI profile` (dev/src/abi/layout/niches.rs, from 929b90e28, the pa12 niche profile, pinned by integer_niches.rs and integer_source.rs). Only `!null` pointers and zero-excluded unsigned ranges have nullable carriers. The same entry compiled in one source-core crate gives the same rejection, so this is a local layout gap, not a transport gap: a pending case whose fresh consumer and single-crate control reject identically by name. The pre-declaration probes on main could not reach any client, because the provider did not export"
+      "amended": "at 2026-11-08T11:03:38Z, after the first candidate run reached the client: rustc accepts it and exits 42, but RustGM rejects it with `scalar pattern enum niches require their complete ABI profile` (dev/src/abi/layout/niches.rs, from 929b90e28, the pa12 niche profile, pinned by integer_niches.rs and integer_source.rs). Only `!null` pointers and zero-excluded unsigned ranges have nullable carriers. The same entry compiled in one source-core crate gives the same rejection, so this is a local layout gap, not a transport gap: a pending case whose fresh consumer and single-crate control reject identically by name. The pre-declaration probes on main could not reach any client, because the provider did not export",
+      "current_candidate_contract": {
+        "declared": "2026-11-17, before amended integration checks; original source/oracle declarations and historical amendments retained",
+        "expected": "accepted in fresh and single-crate controls; zero-based integer suffix niche is now implemented",
+        "size": 4,
+        "align": 4,
+        "native_exit": 42,
+        "evidence": "unchanged fixture/provider hashes and original rustc acceptance/layout observations; scalar-suffix contract b5175a54c"
+      }
     },
     {
       "file": "spec/nonnull-patterns/nonzero-char.rs",
@@ -83,7 +91,15 @@
       "rustc_size": 4,
       "rustc_align": 4,
       "sha256": "8a4e4bc77e825f6b3552f64a324f8a788a1927c7a6815a251e6dc6805730f3fa",
-      "amended": "at 2026-11-08T11:03:38Z, after the first candidate run reached the client: rustc accepts it and exits 42, but RustGM rejects it with `scalar pattern enum niches require their complete ABI profile` (dev/src/abi/layout/niches.rs, from 929b90e28, the pa12 niche profile, pinned by integer_niches.rs and integer_source.rs). Only `!null` pointers and zero-excluded unsigned ranges have nullable carriers. The same entry compiled in one source-core crate gives the same rejection, so this is a local layout gap, not a transport gap: a pending case whose fresh consumer and single-crate control reject identically by name. The pre-declaration probes on main could not reach any client, because the provider did not export"
+      "amended": "at 2026-11-08T11:03:38Z, after the first candidate run reached the client: rustc accepts it and exits 42, but RustGM rejects it with `scalar pattern enum niches require their complete ABI profile` (dev/src/abi/layout/niches.rs, from 929b90e28, the pa12 niche profile, pinned by integer_niches.rs and integer_source.rs). Only `!null` pointers and zero-excluded unsigned ranges have nullable carriers. The same entry compiled in one source-core crate gives the same rejection, so this is a local layout gap, not a transport gap: a pending case whose fresh consumer and single-crate control reject identically by name. The pre-declaration probes on main could not reach any client, because the provider did not export",
+      "current_candidate_contract": {
+        "declared": "2026-11-17, before amended integration checks; original source/oracle declarations and historical amendments retained",
+        "expected": "accepted in fresh and single-crate controls; zero-based integer suffix niche is now implemented",
+        "size": 4,
+        "align": 4,
+        "native_exit": 42,
+        "evidence": "unchanged fixture/provider hashes and original rustc acceptance/layout observations; scalar-suffix contract b5175a54c"
+      }
     },
     {
       "file": "spec/nonnull-patterns/nonzero-u8.rs",
@@ -104,7 +120,15 @@
       "rustc_size": 1,
       "rustc_align": 1,
       "sha256": "5a9c61626ca3b109241328b255c62081ca033b0ce5839e09321057040efb95cf",
-      "amended": "at 2026-11-08T11:03:38Z, after the first candidate run reached the client: rustc accepts it and exits 42, but RustGM rejects it with `scalar pattern enum niches require their complete ABI profile` (dev/src/abi/layout/niches.rs, from 929b90e28, the pa12 niche profile, pinned by integer_niches.rs and integer_source.rs). Only `!null` pointers and zero-excluded unsigned ranges have nullable carriers. The same entry compiled in one source-core crate gives the same rejection, so this is a local layout gap, not a transport gap: a pending case whose fresh consumer and single-crate control reject identically by name. The pre-declaration probes on main could not reach any client, because the provider did not export"
+      "amended": "at 2026-11-08T11:03:38Z, after the first candidate run reached the client: rustc accepts it and exits 42, but RustGM rejects it with `scalar pattern enum niches require their complete ABI profile` (dev/src/abi/layout/niches.rs, from 929b90e28, the pa12 niche profile, pinned by integer_niches.rs and integer_source.rs). Only `!null` pointers and zero-excluded unsigned ranges have nullable carriers. The same entry compiled in one source-core crate gives the same rejection, so this is a local layout gap, not a transport gap: a pending case whose fresh consumer and single-crate control reject identically by name. The pre-declaration probes on main could not reach any client, because the provider did not export",
+      "current_candidate_contract": {
+        "declared": "2026-11-17, before amended integration checks; original source/oracle declarations and historical amendments retained",
+        "expected": "accepted in fresh and single-crate controls; zero-based integer suffix niche is now implemented",
+        "size": 1,
+        "align": 1,
+        "native_exit": 42,
+        "evidence": "unchanged fixture/provider hashes and original rustc acceptance/layout observations; scalar-suffix contract b5175a54c"
+      }
     },
     {
       "file": "spec/nonnull-patterns/private.rs",
@@ -127,11 +151,13 @@
   ],
   "layout": {
     "expected": "each accepted client's `entry` LowIR equals the LowIR of the same entry compiled in one source-core crate with the provider's lines (base:: paths as crate::), and the slot holding `o` has rustc's size and alignment",
-    "amended": "at 2026-11-08T11:03:38Z: the equality and slot claims hold for the four clients whose `Opt` has a carrier (nonnull, nonnull-str, holder, nonzero-u8). For the four pending range clients, the fresh consumer and the single-crate control each reject with the same named niche fence. Each range type's own layout is witnessed by the generated layout-witness control instead"
+    "amended": "at 2026-11-08T11:03:38Z: the equality and slot claims hold for the four clients whose `Opt` has a carrier (nonnull, nonnull-str, holder, nonzero-u8). For the four pending range clients, the fresh consumer and the single-crate control each reject with the same named niche fence. Each range type's own layout is witnessed by the generated layout-witness control instead",
+    "current_candidate_contract": "Seven accepted carrier clients (nonnull, nonnull-str, holder, nonzero-u8, nanoseconds, code-point, percent) compare fresh versus single-crate LowIR and physical slots. Nanoseconds and CodePointInner use 4x4; Percent uses 1x1. Holder keeps its explicitly recorded 16x8 divergence. NonZeroCharInner alone remains pending at the named complete scalar ABI fence."
   },
   "native": {
     "expected": "the eight accepted clients exit 42 natively, as rustc's do",
-    "amended": "at 2026-11-08T11:03:38Z: the four accepted clients with carriers exit 42 natively; the four pending range clients are rejected before LowIR"
+    "amended": "at 2026-11-08T11:03:38Z: the four accepted clients with carriers exit 42 natively; the four pending range clients are rejected before LowIR",
+    "current_candidate_contract": "All seven currently admitted carrier clients require native exit 42; this is an expectation, not a claim that newly added candidate native checks have run. The char-range client remains a required source acceptance with an explicit candidate layout gap."
   },
   "generated_controls": [
     {
@@ -200,7 +226,9 @@
       "expected": "accepted; the consumer interns exactly the interval that intern_scalar_or gives a local `..0 | 1..`, so Opt<Percent> takes the same niche; its honest witness arrives with RangePattern role transport (item 5b)",
       "amended": "at 2026-11-08T11:03:38Z: the Percent client's `Opt<Percent>` reaches the niche fence before the interval matters, so this control's client becomes the Percent layout witness. The rewritten packet is accepted; the consumer still interns exactly the `..0 | 1..` interval (the lib invariant wrapped_rows_intern_the_local_connected_alternative), and the witness LowIR equals the honest Percent witness's, an obj<1x1> slot",
       "amended_carrier": "at 2026-11-15T23:13:12Z, after the full qualification run on main 8b2e98948 (GitHub run 43770353490) and before any run of the amended test: since 8b2e98948 a range that excludes only zero has a scalar carrier at either signedness, so the consumer's faithful `..0 | 1..` interval makes the rewritten Percent a 1-byte carrier, as NonZeroU8 is, while the honest `0..=100` still has none. The witness equality with the honest Percent held only while signed ranges had no carrier and is replaced. Expected: the rewritten packet is accepted; its witness `hold` takes `%p0 : i8` with an obj<1x1> slot, and its entry and hold equal the honest NonZeroU8 witness's, not the honest Percent witness's, which passes the value by object; the frozen `percent` client (`Opt<base::Percent>`) is accepted against the rewritten packet, `o` is obj<1x1>, and its entry equals the honest `nonzero-u8` client's, the originally declared same niche; against the honest packet it stays pending. rustc (a std replica of the three declarations, obj/parallel/runtime2/linking/percent/oracle2.log) gives 1/1 for each type and for Opt of each and passes each by an i8 immediate; RustGM's Rust ABI passes a transparent range wrapper without a carrier by object, an internal convention that both sides of an honest packet share",
-      "amended_signedness": "at 2026-11-15T23:15:23Z, after the first run of the amended test (obj/parallel/runtime2/linking/fast-nonnull.log) and before the next: a failed prediction. The rewritten witness's hold takes `%p0 : i8` with an obj<1x1> slot, as declared, but LowIR spells the carrier's signedness, so the honest NonZeroU8 witness's hold takes `%p0 : u8`; the two differ in nothing else. Expected instead: the rewritten witness, and the rewritten `percent` client's entry, equal the honest NonZeroU8 witness and `nonzero-u8` entry with each u8 spelled i8. No other expectation changes"
+      "amended_signedness": "at 2026-11-15T23:15:23Z, after the first run of the amended test (obj/parallel/runtime2/linking/fast-nonnull.log) and before the next: a failed prediction. The rewritten witness's hold takes `%p0 : i8` with an obj<1x1> slot, as declared, but LowIR spells the carrier's signedness, so the honest NonZeroU8 witness's hold takes `%p0 : u8`; the two differ in nothing else. Expected instead: the rewritten witness, and the rewritten `percent` client's entry, equal the honest NonZeroU8 witness and `nonzero-u8` entry with each u8 spelled i8. No other expectation changes",
+      "current_candidate_contract": "After the zero-based integer suffix contract b5175a54c, honest Percent 0..=100 and rewritten zero-excluded Percent 1..=255 both pass as an i8 scalar and retain obj<1x1> storage. Their normalized by-value witness LowIR is equal. Their Opt encodings remain distinct: honest None uses255 (ff, signed distance minus1), rewritten None uses0. Rewritten Opt equals NonZeroU8 with u8 spelled i8; honest Opt differs. Existing malformed kind/base/endpoint/truncation opponents remain rejected.",
+      "current_oracle_basis": "Existing pinned scalar-niche-oracle receipt/full-chain observations establish signed-distance, negative-side tie ranking for one unused raw value, and source ABI reserve logic at rustc 88d9e12a rustc_abi::Niche::reserve. For i8 valid0..100, invalid 255 is distance 1; for 1..=255, only 0 is invalid. This derives the two exact sentinels without a new probe. Old exact Percent acceptance/layout declarations and historical observations remain unchanged."
     },
     {
       "control": "254 spelling rewritten to `NonNulx`",

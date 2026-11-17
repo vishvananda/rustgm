@@ -120,5 +120,10 @@
    "probe": "type-macro-generic",
    "rustc_error": "error: `derive` cannot be used on items with type macros"
   }
+ },
+ "candidate_lowering_contract": {
+  "declared": "2026-11-17, before repaired integration checks; original source hashes and pinned oracle statuses retained",
+  "expected": "Every accepted fixture, including reference-field.rs, completes prepared lowering. The lifetime/reference projected field gap was resolved by typed source projection storage; the historical gap is no longer a required rejection.",
+  "evidence": "Unchanged reference-field SHA-256 64eaa95bd610a8e0f6b14a481bb2cb5a5ad33ede5b4a5de92287f908512f983d and pinned rustc acceptance 0; full CI 44025881426 independently records candidate lowering Ok for this case."
  }
 }

@@ -4,14 +4,6 @@
 use std::fmt::Write as _;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const PACKET: &str = "pa31/tests/spec/derive-projection-bounds";
-/// Accepted cases that type and stop in prepared lowering at a recorded gap.
-/// A manual `Debug` impl over the same struct stops there too
-/// (`obj/parallel/derive-projections/core/batch3`): an impl instance reading
-/// a projected field of a struct with a lifetime parameter.
-const LOWERING_GAPS: [(&str, &str); 1] = [(
-    "reference-field.rs",
-    "generic aggregate requires instantiated fields",
-)];
 const SUFFIX: &str = "    #[derive(Clone, Debug)]
     pub struct Wrap<T> { value: T }
     pub fn again(value: &Wrap<u8>) -> Wrap<u8> { Clone::clone(value) }
@@ -57,7 +49,7 @@ fn typed(path: &std::path::Path) -> Result<(bool, String)> {
     ))
 }
 
-/// Every accepted case types and lowers, except for the recorded gaps. Each
+/// Every accepted case types and lowers. Each
 /// rejection reports its message at the last occurrence of its site: a use the
 /// derived predicate refuses, the derive whose body needs an unbounded
 /// qualified path, or a type macro.
@@ -78,14 +70,7 @@ fn derived_field_paths_are_bounded_like_rustc() -> Result {
             let lowered = program(&source)
                 .map(|_| ())
                 .map_err(|error| error.to_string());
-            let gap = LOWERING_GAPS
-                .iter()
-                .find(|(case, _)| path.ends_with(case))
-                .map(|(_, message)| *message);
-            let lowers = match gap {
-                Some(message) => lowered.as_ref().is_err_and(|error| error.contains(message)),
-                None => lowered.is_ok(),
-            };
+            let lowers = lowered.is_ok();
             if !lowers {
                 failures.push(format!("{path}: lowering {lowered:?}"));
             }

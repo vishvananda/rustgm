@@ -27,10 +27,18 @@ MIT/Apache-2.0 licence, and the repository NOTICE applies to them.
 Eight clients each bind `Opt::None` of one imported type, match on it and
 return 42: `nonnull`, `nonnull-str`, `holder` (a local struct over
 `NonNull<u8>`), `nanoseconds`, `nonzero-char`, `code-point`, `nonzero-u8` and
-`percent`. rustc accepts all eight. RustGM accepts `nonnull`, `nonnull-str`,
-`holder` and `nonzero-u8`. The other four are pending its niche layout for
-scalar ranges other than those excluding only zero: RustGM rejects them by name,
-in a fresh consumer and in one source-core crate alike.
+`percent`. rustc accepts all eight. RustGM admits all except `nonzero-char`,
+whose char-range validity still needs its complete scalar ABI profile. Fresh and
+single-crate controls retain that named gap. The zero-based integer wrappers
+`Nanoseconds`, `CodePointInner` and `Percent` now use suffix niches; their `Opt`
+layouts are 4x4, 4x4 and 1x1. Holder retains its separately recorded 16x8 candidate
+divergence from rustc's 8x8 layout.
+
+Honest `Percent` and its rewritten zero-excluded wire control both pass as an i8
+scalar. Their `Opt::None` encodings differ: the honest 0..100 range uses ff, while
+the rewritten 1..255 range uses zero. The manifest retains the historical
+amendments and records this current contract; malformed wire opponents stay
+rejected. New candidate native checks remain required until executed.
 
 Two opponents are rejected:
 

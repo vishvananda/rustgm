@@ -20,16 +20,18 @@ const OLDER: [&str; 2] = ["module-branches-v12", "module-nominals-v10"];
 /// the local nullable-carrier walk descends only `repr(transparent)` structs
 /// and gives the tagged 16x8. The pin fails when field-niche placement lands
 /// and then flips to the declared 8x8.
-const ACCEPTED: [(&str, u32, u32); 4] = [
+const ACCEPTED: [(&str, u32, u32); 7] = [
     ("nonnull", 8, 8),
     ("nonnull-str", 16, 8),
     ("holder", 16, 8),
     ("nonzero-u8", 1, 1),
+    ("nanoseconds", 4, 4),
+    ("code-point", 4, 4),
+    ("percent", 1, 1),
 ];
-/// Clients rustc accepts that wait for the local niche ABI profile: only
-/// `!null` pointers and zero-excluded unsigned ranges have nullable carriers.
-/// Their fresh consumers and single-crate controls reject alike.
-const PENDING: [&str; 4] = ["nanoseconds", "nonzero-char", "code-point", "percent"];
+/// The char range still requires its complete scalar-validity ABI profile.
+/// Its fresh consumer and single-crate control reject alike.
+const PENDING: [&str; 1] = ["nonzero-char"];
 const NICHE: &str = "scalar pattern enum niches require their complete ABI profile";
 /// Each range type and rustc's size and alignment of it, witnessed by the
 /// by-value slot of a function whose address the entry takes.
@@ -457,12 +459,19 @@ fn forged_pattern_rows_reject_in_fresh_consumers() -> Result {
         let mut consumer = packet.forged(name, changed, "nonnull")?;
         packet.rejected(name, &mut consumer, diagnostic)?;
     }
+    percent_carriers(&packet, bytes, percent)?;
+    for length in 0..bytes.len() {
+        assert!(crates::decode(&bytes[..length]).is_err(), "prefix {length}");
+    }
+    Ok(())
+}
+fn percent_carriers(packet: &Packet, bytes: &[u8], percent: usize) -> Result {
     // A well-formed rewritten row, not an honest export: Percent as the bits
     // of `i8 is ..0 | 1..`. The consumer interns exactly that interval, which
     // excludes only zero, so the rewritten Percent is a scalar carrier as
-    // NonZeroU8 is, signed where NonZeroU8's is unsigned; the honest
-    // `0..=100` has none and passes by object. rustc gives each 1x1 and
-    // passes each as an i8 immediate.
+    // NonZeroU8 is, signed where NonZeroU8's is unsigned. The honest
+    // `0..=100` has a suffix carrier too: both Percent witnesses now pass
+    // as i8, while their Opt encodings retain distinct excluded values.
     let metadata = packet.folder.join("wrapped.rgcrate");
     std::fs::write(&metadata, endpoints(bytes, percent, 1, 0xff))?;
     let mut witnessed = Vec::new();
@@ -471,14 +480,14 @@ fn forged_pattern_rows_reject_in_fresh_consumers() -> Result {
         ("wrapped", "Percent", &metadata),
         ("zero-excluded", "NonZeroU8", &packet.metadata),
     ] {
-        let client = entry(&packet, &format!("{label}-witness"), &witness(name))?;
+        let client = entry(packet, &format!("{label}-witness"), &witness(name))?;
         let mut consumer = packet.consumer(&client, label, metadata, &packet.owner());
         super::artifacts::checked(label, &packet.folder, &mut consumer)?;
-        witnessed.push(held(&lowir(&packet, label)?, "entry", 1, 1)?);
+        witnessed.push(held(&lowir(packet, label)?, "entry", 1, 1)?);
     }
     assert!(witnessed[1].contains("@hold(%p0 : i8)"), "{}", witnessed[1]);
     assert_eq!(witnessed[1], witnessed[2].replace("u8", "i8"));
-    assert_ne!(witnessed[1], witnessed[0]);
+    assert_eq!(witnessed[1], witnessed[0]);
     // So `Opt<Percent>` takes the niche NonZeroU8's takes.
     let mut niche = packet.consumer(
         &packet.fixture("percent"),
@@ -489,15 +498,20 @@ fn forged_pattern_rows_reject_in_fresh_consumers() -> Result {
     super::artifacts::checked("wrapped-percent", &packet.folder, &mut niche)?;
     let mut unsigned = packet.client("nonzero-u8");
     super::artifacts::checked("nonzero-u8", &packet.folder, &mut unsigned)?;
-    let opt = function(&lowir(&packet, "wrapped-percent")?, "entry")?;
+    let opt = function(&lowir(packet, "wrapped-percent")?, "entry")?;
     assert!(opt.contains("slot $s0 : obj<1x1>\n"), "{opt}");
+    assert_eq!(opt.matches("store i8 ").count(), 1, "{opt}");
+    assert!(opt.contains("store i8 0, $"), "{opt}");
     assert_eq!(
         opt,
-        function(&lowir(&packet, "nonzero-u8")?, "entry")?.replace("u8", "i8")
+        function(&lowir(packet, "nonzero-u8")?, "entry")?.replace("u8", "i8")
     );
-    for length in 0..bytes.len() {
-        assert!(crates::decode(&bytes[..length]).is_err(), "prefix {length}");
-    }
+    let mut honest = packet.client("percent");
+    super::artifacts::checked("percent", &packet.folder, &mut honest)?;
+    let honest_opt = function(&lowir(packet, "percent")?, "entry")?;
+    assert_eq!(honest_opt.matches("store i8 ").count(), 1, "{honest_opt}");
+    assert!(honest_opt.contains("store i8 255, $"), "{honest_opt}");
+    assert_ne!(opt, honest_opt);
     Ok(())
 }
 #[test]

@@ -50,5 +50,7 @@ MIT/Apache-2.0 attribution; see root NOTICE and `third_party/sources.json`.
 `dev/tests/derived_field_bounds.rs` checks every case's typing through the
 CLI. It runs prepared lowering for every accepted case, and checks each
 rejection's message and site. It also checks bounded work. `reference-field`
-stops in prepared lowering at a recorded gap, which a manual impl shares. See
-`docs/pa31-derive-projection-bounds.md`.
+now completes prepared lowering through typed source projection storage. Its old
+lowering rejection is no longer expected; the original accepted source/oracle
+declaration remains unchanged. The historical gap and qualification are retained
+in `docs/pa31-derive-projection-bounds.md`.
