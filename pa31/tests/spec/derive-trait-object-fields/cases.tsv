@@ -1,0 +1,8 @@
+foundation	0
+eh-context	0
+nonstatic-object	0
+higher-bound	0
+owned-object	1
+mutable-object	1
+non-dyn-compatible	1
+captured-escape	1

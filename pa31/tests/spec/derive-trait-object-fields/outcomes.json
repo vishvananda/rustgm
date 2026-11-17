@@ -1,0 +1,394 @@
+{
+  "state": "Pinned Rustc independently matched all seven outcomes and both setup checks. RustGM matched the declared source cases.",
+  "owner": "PA31 source derive field syntax transfer",
+  "primary": {
+    "original_path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/frontier3/library/std/src/sys/personality/dwarf/eh.rs",
+    "source_sha256": "80ce3c6afb067cccb8b4baa1297467c19a4cb966515344e6ade4a0bc453cecab",
+    "start": 1272,
+    "end": 1664,
+    "struct_sha256": "8a28152e36d86f001c5fdf4687514640dd536c81299f85fed2cf72d12604d3a1",
+    "primary_offset": 1518
+  },
+  "foundation_provenance": [
+    {
+      "path": "pa31/tests/spec/derive-type-macros/source-runtime.rs",
+      "sha256": "91749352c025f4d4839499b3b56a845be273dea71c50a5b4eb99a3d276fe1b96",
+      "copied_bytes": [
+        0,
+        9682
+      ]
+    },
+    {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/continuation-20261117/boxed-callables-v5-frozen/files/pa31/tests/spec/boxed-callables/prefix.rs",
+      "sha256": "d13b85f6ff1ffcd537b87b5e231ecfd7de1d4fe18e3e8bb103faef3abacc14d7",
+      "copied_bytes": [
+        3097,
+        3568
+      ]
+    },
+    {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/function.rs",
+      "sha256": "35369957f4544972df85e2778f15714e3afc4f6a010049f18817aa85eda1521d",
+      "copied_lines": [
+        75,
+        162,
+        241
+      ],
+      "purpose": "Pinned const stability of the three actual callable language-role declarations, required by the unchanged staged_api foundation."
+    },
+    {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/marker.rs",
+      "sha256": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575",
+      "line_targets": [
+        232,
+        235
+      ],
+      "purpose": "Pinned source authority for the no-core role or receiver declarations."
+    },
+    {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/unsize.rs",
+      "sha256": "4f0f013efec7392300e9d4415748ffd5e74e990ebb096c1b556922540d9684d6",
+      "line_targets": [
+        121,
+        128,
+        131
+      ],
+      "purpose": "Pinned source authority for the no-core role or receiver declarations."
+    },
+    {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/continuation-20261117/boxed-callables-v5-frozen/files/pa31/tests/spec/boxed-callables/prefix.rs",
+      "sha256": "d13b85f6ff1ffcd537b87b5e231ecfd7de1d4fe18e3e8bb103faef3abacc14d7",
+      "copied_lines": [
+        16,
+        18,
+        19,
+        20
+      ],
+      "copied_rows_sha256": "e1f4939fa11f8df0879dafea67c01dafccc24769be3aff8d334b20baae19075d",
+      "purpose": "Byte-exact Unsize and DispatchFromDyn roles and both valid reference receiver implementations from independently passing Box V5. CoerceUnsized and unrelated roles are excluded."
+    },
+    {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/vec-method-lookup/explicit-dynamic-rust-call-v2/prefix.rs",
+      "sha256": "618fa533a6fdbdee1e5fa552cc62c369012e36bed7550e8f16c532a66dae9849",
+      "copied_lines": [
+        [
+          17,
+          17
+        ],
+        [
+          78,
+          82
+        ]
+      ],
+      "declared_role_sha256": "51c1a412719950a7e974c19cd6b4312fe38489ae6cd29e25598801816f25dfb4",
+      "both_reference_impls_sha256": "bcaf192b594c4591f30da1ef7805e7527e34f1668446da6c76f8fe15c9640dba",
+      "purpose": "Borrowed-member V2 exact relevant reference coercion declaration and impls; prior separate shared and mutable coercion confirmations."
+    },
+    {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/vec-method-lookup/explicit-dynamic-rust-call-v2/results/receipt.json",
+      "sha256": "702b633a2f0272555a52304625c18cdec10494ede8af8e528151e653b4b8ffba",
+      "purpose": "Pinned Rustc borrowed-member V2 isolated shared/mutable coercion setup receipts both accepted."
+    },
+    {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/unsize.rs",
+      "sha256": "4f0f013efec7392300e9d4415748ffd5e74e990ebb096c1b556922540d9684d6",
+      "pinned_reference_impl_lines": [
+        42,
+        58
+      ],
+      "purpose": "Exact original shared and mutable CoerceUnsized reference implementations."
+    },
+    {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/pa31/tests/spec/debug-field-arrays-runtime/source-observer.rs",
+      "sha256": "b81b207c8d26140be3fbd566769f952042fcb3f27a443aeafe4d00f97741bf9a",
+      "basis": "Existing independently metadata-qualified Source Debug observer. Exact declaration, extern type and feature attr."
+    },
+    {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ptr/metadata.rs",
+      "sha256": "90be519b27b46064f0bec607170ffce37aa9afb160a1edfab9c51641c8af15e2",
+      "basis": "Pinned core ptr/metadata.rs:158\u2013169 exact nominal representation, real VTable foreign type."
+    }
+  ],
+  "profile": {
+    "commit": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "compiler": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "target": "x86_64-unknown-linux-gnu",
+    "edition": "2024",
+    "flags": [
+      "--crate-type=lib",
+      "--emit=metadata",
+      "--sysroot <empty directory>",
+      "-Cpanic=abort",
+      "-Copt-level=0",
+      "-Coverflow-checks=yes",
+      "-Cdebug-assertions=no",
+      "--cap-lints=allow"
+    ],
+    "environment": {
+      "RUSTC_BOOTSTRAP": "1"
+    }
+  },
+  "toolchain_sha256": {
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcore-a6075fd9c05de416.rlib": "37559e4d9488546d92cb19b74bcee17f7396c10a2a781c8a24e7464f836e7e51",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/liballoc-ca14532e0afe7a5d.rlib": "2730ec537c47f62737c175c0fa8f43c60636c5887da80933be1b3c91ac708401",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libstd-2e38004a9ef1deab.rlib": "c72b308614b215194d09d3bb7369dfd9acd33225333dd44b85574d7af726403f",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcompiler_builtins-b8411246c6de4c7a.rlib": "92804424c98ac58c1f9621d4b1ed891c7a865f0fe93301bcdd2231a658e5aad9",
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "setup": {
+    "name": "foundation",
+    "input": "foundation.rs",
+    "sha256": "4fa4cfa24c4d9ddd1c345ab394b063a649205a775068db6b444f3ad9c07f9c9b",
+    "rustc_status": 0,
+    "rustc_diagnostics_any": [],
+    "candidate_status": 0,
+    "intent": "Foundation only: actual source derive role and callable declarations are prepared without an object field.",
+    "candidate_view": "prepared source body, lifetime and loan proofs",
+    "required_body_ir_status": 0,
+    "body_clone_use_owner": "setup"
+  },
+  "cases": [
+    {
+      "name": "eh-context",
+      "input": "eh-context.rs",
+      "sha256": "c7d1a425a20a483cff1082b1f819bcc7375310bfadd04dd0570172e814fcbd09",
+      "rustc_status": 0,
+      "rustc_diagnostics_any": [],
+      "candidate_status": 0,
+      "intent": "Byte-exact EHContext item and a real copy/clone use, without invoking either object.",
+      "candidate_view": "prepared source body, lifetime and loan proofs",
+      "required_body_ir_status": 0,
+      "body_clone_use_owner": "duplicate"
+    },
+    {
+      "name": "nonstatic-object",
+      "input": "nonstatic-object.rs",
+      "sha256": "81ce47caec0a9c1a4459fda024f38b17aeecf79da0815ffdc3c0e9de784b4a4e",
+      "rustc_status": 0,
+      "rustc_diagnostics_any": [],
+      "candidate_status": 0,
+      "intent": "The function result, object bound and field reference all use the same actual caller lifetime.",
+      "candidate_view": "prepared source body, lifetime and loan proofs",
+      "required_body_ir_status": 0,
+      "body_clone_use_owner": "preserve"
+    },
+    {
+      "name": "higher-bound",
+      "input": "higher-bound.rs",
+      "sha256": "4ca69b6728c0820c318ca898bf5df88d6ff050e05dda61485d6ca10dd17a08d2",
+      "rustc_status": 0,
+      "rustc_diagnostics_any": [],
+      "candidate_status": 0,
+      "intent": "The bound declaration and input/output lifetime uses stay inside the copied trait binder; the object lifetime is outside.",
+      "candidate_view": "prepared source body, lifetime and loan proofs",
+      "required_body_ir_status": 0,
+      "body_clone_use_owner": "preserve"
+    },
+    {
+      "name": "owned-object",
+      "input": "owned-object.rs",
+      "sha256": "dea951c09de48dca852e86bfe229ba70990e51157b854bef5aeba94242fce213",
+      "rustc_status": 1,
+      "rustc_diagnostics_any": [],
+      "candidate_status": 1,
+      "intent": "Copying the parsed field does not authorize Copy or Clone for an owned object.",
+      "candidate_view": "--emit-generic-semantics",
+      "required_rustc_field_error": {
+        "code": "E0204",
+        "message": "the trait `Copy` cannot be implemented for this type",
+        "label": "this field does not implement `Copy`",
+        "source_text": "dyn Fn() -> *const u8",
+        "byte_start": 11521,
+        "byte_end": 11542
+      }
+    },
+    {
+      "name": "mutable-object",
+      "input": "mutable-object.rs",
+      "sha256": "2c39d6da04aab7fd3376202de471d511bc12d6d0c2aa30a7187a4707165e5f16",
+      "rustc_status": 1,
+      "rustc_diagnostics_any": [],
+      "candidate_status": 1,
+      "intent": "A mutable reference does not inherit shared-reference Copy or Clone.",
+      "candidate_view": "--emit-generic-semantics",
+      "required_rustc_field_error": {
+        "code": "E0204",
+        "message": "the trait `Copy` cannot be implemented for this type",
+        "label": "this field does not implement `Copy`",
+        "source_text": "&'a mut dyn Fn() -> *const u8",
+        "byte_start": 11528,
+        "byte_end": 11557
+      }
+    },
+    {
+      "name": "non-dyn-compatible",
+      "input": "non-dyn-compatible.rs",
+      "sha256": "47467e349958ee57433108c3af4f28f57247b84aa92aa2b6e21b70d2c977fc30",
+      "rustc_status": 1,
+      "rustc_diagnostics_any": [
+        "E0038"
+      ],
+      "candidate_status": 1,
+      "intent": "Syntax copying does not make a Sized principal dyn-compatible.",
+      "candidate_view": "--emit-generic-semantics"
+    },
+    {
+      "name": "captured-escape",
+      "input": "captured-escape.rs",
+      "sha256": "8ec486754d9416047be15b8968d7f918103881f7e1da89a1a9d4d900048aeb24",
+      "rustc_status": 1,
+      "rustc_diagnostics_any": [
+        "lifetime may not live long enough"
+      ],
+      "candidate_status": 1,
+      "intent": "Clone cannot replace the actual caller/object lifetime with static.",
+      "candidate_view": "prepared source body, lifetime and loan proofs",
+      "required_body_ir_status": 0,
+      "required_candidate_region_diagnostic_any": [
+        "required lifetime does not outlive",
+        "required type does not outlive"
+      ]
+    }
+  ],
+  "setup_amendment": {
+    "v2_manifest_sha256": "2fc89be07d4a3eb6f3a193b93ac9a9d44fd94705bd12b858bddf47fffb6f0ccd",
+    "v2_evidence": {
+      "setup.stderr": "ad2800f557d22957c3cf8d8a6672d138e97bed6281c57eef1fd338433b7e2e92",
+      "receipt.json": "f3ca7896f0c11b9862fe81f15e69c3e2b1b4fa9d3c1f5ebea3db205a80d882e1",
+      "launcher.log": "f3ca7896f0c11b9862fe81f15e69c3e2b1b4fa9d3c1f5ebea3db205a80d882e1",
+      "resource.json": "1f06624ce057231a625a9355c523049ca1afead72505b476ac2d85da486e149f"
+    },
+    "failure": "Nested probe cannot resolve derive; staged public const callable traits need const stability. Setup Clone failure follows the missing derive.",
+    "insertions": "Import the genuine crate::derive macro in the probe; copy the pinned const_trait_impl stability attribute once per actual Fn/FnMut/FnOnce definition.",
+    "candidate_scope": "Only the foundation changes; no compiler/provider/derive-role or public trait semantics are changed."
+  },
+  "setup_dyn": {
+    "name": "foundation-dyn",
+    "input": "foundation-dyn.rs",
+    "sha256": "48b95486cca9e522371d4040502ebc7194c6357683aba7b49762f0a8b6d4c21c",
+    "rustc_status": 0,
+    "rustc_diagnostics_any": [],
+    "intent": "Independent setup prerequisite only. The actual source derive must copy an input with the same borrowed dyn Fn pointer-result field as EHContext. A copy followed by Clone::clone uses both selected derive roles.",
+    "candidate_view": "prepared source body, lifetime and loan proofs",
+    "candidate_status": 0,
+    "required_expansion_status": 0,
+    "required_body_ir_status": 0,
+    "body_clone_use_owner": "check_derived",
+    "independent_and_candidate_setup_only": true,
+    "candidate_coercion_owner": "check_coercion"
+  },
+  "v4_setup_amendment": {
+    "v3_manifest_sha256": "8a21f0161f061064cd34ad2f054024fab47a8557f8b1c7502c5dafb2525574a9",
+    "v3_receipt_sha256": "a2a32cb4ae863265eaf44c00a9ce5cf84e8fbce815c22d3379aeff8a754bfb25",
+    "reason": "V3 dyn Fn checks reached E0038 because actual shared and mutable reference receiver dispatch was absent. Add exact already-qualified language roles/impls and gate all seven cases on a borrowed dyn + Copy/Clone source setup.",
+    "modified_common_prefix_bytes": 369
+  },
+  "v5_setup_amendment": {
+    "v4_manifest_sha256": "4abf743175e64b80a0030f09b5906d0858e37b1125f2ce3d44b51edf16c88535",
+    "v4_receipt_sha256": "a7019ceffdd7e1698d1829c045b9fc0b960ce5c5b2a0c12811a16241abe0b144",
+    "reason": "V4 Rustc DispatchFromDyn coherence requires the CoerceUnsized language declaration. Add the already independently qualified exact declaration and both relevant reference impls together.",
+    "modified_common_prefix_bytes": 280
+  },
+  "v6_setup_amendment": "Exact observer and pinned core DynMetadata with genuine NonNull<VTable> and PhantomData<Dyn>, opaque extern VTable, and its extern_types gate. Shared closure coercion in dyn setup only. All semantic case suffixes and outcomes unchanged.",
+  "independent_qualification": {
+    "receipt_sha256": "909315523e148cb98d599ccff24c456a3827cbaa7e48d0abefee6c115454d1d6",
+    "declared_manifest_sha256": "8c62e66ad308f0403f2f6f65616c6e998345d2f088a06a36edc441bff94e47c2",
+    "setup": {
+      "status": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "infrastructure": false,
+      "source_sha256": "4fa4cfa24c4d9ddd1c345ab394b063a649205a775068db6b444f3ad9c07f9c9b",
+      "expected": 0,
+      "matched": true
+    },
+    "setup_dyn": {
+      "status": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "infrastructure": false,
+      "source_sha256": "48b95486cca9e522371d4040502ebc7194c6357683aba7b49762f0a8b6d4c21c",
+      "expected": 0,
+      "matched": true
+    },
+    "cases": {
+      "eh-context": {
+        "status": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "infrastructure": false,
+        "source_sha256": "c7d1a425a20a483cff1082b1f819bcc7375310bfadd04dd0570172e814fcbd09",
+        "expected": 0,
+        "matched": true
+      },
+      "nonstatic-object": {
+        "status": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "infrastructure": false,
+        "source_sha256": "81ce47caec0a9c1a4459fda024f38b17aeecf79da0815ffdc3c0e9de784b4a4e",
+        "expected": 0,
+        "matched": true
+      },
+      "higher-bound": {
+        "status": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "infrastructure": false,
+        "source_sha256": "4ca69b6728c0820c318ca898bf5df88d6ff050e05dda61485d6ca10dd17a08d2",
+        "expected": 0,
+        "matched": true
+      },
+      "owned-object": {
+        "status": 1,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "74fbbce4b23ecbecc25c421adda4c81ad03e34e4b312f72c4db22c67764413b7",
+        "infrastructure": false,
+        "source_sha256": "dea951c09de48dca852e86bfe229ba70990e51157b854bef5aeba94242fce213",
+        "expected": 1,
+        "matched": true
+      },
+      "mutable-object": {
+        "status": 1,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "d072f05240da22c6269070b67132fffca214d665f5623b95ac559e2c4e61a7df",
+        "infrastructure": false,
+        "source_sha256": "2c39d6da04aab7fd3376202de471d511bc12d6d0c2aa30a7187a4707165e5f16",
+        "expected": 1,
+        "matched": true
+      },
+      "non-dyn-compatible": {
+        "status": 1,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "b7eb2ca9f4fe45bc2cb765b28b1eef94d275448141dc07bee5533ddc4b6a1bd6",
+        "infrastructure": false,
+        "source_sha256": "47467e349958ee57433108c3af4f28f57247b84aa92aa2b6e21b70d2c977fc30",
+        "expected": 1,
+        "matched": true
+      },
+      "captured-escape": {
+        "status": 1,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "cb430243eca49d3647c84f913dc2fd0aa794337dc426077f1409db968380ec0d",
+        "infrastructure": false,
+        "source_sha256": "8ec486754d9416047be15b8968d7f918103881f7e1da89a1a9d4d900048aeb24",
+        "expected": 1,
+        "matched": true
+      }
+    }
+  },
+  "candidate_qualification": {
+    "expanded": {
+      "fastcheck": "1794945803769047820",
+      "status": 0,
+      "scope": "All nine source inputs expanded. Existing C ABI derived field control also passed. The separate semantic selector in that batch failed at the concrete-only inspection of a generic setup."
+    },
+    "semantic": {
+      "fastcheck": "1794946328968430199",
+      "status": 0,
+      "scope": "Setup and all seven declared cases. Accepted cases have actual Clone calls in typed CFGs and pass the prepared source proofs. The escaped lifetime reaches typed CFGs and is rejected by lifetime proof."
+    },
+    "private": "Pending complete qualification."
+  }
+}

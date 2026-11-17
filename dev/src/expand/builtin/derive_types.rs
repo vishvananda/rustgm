@@ -22,6 +22,9 @@ mod literal_tests;
 #[path = "../../../tests/invariants/forest_types.rs"]
 mod macro_tests;
 #[cfg(test)]
+#[path = "../../../tests/invariants/derived_object_fields.rs"]
+mod object_tests;
+#[cfg(test)]
 #[path = "../../../tests/invariants/constraint_images.rs"]
 mod tests;
 
@@ -78,6 +81,10 @@ fn selected(
     Ok(copied)
 }
 
+#[expect(
+    clippy::too_many_lines,
+    reason = "one typed field-node dispatch preserves syntax edges, source authority and payer order"
+)]
 pub(super) fn node(
     source: &Source<'_>,
     id: NodeId,
@@ -136,6 +143,27 @@ pub(super) fn node(
         Kind::FunctionType(index) => {
             *index = callable(source, *index, actual.span.start, target, charge, depth + 1)?;
         }
+        // Object fields retain the original bounds; the derived impl's own
+        // trait and lifetime checks still decide whether the field is legal.
+        Kind::TraitType {
+            opaque: false,
+            bounds,
+        } if source.owner.is_some() => {
+            *bounds = list(source, *bounds, target, charge, depth + 1)?;
+        }
+        Kind::Bound {
+            optional: false,
+            constness: crate::support::constness::Constness::Ordinary,
+            quantified,
+            binders,
+            value,
+        } if source.owner.is_some() && (*quantified || binders.start == binders.end) => {
+            *binders = list(source, *binders, target, charge, depth + 1)?;
+            *value = node(source, *value, target, charge, depth + 1)?;
+        }
+        Kind::Generic(index) if source.owner.is_some() => {
+            *index = bound_lifetime(source, *index, actual.span.start, target, charge)?;
+        }
         Kind::Constraint {
             target: binding,
             value,
@@ -184,6 +212,50 @@ pub(super) fn node(
     derive_constants::pending(actual, copied, &mut target.ast, charge)?;
     target.ast.nodes.push(actual);
     Ok(copied)
+}
+
+/// Copy an actual higher-ranked lifetime row and its exact declaration span.
+fn bound_lifetime(
+    source: &Source<'_>,
+    index: u32,
+    at: u32,
+    target: &mut ParsedSyntax,
+    charge: &Charge<'_>,
+) -> Result<u32, LexError> {
+    use crate::syntax::item::{GenericFlavor, GenericParameter};
+
+    let lifetime = *source
+        .ast
+        .generics
+        .get(index as usize)
+        .ok_or_else(|| error(at, "derived object binder lost its parsed parameter"))?;
+    if lifetime.flavor != GenericFlavor::Lifetime
+        || lifetime.ty.is_some()
+        || lifetime.default.is_some()
+        || lifetime.bounds.start != lifetime.bounds.end
+    {
+        return Err(error(at, "derived object binder requires a plain lifetime"));
+    }
+    let growth = crate::support::retained::Growth::vector::<GenericParameter>(
+        target.ast.generics.len(),
+        target.ast.generics.capacity(),
+        1,
+    );
+    charge(growth.work.saturating_add(1), growth.bytes)?;
+    let result = u32::try_from(target.ast.generics.len())
+        .map_err(|_| error(at, "derived object binder arena overflow"))?;
+    let start = u32::try_from(target.ast.edges.len())
+        .map_err(|_| error(at, "derived object binder list overflow"))?;
+    target
+        .ast
+        .generics
+        .try_reserve(1)
+        .map_err(|_| error(at, "derived object binder allocation failed"))?;
+    target.ast.generics.push(GenericParameter {
+        bounds: List { start, end: start },
+        ..lifetime
+    });
+    Ok(result)
 }
 
 /// Copy only this occurrence's forest. Persistent opaque handles remain owned

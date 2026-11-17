@@ -1479,6 +1479,11 @@ strings retain their literal owners; other ABI and binder profiles keep their
 existing fences. `outcomes.json` binds every source byte and distinguishes
 RustGM profile outcomes from pinned rustc acceptance.
 
+`spec/derive-trait-object-fields/outcomes.json` declares the staged derive
+cases for parsed trait-object field bounds, including the original std
+`EHContext` item and the independent foundation inputs. The existing
+`derived_field_bounds` suite checks expansion, typed clone calls and loans.
+
 `spec/coercion-casts/` preserves16 independently qualified nominal coercion-cast
 source contracts, two frozen ordinary controls and the existing allocation/drop
 observer. The manifest records required source/full-proof/native outcomes before
