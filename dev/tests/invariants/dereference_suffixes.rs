@@ -55,7 +55,7 @@ fn actual_deref_chain_keeps_the_whole_static_requirement() -> Result<(), Box<dyn
         let (result, steps) = chain.resolve(&mut facts, alias)?;
         assert_eq!(result, Some(scalar));
         assert_eq!(steps, 3);
-        let evidence = search.evidence(&facts, root, Some(chain))?;
+        let evidence = search.evidence(&mut facts, root, Some(chain))?;
         assert_eq!(size_evidence_tests::valid(&facts, &evidence.proof)?, valid);
     }
     Ok(())

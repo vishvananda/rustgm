@@ -190,7 +190,7 @@ fn selected_implementation_keeps_provisional_size_evidence_out_of_its_cache() ->
     }
     assert!(
         search
-            .evidence(&facts, root, None)?
+            .evidence(&mut facts, root, None)?
             .completion
             .provisional()
     );

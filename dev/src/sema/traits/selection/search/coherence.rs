@@ -118,7 +118,8 @@ pub(in crate::sema) fn may_overlap_with(
         continuation::Progress::Ready(Decision::Absent) if mode.implicit() => Ok(false),
         continuation::Progress::Ready(Decision::Refuted(node)) if mode.negative() => {
             let expected = search.query.nodes[node].goal;
-            let refutation = search.refutation(facts, node, expected)?;
+            let refutation = search
+                .pay_extraction(context, |search| search.refutation(facts, node, expected))?;
             refutation
                 .disjoint_with(|proof, sized, meta_sized| {
                     pay(facts, context, proof, sized, meta_sized)

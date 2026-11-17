@@ -59,7 +59,9 @@ pub(in crate::sema) fn prove_conjunction(
     charged?;
     nested?;
     match roots {
-        Roots::Proven(roots) => search.finish_conjunction(facts, roots).map_err(Into::into),
+        Roots::Proven(roots) => search
+            .pay_extraction(context, |search| search.finish_conjunction(facts, roots))
+            .map_err(Into::into),
         Roots::Unproven(index) => Ok(Conjunction::Unproven(index)),
         Roots::Refuted {
             index,
@@ -128,8 +130,8 @@ impl Search<'_> {
     }
 
     fn finish_conjunction(
-        mut self,
-        facts: &Declarations,
+        &mut self,
+        facts: &mut Declarations,
         roots: Vec<usize>,
     ) -> Result<Conjunction, String> {
         let mut provisional_size = false;

@@ -74,8 +74,8 @@ impl Search<'_> {
     }
 
     pub(super) fn paid_refutation(
-        mut self,
-        facts: &Declarations,
+        &mut self,
+        facts: &mut Declarations,
         context: &mut super::Context,
         root: usize,
         expected: super::Predicate,
@@ -89,7 +89,8 @@ impl Search<'_> {
         let paid = paid?;
         charged.map_err(super::inference)?;
         nested.map_err(super::inference)?;
-        let result = self.refutation(facts, root, expected)?;
+        let result =
+            self.pay_extraction(context, |search| search.refutation(facts, root, expected))?;
         Ok(match (paid, result) {
             (true, Refutation::Conditional(proof)) => Refutation::Equalities(Paid(proof)),
             (_, result) => result,
@@ -97,8 +98,8 @@ impl Search<'_> {
     }
 
     pub(super) fn refutation(
-        mut self,
-        facts: &Declarations,
+        &mut self,
+        facts: &mut Declarations,
         root: usize,
         expected: super::Predicate,
     ) -> Result<Refutation, String> {

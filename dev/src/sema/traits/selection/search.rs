@@ -283,7 +283,9 @@ impl Search<'_> {
                 let expected = context
                     .resolved_predicate(&mut facts.types, goal)
                     .map_err(inference)?;
-                let refutation = self.paid_refutation(facts, context, root, expected)?;
+                let collected = self.paid_refutation(facts, context, root, expected);
+                suspension::observe_work(&mut attempted, self.query.steps);
+                let refutation = collected?;
                 // External consumers in this first profile cannot pay a scoped
                 // negative. Retain its full proof until this explicit boundary.
                 if matches!(refutation, super::Refutation::Conditional(_)) {
@@ -301,9 +303,24 @@ impl Search<'_> {
                         )
                         .map_err(inference)?;
                 }
-                Ok(Selection::Proven(self.evidence(facts, root, chain)?))
+                let collected =
+                    self.pay_extraction(context, |search| search.evidence(facts, root, chain));
+                suspension::observe_work(&mut attempted, self.query.steps);
+                Ok(Selection::Proven(collected?))
             }
         }
+    }
+    fn pay_extraction<T>(
+        &mut self,
+        context: &mut Context,
+        collect: impl FnOnce(&mut Self) -> Result<T, String>,
+    ) -> Result<T, String> {
+        let before = self.query.steps;
+        let result = collect(self);
+        context
+            .account_work(self.query.steps.saturating_sub(before))
+            .map_err(inference)?;
+        result
     }
     fn charge(&mut self, context: &mut Context) -> Result<(), String> {
         self.account_query_work(std::mem::take(&mut context.steps).saturating_add(1))?;
@@ -842,8 +859,8 @@ impl Search<'_> {
         Ok(())
     }
     fn evidence(
-        mut self,
-        facts: &Declarations,
+        &mut self,
+        facts: &mut Declarations,
         root: usize,
         chain: Option<Box<Chain>>,
     ) -> Result<Evidence, String> {
@@ -879,7 +896,7 @@ impl Search<'_> {
     /// premise proved move there. Without it they remain ordinary Sized debts.
     fn collect_graph(
         &mut self,
-        facts: &Declarations,
+        facts: &mut Declarations,
         roots: impl IntoIterator<Item = usize>,
         negative: Option<(crate::resolve::model::DefId, crate::types::GenericArgs)>,
         proof: &mut super::Obligations,
@@ -931,7 +948,7 @@ impl Search<'_> {
             }
         }
         if let Some(scopes) = scopes {
-            scopes.finish(proof)?;
+            scopes.finish(&mut facts.types, proof, |work| self.account_own_work(work))?;
         }
         Ok(())
     }

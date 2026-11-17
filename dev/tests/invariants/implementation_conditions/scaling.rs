@@ -12,6 +12,166 @@ use crate::{
 };
 use std::fmt::Write as _;
 
+struct CaptureGraph {
+    facts: Declarations,
+    proof: crate::types::lifetime_proof::Obligations,
+    expected: crate::types::TypeId,
+    work: usize,
+    growth: usize,
+    failure: Option<String>,
+}
+
+fn shared_capture_type(
+    types: &mut crate::types::Store,
+    width: usize,
+    depth: u16,
+) -> TestResult<crate::types::TypeId> {
+    let mut reference = |region| {
+        types.intern(Kind::Reference {
+            mutable: false,
+            region,
+            referent: BYTE,
+        })
+    };
+    let outer = reference(RegionId::bound(depth, 1)?)?;
+    let local = reference(RegionId::bound(0, 0)?)?;
+    let captured = reference(RegionId::bound(depth + 1, 1)?)?;
+    let parameters = types.intern_list(&[local, captured])?;
+    let function = types.intern(Kind::Function {
+        bound_regions: 1,
+        parameters,
+        result: crate::types::TypeId::UNIT,
+        unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
+    })?;
+    let fields = types.intern_list(&[outer, function])?;
+    let mut tail = types.intern(Kind::Tuple(fields))?;
+    for _ in 0..width {
+        let fields = types.intern_list(&[tail, tail])?;
+        tail = types.intern(Kind::Tuple(fields))?;
+    }
+    Ok(tail)
+}
+
+fn capture_graph(width: usize, local: bool, limited: bool) -> TestResult<CaptureGraph> {
+    use super::super::{Node, Search, Source};
+    use crate::types::{infer::Context, lifetime_proof::ScopeId, parameters::predicates::Bound};
+    let (_, mut facts) = tests::declarations("trait Empty{}")?;
+    let ty = shared_capture_type(&mut facts.types, width, 0)?;
+    let assumptions = crate::sema::traits::assumptions::Assumptions::default();
+    let mut search = Search::new(
+        tests::caller(&assumptions, None),
+        crate::sema::traits::implementations::Availability::Declarations,
+    );
+    let mut roots = Vec::new();
+    for _ in 0..width {
+        let first = search.query.allocations.reserve_scoped();
+        let scope = search
+            .query
+            .scopes
+            .get_or_insert_with(Default::default)
+            .introduce(ScopeId::ROOT, 1, first)?;
+        search.query.allocations.record(first + 1);
+        let end = search.query.allocations.end();
+        let shorter = if local {
+            RegionId(first)
+        } else {
+            RegionId::bound(0, 1)?
+        };
+        roots.push(search.query.push(
+            Node {
+                debt_free: false,
+                cycle_dependent: false,
+                provisional_size: false,
+                goal: crate::types::parameters::predicates::Predicate {
+                    ty: BYTE,
+                    bound: Bound::Sized,
+                },
+                source: Some(Source::Builtin),
+                children: Vec::new(),
+                first: end,
+                end,
+                equalities: Vec::new(),
+                outlives: Vec::new(),
+                type_outlives: vec![(ty, shorter)],
+                sized: Vec::new(),
+            },
+            scope,
+            end..end,
+        ));
+    }
+    if limited {
+        search.query.steps = 999_999;
+    }
+    let end = search.query.allocations.end();
+    let mut proof = std::mem::replace(
+        &mut search.query.allocations,
+        super::super::allocations::Allocations::new(1),
+    )
+    .finish(end);
+    let mut context = Context::default();
+    let mut sized = Vec::new();
+    let before = facts.types.len();
+    let result = search.pay_extraction(&mut context, |search| {
+        search.collect_graph(&mut facts, roots, None, &mut proof, &mut sized, None)
+    });
+    let growth = facts.types.len() - before;
+    let expected = shared_capture_type(&mut facts.types, width, 1)?;
+    Ok(CaptureGraph {
+        facts,
+        proof,
+        expected,
+        work: context.steps,
+        growth,
+        failure: result.err(),
+    })
+}
+
+#[test]
+fn scoped_capture_reclosure_shares_type_prefixes_and_pays_the_caller() -> TestResult {
+    let mut previous = None;
+    for width in [8, 32, 128] {
+        let graph = capture_graph(width, false, false)?;
+        assert_eq!(graph.failure, None);
+        assert_eq!(graph.proof.scope_count(), width);
+        assert_eq!(graph.proof.type_roots().count(), width);
+        assert!(graph.proof.type_roots().all(|(_, ty)| ty == graph.expected));
+        assert!(quantified_tests::valid(&graph.facts, &graph.proof, 2)?);
+        assert!(
+            graph.work > 0 && graph.work < 64 * width + 256,
+            "{width}: {}",
+            graph.work
+        );
+        assert!(graph.growth < 4 * width + 32, "{width}: {}", graph.growth);
+        if let Some(before) = previous {
+            assert!(graph.work <= 4 * before + 64);
+        }
+        previous = Some(graph.work);
+    }
+    Ok(())
+}
+
+#[test]
+fn scoped_capture_reclosure_keeps_type_debts_and_nested_binders() -> TestResult {
+    let graph = capture_graph(8, true, false)?;
+    assert_eq!(graph.failure, None);
+    assert_eq!(graph.proof.type_roots().count(), 8);
+    assert!(graph.proof.type_roots().all(|(_, ty)| ty == graph.expected));
+    assert!(!quantified_tests::valid(&graph.facts, &graph.proof, 2)?);
+    Ok(())
+}
+
+#[test]
+fn scoped_capture_reclosure_failure_still_pays_the_caller() -> TestResult {
+    let graph = capture_graph(8, false, true)?;
+    assert_eq!(
+        graph.failure.as_deref(),
+        Some("trait selection work budget exceeded")
+    );
+    assert!(graph.work > 0);
+    Ok(())
+}
+
 fn install(
     facts: &mut Declarations,
     owner: crate::resolve::model::DefId,

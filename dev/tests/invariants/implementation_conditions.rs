@@ -111,6 +111,63 @@ fn root(facts: &mut Declarations, report: &Report, name: &str) -> TestResult<Pre
     )?)
 }
 
+fn body_capture_condition(
+    slot: u16,
+    implementation: &str,
+) -> TestResult<(Declarations, crate::types::lifetime_proof::Obligations)> {
+    let (report, mut facts) = tests::declarations(&format!(
+        "trait Inner<T>{{}}trait Outer<T>{{}}{implementation}\
+         impl<T>Outer<T>for u8 where for<'a>u8:Inner<(&'a u8,T)>{{}}"
+    ))?;
+    let capture = facts.types.intern(crate::types::Kind::Reference {
+        mutable: false,
+        region: RegionId::bound(0, slot)?,
+        referent: BYTE,
+    })?;
+    let arguments = facts.types.intern_arguments(&[Argument::Type(capture)])?;
+    let predicate = tests::predicate(
+        &mut facts,
+        tests::definition(&report, "Outer")?,
+        BYTE,
+        arguments,
+    )?;
+    let (mut context, goal) = tests::instantiate(&mut facts, predicate)?;
+    let assumptions = Assumptions::default();
+    let super::Selection::Proven(mut evidence) = super::super::select_available(
+        &mut facts,
+        &mut context,
+        &goal,
+        tests::caller(&assumptions, None),
+        Availability::Declarations,
+    )?
+    else {
+        return Err("known body capture did not retain its impl condition proof".into());
+    };
+    evidence
+        .proof
+        .equalities
+        .append(&mut context.region_equalities);
+    assert_eq!(evidence.proof.scope_count(), 1);
+    Ok((facts, evidence.proof))
+}
+
+#[test]
+fn known_body_captures_remain_outer_in_impl_condition_proofs() -> TestResult {
+    for slot in [0, 1] {
+        let (facts, proof) =
+            body_capture_condition(slot, "impl<'a,'b>Inner<(&'a u8,&'b u8)>for u8{}")?;
+        assert!(quantified_tests::valid(&facts, &proof, 2)?);
+    }
+    Ok(())
+}
+
+#[test]
+fn impl_condition_local_lifetimes_cannot_capture_known_body_slots() -> TestResult {
+    let (facts, proof) = body_capture_condition(0, "impl<'a>Inner<(&'a u8,&'a u8)>for u8{}")?;
+    assert!(!quantified_tests::valid(&facts, &proof, 2)?);
+    Ok(())
+}
+
 #[test]
 fn universal_impl_conditions_require_every_lifetime() -> TestResult {
     for (implementation, expected) in [
@@ -258,7 +315,7 @@ fn an_empty_quantifier_is_proven_and_cached_as_its_ordinary_condition() -> TestR
             return Err("missing empty-binder proof".into());
         };
         let completed = search.query.completed.len();
-        let evidence = search.evidence(&facts, root, None)?;
+        let evidence = search.evidence(&mut facts, root, None)?;
         assert!(evidence.proof.regions.is_empty());
         assert!(quantified_tests::valid(&facts, &evidence.proof, 0)?);
         observed.push((completed, evidence.proof.scope_count()));
@@ -297,7 +354,7 @@ fn header_waits_preserve_the_universal_and_exclude_foreign_allocations() -> Test
     else {
         return Err("universal condition did not resume".into());
     };
-    let evidence = search.evidence(&facts, root, None)?;
+    let evidence = search.evidence(&mut facts, root, None)?;
     assert_eq!(evidence.proof.scope_count(), 1);
     for id in frontier..frontier + 3 {
         assert!(!evidence.proof.owns_region(RegionId(id)));

@@ -140,7 +140,7 @@ fn actual_formation_work_is_linear_and_internal_marker_cannot_replace_the_trait(
         }
         previous = Some((work, edges));
         eprintln!("UnsafeUnpin depth={depth} work={work} edges={edges}");
-        search.evidence(&facts, root, None)?;
+        search.evidence(&mut facts, root, None)?;
         let (mut context, goal) = tests::instantiate(&mut facts, Predicate { ty, bound })?;
         let mut rejected = Search::new(tests::caller(&assumptions, None), Availability::Validated);
         rejected.query.steps = 1_000_000;
@@ -206,7 +206,7 @@ fn negative_capture_and_coinductive_siblings_keep_their_real_proof_debts() -> Re
     assert!(!search.query.nodes[root].debt_free);
     assert!(search.negative_child(Decision::Refuted(root)).is_err());
     let super::super::Refutation::Conditional(proof) =
-        search.refutation(&facts, root, predicate)?
+        search.refutation(&mut facts, root, predicate)?
     else {
         return Err("lost captured debt".into());
     };

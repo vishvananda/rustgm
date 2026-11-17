@@ -587,7 +587,12 @@ impl Scopes {
         proof.types.append(&mut node.type_outlives);
         Ok(())
     }
-    pub fn finish(mut self, proof: &mut Obligations) -> Result<(), &'static str> {
+    pub fn finish(
+        mut self,
+        types: &mut crate::types::Store,
+        proof: &mut Obligations,
+        mut charge: impl FnMut(usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
         for index in (0..self.universes.len()).rev() {
             let universe = &self.universes[index];
             if universe.selected && universe.parent != ScopeId::ROOT {
@@ -596,9 +601,19 @@ impl Scopes {
             }
         }
         let mut bindings = vec![ScopeId::ROOT];
+        let mut captures = HashMap::default();
         for universe in &mut self.universes {
             let scope = if universe.selected {
                 let scope = proof.scope(bindings[universe.parent.0 as usize], universe.count)?;
+                // Opening replaced query-local binders with free aliases. The
+                // remaining bound names belong to the caller, so restore their
+                // depth before declaring this scope's own bound-slot aliases.
+                let depth = proof.scope_depth(scope)?;
+                let fold = captures.entry(depth).or_insert_with(|| Bound::shift(depth));
+                let before = fold.steps;
+                let closed = universe.proof.substitute(types, fold);
+                charge(fold.steps.saturating_sub(before).saturating_add(1))?;
+                closed?;
                 for (slot, region) in universe.aliases.clone().enumerate() {
                     universe.proof.equalities.push((
                         RegionId(region),
