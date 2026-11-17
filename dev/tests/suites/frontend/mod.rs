@@ -328,3 +328,6 @@ mod destructured_storage;
 mod target_tls_queries;
 #[path = "../../thread_locals.rs"]
 mod thread_locals;
+
+#[path = "../../retired_features.rs"]
+mod retired_features;

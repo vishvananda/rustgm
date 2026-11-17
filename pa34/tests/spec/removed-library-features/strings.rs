@@ -1,0 +1,5 @@
+#![feature(staged_api)]
+#![feature(no_core)]
+#![no_core]
+#![stable(feature="removed_root", since="1.0.0")]
+#![unstable_removed(feature = "escaped_\u{70}robe", reason = "first\nsecond", link = r#"https://example.invalid/?q="retired""#, since = "1.90.0")]

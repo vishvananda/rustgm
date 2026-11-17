@@ -69,6 +69,7 @@ pub(in crate::resolve) fn complete(
         imports: owners.imports,
         consts: owners.consts,
         fields: owners.fields,
+        retirements: draft.retirements.take(),
         steps: draft.steps,
     };
     draft.retain_inventory(library, &mut inventory)?;

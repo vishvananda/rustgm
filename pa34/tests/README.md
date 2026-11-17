@@ -2,6 +2,16 @@
 
 Planned: no graded fixtures or generated reference outputs yet.
 
+`spec/removed-library-features/outcomes.json` declares37 metadata-only outcomes
+for the actual std removed-feature payload and its precise Rust1.98 grammar,
+staged_api gate, repeated-attribute combination, root ownership and feature
+request fallback. Typed cold records remain distinct from API policies. Every
+source is listed and hashed; runtime, full std artifacts and PA34 activation
+remain required. All37 independent and candidate outcomes pass, together with the existing36
+loader outcomes and744 PA24 references. Private controls and full qualification
+remain pending after the local private build exceeded its feedback budget. The original four import harness failures and their repaired
+observations are preserved without fixture/status changes.
+
 `spec/panic-runtime-marker/outcomes.json` retains seventeen qualified source
 outcomes and predeclares nineteen `needs_panic_runtime` extension outcomes for
 the actual panic-abort/std loader identities. Each root pays its

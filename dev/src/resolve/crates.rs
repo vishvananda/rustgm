@@ -61,7 +61,9 @@ struct ColdImports {
 }
 impl Imported {
     pub(crate) fn has_availability(&self) -> bool {
-        self.availability.is_some()
+        self.availability
+            .as_deref()
+            .is_some_and(super::stability::availability_imports::Imports::has_api)
     }
     pub(crate) fn original_reservation_budget(&self) -> (usize, usize) {
         self.cold

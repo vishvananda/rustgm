@@ -1,0 +1,4 @@
+#![feature(staged_api)]
+#![feature(no_core)]
+#![no_core]
+#![stable(feature="removed_root", since="1.0.0")]

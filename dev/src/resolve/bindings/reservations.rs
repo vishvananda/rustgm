@@ -550,13 +550,11 @@ fn owner_claims(
         node = value;
     }
     let key = NodeKey { file, node };
-    let header = super::panic_contracts::checked(
-        package,
-        NodeKey {
-            file,
-            node: owner.node,
-        },
-    )?;
+    let attribute_owner = NodeKey {
+        file,
+        node: owner.node,
+    };
+    let header = super::panic_contracts::checked(package, attribute_owner)?;
     let contract = header
         .as_ref()
         .map(super::panic_contracts::CheckedHeader::summary);
@@ -594,11 +592,17 @@ fn owner_claims(
         if crate::resolve::stability::fn_allowances::collect(
             package,
             library,
-            NodeKey {
-                file,
-                node: owner.node,
-            },
+            attribute_owner,
             index,
+            attribute,
+            forest,
+        )? {
+            continue;
+        }
+        if crate::resolve::stability::collect_removed(
+            package,
+            library,
+            attribute_owner,
             attribute,
             forest,
         )? {

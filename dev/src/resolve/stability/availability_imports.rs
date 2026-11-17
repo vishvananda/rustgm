@@ -112,8 +112,9 @@ impl Budget {
     }
 }
 pub(in crate::resolve) struct Imports {
-    catalog: Rc<Catalog>,
-    inventory: Arc<Dependencies>,
+    catalog: Option<Rc<Catalog>>,
+    pub(super) inventory: Arc<Dependencies>,
+    pub(super) retirements: Option<Box<super::retired_requests::Index>>,
     declarations: HashMap<DefId, Option<Declaration>>,
     bindings: HashMap<BindingKey, Binding>,
     features: HashSet<String>,
@@ -131,7 +132,15 @@ struct Deferred {
     feature: String,
 }
 impl Imports {
-    fn charge(&self, steps: usize, bytes: usize) -> Result<(), Error> {
+    pub(in crate::resolve) const fn has_api(&self) -> bool {
+        self.catalog.is_some()
+    }
+    fn catalog(&self) -> Result<&Catalog, Error> {
+        self.catalog
+            .as_deref()
+            .ok_or_else(|| Error::unlocated("API operation requires its actual source catalog"))
+    }
+    pub(super) fn charge(&self, steps: usize, bytes: usize) -> Result<(), Error> {
         let mut budget = self.budget.get();
         let result = budget.charge(steps, bytes);
         self.budget.set(budget);
@@ -143,8 +152,12 @@ impl Imports {
             .origin_catalog()
             .map_err(Error::unlocated)?
             .ok_or_else(|| Error::unlocated("availability catalog is absent"))?;
-        if !Rc::ptr_eq(&self.catalog, &catalog)
-            || !Arc::ptr_eq(&self.inventory, &imported.shared_dependencies())
+        if !Rc::ptr_eq(
+            self.catalog.as_ref().ok_or_else(|| {
+                Error::unlocated("API operation requires its actual source catalog")
+            })?,
+            &catalog,
+        ) || !Arc::ptr_eq(&self.inventory, &imported.shared_dependencies())
         {
             return Err(Error::unlocated(
                 "availability belongs to another imported catalog or inventory",
@@ -313,11 +326,11 @@ impl Imports {
         let mapped = mapped.as_ref().ok_or_else(|| {
             Error::unlocated("imported API availability is unknown in its metadata profile")
         })?;
-        self.catalog
+        self.catalog()?
             .validate_declaration(mapped.handle, definition, mapped.kind)
             .map_err(Error::unlocated)?;
         let (identity, declaration, edition) = self
-            .catalog
+            .catalog()?
             .declaration_coordinate(mapped.handle)
             .map_err(Error::unlocated)?;
         let artifact = &self.inventory.artifacts()[mapped.artifact];
@@ -443,10 +456,10 @@ impl Imports {
                 .ok_or_else(|| Error::unlocated("availability canonical declaration is absent"))?
                 .kind;
             let handle = self
-                .catalog
+                .catalog()?
                 .declaration(definition)
                 .map_err(Error::unlocated)?;
-            self.catalog
+            self.catalog()?
                 .validate_declaration(handle, definition, kind)
                 .map_err(Error::unlocated)?;
             let growth = retained::Growth::map::<DefId, Option<Declaration>>(
@@ -490,23 +503,47 @@ pub(in crate::resolve) fn prepare(
     let (steps, bytes) = imported.original_reservation_budget();
     let mut budget = Budget { steps, bytes };
     budget.charge(imported.dependencies().artifacts().len(), 0)?;
-    if !imported.dependencies().artifacts().iter().any(|artifact| {
+    let artifacts = imported.dependencies().artifacts();
+    let available = artifacts.iter().any(|artifact| {
         artifact
             .source_descriptor()
             .is_some_and(|descriptor| descriptor.profile().availability())
-    }) {
+    });
+    // The removed-table search is a separate bounded inventory pass.
+    budget.charge(artifacts.len(), 0)?;
+    let removed = artifacts
+        .iter()
+        .any(|artifact| artifact.removed_features().is_some());
+    if !available && !removed {
         return Ok(None);
     }
-    let catalog = imported
-        .origin_catalog()
-        .map_err(Error::unlocated)?
-        .ok_or_else(|| {
-            Error::unlocated("availability import requires its installed origin catalog")
-        })?;
+    let catalog = if available {
+        Some(
+            imported
+                .origin_catalog()
+                .map_err(Error::unlocated)?
+                .ok_or_else(|| {
+                    Error::unlocated("availability import requires its installed origin catalog")
+                })?,
+        )
+    } else {
+        // Checking primitive absence visits this inventory once more.
+        budget.charge(artifacts.len(), 0)?;
+        if !artifacts
+            .iter()
+            .all(crate::support::crates::Interface::primitive_empty)
+        {
+            return Err(Error::unlocated(
+                "removed metadata without a source catalog requires primitive empty artifacts",
+            ));
+        }
+        None
+    };
     let inventory = imported.shared_dependencies();
     let mut result = Imports {
         catalog,
         inventory: Arc::clone(&inventory),
+        retirements: None,
         declarations: HashMap::default(),
         bindings: HashMap::default(),
         features: HashSet::default(),
@@ -518,6 +555,9 @@ pub(in crate::resolve) fn prepare(
     };
     result.charge(0, size_of::<Imports>())?;
     for (index, artifact) in inventory.artifacts().iter().enumerate() {
+        if let Some(table) = artifact.removed_features() {
+            result.collect_removed(index, table)?;
+        }
         if let Some(macros) = artifact.macros() {
             result.macro_features(macros)?;
         }
@@ -673,7 +713,11 @@ fn owner<'a>(
     package: &Package,
     imported: Option<&'a Imported>,
 ) -> Result<Option<&'a Imports>, Error> {
-    let availability = imported.and_then(|imports| imports.availability.as_deref());
+    // Removed-only data has no API owner and cannot satisfy a source client's
+    // availability requirement. Its fallback request lookup stays separate.
+    let availability = imported
+        .and_then(|imports| imports.availability.as_deref())
+        .filter(|imports| imports.has_api());
     if let Some(availability) = availability {
         availability.charge(1, 0)?;
     }

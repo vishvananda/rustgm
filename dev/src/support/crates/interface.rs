@@ -1,5 +1,6 @@
 //! The first wire profile exports closed scalar Rust functions, with explicit symbols.
 mod payload;
+mod retirements;
 use super::{
     Constant, CrateIdentity, ExternalDef, ExternalKind, MAX_COMPONENTS, MAX_DEPENDENCIES,
     MAX_FUNCTIONS, MAX_NAME_BYTES, Nominals, PublicNames, Record, Signature, Storage, TypeNode,
@@ -143,6 +144,7 @@ pub struct Interface {
     native_links: Option<Box<crate::support::linker_libraries::Plan>>,
     macros: Option<Box<super::exported_macros::Macros>>,
     loader: LoaderFlags,
+    retirements: Option<Box<super::RemovedFeatures>>,
     atoms: usize,
     names: usize,
 }
@@ -161,6 +163,7 @@ impl PartialEq for Interface {
             && self.native_links == other.native_links
             && self.macros == other.macros
             && self.loader == other.loader
+            && self.retirements == other.retirements
     }
 }
 impl Eq for Interface {}
@@ -348,9 +351,7 @@ impl Interface {
             return Err("metadata table exceeds profile budget");
         }
         dependencies.sort_unstable();
-        if dependencies
-            .iter()
-            .any(|dependency| dependency == &identity)
+        if dependencies.contains(&identity)
             || dependencies.windows(2).any(|pair| pair[0] == pair[1])
         {
             return Err("duplicate or self metadata dependency");
@@ -435,6 +436,7 @@ impl Interface {
             native_links: None,
             macros: None,
             loader: LoaderFlags::default(),
+            retirements: None,
             atoms: components,
             names: bytes,
         })

@@ -280,24 +280,7 @@ fn arguments<'a>(
         let token = forest
             .token(cursor + 2)
             .ok_or_else(|| error("missing library stability literal"))?;
-        work.charge(1, (token.end - token.start) as usize * 2)?;
-        let Some(crate::literal::Value::String(bytes)) =
-            crate::literal::interpret(unit.source.text(), token)
-                .map_err(|e| Error::at(key.file, e.offset, e.message))?
-        else {
-            return Err(error(
-                "library stability argument requires a string literal",
-            ));
-        };
-        *slot = Some(match bytes {
-            Cow::Borrowed(bytes) => Cow::Borrowed(
-                std::str::from_utf8(bytes)
-                    .map_err(|_| error("invalid library stability string"))?,
-            ),
-            Cow::Owned(bytes) => Cow::Owned(
-                String::from_utf8(bytes).map_err(|_| error("invalid library stability string"))?,
-            ),
-        });
+        *slot = Some(string(unit, key, attribute.span.start, token, work)?);
         cursor += 3;
         if cursor < range.end {
             if !forest.punctuation(cursor, Punctuation::Comma) {
@@ -307,6 +290,34 @@ fn arguments<'a>(
         }
     }
     Ok(arguments)
+}
+
+/// Both API and removed-feature declarations decode their actual retained literal.
+pub(super) fn string<'a>(
+    unit: &'a Unit,
+    key: NodeKey,
+    offset: u32,
+    token: crate::lex::token::Token,
+    work: &mut Draft<'_>,
+) -> Result<Cow<'a, str>, Error> {
+    let error = |message| Error::at(key.file, offset, message);
+    work.charge(1, (token.end - token.start) as usize * 2)?;
+    let Some(crate::literal::Value::String(bytes)) =
+        crate::literal::interpret(unit.source.text(), token)
+            .map_err(|e| Error::at(key.file, e.offset, e.message))?
+    else {
+        return Err(error(
+            "library stability argument requires a string literal",
+        ));
+    };
+    Ok(match bytes {
+        Cow::Borrowed(bytes) => Cow::Borrowed(
+            std::str::from_utf8(bytes).map_err(|_| error("invalid library stability string"))?,
+        ),
+        Cow::Owned(bytes) => Cow::Owned(
+            String::from_utf8(bytes).map_err(|_| error("invalid library stability string"))?,
+        ),
+    })
 }
 
 pub(super) fn identifier(name: &str) -> bool {

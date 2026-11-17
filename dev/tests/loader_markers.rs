@@ -6,8 +6,13 @@ use std::{
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const PACKET: &str = "../pa34/tests/spec/panic-runtime-marker";
 
-fn run(name: &str, host: &str, profile: &str, guests: &str) -> Result<Output> {
-    let packet = Path::new(env!("CARGO_MANIFEST_DIR")).join(PACKET);
+pub(crate) fn run(
+    packet: &Path,
+    name: &str,
+    host: &str,
+    profile: &str,
+    guests: &str,
+) -> Result<Output> {
     if profile == "ordinary" {
         return Ok(Command::new(env!("CARGO_BIN_EXE_rustgm"))
             .args(["--emit-body-ir", "--cap-lints=allow", "--edition=2024"])
@@ -18,6 +23,7 @@ fn run(name: &str, host: &str, profile: &str, guests: &str) -> Result<Output> {
     // APIs. Each CLI process owns its guest selection; no body/lowering phase runs.
     let folder = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../obj/loader-markers")
+        .join(packet.file_name().ok_or("packet has no name")?)
         .join(format!("{name}-{}", std::process::id()));
     std::fs::create_dir_all(&folder)?;
     let mut command = Command::new(env!("CARGO_BIN_EXE_rustgm"));
@@ -61,7 +67,7 @@ fn panic_runtime_is_one_checked_source_root_marker_with_its_own_feature() -> Res
         let [name, host, expected, profile, guests, message] = columns.as_slice() else {
             return Err("malformed panic marker contract".into());
         };
-        let output = run(name, host, profile, guests)?;
+        let output = run(&packet, name, host, profile, guests)?;
         let diagnostic = String::from_utf8_lossy(&output.stderr);
         assert_eq!(
             output.status.code(),

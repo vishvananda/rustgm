@@ -8,6 +8,7 @@ mod packet_envelope;
 mod profiles;
 mod public_names;
 mod reader;
+mod retired_envelope;
 mod scalars;
 mod signatures;
 mod stored_globals;
@@ -41,6 +42,9 @@ pub fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     } else {
         encode_inner(interface)?
     };
+    if interface.removed_features().is_some() {
+        bytes = retired_envelope::encode(interface, &bytes)?;
+    }
     let flags = interface.loader_flags();
     if !flags.is_empty() {
         if bytes.len().saturating_add(2) > MAX_BYTES {
@@ -131,29 +135,46 @@ fn encode_function(
 /// # Errors
 /// Rejects malformed/truncated data, foreign IDs, duplicates and profile mismatches.
 pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
-    if bytes.len() > MAX_BYTES {
+    decode_with_retained(bytes, 0)
+}
+fn decode_with_retained(bytes: &[u8], retained: usize) -> Result<Interface, &'static str> {
+    if bytes.len() > MAX_BYTES || retained > MAX_BYTES {
         return Err("metadata artifact exceeds 16 MB budget");
     }
-    let mut input = Reader::new(bytes);
+    let mut input = if retained == 0 {
+        Reader::new(bytes)
+    } else {
+        Reader::with_retained(bytes, retained)
+    };
     decode_header(&mut input)?;
-    let tag = input.u8()?;
-    if tag != LOADER_FLAGS {
-        return decode_tagged(&mut input, tag);
-    }
-    let flags = LoaderFlags::from_bits(input.u8()?)?;
-    if flags.is_empty() {
-        return Err("crate loader flags envelope requires a flag");
-    }
-    let tag = input.u8()?;
-    decode_tagged(&mut input, tag)?.with_loader_flags(flags)
+    let mut tag = input.u8()?;
+    let flags = if tag == LOADER_FLAGS {
+        let flags = LoaderFlags::from_bits(input.u8()?)?;
+        if flags.is_empty() {
+            return Err("crate loader flags envelope requires a flag");
+        }
+        tag = input.u8()?;
+        flags
+    } else {
+        LoaderFlags::default()
+    };
+    let interface = if tag == retired_envelope::TAG {
+        retired_envelope::decode(&mut input)?
+    } else {
+        decode_tagged(&mut input, tag)?
+    };
+    interface.with_loader_flags(flags)
 }
 /// An artifact wrapped by an envelope belongs to the same crate, so only the
-/// outermost artifact carries its loader flags.
-fn decode_nested(bytes: &[u8]) -> Result<Interface, &'static str> {
+/// outermost artifact carries crate flags or removed-feature declarations.
+fn decode_nested_with_retained(bytes: &[u8], retained: usize) -> Result<Interface, &'static str> {
     if bytes.get(HEADER) == Some(&LOADER_FLAGS) {
         return Err("crate loader flags belong to the outermost artifact");
     }
-    decode(bytes)
+    if bytes.get(HEADER) == Some(&retired_envelope::TAG) {
+        return Err("removed library features belong to the outermost artifact");
+    }
+    decode_with_retained(bytes, retained)
 }
 fn decode_tagged(input: &mut Reader<'_>, tag: u8) -> Result<Interface, &'static str> {
     if tag == LOADER_FLAGS {

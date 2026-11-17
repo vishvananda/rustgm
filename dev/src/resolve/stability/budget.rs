@@ -50,7 +50,13 @@ impl<'a> Draft<'a> {
                 .requests
                 .len()
                 .saturating_add(inventory.policies.len())
-                .saturating_add(inventory.relationships.len()),
+                .saturating_add(inventory.relationships.len())
+                .saturating_add(
+                    inventory
+                        .retirements
+                        .as_ref()
+                        .map_or(0, |column| column.entries.len()),
+                ),
             0,
         )?;
         let mut retained = Retained::default();

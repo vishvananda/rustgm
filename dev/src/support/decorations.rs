@@ -101,6 +101,7 @@ impl Consumer {
             | "panic_handler" => Self::SourceBindings,
             "stable"
             | "unstable"
+            | "unstable_removed"
             | "rustc_allowed_through_unstable_modules"
             | "unstable_feature_bound"
             | "rustc_const_stable"

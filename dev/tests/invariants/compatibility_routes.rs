@@ -147,11 +147,13 @@ fn repeated_groups_share_real_event_dedup_and_warm_lookup_has_no_retained_growth
     assert!(after.steps > before.steps);
     // Path uses and their completion flag add 32 bytes. The denied uses that
     // await their expansion frames' allowance lists add one `RefCell` vector.
+    // Removed-feature request data adds one optional cold index pointer.
     assert_eq!(
         size_of::<Imports>(),
         size_of::<LegacyImports>()
             + 32
             + size_of::<std::cell::RefCell<Vec<super::super::Deferred>>>()
+            + size_of::<Option<Box<super::super::super::retired_requests::Index>>>()
     );
     println!(
         "compatibility Imports={} oldowner={} PathUse={} Entry={} warm128={} retainedgrowth={}",

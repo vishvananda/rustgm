@@ -13,12 +13,15 @@ mod inventory;
 mod owners;
 mod record_policies;
 mod relationships;
+mod removed_features;
 mod request_order;
+mod retired_requests;
 #[cfg(test)]
 use super::unit::FileId;
 use super::{model::DefId, package::Error, unit::NodeKey};
 use crate::support::hash::HashMap;
 pub(crate) use exported_scopes::{Budget as PublicBudget, visit as visit_public_bindings};
+pub(in crate::resolve) use removed_features::collect as collect_removed;
 use std::num::{NonZeroU32, NonZeroUsize};
 use std::rc::Rc;
 
@@ -141,6 +144,13 @@ impl Library {
     ) -> Result<(), Error> {
         use crate::support::retained::{sum, vector};
         budget.charge(
+            inventory
+                .retirements
+                .as_ref()
+                .map_or(0, |column| column.entries.len()),
+            0,
+        )?;
+        budget.charge(
             self.requests.len().saturating_add(inventory.policies.len()),
             sum([
                 size_of::<Self>(),
@@ -150,6 +160,7 @@ impl Library {
                 vector(&inventory.relationships),
                 vector(&inventory.declarations),
                 vector(&inventory.imports),
+                inventory.removed_bytes(),
                 inventory
                     .fields
                     .as_deref()
@@ -224,6 +235,7 @@ pub struct Inventory {
     imports: Vec<Option<PolicyId>>,
     consts: Option<Box<constness::ConstPolicies>>,
     fields: Option<Box<record_policies::Fields>>,
+    retirements: Option<Box<removed_features::Declarations>>,
     steps: usize,
 }
 impl Inventory {
@@ -305,6 +317,7 @@ pub(super) struct Draft<'a> {
     import_attributes: HashMap<NodeKey, PolicyId>,
     function_markers: Vec<(NodeKey, FunctionMarker)>,
     fn_allowances: Option<Box<fn_allowances::Pending>>,
+    retirements: Option<Box<removed_features::Declarations>>,
     steps: usize,
     bytes: usize,
 }

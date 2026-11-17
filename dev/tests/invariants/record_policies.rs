@@ -72,8 +72,8 @@ fn completed_fields_preserve_parent_and_direct_inherited_policy_identity() -> Re
         }
         assert!(library.require_plain_metadata().is_err());
     }
-    assert_eq!(size_of::<Inventory>(), 120);
-    assert_eq!(size_of::<Library>(), 160);
+    assert_eq!(size_of::<Inventory>(), 128);
+    assert_eq!(size_of::<Library>(), 168);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     Ok(())
 }

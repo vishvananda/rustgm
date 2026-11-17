@@ -45,5 +45,5 @@ pub(super) fn decode(input: &mut Reader<'_>) -> Result<Interface, &'static str> 
     if !input.done() || inner.get(12) == Some(&TAG) {
         return Err("trailing or nested native dependency metadata");
     }
-    super::decode_nested(inner)?.with_native_links(plan)
+    super::decode_nested_with_retained(inner, input.retained_prefix())?.with_native_links(plan)
 }

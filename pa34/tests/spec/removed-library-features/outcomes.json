@@ -1,0 +1,564 @@
+{
+  "schema": 1,
+  "profile": "Declared before any execution; Rust1.98.0 commit88d9e12ae178fab0fb5cc050a94da85685d449ea, x86_64-unknown-linux-gnu, edition2024, panic abort, cap-lints allow, metadata only; all source/guest cases use their exact no_core bytes and independent unit compilation. Imports use a real separately compiled metadata provider plus unchanged client bytes.",
+  "scope": "Source-only checked removed-library-feature data, distinct cold Draft/Inventory owner; actual std regular Stable(rust1) and API/body/const permissions remain independent. Imported removed-feature data is consulted only after active feature lookup fails.",
+  "actual_trigger": {
+    "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/frontier3/library/std/src/lib.rs",
+    "sha256": "bf99f8f0a239b52df99d3841011299feadf38925abb5f709e36d8779240ce1ed",
+    "file": 9,
+    "offset": 16909,
+    "line": 441,
+    "payload": "#![unstable_removed(\n    feature = \"concat_idents\",\n    reason = \"Replaced by the macro_metavar_expr_concat feature\",\n    link = \"https://github.com/rust-lang/rust/issues/29599#issuecomment-2986866250\",\n    since = \"1.90.0\"\n)]",
+    "primary_receipt": "obj/parallel/std-guests-20261117/graph-needs-panic-marker-v1/primary.json",
+    "primary_receipt_sha256": "480935679dd124a9f48d29f3d2ef029f9b149015c84ee2155db0f556c353ada5"
+  },
+  "primary_sources": [
+    {
+      "url": "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_attr_parsing/src/attributes/stability.rs#L429",
+      "contract": "UnstableRemovedParser: crate-only, staged_api, four required strings, numeric version, combines repeated attributes, no identifier validation of feature data."
+    },
+    {
+      "url": "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_passes/src/stability.rs#L1020",
+      "contract": "Removed metadata lookup is fallback for unresolved imported library-feature requests, not an active feature definition."
+    }
+  ],
+  "inputs": [
+    "actual.rs",
+    "arbitrary-feature.rs",
+    "bad-version.rs",
+    "cases.tsv",
+    "client-active.rs",
+    "client-other.rs",
+    "client-plain.rs",
+    "client-request.rs",
+    "client-unknown.rs",
+    "disabled.rs",
+    "duplicate-key.rs",
+    "empty-data.rs",
+    "host.rs",
+    "local-request.rs",
+    "missing-feature.rs",
+    "missing-gate.rs",
+    "missing-link.rs",
+    "missing-reason.rs",
+    "missing-root-stable.rs",
+    "missing-since.rs",
+    "multiple.rs",
+    "nested.rs",
+    "non-string.rs",
+    "ordinary.rs",
+    "outer.rs",
+    "placeholder.rs",
+    "provider.rs",
+    "reordered.rs",
+    "repeated.rs",
+    "short-version.rs",
+    "staged-only.rs",
+    "strings.rs",
+    "unknown-key.rs",
+    "value.rs",
+    "word.rs",
+    "wrong-gate.rs"
+  ],
+  "input_sha256": {
+    "actual.rs": "28fd97699d13e4e4705bf1c374953eea54b53a1fdb9ae2817fbb8a23f8ff1bfc",
+    "arbitrary-feature.rs": "8af43e9e3650a25761f8c275777566a49ee19783573df371267eae1c81081806",
+    "bad-version.rs": "07edd98ee3f83862b43854f1b4f9e83ce1a93d33be7598fc756091d9e705eaf9",
+    "client-active.rs": "cfe8bb2ecdab2b48bb3633c4feb6481b71f902da2b42b011d4be6c3b0c0702ea",
+    "client-other.rs": "36f3e9a9c2003d3f73b6658beb7032a88d409bca1b952b17cf358da23ed0706c",
+    "client-plain.rs": "bef661f725659b491e6e2c4af6192b6394f98bc20fbe93344fbf41e8c7fa007a",
+    "client-request.rs": "4df87c811b5cf146b8c2f52deedd25d654b5c3abd6efa20948d42e9d82d8504a",
+    "client-unknown.rs": "4c308f68be84c276cd692e5e32c1fc477b1b5debcb0e5ab6c4e81e0eb387b606",
+    "disabled.rs": "f3b754df2ab8a12144ed9cd9499b4438838872d97ba770bd6928f65bf7c8ba46",
+    "duplicate-key.rs": "31f57506319c8dc71d78e216432500255831e27cf895109e382b0d65d5b38a28",
+    "empty-data.rs": "59789eb6678c90fd94d9f7df6c5b6a6bbf318742b4c57e16e0c80fba0f6732a0",
+    "host.rs": "a99813099f79cdd0e802b911787d742bc77d3740decf7afb95b45856b60d1c84",
+    "local-request.rs": "fdce26502a837cd4a2f6428e8736435734da0468cdb3f044a71746bd882fc1b0",
+    "missing-feature.rs": "ac0601bc6d9d8c9a47be8be8c25e06739d40a6c9d4bfd94edfcffbedd936c2a3",
+    "missing-gate.rs": "294256b14d94a2367c0f42f0da9b392d84c1bef194289db88332e2bfa41ea132",
+    "missing-link.rs": "4b9a5ddb2562de57c81d273f9e66425174032bb9b8f5fba79f01112e804a3cfb",
+    "missing-reason.rs": "5ffedcb8b77913c9cd5b3f8af38d5dc012b4b7758786c38e59bd24ed417e1086",
+    "missing-root-stable.rs": "e2339345b5dbe5f6ade2f05fb32bb4b61b62eb3a615cc57076817b6312a91a1b",
+    "missing-since.rs": "a947aab29785742a0aa4f4a88c671137810608af247d75fe64ebc9830fd50bc3",
+    "multiple.rs": "935a5a998b844bd19291c393da967457faeda46b144602856a2628a4cb45a262",
+    "nested.rs": "67dc7b8bf00f28beed04b3102acb913359b9f4625f14cbcf464e589d4d0f4338",
+    "non-string.rs": "52e6b5f139355f2f5b060842593a2dcad9ae43f78ff07a3449b61211f0012c4f",
+    "ordinary.rs": "b58f9df9da95155976be224536b3489647cfbbe764f1c3ff686be87e0f6be3a1",
+    "outer.rs": "c49f360f8a6c0a0610e92e12ad62ce8b726eafef256a6c63e3d60b7337776ed6",
+    "placeholder.rs": "52d75be9dc2bcebc7de0a0b1452bf085ad8d729917b0f642eb0a46f51295ef34",
+    "provider.rs": "ee4132ead7db3fc38afa0264b415666f6be3558e833983556a739af617a9864b",
+    "reordered.rs": "795bdb0d3019a173bc2bb6c0dd164f7685db8b66f1b2954cc806b8eb502d793b",
+    "repeated.rs": "b9e5866f68a1fc41cda66df35b6e0e12471d46695456f151d34b9f60ded76c2e",
+    "short-version.rs": "e304cb77db62e20a07d2bcd2d468eb286d8137d7587a730319dca8f9efbcbb2a",
+    "staged-only.rs": "ee4132ead7db3fc38afa0264b415666f6be3558e833983556a739af617a9864b",
+    "strings.rs": "ed4b69da84e5408f013a20bb259e062fa024ca683bf0a205cbd3ae528184e7db",
+    "unknown-key.rs": "b13fa408a0c5d47a8682ef854f574120f77147755cc2256d76b759129c00043a",
+    "value.rs": "3f75d7cbdc5eed6fa2ec251062e4fa19fa28fad8983287c7d7ed264af1fd821e",
+    "word.rs": "7968cc5ce9939a1fe4c95e5ef3b6278d9beda362452729c352be0562a8182d71",
+    "wrong-gate.rs": "92a83dde083ed7a07a11aa28c318c94bca9c356bb17fd5824cefdfb0fccd75aa",
+    "cases.tsv": "38e35fc311a386e047f16f1483cf6dff1d88e31bd11866cabec8d38cf25d24e5"
+  },
+  "cases": [
+    {
+      "name": "actual-payload",
+      "source": "actual.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0
+    },
+    {
+      "name": "staged-api-without-rustc-attrs",
+      "source": "staged-only.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0
+    },
+    {
+      "name": "opaque-nonidentifier-feature-data",
+      "source": "arbitrary-feature.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0
+    },
+    {
+      "name": "raw-and-escaped-strings",
+      "source": "strings.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0
+    },
+    {
+      "name": "multiple-attributes-combine",
+      "source": "multiple.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0
+    },
+    {
+      "name": "same-feature-repeated-data",
+      "source": "repeated.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0
+    },
+    {
+      "name": "arguments-reordered",
+      "source": "reordered.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0
+    },
+    {
+      "name": "cfg-disabled-no-gate",
+      "source": "disabled.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0
+    },
+    {
+      "name": "missing-staged-api",
+      "source": "missing-gate.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "unstable_removed"
+      ]
+    },
+    {
+      "name": "rustc-attrs-does-not-pay-staged-api",
+      "source": "wrong-gate.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "unstable_removed"
+      ]
+    },
+    {
+      "name": "word-form",
+      "source": "word.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "unstable_removed"
+      ]
+    },
+    {
+      "name": "name-value-form",
+      "source": "value.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "unstable_removed"
+      ]
+    },
+    {
+      "name": "missing-feature",
+      "source": "missing-feature.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "unstable_removed"
+      ]
+    },
+    {
+      "name": "missing-reason",
+      "source": "missing-reason.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "unstable_removed"
+      ]
+    },
+    {
+      "name": "missing-link",
+      "source": "missing-link.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "unstable_removed"
+      ]
+    },
+    {
+      "name": "missing-since",
+      "source": "missing-since.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "unstable_removed"
+      ]
+    },
+    {
+      "name": "duplicate-key",
+      "source": "duplicate-key.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "unstable_removed"
+      ]
+    },
+    {
+      "name": "unknown-key",
+      "source": "unknown-key.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "unstable_removed"
+      ]
+    },
+    {
+      "name": "non-string-value",
+      "source": "non-string.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "unstable_removed"
+      ]
+    },
+    {
+      "name": "invalid-version",
+      "source": "bad-version.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "unstable_removed"
+      ]
+    },
+    {
+      "name": "version-placeholder-not-numeric",
+      "source": "placeholder.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "unstable_removed"
+      ]
+    },
+    {
+      "name": "nested-owner",
+      "source": "nested.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "unstable_removed"
+      ]
+    },
+    {
+      "name": "outer-owner",
+      "source": "outer.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "unstable_removed"
+      ]
+    },
+    {
+      "name": "local-removed-data-does-not-enable-request",
+      "source": "local-request.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "unknown feature",
+        "rustgm_retired_probe"
+      ]
+    },
+    {
+      "name": "ordinary-declaration-profile-fence",
+      "source": "ordinary.rs",
+      "profile": "ordinary",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 1
+    },
+    {
+      "name": "actual-guest-root",
+      "source": "host.rs",
+      "profile": "source",
+      "guests": [
+        [
+          "app",
+          "staged-only.rs"
+        ]
+      ],
+      "rustc": 0,
+      "rustgm": 0
+    },
+    {
+      "name": "host-staged-api-cannot-pay-guest",
+      "source": "host.rs",
+      "profile": "source",
+      "guests": [
+        [
+          "app",
+          "missing-gate.rs"
+        ]
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "unstable_removed"
+      ]
+    },
+    {
+      "name": "sibling-staged-api-cannot-pay-guest",
+      "source": "host.rs",
+      "profile": "source",
+      "guests": [
+        [
+          "first",
+          "host.rs"
+        ],
+        [
+          "app",
+          "missing-gate.rs"
+        ]
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "unstable_removed"
+      ]
+    },
+    {
+      "name": "guest-staged-api-cannot-pay-host",
+      "source": "missing-gate.rs",
+      "profile": "source",
+      "guests": [
+        [
+          "app",
+          "host.rs"
+        ]
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "unstable_removed"
+      ]
+    },
+    {
+      "name": "removed-data-does-not-fill-root-stability",
+      "source": "missing-root-stable.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "missing stability attribute"
+      ]
+    },
+    {
+      "name": "two-component-version",
+      "source": "short-version.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0
+    },
+    {
+      "name": "empty-opaque-strings",
+      "source": "empty-data.rs",
+      "profile": "source",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0
+    },
+    {
+      "name": "imported-removed-request-denied",
+      "source": "client-request.rs",
+      "profile": "import",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "has been removed",
+        "rustgm_retired_probe"
+      ]
+    },
+    {
+      "name": "active-feature-precedes-imported-removed",
+      "source": "client-active.rs",
+      "profile": "import",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0
+    },
+    {
+      "name": "unknown-request-without-provider",
+      "source": "client-unknown.rs",
+      "profile": "ordinary",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "unknown feature",
+        "rustgm_retired_probe"
+      ]
+    },
+    {
+      "name": "removed-table-does-not-pay-other-request",
+      "source": "client-other.rs",
+      "profile": "import",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "unknown feature",
+        "rustgm_other_retired_probe"
+      ]
+    },
+    {
+      "name": "import-without-request",
+      "source": "client-plain.rs",
+      "profile": "import",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0
+    }
+  ],
+  "profile_gaps": [
+    "Ordinary authored removed declarations remain outside the source compiler profile; no ordinary PA24 declaration permission is added."
+  ],
+  "counts": {
+    "cases": 37,
+    "rustc_accept": 14,
+    "rustgm_expected_accept": 13
+  },
+  "typed_metadata_plan": {
+    "new_outer_tag": 16,
+    "canonical_chain": "optional loader15 followed by optional removed16 followed by unchanged prior profile; one of each at outer boundary only",
+    "owner": "exact Interface crate identity; only this host source root publishes its own checked rows; guest records stay distinct in session inventory",
+    "data": "feature/reason/link exact decoded UTF8 strings and numeric version; combines repeated rows in source order, including opaque nonidentifier data",
+    "negative_controls": [
+      "foreign table owner",
+      "duplicate envelope",
+      "recursive envelope",
+      "removed envelope in dependency inner layer",
+      "unknown envelope version",
+      "empty envelope",
+      "truncated payload",
+      "component/string/retained/transient quotas",
+      "active feature wins before removed fallback",
+      "plain metadata byte equality when absent",
+      "loader15+removed16 roundtrip canonical composition"
+    ],
+    "authority": "No active feature/API/const/body/codegen/runtime permission is carried."
+  },
+  "private_plan": [
+    "Root policy and regular declaration inheritance stay Stable(rust1) independent of removed records.",
+    "Original/appended decoded string ownership and exact actual payload survive producer+codec roundtrip.",
+    "Guest own staged_api uses existing Package::staged_crate; no new dense capability bit.",
+    "Cold attachment costs prepay real Growth and source/decode retained/scratch budgets; Package/SourceCore/NodeFacts sizes unchanged.",
+    "The actual-payload positive also declares explicitly stable rust1 modules for root/child policy preservation; no body or runtime consumer is added."
+  ],
+  "pending": "Independent37 outcomes pass. Candidate37, nine private metadata/scope/quota controls, strict lint/audit, harness/upstream and fresh actual std replay remain pending. No generated references or full library/runtime claim.",
+  "private_controls": [
+    "resolve::stability::removed_features::tests::removed_data_preserves_the_actual_root_policy_and_decoded_strings",
+    "resolve::stability::removed_features::tests::repeated_removed_declarations_combine_without_becoming_active_definitions",
+    "resolve::stability::removed_features::tests::fallback_requests_reject_removed_names_and_preserve_active_first_lookup",
+    "resolve::stability::removed_features::tests::catalogless_removed_imports_cannot_carry_a_callable_or_gain_permission_from_flags",
+    "resolve::stability::removed_features::tests::removed_metadata_owner_quota_and_plain_bytes_stay_closed",
+    "resolve::stability::removed_features::tests::flags_and_removed_envelopes_compose_once_at_the_outermost_owner",
+    "resolve::stability::removed_features::tests::removed_publication_obeys_the_existing_sticky_source_payer",
+    "resolve::stability::removed_features::tests::source_clients_cannot_republish_a_root_declaration_by_importing_data",
+    "resolve::stability::removed_features::tests::removed_envelopes_stay_outside_native_dependency_inner_metadata"
+  ],
+  "independent_observation": {
+    "original_declaration": "declared-v1.json",
+    "original_manifest_sha256": "47d9823aee71d61b66d9bead2d3b15671e774620f17256383d4dd46d8142258b",
+    "grammar33_records": "obj/parallel/std-guests-20261117/removed-feature-oracle-v1/records.json",
+    "grammar33_records_sha256": "87348ce872f9e93c8b73df34e52b26caf7763c8071f52e27e0cdf026ac5029d0",
+    "harness_failure": "Four original import consumers did not reach semantics because the external metadata lacked lib* basename. The original records/raw stderr/helper are retained; no source or expected status was changed.",
+    "repair_receipt": "obj/parallel/std-guests-20261117/removed-feature-harness-repair-v2.json",
+    "repair_receipt_sha256": "a962be1a657082227ed9f762a0122253551a5e9cf08a6ede453d33a4c7100f81",
+    "import4_records": "obj/parallel/std-guests-20261117/removed-feature-import-oracle-v2/records.json",
+    "import4_records_sha256": "9c1db290245ad00acb138dc0f2e716acf986bb08f35002d01d0d003ccefd85e7",
+    "result": "All37 intended source outcomes and diagnostics match, combining33 grammar cases and4 repaired import-only controls; no declaration refutation, no repeated33 run."
+  },
+  "cold_layout_prediction": {
+    "Inventory": 128,
+    "Library": 168,
+    "Package": 256,
+    "SourceCore": 248,
+    "NodeFacts": 80,
+    "reason": "Only optional cold declaration storage grows; no dense per-definition or phase record grows. These are static layout predictions pending the guarded candidate gate."
+  },
+  "candidate_adapter": "Existing generic expansion/resolution packet driver reused for33 local/guest/ordinary controls. Four metadata request controls use the actual checked SourceCore producer, typed codec roundtrip and ordinary public expansion/resolution import boundary, without body/lowering/native claims."
+}

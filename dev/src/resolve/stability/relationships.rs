@@ -97,6 +97,13 @@ impl Draft<'_> {
                     .transpose()?
                     .unwrap_or(false)
             {
+                if let Some(message) = imported
+                    .map(|imports| imports.removed_message(name))
+                    .transpose()?
+                    .flatten()
+                {
+                    return Err(Error::at(FileId(0), 0, message));
+                }
                 return Err(Error::at(
                     FileId(0),
                     0,

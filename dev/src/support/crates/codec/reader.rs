@@ -6,15 +6,23 @@ pub(super) struct Reader<'a> {
     cursor: usize,
     names: usize,
     atoms: usize,
+    retained_prefix: usize,
 }
 impl<'a> Reader<'a> {
     pub(super) const fn new(bytes: &'a [u8]) -> Self {
+        Self::with_retained(bytes, 0)
+    }
+    pub(super) const fn with_retained(bytes: &'a [u8], retained_prefix: usize) -> Self {
         Self {
             bytes,
             cursor: 0,
             names: 0,
             atoms: 0,
+            retained_prefix,
         }
+    }
+    pub(super) const fn retained_prefix(&self) -> usize {
+        self.retained_prefix
     }
     pub(super) fn bytes(&mut self, count: usize) -> Result<&'a [u8], &'static str> {
         let end = self

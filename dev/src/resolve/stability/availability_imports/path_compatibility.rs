@@ -98,11 +98,11 @@ impl Imports {
         let mapped = mapped.ok_or_else(|| {
             Error::unlocated("imported API availability is unknown in its metadata profile")
         })?;
-        self.catalog
+        self.catalog()?
             .validate_declaration(mapped.handle, definition, mapped.kind)
             .map_err(Error::unlocated)?;
         let coordinate = self
-            .catalog
+            .catalog()?
             .declaration_coordinate(mapped.handle)
             .map_err(Error::unlocated)?;
         let artifact = &self.inventory.artifacts()[mapped.artifact];

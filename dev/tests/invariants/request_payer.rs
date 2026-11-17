@@ -10,6 +10,7 @@ fn inventory(steps: usize) -> Inventory {
         imports: Vec::new(),
         consts: None,
         fields: None,
+        retirements: None,
         steps,
     }
 }

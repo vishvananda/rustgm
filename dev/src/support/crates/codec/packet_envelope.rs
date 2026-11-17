@@ -132,7 +132,9 @@ fn decode_profile(
     let identity = input.identity()?;
     let dependencies = decode_dependencies(input)?;
     let interface = Interface::new(identity, dependencies, Vec::new())?;
-    let base = interface.base_retained_bytes();
+    let base = interface
+        .base_retained_bytes()
+        .saturating_add(input.retained_prefix());
     if base > MAX_BYTES {
         return Err("source envelope base exceeds retained storage budget");
     }

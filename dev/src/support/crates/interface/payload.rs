@@ -18,6 +18,9 @@ impl Interface {
             vector(&self.dependencies),
             vector(&self.functions),
             vector(&self.constants),
+            self.retirements
+                .as_deref()
+                .map_or(0, crate::support::crates::RemovedFeatures::allocation_bytes),
             self.native_links
                 .as_deref()
                 .map_or(0, crate::support::linker_libraries::Plan::allocation_bytes),

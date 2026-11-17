@@ -274,19 +274,25 @@ pub fn build_library_prepared(
     .map_err(|e| diagnostic(report, e.node, e.message.into()))?;
     let interface = interface
         .ok_or_else(|| diagnostic(report, None, "missing checked library exports".into()))?;
-    Ok((program, with_loader_flags(report, interface)?))
+    Ok((program, with_crate_attributes(report, interface)?))
 }
 
-/// Publish the crate's own loader attributes on its outermost artifact.
-fn with_loader_flags(
+/// Publish only this crate's checked root declarations on its outermost artifact.
+fn with_crate_attributes(
     report: &Report,
     interface: crate::support::crates::Interface,
 ) -> Result<crate::support::crates::Interface, Error> {
-    report
+    let interface = report
         .package
         .loader_flags()
         .and_then(|flags| interface.with_loader_flags(flags))
-        .map_err(|message| diagnostic(report, None, message.into()))
+        .map_err(|message| diagnostic(report, None, message.into()))?;
+    match report.package.removed_features()? {
+        Some(rows) => interface
+            .with_removed_features(rows)
+            .map_err(|message| diagnostic(report, None, message.into())),
+        None => Ok(interface),
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -398,7 +404,7 @@ pub fn build_source_library_profile(
             let program = super::build_assembled(facts, assembled, roots)
                 .map_err(|e| diagnostic(report, e.node, e.message.into()))?;
             let interface = published_interface(report, facts, source, base, profile)?;
-            Ok((program, with_loader_flags(report, interface)?))
+            Ok((program, with_crate_attributes(report, interface)?))
         },
         if matches!(
             profile,

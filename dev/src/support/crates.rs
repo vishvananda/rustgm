@@ -10,6 +10,7 @@ mod interface;
 mod nominals;
 pub mod owner_catalog;
 mod public_names;
+mod retirements;
 mod scalar_value;
 mod type_graph;
 pub use artifact_policy::{ArtifactContext, OutputKind};
@@ -23,6 +24,7 @@ pub use identity::{CrateIdentity, ExternalDef, ExternalKind, Namespace};
 pub use interface::{Function, Interface, LoaderFlags, Scalar, Symbol};
 pub use nominals::{Nominals, Record, RecordField, RecordRef, RecordRepr};
 pub use public_names::{PublicBinding, PublicModule, PublicNames};
+pub use retirements::{RemovedFeature, RemovedFeatures, RemovedVersion};
 pub use scalar_value::{Constant, ScalarValue};
 pub use type_graph::{Abi, Lifetime, Signature, TypeGraph, TypeNode, TypeRef};
 
