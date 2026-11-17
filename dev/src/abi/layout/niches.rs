@@ -136,9 +136,27 @@ impl Niches {
             let layout = layouts
                 .get(ty)
                 .ok_or("nullable carrier lacks its completed layout")?;
+            if let (Some(Kind::Adt(..)), Shape::Niche { encoding, .. }) =
+                (types.kind(ty), layout.shape)
+            {
+                let niche = self
+                    .records
+                    .get(encoding.0 as usize)
+                    .ok_or("missing nested nullable encoding")?;
+                if niche.owner != ty {
+                    return Err("nested nullable encoding belongs to another type");
+                }
+                break niche
+                    .carrier
+                    .next(types)?
+                    .map_or(Answer::Absent, Answer::Carrier);
+            }
             match types.kind(ty).ok_or("missing nullable carrier type")? {
                 Kind::Primitive(crate::types::Primitive::Bool) => {
-                    break Answer::Carrier(Carrier::Boolean { leaf: ty });
+                    break Answer::Carrier(Carrier::Boolean {
+                        leaf: ty,
+                        consumed: 0,
+                    });
                 }
                 Kind::Pattern {
                     constraint: crate::types::Constraint::NonNull,

@@ -21,7 +21,8 @@ impl Lower<'_, '_, '_> {
             self.builder
                 .literal(ty, crate::lowir::program::Literal::Null)
         } else {
-            self.builder.integer(ty, carrier.empty_bits())
+            self.builder
+                .integer(ty, carrier.empty_bits(self.context.types)?)
         }
     }
 

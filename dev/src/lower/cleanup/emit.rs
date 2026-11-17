@@ -480,7 +480,8 @@ impl Emitter<'_, '_> {
                         self.builder
                             .literal(Type::Ptr, crate::lowir::program::Literal::Null)?
                     } else {
-                        self.builder.integer(tag.ty, niche.carrier.empty_bits())?
+                        self.builder
+                            .integer(tag.ty, niche.carrier.empty_bits(self.context.types)?)?
                     },
                     predicate,
                 )

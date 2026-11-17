@@ -1456,3 +1456,7 @@ binder preserves DropGuard formation while unpaid const Drop still rejects.
 patterns and two lifetime/move opponents in `outcomes.json`; `observe.c` checks
 actual generic tuple/record/ergonomic bindings. The registered frontend root
 `destructured_storage` checks source outcomes and native `41 59` output.
+
+`spec/scalar-niche-suffixes/outcomes.json` declares three accepted source/native
+programs and two invalid scalar opponents for bounded integer and nested bool
+encodings. Its manifest includes every Rust input and the shared C observer.

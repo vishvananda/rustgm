@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "declared": "Corrected before any revised candidate/oracle execution: pinned rustc source reserve chooses spare values by signed magnitude, negative first on ties, except exact range0..1 takes2 first; bounded u32 None0xffffffff, nested bool outerNone255/tripleNone254; exhaustion and invalid payload outcomes unchanged.",
+  "native_stdout": "41 59\n",
+  "observer": "observe.c",
+  "cases": {
+    "bounded.rs": {
+      "sha256": "9caf6eae7235c477160e96f60cda917c1709f54a1af4813171e0a14e42be3a03",
+      "status": 0
+    },
+    "nested-bool.rs": {
+      "sha256": "7d9c78b0c378a9324e4767432279b56421279de28a88d61143be4d8b61c8144a",
+      "status": 0
+    },
+    "exhausted.rs": {
+      "sha256": "1f9277e058a86511e6636df7285b6f6fdba72ae59942f8562caf11171e297f6e",
+      "status": 0
+    },
+    "invalid-bounded.rs": {
+      "sha256": "83fd8c4241fe19ad4a3d4116da9edb3ff11bd0052c5b835c95e1d806d47e7a79",
+      "status": 1
+    },
+    "invalid-nested.rs": {
+      "sha256": "58051fd91807385654127a9fbeba6968e64fbfe66c7e7c8e090c3924be926119",
+      "status": 1
+    }
+  },
+  "observer_sha256": "b907066beba74ca28839dcb2bd21577c183be0d294e57625b7f91a29b3c8f17b",
+  "authoring_note": "Before execution, replaced the copied observer with the first/second entry names declared by this packet. Before execution, invalid constants are demanded by exported functions rather than shared statics to avoid an unrelated Sync prerequisite. Corrected before revised candidate execution: the copied no_core foundation lacked Clone/Copy for u32 and the integer scaling family, causing a delayed pinned-rustc fully_perform ICE after its original wrong assertion was removed; added the actual primitive impls and preserved the failed run. Candidate source run exposed an unrelated128-bit Clone return ABI fence because the first repair added every integer impl to every fixture. Before the next run, limited tracked programs to their actual bool/u8/u32 prerequisites; width-only oracle programs retain their own observed foundation. No predicted outcome or production fence was weakened. The initial128-bit attribution was an unconfirmed harness diagnosis: offset951 is the shared bool clone body. The exhausted fixture also requested a tagged-enum C return outside the intended scalar-C contract. Its helper now uses internal Rust ABI; C first/second observers,2-byte exhaustion and all predicted values remain required.",
+  "scaling": {
+    "nested_bool_depths": [
+      8,
+      32,
+      128,
+      255
+    ],
+    "expected_bytes": [
+      1,
+      1,
+      1,
+      2
+    ],
+    "maximum_layout_work": "48 * depth + 64; repeated completed demands add zero work",
+    "integer_bases": [
+      "u8",
+      "u16",
+      "u32",
+      "u64",
+      "u128",
+      "usize",
+      "i8",
+      "i16",
+      "i32",
+      "i64",
+      "i128",
+      "isize"
+    ],
+    "integer_range": "0..=41; first None all-one bits and next all-one bits minus1; full u8 suffix independently ordered by signed magnitude"
+  },
+  "refuted_prediction": {
+    "original_manifest_sha256": "cdee070c8c6ae2e8f626eb1a764fb574132560c287454cf4a49e9bfb25292ff7",
+    "prediction": "bounded None0x110000; nested bool None3/triple4",
+    "observation": "Pinned rustc bounded sizeof4 passed but the None0x110000 const assertion rejected; publication independently reproduced both original bounded/nested failures. Raw failed evidence remains in obj. This is a contract authoring correction, not a generated-reference update."
+  }
+}

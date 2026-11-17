@@ -147,7 +147,7 @@ impl Context<'_> {
                         init.work.push(Work::Bits {
                             offset: offset + niche.offset,
                             bytes: niche.carrier.bytes(),
-                            bits: niche.carrier.empty_bits(),
+                            bits: niche.carrier.empty_bits(self.types)?,
                         });
                     } else if ordinal != niche.payload as usize || length != 1 {
                         return Err("nullable constant differs from its canonical variant");

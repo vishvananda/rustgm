@@ -1565,3 +1565,25 @@ fn empty_callable_binders_preserve_formation_requirements() -> Result {
 fn vacuous_callable_formation_executes() -> Result {
     execute_cases(VACUOUS_CALLABLE, &["new", "angleout"])
 }
+
+const SCALAR_SUFFIXES: &str = "pa31/tests/spec/scalar-niche-suffixes";
+#[test]
+fn scalar_niche_suffixes_preserve_payload_validity_and_exhaustion() -> Result {
+    lower_completely(SCALAR_SUFFIXES, &["bounded", "nested-bool", "exhausted"])?;
+    for (case, diagnostic) in [
+        ("invalid-bounded", "scalar pattern"),
+        ("invalid-nested", "bool"),
+    ] {
+        let (rejected, _) = minicore(SCALAR_SUFFIXES, case, None)?;
+        let stderr = String::from_utf8(rejected.stderr)?;
+        assert_eq!(rejected.status.code(), Some(1), "{case}: {stderr}");
+        assert!(stderr.contains(diagnostic), "{case}: {stderr}");
+    }
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn scalar_niche_suffixes_execute() -> Result {
+    execute_cases(SCALAR_SUFFIXES, &["bounded", "nested-bool", "exhausted"])
+}

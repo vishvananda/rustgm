@@ -10,8 +10,16 @@ pub enum Carrier {
         leaf: TypeId,
         primitive: Primitive,
     },
+    /// A zero-based integer interval; each enclosing enum consumes one value
+    /// from its unused suffix. The original range stays in the type store.
+    UpperBoundedInteger {
+        leaf: TypeId,
+        primitive: Primitive,
+        consumed: u32,
+    },
     Boolean {
         leaf: TypeId,
+        consumed: u8,
     },
 }
 impl Carrier {
@@ -20,7 +28,8 @@ impl Carrier {
         match self {
             Self::NonNullPointer { leaf }
             | Self::ZeroExcludedInteger { leaf, .. }
-            | Self::Boolean { leaf } => leaf,
+            | Self::UpperBoundedInteger { leaf, .. }
+            | Self::Boolean { leaf, .. } => leaf,
         }
     }
     #[must_use]
@@ -28,7 +37,8 @@ impl Carrier {
         match self {
             Self::NonNullPointer { .. } => 8,
             Self::Boolean { .. } => 1,
-            Self::ZeroExcludedInteger { primitive, .. } => primitive
+            Self::ZeroExcludedInteger { primitive, .. }
+            | Self::UpperBoundedInteger { primitive, .. } => primitive
                 .integer()
                 .map_or(0, |(_, bits)| u64::from(bits / 8)),
         }
@@ -38,18 +48,86 @@ impl Carrier {
         matches!(self, Self::NonNullPointer { .. })
     }
     /// The unused carrier value that encodes the companion variant.
-    #[must_use]
-    pub const fn empty_bits(self) -> u128 {
+    /// # Errors
+    /// Rejects a stale range identity or an exhausted scalar carrier.
+    pub fn empty_bits(self, types: &Store) -> Result<u128, &'static str> {
         match self {
-            Self::Boolean { .. } => 2,
-            Self::NonNullPointer { .. } | Self::ZeroExcludedInteger { .. } => 0,
+            Self::Boolean { consumed, .. } => suffix_niche(1, 255, u128::from(consumed)),
+            Self::UpperBoundedInteger {
+                leaf,
+                primitive,
+                consumed,
+            } => {
+                let Kind::Pattern {
+                    base,
+                    constraint: crate::types::Constraint::ScalarRange(id),
+                } = types.kind(leaf).ok_or("missing bounded carrier type")?
+                else {
+                    return Err("bounded carrier lacks its scalar range");
+                };
+                let range = types
+                    .scalar_range(id)
+                    .ok_or("missing bounded carrier range")?;
+                let (_, bits) = primitive
+                    .integer()
+                    .ok_or("bounded carrier is not an integer")?;
+                if base != TypeId::primitive(primitive) || range.base != base || range.start != 0 {
+                    return Err("bounded carrier differs from its scalar range");
+                }
+                suffix_niche(range.end, u128::MAX >> (128 - bits), u128::from(consumed))
+            }
+            Self::NonNullPointer { .. } | Self::ZeroExcludedInteger { .. } => Ok(0),
         }
+    }
+    /// The payload's next available invalid value after one enum uses this one.
+    pub(super) fn next(self, types: &Store) -> Result<Option<Self>, &'static str> {
+        Ok(match self {
+            Self::Boolean { leaf, consumed } if consumed < 253 => Some(Self::Boolean {
+                leaf,
+                consumed: consumed + 1,
+            }),
+            Self::UpperBoundedInteger {
+                leaf,
+                primitive,
+                consumed,
+            } => {
+                let (_, bits) = primitive
+                    .integer()
+                    .ok_or("bounded carrier is not an integer")?;
+                let Kind::Pattern {
+                    constraint: crate::types::Constraint::ScalarRange(id),
+                    ..
+                } = types
+                    .kind(self.leaf())
+                    .ok_or("missing bounded carrier type")?
+                else {
+                    return Err("bounded carrier lacks its scalar range");
+                };
+                let range = types
+                    .scalar_range(id)
+                    .ok_or("missing bounded carrier range")?;
+                self.empty_bits(types)?;
+                if u128::from(consumed) + 1 == (u128::MAX >> (128 - bits)) - range.end {
+                    None
+                } else {
+                    Some(Self::UpperBoundedInteger {
+                        leaf,
+                        primitive,
+                        consumed: consumed
+                            .checked_add(1)
+                            .ok_or("bounded carrier count overflow")?,
+                    })
+                }
+            }
+            Self::NonNullPointer { .. }
+            | Self::ZeroExcludedInteger { .. }
+            | Self::Boolean { .. } => None,
+        })
     }
 }
 impl Carrier {
-    /// The carrier of a range that excludes only zero. An unsigned base spells
-    /// it `1..`; a signed base spells it `..0 | 1..`, which is stored as the same
-    /// wrapped interval of raw bits, one through the all-ones mask.
+    /// Supports one zero niche or the contiguous unused suffix of a zero-based
+    /// integer interval. Other intervals retain their explicit wider ABI fence.
     pub(super) fn integer(
         types: &Store,
         leaf: TypeId,
@@ -70,10 +148,20 @@ impl Carrier {
             return Ok(None);
         };
         let mask = u128::MAX >> (128 - bits);
-        if range.start != 1 || range.end != mask || bytes != u64::from(bits / 8) {
+        if bytes != u64::from(bits / 8) {
             return Ok(None);
         }
-        Ok(Some(Self::ZeroExcludedInteger { leaf, primitive }))
+        Ok(if range.start == 1 && range.end == mask {
+            Some(Self::ZeroExcludedInteger { leaf, primitive })
+        } else if range.start == 0 && range.end < mask {
+            Some(Self::UpperBoundedInteger {
+                leaf,
+                primitive,
+                consumed: 0,
+            })
+        } else {
+            None
+        })
     }
 }
 
@@ -91,4 +179,31 @@ impl Answer {
             Self::Absent | Self::WiderScalar => None,
         }
     }
+}
+
+/// Rank the suffix's bit patterns by signed distance from zero, negative first
+/// on ties. This is the pinned source ABI's one-value reservation policy.
+/// The exact 0..=1 range reserves 2 first, including integer pattern types.
+/// Computing the rank directly keeps nested layout demands linear in depth.
+fn suffix_niche(mut end: u128, mask: u128, mut consumed: u128) -> Result<u128, &'static str> {
+    if end >= mask || consumed >= mask - end {
+        return Err("bounded carrier has no unused scalar value");
+    }
+    if end == 1 {
+        if consumed == 0 {
+            return Ok(2);
+        }
+        end = 2;
+        consumed -= 1;
+    }
+    if end >= mask / 2 || consumed <= end {
+        return Ok(mask - consumed);
+    }
+    let alternating = consumed - end - 1;
+    let magnitude = end + 1 + alternating / 2;
+    Ok(if alternating & 1 == 0 {
+        magnitude
+    } else {
+        mask - magnitude
+    })
 }

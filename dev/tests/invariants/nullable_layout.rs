@@ -102,7 +102,7 @@ fn boolean_carrier_cache_cannot_change_a_course_policy() -> Result<(), String> {
         let source_layout = layouts.get(source).ok_or("source bool layout")?;
         assert_eq!(source_layout.size, 1);
         let encoding = layouts.niche(source_layout)?.ok_or("source bool niche")?;
-        assert_eq!(encoding.carrier.empty_bits(), 2);
+        assert_eq!(encoding.carrier.empty_bits(&types)?, 2);
         assert_eq!(encoding.carrier.bytes(), 1);
         let course_layout = layouts.get(course).ok_or("course bool layout")?;
         assert_eq!(course_layout.size, 16);
@@ -368,3 +368,59 @@ fn nullable_owner_seals_and_none_inhabitedness_are_independent_of_payload() -> R
 
 #[path = "integer_niches.rs"]
 mod integers;
+
+/// Nested source enums consume distinct bool values; the 255th needs a tag.
+#[test]
+fn nested_boolean_niches_are_bounded_and_stop_at_exhaustion() -> Result<(), String> {
+    for count in [8_u16, 32, 128, 255] {
+        let mut types = Store::default();
+        let mut definitions = Definitions::default();
+        let mut ty = TypeId::primitive(crate::types::Primitive::Bool);
+        let mut layouts = Layouts::default();
+        for ordinal in 0..count {
+            let item = ItemId(100 + u32::from(ordinal));
+            ty = nullable(&mut types, &mut definitions, item, ty, false)?;
+            definitions.register_nullable_enum(
+                &types,
+                item,
+                NullableEnum {
+                    empty: 1,
+                    payload: 0,
+                    field: 0,
+                    fallback_tag: Some(crate::types::Primitive::U8),
+                    companion: crate::types::aggregate::Companion::Fieldless,
+                    bool_niche: true,
+                },
+                None,
+            )?;
+            layouts
+                .demand_bounded(&types, &definitions, ty, 64 * usize::from(count) + 128)
+                .map_err(|e| e.to_string())?;
+            let layout = layouts.get(ty).ok_or("nested layout")?;
+            if ordinal < 254 {
+                assert_eq!(layout.size, 1);
+                let encoding = layouts.niche(layout)?.ok_or("nested niche")?;
+                let expected = match ordinal {
+                    0 => 2,
+                    1..=3 => 256 - u128::from(ordinal),
+                    _ if ordinal % 2 == 0 => u128::from(ordinal / 2) + 1,
+                    _ => 254 - u128::from(ordinal / 2),
+                };
+                assert_eq!(encoding.carrier.empty_bits(&types)?, expected);
+            } else {
+                assert_eq!(layout.size, 2);
+                assert!(layouts.niche(layout)?.is_none());
+            }
+        }
+        assert_eq!(layouts.niche_mark(), usize::from(count.min(254)));
+        assert!(layouts.steps <= usize::from(count) * 48 + 64);
+        let work = layouts.steps;
+        for _ in 0..128 {
+            layouts
+                .demand(&types, &definitions, ty)
+                .map_err(|e| e.to_string())?;
+        }
+        assert_eq!(layouts.steps, work);
+    }
+    Ok(())
+}
