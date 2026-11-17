@@ -11,8 +11,21 @@ pub enum KnownFeature {
     CfgTargetHasAtomic,
     CfgSanitize,
     CfgFloatReliability,
+    CfgTargetThreadLocal,
 }
 impl KnownFeature {
+    // This inventory exhausts the existing compact mask. Another consumer
+    // requires an explicit representation review rather than a ninth u8 bit.
+    pub(super) const ALL: [Self; 8] = [
+        Self::EditionPanic,
+        Self::PanicInternals,
+        Self::CoreIntrinsics,
+        Self::CfgUbChecks,
+        Self::CfgTargetHasAtomic,
+        Self::CfgSanitize,
+        Self::CfgFloatReliability,
+        Self::CfgTargetThreadLocal,
+    ];
     #[must_use]
     pub const fn name(self) -> FeatureName<'static> {
         FeatureName(Cow::Borrowed(match self {
@@ -23,12 +36,17 @@ impl KnownFeature {
             Self::CfgTargetHasAtomic => "cfg_target_has_atomic",
             Self::CfgSanitize => "cfg_sanitize",
             Self::CfgFloatReliability => "cfg_target_has_reliable_f16_f128",
+            Self::CfgTargetThreadLocal => "cfg_target_thread_local",
         }))
     }
     pub(super) const fn mask(self) -> u8 {
         1 << self as u8
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/compact_masks.rs"]
+mod tests;
 
 /// A name already canonicalized by its declaration or the existing name arena.
 #[derive(Clone)]

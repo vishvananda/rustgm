@@ -18,6 +18,7 @@ pub enum CfgGate {
     TargetHasAtomic,
     Sanitize,
     FloatReliability,
+    ThreadLocal,
 }
 impl CfgGate {
     pub(crate) fn named(name: &str) -> Option<Self> {
@@ -25,6 +26,7 @@ impl CfgGate {
             "ub_checks" => Some(Self::UbChecks),
             "target_has_atomic_load_store" => Some(Self::TargetHasAtomic),
             "sanitize" => Some(Self::Sanitize),
+            "target_thread_local" => Some(Self::ThreadLocal),
             "target_has_reliable_f16"
             | "target_has_reliable_f16_math"
             | "target_has_reliable_f128"

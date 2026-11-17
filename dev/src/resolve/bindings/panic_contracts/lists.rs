@@ -153,15 +153,7 @@ pub(super) fn collect(
     }
     let witnesses = capture(owner, declaration.builtin, &mut names, work).map_err(error)?;
     let (features, helpers, lexeme_bytes) = names.finish();
-    for feature in [
-        KnownFeature::EditionPanic,
-        KnownFeature::PanicInternals,
-        KnownFeature::CoreIntrinsics,
-        KnownFeature::CfgUbChecks,
-        KnownFeature::CfgTargetHasAtomic,
-        KnownFeature::CfgSanitize,
-        KnownFeature::CfgFloatReliability,
-    ] {
+    for feature in KnownFeature::ALL {
         work.charge(feature.name().spelling().len(), 0)
             .map_err(error)?;
         if features.contains(feature.name().spelling()) {

@@ -1217,10 +1217,10 @@ impl<'a, S: Sources> Engine<'a, S> {
                 decorated_calls::validate(&self.loader.package, &self.paths.state.facts, call)?;
             }
         }
-        if call.absolute {
+        if call.absolute && self.loader.package.source_core().is_none() {
             return Err(call.diagnostic("external macro paths require external metadata"));
         }
-        if call.path.len() == 1 {
+        if !call.absolute && call.path.len() == 1 {
             let name = call.path[0];
             match (bindings::Bindings {
                 definitions: &self.definitions,
@@ -1271,7 +1271,21 @@ impl<'a, S: Sources> Engine<'a, S> {
                 MacroTarget::Declarative(index)
                 | MacroTarget::SourceAttribute(index)
                 | MacroTarget::SourceDerive(index),
-            ) => Ok(Some(index)),
+            ) => {
+                if call.absolute
+                    && (transported_macros::imported(&self.paths.state.facts, index).is_some()
+                        || self
+                            .definitions
+                            .get(index)
+                            .is_none_or(|definition| definition.node.is_none()))
+                {
+                    return Err(call.diagnostic("external macro paths require external metadata"));
+                }
+                Ok(Some(index))
+            }
+            Some(MacroTarget::Builtin(_)) if call.absolute => {
+                Err(call.diagnostic("external macro paths require external metadata"))
+            }
             Some(MacroTarget::Builtin(builtin)) => self.builtin_definition(builtin).map(Some),
             None => Ok(None),
         }

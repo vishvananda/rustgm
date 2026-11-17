@@ -1,0 +1,369 @@
+{
+  "schema": 1,
+  "profile": "Pinned Rust1.98; x86_64-unknown-linux-gnu; abort; cap-lints allow; declared before execution; source-only PA34 bring-up guests with exact unit editions",
+  "trigger": {
+    "path": "library/vendor/libc-0.2.185/src/macros.rs",
+    "offset": 7994,
+    "line": 254,
+    "source": "#[::core::prelude::v1::derive(...) ]",
+    "observed": "external macro paths require external metadata"
+  },
+  "scope": "Actual source-core/guest declarations and same-session reexports use existing typed edition-aware path lookup. Ordinary and metadata-imported/synthetic absolute targets remain fenced. No external macro transport or library artifact claim.",
+  "inputs": [
+    "bang-alias.rs",
+    "core-bang.rs",
+    "core-derive.rs",
+    "derive-alias.rs",
+    "first-later.rs",
+    "first.rs",
+    "guest-bang.rs",
+    "host.rs",
+    "local-prefix.rs",
+    "missing.rs",
+    "nested.rs",
+    "ordinary.rs",
+    "private.rs",
+    "shadow.rs",
+    "single.rs",
+    "wrong-kind.rs",
+    "cases.tsv",
+    "metadata-provider.rs",
+    "metadata-relative.rs",
+    "metadata-absolute.rs"
+  ],
+  "input_sha256": {
+    "bang-alias.rs": "a864e054733b944b11bb9d59f31372e636a41cf4c5cc7a92f8d8a1e75fb0a804",
+    "core-bang.rs": "830a55208d930b3972e509cafb390a26437fd5be219e2c546d3cb5fed87ff901",
+    "core-derive.rs": "3612cdbde71e6727c1e26eba1d82bab56b835408351f6e54a2d84a53ee135b44",
+    "derive-alias.rs": "02f058e8426dc7c6b705c7a564508511eb3628f54780699c36f9e21962807799",
+    "first-later.rs": "2f05d50921826508cdc21dbe38923921eee726cca9160890dfb35a6c635e0404",
+    "first.rs": "fe45c578f154e702121add6130fe272ae2db231391753fbcdb8d91c62fedfe41",
+    "guest-bang.rs": "550b4c05b08ad93589016816cc95bbd0350a06df1f1ec04916268fef57d93d69",
+    "host.rs": "e1d1829d250a8c001eb46ed6d8ec82e2289dde0ebf2fec17eeb0d3acc05a8ad2",
+    "local-prefix.rs": "3d68f496ed09512310fa7fc59933992f4a3cc685fb421d8962fb6ff0bc4cb912",
+    "missing.rs": "cf1c5208e257317aba773784672522b462b44568d422c1748951dd7c16567398",
+    "nested.rs": "580ec05443ebd197750b71a99cda88e5e518a1d2739a030768ea63a1d736b3de",
+    "ordinary.rs": "ff152edc2bb43be949f5262acda48f67185f7f0d0f42d614ef71dff865736776",
+    "private.rs": "de5898c127f4e86b0e75fa4ebdbaaf7a90d566bcaab0d5ed1fc9bb732ce0e839",
+    "shadow.rs": "701b6feae027758ee20c79776f764ae74dbc590cf058e160c2987de8df30c459",
+    "single.rs": "089c4327f44b379662e637f01bb9727ddb1d7525cefc3238210c27906c3efe91",
+    "wrong-kind.rs": "23763fbfb246b1e90da2029a078af4c17b96303536f610da57cabada5f9976b2",
+    "cases.tsv": "cf35bf8aa430dd79e6883ae1216e3c370025b4d25a94f5d41de66b81d3aa92fb",
+    "metadata-provider.rs": "fe80cd9717b1f19031497a88f2746bbae6104ba6f8b7fd8544264e58559537ab",
+    "metadata-relative.rs": "e10939f2c4d2fb195cea3f8cc6149d361b6c895ae916b0b9d00a905254d8ae99",
+    "metadata-absolute.rs": "a32fe20a17d17d9e8289b156b047bda7bfbb0a6ea61c66b1a3c42cf59519e10d"
+  },
+  "cases": [
+    {
+      "name": "core-bang",
+      "app": "core-bang.rs",
+      "edition": "2024",
+      "rustc": 0,
+      "rustgm": 0,
+      "guests": [
+        [
+          "first",
+          "2021",
+          "first.rs"
+        ],
+        [
+          "app",
+          "2024",
+          "core-bang.rs"
+        ]
+      ]
+    },
+    {
+      "name": "core-derive",
+      "app": "core-derive.rs",
+      "edition": "2024",
+      "rustc": 0,
+      "rustgm": 0,
+      "guests": [
+        [
+          "first",
+          "2021",
+          "first.rs"
+        ],
+        [
+          "app",
+          "2024",
+          "core-derive.rs"
+        ]
+      ]
+    },
+    {
+      "name": "guest-bang",
+      "app": "guest-bang.rs",
+      "edition": "2024",
+      "rustc": 0,
+      "rustgm": 0,
+      "guests": [
+        [
+          "first",
+          "2021",
+          "first.rs"
+        ],
+        [
+          "app",
+          "2024",
+          "guest-bang.rs"
+        ]
+      ]
+    },
+    {
+      "name": "derive-reexport",
+      "app": "derive-alias.rs",
+      "edition": "2024",
+      "rustc": 0,
+      "rustgm": 0,
+      "guests": [
+        [
+          "first",
+          "2021",
+          "first.rs"
+        ],
+        [
+          "app",
+          "2024",
+          "derive-alias.rs"
+        ]
+      ]
+    },
+    {
+      "name": "bang-reexport",
+      "app": "bang-alias.rs",
+      "edition": "2021",
+      "rustc": 0,
+      "rustgm": 0,
+      "guests": [
+        [
+          "first",
+          "2021",
+          "first.rs"
+        ],
+        [
+          "app",
+          "2021",
+          "bang-alias.rs"
+        ]
+      ]
+    },
+    {
+      "name": "nested-exported",
+      "app": "nested.rs",
+      "edition": "2021",
+      "rustc": 0,
+      "rustgm": 0,
+      "guests": [
+        [
+          "first",
+          "2021",
+          "first.rs"
+        ],
+        [
+          "app",
+          "2021",
+          "nested.rs"
+        ]
+      ]
+    },
+    {
+      "name": "local-core-cannot-shadow",
+      "app": "shadow.rs",
+      "edition": "2024",
+      "rustc": 0,
+      "rustgm": 0,
+      "guests": [
+        [
+          "first",
+          "2021",
+          "first.rs"
+        ],
+        [
+          "app",
+          "2024",
+          "shadow.rs"
+        ]
+      ]
+    },
+    {
+      "name": "unknown-core-member",
+      "app": "missing.rs",
+      "edition": "2024",
+      "rustc": 1,
+      "rustgm": 1,
+      "guests": [
+        [
+          "first",
+          "2021",
+          "first.rs"
+        ],
+        [
+          "app",
+          "2024",
+          "missing.rs"
+        ]
+      ]
+    },
+    {
+      "name": "modern-single-is-not-textual",
+      "app": "single.rs",
+      "edition": "2021",
+      "rustc": 1,
+      "rustgm": 1,
+      "guests": [
+        [
+          "first",
+          "2021",
+          "first.rs"
+        ],
+        [
+          "app",
+          "2021",
+          "single.rs"
+        ]
+      ]
+    },
+    {
+      "name": "legacy-single-is-crate-root",
+      "app": "single.rs",
+      "edition": "2015",
+      "rustc": 0,
+      "rustgm": 0,
+      "guests": [
+        [
+          "first",
+          "2021",
+          "first.rs"
+        ],
+        [
+          "app",
+          "2015",
+          "single.rs"
+        ]
+      ]
+    },
+    {
+      "name": "wrong-macro-kind",
+      "app": "wrong-kind.rs",
+      "edition": "2024",
+      "rustc": 1,
+      "rustgm": 1,
+      "guests": [
+        [
+          "first",
+          "2021",
+          "first.rs"
+        ],
+        [
+          "app",
+          "2024",
+          "wrong-kind.rs"
+        ]
+      ]
+    },
+    {
+      "name": "private-guest-macro",
+      "app": "private.rs",
+      "edition": "2024",
+      "rustc": 1,
+      "rustgm": 1,
+      "guests": [
+        [
+          "first",
+          "2021",
+          "first.rs"
+        ],
+        [
+          "app",
+          "2024",
+          "private.rs"
+        ]
+      ]
+    },
+    {
+      "name": "later-guest-not-visible",
+      "app": "first-later.rs",
+      "edition": "2021",
+      "rustc": 1,
+      "rustgm": 1,
+      "guests": [
+        [
+          "first",
+          "2021",
+          "first-later.rs"
+        ],
+        [
+          "later",
+          "2021",
+          "first.rs"
+        ]
+      ]
+    },
+    {
+      "name": "local-module-is-not-extern",
+      "app": "local-prefix.rs",
+      "edition": "2024",
+      "rustc": 1,
+      "rustgm": 1,
+      "guests": [
+        [
+          "first",
+          "2021",
+          "first.rs"
+        ],
+        [
+          "app",
+          "2024",
+          "local-prefix.rs"
+        ]
+      ]
+    },
+    {
+      "name": "ordinary-fence",
+      "app": "ordinary.rs",
+      "edition": "2024",
+      "rustc": 0,
+      "rustgm": 1,
+      "guests": [],
+      "ordinary": true
+    }
+  ],
+  "profile_gaps": [
+    "ordinary-fence is independently accepted Rust but deliberately retains the adopted ordinary external-macro-path fence"
+  ],
+  "case_table": "cases.tsv",
+  "driver_only": [
+    {
+      "name": "imported-relative-control",
+      "provider": "metadata-provider.rs",
+      "consumer": "metadata-relative.rs",
+      "prelude": "host.rs",
+      "rustgm": 0,
+      "purpose": "authentic ordinary exported macro metadata remains usable through its existing relative lookup"
+    },
+    {
+      "name": "imported-absolute-fence",
+      "provider": "metadata-provider.rs",
+      "consumer": "metadata-absolute.rs",
+      "prelude": "host.rs",
+      "rustgm": 1,
+      "rustgm_diagnostic": "external macro paths require external metadata",
+      "purpose": "source-provider mode does not confer source-declaration authority on imported macro rows"
+    }
+  ],
+  "required_rustc_diagnostics": {
+    "unknown-core-member": "could not find `missing` in `core`",
+    "modern-single-is-not-textual": "could not find `local` in the list of imported crates",
+    "wrong-macro-kind": "expected attribute, found macro",
+    "private-guest-macro": "could not find `hidden` in `first`",
+    "later-guest-not-visible": "could not find `later` in the list of imported crates",
+    "local-module-is-not-extern": "could not find `local` in the list of imported crates"
+  },
+  "retained_controls": [
+    "crate_linking::declarative_exports",
+    "crate_linking::hygienic_exports",
+    "ordinary-fence keeps synthetic std/core bootstrap paths outside this source-only change"
+  ]
+}

@@ -1,0 +1,204 @@
+{
+  "schema": 1,
+  "profile": "Pinned Rust1.98; edition2024; x86_64-unknown-linux-gnu; panic abort; cap-lints allow; source-only PA34; declared before source oracle/candidate execution",
+  "facts": {
+    "target_thread_local": true,
+    "basis": "Pinned rustc1.98 --print cfg observed true with/without -Zunstable-options; input hash/commands retained in runtime graph-diagnostic-artifact/target-cfg-comparison.json"
+  },
+  "scope": "Query permission cfg_target_thread_local is independent of thread_local storage; reuse demanded cfg leaf and literal/captured macro provenance checks",
+  "inputs": [
+    "requested-macro.rs",
+    "requested-attribute.rs",
+    "missing-macro.rs",
+    "missing-attribute.rs",
+    "missing-false-attribute.rs",
+    "missing-short-circuit.rs",
+    "storage-only-query.rs",
+    "query-only-storage.rs",
+    "storage-only-storage.rs",
+    "both.rs",
+    "macro-query.rs",
+    "captured-query.rs",
+    "wrong-allowance.rs",
+    "query-allowance-storage.rs",
+    "disabled-nested.rs",
+    "cases.tsv"
+  ],
+  "input_sha256": {
+    "requested-macro.rs": "5d52997800231e9019b30dc1f92adec6e5068d74ed49728e5a37fb67dda8d88d",
+    "requested-attribute.rs": "ce772be5fd48f38177d756b07ef3438a3c3c1fc7e23a6b29a2a07ab37760fb5f",
+    "missing-macro.rs": "adfeec2a4092ff4866985092bcffe2e5414893687f34da453db35b1d6bab860e",
+    "missing-attribute.rs": "46bcbc1bd8064acfc062db013d755dfb900745924bbdfaed2d2782a7219e670a",
+    "missing-false-attribute.rs": "7eb8ce07ac36cf6dfc8097bac77d4baf554ad8639d58b8b59650e77487a076ea",
+    "missing-short-circuit.rs": "92010b7e2398294eb98cec02b1d7379a15b4951c0842d57ebb98acf92c992f36",
+    "storage-only-query.rs": "992f2ccf074614d2817116753ae401e977ca23a3b068bd5d301312527d556508",
+    "query-only-storage.rs": "ffb4eac4dec4b8ed9a1434ca9e05d526b6cb5bec40ce634847a53a56220cd3c2",
+    "storage-only-storage.rs": "29b08f97f4475c1f91c8e83b038e066ac4a6bad4d74b9be32c4ebc53c4ae170c",
+    "both.rs": "fb6a444fcbab561cb15a4e60108ba951872d912a150a7f4e4e1aad2efe629344",
+    "macro-query.rs": "0e5463ce92247524006a2546e8cc4a1ace2d70093faf8551f99d94e3ecb67253",
+    "captured-query.rs": "7320a14061904001d1a7cba597299808da378ad15909e415825a2fc9e1daa48d",
+    "wrong-allowance.rs": "eda9f0d57db572930c65e64ddeca20d7269bd0b58006697f86bb993f8bf2c54e",
+    "query-allowance-storage.rs": "27b6fcf4986a631e774f91dbd05c9a15b82f4ce20a53ff2774d10d5aa0cfbe59",
+    "disabled-nested.rs": "86f18625cd6b41e8223905c5cec6d956efe168e2713421211c301efa74fe63a7",
+    "cases.tsv": "097fa6391cae79dd47b89450cc2c7226974f4912b8cab849a07ab4f6080d1611"
+  },
+  "cases": [
+    {
+      "name": "requested-macro",
+      "path": "requested-macro.rs",
+      "rustc": 0,
+      "rustgm": 0,
+      "purpose": "requested query sees fixed native-TLS fact",
+      "rustgm_diagnostic": null
+    },
+    {
+      "name": "requested-attribute",
+      "path": "requested-attribute.rs",
+      "rustc": 0,
+      "rustgm": 0,
+      "purpose": "native branch is selected; wrong target fact fails",
+      "rustgm_diagnostic": null
+    },
+    {
+      "name": "missing-macro",
+      "path": "missing-macro.rs",
+      "rustc": 1,
+      "rustgm": 1,
+      "purpose": "query needs its own feature",
+      "rustgm_diagnostic": "requires cfg_target_thread_local"
+    },
+    {
+      "name": "missing-attribute",
+      "path": "missing-attribute.rs",
+      "rustc": 1,
+      "rustgm": 1,
+      "purpose": "attribute predicate requires query permission",
+      "rustgm_diagnostic": "requires cfg_target_thread_local"
+    },
+    {
+      "name": "missing-false-attribute",
+      "path": "missing-false-attribute.rs",
+      "rustc": 1,
+      "rustgm": 1,
+      "purpose": "demanded false predicate still requires permission",
+      "rustgm_diagnostic": "requires cfg_target_thread_local"
+    },
+    {
+      "name": "missing-short-circuit",
+      "path": "missing-short-circuit.rs",
+      "rustc": 1,
+      "rustgm": 1,
+      "purpose": "demanded short-circuit leaf retains provenance",
+      "rustgm_diagnostic": "requires cfg_target_thread_local"
+    },
+    {
+      "name": "storage-only-query",
+      "path": "storage-only-query.rs",
+      "rustc": 1,
+      "rustgm": 1,
+      "purpose": "storage permission does not pay for query",
+      "rustgm_diagnostic": "requires cfg_target_thread_local"
+    },
+    {
+      "name": "query-only-storage",
+      "path": "query-only-storage.rs",
+      "rustc": 1,
+      "rustgm": 1,
+      "purpose": "query permission does not authorize storage",
+      "rustgm_diagnostic": "requires thread_local"
+    },
+    {
+      "name": "storage-only-storage",
+      "path": "storage-only-storage.rs",
+      "rustc": 0,
+      "rustgm": 0,
+      "purpose": "existing storage feature remains independent",
+      "rustgm_diagnostic": null
+    },
+    {
+      "name": "both",
+      "path": "both.rs",
+      "rustc": 0,
+      "rustgm": 0,
+      "purpose": "both independent permissions work together",
+      "rustgm_diagnostic": null
+    },
+    {
+      "name": "macro-query",
+      "path": "macro-query.rs",
+      "rustc": 0,
+      "rustgm": 0,
+      "purpose": "literal macro query consumes exact allowance",
+      "rustgm_diagnostic": null
+    },
+    {
+      "name": "captured-query",
+      "path": "captured-query.rs",
+      "rustc": 1,
+      "rustgm": 1,
+      "purpose": "captured caller expression cannot borrow macro allowance",
+      "rustgm_diagnostic": "requires cfg_target_thread_local"
+    },
+    {
+      "name": "wrong-allowance",
+      "path": "wrong-allowance.rs",
+      "rustc": 1,
+      "rustgm": 1,
+      "purpose": "storage allowance does not pay for query",
+      "rustgm_diagnostic": "requires cfg_target_thread_local"
+    },
+    {
+      "name": "query-allowance-storage",
+      "path": "query-allowance-storage.rs",
+      "rustc": 1,
+      "rustgm": 1,
+      "purpose": "query allowance does not authorize storage",
+      "rustgm_diagnostic": "requires thread_local"
+    },
+    {
+      "name": "disabled-nested",
+      "path": "disabled-nested.rs",
+      "rustc": 0,
+      "rustgm": 0,
+      "purpose": "unvisited disabled attribute and body stay undemanded",
+      "rustgm_diagnostic": null
+    }
+  ],
+  "driver_only": [
+    {
+      "setting": "target_thread_local",
+      "rustgm": 2,
+      "diagnostic": "compiler-controlled cfg option"
+    },
+    {
+      "setting": "target_thread_local=\"false\"",
+      "rustgm": 2,
+      "diagnostic": "compiler-controlled cfg option"
+    }
+  ],
+  "representation": {
+    "feature_bits": {
+      "thread_local": 80,
+      "cfg_target_thread_local": 81
+    },
+    "feature_storage_bytes": 16,
+    "known_consumer_count": 8,
+    "known_consumer_mask_bytes": 1,
+    "query_consumer_bit": 7,
+    "known_feature_enum_bytes": 1,
+    "cfg_gate_enum_bytes": 1
+  },
+  "claim": "No native/library artifact or assignment completion claim; original15 source outcomes are predeclared hypotheses",
+  "case_table": "cases.tsv",
+  "required_rustc_diagnostics": {
+    "missing-macro": "`cfg(target_thread_local)` is experimental",
+    "missing-attribute": "`cfg(target_thread_local)` is experimental",
+    "missing-false-attribute": "`cfg(target_thread_local)` is experimental",
+    "missing-short-circuit": "`cfg(target_thread_local)` is experimental",
+    "storage-only-query": "`cfg(target_thread_local)` is experimental",
+    "query-only-storage": "is an experimental feature",
+    "captured-query": "`cfg(target_thread_local)` is experimental",
+    "wrong-allowance": "`cfg(target_thread_local)` is experimental",
+    "query-allowance-storage": "is an experimental feature"
+  }
+}

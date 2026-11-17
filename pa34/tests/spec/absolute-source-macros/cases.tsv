@@ -1,0 +1,15 @@
+core-bang	core-bang.rs	2024	0	source	first@2021=first.rs|app@2024=core-bang.rs
+core-derive	core-derive.rs	2024	0	source	first@2021=first.rs|app@2024=core-derive.rs
+guest-bang	guest-bang.rs	2024	0	source	first@2021=first.rs|app@2024=guest-bang.rs
+derive-reexport	derive-alias.rs	2024	0	source	first@2021=first.rs|app@2024=derive-alias.rs
+bang-reexport	bang-alias.rs	2021	0	source	first@2021=first.rs|app@2021=bang-alias.rs
+nested-exported	nested.rs	2021	0	source	first@2021=first.rs|app@2021=nested.rs
+local-core-cannot-shadow	shadow.rs	2024	0	source	first@2021=first.rs|app@2024=shadow.rs
+unknown-core-member	missing.rs	2024	1	source	first@2021=first.rs|app@2024=missing.rs
+modern-single-is-not-textual	single.rs	2021	1	source	first@2021=first.rs|app@2021=single.rs
+legacy-single-is-crate-root	single.rs	2015	0	source	first@2021=first.rs|app@2015=single.rs
+wrong-macro-kind	wrong-kind.rs	2024	1	source	first@2021=first.rs|app@2024=wrong-kind.rs
+private-guest-macro	private.rs	2024	1	source	first@2021=first.rs|app@2024=private.rs
+later-guest-not-visible	first-later.rs	2021	1	source	first@2021=first-later.rs|later@2021=first.rs
+local-module-is-not-extern	local-prefix.rs	2024	1	source	first@2021=first.rs|app@2024=local-prefix.rs
+ordinary-fence	ordinary.rs	2024	1	ordinary	-

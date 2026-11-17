@@ -111,7 +111,10 @@ impl Config {
             } else {
                 matches!(
                     name,
-                    "unix" | "target_has_atomic" | "target_has_atomic_load_store"
+                    "unix"
+                        | "target_has_atomic"
+                        | "target_has_atomic_load_store"
+                        | "target_thread_local"
                 ) || self.flags.contains(name)
             };
         };

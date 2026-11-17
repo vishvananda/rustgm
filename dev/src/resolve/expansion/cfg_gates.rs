@@ -96,6 +96,7 @@ fn feature(gate: CfgGate) -> KnownFeature {
         CfgGate::TargetHasAtomic => KnownFeature::CfgTargetHasAtomic,
         CfgGate::Sanitize => KnownFeature::CfgSanitize,
         CfgGate::FloatReliability => KnownFeature::CfgFloatReliability,
+        CfgGate::ThreadLocal => KnownFeature::CfgTargetThreadLocal,
     }
 }
 fn missing(site: Location, gate: CfgGate) -> Error {
@@ -114,6 +115,9 @@ fn missing(site: Location, gate: CfgGate) -> Error {
             }
             CfgGate::TargetHasAtomic => {
                 "cfg(target_has_atomic_load_store) requires cfg_target_has_atomic or its actual macro allowance"
+            }
+            CfgGate::ThreadLocal => {
+                "cfg(target_thread_local) requires cfg_target_thread_local or its actual macro allowance"
             }
         },
     )

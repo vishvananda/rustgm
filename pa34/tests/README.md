@@ -2,6 +2,21 @@
 
 Planned: no graded fixtures or generated reference outputs yet.
 
+`spec/absolute-source-macros/outcomes.json` declares fifteen source outcomes
+for real source-core/guest absolute macro paths and same-session reexports.
+Edition, kind, privacy and ordinary-profile opponents remain explicit. Two
+driver controls retain the imported-metadata boundary. Every source and the
+case table is listed and hashed there; no external macro transport or library
+artifact qualification is claimed.
+
+`spec/target-tls-query/outcomes.json` declares fifteen source outcomes for the
+fixed Linux x86-64 `target_thread_local` fact and its separate
+`cfg_target_thread_local` permission. Missing gates, literal/captured macro
+origins, storage permissions and target-fact override denials remain separate.
+Every source and the case table is listed and hashed there; compact capability
+counts and widths have private controls. These packets are unqualified drafts
+and leave full std acceptance and PA34 activation required.
+
 `spec/crate-artifact-attributes/outcomes.json` declares checked builtin output
 metadata, explicit PA34 source binary/library overrides and guest rlib admission.
 Malformed forms, omitted unsupported artifact selections and the frozen ordinary

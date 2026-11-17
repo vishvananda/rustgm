@@ -102,6 +102,7 @@ pub(in crate::resolve) enum Feature {
     /// directives on a type's declaration.
     DiagnosticMove = 79,
     ThreadLocal = 80,
+    CfgTargetThreadLocal = 81,
 }
 
 #[cfg(test)]
@@ -194,6 +195,7 @@ impl Request {
             "allow_internal_unsafe" => Self::Capability(Feature::InternalUnsafeLint),
             "cfg_ub_checks" => Self::Capability(Feature::CfgUbChecks),
             "cfg_target_has_atomic" => Self::Capability(Feature::CfgTargetHasAtomic),
+            "cfg_target_thread_local" => Self::Capability(Feature::CfgTargetThreadLocal),
             "cfg_sanitize" => Self::Capability(Feature::CfgSanitize),
             "cfg_target_has_reliable_f16_f128" => Self::Capability(Feature::CfgFloatReliability),
             "builtin_syntax" => Self::Capability(Feature::BuiltinSyntax),
@@ -262,6 +264,7 @@ impl Features {
             || self.has(Feature::ReprSimd)
             || self.has(Feature::SimdFfi)
             || self.has(Feature::CfgTargetHasAtomic)
+            || self.has(Feature::CfgTargetThreadLocal)
             || self.has(Feature::CfgSanitize)
             || self.has(Feature::CfgFloatReliability)
             || self.has(Feature::AbiUnadjusted)

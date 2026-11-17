@@ -284,6 +284,8 @@ mod census_mode;
 #[path = "../../bringup_stubs.rs"]
 mod bringup_stubs;
 
+#[path = "../../guest_absolute_macros.rs"]
+mod guest_absolute_macros;
 #[path = "../../guest_crates.rs"]
 mod guest_crates;
 
@@ -318,5 +320,7 @@ mod global_allocators;
 
 #[path = "../../destructured_storage.rs"]
 mod destructured_storage;
+#[path = "../../target_tls_queries.rs"]
+mod target_tls_queries;
 #[path = "../../thread_locals.rs"]
 mod thread_locals;

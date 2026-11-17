@@ -75,6 +75,7 @@ impl super::package::Package {
         let feature = match gate {
             crate::expand::config::CfgGate::UbChecks => return Ok(self.requested_cfg_ub_checks()),
             crate::expand::config::CfgGate::TargetHasAtomic => policy::Feature::CfgTargetHasAtomic,
+            crate::expand::config::CfgGate::ThreadLocal => policy::Feature::CfgTargetThreadLocal,
             crate::expand::config::CfgGate::Sanitize => policy::Feature::CfgSanitize,
             crate::expand::config::CfgGate::FloatReliability => {
                 policy::Feature::CfgFloatReliability

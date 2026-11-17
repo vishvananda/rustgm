@@ -1,0 +1,15 @@
+requested-macro	requested-macro.rs	0	-
+requested-attribute	requested-attribute.rs	0	-
+missing-macro	missing-macro.rs	1	requires cfg_target_thread_local
+missing-attribute	missing-attribute.rs	1	requires cfg_target_thread_local
+missing-false-attribute	missing-false-attribute.rs	1	requires cfg_target_thread_local
+missing-short-circuit	missing-short-circuit.rs	1	requires cfg_target_thread_local
+storage-only-query	storage-only-query.rs	1	requires cfg_target_thread_local
+query-only-storage	query-only-storage.rs	1	requires thread_local
+storage-only-storage	storage-only-storage.rs	0	-
+both	both.rs	0	-
+macro-query	macro-query.rs	0	-
+captured-query	captured-query.rs	1	requires cfg_target_thread_local
+wrong-allowance	wrong-allowance.rs	1	requires cfg_target_thread_local
+query-allowance-storage	query-allowance-storage.rs	1	requires thread_local
+disabled-nested	disabled-nested.rs	0	-

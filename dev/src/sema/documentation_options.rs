@@ -157,6 +157,7 @@ impl Draft {
             CfgGate::TargetHasAtomic => KnownFeature::CfgTargetHasAtomic,
             CfgGate::Sanitize => KnownFeature::CfgSanitize,
             CfgGate::FloatReliability => KnownFeature::CfgFloatReliability,
+            CfgGate::ThreadLocal => KnownFeature::CfgTargetThreadLocal,
         };
         if !enabled && !allowances.allows_at(key.file, used.span, &feature.name())? {
             return Err(error(
