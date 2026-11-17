@@ -1,6 +1,6 @@
 //! Append-only semantic facts are consumed once, independently of defining-body order.
 use super::{Contract, Contracts, Declarations, Kind, NodeKey, Obligation, Proof};
-use crate::sema::model::{AdjustmentKind, BodyRegionOrigin, Function};
+use crate::sema::model::{AdjustmentKind, BodyRegionOrigin, Function, RegionEquality};
 use crate::support::hash::HashMap;
 
 #[derive(Default)]
@@ -277,6 +277,33 @@ fn variable(id: crate::types::RegionId, origin: BodyRegionOrigin) -> Kind {
         ),
     }
 }
+
+fn equality_source(facts: &Declarations, value: RegionEquality) -> NodeKey {
+    if !facts.closures.inputs.contains_key(&value.body) {
+        return value.body;
+    }
+    // A generic input bridge can fail against its referent's type-outlives
+    // requirement. Keep that reference node even inside a tuple annotation;
+    // monomorphic input bridges retain the closure's original diagnostic site.
+    [(value.left, value.right), (value.right, value.left)]
+        .into_iter()
+        .find_map(|(input, universal)| {
+            let (0, _) = universal.bound_parts()? else {
+                return None;
+            };
+            let input = facts.body_regions.get(value.body, input)?;
+            let ty = facts.node(input.source)?.ty?;
+            let crate::types::Kind::Reference { referent, .. } = facts.types.kind(ty)? else {
+                return None;
+            };
+            (input.body == value.body
+                && matches!(input.origin, BodyRegionOrigin::Annotation)
+                && facts.types.contains_parameters(referent) == Some(true))
+            .then_some(input.source)
+        })
+        .unwrap_or(value.body)
+}
+
 #[derive(Default)]
 pub(super) struct Cursor {
     cursors: [usize; 7],
@@ -325,7 +352,7 @@ impl Cursor {
         for value in &facts.region_equalities[self.cursors[1]..] {
             add(
                 value.body,
-                value.body,
+                equality_source(facts, *value),
                 Fact::Obligation(1, Kind::Equality((value.left, value.right))),
             )?;
         }
