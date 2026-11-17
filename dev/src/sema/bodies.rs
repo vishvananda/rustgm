@@ -2947,6 +2947,9 @@ impl Checker<'_> {
         value: NodeId,
         ty: NodeId,
     ) -> Result<Operation, Error> {
+        if let Some(operation) = self.nominal_cast_operation(value, ty)? {
+            return Ok(operation);
+        }
         let kind = if let Some(kind) = self.validate_pointer_cast(node, value, ty)? {
             kind
         } else if matches!(

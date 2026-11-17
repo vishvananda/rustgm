@@ -1866,12 +1866,13 @@ impl<'a> Builder<'a> {
             } => self.question_mark(node, operand)?,
             Kind::Unary { operand, .. } => self.unary_value(node, operand)?,
             Kind::Binary { left, right, .. } => self.binary(node, left, right)?,
-            Kind::Cast { value, .. } => {
-                let Some(Operation::Cast { kind, .. }) = self.fact(node)?.operation else {
-                    return Err(self.error(node, "missing cast selection"));
-                };
-                self.cast_value(node, value, ty, kind)?
-            }
+            Kind::Cast { value, .. } => match self.fact(node)?.operation {
+                Some(Operation::Cast { kind, .. }) => self.cast_value(node, value, ty, kind)?,
+                Some(Operation::CoercionCast { source, target }) => {
+                    self.coercion_cast_value(node, value, source, target)?
+                }
+                _ => return Err(self.error(node, "missing cast selection")),
+            },
             Kind::Call { callee, arguments } => self.call(node, callee, arguments)?,
             Kind::MethodCall { arguments, .. } | Kind::GenericMethodCall { arguments, .. } => {
                 self.method_call(node, arguments)?

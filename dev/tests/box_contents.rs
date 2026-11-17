@@ -119,3 +119,114 @@ fn owned_boxes_execute() -> Result {
     }
     Ok(())
 }
+
+const CASTS: &str = "pa31/tests/spec/coercion-casts";
+fn coercion_program(name: &str, source_profile: bool) -> Result<rustgm::lowir::program::Program> {
+    let text = crate::resolve::fixture(&format!("{CASTS}/{name}.rs"))?;
+    let mut config = rustgm::expand::config::Config::default();
+    config.set_lint_cap(rustgm::support::diagnostics::LintCap::Allow);
+    let mut report = if source_profile {
+        crate::resolve::source_provider_config(&text, "coercion_casts", &config)?
+    } else {
+        crate::resolve::resolve_config(&text, true, &config)?
+    };
+    let rustgm::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = rustgm::pipeline::analyze_source(&report)?;
+    Ok(if source_profile {
+        rustgm::lower::instances::build_roots_prepared(
+            &report,
+            &mut facts,
+            rustgm::lower::Roots {
+                entry: None,
+                exports: &[],
+            },
+            prepared,
+        )?
+    } else {
+        let entry = rustgm::sema::entry::select(&mut report, &facts)?;
+        rustgm::lower::instances::build_prepared(&report, &mut facts, entry, prepared)?
+    })
+}
+
+/// Frozen profile/acceptance columns from `coercion-casts/outcomes.json`.
+const COERCION_CASES: [(&str, bool, bool); 16] = [
+    ("generic-array", true, true),
+    ("method-result", true, true),
+    ("caller-bound", true, true),
+    ("slice-once", true, true),
+    ("dyn", true, true),
+    ("different-owner", true, false),
+    ("wrong-element", true, false),
+    ("reverse", true, false),
+    ("changed-allocator", true, false),
+    ("missing-implementation", true, false),
+    ("stronger-mutability", true, false),
+    ("unimplemented-dyn", true, false),
+    ("moved-source", true, false),
+    ("drop-opponent", true, false),
+    ("ordinary-reference", false, true),
+    ("ordinary-nominal", false, false),
+];
+
+#[test]
+fn explicit_nominal_casts_keep_selected_proofs_and_ownership_opponents() {
+    let mut failures = Vec::new();
+    for (name, source, accepts) in COERCION_CASES {
+        match coercion_program(name, source) {
+            Ok(_) if accepts => {}
+            Ok(_) => failures.push(format!("{name}: accepted a required rejection")),
+            Err(error) if accepts => failures.push(format!("{name}: {error}")),
+            Err(error) => {
+                let error = error.to_string();
+                let semantic = match name {
+                    "moved-source" => error.contains("uninitialized"),
+                    "drop-opponent" => error.contains(
+                        "cannot move a non-Copy field out of a type that implements Drop",
+                    ),
+                    "ordinary-nominal" => true,
+                    _ => ["cast", "coerc", "trait obligation", "incompatible types"]
+                        .iter()
+                        .any(|reason| error.contains(reason)),
+                };
+                let infrastructure = [
+                    "budget",
+                    "exhaust",
+                    "panicked",
+                    "not implemented",
+                    "unsupported",
+                    "coercion cast changed",
+                    "coercion cast lost",
+                    "coercion cast requires",
+                    "missing unadjusted",
+                ]
+                .iter()
+                .any(|reason| error.contains(reason));
+                if !semantic || source && infrastructure {
+                    failures.push(format!("{name}: wrong rejection cause: {error}"));
+                }
+            }
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn explicit_nominal_casts_execute_once_with_slice_and_object_cleanup() -> Result {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    for (name, expected) in [
+        ("slice-once", "alloc 2\ndrop 3\ndrop 6\nfree\nvalue 9\n"),
+        ("dyn", "alloc 1\ndrop 4\nfree\nvalue 4\n"),
+    ] {
+        crate::observed_program::execute(
+            &root.join(format!("obj/parallel/coercion-casts/native/{name}")),
+            &coercion_program(name, true)?,
+            &root.join(CASTS).join("observe.c"),
+            expected.as_bytes(),
+        )
+        .map_err(|error| format!("{name}: {error}"))?;
+    }
+    Ok(())
+}

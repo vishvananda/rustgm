@@ -656,6 +656,9 @@ fn operation(value: Operation, out: &mut impl Write) -> io::Result<()> {
             source,
             target,
         } => write!(out, "cast {kind:?} source={} target={}", source.0, target.0),
+        Operation::CoercionCast { source, target } => {
+            write!(out, "coercion-cast source={} target={}", source.0, target.0)
+        }
         Operation::Try { plan } => write!(out, "try plan={}", plan.index()),
         Operation::Iteration { plan } => write!(out, "iteration plan={}", plan.index()),
         Operation::OffsetOf { plan } => write!(out, "offset-of plan={}", plan.index()),

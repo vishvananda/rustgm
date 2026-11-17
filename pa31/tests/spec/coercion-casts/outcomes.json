@@ -1,0 +1,319 @@
+{
+  "schema": 1,
+  "owner": "pa31",
+  "state": "All16 independent metadata outcomes and2 independent native traces match. Candidate16source+19existingBoxcontrols/all751PA24text/15native programs/harness/upstream pass.5private controls remain unexecuted after local compile timeout; ordinary byte-equality and actual alloc/Vec replay pending clean immutable compiler.",
+  "original_declaration_sha256": "652d9ac9bc20b4bace3722e51e3379e72a390f94059e3609d1016bbe8c72131c",
+  "profile": {
+    "version": "1.98.0",
+    "commit": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "executable_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "target": "x86_64-unknown-linux-gnu",
+    "edition": "2024",
+    "flags": [
+      "--crate-type=rlib",
+      "--emit=metadata",
+      "-Cpanic=abort",
+      "--cap-lints=allow"
+    ],
+    "environment": {
+      "RUSTC_BOOTSTRAP": "1",
+      "LC_ALL": "C"
+    }
+  },
+  "cases": [
+    {
+      "name": "generic-array",
+      "input": "generic-array.rs",
+      "profile": "source",
+      "rustc": 0,
+      "rustgm": 0,
+      "semantic_contract": "same owner; all non-tail arguments equal; generic element and const extent retained",
+      "required_rustc_diagnostic": null,
+      "native_stdout": null,
+      "source_sha256": "a4b45055a5d4c936cbbf952b1836236e1e1ea63dbb00a20b2b78dc6854e6e1ec",
+      "independent_metadata_status": 0
+    },
+    {
+      "name": "method-result",
+      "input": "method-result.rs",
+      "profile": "source",
+      "rustc": 0,
+      "rustgm": 0,
+      "semantic_contract": "cast consumes actual typed method result; does not infer eligibility from method spelling",
+      "required_rustc_diagnostic": null,
+      "native_stdout": null,
+      "source_sha256": "b375eb6ceac249078f619f3b09e9cdb66bf63e50fada4133dce2e502fb1f1b01",
+      "independent_metadata_status": 0
+    },
+    {
+      "name": "caller-bound",
+      "input": "caller-bound.rs",
+      "profile": "source",
+      "rustc": 0,
+      "rustgm": 0,
+      "semantic_contract": "ordinary selected CoerceUnsized application retains caller Unsize premise and endpoints",
+      "required_rustc_diagnostic": null,
+      "native_stdout": null,
+      "source_sha256": "74dc566a0f10fea0962e921edcf9fbc476b8fbca925c9a3f5bfbc794ecaad0c5",
+      "independent_metadata_status": 0
+    },
+    {
+      "name": "slice-once",
+      "input": "slice-once.rs",
+      "profile": "source",
+      "rustc": 0,
+      "rustgm": 0,
+      "semantic_contract": "one actual source evaluation and nominal conversion; content drops then allocation frees",
+      "required_rustc_diagnostic": null,
+      "native_stdout": "alloc 2\ndrop 3\ndrop 6\nfree\nvalue 9\n",
+      "source_sha256": "5132d65a58ff5e1a168c825f0b15ca0362ce7e8b0f7bb87a84ae9af3ed20e1b7",
+      "independent_metadata_status": 0
+    },
+    {
+      "name": "dyn",
+      "input": "dyn.rs",
+      "profile": "source",
+      "rustc": 0,
+      "rustgm": 0,
+      "semantic_contract": "already-owned source object conversion and real dynamic dispatch; content drops once",
+      "required_rustc_diagnostic": null,
+      "native_stdout": "alloc 1\ndrop 4\nfree\nvalue 4\n",
+      "source_sha256": "1fae4d561a06a7e36571f5684110823c0731597a45ae71913419a99393b5cad8",
+      "independent_metadata_status": 0
+    },
+    {
+      "name": "different-owner",
+      "input": "different-owner.rs",
+      "profile": "source",
+      "rustc": 1,
+      "rustgm": 1,
+      "semantic_contract": "cast cannot change nominal owner",
+      "required_rustc_diagnostic": "E0605",
+      "native_stdout": null,
+      "source_sha256": "fc85f8d17048c1abece57723d69c9aecb7c2799665723bd6e640d61c8a8e531f",
+      "independent_metadata_status": 1
+    },
+    {
+      "name": "wrong-element",
+      "input": "wrong-element.rs",
+      "profile": "source",
+      "rustc": 1,
+      "rustgm": 1,
+      "semantic_contract": "tail proof cannot change slice element identity",
+      "required_rustc_diagnostic": "E0605",
+      "native_stdout": null,
+      "source_sha256": "3dd2e385d1988c1265c7bc5c09194d70a64f64ad3bcc4861282b2618f9ab651c",
+      "independent_metadata_status": 1
+    },
+    {
+      "name": "reverse",
+      "input": "reverse.rs",
+      "profile": "source",
+      "rustc": 1,
+      "rustgm": 1,
+      "semantic_contract": "unsizing is not reversible",
+      "required_rustc_diagnostic": "E0605",
+      "native_stdout": null,
+      "source_sha256": "bf0e7787afe4ecb2b349ca0fa55988cfe1a2dd8866e9632cc5ec15302714a247",
+      "independent_metadata_status": 1
+    },
+    {
+      "name": "changed-allocator",
+      "input": "changed-allocator.rs",
+      "profile": "source",
+      "rustc": 1,
+      "rustgm": 1,
+      "semantic_contract": "unchanged allocator argument must remain equal",
+      "required_rustc_diagnostic": "E0605",
+      "native_stdout": null,
+      "source_sha256": "d2b5383f4798a059d14ab838ae0160682ae43efee7b9a0c5a0144a1bb8446961",
+      "independent_metadata_status": 1
+    },
+    {
+      "name": "missing-implementation",
+      "input": "missing-implementation.rs",
+      "profile": "source",
+      "rustc": 1,
+      "rustgm": 1,
+      "semantic_contract": "pointer-shaped data alone cannot grant a CoerceUnsized implementation",
+      "required_rustc_diagnostic": "E0605",
+      "native_stdout": null,
+      "source_sha256": "e23fbd39136e8a8be46e2a6587d622a5b82829d21726beff92313c292209799a",
+      "independent_metadata_status": 1
+    },
+    {
+      "name": "stronger-mutability",
+      "input": "stronger-mutability.rs",
+      "profile": "source",
+      "rustc": 1,
+      "rustgm": 1,
+      "semantic_contract": "nominal conversion cannot strengthen content pointer mutability",
+      "required_rustc_diagnostic": "E0605",
+      "native_stdout": null,
+      "source_sha256": "a52e70ec4945332126ab444e301147be4d75ed729a3a18c08ac77b6a4f4c779c",
+      "independent_metadata_status": 1
+    },
+    {
+      "name": "unimplemented-dyn",
+      "input": "unimplemented-dyn.rs",
+      "profile": "source",
+      "rustc": 1,
+      "rustgm": 1,
+      "semantic_contract": "object terminal still requires the source trait implementation",
+      "required_rustc_diagnostic": "E0277",
+      "native_stdout": null,
+      "source_sha256": "19b566c43515666f6c4fce04d085c0493878fe6b5b8bf3921d35d58b544a53bb",
+      "independent_metadata_status": 1
+    },
+    {
+      "name": "moved-source",
+      "input": "moved-source.rs",
+      "profile": "source",
+      "rustc": 1,
+      "rustgm": 1,
+      "semantic_contract": "coercion cast moves the owning source exactly once; no Copy permission",
+      "required_rustc_diagnostic": "E0382",
+      "native_stdout": null,
+      "source_sha256": "f55e110cceda1667f01c082f5c0c54a1c3a6e101e6e058f94a2944106a9c8ab6",
+      "independent_metadata_status": 1
+    },
+    {
+      "name": "drop-opponent",
+      "input": "drop-opponent.rs",
+      "profile": "source",
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostic": "E0509",
+      "semantic_contract": "unchanged owning-content Drop move fence",
+      "copied_from": "pa31/tests/spec/owned-boxes/move-from-drop-content.rs",
+      "source_sha256": "bfeb037a39ad09b028aabe8f0737a0165f315b6cf91a2c131b8482fcca2dcb3d",
+      "independent_metadata_status": 1
+    },
+    {
+      "name": "ordinary-reference",
+      "input": "ordinary-reference.rs",
+      "profile": "ordinary",
+      "rustc": 0,
+      "rustgm": 0,
+      "required_rustc_diagnostic": null,
+      "semantic_contract": "unchanged ordinary reference coercion cast; compare immutable before/after IR",
+      "copied_from": "pa22/tests/spec/casts/reference-unsizing/generic.rs",
+      "source_sha256": "4e29044809a0c1fa81fcdca21ba05abd9c4abcbbdf5606380dd7185a55691b79",
+      "independent_metadata_status": 0
+    },
+    {
+      "name": "ordinary-nominal",
+      "input": "ordinary-nominal.rs",
+      "profile": "ordinary",
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostic": "E0605",
+      "semantic_contract": "ordinary PA24 bootstrap receives no new source CoerceUnsized authority",
+      "source_sha256": "c3f63a086d08e7c22c19ea38e3851f714421f15eb895c5d0abb124f24b72f577",
+      "independent_metadata_status": 1
+    }
+  ],
+  "auxiliary": [
+    {
+      "path": "prefix.rs",
+      "source_sha256": "de8e6d839f4f1859881e986d173d18ef696fc12d52ad8fa9834e8aba79b96c86",
+      "purpose": "Byte-identical mini-core foundation reference; every complete source already includes these bytes."
+    },
+    {
+      "path": "observe.c",
+      "source_sha256": "a3d959c0f8d1b6a2c24ba5a88381ac99f737c7e37af9b6c32c59a510033247e4",
+      "purpose": "Existing host allocation/drop/free observer; no backend contract change."
+    }
+  ],
+  "independent_metadata": {
+    "receipt": "obj/parallel/continuation-20261117/box-cast-oracle-v1/records.json",
+    "receipt_sha256": "7906171abb08db1c729594eb9a18cbf347cd0b1109210f74a7945b3087db0bd9",
+    "status": "passed",
+    "cases": 16,
+    "candidate_or_native_claim": false
+  },
+  "actual_alloc": {
+    "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/frontier3/library/alloc/src/boxed.rs",
+    "sha256": "ad1b7ab420ae7fced26fbd1ff0b8b1b603057d509f75b283d285b3d3bd0a7d0f",
+    "row": "alloc:boxed.rs\t10093\tbox_assume_init_into_vec_unsafe\tonly eligible field-less enums can be cast to integers",
+    "offset": 10093,
+    "line": 262,
+    "bytes_at_offset": "pub fn box_assume_init_into_vec_unsafe<T, const N: usize>(\n    b: Box<MaybeUnini"
+  },
+  "private_plan": [
+    "same source body and type arena retain exact selected Conversion::Nominal endpoints and paid NominalUse",
+    "reject removed terminal, changed target, different nominal owner, or forged source proof; lowering forwards only exact already-adjusted target",
+    "cast does not create scalar/pointer Rvalue::Cast for nominal aggregate; actual selected nominal use remains consumed by dispatch",
+    "retain NodeFacts80, TypeId4, Type24 and BodyValue24 exact pins; ordinary scalar/reference controls preserve existing artifacts"
+  ],
+  "retained_requirements": [
+    "Only source-profile nominal casts gain this path; both frozen ordinary controls retain their old artifacts/outcome.",
+    "Every accepted nominal cast needs the original CoerceUnsized goal, unchanged non-tail arguments, endpoint/lifetime proof and retained NominalUse.",
+    "No scalar/pointer Rvalue::Cast may stand in for a nominal aggregate conversion.",
+    "Complete original source and demanded bodies remain required; metadata acceptance alone is not artifact/native success."
+  ],
+  "qualification": {
+    "independent_metadata": {
+      "receipt": "obj/parallel/continuation-20261117/box-cast-oracle-v1/records.json",
+      "receipt_sha256": "7906171abb08db1c729594eb9a18cbf347cd0b1109210f74a7945b3087db0bd9",
+      "status": "passed",
+      "cases": 16,
+      "candidate_or_native_claim": false
+    },
+    "independent_native": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/vec-method-lookup/box-coercion-casts/independent-native2-v1/results/receipt.json",
+      "sha256": "6f36e17873614c87a7a4e67d2f4b70060ca24863f2d58dedc42aa4da65d02b2e",
+      "programs": 2,
+      "state": "passed; exactdeclaredallocation/drop/free/value stdout andempty stderr; alltoolchain/source/observer hashes verified before/after"
+    },
+    "candidate_source": {
+      "path": "obj/qualification/fast/1794926593074925387/receipt.json",
+      "sha256": "718c08a9786b87fe2d393bb841fa82e2156f265aa4908f75ceca9caa8c6219ec",
+      "state": "passed",
+      "tests": 2,
+      "new_cases": 16,
+      "existing_cases": 19,
+      "seconds": 83.52,
+      "strict_selected_clippy": true,
+      "format": true,
+      "architecture": true,
+      "course_cases": 751,
+      "source_negative_internal_cause_rejections": true
+    },
+    "candidate_native": {
+      "path": "obj/qualification/fast/1794926100560438546/receipt.json",
+      "sha256": "58bf461de96eb3b6caf1102010c7b55366c391865e81c32e3bca1fe2fb4c54d8",
+      "state": "passed",
+      "tests": 2,
+      "new_programs": 2,
+      "existing_programs": 13,
+      "seconds": 62.06,
+      "backend": "locked CPPGMv0.9.3 ABI4 text path",
+      "cleanup": "Native helper roots explicitly pruned; raw diagnostics/source/traces retained."
+    },
+    "private": {
+      "path": "obj/qualification/fast/1794926248433502030/receipt.json",
+      "sha256": "271bebf5f1d35901b3a8ec167a83aabddae773ed10c623cf107ad05f9c8f97e7",
+      "state": "PendingCI;5exactselectedcontrols never executed. Linked private harness compile exceeded227s phase/five-minute budget. No semantic or Clippy pass claimed.",
+      "new_tests": 2,
+      "existing_controls": 3
+    },
+    "integration_repairs": [
+      "Read the actual unadjusted operand NodeFacts.ty; Checker::ty returns adjusted target and caused valid casts to fail endpoint validation.",
+      "Reuse typed16-case table instead of unavailable serde_json dependency, preserving every frozen acceptance/profile column.",
+      "Source negative checks forbid internal cast endpoint/provenance errors."
+    ],
+    "ordinary_bytes": "Pending samecleanimmutablecompiler comparison against old250 LowIR/diagnostic channels; declared ordinary cases already preserve status/complete lowering.",
+    "actual_replay": "Pending clean immutable compiler. Preserve original20rowf165 file and derive19by removingonlyalloc:boxed.rs10093 so the repaired original body executes. No additions or originalsource/golden changes.",
+    "harness_upstream": {
+      "log": "obj/parallel/continuation-20261117/box-coercion-harness.log",
+      "sha256": "7e90ede58b7d8484ccdadb7970974c95c3dfeee64db94c326adb876eb412c41a",
+      "state": "passed",
+      "maintainer_roots": 528,
+      "maintainer_binaries": 13,
+      "script_tests": 376,
+      "upstream_fixtures": 128,
+      "reference_files": 126
+    }
+  }
+}

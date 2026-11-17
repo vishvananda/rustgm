@@ -2,7 +2,7 @@
 use super::{Checker, Constructor, Error, Kind, NodeId, TermId, Type, TypeId, Work};
 use crate::{
     abi::metadata::Metadata,
-    sema::model::{AdjustmentKind, Cast},
+    sema::model::{AdjustmentKind, Cast, Operation},
     support::retained::Growth,
     types::infer::{Error as InferError, Solved},
 };
@@ -151,6 +151,13 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let from = self.head(node, source)?;
         let to = self.head(node, target)?;
+        if matches!((from, to),
+            (Some(Constructor::Adt(a, _) | Constructor::AdtArgs(a, _)),
+             Some(Constructor::Adt(b, _) | Constructor::AdtArgs(b, _))) if a == b)
+            && self.source_nominal_coercion(value, source, target)?
+        {
+            return Ok(());
+        }
         if matches!(from, Some(Constructor::Reference { .. }))
             && matches!(to, Some(Constructor::Reference { .. }))
         {
@@ -272,6 +279,46 @@ impl Checker<'_> {
             .layouts
             .pointer_metadata(&self.facts.types, &self.facts.aggregates, ty)
             .map_err(|e| self.error(node, e))
+    }
+    pub(super) fn nominal_cast_operation(
+        &mut self,
+        value: NodeId,
+        target: NodeId,
+    ) -> Result<Option<Operation>, Error> {
+        if self.facts.source_bindings.is_none() {
+            return Ok(None);
+        }
+        let key = self.key(value);
+        let Some(adjustment) = self.facts.node(key).and_then(|fact| fact.adjustment) else {
+            return Ok(None);
+        };
+        if adjustment.kind != AdjustmentKind::Unsize {
+            return Ok(None);
+        }
+        let Some(crate::types::unsizing::Conversion::Nominal {
+            source: from,
+            target: to,
+        }) = self.facts.unsizing_adjustments.get(&key).copied()
+        else {
+            return Ok(None);
+        };
+        let source = self
+            .facts
+            .node(key)
+            .and_then(|fact| fact.ty)
+            .ok_or_else(|| self.error(value, "missing unadjusted nominal cast operand type"))?;
+        let target = self.ty(target)?;
+        if adjustment.target != target
+            || (from, to) != (source, target)
+            || !matches!((self.facts.types.kind(source), self.facts.types.kind(target)),
+                (Some(Type::Adt(a, _)), Some(Type::Adt(b, _))) if a == b)
+        {
+            return Err(self.error(
+                value,
+                "coercion cast changed its selected nominal endpoints",
+            ));
+        }
+        Ok(Some(Operation::CoercionCast { source, target }))
     }
     pub(super) fn validate_pointer_cast(
         &mut self,

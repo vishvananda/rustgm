@@ -95,6 +95,11 @@ pub enum Operation {
         source: TypeId,
         target: TypeId,
     },
+    /// The operand's checked nominal unsizing already produces this target.
+    CoercionCast {
+        source: TypeId,
+        target: TypeId,
+    },
     Assign {
         target: DefId,
         operator: Option<Punctuation>,

@@ -1,8 +1,34 @@
 //! Unary syntax consumes its selected scalar, reference or raw-address operation.
 use super::{Builder, Error, NodeId, Operation, Rvalue, ValueId};
 use crate::sema::model::Cast;
+#[cfg(test)]
+#[path = "../../../tests/invariants/coerced_values.rs"]
+mod tests;
 
 impl Builder<'_> {
+    pub(super) fn coercion_cast_value(
+        &self,
+        node: NodeId,
+        operand: NodeId,
+        source: crate::types::TypeId,
+        target: crate::types::TypeId,
+    ) -> Result<ValueId, Error> {
+        if self.ty(operand)? != source || self.ty(node)? != target {
+            return Err(self.error(node, "coercion cast changed its selected expression types"));
+        }
+        forward_nominal_cast(
+            self.facts,
+            &self.body,
+            self.value(operand)?,
+            super::NodeKey {
+                node: operand,
+                ..self.source
+            },
+            source,
+            target,
+        )
+        .map_err(|e| self.error(node, e))
+    }
     pub(super) fn cast_value(
         &mut self,
         node: NodeId,
@@ -346,4 +372,44 @@ impl Builder<'_> {
         }
         Err(self.error(node, "cycle in binary operand source wrappers"))
     }
+}
+
+/// Forward only the adjustment's already-created value and exact retained proof.
+fn forward_nominal_cast(
+    facts: &crate::sema::model::Declarations,
+    body: &crate::body::ir::Body,
+    value: ValueId,
+    source: super::NodeKey,
+    from: crate::types::TypeId,
+    target: crate::types::TypeId,
+) -> Result<ValueId, &'static str> {
+    let adjusted = body
+        .values
+        .get(value.0 as usize)
+        .ok_or("coercion cast lost its adjusted operand")?;
+    let Rvalue::Unsize {
+        value: operand,
+        conversion,
+    } = adjusted.kind
+    else {
+        return Err("coercion cast requires its actual nominal adjustment");
+    };
+    if conversion
+        != (crate::types::unsizing::Conversion::Nominal {
+            source: from,
+            target,
+        })
+        || facts.unsizing_adjustments.get(&source) != Some(&conversion)
+    {
+        return Err("coercion cast changed its selected nominal conversion");
+    }
+    let row = body.nominal_use(&facts.types, value)?;
+    if adjusted.ty != target
+        || row.source != source
+        || row.operand != operand
+        || (row.from, row.to) != (from, target)
+    {
+        return Err("coercion cast changed its retained nominal use");
+    }
+    Ok(value)
 }

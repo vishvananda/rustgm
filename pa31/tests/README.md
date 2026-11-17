@@ -1474,3 +1474,10 @@ source outcomes for actual staged derive field copying: C function-pointer
 strings retain their literal owners; other ABI and binder profiles keep their
 existing fences. `outcomes.json` binds every source byte and distinguishes
 RustGM profile outcomes from pinned rustc acceptance.
+
+`spec/coercion-casts/` preserves16 independently qualified nominal coercion-cast
+source contracts, two frozen ordinary controls and the existing allocation/drop
+observer. The manifest records required source/full-proof/native outcomes before
+candidate execution. Actual Box casts require their selected source CoerceUnsized
+proof and retained adjustment; no scalar aggregate cast or bootstrap authority is
+introduced. Candidate and two native traces remain pending qualification.
