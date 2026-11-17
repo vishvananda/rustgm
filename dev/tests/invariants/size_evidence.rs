@@ -16,12 +16,23 @@ pub(super) fn valid(
     facts: &Declarations,
     proof: &Obligations,
 ) -> Result<bool, Box<dyn std::error::Error>> {
+    valid_in_caller(facts, proof, false)
+}
+
+pub(super) fn valid_in_caller(
+    facts: &Declarations,
+    proof: &Obligations,
+    assume_static: bool,
+) -> Result<bool, Box<dyn std::error::Error>> {
     let mut constraints = Constraints::new(&facts.types, &facts.lifetimes.variances, 1, 100_000)?;
     let input = RegionId(10);
     let universal = RegionId::bound(0, 0)?;
     constraints.variable(input)?;
     constraints.outlives(input, universal, 0)?;
     constraints.outlives(universal, input, 0)?;
+    if assume_static {
+        constraints.assume(universal, RegionId::STATIC)?;
+    }
     let mut queries = Queries::new(
         &facts.types,
         &facts.lifetimes.nominal_requirements,

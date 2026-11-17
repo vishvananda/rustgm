@@ -93,6 +93,12 @@ impl Frame {
     }
 }
 
+pub(super) enum Completion {
+    Continue,
+    Selected(Decision),
+    MoveWithFormation(usize),
+}
+
 impl Search<'_> {
     /// Consume parent input evidence once, then withhold completion until every
     /// member requirement has a retained proof. Failure cannot poison trait caches.
@@ -101,15 +107,14 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
         decision: Decision,
-    ) -> Result<Option<Decision>, String> {
+        classify_root_copy: bool,
+    ) -> Result<Completion, String> {
         if frame
             .formation
             .as_ref()
             .is_some_and(|f| f.purpose.nominal())
         {
-            return self
-                .complete_nominal_formation(facts, frame, decision)
-                .map(Some);
+            return self.complete_nominal_formation(facts, frame, decision, classify_root_copy);
         }
         if frame
             .formation
@@ -126,10 +131,10 @@ impl Search<'_> {
             let parent = match decision {
                 Decision::Proven(parent) => super::frames::Chosen::Positive(parent),
                 Decision::Refuted(parent) => super::frames::Chosen::Negative(parent),
-                _ => return Ok(Some(decision)),
+                _ => return Ok(Completion::Selected(decision)),
             };
             let Some(formation) = &mut frame.formation else {
-                return Ok(Some(decision));
+                return Ok(Completion::Selected(decision));
             };
             if let Some(key) = frame.key.take() {
                 self.query.active.remove(&key);
@@ -140,7 +145,7 @@ impl Search<'_> {
             let key = Key::Member(application, frame.scope);
             if self.query.families.contains_key(&key) {
                 self.query.cycles += 1;
-                return Ok(Some(Decision::Absent));
+                return Ok(Completion::Selected(Decision::Absent));
             }
             self.query.families.insert(key, Entry::Active);
             formation.registered = true;
@@ -148,7 +153,7 @@ impl Search<'_> {
             formation.children.push(parent.node());
             // No refinement from a family's proof may escape before all of its
             // conditions finish. Already selected parent inputs remain known.
-            return Ok(None);
+            return Ok(Completion::Continue);
         }
         if let Some(formation) = &mut frame.formation
             && formation.registered
@@ -161,7 +166,7 @@ impl Search<'_> {
                 .remove(&Key::Member(application, frame.scope));
             formation.registered = false;
         }
-        Ok(Some(decision))
+        Ok(Completion::Selected(decision))
     }
 
     pub(super) fn advance_formation(

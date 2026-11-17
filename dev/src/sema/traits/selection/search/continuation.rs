@@ -6,6 +6,7 @@ use crate::{sema::traits::implementations::Availability, types::shape_key::Shape
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Progress {
     Ready(Decision),
+    MoveWithFormation(usize),
     Pending(Dependency),
     Inferred,
 }
@@ -201,6 +202,9 @@ impl<'a> Search<'a> {
     ) -> Result<Decision, super::super::Failure> {
         match self.begin(facts, first)? {
             Progress::Ready(decision) => Ok(decision),
+            Progress::MoveWithFormation(_) => Err(super::super::Failure::Invalid(
+                "formation-only move escaped body Copy classification".into(),
+            )),
             Progress::Pending(dependency) => Err(super::super::Failure::Pending(dependency)),
             Progress::Inferred => Err(super::super::Failure::Invalid(
                 "non-refining selection returned partial inputs".into(),
@@ -213,14 +217,31 @@ impl<'a> Search<'a> {
         facts: &mut Declarations,
         first: Frame,
     ) -> Result<Progress, String> {
+        self.begin_with_mode(facts, first, false)
+    }
+
+    pub(super) fn begin_with_mode(
+        &mut self,
+        facts: &mut Declarations,
+        first: Frame,
+        classify_body_copy: bool,
+    ) -> Result<Progress, String> {
         if !self.query.stack.is_empty() || self.query.decision.is_some() {
             return Err("trait selection query was started twice".into());
         }
         self.query.stack.push(first);
-        self.poll(facts)
+        self.poll_with_mode(facts, classify_body_copy)
     }
 
     pub(super) fn poll(&mut self, facts: &mut Declarations) -> Result<Progress, String> {
+        self.poll_with_mode(facts, false)
+    }
+
+    fn poll_with_mode(
+        &mut self,
+        facts: &mut Declarations,
+        classify_body_copy: bool,
+    ) -> Result<Progress, String> {
         if let Some(owner) = self.query.waiting {
             self.account_query_work(1)?;
             if !owner.ready(facts) {
@@ -232,7 +253,7 @@ impl<'a> Search<'a> {
             return Ok(Progress::Ready(decision));
         }
         let mut stack = std::mem::take(&mut self.query.stack);
-        while let Some(frame) = stack.last_mut() {
+        while let Some((frame, parents)) = stack.split_last_mut() {
             let action = self.advance(facts, frame);
             let charged = self.charge(&mut frame.inputs.context);
             let trial_charged = frame
@@ -290,37 +311,60 @@ impl<'a> Search<'a> {
                     stack.push(child);
                 }
                 Action::Complete(decision) => {
-                    let Some(decision) = self.complete_formation(facts, frame, decision)? else {
-                        continue;
-                    };
-                    if let Some(key) = frame.key {
-                        self.query.active.remove(&key);
-                        if let Some(goal) = frame.canonical {
-                            self.query.auto_active.remove(&goal);
+                    use super::member_conditions::Completion;
+                    let classify_root_copy = classify_body_copy && parents.is_empty();
+                    let decision = match self.complete_formation(
+                        facts,
+                        frame,
+                        decision,
+                        classify_root_copy,
+                    )? {
+                        Completion::Continue => continue,
+                        Completion::Selected(decision) => decision,
+                        Completion::MoveWithFormation(root) => {
+                            return Ok(Progress::MoveWithFormation(root));
                         }
-                    }
-                    if !matches!(decision, Decision::Proven(_)) {
-                        self.query.invalidate_auto(frame);
-                    }
-                    let mut completed = stack.pop().ok_or("missing completed selection frame")?;
-                    let Some(parent) = stack.last_mut() else {
-                        if self.query.universal.is_some() {
-                            stack.push(completed);
-                            self.query.stack = stack;
-                        }
-                        self.query.decision = Some(decision);
-                        return Ok(Progress::Ready(decision));
                     };
-                    if completed.formation_cacheable() {
-                        self.remember(facts, &completed, decision)?;
-                        self.query.export_completed(facts, decision)?;
+                    if let Some(progress) = self.finish_frame(facts, &mut stack, decision)? {
+                        return Ok(progress);
                     }
-                    let decision = self.positive_child(facts, &mut completed, decision)?;
-                    self.accept(facts, parent, decision)?;
                 }
             }
         }
         Err("missing trait selection result".into())
+    }
+
+    fn finish_frame(
+        &mut self,
+        facts: &mut Declarations,
+        stack: &mut Vec<Frame>,
+        decision: Decision,
+    ) -> Result<Option<Progress>, String> {
+        let mut completed = stack.pop().ok_or("missing completed selection frame")?;
+        if let Some(key) = completed.key {
+            self.query.active.remove(&key);
+            if let Some(goal) = completed.canonical {
+                self.query.auto_active.remove(&goal);
+            }
+        }
+        if !matches!(decision, Decision::Proven(_)) {
+            self.query.invalidate_auto(&completed);
+        }
+        let Some(parent) = stack.last_mut() else {
+            if self.query.universal.is_some() {
+                stack.push(completed);
+                self.query.stack = std::mem::take(stack);
+            }
+            self.query.decision = Some(decision);
+            return Ok(Some(Progress::Ready(decision)));
+        };
+        if completed.formation_cacheable() {
+            self.remember(facts, &completed, decision)?;
+            self.query.export_completed(facts, decision)?;
+        }
+        let decision = self.positive_child(facts, &mut completed, decision)?;
+        self.accept(facts, parent, decision)?;
+        Ok(None)
     }
 
     pub(super) fn resume_at(&mut self, first: u32) -> Result<(), String> {

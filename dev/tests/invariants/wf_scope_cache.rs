@@ -33,7 +33,7 @@ fn active_completed_and_binder_depth_formation_entries_remain_distinct() -> Resu
     assert!(frame.key.is_some());
     assert!(
         search
-            .complete_nominal_formation(&mut facts, &mut frame, Decision::Proven(0))
+            .complete_nominal_formation(&mut facts, &mut frame, Decision::Proven(0), false)
             .is_err()
     );
     assert!(matches!(
@@ -66,13 +66,13 @@ fn active_completed_and_binder_depth_formation_entries_remain_distinct() -> Resu
     search.query.nodes[prefix].debt_free = false;
     assert!(
         search
-            .complete_nominal_formation(&mut facts, &mut parent, Decision::Absent)
+            .complete_nominal_formation(&mut facts, &mut parent, Decision::Absent, true)
             .is_err()
     );
     search.query.nodes[prefix].debt_free = true;
     assert!(matches!(
-        search.complete_nominal_formation(&mut facts, &mut parent, Decision::Absent)?,
-        Decision::Absent
+        search.complete_nominal_formation(&mut facts, &mut parent, Decision::Absent, false)?,
+        member_conditions::Completion::Selected(Decision::Absent)
     ));
     let mut helper =
         search.nominal_formation_child_for_test(&mut facts, &mut context, &goal, ty, 0)?;

@@ -470,3 +470,73 @@ fn unit_copy_and_clone_use_actual_roles_without_granting_nonempty_tuple_evidence
     ));
     Ok(())
 }
+
+#[test]
+fn optional_closure_move_retains_nominal_formation_without_copy_authority() -> TestResult {
+    use crate::types::closure::CallKind;
+
+    let (report, mut facts) =
+        declarations("trait Need{}impl<'a:'static>Need for &'a u8{}struct N<T:Need>(T);")?;
+    let byte = TypeId::primitive(Primitive::U8);
+    let argument = facts.types.intern(Kind::Reference {
+        mutable: false,
+        region: RegionId(10),
+        referent: byte,
+    })?;
+    let arguments = facts.types.intern_arguments(&[Argument::Type(argument)])?;
+    let nominal = facts.types.intern(Kind::Adt(
+        ItemId(tests::definition(&report, "N")?.0),
+        arguments,
+    ))?;
+    let signature = function(&mut facts, byte, false, Convention::RUST)?;
+    let capture = facts.types.intern(Kind::Reference {
+        mutable: true,
+        region: RegionId(10),
+        referent: nominal,
+    })?;
+    let fields = facts.types.intern_list(&[capture])?;
+    let environment = facts.types.intern(Kind::Tuple(fields))?;
+    let identity = facts.types.declare_closure(CallKind::Mutable)?;
+    let closure = facts.types.intern(Kind::Closure {
+        identity,
+        signature,
+        arguments: GenericArgs::EMPTY,
+        environment,
+    })?;
+    let copy = predicate(&mut facts, LangItem::Copy, closure)?;
+    let mut state = crate::sema::nominals::traits::State::body(&mut facts, None, 0, 100)?;
+    assert!(!state.copy_decision(&mut facts, copy)?);
+    let proof = state.finish();
+    assert_eq!(proof.regions.start, 100);
+    assert!(proof.owned_regions().next().is_some());
+    for paid in [false, true, false] {
+        assert_eq!(
+            super::size_evidence_tests::valid_in_caller(&facts, &proof, paid)?,
+            paid
+        );
+    }
+    let error = select(&mut facts, copy, &mut Reuse::default())
+        .err()
+        .ok_or("explicit selection published bare absence for conditional formation")?;
+    assert!(
+        error.to_string().contains(
+            "conditional nominal formation cannot publish an absence without paying its debts"
+        ),
+        "{error}"
+    );
+
+    let fields = facts.types.intern_list(&[byte])?;
+    let environment = facts.types.intern(Kind::Tuple(fields))?;
+    let identity = facts.types.declare_closure(CallKind::Shared)?;
+    let closure = facts.types.intern(Kind::Closure {
+        identity,
+        signature,
+        arguments: GenericArgs::EMPTY,
+        environment,
+    })?;
+    let copy = predicate(&mut facts, LangItem::Copy, closure)?;
+    let mut state = crate::sema::nominals::traits::State::body(&mut facts, None, 0, 100)?;
+    assert!(state.copy_decision(&mut facts, copy)?);
+    assert!(state.finish().is_empty());
+    Ok(())
+}

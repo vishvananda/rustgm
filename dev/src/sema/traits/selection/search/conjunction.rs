@@ -155,8 +155,14 @@ impl Search<'_> {
         let mut sized = Vec::new();
         // One union traversal visits shared prerequisites once and retains every
         // root's actual region, equality, formation and sizing obligations.
-        self.query.reused = true;
-        self.collect_graph(facts, roots, None, &mut proof, &mut sized, None)?;
+        self.collect_graph(
+            facts,
+            (roots, super::GraphTraversal::Unique),
+            None,
+            &mut proof,
+            &mut sized,
+            None,
+        )?;
         Ok(Conjunction::Proven {
             proof,
             sized,

@@ -135,7 +135,7 @@ impl Search<'_> {
         let mut meta_sized = Vec::new();
         self.collect_graph(
             facts,
-            [root],
+            ([root], super::GraphTraversal::Ordinary),
             Some((owner, arguments)),
             &mut proof,
             &mut sized,

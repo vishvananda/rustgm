@@ -77,6 +77,44 @@ fn copying_role(
 }
 
 impl Search<'_> {
+    /// A finalized closure reaches this only after its actual capture queries.
+    pub(super) fn absent_closure_copy(
+        facts: &Declarations,
+        frame: &Frame,
+        goal: Predicate,
+    ) -> Result<bool, String> {
+        if !frame.structural_component_absent()
+            || frame.normalization.is_some()
+            || frame.normalized_inputs.is_some()
+        {
+            return Ok(false);
+        }
+        let Some(crate::types::Kind::Closure {
+            identity,
+            environment,
+            ..
+        }) = facts.types.kind(goal.ty)
+        else {
+            return Ok(false);
+        };
+        let Some((item, arguments)) = frame.goal.trait_arguments() else {
+            return Ok(false);
+        };
+        let copy = facts
+            .source_bindings
+            .as_deref()
+            .ok_or("closure Copy classification requires its source provider")?
+            .validated_role(LangItem::Copy)?;
+        Ok(copy.is_some_and(|role| role.definition.0 == item.0)
+            && arguments.is_empty()
+            && frame.goal.constness() == Some(Constness::Ordinary)
+            && facts.types.closure_kind(identity).is_some()
+            && matches!(
+                facts.types.kind(environment),
+                Some(crate::types::Kind::Tuple(_))
+            ))
+    }
+
     pub(super) fn source_builtin_marker_goal(
         facts: &Declarations,
         frame: &mut Frame,

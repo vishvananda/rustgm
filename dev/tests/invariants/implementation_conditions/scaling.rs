@@ -113,7 +113,14 @@ fn capture_graph(width: usize, local: bool, limited: bool) -> TestResult<Capture
     let mut sized = Vec::new();
     let before = facts.types.len();
     let result = search.pay_extraction(&mut context, |search| {
-        search.collect_graph(&mut facts, roots, None, &mut proof, &mut sized, None)
+        search.collect_graph(
+            &mut facts,
+            (roots, super::super::GraphTraversal::Ordinary),
+            None,
+            &mut proof,
+            &mut sized,
+            None,
+        )
     });
     let growth = facts.types.len() - before;
     let expected = shared_capture_type(&mut facts.types, width, 1)?;

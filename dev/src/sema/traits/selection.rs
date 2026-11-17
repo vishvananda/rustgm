@@ -43,6 +43,7 @@ pub(crate) use search::copy_trace;
 pub(in crate::sema) use search::source_object_marker;
 #[cfg(test)]
 pub(in crate::sema) use search::specialization_layouts;
+pub(in crate::sema) use search::{BodyCopy, copying_predicate, no_drop_predicate};
 pub(in crate::sema) use search::{Conjunction, prove_conjunction};
 pub(in crate::sema) use search::{NegativePremises, may_overlap, may_overlap_with};
 pub(in crate::sema) use search::{
@@ -50,7 +51,6 @@ pub(in crate::sema) use search::{
     begin_declaration_counted, begin_executable_counted, begin_projection,
     begin_quantified_borrowed, begin_refining, begin_refining_untouched, begin_scoped_refining,
 };
-pub(in crate::sema) use search::{copying_predicate, no_drop_predicate};
 use std::sync::Arc;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -550,6 +550,23 @@ pub(in crate::sema) fn select_available_checked(
     availability: Availability,
 ) -> Result<Selection, Failure> {
     select_from_checked(facts, context, goal, caller, availability, false, None)
+}
+
+/// Optional reads may keep formation obligations while classifying a move.
+pub(in crate::sema) fn classify_body_copy(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Goal,
+    caller: Caller<'_>,
+) -> Result<BodyCopy, Failure> {
+    if goal.trait_arguments().is_some() {
+        match select_assumption(&mut facts.types, context, goal, &caller) {
+            Ok(Selection::Absent) | Err(infer::Error::Normalization) => {}
+            Ok(proof) => return Ok(BodyCopy::Selection(proof)),
+            Err(error) => return Err(Failure::Invalid(inference(error))),
+        }
+    }
+    search::classify_body_copy(facts, context, goal, caller)
 }
 
 /// A method receiver step asks only whether its candidate applies. When a

@@ -415,6 +415,9 @@ fn begin_borrowed_inputs(
     observe_work(&mut attempted, search.query.steps);
     let progress = progress?;
     match progress {
+        continuation::Progress::MoveWithFormation(_) => {
+            Err("formation-only move escaped body Copy classification".into())
+        }
         continuation::Progress::Ready(decision) => {
             if let Some(untouched) = untouched {
                 *untouched = search.query.allocations.untouched();
@@ -524,6 +527,9 @@ impl Pending {
         observe_work(&mut attempted, search.query.steps);
         let progress = progress?;
         match progress {
+            continuation::Progress::MoveWithFormation(_) => {
+                Err("formation-only move escaped body Copy classification".into())
+            }
             continuation::Progress::Ready(decision) => {
                 search.return_reuse(facts, decision, reuse, true)?;
                 search

@@ -14,6 +14,9 @@ pub(in crate::sema) use automatic_traits::predicate as automatic_predicate;
 mod builtins;
 mod callable_queries;
 mod callables;
+mod move_formation;
+pub(in crate::sema) use move_formation::BodyCopy;
+pub(in crate::sema::traits::selection) use move_formation::classify_body_copy;
 mod cloning;
 mod component_markers;
 mod coroutine_inputs;
@@ -168,6 +171,11 @@ enum Decision {
     Deferred,
     Proven(usize),
     Refuted(usize),
+}
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum GraphTraversal {
+    Ordinary,
+    Unique,
 }
 enum Action {
     Continue,
@@ -884,7 +892,7 @@ impl Search<'_> {
         };
         self.collect_graph(
             facts,
-            [root],
+            ([root], GraphTraversal::Ordinary),
             None,
             &mut evidence.proof,
             &mut evidence.sized,
@@ -897,17 +905,16 @@ impl Search<'_> {
     fn collect_graph(
         &mut self,
         facts: &mut Declarations,
-        roots: impl IntoIterator<Item = usize>,
+        roots: (impl IntoIterator<Item = usize>, GraphTraversal),
         negative: Option<(crate::resolve::model::DefId, crate::types::GenericArgs)>,
         proof: &mut super::Obligations,
         sized: &mut Vec<super::TypeId>,
         mut meta_sized: Option<&mut Vec<super::TypeId>>,
     ) -> Result<(), String> {
         let mut scopes = self.query.scopes.take();
+        let (roots, traversal) = roots;
         let mut work: Vec<_> = roots.into_iter().collect();
-        let mut visited = self
-            .query
-            .reused
+        let mut visited = (traversal == GraphTraversal::Unique || self.query.reused)
             .then(|| vec![false; self.query.nodes.len()]);
         while let Some(index) = work.pop() {
             if let Some(visited) = &mut visited {

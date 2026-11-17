@@ -50,6 +50,13 @@ impl Pending {
     }
 }
 impl Frame {
+    pub(super) fn structural_component_absent(&self) -> bool {
+        matches!(
+            self.language.as_deref(),
+            Some(Language::Components(pending)) if pending.stopped == Some(Decision::Absent)
+        )
+    }
+
     fn component_markers(&mut self) -> Result<&mut Pending, String> {
         match self.language.as_deref_mut() {
             Some(Language::Components(pending)) => Ok(pending),

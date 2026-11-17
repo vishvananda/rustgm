@@ -274,29 +274,41 @@ impl State {
                 self.context.steps
             ))
         });
+        let mut substitution = Instantiation::new(&mut self.context, &facts.types, &[])
+            .map_err(|_| "invalid declaration trait instantiation")?;
+        let goal = self
+            .context
+            .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
+            .map_err(|_| "invalid declaration trait goal")?;
         let selected = if let Some(preparation) = preparation {
-            let mut substitution = Instantiation::new(&mut self.context, &facts.types, &[])
-                .map_err(|_| "invalid declaration trait instantiation")?;
-            let goal = self
-                .context
-                .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
-                .map_err(|_| "invalid declaration trait goal")?;
             selection::select_prepared(facts, &mut self.context, &goal, &caller, preparation)
+                .map(selection::BodyCopy::Selection)
                 .map_err(CopyFailure::Prepared)?
         } else {
-            select_requirement_waiting(
-                facts,
-                &mut self.context,
-                predicate,
-                caller,
-                self.availability,
-                false,
-                None,
-            )
-            .map_err(|waiting| match waiting {
+            let selected = if self.availability == Availability::Executable {
+                selection::classify_body_copy(facts, &mut self.context, &goal, caller)
+                    .map_err(|failure| executable_waiting(facts, failure))
+            } else {
+                match self.availability {
+                    Availability::Declarations => {
+                        selection::select_declaration(facts, &mut self.context, &goal, caller)
+                    }
+                    _ => selection::select(facts, &mut self.context, &goal, caller),
+                }
+                .map(selection::BodyCopy::Selection)
+                .map_err(|error| declaration_waiting(&error))
+            };
+            selected.map_err(|waiting| match waiting {
                 Waiting::Failed(message) => CopyFailure::Ordinary(message),
                 Waiting::Pending(dependency) => CopyFailure::Pending(dependency),
             })?
+        };
+        let selected = match selected {
+            selection::BodyCopy::Selection(selected) => selected,
+            selection::BodyCopy::MoveWithFormation(proof) => {
+                self.append_proof(proof)?;
+                return Ok(false);
+            }
         };
         #[cfg(test)]
         selection::copy_trace::record(|| {
@@ -727,41 +739,46 @@ fn select_requirement_waiting(
                     caller,
                     availability,
                 )
-                .map_err(|failure| match failure {
-                    selection::Failure::Pending(
-                        dependency @ selection::Dependency::ImplementationValidated(owner),
-                    ) => match facts
-                        .generics
-                        .implementations
-                        .as_ref()
-                        .map_or(Ok(false), |r| r.early_unavailable(&facts.types, owner))
-                    {
-                        Ok(true) => Waiting::Failed(
-                            "implementation validation is outside the early scalar profile",
-                        ),
-                        Ok(false) => Waiting::Pending(dependency),
-                        Err(error) => Waiting::Failed(error),
-                    },
-                    selection::Failure::Pending(dependency) => Waiting::Pending(dependency),
-                    failure @ (selection::Failure::Invalid(_)
-                    | selection::Failure::Conditional(_)) => {
-                        Waiting::Failed(crate::sema::census::fold_cause(
-                            &failure,
-                            "canonical trait selection work exhausted",
-                            "invalid canonical trait selection",
-                        ))
-                    }
-                });
+                .map_err(|failure| executable_waiting(facts, failure));
             }
         }
     };
-    selected.map_err(|error| {
-        #[cfg(test)]
-        selection::copy_trace::record(|| format!("declaration selection: {error}"));
-        Waiting::Failed(crate::sema::census::fold_cause(
-            &error,
-            "canonical trait selection work exhausted",
-            "invalid canonical trait selection",
-        ))
-    })
+    selected.map_err(|error| declaration_waiting(&error))
+}
+
+fn executable_waiting(facts: &Declarations, failure: selection::Failure) -> Waiting {
+    match failure {
+        selection::Failure::Pending(
+            dependency @ selection::Dependency::ImplementationValidated(owner),
+        ) => match facts
+            .generics
+            .implementations
+            .as_ref()
+            .map_or(Ok(false), |r| r.early_unavailable(&facts.types, owner))
+        {
+            Ok(true) => {
+                Waiting::Failed("implementation validation is outside the early scalar profile")
+            }
+            Ok(false) => Waiting::Pending(dependency),
+            Err(error) => Waiting::Failed(error),
+        },
+        selection::Failure::Pending(dependency) => Waiting::Pending(dependency),
+        failure @ (selection::Failure::Invalid(_) | selection::Failure::Conditional(_)) => {
+            Waiting::Failed(crate::sema::census::fold_cause(
+                &failure,
+                "canonical trait selection work exhausted",
+                "invalid canonical trait selection",
+            ))
+        }
+    }
+}
+
+fn declaration_waiting(error: &str) -> Waiting {
+    #[cfg(test)]
+    selection::copy_trace::record(|| format!("declaration selection: {error}"));
+    Waiting::Failed(crate::sema::census::fold_cause(
+        &error,
+        "canonical trait selection work exhausted",
+        "invalid canonical trait selection",
+    ))
 }

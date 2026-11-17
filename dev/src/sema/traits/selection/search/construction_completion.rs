@@ -2,7 +2,7 @@
 use super::{Action, Decision, Declarations, Frame, Node, Search, inference};
 use super::{
     frames::Chosen,
-    member_conditions::{Entry, Purpose},
+    member_conditions::{Completion, Entry, Purpose},
 };
 impl Search<'_> {
     pub(super) fn advance_nominal_formation(
@@ -93,7 +93,8 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
         decision: Decision,
-    ) -> Result<Decision, String> {
+        classify_root_copy: bool,
+    ) -> Result<Completion, String> {
         let formation = frame
             .formation
             .as_ref()
@@ -103,7 +104,7 @@ impl Search<'_> {
         }
         if let Some(stopped) = formation.stopped {
             return if stopped == Decision::Deferred && decision == stopped {
-                Ok(stopped)
+                Ok(Completion::Selected(stopped))
             } else {
                 Err("nominal formation published an unsatisfied prerequisite".into())
             };
@@ -119,7 +120,7 @@ impl Search<'_> {
         }
         if matches!(formation.purpose, Purpose::Nominal(..)) {
             return if decision == Decision::Proven(prefix) {
-                Ok(decision)
+                Ok(Completion::Selected(decision))
             } else {
                 Err("formation-only helper cannot publish a trait selection".into())
             };
@@ -133,6 +134,13 @@ impl Search<'_> {
             return Err("nominal formation subject changed after preparation".into());
         }
         if decision == Decision::Absent && !self.query.nodes[prefix].debt_free {
+            if classify_root_copy
+                && frame.scope == crate::types::lifetime_proof::ScopeId::ROOT
+                && self.query.purpose == crate::sema::traits::implementations::Purpose::Use
+                && Self::absent_closure_copy(facts, frame, goal)?
+            {
+                return Ok(Completion::MoveWithFormation(prefix));
+            }
             return Err(
                 "conditional nominal formation cannot publish an absence without paying its debts"
                     .into(),
@@ -144,5 +152,6 @@ impl Search<'_> {
             decision => decision,
         };
         self.input_evidence(facts, frame, decision)
+            .map(Completion::Selected)
     }
 }
