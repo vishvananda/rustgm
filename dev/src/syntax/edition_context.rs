@@ -44,6 +44,9 @@ where
     fn get(&self, token: Token) -> Result<Option<Splice<'_>>, LexError> {
         self.inputs.get(token)
     }
+    fn cfg_boolean_literal(&self, splice: &Splice<'_>) -> Result<Option<bool>, LexError> {
+        self.inputs.cfg_boolean_literal(splice)
+    }
     fn edition(&self, token: Token) -> Result<Edition, LexError> {
         (self.editions)(token)
     }

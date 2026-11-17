@@ -3,7 +3,50 @@ use super::{Engine, Error, FileId, Input, Location, MacroContext, Report, Source
 use crate::{
     expand::config::{CfgGate, CfgUse},
     resolve::bindings::KnownFeature,
+    syntax::interpolation::{Inputs, Splice},
 };
+#[cfg(test)]
+#[path = "../../../tests/invariants/truth_scopes.rs"]
+mod literal_tests;
+
+/// Only the actual source provider extends cfg's opaque literal input contract.
+pub(super) struct SourceInputs<'a> {
+    pub inputs: &'a dyn Inputs,
+    pub source: Option<&'a crate::resolve::bindings::SourceCore>,
+}
+impl Inputs for SourceInputs<'_> {
+    fn is_empty(&self) -> bool {
+        self.inputs.is_empty()
+    }
+    fn get(
+        &self,
+        token: crate::lex::token::Token,
+    ) -> Result<Option<Splice<'_>>, crate::lex::token::LexError> {
+        self.inputs.get(token)
+    }
+    fn edition(
+        &self,
+        token: crate::lex::token::Token,
+    ) -> Result<crate::support::edition::Edition, crate::lex::token::LexError> {
+        self.inputs.edition(token)
+    }
+    fn cfg_boolean_literal(
+        &self,
+        splice: &Splice<'_>,
+    ) -> Result<Option<bool>, crate::lex::token::LexError> {
+        let Some(source) = self.source else {
+            return Ok(None);
+        };
+        if splice.syntax_kind() != Some(crate::syntax::expression::fragment::FragmentKind::Literal)
+        {
+            return Ok(None);
+        }
+        source.macros.charge(1, 0).map_err(|message| {
+            crate::syntax::token_tree::error(splice.destination.start, message)
+        })?;
+        splice.boolean_literal().map(Some)
+    }
+}
 
 impl<S: Sources> Engine<'_, S> {
     pub(super) fn cfg_expansion(
@@ -23,6 +66,10 @@ impl<S: Sources> Engine<'_, S> {
                     package.units.get(id.0 as usize)
                 })
             });
+            let inputs = SourceInputs {
+                inputs: &inputs,
+                source: package.source_core(),
+            };
             builtin::cfg_evaluation(
                 package.unit(file).source.text(),
                 input,

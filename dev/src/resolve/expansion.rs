@@ -1623,6 +1623,10 @@ impl<'a, S: Sources> Engine<'a, S> {
         let ast =
             fragment::parse_expansion_with_inputs(&stream.source, &stream.tokens, grammar, &inputs)
                 .map_err(|e| diagnostics::stream_error(&stream, file, original, e))?;
+        let inputs = cfg_gates::SourceInputs {
+            inputs: &inputs,
+            source: package.source_core(),
+        };
         let configured =
             crate_syntax::configure_with_inputs(&stream.source, ast, self.config, &inputs)
                 .map_err(|e| diagnostics::stream_error(&stream, file, original, e))?;

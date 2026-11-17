@@ -21,6 +21,10 @@ impl Inputs for Counted<'_> {
         (self.charge)(1, 0)?;
         self.inputs.edition(token)
     }
+    fn cfg_boolean_literal(&self, splice: &Splice<'_>) -> Result<Option<bool>, LexError> {
+        (self.charge)(1, 0)?;
+        self.inputs.cfg_boolean_literal(splice)
+    }
     fn get(&self, token: Token) -> Result<Option<Splice<'_>>, LexError> {
         (self.charge)(1, 0)?;
         let result = self.inputs.get(token)?;

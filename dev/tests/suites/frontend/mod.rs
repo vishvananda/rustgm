@@ -205,6 +205,8 @@ mod temporary_editions;
 mod textual_scopes;
 #[path = "../../token_trees.rs"]
 mod token_trees;
+#[path = "../../truth_captures.rs"]
+mod truth_captures;
 #[path = "../../tuple_index_privacy.rs"]
 mod tuple_index_privacy;
 #[path = "../../zero_sized_niche_companions.rs"]

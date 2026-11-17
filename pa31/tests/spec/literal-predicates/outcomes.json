@@ -1,0 +1,493 @@
+{
+  "state": "Focused RustGM configuration/expansion outcomes qualified:11 accepts14 invalid rejections and2 explicit required expression-root gaps; PA8 text unchanged. Private checks and actual std replay remain required.",
+  "owner": "PA31 source provider prerequisite using PA8 capture/configuration machinery; ordinary PA24 grammar frozen",
+  "primary": {
+    "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/frontier3/library/std/src/os/unix/io/mod.rs",
+    "sha256": "9ce4a534c46e3001e3d4124a75a12ed882df609ca34374500e8f6789c4fe8832",
+    "macro_header_offset": 7741,
+    "invocation_offset": 9026,
+    "primary_literal_offset": 9063,
+    "cfg_use_offset": 8465,
+    "retained_primary_sha256": "21456e7e9cddb402175ea79f8ece2c52279cbdfab43b5c571b8dcc56f640a825"
+  },
+  "foundation": {
+    "path": "pa31/tests/spec/literal-predicates/setup.rs",
+    "sha256": "d201c8f9a435b76d47f74e12e6ed0c2dfd7ddc6962274658dcb299ff20d65657",
+    "rustc_status": 0,
+    "purpose": "Exact minimal source-core foundation +actual local cfg builtin; must pass before semantic cases. Prefix copied from already qualified operator foundation before its Add declaration, with explicit decl_macro gate and cfg declaration. New complete foundation still requires its own setup.",
+    "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/setup.rs"
+  },
+  "prefix": {
+    "path": "pa31/tests/spec/literal-predicates/prefix.rs",
+    "sha256": "53a7183cc75962a0cb8eff04aeeb2bc98bf87dd906c620524154f20cb42de3c2",
+    "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/prefix.rs"
+  },
+  "cases": [
+    {
+      "name": "io-ext-shape",
+      "path": "pa31/tests/spec/literal-predicates/io-ext-shape.rs",
+      "sha256": "31abbc1cfa3cb6c20dda31f405b9a9c7c51a11f4ae9a87dffac9fb2105f58fc3",
+      "semantic_body_sha256": "a0bfe5a1aabde6695f88e46f89e95dec7f751861465943a6a9c6efe1e42f5e57",
+      "rustc_status": 0,
+      "rustgm_source_status": 0,
+      "required_rustc_diagnostics_any": [],
+      "intent": "Exact original matcher header and three call shapes; StdinLock has no flush, so false must remove its flush statement. This is an explicit body reduction, not the full std macro.",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/io-ext-shape.rs",
+      "required_rustgm_diagnostic": null
+    },
+    {
+      "name": "attribute-true",
+      "path": "pa31/tests/spec/literal-predicates/attribute-true.rs",
+      "sha256": "a58cd7703131ae2c8b5517abcbcf51ca7bd5161dc08bfb22db8758606579272b",
+      "semantic_body_sha256": "bb49a2496f46e4e2b13d8715bba8b9bcb25f19edf00d1d01e638a3ea3989b8c7",
+      "rustc_status": 0,
+      "rustgm_source_status": 0,
+      "required_rustc_diagnostics_any": [],
+      "intent": "true retains selected and removes unresolved false owner",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/attribute-true.rs",
+      "required_rustgm_diagnostic": null
+    },
+    {
+      "name": "attribute-false",
+      "path": "pa31/tests/spec/literal-predicates/attribute-false.rs",
+      "sha256": "d0c2fa9d6c29e732bf33a1ca312c0a8f929abc56fe103ede694b7f691769abb4",
+      "semantic_body_sha256": "17a26269c0534ecd827bd68319427745ace32636dd3875b5084e3a9ac156482b",
+      "rustc_status": 0,
+      "rustgm_source_status": 0,
+      "required_rustc_diagnostics_any": [],
+      "intent": "false removes unresolved owner and retains selected under not",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/attribute-false.rs",
+      "required_rustgm_diagnostic": null
+    },
+    {
+      "name": "value-true",
+      "path": "pa31/tests/spec/literal-predicates/value-true.rs",
+      "sha256": "0330b5edabca8852d6e638081daf790310bcb57fdda1f4fcdb2990bfa9364e58",
+      "semantic_body_sha256": "197e3c469a435dfad4412a5e5382de7dd2813b0b90970fb5180d182ebc3bf385",
+      "rustc_status": 0,
+      "rustgm_source_status": 0,
+      "required_rustc_diagnostics_any": [],
+      "intent": "cfg! typed Boolean true proves exact array length1",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/value-true.rs",
+      "required_rustgm_diagnostic": null
+    },
+    {
+      "name": "value-false",
+      "path": "pa31/tests/spec/literal-predicates/value-false.rs",
+      "sha256": "af8451bd37847bc52ce81e7945d140a69e17a943dc4130293d966a9d3bc1f468",
+      "semantic_body_sha256": "d2852b910144ba064496cc7ad0bf5e423d97d004db0315f28368821b9d8c052b",
+      "rustc_status": 0,
+      "rustgm_source_status": 0,
+      "required_rustc_diagnostics_any": [],
+      "intent": "cfg! typed Boolean false proves exact array length0",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/value-false.rs",
+      "required_rustgm_diagnostic": null
+    },
+    {
+      "name": "nested-predicates",
+      "path": "pa31/tests/spec/literal-predicates/nested-predicates.rs",
+      "sha256": "a8e11773e27c748f2976e2979c6f250b03bbcda0d5e320002ebdd3ada244f499",
+      "semantic_body_sha256": "f2e3d34a36c8c27e8d9d007d47cc968bf2f614273d6b508b1bac0ca61c303c5b",
+      "rustc_status": 0,
+      "rustgm_source_status": 0,
+      "required_rustc_diagnostics_any": [],
+      "intent": "Nested cfg operators consume both literal captures",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/nested-predicates.rs",
+      "required_rustgm_diagnostic": null
+    },
+    {
+      "name": "forwarded-attribute",
+      "path": "pa31/tests/spec/literal-predicates/forwarded-attribute.rs",
+      "sha256": "67744a735e96602e47275cdeb2d5503e939cde36423ff759c606c9d30e1cea31",
+      "semantic_body_sha256": "92f0b9c65b7cc35db40f25ca446085e4a19c2d09b884c09f0b55a80386fad903",
+      "rustc_status": 0,
+      "rustgm_source_status": 0,
+      "required_rustc_diagnostics_any": [],
+      "intent": "Repeated literal forwarding preserves typed capture and selecting truth",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/forwarded-attribute.rs",
+      "required_rustgm_diagnostic": null
+    },
+    {
+      "name": "forwarded-value",
+      "path": "pa31/tests/spec/literal-predicates/forwarded-value.rs",
+      "sha256": "92d2c4bf6e3c4f103f2ee33bb7d6b6dd769197532aa7111ad0c6782685abf0e8",
+      "semantic_body_sha256": "542140972f6761d95135f7139f158229b1aa868bab27732c504fe71e18058e82",
+      "rustc_status": 0,
+      "rustgm_source_status": 0,
+      "required_rustc_diagnostics_any": [],
+      "intent": "Repeated literal forwarding to cfg! remains Boolean true",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/forwarded-value.rs",
+      "required_rustgm_diagnostic": null
+    },
+    {
+      "name": "cfg-attr-true",
+      "path": "pa31/tests/spec/literal-predicates/cfg-attr-true.rs",
+      "sha256": "97abad34f56151b1b7214d058b005938edf4ed09a8b6ee16efdb9ef6a7b12617",
+      "semantic_body_sha256": "1d7f674b32c4b00e3513ff3c6399e2ae0e8559e4c35c6600616dcdc2cf81ade4",
+      "rustc_status": 0,
+      "rustgm_source_status": 0,
+      "required_rustc_diagnostics_any": [],
+      "intent": "cfg_attr true installs cfg(false) and removes its invalid owner",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/cfg-attr-true.rs",
+      "required_rustgm_diagnostic": null
+    },
+    {
+      "name": "cfg-attr-false",
+      "path": "pa31/tests/spec/literal-predicates/cfg-attr-false.rs",
+      "sha256": "0e453f47de2a4601dbb1e6cd506e4879fc48aa44bb87860a48293f5b65d0883d",
+      "semantic_body_sha256": "7a41be4ebf9f76d13d28448a7e3e8aaace04cf87d6efb0ffc7809b5625097d5a",
+      "rustc_status": 0,
+      "rustgm_source_status": 0,
+      "required_rustc_diagnostics_any": [],
+      "intent": "cfg_attr false does not install its removal attribute",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/cfg-attr-false.rs",
+      "required_rustgm_diagnostic": null
+    },
+    {
+      "name": "wrong-integer",
+      "path": "pa31/tests/spec/literal-predicates/wrong-integer.rs",
+      "sha256": "47f37bcf8b9d47ffa7d3ef629a48222328fb3de8b9fd742c2fb2b39e9f44904a",
+      "semantic_body_sha256": "585142bcd39f4b516793b73d15734a7e9156f901e0dc18557bca8851fa894c11",
+      "rustc_status": 1,
+      "rustgm_source_status": 1,
+      "required_rustc_diagnostics_any": [
+        "expected a valid identifier here"
+      ],
+      "intent": "A cfg predicate literal must be Boolean; this capture has the wrong literal kind",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/wrong-integer.rs",
+      "required_rustgm_diagnostic": "expected captured Boolean cfg literal"
+    },
+    {
+      "name": "wrong-negative",
+      "path": "pa31/tests/spec/literal-predicates/wrong-negative.rs",
+      "sha256": "bf54a02bfee5e593d11ae5af606f68341fb6130aa0fbf3f2eb289c517896ba88",
+      "semantic_body_sha256": "2de9c530c81f5a70fc672c5aecdaccff9e2c6413f8cf14ab39a41c41d5493111",
+      "rustc_status": 1,
+      "rustgm_source_status": 1,
+      "required_rustc_diagnostics_any": [
+        "expected a literal (`1u8`, `1.0f32`, `\"string\"`, etc.) here, found `<eof>`"
+      ],
+      "intent": "A cfg predicate literal must be Boolean; this capture has the wrong literal kind",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/wrong-negative.rs",
+      "required_rustgm_diagnostic": "expected captured Boolean cfg literal"
+    },
+    {
+      "name": "wrong-string",
+      "path": "pa31/tests/spec/literal-predicates/wrong-string.rs",
+      "sha256": "de2506a67b6bf0f528a5d10ae3ac59a05e486e19c99b54fcb9aa81832223a986",
+      "semantic_body_sha256": "ac9ea3ef19f609a1bc016f44c5db0ed11a6599c76976b1145cc8dc0e668bc715",
+      "rustc_status": 1,
+      "rustgm_source_status": 1,
+      "required_rustc_diagnostics_any": [
+        "expected a valid identifier here"
+      ],
+      "intent": "A cfg predicate literal must be Boolean; this capture has the wrong literal kind",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/wrong-string.rs",
+      "required_rustgm_diagnostic": "expected cfg predicate name"
+    },
+    {
+      "name": "wrong-character",
+      "path": "pa31/tests/spec/literal-predicates/wrong-character.rs",
+      "sha256": "2be0fe795bd8ca982acbb6d9a382aeca329f86474858c811c333fbcc15550564",
+      "semantic_body_sha256": "8437578b1145790011145156f16247d668184718604ef0e3591617b00b8d61ff",
+      "rustc_status": 1,
+      "rustgm_source_status": 1,
+      "required_rustc_diagnostics_any": [
+        "expected a valid identifier here"
+      ],
+      "intent": "A cfg predicate literal must be Boolean; this capture has the wrong literal kind",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/wrong-character.rs",
+      "required_rustgm_diagnostic": "expected captured Boolean cfg literal"
+    },
+    {
+      "name": "wrong-byte",
+      "path": "pa31/tests/spec/literal-predicates/wrong-byte.rs",
+      "sha256": "55d4b1d330767c62f1f4b5d08585766e05b05af35d4adab7ce8ea8c2fe9bf11e",
+      "semantic_body_sha256": "3af4f363cc7be4982a48182e2aa6cba5053ea752ec91eb1c05f74ec3623f0d8f",
+      "rustc_status": 1,
+      "rustgm_source_status": 1,
+      "required_rustc_diagnostics_any": [
+        "expected a valid identifier here"
+      ],
+      "intent": "A cfg predicate literal must be Boolean; this capture has the wrong literal kind",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/wrong-byte.rs",
+      "required_rustgm_diagnostic": "expected captured Boolean cfg literal"
+    },
+    {
+      "name": "wrong-bytes",
+      "path": "pa31/tests/spec/literal-predicates/wrong-bytes.rs",
+      "sha256": "18a46bfc3e566edfb5d81b078f7bfb677045e646fef0eb9456440c536ed79bde",
+      "semantic_body_sha256": "165b1c72bf8e98d8e324017c50dffc2b7098a0de779cb886b6da9bfc62e5f48d",
+      "rustc_status": 1,
+      "rustgm_source_status": 1,
+      "required_rustc_diagnostics_any": [
+        "expected a valid identifier here"
+      ],
+      "intent": "A cfg predicate literal must be Boolean; this capture has the wrong literal kind",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/wrong-bytes.rs",
+      "required_rustgm_diagnostic": "expected captured Boolean cfg literal"
+    },
+    {
+      "name": "boolean-as-string-value",
+      "path": "pa31/tests/spec/literal-predicates/boolean-as-string-value.rs",
+      "sha256": "ca72e22d929c22e60933447dd5bdea6900636a02c08d7ace28ce22d5da6363fd",
+      "semantic_body_sha256": "c1dcf4df047c8bffe5cf93a64ccb48da3ca4fb4b00d9342bd1fc1c09a8678913",
+      "rustc_status": 1,
+      "rustgm_source_status": 1,
+      "required_rustc_diagnostics_any": [
+        "string literal"
+      ],
+      "intent": "Boolean does not become a cfg name/value string",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/boolean-as-string-value.rs",
+      "required_rustgm_diagnostic": "expected captured string literal"
+    },
+    {
+      "name": "literal-with-call",
+      "path": "pa31/tests/spec/literal-predicates/literal-with-call.rs",
+      "sha256": "7a3d2fc8a3daadf85fa4fe1fc045dfb60455aaf07ad11f851e2c9c71863b2041",
+      "semantic_body_sha256": "1aec92369076f44f4b6dd15e5bec71ca9c6513a80388907d19e1d22eb7d132af",
+      "rustc_status": 1,
+      "rustgm_source_status": 1,
+      "required_rustc_diagnostics_any": [
+        "expected"
+      ],
+      "intent": "A Boolean predicate cannot acquire argument syntax",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/literal-with-call.rs",
+      "required_rustgm_diagnostic": "opaque cfg predicate has trailing tokens"
+    },
+    {
+      "name": "literal-with-value",
+      "path": "pa31/tests/spec/literal-predicates/literal-with-value.rs",
+      "sha256": "764062b441bff078c72504a68280601c0541a07bdcc9defd829744f982a2c7e8",
+      "semantic_body_sha256": "3969d76d79224f88c522bea35a8ec42a936c94f685d017f8aedf0b799da89834",
+      "rustc_status": 1,
+      "rustgm_source_status": 1,
+      "required_rustc_diagnostics_any": [
+        "expected"
+      ],
+      "intent": "A Boolean predicate cannot acquire name/value syntax",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/literal-with-value.rs",
+      "required_rustgm_diagnostic": "opaque cfg predicate has trailing tokens"
+    },
+    {
+      "name": "literal-trailing-predicate",
+      "path": "pa31/tests/spec/literal-predicates/literal-trailing-predicate.rs",
+      "sha256": "2e70da3da849c99805cf85c9710330b570db72bd917f170d08d91b17c5bfe522",
+      "semantic_body_sha256": "33ed5126eb776fe964bc343482ed9494e95d6a4173ad6944f213f9c0309a8b40",
+      "rustc_status": 1,
+      "rustgm_source_status": 1,
+      "required_rustc_diagnostics_any": [
+        "argument",
+        "predicate"
+      ],
+      "intent": "cfg requires exactly one root predicate",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/literal-trailing-predicate.rs",
+      "required_rustgm_diagnostic": "cfg requires exactly one predicate"
+    },
+    {
+      "name": "invalid-after-true",
+      "path": "pa31/tests/spec/literal-predicates/invalid-after-true.rs",
+      "sha256": "5e9af6747083af9999a33f6122dade056c9930995c877403186ccea9d914719c",
+      "semantic_body_sha256": "91e9d9b3f2f09bf7307b963fb0108007f1e1119a81ab03b111a372d946287ef3",
+      "rustc_status": 1,
+      "rustgm_source_status": 1,
+      "required_rustc_diagnostics_any": [
+        "expected a valid identifier here"
+      ],
+      "intent": "Logical true does not suppress malformed later cfg syntax",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/invalid-after-true.rs",
+      "required_rustgm_diagnostic": "expected captured Boolean cfg literal"
+    },
+    {
+      "name": "expression-root-attribute",
+      "path": "pa31/tests/spec/literal-predicates/expression-root-attribute.rs",
+      "sha256": "959075fc7ae792748e6e66fabd58ebbf184d44a3de2e5949ac6b7fd34ceb91b7",
+      "semantic_body_sha256": "ae4a9ba478175378534d02d876977e64776c44c5041d43f2eefcada632488e75",
+      "rustc_status": 0,
+      "rustgm_source_status": 1,
+      "required_rustc_diagnostics_any": [],
+      "intent": "Pinned AllowExprMetavar::Yes may admit literal expression root; explicit required profile gap while new admission remains Literal only",
+      "classification": "required acceptance outside proposed finite source profile",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/expression-root-attribute.rs",
+      "required_rustgm_diagnostic": "expected opaque metadata fragment"
+    },
+    {
+      "name": "expression-root-value",
+      "path": "pa31/tests/spec/literal-predicates/expression-root-value.rs",
+      "sha256": "5499580a1561f0e519d71334e802af26cc60be409bd4ea65b571c1d9f22a6554",
+      "semantic_body_sha256": "61f19d15cfa2d24c3831120b0767298247161fc54bb82abe5b9cff9d4d323346",
+      "rustc_status": 0,
+      "rustgm_source_status": 1,
+      "required_rustc_diagnostics_any": [],
+      "intent": "Expression-root cfg! Boolean is a required independent acceptance; does not authorize generic expression evaluation",
+      "classification": "required acceptance outside proposed finite source profile",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/expression-root-value.rs",
+      "required_rustgm_diagnostic": "expected opaque metadata fragment"
+    },
+    {
+      "name": "expression-group",
+      "path": "pa31/tests/spec/literal-predicates/expression-group.rs",
+      "sha256": "dc554ea5ead24ef77362faeba181f49c951a12408ee33b5b3e83bb7a03d6672b",
+      "semantic_body_sha256": "11ebd0544f01e796403d420ebe2aaf0e7b34cc68fbf6ea0205ce94bed79ab3f1",
+      "rustc_status": 1,
+      "rustgm_source_status": 1,
+      "required_rustc_diagnostics_any": [
+        "literal",
+        "expected"
+      ],
+      "intent": "Parenthesized expression is not a bare Boolean literal; status prediction must be independently checked",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/expression-group.rs",
+      "required_rustgm_diagnostic": "expected opaque metadata fragment"
+    },
+    {
+      "name": "expression-string-value",
+      "path": "pa31/tests/spec/literal-predicates/expression-string-value.rs",
+      "sha256": "daa31deda1456c4105dfdd9a3a6a0941d80caa8ee05782aa11dcec1030bff1a0",
+      "semantic_body_sha256": "3baddb817b08aeaf8c7708da48e96f001ddc4db0eddc96de7deade8c9e91c1e1",
+      "rustc_status": 0,
+      "rustgm_source_status": 0,
+      "required_rustc_diagnostics_any": [],
+      "intent": "Existing bare expression-string value path remains valid",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/expression-string-value.rs",
+      "required_rustgm_diagnostic": null
+    },
+    {
+      "name": "expression-group-string",
+      "path": "pa31/tests/spec/literal-predicates/expression-group-string.rs",
+      "sha256": "a8ebc2721998896ee40fc172a8a7499d64afd377e287de8abaa97a3d278ee4a2",
+      "semantic_body_sha256": "c266a81caf27c7a664e5a97b1b4bcc63d06a9aba2b403da468c2dcbe84de456a",
+      "rustc_status": 1,
+      "rustgm_source_status": 1,
+      "required_rustc_diagnostics_any": [
+        "literal",
+        "expected"
+      ],
+      "intent": "Existing expression-group string opponent stays closed",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/expression-group-string.rs",
+      "required_rustgm_diagnostic": "expected captured string literal"
+    },
+    {
+      "name": "false-selection-opponent",
+      "path": "pa31/tests/spec/literal-predicates/false-selection-opponent.rs",
+      "sha256": "8650b755e8d66e5976d4bcd23ba8497b7db42eb180aef5ab7a58dd96d56067cf",
+      "semantic_body_sha256": "5e14ba03516d46a86ae7c154ac9d8654507c0a2f867a57d39edaae72e6c0d94b",
+      "rustc_status": 1,
+      "rustgm_source_status": 1,
+      "required_rustc_diagnostics_any": [
+        "E0425",
+        "cannot find function"
+      ],
+      "intent": "False literal removes the declaration; later name use must fail for that semantic reason",
+      "classification": "required source outcome",
+      "original_qualified_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/literal-cfg-design-v1/inputs/false-selection-opponent.rs",
+      "required_rustgm_diagnostic": "unresolved value name"
+    }
+  ],
+  "language_gate": {
+    "cfg_boolean_literals": "accepted/stable since1.88.0 per pinned compiler/rustc_feature/src/accepted.rs; no new feature request is declared",
+    "source_uri": "https://raw.githubusercontent.com/rust-lang/rust/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_feature/src/accepted.rs#L92-L94"
+  },
+  "primary_implementations": [
+    "https://raw.githubusercontent.com/rust-lang/rust/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_builtin_macros/src/cfg.rs#L39-L43",
+    "https://raw.githubusercontent.com/rust-lang/rust/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_expand/src/config.rs#L350-L363",
+    "https://raw.githubusercontent.com/rust-lang/rust/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_attr_parsing/src/attributes/cfg.rs#L73-L116"
+  ],
+  "profile": "Rust1.98 pinned88d9, x86_64 host, edition2024, metadata-only no_core, empty sysroot, panicabort, RUSTC_BOOTSTRAP1 and caplintsallow. No native or library publication claim.",
+  "strictly_unchanged_controls": [
+    "pa8/tests/spec/captured-cfg/boolean.rs",
+    "pa8/tests/spec/captured-cfg/expr-literal.rs",
+    "pa8/tests/spec/captured-cfg/expr-group.rs",
+    "pa8/tests/spec/captured-cfg/literal.rs",
+    "pa8/tests/spec/captured-cfg/forwarded.rs",
+    "pa8/tests/spec/captured-cfg/metadata.rs"
+  ],
+  "no_execution": false,
+  "independent_qualification": {
+    "original_manifest_sha256": "8a47f552045ca23935fffdfd3164b4e4a15884bf5601e4283ed34e651dff2a7a",
+    "original_records_sha256": "28dd5f4a0f68b5166d238a1b98449ed8d79c7920655214a94af34b878e85b08d",
+    "failed_wrapper_terminal_receipt_sha256": "01112a7ec1a4bd9d3a0e5447910cbc13159f73151506429f8d1fceb073d6f40c",
+    "cause_only_proposal_sha256": "63bb6d8746974a3f78408bb93ccce6c02fa5bba7071ef9e9219a0d2efdad2d48",
+    "approved_proposal_manifest_sha256": "abaee7a7437a1927d9a7e14b7a54548bcd8b893c8c8d0edb333f75236a36e6a7",
+    "root_review": "Root independently verified exactly seven matcher leaves, all raw hashes and intended actual causes; approved without source/status/profile changes or rerun.",
+    "status_matches": 27,
+    "rustc_accepts": 13,
+    "rustc_rejects": 14,
+    "setup_status": 0,
+    "additional_runs": 0,
+    "combined_qualification_sha256": "c400b0635a5c856744958f9df75c992a7f79a98a074415fdc167a71122a06c34"
+  },
+  "candidate_reconciliation": {
+    "history": "Original candidate matcher predictions preserved in obj/parallel/continuation-20261117/literal-cfg-cause-predictions-v1.json. No source/status/independent Rustc/native contract changed.",
+    "matcher_corrections": [
+      {
+        "case": "wrong-string",
+        "old": "expected captured Boolean cfg literal",
+        "new": "expected cfg predicate name",
+        "actual_span": "file0:2649, macro pick call2643, definition2583",
+        "review": "Existing attribute forest handling appends captured String/RawString as genuine string tokens before cfg evaluation; numeric/character/byte forms remain opaque. Independent static review identified append_attribute_string in syntax/expression/attributes.rs."
+      },
+      {
+        "case": "literal-trailing-predicate",
+        "old": "opaque cfg predicate has trailing tokens",
+        "new": "cfg requires exactly one predicate",
+        "actual_span": "file0:2616; macro pick call2649 definition2583",
+        "review": "Existing configured attribute framing rejects a second predicate root before calling the opaque predicate reader, dev/src/expand/configured.rs283..292."
+      }
+    ],
+    "gates": [
+      {
+        "gate": "1794940984892487652",
+        "raw_log_sha256": "e73a6079847ca4d2a88a39eb4e08924474373944140aa65ce01e62ad690985cc"
+      },
+      {
+        "gate": "1794941462144305695",
+        "raw_log_sha256": "5ad06462012e8196e5a4938948334a77600b34a87d3c63e249f0391189fe8910",
+        "observed": "All27 expected statuses (11 accepts16rejects) matched; exactly one remaining message prediction refuted."
+      }
+    ]
+  },
+  "candidate_qualification": {
+    "source_gate": "obj/qualification/fast/1794941616174300628",
+    "receipt_sha256": "44db36f67fa2b32a4e9963acd1e411ad912c79e3f9647ee3b6d8f2b50e554a34",
+    "expected_statuses": 27,
+    "accepts": 11,
+    "rejects": 16,
+    "required_accepted_rustc_gaps": 2,
+    "typed_forwarded_values": 3,
+    "ordinary_pa8_text_cases": 136,
+    "affected_existing_controls": {
+      "gate": "obj/qualification/fast/1794940984892487652",
+      "passed": 5,
+      "scope": "existing cfg builtin/framing/opaque paths/source-root commas/declarative branch framing; new27 matcher failed separately"
+    },
+    "strict_production_and_frontend_clippy_format_architecture": "passed",
+    "fixture_harness": "376 script tests,532 roots in13 binaries,45-stage layout;128 upstream fixtures and126 Reference files passed",
+    "private_checks": "Five new private literal/span/scope/payment/scaling tests and four affected private controls pending CI. Repeated prior cold private harness compilations exceeded the local five-minute feedback budget before execution; not repeated for this checkpoint.",
+    "native_or_backend": "No code generation or ABI change; no native qualification claimed.",
+    "actual_std": "Unchanged source graph replay pending a clean immutable observation compiler."
+  }
+}

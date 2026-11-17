@@ -63,6 +63,14 @@ pub trait Inputs {
     /// # Errors
     /// Rejects missing handles or invalid provenance for an opaque token.
     fn get(&self, token: Token) -> Result<Option<Splice<'_>>, LexError>;
+    /// A source provider may admit an actual captured Boolean literal as cfg.
+    /// Ordinary syntax keeps its existing opaque-metadata grammar.
+    ///
+    /// # Errors
+    /// Rejects invalid literal roots, provenance or exhausted source payment.
+    fn cfg_boolean_literal(&self, _splice: &Splice<'_>) -> Result<Option<bool>, LexError> {
+        Ok(None)
+    }
     /// Defining edition of one token, independent of a macro's fragment grammar.
     /// Existing callers supply the ordinary Rust 2024 source profile. A mixed
     /// stream must provide its immutable provenance for the entire invocation.
@@ -98,6 +106,52 @@ impl Inputs for Slice<'_> {
 }
 pub const EMPTY_INPUTS: Slice<'static> = Slice(&[]);
 impl<'capture> Splice<'capture> {
+    /// Read only a typed Boolean literal capture, with its actual occurrence spans.
+    /// # Errors
+    /// Rejects non-Boolean roots and spans outside the actual captured occurrence.
+    pub(crate) fn boolean_literal(&self) -> Result<bool, LexError> {
+        let invalid = || {
+            error(
+                self.destination.start,
+                "expected captured Boolean cfg literal",
+            )
+        };
+        let Nonterminal::Syntax {
+            kind: FragmentKind::Literal,
+            parsed,
+        } = self.fragment
+        else {
+            return Err(invalid());
+        };
+        let node = parsed
+            .ast
+            .nodes
+            .get(parsed.ast.root.get() as usize)
+            .ok_or_else(invalid)?;
+        self.span(node.span)?;
+        let value = match node.kind {
+            Kind::Literal(index) => match parsed.ast.literals.get(index as usize) {
+                Some(StoredValue::Boolean(value)) => return Ok(*value),
+                _ => return Err(invalid()),
+            },
+            Kind::DeferredLiteral(token) => {
+                self.span(Span {
+                    start: token.start,
+                    end: token.end,
+                })?;
+                if token.kind != TokenKind::Identifier {
+                    return Err(invalid());
+                }
+                crate::literal::interpret(self.original_source, token)?.ok_or_else(invalid)?
+            }
+            _ => return Err(invalid()),
+        };
+        if let Value::Boolean(value) = value {
+            Ok(value)
+        } else {
+            Err(invalid())
+        }
+    }
     /// Borrow a captured string value, decoding only a genuinely deferred literal.
     /// # Errors
     /// Rejects other root forms, literal kinds and invalid capture/storage ranges.
@@ -522,6 +576,9 @@ impl<'capture> Splice<'capture> {
 #[cfg(test)]
 #[path = "../../tests/invariants/interpolated_arguments.rs"]
 mod const_arguments;
+#[cfg(test)]
+#[path = "../../tests/invariants/truth_values.rs"]
+mod predicate_tests;
 
 /// Select the lexical carrier of a typed string's genuine source interval.
 /// This checks delimiters only; it neither parses a value nor admits another root kind.

@@ -1498,3 +1498,10 @@ qualification remain separate.
 
 The operator packet also declares `direct-rhs.rs` and `closed-missing-rhs.rs`
 for same-lhs multiple-Rhs selection, with one additional native trace.
+
+`spec/literal-predicates/` owns source-profile Boolean-literal cfg forwarding.
+Every complete input appears in `cases.tsv` and `outcomes.json`: `io-ext-shape.rs`, `attribute-true.rs`, `attribute-false.rs`, `value-true.rs`, `value-false.rs`, `nested-predicates.rs`, `forwarded-attribute.rs`, `forwarded-value.rs`, `cfg-attr-true.rs`, `cfg-attr-false.rs`, `wrong-integer.rs`, `wrong-negative.rs`, `wrong-string.rs`, `wrong-character.rs`, `wrong-byte.rs`, `wrong-bytes.rs`, `boolean-as-string-value.rs`, `literal-with-call.rs`, `literal-with-value.rs`, `literal-trailing-predicate.rs`, `invalid-after-true.rs`, `expression-root-attribute.rs`, `expression-root-value.rs`, `expression-group.rs`, `expression-string-value.rs`, `expression-group-string.rs`, `false-selection-opponent.rs`.
+Auxiliary `prefix.rs` and setup `setup.rs` retain independent setup bytes.
+The 27 independent statuses and seven reviewed diagnostic-matcher corrections
+are recorded without source/status changes. Two valid expression-root programs
+remain explicit required source-profile gaps; ordinary PA8/PA24 is unchanged.

@@ -131,6 +131,9 @@ fn evaluate_in(
             .inputs
             .get(token)?
             .ok_or_else(|| error(offset, "missing opaque cfg predicate"))?;
+        if let Some(value) = context.inputs.cfg_boolean_literal(&splice)? {
+            return Ok(value);
+        }
         let captured = splice.metadata()?;
         return evaluate_in(
             &captured.forest,
