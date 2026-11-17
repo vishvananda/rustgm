@@ -1,7 +1,7 @@
 //! Trait equality preserves local binder correlations; only outer regions escape.
 mod binders;
 mod rebase;
-use super::{Constructor, Context, Error, Store, TermId, Value, arguments::Slot};
+use super::{Constructor, Context, Domain, Error, Kind, Store, TermId, Value, arguments::Slot};
 use crate::support::hash::HashSet;
 use binders::Binders;
 use rebase::Rebasing;
@@ -132,6 +132,14 @@ impl Context {
                 self.variable_pair(a, b, left, right)?;
                 continue;
             }
+            if let Some(blocked) = &mut blocked
+                && self.scoped_integer_projection(store, a, b)?
+            {
+                // Other signature inputs may settle this integer independently.
+                // The final blocked-input check still requires normalization.
+                blocked.push((a, b));
+                continue;
+            }
             if let Value::Variable(domain) = self.terms[a.0 as usize].value {
                 let candidate = rebasing.apply(self, store, b, binders.depth()?, false)?;
                 self.bind(store, a, candidate, domain)?;
@@ -163,6 +171,34 @@ impl Context {
             work.extend(self.pairs.drain(..).rev().map(|(a, b)| Work::Pair(a, b)));
         }
         Ok(())
+    }
+
+    /// Read stored heads only; opaque normal forms keep their existing restrictions.
+    fn scoped_integer_projection(
+        &self,
+        store: &Store,
+        left: TermId,
+        right: TermId,
+    ) -> Result<bool, Error> {
+        let (candidate, value) = match (
+            self.terms[left.0 as usize].value,
+            self.terms[right.0 as usize].value,
+        ) {
+            (Value::Variable(Domain::Integer), value) => (right, value),
+            (value, Value::Variable(Domain::Integer)) => (left, value),
+            _ => return Ok(false),
+        };
+        if self.opaque_projection(candidate).is_some() {
+            return Ok(false);
+        }
+        Ok(match value {
+            Value::Known(ty) => matches!(
+                store.kind(ty).ok_or(Error::InvalidIdentity)?,
+                Kind::Projection(_)
+            ),
+            Value::Construct(Constructor::Projection(_)) => true,
+            _ => false,
+        })
     }
 
     fn scoped_binder(

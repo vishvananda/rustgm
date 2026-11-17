@@ -2,7 +2,7 @@
 use super::*;
 use crate::types::infer::Value;
 use crate::types::{
-    ItemId, Primitive, TypeId, copy,
+    ItemId, Kind, Primitive, TypeId, copy,
     infer::{Constructor, Domain, arguments::ArgumentsId, projections::Projection},
     projection::Schema,
 };
@@ -234,6 +234,142 @@ fn ready_equations_precede_numeric_fallback() -> TestResult {
             context.resolved(&mut store, numeric)?,
             TypeId::primitive(Primitive::I32)
         );
+    }
+    Ok(())
+}
+
+#[test]
+fn scoped_integer_inputs_wait_without_losing_independent_equations() -> TestResult {
+    for reverse in [false, true] {
+        let mut context = Context::default();
+        let mut store = Store::default();
+        let subject_type = TypeId::primitive(Primitive::U8);
+        let subject = context.known(&store, subject_type)?;
+        let projected = projection(&mut context, &mut store, subject)?;
+        let projected_type = context.resolved(&mut store, projected)?;
+        let Some(Kind::Projection(application)) = store.kind(projected_type) else {
+            return Err("named associated projection expected".into());
+        };
+        assert_eq!(application.item, ItemId(10));
+        assert_eq!(application.subject, subject_type);
+        assert_eq!(
+            store
+                .trait_application(application.trait_application)
+                .ok_or("projection trait application")?
+                .item,
+            ItemId(1)
+        );
+        assert_eq!(context.head(&store, projected), Err(Error::Normalization));
+        let projected_root = context.root(projected)?;
+        assert_eq!(context.opaque_projection(projected_root), None);
+
+        let integer = context.variable(Domain::Integer)?;
+        let independent = context.variable(Domain::Any)?;
+        let boolean = context.known(&store, TypeId::primitive(Primitive::Bool))?;
+        let word_type = TypeId::primitive(Primitive::U32);
+        let word = context.known(&store, word_type)?;
+        assert_eq!(context.unresolved_domain(integer)?, Some(Domain::Integer));
+        assert_eq!(context.head(&store, integer)?, None);
+        let left = context.construct(Constructor::Tuple, &[integer, independent, integer])?;
+        let right = context.construct(Constructor::Tuple, &[projected, boolean, word])?;
+        let (left, right) = if reverse {
+            (right, left)
+        } else {
+            (left, right)
+        };
+
+        let result = context.equate_scoped_inputs(&mut store, left, right);
+        assert_eq!(result, Err(Error::Normalization), "reverse={reverse}");
+        assert_eq!(
+            context.resolved(&mut store, independent)?,
+            TypeId::primitive(Primitive::Bool)
+        );
+        assert_eq!(context.resolved(&mut store, integer)?, word_type);
+        assert_ne!(context.root(integer)?, context.root(projected)?);
+        assert_eq!(context.resolved(&mut store, projected)?, projected_type);
+        assert_eq!(context.head(&store, projected), Err(Error::Normalization));
+
+        context.apply_normalization(&mut store, projected, word_type)?;
+        context.equate_scoped_inputs(&mut store, left, right)?;
+        assert_eq!(
+            context.resolved(&mut store, left)?,
+            context.resolved(&mut store, right)?
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn scoped_integer_inputs_preserve_closed_mismatches_and_ordinary_equations() -> TestResult {
+    for reverse in [false, true] {
+        for primitive in [Primitive::Bool, Primitive::F32] {
+            let mut context = Context::default();
+            let mut store = Store::default();
+            let integer = context.variable(Domain::Integer)?;
+            let other = context.known(&store, TypeId::primitive(primitive))?;
+            let (left, right) = if reverse {
+                (other, integer)
+            } else {
+                (integer, other)
+            };
+            assert_eq!(
+                context.equate_scoped_inputs(&mut store, left, right),
+                Err(Error::Mismatch)
+            );
+            assert_eq!(context.unresolved_domain(integer)?, Some(Domain::Integer));
+            assert_ne!(context.root(integer)?, context.root(other)?);
+        }
+        let mut context = Context::default();
+        let mut store = Store::default();
+        let subject = context.known(&store, TypeId::primitive(Primitive::U8))?;
+        let projected = projection(&mut context, &mut store, subject)?;
+        let integer = context.variable(Domain::Integer)?;
+        let (left, right) = if reverse {
+            (projected, integer)
+        } else {
+            (integer, projected)
+        };
+        assert_eq!(
+            context.equate_scoped_terms(&store, left, right),
+            Err(Error::Mismatch)
+        );
+        assert_eq!(context.unresolved_domain(integer)?, Some(Domain::Integer));
+        assert_ne!(context.root(integer)?, context.root(projected)?);
+    }
+    Ok(())
+}
+
+#[test]
+fn scoped_integer_inputs_cannot_bind_a_marked_opaque_projection() -> TestResult {
+    for reverse in [false, true] {
+        let mut context = Context::default();
+        let mut store = Store::default();
+        let subject = context.known(&store, TypeId::primitive(Primitive::U8))?;
+        let projected = projection(&mut context, &mut store, subject)?;
+        let projected_type = context.resolved(&mut store, projected)?;
+        context.apply_normalization(&mut store, projected, projected_type)?;
+        let projected_root = context.root(projected)?;
+        assert_eq!(
+            context.opaque_projection(projected_root),
+            Some(projected_type)
+        );
+        assert!(matches!(
+            context.head(&store, projected)?,
+            Some(Constructor::Projection(_))
+        ));
+        let integer = context.variable(Domain::Integer)?;
+        let (left, right) = if reverse {
+            (projected, integer)
+        } else {
+            (integer, projected)
+        };
+        assert_eq!(
+            context.equate_scoped_inputs(&mut store, left, right),
+            Err(Error::Mismatch)
+        );
+        assert_eq!(context.unresolved_domain(integer)?, Some(Domain::Integer));
+        assert_ne!(context.root(integer)?, context.root(projected)?);
+        assert_eq!(context.resolved(&mut store, projected)?, projected_type);
     }
     Ok(())
 }
