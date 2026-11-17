@@ -1,0 +1,143 @@
+{
+  "schema": 1,
+  "owner": "pa31",
+  "state": "Pinned Rustc and focused RustGM source and native gates passed",
+  "prefix": "prefix.rs",
+  "prefix_sha256": "618fa533a6fdbdee1e5fa552cc62c369012e36bed7550e8f16c532a66dae9849",
+  "observer": "observe.c",
+  "observer_sha256": "a3d959c0f8d1b6a2c24ba5a88381ac99f737c7e37af9b6c32c59a510033247e4",
+  "pinned_reference_coercion_source": "library/core/src/ops/unsize.rs",
+  "pinned_reference_coercion_sha256": "4f0f013efec7392300e9d4415748ffd5e74e990ebb096c1b556922540d9684d6",
+  "prefix_delta": {
+    "insertion_offset": 5123,
+    "ending_offset": 5331,
+    "preceding_bytes_preserved": true,
+    "semantic_suffixes_preserved": true
+  },
+  "reference_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "independent": {
+    "compiler": "rustc 1.98.0",
+    "profile": "edition2024 x86_64-unknown-linux-gnu no_core empty sysroot panic=abort",
+    "receipt_sha256": "702b633a2f0272555a52304625c18cdec10494ede8af8e528151e653b4b8ffba",
+    "retained_v1_receipt_sha256": "2ad36db7212c36577622a39387ac7a011ede5b7df9b7ba466a604196d410ed33",
+    "setup": [
+      {
+        "name": "setup-prefix",
+        "status": 0,
+        "metadata_sha256": "c5128641aa7d526eba4c4ad41ada8ac4add90ad952bbbd9b0a0a47538deef00e"
+      },
+      {
+        "name": "setup-shared-coercion",
+        "status": 0,
+        "metadata_sha256": "a247b38444d8802e5d0c5c09ea7fd6856d14526ec8a1456a6d0a80aa6f8ce843"
+      },
+      {
+        "name": "setup-mutable-coercion",
+        "status": 0,
+        "metadata_sha256": "9b18d20ee4b792cc414b79e98a5c55690a4dba905aa5c45d4b84db1adc12acf3"
+      }
+    ],
+    "semantic_metadata": {
+      "borrowed-shared-owned-tuple": 0,
+      "borrowed-mutable-owned-tuple": 0,
+      "wrong-tuple-application": 1
+    },
+    "native": [
+      {
+        "name": "borrowed-shared-owned-tuple",
+        "status": 0,
+        "stdout_sha256": "d2596eaa4063642fab85aad02e0b6f6f1e8319c65f4436cb8cc56fa551260b6a",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "borrowed-mutable-owned-tuple",
+        "status": 0,
+        "stdout_sha256": "54508d48cf07d680fa8891e9fb87bfca0d37a7e5e64865a11c4b9bf0132a0d44",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "mutable_v2_preserved": {
+      "case": {
+        "name": "borrowed-mutable-owned-tuple",
+        "source": "borrowed-mutable-owned-tuple.rs",
+        "sha256": "4ef3b9b85914a9b34b86363becc62bd6c9684de19c3aec535d1ad311393330a3",
+        "rustc_metadata": 0,
+        "rustgm_source": 0,
+        "required_diagnostic_class": null,
+        "native_status": 0,
+        "native_stdout": "drop 3\ndrop 4\nvalue 7\n",
+        "native_stderr": ""
+      },
+      "native": {
+        "name": "borrowed-mutable-owned-tuple",
+        "status": 0,
+        "stdout_sha256": "37a7e195dd5940be8fcc6c470cba63639a147786ef7729f10ac2d08f3b58ad37",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "candidate_gate": "1794944016114260749",
+      "candidate_cause": "Installed source overflow panic guard at count += step. V3 observer instead saves and returns the previous capture value and replaces it with step."
+    },
+    "mutable_v3_receipt_sha256": "5dca497453265944eaaed119eb3e8b0a372a8386473feca6574a077bb09a3d09"
+  },
+  "cases": [
+    {
+      "name": "borrowed-shared-owned-tuple",
+      "source": "borrowed-shared-owned-tuple.rs",
+      "sha256": "faff215f6628344862e712ca80f4722bce313bb1995226330c49b4751f64cf59",
+      "rustc_metadata": 0,
+      "rustgm_source": 0,
+      "required_diagnostic_class": null,
+      "native_status": 0,
+      "native_stdout": "drop 4\nvalue 7\n",
+      "native_stderr": ""
+    },
+    {
+      "name": "borrowed-mutable-owned-tuple",
+      "source": "borrowed-mutable-owned-tuple.rs",
+      "sha256": "07a63d93e58993714bfcfec613325abbfd0bc35487d4d2db6ee92adeaad56fc8",
+      "rustc_metadata": 0,
+      "rustgm_source": 0,
+      "required_diagnostic_class": null,
+      "native_status": 0,
+      "native_stdout": "drop 3\ndrop 4\nvalue 2\n",
+      "native_stderr": ""
+    },
+    {
+      "name": "wrong-tuple-application",
+      "source": "wrong-tuple-application.rs",
+      "sha256": "dcb7079845b13d596c04aa71229d8ef4703604e50994e8b8eafce555e39d16bd",
+      "rustc_metadata": 1,
+      "rustgm_source": 1,
+      "required_diagnostic_class": "trait application is not implemented",
+      "native_status": null,
+      "native_stdout": null,
+      "native_stderr": null,
+      "rustgm_required_diagnostic_fragment": "file 0: 5389: associated type requires an unambiguous validated implementation",
+      "rustc_required_diagnostic": "E0277 trait bound"
+    }
+  ],
+  "candidate_diagnostic_reconciliation": {
+    "case": "wrong-tuple-application",
+    "prior_prediction": "trait obligation requires a matching assumption or implementation",
+    "observed": "file 0: 5389: associated type requires an unambiguous validated implementation",
+    "source_site": "wrong-tuple-application.rs:85:5 exact UFCS call requesting Fn<(u32, Noisy)> against dyn Fn(Noisy, u32)",
+    "basis": "Rustc rejects the same explicit application with E0277. The RustGM result projection cannot select a validated implementation for the requested application. No source, status or oracle output changed.",
+    "gate": "1794944570823840359",
+    "raw_log_sha256": "fc06974fe5abf62b80d6c8e7966cf668f05e93c87807accf43b7e2ac72881435"
+  },
+  "candidate_qualification": {
+    "source": {
+      "run": "1794944671891182990",
+      "receipt_sha256": "e0b4a3b44e9398c385e342a98373dfaf30fdae2620eeb4fdaa35de49e9bfebce"
+    },
+    "native": {
+      "run": "1794944748048288055",
+      "receipt_sha256": "0c35d56764ca4f3b9226c1fdc5076409cd249814d3c16492b9e8bbc712f734ba"
+    },
+    "source_cases": "Both borrowed callables lower through their generated slot and the exact wrong tuple application rejects",
+    "native_cases": "Two borrowed traces match exactly, with exit 0 and empty stderr. Both existing native Box and nominal cast controls pass.",
+    "existing_source_controls": "Two existing Box and nominal cast source selectors passed against unchanged production in 1794944016114260749",
+    "fixture_checks": "376 harness tests and 532 suite roots in 13 binaries, layout verification, 128 upstream fixtures and 126 pinned Reference files",
+    "remaining": "Full CI and original Box-dyn with owned FnOnce and higher-ranked conversion remain required"
+  }
+}

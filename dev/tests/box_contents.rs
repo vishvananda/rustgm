@@ -120,9 +120,68 @@ fn owned_boxes_execute() -> Result {
     Ok(())
 }
 
+const DYNAMIC_MEMBERS: &str = "pa31/tests/spec/explicit-dynamic-call-members";
+const DYNAMIC_MEMBER_TRACES: [(&str, &[u8]); 2] = [
+    ("borrowed-shared-owned-tuple", b"drop 4\nvalue 7\n"),
+    ("borrowed-mutable-owned-tuple", b"drop 3\ndrop 4\nvalue 2\n"),
+];
+
+#[test]
+fn explicit_borrowed_dynamic_members_keep_exact_tuple_application() {
+    let mut failures = Vec::new();
+    for (name, _) in DYNAMIC_MEMBER_TRACES {
+        match packet_program(DYNAMIC_MEMBERS, name, true) {
+            Ok(output)
+                if output
+                    .symbols
+                    .iter()
+                    .any(|symbol| symbol.name.starts_with("rg.callable.member.")) => {}
+            Ok(_) => failures.push(format!(
+                "{name}: explicit callable did not reach its virtual member"
+            )),
+            Err(error) => failures.push(format!("{name}: {error}")),
+        }
+    }
+    let wrong_tuple_cause = concat!(
+        "file 0: 5389: ",
+        "associated type requires an unambiguous validated implementation"
+    );
+    match packet_program(DYNAMIC_MEMBERS, "wrong-tuple-application", true) {
+        Err(error) if error.to_string() == wrong_tuple_cause => {}
+        Err(error) => failures.push(format!("wrong-tuple-application: {error}")),
+        Ok(_) => failures.push("accepted a different dynamic call-trait application".into()),
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn explicit_borrowed_dynamic_members_execute_exact_tuple_traces() -> Result {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    for (name, expected) in DYNAMIC_MEMBER_TRACES {
+        crate::observed_program::execute(
+            &root.join(format!(
+                "obj/parallel/explicit-dynamic-call-members/native/{name}"
+            )),
+            &packet_program(DYNAMIC_MEMBERS, name, true)?,
+            &root.join(DYNAMIC_MEMBERS).join("observe.c"),
+            expected,
+        )
+        .map_err(|error| format!("{name}: {error}"))?;
+    }
+    Ok(())
+}
+
 const CASTS: &str = "pa31/tests/spec/coercion-casts";
 fn coercion_program(name: &str, source_profile: bool) -> Result<rustgm::lowir::program::Program> {
-    let text = crate::resolve::fixture(&format!("{CASTS}/{name}.rs"))?;
+    packet_program(CASTS, name, source_profile)
+}
+fn packet_program(
+    packet: &str,
+    name: &str,
+    source_profile: bool,
+) -> Result<rustgm::lowir::program::Program> {
+    let text = crate::resolve::fixture(&format!("{packet}/{name}.rs"))?;
     let mut config = rustgm::expand::config::Config::default();
     config.set_lint_cap(rustgm::support::diagnostics::LintCap::Allow);
     let mut report = if source_profile {

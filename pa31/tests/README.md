@@ -2,6 +2,10 @@
 
 Planned: no graded manifest or generated reference outputs yet.
 
+`spec/explicit-dynamic-call-members/outcomes.json` declares the borrowed dynamic
+rust-call member cases, the Box callable foundation and the ordered C observer
+traces. The ownership suite selects them through `box_contents`.
+
 `spec/bool-niches/` owns21 source layout/value contracts and three C observers:
 bool payloads use bytes0/1, and the companion uses2. Source constants, validity,
 runtime construction, statics and actual destructor selection agree with Rust;

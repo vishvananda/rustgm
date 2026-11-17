@@ -966,6 +966,9 @@ impl<'a> Context<'a> {
         if matches!(self.types.kind(instance.ty()), Some(Kind::Closure { .. })) {
             return self.demand_closure(instance.ty());
         }
+        if let Some(member) = self.objects.member(instance) {
+            return self.object_member(member);
+        }
         if let Some(call) = self.objects.call(instance) {
             return self.virtual_method(instance, call);
         }

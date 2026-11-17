@@ -14,6 +14,7 @@ use crate::{
 #[derive(Default)]
 pub(in crate::lower) struct Callables {
     entries: HashMap<Callable, SymbolId>,
+    pub(super) members: HashMap<crate::sema::vtable_plans::Member, SymbolId>,
     calls: HashMap<(ShapeId, u32, u32), SymbolId>,
 }
 impl Context<'_> {

@@ -1,5 +1,6 @@
 //! Executable object plans are demanded from bodies whose source proofs have passed.
 mod captured;
+mod members;
 mod operators;
 mod shapes;
 mod tables;
@@ -13,6 +14,7 @@ use crate::{
     types::{TypeId, instance::Instance, substitute::Bound, traits::ApplicationId},
 };
 pub(crate) use captured::{Captured, captured_permissions, prepare_captured};
+pub(crate) use members::Member;
 pub(crate) use operators::{Operator, prepare_operator};
 use std::sync::Arc;
 pub(crate) use tables::{complete_tables, prepare_table};
@@ -67,7 +69,7 @@ pub(crate) enum Upcast {
     Table { source: ShapeId, index: u32 },
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) struct Virtual {
     pub shape: ShapeId,
     pub slot: u32,
@@ -81,6 +83,7 @@ struct Storage {
     shapes: Vec<Arc<Shape>>,
     shape_ids: HashMap<TypeId, ShapeId>,
     calls: HashMap<Instance, Option<Virtual>>,
+    members: HashMap<Instance, Member>,
     operators: HashMap<(TypeId, crate::support::call_traits::CallTrait, TypeId), Operator>,
     callable_targets: HashMap<TypeId, Callable>,
     captured_targets: HashMap<(TypeId, crate::support::call_traits::CallTrait), Captured>,
@@ -102,6 +105,7 @@ impl Default for Storage {
             shapes: Vec::new(),
             shape_ids: HashMap::default(),
             calls: HashMap::default(),
+            members: HashMap::default(),
             operators: HashMap::default(),
             callable_targets: HashMap::default(),
             captured_targets: HashMap::default(),
@@ -139,6 +143,9 @@ impl Objects {
             .get(&instance)
             .copied()
             .flatten()
+    }
+    pub(crate) fn member(&self, instance: Instance) -> Option<Member> {
+        self.storage.as_ref()?.members.get(&instance).copied()
     }
     pub(crate) fn shape(&self, id: ShapeId) -> Option<&Shape> {
         self.storage
@@ -206,6 +213,9 @@ pub(crate) fn prepare_call(
     {
         return Ok(value.is_some());
     }
+    if facts.objects.member(instance).is_some() {
+        return Ok(true);
+    }
     let Some((method, predicate)) = super::dispatch::object_method(facts, instance.ty())? else {
         return Ok(false);
     };
@@ -224,6 +234,9 @@ pub(crate) fn prepare_call(
         return Err("object callable requires a complete parent trait".into());
     };
     let shape = shapes::prepare(report, facts, predicate.ty)?;
+    if let Some(kind) = super::compiler_items::callable_member(facts, method)? {
+        return members::prepare(facts, instance, kind, shape, parent);
+    }
     let slot = facts
         .objects
         .shape(shape)

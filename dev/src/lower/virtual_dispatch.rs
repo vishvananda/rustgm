@@ -1,5 +1,6 @@
 //! Selected virtual slots lower mechanically through the two-word receiver ABI.
 mod forwarders;
+mod members;
 mod tables;
 use super::context::{Context, Representation};
 use crate::{
@@ -95,15 +96,7 @@ impl Context<'_> {
         for _ in 0..dereferences {
             receiver = builder.load(Type::Ptr, receiver.operand)?;
         }
-        let data = builder.load(Type::Ptr, receiver.operand)?;
-        let metadata = offset(&mut builder, receiver, 8)?;
-        let metadata = builder.load(Type::Ptr, metadata.operand)?;
-        let address = offset(
-            &mut builder,
-            metadata,
-            HEADER_BYTES + u64::from(call.slot) * 8,
-        )?;
-        let method = builder.load(Type::Ptr, address.operand)?;
+        let (data, method) = dispatch(&mut builder, receiver, call)?;
         arguments[receiver_index] = data;
         let native = self.output.scalar_signature(signature)?;
         let value = builder.call(signature, native.result, method.operand, &arguments)?;
@@ -139,4 +132,17 @@ fn parameters(
 fn offset(builder: &mut Builder, base: Value, bytes: u64) -> Result<Value, &'static str> {
     let offset = builder.integer(Type::I64, u128::from(bytes))?;
     builder.index(Type::U8, base, offset)
+}
+
+fn dispatch(
+    builder: &mut Builder,
+    receiver: Value,
+    call: Virtual,
+) -> Result<(Value, Value), &'static str> {
+    let data = builder.load(Type::Ptr, receiver.operand)?;
+    let metadata = offset(builder, receiver, 8)?;
+    let metadata = builder.load(Type::Ptr, metadata.operand)?;
+    let address = offset(builder, metadata, HEADER_BYTES + u64::from(call.slot) * 8)?;
+    let method = builder.load(Type::Ptr, address.operand)?;
+    Ok((data, method))
 }
