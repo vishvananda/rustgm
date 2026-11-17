@@ -130,3 +130,94 @@ fn rhs_dereference_and_add_traces_match_independent_observations() -> Result {
     }
     Ok(())
 }
+
+const COMPOUND: &str = "pa31/tests/spec/source-compound-rhs";
+const COMPOUND_NATIVE: [(&str, &str); 2] = [
+    ("coerced-rhs", "left\nrhs\nderef\nassign\nvalue 7\n"),
+    ("direct-overloaded-rhs", "assign\nvalue 7\n"),
+];
+
+#[test]
+fn compound_rhs_coercions_preserve_exact_place_and_reject_opponents() -> Result {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("repository root")?;
+    let cases = [
+        ("coerced-rhs", "--emit-body-ir", None),
+        ("direct-overloaded-rhs", "--emit-body-ir", None),
+        ("primitive-rhs", "--emit-body-ir", None),
+        (
+            "immutable-place",
+            "--emit-loans",
+            Some("cannot mutably borrow an immutable local"),
+        ),
+        (
+            "closed-wrong-rhs",
+            "--emit-body-ir",
+            Some("incompatible types"),
+        ),
+        (
+            "overlapping-receiver",
+            "--emit-loans",
+            Some("access conflicts with a live reference loan"),
+        ),
+    ];
+    let mut failures = Vec::new();
+    for (name, view, cause) in cases {
+        let output = Command::new(env!("CARGO_BIN_EXE_rustgm"))
+            .args([
+                view,
+                "--cap-lints=allow",
+                "--edition=2024",
+                "--crate-name",
+                "minicore",
+                "--crate-disambiguator",
+                "compound_rhs",
+                "--source-core",
+                "minicore@compound_rhs",
+            ])
+            .arg(root.join(COMPOUND).join(format!("{name}.rs")))
+            .output()?;
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let valid = match cause {
+            Some(cause) => {
+                output.status.code() == Some(1)
+                    && stderr
+                        .lines()
+                        .any(|line| line.starts_with("ERROR: ") && line.contains(cause))
+                    && !["not implemented", "panicked", "work budget", "lost its"]
+                        .iter()
+                        .any(|word| stderr.contains(word))
+            }
+            None => output.status.success() && !output.stdout.is_empty() && stderr.is_empty(),
+        };
+        if !valid {
+            failures.push(format!(
+                "{name}: {view} {:?}: {stderr}",
+                output.status.code()
+            ));
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the pinned LowIR backend and a C linker"]
+fn compound_rhs_native_traces_keep_place_and_coercion_order() -> Result {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("repository root")?;
+    let folder = root.join(format!(
+        "obj/parallel/source-compound-rhs-native/{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let observer = crate::resolve::fixture(&format!("{COMPOUND}/observe.c"))?;
+    for (name, expected) in COMPOUND_NATIVE {
+        let source = crate::resolve::fixture(&format!("{COMPOUND}/{name}.rs"))?;
+        let program = crate::ffi_program::exported(&source, "compound_rhs")?;
+        crate::ffi_program::check(root, &folder, name, &program, &observer, expected)?;
+    }
+    Ok(())
+}

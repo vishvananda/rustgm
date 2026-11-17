@@ -1,0 +1,142 @@
+{
+  "schema": 1,
+  "owner": "pa31",
+  "state": "Pinned Rustc and focused RustGM source and native gates passed",
+  "profile": {
+    "compiler": "rustc 1.98.0 88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "scope": "edition2024 x86_64-unknown-linux-gnu no_core empty sysroot panic=abort"
+  },
+  "prefix": {
+    "path": "prefix.rs",
+    "sha256": "f8bafb7dede4814f3e6f268ce4754d0267f0f9d4c180eae6d8bd360e1d5e2ac0"
+  },
+  "observer": {
+    "path": "observe.c",
+    "sha256": "debb4e183a6783a3f7bef6b4e31a963c016f594b8572c32265a08d8344a899ce"
+  },
+  "pinned_add_assign": {
+    "path": "library/core/src/ops/arith.rs",
+    "sha256": "a495c8c9838be09ce2c239462153a6221b6f471aa2efe43ce437e83581636c91",
+    "start": 21978,
+    "end": 22618
+  },
+  "independent": {
+    "receipt_sha256": "4338f75ad6307613a8187b797eec793dae2bc7c9c34382737816d240a38df834",
+    "metadata": {
+      "setup-prefix": 0,
+      "coerced-rhs": 0,
+      "direct-overloaded-rhs": 0,
+      "primitive-rhs": 0,
+      "immutable-place": 1,
+      "closed-wrong-rhs": 1,
+      "overlapping-receiver": 1
+    },
+    "native": {
+      "coerced-rhs": {
+        "status": 0,
+        "stdout_sha256": "d6efe999b95b989aa326fda22a7416a580f611821e62a95c959cf90991a7d096",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "direct-overloaded-rhs": {
+        "status": 0,
+        "stdout_sha256": "a2aa3e3c5fe80dd37a7aabeaac7b231f4d3f55dc44d9810051015bf77006db88",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  "cases": [
+    {
+      "name": "coerced-rhs",
+      "path": "coerced-rhs.rs",
+      "sha256": "df56acee43bceadd278f02b1d0f5ce919d2182f497c53f167affcb956eb9ebef",
+      "rustc_metadata": 0,
+      "rustgm_source": 0,
+      "rustc_diagnostic": null,
+      "native_status": 0,
+      "native_stdout": "left\nrhs\nderef\nassign\nvalue 7\n",
+      "native_stderr": "",
+      "candidate_view": "--emit-body-ir",
+      "candidate_cause": null
+    },
+    {
+      "name": "direct-overloaded-rhs",
+      "path": "direct-overloaded-rhs.rs",
+      "sha256": "c9ebca3c100390ef3bf630694d3f4616258dce7461fea4b2b77eb98a95d03d49",
+      "rustc_metadata": 0,
+      "rustgm_source": 0,
+      "rustc_diagnostic": null,
+      "native_status": 0,
+      "native_stdout": "assign\nvalue 7\n",
+      "native_stderr": "",
+      "intent": "Direct overloaded RHS on a grouped LHS place; one assignment, no deref",
+      "candidate_view": "--emit-body-ir",
+      "candidate_cause": null
+    },
+    {
+      "name": "primitive-rhs",
+      "path": "primitive-rhs.rs",
+      "sha256": "d6d6a5162779936883b41d6b86e9396e4c053ad7067b7ab101a8381ccfabcb60",
+      "rustc_metadata": 0,
+      "rustgm_source": 0,
+      "rustc_diagnostic": null,
+      "native_status": null,
+      "native_stdout": null,
+      "native_stderr": null,
+      "candidate_view": "--emit-body-ir",
+      "candidate_cause": null
+    },
+    {
+      "name": "immutable-place",
+      "path": "immutable-place.rs",
+      "sha256": "348af4396c3fc7dc9c299abd61d20f16a91cd71242d8b460ae06a08566eb58bc",
+      "rustc_metadata": 1,
+      "rustgm_source": 1,
+      "rustc_diagnostic": "E0596",
+      "native_status": null,
+      "native_stdout": null,
+      "native_stderr": null,
+      "candidate_view": "--emit-loans",
+      "candidate_cause": "cannot mutably borrow an immutable local"
+    },
+    {
+      "name": "closed-wrong-rhs",
+      "path": "closed-wrong-rhs.rs",
+      "sha256": "338e7f9516a853a884f9fe8e7a2800dbb9df7901a07ff21983cd7bcfe4c5998f",
+      "rustc_metadata": 1,
+      "rustgm_source": 1,
+      "rustc_diagnostic": "E0308",
+      "native_status": null,
+      "native_stdout": null,
+      "native_stderr": null,
+      "candidate_view": "--emit-body-ir",
+      "candidate_cause": "incompatible types"
+    },
+    {
+      "name": "overlapping-receiver",
+      "path": "overlapping-receiver.rs",
+      "sha256": "9a7d82bbf37955b8671c0f6a6b4a9d8b2fd553785aebb4ce67f951011989575d",
+      "rustc_metadata": 1,
+      "rustgm_source": 1,
+      "rustc_diagnostic": "E0502",
+      "native_status": null,
+      "native_stdout": null,
+      "native_stderr": null,
+      "candidate_view": "--emit-loans",
+      "candidate_cause": "access conflicts with a live reference loan"
+    }
+  ],
+  "candidate_qualification": {
+    "source": {
+      "run": "1794944990503012621",
+      "receipt_sha256": "91678e4e0e567eee0ab155561414c05623141591130112a59e15c4da8ce50313"
+    },
+    "native": {
+      "run": "1794945160056970916",
+      "receipt_sha256": "ed3a3e03fa222dfaa709e43c90f42672ce2dd20c829f68353a1efd77a4c7f197"
+    },
+    "source_cases": "Three positive source cases and three exact diagnostic opponents pass. Existing arithmetic RHS and all ten assignment controls pass.",
+    "native_cases": "Both native traces match the pinned oracle exactly, with exit 0 and empty stderr.",
+    "fixture_checks": "376 harness tests and 532 suite roots in 13 binaries, layout verification, 128 upstream fixtures and 126 pinned Reference files",
+    "remaining": "Full CI and unchanged original String replay remain required"
+  }
+}

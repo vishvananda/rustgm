@@ -1510,6 +1510,11 @@ The 27 independent statuses and seven reviewed diagnostic-matcher corrections
 are recorded without source/status changes. Two valid expression-root programs
 remain explicit required source-profile gaps; ordinary PA8/PA24 is unchanged.
 
+`spec/source-compound-rhs/outcomes.json` declares six standalone source compound
+assignment cases, the foundation and the C observer. The RHS integration suite
+owns the source and native selectors. The packet records pinned source outcomes
+and the two independently matched ordered traces.
+
 Source borrowed-rvalue expectation inputs are registered in
 [spec/unsized-borrow-expectations/outcomes.json](spec/unsized-borrow-expectations/outcomes.json).
 The complete standalone sources cover inferred, direct, explicit, block, macro,

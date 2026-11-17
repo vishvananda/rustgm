@@ -38,14 +38,37 @@ impl Checker<'_> {
         left: NodeId,
         right: NodeId,
     ) -> Result<TermId, Error> {
+        let Kind::Binary {
+            op,
+            right: actual_right,
+            ..
+        } = self.kind(node)
+        else {
+            return Err(self.error(node, "source assignment lost its actual operator"));
+        };
+        if actual_right != right || super::assignment_hook(op) != Some(hook) {
+            return Err(self.error(node, "source assignment changed its actual RHS or hook"));
+        }
         let selected =
             compiler_items::source_assignment(self.report, self.facts, self.key(node), hook)?;
         let subject = self.term(left)?;
-        let rhs = self.term(right)?;
-        if let Kind::Binary { op, .. } = self.kind(node) {
-            // The builtin rule unifies the operands; the result stays unit.
-            self.builtin_binary(node, op, subject, rhs)?;
-        }
+        let actual_rhs = self.term(right)?;
+        // The mutable place keeps its exact Self. Only an overloaded RHS
+        // gets a fresh input selected by this operator before coercion.
+        let rhs = if self
+            .builtin_binary(node, op, subject, actual_rhs)?
+            .is_some()
+        {
+            actual_rhs
+        } else {
+            let rhs = self.variable(node, super::super::Domain::Any)?;
+            self.state.work.push(super::super::Work::CoerceBinaryRhs {
+                node,
+                operand: right,
+                expected: rhs,
+            });
+            rhs
+        };
         let effect = self.callee_use_effect()?;
         self.state.call_types.obligations.push((
             node,
