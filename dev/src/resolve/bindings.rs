@@ -445,14 +445,39 @@ impl super::package::Package {
         &self,
         file: crate::support::source::FileId,
     ) -> Result<bool, super::package::Error> {
+        self.requested_own_root(file, policy::Feature::UsedWithArg)
+    }
+    pub(crate) fn requested_ffi_effect(
+        &self,
+        file: crate::support::source::FileId,
+        feature: &str,
+    ) -> Result<bool, super::package::Error> {
+        let feature = match feature {
+            "ffi_const" => policy::Feature::FfiConst,
+            "ffi_pure" => policy::Feature::FfiPure,
+            _ => {
+                return Err(super::package::Error::at(
+                    file,
+                    0,
+                    "unknown foreign effect feature",
+                ));
+            }
+        };
+        self.requested_own_root(file, feature)
+    }
+    fn requested_own_root(
+        &self,
+        file: crate::support::source::FileId,
+        feature: policy::Feature,
+    ) -> Result<bool, super::package::Error> {
         let error = |message| super::package::Error::at(file, 0, message);
         let source = self
             .source_core()
-            .ok_or_else(|| error("used retention requires SourceCore"))?;
+            .ok_or_else(|| error("crate-owned feature requires SourceCore"))?;
         let module = self
             .modules
             .get(self.file_crate_root(file).0 as usize)
-            .ok_or_else(|| error("used attribute has no actual crate root"))?;
+            .ok_or_else(|| error("source feature has no actual crate root"))?;
         let unit = self.unit(module.file);
         if let Some(index) = unit.owner_indices[module.root.get() as usize] {
             let owner = &unit.configured.owners[index.get() as usize - 1];
@@ -470,7 +495,7 @@ impl super::package::Package {
             );
             source.macros.charge(width, 0).map_err(error)?;
         }
-        policy::root_feature(unit, module.file, policy::Feature::UsedWithArg)
+        policy::root_feature(unit, module.file, feature)
     }
     /// Permission for `#[thread_local]`, never its storage.
     pub(crate) fn requested_thread_local(&self) -> Result<bool, &'static str> {

@@ -730,3 +730,105 @@ fn gnu_init_arrays_require_unsafe_literal_owner_and_actual_c_callable() -> TestR
     }
     Ok(())
 }
+
+#[test]
+fn source_foreign_effects_retain_distinct_canonical_function_assertions() -> TestResult {
+    use rustgm::{resolve::model::DefId, sema::foreign::MemoryEffect};
+    let prefix =
+        crate::resolve::fixture("pa31/tests/spec/source-functions-transport/minimal-provider.rs")?;
+    let source = format!(
+        "#![feature(ffi_const,ffi_pure)]\n{prefix}
+         unsafe extern \"C\" {{
+            #[link_name = \"__errno_location\"] #[unsafe(ffi_const)]
+            pub safe fn errno_location() -> *mut i32;
+            #[unsafe(ffi_pure)] pub fn observes(value:i32) -> i32;
+            pub safe fn plain() -> i32;
+         }}
+         pub fn checked() -> *mut i32 {{ errno_location() }}"
+    );
+    let report = crate::resolve::source_provider(&source, "source_foreign_effects")?;
+    let facts = rustgm::pipeline::analyze_source(&report)?.facts;
+    for (name, assertion) in [
+        ("errno_location", Some(MemoryEffect::Const)),
+        ("observes", Some(MemoryEffect::Pure)),
+        ("plain", None),
+        ("checked", None),
+    ] {
+        let index = report
+            .resolution
+            .definitions
+            .iter()
+            .position(|definition| report.package.names.get(definition.name) == name)
+            .ok_or("missing exact function declaration")?;
+        assert_eq!(
+            facts.foreign_memory_effect(DefId(u32::try_from(index)?)),
+            assertion
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn source_foreign_effects_require_exact_features_forms_owners_and_call_safety() -> TestResult {
+    let prefix =
+        crate::resolve::fixture("pa31/tests/spec/source-functions-transport/minimal-provider.rs")?;
+    let both = "#![feature(ffi_const,ffi_pure)]";
+    let rows = [
+        (
+            "",
+            "unsafe extern \"C\" { #[unsafe(ffi_const)] fn f(); }",
+            "this crate's ffi_const feature",
+        ),
+        (
+            "#![feature(ffi_const)]",
+            "unsafe extern \"C\" { #[unsafe(ffi_pure)] fn f(); }",
+            "this crate's ffi_pure feature",
+        ),
+        (
+            both,
+            "unsafe extern \"C\" { #[ffi_const] fn f(); }",
+            "unsafe attribute used without unsafe",
+        ),
+        (
+            both,
+            "unsafe extern \"C\" { #[unsafe(ffi_const(0))] fn f(); }",
+            "requires a word attribute",
+        ),
+        (
+            both,
+            "#[unsafe(ffi_const)] fn f() {}",
+            "requires an actual foreign function",
+        ),
+        (
+            both,
+            "unsafe extern \"C\" { #[unsafe(ffi_const)] static F:i32; }",
+            "requires an actual foreign function",
+        ),
+        (
+            both,
+            "unsafe extern \"C\" { #[unsafe(ffi_const)] #[unsafe(ffi_const)] fn f(); }",
+            "duplicate foreign effect",
+        ),
+        (
+            both,
+            "unsafe extern \"C\" { #[unsafe(ffi_pure)] #[unsafe(ffi_const)] fn f(); }",
+            "cannot be `#[ffi_pure]`",
+        ),
+        (
+            both,
+            "unsafe extern \"C\" { #[unsafe(ffi_const)] fn f(); } pub fn call() { f(); }",
+            "call to unsafe function requires an unsafe context",
+        ),
+    ];
+    for (header, suffix, cause) in rows {
+        let report = crate::resolve::source_provider(
+            &format!("{header}\n{prefix}\n{suffix}"),
+            "source_foreign_effect_rejection",
+        )?;
+        let error = rustgm::pipeline::analyze_source(&report)
+            .err()
+            .ok_or("foreign effect accepted an opposing case")?;
+        assert!(error.to_string().contains(cause), "{suffix}: {error}");
+    }
+    Ok(())
+}

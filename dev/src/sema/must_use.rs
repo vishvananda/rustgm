@@ -49,6 +49,7 @@ pub struct Work {
 }
 #[derive(Default)]
 pub(super) struct Contracts {
+    pub(super) ffi_effects: Option<Box<HashMap<DefId, super::foreign::MemoryEffect>>>,
     pub(super) used_statics: Option<Box<super::used_statics::Retention>>,
     pub(in crate::sema) headers: Option<Box<super::header_attributes::Ledger>>,
     pub(in crate::sema) specialization: Option<Box<super::specialization::LocalMarkers>>,

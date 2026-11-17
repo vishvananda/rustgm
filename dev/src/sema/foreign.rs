@@ -10,6 +10,21 @@ use crate::{
 };
 pub(crate) use prepared_functions::PreparedFunctions;
 
+/// A source declaration's asserted foreign memory effect. No call permission.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum MemoryEffect {
+    Const,
+    Pure,
+}
+impl MemoryEffect {
+    pub(super) const fn feature(self) -> &'static str {
+        match self {
+            Self::Const => "ffi_const",
+            Self::Pure => "ffi_pure",
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Function {
     pub signature: TypeId,

@@ -29,6 +29,7 @@ struct AnnotationState<'unit> {
     /// The statics `#[thread_local]` names, bound after every owner.
     thread_locals: Vec<NodeKey>,
     used_statics: crate::sema::used_statics::Draft,
+    ffi_effects: crate::sema::ffi_effects::Draft,
 }
 
 impl AnnotationState<'_> {
@@ -123,6 +124,7 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
     }
     crate::sema::thread_locals::bind(report, facts, &flags.thread_locals)?;
     flags.used_statics.bind(report, facts)?;
+    flags.ffi_effects.bind(report, facts)?;
     bind_definitions(
         report,
         facts,
@@ -250,6 +252,11 @@ fn consume_annotation<'unit>(
             flags
                 .used_statics
                 .attach_section(facts, declaration, attribute, section)?;
+        }
+        Some(Consumer::ForeignEffects) => {
+            flags
+                .ffi_effects
+                .consume(report, facts, declaration, attribute, forest, allowances)?;
         }
         Some(Consumer::StaticRetention) => {
             flags
