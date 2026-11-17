@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "pa24",
-  "state": "Declared source bytes/outcomes preserved; focused source, native and all 748 PA24 text comparisons pass. New private controls and full qualification remain pending.",
+  "state": "Original4 source/status/native outcomes and12 reference channels preserved. They are captureless controls; three separately declared captured successors and corrected private fixtures exercise adapters. Original full CI found3 private fixture-selection errors; execution of repaired private fixtures remains pending CI.",
   "profile": {
     "rust": "1.98.0",
     "edition": "2024",
@@ -15,7 +15,7 @@
     "sha256": "432b65341d7d971be7fe5e1be0cedfa252169b76ce4e2ff5ce03d9fe133623d1",
     "source_bytes_preserved": true
   },
-  "scope": "Shared-source Fn called through a requested FnMut receiver adapter. Copy outputs, owned custom-Drop outputs and owned argument/result transfer require complete ordinary proof and native behavior; moved result use must still reject.",
+  "scope": "Captureless Fn closures called through requested FnMut bounds. These inputs require no environment adapter; they preserve Copy/owned results, argument/result transfer and moved-result rejection as controls. Captured successors separately exercise generated receiver adapters.",
   "attribution": "RustGM-authored reductions; source bytes and expected statuses/native outputs copied unchanged from the pre-oracle tiny declaration.",
   "cases": [
     {
@@ -24,7 +24,7 @@
       "source_sha256": "d406f502243871e969157f3f2a0ab946d34f08757c76dc9915b95139b4cf838b",
       "rustc_status": 0,
       "rustgm_lowir_status": 0,
-      "purpose": "Actual shared-to-mutable selected closure entry with Copy result; zero owned adapter temporaries.",
+      "purpose": "Captureless Copy-result control; no environment receiver adapter is generated.",
       "rustgm_types_status": 0,
       "native": {
         "status": 0,
@@ -39,7 +39,7 @@
       "source_sha256": "c6b1f98a0d07669101fc7a97d4880fe090745db176ecf6bad797164c9ea1d775",
       "rustc_status": 0,
       "rustgm_lowir_status": 0,
-      "purpose": "Same selected adapter but custom Drop result; one Invoke creation and one return transfer.",
+      "purpose": "Captureless custom-Drop result control; no environment receiver adapter is generated.",
       "rustgm_types_status": 0,
       "native": {
         "status": 0,
@@ -54,7 +54,7 @@
       "source_sha256": "5dd3d1eaeb515306bc219a48afb93a31cc3942d455390a5494682345ad7340f8",
       "rustc_status": 0,
       "rustgm_lowir_status": 0,
-      "purpose": "Non-Copy argument forwarded and returned through the adapter; two owned rvalues, one returned result, zero drops before return, one afterward.",
+      "purpose": "Captureless Non-Copy argument/result transfer control; zero drops before return and one afterward.",
       "rustgm_types_status": 0,
       "native": {
         "status": 0,
@@ -120,13 +120,15 @@
       "independent_review": "All statuses and intended E0382/moved cause match; candidate native Copy/owned/one-drop-transfer pass. No old reference bytes changed."
     },
     "private": {
-      "state": "Pending CI; local Clippy-linked private harness exceeded225s compile phase/five-minute total before test execution. Known filename/raw-literal lints corrected.",
-      "source_regression": "Captured adapters must not require an optional caller-header budget; materialization work uses existing canonical counter, retained bodies keep existing 64 MB demand cap."
+      "state": "Full CI44088372695 passed3155 other private tests including bounded-work control, but3 new tests used captureless closures/ambiguous instance selection and failed before adapter assertions. Corrected captured sources and unique generic caller selection are included in this checkpoint; local linked harness compile timed out before execution.",
+      "source_regression": "Captured adapters must not require an optional caller-header budget; materialization work uses existing canonical counter, retained bodies keep existing 64 MB demand cap.",
+      "ci": "https://github.com/vishvananda/rustgm/actions/runs/44088372695"
     }
   },
   "retained_requirements": [
     "No acceptance or native claim from declarations alone.",
     "No invalid ownership-coverage error can satisfy the moved-value opponent.",
     "Source-core/alloc shared-owned vs mutable-owned baseline and original Vec native remain separate required actual-consumer checks."
-  ]
+  ],
+  "captured_successors": "captured-adapter-value-outcomes.json"
 }

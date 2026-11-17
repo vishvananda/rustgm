@@ -1,0 +1,97 @@
+{
+  "schema": 1,
+  "owner": "pa24",
+  "state": "All3 independent and old/new frontend outcomes match. Focused source, all751 PA24 text comparisons and25 native programs pass. Corrected private fixture execution remains pending CI after local build timeout.",
+  "reason": "A unit-environment closure needs no receiver adapter. Shared captures make the generated wrapper and its owned values observable.",
+  "original_cases": "All748 existing source bytes and references remain unchanged.",
+  "declaration_sha256": "d6bf9cfd0001363ae50de48d957ecd67fd059543738a390fbe5dedca917bca12",
+  "records_sha256": "f6e7b6e3c92719307ac4a8e6068e2b7ce17dd1d09b89f53b674692e776018fe2",
+  "cases": [
+    {
+      "name": "captured-owned",
+      "path": "tests/spec/receiver-value-cleanup/captured-owned.rs",
+      "source_sha256": "fffa1af129f472edeab1cce08632f15631d304c1a22f1645bea0715eefa5bb52",
+      "rustc_object_status": 0,
+      "rustgm_lowir_status": 0,
+      "old3488_status": 1,
+      "old_cause": "owned value lacks its destruction scope",
+      "candidate_negative": null,
+      "native": {
+        "status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "name": "captured-transfer",
+      "path": "tests/spec/receiver-value-cleanup/captured-transfer.rs",
+      "source_sha256": "185b138cbc3cc8ce8772b3e15ba8dd4485eb566f8ca7a3d98d07a8a03c9a92e5",
+      "rustc_object_status": 0,
+      "rustgm_lowir_status": 0,
+      "old3488_status": 1,
+      "old_cause": "owned value lacks its destruction scope",
+      "candidate_negative": null,
+      "native": {
+        "status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "name": "captured-move-twice",
+      "path": "tests/spec/receiver-value-cleanup/captured-move-twice.rs",
+      "source_sha256": "f227fa0af39552de9c49278ad654f5a21d0b117bb6914fe0733dbbf50dde0c76",
+      "rustc_object_status": 1,
+      "rustgm_lowir_status": 1,
+      "old3488_status": 1,
+      "old_cause": "uninitialized",
+      "candidate_negative": "uninitialized",
+      "native": null
+    }
+  ],
+  "preserved_opponents": "The captured moved result must reject for uninitialized/moved ownership, never a missing cleanup-coverage failure.",
+  "qualification": {
+    "source": {
+      "receipt": "obj/qualification/fast/1794923284486524422/receipt.json",
+      "sha256": "226e4906379e29be5b6717bccacc64eb12b0fb63a1be2e98ccb013036aee21b7",
+      "regular_tests": 3,
+      "course_cases": 751,
+      "strict_selected_clippy": true,
+      "format": true,
+      "architecture": true
+    },
+    "native": {
+      "receipt": "obj/qualification/fast/1794923370879253907/receipt.json",
+      "sha256": "e428bec2ba06f7c485968510468f7bb81f72c689674626bae0aecb692f44a205",
+      "exact_tests": 2,
+      "programs": 25,
+      "new_captured_programs": 2
+    },
+    "private": {
+      "state": "Clippy-linked private harness exceeded227s compile phase before executing tests; no semantic result. CI required.",
+      "receipt": "obj/qualification/fast/1794922832678303913/receipt.json"
+    },
+    "references": {
+      "scoped_batch": "pa24/reference-batches/1794923269592159412-b828947c10cf.json",
+      "new_cases": 3,
+      "new_sidecars": 9,
+      "expected_unchanged_prior_cases": 748,
+      "base": "2508758450a4014e67fe96e8fdb33cee3873d8d9",
+      "unchanged_sources": 748,
+      "unchanged_sidecars": 2244,
+      "unchanged_manifest_prefix": 748,
+      "new_sources": 3,
+      "new_sources_match_pre_execution_declaration": true,
+      "preservation_sha256": "ba79cbc5d8a7f5fc4906382597befbd3f28a6c9cf8f6e88a9ba42ce70c72fbf2"
+    },
+    "harness_upstream": {
+      "log": "obj/parallel/continuation-20261117/captured-adapter-harness.log",
+      "sha256": "383544da22ef429be6b03f7641d09cfd56a6718d0044f8faa8faa32d11d12816",
+      "roots": 527,
+      "binaries": 13,
+      "upstream_fixtures": 128,
+      "reference_files": 126,
+      "state": "passed"
+    }
+  }
+}

@@ -8,15 +8,35 @@ use crate::{
     types::{closure::CallKind, destruction::NeedsDrop},
 };
 
+fn caller_instance(
+    report: &crate::resolve::expansion::Report,
+    facts: &crate::sema::model::Declarations,
+    instances: &[crate::types::instance::Instance],
+) -> TestResult<crate::types::instance::Instance> {
+    let mut callers = instances.iter().copied().filter(|instance| {
+        let Some(crate::types::Kind::FunctionItem { item, .. }) = facts.types.kind(instance.ty())
+        else {
+            return false;
+        };
+        report
+            .resolution
+            .definitions
+            .get(item.0 as usize)
+            .is_some_and(|definition| report.package.names.get(definition.name) == "call")
+    });
+    let caller = callers.next().ok_or("actual generic adapter caller")?;
+    if callers.next().is_some() {
+        return Err("adapter caller is not unique".into());
+    }
+    Ok(caller)
+}
+
 fn verify(source: &str, expected_owned: usize) -> TestResult {
     let (report, mut fixture) = fixture_with_report(source)?;
     let facts = &mut fixture.facts;
     let checked = originals(facts, &fixture.templates, &fixture.inputs)?;
-    let entry = selected(
-        facts,
-        &checked,
-        *fixture.instances.first().ok_or("instance")?,
-    )?;
+    let caller = caller_instance(&report, facts, &fixture.instances)?;
+    let entry = selected(facts, &checked, caller)?;
     let adapter = entry.adapter().ok_or("selected receiver adapter")?;
     assert_eq!(adapter.requested(), CallTrait::FnMut);
     let (_, execution) = entry.validate_adapter(facts)?;
@@ -104,7 +124,7 @@ fn verify(source: &str, expected_owned: usize) -> TestResult {
 fn copy_outputs_remain_unowned_in_selected_adapters() -> TestResult {
     verify(
         r"fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
-fn call<F:FnMut()->u8>(mut f:F)->u8{f()}fn main(){let f=||7u8;check(call(f)==7);}
+fn call<F:FnMut()->u8>(mut f:F)->u8{f()}fn main(){let n=7u8;let f=||n;check(call(f)==7);}
 ",
         0,
     )
@@ -114,7 +134,7 @@ fn call<F:FnMut()->u8>(mut f:F)->u8{f()}fn main(){let f=||7u8;check(call(f)==7);
 fn owned_outputs_have_birth_and_return_transfer_in_selected_adapters() -> TestResult {
     verify(
         r"fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
-struct D(u8);impl Drop for D{fn drop(&mut self){}}fn call<F:FnMut()->D>(mut f:F)->D{f()}fn main(){let f=||D(7);let result=call(f);check(result.0==7);}
+struct D(u8);impl Drop for D{fn drop(&mut self){}}fn call<F:FnMut()->D>(mut f:F)->D{f()}fn main(){let n=7u8;let f=||D(n);let result=call(f);check(result.0==7);}
 ",
         1,
     )
@@ -124,7 +144,7 @@ struct D(u8);impl Drop for D{fn drop(&mut self){}}fn call<F:FnMut()->D>(mut f:F)
 fn owned_inputs_and_outputs_keep_distinct_transfers_in_selected_adapters() -> TestResult {
     verify(
         r"fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
-struct D<'a>(&'a mut u8);impl Drop for D<'_>{fn drop(&mut self){*self.0+=1;}}fn call<'a,F:FnMut(D<'a>)->D<'a>>(mut f:F,d:D<'a>)->D<'a>{f(d)}fn main(){let mut n=0u8;{let f=|d|d;let result=call(f,D(&mut n));check(*result.0==0);}check(n==1);}
+struct D<'a>(&'a mut u8);impl Drop for D<'_>{fn drop(&mut self){*self.0+=1;}}fn call<'a,F:FnMut(D<'a>)->D<'a>>(mut f:F,d:D<'a>)->D<'a>{f(d)}fn main(){let mut n=0u8;let marker=0u8;{let f=|d|{check(marker==0);d};let result=call(f,D(&mut n));check(*result.0==0);}check(n==1);}
 ",
         2,
     )

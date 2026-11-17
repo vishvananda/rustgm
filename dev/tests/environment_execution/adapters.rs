@@ -111,6 +111,9 @@ const VALUE_CASES: &[(&str, bool)] = &[
     ("tiny-owned", true),
     ("tiny-transfer", true),
     ("tiny-move-twice", false),
+    ("captured-owned", true),
+    ("captured-transfer", true),
+    ("captured-move-twice", false),
 ];
 fn value_fixture(name: &str) -> std::path::PathBuf {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(

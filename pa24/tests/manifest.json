@@ -14463,6 +14463,59 @@
       "features": [
         "pa24.closure-captures-and-calls"
       ]
+    },
+    {
+      "path": "tests/spec/receiver-value-cleanup/captured-owned.rs",
+      "source_sha256": "fffa1af129f472edeab1cce08632f15631d304c1a22f1645bea0715eefa5bb52",
+      "exit_status": 0,
+      "input": "file",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/receiver-value-cleanup/captured-transfer.rs",
+      "source_sha256": "185b138cbc3cc8ce8772b3e15ba8dd4485eb566f8ca7a3d98d07a8a03c9a92e5",
+      "exit_status": 0,
+      "input": "file",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/receiver-value-cleanup/captured-move-twice.rs",
+      "source_sha256": "f227fa0af39552de9c49278ad654f5a21d0b117bb6914fe0733dbbf50dde0c76",
+      "exit_status": 1,
+      "input": "file",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
     }
   ]
 }
