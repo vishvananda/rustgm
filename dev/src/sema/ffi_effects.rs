@@ -28,8 +28,8 @@ impl Draft {
         &mut self,
         report: &Report,
         facts: &mut Declarations,
-        declaration: NodeKey,
-        attribute: Attribute,
+        (owner, declaration): (NodeKey, NodeKey),
+        (attribute, retained): (Attribute, usize),
         forest: &Forest,
         allowances: &mut MacroAllowanceSession<'_>,
     ) -> Result<(), Error> {
@@ -55,14 +55,11 @@ impl Draft {
                 "foreign effect requires an actual foreign function declaration",
             ));
         }
-        let name = forest
-            .tree(attribute.path.start)
-            .ok_or_else(|| error("foreign effect lost its actual name token"))?
-            .span;
         if !self.requested(report, facts, declaration, effect)?
-            && !allowances.allows_at(
-                declaration.file,
-                name,
+            && !allowances.allows_attribute(
+                owner,
+                retained,
+                attribute,
                 &FeatureName::new(effect.feature()).map_err(error)?,
             )?
         {

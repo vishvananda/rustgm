@@ -224,6 +224,7 @@ impl<S: Sources> Engine<'_, S> {
                     | Consumer::DeprecatedSafe2024
                     | Consumer::StaticRetention
                     | Consumer::ForeignEffects
+                    | Consumer::CfiEncoding
                     | Consumer::InitArraySection
             )
         ) {

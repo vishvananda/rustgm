@@ -1,7 +1,7 @@
 //! A borrowed report authenticates complete headers once, never captured callers.
 use super::{Error, Location, Report, permission_frames::FrameView};
 use crate::{
-    expand::marks::ExpansionId,
+    expand::{config::comma_item, configured::Effect, marks::ExpansionId},
     resolve::{
         bindings::{
             FeatureName,
@@ -10,8 +10,135 @@ use crate::{
         unit::{NodeKey, contexts},
     },
     support::{hash::HashMap, names::NameId},
+    syntax::{
+        attribute::{Attribute, Input},
+        token_tree::{Forest, Span, TreeKind, TreeRange},
+    },
 };
 use std::{rc::Rc, sync::Arc};
+fn attribute_endpoints(
+    report: &Report,
+    owner: NodeKey,
+    effect: usize,
+    expected: Attribute,
+) -> Result<(Location, Location), Error> {
+    let error = |message| Error::at(owner.file, expected.span.start, message);
+    let package = &report.package;
+    let unit = package
+        .units
+        .get(owner.file.0 as usize)
+        .ok_or_else(|| error("attribute allowance source disappeared"))?;
+    let index = unit
+        .owner_indices
+        .get(owner.node.get() as usize)
+        .copied()
+        .flatten()
+        .ok_or_else(|| error("attribute allowance needs an actual configured owner"))?;
+    let actual = &unit.configured.owners[index.get() as usize - 1];
+    if actual.node != owner.node || !actual.enabled || !actual.attributes.contains(&effect) {
+        return Err(error("attribute allowance changed its configured owner"));
+    }
+    let row = &unit.configured.effects[effect];
+    if row.attribute.effect != Effect::Keep || row.attribute.attribute != expected {
+        return Err(error("attribute allowance changed its retained attribute"));
+    }
+    let source = package
+        .macro_context()
+        .map_err(error)?
+        .ok_or_else(|| error("attribute allowance needs an actual macro provider"))?;
+    source.contracts().charge(1, 0).map_err(error)?;
+    let (first, last) = if let Some(parent) = row.attribute.parent {
+        let parent = Some(parent as usize)
+            .filter(|&parent| parent < effect && actual.attributes.contains(&parent))
+            .ok_or_else(|| error("attribute allowance changed its cfg_attr parent"))?;
+        let parent = &unit.configured.effects[parent];
+        let parent_attr = parent.attribute.attribute;
+        if parent.capture != row.capture || parent.attribute.effect != Effect::CfgAttr(true) {
+            return Err(error("attribute allowance changed its cfg_attr capture"));
+        }
+        let forest = &unit.configured.ast.attributes[row.capture as usize].forest;
+        let Input::Delimited(group) = parent_attr.input else {
+            return Err(error("attribute allowance lost its cfg_attr group"));
+        };
+        let children = forest
+            .children(group)
+            .ok_or_else(|| error("attribute allowance lost its cfg_attr arguments"))?;
+        source
+            .contracts()
+            .charge(1 + (children.end - children.start) as usize, 0)
+            .map_err(error)?;
+        cfg_attribute_item(forest, children, expected.path.start)
+            .ok_or_else(|| error("attribute allowance lost its cfg_attr item"))?
+    } else {
+        let Span { start, end } = expected.span;
+        let text = unit.source.text().as_bytes();
+        if start >= end
+            || text.get(start as usize) != Some(&b'#')
+            || text.get((end - 1) as usize) != Some(&b']')
+        {
+            return Err(error(
+                "attribute allowance requires its actual bracket endpoints",
+            ));
+        }
+        (
+            Span {
+                start,
+                end: start + 1,
+            },
+            Span {
+                start: end - 1,
+                end,
+            },
+        )
+    };
+    Ok((
+        Location {
+            file: owner.file,
+            span: first,
+        },
+        Location {
+            file: owner.file,
+            span: last,
+        },
+    ))
+}
+
+fn cfg_attribute_item(
+    forest: &Forest,
+    children: TreeRange,
+    path_start: u32,
+) -> Option<(Span, Span)> {
+    let (_, mut next) = comma_item(forest, children);
+    while next < children.end {
+        let (item, following) = comma_item(
+            forest,
+            TreeRange {
+                start: next,
+                end: children.end,
+            },
+        );
+        if item.start <= path_start && path_start < item.end {
+            let first = forest.tree(item.start)?.span;
+            let mut last = item.start;
+            while forest.after(last) < item.end {
+                last = forest.after(last);
+            }
+            let tree = forest.tree(last)?;
+            let last = if matches!(tree.kind, TreeKind::Group { .. }) {
+                Span {
+                    start: tree.span.end.checked_sub(1)?,
+                    end: tree.span.end,
+                }
+            } else {
+                tree.span
+            };
+            return Some((first, last));
+        }
+        next = following;
+    }
+    None
+}
+
 #[derive(Clone)]
 struct CachedHeader {
     data: Option<Rc<HeaderData>>,
@@ -111,6 +238,16 @@ impl MacroAllowanceSession<'_> {
         feature: &FeatureName<'_>,
     ) -> Result<bool, Error> {
         self.allows(Location { file, span }, feature)
+    }
+    pub(crate) fn allows_attribute(
+        &mut self,
+        owner: crate::resolve::unit::NodeKey,
+        effect: usize,
+        attribute: crate::syntax::attribute::Attribute,
+        feature: &FeatureName<'_>,
+    ) -> Result<bool, Error> {
+        let (first, last) = attribute_endpoints(self.report, owner, effect, attribute)?;
+        self.query().allows_composed(first, last, feature)
     }
     pub(crate) fn allows_try_block(
         &mut self,

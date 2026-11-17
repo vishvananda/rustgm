@@ -204,7 +204,7 @@ pub fn predicate_with_inputs(
     predicate_checked(forest, source, range, config, inputs).map(|answer| answer.value)
 }
 
-pub(super) fn comma_item(forest: &Forest, range: TreeRange) -> (TreeRange, u32) {
+pub(crate) fn comma_item(forest: &Forest, range: TreeRange) -> (TreeRange, u32) {
     let mut end = range.start;
     while end < range.end && !forest.punctuation(end, Punctuation::Comma) {
         end = forest.after(end);

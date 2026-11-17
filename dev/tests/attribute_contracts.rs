@@ -832,3 +832,128 @@ fn source_foreign_effects_require_exact_features_forms_owners_and_call_safety() 
     }
     Ok(())
 }
+
+#[test]
+fn source_cfi_encoding_retains_actual_local_type_without_changing_representation() -> TestResult {
+    let prefix =
+        crate::resolve::fixture("pa31/tests/spec/source-functions-transport/minimal-provider.rs")?;
+    let source = format!(
+        "#![feature(cfi_encoding)]\n{prefix}
+         pub fn register() {{
+             #[cfi_encoding = \"i\"] #[repr(transparent)] pub struct Code(pub i32);
+             let _ = Code(7);
+         }}
+         #[cfi_encoding = r#\" enum value \"#] pub enum Tag {{ Value }}
+         #[cfi_encoding = \"U\"] pub union Data {{ value: i32 }}
+         pub fn irrelevant() {{}}"
+    );
+    let report = crate::resolve::source_provider(&source, "cfi_encoding_retention")?;
+    let facts = rustgm::pipeline::analyze_source(&report)?.facts;
+    for (name, expected) in [("Code", "i"), ("Tag", " enum value "), ("Data", "U")] {
+        let index = report
+            .resolution
+            .definitions
+            .iter()
+            .position(|definition| {
+                definition.namespace == rustgm::resolve::model::Namespace::Type
+                    && report.package.names.get(definition.name) == name
+            })
+            .ok_or("missing canonical type")?;
+        let id = rustgm::resolve::model::DefId(u32::try_from(index)?);
+        assert_eq!(facts.cfi_encoding(id), Some(expected));
+    }
+    Ok(())
+}
+
+#[test]
+fn source_cfi_encoding_requires_own_feature_payload_and_lint_target_policy() -> TestResult {
+    let prefix =
+        crate::resolve::fixture("pa31/tests/spec/source-functions-transport/minimal-provider.rs")?;
+    for (features, item, cause) in [
+        (
+            "",
+            "#[cfi_encoding=\"i\"] struct Marked;",
+            "this crate's cfi_encoding feature",
+        ),
+        (
+            "#![feature(cfi_encoding)]",
+            "#[cfi_encoding=7] struct Marked;",
+            "requires a string literal",
+        ),
+        (
+            "#![feature(cfi_encoding)]",
+            "#[cfi_encoding=\" \"] struct Marked;",
+            "requires a nonempty string literal",
+        ),
+        (
+            "#![feature(cfi_encoding)]",
+            "#[unsafe(cfi_encoding=\"i\")] struct Marked;",
+            "requires a normal outer attribute",
+        ),
+        (
+            "#![feature(cfi_encoding)]",
+            "#[cfi_encoding=\"i\"] #[cfi_encoding=\"j\"] struct Marked;",
+            "duplicate cfi_encoding",
+        ),
+        (
+            "#![feature(cfi_encoding)]#![deny(unused_attributes)]",
+            "#[cfi_encoding=\"i\"] fn marked(){}",
+            "applies only to struct",
+        ),
+    ] {
+        let report = crate::resolve::source_provider(
+            &format!("{features}\n{prefix}\n{item}"),
+            "cfi_encoding_negative",
+        )?;
+        let error = rustgm::pipeline::analyze_source(&report)
+            .err()
+            .ok_or("opposing encoding admitted")?;
+        assert!(error.to_string().contains(cause), "{error}");
+    }
+    let report = crate::resolve::source_provider(
+        &format!("{prefix}\n#[cfg_attr(any(),cfi_encoding=\"i\")] struct Marked;"),
+        "cfi_encoding_disabled",
+    )?;
+    rustgm::pipeline::analyze_source(&report)?;
+    Ok(())
+}
+
+#[test]
+fn foreign_effect_macro_grants_follow_the_attribute_wrapper() -> TestResult {
+    let prefix =
+        crate::resolve::fixture("pa31/tests/spec/source-functions-transport/minimal-provider.rs")?;
+    for (matcher, attribute, invocation, accepted) in [
+        ("$effect:ident", "#[unsafe($effect)]", "ffi_const", true),
+        (
+            "($($attribute:tt)*)",
+            "$($attribute)*",
+            "(#[unsafe(ffi_const)])",
+            false,
+        ),
+    ] {
+        let source = format!(
+            "#![feature(allow_internal_unstable)]\n{prefix}
+             #[allow_internal_unstable(ffi_const)]
+             macro_rules! ffi {{
+                 ({matcher}) => {{
+                     unsafe extern \"C\" {{ {attribute} pub fn f(); }}
+                 }};
+             }}
+             ffi!({invocation});"
+        );
+        let report = crate::resolve::source_provider(&source, "foreign_effect_macro_span")?;
+        let result = rustgm::pipeline::analyze_source(&report);
+        if accepted {
+            result?;
+        } else {
+            let error = result
+                .err()
+                .ok_or("caller-written wrapper acquired an allowance")?;
+            assert!(
+                error.to_string().contains("this crate's ffi_const feature"),
+                "{error}"
+            );
+        }
+    }
+    Ok(())
+}

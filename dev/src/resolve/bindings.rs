@@ -465,6 +465,12 @@ impl super::package::Package {
         };
         self.requested_own_root(file, feature)
     }
+    pub(crate) fn requested_cfi_encoding(
+        &self,
+        file: crate::support::source::FileId,
+    ) -> Result<bool, super::package::Error> {
+        self.requested_own_root(file, policy::Feature::CfiEncoding)
+    }
     fn requested_own_root(
         &self,
         file: crate::support::source::FileId,

@@ -109,6 +109,7 @@ pub(in crate::resolve) enum Feature {
     UsedWithArg = 85,
     FfiConst = 86,
     FfiPure = 87,
+    CfiEncoding = 88,
 }
 
 #[cfg(test)]
@@ -157,6 +158,7 @@ impl Request {
             "used_with_arg" => Self::Capability(Feature::UsedWithArg),
             "ffi_const" => Self::Capability(Feature::FfiConst),
             "ffi_pure" => Self::Capability(Feature::FfiPure),
+            "cfi_encoding" => Self::Capability(Feature::CfiEncoding),
             "new_range" => Self::Capability(Feature::NewRange),
             "reborrow" => Self::Capability(Feature::Reborrow),
             "inherent_associated_types" => Self::Capability(Feature::InherentAssociatedTypes),

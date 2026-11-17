@@ -15,6 +15,7 @@ pub use constants::values;
 mod api_exposure;
 mod arguments;
 pub(crate) mod callee_premises;
+mod cfi_encoding;
 pub(crate) mod cloning;
 pub(crate) mod compiler_items;
 mod coverage_annotations;
