@@ -21,13 +21,25 @@
     "inactive.rs",
     "list.rs",
     "missing.rs",
+    "needs-duplicate.rs",
+    "needs-gate-only.rs",
+    "needs-gated.rs",
+    "needs-inactive.rs",
+    "needs-list.rs",
+    "needs-missing.rs",
+    "needs-nested.rs",
+    "needs-ordinary.rs",
+    "needs-outer.rs",
+    "needs-panic-with-needs-feature.rs",
+    "needs-value.rs",
+    "needs-with-panic-feature.rs",
     "nested.rs",
     "ordinary.rs",
     "outer.rs",
     "value.rs"
   ],
   "input_sha256": {
-    "cases.tsv": "a68c4188314fd1fe6572fb396bad14eea7e46cc184c6072db87b84972eccd9d3",
+    "cases.tsv": "0d09b48f0890ccf7b7212b1ea8d129151c86f99d98441da534e39c7b6349a3d8",
     "duplicate.rs": "ca63a58fb5c25658046b61ad7fe6f424a9809cf4ff4a2471aaaf7b084d1dc36b",
     "gate-only.rs": "c93235f77136f78b6accd6baeab9cfcf6670ad518b3c21e22211b38013e02570",
     "gated.rs": "620f9da3305460102658fc818435855812e9994c90cdead41e7b5a9dffba6680",
@@ -35,6 +47,18 @@
     "inactive.rs": "67c986bd6cac94fc600ea757c632011e5b6e4c8841554c1f6895c40a31b21e77",
     "list.rs": "9bebbac205dfa99b2a861c25a2ae67e97a0ad6df93e26995b9b37abd2d8f343d",
     "missing.rs": "d0f106fbdbb991997a130af7e622a3c1373d011273cfd58a664662fa02e7d218",
+    "needs-duplicate.rs": "057b30a20ee820ee9f90c738482c5c63ad778c62ef99be9b864577261902a796",
+    "needs-gate-only.rs": "729f7fbffcdf9446d0b5a48fb2d0cd6a8cfc9de9d2911afd90df3a3009adb4f2",
+    "needs-gated.rs": "630e545e76f1bb830c0c9c4ffc7c12871af908a766f05db3cceaa1ba57a406f6",
+    "needs-inactive.rs": "804f8890a716cbd85cd560b93ec306e258d2b74a4aa73f598780cd33674d83df",
+    "needs-list.rs": "bc48fbae4e26807f2e12de33359be37de88deb9513ef51ac705cf2278fbc4c2d",
+    "needs-missing.rs": "19176482f79ae881cd7e522f2ee9bf947185a8eb88f91dc94d2c80f24991cd97",
+    "needs-nested.rs": "6f00e40605c58c61b3d33c2eb3bea924876163b4c57ad7792f6cc0279d3451ca",
+    "needs-ordinary.rs": "5deafbbea82d842f36bf4618782dfc2920077857509df888d11b84dd6009e909",
+    "needs-outer.rs": "a86e3c6c03b3a1b7f55e585949c8e264c7dfeeb2fb435d59c7ba0a1a038556a2",
+    "needs-panic-with-needs-feature.rs": "848f5c462e3ec818ea3fe16b96daa9852e9e0a65d3d6fb04c9e2c6c285b3c4b5",
+    "needs-value.rs": "9280984702a584ac59292afa0b7a7acfaefcb72709dc8fa4ada020e94ede97a1",
+    "needs-with-panic-feature.rs": "b8e93e1e77bdbb4479914b8dd5943018060e3b676b35356202b12f69c4c83e24",
     "nested.rs": "041cd76f20fab35530233e1e19f28849245780cc573e58ad498e3ad6e431f656",
     "ordinary.rs": "96ad1d02d91d8a0245292aa653b447b715264a2a61c9d959304d7f25fc98804e",
     "outer.rs": "3c996070079a92c7294598567303f0972d81a267def1325819d06787a6ede1b3",
@@ -216,6 +240,198 @@
       "rustgm": 1,
       "rustgm_diagnostic": "panic_runtime requires the actual source-core profile",
       "ordinary": true
+    },
+    {
+      "name": "needs-gated-root",
+      "host": "needs-gated.rs",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0,
+      "rustgm_diagnostic": "-"
+    },
+    {
+      "name": "needs-gated-guest",
+      "host": "host.rs",
+      "guests": [
+        [
+          "app",
+          "needs-gated.rs"
+        ]
+      ],
+      "rustc": 0,
+      "rustgm": 0,
+      "rustgm_diagnostic": "-"
+    },
+    {
+      "name": "needs-gated-root-and-guest",
+      "host": "needs-gated.rs",
+      "guests": [
+        [
+          "app",
+          "needs-gated.rs"
+        ]
+      ],
+      "rustc": 0,
+      "rustgm": 0,
+      "rustgm_diagnostic": "-"
+    },
+    {
+      "name": "needs-disabled-root",
+      "host": "needs-inactive.rs",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0,
+      "rustgm_diagnostic": "-"
+    },
+    {
+      "name": "needs-feature-without-marker",
+      "host": "needs-gate-only.rs",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0,
+      "rustgm_diagnostic": "-"
+    },
+    {
+      "name": "needs-missing-root-feature",
+      "host": "needs-missing.rs",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "`#![needs_panic_runtime]` requires `#![feature(needs_panic_runtime)]`"
+    },
+    {
+      "name": "needs-missing-guest-feature",
+      "host": "host.rs",
+      "guests": [
+        [
+          "app",
+          "needs-missing.rs"
+        ]
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "`#![needs_panic_runtime]` requires `#![feature(needs_panic_runtime)]`"
+    },
+    {
+      "name": "needs-host-feature-cannot-pay-guest",
+      "host": "needs-gate-only.rs",
+      "guests": [
+        [
+          "app",
+          "needs-missing.rs"
+        ]
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "`#![needs_panic_runtime]` requires `#![feature(needs_panic_runtime)]`"
+    },
+    {
+      "name": "needs-sibling-feature-cannot-pay-guest",
+      "host": "host.rs",
+      "guests": [
+        [
+          "first",
+          "needs-gate-only.rs"
+        ],
+        [
+          "app",
+          "needs-missing.rs"
+        ]
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "`#![needs_panic_runtime]` requires `#![feature(needs_panic_runtime)]`"
+    },
+    {
+      "name": "needs-guest-feature-cannot-pay-host",
+      "host": "needs-missing.rs",
+      "guests": [
+        [
+          "app",
+          "needs-gate-only.rs"
+        ]
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "`#![needs_panic_runtime]` requires `#![feature(needs_panic_runtime)]`"
+    },
+    {
+      "name": "needs-duplicate-root",
+      "host": "needs-duplicate.rs",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "multiple `needs_panic_runtime` attributes"
+    },
+    {
+      "name": "needs-duplicate-guest",
+      "host": "host.rs",
+      "guests": [
+        [
+          "app",
+          "needs-duplicate.rs"
+        ]
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "multiple `needs_panic_runtime` attributes"
+    },
+    {
+      "name": "needs-list-root",
+      "host": "needs-list.rs",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "malformed `needs_panic_runtime` attribute input"
+    },
+    {
+      "name": "needs-value-root",
+      "host": "needs-value.rs",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "malformed `needs_panic_runtime` attribute input"
+    },
+    {
+      "name": "needs-nested-marker",
+      "host": "needs-nested.rs",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "the `#![needs_panic_runtime]` attribute can only be used at the crate root"
+    },
+    {
+      "name": "needs-outer-marker",
+      "host": "needs-outer.rs",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "the `#![needs_panic_runtime]` attribute can only be used at the crate root"
+    },
+    {
+      "name": "needs-ordinary-profile",
+      "host": "needs-ordinary.rs",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 1,
+      "rustgm_diagnostic": "needs_panic_runtime requires the actual source-core profile",
+      "ordinary": true
+    },
+    {
+      "name": "needs-panic-feature-does-not-pay-needs",
+      "host": "needs-with-panic-feature.rs",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "`#![needs_panic_runtime]` requires `#![feature(needs_panic_runtime)]`"
+    },
+    {
+      "name": "needs-feature-does-not-pay-panic",
+      "host": "needs-panic-with-needs-feature.rs",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "`#![panic_runtime]` requires `#![feature(panic_runtime)]`"
     }
   ],
   "required_rustc_diagnostics": {
@@ -229,29 +445,49 @@
     "list-root": "malformed `panic_runtime` attribute input",
     "value-root": "malformed `panic_runtime` attribute input",
     "nested-marker": "the `#![panic_runtime]` attribute can only be used at the crate root",
-    "outer-marker": "crate-level attribute should be an inner attribute"
+    "outer-marker": "crate-level attribute should be an inner attribute",
+    "needs-missing-root-feature": "E0658",
+    "needs-missing-guest-feature": "E0658",
+    "needs-host-feature-cannot-pay-guest": "E0658",
+    "needs-sibling-feature-cannot-pay-guest": "E0658",
+    "needs-guest-feature-cannot-pay-host": "E0658",
+    "needs-duplicate-root": "multiple `needs_panic_runtime` attributes",
+    "needs-duplicate-guest": "multiple `needs_panic_runtime` attributes",
+    "needs-list-root": "malformed `needs_panic_runtime` attribute input",
+    "needs-value-root": "malformed `needs_panic_runtime` attribute input",
+    "needs-nested-marker": "the `#![needs_panic_runtime]` attribute can only be used at the crate root",
+    "needs-outer-marker": "crate-level attribute should be an inner attribute",
+    "needs-panic-feature-does-not-pay-needs": "E0658",
+    "needs-feature-does-not-pay-panic": "E0658"
   },
   "profile_gaps": [
-    "Ordinary PA24 production does not gain source compiler loader declarations."
+    "Ordinary PA24 production does not gain source compiler loader declarations.",
+    "Ordinary PA24 production does not gain needs_panic_runtime loader declarations either; its separate source opponent remains a profile gap."
   ],
   "private_controls": [
     "resolve::standard_imports::loader_tests::loader_flags_lead_only_the_outermost_artifact_and_keep_every_other_byte",
     "resolve::standard_imports::loader_tests::panic_runtime_flags_come_only_from_a_checked_source_root",
     "resolve::standard_imports::loader_tests::source_clients_cannot_supply_the_source_core_panic_marker",
-    "resolve::bindings::allowances::tests::cfg_thread_local_uses_the_last_consumer_bit_without_widening_the_mask"
+    "resolve::bindings::allowances::tests::cfg_thread_local_uses_the_last_consumer_bit_without_widening_the_mask",
+    "resolve::standard_imports::loader_tests::needs_panic_runtime_flags_come_only_from_a_checked_source_root",
+    "resolve::standard_imports::loader_tests::assigned_loader_flags_roundtrip_as_independent_one_byte_identities",
+    "resolve::standard_imports::loader_tests::no_std_clients_need_a_compiler_builtins_crate_in_their_graph",
+    "resolve::standard_imports::loader_tests::the_compiler_builtins_attribute_is_one_gated_crate_root_word"
   ],
   "wire_contract": {
     "envelope_tag": 15,
     "panic_runtime_bit": 1,
     "compiler_builtins_bit": 0,
-    "unknown_opponent_bit": 2,
-    "closed_mask": 3,
+    "unknown_opponent_bit": 3,
+    "closed_mask": 7,
     "byte_width": 1,
     "feature_index": 82,
     "consumer_bits": 8,
-    "feature_storage_bytes": 16
+    "feature_storage_bytes": 16,
+    "needs_panic_runtime_bit": 2,
+    "needs_feature_index": 83
   },
-  "pending": "Independent raw records adjudicated after preserving two refuted placement predictions; all17 observed statuses now match. Candidate/private/upstream checks have not run; no references generated.",
+  "pending": "Original17 qualified and unchanged. New19 independent oracle/candidate, affected private controls, harness/upstream pending; no references, runtime-hook, linked std or artifact qualification claim.",
   "authoring_corrections": [
     {
       "cases": [
@@ -272,5 +508,44 @@
     "integration_harness_correction": "The first integration command overwrote the full dummy core with a metadata-only marker fixture, then requested LowIR and failed the unrelated sizing-trait contract. The corrected command uses the existing CLI expansion-plus-resolution view in separate processes for guest input isolation. Fixture bytes, production policy and expected outcomes are unchanged. No role validation was weakened.",
     "native_or_runtime_authority": "None; this checkpoint recognizes and transports checked crate-loader identity only",
     "actual_std_replay": "Pending on a new immutable compiler; prior source8:352 panic_abort panic_runtime is the authenticated trigger."
+  },
+  "needs_panic_runtime_extension": {
+    "state": "19 new paired metadata-only outcomes declared before execution; original17 exact case objects, source fixture bytes and TSV prefix unchanged",
+    "qualified_original_manifest": "qualified-panic-runtime.json",
+    "qualified_original_manifest_sha256": "9083b98e8c9ffc20b0a2a4c743eab35d05146de09a137c07b4bacb200153cdea",
+    "actual_trigger": {
+      "path": "library/std/src/lib.rs",
+      "sha256": "bf99f8f0a239b52df99d3841011299feadf38925abb5f709e36d8779240ce1ed",
+      "file": 9,
+      "offset": 11218,
+      "line": 239,
+      "source": "#![needs_panic_runtime]",
+      "own_feature": "#![feature(needs_panic_runtime)]",
+      "own_feature_offset": 13140,
+      "own_feature_line": 301,
+      "receipt": "obj/parallel/std-guests-20261117/graph-panic-marker-v1/primary.json",
+      "receipt_sha256": "5bb373d8047039e28dbbd1da1e03cc92bb0aac21218620e8492e93355a8e4a04"
+    },
+    "same_cause_review": "Read every std root attribute. default_lib_allocator atline439 is already checked with allocator_internals at273; no further unrecognized crate-loader words remain in this root. unstable_removed at441 is separate stability metadata, not an inert loader marker.",
+    "predeclared_counts": {
+      "new_cases": 19,
+      "new_rustc_accept": 6,
+      "new_rustc_reject": 13,
+      "new_rustgm_accept": 5,
+      "new_rustgm_reject": 14,
+      "combined_cases": 36,
+      "combined_rustc_accept": 12,
+      "combined_rustc_reject": 24,
+      "combined_rustgm_accept": 10,
+      "combined_rustgm_reject": 26
+    },
+    "placement_lesson": "Both nested and outer source marker controls are declared rejection1 upfront, following the independent prior marker evidence; no language acceptance is converted into a candidate rejection."
+  },
+  "needs_candidate_validation": {
+    "fastcheck": "1794907947332693008: all nine exact tests pass (eight private controls plus one integration covering all thirty-six source outcomes), strict selected/private Clippy, formatting and architecture pass; total59.82s",
+    "cold_attempt": "1794907561585924461: all same tests passed, but wrapper timed out during post-run work; retained infrastructure failure, no budget or selection change",
+    "independent": "needs-panic-marker-oracle-v1 all nineteen new pinned rustc outcomes/diagnostics match; prior seventeen unchanged inputs/outcomes retained and not rerun",
+    "scope": "checked loader identity and closed one-byte transport only; no runtime hook, native linking or whole std artifact qualification",
+    "actual_std": "new immutable observe compiler replay remains pending; previous6530 reaches actual std needs_panic_runtime marker atfile9:11218"
   }
 }

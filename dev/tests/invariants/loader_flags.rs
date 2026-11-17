@@ -1,4 +1,4 @@
-//! Checked compiler-builtins and panic-runtime markers own bits 0 and 1
+//! Checked builtins, panic-runtime and needs-panic-runtime markers own bits 0–2
 //! of a crate loader flags byte that leads only the outermost artifact. A
 //! `no_std` source client requires a compiler-builtins crate in its graph after
 //! name resolution, as rustc 1.98's crate loader injects one.
@@ -173,8 +173,8 @@ fn loader_flags_lead_only_the_outermost_artifact_and_keep_every_other_byte() -> 
     assert_eq!(crates::encode(&decoded)?, bytes);
     assert!(crates::decode(&unflagged)?.loader_flags().is_empty());
     for (flags, message) in [
-        // Bit 1 now identifies the checked panic runtime; bit 2 stays unassigned.
-        (4, "unknown crate loader flag"),
+        // Bit 2 now identifies the checked runtime request; bit 3 stays unassigned.
+        (8, "unknown crate loader flag"),
         (0x81, "unknown crate loader flag"),
         (0, "crate loader flags envelope requires a flag"),
     ] {
@@ -216,14 +216,6 @@ fn loader_flags_lead_only_the_outermost_artifact_and_keep_every_other_byte() -> 
             .is_err()
     );
     assert!(LoaderFlags::from_bits(1)?.compiler_builtins());
-    let panic = plain()?.with_loader_flags(LoaderFlags::PANIC_RUNTIME)?;
-    let panic_bytes = crates::encode(&panic)?;
-    assert_eq!(panic_bytes[12..14], [15, 2]);
-    assert_eq!(crates::decode(&panic_bytes)?, panic);
-    assert!(panic.loader_flags().panic_runtime());
-    assert!(!panic.loader_flags().compiler_builtins());
-    assert!(LoaderFlags::from_bits(3)?.panic_runtime());
-    assert!(LoaderFlags::from_bits(3)?.compiler_builtins());
     Ok(())
 }
 
@@ -319,8 +311,7 @@ fn the_compiler_builtins_attribute_is_one_gated_crate_root_word() -> Result {
     Ok(())
 }
 
-#[test]
-fn panic_runtime_flags_come_only_from_a_checked_source_root() -> Result {
+fn marker_report(file: &str) -> Result<resolve::expansion::Report> {
     let identity = CrateIdentity::new("core", "panic_marker")?;
     let context = Context {
         crate_name: Some("core".into()),
@@ -328,34 +319,84 @@ fn panic_runtime_flags_come_only_from_a_checked_source_root() -> Result {
         mode: Mode::Source { provider: identity },
         ..Default::default()
     };
+    let source =
+        crate::test_source::fixture(&format!("pa34/tests/spec/panic-runtime-marker/{file}"))?;
+    let expanded = resolve::expansion::analyze_with_context(
+        input(&source)?,
+        &mut NoFiles,
+        &Config::default(),
+        &context,
+    )?;
+    Ok(resolve::analyze_expanded(expanded)?)
+}
+
+#[test]
+fn panic_runtime_flags_come_only_from_a_checked_source_root() -> Result {
     for (file, marked) in [
         ("gated.rs", true),
         ("host.rs", false),
         ("gate-only.rs", false),
         ("inactive.rs", false),
     ] {
-        let source =
-            crate::test_source::fixture(&format!("pa34/tests/spec/panic-runtime-marker/{file}"))?;
-        let expanded = resolve::expansion::analyze_with_context(
-            input(&source)?,
-            &mut NoFiles,
-            &Config::default(),
-            &context,
-        )?;
-        let report = resolve::analyze_expanded(expanded)?;
-        let flags = report.package.loader_flags()?;
+        let flags = marker_report(file)?.package.loader_flags()?;
         assert_eq!(flags.panic_runtime(), marked, "{file}");
         assert!(!flags.compiler_builtins(), "{file}");
+        assert!(!flags.needs_panic_runtime(), "{file}");
     }
+    Ok(())
+}
+
+#[test]
+fn needs_panic_runtime_flags_come_only_from_a_checked_source_root() -> Result {
+    for (file, marked) in [
+        ("needs-gated.rs", true),
+        ("host.rs", false),
+        ("needs-gate-only.rs", false),
+        ("needs-inactive.rs", false),
+    ] {
+        let flags = marker_report(file)?.package.loader_flags()?;
+        assert_eq!(flags.needs_panic_runtime(), marked, "{file}");
+        assert!(!flags.compiler_builtins(), "{file}");
+        assert!(!flags.panic_runtime(), "{file}");
+    }
+    Ok(())
+}
+
+#[test]
+fn assigned_loader_flags_roundtrip_as_independent_one_byte_identities() -> Result {
+    assert_eq!(size_of::<LoaderFlags>(), 1);
+    let identity = CrateIdentity::new("loader_identity", "closed_flags")?;
+    for bits in 1..=7 {
+        let flags = LoaderFlags::from_bits(bits)?;
+        let artifact =
+            Interface::new(identity.clone(), Vec::new(), Vec::new())?.with_loader_flags(flags)?;
+        let bytes = crates::encode(&artifact)?;
+        assert_eq!(bytes[12..14], [15, bits]);
+        assert_eq!(crates::decode(&bytes)?, artifact);
+        assert_eq!(flags.compiler_builtins(), bits & 1 != 0);
+        assert_eq!(flags.panic_runtime(), bits & 2 != 0);
+        assert_eq!(flags.needs_panic_runtime(), bits & 4 != 0);
+    }
+    assert_eq!(LoaderFlags::COMPILER_BUILTINS.bits(), 1);
+    assert_eq!(LoaderFlags::PANIC_RUNTIME.bits(), 2);
+    assert_eq!(LoaderFlags::NEEDS_PANIC_RUNTIME.bits(), 4);
+    assert!(LoaderFlags::from_bits(8).is_err());
     Ok(())
 }
 
 #[test]
 fn source_clients_cannot_supply_the_source_core_panic_marker() -> Result {
     let core = core()?;
-    let source = crate::test_source::fixture("pa34/tests/spec/panic-runtime-marker/gated.rs")?;
-    failure(
-        resolved(&core, "panic_provider", &[], &[], &source),
-        "panic_runtime requires the actual source-core profile",
-    )
+    for (file, name) in [
+        ("gated.rs", "panic_runtime"),
+        ("needs-gated.rs", "needs_panic_runtime"),
+    ] {
+        let source =
+            crate::test_source::fixture(&format!("pa34/tests/spec/panic-runtime-marker/{file}"))?;
+        failure(
+            resolved(&core, "panic_provider", &[], &[], &source),
+            &format!("{name} requires the actual source-core profile"),
+        )?;
+    }
+    Ok(())
 }

@@ -244,7 +244,12 @@ impl Package {
         let panic = unit
             .word_attribute(Some(unit.configured.ast.root), "panic_runtime")
             .map_err(|error| error.message)?;
-        crate::support::crates::LoaderFlags::from_bits(u8::from(builtins) | (u8::from(panic) << 1))
+        let needs_panic = unit
+            .word_attribute(Some(unit.configured.ast.root), "needs_panic_runtime")
+            .map_err(|error| error.message)?;
+        crate::support::crates::LoaderFlags::from_bits(
+            u8::from(builtins) | (u8::from(panic) << 1) | (u8::from(needs_panic) << 2),
+        )
     }
 
     /// Whether the root of some crate of the session, the host's alone in a

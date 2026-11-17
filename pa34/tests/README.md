@@ -2,10 +2,11 @@
 
 Planned: no graded fixtures or generated reference outputs yet.
 
-`spec/panic-runtime-marker/outcomes.json` declares seventeen source outcomes for
-the actual panic-abort crate's `panic_runtime` loader identity. Each root pays its
+`spec/panic-runtime-marker/outcomes.json` retains seventeen qualified source
+outcomes and predeclares nineteen `needs_panic_runtime` extension outcomes for
+the actual panic-abort/std loader identities. Each root pays its
 own feature before session aggregation. Form, duplication, placement and ordinary
-profile opponents remain checked; bit1 travels in the existing closed loader
+profile opponents remain checked; bits1/2 travel in the existing closed loader
 envelope with private producer/roundtrip/compact-width controls. Every input is
 listed and hashed there. Runtime hooks, linking and full std artifacts remain
 required.

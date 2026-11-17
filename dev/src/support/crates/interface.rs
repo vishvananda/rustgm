@@ -8,7 +8,8 @@ use crate::support::linkage::Linkage;
 use std::sync::Arc;
 
 /// Crate-level attributes that a crate loader reads from every loaded crate.
-/// Bit 0 is `#![compiler_builtins]`; bit 1 is `#![panic_runtime]`.
+/// Bits 0, 1 and 2 identify `#![compiler_builtins]`, `#![panic_runtime]`
+/// and `#![needs_panic_runtime]`, respectively.
 /// These identify loader declarations, never callable or execution authority.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct LoaderFlags(u8);
@@ -17,7 +18,10 @@ impl LoaderFlags {
     pub const COMPILER_BUILTINS: Self = Self(1);
     /// `#![panic_runtime]`.
     pub const PANIC_RUNTIME: Self = Self(2);
-    const KNOWN: u8 = Self::COMPILER_BUILTINS.0 | Self::PANIC_RUNTIME.0;
+    /// `#![needs_panic_runtime]`.
+    pub const NEEDS_PANIC_RUNTIME: Self = Self(4);
+    const KNOWN: u8 =
+        Self::COMPILER_BUILTINS.0 | Self::PANIC_RUNTIME.0 | Self::NEEDS_PANIC_RUNTIME.0;
     /// # Errors
     /// Rejects every bit this profile does not assign.
     pub const fn from_bits(bits: u8) -> Result<Self, &'static str> {
@@ -41,6 +45,10 @@ impl LoaderFlags {
     #[must_use]
     pub const fn panic_runtime(self) -> bool {
         self.0 & Self::PANIC_RUNTIME.0 != 0
+    }
+    #[must_use]
+    pub const fn needs_panic_runtime(self) -> bool {
+        self.0 & Self::NEEDS_PANIC_RUNTIME.0 != 0
     }
 }
 

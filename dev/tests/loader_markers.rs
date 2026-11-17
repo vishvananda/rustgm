@@ -74,6 +74,6 @@ fn panic_runtime_is_one_checked_source_root_marker_with_its_own_feature() -> Res
         }
         count += 1;
     }
-    assert_eq!(count, 17);
+    assert_eq!(count, 36);
     Ok(())
 }

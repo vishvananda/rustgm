@@ -15,3 +15,22 @@ value-root	value.rs	1	source	-	malformed `panic_runtime` attribute input
 nested-marker	nested.rs	1	source	-	the `#![panic_runtime]` attribute can only be used at the crate root
 outer-marker	outer.rs	1	source	-	the `#![panic_runtime]` attribute can only be used at the crate root
 ordinary-profile	ordinary.rs	1	ordinary	-	panic_runtime requires the actual source-core profile
+needs-gated-root	needs-gated.rs	0	source	-	-
+needs-gated-guest	host.rs	0	source	app=needs-gated.rs	-
+needs-gated-root-and-guest	needs-gated.rs	0	source	app=needs-gated.rs	-
+needs-disabled-root	needs-inactive.rs	0	source	-	-
+needs-feature-without-marker	needs-gate-only.rs	0	source	-	-
+needs-missing-root-feature	needs-missing.rs	1	source	-	`#![needs_panic_runtime]` requires `#![feature(needs_panic_runtime)]`
+needs-missing-guest-feature	host.rs	1	source	app=needs-missing.rs	`#![needs_panic_runtime]` requires `#![feature(needs_panic_runtime)]`
+needs-host-feature-cannot-pay-guest	needs-gate-only.rs	1	source	app=needs-missing.rs	`#![needs_panic_runtime]` requires `#![feature(needs_panic_runtime)]`
+needs-sibling-feature-cannot-pay-guest	host.rs	1	source	first=needs-gate-only.rs|app=needs-missing.rs	`#![needs_panic_runtime]` requires `#![feature(needs_panic_runtime)]`
+needs-guest-feature-cannot-pay-host	needs-missing.rs	1	source	app=needs-gate-only.rs	`#![needs_panic_runtime]` requires `#![feature(needs_panic_runtime)]`
+needs-duplicate-root	needs-duplicate.rs	1	source	-	multiple `needs_panic_runtime` attributes
+needs-duplicate-guest	host.rs	1	source	app=needs-duplicate.rs	multiple `needs_panic_runtime` attributes
+needs-list-root	needs-list.rs	1	source	-	malformed `needs_panic_runtime` attribute input
+needs-value-root	needs-value.rs	1	source	-	malformed `needs_panic_runtime` attribute input
+needs-nested-marker	needs-nested.rs	1	source	-	the `#![needs_panic_runtime]` attribute can only be used at the crate root
+needs-outer-marker	needs-outer.rs	1	source	-	the `#![needs_panic_runtime]` attribute can only be used at the crate root
+needs-ordinary-profile	needs-ordinary.rs	1	ordinary	-	needs_panic_runtime requires the actual source-core profile
+needs-panic-feature-does-not-pay-needs	needs-with-panic-feature.rs	1	source	-	`#![needs_panic_runtime]` requires `#![feature(needs_panic_runtime)]`
+needs-feature-does-not-pay-panic	needs-panic-with-needs-feature.rs	1	source	-	`#![panic_runtime]` requires `#![feature(panic_runtime)]`
