@@ -483,7 +483,7 @@ fn hosted_session(host: &str, name: &str, guests: &[(&str, &str)]) -> Result<Out
     command.arg("--bringup-skip-list").arg(list);
     Ok(command.arg(folder.join("core.rs")).output()?)
 }
-fn prepare(name: &str, guests: &[(&str, &str)]) -> Result<(PathBuf, Command)> {
+pub(crate) fn prepare(name: &str, guests: &[(&str, &str)]) -> Result<(PathBuf, Command)> {
     let folder = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../obj/guest-crates")
         .join(format!("{name}-{}", std::process::id()));

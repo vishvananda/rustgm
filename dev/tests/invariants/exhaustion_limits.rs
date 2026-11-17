@@ -308,6 +308,68 @@ fn each_admitted_identity_grants_once_and_expansion_output_grants_nothing() -> T
     }
     Ok(())
 }
+/// Parsing one physical source for another edition grants no new source bytes.
+#[test]
+fn edition_specific_parses_share_one_physical_source_allowance() -> TestResult {
+    use crate::{
+        resolve::{
+            bindings::Context,
+            load::{InputFile, Loader},
+            package::ModuleId,
+        },
+        support::{bindings::Mode, crates::CrateIdentity, edition::Edition, source::SourceFile},
+        syntax::{
+            ast::{Kind, NodeId},
+            item::{ItemContext, ItemKind},
+        },
+    };
+    use std::path::Path;
+    let source = format!("{CORE}mod unit;");
+    let identity = CrateIdentity::new("minicore", "edition_grants")?;
+    let context = Context {
+        crate_name: Some("minicore".into()),
+        current: Some(identity.clone()),
+        mode: Mode::Source { provider: identity },
+        ..Default::default()
+    };
+    let config = Config::default();
+    let mut files = Aliased;
+    let mut loader = Loader::with_context(
+        InputFile {
+            identity: "lib.rs".into(),
+            path: "lib.rs".into(),
+            source: SourceFile::new(source.as_bytes().to_vec())?,
+        },
+        &mut files,
+        &config,
+        &context,
+    )?;
+    let grammar = crate::syntax::ast::MacroContext::Items(ItemContext::Module);
+    // The include admits the identity before a complete module parse exists.
+    let (old, _) = loader.include(Path::new("unit.rs"), grammar, Edition::Rust2021)?;
+    let ast = &loader.package.units[0].configured.ast;
+    let declaration = ast.nodes.iter().position(|node| {
+        matches!(node.kind, Kind::Item(index) if matches!(ast.items[index as usize].kind, ItemKind::Module { .. }))
+    }).and_then(|index| u32::try_from(index).ok()).map(NodeId::new).ok_or("module declaration")?;
+    let module = loader.load_module(ModuleId(0), declaration, None, false, None)?;
+    let modern_module = loader.package.modules[module.0 as usize].file;
+    let (modern, _) = loader.include(Path::new("./unit.rs"), grammar, Edition::Rust2024)?;
+    let (again, _) = loader.include(Path::new("unit.rs"), grammar, Edition::Rust2021)?;
+    assert_eq!(old, again);
+    assert_ne!(old, modern);
+    assert_eq!(loader.package.unit(old).edition(), Edition::Rust2021);
+    assert_eq!(
+        loader.package.unit(modern_module).edition(),
+        Edition::Rust2024
+    );
+    assert_eq!(loader.package.unit(modern).edition(), Edition::Rust2024);
+    let admitted = source.len() + UNIT.len();
+    assert_eq!(loader.package.admitted_source_bytes(), admitted);
+    let context = loader.package.macro_context()?.ok_or("contract owner")?;
+    let actual = context.contracts().0.borrow().granted;
+    assert_eq!(actual, allowance::Allowance::SETUP.admit(admitted));
+    Ok(())
+}
 #[test]
 fn explicit_caps_bound_the_grant_and_grants_never_reset_failure() -> TestResult {
     let source = crate::support::source::SourceFile::new(vec![b' '; 1000])?;

@@ -123,7 +123,17 @@ impl Unit {
     /// # Errors
     /// Propagates syntax/configuration errors and storage-range overflows.
     pub fn parse(source: SourceFile, config: &Config, names: &mut Names) -> Result<Self, LexError> {
-        Self::parsed(source, config, None, names)
+        Self::parsed(source, config, config.edition(), None, names)
+    }
+    /// Parse physical source using its owning crate's edition and the
+    /// session's unchanged configuration and resource policy.
+    pub(super) fn parse_in_edition(
+        source: SourceFile,
+        config: &Config,
+        edition: crate::support::edition::Edition,
+        names: &mut Names,
+    ) -> Result<Self, LexError> {
+        Self::parsed(source, config, edition, None, names)
     }
 
     /// # Errors
@@ -134,7 +144,16 @@ impl Unit {
         context: MacroContext,
         names: &mut Names,
     ) -> Result<Self, LexError> {
-        Self::parsed(source, config, Some(context), names)
+        Self::parsed(source, config, config.edition(), Some(context), names)
+    }
+    pub(super) fn include_in_edition(
+        source: SourceFile,
+        config: &Config,
+        edition: crate::support::edition::Edition,
+        context: MacroContext,
+        names: &mut Names,
+    ) -> Result<Self, LexError> {
+        Self::parsed(source, config, edition, Some(context), names)
     }
 
     /// The spelling unit of one transported macro image. The image is its
@@ -151,24 +170,31 @@ impl Unit {
     ) -> Result<Self, LexError> {
         let context = MacroContext::Items(crate::syntax::item::ItemContext::Module);
         let config = Config::in_edition(edition);
-        Self::configured(source, &config, Some(context), names, |_, names| {
-            crate::syntax::expression::fragment::parse_include_in_edition(
-                "",
-                context,
-                Some(names),
-                edition,
-            )
-        })
+        Self::configured(
+            source,
+            &config,
+            edition,
+            Some(context),
+            names,
+            |_, names| {
+                crate::syntax::expression::fragment::parse_include_in_edition(
+                    "",
+                    context,
+                    Some(names),
+                    edition,
+                )
+            },
+        )
     }
 
     fn parsed(
         source: SourceFile,
         config: &Config,
+        edition: crate::support::edition::Edition,
         context: Option<MacroContext>,
         names: &mut Names,
     ) -> Result<Self, LexError> {
-        let edition = config.edition();
-        Self::configured(source, config, context, names, |text, names| {
+        Self::configured(source, config, edition, context, names, |text, names| {
             if let Some(context) = context {
                 crate::syntax::expression::fragment::parse_include_in_edition(
                     text,
@@ -185,12 +211,13 @@ impl Unit {
     fn configured(
         source: SourceFile,
         config: &Config,
+        edition: crate::support::edition::Edition,
         context: Option<MacroContext>,
         names: &mut Names,
         parse: impl for<'a> FnOnce(&'a str, &mut Names) -> Result<crate::syntax::ast::Ast<'a>, LexError>,
     ) -> Result<Self, LexError> {
         let ast = parse(source.text(), names)?;
-        let report = crate_syntax::configure(source.text(), ast, config)?;
+        let report = crate_syntax::configure_with_inputs(source.text(), ast, config, &edition)?;
         let mut literals = Storage::default();
         let ast = report.ast.map_literals(|value| {
             literals
@@ -225,7 +252,7 @@ impl Unit {
             owner_indices,
             origins: Vec::new(),
             original,
-            edition: config.edition(),
+            edition,
         })
     }
 

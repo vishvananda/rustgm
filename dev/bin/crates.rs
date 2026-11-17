@@ -71,7 +71,7 @@ impl Options {
         }
         Ok(true)
     }
-    /// `--bringup-guest NAME=ROOT.rs`: one more crate resolved in this session.
+    /// `--bringup-guest NAME[@EDITION]=ROOT.rs`: one more crate in this session.
     fn guest(&mut self, value: Option<&str>) -> Result<(), String> {
         let (name, root) = value
             .and_then(|value| value.split_once('='))
@@ -80,10 +80,30 @@ impl Options {
         if self.guests.len() >= 64 {
             return Err("guest crates exceed the bring-up profile's limit of 64".into());
         }
-        self.guests.push(
-            rustgm::support::bringup::Guest::new(name, PathBuf::from(root))
-                .map_err(|message| format!("--bringup-guest {name}: {message}"))?,
-        );
+        let (name, edition) = match name.split_once('@') {
+            Some((name, edition)) => {
+                use rustgm::support::edition::Edition;
+                let edition = match edition {
+                    "2015" => Edition::Rust2015,
+                    "2018" => Edition::Rust2018,
+                    "2021" => Edition::Rust2021,
+                    "2024" => Edition::Rust2024,
+                    _ => {
+                        return Err(
+                            "--bringup-guest edition must be 2015, 2018, 2021 or 2024".into()
+                        );
+                    }
+                };
+                (name, Some(edition))
+            }
+            None => (name, None),
+        };
+        let guest = rustgm::support::bringup::Guest::new(name, PathBuf::from(root))
+            .map_err(|message| format!("--bringup-guest {name}: {message}"))?;
+        self.guests.push(match edition {
+            Some(edition) => guest.with_edition(edition),
+            None => guest,
+        });
         Ok(())
     }
     pub fn select_native_output(&mut self, path: Option<String>) -> Result<(), String> {

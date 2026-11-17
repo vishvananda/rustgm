@@ -1,0 +1,26 @@
+{
+  "profile": "Rust 1.98.0; x86_64-unknown-linux-gnu; panic abort; source-core bring-up guests; host edition 2024; declared before execution",
+  "scope": "Each guest owns its edition; omitted editions inherit the host. No new legacy language rule is admitted.",
+  "inputs": ["host.rs", "legacy.rs", "modern.rs", "module.rs", "include.rs", "shared.rs", "included.rs", "reserved.rs", "plain.rs"],
+  "cases": [
+    {"name": "root-2021", "guests": ["legacy@2021=legacy.rs"], "rustc": 0, "rustgm": 0},
+    {"name": "root-2024", "guests": ["legacy@2024=plain.rs"], "rustc": 1, "rustgm": 1},
+    {"name": "root-inherited", "guests": ["legacy=plain.rs"], "rustc": 1, "rustgm": 1},
+    {"name": "mixed-preludes-macro", "guests": ["legacy@2021=legacy.rs", "modern@2024=modern.rs"], "rustc": 0, "rustgm": 0},
+    {"name": "module-2021", "guests": ["legacy@2021=module.rs"], "rustc": 0, "rustgm": 0},
+    {"name": "module-2015", "guests": ["legacy@2015=module.rs"], "rustc": 0, "rustgm": 0},
+    {"name": "module-2018", "guests": ["legacy@2018=module.rs"], "rustc": 0, "rustgm": 0},
+    {"name": "module-cache-isolation", "guests": ["legacy@2021=module.rs", "modern@2024=module.rs"], "rustc": 1, "rustgm": 1},
+    {"name": "include-2021", "guests": ["legacy@2021=include.rs"], "rustc": 0, "rustgm": 0},
+    {"name": "include-cache-isolation", "guests": ["legacy@2021=include.rs", "modern@2024=include.rs"], "rustc": 1, "rustgm": 1},
+    {"name": "reserved-2021", "guests": ["legacy@2021=reserved.rs"], "rustc": 0, "rustgm": 0},
+    {"name": "reserved-2024", "guests": ["modern@2024=reserved.rs"], "rustc": 1, "rustgm": 1}
+  ],
+  "authoring_corrections": [{"cases": ["root-2024", "root-inherited"], "correction": "Use isolated plain.rs: legacy.rs also requested From2021, whose absence in the 2024 prelude masked the intended unsafe-extern diagnostic. Expected rejection and the other guest sources stay unchanged."}, {"cases": ["root-2021", "mixed-preludes-macro"], "correction": "Add the minimal existing Clone/Copy/LegacyReceiver language declarations and u8 implementations to host.rs after the corrected empty-sysroot rustc oracle exposed the missing copy lang item. Expected acceptance and all guest bytes stay unchanged."}] ,
+  "driver_only": [
+    "Unsupported or empty edition tags reject before source loading.",
+    "A repeated @ edition suffix rejects.",
+    "A guest edition never changes the host's edition.",
+    "The same root source remains forbidden for two guests even when their editions differ."
+  ]
+}

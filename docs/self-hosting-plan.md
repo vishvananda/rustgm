@@ -69,10 +69,12 @@ core (alloc, std, consumer instantiation, the backend at scale) was exercised.
 | M7 | Strict ratchet: zero bring-up records for core, alloc, std and the compiler |
 
 Until metadata publication is complete, the crates above core join core's
-session as guest crates (`--bringup-guest NAME=ROOT.rs`, bring-up profile
+session as guest crates (`--bringup-guest NAME[@EDITION]=ROOT.rs`, bring-up profile
 only): each is resolved as a crate of its own within one compilation, so
 alloc, std and third-party sources need no textual mounting. `handoff.md`
 describes the option and its limits.
+An omitted guest edition inherits the host's; an explicit edition follows the
+guest's source, modules, includes and macro definition tokens.
 
 Self-hosting does not need procedural macros, unwinding or async. It does need
 atomics beyond U32, SIMD lowering for hashbrown, allocator/start/TLS shims and

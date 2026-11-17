@@ -86,10 +86,10 @@ class Linked(unittest.TestCase):
             self.assertEqual(root, source / "lib.rs")
             self.assertEqual(extra, ["--bringup-guest", f"app={program}"])
             # Dependencies are further guests before the program, in order.
-            options.dependency = ["alloc=/a/lib.rs", "extra=/b/lib.rs"]
+            options.dependency = ["alloc=/a/lib.rs", "extra@2021=/b/lib.rs"]
             _, extra = linked.session(options, program)
             self.assertEqual(extra, ["--bringup-guest", "alloc=/a/lib.rs",
-                                     "--bringup-guest", "extra=/b/lib.rs",
+                                     "--bringup-guest", "extra@2021=/b/lib.rs",
                                      "--bringup-guest", f"app={program}"])
             options.dependency = []
             # Nothing is copied, mounted or rewritten.

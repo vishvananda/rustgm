@@ -8,7 +8,7 @@ use crate::support::hash::HashMap;
 use crate::{
     expand::{config::Config, configured::Effect},
     literal::Value,
-    support::source::SourceFile,
+    support::{edition::Edition, source::SourceFile},
     syntax::{
         ast::{Kind, MacroContext, NodeId},
         attribute::Input,
@@ -62,14 +62,29 @@ pub(crate) struct Loader<'a, S> {
     config: &'a Config,
     directories: Vec<Directory>,
     identities: Vec<PathBuf>,
-    /// Every admitted identity, whose parsed bytes already granted allowance,
-    /// with its parsed module unit; an identity only included has none.
-    cache: HashMap<PathBuf, Option<FileId>>,
+    /// Each authenticated physical identity grants allowance once. Complete
+    /// module parses are cached separately by edition; include-only identities
+    /// have no complete module parse in any slot.
+    cache: HashMap<PathBuf, [Option<FileId>; 4]>,
     separate_instances: bool,
-    includes: HashMap<(PathBuf, MacroContext), FileId>,
-    include_requests: HashMap<(PathBuf, MacroContext), FileId>,
+    includes: HashMap<(PathBuf, MacroContext, Edition), FileId>,
+    include_requests: HashMap<(PathBuf, MacroContext, Edition), FileId>,
     resources: HashMap<PathBuf, Result<Option<Vec<u8>>, String>>,
     environment: HashMap<String, Result<Option<String>, String>>,
+}
+/// The fixed edition vocabulary indexes parses, never admission authority.
+const fn edition_slot(edition: Edition) -> usize {
+    match edition {
+        Edition::Rust2015 => 0,
+        Edition::Rust2018 => 1,
+        Edition::Rust2021 => 2,
+        Edition::Rust2024 => 3,
+    }
+}
+fn parsed_source(file: FileId, edition: Edition) -> [Option<FileId>; 4] {
+    let mut units = [None; 4];
+    units[edition_slot(edition)] = Some(file);
+    units
 }
 /// Load each source image once; disabled module declarations never request I/O.
 ///
@@ -230,7 +245,10 @@ impl<'a, S: Sources> Loader<'a, S> {
                 relative: None,
             }],
             identities: vec![root.identity.clone()],
-            cache: HashMap::from_iter([(root.identity, Some(FileId(0)))]),
+            cache: HashMap::from_iter([(
+                root.identity,
+                parsed_source(FileId(0), config.edition()),
+            )]),
             separate_instances: false,
             includes: HashMap::default(),
             include_requests: HashMap::default(),
@@ -274,18 +292,22 @@ impl<'a, S: Sources> Loader<'a, S> {
                 u32::try_from(self.package.modules.len())
                     .map_err(|_| Error::unlocated("too many modules"))?,
             );
-            if self
-                .cache
-                .insert(source.identity.clone(), Some(file))
-                .is_some()
-            {
+            if self.cache.contains_key(&source.identity) {
                 return Err(Error::unlocated(format!(
                     "guest crate `{}` shares its root source with another crate of this session",
                     input.name()
                 )));
             }
-            let unit = Unit::parse(source.source, self.config, &mut self.package.names)
-                .map_err(|e| Error::at(file, e.offset, e.message))?;
+            let edition = input.edition().unwrap_or(self.config.edition());
+            let unit = Unit::parse_in_edition(
+                source.source,
+                self.config,
+                edition,
+                &mut self.package.names,
+            )
+            .map_err(|e| Error::at(file, e.offset, e.message))?;
+            self.cache
+                .insert(source.identity.clone(), parsed_source(file, edition));
             let root = guests.admit(&mut self.package.names, input, &unit, (file, module))?;
             let slot = root.krate;
             self.package.units.push(unit);
@@ -460,17 +482,26 @@ impl<'a, S: Sources> Loader<'a, S> {
                     None
                 },
             };
-            let cached = self.cache.get(&selected.identity).copied().flatten();
-            let source_file = if let Some(id) = cached {
+            let edition = self.package.unit(file).edition();
+            let parsed = self.cache.get(&selected.identity).copied();
+            let slot = edition_slot(edition);
+            let source_file = if let Some(id) = parsed.and_then(|units| units[slot]) {
                 self.cached_instance(id, &selected.path)?
             } else {
                 let id = FileId(
                     u32::try_from(self.package.units.len())
                         .map_err(|_| Error::at(file, span.start, "too many source files"))?,
                 );
-                let unit = Unit::parse(selected.source, self.config, &mut self.package.names)
-                    .map_err(|e| Error::at(id, e.offset, e.message))?;
-                let included = self.cache.insert(selected.identity.clone(), Some(id));
+                let unit = Unit::parse_in_edition(
+                    selected.source,
+                    self.config,
+                    edition,
+                    &mut self.package.names,
+                )
+                .map_err(|e| Error::at(id, e.offset, e.message))?;
+                let mut units = parsed.unwrap_or([None; 4]);
+                units[slot] = Some(id);
+                let included = self.cache.insert(selected.identity.clone(), units);
                 self.package.units.push(unit);
                 self.package
                     .file_paths
@@ -611,8 +642,9 @@ impl<S: Sources> Loader<'_, S> {
         &mut self,
         path: &Path,
         grammar: MacroContext,
+        edition: Edition,
     ) -> Result<(FileId, bool), Error> {
-        let requested = (path.components().collect(), grammar);
+        let requested = (path.components().collect(), grammar, edition);
         if let Some(file) = self.include_requests.get(&requested) {
             return Ok((*file, false));
         }
@@ -634,12 +666,18 @@ impl<S: Sources> Loader<'_, S> {
                     ),
                 )
             })?;
-        let key = (input.identity.clone(), grammar);
+        let key = (input.identity.clone(), grammar, edition);
         let (unit, parsed) = if let Some(file) = self.includes.get(&key) {
             (self.package.unit(*file).fresh_instance(), false)
         } else {
             (
-                Unit::parse_include(input.source, self.config, grammar, &mut self.package.names),
+                Unit::include_in_edition(
+                    input.source,
+                    self.config,
+                    edition,
+                    grammar,
+                    &mut self.package.names,
+                ),
                 true,
             )
         };
@@ -648,8 +686,11 @@ impl<S: Sources> Loader<'_, S> {
         self.package
             .file_paths
             .push(input.path.components().collect());
-        if parsed && !self.cache.contains_key(&input.identity) {
-            self.cache.insert(input.identity.clone(), None);
+        if parsed
+            && let std::collections::hash_map::Entry::Vacant(entry) =
+                self.cache.entry(input.identity.clone())
+        {
+            entry.insert([None; 4]);
             self.admit(id)?;
         }
         self.identities.push(input.identity);

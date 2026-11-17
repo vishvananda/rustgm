@@ -4,9 +4,10 @@
 //! whose root module has no parent, so `super` and restricted visibility stop
 //! there. `crate`, `$crate`, exported macros, the extern prelude and the
 //! standard prelude follow the crate that owns the module they are asked
-//! from. Lang items, features and coherence stay those of the session. The
-//! bring-up profile names the guests; a strict compilation has none and takes
-//! none of these paths. Their state lives in the session's boxed source core,
+//! from. Lang items, features and coherence stay those of the session. Each
+//! crate's source edition stays with its units; an omitted guest edition inherits
+//! the host's. The bring-up profile names the guests; a strict compilation has
+//! none and takes none of these paths. Their state lives in the session's boxed source core,
 //! so no package or resolution record grows for them.
 use super::{
     bindings::Source,

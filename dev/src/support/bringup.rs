@@ -23,11 +23,13 @@ pub fn selected() -> Option<&'static Stubs> {
     SELECTED.get()
 }
 
-/// A guest crate as the driver names it: its crate name and root source.
+/// A guest crate as the driver names it: its crate name, root source and
+/// optional edition. An omitted edition inherits the host's.
 #[derive(Clone, Debug)]
 pub struct Guest {
     name: String,
     root: PathBuf,
+    edition: Option<super::edition::Edition>,
 }
 impl Guest {
     /// # Errors
@@ -44,7 +46,18 @@ impl Guest {
         Ok(Self {
             name: name.to_owned(),
             root,
+            edition: None,
         })
+    }
+    /// Select this crate's source edition without changing the host's inputs.
+    #[must_use]
+    pub const fn with_edition(mut self, edition: super::edition::Edition) -> Self {
+        self.edition = Some(edition);
+        self
+    }
+    #[must_use]
+    pub const fn edition(&self) -> Option<super::edition::Edition> {
+        self.edition
     }
     #[must_use]
     pub fn name(&self) -> &str {

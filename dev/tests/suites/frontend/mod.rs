@@ -285,6 +285,9 @@ mod bringup_stubs;
 #[path = "../../guest_crates.rs"]
 mod guest_crates;
 
+#[path = "../../guest_editions.rs"]
+mod guest_editions;
+
 #[path = "../../knowledge_sources.rs"]
 mod knowledge_sources;
 

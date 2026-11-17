@@ -2,6 +2,11 @@
 
 Planned: no graded fixtures or generated reference outputs yet.
 
+`spec/guest-editions/outcomes.json` declares mixed-edition bring-up guest inputs:
+crate roots, modules, includes, distinct edition preludes and macro definition
+tokens. An optional `NAME@EDITION=ROOT.rs` guest input leaves the host and every
+other guest's edition unchanged. PA34 and full std acceptance remain planned.
+
 `stdlib-graph-outcomes.json` records original pinned core/alloc/std planning with
 explicit abort target profiles, authenticated registry/local sources and complete
 unit settings. `spec/legacy-stdlib-editions/contract.json` declares import and

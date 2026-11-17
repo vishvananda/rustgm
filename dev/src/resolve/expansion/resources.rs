@@ -113,7 +113,8 @@ impl<S: Sources> Engine<'_, S> {
         grammar: MacroContext,
     ) -> Result<(Span, FileId, bool), Error> {
         let (_, path) = self.include_path(file, target, arguments)?;
-        let (included, parsed) = self.loader.include(&path, grammar)?;
+        let edition = self.loader.package.unit(file).edition();
+        let (included, parsed) = self.loader.include(&path, grammar, edition)?;
         self.grant_admissions();
         // Cached source templates are never expanded in place. Each insertion
         // copies typed arenas into the caller and keeps a physical origin boundary.
