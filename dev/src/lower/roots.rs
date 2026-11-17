@@ -43,17 +43,19 @@ pub(super) fn exports(facts: &Declarations, explicit: &[DefId]) -> Result<Export
     if explicit.len() > LIMIT {
         return Err("export roots exceed 100000 function budget");
     }
-    let (mut functions, globals) = facts.foreign.as_deref().map_or_else(
+    let (mut functions, mut globals) = facts.foreign.as_deref().map_or_else(
         || (Vec::new(), Vec::new()),
         crate::sema::foreign::Registry::all_exports,
     );
     if functions.len().saturating_add(explicit.len()) > LIMIT {
         return Err("export roots exceed 100000 function budget");
     }
+    let retained = facts.compiler_retained_statics()?;
     if functions
         .len()
         .saturating_add(explicit.len())
         .saturating_add(globals.len())
+        .saturating_add(retained.len())
         > LIMIT
     {
         return Err("export roots exceed 100000 definition budget");
@@ -61,5 +63,13 @@ pub(super) fn exports(facts: &Declarations, explicit: &[DefId]) -> Result<Export
     functions.extend_from_slice(explicit);
     functions.sort_unstable_by_key(|id| id.0);
     functions.dedup();
+    if !retained.is_empty() {
+        globals
+            .try_reserve(retained.len())
+            .map_err(|_| "retained static roots allocation failed")?;
+        globals.extend_from_slice(retained);
+        globals.sort_unstable_by_key(|id| id.0);
+        globals.dedup();
+    }
     Ok(Exports { functions, globals })
 }

@@ -219,7 +219,11 @@ impl<S: Sources> Engine<'_, S> {
         }
         if matches!(
             name.and_then(Consumer::named),
-            Some(Consumer::QueryInstabilityAdvisory | Consumer::DeprecatedSafe2024)
+            Some(
+                Consumer::QueryInstabilityAdvisory
+                    | Consumer::DeprecatedSafe2024
+                    | Consumer::StaticRetention
+            )
         ) {
             return Ok(self.loader.package.source_core().is_some());
         }

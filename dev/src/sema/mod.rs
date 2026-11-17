@@ -65,6 +65,7 @@ mod specialization;
 pub(crate) mod stored_fields;
 mod thread_locals;
 mod traits;
+mod used_statics;
 #[cfg(test)]
 pub(crate) use traits::selection::copy_trace;
 pub mod type_view;

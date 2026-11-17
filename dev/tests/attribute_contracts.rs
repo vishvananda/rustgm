@@ -1,6 +1,10 @@
 //! Retained attribute contracts use independently declared source and warning outcomes.
 use rustgm::{
     expand::config::Config,
+    lowir::{
+        data::{GlobalKind, Item, Target},
+        program::Program,
+    },
     resolve::{
         self,
         expansion::Report,
@@ -534,5 +538,109 @@ fn query_instability_checks_source_owners_form_and_exact_spelling() -> TestResul
         .err()
         .ok_or("ordinary marker resolved")?;
     assert!(error.contains("unresolved attribute macro"), "{error}");
+    Ok(())
+}
+
+fn used_provider() -> TestResult<String> {
+    let prefix =
+        crate::resolve::fixture("pa31/tests/spec/source-functions-transport/minimal-provider.rs")?;
+    Ok(format!(
+        "#![feature(auto_traits)]\n{prefix}\n#[lang = \"sync\"]pub unsafe auto trait Sync {{}}\n"
+    ))
+}
+
+fn lower_used(source: &str) -> TestResult<Program> {
+    let mut report = crate::resolve::source_provider(source, "used_retention")?;
+    let analysis = rustgm::pipeline::analyze_source(&report)?;
+    let mut facts = analysis.facts;
+    let entry = rustgm::sema::entry::select(&mut report, &facts)?;
+    Ok(rustgm::lower::instances::build_prepared(
+        &report,
+        &mut facts,
+        entry,
+        analysis.prepared,
+    )?)
+}
+
+#[test]
+fn used_compiler_retains_the_private_static_and_its_function_relocation() -> TestResult {
+    let prefix = used_provider()?;
+    let program = lower_used(&format!(
+        "#![feature(used_with_arg)]\n{prefix}
+         fn used_dependency()->u64{{37}}
+         #[used(compiler)] static KEPT: fn()->u64=used_dependency;
+         static UNMARKED: u64=29;
+         fn main(){{}}"
+    ))?;
+    let [kept] = program.globals.as_slice() else {
+        return Err("expected exactly one global from the actual used root".into());
+    };
+    assert_eq!(kept.kind, GlobalKind::Definition);
+    let items = kept.items.ok_or("retained static has no initializer")?;
+    let [
+        Item::Address {
+            target: Target::Function(dependency),
+            addend: 0,
+        },
+    ] = &program.data[items.start as usize..items.end as usize]
+    else {
+        return Err("expected the retained static's function relocation".into());
+    };
+    let function = &program.symbols[dependency.0 as usize];
+    assert!(function.body.is_some());
+    assert!(!function.entry);
+    Ok(())
+}
+
+#[test]
+fn used_modes_check_source_owner_feature_and_linker_requirement() -> TestResult {
+    let prefix = used_provider()?;
+    let feature = "#![feature(used_with_arg)]";
+    for (header, item, cause) in [
+        (
+            "",
+            "#[used(compiler)]static ITEM:u64=7;",
+            "requires this crate's used_with_arg",
+        ),
+        (
+            feature,
+            "#[used(compiler)]fn item(){}",
+            "requires an actual static definition",
+        ),
+        (
+            feature,
+            "#[used(compiler, linker)]static ITEM:u64=7;",
+            "malformed `used`",
+        ),
+        (
+            "#![feature(used_with_arg)]#![deny(unused_attributes)]",
+            "#[used(compiler)]#[used(compiler)]static ITEM:u64=7;",
+            "duplicate `used`",
+        ),
+        (
+            "",
+            "#[used]static ITEM:u64=7;",
+            "used linker retention is not implemented",
+        ),
+        (
+            feature,
+            "#[used(linker)]static ITEM:u64=7;",
+            "used linker retention is not implemented",
+        ),
+        (
+            feature,
+            "#[used(compiler)]#[used(linker)]static ITEM:u64=7;",
+            "used linker retention is not implemented",
+        ),
+    ] {
+        let error = lower_used(&format!("{header}\n{prefix}\n{item}\nfn main(){{}}"))
+            .err()
+            .ok_or("expected retention rejection")?;
+        assert!(error.to_string().contains(cause), "{item}: {error}");
+    }
+    let program = lower_used(&format!(
+        "{prefix}\n#[cfg_attr(any(), used(compiler))]static ITEM:u64=7;\nfn main(){{}}"
+    ))?;
+    assert!(program.globals.is_empty());
     Ok(())
 }

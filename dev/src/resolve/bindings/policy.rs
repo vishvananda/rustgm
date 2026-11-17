@@ -106,6 +106,7 @@ pub(in crate::resolve) enum Feature {
     PanicRuntime = 82,
     NeedsPanicRuntime = 83,
     TypeAliasImplTrait = 84,
+    UsedWithArg = 85,
 }
 
 #[cfg(test)]
@@ -151,6 +152,7 @@ impl Request {
     fn named(name: &str) -> Option<Self> {
         Some(match name {
             "prelude_import" => Self::Capability(Feature::PreludeImport),
+            "used_with_arg" => Self::Capability(Feature::UsedWithArg),
             "new_range" => Self::Capability(Feature::NewRange),
             "reborrow" => Self::Capability(Feature::Reborrow),
             "inherent_associated_types" => Self::Capability(Feature::InherentAssociatedTypes),

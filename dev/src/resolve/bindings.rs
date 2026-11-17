@@ -440,6 +440,38 @@ impl super::package::Package {
             "arbitrary receiver client identity changed",
         )
     }
+    /// Read the attributed static's own root instead of the guest feature union.
+    pub(crate) fn requested_used_with_arg(
+        &self,
+        file: crate::support::source::FileId,
+    ) -> Result<bool, super::package::Error> {
+        let error = |message| super::package::Error::at(file, 0, message);
+        let source = self
+            .source_core()
+            .ok_or_else(|| error("used retention requires SourceCore"))?;
+        let module = self
+            .modules
+            .get(self.file_crate_root(file).0 as usize)
+            .ok_or_else(|| error("used attribute has no actual crate root"))?;
+        let unit = self.unit(module.file);
+        if let Some(index) = unit.owner_indices[module.root.get() as usize] {
+            let owner = &unit.configured.owners[index.get() as usize - 1];
+            source
+                .macros
+                .charge(owner.attributes.len(), 0)
+                .map_err(error)?;
+            let width = unit.retained_attributes(owner.attributes.clone()).fold(
+                0usize,
+                |width, (attribute, _)| {
+                    width.saturating_add(
+                        attribute.span.end.saturating_sub(attribute.span.start) as usize
+                    )
+                },
+            );
+            source.macros.charge(width, 0).map_err(error)?;
+        }
+        policy::root_feature(unit, module.file, policy::Feature::UsedWithArg)
+    }
     /// Permission for `#[thread_local]`, never its storage.
     pub(crate) fn requested_thread_local(&self) -> Result<bool, &'static str> {
         self.requested_expression_feature(
