@@ -306,6 +306,22 @@ impl Candidate {
         if !self.probe.preserves_inputs(source).map_err(inference)? {
             return Ok(None);
         }
+        if matches!(item, ResultId::Associated(_)) && self.instance.quantified.is_none() {
+            // Only a bare fresh output may alias its actual determining clause.
+            // Nonempty quantified clauses can contribute fresh-region instances
+            // to goals; keep their existing path until provenance is explicit.
+            self.probe
+                .context()
+                .account_work(self.instance.goals.len())
+                .map_err(inference)?;
+            let aliases = self.instance.goals.iter().filter_map(|goal| {
+                goal.projection_result()
+                    .map(|result| (goal.subject(), result))
+            });
+            self.probe
+                .alias_fresh_results(&facts.types, aliases)
+                .map_err(inference)?;
+        }
         let result = match item {
             ResultId::Associated(item) => {
                 let definition = definition(facts, self.instance.owner, item)?;

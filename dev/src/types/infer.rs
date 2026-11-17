@@ -377,6 +377,17 @@ impl Context {
         variable: TermId,
         candidate: TermId,
     ) -> Result<bool, Error> {
+        self.occurs_excluding::<false>(store, variable, candidate, None)
+    }
+    /// A preserved imported subgraph cannot contain a newly allocated query variable.
+    /// The ordinary occurrence check keeps the complete traversal at compile time.
+    fn occurs_excluding<const EXCLUDE: bool>(
+        &mut self,
+        store: &Store,
+        variable: TermId,
+        candidate: TermId,
+        protected: Option<&HashSet<TermId>>,
+    ) -> Result<bool, Error> {
         self.epoch = self.epoch.wrapping_add(1);
         if self.epoch == 0 {
             self.marks.fill(0);
@@ -389,6 +400,9 @@ impl Context {
             let next = self.root(next)?;
             if next == variable {
                 return Ok(true);
+            }
+            if EXCLUDE && protected.is_some_and(|roots| roots.contains(&next)) {
+                continue;
             }
             // A completed graph has no inference holes or projections. Reuse
             // its immutable facts instead of walking the same growing prefix.

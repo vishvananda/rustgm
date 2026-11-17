@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "declared": "Original independent source statuses0/0/1 were frozen before the pinned rustc or b77 compiler executions. Promotion preserves those exact source bytes and requirements. The inferred candidate failure remains a required-positive regression, not an expected rejection.",
+  "phase": "Source-mode semantic pipeline only; no lowering, backend, native or whole-library acceptance claim.",
+  "cases": {
+    "inferred.rs": {
+      "sha256": "f632dcf395442c29945d41fdcb904c54727d960f8de75b5fc11033cb0277cd56",
+      "rustc_status": 0,
+      "required_rustgm_status": 0,
+      "purpose": "Output-only B must propagate Sink<u32> through custom Call equality and conditional Range."
+    },
+    "typed-u32.rs": {
+      "sha256": "111b5acd18069f8178220f4dd7c06f42ebf53c7917aa7c47d7b7d1b7facd5041",
+      "rustc_status": 0,
+      "required_rustgm_status": 0,
+      "purpose": "Closed u32 positive calibrates custom Call Output and Map HasItem."
+    },
+    "wrong-i32.rs": {
+      "sha256": "1871243fccf119ee29b27b2aa095113cb6b1b94121594d4e92c821ce3c0c1a16",
+      "rustc_status": 1,
+      "required_rustgm_status": 1,
+      "purpose": "Closed i32 mapped item versus Sink<u32> must reject."
+    }
+  },
+  "source_mode": "Actual no_core provider, using the existing Sized/Clone/Copy/Destruct foundation and real primitive Copy impls; no bootstrap declarations.",
+  "proof_contract": "Output-only impl B is absent from Map<I,F> and determined by F:Call<I::Item,Output=B>. Sink<u32>:Collect<I::Item> must constrain the inferred integer before fallback; accepting a projected equation alone supplies no trait proof.",
+  "independent_oracle": {
+    "toolchain": "rustc1.98.0",
+    "commit": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "mode": "2024 library metadata; RUSTC_BOOTSTRAP=1 for no_core language declarations",
+    "observed_statuses": [
+      0,
+      0,
+      1
+    ],
+    "closed_mismatch": "E0277: collecting i32; Collect<i32> is not implemented for Sink<u32>",
+    "original_declaration_sha256": "237a0d2c2d9e489e62ee4d391078a59ade5119ce39a9f27e0e8c168fe638986a"
+  },
+  "retained_candidate_baseline": {
+    "compiler_sha256": "b77d2e4e49fe41ecade99370d6ddeaf0959cd88a28a2bdd8e50bcc8ad8e8f285",
+    "observed_statuses": [
+      1,
+      0,
+      1
+    ],
+    "inferred_primary": {
+      "file": 0,
+      "offset": 1856,
+      "message": "collecting i32"
+    },
+    "closed_mismatch": "Rejection occurs at the call; the authored message does not render because its typed source shape remains unsupported. No rendered i32 claim is made for that control.",
+    "receipt_sha256": "9aa87aa4004ab7630e9723ed2cc3a6577910e9f0f920cfb98f36282ac0f586d3",
+    "retained_evidence": "obj/parallel/vec-method-lookup/tiny-map-output"
+  },
+  "maintainer_tests": "Existing traits/winnowed_projections root, output_parameters submodule. Positives require full analyze_source acceptance and actual integer-literal u32 facts; closed mismatch requires a semantic error at the exact call. Candidate fix validation is pending."
+}

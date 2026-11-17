@@ -1460,3 +1460,11 @@ actual generic tuple/record/ergonomic bindings. The registered frontend root
 `spec/scalar-niche-suffixes/outcomes.json` declares three accepted source/native
 programs and two invalid scalar opponents for bounded integer and nested bool
 encodings. Its manifest includes every Rust input and the shared C observer.
+
+`spec/output-only-trait-inference/` freezes three independently checked source
+outcomes for an impl parameter determined only by an associated-output equality.
+The original inferred positive remains a required regression; explicit `u32`
+accepts and a closed `i32`/`u32` mismatch rejects. The existing maintainer traits
+root checks actual source-pipeline acceptance and integer types without making
+lowering or native claims. See its outcome manifest for the retained failed
+baseline and independent oracle provenance.

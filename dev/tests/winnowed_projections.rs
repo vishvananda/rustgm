@@ -3,6 +3,8 @@
 //! `(&[]).into_iter()` in `slice/iter/macros.rs`'s `Default` needs it: the
 //! blanket `impl<I: Iterator> IntoIterator for I` matches `&[?E; 0]`'s header.
 use std::fmt::Write as _;
+#[path = "winnowed_projections/correlated_parameters.rs"]
+mod output_parameters;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const PACKET: &str = "pa31/tests/spec/blanket-candidate-winnowing";
 const SUFFIX: &str = "impl<T> Default for Iter<'_, T> {

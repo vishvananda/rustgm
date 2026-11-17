@@ -5,6 +5,10 @@ use super::{
 };
 use crate::support::hash::HashSet;
 
+#[cfg(test)]
+#[path = "../../../tests/invariants/probe_aliases.rs"]
+mod tests;
+
 /// One isolated query over a fixed source graph. This is an inference transport,
 /// not implementation-selection or bound evidence. Keep the source's equations
 /// unchanged until export; fresh query variables cannot escape into that source.
@@ -68,6 +72,69 @@ impl Probe {
     /// handles lifetime equations separately from exporting type structure.
     pub const fn context(&mut self) -> &mut Context {
         &mut self.context
+    }
+
+    /// Relate query-only result variables to their owned projection expressions.
+    /// The semantic caller must already have one unique candidate and retain
+    /// every original equality and condition. This neither normalizes an alias
+    /// nor proves an equality. Mapped inputs and nontrivial right sides stay put.
+    ///
+    /// # Errors
+    /// Propagates malformed identities, allocation failure and exhausted work.
+    pub(crate) fn alias_fresh_results(
+        &mut self,
+        store: &Store,
+        aliases: impl IntoIterator<Item = (TermId, TermId)>,
+    ) -> Result<(), Error> {
+        let mut aliases = aliases.into_iter().peekable();
+        if aliases.peek().is_none() {
+            return Ok(());
+        }
+        // Preserved input holes and constructors predate all fresh query results.
+        // They are safe leaves in the occurrence checks for this alias batch.
+        if !self.inputs_preserved()? {
+            return Err(Error::InvalidIdentity);
+        }
+        let mut protected = HashSet::default();
+        self.context.account_work(self.mappings.types.len())?;
+        protected
+            .try_reserve(self.mappings.types.len())
+            .map_err(|_| Error::Overflow)?;
+        for &copied in self.mappings.types.values() {
+            self.context.step()?;
+            protected.insert(self.context.root(copied)?);
+        }
+        for (expression, result) in aliases {
+            self.context.step()?;
+            let expression = self.context.root(expression)?;
+            let result = self.context.root(result)?;
+            if protected.contains(&result)
+                || !matches!(
+                    self.context.terms[result.0 as usize].value,
+                    Value::Variable(Domain::Any)
+                )
+            {
+                continue;
+            }
+            if self.context.opaque_projection(expression).is_some()
+                || self.context.rigid_projection(expression).is_some()
+                || self.context.projection_item(store, expression)?.is_none()
+                || self.context.occurs_excluding::<true>(
+                    store,
+                    result,
+                    expression,
+                    Some(&protected),
+                )?
+            {
+                continue;
+            }
+            // This directional link changes only the fresh variable. The
+            // projection target never links back, so protected representatives
+            // stay fixed throughout this batch; each RHS is rooted again.
+            self.context
+                .bind_checked::<false>(store, result, expression, Domain::Any)?;
+        }
+        Ok(())
     }
 
     /// Check input preservation without allocating or exporting a result graph.
