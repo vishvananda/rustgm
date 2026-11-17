@@ -1,0 +1,254 @@
+{
+  "schema": 1,
+  "profile": "Pinned Rust1.98.0 commit88d9e12ae178fab0fb5cc050a94da85685d449ea; edition2024; x86_64-unknown-linux-gnu; panic abort; cap-lints allow; metadata-only independent oracle; declared before execution",
+  "scope": "PA34 actual SourceCore host and explicit bring-up guest crate-loader identity only. The marker never grants runtime selection, hooks, codegen, execution or qualified std artifact publication. Ordinary, imported source-client and staged producer permission remains closed.",
+  "actual_trigger": {
+    "file": 8,
+    "offset": 352,
+    "path": "library/panic_abort/src/lib.rs",
+    "sha256": "4c80db47c81f4fcb30f7dc1cdf4431335b9e152ad48f464c31daf4874b97b44e",
+    "source": "#![panic_runtime]",
+    "own_feature": "#![feature(panic_runtime)]",
+    "receipt": "obj/parallel/std-guests-20261117/graph-output-alias-cabi-v1/primary.json",
+    "receipt_sha256": "d6f44cad771303c8512d6c135e46102a3e86d386a24867b4f9dd419908134aaa"
+  },
+  "inputs": [
+    "cases.tsv",
+    "duplicate.rs",
+    "gate-only.rs",
+    "gated.rs",
+    "host.rs",
+    "inactive.rs",
+    "list.rs",
+    "missing.rs",
+    "nested.rs",
+    "ordinary.rs",
+    "outer.rs",
+    "value.rs"
+  ],
+  "input_sha256": {
+    "cases.tsv": "a68c4188314fd1fe6572fb396bad14eea7e46cc184c6072db87b84972eccd9d3",
+    "duplicate.rs": "ca63a58fb5c25658046b61ad7fe6f424a9809cf4ff4a2471aaaf7b084d1dc36b",
+    "gate-only.rs": "c93235f77136f78b6accd6baeab9cfcf6670ad518b3c21e22211b38013e02570",
+    "gated.rs": "620f9da3305460102658fc818435855812e9994c90cdead41e7b5a9dffba6680",
+    "host.rs": "f877d457952bafb3566288e29dc211244bcab4b2b0ee0d6615ded8253b80e8ac",
+    "inactive.rs": "67c986bd6cac94fc600ea757c632011e5b6e4c8841554c1f6895c40a31b21e77",
+    "list.rs": "9bebbac205dfa99b2a861c25a2ae67e97a0ad6df93e26995b9b37abd2d8f343d",
+    "missing.rs": "d0f106fbdbb991997a130af7e622a3c1373d011273cfd58a664662fa02e7d218",
+    "nested.rs": "041cd76f20fab35530233e1e19f28849245780cc573e58ad498e3ad6e431f656",
+    "ordinary.rs": "96ad1d02d91d8a0245292aa653b447b715264a2a61c9d959304d7f25fc98804e",
+    "outer.rs": "3c996070079a92c7294598567303f0972d81a267def1325819d06787a6ede1b3",
+    "value.rs": "1c2a3486370116acb7334ebda97f0389d1781f1aa2213f0749c19b77cd89982d"
+  },
+  "cases": [
+    {
+      "name": "gated-root",
+      "host": "gated.rs",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0,
+      "rustgm_diagnostic": "-"
+    },
+    {
+      "name": "gated-guest",
+      "host": "host.rs",
+      "guests": [
+        [
+          "app",
+          "gated.rs"
+        ]
+      ],
+      "rustc": 0,
+      "rustgm": 0,
+      "rustgm_diagnostic": "-"
+    },
+    {
+      "name": "gated-root-and-guest",
+      "host": "gated.rs",
+      "guests": [
+        [
+          "app",
+          "gated.rs"
+        ]
+      ],
+      "rustc": 0,
+      "rustgm": 0,
+      "rustgm_diagnostic": "-"
+    },
+    {
+      "name": "disabled-root",
+      "host": "inactive.rs",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0,
+      "rustgm_diagnostic": "-"
+    },
+    {
+      "name": "feature-without-marker",
+      "host": "gate-only.rs",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0,
+      "rustgm_diagnostic": "-"
+    },
+    {
+      "name": "missing-root-feature",
+      "host": "missing.rs",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "`#![panic_runtime]` requires `#![feature(panic_runtime)]`"
+    },
+    {
+      "name": "missing-guest-feature",
+      "host": "host.rs",
+      "guests": [
+        [
+          "app",
+          "missing.rs"
+        ]
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "`#![panic_runtime]` requires `#![feature(panic_runtime)]`"
+    },
+    {
+      "name": "host-feature-cannot-pay-guest",
+      "host": "gate-only.rs",
+      "guests": [
+        [
+          "app",
+          "missing.rs"
+        ]
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "`#![panic_runtime]` requires `#![feature(panic_runtime)]`"
+    },
+    {
+      "name": "sibling-feature-cannot-pay-guest",
+      "host": "host.rs",
+      "guests": [
+        [
+          "first",
+          "gate-only.rs"
+        ],
+        [
+          "app",
+          "missing.rs"
+        ]
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "`#![panic_runtime]` requires `#![feature(panic_runtime)]`"
+    },
+    {
+      "name": "guest-feature-cannot-pay-host",
+      "host": "missing.rs",
+      "guests": [
+        [
+          "app",
+          "gate-only.rs"
+        ]
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "`#![panic_runtime]` requires `#![feature(panic_runtime)]`"
+    },
+    {
+      "name": "duplicate-root",
+      "host": "duplicate.rs",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "multiple `panic_runtime` attributes"
+    },
+    {
+      "name": "duplicate-guest",
+      "host": "host.rs",
+      "guests": [
+        [
+          "app",
+          "duplicate.rs"
+        ]
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "multiple `panic_runtime` attributes"
+    },
+    {
+      "name": "list-root",
+      "host": "list.rs",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "malformed `panic_runtime` attribute input"
+    },
+    {
+      "name": "value-root",
+      "host": "value.rs",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "malformed `panic_runtime` attribute input"
+    },
+    {
+      "name": "nested-marker",
+      "host": "nested.rs",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 1,
+      "rustgm_diagnostic": "the `#![panic_runtime]` attribute can only be used at the crate root"
+    },
+    {
+      "name": "outer-marker",
+      "host": "outer.rs",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 1,
+      "rustgm_diagnostic": "the `#![panic_runtime]` attribute can only be used at the crate root"
+    },
+    {
+      "name": "ordinary-profile",
+      "host": "ordinary.rs",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 1,
+      "rustgm_diagnostic": "panic_runtime requires the actual source-core profile",
+      "ordinary": true
+    }
+  ],
+  "required_rustc_diagnostics": {
+    "missing-root-feature": "E0658",
+    "missing-guest-feature": "E0658",
+    "host-feature-cannot-pay-guest": "E0658",
+    "sibling-feature-cannot-pay-guest": "E0658",
+    "guest-feature-cannot-pay-host": "E0658",
+    "duplicate-root": "multiple `panic_runtime` attributes",
+    "duplicate-guest": "multiple `panic_runtime` attributes",
+    "list-root": "malformed `panic_runtime` attribute input",
+    "value-root": "malformed `panic_runtime` attribute input"
+  },
+  "profile_gaps": [
+    "Nested and outer crate-loader attributes remain closed by the checked root-owner profile even where pinned rustc cap-lints=allow accepts an ignored attribute.",
+    "Ordinary PA24 production does not gain source compiler loader declarations."
+  ],
+  "private_controls": [
+    "resolve::standard_imports::loader_tests::loader_flags_lead_only_the_outermost_artifact_and_keep_every_other_byte",
+    "resolve::standard_imports::loader_tests::panic_runtime_flags_come_only_from_a_checked_source_root",
+    "resolve::standard_imports::loader_tests::source_clients_cannot_supply_the_source_core_panic_marker",
+    "resolve::bindings::allowances::tests::cfg_thread_local_uses_the_last_consumer_bit_without_widening_the_mask"
+  ],
+  "wire_contract": {
+    "envelope_tag": 15,
+    "panic_runtime_bit": 1,
+    "compiler_builtins_bit": 0,
+    "unknown_opponent_bit": 2,
+    "closed_mask": 3,
+    "byte_width": 1,
+    "feature_index": 82,
+    "consumer_bits": 8,
+    "feature_storage_bytes": 16
+  },
+  "pending": "Independent oracle and candidate/private/upstream checks have not run. No references generated."
+}

@@ -295,6 +295,8 @@ mod guest_crates;
 mod artifact_selections;
 #[path = "../../guest_editions.rs"]
 mod guest_editions;
+#[path = "../../loader_markers.rs"]
+mod loader_markers;
 
 #[path = "../../knowledge_sources.rs"]
 mod knowledge_sources;

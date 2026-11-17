@@ -170,13 +170,15 @@ A crate's loader attributes travel in one flags byte, profile tag 15
 [12-byte header][u8 15][u8 flags][the unflagged artifact's bytes from byte 12]
 ```
 
-- Bit 0 is `#![compiler_builtins]`. Bits 1 to 7 stay open for
-  `panic_runtime` and `needs_panic_runtime`, which are not added.
+- Bit 0 is `#![compiler_builtins]`. The later PA34 source-only
+  [panic marker packet](../../pa34/tests/spec/panic-runtime-marker/README.md)
+  assigns bit1 to checked `#![panic_runtime]` identity. Bits2–7 remain closed,
+  including unimplemented `needs_panic_runtime`; no runtime behavior is implied.
 - The tag is written only when a flag is set, so every other artifact keeps
   its bytes. Encoding splices the two bytes in at byte 12 after the budget
   check.
 - These are rejected by name:
-  - a bit outside bit 0 ("unknown crate loader flag");
+  - an unassigned bit ("unknown crate loader flag");
   - a zero flags byte ("crate loader flags envelope requires a flag");
   - a second tag 15 ("repeated crate loader flags");
   - a tag 15 on an artifact wrapped by the link or macro envelope ("crate

@@ -103,6 +103,7 @@ pub(in crate::resolve) enum Feature {
     DiagnosticMove = 79,
     ThreadLocal = 80,
     CfgTargetThreadLocal = 81,
+    PanicRuntime = 82,
 }
 
 #[cfg(test)]
@@ -154,6 +155,7 @@ impl Request {
             "must_not_suspend" => Self::Capability(Feature::MustNotSuspend),
             "no_core" => Self::Capability(Feature::NoCore),
             "compiler_builtins" => Self::Capability(Feature::CompilerBuiltins),
+            "panic_runtime" => Self::Capability(Feature::PanicRuntime),
             "allocator_internals" => Self::Capability(Feature::AllocatorInternals),
             "dropck_eyepatch" => Self::Capability(Feature::DropckEyepatch),
             "abi_unadjusted" => Self::Capability(Feature::AbiUnadjusted),
@@ -411,7 +413,12 @@ pub(in crate::resolve) fn prepare_with_admission(
         .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
     let (features, library) = features(unit, FileId(0))?;
     let options = super::root_options::prepare(unit, features.has(Feature::RustcAttributes))?;
-    super::root_options::validate_loader_words(unit, FileId(0), &features)?;
+    super::root_options::validate_loader_words(
+        unit,
+        FileId(0),
+        &features,
+        matches!(&context.mode, Mode::Source { .. }) && admission.is_none(),
+    )?;
     if let Some(request) = admission {
         let mut prepared = super::consumer_policy::prepare(
             unit, context, no_core, features, library, request, limits,
@@ -500,7 +507,7 @@ pub(in crate::resolve) fn admit_guest(
 ) -> Result<bool, Error> {
     let unit = package.unit(file);
     let (features, library) = features(unit, file)?;
-    super::root_options::validate_loader_words(unit, file, &features)?;
+    super::root_options::validate_loader_words(unit, file, &features, true)?;
     let Some(Source::Core(source)) = package.source.as_deref_mut() else {
         return Err(Error::at(file, 0, "guest crates require a source core"));
     };

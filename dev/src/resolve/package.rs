@@ -241,11 +241,10 @@ impl Package {
         let builtins = unit
             .word_attribute(Some(unit.configured.ast.root), "compiler_builtins")
             .map_err(|error| error.message)?;
-        Ok(if builtins {
-            crate::support::crates::LoaderFlags::COMPILER_BUILTINS
-        } else {
-            crate::support::crates::LoaderFlags::default()
-        })
+        let panic = unit
+            .word_attribute(Some(unit.configured.ast.root), "panic_runtime")
+            .map_err(|error| error.message)?;
+        crate::support::crates::LoaderFlags::from_bits(u8::from(builtins) | (u8::from(panic) << 1))
     }
 
     /// Whether the root of some crate of the session, the host's alone in a

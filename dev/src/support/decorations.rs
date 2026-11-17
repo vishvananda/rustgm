@@ -76,6 +76,7 @@ impl Consumer {
             | "no_implicit_prelude"
             | "path"
             | "compiler_builtins"
+            | "panic_runtime"
             | "needs_allocator"
             | "default_lib_allocator" => Self::Loading,
             "feature" => Self::Requests,

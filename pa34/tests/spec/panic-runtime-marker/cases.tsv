@@ -1,0 +1,17 @@
+gated-root	gated.rs	0	source	-	-
+gated-guest	host.rs	0	source	app=gated.rs	-
+gated-root-and-guest	gated.rs	0	source	app=gated.rs	-
+disabled-root	inactive.rs	0	source	-	-
+feature-without-marker	gate-only.rs	0	source	-	-
+missing-root-feature	missing.rs	1	source	-	`#![panic_runtime]` requires `#![feature(panic_runtime)]`
+missing-guest-feature	host.rs	1	source	app=missing.rs	`#![panic_runtime]` requires `#![feature(panic_runtime)]`
+host-feature-cannot-pay-guest	gate-only.rs	1	source	app=missing.rs	`#![panic_runtime]` requires `#![feature(panic_runtime)]`
+sibling-feature-cannot-pay-guest	host.rs	1	source	first=gate-only.rs|app=missing.rs	`#![panic_runtime]` requires `#![feature(panic_runtime)]`
+guest-feature-cannot-pay-host	missing.rs	1	source	app=gate-only.rs	`#![panic_runtime]` requires `#![feature(panic_runtime)]`
+duplicate-root	duplicate.rs	1	source	-	multiple `panic_runtime` attributes
+duplicate-guest	host.rs	1	source	app=duplicate.rs	multiple `panic_runtime` attributes
+list-root	list.rs	1	source	-	malformed `panic_runtime` attribute input
+value-root	value.rs	1	source	-	malformed `panic_runtime` attribute input
+nested-marker	nested.rs	1	source	-	the `#![panic_runtime]` attribute can only be used at the crate root
+outer-marker	outer.rs	1	source	-	the `#![panic_runtime]` attribute can only be used at the crate root
+ordinary-profile	ordinary.rs	1	ordinary	-	panic_runtime requires the actual source-core profile

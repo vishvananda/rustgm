@@ -10,6 +10,7 @@ fn cfg_thread_local_uses_the_last_consumer_bit_without_widening_the_mask() {
     assert_eq!(size_of::<Features>(), 16);
     assert_eq!(Feature::ThreadLocal as usize, 80);
     assert_eq!(Feature::CfgTargetThreadLocal as usize, 81);
+    assert_eq!(Feature::PanicRuntime as usize, 82);
     assert_eq!(KnownFeature::ALL.len(), u8::BITS as usize);
     let mut mask = 0_u8;
     for (index, feature) in KnownFeature::ALL.into_iter().enumerate() {

@@ -1,0 +1,37 @@
+{
+  "state": "original17 outcomes reviewed; two placement predictions refuted, corrected using authenticated raw observations without compiler rerun",
+  "old_manifest_sha256": "8ef25808aef373ba1f5320f26ec45bd73e3cc3548881d00870021c8a4a7640a7",
+  "new_manifest_sha256": "8b6e7c3bb9c6ef9674d74d0bb468dd1e8a6a6194a6c94698d5357182e5bf9358",
+  "records": "obj/parallel/std-guests-20261117/panic-marker-oracle-v1/records.json",
+  "records_sha256": "95a260f1a97969108589342e9be11ca558299a17f84438a49273cba8b1cbface",
+  "raw_leaves": [
+    {
+      "case": "nested-marker",
+      "original_prediction": 0,
+      "observed": 1,
+      "corrected_prediction": 1,
+      "raw_stderr_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/panic-marker-oracle-v1/nested-marker/core.stderr",
+      "raw_stderr_sha256": "055baaad276e9e754dba89fcb0246d0b646ee4eb8f9ec3f336ea09bd3578c07d",
+      "diagnostic": "the `#![panic_runtime]` attribute can only be used at the crate root"
+    },
+    {
+      "case": "outer-marker",
+      "original_prediction": 0,
+      "observed": 1,
+      "corrected_prediction": 1,
+      "raw_stderr_path": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/std-guests-20261117/panic-marker-oracle-v1/outer-marker/core.stderr",
+      "raw_stderr_sha256": "74729b2e1469fd800cee668caca70db53139f24833d53faff36096b767f2bf37",
+      "diagnostic": "crate-level attribute should be an inner attribute"
+    }
+  ],
+  "immutable_source_hashes_unchanged": true,
+  "statuses_match_after_adjudication": true,
+  "actual_counts": {
+    "rustc_accept": 6,
+    "rustc_reject": 11,
+    "rustgm_expected_accept": 5,
+    "rustgm_expected_reject": 12,
+    "profile_gaps": 1
+  },
+  "claim": "independent metadata-only root-marker semantics; candidate and runtime behavior remain unqualified"
+}

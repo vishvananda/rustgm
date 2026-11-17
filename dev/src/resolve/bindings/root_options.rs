@@ -89,7 +89,7 @@ const BUILTINS: &str = "compiler_builtins";
 /// reads, each with the internal feature that admits it and the failure
 /// without that feature. `needs_allocator` (alloc) and
 /// `default_lib_allocator` (std) select the program's allocator shim.
-const LOADER_WORDS: [(&str, Feature, &str); 3] = [
+const LOADER_WORDS: [(&str, Feature, &str); 4] = [
     (
         BUILTINS,
         Feature::CompilerBuiltins,
@@ -105,6 +105,11 @@ const LOADER_WORDS: [(&str, Feature, &str); 3] = [
         Feature::AllocatorInternals,
         "`#![default_lib_allocator]` requires `#![feature(allocator_internals)]`",
     ),
+    (
+        "panic_runtime",
+        Feature::PanicRuntime,
+        "`#![panic_runtime]` requires `#![feature(panic_runtime)]`",
+    ),
 ];
 
 /// Each crate-loader word is one inner word attribute of the crate root in
@@ -113,6 +118,7 @@ pub(super) fn validate_loader_words(
     unit: &Unit,
     file: FileId,
     features: &Features,
+    source_core: bool,
 ) -> Result<(), Error> {
     let root = unit.configured.ast.root;
     let Some(index) = unit.owner_indices[root.get() as usize] else {
@@ -133,6 +139,11 @@ pub(super) fn validate_loader_words(
         };
         let (name, feature, ungated) = LOADER_WORDS[word];
         let error = |message| Error::at(file, attribute.span.start, message);
+        if name == "panic_runtime" && !source_core {
+            return Err(error(
+                "panic_runtime requires the actual source-core profile".into(),
+            ));
+        }
         if attribute.style != Style::Inner
             || attribute.input != Input::Empty
             || attribute.unsafe_wrapper
@@ -188,14 +199,21 @@ pub(in crate::resolve) fn validate(report: &Report) -> Result<(), Error> {
                 let guest = key != expected && report.package.guest_root(key);
                 if let Some(word) =
                     name.filter(|name| LOADER_WORDS.iter().any(|(word, ..)| word == name))
-                    && key != expected
-                    && !guest
                 {
-                    return Err(Error::at(
-                        file,
-                        attribute.span.start,
-                        format!("the `#![{word}]` attribute can only be used at the crate root"),
-                    ));
+                    if word == "panic_runtime" && report.package.source_core().is_none() {
+                        return Err(error(
+                            "panic_runtime requires the actual source-core profile",
+                        ));
+                    }
+                    if key != expected && !guest {
+                        return Err(Error::at(
+                            file,
+                            attribute.span.start,
+                            format!(
+                                "the `#![{word}]` attribute can only be used at the crate root"
+                            ),
+                        ));
+                    }
                 }
                 let Some(kind) = name.and_then(OptionKind::named) else {
                     continue;
