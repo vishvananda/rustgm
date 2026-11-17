@@ -296,7 +296,8 @@ fn inherited_const_policy_never_changes_the_actual_callable_constness() -> Resul
                 .as_ref(),
             "marker_const"
         );
-        assert_eq!(size_of_val(inventory), 120);
+        // The cold inventory also owns its optional removed-feature table.
+        assert_eq!(size_of_val(inventory), 128);
         assert_eq!(size_of::<rustgm::body::ir::Body>(), 456);
     }
     Ok(())
