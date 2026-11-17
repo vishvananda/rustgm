@@ -19,7 +19,9 @@ pub(in crate::sema) use tracking::{consume_tracking, inherit_tracking};
 mod internal_constness;
 pub(in crate::sema) use internal_constness::{consume_const_panic, consume_inherited_overflow};
 mod implicit_receivers;
-pub(in crate::sema) use implicit_receivers::{consume_no_implicit_autorefs, consume_pointer_lint};
+pub(in crate::sema) use implicit_receivers::{
+    consume_no_implicit_autorefs, consume_pointer_lint, consume_query_instability,
+};
 mod comptime;
 mod legacy_indices;
 pub(in crate::sema) use legacy_indices::consume as consume_legacy_indices;

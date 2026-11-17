@@ -1,0 +1,104 @@
+{
+  "state": "Declared before qualification",
+  "cases": [
+    {
+      "name": "valid",
+      "input": "valid.rs",
+      "sha256": "d8d7cf4b62367cd968a9cea7b590199da6d5ff52564c5f5cae748af58a3d8b13",
+      "rustc_status": 0,
+      "diagnostic_mentions": null
+    },
+    {
+      "name": "missing-request",
+      "input": "missing-request.rs",
+      "sha256": "9a238209b9a6e14ec382c5f2ab43c5dfdf4eee3771d2d42110e497b94ef247be",
+      "rustc_status": 1,
+      "diagnostic_mentions": "rustc_lint_query_instability"
+    },
+    {
+      "name": "arguments",
+      "input": "arguments.rs",
+      "sha256": "f9b283ed0553436e19db034a4e2e43de6b998bf3823af581e1d4ad76e4325301",
+      "rustc_status": 1,
+      "diagnostic_mentions": "rustc_lint_query_instability"
+    },
+    {
+      "name": "equals",
+      "input": "equals.rs",
+      "sha256": "81400c8497b9c72daeec6f7b3305ba893206678399e3c6f6f39989f16df03c8e",
+      "rustc_status": 1,
+      "diagnostic_mentions": "rustc_lint_query_instability"
+    },
+    {
+      "name": "unsafe-wrapper",
+      "input": "unsafe-wrapper.rs",
+      "sha256": "cebf3412decffdf6f66edbd5db730f7d28ce2110da6ced260757218a0303393c",
+      "rustc_status": 1,
+      "diagnostic_mentions": "rustc_lint_query_instability"
+    },
+    {
+      "name": "wrong-owner",
+      "input": "wrong-owner.rs",
+      "sha256": "b7a650f8e2d8c8486de3fd91dd12f366b3fe413c6f03b71fb4ca762dc9991690",
+      "rustc_status": 1,
+      "diagnostic_mentions": "rustc_lint_query_instability"
+    },
+    {
+      "name": "foreign",
+      "input": "foreign.rs",
+      "sha256": "ac1563a16a1242f14608369769670607ca1f729aaf77c26bd65537edcfbbf0ba",
+      "rustc_status": 1,
+      "diagnostic_mentions": "rustc_lint_query_instability"
+    },
+    {
+      "name": "duplicate",
+      "input": "duplicate.rs",
+      "sha256": "9b6b0c076a82f972ceda94a18b2cc59facc12fdd3f125913c5c3205a6bb87cfe",
+      "rustc_status": 1,
+      "diagnostic_mentions": "rustc_lint_query_instability"
+    },
+    {
+      "name": "lookalike",
+      "input": "lookalike.rs",
+      "sha256": "17cd37539553d42260896523650475869291b1728b00cab6e5ea3d38192ee84c",
+      "rustc_status": 1,
+      "diagnostic_mentions": "rustc_lint_query_instability_extra"
+    },
+    {
+      "name": "qualified",
+      "input": "qualified.rs",
+      "sha256": "93f4c91576fc84d2ac77ba48c2f2ef60cf346308724e4dc15d7ffbceb38660fb",
+      "rustc_status": 1,
+      "diagnostic_mentions": "internal"
+    },
+    {
+      "name": "cfg-disabled",
+      "input": "cfg-disabled.rs",
+      "sha256": "d5d70060567cb489d81c8045624c6abd08e3ab72f1ae13077ace24923438576e",
+      "rustc_status": 0,
+      "diagnostic_mentions": null
+    }
+  ],
+  "independent_qualification": {
+    "receipt_sha256": "b9f48094245f5511c0e6df29bd292ee24eef07b9ec140919aa891beea94caa5d",
+    "declared_manifest_sha256": "e87c47c30d165a252345977fc478ebb9da6031ab6f2f713f4becca1bb40bca4a",
+    "outcomes": {
+      "valid": 0,
+      "missing-request": 1,
+      "arguments": 1,
+      "equals": 1,
+      "unsafe-wrapper": 1,
+      "wrong-owner": 1,
+      "foreign": 1,
+      "duplicate": 1,
+      "lookalike": 1,
+      "qualified": 1,
+      "cfg-disabled": 0
+    }
+  },
+  "candidate_qualification": {
+    "fastcheck": "1794947127381699508",
+    "status": 0,
+    "scope": "Eleven Source cases, closed ordinary profile control and existing retained attribute contract suite."
+  }
+}

@@ -1484,6 +1484,10 @@ cases for parsed trait-object field bounds, including the original std
 `EHContext` item and the independent foundation inputs. The existing
 `derived_field_bounds` suite checks expansion, typed clone calls and loans.
 
+`spec/query-instability/outcomes.json` declares the source-only internal
+lint marker used on std's `HashMap::keys`. The attribute contract suite
+checks its exact spelling, feature request, form and declaration owner.
+
 `spec/coercion-casts/` preserves16 independently qualified nominal coercion-cast
 source contracts, two frozen ordinary controls and the existing allocation/drop
 observer. The manifest records required source/full-proof/native outcomes before

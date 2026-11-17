@@ -217,6 +217,9 @@ impl<S: Sources> Engine<'_, S> {
             )?;
             return Ok(true);
         }
+        if name.and_then(Consumer::named) == Some(Consumer::QueryInstabilityAdvisory) {
+            return Ok(self.loader.package.source_core().is_some());
+        }
         Ok(matches!(input, Input::Doc(_))
             || name.is_some_and(|name| self.loader.package.guest_root_attribute(owner, name))
             || name == Some("default") && self.default_helper(owner, effect)?

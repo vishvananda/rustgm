@@ -252,6 +252,16 @@ fn consume_annotation<'unit>(
                 allowances,
             )?;
         }
+        Some(Consumer::QueryInstabilityAdvisory) => {
+            crate::sema::header_attributes::consume_query_instability(
+                report,
+                facts,
+                declaration,
+                attribute,
+                forest,
+                allowances,
+            )?;
+        }
         Some(Consumer::NoImplicitAutorefs) => {
             crate::sema::header_attributes::consume_no_implicit_autorefs(
                 report,

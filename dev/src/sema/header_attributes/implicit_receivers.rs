@@ -90,6 +90,49 @@ pub(in crate::sema) fn consume_pointer_lint(
     Ok(())
 }
 
+/// The source marker describes an internal compiler lint and grants no call permission.
+pub(in crate::sema) fn consume_query_instability(
+    report: &Report,
+    facts: &mut Declarations,
+    declaration: NodeKey,
+    attribute: Attribute,
+    forest: &crate::syntax::token_tree::Forest,
+    allowances: &mut crate::resolve::expansion::MacroAllowanceSession<'_>,
+) -> Result<(), Error> {
+    facts.reserve_must_use_source(declaration, attribute.span)?;
+    let error = |message| Error::at(declaration.file, attribute.span.start, message);
+    if attribute.unsafe_wrapper || attribute.input != Input::Empty {
+        return Err(error(
+            "rustc_lint_query_instability requires a word attribute",
+        ));
+    }
+    let name = forest
+        .tree(attribute.path.start)
+        .ok_or_else(|| error("query-instability marker lost its actual name"))?
+        .span;
+    if report.package.source_core().is_none()
+        || (!report.package.requested_internal_attributes()
+            && !allowances.allows_at(
+                declaration.file,
+                name,
+                &crate::resolve::bindings::FeatureName::new("rustc_attrs").map_err(error)?,
+            )?)
+    {
+        return Err(error(
+            "rustc_lint_query_instability requires its rustc_attrs source profile",
+        ));
+    }
+    let ast = &report.package.unit(declaration.file).configured.ast;
+    if !matches!(ast.node(declaration.node).kind, Kind::Item(index)
+        if matches!(ast.items[index as usize].kind, ItemKind::Function { .. }))
+    {
+        return Err(error(
+            "rustc_lint_query_instability requires an actual function or method",
+        ));
+    }
+    Ok(())
+}
+
 /// False means Unknown, including imported or incomplete headers. No caller may
 /// infer checked absence from that outcome. One authenticated source walk is shared.
 pub(super) fn visit_attributes(

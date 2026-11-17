@@ -461,3 +461,78 @@ fn default_warning_and_explicit_discard_programs_keep_native_behavior() -> TestR
         &cases,
     )
 }
+
+fn query_instability_fixture(name: &str) -> TestResult<String> {
+    Ok(crate::resolve::fixture(&format!(
+        "pa31/tests/spec/query-instability/{name}.rs"
+    ))?)
+}
+
+#[test]
+fn query_instability_checks_source_owners_form_and_exact_spelling() -> TestResult {
+    let prefix =
+        crate::resolve::fixture("pa31/tests/spec/source-functions-transport/minimal-provider.rs")?;
+    for (name, cause) in [
+        ("valid", None),
+        ("cfg-disabled", None),
+        ("arguments", Some("requires a word attribute")),
+        ("equals", Some("requires a word attribute")),
+        ("unsafe-wrapper", Some("requires a word attribute")),
+        ("wrong-owner", Some("requires an actual function or method")),
+        (
+            "foreign",
+            Some("duplicate or foreign rustc_lint_query_instability"),
+        ),
+        (
+            "duplicate",
+            Some("duplicate or foreign rustc_lint_query_instability"),
+        ),
+        ("lookalike", Some("unresolved attribute macro")),
+        ("qualified", Some("unresolved attribute macro")),
+    ] {
+        let input = query_instability_fixture(name)?;
+        let suffix = input
+            .strip_prefix("#![no_std]\n#![feature(rustc_attrs)]\n")
+            .ok_or("fixture lost standalone prefix")?;
+        let report =
+            crate::resolve::source_provider(&(prefix.clone() + suffix), "query_instability");
+        let outcome = report.and_then(|report| {
+            rustgm::pipeline::analyze_source(&report)
+                .map(|_| ())
+                .map_err(|error| error.to_string())
+        });
+        if let Some(cause) = cause {
+            let error = outcome.err().ok_or("expected source rejection")?;
+            assert!(error.contains(cause), "{name}: {error}");
+        } else {
+            outcome?;
+        }
+    }
+    let missing = query_instability_fixture("missing-request")?;
+    let suffix = missing
+        .strip_prefix("#![no_std]\n")
+        .ok_or("standalone profile")?;
+    let report = crate::resolve::source_provider(
+        &format!("#![feature(no_core)]\n#![no_core]\n{suffix}"),
+        "query_instability_missing",
+    )?;
+    let error = rustgm::pipeline::analyze_source(&report)
+        .err()
+        .ok_or("missing internal attribute request accepted")?;
+    assert!(
+        error
+            .to_string()
+            .contains("requires its rustc_attrs source profile"),
+        "{error}"
+    );
+
+    let valid = query_instability_fixture("valid")?;
+    let suffix = valid
+        .strip_prefix("#![no_std]\n")
+        .ok_or("standalone profile")?;
+    let error = crate::resolve::resolve(suffix, true)
+        .err()
+        .ok_or("ordinary marker resolved")?;
+    assert!(error.contains("unresolved attribute macro"), "{error}");
+    Ok(())
+}

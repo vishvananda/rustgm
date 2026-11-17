@@ -398,10 +398,23 @@ pub(super) fn validate_intrinsic_annotations(
     let unit = report.package.unit(declaration.file);
     let mut panic_words = (false, false);
     let mut no_implicit_autorefs = false;
+    let mut query_instability = false;
     for owner in &header.owners {
         super::charge_source_contract_query(facts, owner.effects.len())?;
         for (attribute, forest) in unit.retained_attributes(owner.effects.clone()) {
             match attribute.name(forest, unit.source.text()) {
+                Some("rustc_lint_query_instability") => {
+                    if query_instability
+                        || report.resolution.foreign_owners.contains_key(&definition)
+                    {
+                        return Err(Error::at(
+                            declaration.file,
+                            attribute.span.start,
+                            "duplicate or foreign rustc_lint_query_instability marker",
+                        ));
+                    }
+                    query_instability = true;
+                }
                 Some("rustc_no_implicit_autorefs") => {
                     if no_implicit_autorefs
                         || report.resolution.foreign_owners.contains_key(&definition)
