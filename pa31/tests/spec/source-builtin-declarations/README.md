@@ -7,8 +7,9 @@ ordinary synthetic slot allocation remain fixed. Added roles initially had no
 execution consumer; no placeholder body may run. The current availability table
 now admits the independently qualified pointer-pattern consumer for pattern_type,
 and rustc's `global_allocator` and `alloc_error_handler` expansions
-(`dev/tests/global_allocators.rs`). Their actual source feature, ownership and
-input checks still apply.
+(`dev/tests/global_allocators.rs`). It also admits authorized `define_opaque`
+attributes, independently checked by the 27 named opaque alias cases under PA34. Their
+actual source feature, ownership and input checks still apply.
 
 `roles.tsv` binds the 61 exact names, kinds and existing execution availability;
 `all-known-roles.rs` retains a genuine declaration for each. Other inputs oppose

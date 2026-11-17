@@ -22,6 +22,32 @@ fn reject(report: &Report, facts: &mut Declarations) -> TestResult<String> {
         .ok_or("body opponent accepted")?;
     Ok(error.to_string())
 }
+
+fn define_first(report: &Report, facts: &mut Declarations) -> TestResult {
+    facts.prepare_named_opaques(report)?;
+    let function = facts
+        .functions
+        .iter()
+        .find(|function| {
+            report
+                .package
+                .names
+                .get(report.resolution.definitions[function.definition.0 as usize].name)
+                == "make"
+        })
+        .copied()
+        .ok_or("actual named defining function")?;
+    Checker::new(report, facts).function(function)?;
+    assert!(facts.typed_function_bodies.contains(&function.definition));
+    assert!(
+        facts
+            .opaques
+            .declarations
+            .values()
+            .all(|declaration| { declaration.hidden == Some(TypeId::primitive(Primitive::U8)) })
+    );
+    Ok(())
+}
 #[test]
 fn failed_first_definition_keeps_its_hidden_type_unpublished() -> TestResult {
     let report = source("bound-violation")?;
@@ -63,6 +89,7 @@ fn inconsistent_second_definition_preserves_the_first_closed_hidden_type() -> Te
 fn a_known_hidden_representation_does_not_authorize_an_ordinary_body_equation() -> TestResult {
     let report = source("unauthorized-body")?;
     let mut facts = crate::sema::declarations::analyze(&report)?;
+    define_first(&report, &mut facts)?;
     reject(&report, &mut facts)?;
     let declaration = facts.opaques.declarations.values().next().ok_or("alias")?;
     assert_eq!(declaration.hidden, Some(TypeId::primitive(Primitive::U8)));
@@ -78,7 +105,7 @@ fn a_known_hidden_representation_does_not_authorize_an_ordinary_body_equation() 
 fn a_forged_function_membership_cannot_create_a_named_defining_permit() -> TestResult {
     let report = source("simple")?;
     let mut facts = crate::sema::declarations::analyze(&report)?;
-    facts.prepare_named_opaques(&report)?;
+    define_first(&report, &mut facts)?;
     let id = *facts.opaques.declarations.keys().next().ok_or("alias")?;
     let ordinary = facts
         .functions

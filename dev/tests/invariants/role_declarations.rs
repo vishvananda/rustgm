@@ -81,8 +81,8 @@ fn real_frames_cannot_borrow_unavailable_role_headers() -> TestResult {
             matches!(definition.body, Body::Builtin(role) if !role.executable()).then_some(index)
         })
         .collect();
-    // `global_allocator` and `alloc_error_handler` now expand.
-    assert_eq!(unavailable.len(), 22);
+    // Allocator attributes and authorized named-opaque definitions now expand.
+    assert_eq!(unavailable.len(), 21);
     for index in unavailable {
         report.invocations[0].definition = index;
         for forged in [false, true] {

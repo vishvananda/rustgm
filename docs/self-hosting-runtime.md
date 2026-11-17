@@ -217,8 +217,12 @@ core/alloc/std artifacts remain required.
 The source-only named opaque prerequisite for std passes all 27 declared
 [alias cases](../pa34/tests/spec/named-opaques/outcomes.json), including the
 backtrace and nested path-iterator shapes, plus six existing regression controls.
-The private harness timed out during compilation before executing tests; full CI
-on `d32edb529` remains pending. Its clean immutable observation compiler
+The private harness timed out during compilation before executing tests. Full CI
+on `d32edb529` passed 3,171 private tests and all 13 regular binaries; four test-contract
+failures require a follow-up: two stale role-availability expectations and two
+warm-hidden tests that had not first executed their authorized defining body.
+The repairs are prepared; their private execution remains pending CI. The clean
+immutable `d32edb529` observation compiler
 (`eb0612bcec1bfd1915c6508c773af7d12cd1c16c979a1a6a43b2a125b8e957a9`)
 advanced the unchanged ten-root std graph beyond the old defining-attribute
 expansion blocker to `std/src/sys/alloc/mod.rs:9`: the nested cfg predicate was
@@ -229,8 +233,12 @@ The [source cfg root-comma cases](../pa31/tests/spec/source-cfg-root-commas/outc
 now pass all 19 declared outcomes and exact boolean observations, plus ordinary
 cfg/named-opaque regressions and bounded 8/32/128-predicate controls. The source
 builtin preserves commas inside predicate groups and removes at most one outer
-comma. The frozen ordinary path retains its prior gap. An unchanged actual std
-replay with a fresh compiler pin is still required.
+comma. The frozen ordinary path retains its prior gap. The clean immutable `1b2b1f734` compiler
+(`afe804cd3da4e86e393ad5e491eeb54b97041f27d3df290d16e7e57878c280f7`)
+advanced the same graph to `std/src/os/unix/io/mod.rs:200`: `io_ext_impl` forwards
+a boolean literal into `#[cfg($writer)]`, which currently expects an opaque
+metadata fragment. All twelve pins and the original skip list remain unchanged.
+No std semantic or artifact qualification is claimed.
 
 ## Runtime and backend gaps
 

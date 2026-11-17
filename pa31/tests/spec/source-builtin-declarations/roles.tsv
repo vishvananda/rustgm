@@ -33,7 +33,7 @@ role_31	autodiff_reverse	Attribute	0
 role_32	bench	Attribute	0
 role_33	cfg_accessible	Attribute	0
 role_34	cfg_eval	Attribute	0
-role_35	define_opaque	Attribute	0
+role_35	define_opaque	Attribute	1
 role_36 derive Attribute 1
 role_37	derive_const	Attribute	1
 role_38	eii	Attribute	0

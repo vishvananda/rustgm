@@ -1,5 +1,5 @@
 {
-  "state": "source semantic outcomes checked; private execution pending CI; actual std graph replay pending",
+  "state": "Source semantic outcomes pass; CI identified four test-contract repairs, follow-up private execution pending",
   "rustc_profile": {
     "compiler": "Rust1.98.0 commit88d9e12ae178fab0fb5cc050a94da85685d449ea",
     "compiler_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
@@ -464,6 +464,38 @@
       "pinned_reference_files": 126,
       "log_sha256": "70ae6c2efa85d7c8b2e17c90306ce905d8ba7e5f36671a051e92c0c82721fcf2"
     },
-    "scope": "Source-only defining-body semantics; no native, source-library artifact, metadata transport, release or whole-assignment qualification."
+    "scope": "Source-only defining-body semantics; no native, source-library artifact, metadata transport, release or whole-assignment qualification.",
+    "d32_ci": {
+      "run": "https://github.com/vishvananda/rustgm/actions/runs/44125346985",
+      "state": "failed",
+      "private_passed": 3171,
+      "private_failed": 4,
+      "private_ignored": 3,
+      "regular": "All13regular suite binaries passed.",
+      "failures": [
+        "Two builtin role availability expectations still declared DefineOpaque unavailable.",
+        "Two new warm-hidden tests assumed function scheduling would execute the real definer first; actual rejection occurred before that precondition."
+      ],
+      "repairs": "Availability table/count now declares the implemented consumer; both warm-hidden tests run the actual authorized make body through Checker::function, assert its typed body and closed hidden type, then attempt the unauthorized/forged body. Production code unchanged."
+    },
+    "ci_repair_gate": {
+      "receipt": "obj/qualification/fast/1794934273694373054/receipt.json",
+      "state": "infrastructure timeout during clippy-driver harness compile, zero selected tests executed",
+      "selected": 6,
+      "compile_seconds": 224.55,
+      "total_seconds": 276.43,
+      "passed": "full formatting, architecture, assignment metadata",
+      "remaining": "Execute the four repaired failures and two failed/inconsistent-publication controls in CI.",
+      "receipt_sha256": "4a96dd70aa2b97c6a2a5f32fcc8513d57a4cf6c683e570c4cce354ad86646a5a"
+    },
+    "ci_repair_fixture_checks": {
+      "status": 0,
+      "python_tests": 376,
+      "registered_roots": 530,
+      "suite_binaries": 13,
+      "pinned_upstream": 128,
+      "pinned_reference_files": 126,
+      "log_sha256": "9f91fd842ccf764136f75854c760bf6e11684beea3367a607bace494b494da54"
+    }
   }
 }

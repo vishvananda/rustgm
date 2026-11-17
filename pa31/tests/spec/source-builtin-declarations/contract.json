@@ -471,5 +471,13 @@
       "ordinary": false
     }
   ],
-  "role_catalog": "roles.tsv"
+  "role_catalog": "roles.tsv",
+  "named_opaque_availability_update": {
+    "scope": "Existing define_opaque Attribute identity now has its real source defining-body consumer; no ordinary slot or provider/feature exemption.",
+    "role_table_sha256": "70d0e479839427de46098029d75c26dca2ec9999125e1c4c5cb6b023f61b9da4",
+    "independent_contract": "pa34/tests/spec/named-opaques/outcomes.json",
+    "outcomes": "27candidate source outcomes already pass; source bodies require actual own-crate type_alias_impl_trait request and selected alias/function identity.",
+    "unavailable_roles": 21,
+    "history": "The original declaration-only predictions remain historical. D32 CI found two stale availability assertions after this consumer became executable; this update declares the qualified role availability."
+  }
 }
