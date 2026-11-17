@@ -1,0 +1,481 @@
+{
+  "state": "19 source outcomes and10 exact native traces pass; selected private execution pending CI",
+  "owner": "PA31 source library operator RHS coercions; ordinary PA24 and compound assignments unchanged",
+  "primary_source": "https://raw.githubusercontent.com/rust-lang/rust/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir_typeck/src/op.rs#L178-L244",
+  "source_bytes": "All 17 complete .rs cases plus prefix.rs and observe.c copied byte-for-byte from the independently qualified packet. No real String or std source rewrite.",
+  "oracle_records_sha256": "563e9e01bd9d0c2cb7df7863ae33767f57865c8476dd3f77bc36e5591cdd3075",
+  "original_declaration_sha256": "f37d3c503c6ce394756c369f6b2b35c71fe04602600f4539a8c9b322c1f8f672",
+  "original_oracle_directory": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/continuation-20261117/operator-rhs-v1/oracle-v1",
+  "cases": [
+    {
+      "name": "direct",
+      "sha256": "88caec509315dff2b767f45ee78d34b1b713e39ec429357d8634b52292725699",
+      "rustc_metadata_status": 0,
+      "rustgm_complete_status": 0,
+      "diagnostic_any": [],
+      "native_stdout": "add\nvalue 7\n",
+      "native_status": 0,
+      "path": "pa31/tests/spec/operator-rhs/direct.rs",
+      "rustgm_diagnostic_any": [],
+      "candidate_view": "--emit-body-ir"
+    },
+    {
+      "name": "borrowed",
+      "sha256": "b2a97791412789122caab4ca32670fb2e167fd3a23a0eb8a87c7da000340cfc8",
+      "rustc_metadata_status": 0,
+      "rustgm_complete_status": 0,
+      "diagnostic_any": [],
+      "native_stdout": "deref\nadd\nvalue 7\n",
+      "native_status": 0,
+      "path": "pa31/tests/spec/operator-rhs/borrowed.rs",
+      "rustgm_diagnostic_any": [],
+      "candidate_view": "--emit-body-ir"
+    },
+    {
+      "name": "temporary",
+      "sha256": "b65dd95eedb5958b11b878ed63eed94d42ce80defcdd73efdfa0752607072f92",
+      "rustc_metadata_status": 0,
+      "rustgm_complete_status": 0,
+      "diagnostic_any": [],
+      "native_stdout": "deref\nadd\nvalue 7\n",
+      "native_status": 0,
+      "path": "pa31/tests/spec/operator-rhs/temporary.rs",
+      "rustgm_diagnostic_any": [],
+      "candidate_view": "--emit-body-ir"
+    },
+    {
+      "name": "nested",
+      "sha256": "8fef2377310505f207d1c656d671a2df634f939c9bf875ef0d1b9c395b4ef5ed",
+      "rustc_metadata_status": 0,
+      "rustgm_complete_status": 0,
+      "diagnostic_any": [],
+      "native_stdout": "deref\nderef\nadd\nvalue 9\n",
+      "native_status": 0,
+      "path": "pa31/tests/spec/operator-rhs/nested.rs",
+      "rustgm_diagnostic_any": [],
+      "candidate_view": "--emit-body-ir"
+    },
+    {
+      "name": "generic-lhs",
+      "sha256": "213e7a305cb517c2e8d3eb40f1b6f7f8f4a80c3de51c8d8578c40a46d07d2704",
+      "rustc_metadata_status": 0,
+      "rustgm_complete_status": 0,
+      "diagnostic_any": [],
+      "native_stdout": "deref\nadd\nvalue 7\n",
+      "native_status": 0,
+      "path": "pa31/tests/spec/operator-rhs/generic-lhs.rs",
+      "rustgm_diagnostic_any": [],
+      "candidate_view": "--emit-generic-semantics"
+    },
+    {
+      "name": "chain",
+      "sha256": "532b7077816ccb9da148ac2a504fe6e1d0bc62c28eee4ad223b98c337c39a87e",
+      "rustc_metadata_status": 0,
+      "rustgm_complete_status": 0,
+      "diagnostic_any": [],
+      "native_stdout": "deref\nadd\nderef\nadd\nvalue 9\n",
+      "native_status": 0,
+      "path": "pa31/tests/spec/operator-rhs/chain.rs",
+      "rustgm_diagnostic_any": [],
+      "candidate_view": "--emit-body-ir"
+    },
+    {
+      "name": "mutable",
+      "sha256": "24575967c894b9cc5c53e785ae6ceb75f79712ad2aeb64fc0ae6959118de5dc2",
+      "rustc_metadata_status": 0,
+      "rustgm_complete_status": 0,
+      "diagnostic_any": [],
+      "native_stdout": "mut\nadd\nvalue 7\n",
+      "native_status": 0,
+      "path": "pa31/tests/spec/operator-rhs/mutable.rs",
+      "rustgm_diagnostic_any": [],
+      "candidate_view": "--emit-body-ir"
+    },
+    {
+      "name": "borrowed-output",
+      "sha256": "2277d433d4af91a622f0b5f49e9a3d7e8b8d7ce2f86c581226a8a1fd6343276f",
+      "rustc_metadata_status": 0,
+      "rustgm_complete_status": 0,
+      "diagnostic_any": [],
+      "native_stdout": "deref\nadd\nvalue 7\n",
+      "native_status": 0,
+      "path": "pa31/tests/spec/operator-rhs/borrowed-output.rs",
+      "rustgm_diagnostic_any": [],
+      "candidate_view": "--emit-body-ir"
+    },
+    {
+      "name": "independent-input-lifetimes",
+      "sha256": "bc7d7f0a004f09e54c41934f2bad6d8a288a2e1feb77652f4a6ccd8e3756f8d5",
+      "rustc_metadata_status": 0,
+      "rustgm_complete_status": 0,
+      "diagnostic_any": [],
+      "native_stdout": "add\nvalue 7\n",
+      "native_status": 0,
+      "path": "pa31/tests/spec/operator-rhs/independent-input-lifetimes.rs",
+      "rustgm_diagnostic_any": [],
+      "candidate_view": "--emit-body-ir"
+    },
+    {
+      "name": "missing-deref",
+      "sha256": "957a4efc022dbd8a9d9873518ba22ee6c375e7e9881c8207006faf3acaa4fe6e",
+      "rustc_metadata_status": 1,
+      "rustgm_complete_status": 1,
+      "diagnostic_any": [
+        "E0308"
+      ],
+      "native_stdout": null,
+      "native_status": null,
+      "path": "pa31/tests/spec/operator-rhs/missing-deref.rs",
+      "rustgm_diagnostic_any": [
+        "incompatible types"
+      ],
+      "candidate_view": "--emit-body-ir"
+    },
+    {
+      "name": "wrong-target",
+      "sha256": "5ffa69296856003be6d5cb41d0f11bb7f8814857675987b0120a6c50fc94e245",
+      "rustc_metadata_status": 1,
+      "rustgm_complete_status": 1,
+      "diagnostic_any": [
+        "E0308"
+      ],
+      "native_stdout": null,
+      "native_status": null,
+      "path": "pa31/tests/spec/operator-rhs/wrong-target.rs",
+      "rustgm_diagnostic_any": [
+        "incompatible types"
+      ],
+      "candidate_view": "--emit-body-ir"
+    },
+    {
+      "name": "bound-expects-original",
+      "sha256": "88fd008e6d3ca99a7b74b2b199bb12a526e014f6b74328016863d3270d7665b8",
+      "rustc_metadata_status": 1,
+      "rustgm_complete_status": 1,
+      "diagnostic_any": [
+        "E0308"
+      ],
+      "native_stdout": null,
+      "native_status": null,
+      "path": "pa31/tests/spec/operator-rhs/bound-expects-original.rs",
+      "rustgm_diagnostic_any": [
+        "incompatible types"
+      ],
+      "candidate_view": "--emit-body-ir"
+    },
+    {
+      "name": "wrong-output",
+      "sha256": "d7eba0347f3350accf0da8dce7b8ea0602ec318db825b89f9d70aad403adb23c",
+      "rustc_metadata_status": 1,
+      "rustgm_complete_status": 1,
+      "diagnostic_any": [
+        "E0308"
+      ],
+      "native_stdout": null,
+      "native_status": null,
+      "path": "pa31/tests/spec/operator-rhs/wrong-output.rs",
+      "rustgm_diagnostic_any": [
+        "incompatible types"
+      ],
+      "candidate_view": "--emit-body-ir"
+    },
+    {
+      "name": "missing-mutable-deref",
+      "sha256": "d5af3fcd4c218a4574adfba5fd842e3e12a253fa0aeb506e97da47652cbcfcde",
+      "rustc_metadata_status": 1,
+      "rustgm_complete_status": 1,
+      "diagnostic_any": [
+        "E0596"
+      ],
+      "native_stdout": null,
+      "native_status": null,
+      "path": "pa31/tests/spec/operator-rhs/missing-mutable-deref.rs",
+      "rustgm_diagnostic_any": [
+        "trait obligation requires an unambiguous matching assumption or implementation"
+      ],
+      "candidate_view": "--emit-body-ir"
+    },
+    {
+      "name": "shared-cannot-be-mut",
+      "sha256": "123599f60225ed24e7a762502deaff2410df4e07334917096fd23a2ea9cf1def",
+      "rustc_metadata_status": 1,
+      "rustgm_complete_status": 1,
+      "diagnostic_any": [
+        "E0308"
+      ],
+      "native_stdout": null,
+      "native_status": null,
+      "path": "pa31/tests/spec/operator-rhs/shared-cannot-be-mut.rs",
+      "rustgm_diagnostic_any": [
+        "cannot coerce a shared reference to a mutable reference"
+      ],
+      "candidate_view": "--emit-body-ir"
+    },
+    {
+      "name": "moved-lhs",
+      "sha256": "8e0ff60a764527c9188f0c5c5845de051bf5002c3484ed446fe4869b081cbf72",
+      "rustc_metadata_status": 1,
+      "rustgm_complete_status": 1,
+      "diagnostic_any": [
+        "E0382"
+      ],
+      "native_stdout": null,
+      "native_status": null,
+      "path": "pa31/tests/spec/operator-rhs/moved-lhs.rs",
+      "rustgm_diagnostic_any": [
+        "already consumed",
+        "uninitialized or moved"
+      ],
+      "candidate_view": "--emit-loans"
+    },
+    {
+      "name": "static-escape",
+      "sha256": "71a01985d86dc90643af9bff274015fc56f7a30b377bfbddaa16cf64614bdcc5",
+      "rustc_metadata_status": 1,
+      "rustgm_complete_status": 1,
+      "diagnostic_any": [
+        "E0515",
+        "E0597"
+      ],
+      "native_stdout": null,
+      "native_status": null,
+      "path": "pa31/tests/spec/operator-rhs/static-escape.rs",
+      "rustgm_diagnostic_any": [
+        "does not outlive",
+        "borrowed value does not live",
+        "local storage"
+      ],
+      "candidate_view": "--emit-loans"
+    },
+    {
+      "name": "direct-rhs",
+      "path": "pa31/tests/spec/operator-rhs/direct-rhs.rs",
+      "sha256": "4a2b57e3f911caae9b6d85761f11c8c043d34468d0cd086389e6f8466ffddff3",
+      "rustc_metadata_status": 0,
+      "rustgm_complete_status": 0,
+      "diagnostic_any": [],
+      "native_stdout": "add\nvalue 7\n",
+      "native_status": 0,
+      "rustgm_diagnostic_any": [],
+      "candidate_view": "--emit-body-ir"
+    },
+    {
+      "name": "closed-missing-rhs",
+      "path": "pa31/tests/spec/operator-rhs/closed-missing-rhs.rs",
+      "sha256": "988a7de4ca63b038de5d3bf2950e74986229e0029f42c920b7e54e43c8c28d72",
+      "rustc_metadata_status": 1,
+      "rustgm_complete_status": 1,
+      "diagnostic_any": [
+        "E0277"
+      ],
+      "native_stdout": null,
+      "native_status": null,
+      "rustgm_diagnostic_any": [
+        "associated type requires an unambiguous validated implementation"
+      ],
+      "candidate_view": "--emit-body-ir"
+    }
+  ],
+  "auxiliary": {
+    "pa31/tests/spec/operator-rhs/prefix.rs": "75d13c751ca3b1181e99542f76f5ed34fd4045ed1d65b8f0ef597cf5b9889955",
+    "pa31/tests/spec/operator-rhs/observe.c": "ba6f5498a126795e609e9ea2521ff42ec775595a01b5281007e9def39bc931f2"
+  },
+  "scope": "9 required accepts, 8 semantic rejects; all 9 accepts require exact native traces. No full original String consumer or library artifact qualification.",
+  "foundation": {
+    "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa31/tests/spec/source-add-sub/nominal-generic.rs",
+    "sha256": "2729795504c72cec204fbe558bb0a77bd02e988a73f2cd5088b5b1e2c8d49b17",
+    "copied_prefix_sha256": "e8ff20ee152c4467d233268b9c587305e1ae434b2f09b1c5af12e96e3a5465ed"
+  },
+  "pre_execution_foundation_amendment": {
+    "original_sha256": "72c676d4977e1da86c8b7e7cf9e8d833da3c70875f368478a97871bdca1ef0f5",
+    "reason": "Copy the exact existing owned-boxes mini-core Freeze language role for reference code generation. Add only auto_traits request and empty unsafe auto Freeze; no semantic case body, status, diagnostic or native trace changed; no compiler has run.",
+    "role_source": "pa31/tests/spec/coercion-casts/prefix.rs",
+    "role_source_sha256": "de8e6d839f4f1859881e986d173d18ef696fc12d52ad8fa9834e8aba79b96c86",
+    "history": "obj/parallel/continuation-20261117/operator-rhs-v1/pre-execution-foundation",
+    "inputs": [
+      {
+        "path": "obj/parallel/continuation-20261117/operator-rhs-v1/inputs/prefix.rs",
+        "before": "b58d40105aa347a5a1835524a2c7b77aca7f15f2af52d5bcf6a44e1c94b5699c",
+        "after": "75d13c751ca3b1181e99542f76f5ed34fd4045ed1d65b8f0ef597cf5b9889955"
+      },
+      {
+        "path": "obj/parallel/continuation-20261117/operator-rhs-v1/inputs/direct.rs",
+        "before": "66be1cfdb53ba3a4e009c9a403b2bf86ddd258c3fe151162f0bbcdfed49d7c0f",
+        "after": "88caec509315dff2b767f45ee78d34b1b713e39ec429357d8634b52292725699"
+      },
+      {
+        "path": "obj/parallel/continuation-20261117/operator-rhs-v1/inputs/borrowed.rs",
+        "before": "69d3949b3fd9dbad851ad188d0765a4d97428340381819321c7933a4e40f08e9",
+        "after": "b2a97791412789122caab4ca32670fb2e167fd3a23a0eb8a87c7da000340cfc8"
+      },
+      {
+        "path": "obj/parallel/continuation-20261117/operator-rhs-v1/inputs/temporary.rs",
+        "before": "c613feaa4675eba0b2af74a108f20a54633d504d6410c71975a196ae48421071",
+        "after": "b65dd95eedb5958b11b878ed63eed94d42ce80defcdd73efdfa0752607072f92"
+      },
+      {
+        "path": "obj/parallel/continuation-20261117/operator-rhs-v1/inputs/nested.rs",
+        "before": "393632b9e92e253db357b2c81eef7a1feb3aeafab64a8aeff52a1e31ac7ca090",
+        "after": "8fef2377310505f207d1c656d671a2df634f939c9bf875ef0d1b9c395b4ef5ed"
+      },
+      {
+        "path": "obj/parallel/continuation-20261117/operator-rhs-v1/inputs/generic-lhs.rs",
+        "before": "bc5f03742dcda11d32b6752fdf318fbbb0e921da7db7d51b6493b4dac8a6a818",
+        "after": "213e7a305cb517c2e8d3eb40f1b6f7f8f4a80c3de51c8d8578c40a46d07d2704"
+      },
+      {
+        "path": "obj/parallel/continuation-20261117/operator-rhs-v1/inputs/chain.rs",
+        "before": "b1e315f5a72e5a31d5d137c605a482a496bc3a53aa96593d593cbab875d1dba3",
+        "after": "532b7077816ccb9da148ac2a504fe6e1d0bc62c28eee4ad223b98c337c39a87e"
+      },
+      {
+        "path": "obj/parallel/continuation-20261117/operator-rhs-v1/inputs/mutable.rs",
+        "before": "be0efec75b5cc41119db2a695e4b06eb25508cc99c1ddd0bbaf2d91aadeeeb64",
+        "after": "24575967c894b9cc5c53e785ae6ceb75f79712ad2aeb64fc0ae6959118de5dc2"
+      },
+      {
+        "path": "obj/parallel/continuation-20261117/operator-rhs-v1/inputs/borrowed-output.rs",
+        "before": "4596137469d0161080627679ea4aef51b9748d1898802510328d9e354f79779a",
+        "after": "2277d433d4af91a622f0b5f49e9a3d7e8b8d7ce2f86c581226a8a1fd6343276f"
+      },
+      {
+        "path": "obj/parallel/continuation-20261117/operator-rhs-v1/inputs/independent-input-lifetimes.rs",
+        "before": "b2c88ab62e1bb62bb168fcd99ecdbb0530a1ecb49e21877c1187c0d1ca6a9745",
+        "after": "bc7d7f0a004f09e54c41934f2bad6d8a288a2e1feb77652f4a6ccd8e3756f8d5"
+      },
+      {
+        "path": "obj/parallel/continuation-20261117/operator-rhs-v1/inputs/missing-deref.rs",
+        "before": "ac86ca1002e46df2de9209d6123ebd32140a647712275f88be2e90eb1035948c",
+        "after": "957a4efc022dbd8a9d9873518ba22ee6c375e7e9881c8207006faf3acaa4fe6e"
+      },
+      {
+        "path": "obj/parallel/continuation-20261117/operator-rhs-v1/inputs/wrong-target.rs",
+        "before": "f9566d700f7065955346b1dba61fcf896bbf7fd450763c2e300be4dd828c3227",
+        "after": "5ffa69296856003be6d5cb41d0f11bb7f8814857675987b0120a6c50fc94e245"
+      },
+      {
+        "path": "obj/parallel/continuation-20261117/operator-rhs-v1/inputs/bound-expects-original.rs",
+        "before": "b49d82b5f2ec783b6a4670b17ccbdc279999d7efb2f0cbe3a5023bfd9a6f3d6f",
+        "after": "88fd008e6d3ca99a7b74b2b199bb12a526e014f6b74328016863d3270d7665b8"
+      },
+      {
+        "path": "obj/parallel/continuation-20261117/operator-rhs-v1/inputs/wrong-output.rs",
+        "before": "98d2af53b5dac816edbc0a2a81ca712f064ea4c9c3f2ac0950c5e1b94d3f798d",
+        "after": "d7eba0347f3350accf0da8dce7b8ea0602ec318db825b89f9d70aad403adb23c"
+      },
+      {
+        "path": "obj/parallel/continuation-20261117/operator-rhs-v1/inputs/missing-mutable-deref.rs",
+        "before": "da5d099ced41a7685547acef41617ab63222f051dbc3c3098541be64f5bbedec",
+        "after": "d5af3fcd4c218a4574adfba5fd842e3e12a253fa0aeb506e97da47652cbcfcde"
+      },
+      {
+        "path": "obj/parallel/continuation-20261117/operator-rhs-v1/inputs/shared-cannot-be-mut.rs",
+        "before": "906a18a041542087118f0b2223a4fe1168c1876994320bc22d4306400a229e03",
+        "after": "123599f60225ed24e7a762502deaff2410df4e07334917096fd23a2ea9cf1def"
+      },
+      {
+        "path": "obj/parallel/continuation-20261117/operator-rhs-v1/inputs/moved-lhs.rs",
+        "before": "b7930f06dbc4bf615bd3b78645c3b5290f9dc3bf2aea9fd07505a307724f7929",
+        "after": "8e0ff60a764527c9188f0c5c5845de051bf5002c3484ed446fe4869b081cbf72"
+      },
+      {
+        "path": "obj/parallel/continuation-20261117/operator-rhs-v1/inputs/static-escape.rs",
+        "before": "cf3f45a4f93114a6e06585faa9ed187928a6ed34164ce1f69bda441d7176be39",
+        "after": "71a01985d86dc90643af9bff274015fc56f7a30b377bfbddaa16cf64614bdcc5"
+      }
+    ]
+  },
+  "invariants": [
+    "Selected operator Self is a real coercion of the original LHS, preserving actual move and lifetime duties.",
+    "A fresh Rhs selects the actual impl before the RHS expression coerces, without comparison borrow state.",
+    "Builtin scalar/shift, const/effects, associated output and ordinary/compound routes preserve their current contracts."
+  ],
+  "supplemental_multiple_rhs": {
+    "receipt_sha256": "c4c45c9d65cfa9a691dfdfb134f7b651c4e1d1237e71f5dcd55263d0d9e1c53f",
+    "declaration_sha256": "b4bec05ef1226d53118e77e0d8e8767c7c52dcf14e0c0f3d6d9e9a48887a6996",
+    "metadata": "2statusesandproperE0277negativecausematched",
+    "native": "positiveexactadd/value7;object/link/native0,emptyerr/freshdirectory",
+    "purpose": "Same lhs and Output with Add<&View>/Add<u8>, actual RHS mustselectdirectmatch; closedboolopponent rejects. Original17bytes/9nativepredictions unchanged."
+  },
+  "private_test_amendment": {
+    "patch_sha256": "cd71b7d5d1b5555b6dc38327f44ca862252b3e72f71f0aba677c1c6d52ea51f2",
+    "reason": "Region-free lhs coercions are intentionally absent from retained relation rows. Check actual selected receiver/function identity there; independent-lifetime case still checks two directed coercion sites."
+  },
+  "candidate_authoring_history": {
+    "original_v1": "CLI argument spelling used --crate-name=value, unsupported by the driver; usage2 meant zero qualified candidate cases. Corrected only argument spelling.",
+    "v2": "Both comparison regressions passed. BodyIR was the wrong selected view for one generic positive and two move/lifetime opponents. Three rejection-cause predictions used different wording from the actual trait/coercion checks. No source bytes or expected language statuses changed.",
+    "phase_probe": {
+      "records": "obj/parallel/continuation-20261117/operator-rhs-phase-v1/records.json",
+      "records_sha256": "ceca318c702f8c9b63268a320adb2c835c71176bdc5ddcbbbeb3e66e1a730a82",
+      "observed": "generic-lhs semantic0; moved-lhs loan1 movedread; static-escape loan1 requiredoutlives failure; source/compiler hashes unchanged before/after"
+    },
+    "original_candidate_diagnostics": {
+      "missing-mutable-deref": [
+        "DerefMut",
+        "mutable dereference",
+        "incompatible types"
+      ],
+      "shared-cannot-be-mut": [
+        "incompatible types"
+      ],
+      "closed-missing-rhs": [
+        "user trait obligation",
+        "no matching implementation",
+        "incompatible types"
+      ]
+    },
+    "amended_candidate_diagnostics": {
+      "missing-mutable-deref": [
+        "trait obligation requires an unambiguous matching assumption or implementation"
+      ],
+      "shared-cannot-be-mut": [
+        "cannot coerce a shared reference to a mutable reference"
+      ],
+      "closed-missing-rhs": [
+        "associated type requires an unambiguous validated implementation"
+      ]
+    },
+    "remaining": "All10native programs still required; generic semantic acceptance does not qualify its artifact.",
+    "cause_review": "Publication statically confirmed missingDerefMut obligation and shared-to-mut guard. ClosedText+bool has only Add<&View>/Add<u8> with identicalOutput and independentE0277; its associated-type diagnostic is a valid rejection but does not alone distinguish internal Absent from Deferred or authenticate a dumpedAdd<bool>query."
+  },
+  "candidate_validation": {
+    "source_gate": {
+      "receipt": "obj/qualification/fast/1794935932085519708/receipt.json",
+      "sha256": "2e31f62a08c19311046c1720d86b77abcbd1ab0461118a0d0f38d07765502517",
+      "status": 0,
+      "selected_tests": 3,
+      "source_cases": 19,
+      "accepts": 10,
+      "rejects": 9,
+      "comparison_controls": 2,
+      "views": "BodyIR for16cases; generic-semantics for generic-lhs; Loans for move/static escape. Same language predictions and source bytes throughout."
+    },
+    "native_gate": {
+      "receipt": "obj/qualification/fast/1794936196929528817/receipt.json",
+      "sha256": "2b919e51d1d915f951c5a9e34b1536475ebfdd7a9056d671bb31750b5d480124",
+      "status": 0,
+      "programs": 10,
+      "result": "Pinned LowIR object backend and host C linker; each native run0 with exact independently predicted Deref/DerefMut/Add/value stdout and empty stderr. Includes actual generic instantiation and same-lhs multiple-Rhs selection. No fresh-environment/directory or original-library qualification claim."
+    },
+    "private_gate": {
+      "receipt": "obj/qualification/fast/1794936377092337065/receipt.json",
+      "sha256": "3e015e5c69fb5facd7c634b18c08192d666f4d0696f8e1424e50ff37925a792b",
+      "state": "infrastructure compile timeout before executing selected tests",
+      "selected": 8,
+      "compile_seconds": 227.25,
+      "total_seconds": 276.23,
+      "remaining": "4newprivate ownership/region/foreign-operand/scaling controls and4existing scalar/const/ordinary controls pendingCI."
+    },
+    "static": "Full formatting, architecture, assignment metadata and strict production/integration Clippy pass.",
+    "scope": "Source arithmetic RHS coercion only; ordinary PA24/compound/comparison routing retained; full original String/core/alloc/std and assignment qualification still required.",
+    "fixture_checks": {
+      "status": 0,
+      "python_tests": 376,
+      "registered_roots": 531,
+      "suite_binaries": 13,
+      "pinned_upstream": 128,
+      "pinned_reference_files": 126,
+      "log_sha256": "013ea91c5ecbbd807eb985ebb09f45e125ee1520c3a0809d5d7379c8495579e7"
+    }
+  }
+}

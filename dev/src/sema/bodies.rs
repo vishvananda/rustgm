@@ -300,6 +300,12 @@ enum Work {
         expected: TermId,
         borrow: usize,
     },
+    /// A by-value source operator's operand, after selecting its actual `Rhs`.
+    CoerceBinaryRhs {
+        node: NodeId,
+        operand: NodeId,
+        expected: TermId,
+    },
     MethodArguments(NodeId, Option<Box<std::vec::IntoIter<DefId>>>),
     AssignmentValue(NodeId),
     /// One node of a destructuring assignment's left operand.
@@ -1023,7 +1029,8 @@ impl Checker<'_> {
                 work @ (Work::PrepareBorrowOperand { .. }
                 | Work::PrepareCallArgument { .. }
                 | Work::CoerceCallArgument { .. }
-                | Work::CoerceOperatorRhs { .. }) => {
+                | Work::CoerceOperatorRhs { .. }
+                | Work::CoerceBinaryRhs { .. }) => {
                     if let Some(dependency) = self.resume_operand_work(work)? {
                         return Ok(Some(dependency));
                     }
@@ -1108,6 +1115,11 @@ impl Checker<'_> {
                 expected,
                 borrow,
             } => self.coerce_operator_rhs(*node, *operand, *expected, *borrow)?,
+            Work::CoerceBinaryRhs {
+                node,
+                operand,
+                expected,
+            } => self.coerce_binary_rhs(*node, *operand, *expected)?,
             _ => return Err(self.error(self.state.body.node, "invalid operand continuation")),
         };
         if dependency.is_some() {

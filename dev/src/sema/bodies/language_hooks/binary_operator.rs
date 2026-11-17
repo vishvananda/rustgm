@@ -14,6 +14,9 @@ use crate::{
 #[cfg(test)]
 #[path = "../../../../tests/invariants/binop_operand_types.rs"]
 mod builtin_tests;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/rhs_fulfillment.rs"]
+mod coercion_tests;
 
 /// An operand type as rustc's builtin binary rule classifies it.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -182,8 +185,27 @@ impl Checker<'_> {
         ) {
             return Err(self.error(node, "source binary descriptor lost its actual Rhs"));
         }
-        let subject = self.term(left)?;
-        let rhs = self.term(right)?;
+        let actual_left = self.term(left)?;
+        let actual_right = self.term(right)?;
+        let Kind::Binary { op, .. } = self.kind(node) else {
+            return Err(self.error(node, "source binary lost its actual operator"));
+        };
+        let builtin = self.builtin_binary(node, op, actual_left, actual_right)?;
+        let (subject, rhs) = if builtin.is_some() {
+            (actual_left, actual_right)
+        } else {
+            // A fresh Self keeps trait matching invariant without equating the
+            // operands' lifetimes. Its real coercion records the source relation.
+            let subject = self.variable(node, super::super::Domain::Any)?;
+            self.coerce(left, subject)?;
+            let rhs = self.variable(node, super::super::Domain::Any)?;
+            self.state.work.push(super::super::Work::CoerceBinaryRhs {
+                node,
+                operand: right,
+                expected: rhs,
+            });
+            (subject, rhs)
+        };
         self.state.call_types.obligations.push((
             node,
             Predicate::trait_application(
@@ -214,15 +236,32 @@ impl Checker<'_> {
         let result = self.child(node, signature, 2)?;
         self.retain_language_method(node, selected.method, callable, subject);
         self.state.calls.push((node, signature));
-        let Kind::Binary { op, .. } = self.kind(node) else {
-            return Err(self.error(node, "source binary lost its actual operator"));
-        };
-        if let Some(builtin) = self.builtin_binary(node, op, subject, rhs)? {
+        if let Some(builtin) = builtin {
             // The selected Output must still agree with the builtin result.
             self.equate(node, builtin, result)?;
             return Ok(builtin);
         }
         Ok(result)
+    }
+
+    /// Refine this operator's own goals before converting its actual operand.
+    pub(in crate::sema::bodies) fn coerce_binary_rhs(
+        &mut self,
+        node: NodeId,
+        operand: NodeId,
+        expected: TermId,
+    ) -> Result<Option<super::super::Dependency>, Error> {
+        if !matches!(self.kind(node), Kind::Binary { right, .. } if right == operand) {
+            return Err(self.error(
+                node,
+                "arithmetic RHS continuation changed its actual operand",
+            ));
+        }
+        if let Some(dependency) = self.refine_call_inputs(node, expected)? {
+            return Ok(Some(dependency));
+        }
+        self.coerce(operand, expected)?;
+        Ok(None)
     }
 
     pub(in crate::sema::bodies) fn source_scalar_binary_solved(

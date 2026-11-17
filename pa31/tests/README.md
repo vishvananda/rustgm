@@ -1484,3 +1484,17 @@ introduced. Candidate and two native traces remain pending qualification.
 
 Source cfg root-comma inputs and independent outcomes are registered in
 [spec/source-cfg-root-commas/README.md](spec/source-cfg-root-commas/README.md).
+
+`spec/operator-rhs/` freezes the source-only operator coercion packet. Every input
+is listed in `cases.tsv` and `outcomes.json`: `direct.rs`, `borrowed.rs`,
+`temporary.rs`, `nested.rs`, `generic-lhs.rs`, `chain.rs`, `mutable.rs`,
+`borrowed-output.rs`, `independent-input-lifetimes.rs`, `missing-deref.rs`,
+`wrong-target.rs`, `bound-expects-original.rs`, `wrong-output.rs`,
+`missing-mutable-deref.rs`, `shared-cannot-be-mut.rs`, `moved-lhs.rs` and
+`static-escape.rs`; auxiliary `prefix.rs` and `observe.c` retain their exact
+qualified hashes. Nine native trace predictions accompany seventeen independent
+metadata outcomes. Ordinary PA24, compound assignments and actual full String/std
+qualification remain separate.
+
+The operator packet also declares `direct-rhs.rs` and `closed-missing-rhs.rs`
+for same-lhs multiple-Rhs selection, with one additional native trace.

@@ -177,6 +177,8 @@ pub(crate) mod resolve;
 mod resuming_sources;
 #[path = "../../rhs_body_lifetimes.rs"]
 mod rhs_body_lifetimes;
+#[path = "../../rhs_coercions.rs"]
+mod rhs_coercions;
 #[path = "../../selected_references.rs"]
 mod selected_references;
 #[path = "../../separated_parameters.rs"]

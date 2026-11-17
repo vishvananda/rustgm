@@ -240,6 +240,15 @@ a boolean literal into `#[cfg($writer)]`, which currently expects an opaque
 metadata fragment. All twelve pins and the original skip list remain unchanged.
 No std semantic or artifact qualification is claimed.
 
+The [source arithmetic RHS packet](../pa31/tests/spec/operator-rhs/outcomes.json)
+passes 19 declared outcomes and ten exact native traces through the pinned backend.
+Trait selection retains a fresh RHS before the real typed coercion; the actual
+left operand also retains its lifetime relation. Deref/DerefMut calls, generic
+instantiation, moved-value and lifetime opponents, comparison controls and
+same-lhs multiple-RHS selection are checked. The selected eight private invariants
+remain pending CI after a compile-time budget failure. Original String acceptance
+and the full core/alloc/std artifacts still require their unchanged-source replay.
+
 ## Runtime and backend gaps
 
 What the corpora demand, against what RustGM lowers today and what the pinned
