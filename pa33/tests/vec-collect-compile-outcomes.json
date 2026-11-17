@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "stage": "planned",
+  "scope": "Source-core+alloc regression for deferred integer projection inputs during Map Iterator lookup. No graded PA33 activation or whole-library qualification.",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "expectation_frozen_before_candidate": true,
+  "profile": "Original core/alloc pin88d9e12ae178fab0fb5cc050a94da85685d449ea; panic abort, cap-lints allow. Explicit bring-up profile remains unqualified.",
+  "entry": "Complete no_std/no_main programs with exported C main, allocator and panic handler; retains the original alloc consumer harness, not the earlier diagnostic-only library-shaped snippets.",
+  "provenance": {
+    "prefix_source": "tests/spec/alloc-consumers/vec.rs",
+    "source_sha256": "0445365f2344bf64a745aaa30334e218a382a02b3c98d177360b4af678711ceb",
+    "preserved_prefix_bytes": 2814,
+    "preserved_prefix_sha256": "c93eab197053afbedcf35dc0bee5b95c8e7c9524582164df78c10ddb3df34748",
+    "prefix_ends_before": "use alloc::boxed::Box;",
+    "attribution": "Allocator, Out, panic handler and C entry copied byte-for-byte from the existing RustGM-authored PA33 Vec consumer. Reduction run bodies are authored for this regression."
+  },
+  "cases": [
+    {
+      "name": "inferred-map",
+      "path": "tests/spec/vec-collect-inference/inferred-map.rs",
+      "source_sha256": "62d2b3a724201545db7e4cc15dbd5d993af88b2f4b1229555d2db4491756e288",
+      "rustc_status": 0,
+      "rustgm_status": 0,
+      "purpose": "Open range element with Map and downstream Vec<u32>; original consumer blocker.",
+      "native": {
+        "status": 0,
+        "stderr": "",
+        "stdout": "[1, 4, 9, 16, 25, 36]\nheap: 0 blocks, 0 bytes live\n"
+      }
+    },
+    {
+      "name": "typed-map",
+      "path": "tests/spec/vec-collect-inference/typed-map.rs",
+      "source_sha256": "8ebc7c7d75356cd17e5fc75683a87997bd2a9d17258781be195f82f27722f73e",
+      "rustc_status": 0,
+      "rustgm_status": 0,
+      "purpose": "Concrete range element control.",
+      "native": {
+        "status": 0,
+        "stderr": "",
+        "stdout": "[1, 4, 9, 16, 25, 36]\nheap: 0 blocks, 0 bytes live\n"
+      }
+    },
+    {
+      "name": "wrong-item",
+      "path": "tests/spec/vec-collect-inference/wrong-item.rs",
+      "source_sha256": "97714b7aa7f5056b1ad966213ba04d654a6e1ea40544a869f1e486f38a1b9a1b",
+      "rustc_status": 1,
+      "rustgm_status": 1,
+      "purpose": "Closed FromIterator item mismatch remains rejected.",
+      "semantic_rejection": [
+        "trait obligation",
+        "FromIterator",
+        "type mismatch"
+      ],
+      "rustc_diagnostic": [
+        "FromIterator"
+      ]
+    },
+    {
+      "name": "float-step",
+      "path": "tests/spec/vec-collect-inference/float-step.rs",
+      "source_sha256": "20e2c998429229f0bd10a8d5775fbd5a5b86f4d4b4116834f758e9928114b1ab",
+      "rustc_status": 1,
+      "rustgm_status": 1,
+      "purpose": "Closed non-Step range cannot become an Iterator.",
+      "semantic_rejection": [
+        "no applicable method for this receiver",
+        "not an iterator"
+      ],
+      "rustc_diagnostic": [
+        "Iterator"
+      ]
+    }
+  ],
+  "retained_requirements": [
+    "No app skip/stub is an acceptance.",
+    "Signals, timeouts, panics, work/storage exhaustion and harness failures are not semantic negative outcomes.",
+    "Original Vec consumer and whole core/alloc/std build/native requirements remain open until independently verified."
+  ],
+  "qualification": {
+    "compiler_commit": "2b2db1cac671b93784f288a69ce81ca30f338ed8",
+    "compiler_sha256": "e1071bbeab4c078d19cac8200e39407173fbf8a9aad7b8ad3216ca9baa1f2b99",
+    "profile": "optimized incremental observe; unqualified bring-up libraries, twenty alloc skips and zero core skips unchanged",
+    "candidate": "all four source outcomes and both CPPGMv0.9.3 ABI4 backend/native positives pass; no app unproven bodies; fixed library801 source hashes unchanged",
+    "candidate_receipt": "obj/parallel/continuation-20261117/vec-collect-packet-e107/results.json",
+    "independent": "all four pinned rustc metadata outcomes pass; both pinned rustc native positives return0 with byte-identical output to RustGM",
+    "independent_native_receipt_sha256": "d25e08b501376b03996fdb2400aca65f11611cd298b5b2bd981800573b805c8e",
+    "native_stdout_sha256": "fe2c83f67dc6fbe0a76cdcc38d4a1712a688b6d9613282dbe5e9f9abd2b78c86",
+    "oracle_host_harness": "The installed prebuilt alloc references rust_eh_personality even under abort. The first no-personality link failure is retained. The separate successful retry links an exact host unwind-personality-ABI shim that unconditionally calls libc abort; source bytes remain unchanged. Native success proves the shim was not invoked.",
+    "qualification_sidecar_sha256": "8c269b69438720227058489351ca8eb76efc8fbbd173dc090dc37d700437d38d",
+    "remaining": "Whole original Vec stops at line258 map closure with invalid lifetime constraint identity. Original alloc/std artifacts, other consumers and strict qualification remain required."
+  }
+}

@@ -18,3 +18,10 @@ not graded while this stage is planned: `spec/alloc-consumers/` holds 12 `no_std
 compare with `scripts/consumer_oracle.py m2` (see the
 [runtime tracker](../../docs/self-hosting-runtime.md)). They are not in a
 manifest, so the stage still fails as planned.
+
+`spec/vec-collect-inference/` adds four complete source-profile regressions owned
+by `vec-collect-compile-outcomes.json`: inferred and explicitly typed mapped Vec
+collection, a wrong collection item, and a floating non-Step range. The original
+Vec consumer harness prefix is preserved and attributed. This separate compile
+outcome manifest leaves PA33 planned; it does not create a graded suite or a
+maintainer integration root.
