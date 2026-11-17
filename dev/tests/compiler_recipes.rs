@@ -62,6 +62,7 @@ pub(crate) fn client_source(
     )?);
     let current = CrateIdentity::new("client", "deferred_op_v11")?;
     let context = resolve::bindings::Context {
+        artifacts: rustgm::support::crates::ArtifactContext::Inspection,
         crate_name: Some("client".into()),
         current: Some(current),
         dependencies: Some(dependencies),
