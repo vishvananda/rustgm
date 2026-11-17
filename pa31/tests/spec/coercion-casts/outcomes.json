@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "pa31",
-  "state": "All16 independent metadata outcomes and2 independent native traces match. Candidate16source+19existingBoxcontrols/all751PA24text/15native programs/harness/upstream pass.5private controls remain unexecuted after local compile timeout; ordinary byte-equality and actual alloc/Vec replay pending clean immutable compiler.",
+  "state": "Independent metadata16/native2 and candidate source16+19existing/all751PA24text/native15/harness/upstream pass. Exact ordinary output comparisons and original Vec native3repeat contract pass under18libraryskips.5private controls remain pending CI after local compile timeout; full core/alloc/std and strict qualification remain required.",
   "original_declaration_sha256": "652d9ac9bc20b4bace3722e51e3379e72a390f94059e3609d1016bbe8c72131c",
   "profile": {
     "version": "1.98.0",
@@ -303,8 +303,57 @@
       "Reuse typed16-case table instead of unavailable serde_json dependency, preserving every frozen acceptance/profile column.",
       "Source negative checks forbid internal cast endpoint/provenance errors."
     ],
-    "ordinary_bytes": "Pending samecleanimmutablecompiler comparison against old250 LowIR/diagnostic channels; declared ordinary cases already preserve status/complete lowering.",
-    "actual_replay": "Pending clean immutable compiler. Preserve original20rowf165 file and derive19by removingonlyalloc:boxed.rs10093 so the repaired original body executes. No additions or originalsource/golden changes.",
+    "ordinary_bytes": {
+      "state": "passed",
+      "receipt": {
+        "path": "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/vec-method-lookup/box-coercion-casts/ordinary-equality-v1/results/receipt.json",
+        "sha256": "e604af901544b8d1e3667d358613d8c809ac3baa8ea64a7c493474bbf7b59fc2"
+      },
+      "ordinary_reference": "status0; completeLowIR sha256d89dc1195d838107ab0555e7222fbf9240614413e1de3433f55356ceb727ba6b equals old250 bytes; empty stdout/stderr",
+      "ordinary_nominal": "status1; rawstderr sha256919bc5f1b66a65649b579629df722b6f8f35bece2c5f59d15fd73d30213ba06e equals old250 bytes; empty stdout/LowIR"
+    },
+    "actual_replay": {
+      "date": "2026-11-17",
+      "compiler_commit": "36cf4f8ec8f803f25f1cceb66f1757ece3e077b0",
+      "compiler_sha256": "0547025be3b5fcc457792889a0385b4b29972c55fbfaa6117df79b25da543c67",
+      "profile": "Original source core+alloc in one bring-up session; unqualified library profile; locked CPPGMv0.9.3 ABI4 text object path and host C link.",
+      "source_sha256": "0445365f2344bf64a745aaa30334e218a382a02b3c98d177360b4af678711ceb",
+      "stdout_sha256": "65e3d11f65850682b3f487dcc99368d99555677ff59334e750a443d81a1b0d5d",
+      "stdout_bytes": 1494,
+      "frontend_status": 0,
+      "object_status": 0,
+      "link_status": 0,
+      "native_status": 0,
+      "native_repeats": 3,
+      "native_stderr": "",
+      "fresh_empty_directories": true,
+      "native_environment": {},
+      "app_blockers": 0,
+      "app_unproven": 0,
+      "library_inputs_unchanged": 801,
+      "library_skip_rows": 18,
+      "core_skip_rows": 0,
+      "app_skip_rows": 0,
+      "skip_sha256": "49621bc8096ebbcad0a11d6c6799451ba0be5b9f9de3b80bfd2c9442c261830e",
+      "removed_from_original20": [
+        "alloc:boxed.rs:10093 box_assume_init_into_vec_unsafe",
+        "alloc:str.rs:5886 join_generic_copy"
+      ],
+      "original20_sha256": "f165596bb7460b385cb0d3198058fc5bfa1c3f38422ab0145c773a2ac6203302",
+      "skip_history": "Original20 and Box-only19 lists preserved unchanged.19 compiled/linked but native aborted.18 additionally removes an obsolete join skip and matches the complete native contract. No added rows or rewritten original sources.",
+      "intentional_final_heap": "1block/4bytes live, from Vec::leak; exact unchanged golden",
+      "frontend_receipt": {
+        "path": "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/vec-method-lookup/box-coercion-casts/full-vec-derived18-v1/results/receipt.json",
+        "sha256": "3cdc6d0f54c9999776effb9d0f59aa48b14d84ad7366ad399edc4fc949fc07b3"
+      },
+      "native_repeat_receipt": {
+        "path": "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/vec-method-lookup/box-coercion-casts/vec-repeat3-from-lowir-v1/results/receipt.json",
+        "sha256": "45f295e9443bde0686d7065987cd1c3db9bb0a7dd5a137d5a10763967dae8830"
+      },
+      "recovered_elf_sha256": "53911b156f5d200644c6a6ec6ed91b4ec38f6bf12c3a797b46f3dff0e3ed267f",
+      "native_recovery": "Successful frontend/object/link/native observation produced retained immutable LowIR. After normal ELF cleanup, the pinned backend rebuilt one byte-identical ELF from that LowIR for the three declared fresh native runs; no new Rust frontend or oracle invocation.",
+      "remaining": "Other M2 consumers, full core/alloc/std artifacts and strict/no-skips qualification remain required; PA33 remains planned."
+    },
     "harness_upstream": {
       "log": "obj/parallel/continuation-20261117/box-coercion-harness.log",
       "sha256": "7e90ede58b7d8484ccdadb7970974c95c3dfeee64db94c326adb876eb412c41a",

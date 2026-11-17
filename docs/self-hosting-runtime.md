@@ -194,12 +194,25 @@ Conventions the frontier needs:
 The stages stay planned: there is no `manifest.json`, `scripts/course.py` still
 fails for PA32, PA33, PA35 and PA36, and `make test-harness` passes.
 `scripts/tests/test_consumer_oracle.py` keeps declarations, sources and recorded
-output consistent without building anything. Only the bring-up profile runs
+output consistent without building anything. The bring-up profile runs
 the M1 programs through RustGM: `scripts/bringup_linked.py` compiles each one
 linked with real core, links it through the object bridge and compares its
 standard output. On 2026-11-16, 17 of 18 behaved as declared (three runs each,
 status, standard error and output); `chars-strs` aborts in a SIMD trap (row 5).
 That is not qualification, and no strict run exists.
+
+On 2026-11-17, clean compiler `36cf4f8ec` compiled original core/alloc with the
+unchanged PA33 Vec consumer, emitted LowIR, built it with pinned CPPGM v0.9.3,
+and linked it with the host C toolchain. Three fresh native runs with an empty
+environment returned 0 and matched all 1,494 original golden bytes, including the
+intentional final `Vec::leak` allocation of 1 block/4 bytes. The 18-row alloc skip
+list removes only Box `box_assume_init_into_vec_unsafe` and the obsolete
+`join_generic_copy` row from the preserved 20-row list; core and the app have
+no skips. The app has no blockers or unproven bodies. All 801 library input
+hashes remain unchanged. [The existing outcome manifest](../pa33/tests/alloc-consumer-outcomes.json)
+records the immutable compiler, exact skip history and frontend/native receipts.
+This is one bring-up consumer; other M2 consumers, strict qualification and full
+core/alloc/std artifacts remain required.
 
 ## Runtime and backend gaps
 
@@ -696,7 +709,7 @@ initialised data of that size on the bridge; an idle machine.
 
 ## Not verified
 
-- Consumer programs run through RustGM only under the bring-up profile (M1,
+- Consumer programs run through RustGM only under the bring-up profile (M1 and Vec,
   see above); nothing runs them in strict mode.
 - Gap rows that say "no handler" rest on the absence of code in `dev/src`,
   not on a failing run: the ordinary profile cannot express those programs.

@@ -35,7 +35,12 @@ cast. Source-negative checks cannot pass through an internal endpoint or
 provenance failure. Existing sources, independent outcomes and backend forms
 remain unchanged.
 
-Actual alloc/Vec replay remains pending. The original20-row skip file is
-preserved; a derived19-row list must remove only `boxed.rs:10093` to execute
-the repaired body. A retained skip would still emit a trapping stub. No other
-row may be added and the original source and golden bytes remain fixed.
+The clean compiler preserves both ordinary controls byte-for-byte. Original
+Vec now compiles, links and matches all 1,494 golden bytes in three fresh native
+runs with an empty environment. The original 20-row skip file is preserved.
+A derived 19-row list executes the repaired Box body but still aborts; removing
+only the additional obsolete `str.rs:5886` skip produces the passing 18-row list.
+All 801 library inputs and the original source/golden bytes remain unchanged.
+No app blockers, unproven bodies or skips satisfy this result. The final live
+allocation is the declared `Vec::leak`, exactly 1 block/4 bytes. Other consumers,
+full library artifacts and strict qualification remain required.
