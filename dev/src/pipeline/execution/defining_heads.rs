@@ -64,7 +64,7 @@ impl Engine {
                 .map_err(|e| report.body_error(body.source, e))?;
         }
         facts
-            .close_opaque_results(definition, &regions.hidden_regions)
+            .close_opaque_results(report, definition, &regions.hidden_regions)
             .map_err(|e| report.body_error(body.source, e))?;
         if matches!(body.owner, Owner::AsyncBody { .. }) {
             // The real original has been proved, but it is never standalone code.
@@ -169,7 +169,7 @@ pub(super) fn close_component(
                 .map_err(|e| report.body_error(template.body.source, e))?;
         }
         facts
-            .close_opaque_results(definition, &regions.hidden_regions)
+            .close_opaque_results(report, definition, &regions.hidden_regions)
             .map_err(|e| report.body_error(template.body.source, e))?;
     }
     Ok(())

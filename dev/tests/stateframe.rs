@@ -403,7 +403,8 @@ fn selected_future_applications_use_actual_checked_bodies_and_complete_capture_f
             identity,
             arguments,
         })?;
-        let application = rustgm::pipeline::future_application(&mut facts, &checked, future)?;
+        let application =
+            rustgm::pipeline::future_application(&report, &mut facts, &checked, future)?;
         assert!(
             matches!(application.body().owner, body::ir::Owner::AsyncApplication { identity: actual, future: ty, signature }
             if actual == identity && ty == future && Some(signature) == application.contract().signature)
@@ -423,7 +424,7 @@ fn selected_future_applications_use_actual_checked_bodies_and_complete_capture_f
                 .contains_parameters(application.body().result)
                 .ok_or("actual body output")?
         );
-        let repeated = rustgm::pipeline::future_application(&mut facts, &checked, future)?;
+        let repeated = rustgm::pipeline::future_application(&report, &mut facts, &checked, future)?;
         assert_eq!(application.body().source, repeated.body().source);
         assert_eq!(
             application.body().blocks.len(),
@@ -431,7 +432,9 @@ fn selected_future_applications_use_actual_checked_bodies_and_complete_capture_f
         );
         assert!(facts.opaques.declarations[&identity].hidden.is_some());
     }
-    assert!(rustgm::pipeline::future_application(&mut facts, &checked, TypeId::UNIT).is_err());
+    assert!(
+        rustgm::pipeline::future_application(&report, &mut facts, &checked, TypeId::UNIT).is_err()
+    );
     Ok(())
 }
 
@@ -449,8 +452,8 @@ fn selected_future_applications_revalidate_store_and_warm_publication() -> Resul
         "generic",
         &[Argument::Type(TypeId::primitive(types::Primitive::U8))],
     )?;
-    let first = rustgm::pipeline::future_application(&mut facts, &checked, future)?;
-    let warm = rustgm::pipeline::future_application(&mut facts, &checked, future)?;
+    let first = rustgm::pipeline::future_application(&report, &mut facts, &checked, future)?;
+    let warm = rustgm::pipeline::future_application(&report, &mut facts, &checked, future)?;
     assert!(first.capture_mapping_bytes() > 0);
     assert_eq!(first.capture_mapping_bytes(), warm.capture_mapping_bytes());
     let mut foreign = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
@@ -460,9 +463,10 @@ fn selected_future_applications_revalidate_store_and_warm_publication() -> Resul
         "generic",
         &[Argument::Type(TypeId::primitive(types::Primitive::U8))],
     )?;
-    let failure = rustgm::pipeline::future_application(&mut foreign, &checked, foreign_future)
-        .err()
-        .ok_or("accepted checked source from another store")?;
+    let failure =
+        rustgm::pipeline::future_application(&report, &mut foreign, &checked, foreign_future)
+            .err()
+            .ok_or("accepted checked source from another store")?;
     assert!(failure.contains("another actual type store"), "{failure}");
     let Some(Kind::Future { identity, .. }) = facts.types.kind(future) else {
         return Err("actual selected future identity".into());
@@ -473,7 +477,7 @@ fn selected_future_applications_revalidate_store_and_warm_publication() -> Resul
         .get_mut(&identity)
         .ok_or("actual owner")?
         .hidden = Some(TypeId::UNIT);
-    let failure = rustgm::pipeline::future_application(&mut facts, &checked, future)
+    let failure = rustgm::pipeline::future_application(&report, &mut facts, &checked, future)
         .err()
         .ok_or("accepted stale warm defining publication")?;
     assert!(
@@ -508,7 +512,7 @@ fn future_formation_proves_closed_bounds_and_retains_unpaid_lifetime_requirement
         "copy_bound",
         &[Argument::Type(TypeId::primitive(types::Primitive::U8))],
     )?;
-    let application = rustgm::pipeline::future_application(&mut facts, &checked, valid)?;
+    let application = rustgm::pipeline::future_application(&report, &mut facts, &checked, valid)?;
     assert!(application.formation_requirements().is_none());
     let definition = report
         .resolution
@@ -523,7 +527,7 @@ fn future_formation_proves_closed_bounds_and_retains_unpaid_lifetime_requirement
         "copy_bound",
         &[Argument::Type(non_copy)],
     )?;
-    let failure = rustgm::pipeline::future_application(&mut facts, &checked, invalid)
+    let failure = rustgm::pipeline::future_application(&report, &mut facts, &checked, invalid)
         .err()
         .ok_or("accepted an application violating its defining Copy premise")?;
     assert!(failure.contains("defining input clause"), "{failure}");
@@ -540,7 +544,8 @@ fn future_formation_proves_closed_bounds_and_retains_unpaid_lifetime_requirement
             "related",
             &regions.map(Argument::Lifetime),
         )?;
-        let application = rustgm::pipeline::future_application(&mut facts, &checked, future)?;
+        let application =
+            rustgm::pipeline::future_application(&report, &mut facts, &checked, future)?;
         assert_eq!(application.formation_requirements().is_some(), debt);
         if let Some(proof) = application.formation_requirements() {
             assert!(!proof.outlives.is_empty());
@@ -561,14 +566,14 @@ fn selected_future_bounds_consume_genuine_future_and_actual_output_equality() ->
     let checked = checks::verify(&facts, &templates, inputs)?;
     for (name, valid) in [("value", true), ("wide", false)] {
         let inner = checks::future(&report, &mut facts, name, &[])?;
-        let _ = rustgm::pipeline::future_application(&mut facts, &checked, inner)?;
+        let _ = rustgm::pipeline::future_application(&report, &mut facts, &checked, inner)?;
         let future = checks::future(
             &report,
             &mut facts,
             "require_future",
             &[Argument::Type(inner)],
         )?;
-        let selected = rustgm::pipeline::future_application(&mut facts, &checked, future);
+        let selected = rustgm::pipeline::future_application(&report, &mut facts, &checked, future);
         if valid {
             let application = selected?;
             assert_eq!(
@@ -576,7 +581,7 @@ fn selected_future_bounds_consume_genuine_future_and_actual_output_equality() ->
                 TypeId::primitive(types::Primitive::U8)
             );
             assert!(application.formation_requirements().is_none());
-            let _ = rustgm::pipeline::future_application(&mut facts, &checked, future)?;
+            let _ = rustgm::pipeline::future_application(&report, &mut facts, &checked, future)?;
         } else {
             let error = selected
                 .err()
@@ -618,7 +623,7 @@ fn selected_authored_poll_calls_keep_the_real_member_and_independent_public_sign
     let (templates, inputs) = checks::prepare(&report, &mut facts)?;
     let checked = checks::verify(&facts, &templates, inputs)?;
     let value = checks::future(&report, &mut facts, "value", &[])?;
-    let _ = rustgm::pipeline::future_application(&mut facts, &checked, value)?;
+    let _ = rustgm::pipeline::future_application(&report, &mut facts, &checked, value)?;
     let future = checks::future(
         &report,
         &mut facts,
@@ -641,7 +646,7 @@ fn selected_authored_poll_calls_keep_the_real_member_and_independent_public_sign
         })
         .ok_or("actual required poll declaration")?
         .definition;
-    let application = rustgm::pipeline::future_application(&mut facts, &checked, future)?;
+    let application = rustgm::pipeline::future_application(&report, &mut facts, &checked, future)?;
     let mut calls = 0;
     for expression in &application.body().values {
         let Rvalue::Call { callee, .. } = expression.kind else {
@@ -678,7 +683,7 @@ fn selected_authored_poll_calls_keep_the_real_member_and_independent_public_sign
         application.body().result,
         TypeId::primitive(types::Primitive::U8)
     );
-    let repeated = rustgm::pipeline::future_application(&mut facts, &checked, future)?;
+    let repeated = rustgm::pipeline::future_application(&report, &mut facts, &checked, future)?;
     assert_eq!(application.body().source, repeated.body().source);
     Ok(())
 }

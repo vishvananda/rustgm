@@ -108,7 +108,7 @@ impl<S: Sources> Engine<'_, S> {
                     self.calls[child]
                         .diagnostic("this source derive has no executable member consumer")
                 })?;
-            self.checked_derive_definition(definition, role)?;
+            self.checked_source_builtin(definition, role)?;
             if selected[slot].replace((child, definition)).is_some() {
                 return Err(
                     self.calls[child].diagnostic("conflicting derived trait implementations")

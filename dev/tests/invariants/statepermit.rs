@@ -17,7 +17,7 @@ fn drop_permit_authenticates_the_full_generated_state_graph_and_current_arena() 
     let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
     let (templates, inputs) = checks::prepare(&report, &mut facts)?;
     let checked = checks::verify(&facts, &templates, inputs)?;
-    pipeline::checked_future_storage(&mut facts, &checked)?;
+    pipeline::checked_future_storage(&report, &mut facts, &checked)?;
     let future = checks::future(&report, &mut facts, "never", &[])?;
     let mut other = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
     let other_future = checks::future(&report, &mut other, "never", &[])?;
@@ -27,7 +27,7 @@ fn drop_permit_authenticates_the_full_generated_state_graph_and_current_arena() 
             mut body,
             contract,
             permit,
-        } = pipeline::future_drop(&mut facts, &checked, future)?;
+        } = pipeline::future_drop(&report, &mut facts, &checked, future)?;
         for _ in 0..8 {
             permit.require_current(&facts.types, &body)?;
             assert!(permit.require_current(&other.types, &body).is_err());
@@ -90,7 +90,7 @@ fn nonempty_actual_capture_families_cannot_use_the_empty_state_drop_profile() ->
     let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
     let (templates, inputs) = checks::prepare(&report, &mut facts)?;
     let checked = checks::verify(&facts, &templates, inputs)?;
-    pipeline::checked_future_storage(&mut facts, &checked)?;
+    pipeline::checked_future_storage(&report, &mut facts, &checked)?;
     let future = checks::future(
         &report,
         &mut facts,
@@ -103,7 +103,7 @@ fn nonempty_actual_capture_families_cannot_use_the_empty_state_drop_profile() ->
         facts.types.kind(future),
         Some(Kind::Future { .. })
     ));
-    let error = pipeline::future_drop(&mut facts, &checked, future)
+    let error = pipeline::future_drop(&report, &mut facts, &checked, future)
         .err()
         .ok_or("captured family acquired an empty cleanup implementation")?;
     assert!(error.contains("capture"), "{error}");

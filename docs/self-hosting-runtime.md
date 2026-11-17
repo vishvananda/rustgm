@@ -214,6 +214,14 @@ records the immutable compiler, exact skip history and frontend/native receipts.
 This is one bring-up consumer; other M2 consumers, strict qualification and full
 core/alloc/std artifacts remain required.
 
+The source-only named opaque prerequisite for std now passes all 27 declared
+[alias cases](../pa34/tests/spec/named-opaques/outcomes.json), including the
+backtrace and nested path-iterator shapes, plus six existing regression controls.
+Defining attributes retain actual alias and function identities, check capture
+remapping and compare hidden types before publication. The private harness timed
+out during compilation before executing tests; CI and the unchanged original std
+graph replay remain pending. No source-library artifact is qualified by this check.
+
 ## Runtime and backend gaps
 
 What the corpora demand, against what RustGM lowers today and what the pinned

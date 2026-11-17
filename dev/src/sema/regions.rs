@@ -62,6 +62,14 @@ pub(super) struct Regions {
     binders: Vec<Binder>,
 }
 impl Regions {
+    pub(super) fn binder_growth(&self) -> crate::support::retained::Growth {
+        crate::support::retained::Growth::vector::<Binder>(
+            self.binders.len(),
+            self.binders.capacity(),
+            1,
+        )
+    }
+
     pub fn binder(&mut self, parent: Option<BinderId>, declared: Vec<DefId>) -> BinderId {
         let id = BinderId(self.binders.len());
         self.binders.push(Binder {

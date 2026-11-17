@@ -105,6 +105,7 @@ pub(in crate::resolve) enum Feature {
     CfgTargetThreadLocal = 81,
     PanicRuntime = 82,
     NeedsPanicRuntime = 83,
+    TypeAliasImplTrait = 84,
 }
 
 #[cfg(test)]
@@ -158,6 +159,7 @@ impl Request {
             "compiler_builtins" => Self::Capability(Feature::CompilerBuiltins),
             "panic_runtime" => Self::Capability(Feature::PanicRuntime),
             "needs_panic_runtime" => Self::Capability(Feature::NeedsPanicRuntime),
+            "type_alias_impl_trait" => Self::Library(Feature::TypeAliasImplTrait),
             "allocator_internals" => Self::Capability(Feature::AllocatorInternals),
             "dropck_eyepatch" => Self::Capability(Feature::DropckEyepatch),
             "abi_unadjusted" => Self::Capability(Feature::AbiUnadjusted),

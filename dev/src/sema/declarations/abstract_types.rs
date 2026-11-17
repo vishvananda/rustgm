@@ -40,9 +40,10 @@ impl Checker<'_> {
         &mut self,
         key: NodeKey,
         bounds: crate::syntax::ast::List,
-        context: regions::Context,
+        mut context: regions::Context,
         finish: bool,
     ) -> Result<Option<TypeId>, Error> {
+        context = self.named_opaque_context(key, context)?;
         if !finish {
             self.work.push(Work::Node(key, true, context));
             let pending = self.prepare_opaque(key, bounds, context)?;
@@ -95,12 +96,18 @@ impl Checker<'_> {
         let Some(Type::Opaque(id, _)) = self.facts.types.kind(application) else {
             return Err(self.error(key, "invalid completed opaque signature"));
         };
-        self.facts
-            .opaques
-            .owners
-            .entry(pending.owner)
-            .or_default()
-            .push(id);
+        if matches!(context.position, Position::Alias(_)) {
+            self.facts
+                .register_named_opaque(self.report, pending.owner, id)
+                .map_err(|e| self.error(key, e))?;
+        } else {
+            self.facts
+                .opaques
+                .owners
+                .entry(pending.owner)
+                .or_default()
+                .push(id);
+        }
         self.facts.opaques.declarations.insert(
             id,
             Declaration {
@@ -116,6 +123,39 @@ impl Checker<'_> {
         Ok(Some(application))
     }
 
+    fn named_opaque_context(
+        &mut self,
+        key: NodeKey,
+        mut context: regions::Context,
+    ) -> Result<regions::Context, Error> {
+        if let Position::Alias(owner) = context.position {
+            self.report.package.require_named_opaque(key.file)?;
+            if context.binder.is_none() {
+                let binder = if let Some(&binder) = self.owner_binders.get(&owner) {
+                    binder
+                } else {
+                    let mut growth = self.regions.binder_growth();
+                    growth.include(crate::support::retained::Growth::map::<
+                        DefId,
+                        super::BinderId,
+                    >(
+                        self.owner_binders.len(), self.owner_binders.capacity(), 1
+                    ));
+                    self.report
+                        .package
+                        .pay_named_opaque(1 + growth.work, growth.bytes)
+                        .map_err(|e| self.error(key, e))?;
+                    let binder = self.regions.binder(None, Vec::new());
+                    self.regions.associate(binder, owner);
+                    self.owner_binders.insert(owner, binder);
+                    binder
+                };
+                context.binder = Some(binder);
+            }
+        }
+        Ok(context)
+    }
+
     fn prepare_opaque(
         &mut self,
         key: NodeKey,
@@ -123,7 +163,9 @@ impl Checker<'_> {
         context: regions::Context,
     ) -> Result<Pending, Error> {
         let owner = context.binder.and_then(|id| self.regions.owner(id));
-        let Some(owner) = owner.filter(|_| matches!(context.position, Position::Output)) else {
+        let Some(owner) =
+            owner.filter(|_| matches!(context.position, Position::Output | Position::Alias(_)))
+        else {
             return Err(self.error(key, "impl Trait requires a function parameter or result"));
         };
         let mut pending = Pending {

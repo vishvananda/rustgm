@@ -224,7 +224,8 @@ fn corrupt(report: &mut Report, file: FileId, ordinal: usize, opponent: usize) -
                 crate::expand::configured::Effect::Keep
                 | crate::expand::configured::Effect::ConditionalLink(_)
                 | crate::expand::configured::Effect::ExpandedDerive
-                | crate::expand::configured::Effect::ExpandedAllocator => {
+                | crate::expand::configured::Effect::ExpandedAllocator
+                | crate::expand::configured::Effect::DefinedOpaque => {
                     return Err("expected actual cfg effect".into());
                 }
             }
@@ -359,6 +360,7 @@ fn failed_retirement_preflight_publishes_neither_flags_nor_receipts() -> TestRes
         visibilities: None,
         values: None,
         derives: None,
+        opaques: None,
     }));
     let call = engine
         .calls

@@ -1,0 +1,469 @@
+{
+  "state": "source semantic outcomes checked; private execution pending CI; actual std graph replay pending",
+  "rustc_profile": {
+    "compiler": "Rust1.98.0 commit88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "compiler_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "emit": "metadata",
+    "sysroot": "empty",
+    "cap_lints": "allow",
+    "environment": {
+      "RUSTC_BOOTSTRAP": "1",
+      "LC_ALL": "C"
+    },
+    "claim": "Independent authored source contract only, no native/artifact/profile qualification"
+  },
+  "cases": [
+    {
+      "name": "simple",
+      "host": "simple.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0,
+      "required_rustc_diagnostics": [],
+      "profile": "source-host",
+      "claim": "declared outcome before execution"
+    },
+    {
+      "name": "backtrace-shaped",
+      "host": "backtrace-shaped.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0,
+      "required_rustc_diagnostics": [],
+      "profile": "source-host",
+      "claim": "declared outcome before execution"
+    },
+    {
+      "name": "nested-splitpaths-shaped",
+      "host": "nested-splitpaths-shaped.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0,
+      "required_rustc_diagnostics": [],
+      "profile": "source-host",
+      "claim": "declared outcome before execution"
+    },
+    {
+      "name": "generic-remapping",
+      "host": "generic-remapping.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0,
+      "required_rustc_diagnostics": [],
+      "profile": "source-host",
+      "claim": "declared outcome before execution"
+    },
+    {
+      "name": "lifetime-remapping",
+      "host": "lifetime-remapping.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0,
+      "required_rustc_diagnostics": [],
+      "profile": "source-host",
+      "claim": "declared outcome before execution"
+    },
+    {
+      "name": "same-crate-renamed-path",
+      "host": "same-crate-renamed-path.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0,
+      "required_rustc_diagnostics": [],
+      "profile": "source-host",
+      "claim": "declared outcome before execution"
+    },
+    {
+      "name": "consistent-defining-bodies",
+      "host": "consistent-defining-bodies.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0,
+      "required_rustc_diagnostics": [],
+      "profile": "source-host",
+      "claim": "declared outcome before execution"
+    },
+    {
+      "name": "repeated-last-attribute",
+      "host": "repeated-last-attribute.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0,
+      "required_rustc_diagnostics": [],
+      "profile": "source-host",
+      "claim": "declared outcome before execution"
+    },
+    {
+      "name": "empty-list",
+      "host": "empty-list.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 0,
+      "required_rustc_diagnostics": [],
+      "profile": "source-host",
+      "claim": "declared outcome before execution"
+    },
+    {
+      "name": "missing-request",
+      "host": "missing-request.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "E0658"
+      ],
+      "profile": "source-host",
+      "claim": "declared outcome before execution"
+    },
+    {
+      "name": "unauthorized-body",
+      "host": "unauthorized-body.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "E0308"
+      ],
+      "profile": "source-host",
+      "claim": "declared outcome before execution"
+    },
+    {
+      "name": "distinct-alias-identities",
+      "host": "distinct-alias-identities.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "E0308"
+      ],
+      "profile": "source-host",
+      "claim": "declared outcome before execution"
+    },
+    {
+      "name": "inconsistent-defining-bodies",
+      "host": "inconsistent-defining-bodies.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "concrete type differs"
+      ],
+      "profile": "source-host",
+      "claim": "declared outcome before execution"
+    },
+    {
+      "name": "bound-violation",
+      "host": "bound-violation.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "E0277"
+      ],
+      "profile": "source-host",
+      "claim": "declared outcome before execution"
+    },
+    {
+      "name": "borrow-cannot-be-static",
+      "host": "borrow-cannot-be-static.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "lifetime may not live long enough"
+      ],
+      "profile": "source-host",
+      "claim": "declared outcome before execution"
+    },
+    {
+      "name": "nongeneric-defining-argument",
+      "host": "nongeneric-defining-argument.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "E0792",
+        "expected generic type parameter, found `u8`"
+      ],
+      "profile": "source-host",
+      "claim": "declared outcome before execution"
+    },
+    {
+      "name": "unconstrained-authorization",
+      "host": "unconstrained-authorization.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "does not constrain"
+      ],
+      "profile": "source-host",
+      "claim": "declared outcome before execution"
+    },
+    {
+      "name": "wrong-placement",
+      "host": "wrong-placement.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "only functions, statics, and consts"
+      ],
+      "profile": "source-host",
+      "claim": "declared outcome before execution"
+    },
+    {
+      "name": "word-payload",
+      "host": "word-payload.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "expected list of type aliases"
+      ],
+      "profile": "source-host",
+      "claim": "declared outcome before execution"
+    },
+    {
+      "name": "nonpath-payload",
+      "host": "nonpath-payload.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "expected path to type alias"
+      ],
+      "profile": "source-host",
+      "claim": "declared outcome before execution"
+    },
+    {
+      "name": "unknown-path",
+      "host": "unknown-path.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "E0425"
+      ],
+      "profile": "source-host",
+      "claim": "declared outcome before execution"
+    },
+    {
+      "name": "nonopaque-alias",
+      "host": "nonopaque-alias.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "item does not contain any opaque types"
+      ],
+      "profile": "source-host",
+      "claim": "declared outcome before execution"
+    },
+    {
+      "name": "ordinary-profile-frozen",
+      "host": "simple.rs",
+      "host_edition": "2024",
+      "guests": [],
+      "rustc": 0,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [],
+      "profile": "ordinary",
+      "claim": "declared outcome before execution",
+      "profile_gap": "Rustc accepts; ordinary PA24 profile remains frozen. Rejection is a profile gap, not a language opponent."
+    },
+    {
+      "name": "guest-own-request",
+      "host": "host-no-request.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "app",
+          "edition": "2024",
+          "path": "guest-own.rs"
+        }
+      ],
+      "rustc": 0,
+      "rustgm": 0,
+      "required_rustc_diagnostics": [],
+      "profile": "source-guest"
+    },
+    {
+      "name": "host-request-cannot-pay-guest",
+      "host": "foundation.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "app",
+          "edition": "2024",
+          "path": "guest-missing.rs"
+        }
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "E0658"
+      ],
+      "profile": "source-guest"
+    },
+    {
+      "name": "guest-request-cannot-pay-host",
+      "host": "missing-request.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "app",
+          "edition": "2024",
+          "path": "guest-own.rs"
+        }
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "E0658"
+      ],
+      "profile": "source-guest"
+    },
+    {
+      "name": "foreign-alias-owner",
+      "host": "provider.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "app",
+          "edition": "2024",
+          "path": "guest-foreign.rs"
+        }
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostics": [
+        "only opaque types defined in the local crate"
+      ],
+      "profile": "source-guest"
+    }
+  ],
+  "inputs": {
+    "backtrace-shaped.rs": "eb5e79c16074697ab517e4d2ffb3205a03c938c4b5d44d1b7fc59b93e6d2e009",
+    "borrow-cannot-be-static.rs": "bd2fd94c799c6d1ba412eb0a4c49a0617a0c779ffab86644c34458a321eff1c0",
+    "bound-violation.rs": "c9bbd4f2247e257cd92b5297608d09d85f7a2eb39777a301ac44aec4fce05765",
+    "consistent-defining-bodies.rs": "e2d9ce1afa3a522579be0de4f2ba957bc72277aa9bd184d8590f1a5046984bca",
+    "distinct-alias-identities.rs": "47e9193897477fa8b544ad7e7994f7070df1d45773882a29234ba63a7dc9d0bc",
+    "empty-list.rs": "5c41ff3c04ebce30ddacb94185abd5c8ef26da3de030fd876e762ef020552f33",
+    "foundation.rs": "489abc315d1cce15a818c7cf26cd4cf207e533ad1fe85f0d49ca0a748a345c30",
+    "generic-remapping.rs": "c0b15651fd02bcc7ee8ec68a3202a88694db34d74e28d531e0caef7fa4dbb316",
+    "guest-foreign.rs": "e79fba418ae98d2c2e79da941e4f5bd260e89e1788d3e437cc5d467932064888",
+    "guest-missing.rs": "41b58119414c1cc545f2511d255fbd75a69aa4944213032141face10b3ffbb95",
+    "guest-own.rs": "69cb965956d4e99df50c17909d651607d16a5a3ea37b28d11925986dab88339b",
+    "host-no-request.rs": "2abf1af83aeec305c1c086007ef90a9255c2ee9dd7fd6d823c24aa589a9bc5b8",
+    "inconsistent-defining-bodies.rs": "5f06e72c24a0ed571a11286928597446c54b792092bc5e790ac5431bfdccd1bc",
+    "lifetime-remapping.rs": "26bbbe6c162e3e89024ef452bc84d713c182758a1c310c4c352de884f3b70b24",
+    "missing-request.rs": "193df39fd7f601858466c32ddc9b75cb7910ee0618fe52f2cc5af896216b2c14",
+    "nested-splitpaths-shaped.rs": "e8be6991a9c38a603386a0e776b973f086e2dd3ecc4d61ff3ff368f91951214d",
+    "nongeneric-defining-argument.rs": "5674660f600ff618e2c5aa31c536a8214c763ea09ce59c1b90c6b772087bdc2a",
+    "nonopaque-alias.rs": "0bde9f35742066cfacb8b2983fba16d761e00580334fefbdb865f582c5c541d2",
+    "nonpath-payload.rs": "39ef6854182052f60f2eb738ba478a2c4b82a1b728e41574c4d822f54cdfd62a",
+    "provider.rs": "32395a248460e876dc79f5fb754fd554eb767c37906ba7ff1c0ce3cefd793296",
+    "repeated-last-attribute.rs": "fb5789f22295ed71c480875615ad37b51a9b6604f7c4240e2863333c55988d75",
+    "same-crate-renamed-path.rs": "84c4e24c3e1c25f3b0bb2308bdf41c4c89a86be845c14c29f5bff8f63e403e18",
+    "setup.rs": "f7adb59cef65330f388e7e807528f04753ae6f6395ee28866ebf5cf0d64eb785",
+    "simple.rs": "58b2fb8ac0e393521cbffe48e7122cdabd17d874bd2f375ae223fa2bd7504a86",
+    "unauthorized-body.rs": "45be4911bac0c84c822a6cc5a7ff9ec702b1a383f67ce6947ffe6bb32d59ae7e",
+    "unconstrained-authorization.rs": "500df411ccaab9c13004205aed06ed9574c2e0248be6c7339dee187834b65b76",
+    "unknown-path.rs": "b7be01937fc1163db84a4bd75a6970987441c0d82532a4c80234762f633bb1d8",
+    "word-payload.rs": "38cbbf601ffe1d772b7b2a4a08a015c6f3938aac90ecffbf3571def1a62297bc",
+    "wrong-placement.rs": "59ec10704df4a21002077b248aa49e3f36529c759cc397a839faa6f936db34d8"
+  },
+  "independent_evidence": {
+    "scope": "All27pinnedRustc metadata statuses+diagnostics,11accept16reject;24byte-identicalV2 reused+3freshV3, setup0. No candidate/runtime/artifact claim.",
+    "receipt_sha256": "32daf61244d609869ef5c6da321adf45f9ef13f44a5af13dc390d89deb0fb630",
+    "v1_manifest_sha256": "ac224c9d542c0b82932f3742388901e317e8252a86dc707d367cf9c98a1f521d",
+    "v2_manifest_sha256": "006f6137db908bb5d027513b9ced341dea3bfaa2459cc3a4c33a367e5bff1c73",
+    "v3_manifest_sha256": "d159327110805d1b01316444ea46d3684c6af11df84ce9684f1b8e2a195e5238",
+    "amendment_sha256": "f7628b41a1094de0969c0af1849ff793e24117de195a45611b01b4adf60857f8",
+    "retained_authoring_failures": "V1unknownlangsend/unknownfn_traitsgate setup, zero semanticcases. V2twoE0308opponents maskedby diagnostic Future role; nongenericprosematcherwaswrong. V3addsFuture+Output onlyto2opponents/setup, correctsprosematcher to actualE0792, preservesallsemanticbodies/statuses. Originalobjpackets/rawrecordsremain."
+  },
+  "candidate_contract": {
+    "view": "--emit-generic-semantics; public expansion, resolution and analyze_source; own source-core context and per-guest features; exactemptybringupskiplist onlywhen guests selected. No LowIR/source-library publication claim.",
+    "ordinary": "Same simple.rs bytes, default context, expected1 profilegap. OrdinaryPA24freeze preserved.",
+    "opponents": "All16languageopponents must reject at own semantic/grammar/ownership boundary, with no budget/timeout/panic/unimplemented success. No negative accepts because it hit an unrelated infrastructure/futurelangfoundation failure.",
+    "source_metadata": "Named opaque publication/import transport remains a checked supported-profile fence; source defining facts are not function-header wire recipes."
+  },
+  "candidate_expected_negative_causes": {
+    "missing-request": "type_alias_impl_trait feature",
+    "unauthorized-body": "incompatible types",
+    "distinct-alias-identities": "incompatible types",
+    "inconsistent-defining-bodies": "concrete type differs",
+    "bound-violation": "user trait obligation requires a matching assumption or implementation",
+    "borrow-cannot-be-static": "outlive|lifetime",
+    "nongeneric-defining-argument": "defining arguments require distinct generic parameters",
+    "unconstrained-authorization": "does not constrain the selected opaque in its output",
+    "wrong-placement": "requires a function with a body",
+    "word-payload": "requires a list of type aliases",
+    "nonpath-payload": "attribute path requires an actual identifier",
+    "unknown-path": "requires an existing local type alias",
+    "nonopaque-alias": "item does not contain any opaque types",
+    "host-request-cannot-pay-guest": "type_alias_impl_trait feature",
+    "guest-request-cannot-pay-host": "type_alias_impl_trait feature",
+    "foreign-alias-owner": "type alias in its own source crate"
+  },
+  "candidate_predicate_note": "These existing/new RustGM diagnostic fragments are declared before any candidate execution; a wrong prediction must be preserved/adjudicated, never softened during a frozen run. Borrow/static allows the two equivalent lifetime/outlives diagnostic leaves of the existing body/region proof; ordinary remains a profile gap.",
+  "candidate_validation": {
+    "source_gate": {
+      "receipt": "obj/qualification/fast/1794931248313898576/receipt.json",
+      "receipt_sha256": "639f2df818ee3519bfdf5f176eceafe5503290aadc8280e490a9367c03c683f5",
+      "status": 0,
+      "selected_tests": 7,
+      "new_cases": 27,
+      "accepts": 10,
+      "rejects": 17,
+      "controls": "own-crate preludes, opaque expression/callable identities, inference separation and two checked async application provenance controls",
+      "static_checks": "strict production/integration Clippy, full formatting, architecture and assignment metadata passed",
+      "subsequent_repairs": "Two cfg(test)-only repairs: exhaustive attribute-effect opponent and direct method reference in the private accounting helper. Production behavior and all case bytes unchanged."
+    },
+    "private_gate": {
+      "receipt": "obj/qualification/fast/1794931929549650182/receipt.json",
+      "state": "infrastructure timeout during the single clippy-driver harness compilation, before test execution",
+      "selected_cases": 21,
+      "executed_cases": 0,
+      "compile_phase_seconds": 226.09,
+      "total_seconds": 276.46,
+      "remaining": "CI must execute the ten new and eleven existing selected private invariants; no passing private result is claimed."
+    },
+    "fixture_checks": {
+      "status": 0,
+      "python_tests": 376,
+      "registered_roots": 529,
+      "suite_binaries": 13,
+      "pinned_upstream_fixtures": 128,
+      "pinned_reference_files": 126,
+      "log_sha256": "70ae6c2efa85d7c8b2e17c90306ce905d8ba7e5f36671a051e92c0c82721fcf2"
+    },
+    "scope": "Source-only defining-body semantics; no native, source-library artifact, metadata transport, release or whole-assignment qualification."
+  }
+}

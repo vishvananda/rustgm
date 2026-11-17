@@ -158,6 +158,7 @@ pub(crate) fn analyze_defining(
     mut close: impl FnMut(&Report, &mut Declarations, DefiningRequest) -> Result<(), Error>,
     mut census: Option<&mut super::census::Census>,
 ) -> Result<Declarations, Error> {
+    facts.prepare_named_opaques(report)?;
     facts.require_lint_context(report)?;
     super::compiler_items::pointee::authenticate(report, &facts)
         .map_err(|error| facts.retain_error_warnings(report.diagnostic(error)))?;

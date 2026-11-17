@@ -42,6 +42,7 @@ mod cfg_gates;
 mod decorated_calls;
 #[path = "expansion/unvisited_syntax.rs"]
 mod default_warnings;
+mod definer_claims;
 mod deprecation;
 mod derive_lists;
 mod diagnostics;
@@ -758,6 +759,7 @@ impl<'a, S: Sources> Engine<'a, S> {
             Body::Builtin(Builtin::Derive | Builtin::DeriveConst) => {
                 return self.begin_derive(index, definition);
             }
+            Body::Builtin(Builtin::DefineOpaque) => return self.define_opaque(index, definition),
             Body::Builtin(Builtin::Test) => return self.remove_test_function(index, definition),
             Body::Builtin(Builtin::GlobalAllocator | Builtin::AllocErrorHandler) => {
                 return self.expand_allocator(index, definition);

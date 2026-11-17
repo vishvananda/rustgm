@@ -27,9 +27,9 @@ fn actual_future_output_rejects_foreign_full_projection_inputs_on_cold_and_warm_
         arguments: GenericArgs::EMPTY,
     };
     assert!(output(&facts, application, future).is_err());
-    let _ = pipeline::future_application(&mut facts, &checked, future)?;
+    let _ = pipeline::future_application(&report, &mut facts, &checked, future)?;
     let wrong_subject = checks::future(&report, &mut facts, "wide", &[])?;
-    let _ = pipeline::future_application(&mut facts, &checked, wrong_subject)?;
+    let _ = pipeline::future_application(&report, &mut facts, &checked, wrong_subject)?;
     let clone = facts
         .source_bindings
         .as_deref()
@@ -83,7 +83,7 @@ fn output_schema_requires_actual_bounds_and_completed_own_family_after_warm_sele
     let (templates, inputs) = checks::prepare(&report, &mut facts)?;
     let checked = checks::verify(&facts, &templates, inputs)?;
     let future = checks::future(&report, &mut facts, "value", &[])?;
-    let _ = pipeline::future_application(&mut facts, &checked, future)?;
+    let _ = pipeline::future_application(&report, &mut facts, &checked, future)?;
     let (trait_, member) = schema::require(&facts)?;
     let trait_application =
         facts
@@ -178,7 +178,7 @@ fn selected_poll() -> Result<(Declarations, FutureMethod)> {
     let (templates, inputs) = checks::prepare(&report, &mut facts)?;
     let checked = checks::verify(&facts, &templates, inputs)?;
     let future = checks::future(&report, &mut facts, "value", &[])?;
-    let _ = pipeline::future_application(&mut facts, &checked, future)?;
+    let _ = pipeline::future_application(&report, &mut facts, &checked, future)?;
     let driven = checks::future(
         &report,
         &mut facts,
@@ -189,7 +189,7 @@ fn selected_poll() -> Result<(Declarations, FutureMethod)> {
             Argument::Type(TypeId::primitive(crate::types::Primitive::U8)),
         ],
     )?;
-    let application = pipeline::future_application(&mut facts, &checked, driven)?;
+    let application = pipeline::future_application(&report, &mut facts, &checked, driven)?;
     let declared = protocol::require(&mut facts)?;
     let mut selected = None;
     for value in &application.body().values {

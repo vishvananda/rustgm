@@ -271,7 +271,7 @@ impl Budget {
         program: &mut proof::Builder,
         instance: Instance,
     ) -> Result<usize, Error> {
-        let prepared = crate::pipeline::future_constructor(facts, templates, instance)
+        let prepared = crate::pipeline::future_constructor(report, facts, templates, instance)
             .map_err(|e| diagnostic(report, None, e))?;
         let family = prepared.body.key();
         self.enter(family, &prepared.body, &prepared.contract)
@@ -303,7 +303,7 @@ impl Budget {
         if self.active.get(&key) == Some(&0) {
             return Ok(());
         }
-        let prepared = crate::pipeline::future_drop(facts, templates, future)
+        let prepared = crate::pipeline::future_drop(report, facts, templates, future)
             .map_err(|e| diagnostic(report, None, e))?;
         if prepared.body.key() != key {
             return Err(diagnostic(
@@ -328,7 +328,7 @@ impl Budget {
         method: crate::sema::coroutine_methods::FutureMethod,
     ) -> Result<usize, Error> {
         let prepared =
-            crate::pipeline::future_poll(facts, templates, method, |facts, application| {
+            crate::pipeline::future_poll(report, facts, templates, method, |facts, application| {
                 program
                     .prove_future_application(facts, templates, application)
                     .map_err(|error| error.message)
@@ -1203,7 +1203,7 @@ pub(super) fn prepare_ordinary<C: Collect>(
     globals: &[DefId],
 ) -> Result<(proof::Builder, Ordinary), Error> {
     let templates = originals.checked;
-    crate::pipeline::checked_future_storage(facts, templates)
+    crate::pipeline::checked_future_storage(report, facts, templates)
         .map_err(|e| diagnostic(report, None, e))?;
     let mut program = body::concrete_selected(
         report,

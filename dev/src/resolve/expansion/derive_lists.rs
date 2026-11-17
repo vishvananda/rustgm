@@ -153,7 +153,7 @@ impl<S: Sources> Engine<'_, S> {
                 self.calls[index].diagnostic("derive list has no actual source attribute role")
             );
         };
-        self.checked_derive_definition(definition, role)?;
+        self.checked_source_builtin(definition, role)?;
         let ranges = self.derive_ranges(index)?;
         let mut transaction = self.prepare_derive_transaction(index, ranges.len())?;
         self.calls
@@ -345,7 +345,11 @@ impl<S: Sources> Engine<'_, S> {
         }
         Ok(result)
     }
-    fn checked_derive_definition(&self, definition: usize, expected: Builtin) -> Result<(), Error> {
+    pub(in crate::resolve::expansion) fn checked_source_builtin(
+        &self,
+        definition: usize,
+        expected: Builtin,
+    ) -> Result<(), Error> {
         let entry = self
             .definitions
             .get(definition)

@@ -333,3 +333,6 @@ mod thread_locals;
 
 #[path = "../../retired_features.rs"]
 mod retired_features;
+
+#[path = "../../tait_aliases.rs"]
+mod tait_aliases;

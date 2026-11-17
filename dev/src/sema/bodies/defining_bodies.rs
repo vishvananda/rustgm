@@ -197,6 +197,7 @@ impl Checker<'_> {
             self.facts
                 .prepare_authored_future_shape(self.report, &function)?;
             schedule.patterns[index] = self.state.pending_patterns.take();
+            self.close_named_body(index, schedule, close)?;
             self.complete_comptime(
                 self.facts.functions[index],
                 &mut schedule.patterns[index],
@@ -239,6 +240,30 @@ impl Checker<'_> {
             Status::Failed(cause) => Ok(Step::Blocked(cause)),
         }
     }
+    fn close_named_body(
+        &mut self,
+        index: usize,
+        schedule: &mut Schedule,
+        close: &mut impl FnMut(&Report, &mut Declarations, DefiningRequest) -> Result<(), Error>,
+    ) -> Result<(), Error> {
+        let owner = self.facts.functions[index].definition;
+        let count = self.facts.opaques.owners.get(&owner).map_or(0, Vec::len);
+        for position in 0..count {
+            let id = self.facts.opaques.owners[&owner][position];
+            if self.facts.is_named_opaque(id)
+                && self.facts.opaques.declarations[&id].hidden.is_none()
+            {
+                self.close_hidden(
+                    id,
+                    self.facts.functions[index].node.node,
+                    &mut schedule.patterns[index],
+                    close,
+                )?;
+            }
+        }
+        Ok(())
+    }
+
     /// Every suspended body waits on the failed one through its hidden types.
     fn unwind(
         &mut self,
@@ -406,8 +431,15 @@ impl Checker<'_> {
             .declarations
             .get(&id)
             .ok_or_else(|| self.error(source, "missing demanded opaque declaration"))?;
+        declaration
+            .require_current(self.facts, id)
+            .map_err(|e| self.error(source, e))?;
+        let owner = self
+            .facts
+            .opaque_defining_owner(id)
+            .ok_or_else(|| self.error(source, "opaque has no authenticated defining owner"))?;
         let target = *owners
-            .get(&declaration.owner)
+            .get(&owner)
             .ok_or_else(|| self.error(source, "opaque hidden type has no defining body"))?;
         if self.facts.functions[target].body.is_none() {
             return Err(self.error(source, "abstract method has no hidden auto-trait contract"));

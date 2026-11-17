@@ -8,6 +8,7 @@ mod future_contract;
 mod futureform;
 pub(crate) use future_contract::check as check_future_contract;
 mod closing;
+pub(crate) mod definitions;
 pub(in crate::sema) mod overrides;
 pub(in crate::sema) mod refinement;
 mod reveal;
@@ -116,6 +117,7 @@ pub(crate) struct Implementation {
 #[derive(Default)]
 pub struct Opaques {
     pub declarations: HashMap<OpaqueId, Declaration>,
+    pub(crate) named: Option<Box<definitions::Named>>,
     pub owners: HashMap<DefId, Vec<OpaqueId>>,
     pub body_results: HashMap<DefId, TypeId>,
     pub(crate) implementations: HashMap<(DefId, OpaqueId), Implementation>,

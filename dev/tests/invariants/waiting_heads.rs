@@ -3,7 +3,7 @@ use super::*;
 
 #[test]
 fn deferred_preparation_keeps_the_existing_cold_record_slot() {
-    assert_eq!(size_of::<crate::sema::opaque::Opaques>(), 144);
+    assert_eq!(size_of::<crate::sema::opaque::Opaques>(), 152);
     assert_eq!(
         size_of::<Option<Box<Preparation>>>(),
         size_of::<Option<Box<crate::abi::templates::Templates>>>()
@@ -175,7 +175,7 @@ fn unresolved_applications_register_once_without_revealing_inferred_heads() -> R
     // Exercise successful queue replay separately from proof authority: this
     // private fixture supplies its scalar defining result directly.
     facts.opaques.owners.insert(DefId(7), vec![id]);
-    facts.close_opaque_results(DefId(7), &[])?;
+    facts.close_opaque_results(&report, DefId(7), &[])?;
     facts.prepare_opaque_storage()?;
     assert_eq!(
         facts.types.storage_head(application)?,
@@ -188,7 +188,7 @@ fn unresolved_applications_register_once_without_revealing_inferred_heads() -> R
         .ok_or("preparation")?
         .steps;
     for _ in 0..128 {
-        facts.close_opaque_results(DefId(7), &[])?;
+        facts.close_opaque_results(&report, DefId(7), &[])?;
         facts.prepare_opaque_storage()?;
     }
     let preparation = facts
@@ -243,7 +243,7 @@ fn failed_wakeup_remains_an_error_after_the_checked_head_closes() -> Result<(), 
         .ok_or("preparation")?
         .steps = 32_000_000;
     let error = facts
-        .close_opaque_results(owner, &[])
+        .close_opaque_results(&report, owner, &[])
         .err()
         .ok_or("missing wakeup budget rejection")?;
     assert!(
@@ -268,7 +268,7 @@ fn failed_wakeup_remains_an_error_after_the_checked_head_closes() -> Result<(), 
     assert!(preparation.ready.is_empty());
     // Even a later cheap no-op cannot make this preparation usable again.
     assert_eq!(preparation.wake(OpaqueId(99)), Err(error));
-    assert_eq!(facts.close_opaque_results(owner, &[]), Err(error));
+    assert_eq!(facts.close_opaque_results(&report, owner, &[]), Err(error));
     assert_eq!(facts.prepare_opaque_storage(), Err(error));
     assert!(facts.types.storage_head(application).is_err());
     Ok(())

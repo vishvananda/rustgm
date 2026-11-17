@@ -45,6 +45,7 @@ impl Stage {
         captures: GenericArgs,
         context: Context,
     ) -> Result<s::Type, &'static str> {
+        require_function_opaque(facts, id)?;
         let contract = facts
             .opaques
             .declarations
@@ -218,4 +219,11 @@ impl Stage {
         }
         Ok(())
     }
+}
+
+fn require_function_opaque(facts: &Declarations, id: OpaqueId) -> Result<(), &'static str> {
+    if facts.is_named_opaque(id) {
+        return Err("named opaque source metadata publication is outside the supported profile");
+    }
+    Ok(())
 }

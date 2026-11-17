@@ -2,6 +2,7 @@
 use crate::{
     body::{coroutines, instantiate::FutureApplication},
     borrow::templates::Checked,
+    resolve::expansion::Report,
     sema::model::Declarations,
     types::{Kind, TypeId},
 };
@@ -9,6 +10,7 @@ use crate::{
 /// Complete storage from the one actual checked family before immutable cleanup queries.
 /// This supplies no generated constructor, poll/drop entry or native permission.
 pub(crate) fn checked_future_storage(
+    report: &Report,
     facts: &mut Declarations,
     checked: &Checked<'_>,
 ) -> Result<(), String> {
@@ -29,7 +31,7 @@ pub(crate) fn checked_future_storage(
             return Err("future storage changed its actual checked source family".into());
         }
         facts.infer_checked_async_future(owner, arena)?;
-        facts.close_opaque_results(owner, &regions.hidden_regions)?;
+        facts.close_opaque_results(report, owner, &regions.hidden_regions)?;
         published = true;
     }
     if !published {
@@ -43,6 +45,7 @@ pub(crate) fn checked_future_storage(
 /// # Errors
 /// Rejects foreign/stale families, wrong owners/capture frames and failed input proofs.
 pub fn future_application(
+    report: &Report,
     facts: &mut Declarations,
     checked: &Checked<'_>,
     future: TypeId,
@@ -59,7 +62,7 @@ pub fn future_application(
         return Err("async application changed its actual checked region owner".into());
     }
     facts.infer_checked_async_future(definition, arena)?;
-    facts.close_opaque_results(definition, &regions.hidden_regions)?;
+    facts.close_opaque_results(report, definition, &regions.hidden_regions)?;
     if facts.checked_future_definition(future)? != definition {
         return Err("async application belongs to another actual checked function".into());
     }
@@ -74,6 +77,7 @@ pub fn future_application(
 /// A real scheduled poll consumes the checked application after its ordinary loan proof.
 /// This finite profile supplies no caller premises for remaining formation requirements.
 pub(crate) fn future_poll(
+    report: &Report,
     facts: &mut Declarations,
     checked: &Checked<'_>,
     method: crate::sema::coroutine_methods::FutureMethod,
@@ -89,7 +93,7 @@ pub(crate) fn future_poll(
     >,
 ) -> Result<coroutines::Constructed, String> {
     method.validate(facts)?;
-    let application = future_application(facts, checked, method.key().future)?;
+    let application = future_application(report, facts, checked, method.key().future)?;
     application.with_parts(
         facts,
         |facts, materialized| {
@@ -114,6 +118,7 @@ pub(crate) fn future_poll(
 
 /// Authenticate constructor readiness without materializing or running the deferred body.
 pub(crate) fn future_constructor(
+    report: &Report,
     facts: &mut Declarations,
     checked: &Checked<'_>,
     instance: crate::types::instance::Instance,
@@ -139,7 +144,7 @@ pub(crate) fn future_constructor(
         return Err("future construction changed its actual checked source family".into());
     }
     facts.infer_checked_async_future(definition, arena)?;
-    facts.close_opaque_results(definition, &regions.hidden_regions)?;
+    facts.close_opaque_results(report, definition, &regions.hidden_regions)?;
     let mut fold = crate::types::substitute::Bound::new(Vec::new());
     let formation = facts.authored_future_requirements(actual.future, &mut fold, 0)?;
     if !formation.is_empty() {
@@ -151,6 +156,7 @@ pub(crate) fn future_constructor(
 
 /// A cleanup demand selects the real checked family, never a source destructor Instance.
 pub(crate) fn future_drop(
+    report: &Report,
     facts: &mut Declarations,
     checked: &Checked<'_>,
     future: TypeId,
@@ -170,7 +176,7 @@ pub(crate) fn future_drop(
         return Err("future Drop changed its actual checked source family".into());
     }
     facts.infer_checked_async_future(definition, arena)?;
-    facts.close_opaque_results(definition, &regions.hidden_regions)?;
+    facts.close_opaque_results(report, definition, &regions.hidden_regions)?;
     let mut fold = crate::types::substitute::Bound::new(Vec::new());
     let formation = facts.authored_future_requirements(future, &mut fold, 0)?;
     if !formation.is_empty() {

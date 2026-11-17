@@ -103,6 +103,7 @@ pub fn analyze_expanded(
         .and_then(|()| resolver.declare_pending(&pending, &mut work))
         .and_then(|()| resolver.finish_imports(work))
         .and_then(|work| resolver.bodies().map(|()| work));
+    let result = result.and_then(|work| report.resolve_named_opaques(&mut state).map(|()| work));
     report.resolution = state.facts;
     let work =
         result.map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;

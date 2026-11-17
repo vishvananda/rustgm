@@ -20,6 +20,8 @@ pub enum Effect {
     /// This exact `#[global_allocator]` or `#[alloc_error_handler]` installed
     /// its generated items beside its owner, which it keeps.
     ExpandedAllocator,
+    /// This authenticated attribute retained its checked defining-owner paths.
+    DefinedOpaque,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

@@ -1,0 +1,27 @@
+simple	simple.rs	0	source-host	-	-
+backtrace-shaped	backtrace-shaped.rs	0	source-host	-	-
+nested-splitpaths-shaped	nested-splitpaths-shaped.rs	0	source-host	-	-
+generic-remapping	generic-remapping.rs	0	source-host	-	-
+lifetime-remapping	lifetime-remapping.rs	0	source-host	-	-
+same-crate-renamed-path	same-crate-renamed-path.rs	0	source-host	-	-
+consistent-defining-bodies	consistent-defining-bodies.rs	0	source-host	-	-
+repeated-last-attribute	repeated-last-attribute.rs	0	source-host	-	-
+empty-list	empty-list.rs	0	source-host	-	-
+missing-request	missing-request.rs	1	source-host	-	type_alias_impl_trait feature
+unauthorized-body	unauthorized-body.rs	1	source-host	-	incompatible types
+distinct-alias-identities	distinct-alias-identities.rs	1	source-host	-	incompatible types
+inconsistent-defining-bodies	inconsistent-defining-bodies.rs	1	source-host	-	concrete type differs
+bound-violation	bound-violation.rs	1	source-host	-	user trait obligation requires a matching assumption or implementation
+borrow-cannot-be-static	borrow-cannot-be-static.rs	1	source-host	-	outlive|lifetime
+nongeneric-defining-argument	nongeneric-defining-argument.rs	1	source-host	-	defining arguments require distinct generic parameters
+unconstrained-authorization	unconstrained-authorization.rs	1	source-host	-	does not constrain the selected opaque in its output
+wrong-placement	wrong-placement.rs	1	source-host	-	requires a function with a body
+word-payload	word-payload.rs	1	source-host	-	requires a list of type aliases
+nonpath-payload	nonpath-payload.rs	1	source-host	-	attribute path requires an actual identifier
+unknown-path	unknown-path.rs	1	source-host	-	requires an existing local type alias
+nonopaque-alias	nonopaque-alias.rs	1	source-host	-	item does not contain any opaque types
+ordinary-profile-frozen	simple.rs	1	ordinary	-	-
+guest-own-request	host-no-request.rs	0	source-guest	app@2024=guest-own.rs	-
+host-request-cannot-pay-guest	foundation.rs	1	source-guest	app@2024=guest-missing.rs	type_alias_impl_trait feature
+guest-request-cannot-pay-host	missing-request.rs	1	source-guest	app@2024=guest-own.rs	type_alias_impl_trait feature
+foreign-alias-owner	provider.rs	1	source-guest	app@2024=guest-foreign.rs	type alias in its own source crate

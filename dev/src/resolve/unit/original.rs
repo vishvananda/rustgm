@@ -160,6 +160,7 @@ impl Unit {
                         effect.attribute.effect,
                         crate::expand::configured::Effect::ExpandedDerive
                             | crate::expand::configured::Effect::ExpandedAllocator
+                            | crate::expand::configured::Effect::DefinedOpaque
                     ) {
                         effect.attribute.effect = crate::expand::configured::Effect::Keep;
                     }

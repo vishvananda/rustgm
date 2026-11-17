@@ -231,7 +231,10 @@ impl Demand {
                 .site(facts)
                 .map_or_else(Error::unlocated, |site| report.body_error(site, message))
         })?;
-        Ok((declaration.owner, source))
+        let owner = facts
+            .opaque_defining_owner(id)
+            .ok_or_else(|| Error::unlocated("opaque hidden type lost its defining body"))?;
+        Ok((owner, source))
     }
     fn close(
         &mut self,
@@ -326,7 +329,7 @@ impl Demand {
         }
         drop(checked);
         facts
-            .close_opaque_results(owner, &choices)
+            .close_opaque_results(report, owner, &choices)
             .map_err(|e| report.body_error(source, e))?;
         for template in templates.bodies {
             self.retain_defining_original(

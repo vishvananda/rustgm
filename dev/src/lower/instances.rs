@@ -706,7 +706,7 @@ fn inspect_staged<S, R>(
         crate::pipeline::cdrop::templates(report, facts, inputs, &templates, &contexts, &custom)
             .map_err(|e| diagnostic(report, e.node, e.message))?;
     publish_closure_conditions(facts, &checked).map_err(|e| diagnostic(report, None, e.into()))?;
-    publish_source_opaque_heads(facts, &checked)
+    publish_source_opaque_heads(report, facts, &checked)
         .map_err(|(source, message)| diagnostic(report, Some(source.into()), message.into()))?;
     facts
         .prepare_opaque_storage_located()
@@ -841,6 +841,7 @@ fn publish_closure_conditions(
 }
 
 fn publish_source_opaque_heads(
+    report: &Report,
     facts: &mut Declarations,
     checked: &borrow::templates::Checked<'_>,
 ) -> Result<(), (crate::body::ir::BodyOrigin, &'static str)> {
@@ -886,7 +887,7 @@ fn publish_source_opaque_heads(
                     .map_err(|error| (proof.source, error))?;
             }
             facts
-                .close_opaque_results(owner, &proof.hidden_regions)
+                .close_opaque_results(report, owner, &proof.hidden_regions)
                 .map_err(|error| (proof.source, error))?;
         }
     }

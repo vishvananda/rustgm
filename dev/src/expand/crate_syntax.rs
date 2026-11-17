@@ -367,6 +367,7 @@ pub fn write_configuration<L>(
                 Effect::Keep => writeln!(output, " keep")?,
                 Effect::ExpandedDerive => writeln!(output, " expanded-derive")?,
                 Effect::ExpandedAllocator => writeln!(output, " expanded-allocator")?,
+                Effect::DefinedOpaque => writeln!(output, " defined-opaque")?,
                 Effect::Cfg(value) => writeln!(output, " cfg={value}")?,
                 Effect::CfgAttr(value) => writeln!(output, " cfg_attr={value}")?,
                 Effect::ConditionalLink(value) => writeln!(output, " link_cfg={value}")?,

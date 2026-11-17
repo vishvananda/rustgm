@@ -10,6 +10,7 @@ pub(crate) struct Effects {
     pub policy: Option<Producer>,
     pub(super) derives: Option<Box<super::derive_lists::Transactions>>,
     pub(super) visibilities: Option<Box<super::unnamed_visibility::Causes>>,
+    pub(super) opaques: Option<Box<super::definer_claims::Claims>>,
     pub(crate) values: Option<Box<super::metavalues::Values>>,
 }
 impl Report {

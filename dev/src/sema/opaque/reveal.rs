@@ -161,7 +161,7 @@ impl Declarations {
     }
     fn opaque_storage_failure(&self, ty: TypeId, message: &'static str) -> StorageFailure {
         let owner = match self.types.kind(ty) {
-            Some(Kind::Opaque(id, _)) => self.opaques.declarations.get(&id).map(|d| d.owner),
+            Some(Kind::Opaque(id, _)) => self.opaque_defining_owner(id),
             _ => None,
         };
         StorageFailure { owner, message }

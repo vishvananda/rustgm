@@ -202,7 +202,7 @@ fn local_derive_feature<'a>(
 ) -> Result<Option<&'a str>, Error> {
     if !matches!(
         definition.body,
-        Body::Builtin(Builtin::Derive | Builtin::DeriveConst)
+        Body::Builtin(Builtin::Derive | Builtin::DeriveConst | Builtin::DefineOpaque)
     ) {
         return Ok(None);
     }

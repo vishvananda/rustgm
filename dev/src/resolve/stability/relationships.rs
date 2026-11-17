@@ -90,7 +90,8 @@ impl Draft<'_> {
             let known = features.contains_key(name.as_ref())
                 || (aggregate_language
                     && matches!(name.as_ref(), "min_adt_const_params" | "adt_const_params"))
-                || (async_destruction && name.as_ref() == "async_drop");
+                || (async_destruction && name.as_ref() == "async_drop")
+                || (package.requested_named_opaque() && name.as_ref() == "type_alias_impl_trait");
             if !known
                 && !imported
                     .map(|imports| imports.has_feature(name))

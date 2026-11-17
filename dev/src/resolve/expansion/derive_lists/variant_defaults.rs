@@ -314,7 +314,7 @@ impl<S: Sources> Engine<'_, S> {
         index: usize,
         definition: usize,
     ) -> Result<Option<Choice>, Error> {
-        self.checked_derive_definition(definition, Builtin::Default)?;
+        self.checked_source_builtin(definition, Builtin::Default)?;
         let entry = self.derive_entry(index)?;
         let choice = select(&self.loader.package, entry.owner)?;
         if choice.is_some() {

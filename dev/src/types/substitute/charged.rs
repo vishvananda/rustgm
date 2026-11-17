@@ -5,6 +5,16 @@ use crate::{
     types::{Store, TypeId, arguments::Argument, parameters::ParameterId},
 };
 impl Bound {
+    /// Apply the existing typed fold under an actual source allocation payer.
+    pub(crate) fn apply_charged(
+        &mut self,
+        store: &mut Store,
+        ty: TypeId,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<TypeId, &'static str> {
+        self.apply_inside_observed::<true>(store, ty, 0, charge)
+    }
+
     pub(crate) fn arguments_charged(
         &mut self,
         store: &mut Store,

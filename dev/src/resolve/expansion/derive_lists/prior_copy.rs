@@ -46,7 +46,7 @@ impl<S: Sources> Engine<'_, S> {
                 }
                 let definition = &self.definitions[invocation.definition];
                 if matches!(definition.body, Body::Builtin(Builtin::Copy)) {
-                    self.checked_derive_definition(invocation.definition, Builtin::Copy)?;
+                    self.checked_source_builtin(invocation.definition, Builtin::Copy)?;
                     return Ok(true);
                 }
             }

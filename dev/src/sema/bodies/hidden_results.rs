@@ -1,4 +1,7 @@
 //! Hidden result inference belongs exclusively to the defining body.
+#[cfg(test)]
+#[path = "../../../tests/invariants/representation_publication.rs"]
+mod tests;
 use super::{Checker, Error, NodeId, TermId};
 use crate::types::{
     infer::{Instantiation, Solved},
@@ -82,13 +85,7 @@ impl Checker<'_> {
         self.state.opaque_terms.sort_unstable_by_key(|(id, _)| id.0);
         for index in 0..self.state.opaque_terms.len() {
             let (id, term) = self.state.opaque_terms[index];
-            let application = self
-                .facts
-                .opaques
-                .declarations
-                .get(&id)
-                .ok_or_else(|| self.error(node, "missing defining opaque application"))?
-                .application;
+            let application = self.defining_opaque_application(node, id)?;
             let application = self.alias_type(node, application)?;
             self.state
                 .infer
@@ -99,6 +96,7 @@ impl Checker<'_> {
             // hidden representation must still prove every bound after inference.
             let bounds = self.facts.opaques.declarations[&id].bounds.clone();
             for clause in bounds {
+                let clause = self.defining_opaque_clause(node, id, clause)?;
                 self.declared_closure_signature(node, id, term, clause)?;
             }
         }
@@ -130,26 +128,38 @@ impl Checker<'_> {
                 .source()
                 .map_err(|e| self.error(self.state.body.node, e))?;
             let bounds = declaration.bounds.clone();
+            let node = if self.facts.is_named_opaque(id) {
+                self.state.body.node
+            } else {
+                source.node
+            };
+            let application = self.defining_opaque_application(node, id)?;
+            let application = if self.facts.is_named_opaque(id) {
+                self.alias_type(node, application)?
+            } else {
+                application
+            };
             let mut substitution = crate::types::substitute::Bound::defining_results(
                 &self.facts.types,
-                crate::support::hash::HashMap::from_iter([(declaration.application, hidden)]),
+                crate::support::hash::HashMap::from_iter([(application, hidden)]),
             )
-            .map_err(|e| self.error(source.node, e))?;
-            self.prove_bound(source.node, hidden, Bound::Sized)?;
+            .map_err(|e| self.error(node, e))?;
+            self.prove_bound(node, hidden, Bound::Sized)?;
             let mut checked = super::bounds::Requirements::default();
             for clause in bounds {
+                let clause = self.defining_opaque_clause(node, id, clause)?;
                 let clause = substitution
                     .clause(&mut self.facts.types, clause)
-                    .map_err(|e| self.error(source.node, e))?;
+                    .map_err(|e| self.error(node, e))?;
                 match clause {
                     Clause::UnstableFeature(_) => {
-                        self.defer_canonical_requirement(source.node, clause)?;
+                        self.defer_canonical_requirement(node, clause)?;
                     }
                     Clause::Predicate(value) => {
-                        self.prove_bound(source.node, value.ty, value.bound)?;
+                        self.prove_bound(node, value.ty, value.bound)?;
                     }
                     Clause::ForAll(_) => {
-                        self.prove_quantified_requirement(source.node, clause, &mut checked)?;
+                        self.prove_quantified_requirement(node, clause, &mut checked)?;
                     }
                 }
             }
@@ -157,14 +167,14 @@ impl Checker<'_> {
             let inferred = hidden;
             let mut uses = crate::types::bound_uses::Uses::including_free();
             uses.collect(&self.facts.types, hidden)
-                .map_err(|e| self.error(source.node, e))?;
+                .map_err(|e| self.error(node, e))?;
             let mut free_regions: Vec<_> = uses.free_regions().collect();
             free_regions.sort_unstable_by_key(|r| r.0);
             let hidden = if free_regions.is_empty() {
                 Some(
                     closing
                         .apply(&mut self.facts.types, hidden)
-                        .map_err(|e| self.error(source.node, e))?,
+                        .map_err(|e| self.error(node, e))?,
                 )
             } else {
                 None
@@ -187,7 +197,27 @@ impl Checker<'_> {
     }
 
     pub(super) fn publish_hidden_results(&mut self, results: HiddenResults) -> Result<(), Error> {
-        for value in results.values {
+        for mut value in results.values {
+            let owner = self.state.environment_owner.ok_or_else(|| {
+                self.error(value.source.node, "opaque result lost its defining body")
+            })?;
+            if self.facts.is_named_opaque(value.id) {
+                if let Some(hidden) = value.closed {
+                    let hidden = self
+                        .facts
+                        .close_named_hidden(self.report, owner, value.id, hidden)
+                        .map_err(|e| self.error(value.source.node, e))?;
+                    self.facts
+                        .compare_named_hidden(value.id, hidden)
+                        .map_err(|e| self.error(value.source.node, e))?;
+                    value.closed = Some(hidden);
+                    value.inferred = hidden;
+                } else {
+                    self.facts
+                        .stage_named_hidden(self.report, owner, value.id)
+                        .map_err(|e| self.error(value.source.node, e))?;
+                }
+            }
             let declaration = self
                 .facts
                 .opaques
@@ -218,6 +248,61 @@ impl Checker<'_> {
             self.facts.opaques.body_results.insert(owner, result);
         }
         Ok(())
+    }
+
+    fn defining_opaque_application(
+        &self,
+        node: NodeId,
+        id: crate::types::opaque::OpaqueId,
+    ) -> Result<super::TypeId, Error> {
+        let declaration = self
+            .facts
+            .opaques
+            .declarations
+            .get(&id)
+            .ok_or_else(|| self.error(node, "missing defining opaque application"))?;
+        let actual = self
+            .state
+            .environment_owner
+            .map(|owner| self.facts.require_named_application(owner, id))
+            .transpose()
+            .map_err(|e| self.error(node, e))?
+            .flatten();
+        if self.facts.is_named_opaque(id) && actual.is_none() {
+            return Err(self.error(node, "named opaque is not authorized in this defining body"));
+        }
+        let application = actual.unwrap_or(declaration.application);
+        if !matches!(self.facts.types.kind(application),Some(crate::types::Kind::Opaque(actual,_)) if actual==id)
+        {
+            return Err(self.error(
+                node,
+                "defining opaque application changed its canonical identity",
+            ));
+        }
+        Ok(application)
+    }
+    fn defining_opaque_clause(
+        &mut self,
+        node: NodeId,
+        id: crate::types::opaque::OpaqueId,
+        clause: Clause,
+    ) -> Result<Clause, Error> {
+        let Some(owner) = self.state.environment_owner else {
+            return Ok(clause);
+        };
+        let Some(mut opening) = self
+            .facts
+            .named_opaque_opening(self.report, owner, id)
+            .map_err(|e| self.error(node, e))?
+        else {
+            return Ok(clause);
+        };
+        let clause = opening
+            .clause_charged(&mut self.facts.types, clause, &|steps, bytes| {
+                self.report.package.pay_named_opaque(steps, bytes)
+            })
+            .map_err(|e| self.error(node, e))?;
+        self.alias_clause(node, clause)
     }
 
     fn hidden_region_closure(

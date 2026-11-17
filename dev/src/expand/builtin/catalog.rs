@@ -248,6 +248,7 @@ impl Builtin {
                 | Self::Unreachable
                 | Self::ConcatBytes
                 | Self::Test
+                | Self::DefineOpaque
                 | Self::GlobalAllocator
                 | Self::AllocErrorHandler
                 | Self::PatternType
