@@ -1199,7 +1199,7 @@ impl Checker<'_> {
         let mut nominal_types = bounds::Requirements::default();
         // An implicit reborrow introduces a dereferenced storage place even
         // when the source expression is only a reference.
-        for ty in self.borrow_storage(solved) {
+        for ty in self.borrow_storage(solved)? {
             self.prepare_storage(body, ty)?;
         }
         // A generic result retains declaration lifetimes even when its expression

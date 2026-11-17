@@ -282,6 +282,9 @@ impl Checker<'_> {
             );
         let main_equalities = main_start..self.facts.region_equalities.len();
         self.publish_body_types(body, &solved)?;
+        // The storage pass also consumes the selected pattern terms, including
+        // their actual source-place reference contexts.
+        self.state.pattern_types.clear();
         let callable_dependencies = self.dependency_frontier();
         self.publish_constant_callables()?;
         let callable_dependencies = self.dependency_append(&callable_dependencies)?;

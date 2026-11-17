@@ -1,4 +1,5 @@
 //! Prepare this body's concrete field graphs before immutable ownership queries.
+mod referents;
 use super::{
     Checker, Error, NodeId, NodeKey, Requirement, TypeId, projections::evidence::Evidence,
 };
@@ -68,9 +69,12 @@ impl Checker<'_> {
         }))
     }
 
-    fn storage_roots(&self, solved: &crate::types::infer::Solved) -> Result<Vec<TypeId>, Error> {
+    fn storage_roots(
+        &mut self,
+        solved: &crate::types::infer::Solved,
+    ) -> Result<Vec<TypeId>, Error> {
         let mut roots = vec![self.state.result];
-        roots.extend(self.borrow_storage(solved));
+        roots.extend(self.borrow_storage(solved)?);
         roots.extend(self.pointer_cast_storage(solved)?);
         for &node in &self.state.touched {
             if !self.state.type_annotations.contains(&node) {
@@ -105,19 +109,49 @@ impl Checker<'_> {
     /// classification reads that place's fields even when no value is moved.
     /// Keep source order and reuse the actual selected borrow, including raw
     /// pointer coercions; unrelated reference types remain unexpanded.
-    pub(super) fn borrow_storage(&self, solved: &crate::types::infer::Solved) -> Vec<TypeId> {
-        if self.state.reference_adjustments.is_empty() {
-            return Vec::new();
+    pub(super) fn borrow_storage(
+        &mut self,
+        solved: &crate::types::infer::Solved,
+    ) -> Result<Vec<TypeId>, Error> {
+        let source = self.facts.source_bindings.is_some();
+        if !source && self.state.reference_adjustments.is_empty() {
+            return Ok(Vec::new());
         }
-        (0..self.state.adjustments.len())
-            .filter_map(|index| {
-                let (_, borrow) = self.state.reference_adjustments.get(&index)?;
-                match self.facts.types.kind(solved.types[borrow.0 as usize]) {
-                    Some(crate::types::Kind::Reference { referent, .. }) => Some(referent),
-                    _ => None,
+        let mut roots = self.projected_storage(solved)?;
+        let mut work = 0;
+        let result = (|| {
+            for (index, adjustment) in self.state.adjustments.iter().enumerate() {
+                if source {
+                    self.storage_visit(&mut work, 1)?;
                 }
-            })
-            .collect()
+                let Some((conversion, borrow)) = self.state.reference_adjustments.get(&index)
+                else {
+                    continue;
+                };
+                if let Some(crate::types::Kind::Reference { referent, .. }) =
+                    self.facts.types.kind(solved.types[borrow.0 as usize])
+                {
+                    roots.push(referent);
+                }
+                if !source {
+                    continue;
+                }
+                let mut actual = solved.types[adjustment.actual.0 as usize];
+                for _ in 0..conversion.dereferences {
+                    self.storage_visit(&mut work, 1)?;
+                    let Some(referent) = self.storage_referent(adjustment.node, actual)? else {
+                        break;
+                    };
+                    roots.push(referent);
+                    actual = referent;
+                }
+            }
+            Ok::<(), Error>(())
+        })();
+        self.facts.body_work.canonical_steps =
+            self.facts.body_work.canonical_steps.saturating_add(work);
+        result?;
+        Ok(roots)
     }
 
     /// Declaration-time typing of a demanded body can reach a nominal whose

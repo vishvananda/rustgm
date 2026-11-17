@@ -1451,3 +1451,8 @@ references to closure locals and local captured storage remain rejected.
 `spec/vacuous-callable-formation/outcomes.json` declares `new.rs`,
 `angleout.rs`, `rejected.rs` and shared `observe.c`: an empty callable
 binder preserves DropGuard formation while unpaid const Drop still rejects.
+
+`spec/generic-pattern-storage/` declares six accepted source-core reference
+patterns and two lifetime/move opponents in `outcomes.json`; `observe.c` checks
+actual generic tuple/record/ergonomic bindings. The registered frontend root
+`destructured_storage` checks source outcomes and native `41 59` output.

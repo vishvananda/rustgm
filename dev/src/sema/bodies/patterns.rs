@@ -29,7 +29,7 @@ impl Checker<'_> {
         &mut self,
         solved: &crate::types::infer::Solved,
     ) -> Result<(), Error> {
-        for (id, term) in self.state.pattern_types.drain(..) {
+        for &(id, term) in &self.state.pattern_types {
             let ty = solved.types[term.0 as usize];
             let pattern = &mut self.facts.patterns.nodes[id.0 as usize];
             pattern.ty = Some(ty);

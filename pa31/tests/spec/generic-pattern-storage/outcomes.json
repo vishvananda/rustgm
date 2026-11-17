@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "declared": "2026-11-17 before either compiler ran on these fixture bytes",
+  "rustc": "1.98.0",
+  "native_stdout": "41 59\n",
+  "cases": {
+    "tuple.rs": {
+      "status": 0,
+      "sha256": "6501035b99654b0b9bc97cf319e608f77b4b5157953e26695b1d2137a425c1dd"
+    },
+    "record.rs": {
+      "status": 0,
+      "sha256": "4474082ae4242cb509ed81daf782e205d0a9d149b5742fef8617399c7cd6f1ec"
+    },
+    "ergonomic.rs": {
+      "status": 0,
+      "sha256": "a388e9d489ac644c667965682c1750483444f7c6cfd51714fb508aac2407c39b"
+    },
+    "unpaid-lifetime.rs": {
+      "status": 1,
+      "sha256": "c203cba3f240bf4115d073398b767684d42104925ee3e655feff2a1c81e14e4a"
+    },
+    "move-from-reference.rs": {
+      "status": 1,
+      "sha256": "81b508a770e4e48c094e99a87ff8771324fde00e7ca5cf3327aed01ab186cb9a"
+    },
+    "nested.rs": {
+      "status": 0,
+      "sha256": "e52afec3dd0e0c4a8addc147b68eae48dd479fc70a2586519b7a1b6537c19687"
+    },
+    "parameter.rs": {
+      "status": 0,
+      "sha256": "6422bb34350a0884e3133f4ba7fecf87d2f8e8b95d62df06e14693729c35021b"
+    },
+    "match.rs": {
+      "status": 0,
+      "sha256": "29a74a885bb159b59c8c3537ef27d88b58d2b6e64357d123757d6849c0b3747f",
+      "declared": "Before either compiler execution: explicit and ergonomic match scrutinee places retain source storage, native41 59"
+    }
+  },
+  "observer": "observe.c",
+  "observer_sha256": "282aeac9968129cc07a897cd5e4d130761135102e9a764c65127a632eefcbfef",
+  "scaling": {
+    "declared": "before either compiler ran on generated source family",
+    "counts": [
+      8,
+      32,
+      128
+    ],
+    "recipe": "tuple.rs foundation before pub fn consume plus N distinct consume_N<T> functions with the same guard reference destructuring",
+    "status": 0,
+    "bound": "field-instantiation and canonical-work increments grow by at most 8 times when source increments grow from 24 to 96 functions"
+  }
+}

@@ -287,6 +287,8 @@ mod guest_crates;
 
 #[path = "../../guest_editions.rs"]
 mod guest_editions;
+#[path = "../../destructured_storage.rs"]
+mod destructured_storage;
 
 #[path = "../../knowledge_sources.rs"]
 mod knowledge_sources;
