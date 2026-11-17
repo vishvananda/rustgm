@@ -100,6 +100,11 @@ fn take(
         .filter(|region| region.bound_parts().is_none())
         .map(|region| region.0.saturating_add(1))
         .fold(reserved, u32::max);
+    // The prefix protects observed external identities, even when the
+    // caller transports no owned regions. Pay its diagnostic slots once.
+    let prefix = (first - reserved) as usize;
+    let prefix_bytes = prefix
+        .saturating_mul(4 * size_of::<(crate::sema::numbered_regions::AllocatedRegion, u32)>());
     // `owned` comes from the exact original Contract, whose local proof IDs
     // may collide numerically with another body's diagnostic arena. Rename
     // those locals before inserting external actuals; never interpret the
@@ -119,6 +124,7 @@ fn take(
     let bytes = catalog
         .namespace_available()
         .saturating_sub(metadata)
+        .saturating_sub(prefix_bytes)
         .saturating_sub(scratch);
     let mut transport = OwnedTransport::new_budgeted(owned, &[], key.universals, first, bytes)?;
     transport.check_actuals(super::observed_arguments::regions(facts, key.enclosing)?)?;
@@ -139,6 +145,7 @@ fn take(
         .map_or(size_of::<Namespaces>(), |n| n.bytes);
     let planned = current
         .saturating_add(bytes)
+        .saturating_add(prefix_bytes)
         .saturating_add(crate::support::retained::new_map::<CallerKey, Entry>(1));
     catalog.namespace_budget(planned)?;
     if catalog
@@ -148,14 +155,11 @@ fn take(
     {
         return Err("source caller namespace count budget exceeded");
     }
-    // These are diagnostic/ownership slots, never executable proof publication.
-    let interval = transport.interval_range();
-    let allocated = if interval.is_empty() {
-        reserved..reserved
-    } else {
-        reserved..interval.end
-    };
+    // An empty interval still designates the authenticated floor. Reserve its
+    // prefix without admitting any of those external IDs into the transport.
+    let allocated = reserved..transport.interval_range().end;
     Reservation::default().reserve(facts, key.source, key.source, allocated)?;
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(prefix);
     let namespaces = facts
         .source_computations
         .as_deref_mut()
