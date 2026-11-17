@@ -2,6 +2,7 @@
 use super::{Checker, Constructor, Error, Kind, NodeId, Operation, TermId, Work};
 mod operands;
 use crate::sema::model::{AdjustmentKind, BodyRegionOrigin, ReferenceConversion};
+pub(super) use operands::Expectation;
 #[cfg(test)]
 #[path = "../../../tests/invariants/shared_reborrows.rs"]
 mod tests;
@@ -541,17 +542,23 @@ impl Checker<'_> {
         } else {
             None
         };
-        if let Some(expected) = referent
-            && self.value_borrow_operand(operand)?
-        {
-            self.state.work.push(Work::PrepareBorrowOperand {
-                node,
-                operand,
-                expected,
-            });
-        } else {
-            self.state.work.push(Work::Enter(operand, referent));
+        if let Some(expected) = referent {
+            let kind = self.borrow_operand_kind(operand)?;
+            let coerce_value = kind == operands::BorrowOperand::CoercibleValue;
+            if coerce_value
+                || (kind == operands::BorrowOperand::OtherValue
+                    && self.facts.source_bindings.is_some())
+            {
+                self.state.work.push(Work::PrepareBorrowOperand {
+                    node,
+                    operand,
+                    expected,
+                    coerce_value,
+                });
+                return Ok(());
+            }
         }
+        self.state.work.push(Work::Enter(operand, referent));
         Ok(())
     }
     pub(super) fn borrow(

@@ -68,6 +68,7 @@ mod protocol_control;
 mod range_values;
 mod reborrow_coercions;
 mod references;
+use references::Expectation;
 mod safety;
 mod selected_arguments;
 mod shared_value_regions;
@@ -257,12 +258,12 @@ enum Work {
     },
     MatchArms {
         node: NodeId,
-        expected: Option<TermId>,
+        expected: Expectation,
     },
     Arm {
         index: u32,
         term: TermId,
-        expected: Option<TermId>,
+        expected: Expectation,
     },
     BindPattern {
         pattern: NodeId,
@@ -270,6 +271,7 @@ enum Work {
         value: Option<NodeId>,
     },
     Enter(NodeId, Option<TermId>),
+    EnterUnsizedRvalue(NodeId, TermId),
     Exit(NodeId),
     CompleteExpression(NodeId, TermId),
     Field(NodeId, aggregates::Field),
@@ -280,8 +282,9 @@ enum Work {
         node: NodeId,
         operand: NodeId,
         expected: TermId,
+        coerce_value: bool,
     },
-    CallArguments(NodeId, Option<TermId>),
+    CallArguments(NodeId, Expectation),
     PrepareCallArgument {
         call: NodeId,
         argument: NodeId,
@@ -970,6 +973,10 @@ impl Checker<'_> {
             }
         }
     }
+    #[expect(
+        clippy::too_many_lines,
+        reason = "keeps the iterative body-work transitions and dependency suspension in one dispatch"
+    )]
     fn advance_current_body(&mut self) -> Result<Option<Dependency>, Error> {
         let body = self.state.body.node;
         if let Some(dependency) = self.resume_body_inputs()? {
@@ -1023,8 +1030,13 @@ impl Checker<'_> {
                     term,
                     value,
                 } => self.bind_pattern_value(pattern, term, value)?,
-                Work::Enter(node, expected) if self.active(node) => self.enter(node, expected)?,
-                Work::Enter(..) => {}
+                Work::Enter(node, expected) if self.active(node) => {
+                    self.enter(node, Expectation::from_type(expected))?;
+                }
+                Work::EnterUnsizedRvalue(node, expected) if self.active(node) => {
+                    self.enter(node, Expectation::UnsizedRvalue(expected))?;
+                }
+                Work::Enter(..) | Work::EnterUnsizedRvalue(..) => {}
                 Work::CoerceElement(node, expected) => self.coerce(node, expected)?,
                 work @ (Work::PrepareBorrowOperand { .. }
                 | Work::PrepareCallArgument { .. }
@@ -1098,7 +1110,8 @@ impl Checker<'_> {
                 node,
                 operand,
                 expected,
-            } => self.prepare_borrow_operand(*node, *operand, *expected)?,
+                coerce_value,
+            } => self.prepare_borrow_operand(*node, *operand, *expected, *coerce_value)?,
             Work::PrepareCallArgument {
                 call,
                 argument,
@@ -1439,8 +1452,9 @@ impl Checker<'_> {
         clippy::too_many_lines,
         reason = "syntax dispatch schedules context-sensitive child constraints without recursive traversal"
     )]
-    fn enter(&mut self, node: NodeId, expected: Option<TermId>) -> Result<(), Error> {
-        if let Some(expected) = expected {
+    fn enter(&mut self, node: NodeId, expectation: Expectation) -> Result<(), Error> {
+        let expected = expectation.ty();
+        if let Some(expected) = expectation.hard() {
             match self.contextual_head(node, expected)? {
                 Some(Constructor::Reference { .. } | Constructor::Pointer { .. }) => {
                     self.state.reference_expected.insert(node);
@@ -1477,7 +1491,7 @@ impl Checker<'_> {
             }
         ) && self.key(node) != self.state.body
         {
-            return self.enter_inline(node, expected);
+            return self.enter_inline(node, expectation.hard());
         }
         if matches!(self.kind(node), Kind::ConstClosure { .. }) {
             self.pay_closure_qualification(node, 1, 0)?;
@@ -1493,19 +1507,24 @@ impl Checker<'_> {
             return self.enter_closure(node, expected, None);
         }
         self.enter_safety(node)?;
-        self.enter_control(node, expected)?;
+        self.enter_control(node, expectation.hard())?;
         self.state.work.push(Work::Exit(node));
         self.state.children.clear();
         match self.kind(node) {
             Kind::InlineAssembly(args) => self.enter_assembly(node, args)?,
-            Kind::TryBlock { body, .. } => return self.enter_try_block(node, body, expected),
+            Kind::TryBlock { body, .. } => {
+                return self.enter_try_block(node, body, expectation.hard());
+            }
             Kind::For { iterator, .. } => {
                 self.state.work.push(Work::ForIterator(node));
                 self.state.work.push(Work::Enter(iterator, None));
                 return Ok(());
             }
             Kind::Match { value, .. } => {
-                self.state.work.push(Work::MatchArms { node, expected });
+                self.state.work.push(Work::MatchArms {
+                    node,
+                    expected: expectation,
+                });
                 self.state.work.push(Work::Enter(value, None));
                 return Ok(());
             }
@@ -1613,7 +1632,7 @@ impl Checker<'_> {
             | Kind::Group(value)
             | Kind::Attributed { value, .. }
             | Kind::Label { value, .. } => {
-                self.state.work.push(Work::Enter(value, expected));
+                self.state.work.push(expectation.enter(value));
                 return Ok(());
             }
             Kind::Block {
@@ -1625,7 +1644,7 @@ impl Checker<'_> {
             } => {
                 self.state
                     .work
-                    .extend(tail.map(|value| Work::Enter(value, expected)));
+                    .extend(tail.map(|value| expectation.enter(value)));
                 let unit = self.report.package.unit(self.state.file);
                 self.state.work.extend(
                     unit.configured
@@ -1644,8 +1663,8 @@ impl Checker<'_> {
             } => {
                 self.state
                     .work
-                    .extend(otherwise.map(|n| Work::Enter(n, expected)));
-                self.state.work.push(Work::Enter(then, expected));
+                    .extend(otherwise.map(|n| expectation.enter(n)));
+                self.state.work.push(expectation.enter(then));
                 self.state.work.push(Work::Enter(condition, None));
                 return Ok(());
             }
@@ -1687,7 +1706,7 @@ impl Checker<'_> {
                 return Ok(());
             }
             Kind::Call { callee, .. } => {
-                self.state.work.push(Work::CallArguments(node, expected));
+                self.state.work.push(Work::CallArguments(node, expectation));
                 self.state.work.push(Work::Enter(callee, None));
                 return Ok(());
             }
@@ -2562,7 +2581,7 @@ impl Checker<'_> {
         }
         Ok(None)
     }
-    fn call_arguments(&mut self, node: NodeId, expected: Option<TermId>) -> Result<(), Error> {
+    fn call_arguments(&mut self, node: NodeId, expectation: Expectation) -> Result<(), Error> {
         let Kind::Call { callee, arguments } = self.kind(node) else {
             return Err(self.error(node, "invalid call work"));
         };
@@ -2583,7 +2602,7 @@ impl Checker<'_> {
         }
         term = if matches!(self.head(node, term)?, Some(Constructor::Function { .. })) {
             self.retain_defining_member(node, callee, receiver)?;
-            self.call_signature_expected(node, term, expected)?
+            self.call_signature_expected(node, term, expectation.hard())?
         } else {
             self.invocation_signature(node, callee, arguments)?
         };
@@ -2592,7 +2611,7 @@ impl Checker<'_> {
         let Some(Constructor::Function { parameters, .. }) = self.head(node, term)? else {
             return Err(self.error(node, "call requires a known function type"));
         };
-        if let Some(expected) = expected {
+        if let Some(expected) = expectation.ty() {
             let result = self.child(node, term, parameters as usize)?;
             let nominal = matches!(
                 (self.contextual_head(node, result)?, self.contextual_head(node, expected)?),
@@ -2618,7 +2637,10 @@ impl Checker<'_> {
             {
                 self.shape_equation(node, result, expected)?;
             }
+            // An unsized borrowed rvalue is checked before the outer borrow
+            // coerces. It cannot fix an open result tied to a generic input.
             if !constructor
+                && expectation.hard().is_some()
                 && self.contextual_head(node, result)?.is_none()
                 && self.contextual_head(node, expected)?.is_some()
                 && (matches!(

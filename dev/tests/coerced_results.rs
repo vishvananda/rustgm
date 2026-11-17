@@ -289,3 +289,41 @@ fn bound_unsizing_instances_execute() -> Result {
     )?;
     crate::observed_program::execute(&folder, &instances()?, &observer, b"7 4\n")
 }
+
+#[test]
+fn weak_unsized_borrow_guides_calls_without_binding_their_result() -> Result {
+    const CASES: &str = "pa31/tests/spec/unsized-borrow-expectations";
+    let analyze = |name: &str| -> Result<Option<rustgm::resolve::package::Error>> {
+        let source = crate::resolve::fixture(&format!("{CASES}/{name}.rs"))?;
+        let report = crate::resolve::source_provider(&source, "borrow_expectation")?;
+        Ok(rustgm::pipeline::analyze_source(&report).err())
+    };
+    for name in [
+        "foundation",
+        "nested-str",
+        "direct-owner",
+        "nested-owner",
+        "bound-owner",
+        "explicit-owner",
+        "block-owner",
+        "macro-owner",
+    ] {
+        if let Some(error) = analyze(name)? {
+            return Err(format!("{name}: {error}").into());
+        }
+    }
+    let error = analyze("sized-owner-opponent")?.ok_or("sized identity opponent accepted")?;
+    assert_eq!(error.message, "incompatible types", "{error}");
+    Ok(())
+}
+
+#[test]
+fn unsized_borrow_keeps_inline_interfaces_macro_places_and_thin_calls() -> Result {
+    const CASES: &str = "pa31/tests/spec/unsized-borrow-expectations";
+    for name in ["inline-const-owner", "macro-place", "thin-nominal"] {
+        let source = crate::resolve::fixture(&format!("{CASES}/{name}.rs"))?;
+        let report = crate::resolve::source_provider(&source, "borrow_expectation")?;
+        rustgm::pipeline::analyze_source(&report).map_err(|error| format!("{name}: {error}"))?;
+    }
+    Ok(())
+}

@@ -1505,3 +1505,10 @@ Auxiliary `prefix.rs` and setup `setup.rs` retain independent setup bytes.
 The 27 independent statuses and seven reviewed diagnostic-matcher corrections
 are recorded without source/status changes. Two valid expression-root programs
 remain explicit required source-profile gaps; ordinary PA8/PA24 is unchanged.
+
+Source borrowed-rvalue expectation inputs are registered in
+[spec/unsized-borrow-expectations/outcomes.json](spec/unsized-borrow-expectations/outcomes.json).
+The complete standalone sources cover inferred, direct, explicit, block, macro,
+inline-const and thin-nominal inputs, retaining the independently rejected sized
+opponent. Focused candidate inference passes; private controls, successor CI
+and the original String replay remain required.

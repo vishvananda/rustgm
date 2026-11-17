@@ -1,0 +1,121 @@
+{
+  "profile": {
+    "commit": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "compiler": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "target": "x86_64-unknown-linux-gnu",
+    "edition": "2024",
+    "flags": [
+      "--crate-type=lib",
+      "--emit=metadata",
+      "--sysroot <empty directory>",
+      "-Cpanic=abort",
+      "-Copt-level=0",
+      "-Coverflow-checks=yes",
+      "-Cdebug-assertions=no",
+      "--cap-lints=allow"
+    ],
+    "environment": {
+      "RUSTC_BOOTSTRAP": "1"
+    }
+  },
+  "inputs": {
+    "foundation.rs": {
+      "sha256": "5ffcbcb87f2273568c9b2e3d47aac06c3afa2786c78a22d7d23058f4ef710e69",
+      "rustc_status": 0,
+      "rustgm_status": 0
+    },
+    "nested-str.rs": {
+      "sha256": "f97f4feb90c3b7f46b71a6cee95d9c32fb3f6ad56750a81585dedfa8106307fe",
+      "rustc_status": 0,
+      "rustgm_status": 0
+    },
+    "direct-owner.rs": {
+      "sha256": "c0a04612307be101a2d46c411693653c8480da7a6dea904eb5ae05a8f13e8826",
+      "rustc_status": 0,
+      "rustgm_status": 0
+    },
+    "nested-owner.rs": {
+      "sha256": "20850371fb7ea13791fa0a266fc6279b93b9f051e6eda39ce5b6628eb76dc187",
+      "rustc_status": 0,
+      "rustgm_status": 0
+    },
+    "bound-owner.rs": {
+      "sha256": "e2af459b6ad3e05544ed6d10bd0f58f980945a464ebbdf0a65e65a729a2f6b7d",
+      "rustc_status": 0,
+      "rustgm_status": 0
+    },
+    "explicit-owner.rs": {
+      "sha256": "471cfc56b5fbeea0318cfce105d82dc488b351bd67a89f27e1baa4a22f23a64b",
+      "rustc_status": 0,
+      "rustgm_status": 0
+    },
+    "block-owner.rs": {
+      "sha256": "55fa991321ccc99a48b853f00dd0bf29b1bec01d0fba46c5b60521370d03ed0e",
+      "rustc_status": 0,
+      "rustgm_status": 0
+    },
+    "macro-owner.rs": {
+      "sha256": "8d3a2f83f5282175a7ee2c039091d9bb1f61516791ea9f9e9067253e28cd6d5e",
+      "rustc_status": 0,
+      "rustgm_status": 0
+    },
+    "sized-owner-opponent.rs": {
+      "sha256": "9b788aca85938c70247451571b799cd1758db3cdf5bd498b0f0711a6b1e40441",
+      "rustc_status": 1,
+      "rustgm_status": 1,
+      "required_rustc_diagnostic": [
+        "error[E0308]",
+        "expected `View`, found `Owned`"
+      ],
+      "required_rustgm_diagnostic": "incompatible types"
+    },
+    "inline-const-owner.rs": {
+      "sha256": "e5e6e51f032cc944658fbb32fdd23444fefac4fb46900022c126bf3cd76f3b95",
+      "rustc_status": 0,
+      "rustgm_status": 0,
+      "state": "Pinned Rustc metadata0 qualified; candidate still required0"
+    },
+    "macro-place.rs": {
+      "sha256": "1552651fd1e758b012a37274da58bb689361b74bb4fd8f607459c50266586455",
+      "rustc_status": 0,
+      "rustgm_status": 0,
+      "state": "Pinned Rustc metadata0 qualified; candidate still required0"
+    },
+    "thin-nominal.rs": {
+      "sha256": "b3fd9ee555d450bdad60f25c51bb1c8e47bf0ec5a87231df1a6b930ad7dcbcb0",
+      "rustc_status": 0,
+      "rustgm_status": 0,
+      "state": "Pinned Rustc metadata0 qualified; candidate still required0"
+    }
+  },
+  "unsized_independent_receipt_sha256": "b396e681381bf0eb6b81fffc65fd332592faddb43ec76c001c085ce2eba2a26b",
+  "sized_independent_receipt_sha256": "6eb93ed421b59ac7cb48e67723cea65901e970790d3ef08607b80dd1dbdbb75a",
+  "prefix_provenance": {
+    "input": "inputs/prefix.rs",
+    "source_sha256": "75d13c751ca3b1181e99542f76f5ed34fd4045ed1d65b8f0ef597cf5b9889955",
+    "original": "/mnt/vizier/rustgm-scratch/rustgm-async-work/obj/parallel/vec-method-lookup/operator-rhs-multiple-add-v1/inputs/prefix.rs"
+  },
+  "claim": "All complete Rust sources preserve the independently observed bytes. The independent reference here qualifies source inference only.",
+  "review_control_declaration_sha256": "e043c5da8b70612b84e2ac19291e563f3a5b1e1ca1dfb89af7d1a83c9071fe40",
+  "review_control_qualification_receipt_sha256": "d8104e84b14b6777cacd5485f8a6c1683de3a216d4abbea133830c09c48134d5",
+  "candidate_qualification": {
+    "scope": "Source inference only:11 positives including foundation and1 sized opponent, plus4 existing Source unsizing/array/borrow controls",
+    "gate": "obj/qualification/fast/1794943077408063669",
+    "receipt_sha256": "ba6c27013ed0fbfbc64e0755863a53ec84766dd546119684b258df3afe624463",
+    "tests": 6,
+    "target_binaries": 3,
+    "wall_seconds": 61.35,
+    "strict_production_integration_clippy_format_architecture": "passed",
+    "work_item_bytes": 24,
+    "harness": "376 script tests;532 roots/13 binaries;45-stage layout passed",
+    "upstream": "128 pinned fixtures +126 Reference files verified",
+    "private": "Three affected private Source/reference/readiness controls and full successor CI pending; cold private-harness compile was not repeated after prior budget timeouts",
+    "native": "No lowering or ABI rule changed; no native or original String qualification claimed",
+    "remaining": "Actual unchanged format reducer and full String replay required. Loop/labeled break result guidance and deeper slice/dyn controls remain required.",
+    "history": {
+      "initial": "1794942433747693101 sole production Clippy103/100 cohesive dispatcher failure, zero semantic cases; added one justified narrow lint expectation",
+      "second": "1794942706671966604 all6 tests and strict selected lints passed, but five-minute completion timeout; not a successful guarded run",
+      "third": "1794943077408063669 same exact selection/source, completed successfully under unchanged limits"
+    }
+  }
+}

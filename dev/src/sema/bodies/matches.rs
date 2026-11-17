@@ -1,5 +1,5 @@
 //! Match arms share ordinary inference; scalar leaves retain ordered target domains.
-use super::{Checker, Constructor, Error, Kind, List, NodeId, TermId, Work};
+use super::{Checker, Constructor, Error, Expectation, Kind, List, NodeId, TermId, Work};
 use crate::{
     sema::patterns::{
         self, Interval, Kind as Pattern, PatternId, RangeId,
@@ -107,11 +107,7 @@ impl Checker<'_> {
             negative,
         })
     }
-    pub(super) fn match_arms(
-        &mut self,
-        node: NodeId,
-        expected: Option<TermId>,
-    ) -> Result<(), Error> {
+    pub(super) fn match_arms(&mut self, node: NodeId, expected: Expectation) -> Result<(), Error> {
         let Kind::Match { value, arms } = self.kind(node) else {
             return Err(self.error(node, "missing match syntax"));
         };
@@ -167,7 +163,7 @@ impl Checker<'_> {
         &mut self,
         index: u32,
         term: TermId,
-        expected: Option<TermId>,
+        expected: Expectation,
     ) -> Result<(), Error> {
         let arm = self.facts.patterns.arms[index as usize];
         let Kind::Arm { pattern, .. } = self.kind(arm.source.node) else {
@@ -176,7 +172,7 @@ impl Checker<'_> {
         let pattern = self.selected_pattern(pattern, term)?;
         self.facts.patterns.arms[index as usize].pattern = Some(pattern);
         self.state.work.push(Work::Exit(arm.source.node));
-        self.state.work.push(Work::Enter(arm.value.node, expected));
+        self.state.work.push(expected.enter(arm.value.node));
         if let Some(guard) = arm.guard {
             let boolean = self.known(guard.node, TypeId::primitive(Primitive::Bool))?;
             self.state.work.push(Work::Enter(guard.node, Some(boolean)));
