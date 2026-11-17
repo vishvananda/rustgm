@@ -26,6 +26,7 @@ fn fresh(work: &mut ReservationWork) -> Result<(Report, ConsumerReservation, Dec
     let producer_arena = actual.facts.types.arena_identity();
     drop(actual.facts);
     let context = Context {
+        artifacts: crate::support::crates::ArtifactContext::Inspection,
         crate_name: Some("consumer".into()),
         current: Some(CrateIdentity::new("consumer", "canonical_inputs")?),
         dependencies: Some(Arc::clone(&actual.inventory)),

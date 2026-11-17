@@ -307,6 +307,7 @@ fn client_derive_is_closed() -> TestResult {
         vec![Dependency::new("base".into(), identity.clone())?],
     )?);
     let context = resolve::bindings::Context {
+        artifacts: crate::support::crates::ArtifactContext::Inspection,
         crate_name: Some("derive_client".into()),
         current: Some(CrateIdentity::new("derive_client", "v1")?),
         dependencies: Some(dependencies),

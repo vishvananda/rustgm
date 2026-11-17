@@ -70,6 +70,7 @@ fn client(
         vec![Dependency::new("shim".into(), shim.identity().clone())?],
     )?;
     let context = Context {
+        artifacts: crate::support::crates::ArtifactContext::Inspection,
         crate_name: Some("glob_client".into()),
         current: Some(identity),
         dependencies: Some(Arc::new(dependencies)),

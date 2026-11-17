@@ -58,6 +58,7 @@ pub(crate) enum Consumer {
     ReservationImpl,
     NonConstTraitMethod,
     ThreadLocal,
+    CrateArtifacts,
 }
 impl Consumer {
     pub(crate) fn tool_member(tool: &str, name: &str) -> Option<Self> {
@@ -78,6 +79,7 @@ impl Consumer {
             | "needs_allocator"
             | "default_lib_allocator" => Self::Loading,
             "feature" => Self::Requests,
+            "crate_type" => Self::CrateArtifacts,
             "macro_use"
             | "macro_export"
             | "rustc_macro_transparency"

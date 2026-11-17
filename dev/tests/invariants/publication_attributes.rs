@@ -250,6 +250,7 @@ fn old_functions_metadata_keeps_imported_attribute_state_unknown() -> Result {
     )?);
     let current = CrateIdentity::new("client", "unknown_attributes")?;
     let context = resolve::bindings::Context {
+        artifacts: crate::support::crates::ArtifactContext::Inspection,
         crate_name: Some("client".into()),
         current: Some(current),
         dependencies: Some(dependencies),

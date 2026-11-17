@@ -1,0 +1,240 @@
+{
+  "schema": 1,
+  "profile": "Rust 1.98.0; edition2024; x86_64-unknown-linux-gnu; panic abort; cap-lints allow; declared before either compiler executes this packet",
+  "scope": "PA34 source compiler and unqualified explicit guest-library admission; inspection checks metadata only; adopted ordinary PA24 executable behavior remains closed",
+  "basis": "Pinned doc/rust-reference/src/linkage.md: explicit CLI crate types override source requests; malformed metadata remains checked. No rustc rlib publication or native result is claimed.",
+  "inputs": [
+    "bin.rs",
+    "dylib.rs",
+    "guest-non-string.rs",
+    "guest-rlib.rs",
+    "host.rs",
+    "inspection.rs",
+    "list.rs",
+    "non-root.rs",
+    "non-string.rs",
+    "ordinary.rs",
+    "rlib.rs",
+    "unknown.rs"
+  ],
+  "input_sha256": {
+    "bin.rs": "af919a7d30bce2f4b80d5e094c202e384e741a5be3fa1f28ef738bd8a82927c8",
+    "dylib.rs": "7b4d9581269472370993ba488594a4805a510c2f929d5679bf86c9b0dc4c2d93",
+    "guest-non-string.rs": "12bd7199c5af6177e5a93696dabf529b13e24d45f97f58a1db3556f8b490ef39",
+    "guest-rlib.rs": "0e8ceca1ca273b4f921a8cd8bd2bab7f597b9cb4687d5b3cfb6000ffe894966b",
+    "host.rs": "726fc4041298efd37ee76630fb20cdad55a47228c5fcb75aa540394b775acc53",
+    "inspection.rs": "aab0a847c221c6ae5c4d547c4b6d0b7f72c8014bd32597c1d8572c097552e132",
+    "list.rs": "0c41b3c39f503bb71172e0a62306655a5fbd48fd87c8c95d17dedec1b3030307",
+    "non-string.rs": "841ac68f400724b3f81b6511ee8d4322f6e9d60fb5a358cda049a9783d109243",
+    "ordinary.rs": "49132e3db7a8a68a8cb00aa8b7cba0f7b679af80f96302639e02adccd3179907",
+    "rlib.rs": "80af54c49fe394830dd724641bcbb8a940bd053ba038b241c81935e88a1a413e",
+    "unknown.rs": "8c0c5700b3010291e3a16dc914dcaacd1e2ababec9a7100b9d5d06d9e9fc866d",
+    "non-root.rs": "c54490aae3359a24388116cdf86757545d346e632413f1ecd5ad02b556e4a333"
+  },
+  "cases": [
+    {
+      "name": "source-bringup-lib-overrides-bin",
+      "source": "bin.rs",
+      "context": "source-bringup-library",
+      "override": "lib",
+      "rustc": 0,
+      "rustgm": 0,
+      "bringup_empty_skip_list": true,
+      "source_bodies": "no blocker or unproven rows; source metadata withheld and unqualified",
+      "rustc_reused_case": "source-lib-overrides-bin"
+    },
+    {
+      "name": "source-bringup-lib-overrides-dylib",
+      "source": "dylib.rs",
+      "context": "source-bringup-library",
+      "override": "lib",
+      "rustc": 0,
+      "rustgm": 0,
+      "bringup_empty_skip_list": true,
+      "source_bodies": "no blocker or unproven rows; source metadata withheld and unqualified",
+      "rustc_reused_case": "source-lib-overrides-dylib"
+    },
+    {
+      "name": "source-default-bin",
+      "source": "bin.rs",
+      "context": "source",
+      "override": null,
+      "rustc": 0,
+      "rustgm": 0
+    },
+    {
+      "name": "source-omitted-rlib",
+      "source": "rlib.rs",
+      "context": "source",
+      "override": null,
+      "rustc": 0,
+      "rustgm": 1,
+      "rustgm_diagnostic": "source-selected library artifacts require an explicit"
+    },
+    {
+      "name": "source-bin-overrides-rlib",
+      "source": "rlib.rs",
+      "context": "source",
+      "override": "bin",
+      "rustc": 0,
+      "rustgm": 0
+    },
+    {
+      "name": "source-lib-overrides-bin",
+      "source": "bin.rs",
+      "context": "source",
+      "override": "lib",
+      "rustc": 0,
+      "rustgm": 1,
+      "rustgm_diagnostic": "source scalar pool requires a wider transport profile",
+      "profile_gap": "Existing strict source metadata transport is outside this artifact-selection work."
+    },
+    {
+      "name": "source-bin-overrides-dylib",
+      "source": "dylib.rs",
+      "context": "source",
+      "override": "bin",
+      "rustc": 0,
+      "rustgm": 0
+    },
+    {
+      "name": "source-lib-overrides-dylib",
+      "source": "dylib.rs",
+      "context": "source",
+      "override": "lib",
+      "rustc": 0,
+      "rustgm": 1,
+      "rustgm_diagnostic": "source scalar pool requires a wider transport profile",
+      "profile_gap": "Existing strict source metadata transport is outside this artifact-selection work."
+    },
+    {
+      "name": "source-omitted-dylib",
+      "source": "dylib.rs",
+      "context": "source",
+      "override": null,
+      "rustc": 0,
+      "rustgm": 1,
+      "rustgm_diagnostic": "source-selected library artifacts require an explicit"
+    },
+    {
+      "name": "source-non-string",
+      "source": "non-string.rs",
+      "context": "source",
+      "override": null,
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "crate_type requires a string literal"
+    },
+    {
+      "name": "source-malformed-list",
+      "source": "list.rs",
+      "context": "source",
+      "override": "bin",
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "crate_type requires a string literal"
+    },
+    {
+      "name": "source-unknown",
+      "source": "unknown.rs",
+      "context": "source",
+      "override": null,
+      "rustc": 0,
+      "rustgm": 1,
+      "rustgm_diagnostic": "crate_type value is outside the supported artifact profile"
+    },
+    {
+      "name": "guest-rlib",
+      "source": "host.rs",
+      "context": "guest",
+      "override": null,
+      "rustc": 0,
+      "rustgm": 0,
+      "guest": "guest-rlib.rs"
+    },
+    {
+      "name": "guest-non-string",
+      "source": "host.rs",
+      "context": "guest",
+      "override": null,
+      "rustc": 1,
+      "rustgm": 1,
+      "rustgm_diagnostic": "crate_type requires a string literal",
+      "guest": "guest-non-string.rs"
+    },
+    {
+      "name": "inspection-rlib",
+      "source": "inspection.rs",
+      "context": "inspection",
+      "override": null,
+      "rustc": 0,
+      "rustgm": 0
+    },
+    {
+      "name": "ordinary-omitted",
+      "source": "ordinary.rs",
+      "context": "ordinary",
+      "override": null,
+      "rustc": 0,
+      "rustgm": 1,
+      "rustgm_diagnostic": "source crate_type artifact selection requires source compiler mode"
+    },
+    {
+      "name": "ordinary-explicit-bin",
+      "source": "ordinary.rs",
+      "context": "ordinary",
+      "override": "bin",
+      "rustc": 0,
+      "rustgm": 1,
+      "rustgm_diagnostic": "source crate_type artifact selection requires source compiler mode"
+    },
+    {
+      "name": "ordinary-non-root",
+      "source": "non-root.rs",
+      "context": "ordinary",
+      "override": null,
+      "rustc": 0,
+      "rustgm": 1,
+      "rustgm_diagnostic": "source crate_type artifact selection requires source compiler mode"
+    },
+    {
+      "name": "inspection-non-root",
+      "source": "non-root.rs",
+      "context": "inspection",
+      "override": null,
+      "rustc": 0,
+      "rustgm": 0
+    }
+  ],
+  "declared_profile_gaps": [
+    "Omitted source-selected lib/rlib/dylib artifacts require an explicit supported CLI selection; source fallback and rustc artifact formats remain unsupported",
+    "Ordinary PA24 production rejects source artifact attributes, including an explicit bin override. Inspection does not request production.",
+    "Unknown output spellings are outside this small artifact profile, while pinned rustc accepts this source with cap-lints allow. This is a profile gap, not a Rust language rejection."
+  ],
+  "pre_execution_extensions": [
+    "Two non-root placement/phase controls were added during static wire review to preserve ordinary-profile rejection at every builtin-recognition path; the first15 source outcomes remain unchanged. No compiler had executed the packet."
+  ],
+  "authoring_corrections": [
+    {
+      "case": "source-unknown",
+      "original_rustc_status": 1,
+      "observed_rustc_status": 0,
+      "corrected_rustc_status": 0,
+      "rustgm_status": 1,
+      "reason": "The original independent run refuted the language-rejection prediction under cap-lints allow; retain the unsupported output spelling as an explicit artifact-profile gap. Source bytes and all other16 outcomes stay unchanged.",
+      "original_declaration": "refuted-original.json",
+      "original_declaration_sha256": "f3011a82292d7cf49ca7fda361bf48892e118adf0cd38779a85a8b2afb7f4027",
+      "observed_receipt": "obj/parallel/crate-artifact-attributes/oracle/observed.json",
+      "observed_receipt_sha256": "bc27b9bccdae8da28523e7a4cd47066d2a16cddf55bb0311d084d34d0e6b8461"
+    }
+  ],
+  "uncapped_review": {
+    "case": "source-unknown",
+    "actual_status": 1,
+    "actual_lint_id": "unknown_crate_types",
+    "actual_level": "error",
+    "review": "review.json",
+    "scope": "The uncapped status0/warning prediction was independently refuted; it does not change this contract's cap-lints=allow profile."
+  },
+  "source_library_context_correction": "Before revised candidate execution: retained the two strict source-library override failures as explicit metadata transport gaps. Added two empty-skip-list bring-up controls matching the real std graph to check supported output selection without claiming qualified metadata publication. Fixture bytes and identical pinned-rustc commands/outcomes are unchanged.19 cases: rustc16 accept/3 reject, RustGM8 accept/11 reject;6 artifact-policy and2 existing metadata-transport gaps."
+}

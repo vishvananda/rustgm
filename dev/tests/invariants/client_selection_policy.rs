@@ -10,6 +10,7 @@ const HEADER: &str = "#![feature(no_core)]#![no_core]";
 
 fn context() -> Result<Context> {
     Ok(Context {
+        artifacts: crate::support::crates::ArtifactContext::Inspection,
         crate_name: Some("client".into()),
         current: Some(CrateIdentity::new("client", "client_v1")?),
         dependencies: None,

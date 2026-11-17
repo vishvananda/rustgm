@@ -1,0 +1,54 @@
+{
+  "source_sha256": "8c0c5700b3010291e3a16dc914dcaacd1e2ababec9a7100b9d5d06d9e9fc866d",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "declared_sha256": "777c7e5bf096789c68b0dcc20893d94f8c2bcaf378f18b03a34eabd7b86f1ca6",
+  "environment": {
+    "PATH": "/bin:/usr/bin",
+    "LC_ALL": "C",
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": [
+    {
+      "name": "unknown-warning",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--emit=metadata",
+        "-Cpanic=abort",
+        "--error-format=json",
+        "--crate-name",
+        "artifact_case",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/crate-artifact-attributes/unknown-observed/unknown-warning.rmeta",
+        "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/crate-artifact-attributes/unknown-observed/unknown.rs"
+      ],
+      "status": 1,
+      "source_sha256": "8c0c5700b3010291e3a16dc914dcaacd1e2ababec9a7100b9d5d06d9e9fc866d",
+      "warnings": [],
+      "matches": false
+    },
+    {
+      "name": "unknown-corrected-capped",
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--emit=metadata",
+        "-Cpanic=abort",
+        "--error-format=json",
+        "--crate-name",
+        "artifact_case",
+        "--cap-lints=allow",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/crate-artifact-attributes/unknown-observed/unknown-corrected-capped.rmeta",
+        "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/crate-artifact-attributes/unknown-observed/unknown.rs"
+      ],
+      "status": 0,
+      "source_sha256": "8c0c5700b3010291e3a16dc914dcaacd1e2ababec9a7100b9d5d06d9e9fc866d",
+      "warnings": [],
+      "matches": true
+    }
+  ],
+  "scope": "One fresh uncapped warning probe plus the corrected capped case; sixteen unchanged observations were not rerun"
+}

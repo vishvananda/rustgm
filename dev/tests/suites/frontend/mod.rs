@@ -287,6 +287,8 @@ mod bringup_stubs;
 #[path = "../../guest_crates.rs"]
 mod guest_crates;
 
+#[path = "../../artifact_selections.rs"]
+mod artifact_selections;
 #[path = "../../guest_editions.rs"]
 mod guest_editions;
 

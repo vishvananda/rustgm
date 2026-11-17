@@ -78,7 +78,7 @@ pub fn run(
         path: path.filter(|p| *p != "-").unwrap_or("<anon>").into(),
         source,
     };
-    let context = crates.context()?;
+    let context = crates.context(matches!(mode, Mode::Lowir))?;
     if matches!(mode, Mode::Lowir)
         && let rustgm::support::bindings::Mode::SourceClient { provider } = &context.mode
         && context.dependencies.as_ref().is_some_and(|inventory| {
@@ -91,7 +91,7 @@ pub fn run(
             })
         })
     {
-        if crates.library || crates.metadata.is_some() {
+        if crates.is_library() || crates.metadata.is_some() {
             return Err("provided-contracts-v1 currently requires an executable consumer".into());
         }
         return rustgm::lower::instances::with_provided_client(
@@ -501,7 +501,7 @@ fn emit_lowir(
     count: bool,
     out: &mut impl Write,
 ) -> Result<(), String> {
-    let (lowir, interface) = if crates.library {
+    let (lowir, interface) = if crates.is_library() {
         let identity = crates
             .identity()
             .map_err(|message| failure_message(&facts, message))?

@@ -1,6 +1,8 @@
 //! Filesystem transport stays outside the frontend's typed metadata consumers.
 use crate::census;
-use rustgm::support::crates::{self, CrateIdentity, Dependencies, Dependency};
+use rustgm::support::crates::{
+    self, ArtifactContext, CrateIdentity, Dependencies, Dependency, OutputKind,
+};
 use rustgm::support::hash::HashMap;
 use std::{fs, io::Read, path::PathBuf, sync::Arc};
 
@@ -8,7 +10,7 @@ use std::{fs, io::Read, path::PathBuf, sync::Arc};
 pub struct Options {
     pub name: Option<String>,
     pub disambiguator: Option<String>,
-    pub library: bool,
+    pub output: Option<OutputKind>,
     pub metadata: Option<String>,
     pub native_links: Option<String>,
     pub externs: Vec<String>,
@@ -50,8 +52,8 @@ impl Options {
                 self.metadata = Some(args.next().ok_or("--metadata-output requires a path")?);
             }
             "--bringup-guest" => self.guest(args.next().as_deref())?,
-            "--crate-type=lib" => self.library = true,
-            "--crate-type=bin" => self.library = false,
+            "--crate-type=lib" => self.output = Some(OutputKind::Library),
+            "--crate-type=bin" => self.output = Some(OutputKind::Binary),
             "--extern" | "--dependency-metadata" => {
                 if self.dependency_count() >= 1024 {
                     return Err("external crate arguments exceed profile budget".into());
@@ -206,7 +208,7 @@ impl Options {
         if self.source_profile.is_some()
             && (self.source_core.is_none()
                 || self.source_client.is_some()
-                || !self.library
+                || !self.is_library()
                 || mode != "--emit-lowir"
                 || self.metadata.is_none()
                 || count
@@ -234,7 +236,7 @@ impl Options {
             }
             self.bindings_mode()?;
         }
-        let enabled = self.library
+        let enabled = self.is_library()
             || self.disambiguator.is_some()
             || self.metadata.is_some()
             || self.dependency_count() != 0;
@@ -263,16 +265,16 @@ impl Options {
             }
             self.bindings_mode()?;
             if mode != "--emit-lowir"
-                && (self.library || self.metadata.is_some() || self.dependency_count() != 0)
+                && (self.is_library() || self.metadata.is_some() || self.dependency_count() != 0)
             {
                 return Err("source-core artifact options require --emit-lowir".into());
             }
         }
         self.validate_guests(mode)?;
-        if self.library && self.identity()?.is_none() {
+        if self.is_library() && self.identity()?.is_none() {
             return Err("library output requires --crate-name and --crate-disambiguator".into());
         }
-        if self.metadata.is_some() && (!self.library || count) {
+        if self.metadata.is_some() && (!self.is_library() || count) {
             return Err(
                 "--metadata-output requires library LowIR output without --count-lowir".into(),
             );
@@ -317,12 +319,26 @@ impl Options {
             })
             .transpose()
     }
-    pub fn context(&self) -> Result<rustgm::resolve::bindings::Context, String> {
+    pub fn is_library(&self) -> bool {
+        self.output == Some(OutputKind::Library)
+    }
+    pub fn context(&self, artifact: bool) -> Result<rustgm::resolve::bindings::Context, String> {
+        let mode = self.bindings_mode()?;
+        let artifacts = if !artifact {
+            ArtifactContext::Inspection
+        } else if matches!(&mode, rustgm::support::bindings::Mode::Bootstrap) {
+            ArtifactContext::Ordinary
+        } else {
+            ArtifactContext::Source {
+                selected: self.output,
+            }
+        };
         Ok(rustgm::resolve::bindings::Context {
             crate_name: self.name.clone(),
             current: self.identity()?,
             dependencies: self.dependencies()?,
-            mode: self.bindings_mode()?,
+            mode,
+            artifacts,
         })
     }
     fn bindings_mode(&self) -> Result<rustgm::support::bindings::Mode, String> {

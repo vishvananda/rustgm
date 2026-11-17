@@ -49,13 +49,14 @@ pub(in crate::resolve) enum Source {
     LocalMacros(LocalMacros),
 }
 
-/// Driver-independent source selection, fixed before expansion or ordinary lookup.
+/// Source selection and explicit caller output policy, fixed before expansion.
 #[derive(Default)]
 pub struct Context {
     pub crate_name: Option<String>,
     pub current: Option<CrateIdentity>,
     pub dependencies: Option<Arc<Dependencies>>,
     pub mode: Mode,
+    pub artifacts: crate::support::crates::ArtifactContext,
 }
 
 pub struct SourceCore {

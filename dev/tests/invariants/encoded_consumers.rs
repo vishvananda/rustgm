@@ -53,6 +53,7 @@ fn provider(extra: &str) -> Result<(String, crates::Interface)> {
 fn context(artifact: crates::Interface) -> Result<Context> {
     let provider = artifact.identity().clone();
     Ok(Context {
+        artifacts: crate::support::crates::ArtifactContext::Inspection,
         crate_name: Some("encoded_consumer".into()),
         current: Some(CrateIdentity::new(
             "encoded_consumer",

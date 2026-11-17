@@ -32,7 +32,7 @@ pub(super) fn validate(crates: &crate::crates::Options) -> Result<(), String> {
         return Err("--bringup-guest requires the bring-up profile (--bringup-skip-list)".into());
     }
     if selected().is_some()
-        && crates.library
+        && crates.is_library()
         && !crates
             .disambiguator
             .as_deref()

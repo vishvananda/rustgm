@@ -58,6 +58,7 @@ struct Visit {
 }
 pub(crate) struct Loader<'a, S> {
     pub package: Package,
+    pub(super) artifact_context: crate::support::crates::ArtifactContext,
     sources: &'a mut S,
     config: &'a Config,
     directories: Vec<Directory>,
@@ -200,12 +201,14 @@ impl<'a, S: Sources> Loader<'a, S> {
             admission,
             config.source_contract_limits(),
         )?;
+        super::artifact_attributes::host(&unit, context)?;
         let source = prepared.source;
         let library = prepared.library;
         let implicit_prelude = !unit
             .word_attribute(Some(root_node), "no_implicit_prelude")
             .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
         let mut loader = Self {
+            artifact_context: context.artifacts,
             package: Package {
                 marks: crate::expand::marks::Marks::default(),
                 source,
@@ -306,6 +309,13 @@ impl<'a, S: Sources> Loader<'a, S> {
                 &mut self.package.names,
             )
             .map_err(|e| Error::at(file, e.offset, e.message))?;
+            super::artifact_attributes::root(
+                &unit,
+                file,
+                crate::support::crates::ArtifactContext::Source {
+                    selected: Some(crate::support::crates::OutputKind::Library),
+                },
+            )?;
             self.cache
                 .insert(source.identity.clone(), parsed_source(file, edition));
             let root = guests.admit(&mut self.package.names, input, &unit, (file, module))?;

@@ -1,4 +1,5 @@
 //! Stable external identities and bounded scalar metadata never contain local arena IDs.
+mod artifact_policy;
 mod codec;
 mod dependencies;
 pub mod exported_macros;
@@ -11,6 +12,7 @@ pub mod owner_catalog;
 mod public_names;
 mod scalar_value;
 mod type_graph;
+pub use artifact_policy::{ArtifactContext, OutputKind};
 pub use codec::{SCHEMA, decode, encode};
 pub use dependencies::{Dependencies, Dependency};
 pub use generics::source::{Descriptor as SourceDescriptor, Profile as SourceProfile};

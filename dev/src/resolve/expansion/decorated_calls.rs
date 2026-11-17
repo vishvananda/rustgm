@@ -203,6 +203,20 @@ impl<S: Sources> Engine<'_, S> {
         name: Option<&str>,
         input: Input,
     ) -> Result<bool, Error> {
+        if name == Some("crate_type") {
+            let unit = self.loader.package.unit(owner.file);
+            let retained = &unit.configured.effects[effect];
+            let attribute = retained.attribute.attribute;
+            let forest = &unit.configured.ast.attributes[retained.capture as usize].forest;
+            super::super::artifact_attributes::form(
+                unit,
+                owner.file,
+                attribute,
+                forest,
+                self.loader.artifact_context,
+            )?;
+            return Ok(true);
+        }
         Ok(matches!(input, Input::Doc(_))
             || name.is_some_and(|name| self.loader.package.guest_root_attribute(owner, name))
             || name == Some("default") && self.default_helper(owner, effect)?

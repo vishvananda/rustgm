@@ -91,6 +91,7 @@ fn resolved(
         )?);
     }
     let context = Context {
+        artifacts: crate::support::crates::ArtifactContext::Inspection,
         crate_name: Some(name.into()),
         current: Some(identity),
         dependencies: Some(Arc::new(Dependencies::new(inventory, entries)?)),

@@ -47,6 +47,7 @@ fn fixture_data(
     let producer_arena = facts.types.arena_identity();
     let provider = actual.inventory.artifacts()[0].identity().clone();
     let context = Context {
+        artifacts: crate::support::crates::ArtifactContext::Inspection,
         crate_name: Some("consumer".into()),
         current: Some(CrateIdentity::new("consumer", "private_current")?),
         dependencies: Some(Arc::clone(&actual.inventory)),

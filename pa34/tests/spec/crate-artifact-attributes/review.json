@@ -1,0 +1,52 @@
+{
+  "scope": "One refuted source prediction; no source-byte change, other16 outcomes unchanged",
+  "original_declaration": "refuted-original.json",
+  "case": "source-unknown",
+  "source_sha256": "8c0c5700b3010291e3a16dc914dcaacd1e2ababec9a7100b9d5d06d9e9fc866d",
+  "rustc_observed_status": 0,
+  "rustc_capped_stderr_bytes": 0,
+  "candidate_expected_status": 1,
+  "candidate_gap": "crate_type value is outside the supported artifact profile",
+  "rustc_accept": 14,
+  "rustc_reject": 3,
+  "rustgm_declared_accept": 8,
+  "rustgm_declared_reject": 9,
+  "explicit_profile_gaps": 6,
+  "candidate_execution": "pending root warm validation",
+  "uncapped_probe": {
+    "status": 1,
+    "lint_id": "unknown_crate_types",
+    "level": "error",
+    "message": "invalid `crate_type` value",
+    "primary_spans": [
+      {
+        "file_name": "/mnt/vizier/rustgm-scratch/rustgm-backend-work/obj/parallel/crate-artifact-attributes/unknown-observed/unknown.rs",
+        "byte_start": 74,
+        "byte_end": 90,
+        "line_start": 3,
+        "line_end": 3,
+        "column_start": 17,
+        "column_end": 33,
+        "is_primary": true,
+        "text": [
+          {
+            "text": "#![crate_type = \"rustgm_unknown\"]",
+            "highlight_start": 17,
+            "highlight_end": 33
+          }
+        ],
+        "label": null,
+        "suggested_replacement": null,
+        "suggestion_applicability": null,
+        "expansion": null
+      }
+    ],
+    "default_level_basis": "diagnostic note: #[deny(unknown_crate_types)] on by default",
+    "declared_warning_status": 0,
+    "declaration_refuted": true,
+    "corrected_capped_status": 0,
+    "capped_stderr_bytes": 0
+  },
+  "uncapped_declaration": "uncapped-probe-declaration.json",
+  "uncapped_observation": "uncapped-probe-observation.json"
+}

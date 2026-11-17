@@ -1,0 +1,26 @@
+{
+  "declared_before_execution": true,
+  "source": "pa34/tests/spec/crate-artifact-attributes/unknown.rs",
+  "source_sha256": "8c0c5700b3010291e3a16dc914dcaacd1e2ababec9a7100b9d5d06d9e9fc866d",
+  "rustc_version": "1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "cases": [
+    {
+      "name": "unknown-warning",
+      "cap_lints_allow": false,
+      "expected_status": 0,
+      "expected_warning": "unknown crate type",
+      "expected_warning_primary": "crate_type attribute line",
+      "expected_lint_id": "unknown_crate_types"
+    },
+    {
+      "name": "unknown-corrected-capped",
+      "cap_lints_allow": true,
+      "expected_status": 0,
+      "expected_stderr_bytes": 0
+    }
+  ],
+  "scope": "Only the warning probe and corrected source-unknown case; do not repeat16 unchanged outcomes"
+}

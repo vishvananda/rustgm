@@ -2,6 +2,11 @@
 
 Planned: no graded fixtures or generated reference outputs yet.
 
+`spec/crate-artifact-attributes/outcomes.json` declares checked builtin output
+metadata, explicit PA34 source binary/library overrides and guest rlib admission.
+Malformed forms, omitted unsupported artifact selections and the frozen ordinary
+executable profile have separate declared opponents. No rustc rlib is published.
+
 `spec/guest-editions/outcomes.json` declares mixed-edition bring-up guest inputs:
 crate roots, modules, includes, distinct edition preludes and macro definition
 tokens. An optional `NAME@EDITION=ROOT.rs` guest input leaves the host and every

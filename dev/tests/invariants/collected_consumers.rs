@@ -578,6 +578,7 @@ fn actual_implicit_prelude_controls() -> Result {
 }
 fn context(inventory: &Arc<crate::support::crates::Dependencies>) -> Result<Context> {
     Ok(Context {
+        artifacts: crate::support::crates::ArtifactContext::Inspection,
         crate_name: Some("consumer".into()),
         current: Some(CrateIdentity::new("consumer", "collected_current")?),
         dependencies: Some(Arc::clone(inventory)),

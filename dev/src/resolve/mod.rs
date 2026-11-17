@@ -1,4 +1,5 @@
 mod anonymous_parameters;
+mod artifact_attributes;
 pub mod bindings;
 mod bodies;
 #[allow(

@@ -150,6 +150,7 @@ fn client_context(
     let dependencies = Arc::new(Dependencies::new(artifacts, aliases)?);
     let current = CrateIdentity::new("client", "source_transaction")?;
     let context = resolve::bindings::Context {
+        artifacts: crate::support::crates::ArtifactContext::Inspection,
         crate_name: Some("client".into()),
         current: Some(current.clone()),
         dependencies: Some(dependencies),
