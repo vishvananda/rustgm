@@ -181,6 +181,7 @@ impl<S: Sources> Engine<'_, S> {
                 file,
                 source: unit.source.text(),
                 ast: &unit.configured.ast,
+                literals: &unit.literals,
                 active: &unit.configured.active,
                 item: unit.configured.ast.items[item as usize],
                 original,

@@ -1,0 +1,12 @@
+option-c	option-c.rs	0	source	-
+raw-c	raw-c.rs	0	source	-
+escaped-c	escaped-c.rs	0	source	-
+default-c	default-c.rs	0	source	-
+unsafe-c	unsafe-c.rs	0	source	-
+rust-control	rust-control.rs	0	source	-
+system-profile	system-profile.rs	1	source	require a wider field profile
+hrtb-profile	hrtb-profile.rs	1	source	require a wider field profile
+variadic-profile	variadic-profile.rs	1	source	requires a wider source derive profile
+unknown-abi	unknown-abi.rs	1	source	require a wider field profile
+c-children	c-children.rs	0	source	-
+ordinary-frozen	ordinary.rs	0	ordinary	-

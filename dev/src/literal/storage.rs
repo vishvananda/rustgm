@@ -55,6 +55,15 @@ pub struct Storage {
 }
 
 impl Storage {
+    /// Prepay destination decoded capacity before a selected literal import.
+    /// This cost-only view grants no permission to copy a literal or source.
+    pub(crate) fn decoded_growth(&self, additional: usize) -> crate::support::retained::Growth {
+        crate::support::retained::Growth::vector::<u8>(
+            self.decoded.len(),
+            self.decoded.capacity(),
+            additional,
+        )
+    }
     pub(crate) fn copy_prefix(&self, size: usize) -> Result<Self, &'static str> {
         self.decoded
             .get(..size)
@@ -196,5 +205,42 @@ impl Storage {
     #[must_use]
     pub fn decoded_bytes(&self) -> usize {
         self.decoded.len()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn decoded_import_growth_prepays_first_spare_and_grown_capacity() -> Result<(), &'static str> {
+        let mut source = Storage::default();
+        let value = source.store("", &Value::String(Cow::Owned(b"C".to_vec())))?;
+        let mut target = Storage::default();
+        let first = target.decoded_growth(1);
+        assert!(first.bytes >= 8);
+        target.import("", &source, value, 0)?;
+        assert!(first.bytes >= target.decoded.capacity());
+        let capacity = target.decoded.capacity();
+        let spare = target.decoded_growth(1);
+        assert_eq!(spare.bytes, 0);
+        assert_eq!(spare.work, 0);
+        target.import("", &source, value, 0)?;
+        assert_eq!(target.decoded.capacity(), capacity);
+        while target.decoded.len() < capacity {
+            target.import("", &source, value, 0)?;
+        }
+        let grown = target.decoded_growth(1);
+        assert_eq!(grown.work, capacity);
+        target.import("", &source, value, 0)?;
+        assert!(grown.bytes >= target.decoded.capacity());
+        eprintln!(
+            "decoded import first={} actual={capacity} spare={} grown={} actual_grown={}",
+            first.bytes,
+            spare.bytes,
+            grown.bytes,
+            target.decoded.capacity()
+        );
+        Ok(())
     }
 }

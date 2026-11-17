@@ -1,0 +1,194 @@
+{
+  "schema": 1,
+  "profile": "Pinned Rust1.98, edition2024, x86_64-unknown-linux-gnu, abort, cap-lints allow. Predeclared before any compiler execution. RustGM source controls select actual SourceCore expansion and resolve only; no semantic/native/library metadata claim.",
+  "trigger": {
+    "original": "libc0.2.185 unix/linux_like/linux/gnu/b64/x86_64/mod.rs",
+    "field": "sigaction.sa_restorer: Option<extern \"C\" fn()>",
+    "actual_offset": 680,
+    "source_sha256": "d72ae5556347be715e3fdfc084e7e95a184504f1575230f163ab7a72a405cb24",
+    "evidence": "runtime graph-diagnostic-callable-span-v1/primary.json"
+  },
+  "contract": "Actual source derive copies C ABI literal nodes with their real Storage owner and destination ParsedSyntax pool. Explicit literal syntax remains distinct from omitted extern. Only decoded C is admitted; HRTB, other ABI and variadic syntax retain profile fences.",
+  "inputs": [
+    "option-c.rs",
+    "raw-c.rs",
+    "escaped-c.rs",
+    "default-c.rs",
+    "unsafe-c.rs",
+    "rust-control.rs",
+    "system-profile.rs",
+    "hrtb-profile.rs",
+    "variadic-profile.rs",
+    "unknown-abi.rs",
+    "ordinary.rs",
+    "c-children.rs",
+    "cases.tsv"
+  ],
+  "input_sha256": {
+    "option-c.rs": "aa1fa2d211480aea564a0da00ede86fd25552f155ee99ff875618bedb4ede6d9",
+    "raw-c.rs": "51ad62e649bb51be2c4b0f90c6a5a54b9fb811711c380dfa24306467965938ee",
+    "escaped-c.rs": "5590395444a3ef263e3626113dbdeac066449278c99fac483397bc55034d22de",
+    "default-c.rs": "57683aa838c2ef50bdfde1530cd886cd6f37e7b45cf8c9c1a39514587d4b2f93",
+    "unsafe-c.rs": "cd7a17eb83419005741618d7b011024d78a2238115e2a9008f7a23980aa31ae0",
+    "rust-control.rs": "2c5056a64e66cef43cff8d1a655e975df32a542f2c3abb9570ef4b5c0d057cbf",
+    "system-profile.rs": "2cba8f0a0c3daa68f6903f45b450e10b468d3dede136ede4ace085ca25780ffc",
+    "hrtb-profile.rs": "575cab019c5a3395da01134e9153ec1270185e451fb2b8508232bf59258a8010",
+    "variadic-profile.rs": "7d2082ddf3a9dc89ce92f2d61d809ff6c902e6bbd0a62213cae6a9c033f953bc",
+    "unknown-abi.rs": "2cac10c18679ab742791d1ba638cc30e1ad41fa72665fa5fcda9a2853f8082a0",
+    "ordinary.rs": "5f7aff8ac63923f42a07b8e906bd7cd972422ba1eba42c86c2e239b7a59a5a66",
+    "c-children.rs": "15be72da3c4a74df4f42fe5e07a277247347d0d80f1ea51d7b2305cb65b56d9f",
+    "cases.tsv": "4163e266cc2a80fca056f9cc5cef6a6a2bcccdcd6aaae54b030be3fc3e2e3a66"
+  },
+  "cases": [
+    {
+      "name": "option-c",
+      "path": "option-c.rs",
+      "rustc": 0,
+      "rustgm": 0,
+      "profile": "source",
+      "type": "extern \"C\" fn()",
+      "rustgm_diagnostic": null
+    },
+    {
+      "name": "raw-c",
+      "path": "raw-c.rs",
+      "rustc": 0,
+      "rustgm": 0,
+      "profile": "source",
+      "type": "extern r#\"C\"# fn()",
+      "rustgm_diagnostic": null
+    },
+    {
+      "name": "escaped-c",
+      "path": "escaped-c.rs",
+      "rustc": 0,
+      "rustgm": 0,
+      "profile": "source",
+      "type": "extern \"\\x43\" fn()",
+      "rustgm_diagnostic": null
+    },
+    {
+      "name": "default-c",
+      "path": "default-c.rs",
+      "rustc": 0,
+      "rustgm": 0,
+      "profile": "source",
+      "type": "extern fn()",
+      "rustgm_diagnostic": null
+    },
+    {
+      "name": "unsafe-c",
+      "path": "unsafe-c.rs",
+      "rustc": 0,
+      "rustgm": 0,
+      "profile": "source",
+      "type": "unsafe extern \"C\" fn()",
+      "rustgm_diagnostic": null
+    },
+    {
+      "name": "rust-control",
+      "path": "rust-control.rs",
+      "rustc": 0,
+      "rustgm": 0,
+      "profile": "source",
+      "type": "fn()",
+      "rustgm_diagnostic": null
+    },
+    {
+      "name": "system-profile",
+      "path": "system-profile.rs",
+      "rustc": 0,
+      "rustgm": 1,
+      "profile": "source",
+      "type": "extern \"system\" fn()",
+      "rustgm_diagnostic": "require a wider field profile"
+    },
+    {
+      "name": "hrtb-profile",
+      "path": "hrtb-profile.rs",
+      "rustc": 0,
+      "rustgm": 1,
+      "profile": "source",
+      "type": "for<'a> fn(&'a u8)->&'a u8",
+      "rustgm_diagnostic": "require a wider field profile"
+    },
+    {
+      "name": "variadic-profile",
+      "path": "variadic-profile.rs",
+      "rustc": 0,
+      "rustgm": 1,
+      "profile": "source",
+      "type": "unsafe extern \"C\" fn(u8,...)",
+      "rustgm_diagnostic": "requires a wider source derive profile"
+    },
+    {
+      "name": "unknown-abi",
+      "path": "unknown-abi.rs",
+      "rustc": 1,
+      "rustgm": 1,
+      "profile": "source",
+      "type": "extern \"rustgm_bad_abi\" fn()",
+      "rustgm_diagnostic": "require a wider field profile"
+    },
+    {
+      "name": "c-children",
+      "path": "c-children.rs",
+      "rustc": 0,
+      "rustgm": 0,
+      "profile": "source",
+      "type": "extern \"C\" fn(u8,*const u8)->u8",
+      "rustgm_diagnostic": null
+    },
+    {
+      "name": "ordinary-frozen",
+      "path": "ordinary.rs",
+      "rustc": 0,
+      "rustgm": 0,
+      "profile": "ordinary",
+      "rustgm_diagnostic": null
+    }
+  ],
+  "fixture_design": "The concrete Clone where predicate intentionally exercises Output::field typed copying without introducing unrelated TrivialClone marker/const-trait declarations; actual unchanged std replay remains the paired Clone/Copy consumer. Minimal prefix uses the already independently qualified authored PA34 sizing/Clone/Copy/LegacyReceiver declarations.",
+  "private_controls": [
+    "original and appended typed spans preserve existing inline/unowned fences",
+    "plain/raw/escaped C actual Storage owner with distinct source/copied/destination/receiver decoded pool prefixes",
+    "default extern and unsafe retained; generic String constants, HRTB, explicit Rust/system ABI and variadic forms stay fenced"
+  ],
+  "profile_gaps": [
+    "system-profile",
+    "hrtb-profile",
+    "variadic-profile"
+  ],
+  "required_rustc_diagnostics": {
+    "unknown-abi": "invalid ABI"
+  },
+  "pending": "Actual unchanged libc/std graph replay and paired source Clone/Copy consumer remain pending. No native, library artifact or release qualification is claimed.",
+  "version_2_additions": "Only c-children is new; eleven original Rust source bytes/statuses remain unchanged and independently passed in cabi-oracle-v1. Storage prepayment now uses actual decoded destination capacity under existing Growth policy; private measurement pending.",
+  "diagnostic_contract_correction": {
+    "prior_cases_sha256": "6b1eb4e270e6ee97eb2ccc2a979161e513aac3afd8ce3d5268c43380d02c7cca",
+    "prior_fragment": "requires a wider field profile",
+    "corrected_fragment": "require a wider field profile",
+    "reason": "The existing production fence has plural subject ABI or explicit binders. Its source text on65ed95a1d independently confirms require. Failed candidate receipt1794902860343185876 is retained; fixture bytes, all source statuses and profile fences are unchanged."
+  },
+  "ordinary_control_correction": {
+    "refuted": "receipt1794903055401105489: ordinary emit-expanded-crate returned0, so the expansion-only command did not reach the frozen type-checking boundary",
+    "declared_check": "ordinary unchanged fixture must reject --emit-body-ir; old immutable352b and current compiler must have identical status and stderr",
+    "source_bytes_and_rustc_outcome": "unchanged; rustc0 remains declared",
+    "candidate_prediction": 1,
+    "baseline_prediction": 1,
+    "typed_prediction_refuted": {
+      "baseline": 0,
+      "candidate": 0,
+      "body_ir_sha256": "89905b0e0de70a5db4c752966c218f545c1aa6c8a210107d44314824ab32c907",
+      "conclusion": "Both compiler identities already accept this ordinary fixture and emit byte-identical typed IR. The corrected control preserves that existing acceptance; frozen ordinary behavior is unchanged."
+    }
+  },
+  "validation": {
+    "source_fastcheck": "1794903303801942546: all twelve source outcomes pass; strict selected Clippy, format and architecture pass",
+    "private_fastcheck": "1794902629527473601: all six CABI/selected image controls pass, strict private Clippy/link pass; overall batch fails two unrelated uncommitted PA24 inspector cases",
+    "existing_controls": "1794902860343185876: both derived_field_bounds controls and original/appended callable span private control pass; source packet failure retained",
+    "independent_rustc": "retained cabi-oracle-v1 eleven cases plus cabi-oracle-v2-children one case; all source statuses match",
+    "harness": "525 roots across13 binaries; assignment/component layout passes;128 pinned upstream fixtures and126 Reference files verified",
+    "ordinary": "old immutable352b and candidate preserve byte-identical typed IR; retained refutations explain corrected ordinary prediction"
+  }
+}

@@ -37,6 +37,7 @@ pub(crate) struct Site<'a> {
     pub file: crate::support::source::FileId,
     pub source: &'a str,
     pub ast: &'a Syntax<StoredValue>,
+    pub literals: &'a crate::literal::storage::Storage,
     pub active: &'a [bool],
     pub item: Item,
     pub original: Span,
@@ -403,7 +404,13 @@ impl Output<'_> {
     fn field(&mut self, ty: NodeId) -> Result<(), LexError> {
         self.prepare_field()?;
         let original = self.site.ast.node(ty).span;
-        let parsed = derive_types::field(self.site.ast, ty, self.charge)?;
+        let parsed = derive_types::owned_field(
+            self.site.ast,
+            self.site.source,
+            self.site.literals,
+            ty,
+            self.charge,
+        )?;
         crate::syntax::transfer::validate_spans(&parsed.ast, |span| {
             if span.start < original.start
                 || span.end > original.end

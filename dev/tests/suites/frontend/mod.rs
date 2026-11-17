@@ -51,6 +51,8 @@ mod declarative_macros;
 mod defaulted_availability;
 #[path = "../../deref_contracts.rs"]
 mod deref_contracts;
+#[path = "../../derived_cabi_fields.rs"]
+mod derived_cabi_fields;
 #[path = "../../derived_field_bounds.rs"]
 mod derived_field_bounds;
 #[path = "../../edition_fragments.rs"]

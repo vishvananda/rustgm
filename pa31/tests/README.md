@@ -1468,3 +1468,9 @@ accepts and a closed `i32`/`u32` mismatch rejects. The existing maintainer trait
 root checks actual source-pipeline acceptance and integer types without making
 lowering or native claims. See its outcome manifest for the retained failed
 baseline and independent oracle provenance.
+
+The authored `spec/derive-cabi-fields/` packet independently declares twelve
+source outcomes for actual staged derive field copying: C function-pointer
+strings retain their literal owners; other ABI and binder profiles keep their
+existing fences. `outcomes.json` binds every source byte and distinguishes
+RustGM profile outcomes from pinned rustc acceptance.

@@ -73,9 +73,9 @@ pub(super) fn pending(
     Ok(())
 }
 pub(super) fn children(
-    source: &Syntax<StoredValue>,
+    source: &super::derive_types::Source<'_>,
     actual: &mut Node,
-    target: &mut Syntax<StoredValue>,
+    target: &mut crate::syntax::interpolation::ParsedSyntax,
     charge: &Charge<'_>,
     depth: usize,
 ) -> Result<(), LexError> {
