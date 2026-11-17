@@ -1442,3 +1442,12 @@ output7. Its ordinary counterparts belong to PA25.
 `rejected.rs` and `rejected-alloc.rs`. The shared `observe.c` prints
 `41 59` for each accepted case. The two opponents retain conflicting loans.
 The registered `bringup_stubs` root checks compilation and native behavior.
+
+`spec/closure-type-outlives/outcomes.json` declares `cursor.rs`, `front.rs`,
+`generic.rs`, `direct.rs`, `rejected-local.rs` and `rejected-captured.rs`, with
+`observe.c`. Closures retain their creator's generic type-outlives debts;
+references to closure locals and local captured storage remain rejected.
+
+`spec/vacuous-callable-formation/outcomes.json` declares `new.rs`,
+`angleout.rs`, `rejected.rs` and shared `observe.c`: an empty callable
+binder preserves DropGuard formation while unpaid const Drop still rejects.

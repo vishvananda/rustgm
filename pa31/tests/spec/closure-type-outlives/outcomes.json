@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "declared": "Before the original rustc oracle in obj/parallel/frontier3/r1/declared.json; copied unchanged for resumed verification of the closure T: lifetime debt",
+  "native_stdout": "41 59\n",
+  "observer": "observe.c",
+  "observer_sha256": "9f437d057f407be7a5d6bbdc0c28d0f1858206316307990f4143586edc864d14",
+  "cases": {
+    "cursor.rs": {
+      "sha256": "c7bb60d2cc2e47b5fd135050e88073ed71b0874ee663fcd899eef0f45eff8955",
+      "status": 0
+    },
+    "direct.rs": {
+      "sha256": "65f20b3cb8084ace142751e4b6d8379d32b486b0198f519f07666b3b95039500",
+      "status": 0
+    },
+    "front.rs": {
+      "sha256": "cc19ca20cd9df4a4f89ed5e742bca3d89e7995413b1106f14b4abcef7046fe7f",
+      "status": 0
+    },
+    "generic.rs": {
+      "sha256": "676552605be12dfbc62d9955887c9bf329224e4e98845aacc3db5699fa94326d",
+      "status": 0
+    },
+    "rejected-captured.rs": {
+      "sha256": "206a720b675b388f392599c1d7770f195b22eef711b7eb9c14e9bdb6c7d4fb96",
+      "status": 1
+    },
+    "rejected-local.rs": {
+      "sha256": "a29fa7463eb79b2b23e8ec288e1cd7e4af86d6e6b2e27155a093644778ec263f",
+      "status": 1
+    }
+  }
+}

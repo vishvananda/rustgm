@@ -18,13 +18,20 @@ impl Graph {
     /// Elimination supplies hypotheses, never proof of the original graph.
     /// Reprove all obligations under exactly the exported hypotheses before
     /// returning evidence. The caller must independently discharge every pair.
-    pub(crate) fn prove_output(mut self, interface: &[Region]) -> Result<Conditional, OutputError> {
+    /// A `longer_only` region (a rigid type parameter's common extent, which
+    /// the caller names as that parameter) is exported only as the longer side.
+    pub(crate) fn prove_output(
+        mut self,
+        interface: &[Region],
+        longer_only: &[Region],
+    ) -> Result<Conditional, OutputError> {
         if self.members.is_some() {
             return Err(OutputError::Unsupported);
         }
-        self.capacity(interface.len())?;
+        self.capacity(interface.len().saturating_add(longer_only.len()))?;
         let allowed: HashSet<_> = interface.iter().copied().collect();
-        for &region in &allowed {
+        let longer_allowed: HashSet<_> = longer_only.iter().copied().collect();
+        for &region in allowed.iter().chain(&longer_allowed) {
             if !matches!(
                 self.kind(region)?,
                 Kind::Static | Kind::Universal { universe: 0 }
@@ -32,11 +39,16 @@ impl Graph {
                 return Err(Error::Identity.into());
             }
         }
+        if !allowed.is_disjoint(&longer_allowed) {
+            return Err(Error::Identity.into());
+        }
         let mut conditions = HashMap::default();
         let mut solver = Solver::new(&self);
-        solver.charge_many(interface.len())?;
+        solver.charge_many(interface.len().saturating_add(longer_only.len()))?;
         solver.propagate(|longer, shorter, source| {
-            if (allowed.contains(&longer) || longer == Region::STATIC)
+            if (allowed.contains(&longer)
+                || longer_allowed.contains(&longer)
+                || longer == Region::STATIC)
                 && (allowed.contains(&shorter) || shorter == Region::STATIC)
             {
                 conditions
@@ -82,7 +94,7 @@ mod tests {
         let actual = graph.region(Kind::Variable { universe: 0 })?;
         graph.require(input, actual, 1)?;
         graph.require(actual, output, 2)?;
-        let conditional = graph.prove_output(&[input, output]);
+        let conditional = graph.prove_output(&[input, output], &[]);
         let Ok(conditional) = conditional else {
             return Err(Error::Identity);
         };
@@ -103,7 +115,7 @@ mod tests {
             if scalar_debt {
                 graph.require(input, output, 2)?;
             }
-            let result = graph.prove_output(&[input, output]);
+            let result = graph.prove_output(&[input, output], &[]);
             if scalar_debt {
                 let Ok(conditional) = result else {
                     return Err(Error::Identity);
@@ -122,6 +134,70 @@ mod tests {
         Ok(())
     }
 
+    /// A parameter's extent named by the caller is exported only as the
+    /// longer side; a pair it would have to be shorter in stays unproven.
+    #[test]
+    fn caller_named_parameters_export_only_as_the_longer_side() -> Result<(), Error> {
+        for parameter_longer in [true, false] {
+            let mut graph = Graph::new(4096);
+            let output = graph.region(Kind::Universal { universe: 0 })?;
+            let parameter = graph.region(Kind::Universal { universe: 0 })?;
+            let actual = graph.region(Kind::Variable { universe: 0 })?;
+            if parameter_longer {
+                graph.require(parameter, actual, 1)?;
+                graph.require(actual, output, 2)?;
+            } else {
+                graph.require(output, parameter, 3)?;
+            }
+            let result = graph.prove_output(&[output], &[parameter]);
+            if parameter_longer {
+                let Ok(conditional) = result else {
+                    return Err(Error::Identity);
+                };
+                assert_eq!(conditional.conditions, [(parameter, output, 1)]);
+            } else {
+                assert!(matches!(
+                    result,
+                    Err(OutputError::Constraint(Error::Unsatisfied {
+                        source: 3,
+                        ..
+                    }))
+                ));
+            }
+        }
+        let mut graph = Graph::new(1024);
+        let shared = graph.region(Kind::Universal { universe: 0 })?;
+        assert!(matches!(
+            graph.prove_output(&[shared], &[shared]),
+            Err(OutputError::Constraint(Error::Identity))
+        ));
+        Ok(())
+    }
+
+    #[test]
+    fn caller_parameter_output_work_is_additive() -> Result<(), Error> {
+        for count in [8, 32, 128] {
+            let mut graph = Graph::new(64 * count + 128);
+            let mut outputs = Vec::new();
+            let mut parameters = Vec::new();
+            for _ in 0..count {
+                let output = graph.region(Kind::Universal { universe: 0 })?;
+                let parameter = graph.region(Kind::Universal { universe: 0 })?;
+                let actual = graph.region(Kind::Variable { universe: 0 })?;
+                graph.require(parameter, actual, 1)?;
+                graph.require(actual, output, 2)?;
+                outputs.push(output);
+                parameters.push(parameter);
+            }
+            let Ok(proof) = graph.prove_output(&outputs, &parameters) else {
+                return Err(Error::Identity);
+            };
+            assert_eq!(proof.conditions.len(), count);
+            assert!(proof.solution.steps <= 32 * count + 128);
+        }
+        Ok(())
+    }
+
     #[test]
     fn private_storage_and_input_only_receivers_cannot_be_exported() -> Result<(), Error> {
         for local in [true, false] {
@@ -136,7 +212,7 @@ mod tests {
             graph.require(owner, actual, 1)?;
             graph.require(actual, output, 2)?;
             assert!(matches!(
-                graph.prove_output(&[output]),
+                graph.prove_output(&[output], &[]),
                 Err(OutputError::Constraint(Error::Unsatisfied { .. }))
             ));
         }
@@ -159,7 +235,7 @@ mod tests {
                 graph.verify_all(&[required, absent])?
             };
             graph.require_verification(test, 2)?;
-            let result = graph.prove_output(&[input, output]);
+            let result = graph.prove_output(&[input, output], &[]);
             if alternatives {
                 let Ok(conditional) = result else {
                     return Err(Error::Identity);
@@ -186,7 +262,7 @@ mod tests {
             }
             let test = graph.verify_outlives(input, output)?;
             graph.require_verification(test, 7)?;
-            let result = graph.prove_output(&[input, output]);
+            let result = graph.prove_output(&[input, output], &[]);
             if assumed {
                 let Ok(conditional) = result else {
                     return Err(Error::Identity);

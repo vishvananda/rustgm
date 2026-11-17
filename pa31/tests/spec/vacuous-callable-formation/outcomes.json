@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "declared": "2026-11-16 original obj/parallel/frontier3/guard/declared.json outcomes, carried forward unchanged before resumed oracle",
+  "observer": "observe.c",
+  "native_stdout": "41 59\n",
+  "cases": {
+    "angleout.rs": {
+      "sha256": "b6556796308226a0cd8216c435fc6be89b1cd8c17652b7611771523da8cb41a4",
+      "status": 0
+    },
+    "new.rs": {
+      "sha256": "55dd3b77604025ed73045de6b6b957aca0374d73d8b889ea1ff2600069dd9034",
+      "status": 0
+    },
+    "rejected.rs": {
+      "sha256": "be425963e4c4b10ba5a5a7b5792cc2dbeedcdc4d5911f9b4e2ef15f4c1112bdf",
+      "status": 1
+    }
+  }
+}

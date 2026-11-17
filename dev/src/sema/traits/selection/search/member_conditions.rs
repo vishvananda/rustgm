@@ -232,6 +232,18 @@ impl Search<'_> {
             .clauses
             .get(formation.cursor)
             .ok_or("missing family condition")?;
+        // Parenthesized callable sugar quantifies a clause under an empty
+        // binder, as core's `DropGuard<T, F> where F: FnOnce(T)` does. Lowered
+        // out of it, as an impl condition is, the condition is proven in the
+        // formation's own scope, so its proof leaves the formation no debt.
+        let mut lowering = None;
+        let clause =
+            crate::sema::traits::selection::vacuous(&mut facts.types, &mut lowering, clause)?;
+        frame
+            .inputs
+            .context
+            .account_work(lowering.map_or(0, |lowering| lowering.steps))
+            .map_err(inference)?;
         self.clause_frame::<false>(
             facts,
             &mut frame.inputs.context,

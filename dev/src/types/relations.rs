@@ -1,5 +1,12 @@
 //! Directed type relations use actual region arguments and explicit binder scopes.
-type OutputConditions = Vec<(RegionId, RegionId, u32)>;
+/// The debts an output proof leaves to its caller, each with its source index.
+#[derive(Default)]
+pub(crate) struct OutputConditions {
+    /// One interface lifetime outlives another.
+    pub regions: Vec<(RegionId, RegionId, u32)>,
+    /// A rigid type parameter outlives an interface lifetime.
+    pub types: Vec<(TypeId, RegionId, u32)>,
+}
 mod alias_slots;
 mod ancestry;
 pub(crate) use alias_slots::BodyAliases;
@@ -836,20 +843,32 @@ impl<'a> Constraints<'a> {
         }
         let end = self.binders.first().ok_or(Error::Identity)?.end;
         self.arguments.truncate(end);
+        // A rigid parameter that must outlive an interface lifetime is the
+        // caller's `T: 'r` debt, as rustc propagates a closure requirement.
+        let parameters: HashMap<Region, ParameterId> = self
+            .parameters
+            .iter()
+            .map(|(&id, &region)| (region, id))
+            .collect();
+        let longer: Vec<Region> = parameters.keys().copied().collect();
         let super::region_graph::Conditional {
             solution,
-            conditions,
-        } = self.graph.prove_output(&regions)?;
-        let conditions = conditions
-            .into_iter()
-            .map(|(longer, shorter, source)| {
-                Ok((
-                    *names.get(&longer).ok_or(Error::Identity)?,
-                    *names.get(&shorter).ok_or(Error::Identity)?,
-                    source,
-                ))
-            })
-            .collect::<Result<Vec<_>, Error>>()?;
+            conditions: pairs,
+        } = self.graph.prove_output(&regions, &longer)?;
+        let mut conditions = OutputConditions::default();
+        for (longer, shorter, source) in pairs {
+            let shorter = *names.get(&shorter).ok_or(Error::Identity)?;
+            if let Some(&longer) = names.get(&longer) {
+                conditions.regions.push((longer, shorter, source));
+            } else {
+                let parameter = *parameters.get(&longer).ok_or(Error::Identity)?;
+                let ty = self
+                    .types
+                    .find_kind(Kind::Parameter(parameter))
+                    .ok_or(Error::Identity)?;
+                conditions.types.push((ty, shorter, source));
+            }
+        }
         Ok((
             Proof {
                 solution,

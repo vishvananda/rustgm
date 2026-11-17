@@ -1512,3 +1512,56 @@ fn captured_dereferences_execute() -> Result {
         &["shared", "generic", "method", "mutable"],
     )
 }
+
+const CLOSURE_TYPE_OUTLIVES: &str = "pa31/tests/spec/closure-type-outlives";
+#[test]
+fn closure_type_outlives_debts_are_discharged_by_the_creator() -> Result {
+    lower_completely(
+        CLOSURE_TYPE_OUTLIVES,
+        &["cursor", "front", "generic", "direct"],
+    )?;
+    for case in ["rejected-local", "rejected-captured"] {
+        let (output, _) = minicore(CLOSURE_TYPE_OUTLIVES, case, None)?;
+        let stderr = String::from_utf8(output.stderr)?;
+        assert_eq!(output.status.code(), Some(1), "{case}: {stderr}");
+        assert!(
+            stderr.contains("required lifetime does not outlive its target"),
+            "{case}: {stderr}"
+        );
+    }
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn closure_type_outlives_execute() -> Result {
+    execute_cases(
+        CLOSURE_TYPE_OUTLIVES,
+        &["cursor", "front", "generic", "direct"],
+    )
+}
+
+const VACUOUS_CALLABLE: &str = "pa31/tests/spec/vacuous-callable-formation";
+#[test]
+fn empty_callable_binders_preserve_formation_requirements() -> Result {
+    lower_completely(VACUOUS_CALLABLE, &["new", "angleout"])?;
+    let (rejected, _) = minicore(VACUOUS_CALLABLE, "rejected", Some(""))?;
+    let stderr = String::from_utf8(rejected.stderr)?;
+    assert!(rejected.status.success(), "{stderr}");
+    assert!(rows(&stderr, "bringup-blocker\t").is_empty(), "{stderr}");
+    let debts = rows(&stderr, "bringup-unproven\t");
+    assert_eq!(debts.len(), 2, "{stderr}");
+    for requirement in ["Destruct", "Drop"] {
+        let suffix = format!(
+            "\tdiscard\tactive cleanup requires const {requirement} in its actual defining environment"
+        );
+        assert!(debts.iter().any(|row| row.ends_with(&suffix)), "{stderr}");
+    }
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the locked CPPGM object backend and a C compiler"]
+fn vacuous_callable_formation_executes() -> Result {
+    execute_cases(VACUOUS_CALLABLE, &["new", "angleout"])
+}

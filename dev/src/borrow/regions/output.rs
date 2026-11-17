@@ -10,7 +10,7 @@ use crate::{
         RegionId, Store,
         outlives::Queries,
         region_graph,
-        relations::{Constraints, Proof},
+        relations::{Constraints, OutputConditions, Proof},
         variance::Variances,
     },
 };
@@ -78,7 +78,7 @@ pub(super) fn finish(
         }
     }
     let (proof, conditions) = if link.bridges.is_empty() {
-        (constraints.prove()?, Vec::new())
+        (constraints.prove()?, OutputConditions::default())
     } else {
         constraints
             .prove_output(&interface)
@@ -97,17 +97,27 @@ pub(super) fn finish(
                 .ok_or(region_graph::Error::Identity)
         }
     };
-    let formal =
-        (!conditions.is_empty()).then(|| conditions.iter().map(|&(a, b, _)| (a, b)).collect());
-    let mut requirements = conditions
-        .into_iter()
-        .map(|(longer, shorter, _)| {
-            Ok(Obligation {
-                source: input.source.into(),
-                kind: Kind::Outlives((parent(longer)?, parent(shorter)?)),
-            })
-        })
-        .collect::<Result<Vec<_>, region_graph::Error>>()?;
+    let formal = (!conditions.regions.is_empty())
+        .then(|| conditions.regions.iter().map(|&(a, b, _)| (a, b)).collect());
+    let source = input.source.into();
+    let mut requirements = Vec::with_capacity(conditions.regions.len() + conditions.types.len());
+    for (longer, shorter, _) in conditions.regions {
+        requirements.push(Obligation {
+            source,
+            kind: Kind::Outlives((parent(longer)?, parent(shorter)?)),
+        });
+    }
+    // The parameter keeps its identity: the child is checked in its creator's
+    // generic environment, which proves `T: 'r` from its own assumptions.
+    for (ty, shorter, _) in conditions.types {
+        requirements.push(Obligation {
+            source,
+            kind: Kind::TypeOutlives {
+                ty,
+                shorter: parent(shorter)?,
+            },
+        });
+    }
     if let Some(formation) = &link.formation {
         requirements.extend(formation.inputs.iter().map(|formation| Obligation {
             source: input.source.into(),
