@@ -202,7 +202,7 @@ impl Resolver<'_> {
             let found = match found {
                 Some(found) => Some(found),
                 None => self
-                    .source_prelude_selection(c, name, namespace, item, None)
+                    .source_prelude_selection(c, name, namespace, query.item, None)
                     .map_err(|e| Error::at(c.file, offset, e))?,
             };
             return Ok(found.or_else(|| {

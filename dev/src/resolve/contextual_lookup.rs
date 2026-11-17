@@ -232,14 +232,8 @@ impl Resolver<'_> {
             barriers += u32::from(frame.barrier);
             current = frame.parent;
         }
-        self.terminal_prelude(
-            Context {
-                module: privacy,
-                ..c
-            },
-            (name, namespace, context),
-            observed,
-            filter,
-        )
+        // Lexical definition privacy above is separate from the invoking
+        // crate whose prelude supplies otherwise unresolved names.
+        self.terminal_prelude(c, (name, namespace, context), observed, filter, privacy)
     }
 }

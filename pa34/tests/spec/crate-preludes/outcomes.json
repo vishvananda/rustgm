@@ -1,0 +1,445 @@
+{
+  "profile": "Rust1.98.0 pinned88d9e12ae178fab0fb5cc050a94da85685d449ea, source core plus actual crate-owned guests, x86_64 abort",
+  "scope": "Per-crate authored prelude selection and same-crate last replacement; fallback belongs to invoking crate, while lexical definition-site privacy remains distinct. Ordinary PA24 bootstrap stays frozen.",
+  "inputs": [
+    "auto-2021.rs",
+    "captured.rs",
+    "first.rs",
+    "guest-missing-gate.rs",
+    "host-leak.rs",
+    "host-missing-gate.rs",
+    "host.rs",
+    "missing-target.rs",
+    "mixed-site.rs",
+    "no-implicit-explicit.rs",
+    "no-implicit-method.rs",
+    "no-implicit-name.rs",
+    "opaque-callsite.rs",
+    "opaque.rs",
+    "same-crate-first-only.rs",
+    "same-crate-last.rs",
+    "second.rs",
+    "shadow.rs",
+    "sibling-leak.rs",
+    "cases.tsv"
+  ],
+  "input_sha256": {
+    "auto-2021.rs": "6a0b8af145c44fbc7c408ffa6d4a5aeca432bdc1f8c58d9f30beeef5f290cdd9",
+    "captured.rs": "8bd55ceb1841a6a2867cd8e7ce47f6ff0e95abd329a665276a108e8e4b206598",
+    "first.rs": "cc92017053ecd316066855680bf9f6383b98e856161c978af219733d3357875f",
+    "guest-missing-gate.rs": "28c71430881f55036ab35334a903c9aa10ba2dd5bfefce11293ba3a98af8d3ad",
+    "host-leak.rs": "45b8b42e53c1ea418539ee69f6cc37bc3afbef23c130f615d730bdbc3eb15490",
+    "host-missing-gate.rs": "dc977ed0275721cc9c5c98fd2abe39ba3ae046ae1d079f942e7ab9d8ee3d84ba",
+    "host.rs": "b95a7da32700b9d8ba4b7a85015753cd2c650e33be2477c38127260a4c92a136",
+    "missing-target.rs": "ea985ddd839e4e0263e5f86394f8e00236f6266a9669b35dcf8565a4e81e4550",
+    "mixed-site.rs": "3810cafafb0542ac759785e3e3ad1bfaa75f7301b6f2b5db8739ab35f856d147",
+    "no-implicit-explicit.rs": "8f6ac01f38778537410a8d0ced117709048bade3299332645bd1adae78584ce0",
+    "no-implicit-method.rs": "621d8263d8fc2cd583757ec10c000992142054c301157d70324105878f1193ea",
+    "no-implicit-name.rs": "8a8903e9eaf6bc1da62646e1c12b82946099306a9df6bf835cfedb57a62200c1",
+    "opaque-callsite.rs": "a275284dd232e7b0746f1e24fac12769ec02d197c660cacbccddde2e08a332ff",
+    "opaque.rs": "d782ac4cc7af18e9f0d8e9b854afbefe50b19dc5826c34f45c266fd99e70379c",
+    "same-crate-first-only.rs": "dfc85deabe2211de6641776b311c0b4e51c110e21f5871435ee2fcc86665554c",
+    "same-crate-last.rs": "8b1ca12d3bcb7458a8d060159f508b16d260b11595b789208c53e264bd77c203",
+    "second.rs": "e4836f2d3280463e20b44b7199800364034d5da53327a7c071295fd40ca6cbf9",
+    "shadow.rs": "e84361df4137b3b6fd2957dbe89cf1db2f01788c6babde56e2dc61670bd5d00a",
+    "sibling-leak.rs": "2488c17b23be5efdf628d88f729144ac12fa3c3cf4fa95cdf2867336b8882a68",
+    "cases.tsv": "99cc15992761866bc07d54ad8eb6c826a10b57469ea34d31c642ccdcce13d37c"
+  },
+  "cases": [
+    {
+      "name": "host-and-guest",
+      "host": "host.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "app",
+          "edition": "2024",
+          "path": "first.rs"
+        }
+      ],
+      "rustc": 0,
+      "rustgm": 0,
+      "required_rustc_diagnostic": null,
+      "profile_gap": null,
+      "baseline_913_status": 1
+    },
+    {
+      "name": "host-and-two-guests",
+      "host": "host.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "first",
+          "edition": "2024",
+          "path": "first.rs"
+        },
+        {
+          "name": "app",
+          "edition": "2024",
+          "path": "second.rs"
+        }
+      ],
+      "rustc": 0,
+      "rustgm": 0,
+      "required_rustc_diagnostic": null,
+      "profile_gap": null,
+      "baseline_913_status": 1
+    },
+    {
+      "name": "mixed-edition-owned-selectors",
+      "host": "host.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "first",
+          "edition": "2021",
+          "path": "first.rs"
+        },
+        {
+          "name": "app",
+          "edition": "2024",
+          "path": "second.rs"
+        }
+      ],
+      "rustc": 0,
+      "rustgm": 0,
+      "required_rustc_diagnostic": null,
+      "profile_gap": null,
+      "baseline_913_status": 1
+    },
+    {
+      "name": "automatic-edition-fallback",
+      "host": "host.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "app",
+          "edition": "2021",
+          "path": "auto-2021.rs"
+        }
+      ],
+      "rustc": 0,
+      "rustgm": 0,
+      "required_rustc_diagnostic": null,
+      "profile_gap": null,
+      "baseline_913_status": 0
+    },
+    {
+      "name": "no-implicit-explicit",
+      "host": "host.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "app",
+          "edition": "2024",
+          "path": "no-implicit-explicit.rs"
+        }
+      ],
+      "rustc": 0,
+      "rustgm": 0,
+      "required_rustc_diagnostic": null,
+      "profile_gap": null,
+      "baseline_913_status": 1
+    },
+    {
+      "name": "lexical-shadow",
+      "host": "host.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "app",
+          "edition": "2024",
+          "path": "shadow.rs"
+        }
+      ],
+      "rustc": 0,
+      "rustgm": 0,
+      "required_rustc_diagnostic": null,
+      "profile_gap": null,
+      "baseline_913_status": 1
+    },
+    {
+      "name": "opaque-definition-prelude",
+      "host": "host.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "app",
+          "edition": "2024",
+          "path": "opaque.rs"
+        }
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostic": "E0308",
+      "profile_gap": null,
+      "baseline_913_status": 1,
+      "semantic_contract": "Original source expects host Same, but pinned Rustc selects guest prelude Same; retain E0308 identity mismatch opponent"
+    },
+    {
+      "name": "captured-callsite-prelude",
+      "host": "host.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "app",
+          "edition": "2024",
+          "path": "captured.rs"
+        }
+      ],
+      "rustc": 0,
+      "rustgm": 0,
+      "required_rustc_diagnostic": null,
+      "profile_gap": null,
+      "baseline_913_status": 1
+    },
+    {
+      "name": "mixed-site-callsite-prelude",
+      "host": "host.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "app",
+          "edition": "2024",
+          "path": "mixed-site.rs"
+        }
+      ],
+      "rustc": 0,
+      "rustgm": 0,
+      "required_rustc_diagnostic": null,
+      "profile_gap": null,
+      "baseline_913_status": 1
+    },
+    {
+      "name": "explicit-path-not-rewritten-by-edition",
+      "host": "host.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "app",
+          "edition": "2021",
+          "path": "first.rs"
+        }
+      ],
+      "rustc": 0,
+      "rustgm": 0,
+      "required_rustc_diagnostic": null,
+      "profile_gap": null,
+      "baseline_913_status": 1
+    },
+    {
+      "name": "host-does-not-inherit-guest",
+      "host": "host-leak.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "app",
+          "edition": "2024",
+          "path": "first.rs"
+        }
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostic": "cannot find type `FirstOnly`",
+      "profile_gap": null,
+      "baseline_913_status": 1
+    },
+    {
+      "name": "sibling-does-not-inherit-first",
+      "host": "host.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "first",
+          "edition": "2024",
+          "path": "first.rs"
+        },
+        {
+          "name": "app",
+          "edition": "2024",
+          "path": "sibling-leak.rs"
+        }
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostic": "cannot find type `FirstOnly`",
+      "profile_gap": null,
+      "baseline_913_status": 1
+    },
+    {
+      "name": "host-request-cannot-pay-guest",
+      "host": "host.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "app",
+          "edition": "2024",
+          "path": "guest-missing-gate.rs"
+        }
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostic": "`#[prelude_import]` is for use by rustc only",
+      "profile_gap": null,
+      "baseline_913_status": 1
+    },
+    {
+      "name": "guest-request-cannot-pay-host",
+      "host": "host-missing-gate.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "app",
+          "edition": "2024",
+          "path": "first.rs"
+        }
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostic": "`#[prelude_import]` is for use by rustc only",
+      "profile_gap": null,
+      "baseline_913_status": 1
+    },
+    {
+      "name": "no-implicit-name",
+      "host": "host.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "app",
+          "edition": "2024",
+          "path": "no-implicit-name.rs"
+        }
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostic": "cannot find value `FirstOnly`",
+      "profile_gap": null,
+      "baseline_913_status": 1
+    },
+    {
+      "name": "no-implicit-method",
+      "host": "host.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "app",
+          "edition": "2024",
+          "path": "no-implicit-method.rs"
+        }
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostic": "no method named `read`",
+      "profile_gap": null,
+      "baseline_913_status": 1
+    },
+    {
+      "name": "missing-selector-target",
+      "host": "host.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "app",
+          "edition": "2024",
+          "path": "missing-target.rs"
+        }
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostic": "cannot resolve a prelude import",
+      "profile_gap": null,
+      "baseline_913_status": 1
+    },
+    {
+      "name": "same-crate-last-selector",
+      "host": "host.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "app",
+          "edition": "2024",
+          "path": "same-crate-last.rs"
+        }
+      ],
+      "rustc": 0,
+      "rustgm": 0,
+      "required_rustc_diagnostic": null,
+      "profile_gap": null,
+      "semantic_contract": "Actual source-core profile must replace the previous same-crate selector and keep only the final module selected",
+      "baseline_913_status": 1
+    },
+    {
+      "name": "same-crate-does-not-merge",
+      "host": "host.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "app",
+          "edition": "2024",
+          "path": "same-crate-first-only.rs"
+        }
+      ],
+      "rustc": 1,
+      "rustgm": 1,
+      "required_rustc_diagnostic": "cannot find value `EarlierOnly`",
+      "profile_gap": null,
+      "semantic_contract": "Actual source-core same-crate selection replaces rather than merges; earlier-only name stays absent",
+      "baseline_913_status": 1
+    },
+    {
+      "name": "opaque-callsite-prelude",
+      "host": "host.rs",
+      "host_edition": "2024",
+      "guests": [
+        {
+          "name": "app",
+          "edition": "2024",
+          "path": "opaque-callsite.rs"
+        }
+      ],
+      "rustc": 0,
+      "rustgm": 0,
+      "required_rustc_diagnostic": null,
+      "profile_gap": null,
+      "baseline_913_status": 1,
+      "semantic_contract": "Opaque lexical definition context remains distinct from prelude fallback. Actual type, value constructor and Read method use the invoking guest crate prelude; return guest Same explicitly."
+    }
+  ],
+  "independent": {
+    "combined_cases": 20,
+    "accept": 11,
+    "reject": 9,
+    "new": 2,
+    "reused_unchanged": 18,
+    "qualification_path": "obj/parallel/std-guests-20261117/crate-preludes-design-v3/oracle-baseline-amended-v1/qualification.json",
+    "qualification_sha256": "9743f25aa3a6ebccd4aff481243f54c3192304c0cbf0d347c8284be4083181e1",
+    "prior_refutations": "V1 lacked Freeze and ran no cases; V2 opaque host-type expected0 was refuted by E0308 guest type. Original declarations, bytes, raw failure and usage2 baseline remain under obj/parallel/std-guests-20261117/crate-preludes-design-v1 and v2. V3 only changes the expected opaque identity and adds the guest-typed successor."
+  },
+  "candidate": {
+    "state": "All20 source cases match declared11accept/9reject;5 exact regular tests pass with selected production/CLI Clippy, format and architecture. Private execution remains pending CI after linked harness compile timeout.",
+    "source_receipt": "obj/qualification/fast/1794923764717123308/receipt.json",
+    "source_receipt_sha256": "2ba1e9fb258fa37c60d7798a8cf0eb958aa17fdb942ee6f75d313d2bca3b827d",
+    "source_seconds": 171.94,
+    "source_regular_tests": 5,
+    "private_receipt": "obj/qualification/fast/1794923960861176795/receipt.json",
+    "private_receipt_sha256": "6cf85f8d287c04a5432db6211d399d3dedc931aa5aba2ecab5b6463ce23bc533",
+    "private_state": "No test execution:227s private compile phase exceeded five-minute development budget. No Clippy error before timeout.16prelude controls plus4adapter controls selected.",
+    "harness_upstream_log": "obj/parallel/continuation-20261117/crate-preludes-harness.log",
+    "harness_upstream_sha256": "7487b2ccf0166277813b36209c903a6e921a7041e9624e01124a95632562e34c",
+    "maintainer_roots": 528,
+    "maintainer_binaries": 13,
+    "upstream_fixtures": 128,
+    "reference_files": 126,
+    "integration_repair": "Complete separate lexical_privacy fallback lookup and Selected.privacy after source-prelude selection through original invoking context.",
+    "retained_contract": "Existing default-Context PA31 multiple gap and ordinary missing-request opponents stay unchanged. Actual std graph replay remains pending new immutable clean compiler."
+  },
+  "runtime": "no new native or full library artifact claim",
+  "private_controls": [
+    "resolve::prelude_scope::owners::tests::source_replacement_keeps_one_paid_crate_entry_and_the_last_owner",
+    "resolve::prelude_scope::owners::tests::a_staged_selector_keeps_the_old_scope_until_the_real_lookup_commits",
+    "resolve::prelude_scope::owners::tests::failed_replacement_payment_leaves_the_previous_selection_unchanged",
+    "resolve::prelude_scope::owners::tests::a_foreign_crate_key_cannot_rebind_an_authentic_source_selector",
+    "resolve::prelude_scope::owners::tests::repeated_source_selectors_pay_linear_work_and_constant_warm_lookup"
+  ]
+}

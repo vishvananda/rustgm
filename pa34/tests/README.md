@@ -1,5 +1,13 @@
 # PA34 fixture ownership
 
+`spec/crate-preludes/` freezes20 independently checked source host/guest outcomes
+(11 accept,9 reject) for crate-owned authored selectors, last replacement,
+invocation-crate macro fallback, own gates, isolation, editions and methods.
+Its manifest lists every input and retains the refuted opaque identity prediction
+and separate successor. Candidate/private qualification is pending; ordinary
+PA24 bootstrap and full source-library publication stay separate requirements.
+
+
 Planned: no graded fixtures or generated reference outputs yet.
 
 `spec/removed-library-features/outcomes.json` declares37 metadata-only outcomes

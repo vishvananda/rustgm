@@ -17,6 +17,10 @@ use crate::{
     },
 };
 use std::sync::Arc;
+#[path = "prelude_scope/prelude_owners.rs"]
+mod owners;
+use super::guests::CrateSlot;
+pub(super) use owners::Preludes;
 #[cfg(test)]
 #[path = "../../tests/invariants/prelude_protocol.rs"]
 mod tests;
@@ -86,6 +90,7 @@ pub(super) fn claim(
 ) -> Result<(), Error> {
     let error = |message| Error::at(owner.file, 0, message);
     pay(package, 8, 0).map_err(error)?;
+    owners::require_own_request(package, context)?;
     let unit = package
         .units
         .get(owner.file.0 as usize)
@@ -131,40 +136,33 @@ pub(super) fn claim(
     if !matches!(item.kind, ItemKind::Use(_)) || context.file != owner.file {
         return Err(error("prelude_import requires its actual use item"));
     }
-    if configured.attributes.is_empty()
-        || facts.introductions.source_prelude().is_some()
-        || facts.introductions.injected_prelude().is_some()
+    if package.source_core().is_none()
+        && (facts.introductions.source_prelude().is_some()
+            || facts.introductions.injected_prelude().is_some())
     {
         return Err(error(
             "multiple source prelude selectors are not implemented",
         ));
     }
-    let bytes = size_of::<Prelude>()
-        + if facts.introductions.item_scopes.is_none() {
-            size_of::<super::container_scopes::ItemScopes>()
-        } else {
-            0
-        };
-    pay(package, 1, bytes).map_err(error)?;
-    facts
-        .introductions
-        .item_scopes
-        .get_or_insert_with(Box::default)
-        .prelude = Some(Box::new(Prelude {
-        owner,
-        item_key,
-        owner_node: unit.configured.ast.node(owner.node),
-        attributes: (configured.attributes.start, configured.attributes.end),
-        capture: retained.capture,
-        node,
-        item,
-        selector: selector(unit, item).map_err(error)?,
-        effect,
-        attribute,
-        image: Arc::clone(unit.source.original_image()),
-        context,
-        selected: None,
-    }));
+    owners::stage(
+        package,
+        &mut facts.introductions,
+        Prelude {
+            owner,
+            item_key,
+            owner_node: unit.configured.ast.node(owner.node),
+            attributes: (configured.attributes.start, configured.attributes.end),
+            capture: retained.capture,
+            node,
+            item,
+            selector: selector(unit, item).map_err(error)?,
+            effect,
+            attribute,
+            image: Arc::clone(unit.source.original_image()),
+            context,
+            selected: None,
+        },
+    )?;
     Ok(())
 }
 fn selector(unit: &super::unit::Unit, item: Item) -> Result<UseTree, &'static str> {
@@ -239,10 +237,18 @@ impl Prelude {
 }
 impl Introductions {
     pub(super) fn has_source_prelude(&self) -> bool {
-        self.source_prelude().is_some() || self.injected_prelude().is_some()
+        self.item_scopes
+            .as_deref()
+            .and_then(|s| s.prelude.as_deref())
+            .is_some_and(Preludes::has_any)
+            || self.injected_prelude().is_some()
     }
     fn source_prelude(&self) -> Option<&Prelude> {
-        self.item_scopes.as_deref()?.prelude.as_deref()
+        self.item_scopes
+            .as_deref()?
+            .prelude
+            .as_deref()?
+            .selected(CrateSlot::HOST)
     }
     pub(super) fn injected_prelude(&self) -> Option<(DefId, ScopeId)> {
         let injected = self.item_scopes.as_deref()?.injected?;
@@ -270,14 +276,22 @@ impl Resolution {
         &self,
         package: &Package,
     ) -> Result<Option<ScopeId>, &'static str> {
+        if let Some(state) = self
+            .introductions
+            .item_scopes
+            .as_deref()
+            .and_then(|s| s.prelude.as_deref())
+        {
+            state.validate(package, self)?;
+        }
         if let Some(selected) = self.introductions.injected_prelude() {
             return self.injected_module(package, selected);
         }
-        let Some(prelude) = self.introductions.source_prelude() else {
-            return Ok(None);
-        };
-        prelude.validate(package, self)?;
-        self.selected_module(prelude)
+        self.introductions
+            .source_prelude()
+            .map(|prelude| self.selected_module(prelude))
+            .transpose()
+            .map(Option::flatten)
     }
     /// One lookup through a selector its phase authenticates. It pays its own
     /// constant cost and rechecks the selected module row, never the whole record.
@@ -293,6 +307,33 @@ impl Resolution {
         };
         pay(package, 1, 0)?;
         self.selected_module(prelude)
+    }
+    /// An authored selector belongs to the lookup's invoking crate, before its automatic prelude.
+    pub(crate) fn selected_crate_prelude(
+        &self,
+        package: &Package,
+        module: super::package::ModuleId,
+    ) -> Result<Option<ScopeId>, &'static str> {
+        let slot = owners::crate_slot(package, module)?;
+        if let Some(prelude) = self
+            .introductions
+            .item_scopes
+            .as_deref()
+            .and_then(|s| s.prelude.as_deref())
+            .and_then(|state| state.selected(slot))
+        {
+            pay(package, 1, 0)?;
+            return self.selected_module(prelude);
+        }
+        if let Some(guest) = package.entered_guest(module) {
+            // Automatic edition injection needs no authored-selector gate,
+            // but its additional target recheck still pays a constant read.
+            if let Some(context) = package.macro_context()? {
+                context.contracts().charge(1, 0)?;
+            }
+            return guest.checked_prelude(self);
+        }
+        self.selected_source_prelude(package)
     }
     /// The injected prelude needs no `prelude_import` request; each lookup
     /// still pays its constant cost and rechecks the selected module row.
@@ -333,12 +374,10 @@ impl Resolver<'_> {
         c: Context,
         tree: NodeId,
     ) -> Result<bool, Error> {
-        let Some(prelude) = self.facts.introductions.source_prelude() else {
+        let Some((slot, prelude)) = owners::pending_for_use(self.package, self.facts, c, tree)?
+        else {
             return Ok(false);
         };
-        if prelude.item.kind != ItemKind::Use(tree) || prelude.item_key.file != c.file {
-            return Ok(false);
-        }
         let error = |message| Error::at(c.file, 0, message);
         prelude.validate(self.package, self.facts).map_err(error)?;
         if c.scope != prelude.context.scope || c.module != prelude.context.module {
@@ -394,14 +433,14 @@ impl Resolver<'_> {
             .members
             .ok_or_else(|| error("source prelude target has no member scope"))?;
         pay(self.package, 1, 0).map_err(error)?;
-        let prelude = self
-            .facts
+        self.facts
             .introductions
             .item_scopes
             .as_deref_mut()
             .and_then(|sites| sites.prelude.as_deref_mut())
-            .ok_or_else(|| error("source prelude owner disappeared"))?;
-        prelude.selected = Some((binding.target, scope));
+            .ok_or_else(|| error("source prelude owner disappeared"))?
+            .commit(slot, c, (binding.target, scope))
+            .map_err(error)?;
         Ok(true)
     }
     pub(super) fn terminal_prelude(
@@ -410,6 +449,7 @@ impl Resolver<'_> {
         requested: (NameId, Namespace, ItemContext),
         observed: Option<&mut Observations>,
         filter: Option<super::lookup::MacroFilter<'_>>,
+        lexical_privacy: super::package::ModuleId,
     ) -> Result<Option<Selected>, &'static str> {
         let (name, namespace, context) = requested;
         if let Some(selected) = self
@@ -419,12 +459,12 @@ impl Resolver<'_> {
             return Ok(Some(selected));
         }
         Ok(self
-            .lexical_prelude(c.module, name, namespace)
+            .lexical_prelude(lexical_privacy, name, namespace)
             .filter(|(_, binding)| filter.is_none_or(|filter| filter.permits(binding.target)))
             .map(|(scope, binding)| Selected {
                 key: (scope, name, namespace, ItemContext::ROOT),
                 binding,
-                privacy: c.module,
+                privacy: lexical_privacy,
             }))
     }
     pub(super) fn source_prelude_selection(
@@ -437,7 +477,11 @@ impl Resolver<'_> {
     ) -> Result<Option<Selected>, &'static str> {
         let mut observed = observed;
         let scope = if let Some(root) = self.guest(c.module) {
-            root.prelude(self.facts, name, namespace, observed.as_deref_mut())
+            if root.prelude_permits(self.facts, name, namespace, observed.as_deref_mut()) {
+                self.facts.selected_crate_prelude(self.package, c.module)?
+            } else {
+                None
+            }
         } else if namespace == Namespace::Macro && self.facts.macro_prelude.contains_key(&name)
             || namespace == Namespace::Type
                 && self

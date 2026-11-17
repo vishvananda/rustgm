@@ -532,8 +532,55 @@ pub(in crate::resolve) fn admit_guest(
 fn features(unit: &Unit, file: FileId) -> Result<(Features, Option<Box<Library>>), Error> {
     let mut result = Features::default();
     let mut library: Option<Box<Library>> = None;
+    feature_names(unit, file, |name, offset| {
+        match Request::named(name) {
+            Some(Request::Capability(feature)) => result.insert(feature),
+            Some(Request::Library(feature)) => {
+                result.insert(feature);
+                library
+                    .get_or_insert_with(|| Box::new(Library::default()))
+                    .request(name)
+                    .map_err(|message| Error::at(file, offset, message))?;
+            }
+            Some(Request::NoCapability) => {}
+            None => {
+                library
+                    .get_or_insert_with(|| Box::new(Library::default()))
+                    .request(name)
+                    .map_err(|message| Error::at(file, offset, message))?;
+            }
+        }
+        Ok(())
+    })?;
+    Ok((result, library))
+}
+
+/// Read one root's actual request without the guest session's feature union.
+/// The caller prepays the retained root attributes before visiting them.
+pub(in crate::resolve) fn root_feature(
+    unit: &Unit,
+    file: FileId,
+    feature: Feature,
+) -> Result<bool, Error> {
+    let mut found = false;
+    feature_names(unit, file, |name, _| {
+        if let Some(Request::Capability(requested) | Request::Library(requested)) =
+            Request::named(name)
+        {
+            found |= requested as usize == feature as usize;
+        }
+        Ok(())
+    })?;
+    Ok(found)
+}
+
+fn feature_names(
+    unit: &Unit,
+    file: FileId,
+    mut visit: impl FnMut(&str, u32) -> Result<(), Error>,
+) -> Result<(), Error> {
     let Some(index) = unit.owner_indices[unit.configured.ast.root.get() as usize] else {
-        return Ok((result, library));
+        return Ok(());
     };
     let owner = &unit.configured.owners[index.get() as usize - 1];
     for (attribute, forest) in unit.retained_attributes(owner.attributes.clone()) {
@@ -550,23 +597,7 @@ fn features(unit: &Unit, file: FileId) -> Result<(Features, Option<Box<Library>>
             let name = forest
                 .name(unit.source.text(), cursor)
                 .ok_or_else(failure)?;
-            match Request::named(name) {
-                Some(Request::Capability(feature)) => result.insert(feature),
-                Some(Request::Library(feature)) => {
-                    result.insert(feature);
-                    library
-                        .get_or_insert_with(|| Box::new(Library::default()))
-                        .request(name)
-                        .map_err(|message| Error::at(file, attribute.span.start, message))?;
-                }
-                Some(Request::NoCapability) => {}
-                None => {
-                    library
-                        .get_or_insert_with(|| Box::new(Library::default()))
-                        .request(name)
-                        .map_err(|message| Error::at(file, attribute.span.start, message))?;
-                }
-            }
+            visit(name, attribute.span.start)?;
             cursor += 1;
             if cursor < range.end {
                 if !forest.punctuation(cursor, crate::lex::token::Punctuation::Comma) {
@@ -576,7 +607,7 @@ fn features(unit: &Unit, file: FileId) -> Result<(Features, Option<Box<Library>>
             }
         }
     }
-    Ok((result, library))
+    Ok(())
 }
 
 #[cfg(test)]

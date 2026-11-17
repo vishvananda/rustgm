@@ -6,6 +6,24 @@ fn fixture(name: &str) -> Result<String, Box<dyn std::error::Error>> {
         "pa31/tests/spec/source-preludes/{name}.rs"
     ))?)
 }
+fn record(facts: &Resolution) -> Result<&Prelude, Box<dyn std::error::Error>> {
+    facts
+        .introductions
+        .item_scopes
+        .as_deref()
+        .and_then(|sites| sites.prelude.as_deref())
+        .and_then(|state| state.selected(CrateSlot::HOST))
+        .ok_or_else(|| "actual source selector".into())
+}
+fn record_mut(facts: &mut Resolution) -> Result<&mut Prelude, Box<dyn std::error::Error>> {
+    facts
+        .introductions
+        .item_scopes
+        .as_deref_mut()
+        .and_then(|sites| sites.prelude.as_deref_mut())
+        .and_then(|state| state.selected_mut(CrateSlot::HOST))
+        .ok_or_else(|| "actual source selector".into())
+}
 #[test]
 fn real_constructor_method_and_shadow_paths_reach_checked_local_lowering() -> TestResult {
     for name in [
@@ -127,6 +145,8 @@ fn prelude_gates_owners_privacy_and_no_implicit_fail_at_their_actual_consumer() 
 }
 #[test]
 fn valid_unsupported_selector_shapes_remain_explicit_requirements() -> TestResult {
+    // The default Context retains the adopted ordinary/local bootstrap boundary.
+    // Actual SourceCore host-only replacement has its own authored-record controls.
     for (name, expected) in [
         ("non-glob-root", "single glob"),
         ("multiple", "multiple source prelude"),
@@ -142,13 +162,7 @@ fn valid_unsupported_selector_shapes_remain_explicit_requirements() -> TestResul
 fn source_prelude_owner_effect_and_module_incarnations_are_reauthenticated() -> TestResult {
     let mut report = crate::test_source::resolve(&fixture("constructor-method")?, true)?;
     for corrupt in 0..5 {
-        let prelude = report
-            .resolution
-            .introductions
-            .item_scopes
-            .as_deref_mut()
-            .and_then(|sites| sites.prelude.as_deref_mut())
-            .ok_or("actual source selector")?;
+        let prelude = record_mut(&mut report.resolution)?;
         let effect = prelude.effect;
         let node = prelude.item_key.node;
         let context = prelude.context;
@@ -167,13 +181,7 @@ fn source_prelude_owner_effect_and_module_incarnations_are_reauthenticated() -> 
                 .source_prelude_scope(&report.package)
                 .is_err()
         );
-        let prelude = report
-            .resolution
-            .introductions
-            .item_scopes
-            .as_deref_mut()
-            .and_then(|sites| sites.prelude.as_deref_mut())
-            .ok_or("actual selector")?;
+        let prelude = record_mut(&mut report.resolution)?;
         prelude.effect = effect;
         prelude.item_key.node = node;
         prelude.context = context;
@@ -186,13 +194,7 @@ fn source_prelude_owner_effect_and_module_incarnations_are_reauthenticated() -> 
                 .is_some()
         );
     }
-    let prelude = report
-        .resolution
-        .introductions
-        .item_scopes
-        .as_deref()
-        .and_then(|sites| sites.prelude.as_deref())
-        .ok_or("actual selector")?;
+    let prelude = record(&report.resolution)?;
     let context = prelude.context;
     let ItemKind::Use(tree) = prelude.item.kind else {
         return Err("actual use tree".into());
@@ -206,17 +208,7 @@ fn source_prelude_owner_effect_and_module_incarnations_are_reauthenticated() -> 
             .select_source_prelude(context, tree)
             .is_err()
     );
-    assert_eq!(
-        state
-            .facts
-            .introductions
-            .item_scopes
-            .as_deref()
-            .and_then(|sites| sites.prelude.as_deref())
-            .ok_or("retained selector")?
-            .selected,
-        selected
-    );
+    assert_eq!(record(&state.facts)?.selected, selected);
     let payer = report.package.macro_context()?.ok_or("actual payer")?;
     let before = payer.contracts().usage();
     state.facts.source_prelude_scope(&report.package)?;
@@ -254,14 +246,17 @@ fn lookups_pay_a_constant_cost_and_phases_reauthenticate_the_selector_once() -> 
     // A phase's own re-authentication is the full constant record check.
     let before = payer.contracts().usage();
     complete_phase(&report.package, &report.resolution)?;
-    assert_eq!(payer.contracts().usage().0 - before.0, 12);
-    let prelude = report
+    let slots = report
         .resolution
         .introductions
         .item_scopes
-        .as_deref_mut()
-        .and_then(|sites| sites.prelude.as_deref_mut())
-        .ok_or("actual source selector")?;
+        .as_deref()
+        .and_then(|sites| sites.prelude.as_deref())
+        .ok_or("source registry")?
+        .capacity();
+    // Every retained hash bucket plus the twelve existing owner/effect checks.
+    assert_eq!(payer.contracts().usage().0 - before.0, slots + 12);
+    let prelude = record_mut(&mut report.resolution)?;
     let effect = prelude.effect;
     let selected = prelude.selected;
     // A changed owner effect is not re-read per lookup, but no phase completes over it.
@@ -277,13 +272,7 @@ fn lookups_pay_a_constant_cost_and_phases_reauthenticate_the_selector_once() -> 
             .source_prelude_scope(&report.package)
             .is_err()
     );
-    let prelude = report
-        .resolution
-        .introductions
-        .item_scopes
-        .as_deref_mut()
-        .and_then(|sites| sites.prelude.as_deref_mut())
-        .ok_or("actual source selector")?;
+    let prelude = record_mut(&mut report.resolution)?;
     prelude.effect = effect;
     // Every lookup still checks the selected module row itself.
     prelude.selected = selected.map(|(definition, _)| (definition, ScopeId(u32::MAX)));
@@ -304,6 +293,7 @@ fn source_prelude_failure_payment_precedes_selector_publication() -> TestResult 
         .item_scopes
         .as_deref_mut()
         .and_then(|sites| sites.prelude.take())
+        .and_then(|mut state| state.take_selected(CrateSlot::HOST))
         .ok_or("actual selector")?;
     let context = report
         .package

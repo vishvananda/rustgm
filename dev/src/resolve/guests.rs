@@ -419,16 +419,16 @@ impl Root {
                 .map(|binding| (scope, *binding))
         })
     }
-    /// The standard prelude scope for one lookup, unless the guest's
-    /// macro-use or extern prelude owns the name. A macro lookup waits on
+    /// Whether this crate's selected prelude may supply a name before its
+    /// macro-use or extern prelude. A macro lookup waits on
     /// each macro-use crate, whose exported macros may still be expanding.
-    pub(super) fn prelude(
+    pub(super) fn prelude_permits(
         &self,
         facts: &Resolution,
         name: NameId,
         namespace: Namespace,
         observed: Option<&mut Observations>,
-    ) -> Option<ScopeId> {
+    ) -> bool {
         if namespace == Namespace::Macro
             && let Some(observed) = observed
         {
@@ -440,9 +440,9 @@ impl Root {
             || namespace == Namespace::Type
                 && facts.bindings.contains(self.externs, name, Namespace::Type)
         {
-            return None;
+            return false;
         }
-        self.prelude.map(|(_, scope)| scope)
+        true
     }
     /// The names found after every lexical scope and the standard prelude:
     /// the macro-use prelude, the primitive types, then the extern prelude.

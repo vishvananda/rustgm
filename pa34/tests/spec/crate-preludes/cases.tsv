@@ -1,0 +1,20 @@
+host-and-guest	host.rs	0	app@2024=first.rs	
+host-and-two-guests	host.rs	0	first@2024=first.rs|app@2024=second.rs	
+mixed-edition-owned-selectors	host.rs	0	first@2021=first.rs|app@2024=second.rs	
+automatic-edition-fallback	host.rs	0	app@2021=auto-2021.rs	
+no-implicit-explicit	host.rs	0	app@2024=no-implicit-explicit.rs	
+lexical-shadow	host.rs	0	app@2024=shadow.rs	
+opaque-definition-prelude	host.rs	1	app@2024=opaque.rs	incompatible types
+captured-callsite-prelude	host.rs	0	app@2024=captured.rs	
+mixed-site-callsite-prelude	host.rs	0	app@2024=mixed-site.rs	
+explicit-path-not-rewritten-by-edition	host.rs	0	app@2021=first.rs	
+host-does-not-inherit-guest	host-leak.rs	1	app@2024=first.rs	unresolved type name
+sibling-does-not-inherit-first	host.rs	1	first@2024=first.rs|app@2024=sibling-leak.rs	unresolved type name
+host-request-cannot-pay-guest	host.rs	1	app@2024=guest-missing-gate.rs	source prelude requires its own crate prelude_import request
+guest-request-cannot-pay-host	host-missing-gate.rs	1	app@2024=first.rs	source prelude requires its own crate prelude_import request
+no-implicit-name	host.rs	1	app@2024=no-implicit-name.rs	unresolved value name
+no-implicit-method	host.rs	1	app@2024=no-implicit-method.rs	method
+missing-selector-target	host.rs	1	app@2024=missing-target.rs	cannot resolve an early source prelude module
+same-crate-last-selector	host.rs	0	app@2024=same-crate-last.rs	
+same-crate-does-not-merge	host.rs	1	app@2024=same-crate-first-only.rs	unresolved value name
+opaque-callsite-prelude	host.rs	0	app@2024=opaque-callsite.rs	

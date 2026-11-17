@@ -155,6 +155,8 @@ mod pinned_drop;
 mod pinning_contracts;
 #[path = "../../polling_source.rs"]
 mod polling_source;
+#[path = "../../prelude_crates.rs"]
+mod prelude_crates;
 #[path = "../../prototype_contracts.rs"]
 mod prototype_contracts;
 #[path = "../../provider_traits.rs"]
