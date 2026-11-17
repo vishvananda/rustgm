@@ -233,8 +233,13 @@ impl<'p> Stater<'p> {
         let program = self.program;
         let mut items = Vec::new();
         for (index, global) in program.globals.iter().enumerate() {
+            let id = GlobalId(count(index)?);
+            if program.init_array_section(id).is_some() {
+                self.forms.note("GNU init-array section");
+                continue;
+            }
             let noted = self.forms.total();
-            let symbol = self.global_symbol(GlobalId(count(index)?))?;
+            let symbol = self.global_symbol(id)?;
             let ty = self.object(global.span);
             items.clear();
             let declaration = global.kind == GlobalKind::Declaration;

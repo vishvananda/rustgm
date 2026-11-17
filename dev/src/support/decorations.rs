@@ -42,6 +42,7 @@ pub(crate) enum Consumer {
     PointerLintMarker,
     QueryInstabilityAdvisory,
     StaticRetention,
+    InitArraySection,
     DeprecatedSafe2024,
     ColdAdvisory,
     PreludeImport,
@@ -71,6 +72,10 @@ impl Consumer {
         }
     }
 
+    #[expect(
+        clippy::too_many_lines,
+        reason = "the exact single-segment attribute registry is one exhaustive table"
+    )]
     pub(crate) fn named(name: &str) -> Option<Self> {
         Some(match name {
             "cfg" | "cfg_attr" => Self::Configuration,
@@ -119,6 +124,7 @@ impl Consumer {
             "rustc_no_implicit_autorefs" => Self::NoImplicitAutorefs,
             "rustc_as_ptr" => Self::PointerLintMarker,
             "used" => Self::StaticRetention,
+            "link_section" => Self::InitArraySection,
             "rustc_lint_query_instability" => Self::QueryInstabilityAdvisory,
             "rustc_deprecated_safe_2024" => Self::DeprecatedSafe2024,
             "cold" => Self::ColdAdvisory,

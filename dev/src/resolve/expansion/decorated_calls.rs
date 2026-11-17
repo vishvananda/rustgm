@@ -223,6 +223,7 @@ impl<S: Sources> Engine<'_, S> {
                 Consumer::QueryInstabilityAdvisory
                     | Consumer::DeprecatedSafe2024
                     | Consumer::StaticRetention
+                    | Consumer::InitArraySection
             )
         ) {
             return Ok(self.loader.package.source_core().is_some());

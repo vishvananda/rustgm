@@ -1,6 +1,19 @@
 //! Exact symbol spellings are local arena identities, never serialized definition names.
 use super::names::{NameId, Names};
 
+/// The reviewed CPPGM GNU initializer-section grammar, preserving spelling.
+pub(crate) fn gnu_init_array_section(name: &str) -> bool {
+    if name == ".init_array" {
+        return true;
+    }
+    let Some(priority) = name.strip_prefix(".init_array.") else {
+        return false;
+    };
+    !priority.is_empty()
+        && priority.bytes().all(|byte| byte.is_ascii_digit())
+        && priority.parse::<u16>().is_ok()
+}
+
 /// Scoped to one `SymbolNames` pool. Metadata transports the exact string bytes.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct SymbolNameId(NameId);

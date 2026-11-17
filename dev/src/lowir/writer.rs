@@ -93,7 +93,7 @@ fn parameters(
 
 fn globals(program: &Program, out: &mut impl Write) -> io::Result<()> {
     use super::data::{GlobalKind, GlobalStorage, Item};
-    for global in &program.globals {
+    for (index, global) in program.globals.iter().enumerate() {
         let items = if global.kind == GlobalKind::Declaration {
             write!(out, "declare ")?;
             None
@@ -113,10 +113,22 @@ fn globals(program: &Program, out: &mut impl Write) -> io::Result<()> {
             "global @{} : obj<{}x{}>",
             global.name, global.span.bytes, global.span.align
         )?;
-        match global.storage {
-            GlobalStorage::Writable => {}
-            GlobalStorage::Readonly => write!(out, " [storage=readonly]")?,
-            GlobalStorage::ThreadLocal => write!(out, " [storage=thread_local]")?,
+        let storage = match global.storage {
+            GlobalStorage::Writable => None,
+            GlobalStorage::Readonly => Some("readonly"),
+            GlobalStorage::ThreadLocal => Some("thread_local"),
+        };
+        let id = super::data::GlobalId(
+            u32::try_from(index).map_err(|_| io::Error::other("invalid LowIR global index"))?,
+        );
+        if let Some(section) = program.init_array_section(id) {
+            write!(out, " [")?;
+            if let Some(storage) = storage {
+                write!(out, "storage={storage}, ")?;
+            }
+            write!(out, "section={section}]")?;
+        } else if let Some(storage) = storage {
+            write!(out, " [storage={storage}]")?;
         }
         let Some(items) = items else {
             writeln!(out)?;

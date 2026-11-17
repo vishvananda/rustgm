@@ -240,6 +240,8 @@ pub(super) enum Name {
 #[derive(Default)]
 pub struct Program {
     pub globals: Vec<super::data::Global>,
+    pub(super) init_arrays:
+        Option<Box<crate::support::hash::HashMap<super::data::GlobalId, Box<str>>>>,
     pub data: Vec<super::data::Item>,
     pub parameters: Vec<Type>,
     pub signatures: Vec<Signature>,

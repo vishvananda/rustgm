@@ -644,3 +644,89 @@ fn used_modes_check_source_owner_feature_and_linker_requirement() -> TestResult 
     assert!(program.globals.is_empty());
     Ok(())
 }
+
+#[test]
+fn gnu_init_arrays_keep_exact_names_and_typed_function_relocations() -> TestResult {
+    let prefix = used_provider()?;
+    let program = lower_used(&format!(
+        "{prefix}
+         #[used] #[unsafe(link_section = \".init_array.90\")]
+         static FIRST: extern \"C\" fn() = first;
+         extern \"C\" fn first() {{}}
+         #[cfg(all(target_os = \"linux\", target_env = \"gnu\"))]
+         #[used] #[unsafe(link_section = \".init_array.00099\")]
+         static ARGV: extern \"C\" fn(i32,*const *const u8,*const *const u8) = argv;
+         extern \"C\" fn argv(_:i32,_:*const *const u8,_:*const *const u8) {{}}
+         #[cfg(target_arch = \"aarch64\")]
+         #[used] #[unsafe(link_section = \".init_array.12\")]
+         static INACTIVE: extern \"C\" fn() = first;
+         fn main(){{}}"
+    ))?;
+    let mut observed = Vec::new();
+    for (index, global) in program.globals.iter().enumerate() {
+        let id = rustgm::lowir::data::GlobalId(u32::try_from(index)?);
+        let section = program
+            .init_array_section(id)
+            .ok_or("lost init-array placement")?;
+        let items = global.items.ok_or("missing constructor initializer")?;
+        let [
+            Item::Address {
+                target: Target::Function(symbol),
+                addend: 0,
+            },
+        ] = &program.data[items.start as usize..items.end as usize]
+        else {
+            return Err("constructor has no exact function relocation".into());
+        };
+        assert!(program.symbols[symbol.0 as usize].body.is_some());
+        observed.push(section);
+    }
+    observed.sort_unstable();
+    assert_eq!(observed, [".init_array.00099", ".init_array.90"]);
+    let mut lowir = Vec::new();
+    rustgm::lowir::writer::write(&program, &mut lowir)?;
+    let lowir = String::from_utf8(lowir)?;
+    assert!(lowir.contains("section=.init_array.00099]"), "{lowir}");
+    assert!(lowir.contains("section=.init_array.90]"), "{lowir}");
+    Ok(())
+}
+
+#[test]
+fn gnu_init_arrays_require_unsafe_literal_owner_and_actual_c_callable() -> TestResult {
+    let prefix = used_provider()?;
+    for (attribute, item, cause) in [
+        (
+            "#[link_section = \".init_array.90\"]",
+            "static INIT: extern \"C\" fn() = target;",
+            "unsafe attribute used without unsafe",
+        ),
+        (
+            "#[unsafe(link_section = 7)]",
+            "static INIT: extern \"C\" fn() = target;",
+            "link_section requires a string literal",
+        ),
+        (
+            "#[unsafe(link_section = \".init_array.90\")]",
+            "static INIT: u64 = 7;",
+            "requires an actual function address",
+        ),
+        (
+            "#[unsafe(link_section = \".init_array.90\")]",
+            "static INIT: fn() = rust_fn;",
+            "requires a C void() or glibc three-argument signature",
+        ),
+        (
+            "#[unsafe(link_section = \".data.nonstartup\")]",
+            "static INIT: u64 = 7;",
+            "only GNU init-array global sections are supported",
+        ),
+    ] {
+        let error = lower_used(&format!(
+            "{prefix}\n#[used] {attribute} {item}\nextern \"C\" fn target(){{}}\nfn rust_fn(){{}}\nfn main(){{}}"
+        ))
+        .err()
+        .ok_or("unsupported init-array declaration emitted")?;
+        assert!(error.to_string().contains(cause), "{error}");
+    }
+    Ok(())
+}

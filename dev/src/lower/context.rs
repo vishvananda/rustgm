@@ -64,7 +64,7 @@ pub(super) struct Context<'a> {
     abort: Option<SymbolId>,
     remainders: [Option<SymbolId>; 2],
     /// The ledger whose demand scopes route demanded bodies' charges.
-    ledger: &'a Declarations,
+    pub(super) ledger: &'a Declarations,
     /// The demand budget's bytes, carried from its traversal, and the work
     /// demanded bodies' emission paid it.
     demand: [usize; 2],

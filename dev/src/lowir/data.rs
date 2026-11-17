@@ -45,6 +45,41 @@ pub struct Global {
     pub items: Option<Range>,
 }
 impl Program {
+    /// Whether this global uses a checked GNU initializer section.
+    #[must_use]
+    pub fn init_array_section(&self, id: GlobalId) -> Option<&str> {
+        self.init_arrays.as_deref()?.get(&id).map(Box::as_ref)
+    }
+
+    pub(crate) fn mark_init_array(
+        &mut self,
+        id: GlobalId,
+        name: Box<str>,
+    ) -> Result<(), &'static str> {
+        let global = self
+            .globals
+            .get(id.0 as usize)
+            .ok_or("missing init-array global")?;
+        if !crate::support::linkage::gnu_init_array_section(&name)
+            || global.kind != GlobalKind::Definition
+            || global.storage == GlobalStorage::ThreadLocal
+            || global.items.is_some()
+            || global.span.bytes != 8
+            || global.span.align != 8
+        {
+            return Err("invalid LowIR init-array global");
+        }
+        let sections = self.init_arrays.get_or_insert_with(Box::default);
+        if sections.contains_key(&id) {
+            return Err("duplicate LowIR init-array global");
+        }
+        sections
+            .try_reserve(1)
+            .map_err(|_| "LowIR init-array allocation failed")?;
+        sections.insert(id, name);
+        Ok(())
+    }
+
     /// Reserve identity before traversing dependencies, including forward addresses.
     /// # Errors
     /// Rejects invalid storage spans or exhausted global identities.
@@ -126,6 +161,17 @@ impl Program {
         }
         if items.is_empty() {
             return Err("LowIR global initializer is empty");
+        }
+        if self.init_array_section(id).is_some()
+            && !matches!(
+                items,
+                [Item::Address {
+                    target: Target::Function(_),
+                    addend: 0
+                }]
+            )
+        {
+            return Err("LowIR init-array initializer requires one exact function address");
         }
         let mut offset = 0_u64;
         for &item in items {

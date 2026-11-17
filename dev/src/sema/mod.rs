@@ -35,6 +35,7 @@ pub(crate) mod function_headers;
 pub mod generics;
 mod glob_shadowing;
 mod ineffective_impls;
+mod init_array;
 pub mod inline_constants;
 mod insignificant_drop;
 pub(crate) mod invocations;

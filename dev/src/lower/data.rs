@@ -1,4 +1,5 @@
 //! Demand persistent objects by semantic identity, before traversing their data.
+mod init_array;
 mod initializer;
 mod zero;
 use super::context::Context;
@@ -106,12 +107,21 @@ impl Context<'_> {
             .constants
             .definition(id)
             .ok_or("static initializer was not evaluated")?;
-        self.constant_data(
+        let section = self.ledger.init_array_section(id);
+        if section.is_some() {
+            self.validate_init_array(initializer.ty, value)?;
+        }
+        let global = self.constant_data(
             Key::Definition(id),
             value,
             initializer.ty,
             matches!(initializer.kind, InitializerKind::Static { mutable: false }),
-        )
+        )?;
+        if let Some(name) = section {
+            self.data.charge(name.len().saturating_add(1))?;
+            self.output.mark_init_array(global, name.into())?;
+        }
+        Ok(global)
     }
     pub fn constant_data(
         &mut self,

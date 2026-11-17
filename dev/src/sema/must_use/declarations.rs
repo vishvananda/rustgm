@@ -244,6 +244,13 @@ fn consume_annotation<'unit>(
                 &mut flags.cold,
             )?;
         }
+        Some(Consumer::InitArraySection) => {
+            let section =
+                crate::sema::init_array::section(report, facts, declaration, attribute, forest)?;
+            flags
+                .used_statics
+                .attach_section(facts, declaration, attribute, section)?;
+        }
         Some(Consumer::StaticRetention) => {
             flags
                 .used_statics

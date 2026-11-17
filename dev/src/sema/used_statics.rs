@@ -29,6 +29,7 @@ struct Mark {
     compiler: bool,
     linker: bool,
     bound: bool,
+    section: Option<Box<str>>,
 }
 
 #[derive(Default)]
@@ -41,6 +42,7 @@ pub(super) struct Draft {
 pub(super) struct Retention {
     compiler: Vec<DefId>,
     needs_linker: bool,
+    sections: HashMap<DefId, Box<str>>,
 }
 
 impl Draft {
@@ -67,17 +69,7 @@ impl Draft {
                 "argument to `used` requires this crate's used_with_arg feature",
             ));
         }
-        if !self.marks.contains_key(&declaration) {
-            let growth = Growth::map::<NodeKey, Mark>(self.marks.len(), self.marks.capacity(), 1);
-            crate::sema::header_attributes::reserve_source_contracts(
-                facts,
-                growth.work,
-                growth.bytes,
-            )?;
-            self.marks
-                .try_reserve(1)
-                .map_err(|_| error("used static draft allocation failed"))?;
-        }
+        self.reserve_mark(facts, declaration)?;
         let mark = self.marks.entry(declaration).or_default();
         if mark.insert(mode) {
             facts.must_use_diagnostic(
@@ -89,6 +81,42 @@ impl Draft {
                 "duplicate `used` attribute".into(),
             )?;
         }
+        Ok(())
+    }
+
+    fn reserve_mark(
+        &mut self,
+        facts: &mut Declarations,
+        declaration: NodeKey,
+    ) -> Result<(), Error> {
+        if !self.marks.contains_key(&declaration) {
+            let growth = Growth::map::<NodeKey, Mark>(self.marks.len(), self.marks.capacity(), 1);
+            crate::sema::header_attributes::reserve_source_contracts(
+                facts,
+                growth.work,
+                growth.bytes,
+            )?;
+            self.marks.try_reserve(1).map_err(|_| {
+                Error::at(declaration.file, 0, "used static draft allocation failed")
+            })?;
+        }
+        Ok(())
+    }
+
+    pub(super) fn attach_section(
+        &mut self,
+        facts: &mut Declarations,
+        declaration: NodeKey,
+        attribute: Attribute,
+        section: Box<str>,
+    ) -> Result<(), Error> {
+        let error = |message| Error::at(declaration.file, attribute.span.start, message);
+        self.reserve_mark(facts, declaration)?;
+        let mark = self.marks.entry(declaration).or_default();
+        if mark.section.is_some() {
+            return Err(error("duplicate source init-array section"));
+        }
+        mark.section = Some(section);
         Ok(())
     }
 
@@ -152,9 +180,23 @@ impl Draft {
                     "used marker has multiple static definitions",
                 ));
             }
-            if mark.linker || !mark.compiler {
+            let has_init_array = mark.section.is_some();
+            if let Some(section) = mark.section.take() {
+                let sections = &mut retention.sections;
+                let growth = Growth::map::<DefId, Box<str>>(sections.len(), sections.capacity(), 1);
+                crate::sema::header_attributes::reserve_source_contracts(
+                    facts,
+                    growth.work,
+                    growth.bytes,
+                )?;
+                sections
+                    .try_reserve(1)
+                    .map_err(|_| Error::at(key.file, 0, "init-array section allocation failed"))?;
+                sections.insert(id, section);
+            }
+            if mark.linker && !has_init_array {
                 retention.needs_linker = true;
-            } else {
+            } else if mark.linker || mark.compiler {
                 let roots = &mut retention.compiler;
                 let growth = Growth::vector::<DefId>(roots.len(), roots.capacity(), 1);
                 crate::sema::header_attributes::reserve_source_contracts(
@@ -225,6 +267,16 @@ fn mode(source: &str, attribute: Attribute, forest: &Forest) -> Result<Mode, &'s
 }
 
 impl Declarations {
+    pub(crate) fn init_array_section(&self, definition: DefId) -> Option<&str> {
+        self.must_use_contracts
+            .as_deref()?
+            .used_statics
+            .as_deref()?
+            .sections
+            .get(&definition)
+            .map(Box::as_ref)
+    }
+
     pub(crate) fn compiler_retained_statics(&self) -> Result<&[DefId], &'static str> {
         let Some(retention) = self
             .must_use_contracts
