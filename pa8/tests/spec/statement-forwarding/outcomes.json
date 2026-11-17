@@ -1,0 +1,117 @@
+{
+  "schema": 1,
+  "profile": "Rust 1.98.0; edition2024; x86_64-unknown-linux-gnu; panic abort; cap-lints allow; complete programs; declared before oracle execution",
+  "scope": "PA8 raw statement expansion forwarding; no library artifact, type/lowering or performance claim",
+  "inputs": [
+    "recursive-cfg.rs",
+    "bracket-call.rs",
+    "local-items.rs",
+    "empty-output.rs",
+    "brace-block-tail.rs",
+    "final-value.rs",
+    "initializer-rejected.rs",
+    "parenthesized-rejected.rs",
+    "ordinary-tail-rejected.rs",
+    "opaque-expression-rejected.rs"
+  ],
+  "cases": [
+    {
+      "name": "recursive-cfg",
+      "path": "recursive-cfg.rs",
+      "sha256": "344d8e874ea6b7c7d2337c7ec9f03577257279baa0c95943216eb0e5bf8218d3",
+      "rustc": 0,
+      "rustgm": 0,
+      "purpose": "Recursive std_detect-shaped cfg statement forwarding",
+      "rustc_diagnostic_substrings": []
+    },
+    {
+      "name": "bracket-call",
+      "path": "bracket-call.rs",
+      "sha256": "16b79d1e57bdaca7a22697a35ec0a8fbc6786c7df9b0faec21fbea4b2f47d4e4",
+      "rustc": 0,
+      "rustgm": 0,
+      "purpose": "Raw bracket-delimited nested invocation in a statement expansion",
+      "rustc_diagnostic_substrings": []
+    },
+    {
+      "name": "local-items",
+      "path": "local-items.rs",
+      "sha256": "ee42e5b5b3a2477094dacd46ac99fbb9fd05f19d55c03ff1453d726cd0e15f46",
+      "rustc": 0,
+      "rustgm": 0,
+      "purpose": "Raw final invocation may produce local item statements",
+      "rustc_diagnostic_substrings": []
+    },
+    {
+      "name": "empty-output",
+      "path": "empty-output.rs",
+      "sha256": "3bb51f592770c41da7e136751db2555c76706184f974de33fc6aec0de53b1ba8",
+      "rustc": 0,
+      "rustgm": 0,
+      "purpose": "Raw final invocation may produce no statements",
+      "rustc_diagnostic_substrings": []
+    },
+    {
+      "name": "brace-block-tail",
+      "path": "brace-block-tail.rs",
+      "sha256": "50b4cecb2cb7da8e910cbc8c95917f2de834e5cf899dd68ff7f57d9aa6743ec3",
+      "rustc": 0,
+      "rustgm": 0,
+      "purpose": "Brace-delimited source block tail retains statement grammar",
+      "rustc_diagnostic_substrings": []
+    },
+    {
+      "name": "final-value",
+      "path": "final-value.rs",
+      "sha256": "7044071aab08b477489d76fb1bbcf0257b3371f5099c1acd45e1c7f6077f7b63",
+      "rustc": 0,
+      "rustgm": 0,
+      "purpose": "Statement caller semicolon consumes a nested final expression",
+      "rustc_diagnostic_substrings": []
+    },
+    {
+      "name": "initializer-rejected",
+      "path": "initializer-rejected.rs",
+      "sha256": "9a404be49ff897798151981142a80b77904322c4369a3a40940c135233edfd6f",
+      "rustc": 1,
+      "rustgm": 1,
+      "purpose": "Initializer forces expression grammar",
+      "rustc_diagnostic_substrings": [
+        "macro expansion ignores"
+      ]
+    },
+    {
+      "name": "parenthesized-rejected",
+      "path": "parenthesized-rejected.rs",
+      "sha256": "908fa09077d6c15f90d049c8204b520501d70bcb3c4fd41a4b479d9a1fdc8fa7",
+      "rustc": 1,
+      "rustgm": 1,
+      "purpose": "Parentheses force expression grammar inside a statement",
+      "rustc_diagnostic_substrings": [
+        "macro expansion ignores"
+      ]
+    },
+    {
+      "name": "ordinary-tail-rejected",
+      "path": "ordinary-tail-rejected.rs",
+      "sha256": "323c32ac45c956a2d322ee7f9f9fc75a7572b3a7ca8d20b229bc03f972a081d3",
+      "rustc": 1,
+      "rustgm": 1,
+      "purpose": "Ordinary parenthesized source block tail remains an expression",
+      "rustc_diagnostic_substrings": [
+        "macro expansion ignores"
+      ]
+    },
+    {
+      "name": "opaque-expression-rejected",
+      "path": "opaque-expression-rejected.rs",
+      "sha256": "95a1f99eab568f368838c5e33fdfeef8c17c5438bd42b280f2f16e07326c2edf",
+      "rustc": 1,
+      "rustgm": 1,
+      "purpose": "Captured expr retains expression grammar through a statement caller",
+      "rustc_diagnostic_substrings": [
+        "macro expansion ignores"
+      ]
+    }
+  ]
+}

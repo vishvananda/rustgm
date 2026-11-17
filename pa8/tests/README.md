@@ -1,6 +1,6 @@
 # PA8 fixtures
 
-The manifest declares 87 complete-program cases and every auxiliary source or
+The manifest declares 136 complete-program cases and every auxiliary source or
 resource. `expansion/` covers generated syntax and worklist completion;
 `hygiene/` covers definition/call-site identity; `resolution/` covers macro scopes,
 exports and imports; `builtins/` covers typed and eager builtin values;
@@ -18,3 +18,7 @@ Fixtures exercise PA8 behavior even when their supporting item/type syntax was
 introduced earlier. Type inference, ownership, library hooks and lowering are
 not PA8 prerequisites. Typed implementation invariants separately test values,
 provenance, parse/read counts and independently resolved definition identities.
+
+`statement-forwarding/` adds ten predeclared source controls for raw nested
+statement expansions and opposing forced/opaque expression categories. Its
+independent source contract is separate from generated expanded-text references.

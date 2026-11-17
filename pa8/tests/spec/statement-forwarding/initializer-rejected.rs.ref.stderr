@@ -1,0 +1,3 @@
+ERROR: file 0: 33: unexpected token after macro expansion
+  in macro values at file 0: 76; defined at file 0: 0
+  in macro forward at file 0: 115; defined at file 0: 45

@@ -185,6 +185,8 @@ mod splice_destructors;
 mod sse_lanes;
 #[path = "../../stateframe.rs"]
 mod stateframe;
+#[path = "../../statement_expansions.rs"]
+mod statement_expansions;
 #[path = "../../syntax_transfer.rs"]
 mod syntax_transfer;
 #[path = "../../tagged_option_constants.rs"]
@@ -287,8 +289,6 @@ mod guest_crates;
 
 #[path = "../../guest_editions.rs"]
 mod guest_editions;
-#[path = "../../destructured_storage.rs"]
-mod destructured_storage;
 
 #[path = "../../knowledge_sources.rs"]
 mod knowledge_sources;
@@ -314,5 +314,7 @@ mod unchecked_shifts;
 #[path = "../../global_allocators.rs"]
 mod global_allocators;
 
+#[path = "../../destructured_storage.rs"]
+mod destructured_storage;
 #[path = "../../thread_locals.rs"]
 mod thread_locals;

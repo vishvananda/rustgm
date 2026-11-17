@@ -1668,6 +1668,126 @@
         "RUSTC_BOOTSTRAP": "1"
       },
       "maintainer_origin": "Independent pinned bootstrap target; bare atomic is separate from load-store feature permission."
+    },
+    {
+      "path": "tests/spec/statement-forwarding/recursive-cfg.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "Predeclared raw statement forwarding contract: Recursive std_detect-shaped cfg statement forwarding"
+    },
+    {
+      "path": "tests/spec/statement-forwarding/bracket-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "Predeclared raw statement forwarding contract: Raw bracket-delimited nested invocation in a statement expansion"
+    },
+    {
+      "path": "tests/spec/statement-forwarding/local-items.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "Predeclared raw statement forwarding contract: Raw final invocation may produce local item statements"
+    },
+    {
+      "path": "tests/spec/statement-forwarding/empty-output.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "Predeclared raw statement forwarding contract: Raw final invocation may produce no statements"
+    },
+    {
+      "path": "tests/spec/statement-forwarding/brace-block-tail.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "Predeclared raw statement forwarding contract: Brace-delimited source block tail retains statement grammar"
+    },
+    {
+      "path": "tests/spec/statement-forwarding/final-value.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "Predeclared raw statement forwarding contract: Statement caller semicolon consumes a nested final expression"
+    },
+    {
+      "path": "tests/spec/statement-forwarding/initializer-rejected.rs",
+      "exit_status": 1,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "Predeclared raw statement forwarding contract: Initializer forces expression grammar"
+    },
+    {
+      "path": "tests/spec/statement-forwarding/parenthesized-rejected.rs",
+      "exit_status": 1,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "Predeclared raw statement forwarding contract: Parentheses force expression grammar inside a statement"
+    },
+    {
+      "path": "tests/spec/statement-forwarding/ordinary-tail-rejected.rs",
+      "exit_status": 1,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "Predeclared raw statement forwarding contract: Ordinary parenthesized source block tail remains an expression"
+    },
+    {
+      "path": "tests/spec/statement-forwarding/opaque-expression-rejected.rs",
+      "exit_status": 1,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "Predeclared raw statement forwarding contract: Captured expr retains expression grammar through a statement caller"
     }
   ]
 }

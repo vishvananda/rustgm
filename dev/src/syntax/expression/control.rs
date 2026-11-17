@@ -156,7 +156,11 @@ impl Parser<'_, '_> {
                         },
                     )?
                 } else if self.end_statements(close)? {
-                    if !opaque {
+                    if !opaque && close.is_none() {
+                        // A statement expansion keeps its raw final invocation
+                        // in statement grammar, even without a written `;`.
+                        self.statement_macro(value);
+                    } else if !opaque {
                         self.statement_tail_macro(value);
                     }
                     tail = Some(self.attach(attrs, value)?);
