@@ -2,84 +2,63 @@
 
 ## Current state
 
-Latest compiler checkpoint on `main` is `2b882d58c082f495104e0566bc155bffc169a212`.
-The goal is to build the original Rust 1.98 `core`, `alloc`, and `std` crates
-and verify the native consumers in the [self-hosting plan](docs/self-hosting-plan.md).
-The latest original-source replay has **0 core skips, 2 alloc skips, and 0 std
-skips**. The `core + alloc` replay emits unqualified frontend artifacts.
-The `core + alloc + std` replay stops before it emits any LowIR. The stage 1
-compiler self-build is still pending.
+The latest compiler checkpoint is `0f6dc142a4cffebfe2706411ba045d9b29503c53`.
+The [self-hosting plan](docs/self-hosting-plan.md) still leads through original
+Rust 1.98 libraries, native consumers and the reproducible stage 1 and stage 2
+builds. Stage 1 is pending.
 
 | Crate | Latest original-source evidence |
 | --- | --- |
-| `core` | Zero skip rows in the current replay. The earlier M1 bring-up ran all 18 native consumers with an older skip list. A native rerun on the current zero-core-skip compiler is pending. |
-| `alloc` | Status 0 with two listed bodies. The combined frontend output contains 667,928 bytes of LowIR, a 55-byte bring-up metadata stamp and a native link manifest. It reports 54 unproven entries and 20 waivers. M2 still needs native consumers. |
-| `std` | Status 1 on the original Linux graph with the same two `alloc` rows. The first reported blocker is the `DEV_NULL` C string at `std/src/sys/process/unix/common.rs:32`. M3 still needs the library artifact and native consumers. |
+| `core` | The original library graph has zero skip rows. Atomics, slices, integers and intrinsic-ops each matched all three native runs with an empty skip list on the checkpoints below. An earlier checkpoint ran all 18 consumers with 12 skips. The remaining current retests are pending. |
+| `alloc` | The original `core + alloc` graph emitted 667,928 bytes of LowIR, the 55-byte bring-up metadata stamp and a native link manifest with an empty skip list. The three outputs are byte-identical to the previous replay. The graph reports 54 unproven entries and 20 waivers. Vec and String matched all three native runs in zero-skip sessions. |
+| `std` | The original Linux graph uses an empty skip list. It now reaches `rustc_demangle:v0.rs` at byte 9511 in `try_parse_str_chars`. The nested closure reports `parent capture root differs from formation type` before LowIR emission. |
 
-The verified `alloc` skip list fell from four to two. A one-row replay cleared
-B-tree `insert_recursing`, and `03c779b22` cleared B-tree merge iterator
-`nexts`. The subsequent `ced1741ec` and `2b882d58c` fixes advanced `std`
-through string-range validation and the `CommandArgs<'static>` auto-trait
-check. The remaining `alloc` failures still reproduce individually on
-`2b882d58c`.
-
-| Remaining skip | Failure when the body is restored |
-| --- | --- |
-| `alloc/src/boxed/thin.rs`, `WithHeader::new_unsize_zst` | `invalid lifetime constraint identity` while proving the generic inline constant's raw-pointer borrow. A generic `T` suffices to reproduce it, and the borrow alone also fails with a projected type. Rustc accepts the reduction. RustGM accepts the ordinary borrow control. |
-| `alloc/src/vec/in_place_collect.rs`, `SpecFromIter::from_iter` | `concrete dispatch retains unresolved parameters` in the inline const that selects the function pointer. Restoring just this body reproduces the error on the original graph. A small equivalent case still needs to reproduce the same diagnostic. |
+`2422b591d` restored both remaining `alloc` bodies. ThinBox's inline constant
+now opens contextual lifetimes in its own binder. Vec's inline constant retains
+the generic trait function item until specialization. The original `std` graph
+cleared `DEV_NULL` with checked signed byte backing in the same checkpoint.
+`d987862e8` added checked saturating integer intrinsics and advanced `std`
+through `saturating_sub`. `0f6dc142a` validates direct constant `CStr` casts from
+full byte-array backing and advances the original replay through
+`CStr::from_bytes_with_nul_unchecked`.
 
 ## Next steps
 
-1. Restore `ThinBox::new_unsize_zst`. Start from
-   `remaining-alloc-skips-v2/plain-inline-borrow-cast.rs` and
-   `project-inline-borrow.rs`. The `regions.log` trace reaches the anonymous
-   body's `borrow::regions::check::apply`. Identify the missing or foreign
-   region identity in that obligation and fix its producer. Compare against
-   the ordinary-borrow control and keep invalid lifetime cases rejecting.
-   Remove the row only after the original-source replay succeeds without it.
-2. Restore `SpecFromIter::from_iter`. Reduce the fallback
-   `SpecFromIterNested::<T, I>::from_iter` with a `Self` result, the generic
-   `fn(I) -> Vec<T>` context and the inline const branch. Run it against rustc
-   and compare it with the same selection outside an inline const. Trace where
-   the generic item enters concrete dispatch before specialization. Then
-   replay original `core + alloc` with an empty skip list.
-3. Advance `std` through `DEV_NULL`. The Linux literal stores valid
-   `[i8; N]` backing in a byte recipe. `Inspection::array` in
-   `dev/src/sema/constants/values/mutation.rs` recognizes the recipe only for
-   `u8`. Use the existing typed byte-recipe validation used by
-   `Reader::stored_bytes`. The reduced signed and empty C strings must pass,
-   and the interior-mutable constant escape must still reject. Replay the
-   original Linux graph with the verified `alloc` list and record its first
-   failure or artifacts. Keep `std` skip-free.
-4. Verify native `core`, `alloc`, and `std` consumers with the artifacts
-   from the successful original-source builds. Record the unproven entries
-   and waivers and keep the strict release gate separate. M2 and M3 stay open
-   until their library builds and consumers are verified.
+1. Reduce the failure at the outer `move` closure in `try_parse_str_chars` in
+   the pinned `rustc-demangle` 0.1.27 source. The captured `bytes` binding is
+   an iterator adapter with a source lifetime and nested closure types.
+   Compare its type in the enclosing CFG with the closure's published
+   `formation_types` row before changing the exact capture check. Replay
+   original Linux `std` with the empty list and record the next failure or
+   artifacts.
+2. Continue the native `core` and `alloc` replays with empty skip lists.
+   Box-to-dyn reaches a missing concrete callable or checked template in
+   `Box::call_once`. B-tree `descend` retains an unmapped lifetime. Rc and Arc
+   fail to resolve calls through `Rc<dyn Fn>` and `Arc<dyn Fn>`. The runs retain
+   each diagnostic and its source position. M2 and M3 remain open.
+3. Follow the self-hosting plan through the original `std` graph and native
+   consumers, then the locked dependencies and compiler itself. The strict
+   release gates still have to pass for both compiler stages.
 
-## Resume from the verified inputs
+## Resume from verified inputs
 
 Build and probe in `/mnt/vizier/rustgm-scratch/rustgm-pa26-work` on
 `lane/frontier-20261115`. Use `/home/vishvananda/rustgm` for Git operations.
-The local evidence is under `obj/parallel/continuation-20261117/` in the
-frontier worktree.
+The following paths are relative to `obj/parallel/` in the frontier worktree.
 
-| Relative to the evidence directory | Contents |
+| Path | Contents |
 | --- | --- |
-| `std-auto-field-lifetimes-v1/qualified/compiler/pin.json` | Clean `2b882d58c` observation build with compiler SHA-256 `95bdf745cf9604c9706517be5d39fdd204e97931a1f29720d86a2400189bac41`, producer and focused-test receipt. |
-| `std-auto-field-lifetimes-v1/qualified/alloc-replay/` | Passing `receipt.json`, two-row `skip.tsv` and exact `command.json`. |
-| `std-auto-field-lifetimes-v1/qualified/alloc-with-thinbox/` | Original alloc with just the ThinBox row removed. |
-| `remaining-alloc-skips-v2/alloc-with-vec/` | Original alloc with just the Vec row removed. |
-| `remaining-alloc-skips-v2/` | ThinBox reproducer, Rustc control results in `reductions.json`, and the region proof backtrace. The Vec variants in this first reduction experiment lack an inferable `Self` and rustc rejects them. |
-| `std-auto-field-lifetimes-v1/qualified/std-replay/` | Exact original std command and compiler environment, two alloc skip rows and failing receipt. The neighboring `array-site/receipt.json` identifies `DEV_NULL` in the expanded source. |
-| `std-cstr-mutation-v1/` | Source digests and Rustc/RustGM outcomes for the signed and empty C strings, unsigned/byte controls and rejected mutable backing. |
+| `resume-20261118/` | `2422b591d` pin, zero-skip original alloc and std receipts, Rustc reductions and the per-case native Vec, Box-to-dyn, atomics and slices results. |
+| `resume-20261118-saturation/` | `d987862e8` pin, native saturation and Rustc oracle receipts, zero-skip original alloc and std receipts, and native String, B-tree, Rc, Arc, integers and intrinsic-ops results. |
+| `resume-20261118-cstr-cast/compiler/pin.json` | Clean `0f6dc142a` observation compiler. SHA-256 `022588425af6b593541db318f6cecb63695c9619090caef9f84b91538ac4186d`. |
+| `resume-20261118-cstr-cast/alloc-empty/` | Successful original core plus alloc artifacts and authenticated input inventory. |
+| `resume-20261118-cstr-cast/std-alloc-empty/` | Exact original Linux graph command, environment, empty skip list and failing receipt. |
+| `resume-20261118-cstr-cast/reductions/` | Four strict CStr positive cases independently accepted by Rustc. All pass the candidate. The baseline fails on an unsized layout query. |
+| `continuation-20261117/` | The preceding `2b882d58c` checkpoints, original-source authentication and initial reductions. |
 
-Preserve the original inputs and the current compiler pin. Use saved argv and
-environment, recording new outputs in a fresh directory under `obj/`. For a new
-candidate, update the copied replay scripts' parent receipt and expected skip-list
-checks to match the intended replay. Follow [AGENTS.md](AGENTS.md) for test scope
-and admission. Use exact `make fastcheck` selections, then authenticate the
-candidate binary, replay the affected crate graph and publish the focused
-checkpoint. For direct commands, check space and use the shared guards.
+Use the saved arguments and environment. Record each observation in a fresh
+directory under `obj/`. Point the copied replay scripts at the last verified
+receipt. Test with the exact `make fastcheck` selections in [AGENTS.md](AGENTS.md).
 
 ```sh
 df -h .
