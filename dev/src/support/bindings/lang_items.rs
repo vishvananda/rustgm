@@ -270,5 +270,7 @@ language_items! {
         PanicAsyncGenFnResumedDrop = 207 => "panic_const_async_gen_fn_resumed_drop", Function, GenericRequirement::Any;
         PanicGenFnNoneDrop = 208 => "panic_const_gen_fn_none_drop", Function, GenericRequirement::Any;
         OwnedBox = 209 => "owned_box", Struct, GenericRequirement::Any;
+        Start = 210 => "start", Function, GenericRequirement::Exact(1);
+        Termination = 211 => "termination", Trait, GenericRequirement::Any;
     }
 }

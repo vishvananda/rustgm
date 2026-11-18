@@ -1117,3 +1117,113 @@ fn source_weak_statics_require_own_feature_shape_and_attribute_provenance() -> T
     }
     Ok(())
 }
+
+#[test]
+fn source_startup_roles_keep_authored_headers_and_refuse_direct_main() -> TestResult {
+    use rustgm::{
+        lower::instances::{SourcePublication, build_source_library_profile},
+        pipeline::Analysis,
+        support::bindings::LangItem,
+    };
+    let prefix =
+        crate::resolve::fixture("pa31/tests/spec/source-functions-transport/minimal-provider.rs")?;
+    let source = format!(
+        r#"{prefix}
+#[lang = "termination"]
+pub trait Termination {{
+    fn report(self) -> i32;
+}}
+#[lang = "start"]
+fn actual_start<T: Termination + 'static>(
+    _main: fn() -> T,
+    _argc: isize,
+    _argv: *const *const u8,
+    _sigpipe: u8,
+) -> isize {{ 0 }}
+fn main() {{}}"#
+    );
+    let mut report = crate::resolve::source_provider(&source, "source_startup_roles")?;
+    let reserved = report
+        .resolution
+        .source_bindings
+        .as_deref()
+        .ok_or("Source role inventory")?;
+    for (role, name) in [
+        (LangItem::Start, "actual_start"),
+        (LangItem::Termination, "Termination"),
+    ] {
+        let declaration = reserved
+            .language(role)
+            .ok_or("actual reserved startup role")?;
+        let definition = &report.resolution.definitions[declaration.definition.0 as usize];
+        assert_eq!(definition.node, Some(declaration.origin));
+        assert_eq!(report.package.names.get(definition.name), name);
+    }
+    let identity = report
+        .package
+        .source_core()
+        .ok_or("Source owner")?
+        .provider
+        .clone();
+    let Analysis {
+        mut facts,
+        prepared,
+    } = rustgm::pipeline::analyze_source(&report)?;
+    let entry = rustgm::sema::entry::select(&mut report, &facts)
+        .err()
+        .ok_or("selected Source start silently used direct main")?;
+    assert!(
+        entry
+            .to_string()
+            .contains("selected Source start requires checked startup instance lowering"),
+        "{entry}"
+    );
+    let publication = build_source_library_profile(
+        &report,
+        &mut facts,
+        identity,
+        prepared,
+        SourcePublication::ModuleBodyOperations,
+    )
+    .err()
+    .ok_or("startup roles silently escaped unsupported metadata")?;
+    assert!(
+        publication
+            .to_string()
+            .contains("selected Source startup roles require their checked artifact transport"),
+        "{publication}"
+    );
+    Ok(())
+}
+
+#[test]
+fn source_start_header_rejects_wrong_callback_pointee_and_formal() -> TestResult {
+    let prefix =
+        crate::resolve::fixture("pa31/tests/spec/source-functions-transport/minimal-provider.rs")?;
+    for (signature, cause) in [
+        (
+            "fn start<T>(_: fn() -> T, _: isize, _: *const *const u8, _: u8) -> i32",
+            "source start requires fn(fn() -> T",
+        ),
+        (
+            "fn start<T>(_: fn() -> T, _: isize, _: *const *mut u8, _: u8) -> isize",
+            "source start requires fn(fn() -> T",
+        ),
+        (
+            "fn start<T>(_: unsafe fn() -> T, _: isize, _: *const *const u8, _: u8) -> isize",
+            "source start requires fn(fn() -> T",
+        ),
+        (
+            "fn start<const N: usize>(_: fn() -> (), _: isize, _: *const *const u8, _: u8) -> isize",
+            "exactly one owned type parameter",
+        ),
+    ] {
+        let source = format!("{prefix}\n#[lang = \"start\"] {signature} {{ 0 }}");
+        let report = crate::resolve::source_provider(&source, "source_start_header_opponents")?;
+        let error = rustgm::pipeline::analyze_source(&report)
+            .err()
+            .ok_or("accepted wrong startup shape")?;
+        assert!(error.to_string().contains(cause), "{error}");
+    }
+    Ok(())
+}

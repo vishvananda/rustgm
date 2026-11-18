@@ -7,6 +7,7 @@ use crate::{
         package::Error,
         unit::FileId,
     },
+    support::bindings::LangItem,
     types::{Kind, TypeId},
 };
 
@@ -83,9 +84,23 @@ pub(in crate::sema) fn select_named(
             .is_empty()
         || unsafe_
         || convention != crate::types::callable::Convention::RUST
-        || (result != TypeId::UNIT && result != TypeId::NEVER)
     {
         return Err(error("main must be safe, parameterless and return () or !"));
     }
+    require_supported_start(facts).map_err(error)?;
+    if result != TypeId::UNIT && result != TypeId::NEVER {
+        return Err(error("main must be safe, parameterless and return () or !"));
+    }
     Ok(binding.target)
+}
+
+/// Lowering accepts explicit roots too. Both paths must refuse the ordinary
+/// direct-main wrapper when the actual Source catalog selects a Start.
+pub(crate) fn require_supported_start(facts: &Declarations) -> Result<(), &'static str> {
+    if let Some(catalog) = facts.source_bindings.as_deref()
+        && catalog.validated_role(LangItem::Start)?.is_some()
+    {
+        return Err("selected Source start requires checked startup instance lowering");
+    }
+    Ok(())
 }

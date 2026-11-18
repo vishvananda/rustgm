@@ -119,7 +119,7 @@ impl Catalog {
     }
 }
 
-const TRAIT_ROLES: [LangItem; 41] = [
+const TRAIT_ROLES: [LangItem; 42] = [
     LangItem::Clone,
     LangItem::Copy,
     LangItem::UseCloned,
@@ -161,6 +161,7 @@ const TRAIT_ROLES: [LangItem; 41] = [
     LangItem::Reborrow,
     LangItem::CoerceShared,
     LangItem::Field,
+    LangItem::Termination,
 ];
 
 pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
@@ -298,6 +299,9 @@ fn complete_dependent_roles(
         .flatten()
     {
         complete.roles.insert(role);
+    }
+    if super::start_contract::complete(report, facts, catalog)? {
+        complete.roles.insert(LangItem::Start);
     }
     for role in [LangItem::TryTraitFromYeet, LangItem::GetContext] {
         if let Some(role) = super::headers::functions::complete(report, facts, catalog, role)? {
@@ -464,6 +468,7 @@ fn canonical_header_only(role: LangItem) -> bool {
     matches!(
         role,
         LangItem::UseCloned
+            | LangItem::Termination
             | LangItem::Field
             | LangItem::Reborrow
             | LangItem::CoerceShared

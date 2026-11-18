@@ -792,6 +792,9 @@ impl Bindings {
     }
 }
 fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
+    if matches!(role, LangItem::Start | LangItem::Termination) {
+        return false;
+    }
     if profile.languages() {
         // General language headers alone retain the v13 future fence. The new
         // operation profile adds precisely v11's future family; Send stays closed.

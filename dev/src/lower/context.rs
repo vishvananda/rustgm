@@ -187,6 +187,12 @@ fn run(
     forwarding: Option<&crate::borrow::incremental::Forwarding>,
     roots: super::roots::Selected<'_>,
 ) -> Result<Program, Error> {
+    if roots.functions.entry.is_some() {
+        crate::sema::entry::require_supported_start(facts).map_err(|message| Error {
+            node: None,
+            message,
+        })?;
+    }
     if let Some(forwarding) = forwarding {
         for (&index, bridge) in forwarding {
             bridge

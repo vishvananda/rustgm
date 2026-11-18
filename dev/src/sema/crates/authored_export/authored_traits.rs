@@ -23,6 +23,7 @@ pub(super) fn require_role_transport(
         .source_bindings
         .as_deref()
         .ok_or("source header graph has no role catalog")?;
+    crate::sema::compiler_items::require_startup_transport(facts)?;
     if LangItem::DECLARATIONS.into_iter().any(|role| {
         let future = matches!(
             role,
