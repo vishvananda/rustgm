@@ -53,6 +53,37 @@ fn cstr_and_nominal_references_reconstruct_from_actual_symbolic_byte_words() -> 
     Ok(())
 }
 #[test]
+fn constant_signed_c_strings_pass_shared_backing_inspection() -> Result {
+    let original = source::fixture(&format!("{PACKET}/local-const.rs"))?;
+    let (cstr, _) = original.split_once("impl CStr {").ok_or("source CStr")?;
+    let prefix = format!(
+        "#![feature(const_destruct)]\n{cstr}}}\n\
+        #[lang=\"unsafe_cell\"] #[repr(transparent)] pub struct Slot<T:?Sized>{{value:T}}"
+    );
+    let accepted = format!(
+        r#"{prefix}
+        const DEV_NULL: &ffi::CStr = c"/dev/null";
+        const EMPTY: &ffi::CStr = c"";
+        const BYTES: &[u8; 1] = b"/";
+        "#
+    );
+    let mut config = Config::default();
+    config.set_lint_cap(LintCap::Allow);
+    let report = source::source_provider_config(&accepted, "signed_cstr", &config)?;
+    pipeline::analyze_source(&report)?;
+    let rejected = format!("{prefix} const BAD: &Slot<i8> = &Slot {{ value: 7i8 }};");
+    let report = source::source_provider_config(&rejected, "mutable_backing", &config)?;
+    let error = pipeline::analyze_source(&report)
+        .err()
+        .ok_or("interior mutable allocation escaped")?;
+    assert!(
+        error
+            .to_string()
+            .contains("interior mutable allocation backing")
+    );
+    Ok(())
+}
+#[test]
 fn ordinary_type_privacy_body_const_and_unsafe_checks_remain() -> Result {
     for (name, causes) in [
         ("privacy", &["private"][..]),

@@ -65,9 +65,7 @@ impl Inspection<'_> {
                     Answer::Ordinary
                 })
             }
-            View::Bytes(_) | View::ByteRange { .. }
-                if element == TypeId::primitive(Primitive::U8) =>
-            {
+            View::Bytes(_) | View::ByteRange { .. } => {
                 self.reader.stored_bytes(parent.ty, value)?;
                 Ok(Answer::Ordinary)
             }

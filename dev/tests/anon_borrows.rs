@@ -48,6 +48,82 @@ fn source_inline_borrows_keep_deferred_associated_values() -> Result {
     outcomes(PACKET, 16, lower)
 }
 
+fn source_roles() -> Result<String> {
+    let original = crate::resolve::fixture("pa31/tests/spec/cstr-source/local-const.rs")?;
+    let (roles, _) = original.split_once("pub mod ffi").ok_or("source roles")?;
+    Ok(format!("#![feature(const_destruct)]\n{roles}"))
+}
+
+#[test]
+fn inline_raw_pointer_borrows_keep_child_region_identities() -> Result {
+    let roles = source_roles()?;
+    let source = format!(
+        r"{roles}
+        pub trait Project {{ type Target; }}
+        const fn never<T>() -> *const T {{ loop {{}} }}
+        pub fn inline<T>() -> *const T {{
+            let borrowed: &T = const {{ unsafe {{ &*never::<T>() }} }};
+            borrowed as *const T
+        }}
+        pub fn projected<D: Project>() {{
+            let borrowed: &D::Target = const {{ unsafe {{ &*never::<D::Target>() }} }};
+            let _ = borrowed;
+        }}
+        pub fn ordinary<T>() -> *const T {{
+            let borrowed: &T = unsafe {{ &*never::<T>() }};
+            borrowed as *const T
+        }}
+        fn main() {{}}
+        "
+    );
+    lower(&source)?;
+    let rejected = format!(
+        "{source} pub fn escape<T>() -> &'static u8 {{ const {{ let local = 7u8; &local }} }}"
+    );
+    let error = lower(&rejected)
+        .err()
+        .ok_or("borrow of inline local escaped")?
+        .to_string();
+    assert!(error.contains("does not outlive"), "{error}");
+    Ok(())
+}
+
+#[test]
+fn inline_function_pointer_selection_waits_for_its_enclosing_instance() -> Result {
+    let roles = source_roles()?;
+    let source = format!(
+        r#"{roles}
+        pub trait Nested<T, I> {{ fn call(arg: I) -> Self; }}
+        pub trait Source {{ const FLAG: bool; type Item; }}
+        pub struct Container<T>(*const T);
+        impl<T, I: Source<Item = T>> Nested<T, I> for Container<T> {{
+            fn call(_: I) -> Self {{ Container(1usize as *const T) }}
+        }}
+        fn direct<T, I: Source<Item = T>>(_: I) -> Container<T> {{
+            Container(2usize as *const T)
+        }}
+        pub fn collect<T, I: Source<Item = T>>(iterator: I) -> Container<T> {{
+            let fun: fn(I) -> Container<T> = const {{
+                if I::FLAG {{ direct }} else {{ Nested::<T, I>::call }}
+            }};
+            fun(iterator)
+        }}
+        struct Direct;
+        impl Source for Direct {{ const FLAG: bool = true; type Item = u8; }}
+        struct Fallback;
+        impl Source for Fallback {{ const FLAG: bool = false; type Item = u8; }}
+        #[unsafe(no_mangle)]
+        pub extern "C" fn probe() {{
+            let _ = collect::<u8, Direct>(Direct);
+            let _ = collect::<u8, Fallback>(Fallback);
+        }}
+        "#
+    );
+    let program = lower(&source)?;
+    assert!(program.symbols.iter().any(|symbol| symbol.body.is_some()));
+    Ok(())
+}
+
 #[test]
 fn bootstrap_inline_borrows_keep_ordinary_value_and_const_rules() -> Result {
     outcomes(ORDINARY, 5, bootstrap)

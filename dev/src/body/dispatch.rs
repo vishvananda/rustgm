@@ -151,6 +151,11 @@ fn resolve_using(
         if let Rvalue::Function(id) = value.kind
             && facts.associated.trait_owner(id).is_some()
         {
+            if let Some(parameters) = &mut original
+                && parameters.deferred_function(facts, value.ty)?
+            {
+                continue;
+            }
             let selected = if let Some(service) = &mut preparation {
                 dispatcher.select_prepared(facts, value.ty, &mut **service)?
             } else {

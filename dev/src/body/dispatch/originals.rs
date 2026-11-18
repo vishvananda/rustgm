@@ -1,4 +1,4 @@
-//! Original initializer operands retain only their own rigid declaration parameters.
+//! Original value bodies retain operands with their own rigid declaration parameters.
 use super::{Body, Contract, Declarations};
 use crate::support::hash::HashSet;
 use crate::{
@@ -89,6 +89,8 @@ fn resolve_parameters(
     let dependent = body.values.iter().any(|value| {
         visits += 1;
         matches!(value.kind, crate::body::ir::Rvalue::AssociatedConstant(_))
+            || (super::trait_function(facts, value)
+                && facts.types.contains_parameters(value.ty) == Some(true))
     });
     facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(visits);
     if !dependent {
@@ -123,6 +125,32 @@ fn resolve_parameters(
 }
 
 impl Parameters {
+    pub(super) fn deferred_function(
+        &mut self,
+        facts: &mut Declarations,
+        ty: crate::types::TypeId,
+    ) -> Result<bool, &'static str> {
+        if !facts
+            .types
+            .contains_parameters(ty)
+            .ok_or("invalid original function operand type")?
+        {
+            return Ok(false);
+        }
+        let before = self.uses.steps.saturating_add(self.regions.steps);
+        let result = self
+            .uses
+            .collect(&facts.types, ty)
+            .and_then(|()| self.regions.collect(&facts.types, ty));
+        facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(
+            self.uses
+                .steps
+                .saturating_add(self.regions.steps)
+                .saturating_sub(before),
+        );
+        result.map(|()| true)
+    }
+
     pub(super) fn deferred(
         &mut self,
         facts: &mut Declarations,

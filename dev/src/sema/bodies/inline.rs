@@ -30,7 +30,7 @@ impl Checker<'_> {
         self.save(node, result);
         // The inline body inherits every declared enclosing slot, even when no
         // earlier expression has needed the parent's lazy universal aliases.
-        self.prepare_universals(node)?;
+        let result = self.alias_inferred_type(node, result)?;
         let (mut inputs, roots) = Refinement::new(
             &self.facts.types,
             &mut self.state.infer,
@@ -40,13 +40,18 @@ impl Checker<'_> {
         let [Argument::Type(result)] = roots.as_slice() else {
             return Err(self.error(node, "missing inline constant result interface"));
         };
-        let result = *result;
         let mut lifetimes = Interface::new(
             &self.state.call_types.universal_arguments(),
             Vec::new(),
             None,
         )
         .map_err(|e| self.error(node, e))?;
+        // Contextual results may contain caller inference regions even when
+        // the function declares no lifetimes. Open them before typing the child.
+        let result = inputs
+            .context
+            .map_regions(&mut self.facts.types, *result, &mut lifetimes.opening)
+            .map_err(|e| self.error(node, e))?;
         let environment = self.nested_projection_environment(node, &mut lifetimes)?;
         let mapped_environment = environment.is_some();
         let generic = self.state.body_binders != 0

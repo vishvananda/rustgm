@@ -136,10 +136,10 @@ impl Inspection<'_> {
                     Answer::Unresolved => unresolved = true,
                     Answer::Ordinary => {}
                 },
-                Kind::Array { element, length } => self.array(element, length, value)?,
+                Kind::Array { element, length } => self.array(ty, element, length, value)?,
                 Kind::Slice(element) => {
                     let length = self.reader.field_types(ty, value)?.len();
-                    self.array(element, length, value)?;
+                    self.array(ty, element, length, value)?;
                 }
                 Kind::Tuple(fields) => self.fields(fields, value, false)?,
                 Kind::Future { .. } => {
@@ -297,7 +297,13 @@ impl Inspection<'_> {
         }
         Ok(())
     }
-    fn array(&mut self, element: TypeId, length: u64, value: Constant) -> Result<(), &'static str> {
+    fn array(
+        &mut self,
+        ty: TypeId,
+        element: TypeId,
+        length: u64,
+        value: Constant,
+    ) -> Result<(), &'static str> {
         match self.reader.view(value)? {
             View::Repeat {
                 value,
@@ -327,17 +333,8 @@ impl Inspection<'_> {
                     return Err("stored byte array image differs from its type length");
                 }
             }
-            View::Bytes(_) | View::ByteRange { .. }
-                if element == TypeId::primitive(crate::types::Primitive::U8) =>
-            {
-                let actual = match self.reader.view(value)? {
-                    View::Bytes(text) => self.reader.bytes(text)?.len() as u64,
-                    View::ByteRange { length, .. } => length,
-                    _ => return Err("missing byte range"),
-                };
-                if actual != length {
-                    return Err("stored byte range differs from its type length");
-                }
+            View::Bytes(_) | View::ByteRange { .. } => {
+                self.reader.stored_bytes(ty, value)?;
             }
             _ => return Err("stored array value differs from its type length"),
         }
