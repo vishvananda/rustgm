@@ -497,3 +497,47 @@ fn wide_pointer_fields_are_supported_while_c_strings_require_actual_source()
     }
     Ok(())
 }
+
+#[test]
+fn nested_closure_text_patterns_complete_before_lowering() -> Result<(), Box<dyn std::error::Error>>
+{
+    let directory = folder()?;
+    for (name, source, expected) in [
+        (
+            "single",
+            r#"fn main(){let f=|x:&[u8]| match x{b""=>7u8,_=>11u8};let _=f(b"a");}"#,
+            0,
+        ),
+        (
+            "nested",
+            r#"fn main(){let f=|x:&[u8]|{let y=|z:&[u8]|match Some(z){Some(b"")=>7u8,_=>11u8};match x{b"a"=>y(x),_=>0}};let _=f(b"a");}"#,
+            0,
+        ),
+        (
+            "incomplete",
+            r#"fn main(){let f=|x:&[u8]| match x{b""=>7u8};let _=f(b"a");}"#,
+            1,
+        ),
+    ] {
+        let path = directory.join(format!("closure-text-{name}.rs"));
+        std::fs::write(&path, source)?;
+        let independent = rustc(&path)?;
+        let actual = frontend(&path, "--emit-lowir")?;
+        let error = String::from_utf8_lossy(&actual.stderr);
+        assert_eq!(
+            independent.status.code(),
+            Some(expected),
+            "{name}: {independent:?}"
+        );
+        assert_eq!(actual.status.code(), Some(expected), "{name}: {error}");
+        if expected == 0 {
+            assert!(
+                actual.stderr.is_empty() && !actual.stdout.is_empty(),
+                "{name}: {error}"
+            );
+        } else {
+            assert!(error.contains("non-exhaustive"), "{name}: {error}");
+        }
+    }
+    Ok(())
+}

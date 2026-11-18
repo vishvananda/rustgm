@@ -100,6 +100,8 @@ pub(super) struct Scheduler<P> {
     pub entries: Vec<Entry<P>>,
     pub stack: Vec<(Option<usize>, Box<State>)>,
     pub active: Option<usize>,
+    // Completed children publish once through the enclosing body's pattern batch.
+    pub(super) patterns: Option<Box<super::pattern_constants::Pending>>,
 }
 
 /// Only the isolated interface is exchanged with the parent inference context.
@@ -117,6 +119,7 @@ impl<P> Default for Scheduler<P> {
             entries: Vec::new(),
             stack: Vec::new(),
             active: None,
+            patterns: None,
         }
     }
 }

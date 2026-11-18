@@ -65,6 +65,10 @@ impl Checker<'_> {
             return Ok(true);
         }
         let Some(index) = scheduler.active else {
+            super::super::pattern_constants::Pending::merge(
+                &mut self.state.pending_patterns,
+                scheduler.patterns.take(),
+            );
             self.state.closure_children.clear();
             self.state.closure_cursor = 0;
             return Ok(false);
@@ -74,6 +78,10 @@ impl Checker<'_> {
             .stack
             .pop()
             .ok_or_else(|| self.error(self.state.body.node, "missing closure completion parent"))?;
+        super::super::pattern_constants::Pending::merge(
+            &mut scheduler.patterns,
+            self.state.pending_patterns.take(),
+        );
         self.state = *parent;
         scheduler.active = active;
         self.state.closures = Some(scheduler);

@@ -37,6 +37,28 @@ impl Pending {
         self.roots.append(&mut other.roots);
         self.matches.append(&mut other.matches);
     }
+
+    pub(in crate::sema::bodies) fn merge(
+        target: &mut Option<Box<Self>>,
+        source: Option<Box<Self>>,
+    ) {
+        if let Some(source) = source {
+            if let Some(target) = target {
+                target.append(*source);
+            } else {
+                *target = Some(source);
+            }
+        }
+    }
+
+    fn allocation(&self, total: &mut crate::support::retained::Allocation) {
+        total.boxed(self);
+        total.vector(&self.requests);
+        total.vector(&self.scopes);
+        total.vector(&self.ranges);
+        total.vector(&self.roots);
+        total.vector(&self.matches);
+    }
 }
 struct Scope {
     values: super::super::constants::PatternScope,
@@ -207,12 +229,15 @@ impl Checker<'_> {
     ) -> crate::support::retained::Allocation {
         let mut total = crate::support::retained::Allocation::default();
         if let Some(pending) = &self.state.pending_patterns {
-            total.boxed(pending.as_ref());
-            total.vector(&pending.requests);
-            total.vector(&pending.scopes);
-            total.vector(&pending.ranges);
-            total.vector(&pending.roots);
-            total.vector(&pending.matches);
+            pending.allocation(&mut total);
+        }
+        if let Some(pending) = self
+            .state
+            .closures
+            .as_deref()
+            .and_then(|s| s.patterns.as_deref())
+        {
+            pending.allocation(&mut total);
         }
         total
     }
