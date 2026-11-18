@@ -308,11 +308,21 @@ impl Checker<'_> {
         {
             return Ok(None);
         }
-        if self
+        let result_fixed = self
             .state
             .infer
             .inputs_fixed(&self.facts.types, result)
-            .map_err(|e| self.error(call, e))?
+            .map_err(|e| self.error(call, e))?;
+        // A unit-returning call can still determine a local's element type
+        // through its receiver or other arguments. Consume its ready premises
+        // before a subsequent expression can constrain that shared input.
+        if result_fixed
+            && (self.state.call_types.obligations.is_empty()
+                || self
+                    .state
+                    .infer
+                    .inputs_fixed(&self.facts.types, signature)
+                    .map_err(|e| self.error(call, e))?)
         {
             return Ok(None);
         }
@@ -320,6 +330,9 @@ impl Checker<'_> {
         // Rechecking a wide partial result after every child would repeat prefixes.
         if let Some(dependency) = self.refine_call_result(call)? {
             return Ok(Some(dependency));
+        }
+        if result_fixed {
+            return Ok(None);
         }
         // A selected output can introduce projections that were absent from
         // the generic result variable when its signature was instantiated.

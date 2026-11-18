@@ -27,6 +27,72 @@ const ANOTHER_IMPL: &str = r"
 impl AsInner<Other> for Socket { fn as_inner(&self) -> &Other { &self.1 } }
 ";
 
+#[test]
+fn unit_calls_infer_shared_inputs_before_later_reference_coercion() -> TestResult {
+    let fixture =
+        crate::resolve::fixture("pa31/tests/spec/specialization-fixpoint/core-extend.rs")?;
+    let (roles, _) = fixture.split_once("pub trait Iter {").ok_or("core roles")?;
+    for (name, annotation, call, accepted) in [
+        ("method", "", "items.extend(Once(&path));", true),
+        (
+            "qualified",
+            "",
+            "Extend::extend(&mut items, Once(&path));",
+            true,
+        ),
+        (
+            "typed",
+            ": Collection<&Path>",
+            "items.extend(Once(&path));",
+            true,
+        ),
+        (
+            "wrong",
+            ": Collection<Path>",
+            "items.extend(Once(&path));",
+            false,
+        ),
+    ] {
+        let source = format!(
+            r#"{roles}
+            #[lang="drop"] pub const trait Drop {{ fn drop(&mut self); }}
+            struct Path(u8);
+            enum Slot<T> {{ Empty, Found(T) }}
+            struct Collection<T>(Slot<T>);
+            trait Source {{ type Item; fn take(self) -> Self::Item; }}
+            struct Once<T>(T);
+            impl<T> Source for Once<T> {{
+                type Item = T;
+                fn take(self) -> T {{ self.0 }}
+            }}
+            trait Extend<T> {{ fn extend<I: Source<Item=T>>(&mut self, item: I); }}
+            impl<T> Extend<T> for Collection<T> {{
+                fn extend<I: Source<Item=T>>(&mut self, item: I) {{ self.0 = Slot::Found(item.take()); }}
+            }}
+            impl<T> Collection<T> {{
+                fn new() -> Self {{ Self(Slot::Empty) }}
+                fn get(&self) -> &T {{
+                    match &self.0 {{ Slot::Found(value) => value, Slot::Empty => loop {{}} }}
+                }}
+            }}
+            fn read(path: &Path) -> u8 {{ path.0 }}
+            #[unsafe(no_mangle)] pub extern "C" fn observe() -> u8 {{
+                let path = Path(7);
+                let mut items{annotation} = Collection::new();
+                {call}
+                read(items.get())
+            }}"#
+        );
+        let result = crate::ffi_program::exported(&source, "unit_call_inputs");
+        match (accepted, result) {
+            (true, Ok(_)) => {}
+            (false, Err(error)) if error.to_string().contains("trait obligation") => {}
+            (_, result) => return Err(format!("{name}: {:?}", result.err()).into()),
+        }
+    }
+    Ok(())
+}
+
 fn prefix() -> TestResult<String> {
     let core = crate::resolve::fixture("pa31/tests/spec/unsizing-roles/object-goal.rs")?;
     let (roles, _) = core

@@ -203,8 +203,8 @@ impl Checker<'_> {
     }
 
     /// All arguments have been checked. Advance this call's ready requirements
-    /// before a consumer asks for its result shape. Unfinished goals and their
-    /// complete evidence remain in the same caller; no numeric fallback runs.
+    /// before a consumer reads its result or another expression uses its shared
+    /// inputs. Unfinished goals and evidence remain in the same caller.
     pub(in crate::sema::bodies) fn refine_call_result(
         &mut self,
         call: NodeId,
