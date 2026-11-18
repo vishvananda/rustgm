@@ -92,6 +92,7 @@ use crate::{
         package::{Error, ModuleId},
         unit::{FileId, NodeKey},
     },
+    support::diagnostics::WarningCode,
     syntax::ast::{BlockFlavor, Kind, List, NodeId, Unary},
     types::{
         Kind as Type, Primitive, TypeId,
@@ -3052,9 +3053,19 @@ impl Checker<'_> {
                 continue;
             }
             let negated = self.state.negated.contains(&node);
-            let scalar = scalar::literal(&value, self.primitive(node)?, negated)
+            let (scalar, overflow) = scalar::literal(&value, self.primitive(node)?, negated)
                 .map_err(|e| self.error(node, e))?;
             let key = self.key(node);
+            if let Some(message) = overflow {
+                self.facts.must_use_diagnostic(
+                    self.report,
+                    key,
+                    unit.configured.ast.node(node).span.start,
+                    0,
+                    WarningCode::OverflowingLiterals,
+                    message.to_owned(),
+                )?;
+            }
             self.facts
                 .node_mut(key)
                 .ok_or_else(|| Declarations::error(self.report, key, "invalid literal node"))?

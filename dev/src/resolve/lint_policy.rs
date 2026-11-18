@@ -41,7 +41,8 @@ pub(crate) struct Policy {
     pub(crate) unfulfilled: Level,
     pub(crate) hidden_glob_reexports: Level,
     pub(crate) ineffective_unstable_trait_impl: Level,
-    expectations: [Option<ExpectationId>; 19],
+    pub(crate) overflowing_literals: Level,
+    expectations: [Option<ExpectationId>; 20],
     pub(crate) deprecated_origin: Option<producer::Tail>,
     pub(crate) deprecation_explicit: bool,
 }
@@ -70,6 +71,7 @@ impl Policy {
             unfulfilled: Level::Allow,
             hidden_glob_reexports: Level::Allow,
             ineffective_unstable_trait_impl: Level::Allow,
+            overflowing_literals: Level::Allow,
             ..self
         }
     }
@@ -92,7 +94,8 @@ impl Policy {
         unfulfilled: Level::Warn,
         hidden_glob_reexports: Level::Warn,
         ineffective_unstable_trait_impl: Level::Deny,
-        expectations: [None; 19],
+        overflowing_literals: Level::Deny,
+        expectations: [None; 20],
         deprecated_origin: None,
         deprecation_explicit: false,
     };
@@ -121,6 +124,7 @@ pub(crate) enum Lint {
     DangerousImplicitAutorefs,
     DeprecatedSafe2024,
     InvalidDocAttributes,
+    OverflowingLiterals,
 }
 pub(crate) struct Change {
     pub(crate) lint: Lint,
@@ -167,6 +171,7 @@ impl Policy {
             Lint::MustUse => &mut self.must_use,
             Lint::UnusedAttributes => &mut self.unused_attributes,
             Lint::InvalidDocAttributes => &mut self.invalid_doc_attributes,
+            Lint::OverflowingLiterals => &mut self.overflowing_literals,
             Lint::UnusedVisibilities => &mut self.unused_visibilities,
             Lint::DuplicateMacroAttributes => &mut self.duplicate_macro_attributes,
             Lint::AmbiguousDeriveHelpers => &mut self.ambiguous_derive_helpers,
@@ -205,6 +210,9 @@ impl Policy {
                         }
                         Lint::InvalidDocAttributes => {
                             "forbidden invalid_doc_attributes lint cannot be weakened"
+                        }
+                        Lint::OverflowingLiterals => {
+                            "forbidden overflowing_literals lint cannot be weakened"
                         }
                         Lint::UnusedVisibilities => {
                             "forbidden unused_visibilities lint cannot be weakened"
@@ -252,6 +260,7 @@ impl Lint {
             Self::DangerousImplicitAutorefs => 16,
             Self::DeprecatedSafe2024 => 17,
             Self::InvalidDocAttributes => 18,
+            Self::OverflowingLiterals => 19,
         }
     }
 }
@@ -287,6 +296,7 @@ impl Lint {
             W::DangerousImplicitAutorefs => Self::DangerousImplicitAutorefs,
             W::DeprecatedSafe2024 => Self::DeprecatedSafe2024,
             W::InvalidDocAttributes => Self::InvalidDocAttributes,
+            W::OverflowingLiterals => Self::OverflowingLiterals,
             W::UnstableSyntaxPreExpansion => return None,
         })
     }
@@ -298,4 +308,4 @@ impl Lint {
     }
 }
 
-const _: [(); 180] = [(); size_of::<Policy>()];
+const _: [(); 188] = [(); size_of::<Policy>()];

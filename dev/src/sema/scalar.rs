@@ -73,16 +73,17 @@ pub(super) fn literal(
     value: &Value<'_>,
     ty: Primitive,
     negated: bool,
-) -> Result<Scalar, &'static str> {
+) -> Result<(Scalar, Option<&'static str>), &'static str> {
     match value {
         Value::Integer(integer) => {
             let ty = integer_type(ty).ok_or("integer literal requires an integer type")?;
-            if integer.materialize(ty, negated)?.overflow {
-                return Err("integer literal is out of range for its type");
-            }
+            let overflow = integer.materialize(ty, negated)?.overflow;
             // The operand retains its positive spelling's target bits; unary negation
             // owns the sign, including Rust's signed-minimum literal exception.
-            Ok(Scalar::Integer(integer.materialize(ty, false)?.bits))
+            Ok((
+                Scalar::Integer(integer.materialize(ty, false)?.bits),
+                overflow.then_some("integer literal is out of range for its type"),
+            ))
         }
         Value::Float(float) => {
             let ty = match ty {
@@ -93,15 +94,16 @@ pub(super) fn literal(
                 _ => return Err("floating literal requires a floating type"),
             };
             let bits = float.round(ty)?;
-            let finite = bits.is_finite();
-            if !finite {
-                return Err("floating literal is out of range for its type");
-            }
-            Ok(Scalar::Float(bits))
+            Ok((
+                Scalar::Float(bits),
+                (!bits.is_finite()).then_some("floating literal is out of range for its type"),
+            ))
         }
-        Value::Boolean(value) if ty == Primitive::Bool => Ok(Scalar::Boolean(*value)),
-        Value::Character(value) if ty == Primitive::Char => Ok(Scalar::Character(*value)),
-        Value::Byte(value) if ty == Primitive::U8 => Ok(Scalar::Integer(u128::from(*value))),
+        Value::Boolean(value) if ty == Primitive::Bool => Ok((Scalar::Boolean(*value), None)),
+        Value::Character(value) if ty == Primitive::Char => Ok((Scalar::Character(*value), None)),
+        Value::Byte(value) if ty == Primitive::U8 => {
+            Ok((Scalar::Integer(u128::from(*value)), None))
+        }
         _ => Err("invalid scalar literal type"),
     }
 }

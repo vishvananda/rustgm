@@ -589,6 +589,7 @@ fn lints(forest: &Forest, source: &str, index: u32) -> &'static [Lint] {
         Some("unused_must_use") => &[Lint::MustUse],
         Some("unused_attributes") => &[Lint::UnusedAttributes],
         Some("invalid_doc_attributes") => &[Lint::InvalidDocAttributes],
+        Some("overflowing_literals") => &[Lint::OverflowingLiterals],
         Some("unused_visibilities") => &[Lint::UnusedVisibilities],
         Some("duplicate_macro_attributes") => &[Lint::DuplicateMacroAttributes],
         Some("ambiguous_derive_helpers" | "future_incompatible") => &[Lint::AmbiguousDeriveHelpers],

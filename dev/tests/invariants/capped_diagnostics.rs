@@ -39,6 +39,124 @@ fn resolved(source: &str, cap: LintCap, source_mode: bool) -> Result<Report> {
     )?;
     Ok(resolve::analyze_expanded(expanded)?)
 }
+
+#[test]
+fn overflowing_literals_obey_the_lexical_lint_and_keep_target_bits() -> Result {
+    use crate::{
+        literal::value::FloatBits,
+        resolve::model::DefId,
+        sema::{
+            constants::values::{Reader, View},
+            model::Scalar,
+        },
+        support::diagnostics::WarningCode,
+    };
+    let cases = [
+        (
+            "#![allow(overflowing_literals)]",
+            LintCap::Uncapped,
+            &[][..],
+        ),
+        (
+            "#![warn(overflowing_literals)]",
+            LintCap::Uncapped,
+            &[WarningCode::OverflowingLiterals; 3][..],
+        ),
+        (
+            "#![expect(overflowing_literals)]",
+            LintCap::Uncapped,
+            &[][..],
+        ),
+        ("#![deny(overflowing_literals)]", LintCap::Allow, &[][..]),
+    ];
+    for (attribute, cap, warnings) in cases {
+        let source = format!(
+            r#"{attribute}
+#![feature(lang_items,no_core)]
+#![no_core]
+#[lang="pointee_sized"]pub trait PointeeSized{{}}
+#[lang="meta_sized"]pub trait MetaSized:PointeeSized{{}}
+#[lang="sized"]pub trait Sized:MetaSized{{}}
+pub const EPOLLET:i32=0x80000000;
+const BYTE:u8=256;
+const FLOAT:f32=1e99;
+"#
+        );
+        let report = resolved(&source, cap, true)?;
+        let analysis = crate::pipeline::analyze_source(&report)?;
+        let reader = Reader::new(&analysis.facts);
+        for (name, expected) in [
+            ("EPOLLET", Scalar::Integer(0x8000_0000)),
+            ("BYTE", Scalar::Integer(0)),
+            ("FLOAT", Scalar::Float(FloatBits::F32(0x7f80_0000))),
+        ] {
+            let index = report
+                .resolution
+                .definitions
+                .iter()
+                .position(|definition| report.package.names.get(definition.name) == name)
+                .ok_or("missing constant declaration")?;
+            let value = reader
+                .definition(DefId(u32::try_from(index)?))
+                .ok_or("missing evaluated constant")?;
+            assert!(
+                matches!(reader.view(value)?, View::Scalar(scalar) if scalar == expected),
+                "{name}"
+            );
+        }
+        assert_eq!(
+            analysis
+                .facts
+                .warnings()
+                .map(|warning| warning.code)
+                .collect::<Vec<_>>(),
+            warnings,
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn overflowing_literals_keep_default_errors_and_local_policy() -> Result {
+    use crate::support::diagnostics::WarningCode;
+    for (source, expected) in [
+        ("const E:i32=0x80000000;", "integer literal is out of range"),
+        ("const E:f32=1e99;", "floating literal is out of range"),
+        (
+            "#![forbid(overflowing_literals)] #[allow(overflowing_literals)] const E:i32=0x80000000;",
+            "forbidden overflowing_literals lint cannot be weakened",
+        ),
+        (
+            "#![allow(overflowing_literals)] const E:u128=340282366920938463463374607431768211456;",
+            "integer magnitude exceeds u128",
+        ),
+    ] {
+        let error = match resolved(source, LintCap::Uncapped, false) {
+            Ok(report) => crate::pipeline::analyze_source(&report)
+                .err()
+                .ok_or("accepted invalid literal")?
+                .to_string(),
+            Err(error) => error.to_string(),
+        };
+        assert!(error.contains(expected), "{error}");
+    }
+    let report = resolved(
+        "#![deny(overflowing_literals)] #[allow(overflowing_literals)] const E:i32=0x80000000; #[expect(overflowing_literals)] const M:i8=-128;",
+        LintCap::Uncapped,
+        false,
+    )?;
+    let analysis = crate::pipeline::analyze_source(&report)?;
+    assert_eq!(
+        analysis
+            .facts
+            .warnings()
+            .map(|warning| warning.code)
+            .collect::<Vec<_>>(),
+        [WarningCode::UnfulfilledLintExpectations],
+    );
+    Ok(())
+}
+
 #[test]
 fn capped_replacement_hints_still_require_the_actual_language_feature() -> Result {
     for name in [
