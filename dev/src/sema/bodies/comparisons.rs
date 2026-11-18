@@ -1,28 +1,79 @@
 //! Equality syntax retains canonical member selection and two independent shared borrows.
 use super::{Checker, Constructor, Dependency, Error, NodeId, TermId, Type, Work};
 use crate::{
+    lex::token::Punctuation,
     support::comparisons::Method,
+    syntax::ast::Kind,
     types::{
         ItemId,
         infer::{arguments::Argument, predicates::Predicate},
     },
 };
+const fn method(op: Punctuation) -> Option<Method> {
+    match op {
+        Punctuation::EqualEqual => Some(Method::Eq),
+        Punctuation::BangEqual => Some(Method::Ne),
+        Punctuation::Less => Some(Method::Lt),
+        Punctuation::LessEqual => Some(Method::Le),
+        Punctuation::Greater => Some(Method::Gt),
+        Punctuation::GreaterEqual => Some(Method::Ge),
+        _ => None,
+    }
+}
+
 impl Checker<'_> {
+    pub(super) fn schedule_source_comparison(
+        &mut self,
+        node: NodeId,
+        expected: Option<TermId>,
+    ) -> bool {
+        if let Kind::Binary { op, left, .. } = self.kind(node)
+            && self.report.package.uses_source_bindings()
+            && matches!(
+                self.availability,
+                crate::sema::traits::implementations::Availability::Validated
+            )
+            && let Some(method) = method(op)
+        {
+            self.state
+                .work
+                .push(Work::PrepareComparisonRhs(node, method, expected));
+            self.state.work.push(Work::Enter(left, None));
+            true
+        } else {
+            false
+        }
+    }
+
+    pub(super) fn comparison_expression(
+        &mut self,
+        node: NodeId,
+        op: Punctuation,
+        (left, right): (NodeId, NodeId),
+    ) -> Result<Option<TermId>, Error> {
+        let Some(method) = method(op) else {
+            return Ok(None);
+        };
+        if self.report.package.uses_source_bindings() {
+            return self
+                .source_comparison_operator(node, method, left, right)
+                .map(Some);
+        }
+        if self.uses_comparison(node, method, left, right)? {
+            return self.comparison(node, method, left, right).map(Some);
+        }
+        Ok(None)
+    }
+
     pub(super) fn comparison_readiness(
         &mut self,
         node: NodeId,
     ) -> Result<Option<super::Requirement>, Error> {
-        let method = match self.kind(node) {
-            crate::syntax::ast::Kind::Binary { op, .. } => match op {
-                crate::lex::token::Punctuation::EqualEqual => Method::Eq,
-                crate::lex::token::Punctuation::BangEqual => Method::Ne,
-                crate::lex::token::Punctuation::Less => Method::Lt,
-                crate::lex::token::Punctuation::LessEqual => Method::Le,
-                crate::lex::token::Punctuation::Greater => Method::Gt,
-                crate::lex::token::Punctuation::GreaterEqual => Method::Ge,
-                _ => return Ok(None),
-            },
-            _ => return Ok(None),
+        let Kind::Binary { op, left, right } = self.kind(node) else {
+            return Ok(None);
+        };
+        let Some(method) = method(op) else {
+            return Ok(None);
         };
         let declaration = self
             .report
@@ -40,9 +91,6 @@ impl Checker<'_> {
         {
             return Ok(None);
         }
-        let crate::syntax::ast::Kind::Binary { left, right, .. } = self.kind(node) else {
-            return Err(self.error(node, "invalid comparison readiness site"));
-        };
         if !self.uses_comparison(node, method, left, right)? {
             return Ok(None);
         }
@@ -61,7 +109,7 @@ impl Checker<'_> {
         )?;
         Ok(None)
     }
-    pub(super) fn uses_comparison(
+    fn uses_comparison(
         &mut self,
         node: NodeId,
         method: Method,
@@ -99,7 +147,7 @@ impl Checker<'_> {
         }
         Ok(false)
     }
-    pub(super) fn comparison(
+    fn comparison(
         &mut self,
         node: NodeId,
         method: Method,
@@ -215,12 +263,99 @@ impl Checker<'_> {
             }
         }
     }
-    pub(super) fn source_comparison_operator(
+    /// When the finished left operand rules out the builtin scalar path, the
+    /// actual comparison can supply a constructor or call with its expected type.
+    pub(super) fn prepare_comparison_rhs(
+        &mut self,
+        node: NodeId,
+        method: Method,
+        result_context: Option<TermId>,
+    ) -> Result<(), Error> {
+        let Kind::Binary { left, right, .. } = self.kind(node) else {
+            return Err(self.error(node, "invalid comparison operand preparation"));
+        };
+        let subject = self.term(left)?;
+        if !self.comparison_requires_selection(node, subject)? {
+            self.state.work.push(Work::Exit(node, result_context));
+            self.state.work.push(Work::Enter(right, None));
+            return Ok(());
+        }
+        let (self_type, rhs, coerce) = self.comparison_rhs(node, right, subject)?;
+        let result =
+            self.source_comparison_call(node, method, (left, right), (subject, self_type, rhs))?;
+        self.state.work.push(Work::CompleteExpression(node, result));
+        self.state.work.push(coerce);
+        self.state.work.push(Work::EnterComparisonRhs {
+            node,
+            operand: right,
+            expected: rhs,
+        });
+        Ok(())
+    }
+
+    pub(super) fn enter_comparison_rhs(
+        &mut self,
+        node: NodeId,
+        operand: NodeId,
+        expected: TermId,
+    ) -> Result<Option<Dependency>, Error> {
+        if let Some(dependency) = self.refine_call_inputs(node, expected)? {
+            return Ok(Some(dependency));
+        }
+        let expected = self.contextual_head(node, expected)?.map(|_| expected);
+        self.state.work.push(Work::Enter(operand, expected));
+        Ok(None)
+    }
+
+    fn source_comparison_operator(
         &mut self,
         node: NodeId,
         method: Method,
         left: NodeId,
         right: NodeId,
+    ) -> Result<TermId, Error> {
+        let subject = self.term(left)?;
+        let actual_right = self.term(right)?;
+        let (self_type, right_type) = if self.builtin_comparison(node, subject, actual_right)? {
+            (subject, actual_right)
+        } else {
+            let (self_type, rhs, coerce) = self.comparison_rhs(node, right, subject)?;
+            self.state.work.push(coerce);
+            (self_type, rhs)
+        };
+        self.source_comparison_call(
+            node,
+            method,
+            (left, right),
+            (subject, self_type, right_type),
+        )
+    }
+
+    fn comparison_rhs(
+        &mut self,
+        node: NodeId,
+        operand: NodeId,
+        subject: TermId,
+    ) -> Result<(TermId, TermId, Work), Error> {
+        // Fresh regions let trait selection fix Rhs without equating the
+        // lifetimes of the two operand places. Actual borrows relate them later.
+        let rhs = self.variable(node, super::Domain::Any)?;
+        self.state.coerced_operands.insert(node, rhs);
+        let coerce = Work::CoerceOperatorRhs {
+            node,
+            operand,
+            expected: rhs,
+            borrow: self.state.call_types.comparison_borrows.len(),
+        };
+        Ok((self.inferred_regions(node, subject)?, rhs, coerce))
+    }
+
+    fn source_comparison_call(
+        &mut self,
+        node: NodeId,
+        method: Method,
+        (left, right): (NodeId, NodeId),
+        (subject, self_type, right_type): (TermId, TermId, TermId),
     ) -> Result<TermId, Error> {
         let selected = crate::sema::compiler_items::source_comparison(
             self.report,
@@ -228,29 +363,6 @@ impl Checker<'_> {
             self.key(node),
             method,
         )?;
-        let subject = self.term(left)?;
-        let actual_right = self.term(right)?;
-        // rustc's `check_overloaded_binop` gives `Rhs` a fresh variable, selects
-        // `Self: PartialEq<Rhs>` where it can and then coerces the right operand.
-        // Two primitive scalars are unified first, so their coercion is an identity.
-        // Otherwise `Self` is the left operand's type with fresh regions, which
-        // the left borrow constrains, as borrow checking renumbers each
-        // operand's regions. Selection solves `Rhs` beneath the method
-        // signature's binder, so neither may name a body lifetime parameter.
-        let builtin = self.builtin_comparison(node, subject, actual_right)?;
-        let (self_type, right_type) = if builtin {
-            (subject, actual_right)
-        } else {
-            let rhs = self.variable(node, super::Domain::Any)?;
-            self.state.coerced_operands.insert(node, rhs);
-            self.state.work.push(Work::CoerceOperatorRhs {
-                node,
-                operand: right,
-                expected: rhs,
-                borrow: self.state.call_types.comparison_borrows.len(),
-            });
-            (self.inferred_regions(node, subject)?, rhs)
-        };
         self.state.call_types.obligations.push((
             node,
             Predicate::trait_application(
@@ -274,7 +386,7 @@ impl Checker<'_> {
         let signature = self.child(node, callable, 0)?;
         let signature = self.call_signature(node, signature)?;
         let receiver = self.child(node, signature, 0)?;
-        if !builtin {
+        if self_type != subject {
             let bound = self.child(node, receiver, 0)?;
             self.shape_equation(node, self_type, bound)?;
         }

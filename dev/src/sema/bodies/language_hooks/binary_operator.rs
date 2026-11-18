@@ -94,6 +94,17 @@ impl Checker<'_> {
         self.equate(node, left, right)?;
         Ok(true)
     }
+    /// A known non-scalar left operand cannot take the builtin comparison path.
+    pub(in crate::sema::bodies) fn comparison_requires_selection(
+        &mut self,
+        node: NodeId,
+        left: TermId,
+    ) -> Result<bool, Error> {
+        Ok(self
+            .builtin_operand(node, left)?
+            .is_some_and(|(_, operand)| operand == Operand::Other))
+    }
+
     /// One shared reference layer is peeled; general unknowns are not builtin.
     fn builtin_operand(
         &mut self,

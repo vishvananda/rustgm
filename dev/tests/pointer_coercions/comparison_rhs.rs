@@ -282,3 +282,106 @@ fn comparison_borrows_the_coerced_right_operand_and_preserves_the_original_loan(
     }
     Ok(())
 }
+
+const OPTION_COMPARISON_IMPLS: &str = r#"
+#[stable(feature = "rust1", since = "1.0.0")]
+#[rustc_const_unstable(feature = "const_cmp", issue = "143800")]
+const impl<T: [const] PartialEq> PartialEq for Option<T> {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Some(left), Some(right)) => *left == *right,
+            (None, None) => true,
+            _ => false,
+        }
+    }
+}
+
+#[stable(feature = "rust1", since = "1.0.0")]
+#[rustc_const_unstable(feature = "const_cmp", issue = "143800")]
+const impl PartialEq for [u8] {
+    fn eq(&self, _: &Self) -> bool { true }
+}
+
+struct Compared;
+impl<'a> PartialEq<Option<&'a [u8]>> for Compared {
+    fn eq(&self, _: &Option<&'a [u8]>) -> bool { true }
+}
+
+struct Overloads;
+impl<'a> PartialEq<Option<&'a [u8]>> for Overloads {
+    fn eq(&self, _: &Option<&'a [u8]>) -> bool { false }
+}
+impl<'a> PartialEq<Option<&'a [u8; 0]>> for Overloads {
+    fn eq(&self, _: &Option<&'a [u8; 0]>) -> bool { true }
+}
+"#;
+
+const CONSTRUCTOR_CASES: &[(&str, &str, bool)] = &[
+    ("inferred", "Some(empty) == Some(b\"\")", true),
+    ("parenthesized", "Some(empty) != (Some(b\"\"))", true),
+    (
+        "explicit-slice",
+        "let value: &[u8] = b\"\"; Some(empty) == Some(value)",
+        true,
+    ),
+    ("different-self", "Compared == Some(b\"\")", true),
+    ("multiple-impls", "Overloads == Some(b\"\")", true),
+    (
+        "preformed-array",
+        "let formed: Option<&[u8; 0]> = Some(b\"\"); Some(empty) == formed",
+        false,
+    ),
+];
+
+#[test]
+fn comparison_type_context_reaches_constructor_arguments() -> Result {
+    let core = crate::resolve::fixture(
+        "pa31/tests/spec/source-comparisons/ordering/actual-source-comparisons-v3.rs",
+    )?;
+    let (roles, _) = core
+        .split_once("#[unsafe(no_mangle)]pub extern \"C\" fn source_eq")
+        .ok_or("comparison roles")?;
+    let (blankets, _) = REFERENCE_COMPARISONS
+        .split_once("fn compare_le")
+        .ok_or("reference comparison impls")?;
+    let box_roles = crate::resolve::fixture("pa31/tests/spec/owned-boxes/box-in-box.rs")?;
+    let unsizing = box_roles
+        .lines()
+        .filter(|line| {
+            line.starts_with("#[lang=\"unsize\"]") || line.starts_with("#[lang=\"coerce_unsized\"]")
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(unsizing.len(), 2);
+    let reference_roles =
+        crate::resolve::fixture("pa31/tests/spec/explicit-dynamic-call-members/prefix.rs")?;
+    let shared = reference_roles
+        .lines()
+        .find(|line| line.contains("CoerceUnsized<&'a U> for &'b T"))
+        .ok_or("shared reference CoerceUnsized")?;
+    let mut failures = Vec::new();
+    for &(name, expression, accepted) in CONSTRUCTOR_CASES {
+        let source = format!(
+            r#"{roles}
+            {}
+            {shared}
+            {blankets}
+            {OPTION_COMPARISON_IMPLS}
+            #[unsafe(no_mangle)] pub extern "C" fn observe() -> bool {{
+                let empty: &[u8] = b"";
+                {expression}
+            }}"#,
+            unsizing.join("\n"),
+        );
+        match (accepted, program(&source)) {
+            (true, Ok(output))
+                if output
+                    .symbols
+                    .iter()
+                    .any(|s| s.name == "observe" && s.body.is_some()) => {}
+            (false, Err(error)) if error.to_string().contains("trait obligation") => {}
+            (_, result) => failures.push(format!("{name}: {:?}", result.err())),
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}

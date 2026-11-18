@@ -308,6 +308,12 @@ enum Work {
         argument: NodeId,
         parameter: u32,
     },
+    PrepareComparisonRhs(NodeId, crate::support::comparisons::Method, Option<TermId>),
+    EnterComparisonRhs {
+        node: NodeId,
+        operand: NodeId,
+        expected: TermId,
+    },
     /// A source comparison's right operand, after its `Rhs` selection, and
     /// the index of its right borrow.
     CoerceOperatorRhs {
@@ -1054,6 +1060,7 @@ impl Checker<'_> {
                 work @ (Work::PrepareBorrowOperand { .. }
                 | Work::PrepareCallArgument { .. }
                 | Work::CoerceCallArgument { .. }
+                | Work::EnterComparisonRhs { .. }
                 | Work::CoerceOperatorRhs { .. }
                 | Work::CoerceBinaryRhs { .. }) => {
                     if let Some(dependency) = self.resume_operand_work(work)? {
@@ -1079,6 +1086,9 @@ impl Checker<'_> {
                 }
                 Work::ForPattern(node, item) => self.pattern(node, item, true)?,
                 Work::AssignmentValue(node) => self.assignment_value(node)?,
+                Work::PrepareComparisonRhs(node, method, expected) => {
+                    self.prepare_comparison_rhs(node, method, expected)?;
+                }
                 Work::Assignee(node) => self.enter_assignee(node)?,
                 Work::AssigneeShell(node) => self.finish_assignee(node)?,
                 Work::Exit(node, expected) => {
@@ -1142,6 +1152,11 @@ impl Checker<'_> {
                 argument,
                 parameter,
             } => self.coerce_call_argument(*call, *argument, *parameter)?,
+            Work::EnterComparisonRhs {
+                node,
+                operand,
+                expected,
+            } => self.enter_comparison_rhs(*node, *operand, *expected)?,
             Work::CoerceOperatorRhs {
                 node,
                 operand,
@@ -1531,6 +1546,9 @@ impl Checker<'_> {
         }
         self.enter_safety(node)?;
         self.enter_control(node, expectation.hard())?;
+        if self.schedule_source_comparison(node, expectation.hard()) {
+            return Ok(());
+        }
         self.state.work.push(Work::Exit(node, expectation.hard()));
         self.state.children.clear();
         match self.kind(node) {
@@ -2338,24 +2356,8 @@ impl Checker<'_> {
         {
             return self.language_operator(node, kind, left, Some(right));
         }
-        let comparison = match op {
-            Op::EqualEqual => Some(crate::support::comparisons::Method::Eq),
-            Op::BangEqual => Some(crate::support::comparisons::Method::Ne),
-            Op::Less => Some(crate::support::comparisons::Method::Lt),
-            Op::LessEqual => Some(crate::support::comparisons::Method::Le),
-            Op::Greater => Some(crate::support::comparisons::Method::Gt),
-            Op::GreaterEqual => Some(crate::support::comparisons::Method::Ge),
-            _ => None,
-        };
-        if let Some(method) = comparison
-            && self.report.package.uses_source_bindings()
-        {
-            return self.source_comparison_operator(node, method, left, right);
-        }
-        if let Some(method) = comparison
-            && self.uses_comparison(node, method, left, right)?
-        {
-            return self.comparison(node, method, left, right);
+        if let Some(result) = self.comparison_expression(node, op, (left, right))? {
+            return Ok(result);
         }
         let a = self.term(left)?;
         let b = self.term(right)?;
