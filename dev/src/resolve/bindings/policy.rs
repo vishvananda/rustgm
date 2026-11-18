@@ -112,6 +112,7 @@ pub(in crate::resolve) enum Feature {
     CfiEncoding = 88,
     Linkage = 89,
     CfgSanitizerCfi = 90,
+    DocMasked = 91,
 }
 
 #[cfg(test)]
@@ -190,6 +191,7 @@ impl Request {
             "link_cfg" => Self::Capability(Feature::LinkCfg),
             "doc_cfg" => Self::Capability(Feature::DocCfg),
             "doc_notable_trait" => Self::Capability(Feature::DocNotableTrait),
+            "doc_masked" => Self::Capability(Feature::DocMasked),
             "diagnostic_on_const" => Self::Capability(Feature::DiagnosticConst),
             "diagnostic_on_unmatched_args" => Self::Capability(Feature::DiagnosticUnmatched),
             "diagnostic_on_move" => Self::Capability(Feature::DiagnosticMove),
@@ -293,6 +295,7 @@ impl Features {
             || self.has(Feature::LinkCfg)
             || self.has(Feature::DocCfg)
             || self.has(Feature::DocNotableTrait)
+            || self.has(Feature::DocMasked)
             || self.has(Feature::DiagnosticConst)
             || self.has(Feature::DiagnosticUnmatched)
             || self.has(Feature::DiagnosticMove)

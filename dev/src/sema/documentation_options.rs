@@ -72,7 +72,8 @@ impl Draft {
         &mut self,
         report: &Report,
         facts: &mut Declarations,
-        (key, attribute): (NodeKey, Attribute),
+        (owner, key): (NodeKey, NodeKey),
+        (attribute, retained): (Attribute, usize),
         forest: &Forest,
         allowances: &mut MacroAllowanceSession<'_>,
     ) -> Result<(), Error> {
@@ -97,6 +98,22 @@ impl Draft {
             let end = cursor;
             cursor += u32::from(cursor < range.end);
             let name = forest.name(source, start);
+            if name == Some("masked") {
+                crate::sema::header_attributes::reserve_source_contracts(
+                    facts,
+                    1 + (end - start) as usize,
+                    0,
+                )?;
+                Self::masked(
+                    report,
+                    facts,
+                    (owner, key),
+                    (attribute, retained),
+                    end == start + 1,
+                    allowances,
+                )?;
+                continue;
+            }
             let gate = match name {
                 Some("cfg" | "auto_cfg") => Gate::Configuration,
                 Some("notable_trait") => Gate::Notable,
@@ -132,6 +149,66 @@ impl Draft {
             }
         }
         Ok(())
+    }
+
+    fn masked(
+        report: &Report,
+        facts: &mut Declarations,
+        (owner, declaration): (NodeKey, NodeKey),
+        (attribute, retained): (Attribute, usize),
+        word: bool,
+        allowances: &mut MacroAllowanceSession<'_>,
+    ) -> Result<(), Error> {
+        let error = |message| Error::at(owner.file, attribute.span.start, message);
+        if !report.package.requested_doc_masked(owner.file)?
+            && !allowances.allows_attribute(
+                owner,
+                retained,
+                attribute,
+                &FeatureName::new("doc_masked").map_err(error)?,
+            )?
+        {
+            return Err(error(
+                "doc(masked) requires this crate's doc_masked feature or actual macro allowance",
+            ));
+        }
+        if !word {
+            return Err(error("doc(masked) takes no arguments"));
+        }
+        facts.require_lint_context(report)?;
+        let unit = report.package.unit(declaration.file);
+        let ast = &unit.configured.ast;
+        let item = match ast.node(declaration.node).kind {
+            crate::syntax::ast::Kind::Item(index) => ast.items.get(index as usize),
+            _ => None,
+        };
+        let message = if let Some(item) = item
+            .filter(|item| matches!(item.kind, crate::syntax::item::ItemKind::ExternCrate { .. }))
+        {
+            let source_name = item
+                .name
+                .ok_or_else(|| error("extern crate has no source name"))?;
+            if unit
+                .spelling(source_name)
+                .map_err(|failure| error(failure.message))?
+                != "self"
+            {
+                // Resolution already established the configured dependency.
+                // Masking does not change its binding or its exports.
+                return Ok(());
+            }
+            "this attribute cannot be applied to an `extern crate self` item"
+        } else {
+            "this attribute can only be applied to an `extern crate` item"
+        };
+        facts.must_use_diagnostic_in(
+            report,
+            owner,
+            attribute.span.start,
+            0,
+            crate::support::diagnostics::WarningCode::InvalidDocAttributes,
+            (message.into(), crate::resolve::model::ExpansionId(0)),
+        )
     }
 
     fn require_query(

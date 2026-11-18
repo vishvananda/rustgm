@@ -41,6 +41,7 @@ pub enum WarningCode {
     StaticMutRefs,
     DangerousImplicitAutorefs,
     DeprecatedSafe2024,
+    InvalidDocAttributes,
 }
 impl WarningCode {
     #[must_use]
@@ -65,6 +66,7 @@ impl WarningCode {
             Self::StaticMutRefs => "static_mut_refs",
             Self::DangerousImplicitAutorefs => "dangerous_implicit_autorefs",
             Self::DeprecatedSafe2024 => "deprecated_safe_2024",
+            Self::InvalidDocAttributes => "invalid_doc_attributes",
         }
     }
 }

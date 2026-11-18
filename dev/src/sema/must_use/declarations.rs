@@ -370,7 +370,8 @@ fn consume_annotation<'unit>(
             flags.documentation_options.consume(
                 report,
                 facts,
-                (declaration, attribute),
+                (owner, declaration),
+                (attribute, effect),
                 forest,
                 allowances,
             )?;

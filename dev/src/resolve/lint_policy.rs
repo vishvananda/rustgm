@@ -32,6 +32,7 @@ pub(crate) struct Policy {
     pub(crate) unreachable_patterns: Level,
     pub(crate) must_use: Level,
     pub(crate) unused_attributes: Level,
+    pub(crate) invalid_doc_attributes: Level,
     pub(crate) unused_visibilities: Level,
     pub(crate) duplicate_macro_attributes: Level,
     pub(crate) ambiguous_derive_helpers: Level,
@@ -40,7 +41,7 @@ pub(crate) struct Policy {
     pub(crate) unfulfilled: Level,
     pub(crate) hidden_glob_reexports: Level,
     pub(crate) ineffective_unstable_trait_impl: Level,
-    expectations: [Option<ExpectationId>; 18],
+    expectations: [Option<ExpectationId>; 19],
     pub(crate) deprecated_origin: Option<producer::Tail>,
     pub(crate) deprecation_explicit: bool,
 }
@@ -60,6 +61,7 @@ impl Policy {
             unreachable_patterns: Level::Allow,
             must_use: Level::Allow,
             unused_attributes: Level::Allow,
+            invalid_doc_attributes: Level::Allow,
             unused_visibilities: Level::Allow,
             duplicate_macro_attributes: Level::Allow,
             ambiguous_derive_helpers: Level::Allow,
@@ -81,6 +83,7 @@ impl Policy {
         unreachable_patterns: Level::Warn,
         must_use: Level::Warn,
         unused_attributes: Level::Warn,
+        invalid_doc_attributes: Level::Warn,
         unused_visibilities: Level::Warn,
         duplicate_macro_attributes: Level::Warn,
         ambiguous_derive_helpers: Level::Warn,
@@ -89,7 +92,7 @@ impl Policy {
         unfulfilled: Level::Warn,
         hidden_glob_reexports: Level::Warn,
         ineffective_unstable_trait_impl: Level::Deny,
-        expectations: [None; 18],
+        expectations: [None; 19],
         deprecated_origin: None,
         deprecation_explicit: false,
     };
@@ -117,6 +120,7 @@ pub(crate) enum Lint {
     IneffectiveUnstableTraitImpl,
     DangerousImplicitAutorefs,
     DeprecatedSafe2024,
+    InvalidDocAttributes,
 }
 pub(crate) struct Change {
     pub(crate) lint: Lint,
@@ -162,6 +166,7 @@ impl Policy {
             Lint::UnreachablePatterns => &mut self.unreachable_patterns,
             Lint::MustUse => &mut self.must_use,
             Lint::UnusedAttributes => &mut self.unused_attributes,
+            Lint::InvalidDocAttributes => &mut self.invalid_doc_attributes,
             Lint::UnusedVisibilities => &mut self.unused_visibilities,
             Lint::DuplicateMacroAttributes => &mut self.duplicate_macro_attributes,
             Lint::AmbiguousDeriveHelpers => &mut self.ambiguous_derive_helpers,
@@ -197,6 +202,9 @@ impl Policy {
                         Lint::MustUse => "forbidden unused_must_use lint cannot be weakened",
                         Lint::UnusedAttributes => {
                             "forbidden unused_attributes lint cannot be weakened"
+                        }
+                        Lint::InvalidDocAttributes => {
+                            "forbidden invalid_doc_attributes lint cannot be weakened"
                         }
                         Lint::UnusedVisibilities => {
                             "forbidden unused_visibilities lint cannot be weakened"
@@ -243,6 +251,7 @@ impl Lint {
             Self::IneffectiveUnstableTraitImpl => 15,
             Self::DangerousImplicitAutorefs => 16,
             Self::DeprecatedSafe2024 => 17,
+            Self::InvalidDocAttributes => 18,
         }
     }
 }
@@ -277,6 +286,7 @@ impl Lint {
             W::StaticMutRefs => Self::Reference,
             W::DangerousImplicitAutorefs => Self::DangerousImplicitAutorefs,
             W::DeprecatedSafe2024 => Self::DeprecatedSafe2024,
+            W::InvalidDocAttributes => Self::InvalidDocAttributes,
             W::UnstableSyntaxPreExpansion => return None,
         })
     }
@@ -288,4 +298,4 @@ impl Lint {
     }
 }
 
-const _: [(); 168] = [(); size_of::<Policy>()];
+const _: [(); 180] = [(); size_of::<Policy>()];

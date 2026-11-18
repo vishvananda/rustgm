@@ -249,6 +249,7 @@ impl Declarations {
             WarningCode::UnreachablePatterns => self.safety_policies.unreachable_patterns(key),
             WarningCode::UnusedMustUse => self.safety_policies.must_use(key),
             WarningCode::UnusedAttributes => self.safety_policies.unused_attributes(key),
+            WarningCode::InvalidDocAttributes => self.safety_policies.invalid_doc_attributes(key),
             WarningCode::UnusedVisibilities => self.safety_policies.unused_visibilities(key),
             WarningCode::UnstableSyntaxPreExpansion => Level::Warn,
             WarningCode::DuplicateMacroAttributes => {

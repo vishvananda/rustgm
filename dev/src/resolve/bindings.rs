@@ -529,6 +529,20 @@ impl super::package::Package {
             "link cfg client identity changed",
         )
     }
+    pub(crate) fn requested_doc_masked(
+        &self,
+        file: crate::support::source::FileId,
+    ) -> Result<bool, super::package::Error> {
+        if self.source_core().is_some() {
+            self.requested_own_root(file, policy::Feature::DocMasked)
+        } else {
+            self.requested_expression_feature(
+                policy::Feature::DocMasked,
+                "documentation feature client identity changed",
+            )
+            .map_err(|message| super::package::Error::at(file, 0, message))
+        }
+    }
     pub(crate) fn requested_documentation(&self, notable: bool) -> Result<bool, &'static str> {
         self.requested_expression_feature(
             if notable {

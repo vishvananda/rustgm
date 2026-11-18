@@ -1492,3 +1492,137 @@ fn selected_source_eh_personality_fences_both_writers() -> TestResult {
     }
     Ok(())
 }
+
+#[test]
+fn configured_doc_masked_keeps_prior_guest_alias_and_usable_reexport() -> TestResult {
+    use std::{fs, process::Command};
+
+    const NO_CORE: &str = "#![feature(no_core)]\n#![no_core]\n";
+    const MASK: &str = "#[cfg_attr(all(), doc(masked))]";
+    const OBSERVATION: &str = "function @observe_masked_dependency(";
+    let folder = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../obj/parallel/doc-masked-guest")
+        .join(std::process::id().to_string());
+    fs::create_dir_all(&folder)?;
+    let root = folder.join("core.rs");
+    let dependency = folder.join("dependency.rs");
+    let dependency_user = folder.join("masked.rs");
+    let app = folder.join("app.rs");
+    let skip = folder.join("skip.tsv");
+    fs::write(
+        &root,
+        crate::resolve::fixture("pa31/tests/spec/source-functions-transport/minimal-provider.rs")?,
+    )?;
+    fs::write(&skip, "")?;
+    fs::write(
+        &app,
+        format!(
+            "{NO_CORE}extern crate masked_guest;
+             #[unsafe(no_mangle)]
+             pub extern \"C\" fn observe_masked_dependency() -> u8 {{
+                 masked_guest::reexported()
+             }}
+             fn main() {{}}"
+        ),
+    )?;
+    let run = |attribute: &str, own: bool| -> TestResult<std::process::Output> {
+        let grant = "#![feature(doc_masked)]\n";
+        let (own_grant, prior_grant) = if own { (grant, "") } else { ("", grant) };
+        fs::write(
+            &dependency,
+            format!("{NO_CORE}{prior_grant}pub fn origin() -> u8 {{ 19 }}"),
+        )?;
+        fs::write(
+            &dependency_user,
+            format!(
+                "{NO_CORE}{own_grant}{attribute}
+                 extern crate libc_guest as actual_dependency;
+                 pub use actual_dependency::origin as reexported;"
+            ),
+        )?;
+        Ok(Command::new(env!("CARGO_BIN_EXE_rustgm"))
+            .args([
+                "--emit-lowir",
+                "--cap-lints=allow",
+                "--edition=2024",
+                "--crate-name",
+                "core",
+                "--crate-disambiguator",
+                "masked_guest_control",
+                "--source-core",
+                "core@masked_guest_control",
+            ])
+            .arg("--bringup-skip-list")
+            .arg(&skip)
+            .arg("--bringup-guest")
+            .arg(format!("libc_guest={}", dependency.display()))
+            .arg("--bringup-guest")
+            .arg(format!("masked_guest={}", dependency_user.display()))
+            .arg("--bringup-guest")
+            .arg(format!("app={}", app.display()))
+            .arg(&root)
+            .output()?)
+    };
+    let plain = run("", true)?;
+    let marked = run(MASK, true)?;
+    for output in [&plain, &marked] {
+        let stderr = std::str::from_utf8(&output.stderr)?;
+        assert!(output.status.success(), "{stderr}");
+        assert!(stderr.is_empty(), "{stderr}");
+        let lowir = std::str::from_utf8(&output.stdout)?;
+        assert!(lowir.contains(OBSERVATION), "{lowir}");
+    }
+    assert_eq!(plain.stdout, marked.stdout);
+
+    let missing = run(MASK, false)?;
+    let stderr = std::str::from_utf8(&missing.stderr)?;
+    assert_eq!(missing.status.code(), Some(1), "{stderr}");
+    assert!(missing.stdout.is_empty(), "{stderr}");
+    assert!(
+        stderr.contains("doc(masked) requires this crate's doc_masked feature"),
+        "{stderr}"
+    );
+    Ok(())
+}
+
+#[test]
+fn doc_masked_uses_its_own_lexical_invalid_owner_lint() -> TestResult {
+    const PREFIX: &str = "#![feature(doc_masked)]\n";
+    const INVALID: &str = "#[doc(masked)] pub struct Wrong;";
+    const SELF: &str = "#[doc(masked)] pub extern crate self as root_alias;";
+    const WRONG_ITEM: &str = "this attribute can only be applied to an `extern crate` item";
+    const SELF_ITEM: &str = "this attribute cannot be applied to an `extern crate self` item";
+    for (source, message) in [(INVALID, WRONG_ITEM), (SELF, SELF_ITEM)] {
+        let input = format!("{PREFIX}{source}");
+        let (_, facts) = analyze(&input)?;
+        let warnings = warning_text(&facts)?;
+        assert_eq!(facts.warnings().count(), 1, "{warnings}");
+        assert!(
+            warnings.contains("warning[invalid_doc_attributes]"),
+            "{warnings}"
+        );
+        assert!(warnings.contains(message), "{warnings}");
+    }
+
+    for setting in [
+        "#![allow(invalid_doc_attributes)]",
+        "#![deny(unfulfilled_lint_expectations)]\n#[expect(invalid_doc_attributes)]",
+    ] {
+        let (_, facts) = analyze(&format!("{PREFIX}{setting}\n{INVALID}"))?;
+        assert!(facts.warnings().next().is_none());
+    }
+    let (_, facts) = analyze("#[cfg(any())]\n#[doc(masked)] pub struct Removed;")?;
+    assert!(facts.warnings().next().is_none());
+
+    let denied = format!("{PREFIX}#![deny(invalid_doc_attributes)]\n{INVALID}");
+    let error = analyze(&denied)
+        .err()
+        .ok_or("invalid doc(masked) owner escaped its own lint")?;
+    assert!(error.to_string().contains(WRONG_ITEM), "{error}");
+    let mut capped = Config::default();
+    capped.set_lint_cap(rustgm::support::diagnostics::LintCap::Allow);
+    let (_, facts) = analyze_with_config(&denied, &capped)?;
+    assert!(facts.warnings().next().is_none());
+    assert_eq!(std::mem::size_of::<rustgm::sema::model::NodeFacts>(), 80);
+    Ok(())
+}

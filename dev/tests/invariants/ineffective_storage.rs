@@ -51,7 +51,7 @@ fn cold_annotations_keep_hot_owners_and_validate_current_impl_incarnations() -> 
     assert_eq!(producer.work().bytes, warm.bytes);
     assert!(warm.steps > cold.steps);
     assert_eq!(size_of::<super::super::producer::Owner>(), 160);
-    assert_eq!(size_of::<super::super::Policy>(), 160);
+    assert_eq!(size_of::<super::super::Policy>(), 180);
     assert_eq!(size_of::<super::super::Level>(), 1);
     let original = producer
         .ineffective_headers
@@ -143,7 +143,7 @@ fn annotation_storage_and_work_follow_actual_impl_width() -> TestResult {
             width
         );
         assert!(facts.warnings().next().is_none());
-        assert_eq!(facts.retained_policy_rows().2, 168);
+        assert_eq!(facts.retained_policy_rows().2, 188);
         assert!(producer.work().steps < 30_000 * (width + 1));
         assert!(producer.work().bytes < 30_000 * (width + 1));
         observations.push((producer.work().steps, producer.work().bytes));

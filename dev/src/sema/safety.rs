@@ -382,6 +382,9 @@ impl Policies {
     pub(super) fn unused_attributes(&self, key: NodeKey) -> Level {
         self.at(key).unused_attributes
     }
+    pub(super) fn invalid_doc_attributes(&self, key: NodeKey) -> Level {
+        self.at(key).invalid_doc_attributes
+    }
     pub(super) fn unused_visibilities(&self, key: NodeKey) -> Level {
         self.at(key).unused_visibilities
     }
