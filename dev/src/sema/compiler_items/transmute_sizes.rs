@@ -76,20 +76,19 @@ fn premise_free(
     {
         return Ok(());
     }
+    let reads = facts
+        .aggregates
+        .reads_parameterized_projections(&mut facts.types, ty, work, LIMIT);
+    pay(facts, *work, paid)?;
+    if !reads? {
+        return Ok(());
+    }
+    if selects_projections(facts, environment, work)? {
+        return Err(CLOSED.into());
+    }
     let normalized = crate::sema::stored_fields::prepare_premise_free(facts, ty, work);
     charge(work, 0)?;
     pay(facts, *work, paid)?;
-    // A premise that keeps the projection rigid decides first, whatever the
-    // premise-free attempt found.
-    if selects_projections(facts, environment, work)? {
-        let reads = facts
-            .aggregates
-            .reads_parameterized_projections(&facts.types, ty, work, LIMIT);
-        pay(facts, *work, paid)?;
-        if reads? {
-            return Err(CLOSED.into());
-        }
-    }
     normalized
 }
 /// Whether a body premise could select a projection: an elaborated trait

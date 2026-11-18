@@ -82,12 +82,12 @@ impl Definitions {
     }
     /// Whether `ty`'s storage reads a parameterized nominal's projected fields
     /// through instantiated nominal fields, tuples, arrays or captures. A
-    /// pointer ends the walk: its width never reads the pointee's fields.
+    /// pointer to a sized type has a known width without normalizing its pointee.
     /// # Errors
     /// Fails on malformed identities, uninstantiated nominals or `limit`.
     pub(crate) fn reads_parameterized_projections(
-        &self,
-        types: &Store,
+        &mut self,
+        types: &mut Store,
         ty: TypeId,
         work: &mut usize,
         limit: usize,
@@ -100,18 +100,32 @@ impl Definitions {
             if *work > limit {
                 return Err("parameterized storage walk budget exceeded");
             }
-            if types.contains_parameters(ty) != Some(true) || !seen.insert(ty) {
+            if (types.contains_parameters(ty) != Some(true)
+                && types.contains_projections(ty) != Some(true))
+                || !seen.insert(ty)
+            {
                 continue;
             }
             match types.kind(ty).ok_or("invalid parameterized storage type")? {
                 Kind::Adt(..) => {
-                    if self.has_projected_fields(ty) {
-                        return Ok(true);
+                    let before = self.instantiation_steps();
+                    let instantiated = self.instantiate(types, ty);
+                    *work = work.saturating_add(self.instantiation_steps().saturating_sub(before));
+                    if *work > limit {
+                        return Err("parameterized storage walk budget exceeded");
                     }
+                    instantiated?;
                     for variant in self.raw_shape(types, ty)?.variants() {
                         let fields = types
                             .list(variant.fields)
                             .ok_or("invalid parameterized storage fields")?;
+                        if work
+                            .saturating_add(pending.len())
+                            .saturating_add(fields.len())
+                            > limit
+                        {
+                            return Err("parameterized storage walk budget exceeded");
+                        }
                         pending.extend_from_slice(fields);
                     }
                 }
@@ -121,11 +135,29 @@ impl Definitions {
                         .ok_or("invalid parameterized storage tuple")?;
                     pending.extend_from_slice(elements);
                 }
+                Kind::ArrayTerm { .. }
+                | Kind::Future { .. }
+                | Kind::Opaque(..)
+                | Kind::Slice(_)
+                    if types.contains_projections(ty) == Some(true) =>
+                {
+                    return Ok(true);
+                }
                 Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } => {
                     pending.push(element);
                 }
                 Kind::Pattern { base, .. } => pending.push(base),
                 Kind::Closure { environment, .. } => pending.push(environment),
+                Kind::Projection(_) => return Ok(true),
+                Kind::Pointer { pointee, .. }
+                | Kind::Reference {
+                    referent: pointee, ..
+                } if types.is_sized(pointee) != Some(true)
+                    && (types.contains_projections(pointee) == Some(true)
+                        || types.contains_projected_sizes(pointee) == Some(true)) =>
+                {
+                    return Ok(true);
+                }
                 _ => {}
             }
         }

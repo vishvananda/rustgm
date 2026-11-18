@@ -77,6 +77,57 @@ fn parameterized_projected_fields_size_transmutes_like_rustc() -> Result {
     Ok(())
 }
 
+#[test]
+fn transmute_of_thin_boxes_uses_the_sizing_contract_of_projected_pointees() -> Result {
+    let source =
+        crate::resolve::fixture("pa31/tests/spec/explicit-dynamic-call-members/prefix.rs")?;
+    let (prefix, _) = source
+        .split_once("pub struct Noisy")
+        .ok_or("owned Box prefix")?;
+    let prefix = prefix.replace(
+        "pub const fn size_of<T>()->usize;}",
+        concat!(
+            "pub const fn size_of<T>()->usize;\n",
+            "#[rustc_intrinsic] pub const unsafe fn transmute<Src, Dst>(src: Src) -> Dst;}",
+        ),
+    );
+    let declarations = r"
+        pub trait HasOutput { type Output; }
+        pub trait HasWideOutput { type Output: ?Sized; }
+        pub struct Payload<T>(T);
+        pub struct ProjectionField<R: HasOutput>(R::Output);
+    ";
+    for (bound, from, to, accepted) in [
+        (
+            "HasOutput",
+            "Box<Payload<T>>",
+            "Box<Payload<R::Output>>",
+            true,
+        ),
+        ("HasOutput", "*const T", "*const R::Output", true),
+        ("HasWideOutput", "Box<T>", "Box<R::Output>", false),
+        ("HasOutput", "T", "R::Output", false),
+    ] {
+        let text = format!(
+            "{prefix}{declarations}
+             pub unsafe fn convert<T, R: {bound}>(value: {from}) -> {to} {{
+                 unsafe {{ intrinsics::transmute(value) }}
+             }}"
+        );
+        let report = crate::resolve::source_provider(&text, "projected_pointee_storage")?;
+        let result = rustgm::pipeline::analyze_source(&report);
+        if accepted {
+            result?;
+        } else {
+            let failure = result
+                .err()
+                .ok_or("accepted a dependently sized transmute")?;
+            assert_eq!(failure.message, CLOSED, "{from} to {to}");
+        }
+    }
+    Ok(())
+}
+
 /// `calls` generic transmutes into their own parameterized `Atomic`, then
 /// unrelated nominals with their own projected fields that no body reads.
 fn width(prefix: &str, calls: usize, noise: bool) -> std::result::Result<String, std::fmt::Error> {
