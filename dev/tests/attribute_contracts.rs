@@ -1228,7 +1228,7 @@ fn source_start_header_rejects_wrong_callback_pointee_and_formal() -> TestResult
     Ok(())
 }
 
-fn begin_panic_source(tail: &str) -> TestResult<String> {
+fn minimal_runtime_source(tail: &str) -> TestResult<String> {
     let prefix =
         crate::resolve::fixture("pa31/tests/spec/source-functions-transport/minimal-provider.rs")?;
     Ok(format!("{prefix}\n{tail}"))
@@ -1248,7 +1248,7 @@ pub const fn renamed_begin<T: Payload>(payload: T) -> ! {
     loop {}
 }
 "#;
-    let source = begin_panic_source(&format!("{body}\nfn main() {{ renamed_begin(17u8); }}"))?;
+    let source = minimal_runtime_source(&format!("{body}\nfn main() {{ renamed_begin(17u8); }}"))?;
     let program = lower_used(&source)?;
     assert!(
         program
@@ -1262,7 +1262,7 @@ pub const fn renamed_begin<T: Payload>(payload: T) -> ! {
         "runtime specialization lost the authored call to panic_observe"
     );
 
-    let source = begin_panic_source(&format!("{body}\nfn main() {{ renamed_begin(17u16); }}"))?;
+    let source = minimal_runtime_source(&format!("{body}\nfn main() {{ renamed_begin(17u16); }}"))?;
     let error = lower_used(&source)
         .err()
         .ok_or("runtime begin_panic did not require its authored payload bound")?;
@@ -1304,7 +1304,7 @@ pub const fn renamed_begin<T>(_payload: T) -> ! { runtime_only(); loop {} }
             None,
         ),
     ] {
-        let source = begin_panic_source(&format!("{header}\n{tail}"))?;
+        let source = minimal_runtime_source(&format!("{header}\n{tail}"))?;
         let report = crate::resolve::source_provider(&source, "begin_panic_const")?;
         let result = rustgm::pipeline::analyze_source(&report);
         if let Some(cause) = cause {
@@ -1325,7 +1325,7 @@ fn selected_source_begin_panic_fences_both_writers() -> TestResult {
         lower::instances::{SourcePublication, build_source_library_profile},
         pipeline::Analysis,
     };
-    let source = begin_panic_source(
+    let source = minimal_runtime_source(
         r#"#[lang = "begin_panic"]
         #[rustc_do_not_const_check]
         const fn renamed_begin<T>(_payload: T) -> ! { loop {} }"#,
@@ -1358,6 +1358,135 @@ fn selected_source_begin_panic_fences_both_writers() -> TestResult {
             error
                 .to_string()
                 .contains("selected Source begin_panic requires its checked artifact transport"),
+            "{error}"
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn source_eh_personality_retains_its_authored_native_body_and_name() -> TestResult {
+    let source = minimal_runtime_source(
+        r#"
+#[repr(C)]
+enum Reason { Fatal = 3, Continue = 8 }
+
+unsafe extern "C" { safe fn observe_personality(actions: i32); }
+
+#[lang = "eh_personality"]
+#[unsafe(export_name = "discarded_personality_name")]
+unsafe extern "C" fn renamed_personality(
+    _version: i32, actions: i32, _class: u64, _exception: *mut i32, _context: *mut i32,
+) -> Reason {
+    observe_personality(19);
+    match actions { 1 => Reason::Continue, _ => Reason::Fatal }
+}
+
+fn main() {}
+"#,
+    )?;
+    let program = lower_used(&source)?;
+    let [personality]: [_; 1] = program
+        .symbols
+        .iter()
+        .filter(|symbol| symbol.name == "rust_eh_personality")
+        .collect::<Vec<_>>()
+        .try_into()
+        .map_err(|_| "expected one canonical personality symbol")?;
+    assert!(personality.body.is_some());
+    assert!(
+        !program
+            .symbols
+            .iter()
+            .any(|symbol| symbol.name == "discarded_personality_name")
+    );
+    let mut lowir = Vec::new();
+    rustgm::lowir::writer::write(&program, &mut lowir)?;
+    let lowir = String::from_utf8(lowir)?;
+    assert!(
+        lowir
+            .lines()
+            .any(|line| { line.contains("call") && line.contains("@observe_personality(") }),
+        "{lowir}"
+    );
+    Ok(())
+}
+
+#[test]
+fn source_eh_personality_checks_role_identity_and_symbol_conflicts() -> TestResult {
+    let plain = minimal_runtime_source("fn rust_eh_personality() {} fn main() {}")?;
+    assert!(
+        !lower_used(&plain)?
+            .symbols
+            .iter()
+            .any(|symbol| symbol.name == "rust_eh_personality")
+    );
+    for (tail, cause) in [
+        (
+            r#"#[lang = "eh_personality"] #[unsafe(no_mangle)]
+unsafe extern "C" fn role() {}"#,
+            "no_mangle cannot be used on internal language items",
+        ),
+        (
+            r#"#[lang = "eh_personality"] unsafe extern "C" fn role() {}
+#[unsafe(export_name = "rust_eh_personality")] extern "C" fn duplicate() {}"#,
+            "multiple definitions export the actual eh_personality symbol",
+        ),
+        (
+            r#"#[lang = "eh_personality"] unsafe extern "C" fn role() -> i32 { false }"#,
+            "incompatible types",
+        ),
+        (
+            r#"#[lang = "eh_personality"] struct Wrong;"#,
+            "required declaration target or owner",
+        ),
+    ] {
+        let source = minimal_runtime_source(&format!("{tail}\nfn main() {{}}"))?;
+        let error = lower_used(&source)
+            .err()
+            .ok_or("accepted invalid Source eh_personality")?;
+        assert!(error.to_string().contains(cause), "{tail}: {error}");
+    }
+    Ok(())
+}
+
+#[test]
+fn selected_source_eh_personality_fences_both_writers() -> TestResult {
+    use rustgm::{
+        lower::instances::{SourcePublication, build_source_library_profile},
+        pipeline::Analysis,
+    };
+    let source = minimal_runtime_source(
+        r#"#[lang = "eh_personality"] unsafe extern "C" fn renamed_personality() {}"#,
+    )?;
+    let report = crate::resolve::source_provider(&source, "personality_transport")?;
+    let identity = report
+        .package
+        .source_core()
+        .ok_or("Source owner")?
+        .provider
+        .clone();
+    let Analysis {
+        mut facts,
+        prepared,
+    } = rustgm::pipeline::analyze_source(&report)?;
+    let scalar = rustgm::sema::crates::export(&report, &mut facts, identity.clone())
+        .err()
+        .ok_or("scalar writer erased the selected personality role")?;
+    let source = build_source_library_profile(
+        &report,
+        &mut facts,
+        identity,
+        prepared,
+        SourcePublication::ModuleBodyOperations,
+    )
+    .err()
+    .ok_or("Source writer erased the selected personality role")?;
+    for error in [scalar, source] {
+        assert!(
+            error
+                .to_string()
+                .contains("selected Source eh_personality requires its checked artifact transport"),
             "{error}"
         );
     }

@@ -84,8 +84,8 @@ fn pinned_declaration_targets_formals_and_weak_only_policy_match_all_source_outc
 }
 #[test]
 fn append_only_vocabulary_preserves_ordinals_spellings_and_checked_profiles() -> TestResult {
-    assert_eq!(LangItem::ALL.len(), 213);
-    assert_eq!(LangItem::DECLARATIONS.len(), 126);
+    assert_eq!(LangItem::ALL.len(), 214);
+    assert_eq!(LangItem::DECLARATIONS.len(), 127);
     for (index, role) in LangItem::ALL.into_iter().enumerate() {
         assert_eq!(role.index(), index);
         assert_eq!(role.declaration_profile().is_some(), index >= 87);
@@ -128,6 +128,12 @@ fn append_only_vocabulary_preserves_ordinals_spellings_and_checked_profiles() ->
         (
             "begin_panic",
             212,
+            DeclarationTarget::Function,
+            GenericRequirement::Any,
+        ),
+        (
+            "eh_personality",
+            213,
             DeclarationTarget::Function,
             GenericRequirement::Any,
         ),

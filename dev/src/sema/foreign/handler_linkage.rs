@@ -48,7 +48,7 @@ impl Registry {
             // before this transaction consumes its unchanged original record.
         }
         if let Some((definition, _)) = handler {
-            pay(self.handler_growth(name, definition))?;
+            pay(self.export_growth(name, definition))?;
             // All callable/collision/payment checks precede the first published row.
             self.items
                 .try_reserve(usize::from(!self.items.contains_key(&definition)))
@@ -82,7 +82,38 @@ impl Registry {
         }
         Ok(())
     }
-    fn handler_growth(
+    /// The authenticated Source definition keeps its own checked C header.
+    pub(in crate::sema) fn bind_personality(
+        &mut self,
+        definition: super::DefId,
+        function: Function,
+        mut pay: impl FnMut(Growth) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        let symbol = crate::sema::compiler_items::PERSONALITY_SYMBOL;
+        let name = self.names.find_exact_paid(symbol, &mut pay)?;
+        if name.is_some_and(|id| self.export_names.contains_key(&id))
+            || self.items.contains_key(&definition)
+        {
+            return Err("multiple definitions export the actual eh_personality symbol");
+        }
+        pay(self.export_growth(name, definition))?;
+        self.items
+            .try_reserve(1)
+            .map_err(|_| "personality callable registry allocation failed")?;
+        self.export_names
+            .try_reserve(1)
+            .map_err(|_| "personality export registry allocation failed")?;
+        let name = self.names.intern_paid(symbol, &mut pay)?;
+        self.insert_function(
+            definition,
+            Function {
+                naming: Naming::Exact(name),
+                ..function
+            },
+        )
+    }
+
+    fn export_growth(
         &self,
         name: Option<crate::support::linkage::SymbolNameId>,
         definition: super::DefId,

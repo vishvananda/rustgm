@@ -143,7 +143,7 @@ pub fn census_source_observed(report: &Report, mut census: Census) -> (Census, O
         }
     }
 }
-/// Complete constants, the panic handler and lints after every body is checked.
+/// Complete constants, runtime definitions and lints after every body is checked.
 fn complete_source(
     report: &Report,
     context: execution::Context,
@@ -156,6 +156,11 @@ fn complete_source(
         &mut analysis.prepared,
     )?;
     sema::compiler_items::complete_panic_handler(report, &mut analysis.facts).map_err(|error| {
+        analysis
+            .facts
+            .retain_error_warnings(report.diagnostic(error))
+    })?;
+    sema::compiler_items::complete_personality(report, &mut analysis.facts).map_err(|error| {
         analysis
             .facts
             .retain_error_warnings(report.diagnostic(error))

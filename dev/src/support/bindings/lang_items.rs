@@ -273,5 +273,6 @@ language_items! {
         Start = 210 => "start", Function, GenericRequirement::Exact(1);
         Termination = 211 => "termination", Trait, GenericRequirement::Any;
         BeginPanic = 212 => "begin_panic", Function, GenericRequirement::Any;
+        EhPersonality = 213 => "eh_personality", Function, GenericRequirement::Any;
     }
 }

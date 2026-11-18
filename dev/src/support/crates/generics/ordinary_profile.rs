@@ -794,7 +794,7 @@ impl Bindings {
 fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
     if matches!(
         role,
-        LangItem::Start | LangItem::Termination | LangItem::BeginPanic
+        LangItem::Start | LangItem::Termination | LangItem::BeginPanic | LangItem::EhPersonality
     ) {
         return false;
     }

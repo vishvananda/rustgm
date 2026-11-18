@@ -142,6 +142,56 @@ fn actual_tags_retain_exact_nominal_identity_and_scalar_plan() -> Result {
     }
     Ok(())
 }
+
+#[test]
+fn fieldless_c_enums_use_the_target_tag_for_both_abi_directions() -> Result {
+    let prefix = source::fixture("pa31/tests/spec/source-functions-transport/minimal-provider.rs")?;
+    let text = format!(
+        "{prefix}
+         #[repr(C)] enum Unsigned {{ A = 3, B = 8 }}
+         #[repr(C)] enum Signed {{ A = 18446744073709551615u64 as isize, B = 8 }}
+         #[repr(C)] enum Wide {{ A = 3, B = 4294967296 }}
+         extern \"C\" fn unsigned(value: Unsigned) -> Unsigned {{ value }}
+         extern \"C\" fn signed(value: Signed) -> Signed {{ value }}
+         extern \"C\" fn wide(value: Wide) -> Wide {{ value }}"
+    );
+    let report = source::source_provider(&text, "fieldless_c_enum")?;
+    let mut facts = pipeline::analyze_source(&report)?.facts;
+    let mut plans = Plans::default();
+    for (name, tag) in [
+        ("unsigned", Primitive::U32),
+        ("signed", Primitive::I32),
+        ("wide", Primitive::U64),
+    ] {
+        let function = facts
+            .functions
+            .iter()
+            .find(|function| {
+                let definition = &report.resolution.definitions[function.definition.0 as usize];
+                report.package.names.get(definition.name) == name
+            })
+            .ok_or("missing enum echo")?;
+        let Some(Kind::Function {
+            parameters, result, ..
+        }) = facts.types.kind(function.signature)
+        else {
+            return Err("missing enum signature".into());
+        };
+        assert_eq!(facts.types.list(parameters), Some([result].as_slice()));
+        assert!(matches!(facts.types.kind(result), Some(Kind::Adt(..))));
+        let plan = plans.demand(
+            &facts.types,
+            &facts.aggregates,
+            &mut facts.layouts,
+            function.signature,
+        )?;
+        let passing = Passing::Scalar(TypeId::primitive(tag));
+        assert_eq!(&*plan.parameters, &[passing], "{name}");
+        assert_eq!(plan.result, passing, "{name}");
+    }
+    Ok(())
+}
+
 #[test]
 fn enum_transport_keeps_move_identity_mutability_and_discriminant_causes() -> Result {
     for (name, words) in [

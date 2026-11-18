@@ -130,6 +130,27 @@ impl Checker<'_> {
         signature: TypeId,
         safety: Safety,
     ) -> Result<(), Error> {
+        if self
+            .facts
+            .source_bindings
+            .as_deref()
+            .is_some_and(|catalog| {
+                catalog
+                    .language(crate::support::bindings::LangItem::EhPersonality)
+                    .is_some_and(|role| role.definition == definition)
+            })
+        {
+            // Weak language items override an explicit export spelling. The
+            // authored C header is checked and registered at Source completion.
+            if self
+                .linkage_sources
+                .get(&key)
+                .is_some_and(|attributes| attributes.no_mangle)
+            {
+                return Err(self.error(key, "no_mangle cannot be used on internal language items"));
+            }
+            return Ok(());
+        }
         let Some((naming, linkage)) = self.foreign_linkage(definition, key)? else {
             return Ok(());
         };

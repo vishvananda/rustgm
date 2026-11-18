@@ -1,7 +1,7 @@
-//! Explicit fieldless enum tags supply storage, without scalar validity promises.
+//! Fieldless enums with a stable integer tag can use its storage at ABI boundaries.
 use super::{Budget, Layouts, Shape, primitive};
 use crate::types::{
-    Kind, Store, TypeId,
+    Kind, Primitive, Store, TypeId,
     aggregate::{Definitions, Representation},
 };
 impl Layouts {
@@ -17,21 +17,16 @@ impl Layouts {
         let definition = definitions
             .get(item)
             .ok_or("enum scalar declaration is missing")?;
-        let Some(tag) = definition.repr.tag else {
-            return Ok(None);
-        };
+        let repr = definition.repr;
         if definition.kind != crate::types::aggregate::Kind::Enum
             || !matches!(
-                definition.repr.representation,
-                Representation::Rust | Representation::C
+                (repr.representation, repr.tag),
+                (Representation::Rust, Some(_)) | (Representation::C, _)
             )
-            || definition.repr.packed.is_some()
-            || definition.repr.align.is_some()
+            || repr.packed.is_some()
+            || repr.align.is_some()
         {
             return Ok(None);
-        }
-        if tag.integer().is_none() {
-            return Err("enum scalar tag is not its actual integer representation");
         }
         let shape = definitions.shape(types, owner)?;
         let count = shape.variants().len();
@@ -48,6 +43,16 @@ impl Layouts {
         else {
             return Ok(None);
         };
+        let tag = repr.tag.unwrap_or(actual.ty);
+        if tag.integer().is_none()
+            || (repr.tag.is_none()
+                && !matches!(
+                    tag,
+                    Primitive::I32 | Primitive::U32 | Primitive::I64 | Primitive::U64
+                ))
+        {
+            return Err("enum scalar tag is not its actual integer representation");
+        }
         if actual.ty != tag || actual.offset != 0 {
             return Err("enum scalar layout changed its actual declared tag");
         }
