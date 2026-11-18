@@ -1,7 +1,7 @@
 //! Aggregate constraints publish member selections once for bodies and ownership.
 use super::{
-    Checker, Constructor, DefId, DefKind, Domain, Error, Kind, List, NodeId, Operation, Primitive,
-    Target, TermId, Type, TypeId, Work, declarations,
+    Checker, Constructor, DefId, DefKind, Domain, Error, Expectation, Kind, List, NodeId,
+    Operation, Primitive, Target, TermId, Type, TypeId, Work, declarations,
 };
 use crate::{
     resolve::{
@@ -78,8 +78,9 @@ impl Checker<'_> {
         &mut self,
         node: NodeId,
         elements: List,
-        expected: Option<TermId>,
+        expectation: Expectation,
     ) -> Result<(), Error> {
+        let expected = self.constructor_hint(node, expectation)?;
         let tuple = matches!(self.kind(node), Kind::Tuple(_));
         let unit = self.report.package.unit(self.state.file);
         let count = unit
@@ -167,8 +168,9 @@ impl Checker<'_> {
         node: NodeId,
         value: NodeId,
         count: NodeId,
-        expected: Option<TermId>,
+        expectation: Expectation,
     ) -> Result<(), Error> {
+        let expected = self.constructor_hint(node, expectation)?;
         let constructor = if let Some(length) =
             self.facts.const_parameter(self.report, self.key(count))
         {
@@ -498,8 +500,9 @@ impl Checker<'_> {
         path: NodeId,
         fields: List,
         base: Option<NodeId>,
-        expected: Option<TermId>,
+        expectation: Expectation,
     ) -> Result<(), Error> {
+        let expected = self.constructor_hint(node, expectation)?;
         let variant_id = self.constructor(path)?;
         let variant = self.facts.members.variants[variant_id.0 as usize];
         let union = self

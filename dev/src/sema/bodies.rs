@@ -1599,13 +1599,13 @@ impl Checker<'_> {
                 return self.enter_range(node, inclusive, start, end, expected);
             }
             Kind::Tuple(elements) | Kind::Array(elements) => {
-                return self.enter_elements(node, elements, expected);
+                return self.enter_elements(node, elements, expectation);
             }
             Kind::Repeat { value, count } => {
-                return self.enter_repeat(node, value, count, expected);
+                return self.enter_repeat(node, value, count, expectation);
             }
             Kind::Struct { path, fields, base } => {
-                return self.enter_struct(node, path, fields, base, expected);
+                return self.enter_struct(node, path, fields, base, expectation);
             }
             Kind::OffsetOf { .. }
             | Kind::PatternEndpoint { .. }
@@ -2623,7 +2623,7 @@ impl Checker<'_> {
         };
         if let Some(expected) = expectation.ty() {
             let result = self.child(node, term, parameters as usize)?;
-            if let Some(expected) = self.call_result_hint(node, result, expected, constructor)?
+            if let Some(expected) = self.call_result_hint(node, result, expectation, constructor)?
                 && (constructor
                     || !self.unsized_input_expectation(node, term, parameters, result, expected)?)
                 && (constructor

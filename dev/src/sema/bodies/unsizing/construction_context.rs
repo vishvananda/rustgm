@@ -1,15 +1,37 @@
 //! A borrowed constructor needs a sized input hint before its outer unsizing.
 use super::{Argument, Checker, Constructor, Error, NodeId, TermId};
+use crate::sema::bodies::Expectation;
 use crate::types::{ItemId, Primitive, TypeId};
 
 impl Checker<'_> {
+    pub(in crate::sema::bodies) fn constructor_hint(
+        &mut self,
+        node: NodeId,
+        expectation: Expectation,
+    ) -> Result<Option<TermId>, Error> {
+        // A borrowed object is formed by unsizing the completed operand.
+        // Its erased type supplies no field or element types to a constructor.
+        if let Expectation::UnsizedRvalue(target) = expectation
+            && matches!(
+                self.contextual_head(node, target)?,
+                Some(Constructor::Dynamic { .. })
+            )
+        {
+            return Ok(None);
+        }
+        Ok(expectation.ty())
+    }
+
     pub(in crate::sema::bodies) fn call_result_hint(
         &mut self,
         node: NodeId,
         result: TermId,
-        expected: TermId,
+        expectation: Expectation,
         constructor: bool,
     ) -> Result<Option<TermId>, Error> {
+        let Some(expected) = self.constructor_hint(node, expectation)? else {
+            return Ok(None);
+        };
         if constructor {
             return self.unsizing_constructor_context(node, result, Some(expected));
         }

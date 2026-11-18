@@ -1,6 +1,8 @@
 //! Actual source unsizing roles retain independent goal and native contracts.
 use crate::provider_traits::{TestResult, lower};
 use std::path::Path;
+#[path = "coercion_provider/construction_coercions.rs"]
+mod construction_coercions;
 #[path = "coercion_provider/discovery.rs"]
 mod discovery;
 #[path = "coercion_provider/envelopes.rs"]
