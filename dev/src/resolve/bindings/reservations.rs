@@ -46,6 +46,20 @@ pub struct Reservations {
     pub steps: usize,
 }
 impl Reservations {
+    pub(super) fn reserve_diagnostic_auto(
+        &mut self,
+        role: LangItem,
+        declaration: Declaration,
+    ) -> Result<(), &'static str> {
+        let slot = &mut self.languages[role.index()];
+        if slot.is_some() {
+            return Err("duplicate source diagnostic identity");
+        }
+        *slot = Some(declaration);
+        self.steps = self.steps.saturating_add(1);
+        Ok(())
+    }
+
     #[must_use]
     pub fn language(&self, kind: LangItem) -> Option<Declaration> {
         if kind == LangItem::Send {

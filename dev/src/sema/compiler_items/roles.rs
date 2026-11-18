@@ -84,8 +84,7 @@ impl Catalog {
         Ok(Some(declaration))
     }
 
-    /// The declaration of one auto-marker role: Freeze, Send, Sync, Unpin or
-    /// `UnsafeUnpin`, never another role. A provider answers exactly as
+    /// Look up the declaration owning a represented auto marker. A provider answers as
     /// `language` does, or `validated_language` when `validated`. A source
     /// client answers from the roles its admitted descriptor re-proved (each
     /// an exact empty auto declaration, and Send's diagnostic identity), and
@@ -103,6 +102,8 @@ impl Catalog {
                 | LangItem::Sync
                 | LangItem::Unpin
                 | LangItem::UnsafeUnpin
+                | LangItem::UnwindSafe
+                | LangItem::RefUnwindSafe
         ) {
             return Err("auto-marker lookup requires an auto-marker role");
         }
@@ -119,7 +120,7 @@ impl Catalog {
     }
 }
 
-const TRAIT_ROLES: [LangItem; 42] = [
+const TRAIT_ROLES: [LangItem; 44] = [
     LangItem::Clone,
     LangItem::Copy,
     LangItem::UseCloned,
@@ -143,6 +144,8 @@ const TRAIT_ROLES: [LangItem; 42] = [
     LangItem::Sync,
     LangItem::Unpin,
     LangItem::UnsafeUnpin,
+    LangItem::UnwindSafe,
+    LangItem::RefUnwindSafe,
     LangItem::ConstParamTy,
     LangItem::StructuralPartialEq,
     LangItem::From,
@@ -572,6 +575,8 @@ fn header<'a>(
                         | LangItem::Sync
                         | LangItem::Unpin
                         | LangItem::UnsafeUnpin
+                        | LangItem::UnwindSafe
+                        | LangItem::RefUnwindSafe
                 ),
             },
             expected,

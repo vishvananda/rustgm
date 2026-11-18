@@ -267,3 +267,149 @@ fn shared_supertraits_keep_direct_edges_and_reuse_completed_queries() -> Result<
     }
     Ok(())
 }
+
+const UNWIND_AUTO_ROLES: &str = r#"
+#[lang = "sync"] pub unsafe auto trait Sync {}
+#[rustc_diagnostic_item = "unwind_safe_trait"] pub auto trait OwnUnwind {}
+#[rustc_diagnostic_item = "ref_unwind_safe_trait"] pub auto trait SharedUnwind {}
+impl<T: SharedUnwind + ?Sized> OwnUnwind for &T {}
+pub fn require_unwind<T: OwnUnwind>(_value: T) {}
+"#;
+
+#[test]
+fn source_unwind_object_keeps_the_exact_reference_marker() -> Result<(), Box<dyn std::error::Error>>
+{
+    use rustgm::types::{Kind, auto_traits::AutoTrait};
+    let prefix = CALLABLES.replacen(
+        "rustc_attrs,const_trait_impl)",
+        "rustc_attrs,const_trait_impl,auto_traits,negative_impls)",
+        1,
+    ) + UNWIND_AUTO_ROLES;
+    let valid = prefix.clone()
+        + "pub fn startup(main: &(dyn Fn(u8)->u8+Sync+SharedUnwind)) { require_unwind(main); }";
+    let report = crate::resolve::source_provider(&valid, "unwind_object")?;
+    let facts = rustgm::pipeline::analyze_source(&report)?.facts;
+    let signature = facts
+        .functions
+        .iter()
+        .find(|function| {
+            let declared = &report.resolution.definitions[function.definition.0 as usize];
+            report.package.names.get(declared.name) == "startup"
+        })
+        .ok_or("actual startup signature")?
+        .signature;
+    let Some(Kind::Function { parameters, .. }) = facts.types.kind(signature) else {
+        return Err("startup lost the actual signature".into());
+    };
+    let Some([pointer]) = facts.types.list(parameters) else {
+        return Err("startup lost its object input".into());
+    };
+    let Some(Kind::Reference { referent, .. }) = facts.types.kind(*pointer) else {
+        return Err("startup lost its shared object reference".into());
+    };
+    let Some(Kind::Dynamic { shape, .. }) = facts.types.kind(referent) else {
+        return Err("startup lost its erased callable".into());
+    };
+    assert_eq!(
+        facts.types.dynamic_auto_traits(shape),
+        Some([AutoTrait::Sync, AutoTrait::RefUnwindSafe].as_slice())
+    );
+
+    for (tail, cause) in [
+        (
+            "pub fn startup(main: &(dyn Fn(u8)->u8+Sync)) { require_unwind(main); }",
+            "trait obligation requires an unambiguous matching assumption or implementation",
+        ),
+        (
+            "pub fn startup(main: &(dyn Fn(u8)->u8+Sync+OwnUnwind)) { require_unwind(main); }",
+            "trait obligation requires an unambiguous matching assumption or implementation",
+        ),
+        (
+            "impl !OwnUnwind for &mut u8 {} \
+             pub fn startup(main: &mut u8) { require_unwind(main); }",
+            "trait obligation requires an unambiguous matching assumption or implementation",
+        ),
+        (
+            "impl<T: ?Sized> !OwnUnwind for &mut T {} \
+             pub fn startup(main: &mut u8) { require_unwind(main); }",
+            "trait obligation requires an unambiguous matching assumption or implementation",
+        ),
+        (
+            "pub struct Cell(u8); impl !SharedUnwind for Cell {} \
+             pub fn startup(main: &Cell) { require_unwind(main); }",
+            "trait obligation requires an unambiguous matching assumption or implementation",
+        ),
+        (
+            "mod another { pub auto trait SharedUnwind {} } \
+             pub fn startup(_main: &(dyn Fn(u8)->u8+Sync+another::SharedUnwind)) {}",
+            "object auto traits without a represented marker are not implemented",
+        ),
+    ] {
+        let source = format!("{prefix}{tail}");
+        let report = crate::resolve::source_provider(&source, "unwind_object_opponent")?;
+        let error = rustgm::pipeline::analyze_source(&report)
+            .err()
+            .ok_or_else(|| format!("accepted an invalid unwind object premise: {tail}"))?;
+        assert!(error.to_string().contains(cause), "{tail}: {error}");
+    }
+    Ok(())
+}
+
+#[test]
+fn source_unwind_marker_preserves_declaration_and_wire_boundaries()
+-> Result<(), Box<dyn std::error::Error>> {
+    use rustgm::lower::instances::{SourcePublication, build_source_library_profile};
+    let prefix =
+        crate::resolve::fixture("pa31/tests/spec/source-functions-transport/minimal-provider.rs")?
+            .replacen("#![no_core]", "#![feature(auto_traits)]\n#![no_core]", 1);
+    for (declaration, cause) in [
+        (
+            r#"#[lang = "unpin"]
+            #[rustc_diagnostic_item = "ref_unwind_safe_trait"]
+            pub auto trait Mixed {}"#,
+            "unwind safety diagnostic identity requires a distinct auto trait",
+        ),
+        (
+            r#"#[rustc_diagnostic_item = "ref_unwind_safe_trait"] pub trait NotAuto {}"#,
+            "unwind safety diagnostic identity requires its actual safe module auto trait",
+        ),
+        (
+            r#"#[lang = "ref_unwind_safe_trait"] pub auto trait Forged {}"#,
+            "language item",
+        ),
+    ] {
+        let source = format!("{prefix}\n{declaration}");
+        let error = crate::resolve::source_provider(&source, "unwind_wrong_claim")
+            .and_then(|report| rustgm::pipeline::analyze_source(&report).map_err(|e| e.to_string()))
+            .err()
+            .ok_or("accepted an invalid source marker claim")?;
+        assert!(error.contains(cause), "{declaration}: {error}");
+    }
+    let source = prefix
+        + r#"#[rustc_diagnostic_item = "ref_unwind_safe_trait"] pub auto trait SharedUnwind {}"#;
+    let report = crate::resolve::source_provider(&source, "unwind_wire_gate")?;
+    let identity = report
+        .package
+        .source_core()
+        .ok_or("actual Source owner")?
+        .provider
+        .clone();
+    let analysis = rustgm::pipeline::analyze_source(&report)?;
+    let mut facts = analysis.facts;
+    let error = build_source_library_profile(
+        &report,
+        &mut facts,
+        identity,
+        analysis.prepared,
+        SourcePublication::ModuleBodyOperations,
+    )
+    .err()
+    .ok_or("source metadata lost its unwind-safety role")?;
+    assert!(
+        error
+            .to_string()
+            .contains("source role requires a wider explicit source profile"),
+        "{error}"
+    );
+    Ok(())
+}

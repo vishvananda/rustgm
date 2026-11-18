@@ -5,15 +5,17 @@ macro_rules! language_items {
     (
         existing { $($(#[$meta:meta])* $old:ident = $index:literal => [$($name:literal),*];)* }
         declarations { $($new:ident = $new_index:literal => $spelling:literal, $target:ident, $generics:expr;)* }
+        diagnostic { $($diagnostic:ident = $diagnostic_index:literal;)* }
     ) => {
         #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
         pub enum LangItem {
             $($(#[$meta])* $old = $index,)*
             $($new = $new_index,)*
+            $($diagnostic = $diagnostic_index,)*
         }
         impl LangItem {
-            pub const ALL: [Self; language_items!(@count $($old)* $($new)*)] = [
-                $(Self::$old,)* $(Self::$new,)*
+            pub const ALL: [Self; language_items!(@count $($old)* $($new)* $($diagnostic)*)] = [
+                $(Self::$old,)* $(Self::$new,)* $(Self::$diagnostic,)*
             ];
             /// New declaration profiles still require their actual semantic consumers.
             pub(crate) const DECLARATIONS: [Self; language_items!(@count $($new)*)] = [$(Self::$new,)*];
@@ -25,6 +27,7 @@ macro_rules! language_items {
                 match self {
                     $(Self::$old => language_items!(@first $($name),*),)*
                     $(Self::$new => Some($spelling),)*
+                    $(Self::$diagnostic => None,)*
                 }
             }
             #[must_use]
@@ -274,5 +277,9 @@ language_items! {
         Termination = 211 => "termination", Trait, GenericRequirement::Any;
         BeginPanic = 212 => "begin_panic", Function, GenericRequirement::Any;
         EhPersonality = 213 => "eh_personality", Function, GenericRequirement::Any;
+    }
+    diagnostic {
+        UnwindSafe = 214;
+        RefUnwindSafe = 215;
     }
 }

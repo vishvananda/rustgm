@@ -11,7 +11,7 @@ const _: [(); crate::sema::model::DECLARATIONS_SIZE] = [(); size_of::<Declaratio
 const _: [(); 456] = [(); size_of::<crate::body::ir::Body>()];
 const _: [(); 24] = [(); size_of::<crate::body::ir::Value>()];
 const _: [(); 36] = [(); size_of::<crate::syntax::ast::Node>()];
-const _: [(); 3848] = [(); size_of::<crate::sema::compiler_items::Catalog>()];
+const _: [(); 3880] = [(); size_of::<crate::sema::compiler_items::Catalog>()];
 
 #[test]
 fn registry_retains_distinct_identities_and_shared_finite_profiles() -> TestResult {

@@ -31,7 +31,7 @@ fn custom(facts: &Declarations, goal: Predicate) -> Result<bool, String> {
             AutoTrait::Unpin,
             AutoTrait::UnsafeUnpin,
         ] {
-            let role = super::freezing::role(marker).ok_or("missing source automatic role")?;
+            let role = super::freezing::role(marker);
             if catalog
                 .auto_marker(role, false)?
                 .is_some_and(|d| d.definition == DefId(item.0))

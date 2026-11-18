@@ -43,6 +43,8 @@ pub(super) enum DiagnosticItem {
     Result,
     Option,
     NegMethod,
+    UnwindSafe,
+    RefUnwindSafe,
 }
 impl DiagnosticItem {
     pub(super) const fn index(self) -> usize {
@@ -86,6 +88,8 @@ pub(super) fn known(bytes: &[u8]) -> Option<DiagnosticItem> {
         b"Result" => DiagnosticItem::Result,
         b"Option" => DiagnosticItem::Option,
         b"neg" => DiagnosticItem::NegMethod,
+        b"unwind_safe_trait" => DiagnosticItem::UnwindSafe,
+        b"ref_unwind_safe_trait" => DiagnosticItem::RefUnwindSafe,
 
         _ => return None,
     })
@@ -104,6 +108,9 @@ pub(super) fn validate(
         };
         if !source.features.has(Feature::RustcAttributes) {
             return Err(error("diagnostic identity requires rustc_attrs"));
+        }
+        if reserve_unwind_identity(package, reserved, declaration, *item, claims)? {
+            continue;
         }
         let expected = expected_language(*item);
         if let Some(expected) = expected {
@@ -124,28 +131,12 @@ pub(super) fn validate(
             if matches!(item, DiagnosticItem::PartialEq | DiagnosticItem::PartialOrd) {
                 validate_module_item(package, declaration, *item)?;
             }
-        } else if matches!(
-            item,
-            DiagnosticItem::CfgSelect
-                | DiagnosticItem::FormatArgsMacro
-                | DiagnosticItem::AssertMacro
-        ) {
-            let role = match item {
-                DiagnosticItem::CfgSelect => crate::expand::builtin::Builtin::CfgSelect,
-                DiagnosticItem::AssertMacro => crate::expand::builtin::Builtin::Assert,
-                _ => crate::expand::builtin::Builtin::FormatArgs,
-            };
+        } else if let Some((role, message)) = builtin_diagnostic(*item) {
             if !claims
                 .iter()
-                .any(|claim| matches!(claim,Claim::BuiltinMacro(actual) if *actual==role))
+                .any(|claim| matches!(claim, Claim::BuiltinMacro(actual) if *actual == role))
             {
-                return Err(error(if matches!(item, DiagnosticItem::CfgSelect) {
-                    "cfg_select diagnostic identity requires its actual builtin role"
-                } else if matches!(item, DiagnosticItem::AssertMacro) {
-                    "assert diagnostic identity requires its actual builtin role"
-                } else {
-                    "format_args diagnostic identity requires its actual builtin role"
-                }));
+                return Err(error(message));
             }
         } else if let Some(expected_owner) = member_owner(*item) {
             validate_member(package, reserved, declaration, expected_owner)?;
@@ -200,6 +191,64 @@ pub(super) fn validate(
         reserved.steps = reserved.steps.saturating_add(1);
     }
     Ok(())
+}
+
+fn builtin_diagnostic(
+    item: DiagnosticItem,
+) -> Option<(crate::expand::builtin::Builtin, &'static str)> {
+    use crate::expand::builtin::Builtin;
+    match item {
+        DiagnosticItem::CfgSelect => Some((
+            Builtin::CfgSelect,
+            "cfg_select diagnostic identity requires its actual builtin role",
+        )),
+        DiagnosticItem::AssertMacro => Some((
+            Builtin::Assert,
+            "assert diagnostic identity requires its actual builtin role",
+        )),
+        DiagnosticItem::FormatArgsMacro => Some((
+            Builtin::FormatArgs,
+            "format_args diagnostic identity requires its actual builtin role",
+        )),
+        _ => None,
+    }
+}
+
+fn reserve_unwind_identity(
+    package: &Package,
+    reserved: &mut Reservations,
+    declaration: Declaration,
+    item: DiagnosticItem,
+    claims: &[Claim],
+) -> Result<bool, Error> {
+    let role = match item {
+        DiagnosticItem::UnwindSafe => LangItem::UnwindSafe,
+        DiagnosticItem::RefUnwindSafe => LangItem::RefUnwindSafe,
+        _ => return Ok(false),
+    };
+    let error = |message| super::reservations::error(package, declaration.origin, message);
+    let ast = &package.unit(declaration.origin.file).configured.ast;
+    if declaration.parent.is_some()
+        || !matches!(ast.node(declaration.origin.node).kind,
+            Kind::Item(index) if matches!(ast.items[index as usize].kind,
+                ItemKind::Trait { auto_: true, unsafe_: false, constant: false, .. }))
+    {
+        return Err(error(
+            "unwind safety diagnostic identity requires its actual safe module auto trait",
+        ));
+    }
+    if claims
+        .iter()
+        .any(|claim| matches!(claim, Claim::Language(_)))
+    {
+        return Err(error(
+            "unwind safety diagnostic identity requires a distinct auto trait",
+        ));
+    }
+    reserved
+        .reserve_diagnostic_auto(role, declaration)
+        .map_err(error)?;
+    Ok(true)
 }
 
 fn validate_module_item(
@@ -328,7 +377,9 @@ fn expected_language(item: DiagnosticItem) -> Option<LangItem> {
         | DiagnosticItem::Hash
         | DiagnosticItem::Result
         | DiagnosticItem::Option
-        | DiagnosticItem::NegMethod => None,
+        | DiagnosticItem::NegMethod
+        | DiagnosticItem::UnwindSafe
+        | DiagnosticItem::RefUnwindSafe => None,
     }
 }
 

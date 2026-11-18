@@ -9,6 +9,8 @@ pub(super) const fn accepts(role: crate::support::bindings::LangItem) -> bool {
             | LangItem::Sync
             | LangItem::Unpin
             | LangItem::UnsafeUnpin
+            | LangItem::UnwindSafe
+            | LangItem::RefUnwindSafe
     )
 }
 pub(super) fn validate(
@@ -23,6 +25,8 @@ pub(super) fn validate(
         crate::support::bindings::LangItem::Sync => "Sync",
         crate::support::bindings::LangItem::Unpin => "Unpin",
         crate::support::bindings::LangItem::UnsafeUnpin => "UnsafeUnpin",
+        crate::support::bindings::LangItem::UnwindSafe => "UnwindSafe",
+        crate::support::bindings::LangItem::RefUnwindSafe => "RefUnwindSafe",
         _ => {
             return Err(Declarations::error(
                 report,
@@ -80,6 +84,8 @@ pub(crate) fn predicate(
         crate::support::bindings::LangItem::Sync,
         crate::support::bindings::LangItem::Unpin,
         crate::support::bindings::LangItem::UnsafeUnpin,
+        crate::support::bindings::LangItem::UnwindSafe,
+        crate::support::bindings::LangItem::RefUnwindSafe,
     ] {
         if catalog
             .auto_marker(role, false)?

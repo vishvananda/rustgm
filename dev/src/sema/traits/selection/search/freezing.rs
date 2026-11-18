@@ -16,10 +16,7 @@ pub(super) fn bound(facts: &mut Declarations, marker: AutoTrait) -> Result<Bound
         .source_bindings
         .as_deref()
         .ok_or("source Freeze requires actual source bindings")?
-        .auto_marker(
-            role(marker).ok_or("source auto trait marker is not represented")?,
-            true,
-        )?
+        .auto_marker(role(marker), true)?
         .ok_or("source Freeze declaration is absent")?;
     let application = Application {
         item: ItemId(declaration.definition.0),
@@ -76,8 +73,8 @@ pub(in crate::sema) fn object_marker(
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(None);
     };
-    for marker in [AutoTrait::Send, AutoTrait::Sync, AutoTrait::Unpin] {
-        let role = role(marker).ok_or("source auto trait marker is not represented")?;
+    for marker in AutoTrait::ALL {
+        let role = role(marker);
         if catalog
             .auto_marker(role, false)?
             .is_some_and(|declaration| declaration.definition == definition)
@@ -104,8 +101,10 @@ impl Search<'_> {
             AutoTrait::Sync,
             AutoTrait::Unpin,
             AutoTrait::UnsafeUnpin,
+            AutoTrait::UnwindSafe,
+            AutoTrait::RefUnwindSafe,
         ] {
-            let role = role(marker).ok_or("source auto trait marker is not represented")?;
+            let role = role(marker);
             if catalog
                 .auto_marker(role, false)?
                 .is_none_or(|declaration| declaration.definition != DefId(item.0))
@@ -227,21 +226,22 @@ impl Search<'_> {
     }
 }
 
-pub(super) const fn role(marker: AutoTrait) -> Option<LangItem> {
+pub(super) const fn role(marker: AutoTrait) -> LangItem {
     match marker {
-        AutoTrait::Freeze => Some(LangItem::Freeze),
-        AutoTrait::Send => Some(LangItem::Send),
-        AutoTrait::Sync => Some(LangItem::Sync),
-        AutoTrait::Unpin => Some(LangItem::Unpin),
-        AutoTrait::UnsafeUnpin => Some(LangItem::UnsafeUnpin),
-        _ => None,
+        AutoTrait::Freeze => LangItem::Freeze,
+        AutoTrait::Send => LangItem::Send,
+        AutoTrait::Sync => LangItem::Sync,
+        AutoTrait::Unpin => LangItem::Unpin,
+        AutoTrait::UnsafeUnpin => LangItem::UnsafeUnpin,
+        AutoTrait::UnwindSafe => LangItem::UnwindSafe,
+        AutoTrait::RefUnwindSafe => LangItem::RefUnwindSafe,
     }
 }
 /// Whether `marker` has a source declaration in the actual role catalog. A
 /// role lookup's integrity failure is an error, never "no source marker".
 pub(super) fn has_source(facts: &Declarations, marker: AutoTrait) -> Result<bool, &'static str> {
-    let (Some(role), Some(catalog)) = (role(marker), facts.source_bindings.as_deref()) else {
+    let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(false);
     };
-    Ok(catalog.auto_marker(role, false)?.is_some())
+    Ok(catalog.auto_marker(role(marker), false)?.is_some())
 }
