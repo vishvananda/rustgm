@@ -51,12 +51,21 @@ impl Query {
                     marker,
                 })?;
             }
-            Kind::Adt(item, _) => {
+            Kind::Adt(item, arguments) => {
                 if definitions.get(item).is_none() {
                     return Ok(Some(Step::Fields(item)));
                 }
                 if let Some(target) = definitions.phantom_argument(types, ty)? {
                     self.dependency(Obligation { ty: target, marker })?;
+                    return Ok(None);
+                }
+                if types
+                    .region_args(arguments)
+                    .is_some_and(|args| !args.is_empty())
+                {
+                    // Layout can share a lifetime-only declaration's shape. A
+                    // field goal needs the application's regions in its proof.
+                    self.lifetime_fields(types, definitions, obligation)?;
                     return Ok(None);
                 }
                 let before = definitions.instantiation_steps();
@@ -99,6 +108,29 @@ impl Query {
             },
         }
         Ok(None)
+    }
+
+    fn lifetime_fields(
+        &mut self,
+        types: &mut Store,
+        definitions: &Definitions,
+        obligation: Obligation,
+    ) -> Result<(), &'static str> {
+        let mut fields = definitions.semantic_fields(types, obligation.ty)?;
+        let mut charged = 0;
+        loop {
+            let field = fields.next(types);
+            let work = fields.work();
+            self.charge(work - charged)?;
+            charged = work;
+            let Some(ty) = field? else {
+                return Ok(());
+            };
+            self.dependency(Obligation {
+                ty,
+                marker: obligation.marker,
+            })?;
+        }
     }
 
     fn reference(

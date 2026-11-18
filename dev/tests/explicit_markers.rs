@@ -413,6 +413,43 @@ const CASES: &[(&str, &str, bool)] = &[
 ];
 
 #[test]
+fn structural_auto_proofs_use_applied_lifetimes_in_field_goals()
+-> Result<(), Box<dyn std::error::Error>> {
+    let suite = crate::resolve::fixture("pa31/tests/spec/specialization-fixpoint/core-extend.rs")?;
+    let (roles, _) = suite.split_once("pub trait Iter {").ok_or("source roles")?;
+    let mut config = rustgm::expand::config::Config::default();
+    config.set_lint_cap(rustgm::support::diagnostics::LintCap::Allow);
+    for (tag, implementation, accepted) in [
+        ("send_field", "unsafe impl Send for Leaf<'_> {}", true),
+        ("named_field", "unsafe impl<'a> Send for Leaf<'a> {}", true),
+        ("missing_impl", "", false),
+    ] {
+        let source = format!(
+            r#"#![feature(negative_impls)]
+            {roles}
+            #[lang="drop"] pub const trait Drop {{ fn drop(&mut self); }}
+            #[rustc_diagnostic_item="Send"] pub unsafe auto trait Send {{}}
+            impl<T:PointeeSized> !Send for *const T {{}}
+            struct Leaf<'a> {{ raw: *const u8, scope: &'a u8 }}
+            {implementation}
+            struct Inner<'a> {{ inner: Leaf<'a> }}
+            struct Outer<'a> {{ inner: Inner<'a> }}
+            const fn bound<T: Send>() {{}}
+            const _: () = bound::<Outer<'static>>();
+            fn runtime() {{ bound::<Outer<'static>>(); }}
+            "#
+        );
+        let report = crate::resolve::source_provider_config(&source, tag, &config)?;
+        match (accepted, rustgm::pipeline::analyze_source(&report)) {
+            (true, Ok(_)) => {}
+            (false, Err(error)) if error.to_string().contains("trait obligation") => {}
+            (_, result) => return Err(format!("{tag}: {:?}", result.err()).into()),
+        }
+    }
+    Ok(())
+}
+
+#[test]
 fn explicit_auto_sources_match_pinned_rustc() -> Result<(), Box<dyn std::error::Error>> {
     let mut failures = Vec::new();
     for &(name, source, accepted) in CASES {
