@@ -59,11 +59,21 @@ fn instantiated(
     let (b, mut right_inputs) = inputs.head(facts, &mut context, right)?;
     let mode = crate::sema::coherence_policy::predicate(facts, left.0);
     let perspective = Perspective::of(facts, [left.1, right.1])?;
-    let overlap = match context.equate_predicate_shapes(&facts.types, &a, &b) {
-        Ok(()) => {
+    let shape = if left.0.contains_projections(&facts.types)?
+        || right.0.contains_projections(&facts.types)?
+    {
+        context.equate_projected_header_shapes(&facts.types, &a, &b)
+    } else {
+        context
+            .equate_predicate_shapes(&facts.types, &a, &b)
+            .map(|()| Vec::new())
+    };
+    let overlap = match shape {
+        Ok(equalities) => {
             inputs.conditions(facts, &mut context, left.1, &mut left_inputs)?;
             inputs.conditions(facts, &mut context, right.1, &mut right_inputs)?;
-            if disjointness::has_unsized(facts, &mut context, &inputs)?
+            if projection_disjoint(facts, &mut context, &equalities, perspective)?
+                || disjointness::has_unsized(facts, &mut context, &inputs)?
                 || inputs.excluded(
                     facts,
                     &mut context,
@@ -81,6 +91,28 @@ fn instantiated(
         Err(error) => return Err(error.to_string()),
     };
     Ok((overlap, context.steps))
+}
+
+fn projection_disjoint(
+    facts: &mut Declarations,
+    context: &mut Context,
+    conditions: &[infer::predicates::Predicate],
+    perspective: Perspective,
+) -> Result<bool, String> {
+    for goal in conditions {
+        let predicate = match context.resolved_predicate(&mut facts.types, goal) {
+            Ok(predicate) => predicate,
+            Err(infer::Error::Unresolved) => continue,
+            Err(error) => return Err(error.to_string()),
+        };
+        if !predicate.contains_parameters(&facts.types)?
+            && predicate.escaping_binders(&facts.types)? == 0
+            && !crate::sema::traits::selection::may_overlap(facts, context, goal, perspective)?
+        {
+            return Ok(true);
+        }
+    }
+    Ok(false)
 }
 
 #[cfg(test)]

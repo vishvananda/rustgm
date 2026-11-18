@@ -202,6 +202,70 @@ impl Trial {
     }
 }
 impl Search<'_> {
+    pub(super) fn begin_trial(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &mut Frame,
+        owner: DefId,
+    ) -> Result<Action, String> {
+        let registry = facts
+            .generics
+            .implementations
+            .as_ref()
+            .ok_or("missing implementation registry for candidate")?;
+        let projected_header = registry
+            .header(owner)
+            .ok_or("missing validated candidate header")?
+            .predicate
+            .contains_projections(&facts.types)?;
+        let mut trial = Trial::new(facts, frame, owner, self.query.allocations.floor())?;
+        self.query.allocations.record(trial.end);
+        self.query.reserve(trial.scope, trial.first..trial.end)?;
+        let result = trial.inputs.context.equate_candidate_header(
+            &facts.types,
+            &trial.goal,
+            &trial.instance.goal,
+            projected_header,
+        );
+        self.charge(&mut trial.inputs.context)?;
+        match result {
+            Ok(conditions) => {
+                if self.query.purpose == crate::sema::traits::implementations::Purpose::Use
+                    && facts
+                        .generics
+                        .implementations
+                        .as_ref()
+                        .ok_or("missing reservation implementation registry")?
+                        .polarity(&facts.types, &facts.associated, owner)?
+                        == crate::sema::traits::implementations::Polarity::Reservation
+                {
+                    return Err("reservation entered an ordinary trait-use trial".into());
+                }
+                self.account_query_work(conditions.len())?;
+                let first = trial.instance.goals.len();
+                trial.instance.goals.extend(conditions);
+                trial.pending.extend(first..trial.instance.goals.len());
+                if Self::source_auto_goal(facts, &frame.goal)? {
+                    frame.explicit_auto = true;
+                }
+                frame.trial = Some(trial);
+            }
+            Err(infer::Error::Mismatch | infer::Error::Occurs) => {}
+            Err(infer::Error::Normalization) => {
+                #[cfg(test)]
+                super::copy_trace::record(|| {
+                    format!(
+                        "candidate-normalization query={:p} scope={:?} owner={owner:?} outer={:?}",
+                        &self.query, frame.scope, frame.canonical
+                    )
+                });
+                frame.deferred = true;
+            }
+            Err(error) => return Err(inference(error)),
+        }
+        Ok(Action::Continue)
+    }
+
     /// Resume one isolated candidate's pending proof frontier before considering alternatives.
     pub(super) fn advance_trial(
         &mut self,

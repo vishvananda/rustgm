@@ -31,6 +31,77 @@ fn program(source: &str) -> Result<rustgm::lowir::program::Program> {
     )?)
 }
 
+#[test]
+fn projected_implementation_headers_prove_results_after_matching_other_inputs() -> Result {
+    let fixture =
+        crate::resolve::fixture("pa31/tests/spec/specialization-fixpoint/core-extend.rs")?;
+    let (roles, _) = fixture.split_once("pub trait Iter {").ok_or("core roles")?;
+    let specialization = r"
+        impl<T> SpecExtend<List<T>, 7> for List<T> {
+            fn spec_extend(&mut self, iter: List<T>) { self.0 = iter.0; }
+        }";
+    let mut failures = Vec::new();
+    for (name, default, extra, bound, slot, accepts) in [
+        (
+            "specialized",
+            "default ",
+            specialization,
+            "<Item=T>",
+            7,
+            true,
+        ),
+        ("ordinary", "", "", "<Item=T>", 7, true),
+        ("missing_equality", "", "", "", 7, false),
+        ("wrong_const", "", "", "<Item=T>", 8, false),
+    ] {
+        let source = format!(
+            r#"#![rustc_coherence_is_core]
+            {roles}
+            #[lang="drop"]pub const trait Drop{{fn drop(&mut self);}}
+            trait Allocator {{}}
+            struct Global;
+            struct Local;
+            impl Allocator for Global {{}}
+            impl Allocator for Local {{}}
+            struct List<T, A: Allocator = Global>(T, A);
+            trait IntoInput {{ type Item; fn into_item(self) -> Self::Item; }}
+            impl<T> IntoInput for List<T> {{
+                type Item = T;
+                fn into_item(self) -> T {{ self.0 }}
+            }}
+            trait SpecExtend<I, const SLOT: usize> {{ fn spec_extend(&mut self, iter: I); }}
+            impl<I: IntoInput, A: Allocator> SpecExtend<I, 7> for List<I::Item, A> {{
+                {default}fn spec_extend(&mut self, iter: I) {{ self.0 = iter.into_item(); }}
+            }}
+            {extra}
+            impl<T, A: Allocator> List<T, A> {{
+                fn extend<I: IntoInput{bound}>(&mut self, iter: I) {{
+                    <Self as SpecExtend<I, {slot}>>::spec_extend(self, iter);
+                }}
+            }}
+            #[unsafe(no_mangle)] pub extern "C" fn observe() -> u8 {{
+                let mut list = List(0u8, Local);
+                list.extend(List(7u8, Global));
+                list.0
+            }}
+            #[unsafe(no_mangle)] pub extern "C" fn observe_specialized() -> u8 {{
+                let mut list = List(0u8, Global);
+                list.extend(List(9u8, Global));
+                list.0
+            }}"#
+        );
+        match (accepts, program(&source)) {
+            (true, Ok(_)) => {}
+            (false, Err(error))
+                if error.to_string().contains("trait obligation")
+                    || error.to_string().contains("trait implementation") => {}
+            (_, result) => failures.push(format!("{name}: {:?}", result.err())),
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
 /// The CLI's typing status and its stderr.
 fn typed(path: &std::path::Path) -> Result<(bool, String)> {
     let output = std::process::Command::new(env!("CARGO_BIN_EXE_rustgm"))

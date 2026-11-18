@@ -45,6 +45,7 @@ impl Inputs {
             .ok_or("specialization registry disappeared")?;
         let child_header = registry.checked_entry(child)?.predicate;
         let parent_header = registry.checked_entry(parent)?.predicate;
+        let projected = parent_header.contains_projections(&facts.types)?;
         let regions = Regions::prepare(facts, child, parent, budget)?;
         let ids = facts.generics.parameter_ids(&facts.types, parent.owner())?;
         let mut context = Counted::new(Context::default(), budget)?;
@@ -72,18 +73,23 @@ impl Inputs {
         let parent_goal = context
             .instantiate_predicate(&mut facts.types, parent_header, &mut parent_substitution)
             .map_err(|error| error.to_string())?;
-        match context.equate_predicate_shapes(&facts.types, &child_goal, &parent_goal) {
-            Ok(()) => {}
-            Err(infer::Error::Mismatch | infer::Error::Occurs) => {
+        let equalities = match relate_headers(
+            &facts.types,
+            &mut context,
+            &child_goal,
+            &parent_goal,
+            projected,
+        ) {
+            Ok(equalities) => equalities,
+            Err(infer::Error::Mismatch | infer::Error::Occurs | infer::Error::Normalization) => {
                 context.pay()?;
                 child_fold.pay()?;
                 parent_fold.pay()?;
                 return Ok(None);
             }
             Err(error) => return Err(error.to_string()),
-        }
-        header_regions(&facts.types, &mut context, &child_goal, &parent_goal)?;
-        let goals = parent_goals(
+        };
+        let mut goals = parent_goals(
             facts,
             parent,
             &mut context,
@@ -92,6 +98,11 @@ impl Inputs {
             &parent_bindings,
             budget,
         )?;
+        budget.charge(
+            equalities.len(),
+            equalities.len().saturating_mul(size_of::<Goal>()),
+        )?;
+        goals.extend(equalities);
         let environment = facts
             .generics
             .environments
@@ -220,19 +231,24 @@ impl Regions {
 /// parent's fresh instantiation, lifetimes included. These equations only name
 /// each parent header lifetime by the child's corresponding one, which restores
 /// the parent's arguments; as in rustc, they resolve no region constraint.
-fn header_regions(
+fn relate_headers(
     store: &crate::types::Store,
     context: &mut Context,
     child: &Goal,
     parent: &Goal,
-) -> Result<(), String> {
+    projected: bool,
+) -> Result<Vec<Goal>, infer::Error> {
+    if projected {
+        return context.equate_specializing_header(store, child, parent);
+    }
+    context.equate_predicate_shapes(store, child, parent)?;
     for pair in child.arguments().zip(parent.arguments()) {
         match pair {
             (Argument::Type(a), Argument::Type(b)) => match context.equate(store, a, b) {
                 // The shape equation already accepted these inputs; a projection
                 // or opaque pair names no further header lifetime here.
                 Ok(()) | Err(infer::Error::Mismatch | infer::Error::Normalization) => {}
-                Err(error) => return Err(error.to_string()),
+                Err(error) => return Err(error),
             },
             (Argument::Lifetime(a), Argument::Lifetime(b)) if a != b => {
                 context.region_equalities.push((a, b));
@@ -240,7 +256,7 @@ fn header_regions(
             _ => {}
         }
     }
-    Ok(())
+    Ok(Vec::new())
 }
 fn parent_goals(
     facts: &mut Declarations,

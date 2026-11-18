@@ -333,7 +333,13 @@ impl Context {
             // A hole may name a complete canonical projection. Only comparisons
             // between results wait; they never infer a projection's inputs.
             let mut blocked = Vec::new();
-            self.equate_scoped_graph(store, term, known, ambient, Some(&mut blocked))?;
+            self.equate_scoped_graph(
+                store,
+                term,
+                known,
+                ambient,
+                Some(super::super::scoped::Blocked::Pairs(&mut blocked)),
+            )?;
             if let Some(premise) = premise {
                 return self.relate_normal_premise(store, blocked, premise);
             }
@@ -351,7 +357,13 @@ impl Context {
             return self.equate_scoped_inside(store, term, known, ambient);
         }
         let mut blocked = Vec::new();
-        self.equate_scoped_graph(store, term, known, ambient, Some(&mut blocked))?;
+        self.equate_scoped_graph(
+            store,
+            term,
+            known,
+            ambient,
+            Some(super::super::scoped::Blocked::Pairs(&mut blocked)),
+        )?;
         if blocked.is_empty() {
             return Ok(());
         }

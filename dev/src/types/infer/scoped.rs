@@ -11,6 +11,23 @@ enum Work {
     Exit,
 }
 
+/// Comparisons a graph walk could not relate without normalizing a type.
+pub(super) enum Blocked<'a> {
+    Pairs(&'a mut Vec<(TermId, TermId)>),
+    WithScope(&'a mut Vec<(TermId, TermId)>, &'a mut bool),
+}
+impl Blocked<'_> {
+    fn push(&mut self, pair: (TermId, TermId), scoped: bool) {
+        match self {
+            Self::Pairs(pairs) => pairs.push(pair),
+            Self::WithScope(pairs, under_binder) => {
+                pairs.push(pair);
+                **under_binder |= scoped;
+            }
+        }
+    }
+}
+
 impl Context {
     /// Compare independently normalized types while preserving callable binders.
     /// Projection inputs are never treated as injective result constructors.
@@ -53,7 +70,7 @@ impl Context {
         right: TermId,
     ) -> Result<(), Error> {
         let mut blocked = Vec::new();
-        self.equate_scoped_graph(store, left, right, &[], Some(&mut blocked))?;
+        self.equate_scoped_graph(store, left, right, &[], Some(Blocked::Pairs(&mut blocked)))?;
         self.account_work(blocked.len())?;
         for (left, right) in blocked {
             if self.resolved(store, left)? != self.resolved(store, right)? {
@@ -79,7 +96,7 @@ impl Context {
         left: TermId,
         right: TermId,
         ambient: &[u32],
-        mut blocked: Option<&mut Vec<(TermId, TermId)>>,
+        mut blocked: Option<Blocked<'_>>,
     ) -> Result<(), Error> {
         self.join_slot_classes(left, right)?;
         let left = self.root(left)?;
@@ -137,7 +154,7 @@ impl Context {
             {
                 // Other signature inputs may settle this integer independently.
                 // The final blocked-input check still requires normalization.
-                blocked.push((a, b));
+                blocked.push((a, b), !binders.is_empty());
                 continue;
             }
             if let Value::Variable(domain) = self.terms[a.0 as usize].value {
@@ -156,7 +173,7 @@ impl Context {
             match self.structural(store, a, b, false) {
                 Err(Error::Normalization) if blocked.is_some() => {
                     if let Some(blocked) = &mut blocked {
-                        blocked.push((a, b));
+                        blocked.push((a, b), !binders.is_empty());
                     }
                     continue;
                 }
