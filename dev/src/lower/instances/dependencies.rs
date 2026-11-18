@@ -11,7 +11,11 @@ use crate::{
         model::{Cast, Declarations},
         values::{Constant, LocationId, Origin, Reader, View},
     },
-    types::{Kind, TypeId, instance::Instance},
+    types::{
+        Kind, TypeId,
+        instance::Instance,
+        unsizing::{CoercionStep, Conversion},
+    },
 };
 
 #[derive(Default)]
@@ -368,31 +372,39 @@ impl Discovered {
         facts: &Declarations,
         body: &Body,
         index: usize,
-        conversion: crate::types::unsizing::Conversion<TypeId>,
+        conversion: Conversion<TypeId>,
     ) -> Result<(), &'static str> {
         let (concrete, object) = match conversion {
-            crate::types::unsizing::Conversion::Object { concrete, target } => (concrete, target),
-            crate::types::unsizing::Conversion::Upcast { source, target } => {
+            Conversion::Object { concrete, target } => (concrete, target),
+            Conversion::Upcast { source, target } => {
                 self.upcasts.push((source, target));
                 return Ok(());
             }
-            crate::types::unsizing::Conversion::Slice(_) => return Ok(()),
-            crate::types::unsizing::Conversion::Bound { .. } => {
+            Conversion::Slice(_) => return Ok(()),
+            Conversion::Bound { .. } => {
                 return Err("bound unsizing reached instance dependencies unresolved");
             }
-            crate::types::unsizing::Conversion::Nominal { .. } => {
+            Conversion::Nominal { .. } => {
                 let row = body.nominal_use(
                     &facts.types,
                     crate::body::ir::ValueId(
                         u32::try_from(index).map_err(|_| "too many nominal conversions")?,
                     ),
                 )?;
-                let Some((concrete, object, _)) =
-                    Reader::new(facts).nominal_object(row.source, row.from, row.to)?
-                else {
-                    return Ok(());
-                };
-                (concrete, object)
+                match Reader::new(facts)
+                    .nominal_terminal(row.source, row.from, row.to)?
+                    .step
+                {
+                    CoercionStep::Object { concrete, object } => (concrete, object),
+                    CoercionStep::Upcast { source, target } => {
+                        self.upcasts.push((source, target));
+                        return Ok(());
+                    }
+                    CoercionStep::Slice(_) => return Ok(()),
+                    CoercionStep::Nested { .. } => {
+                        return Err("nominal conversion dependency requires a pointer terminal");
+                    }
+                }
             }
         };
         self.tables.push((concrete, object));

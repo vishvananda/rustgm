@@ -61,6 +61,11 @@ pub(crate) enum Step {
         concrete: TypeId,
         object: TypeId,
     },
+    /// A wide pointer keeps its data address and selects the target object table.
+    Upcast {
+        source: TypeId,
+        target: TypeId,
+    },
     Nested {
         source: TypeId,
         target: TypeId,

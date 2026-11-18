@@ -2,6 +2,47 @@
 use crate::provider_traits::{TestResult, lower};
 const FOLDER: &str = "pa31/tests/spec/unsizing-upcasts";
 #[test]
+fn boxed_object_upcasts_keep_the_data_and_require_source_bounds() -> TestResult {
+    let fixture =
+        crate::resolve::fixture("pa31/tests/spec/explicit-dynamic-call-members/prefix.rs")?;
+    let (roles, _) = fixture
+        .split_once("impl Clone for u32")
+        .ok_or("Box and object roles")?;
+    let mut failures = Vec::new();
+    for (name, from, to, accepted) in [
+        ("forget_markers", "Base + Send + Sync", "Base", true),
+        ("boxed_supertrait", "Detailed + Send + Sync", "Base", true),
+        ("add_marker", "Base + Send", "Base + Send + Sync", false),
+    ] {
+        let source = format!(
+            r#"{roles}
+            #[rustc_diagnostic_item = "Send"] unsafe auto trait Send {{}}
+            #[lang = "sync"] unsafe auto trait Sync {{}}
+            trait Base {{ fn code(&self) -> u8; }}
+            trait Detailed: Base {{ fn detail(&self) -> u8; }}
+            impl Base for Noisy {{ fn code(&self) -> u8 {{ self.0 }} }}
+            impl Detailed for Noisy {{ fn detail(&self) -> u8 {{ self.0 }} }}
+            #[unsafe(no_mangle)] pub extern "C" fn observe() -> u8 {{
+                let value: Box<dyn {from}> = Box::new(Noisy(7));
+                let converted: Box<dyn {to}> = value;
+                (*converted).code()
+            }}"#
+        );
+        let result = crate::ffi_program::exported(&source, name);
+        match (accepted, result) {
+            (true, Ok(_)) => {}
+            (false, Err(error))
+                if error
+                    .to_string()
+                    .contains("conditional Unsize input formation") => {}
+            (_, result) => failures.push(format!("{name}: {:?}", result.err())),
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
+#[test]
 fn actual_source_upcasts_use_intrinsic_object_bounds_and_all_caller_debts() -> TestResult {
     let cases = crate::resolve::fixture(&format!("{FOLDER}/cases.tsv"))?;
     let mut count = 0;

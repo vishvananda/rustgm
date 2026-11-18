@@ -158,6 +158,12 @@ fn step(
         return Err("nominal changed field lacks its checked physical conversion profile");
     };
     let heads = (types.kind(a), types.kind(b));
+    if let (Some(Kind::Dynamic { .. }), Some(Kind::Dynamic { .. })) = heads {
+        return Ok(CoercionStep::Upcast {
+            source: a,
+            target: b,
+        });
+    }
     // The selected `Unsize` proof made `a` a sized implementor of `b`.
     if let (Some(kind), Some(Kind::Dynamic { .. })) = heads
         && !matches!(

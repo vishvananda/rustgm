@@ -23,42 +23,51 @@ impl<'a> Reader<'a> {
         }
         self.nominal_plan(from, to)
     }
-    /// Read the actual object terminal and its receiver lifetime through checked fields.
+    /// Follow the checked changed fields to the physical pointer conversion.
+    pub(crate) fn nominal_terminal(
+        self,
+        source: NodeKey,
+        from: TypeId,
+        to: TypeId,
+    ) -> Result<&'a CoercionPlan, &'static str> {
+        let mut plan = self.nominal_conversion(source, from, to)?;
+        for _ in 0..1_000_000 {
+            self.facts.charge_caller_inputs(1, 0)?;
+            let CoercionStep::Nested { source, target } = plan.step else {
+                return Ok(plan);
+            };
+            plan = self.nominal_plan(source, target)?;
+        }
+        Err("nested nominal conversion work budget exceeded")
+    }
+
+    /// Read the receiver lifetime used to select newly erased callable entries.
     pub(crate) fn nominal_object(
         self,
         source: NodeKey,
         from: TypeId,
         to: TypeId,
     ) -> Result<Option<(TypeId, TypeId, RegionId)>, &'static str> {
-        let mut plan = self.nominal_conversion(source, from, to)?;
+        let terminal = self.nominal_terminal(source, from, to)?;
+        let CoercionStep::Object { concrete, object } = terminal.step else {
+            return Ok(None);
+        };
+        let span = terminal
+            .fields
+            .get(terminal.changed as usize)
+            .ok_or("nominal object conversion lost its changed field")?;
         let types = &self.facts.types;
-        for _ in 0..1_000_000 {
-            self.facts.charge_caller_inputs(1, 0)?;
-            match plan.step {
-                CoercionStep::Nested { source, target } => {
-                    plan = self.nominal_plan(source, target)?;
-                }
-                CoercionStep::Slice(_) => return Ok(None),
-                CoercionStep::Object { concrete, object } => {
-                    let span = plan
-                        .fields
-                        .get(plan.changed as usize)
-                        .ok_or("nominal object conversion lost its changed field")?;
-                    let pointer = match types.kind(span.source) {
-                        Some(Kind::Pattern { base, .. }) => types.kind(base),
-                        kind => kind,
-                    };
-                    let ((Some(Kind::Reference { region, .. }), _)
-                    | (Some(Kind::Pointer { .. }), Some(Kind::Dynamic { region, .. }))) =
-                        (pointer, types.kind(object))
-                    else {
-                        return Err("nominal object conversion lost its pointer lifetime");
-                    };
-                    return Ok(Some((concrete, object, region)));
-                }
-            }
-        }
-        Err("nested nominal conversion work budget exceeded")
+        let pointer = match types.kind(span.source) {
+            Some(Kind::Pattern { base, .. }) => types.kind(base),
+            kind => kind,
+        };
+        let ((Some(Kind::Reference { region, .. }), _)
+        | (Some(Kind::Pointer { .. }), Some(Kind::Dynamic { region, .. }))) =
+            (pointer, types.kind(object))
+        else {
+            return Err("nominal object conversion lost its pointer lifetime");
+        };
+        Ok(Some((concrete, object, region)))
     }
 
     pub(crate) fn nominal_plan(

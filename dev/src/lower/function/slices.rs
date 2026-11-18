@@ -6,6 +6,7 @@ use crate::{
         program::{MemorySpan, Value},
         vocabulary::{Binary, Predicate, Type},
     },
+    sema::vtable_plans::Upcast,
     types::{Kind, TypeId},
 };
 
@@ -184,18 +185,31 @@ impl Lower<'_, '_, '_> {
         source: TypeId,
         target: TypeId,
     ) -> Result<Selected, &'static str> {
-        use crate::sema::vtable_plans::Upcast;
         let plan = self
             .context
             .objects
             .upcast(source, target)
             .ok_or("object upcast lacks a checked plan")?;
         let value = self.value(operand)?;
-        let Upcast::Table { source, index } = plan else {
+        if matches!(plan, Upcast::Identity) {
             return Ok(value);
-        };
+        }
         let Selected::Object(address) = value else {
             return Err("upcast source lacks its wide pointer representation");
+        };
+        let data = self.builder.load(Type::Ptr, address.operand)?;
+        let metadata = self.upcast_metadata(address, plan)?;
+        self.wide_pointer(data, metadata)
+    }
+    pub(super) fn upcast_metadata(
+        &mut self,
+        address: Address,
+        plan: Upcast,
+    ) -> Result<Value, &'static str> {
+        let metadata = self.offset(address, 8)?;
+        let table = self.builder.load(Type::Ptr, metadata.operand)?;
+        let Upcast::Table { source, index } = plan else {
+            return Ok(table);
         };
         let shape = self
             .context
@@ -208,9 +222,6 @@ impl Lower<'_, '_, '_> {
             .and_then(|n| n.checked_mul(8))
             .and_then(|n| n.checked_add(super::super::virtual_dispatch::HEADER_BYTES))
             .ok_or("upcast slot exceeds target address space")?;
-        let data = self.builder.load(Type::Ptr, address.operand)?;
-        let metadata = self.offset(address, 8)?;
-        let table = self.builder.load(Type::Ptr, metadata.operand)?;
         let slot = self.offset(
             Address {
                 operand: table.operand,
@@ -218,8 +229,7 @@ impl Lower<'_, '_, '_> {
             },
             slot,
         )?;
-        let metadata = self.builder.load(Type::Ptr, slot.operand)?;
-        self.wide_pointer(data, metadata)
+        self.builder.load(Type::Ptr, slot.operand)
     }
     pub(super) fn slice_length(&mut self, place: Place) -> Result<Value, &'static str> {
         let value = self.metadata(place)?;

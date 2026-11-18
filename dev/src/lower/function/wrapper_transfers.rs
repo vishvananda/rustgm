@@ -57,6 +57,9 @@ impl Lower<'_, '_, '_> {
                         CoercionStep::Object { concrete, object } => {
                             self.transfer_object(span, (concrete, object), a, b)?;
                         }
+                        CoercionStep::Upcast { source, target } => {
+                            self.transfer_upcast(span, (source, target), a, b)?;
+                        }
                         CoercionStep::Nested { source, target } => {
                             if (span.source, span.target) != (source, target) {
                                 return Err("nested nominal transfer changed its actual field");
@@ -175,6 +178,33 @@ impl Lower<'_, '_, '_> {
         let metadata = self.offset(target, 8)?;
         self.builder.store(length, metadata.operand)
     }
+    fn transfer_upcast(
+        &mut self,
+        span: CoercionSpan,
+        (from, to): (TypeId, TypeId),
+        source: Address,
+        target: Address,
+    ) -> Result<(), &'static str> {
+        let pointee = |ty| terminal_pointee(self.context.types, ty);
+        if pointee(span.source) != Some(from)
+            || pointee(span.target) != Some(to)
+            || self.context.layout(span.source)?.size != 16
+            || self.context.layout(span.target)?.size != 16
+        {
+            return Err("nominal upcast changed its actual wide pointer terminal");
+        }
+        let plan = self
+            .context
+            .objects
+            .upcast(from, to)
+            .ok_or("nominal object upcast lacks a checked plan")?;
+        let data = self.builder.load(Type::Ptr, source.operand)?;
+        let table = self.upcast_metadata(source, plan)?;
+        self.builder.store(data, target.operand)?;
+        let metadata = self.offset(target, 8)?;
+        self.builder.store(table, metadata.operand)
+    }
+
     /// Store the thin pointer at `source` as a pointer to the trait object,
     /// with the concrete type's vtable as its metadata.
     fn transfer_object(
