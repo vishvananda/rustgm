@@ -6,7 +6,7 @@ mod known;
 mod normalization;
 mod parents;
 mod selection;
-use super::{Checker, Error, NodeId, TermId};
+use super::{Checker, Error, Kind, NodeId, TermId};
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
     sema::{alias_requirements::Expansion, annotations::Fields, generics::AnnotationArgument},
@@ -48,6 +48,7 @@ enum Completion {
     Complete,
     Dependency(super::Requirement, Continuation),
 }
+
 enum Continuation {
     Normalization(Box<normalization::Continuation>),
     Parent { query: Box<Query>, watch: WatchId },
@@ -148,6 +149,32 @@ impl Pending {
     }
 }
 impl Checker<'_> {
+    /// Coercing the actual arms to a retained nominal expectation can
+    /// constrain the inputs to a still-pending result projection.
+    pub(super) fn projected_if_result(
+        &mut self,
+        node: NodeId,
+        expected: TermId,
+    ) -> Result<Option<TermId>, Error> {
+        let Kind::If {
+            then,
+            otherwise: Some(otherwise),
+            ..
+        } = self.kind(node)
+        else {
+            return Ok(None);
+        };
+        for arm in [then, otherwise] {
+            let term = self.term(arm)?;
+            match self.state.infer.head(&self.facts.types, term) {
+                Err(crate::types::infer::Error::Normalization) => return Ok(Some(expected)),
+                Err(error) => return Err(self.error(arm, error)),
+                Ok(_) => {}
+            }
+        }
+        Ok(None)
+    }
+
     pub(super) fn known_projection(&mut self, node: NodeId, ty: TypeId) -> Result<TermId, Error> {
         let ty = self.normalize_known_projection(node, ty)?;
         let term = self

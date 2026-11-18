@@ -362,7 +362,7 @@ impl Checker<'_> {
         self.state.address_dereferences.clear();
         self.state.raw_address_places.clear();
         self.state.union_write_places.clear();
-        self.state.unsizing_contexts.clear();
+        self.state.branch_expectations.clear();
         self.state.reference_work.clear();
         self.state.reference_steps = 0;
         self.state.break_roots.clear();

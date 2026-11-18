@@ -185,7 +185,7 @@ impl Checker<'_> {
         value: NodeId,
         arms: List,
     ) -> Result<TermId, Error> {
-        let expected = self.contextual_unsizing_result(node)?;
+        let expected = self.contextual_branch_result(node)?;
         let mut common = if let Some(expected) = expected {
             expected
         } else {

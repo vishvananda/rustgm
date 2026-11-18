@@ -49,6 +49,57 @@ fn pending_joins_keep_complete_call_and_conversion_obligations() -> Result {
 }
 
 #[test]
+fn nominal_if_context_constrains_source_operator_projection() -> Result {
+    let prefix = source::fixture("pa31/tests/spec/operator-rhs/prefix.rs")?;
+    let (prefix, _) = prefix
+        .split_once("#[lang = \"sub\"]")
+        .ok_or("operator fixture is missing its Add prefix")?;
+    let direct = r#"if keep { text } else { text + "x" }"#;
+    let reversed = r#"if keep { text + "x" } else { text }"#;
+    for (label, body, output, accepted) in [
+        ("direct", direct, "Text", true),
+        ("reversed", reversed, "Text", true),
+        ("wrong output", direct, "Other", false),
+        (
+            "wrong argument",
+            "if keep { text } else { text + 1u8 }",
+            "Text",
+            false,
+        ),
+    ] {
+        let text = format!(
+            r"{prefix}
+struct Text(u8);
+struct Other(u8);
+trait Gather {{ fn gather() -> Self; }}
+impl Gather for Text {{ fn gather() -> Self {{ Text(7) }} }}
+impl Gather for Other {{ fn gather() -> Self {{ Other(13) }} }}
+fn collect<T: Gather>() -> T {{ T::gather() }}
+impl Add<&str> for Text {{
+    type Output = {output};
+    fn add(self, _: &str) -> {output} {{ {output}(9) }}
+}}
+fn choose(keep: bool) -> Text {{ let text = collect(); {body} }}"
+        );
+        let report = source::source_provider(&text, "nominal_if_context")?;
+        let result = rustgm::pipeline::analyze_source(&report);
+        match (accepted, result) {
+            (true, Ok(_)) => {}
+            (false, Err(error)) => {
+                let text = error.to_string();
+                assert!(
+                    !text.contains("requires normalization") && !text.contains("budget"),
+                    "{label}: {text}"
+                );
+            }
+            (true, Err(error)) => return Err(format!("{label}: {error}").into()),
+            (false, Ok(_)) => return Err(format!("{label}: unexpectedly accepted").into()),
+        }
+    }
+    Ok(())
+}
+
+#[test]
 fn join_readiness_scales_with_calls_and_ignores_unrelated_types() -> Result {
     let mut previous = None;
     for width in [8, 32, 128] {

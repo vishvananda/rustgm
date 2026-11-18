@@ -41,21 +41,22 @@ impl Pending {
 }
 
 impl Checker<'_> {
-    /// A declared DST result is the common type before joining differently
-    /// sized branch operands, as rustc coerces each branch to a known
-    /// expectation. Ordinary joins retain their existing inference.
-    pub(super) fn contextual_unsizing_result(
+    /// A hard expectation supplies the common type for branch unsizing or
+    /// when a nominal result can constrain a pending source projection.
+    pub(super) fn contextual_branch_result(
         &mut self,
         node: NodeId,
     ) -> Result<Option<TermId>, Error> {
-        let Some(&expected) = self.state.unsizing_contexts.get(&node) else {
+        let Some(&expected) = self.state.branch_expectations.get(&node) else {
             return Ok(None);
         };
-        if matches!(
-            self.head(node, expected)?,
-            Some(Constructor::Pointer { .. })
-        ) {
-            return Ok(Some(expected));
+        match self.head(node, expected)? {
+            Some(Constructor::Pointer { .. }) => return Ok(Some(expected)),
+            Some(Constructor::Adt(..) | Constructor::AdtArgs(..)) => {
+                return self.projected_if_result(node, expected);
+            }
+            Some(Constructor::Reference { .. }) => {}
+            _ => return Ok(None),
         }
         let mut term = self.child(node, expected, 0)?;
         loop {

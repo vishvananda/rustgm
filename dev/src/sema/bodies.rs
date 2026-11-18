@@ -394,7 +394,7 @@ pub(super) struct State {
     raw_address_places: HashSet<NodeId>,
     union_write_places: HashSet<NodeId>,
     language_places: Option<Box<language_hooks::Places>>,
-    unsizing_contexts: crate::support::hash::HashMap<NodeId, TermId>,
+    branch_expectations: crate::support::hash::HashMap<NodeId, TermId>,
     reference_work: Vec<references::CoercionWork>,
     reference_steps: usize,
     break_roots: crate::support::hash::HashMap<NodeId, usize>,
@@ -498,7 +498,7 @@ impl State {
             raw_address_places: HashSet::default(),
             union_write_places: HashSet::default(),
             language_places: None,
-            unsizing_contexts: crate::support::hash::HashMap::default(),
+            branch_expectations: crate::support::hash::HashMap::default(),
             reference_work: Vec::new(),
             reference_steps: 0,
             break_roots: crate::support::hash::HashMap::default(),
@@ -1459,20 +1459,32 @@ impl Checker<'_> {
                 Some(Constructor::Reference { .. } | Constructor::Pointer { .. }) => {
                     self.state.reference_expected.insert(node);
                     if matches!(self.kind(node), Kind::If { .. } | Kind::Match { .. }) {
-                        self.state.unsizing_contexts.insert(node, expected);
+                        self.state.branch_expectations.insert(node, expected);
                     }
                 }
-                Some(Constructor::Adt(..) | Constructor::AdtArgs(..))
+                Some(Constructor::Adt(..) | Constructor::AdtArgs(..)) => {
+                    if self.facts.source_bindings.is_some()
+                        && matches!(
+                            self.kind(node),
+                            Kind::If {
+                                otherwise: Some(_),
+                                ..
+                            }
+                        )
+                    {
+                        self.state.branch_expectations.insert(node, expected);
+                    }
+                    // Remember the expectation before the expression can
+                    // infer its own nominal head. Later equality cannot
+                    // retrospectively turn the original move into a loan.
                     if self
                         .report
                         .package
                         .requested_reborrow()
-                        .map_err(|e| self.error(node, e))? =>
-                {
-                    // Remember the expectation before the expression can
-                    // infer its own nominal head. Later equality cannot
-                    // retrospectively turn the original move into a loan.
-                    self.state.reference_expected.insert(node);
+                        .map_err(|e| self.error(node, e))?
+                    {
+                        self.state.reference_expected.insert(node);
+                    }
                 }
                 _ => {}
             }
@@ -2233,7 +2245,7 @@ impl Checker<'_> {
         Ok(())
     }
     fn join(&mut self, node: NodeId, left: NodeId, right: NodeId) -> Result<TermId, Error> {
-        let common = if let Some(expected) = self.contextual_unsizing_result(node)? {
+        let common = if let Some(expected) = self.contextual_branch_result(node)? {
             expected
         } else {
             self.join_types(node, self.term(left)?, self.term(right)?)?
