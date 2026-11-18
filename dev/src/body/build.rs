@@ -408,6 +408,7 @@ enum Work {
         leaf: NodeId,
         value: Option<ValueId>,
     },
+    CoercedPlace(NodeId),
     AdjustedPlace {
         operand: NodeId,
         site: NodeId,
@@ -1108,7 +1109,8 @@ impl<'a> Builder<'a> {
                     self.save(node, value)?;
                 }
             }
-            Work::Place(node) => self.enter_place(node)?,
+            Work::Place(node) => self.enter_place(node, false)?,
+            Work::CoercedPlace(node) => self.enter_place(node, true)?,
             Work::Destructure(node) => self.destructure(node)?,
             Work::DestructureStore { node, leaf, value } => {
                 self.destructure_store(node, leaf, value)?;
@@ -1522,7 +1524,7 @@ impl<'a> Builder<'a> {
                         if self.borrowed_language_operator(node) {
                             if self.comparison_operator(node) {
                                 self.scratch.work.push(Work::ComparisonArgument(node));
-                                self.scratch.work.push(Work::Place(right));
+                                self.scratch.work.push(Work::CoercedPlace(right));
                             } else {
                                 self.scratch.work.push(Work::Enter(right));
                             }

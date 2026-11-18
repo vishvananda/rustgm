@@ -206,3 +206,79 @@ fn coerced_comparisons_track_calls_without_scanning_unrelated_impls() -> Result 
     }
     Ok(())
 }
+
+const REFERENCE_COMPARISONS: &str = r#"
+#[stable(feature = "rust1", since = "1.0.0")]
+#[rustc_const_unstable(feature = "const_cmp", issue = "143800")]
+const impl<A: PointeeSized, B: PointeeSized> PartialEq<&B> for &A
+where A: [const] PartialEq<B>
+{
+    fn eq(&self, other: &&B) -> bool { PartialEq::eq(*self, *other) }
+}
+#[stable(feature = "rust1", since = "1.0.0")]
+#[rustc_const_unstable(feature = "const_cmp", issue = "143800")]
+const impl<A: PointeeSized, B: PointeeSized> PartialOrd<&B> for &A
+where A: [const] PartialOrd<B>
+{
+    fn partial_cmp(&self, other: &&B) -> Option<Ordering> { PartialOrd::partial_cmp(*self, *other) }
+    fn le(&self, other: &&B) -> bool { PartialOrd::le(*self, *other) }
+    fn ge(&self, other: &&B) -> bool { PartialOrd::ge(*self, *other) }
+}
+#[stable(feature = "rust1", since = "1.0.0")]
+#[rustc_const_unstable(feature = "const_cmp", issue = "143800")]
+const impl<A: PointeeSized, B: PointeeSized> PartialEq<&mut B> for &A
+where A: [const] PartialEq<B>
+{
+    fn eq(&self, other: &&mut B) -> bool { PartialEq::eq(*self, *other) }
+}
+
+fn compare_le<K: PartialOrd>(key: K, previous: &mut K) -> bool {
+    let ordered = &key <= previous;
+    *previous = key;
+    ordered
+}
+fn compare_ge<K: PartialOrd>(key: K, previous: &mut K) -> bool {
+    let ordered = &key >= (previous);
+    *previous = key;
+    ordered
+}
+fn compare_exact<K: PartialEq>(key: K, previous: &mut K) -> bool {
+    let equal = &key == previous;
+    *previous = key;
+    equal
+}
+
+#[unsafe(no_mangle)] pub extern "C" fn observe_le(key: u8, prior: u8) -> u8 {
+    let mut previous = prior;
+    if compare_le(key, &mut previous) { previous } else { 0 }
+}
+#[unsafe(no_mangle)] pub extern "C" fn observe_ge(key: u8, prior: u8) -> u8 {
+    let mut previous = prior;
+    if compare_ge(key, &mut previous) { previous } else { 0 }
+}
+#[unsafe(no_mangle)] pub extern "C" fn observe_exact(key: u8, prior: u8) -> u8 {
+    let mut previous = prior;
+    if compare_exact(key, &mut previous) { previous } else { 0 }
+}
+"#;
+
+#[test]
+fn comparison_borrows_the_coerced_right_operand_and_preserves_the_original_loan() -> Result {
+    let source = crate::resolve::fixture(
+        "pa31/tests/spec/source-comparisons/ordering/actual-source-comparisons-v3.rs",
+    )?;
+    let (roles, _) = source
+        .split_once("#[unsafe(no_mangle)]pub extern \"C\" fn source_eq")
+        .ok_or("comparison roles")?;
+    let lowered = program(&format!("{roles}{REFERENCE_COMPARISONS}"))?;
+    for name in ["observe_le", "observe_ge", "observe_exact"] {
+        assert!(
+            lowered
+                .symbols
+                .iter()
+                .any(|symbol| symbol.name == name && symbol.body.is_some()),
+            "{name}"
+        );
+    }
+    Ok(())
+}

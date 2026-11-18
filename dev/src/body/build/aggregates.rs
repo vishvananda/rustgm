@@ -137,9 +137,14 @@ impl Builder<'_> {
         }
         Ok(())
     }
-    pub(super) fn enter_place(&mut self, node: NodeId) -> Result<(), Error> {
+    pub(super) fn enter_place(&mut self, node: NodeId, coerce: bool) -> Result<(), Error> {
         if self.current.is_none() {
             self.scratch.places.push(None);
+            return Ok(());
+        }
+        // A comparison borrows the converted value when its operand has a coercion.
+        if coerce && self.fact(node)?.adjustment.is_some() {
+            self.enter_temporary_place(node);
             return Ok(());
         }
         match self.captured_place(node)? {
@@ -153,17 +158,22 @@ impl Builder<'_> {
             }
             super::environments::Access::Ordinary => {}
         }
+        let transparent: fn(NodeId) -> Work = if coerce {
+            Work::CoercedPlace
+        } else {
+            Work::Place
+        };
         match self.kind(node) {
             Kind::Group(value)
             | Kind::Attributed { value, .. }
             | Kind::ConstClosure { closure: value, .. } => {
-                self.scratch.work.push(Work::Place(value));
+                self.scratch.work.push(transparent(value));
             }
             Kind::Expansion {
                 children,
                 tail: Some(value),
             } if children.start == children.end => {
-                self.scratch.work.push(Work::Place(value));
+                self.scratch.work.push(transparent(value));
             }
             Kind::Unary {
                 op: crate::syntax::ast::Unary::Dereference,
@@ -208,8 +218,7 @@ impl Builder<'_> {
                 .map_err(|e| self.error(node, e))?
                 .is_some() =>
             {
-                self.scratch.work.push(Work::TemporaryPlace(node));
-                self.enter_materialized(node);
+                self.enter_temporary_place(node);
             }
             Kind::Path { .. } | Kind::Name(..) => {
                 let Some(Target::Definition(definition)) = self.fact(node)?.reference else {
@@ -219,21 +228,20 @@ impl Builder<'_> {
                     DefKind::Local | DefKind::Parameter => self.local_place(node, definition)?,
                     DefKind::Static => self.static_place(node, definition)?,
                     _ => {
-                        self.scratch.work.push(Work::TemporaryPlace(node));
-                        self.enter_materialized(node);
+                        self.enter_temporary_place(node);
                         return Ok(());
                     }
                 };
                 self.scratch.places.push(Some(place));
             }
             _ => {
-                self.scratch.work.push(Work::TemporaryPlace(node));
-                self.enter_materialized(node);
+                self.enter_temporary_place(node);
             }
         }
         Ok(())
     }
-    fn enter_materialized(&mut self, node: NodeId) {
+    fn enter_temporary_place(&mut self, node: NodeId) {
+        self.scratch.work.push(Work::TemporaryPlace(node));
         let work = if self.scratch.unadjusted.last() == Some(&node) {
             Work::EnterUnadjusted(node)
         } else {
