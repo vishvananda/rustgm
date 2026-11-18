@@ -94,37 +94,39 @@ pub(super) fn arguments(
         }
         let id = parameter_id(&host.facts().types, parameter.argument)
             .map_err(|e| error(host, key, e))?;
-        let (facts, infer) = host.inference();
-        let argument = infer
-            .parameter_variable(&facts.types, id)
-            .map_err(|e| error(host, key, e))?;
-        match (*source, argument) {
-            (Written::Type(source), Argument::Type(value)) => {
-                let actual = term(host, source)?;
+        let argument =
+            if let (Written::Type(source), Canonical::Type(_)) = (*source, parameter.argument) {
+                // The written shape belongs to this callable scope. An extra
+                // inference variable would rebase any local lifetimes when the
+                // type is later compared inside the binder.
+                Argument::Type(term(host, source)?)
+            } else {
                 let (facts, infer) = host.inference();
-                infer
-                    .equate(&facts.types, value, actual)
+                let argument = infer
+                    .parameter_variable(&facts.types, id)
                     .map_err(|e| error(host, key, e))?;
-            }
-            (Written::Const(id), Argument::Const(value)) => {
-                let (facts, infer) = host.inference();
-                let known = infer
-                    .known_const(&facts.types, id)
-                    .map_err(|e| error(host, key, e))?;
-                host.inference()
-                    .1
-                    .equate_consts(value, known)
-                    .map_err(|e| error(host, key, e))?;
-            }
-            (Written::Infer | Written::Default(_), _) => {}
-            _ => {
-                return Err(error(
-                    host,
-                    key,
-                    "partial annotation argument kind mismatch",
-                ));
-            }
-        }
+                match (*source, argument) {
+                    (Written::Const(id), Argument::Const(value)) => {
+                        let (facts, infer) = host.inference();
+                        let known = infer
+                            .known_const(&facts.types, id)
+                            .map_err(|e| error(host, key, e))?;
+                        host.inference()
+                            .1
+                            .equate_consts(value, known)
+                            .map_err(|e| error(host, key, e))?;
+                    }
+                    (Written::Infer | Written::Default(_), _) => {}
+                    _ => {
+                        return Err(error(
+                            host,
+                            key,
+                            "partial annotation argument kind mismatch",
+                        ));
+                    }
+                }
+                argument
+            };
         arguments.push(argument);
         bindings.push((id, argument));
     }

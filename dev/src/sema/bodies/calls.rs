@@ -47,7 +47,7 @@ pub(super) struct CallTypes {
     pub openings: Option<Box<(infer::RegionMapping, infer::RegionMapping)>>,
     /// Value types already published for the finishing body, with the node
     /// conditions that decide their storage and formation facts.
-    pub published: Vec<(TypeId, bool, bool)>,
+    pub published: Vec<(TypeId, bool, Option<u16>)>,
 }
 #[derive(Default)]
 struct CallConstraints {

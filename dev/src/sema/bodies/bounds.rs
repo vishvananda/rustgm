@@ -78,9 +78,21 @@ impl Checker<'_> {
         if !self.facts.generics.has_nominal_requirements {
             return Ok(());
         }
-        let requirements =
-            crate::sema::nominals::requirements(self.facts, ty, &mut checked.ordinary)
-                .map_err(|e| self.error(node, e))?;
+        // An annotation fragment still belongs to its callable's binders.
+        // At depth zero those locals would look like the body's free lifetimes.
+        let depth = self
+            .state
+            .annotation_children
+            .get(&node)
+            .copied()
+            .unwrap_or(0);
+        let requirements = crate::sema::nominals::requirements_inside(
+            self.facts,
+            ty,
+            depth,
+            &mut checked.ordinary,
+        )
+        .map_err(|e| self.error(node, e))?;
         let joined = self.prove_sizing_conjunction(node, &requirements)?;
         for requirement in requirements {
             match requirement {

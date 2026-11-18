@@ -76,8 +76,18 @@ impl Host for Checker<'_> {
     ) -> Result<(), Error> {
         self.defer_normalization(key.node, scope, term)
     }
-    fn child(&mut self, key: NodeKey) {
-        self.state.annotation_children.insert(key.node);
+    fn child(
+        &mut self,
+        key: NodeKey,
+        scope: crate::types::lifetime_proof::ScopeId,
+    ) -> Result<(), Error> {
+        let depth = self
+            .state
+            .projections
+            .scope_depth(scope)
+            .map_err(|e| self.error(key.node, e))?;
+        self.state.annotation_children.insert(key.node, depth);
+        Ok(())
     }
     fn pending_normalization(&self) -> bool {
         self.state.projections.active()

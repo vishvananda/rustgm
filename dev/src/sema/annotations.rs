@@ -25,7 +25,7 @@ pub(super) trait Host {
     fn nominal(&mut self, term: TermId, fields: Fields);
     fn requirement(&mut self, key: NodeKey, predicate: crate::types::infer::predicates::Predicate);
     fn callable(&mut self, key: NodeKey);
-    fn child(&mut self, key: NodeKey);
+    fn child(&mut self, key: NodeKey, scope: ScopeId) -> Result<(), Error>;
     fn scope(&mut self, key: NodeKey, parent: ScopeId, count: u32) -> Result<ScopeId, Error>;
     fn deferred(
         &mut self,
@@ -77,7 +77,7 @@ impl Scratch {
             };
             host.save(key, term);
             if key != root {
-                host.child(key);
+                host.child(key, scope)?;
             }
         }
         term(host, root)

@@ -228,7 +228,7 @@ pub(in crate::sema) fn pending_contracts(
 }
 
 /// Equality results and outlives subjects recurse beneath their whole-clause binder.
-pub(super) fn requirements_inside(
+pub(in crate::sema) fn requirements_inside(
     facts: &mut Declarations,
     root: TypeId,
     depth: u16,

@@ -7,6 +7,8 @@ mod discovery;
 mod envelopes;
 #[path = "coercion_provider/erasure.rs"]
 mod erasure;
+#[path = "coercion_provider/partial_callables.rs"]
+mod partial_callables;
 #[path = "coercion_provider/referent_calls.rs"]
 mod referent_calls;
 #[path = "coercion_provider/struct_goals.rs"]

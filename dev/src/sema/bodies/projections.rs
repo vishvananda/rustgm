@@ -141,6 +141,16 @@ impl Pending {
             .scopes
             .callable_scope(parent, count)
     }
+    pub fn scope_depth(&self, scope: ScopeId) -> Result<u16, &'static str> {
+        if scope == ScopeId::ROOT {
+            return Ok(0);
+        }
+        self.data
+            .as_ref()
+            .ok_or("missing callable annotation scope")?
+            .scopes
+            .scope_depth(scope)
+    }
     fn insert(&mut self, watch: WatchId, query: Query) {
         self.data
             .get_or_insert_with(Default::default)

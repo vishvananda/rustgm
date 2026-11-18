@@ -82,7 +82,7 @@ use super::{
     model::{AdjustmentKind, Declarations, Function, Operation, RegionEquality},
     scalar,
 };
-use crate::support::hash::HashSet;
+use crate::support::hash::{HashMap, HashSet};
 use crate::{
     lex::token::Punctuation as Op,
     literal::{Value, value::FloatType},
@@ -438,7 +438,7 @@ pub(super) struct State {
     trait_goals: Option<Box<trait_goals::Pending>>,
     type_children: Vec<TermId>,
     annotation_checks: Vec<NodeId>,
-    annotation_children: HashSet<NodeId>,
+    annotation_children: HashMap<NodeId, u16>,
     type_annotations: HashSet<NodeId>,
     frames: Vec<Frame>,
     pending_label: Option<(NodeId, DefId)>,
@@ -540,7 +540,7 @@ impl State {
             trait_goals: None,
             type_children: Vec::new(),
             annotation_checks: Vec::new(),
-            annotation_children: HashSet::default(),
+            annotation_children: HashMap::default(),
             type_annotations: HashSet::default(),
             frames: Vec::new(),
             pending_label: None,
@@ -1357,7 +1357,7 @@ impl Checker<'_> {
             let conditions = (
                 ty,
                 self.state.type_annotations.contains(&node),
-                self.state.annotation_children.contains(&node),
+                self.state.annotation_children.get(&node).copied(),
             );
             if !published.contains(&conditions) {
                 if published.len() < PUBLISHED {
@@ -1418,7 +1418,7 @@ impl Checker<'_> {
     ) {
         if (self.facts.types.contains_regions(ty) == Some(true)
             || self.facts.types.contains_parameters(ty) == Some(true))
-            && !self.state.annotation_children.contains(&node)
+            && !self.state.annotation_children.contains_key(&node)
             && well_formed.insert(ty)
         {
             self.facts.well_formed.push(super::model::WellFormed {

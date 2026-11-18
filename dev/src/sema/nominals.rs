@@ -14,7 +14,7 @@ use crate::types::{
 };
 pub(super) use requirements::{
     FormationRequirements, Requirements, formation_requirements_counted, immediate,
-    pending_contracts, requirements,
+    pending_contracts, requirements, requirements_inside,
 };
 #[cfg(test)]
 #[path = "../../tests/invariants/normalized_sizing_lifetimes.rs"]

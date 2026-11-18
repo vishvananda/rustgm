@@ -199,7 +199,9 @@ impl Host for Prefix<'_> {
     // Prefix probes discover candidates; the actual body annotation owns its proofs.
     fn requirement(&mut self, _: NodeKey, _: crate::types::infer::predicates::Predicate) {}
     fn callable(&mut self, _: NodeKey) {}
-    fn child(&mut self, _: NodeKey) {}
+    fn child(&mut self, _: NodeKey, _: crate::types::lifetime_proof::ScopeId) -> Result<(), Error> {
+        Ok(())
+    }
     fn pending_normalization(&self) -> bool {
         false
     }
