@@ -73,6 +73,18 @@ impl Checker<'_> {
             _ => return Ok(None),
         }
         let mut term = self.child(node, expected, 0)?;
+        // The expected reference gives each arm a directed coercion site.
+        // An open referent still needs common-type inference across the arms.
+        if crate::sema::compiler_items::dereferencing::available(self.facts)
+            && self
+                .state
+                .infer
+                .inputs_fixed(&self.facts.types, term)
+                .map_err(|error| self.error(node, error))?
+            && self.contextual_head(node, term)?.is_some()
+        {
+            return Ok(Some(expected));
+        }
         loop {
             self.state.reference_steps += 1;
             if self.state.reference_steps > 1_000_000 {

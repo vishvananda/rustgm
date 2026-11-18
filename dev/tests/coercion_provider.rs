@@ -5,6 +5,8 @@ use std::path::Path;
 mod branch_coercions;
 #[path = "coercion_provider/construction_coercions.rs"]
 mod construction_coercions;
+#[path = "coercion_provider/cross_arm_deref.rs"]
+mod cross_arm_deref;
 #[path = "coercion_provider/discovery.rs"]
 mod discovery;
 #[path = "coercion_provider/envelopes.rs"]
