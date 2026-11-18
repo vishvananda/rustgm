@@ -33,6 +33,36 @@ const CASES: &[(&str, bool, &str)] = &[
         "fn f(p:*const [u8])->*const u8{p as *const u8}",
     ),
     (
+        "cast-inferred-wide-pointee",
+        true,
+        "struct Buffer<T:?Sized>{header:usize,tail:T} fn f<T>(p:*mut Buffer<[T]>)->*mut u8{p as *mut _ as *mut u8}",
+    ),
+    (
+        "cast-inferred-mutable-to-const",
+        true,
+        "fn f(p:*mut [u16])->*const u8{p as *const _ as *const u8}",
+    ),
+    (
+        "cast-later-use-infers-pointee",
+        true,
+        "fn take(p:*mut u16)->*mut u16{p} fn f(p:*mut u8)->*mut u16{let q=p as *mut _; take(q)}",
+    ),
+    (
+        "cast-expected-pointee-for-const-to-mut",
+        true,
+        "fn f(p:*const u8)->*mut u16{p as *mut _}",
+    ),
+    (
+        "cast-integer-leaves-pointee-open",
+        false,
+        "fn f(p:usize)->*mut u8{p as *mut _ as *mut u8}",
+    ),
+    (
+        "cast-const-to-mut-leaves-pointee-open",
+        false,
+        "fn f(p:*const u8)->*mut u8{p as *mut _ as *mut u8}",
+    ),
+    (
         "cast-reference-elements",
         false,
         "fn f(p:&u8)->*const u16{p as *const u16}",

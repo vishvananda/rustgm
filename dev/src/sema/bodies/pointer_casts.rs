@@ -4,7 +4,7 @@ use crate::{
     abi::metadata::Metadata,
     sema::model::{AdjustmentKind, Cast, Operation},
     support::retained::Growth,
-    types::infer::{Error as InferError, Solved},
+    types::infer::{Domain, Error as InferError, Solved},
 };
 
 /// A cold owned queue keeps the ordinary Work payload one pointer wide.
@@ -250,6 +250,58 @@ impl Checker<'_> {
         }
         Ok(())
     }
+    /// Complete the pointee of an otherwise unconstrained raw pointer cast.
+    /// Body equations and explicit expected pointer hints have already run.
+    pub(super) fn resolve_raw_cast_pointees(&mut self) -> Result<(), Error> {
+        let body = self.state.body.node;
+        self.state
+            .infer
+            .account_work(self.state.pointer_casts.len())
+            .map_err(|error| self.error(body, error))?;
+        for index in 0..self.state.pointer_casts.len() {
+            let node = self.state.pointer_casts[index];
+            let Kind::Cast { value, ty } = self.kind(node) else {
+                return Err(self.error(node, "missing pointer cast syntax"));
+            };
+            let source = self.term(value)?;
+            let target = self.term(ty)?;
+            let (
+                Some(Constructor::Pointer { mutable: from }),
+                Some(Constructor::Pointer { mutable: to }),
+            ) = (
+                self.contextual_head(node, source)?,
+                self.contextual_head(node, target)?,
+            )
+            else {
+                continue;
+            };
+            if to && !from {
+                continue;
+            }
+            let target = self.child(node, target, 0)?;
+            if self
+                .state
+                .infer
+                .unresolved_domain(target)
+                .map_err(|error| self.error(node, error))?
+                != Some(Domain::Any)
+            {
+                continue;
+            }
+            let pointee = self.child(node, source, 0)?;
+            match self.state.infer.resolved(&mut self.facts.types, pointee) {
+                Ok(_) => self
+                    .state
+                    .infer
+                    .equate(&self.facts.types, target, pointee)
+                    .map_err(|error| self.error(node, error))?,
+                Err(InferError::Unresolved | InferError::Normalization) => {}
+                Err(error) => return Err(self.error(node, error)),
+            }
+        }
+        Ok(())
+    }
+
     /// Early constant bodies suspend until these metadata roots have real fields.
     pub(super) fn pointer_cast_storage(&self, solved: &Solved) -> Result<Vec<TypeId>, Error> {
         let mut roots = Vec::new();

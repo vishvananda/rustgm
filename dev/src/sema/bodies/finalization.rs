@@ -65,6 +65,7 @@ impl Checker<'_> {
     ) -> Result<Option<Dependency>, Error> {
         let body = self.state.body.node;
         self.publish_nested_progress()?;
+        self.resolve_raw_cast_pointees()?;
         let mut infer = std::mem::take(&mut self.state.infer);
         let finished = infer.finish_with_arguments(
             &mut self.facts.types,
