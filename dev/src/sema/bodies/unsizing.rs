@@ -1,5 +1,5 @@
 //! Select one structural unsizing and retain the source-side lifetime view.
-use super::{Checker, Constructor, Error, NodeId, TermId};
+use super::{Checker, Constructor, Error, Kind, NodeId, TermId};
 mod construction_context;
 mod elaboration;
 mod relations;
@@ -41,6 +41,20 @@ impl Pending {
 }
 
 impl Checker<'_> {
+    pub(super) fn retain_nominal_branch_expectation(&mut self, node: NodeId, expected: TermId) {
+        if self.facts.source_bindings.is_some()
+            && matches!(
+                self.kind(node),
+                Kind::If {
+                    otherwise: Some(_),
+                    ..
+                } | Kind::Match { .. }
+            )
+        {
+            self.state.branch_expectations.insert(node, expected);
+        }
+    }
+
     /// A hard expectation supplies the common type for branch unsizing or
     /// when a nominal result can constrain a pending source projection.
     pub(super) fn contextual_branch_result(
@@ -52,8 +66,8 @@ impl Checker<'_> {
         };
         match self.head(node, expected)? {
             Some(Constructor::Pointer { .. }) => return Ok(Some(expected)),
-            Some(Constructor::Adt(..) | Constructor::AdtArgs(..)) => {
-                return self.projected_if_result(node, expected);
+            Some(Constructor::Adt(owner, _) | Constructor::AdtArgs(owner, _)) => {
+                return self.nominal_branch_result(node, owner, expected);
             }
             Some(Constructor::Reference { .. }) => {}
             _ => return Ok(None),
@@ -105,6 +119,30 @@ impl Checker<'_> {
             }
         }
     }
+    fn nominal_branch_result(
+        &mut self,
+        node: NodeId,
+        owner: crate::types::ItemId,
+        expected: TermId,
+    ) -> Result<Option<TermId>, Error> {
+        // Each arm must supply its own checked coercion to a settled wrapper
+        // expectation. An open target still needs the arms' common-type inference.
+        if let Some(rules) = self.facts.unsizing_rules.as_deref()
+            && rules
+                .nominal_hint_slots(&self.facts.types, owner)
+                .map_err(|error| self.error(node, error))?
+                .is_some()
+            && self
+                .state
+                .infer
+                .inputs_fixed(&self.facts.types, expected)
+                .map_err(|error| self.error(node, error))?
+        {
+            return Ok(Some(expected));
+        }
+        self.projected_if_result(node, expected)
+    }
+
     /// Keep all selected reference ancestors, including their original regions.
     pub(super) fn unsizing_source_view(
         &mut self,

@@ -56,8 +56,9 @@ impl Search<'_> {
             return Ok(ControlFlow::Break(Action::Complete(decision)));
         }
         let source = super::freezing::has_source(facts, root.marker)?;
+        let internal = frame.goal.builtin_bound() == Some(Bound::Auto(root.marker));
         loop {
-            let (step, work) = pending.advance(facts, self.caller.environment, source)?;
+            let (step, work) = pending.advance(facts, self.caller.environment, source, internal)?;
             frame.inputs.context.account_work(work).map_err(inference)?;
             match step {
                 Step::Ready(value) => return Ok(ControlFlow::Continue(value)),
@@ -65,7 +66,6 @@ impl Search<'_> {
                     return Ok(ControlFlow::Break(Action::Wait(Dependency::Fields(item))));
                 }
                 Step::Proof(obligation) if source => {
-                    let internal = frame.goal.builtin_bound() == Some(Bound::Auto(root.marker));
                     if let Some(action) = pending.source_proof(facts, obligation, internal)? {
                         return Ok(ControlFlow::Break(action));
                     }
@@ -270,6 +270,7 @@ impl Pending {
         facts: &mut Declarations,
         environment: Option<&std::sync::Arc<crate::types::parameters::environment::Environment>>,
         source: bool,
+        internal: bool,
     ) -> Result<(Step, usize), String> {
         let before = self.query.steps;
         let permissions_before = self.permissions.as_ref().map_or(0, |q| q.steps());
@@ -278,9 +279,10 @@ impl Pending {
             &mut facts.aggregates,
             |types, obligation| {
                 if source {
-                    // Every immediate child returns through actual source
-                    // selection before structural propagation can use it.
-                    return Ok(if obligation == self.root {
+                    // Structural fallback belongs to the actual source
+                    // application. An internal marker request must first
+                    // select it, including any explicit implementation.
+                    return Ok(if obligation == self.root && !internal {
                         Rule::SourceStructural
                     } else {
                         Rule::External

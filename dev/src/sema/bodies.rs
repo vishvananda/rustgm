@@ -1484,17 +1484,7 @@ impl Checker<'_> {
                     }
                 }
                 Some(Constructor::Adt(..) | Constructor::AdtArgs(..)) => {
-                    if self.facts.source_bindings.is_some()
-                        && matches!(
-                            self.kind(node),
-                            Kind::If {
-                                otherwise: Some(_),
-                                ..
-                            }
-                        )
-                    {
-                        self.state.branch_expectations.insert(node, expected);
-                    }
+                    self.retain_nominal_branch_expectation(node, expected);
                     // Remember the expectation before the expression can
                     // infer its own nominal head. Later equality cannot
                     // retrospectively turn the original move into a loan.

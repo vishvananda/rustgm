@@ -119,9 +119,12 @@ impl Context {
             .ok_or(Error::InvalidIdentity)?
             .to_vec()
         {
+            // Auto markers constrain the concrete implementor in the enclosing
+            // scope. Only the principal and its associated bindings use the
+            // object's quantified trait inputs.
             output.push(Requirement {
-                predicate: Predicate::builtin(subject, Bound::Auto(marker)),
-                bound_regions,
+                predicate: Predicate::builtin(concrete, Bound::Auto(marker)),
+                bound_regions: None,
             });
         }
         Ok(output)
