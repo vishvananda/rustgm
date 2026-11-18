@@ -36,7 +36,7 @@ impl Checker<'_> {
         &mut self,
         node: NodeId,
         operand: NodeId,
-        (subject, dereferences): (TermId, u32),
+        (term, (subject, dereferences)): (TermId, (TermId, u32)),
     ) -> Result<bool, Error> {
         if !crate::sema::compiler_items::dereferencing::available(self.facts) {
             return Ok(false);
@@ -61,6 +61,7 @@ impl Checker<'_> {
         {
             return Ok(false);
         }
+        self.builtin_method_dereferences(node, term, dereferences)?;
         let (index, target) = self.discover_field_target(node, subject, dereferences)?;
         let end = index
             .checked_add(1)
@@ -108,6 +109,28 @@ impl Checker<'_> {
         }
         self.state.work.push(Work::MethodArguments(node, None));
         Ok(true)
+    }
+
+    pub(super) fn builtin_method_dereferences(
+        &mut self,
+        node: NodeId,
+        mut term: TermId,
+        count: u32,
+    ) -> Result<TermId, Error> {
+        let owned_box = self.facts.aggregates.owned_box();
+        for _ in 0..count {
+            if let Some(owner) = owned_box
+                && matches!(
+                    self.head(node, term)?,
+                    Some(Constructor::Adt(item, _) | Constructor::AdtArgs(item, _)) if item == owner
+                )
+            {
+                // Reading the box's leading pointer needs its exact storage layout.
+                self.state.call_types.demand_fields(term);
+            }
+            term = self.child(node, term, 0)?;
+        }
+        Ok(term)
     }
 
     pub(super) fn complete_method_receiver(

@@ -226,6 +226,34 @@ fn method_receivers_preserve_owned_box_places_and_borrowed_access() -> Result {
     Ok(())
 }
 
+const BORROWED_BOX_SLICE: &str = r#"
+trait SliceMethod {
+    fn read_contents(&self) -> u8;
+    fn write_contents(&mut self) -> u8;
+}
+impl<T> SliceMethod for [T] {
+    fn read_contents(&self) -> u8 { 7 }
+    fn write_contents(&mut self) -> u8 { 9 }
+}
+fn read<T, A>(boxed: &Box<[T], A>) -> u8 { boxed.read_contents() }
+fn write<T, A>(boxed: &mut Box<[T], A>) -> u8 { boxed.write_contents() }
+#[unsafe(no_mangle)] pub extern "C" fn run() -> u8 {
+    let mut boxed: Box<[Noisy]> = Box::new([Noisy(3), Noisy(6)]);
+    let _ = read(&boxed);
+    write(&mut boxed)
+}
+"#;
+
+#[test]
+fn generic_borrowed_box_slice_receivers_prepare_pointer_storage() -> Result {
+    let fixture = crate::resolve::fixture(&format!("{PACKET}/slice-content.rs"))?;
+    let (roles, _) = fixture
+        .split_once("#[unsafe(no_mangle)]")
+        .ok_or("Box roles")?;
+    owned_box_program(&format!("{roles}{BORROWED_BOX_SLICE}"))?;
+    Ok(())
+}
+
 /// Each accepted program prints exactly what rustc's build of it prints.
 #[test]
 #[ignore = "requires the locked CPPGM object backend and a C compiler"]

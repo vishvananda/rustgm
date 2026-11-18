@@ -96,7 +96,7 @@ impl Checker<'_> {
         let selected = match progress {
             receiver::Progress::Ready(selected) => selected,
             receiver::Progress::Absent(message, tail) => {
-                return if self.advance_method_receiver(node, site.receiver, tail)? {
+                return if self.advance_method_receiver(node, site.receiver, (term, tail))? {
                     Ok(None)
                 } else {
                     Err(self.error(node, message))
@@ -393,10 +393,7 @@ impl Checker<'_> {
         term: TermId,
         selected: receiver::Selected,
     ) -> Result<(u32, Option<TermId>, TermId), Error> {
-        let mut actual = term;
-        for _ in 0..selected.dereferences {
-            actual = self.child(node, actual, 0)?;
-        }
+        let mut actual = self.builtin_method_dereferences(node, term, selected.dereferences)?;
         let mut dereferences = selected.dereferences;
         let mut borrow = selected.borrow;
         if borrow.is_none()
