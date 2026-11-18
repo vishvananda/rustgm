@@ -43,7 +43,7 @@ fn cold_cast_queue_keeps_original_order_and_known_casts_need_no_payload() -> Tes
     assert_eq!(casts.as_deref().map(Vec::as_slice), Some(nodes.as_slice()));
     checker.resume_closure_casts(casts)?;
     for expected in nodes {
-        assert!(matches!(checker.state.work.pop(),Some(Work::Exit(node)) if node==expected));
+        assert!(matches!(checker.state.work.pop(),Some(Work::Exit(node, None)) if node==expected));
     }
     assert!(checker.state.work.is_empty());
     Ok(())
