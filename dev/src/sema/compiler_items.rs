@@ -74,7 +74,8 @@ pub(crate) mod zeroing_contract;
 pub(crate) use simd_contract::{SimdOperation, SimdSelection};
 pub(crate) use subtraction_contract::SubtractionSelection;
 pub(crate) use subtraction_contract::{
-    overflowing_operator, scalar_arithmetic, unchecked_operator, unchecked_shift, wrapping_operator,
+    overflowing_operator, saturating_operator, scalar_arithmetic, unchecked_operator,
+    unchecked_shift, wrapping_operator,
 };
 pub(crate) use wrapping_contract::WrappingOffsetSelection;
 #[path = "compiler_items/reflection_fields.rs"]

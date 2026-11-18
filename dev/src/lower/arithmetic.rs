@@ -302,6 +302,34 @@ impl Arithmetic<'_, '_> {
         let overflow = self.overflow_flag(Binary::Add, signed, left, right, result)?;
         Ok((result, overflow))
     }
+    /// Select the target-width bound when the addition or subtraction overflows.
+    pub(super) fn saturate(
+        &mut self,
+        subtract: bool,
+        signed: bool,
+        left: Value,
+        wrapped: Value,
+        overflow: Value,
+    ) -> Result<Value, &'static str> {
+        let ty = wrapped.ty;
+        let zero = self.builder.integer(ty, 0)?;
+        let flag = casts::integer(self.builder, overflow, ty, false)?;
+        let mask = self.builder.binary(Binary::Sub, zero, flag)?;
+        let bound = if signed {
+            let negative = self.builder.compare(Predicate::Lt, left, zero)?;
+            let negative = casts::integer(self.builder, negative, ty, false)?;
+            let maximum = self.builder.integer(ty, (1_u128 << (ty.bits() - 1)) - 1)?;
+            // Signed overflow heads toward the sign of the left operand.
+            self.builder.binary(Binary::Add, maximum, negative)?
+        } else if subtract {
+            zero
+        } else {
+            self.builder.integer(ty, u128::MAX)?
+        };
+        let differing = self.builder.binary(Binary::Xor, wrapped, bound)?;
+        let replaced = self.builder.binary(Binary::And, differing, mask)?;
+        self.builder.binary(Binary::Xor, wrapped, replaced)
+    }
     fn overflow_flag(
         &mut self,
         op: Binary,

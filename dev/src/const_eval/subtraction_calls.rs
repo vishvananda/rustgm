@@ -85,6 +85,11 @@ impl Machine<'_, '_> {
                 Overflow::Wrapping,
             );
         }
+        if let Some(operator) = crate::sema::compiler_items::saturating_operator(selected.kind) {
+            return self
+                .evaluator
+                .saturating_integer(operator, selected.input, left, right);
+        }
         let operator = crate::sema::compiler_items::overflowing_operator(selected.kind)
             .ok_or("source arithmetic lost its selected overflow operation")?;
         let checked =

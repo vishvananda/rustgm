@@ -2,7 +2,12 @@
 use super::{Arithmetic, Lower, Selected, ir};
 use crate::{
     abi::layout::Shape,
-    lowir::vocabulary::{Binary, Convert, Type},
+    lex::token::Punctuation,
+    lowir::{
+        program::Value,
+        vocabulary::{Binary, Convert, Type},
+    },
+    sema::compiler_items::SubtractionSelection,
     types::{Kind, TypeId, instance::Instance},
 };
 impl Lower<'_, '_, '_> {
@@ -66,8 +71,17 @@ impl Lower<'_, '_, '_> {
             return Err("source subtraction differs from its actual checked direct call");
         }
         let (left, right) = (self.value(left)?.runtime()?, self.value(right)?.runtime()?);
+        self.lower_source_arithmetic(&selected, left, right)
+            .map(Some)
+    }
+    fn lower_source_arithmetic(
+        &mut self,
+        selected: &SubtractionSelection,
+        left: Value,
+        right: Value,
+    ) -> Result<Selected, &'static str> {
         if let Some(operator) = crate::sema::compiler_items::wrapping_operator(selected.kind) {
-            return self.scalar_binary(operator, left, right, false).map(Some);
+            return self.scalar_binary(operator, left, right, false);
         }
         let Some(Kind::Primitive(primitive)) = self.context.types.kind(selected.input) else {
             return Err("source subtraction lost its integer input");
@@ -77,7 +91,7 @@ impl Lower<'_, '_, '_> {
             .ok_or("source subtraction requires an integer")?;
         if let Some(operator) = crate::sema::compiler_items::unchecked_shift(selected.kind) {
             let binary = match operator {
-                crate::lex::token::Punctuation::ShiftLeft => Binary::Shl,
+                Punctuation::ShiftLeft => Binary::Shl,
                 _ if signed => Binary::Shr,
                 _ => Binary::Ushr,
             };
@@ -85,31 +99,37 @@ impl Lower<'_, '_, '_> {
             return self
                 .builder
                 .binary(binary, left, right)
-                .map(|result| Some(Selected::Runtime(result)));
+                .map(Selected::Runtime);
         }
         if let Some(operator) = crate::sema::compiler_items::unchecked_operator(selected.kind) {
-            return self.scalar_binary(operator, left, right, signed).map(Some);
+            return self.scalar_binary(operator, left, right, signed);
         }
+        let saturation = crate::sema::compiler_items::saturating_operator(selected.kind);
+        let operator =
+            saturation.or_else(|| crate::sema::compiler_items::overflowing_operator(selected.kind));
         let mut arithmetic = Arithmetic {
             constants: self.context.constants,
             builder: &mut self.builder,
             panic: &mut self.panic,
         };
-        let (result, overflow) =
-            match crate::sema::compiler_items::overflowing_operator(selected.kind) {
-                Some(crate::lex::token::Punctuation::Minus) => {
-                    arithmetic.subtract_overflow(signed, left, right)?
-                }
-                Some(crate::lex::token::Punctuation::Star) => {
-                    arithmetic.multiply_overflow(signed, left, right)?
-                }
-                Some(crate::lex::token::Punctuation::Plus) => {
-                    arithmetic.add_overflow(signed, left, right)?
-                }
-                _ => return Err("source arithmetic lost its selected overflow operation"),
-            };
+        let (result, overflow) = match operator {
+            Some(Punctuation::Minus) => arithmetic.subtract_overflow(signed, left, right)?,
+            Some(Punctuation::Star) => arithmetic.multiply_overflow(signed, left, right)?,
+            Some(Punctuation::Plus) => arithmetic.add_overflow(signed, left, right)?,
+            _ => return Err("source arithmetic lost its selected overflow operation"),
+        };
+        if let Some(operator) = saturation {
+            return arithmetic
+                .saturate(
+                    operator == Punctuation::Minus,
+                    signed,
+                    left,
+                    result,
+                    overflow,
+                )
+                .map(Selected::Runtime);
+        }
         self.store_subtraction_tuple(result, overflow, selected.input, selected.output)
-            .map(Some)
     }
     /// Publish the real checked result and flag using its selected tuple layout.
     pub(super) fn store_subtraction_tuple(
@@ -155,7 +175,6 @@ impl Lower<'_, '_, '_> {
         right: crate::lowir::program::Value,
         signed: bool,
     ) -> Result<Selected, &'static str> {
-        use crate::lex::token::Punctuation;
         let binary = match operator {
             Punctuation::Plus => Binary::Add,
             Punctuation::Minus => Binary::Sub,

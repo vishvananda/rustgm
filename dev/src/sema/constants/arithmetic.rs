@@ -23,6 +23,34 @@ fn minimum(width: u16) -> i128 {
 fn maximum(width: u16) -> i128 {
     i128::from_ne_bytes(((1_u128 << (width - 1)) - 1).to_ne_bytes())
 }
+pub(super) fn saturating(
+    op: Op,
+    ty: Primitive,
+    left: Scalar,
+    right: Scalar,
+) -> Result<Scalar, Failure> {
+    let (Scalar::Integer(left), Scalar::Integer(right)) = (left, right) else {
+        return Err(Failure::Invalid("saturation requires integer operands"));
+    };
+    let (is_signed, width) = ty.integer().ok_or("saturation requires an integer type")?;
+    let value = if is_signed {
+        let left = signed(left, width);
+        let right = signed(right, width);
+        let result = match op {
+            Op::Plus => left.saturating_add(right),
+            Op::Minus => left.saturating_sub(right),
+            _ => return Err(Failure::Invalid("invalid saturating arithmetic operation")),
+        };
+        bits(result.clamp(minimum(width), maximum(width)))
+    } else {
+        match op {
+            Op::Plus => left.saturating_add(right).min(mask(width)),
+            Op::Minus => left.saturating_sub(right),
+            _ => return Err(Failure::Invalid("invalid saturating arithmetic operation")),
+        }
+    };
+    Ok(Scalar::Integer(value & mask(width)))
+}
 pub(super) fn successor(ty: Primitive, value: u128) -> Option<u128> {
     let (signed, width) = ty.integer()?;
     let max = if signed {

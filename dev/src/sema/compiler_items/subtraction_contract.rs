@@ -26,6 +26,17 @@ pub(crate) fn wrapping_operator(kind: SourceIntrinsic) -> Option<Punctuation> {
     }
 }
 
+pub(crate) fn saturating_operator(kind: SourceIntrinsic) -> Option<Punctuation> {
+    let SourceIntrinsic::Declaration(identity) = kind else {
+        return None;
+    };
+    match identity.name() {
+        "saturating_add" => Some(Punctuation::Plus),
+        "saturating_sub" => Some(Punctuation::Minus),
+        _ => None,
+    }
+}
+
 pub(crate) fn unchecked_operator(kind: SourceIntrinsic) -> Option<Punctuation> {
     match kind {
         SourceIntrinsic::UncheckedSub => Some(Punctuation::Minus),
@@ -52,6 +63,7 @@ pub(crate) fn unchecked_shift(kind: SourceIntrinsic) -> Option<Punctuation> {
 pub(crate) fn scalar_arithmetic(kind: SourceIntrinsic) -> bool {
     unchecked_operator(kind).is_some()
         || wrapping_operator(kind).is_some()
+        || saturating_operator(kind).is_some()
         || overflowing_operator(kind).is_some()
         || unchecked_shift(kind).is_some()
 }
@@ -205,6 +217,7 @@ fn signature(
         }
         kind if unchecked_operator(kind).is_some()
             || wrapping_operator(kind).is_some()
+            || saturating_operator(kind).is_some()
             || unchecked_shift(kind).is_some() =>
         {
             result == input

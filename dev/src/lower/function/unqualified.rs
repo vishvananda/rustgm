@@ -70,9 +70,7 @@ impl Lower<'_, '_, '_> {
             result: value.ty,
         };
         let lowered = match name {
-            "saturating_add" | "saturating_sub" | "exact_div" => {
-                self.unqualified_arithmetic(call)?
-            }
+            "exact_div" => self.unqualified_arithmetic(call)?,
             "ctpop" | "ctlz" | "ctlz_nonzero" | "cttz" | "cttz_nonzero" | "bswap"
             | "bitreverse" => self.unqualified_bits(call)?,
             "offset" | "slice_get_unchecked" | "ptr_offset_from" | "ptr_offset_from_unsigned" => {

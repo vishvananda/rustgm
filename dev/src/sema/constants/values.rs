@@ -711,6 +711,21 @@ impl<'a> Evaluator<'a> {
         )
         .map(Constant::scalar)
     }
+    pub(crate) fn saturating_integer(
+        &self,
+        op: Punctuation,
+        ty: TypeId,
+        left: Constant,
+        right: Constant,
+    ) -> Result<Constant, Failure> {
+        arithmetic::saturating(
+            op,
+            self.primitive(ty)?,
+            left.as_scalar()?,
+            right.as_scalar()?,
+        )
+        .map(Constant::scalar)
+    }
     /// # Errors
     /// Requires the already selected scalar, enum or function-pointer cast.
     pub fn cast(

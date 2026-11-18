@@ -66,6 +66,94 @@ fn every_integer_width_retains_exact_unchecked_arithmetic_bits() -> Result {
     program("legacy-sub")?;
     Ok(())
 }
+
+fn saturating_source() -> Result<String> {
+    let original = source::fixture(&format!("{PACKET}/ordinary.rs"))?;
+    let (roles, _) = original
+        .split_once("const fn unchecked_mul")
+        .ok_or("source roles")?;
+    Ok(format!(
+        r#"{roles}
+        #[rustc_intrinsic_const_stable_indirect]
+        #[rustc_nounwind]
+        #[rustc_intrinsic]
+        pub const fn saturating_add<T: Copy>(a: T, b: T) -> T;
+        #[rustc_intrinsic_const_stable_indirect]
+        #[rustc_nounwind]
+        #[rustc_intrinsic]
+        pub const fn saturating_sub<T: Copy>(a: T, b: T) -> T;
+        const U8_FLOOR: u8 = saturating_sub(5, 6);
+        const U8_CEILING: u8 = saturating_add(250, 10);
+        const I8_FLOOR: i8 = saturating_sub(129u8 as i8, 2);
+        const I8_CEILING: i8 = saturating_sub(126, 251u8 as i8);
+        const I128_FLOOR: i128 = saturating_sub(170141183460469231731687303715884105728u128 as i128, 1);
+        const U128_CEILING: u128 = saturating_add(340282366920938463463374607431768211455, 1);
+        const NO_OVERFLOW: u8 = saturating_sub(7, 2);
+        #[unsafe(no_mangle)]
+        pub extern "C" fn add_i8(a: i8, b: i8) -> i8 {{ saturating_add(a, b) }}
+        #[unsafe(no_mangle)]
+        pub extern "C" fn sub_u8(a: u8, b: u8) -> u8 {{ saturating_sub(a, b) }}
+        "#
+    ))
+}
+
+#[test]
+fn source_saturation_preserves_signed_and_unsigned_target_widths() -> Result {
+    let input = saturating_source()?;
+    let report = source::source_provider(&input, "saturating_arithmetic")?;
+    let analysis = pipeline::analyze_source(&report)?;
+    for (name, bits) in [
+        ("U8_FLOOR", 0),
+        ("U8_CEILING", 255),
+        ("I8_FLOOR", 128),
+        ("I8_CEILING", 127),
+        ("I128_FLOOR", 1_u128 << 127),
+        ("U128_CEILING", u128::MAX),
+        ("NO_OVERFLOW", 5),
+    ] {
+        assert_eq!(constant(&report, &analysis.facts, name)?, bits, "{name}");
+    }
+    crate::provider_traits::lower_report(&report)?;
+    let bad = format!("{input} const BAD: bool = saturating_sub(false, true);");
+    let report = source::source_provider(&bad, "noninteger_saturation")?;
+    let error = pipeline::analyze_source(&report)
+        .err()
+        .ok_or("accepted noninteger saturation")?;
+    assert!(
+        error.to_string().contains("supported closed scalar type"),
+        "{error}"
+    );
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires pinned CPPGM and the host C linker"]
+fn source_saturation_executes_through_the_authenticated_runtime_path() -> Result {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let folder = root.join(format!(
+        "obj/parallel/intrinsic-next/saturation-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let program = crate::provider_traits::lower(&saturating_source()?)?;
+    crate::ffi_program::check(
+        &root,
+        &folder,
+        "saturation",
+        &program,
+        r#"#include <stdint.h>
+        #include <stdio.h>
+        extern int8_t add_i8(int8_t, int8_t);
+        extern uint8_t sub_u8(uint8_t, uint8_t);
+        int main(void) {
+            printf("%d %d %d %d %d\n", add_i8(-127, -2), add_i8(126, 5), add_i8(3, 4),
+                   sub_u8(5, 6), sub_u8(7, 2));
+        }"#,
+        "-128 127 7 0 5\n",
+    )?;
+    Ok(())
+}
+
 #[test]
 fn overflow_zero_minimum_types_and_call_contracts_reject() -> Result {
     for (name, reason) in [
