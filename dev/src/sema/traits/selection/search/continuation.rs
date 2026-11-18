@@ -363,7 +363,7 @@ impl<'a> Search<'a> {
             self.query.export_completed(facts, decision)?;
         }
         let decision = self.positive_child(facts, &mut completed, decision)?;
-        self.accept(facts, parent, decision)?;
+        self.accept(facts, parent, &mut completed, decision)?;
         Ok(None)
     }
 

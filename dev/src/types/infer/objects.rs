@@ -2,6 +2,7 @@
 mod requirements;
 use super::{Constructor, Context, Error, Kind, RegionId, Store, TermId};
 use crate::support::hash::HashMap;
+pub(crate) use requirements::Requirement;
 
 /// Context-owned metadata keeps the common inference term compact.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

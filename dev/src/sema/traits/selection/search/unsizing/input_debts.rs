@@ -1,8 +1,11 @@
 //! Ordinary lifetime formation remains debt, independent of physical pointee shape.
-use super::super::{Declarations, Node, Search, inference};
+use super::{
+    super::{Declarations, Frame, Node, Search, inference},
+    Mechanical,
+};
 use crate::types::{
     Kind, RegionId, TypeId,
-    infer::Context,
+    infer::{self, Context},
     lifetime_proof::ScopeId,
     outlives::{Pair, ParameterPair, ProjectionPair, Queries},
     parameters::predicates::{Bound, Predicate},
@@ -40,6 +43,44 @@ fn collect(facts: &Declarations, context: &mut Context, ty: TypeId) -> Result<De
     result
 }
 impl Search<'_> {
+    pub(super) fn retain_endpoint_debts(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &mut Frame,
+        input_index: usize,
+    ) -> Result<(), String> {
+        let scope = frame.scope;
+        let first = frame.first;
+        let Some(Mechanical::Unsize(pending)) = frame.language.as_deref_mut() else {
+            return Err("missing Unsize input proof".into());
+        };
+        let goal = pending
+            .goals
+            .get(input_index)
+            .ok_or("missing Unsize input goal")?;
+        match frame
+            .inputs
+            .context
+            .resolved_predicate(&mut facts.types, &goal.predicate)
+        {
+            Ok(goal) => {
+                if let Some(prefix) = self.unsizing_input_debts(
+                    facts,
+                    &mut frame.inputs.context,
+                    goal,
+                    scope,
+                    first,
+                    pending.end,
+                )? {
+                    pending.children.push(prefix);
+                }
+            }
+            Err(infer::Error::Unresolved | infer::Error::Normalization) => {}
+            Err(error) => return Err(inference(error)),
+        }
+        Ok(())
+    }
+
     pub(super) fn unsizing_input_debts(
         &mut self,
         facts: &mut Declarations,

@@ -772,6 +772,7 @@ impl Search<'_> {
         &mut self,
         facts: &mut Declarations,
         frame: &mut Frame,
+        child: &mut Frame,
         decision: Decision,
     ) -> Result<(), String> {
         let decision = self.accept_negative(facts, decision)?;
@@ -804,7 +805,7 @@ impl Search<'_> {
             frame.language.as_deref(),
             Some(mechanical::Pending::Unsize(_))
         ) {
-            return self.accept_unsizing(facts, frame, decision);
+            return self.accept_unsizing(facts, frame, child, decision);
         }
         if matches!(
             frame.language.as_deref(),

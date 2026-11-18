@@ -20,15 +20,22 @@ impl ExportSource {
         }
     }
 }
+enum Sources {
+    Intervals(Vec<ExportSource>),
+    Scoped(HashMap<RegionId, bool>),
+}
 pub(super) struct Export {
-    sources: Vec<ExportSource>,
+    sources: Sources,
     pub next: u32,
     witnesses: Vec<(RegionId, RegionId)>,
 }
 impl Export {
     pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
         let mut total = crate::support::retained::Allocation::default();
-        total.vector(&self.sources);
+        match &self.sources {
+            Sources::Intervals(sources) => total.vector(sources),
+            Sources::Scoped(sources) => total.map(sources),
+        }
         total.vector(&self.witnesses);
         total
     }
@@ -37,6 +44,9 @@ impl Export {
         if first < self.next || first >= 0x8000_0000 {
             return Err("invalid witness export allocation frontier");
         }
+        let Sources::Intervals(retained) = &mut self.sources else {
+            return Err("cannot append intervals to a scoped export");
+        };
         let mut end = self.next;
         for source in sources {
             let interval = source.interval();
@@ -45,7 +55,7 @@ impl Export {
             }
             end = interval.end;
         }
-        self.sources.extend_from_slice(sources);
+        retained.extend_from_slice(sources);
         self.next = first;
         Ok(())
     }
@@ -57,23 +67,35 @@ impl Export {
         steps: &mut usize,
     ) -> Result<RegionId, &'static str> {
         if region.bound_parts().is_some() {
-            return Err("witness export retains an unopened surrounding lifetime");
+            return if matches!(self.sources, Sources::Scoped(_)) {
+                Ok(region)
+            } else {
+                Err("witness export retains an unopened surrounding lifetime")
+            };
         }
-        let mut comparisons = 1;
-        let index = self.sources.partition_point(|source| {
-            comparisons += 1;
-            source.interval().end <= region.0
-        });
-        *steps = steps.saturating_add(comparisons);
+        let private = match &self.sources {
+            Sources::Scoped(regions) => {
+                *steps = steps.saturating_add(1);
+                regions.get(&region).copied()
+            }
+            Sources::Intervals(sources) => {
+                let mut comparisons = 1;
+                let index = sources.partition_point(|source| {
+                    comparisons += 1;
+                    source.interval().end <= region.0
+                });
+                *steps = steps.saturating_add(comparisons);
+                sources
+                    .get(index)
+                    .filter(|source| source.interval().contains(&region.0))
+                    .map(|source| matches!(source, ExportSource::Private(_)))
+            }
+        }
+        .ok_or("witness export contains a universal or unowned lifetime")?;
         if *steps > WORK_LIMIT {
             return Err("witness export work budget exhausted");
         }
-        let source = self
-            .sources
-            .get(index)
-            .filter(|source| source.interval().contains(&region.0))
-            .ok_or("witness export contains a universal or unowned lifetime")?;
-        if matches!(source, ExportSource::Caller(_)) {
+        if !private {
             return Ok(region);
         }
         let next = self
@@ -103,7 +125,7 @@ impl Bound {
         let mut fold = Self::new(Vec::new());
         fold.account_arguments(sources.len())?;
         let mut export = Export {
-            sources: Vec::new(),
+            sources: Sources::Intervals(Vec::new()),
             next: 1,
             witnesses: Vec::new(),
         };
@@ -113,6 +135,56 @@ impl Bound {
             replacements: HashMap::default(),
         }));
         Ok(fold)
+    }
+
+    /// A nested proof can refer to retained ancestors and still-bound caller names.
+    pub(crate) fn scoped_export_regions() -> Self {
+        let mut fold = Self::new(Vec::new());
+        fold.action = Action::Regions(Box::new(Mapping {
+            mode: Mode::Export(Box::new(Export {
+                sources: Sources::Scoped(HashMap::default()),
+                next: 1,
+                witnesses: Vec::new(),
+            })),
+            replacements: HashMap::default(),
+        }));
+        fold
+    }
+
+    /// Authorize the exact free regions observed on refined inputs for this publication.
+    /// Preserve previous exports across partial proof publication and resumption.
+    pub(crate) fn prepare_scoped_export(
+        &mut self,
+        sources: &[(RegionId, bool)],
+        first: u32,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        self.account_arguments(sources.len())?;
+        let Action::Regions(mapping) = &mut self.action else {
+            return Err("missing scoped lifetime export fold");
+        };
+        let Mode::Export(export) = &mut mapping.mode else {
+            return Err("missing scoped lifetime export mapping");
+        };
+        let Sources::Scoped(regions) = &mut export.sources else {
+            return Err("scoped lifetime export has interval sources");
+        };
+        if first < export.next || first >= 0x8000_0000 {
+            return Err("invalid scoped witness export allocation frontier");
+        }
+        let growth = crate::support::retained::Growth::map::<RegionId, bool>(
+            0,
+            regions.capacity(),
+            sources.len(),
+        );
+        charge(growth.work.saturating_add(sources.len()), growth.bytes)?;
+        regions.clear();
+        regions
+            .try_reserve(sources.len())
+            .map_err(|_| "scoped witness observations exceed allocation limits")?;
+        regions.extend(sources.iter().copied());
+        export.next = first;
+        Ok(())
     }
 
     /// Register newly allocated inputs and continue at the actual global frontier.

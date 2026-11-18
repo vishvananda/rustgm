@@ -2,6 +2,7 @@
 #[cfg(test)]
 #[path = "../../../../../tests/invariants/coercion_formation.rs"]
 mod formation_tests;
+mod higher_ranked;
 mod input_debts;
 mod plan;
 mod struct_inputs;
@@ -15,12 +16,13 @@ use crate::{
     support::{bindings::LangItem, constness::Constness},
     types::{
         ItemId,
-        infer::{self, arguments::Argument},
+        infer::{self, arguments::Argument, objects::Requirement},
     },
 };
 
 pub(super) struct Pending {
-    goals: Vec<Goal>,
+    goals: Vec<Requirement>,
+    scoped: Option<Box<higher_ranked::Inputs>>,
     cursor: u32,
     children: Vec<usize>,
     phase: Phase,
@@ -55,7 +57,7 @@ impl Pending {
             || self
                 .goals
                 .get(index)
-                .is_none_or(|goal| goal.trait_arguments().is_none())
+                .is_none_or(|goal| goal.predicate.trait_arguments().is_none())
         {
             return Ok(false);
         }
@@ -161,7 +163,6 @@ impl Search<'_> {
             | Err(plan::Failure::Inference(
                 infer::Error::Unresolved | infer::Error::Normalization,
             )) => Completion::Deferred,
-            Ok(plan::Outcome::Unsupported(message)) => return Err(message.into()),
             Err(error) => return Err(error.to_string()),
         };
         let completion = if frame.deferred {
@@ -183,21 +184,22 @@ impl Search<'_> {
             return Err("source Unsize requires completed PointeeSized".into());
         }
         frame.inputs.context.account_work(2).map_err(inference)?;
-        goals.push(Goal::trait_application(
-            source,
-            ItemId(pointee.definition.0),
-            Vec::new(),
-        ));
-        goals.push(Goal::trait_application(
-            target,
-            ItemId(pointee.definition.0),
-            Vec::new(),
-        ));
+        for subject in [source, target] {
+            goals.push(Requirement {
+                predicate: Goal::trait_application(
+                    subject,
+                    ItemId(pointee.definition.0),
+                    Vec::new(),
+                ),
+                bound_regions: None,
+            });
+        }
         // Every generated goal was charged under the existing 1,000,000-step
         // inference budget. Check the retained cursor width independently too.
         u32::try_from(goals.len()).map_err(|_| "source Unsize goal count overflow")?;
         frame.language = Some(Box::new(Mechanical::Unsize(Pending {
             goals,
+            scoped: None,
             cursor: 0,
             children: Vec::new(),
             phase: Phase::Ready(completion),
@@ -232,8 +234,11 @@ impl Search<'_> {
             .goals
             .get(pending.index()?)
             .ok_or("missing source Unsize child")?;
-        let mut child = Frame::new(facts, &mut frame.inputs.context, goal, first)?;
+        let mut child = Frame::new(facts, &mut frame.inputs.context, &goal.predicate, first)?;
         child.scope = frame.scope;
+        if let Some(count) = goal.bound_regions {
+            self.open_unsize_child(facts, &mut child, &mut pending.scoped, count)?;
+        }
         child.inference = if frame.inference == super::frames::Inference::Disabled {
             super::frames::Inference::Disabled
         } else {
@@ -245,10 +250,9 @@ impl Search<'_> {
         &mut self,
         facts: &mut Declarations,
         frame: &mut Frame,
+        child: &mut Frame,
         decision: Decision,
     ) -> Result<(), String> {
-        let scope = frame.scope;
-        let first = frame.first;
         let Some(Mechanical::Unsize(pending)) = frame.language.as_deref_mut() else {
             return Err("missing source Unsize parent".into());
         };
@@ -273,24 +277,31 @@ impl Search<'_> {
             }
             decision => decision,
         };
-        pending.end = pending.end.max(self.query.allocations.end());
         if let Decision::Proven(node) = decision {
-            frame
-                .inputs
-                .context
-                .equate_proved_predicate(
-                    &mut facts.types,
-                    pending
-                        .goals
-                        .get(pending.index()?)
-                        .ok_or("missing source Unsize child goal")?,
-                    self.query.nodes[node].goal,
-                )
-                .map_err(inference)?;
+            let goal = pending
+                .goals
+                .get(input_index)
+                .ok_or("missing source Unsize child goal")?;
+            if goal.bound_regions.is_some() {
+                self.match_unsize_child(facts, frame, child, node)?;
+            } else {
+                frame
+                    .inputs
+                    .context
+                    .equate_proved_predicate(
+                        &mut facts.types,
+                        &goal.predicate,
+                        self.query.nodes[node].goal,
+                    )
+                    .map_err(inference)?;
+            }
+            let pending = frame.unsizing()?;
+            pending.end = pending.end.max(self.query.allocations.end());
             pending.children.push(node);
             pending.advance()?;
             pending.end = pending.end.max(self.query.nodes[node].end);
         } else {
+            pending.end = pending.end.max(self.query.allocations.end());
             let completion = if matches!(decision, Decision::Deferred)
                 || matches!(pending.completion(), Completion::ConditionalObject)
             {
@@ -319,30 +330,7 @@ impl Search<'_> {
         }
 
         if is_input {
-            let goal = pending
-                .goals
-                .get(input_index)
-                .ok_or("missing Unsize input goal")?;
-            match frame
-                .inputs
-                .context
-                .resolved_predicate(&mut facts.types, goal)
-            {
-                Ok(goal) => {
-                    if let Some(prefix) = self.unsizing_input_debts(
-                        facts,
-                        &mut frame.inputs.context,
-                        goal,
-                        scope,
-                        first,
-                        pending.end,
-                    )? {
-                        pending.children.push(prefix);
-                    }
-                }
-                Err(infer::Error::Unresolved | infer::Error::Normalization) => {}
-                Err(error) => return Err(inference(error)),
-            }
+            self.retain_endpoint_debts(facts, frame, input_index)?;
         }
         Ok(())
     }
@@ -352,7 +340,11 @@ impl Search<'_> {
         frame: &mut Frame,
         mut child: Frame,
     ) -> Result<(), String> {
-        child.publish(facts, &mut frame.inputs.context)?;
+        if child.scope == frame.scope {
+            child.publish(facts, &mut frame.inputs.context)?;
+        } else {
+            self.publish_unsize_child(facts, frame, &mut child)?;
+        }
         let end = self.query.allocations.end();
         let slot = self.query.retain_partial(child)?;
         let pending = frame.unsizing()?;

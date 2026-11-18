@@ -1,7 +1,7 @@
 //! Structural eligibility creates all children; it is never a selected proof.
 use crate::{
     sema::model::Declarations,
-    types::infer::{Constructor, Context, Error, TermId, predicates::Predicate},
+    types::infer::{Constructor, Context, Error, TermId, objects::Requirement},
 };
 pub(super) enum Outcome {
     Ready,
@@ -10,7 +10,6 @@ pub(super) enum Outcome {
     ConditionalObject,
     Absent,
     Deferred,
-    Unsupported(&'static str),
 }
 pub(super) use crate::sema::annotations::FieldError as Failure;
 
@@ -19,7 +18,7 @@ pub(super) fn requirements(
     context: &mut Context,
     source: TermId,
     target: TermId,
-    goals: &mut Vec<Predicate>,
+    goals: &mut Vec<Requirement>,
 ) -> Result<Outcome, Failure> {
     context.account_work(1)?;
     let heads = [
@@ -54,22 +53,14 @@ pub(super) fn requirements(
                 context.object_requirements(&mut facts.types, source, target)?
             };
             context.account_work(requirements.len())?;
-            if requirements
-                .iter()
-                .any(|requirement| requirement.bound_regions.is_some())
-            {
-                return Ok(Outcome::Unsupported(
-                    "source Unsize quantified object goals are not implemented",
-                ));
-            }
             // Trait/projection equations can refine the later builtin inputs.
             // Every requirement is retained; this changes no effect ordering.
             let mut builtins = Vec::new();
             for requirement in requirements {
                 if requirement.predicate.builtin_bound().is_some() {
-                    builtins.push(requirement.predicate);
+                    builtins.push(requirement);
                 } else {
-                    goals.push(requirement.predicate);
+                    goals.push(requirement);
                 }
             }
             goals.append(&mut builtins);

@@ -1,4 +1,5 @@
 //! Sparse universe metadata preserves selected graph debts without copying ancestor proofs.
+mod exports;
 use super::{Decision, Declarations, Node, Predicate, Query};
 use crate::support::hash::HashMap;
 use crate::types::{
@@ -25,6 +26,7 @@ struct Reservation {
     scope: ScopeId,
     regions: Range<u32>,
     alias: bool,
+    exported: bool,
     selected: bool,
 }
 #[derive(Default)]
@@ -389,6 +391,7 @@ impl Scopes {
             scope,
             regions,
             alias,
+            exported: false,
             selected: false,
         });
         Ok(())
@@ -632,7 +635,8 @@ impl Scopes {
         }
         for reservation in self.reservations {
             if !(reservation.selected
-                || reservation.alias && self.universes[reservation.scope.0 as usize - 1].selected)
+                || (reservation.alias || reservation.exported)
+                    && self.universes[reservation.scope.0 as usize - 1].selected)
             {
                 continue;
             }

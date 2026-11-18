@@ -219,6 +219,27 @@ impl Refinement {
             .map(|(changed, _)| changed)
     }
 
+    /// Observe only the free lifetimes that this query could export to its caller.
+    pub(crate) fn publication_regions(
+        &mut self,
+        store: &mut Store,
+    ) -> Result<Vec<RegionId>, Error> {
+        let Some(inputs) = &self.inputs else {
+            return Ok(Vec::new());
+        };
+        if inputs.types.is_empty() {
+            return Ok(Vec::new());
+        }
+        let roots: Vec<_> = inputs.types.iter().map(|&(_, root)| root).collect();
+        let mut observing = Bound::observe_regions();
+        self.context
+            .map_region_roots(store, &roots, &mut observing)?;
+        Ok(observing
+            .observed_regions()
+            .filter(|r| r.bound_parts().is_none())
+            .collect())
+    }
+
     fn publish_inputs(
         &mut self,
         store: &mut Store,

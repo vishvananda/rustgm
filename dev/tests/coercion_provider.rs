@@ -9,6 +9,8 @@ mod envelopes;
 mod erasure;
 #[path = "coercion_provider/struct_goals.rs"]
 mod struct_goals;
+#[path = "coercion_provider/unsize_binders.rs"]
+mod unsize_binders;
 
 const POSITIVE: &[&str] = &[
     "array-slice",

@@ -6,7 +6,10 @@ use crate::{
     types::{
         ItemId, TypeId,
         arguments::Argument as Canonical,
-        infer::{Context, Error, TermId, arguments::Argument, predicates::Predicate},
+        infer::{
+            Context, Error, TermId, arguments::Argument, objects::Requirement,
+            predicates::Predicate,
+        },
     },
 };
 
@@ -15,7 +18,7 @@ pub(super) fn requirements(
     context: &mut Context,
     pair: (TermId, TermId),
     owners: (ItemId, ItemId),
-    goals: &mut Vec<Predicate>,
+    goals: &mut Vec<Requirement>,
 ) -> Result<Outcome, Failure> {
     if owners.0 != owners.1 {
         return Ok(Outcome::Absent);
@@ -43,11 +46,14 @@ pub(super) fn requirements(
         .and_then(|catalog| catalog.language(LangItem::Unsize))
         .ok_or("nominal source Unsize lost its actual trait")?;
     context.account_work(1)?;
-    goals.push(Predicate::trait_application(
-        source,
-        ItemId(role.definition.0),
-        vec![Argument::Type(target)],
-    ));
+    goals.push(Requirement {
+        predicate: Predicate::trait_application(
+            source,
+            ItemId(role.definition.0),
+            vec![Argument::Type(target)],
+        ),
+        bound_regions: None,
+    });
     Ok(Outcome::Ready)
 }
 

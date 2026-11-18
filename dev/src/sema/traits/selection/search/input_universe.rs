@@ -72,16 +72,7 @@ impl Search<'_> {
             .stack
             .first_mut()
             .ok_or("missing universal root frame")?;
-        let goal = frame
-            .normalization
-            .as_ref()
-            .and_then(|normalization| normalization.original_inputs())
-            .unwrap_or(&frame.goal);
-        frame
-            .inputs
-            .context
-            .equate_proved_predicate(&mut facts.types, goal, self.query.nodes[selected].goal)
-            .map_err(inference)?;
+        frame.match_scoped_goal(facts, self.query.nodes[selected].goal)?;
         self.publish_inputs(facts, caller)?;
         let frame = self
             .query
@@ -96,6 +87,24 @@ impl Search<'_> {
             .ok_or("missing universal proof scopes")?
             .equalities(frame.scope, equalities)?;
         Ok(())
+    }
+}
+
+impl Frame {
+    pub(super) fn match_scoped_goal(
+        &mut self,
+        facts: &mut Declarations,
+        selected: super::Predicate,
+    ) -> Result<(), String> {
+        let goal = self
+            .normalization
+            .as_ref()
+            .and_then(|normalization| normalization.original_inputs())
+            .unwrap_or(&self.goal);
+        self.inputs
+            .context
+            .equate_proved_predicate(&mut facts.types, goal, selected)
+            .map_err(inference)
     }
 }
 
