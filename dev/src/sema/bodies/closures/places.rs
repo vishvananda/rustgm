@@ -279,7 +279,12 @@ impl Places {
     }
     /// A box's content is no capture projection here: as with a `Deref`
     /// call, the capture stops at the box itself.
-    fn boxed(&self, checker: &mut Checker<'_>, node: NodeId, place: Place) -> Result<bool, Error> {
+    pub(super) fn boxed(
+        &self,
+        checker: &mut Checker<'_>,
+        node: NodeId,
+        place: Place,
+    ) -> Result<bool, Error> {
         let term = self.types[place.path.index()];
         let boxed = checker.facts.aggregates.owned_box();
         Ok(matches!(

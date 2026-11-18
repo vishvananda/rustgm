@@ -26,7 +26,7 @@ pub(in crate::sema) struct Selected {
 pub(in crate::sema) enum Progress {
     Ready(Selected),
     Prepare(std::vec::IntoIter<DefId>),
-    Absent(&'static str),
+    Absent(&'static str, (TermId, u32)),
 }
 #[derive(Clone, Copy)]
 enum Lane {
@@ -60,10 +60,69 @@ pub(in crate::sema) fn choose(
 ) -> Result<Progress, Error> {
     let error = |message: &str| Declarations::error(report, key, message);
     let identifier = super::names::Use::receiver(report, key, site)?;
-    let (base, depth) = source
-        .reference_target(&facts.types, term)
-        .map_err(inference)
-        .map_err(error)?;
+    let mut prefix = 0;
+    loop {
+        let tail = source
+            .reference_target(&facts.types, term)
+            .map_err(inference)
+            .map_err(error)?;
+        match choose_at(
+            report,
+            facts,
+            source,
+            key,
+            (term, tail),
+            (site, identifier),
+            caller,
+        )? {
+            Progress::Ready(mut selected) => {
+                selected.dereferences =
+                    combine_depths(prefix, selected.dereferences).map_err(error)?;
+                return Ok(Progress::Ready(selected));
+            }
+            Progress::Prepare(members) => return Ok(Progress::Prepare(members)),
+            Progress::Absent(message, (subject, depth)) => {
+                let dereferences = combine_depths(prefix, depth).map_err(error)?;
+                let head = source
+                    .head(&facts.types, subject)
+                    .map_err(inference)
+                    .map_err(error)?;
+                if let Some(Constructor::Adt(item, _) | Constructor::AdtArgs(item, _)) = head
+                    && facts.aggregates.owned_box() == Some(item)
+                {
+                    // The box's built-in projection keeps its content as a place.
+                    prefix = combine_depths(dereferences, 1).map_err(error)?;
+                    source.account_work(1).map_err(inference).map_err(error)?;
+                    term = source
+                        .child(&facts.types, subject, 0)
+                        .map_err(inference)
+                        .map_err(error)?;
+                    continue;
+                }
+                return Ok(Progress::Absent(message, (subject, dereferences)));
+            }
+        }
+    }
+}
+
+fn combine_depths(prefix: u32, depth: u32) -> Result<u32, &'static str> {
+    prefix
+        .checked_add(depth)
+        .filter(|&total| total <= 1_000_000)
+        .ok_or("method receiver dereference budget exceeded")
+}
+
+fn choose_at(
+    report: &Report,
+    facts: &mut Declarations,
+    source: &mut Context,
+    key: NodeKey,
+    (mut term, (base, depth)): (TermId, (TermId, u32)),
+    (site, identifier): (MethodCall, super::names::Use),
+    caller: Caller<'_>,
+) -> Result<Progress, Error> {
+    let error = |message: &str| Declarations::error(report, key, message);
+    let absent = |message| Progress::Absent(message, (base, depth));
     let head = source
         .head(&facts.types, base)
         .map_err(inference)
@@ -92,7 +151,7 @@ pub(in crate::sema) fn choose(
     let has_traits = facts.methods.trait_names.contains(&site.name);
     let library = library_method(report, head, site.name);
     if inherent.members.is_empty() && !has_traits && library.is_none() {
-        return Ok(Progress::Absent(if inherent.filtered {
+        return Ok(absent(if inherent.filtered {
             "no applicable inherent method for this receiver"
         } else if matches!(head, Some(Constructor::Adt(..) | Constructor::AdtArgs(..))) {
             "no inherent method with this name"
@@ -153,7 +212,7 @@ pub(in crate::sema) fn choose(
             return Ok(Progress::Ready(selected));
         }
     }
-    Ok(Progress::Absent(if has_traits {
+    Ok(absent(if has_traits {
         "no applicable method for this receiver"
     } else {
         "no applicable inherent method for this receiver"

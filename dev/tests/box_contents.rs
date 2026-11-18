@@ -59,13 +59,13 @@ const REJECTED: [(&str, &str); 6] = [
 const MOVED: &str = "local may be uninitialized or moved at this read";
 
 fn program(name: &str) -> Result<rustgm::lowir::program::Program> {
+    owned_box_program(&crate::resolve::fixture(&format!("{PACKET}/{name}.rs"))?)
+}
+
+fn owned_box_program(source: &str) -> Result<rustgm::lowir::program::Program> {
     let mut config = rustgm::expand::config::Config::default();
     config.set_lint_cap(rustgm::support::diagnostics::LintCap::Allow);
-    let report = crate::resolve::source_provider_config(
-        &crate::resolve::fixture(&format!("{PACKET}/{name}.rs"))?,
-        "owned_boxes",
-        &config,
-    )?;
+    let report = crate::resolve::source_provider_config(source, "owned_boxes", &config)?;
     let rustgm::pipeline::Analysis {
         mut facts,
         prepared,
@@ -101,6 +101,129 @@ fn owned_boxes_lower_and_their_controls_reject() {
         }
     }
     assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+const BOX_DEREF: &str = r#"
+#[lang = "tuple_trait"] #[rustc_deny_explicit_impl] pub trait Tuple {}
+#[lang = "fn_once"] pub const trait FnOnce<Args: Tuple> {
+    #[lang = "fn_once_output"] type Output;
+    extern "rust-call" fn call_once(self, args: Args) -> Self::Output;
+}
+#[lang = "fn_mut"] pub const trait FnMut<Args: Tuple>: FnOnce<Args> {
+    extern "rust-call" fn call_mut(&mut self, args: Args) -> Self::Output;
+}
+#[lang = "fn"] pub const trait Fn<Args: Tuple>: [const] FnMut<Args> {
+    extern "rust-call" fn call(&self, args: Args) -> Self::Output;
+}
+#[lang = "deref"] pub trait Deref: PointeeSized {
+    #[lang = "deref_target"] type Target: PointeeSized;
+    fn deref(&self) -> &Self::Target;
+}
+impl<T: ?Sized, A> Deref for Box<T, A> {
+    type Target = T;
+    fn deref(&self) -> &T { &**self }
+}
+struct Wrap(Box<Pair>);
+impl Deref for Wrap {
+    type Target = Box<Pair>;
+    fn deref(&self) -> &Box<Pair> { &self.0 }
+}
+"#;
+
+#[test]
+fn method_receivers_preserve_owned_box_places_and_borrowed_access() -> Result {
+    let fixture = crate::resolve::fixture(&format!("{PACKET}/box-in-box.rs"))?;
+    let (roles, _) = fixture
+        .split_once("#[unsafe(no_mangle)]")
+        .ok_or("Box roles")?;
+    let cases = [
+        (
+            "owned",
+            BOX_DEREF,
+            "let left = boxed.into_left(); left.0",
+            true,
+        ),
+        (
+            "builtin-only",
+            "",
+            "let left = boxed.into_left(); left.0",
+            true,
+        ),
+        (
+            "nested",
+            BOX_DEREF,
+            "let left = Box::new(boxed).into_left(); left.0",
+            true,
+        ),
+        (
+            "borrowed",
+            BOX_DEREF,
+            "let left = (&boxed).into_left(); left.0",
+            false,
+        ),
+        (
+            "box-before-overloaded",
+            BOX_DEREF,
+            "Box::new(Wrap(boxed)).value()",
+            true,
+        ),
+        (
+            "overloaded-before-box",
+            BOX_DEREF,
+            "Wrap(boxed).value()",
+            true,
+        ),
+        (
+            "box-overloaded-move",
+            BOX_DEREF,
+            "let left = Box::new(Wrap(boxed)).into_left(); left.0",
+            false,
+        ),
+        (
+            "shared-closure",
+            BOX_DEREF,
+            "let read = || boxed.value(); read()",
+            true,
+        ),
+        (
+            "owned-closure",
+            BOX_DEREF,
+            "let take = || boxed.into_left(); let left = take(); left.0",
+            true,
+        ),
+        (
+            "box-method-priority",
+            "impl Box<Pair> { fn into_left(self) -> u8 { 77 } }",
+            "boxed.into_left()",
+            true,
+        ),
+    ];
+    let mut failures = Vec::new();
+    for (name, declarations, body, allowed) in cases {
+        let text = format!(
+            r#"#![feature(unboxed_closures)]
+{roles}{declarations}
+            impl Pair {{
+                fn into_left(self) -> Noisy {{ self.left }}
+                fn value(&self) -> u8 {{ self.left.0 }}
+            }}
+            #[unsafe(no_mangle)] pub extern "C" fn run() -> u8 {{
+                let boxed = Box::new(Pair {{ left: Noisy(1), right: Noisy(2) }});
+                {body}
+            }}
+        "#
+        );
+        match (allowed, owned_box_program(&text)) {
+            (true, Ok(_)) => {}
+            (false, Err(error))
+                if error
+                    .to_string()
+                    .contains("cannot move a non-Copy value out of a reference") => {}
+            (_, result) => failures.push(format!("{name}: {:?}", result.err())),
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
 }
 
 /// Each accepted program prints exactly what rustc's build of it prints.

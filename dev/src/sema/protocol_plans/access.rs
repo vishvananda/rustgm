@@ -330,14 +330,14 @@ pub(in crate::sema) fn check_rows(
     );
     let mut calls = plan.calls().map_err(error)?;
     while let Some(step) = next_from(plan, steps, entries, &mut calls).map_err(error)? {
-        ty = references(facts, ty, step.dereferences).map_err(error)?;
+        ty = builtin_dereferences(facts, ty, step.dereferences).map_err(error)?;
         if ty != step.subject {
             return Err(error("field step changed its actual current subject"));
         }
         check_call(report, facts, plan, step, &mut shapes)?;
         ty = step.target;
     }
-    if references(facts, ty, dereferences).map_err(error)? != receiver {
+    if builtin_dereferences(facts, ty, dereferences).map_err(error)? != receiver {
         return Err(error("field step chain changed its actual final receiver"));
     }
     if let super::Kind::Receiver { call, .. } = plan.kind {
@@ -374,19 +374,20 @@ fn indexed_receiver(
     }
 }
 
-pub(crate) fn references(
+fn builtin_dereferences(
     facts: &super::super::model::Declarations,
     mut ty: TypeId,
     count: u32,
 ) -> Result<TypeId, &'static str> {
     if count > 1_000_000 {
-        return Err("field reference depth exceeds its existing work limit");
+        return Err("field dereference depth exceeds its existing work limit");
     }
     for _ in 0..count {
-        let Some(crate::types::Kind::Reference { referent, .. }) = facts.types.kind(ty) else {
-            return Err("field step lost its actual built-in reference prefix");
+        ty = match facts.types.kind(ty) {
+            Some(crate::types::Kind::Reference { referent, .. }) => referent,
+            _ => crate::sema::compiler_items::boxes::content(&facts.types, &facts.aggregates, ty)?
+                .ok_or("field step lost its built-in dereference prefix")?,
         };
-        ty = referent;
     }
     Ok(ty)
 }

@@ -240,15 +240,18 @@ impl Collector<'_> {
         } else {
             work
         };
-        for _ in 0..work.dereferences {
+        let mut remaining = work.dereferences;
+        while remaining != 0 && !self.places.boxed(checker, work.node, place)? {
             place = self.places.dereference(checker, work.node, place)?;
+            remaining -= 1;
         }
-        if work.dereferences != 0
+        let consumed = work.dereferences - remaining;
+        if consumed != 0
             && let Some((site, kind)) = work.receiver
         {
             let access = AdjustedAccess {
                 path: place.path,
-                dereferences: work.dereferences,
+                dereferences: consumed,
             };
             if self
                 .adjusted_accesses
@@ -276,10 +279,17 @@ impl Collector<'_> {
             }
             return Ok(true);
         }
-        let term = match work.usage {
-            Use::ValueOf(term) => term,
-            _ => self.places.types[place.path.index()],
-        };
+        let mut term = self.places.types[place.path.index()];
+        match work.usage {
+            Use::ValueOf(leaf) => term = leaf,
+            Use::Value => {
+                // Capture stops at the box, while Copy depends on the callee's value.
+                for _ in 0..remaining {
+                    term = checker.child(work.node, term, 0)?;
+                }
+            }
+            _ => {}
+        }
         let mut mode = if place.raw {
             Mode::Shared
         } else {

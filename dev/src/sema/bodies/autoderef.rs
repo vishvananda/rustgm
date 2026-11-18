@@ -36,16 +36,11 @@ impl Checker<'_> {
         &mut self,
         node: NodeId,
         operand: NodeId,
-        term: TermId,
+        (subject, dereferences): (TermId, u32),
     ) -> Result<bool, Error> {
         if !crate::sema::compiler_items::dereferencing::available(self.facts) {
             return Ok(false);
         }
-        let (subject, dereferences) = self
-            .state
-            .infer
-            .reference_target(&self.facts.types, term)
-            .map_err(|e| self.error(node, e))?;
         if self.head(node, subject)?.is_none() {
             return Ok(false);
         }

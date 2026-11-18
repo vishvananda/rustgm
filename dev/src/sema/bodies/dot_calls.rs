@@ -95,8 +95,8 @@ impl Checker<'_> {
         )?;
         let selected = match progress {
             receiver::Progress::Ready(selected) => selected,
-            receiver::Progress::Absent(message) => {
-                return if self.advance_method_receiver(node, site.receiver, term)? {
+            receiver::Progress::Absent(message, tail) => {
+                return if self.advance_method_receiver(node, site.receiver, tail)? {
                     Ok(None)
                 } else {
                     Err(self.error(node, message))
