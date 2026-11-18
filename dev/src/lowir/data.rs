@@ -1,6 +1,6 @@
 //! Persistent object storage and relocations use typed identities and flat data.
 use super::{
-    program::{self, MemorySpan, Program, Range, SymbolId},
+    program::{self, Binding, MemorySpan, Program, Range, SymbolId},
     vocabulary::Type,
 };
 
@@ -42,7 +42,18 @@ pub struct Global {
     pub span: MemorySpan,
     pub storage: GlobalStorage,
     pub kind: GlobalKind,
+    pub binding: Binding,
     pub items: Option<Range>,
+}
+impl Global {
+    #[must_use]
+    pub fn native_binding(&self) -> Binding {
+        match (self.kind, self.binding) {
+            (GlobalKind::Declaration, Binding::Weak) => Binding::Weak,
+            (GlobalKind::Definition, Binding::Internal) => Binding::Internal,
+            _ => Binding::Strong,
+        }
+    }
 }
 impl Program {
     /// Whether this global uses a checked GNU initializer section.
@@ -89,7 +100,7 @@ impl Program {
         span: MemorySpan,
         storage: GlobalStorage,
     ) -> Result<GlobalId, &'static str> {
-        self.global_symbol(name, span, storage, GlobalKind::Definition)
+        self.global_symbol(name, span, storage, GlobalKind::Definition, Binding::Strong)
     }
     /// Declare external storage without an initializer or a local definition.
     /// # Errors
@@ -100,7 +111,45 @@ impl Program {
         span: MemorySpan,
         storage: GlobalStorage,
     ) -> Result<GlobalId, &'static str> {
-        self.global_symbol(name, span, storage, GlobalKind::Declaration)
+        self.global_symbol(
+            name,
+            span,
+            storage,
+            GlobalKind::Declaration,
+            Binding::Strong,
+        )
+    }
+    /// Create a private definition with its own canonical identity.
+    ///
+    /// # Errors
+    /// Rejects invalid spans and any existing symbol with the same name.
+    pub fn internal_global(
+        &mut self,
+        name: String,
+        span: MemorySpan,
+        storage: GlobalStorage,
+    ) -> Result<GlobalId, &'static str> {
+        self.global_symbol(
+            name,
+            span,
+            storage,
+            GlobalKind::Definition,
+            Binding::Internal,
+        )
+    }
+
+    /// Declare weak external storage. A compatible ordinary declaration or
+    /// local definition retains its strong reference under the same identity.
+    ///
+    /// # Errors
+    /// Rejects invalid spans and incompatible or differently kinded aliases.
+    pub fn declare_weak_global(
+        &mut self,
+        name: String,
+        span: MemorySpan,
+        storage: GlobalStorage,
+    ) -> Result<GlobalId, &'static str> {
+        self.global_symbol(name, span, storage, GlobalKind::Declaration, Binding::Weak)
     }
     fn global_symbol(
         &mut self,
@@ -108,6 +157,7 @@ impl Program {
         span: MemorySpan,
         storage: GlobalStorage,
         kind: GlobalKind,
+        binding: Binding,
     ) -> Result<GlobalId, &'static str> {
         if span.bytes == 0
             || span.bytes > i64::MAX as u64
@@ -122,11 +172,17 @@ impl Program {
                 return Err("LowIR symbol kind conflicts with prior declaration");
             };
             let previous = &mut self.globals[id.0 as usize];
+            if previous.binding == Binding::Internal || binding == Binding::Internal {
+                return Err("LowIR internal global name conflicts with prior symbol");
+            }
             if previous.span != span || previous.storage != storage {
                 return Err("incompatible LowIR global declarations");
             }
             if kind == GlobalKind::Definition {
                 previous.kind = kind;
+            }
+            if binding == Binding::Strong {
+                previous.binding = binding;
             }
             return Ok(id);
         }
@@ -137,6 +193,7 @@ impl Program {
             span,
             storage,
             kind,
+            binding,
             items: None,
         });
         Ok(id)

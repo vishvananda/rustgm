@@ -32,6 +32,12 @@ pub struct Function {
     pub naming: Naming,
     pub linkage: Linkage,
 }
+/// A foreign static whose source storage contains a weak symbol's address.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum WeakStatic {
+    Data,
+    Function(TypeId),
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Global {
     pub ty: TypeId,
@@ -39,6 +45,7 @@ pub struct Global {
     pub safety: Safety,
     pub naming: Naming,
     pub linkage: Linkage,
+    pub weak: Option<WeakStatic>,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Item {
@@ -176,6 +183,13 @@ impl Registry {
     /// # Errors
     /// Rejects absent exact names and conflicting declarations or definitions.
     pub fn insert_global(&mut self, definition: DefId, global: Global) -> Result<(), &'static str> {
+        if global.weak.is_some()
+            && (global.mutable
+                || global.linkage != Linkage::Import
+                || !matches!(global.naming, Naming::Exact(_)))
+        {
+            return Err("weak static requires an immutable exact foreign import");
+        }
         self.insert(definition, Item::Global(global))
     }
     fn insert(&mut self, definition: DefId, item: Item) -> Result<(), &'static str> {

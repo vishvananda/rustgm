@@ -3,6 +3,7 @@ mod allocator_conflicts;
 mod linkage_attributes;
 mod llvm_permissions;
 mod simd;
+mod weak_statics;
 use super::{Checker, DefId, Error, Item, ItemKind, Kind, NodeKey, Safety, callable_convention};
 use crate::{
     syntax::item::Abi,
@@ -208,6 +209,7 @@ impl Checker<'_> {
         {
             return Err(self.error(key, "foreign static cannot have an initializer"));
         }
+        let weak = self.weak_static(definition, key, ty, mutable)?;
         if let Some((naming, linkage)) = self.foreign_linkage(definition, key)? {
             self.facts
                 .foreign
@@ -220,6 +222,7 @@ impl Checker<'_> {
                         safety,
                         naming,
                         linkage,
+                        weak,
                     },
                 )
                 .map_err(|e| self.error(key, e))?;

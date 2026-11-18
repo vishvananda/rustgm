@@ -67,6 +67,7 @@ fn declarations(
                     },
                     naming,
                     linkage: Linkage::Import,
+                    weak: None,
                 },
             )
             .map_err(error)?;

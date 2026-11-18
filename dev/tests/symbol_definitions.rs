@@ -2,9 +2,141 @@
 use rustgm::lowir::{
     builder::Builder,
     data::GlobalStorage,
-    program::{Function, Literal, Program, SignatureId, Symbol, SymbolId, Terminator},
+    program::{Binding, Function, Literal, Program, SignatureId, Symbol, SymbolId, Terminator},
     vocabulary::Type,
 };
+#[test]
+fn weak_declarations_merge_without_weakening_strong_names() -> Result<(), Box<dyn std::error::Error>>
+{
+    use rustgm::lowir::{data::Item, program::MemorySpan, writer};
+
+    let mut program = Program::default();
+    let span = MemorySpan { bytes: 1, align: 1 };
+    let signature = program.signature(&[], Type::I32, false)?;
+    let other = program.signature(&[], Type::I64, false)?;
+    let weak = program.declare_weak_function("weak_fn".into(), signature)?;
+    assert_eq!(
+        program.declare_weak_function("weak_fn".into(), signature)?,
+        weak
+    );
+    assert!(program.declare("weak_fn".into(), other, false).is_err());
+
+    let forward = program.declare_weak_function("strong_fn".into(), signature)?;
+    assert_eq!(
+        program.declare("strong_fn".into(), signature, false)?,
+        forward
+    );
+    assert_eq!(
+        program.declare_weak_function("strong_fn".into(), signature)?,
+        forward
+    );
+
+    let definition = program.declare_weak_function("defined_fn".into(), signature)?;
+    program.define(definition, body(7)?)?;
+    assert_eq!(
+        program.declare_weak_function("defined_fn".into(), signature)?,
+        definition
+    );
+
+    let storage = GlobalStorage::Readonly;
+    let weak = program.declare_weak_global("weak_data".into(), span, storage)?;
+    assert_eq!(
+        program.declare_weak_global("weak_data".into(), span, storage)?,
+        weak
+    );
+    assert!(
+        program
+            .declare_global("weak_data".into(), span, GlobalStorage::Writable)
+            .is_err()
+    );
+    assert!(
+        program
+            .declare_weak_function("weak_data".into(), signature)
+            .is_err()
+    );
+
+    let strong = program.declare_global("strong_data".into(), span, storage)?;
+    assert_eq!(
+        program.declare_weak_global("strong_data".into(), span, storage)?,
+        strong
+    );
+    let upgraded = program.declare_weak_global("upgraded_data".into(), span, storage)?;
+    assert_eq!(
+        program.declare_global("upgraded_data".into(), span, storage)?,
+        upgraded
+    );
+
+    let definition = program.declare_weak_global("defined_data".into(), span, storage)?;
+    assert_eq!(
+        program.global("defined_data".into(), span, storage)?,
+        definition
+    );
+    program.initialize(definition, &[Item::Zero(1)])?;
+    assert_eq!(
+        program.declare_weak_global("defined_data".into(), span, storage)?,
+        definition
+    );
+
+    let mut output = Vec::new();
+    writer::write(&program, &mut output)?;
+    let output = String::from_utf8(output)?;
+    assert!(
+        output
+            .lines()
+            .any(|line| line == "declare function @weak_fn() -> i32 [binding=weak]")
+    );
+    assert!(output.lines().any(
+        |line| line == "declare global @weak_data : obj<1x1> [binding=weak, storage=readonly]"
+    ));
+    assert_eq!(output.matches("binding=weak").count(), 2);
+    Ok(())
+}
+
+#[test]
+fn internal_globals_never_share_external_or_local_definition_names()
+-> Result<(), Box<dyn std::error::Error>> {
+    use rustgm::lowir::{data::Item, program::MemorySpan, writer};
+
+    let mut program = Program::default();
+    let span = MemorySpan { bytes: 1, align: 1 };
+    let storage = GlobalStorage::Readonly;
+    let private = program.internal_global("private_cell".into(), span, storage)?;
+    let external = program.declare_weak_global("external".into(), span, storage)?;
+    for rejected in [
+        program.internal_global("private_cell".into(), span, storage),
+        program.declare_global("private_cell".into(), span, storage),
+        program.declare_weak_global("private_cell".into(), span, storage),
+        program.global("private_cell".into(), span, storage),
+        program.internal_global("external".into(), span, storage),
+    ] {
+        assert_eq!(
+            rejected,
+            Err("LowIR internal global name conflicts with prior symbol")
+        );
+    }
+    assert!(program.globals[private.0 as usize].items.is_none());
+    assert_eq!(
+        program.globals[external.0 as usize].native_binding(),
+        Binding::Weak
+    );
+    assert_eq!(program.globals.len(), 2);
+    program.initialize(private, &[Item::Zero(1)])?;
+    let mut output = Vec::new();
+    writer::write(&program, &mut output)?;
+    let output = String::from_utf8(output)?;
+    assert!(
+        output.lines().any(|line| line
+            == "global @private_cell : obj<1x1> [binding=internal, storage=readonly] = {")
+    );
+    assert!(
+        output
+            .lines()
+            .any(|line| line
+                == "declare global @external : obj<1x1> [binding=weak, storage=readonly]")
+    );
+    Ok(())
+}
+
 fn body(value: u128) -> Result<Function, &'static str> {
     let mut builder = Builder::default();
     let block = builder.block()?;
@@ -93,6 +225,7 @@ fn invalid_definitions_do_not_change_bodies_or_canonical_names()
         name: "ffi".into(),
         signature,
         entry: false,
+        binding: Binding::Strong,
         body: None,
     });
     assert_eq!(

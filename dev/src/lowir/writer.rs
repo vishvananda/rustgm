@@ -63,6 +63,9 @@ pub fn write(program: &Program, out: &mut impl Write) -> io::Result<()> {
         write!(out, ") -> ")?;
         objects::result(program, symbol.signature, out)?;
         objects::result_metadata(program, symbol.signature, out)?;
+        if let Some(binding) = symbol.native_binding().metadata() {
+            write!(out, " [binding={binding}]")?;
+        }
         if symbol.entry {
             write!(out, " [role=entry]")?;
         }
@@ -79,6 +82,28 @@ pub fn write(program: &Program, out: &mut impl Write) -> io::Result<()> {
         } else {
             writeln!(out)?;
         }
+    }
+    Ok(())
+}
+fn global_metadata(
+    binding: Option<&str>,
+    storage: Option<&str>,
+    section: Option<&str>,
+    out: &mut impl Write,
+) -> io::Result<()> {
+    let mut separator = " [";
+    for (key, value) in [
+        ("binding", binding),
+        ("storage", storage),
+        ("section", section),
+    ] {
+        if let Some(value) = value {
+            write!(out, "{separator}{key}={value}")?;
+            separator = ", ";
+        }
+    }
+    if separator == ", " {
+        write!(out, "]")?;
     }
     Ok(())
 }
@@ -121,15 +146,12 @@ fn globals(program: &Program, out: &mut impl Write) -> io::Result<()> {
         let id = super::data::GlobalId(
             u32::try_from(index).map_err(|_| io::Error::other("invalid LowIR global index"))?,
         );
-        if let Some(section) = program.init_array_section(id) {
-            write!(out, " [")?;
-            if let Some(storage) = storage {
-                write!(out, "storage={storage}, ")?;
-            }
-            write!(out, "section={section}]")?;
-        } else if let Some(storage) = storage {
-            write!(out, " [storage={storage}]")?;
-        }
+        global_metadata(
+            global.native_binding().metadata(),
+            storage,
+            program.init_array_section(id),
+            out,
+        )?;
         let Some(items) = items else {
             writeln!(out)?;
             continue;

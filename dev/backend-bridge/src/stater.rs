@@ -12,19 +12,21 @@ use crate::{
     records::{
         ARITY_VARIADIC, ASM_BANK_GPR, ASM_BANK_VECTOR, ASM_LOCATION_REGISTER, ASM_OPERAND_READ,
         ASM_PIECE_OPERAND, ASM_PIECE_TEXT, AsmAlternative, AsmGroup, AsmOperand, AsmPiece,
-        AsmRegister, Boundary, CLASS_MEMORY, CLASS_STATED, DATA_ADDRESS, DATA_SCALAR, DATA_ZERO,
-        DataItem, EIGHTBYTE_INTEGER, EIGHTBYTE_NONE, EIGHTBYTE_SSE, EIGHTBYTE_SSEUP, KEY_LINKAGE,
-        KEY_ROLE, LINKAGE_DEFAULT, Literal, NO_ID, Parameter, RETURN_NORETURN, ROLE_ENTRY,
-        STORAGE_DEFAULT, STORAGE_READONLY, STORAGE_THREAD_LOCAL, TYPE_F32, TYPE_F64, TYPE_I1,
-        TYPE_I8, TYPE_I16, TYPE_I32, TYPE_I64, TYPE_I128, TYPE_PTR, TYPE_U8, TYPE_U16, TYPE_U32,
-        TYPE_V128, TYPE_VOID, Type, object,
+        AsmRegister, BINDING_INTERNAL, BINDING_WEAK, Boundary, CLASS_MEMORY, CLASS_STATED,
+        DATA_ADDRESS, DATA_SCALAR, DATA_ZERO, DataItem, EIGHTBYTE_INTEGER, EIGHTBYTE_NONE,
+        EIGHTBYTE_SSE, EIGHTBYTE_SSEUP, KEY_BINDING, KEY_LINKAGE, KEY_ROLE, LINKAGE_DEFAULT,
+        Literal, NO_ID, Parameter, RETURN_NORETURN, ROLE_ENTRY, STORAGE_DEFAULT, STORAGE_READONLY,
+        STORAGE_THREAD_LOCAL, TYPE_F32, TYPE_F64, TYPE_I1, TYPE_I8, TYPE_I16, TYPE_I32, TYPE_I64,
+        TYPE_I128, TYPE_PTR, TYPE_U8, TYPE_U16, TYPE_U32, TYPE_V128, TYPE_VOID, Type, object,
     },
 };
 use rustgm::lowir::{
     asm::{Kind, Part},
     boundary::{self, Class, Classes},
     data::{GlobalId, GlobalKind, GlobalStorage, Item, Target},
-    program::{Literal as Constant, MemorySpan, Program, Signature, SignatureId, SymbolId},
+    program::{
+        Binding, Literal as Constant, MemorySpan, Program, Signature, SignatureId, SymbolId,
+    },
     vocabulary::Type as Scalar,
 };
 
@@ -261,6 +263,7 @@ impl<'p> Stater<'p> {
             if self.forms.total() == noted {
                 self.module
                     .global(symbol, ty, storage, &items, declaration)?;
+                self.binding(symbol, global.native_binding())?;
             }
         }
         Ok(())
@@ -408,6 +411,7 @@ impl<'p> Stater<'p> {
             if declared {
                 self.module.function(id, signature, symbol.body.is_some())?;
                 self.module.symbol_fact(id, KEY_LINKAGE, LINKAGE_DEFAULT)?;
+                self.binding(id, symbol.native_binding())?;
                 if symbol.entry {
                     self.module.symbol_fact(id, KEY_ROLE, ROLE_ENTRY)?;
                 }
@@ -423,6 +427,15 @@ impl<'p> Stater<'p> {
         }
         Ok(())
     }
+    fn binding(&mut self, symbol: u32, binding: Binding) -> Result<(), Failure> {
+        let value = match binding {
+            Binding::Strong => return Ok(()),
+            Binding::Weak => BINDING_WEAK,
+            Binding::Internal => BINDING_INTERNAL,
+        };
+        Ok(self.module.symbol_fact(symbol, KEY_BINDING, value)?)
+    }
+
     /// The module, unless it holds a form the bridge does not state.
     pub(crate) fn finish(self) -> Result<ffi::Module, Failure> {
         if self.forms.is_empty() {

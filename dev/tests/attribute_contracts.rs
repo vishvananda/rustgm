@@ -957,3 +957,163 @@ fn foreign_effect_macro_grants_follow_the_attribute_wrapper() -> TestResult {
     }
     Ok(())
 }
+
+#[test]
+fn source_weak_statics_keep_actual_imports_and_the_callback_signature() -> TestResult {
+    use rustgm::{
+        resolve::model::DefId,
+        sema::foreign::WeakStatic,
+        support::linkage::{Linkage, Naming},
+        syntax::item::Safety,
+        types::{Kind, Primitive, TypeId, callable::Convention},
+    };
+    let prefix =
+        crate::resolve::fixture("pa31/tests/spec/source-functions-transport/minimal-provider.rs")?;
+    let source = format!(
+        r#"#![feature(linkage)]
+{prefix}
+#[lang = "Option"]
+pub enum Option<T> {{ #[lang = "None"] None, #[lang = "Some"] Some(T) }}
+unsafe extern "C" {{
+    #[linkage = "extern_weak"]
+    #[link_name = "host_weak_data"]
+    static WEAK_DATA: *mut u8;
+    #[cfg_attr(all(), linkage = "extern_weak")]
+    static WEAK_CALL: Option<extern "C" fn(i32) -> i32>;
+    #[cfg_attr(any(), linkage = "extern_weak")]
+    static STRONG_DATA: *mut u8;
+}}"#
+    );
+    let report = crate::resolve::source_provider(&source, "weak_static_headers")?;
+    let facts = rustgm::pipeline::analyze_source(&report)?.facts;
+    let registry = facts.foreign.as_deref().ok_or("actual foreign registry")?;
+    let global = |name| -> TestResult<_> {
+        let index = report
+            .resolution
+            .definitions
+            .iter()
+            .position(|definition| report.package.names.get(definition.name) == name)
+            .ok_or("missing actual foreign declaration")?;
+        let id = DefId(u32::try_from(index)?);
+        assert!(report.resolution.foreign_owners.contains_key(&id));
+        assert!(registry.imports_global(id));
+        let record = registry.global(id).ok_or("missing canonical global")?;
+        assert_eq!(record.linkage, Linkage::Import);
+        assert_eq!(record.safety, Safety::Default);
+        assert!(!record.mutable);
+        Ok(record)
+    };
+    let data = global("WEAK_DATA")?;
+    assert_eq!(data.weak, Some(WeakStatic::Data));
+    let Naming::Exact(symbol) = data.naming else {
+        return Err("expected the exact native symbol".into());
+    };
+    assert_eq!(registry.names().get(symbol), Some("host_weak_data"));
+    let Some(WeakStatic::Function(signature)) = global("WEAK_CALL")?.weak else {
+        return Err("expected the canonical weak callback".into());
+    };
+    let Some(Kind::Function {
+        convention: Convention::C,
+        parameters,
+        result,
+        unsafe_: false,
+        ..
+    }) = facts.types.kind(signature)
+    else {
+        return Err("expected the actual safe C function pointer signature".into());
+    };
+    let i32_type = TypeId::primitive(Primitive::I32);
+    assert_eq!(facts.types.list(parameters), Some([i32_type].as_slice()));
+    assert_eq!(result, i32_type);
+    assert!(global("STRONG_DATA")?.weak.is_none());
+    Ok(())
+}
+
+#[test]
+fn source_weak_statics_require_own_feature_shape_and_attribute_provenance() -> TestResult {
+    let prefix =
+        crate::resolve::fixture("pa31/tests/spec/source-functions-transport/minimal-provider.rs")?;
+    let feature = "#![feature(linkage)]";
+    for (flags, input, cause) in [
+        (
+            "",
+            r#"unsafe extern "C" { #[linkage = "extern_weak"] static W: *mut u8; }"#,
+            "this crate's linkage feature",
+        ),
+        (
+            feature,
+            r#"unsafe extern "C" { #[linkage = "extern_weak"] static mut W: *mut u8; }"#,
+            "extern mutable statics are not allowed",
+        ),
+        (
+            feature,
+            r#"unsafe extern "C" { #[linkage = "extern_weak"] static W: i32; }"#,
+            "requires a raw pointer or the actual Option",
+        ),
+        (
+            feature,
+            r#"#[linkage = "extern_weak"] static W: *mut u8 = 0 as *mut u8;"#,
+            "requires its actual foreign static owner",
+        ),
+        (
+            feature,
+            r#"unsafe extern "C" { #[linkage = "external_weak"] static W: *mut u8; }"#,
+            "supports only extern_weak foreign statics",
+        ),
+    ] {
+        let source = format!("{flags}\n{prefix}\n{input}");
+        let report = crate::resolve::source_provider(&source, "weak_static_opponent")?;
+        let error = rustgm::pipeline::analyze_source(&report)
+            .err()
+            .ok_or("accepted invalid weak static")?;
+        assert!(error.to_string().contains(cause), "{error}");
+    }
+    for (matcher, attribute, invocation, accepted) in [
+        ("", r#"#[linkage = "extern_weak"]"#, "", true),
+        (
+            "($($attribute:tt)*)",
+            "$($attribute)*",
+            r#"(#[linkage = "extern_weak"])"#,
+            false,
+        ),
+    ] {
+        let source = format!(
+            "#![feature(allow_internal_unstable)]\n{prefix}
+             #[allow_internal_unstable(linkage)]
+             macro_rules! weak_static {{
+                 ({matcher}) => {{
+                     unsafe extern \"C\" {{ {attribute} static W: *mut u8; }}
+                 }};
+             }}
+             weak_static!({invocation});"
+        );
+        let report = crate::resolve::source_provider(&source, "weak_static_macro_site")?;
+        let result = rustgm::pipeline::analyze_source(&report);
+        if accepted {
+            let facts = result?.facts;
+            let index = report
+                .resolution
+                .definitions
+                .iter()
+                .position(|definition| report.package.names.get(definition.name) == "W")
+                .ok_or("macro grant did not produce its static")?;
+            let record = facts
+                .foreign
+                .as_deref()
+                .and_then(|registry| {
+                    registry.global(rustgm::resolve::model::DefId(u32::try_from(index).ok()?))
+                })
+                .ok_or("macro grant did not bind the actual import")?;
+            assert_eq!(record.weak, Some(rustgm::sema::foreign::WeakStatic::Data));
+        } else {
+            let error = result
+                .err()
+                .ok_or("caller-written weak marker acquired a macro allowance")?;
+            assert!(
+                error.to_string().contains("this crate's linkage feature"),
+                "{error}"
+            );
+        }
+    }
+    Ok(())
+}

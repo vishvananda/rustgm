@@ -471,6 +471,12 @@ impl super::package::Package {
     ) -> Result<bool, super::package::Error> {
         self.requested_own_root(file, policy::Feature::CfiEncoding)
     }
+    pub(crate) fn requested_external_linkage(
+        &self,
+        file: crate::support::source::FileId,
+    ) -> Result<bool, super::package::Error> {
+        self.requested_own_root(file, policy::Feature::Linkage)
+    }
     fn requested_own_root(
         &self,
         file: crate::support::source::FileId,

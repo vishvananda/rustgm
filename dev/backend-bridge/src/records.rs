@@ -131,9 +131,12 @@ pub const DATA_ZERO: u32 = 2;
 
 pub const KEY_ROLE: u32 = 10;
 pub const KEY_LINKAGE: u32 = 11;
+pub const KEY_BINDING: u32 = 12;
 pub const ROLE_ENTRY: u32 = 1;
 pub const LINKAGE_DEFAULT: u32 = 0;
 pub const BINDING_DEFAULT: u32 = 0;
+pub const BINDING_INTERNAL: u32 = 1;
+pub const BINDING_WEAK: u32 = 3;
 pub const STORAGE_DEFAULT: u32 = 0;
 pub const STORAGE_READONLY: u32 = 1;
 pub const STORAGE_THREAD_LOCAL: u32 = 2;

@@ -225,12 +225,40 @@ pub struct ScalarSignature {
     pub noreturn: bool,
     pub variadic: bool,
 }
+/// Native symbol binding, independent of its canonical source identity.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Binding {
+    #[default]
+    Strong,
+    Weak,
+    Internal,
+}
+impl Binding {
+    pub(super) const fn metadata(self) -> Option<&'static str> {
+        match self {
+            Self::Strong => None,
+            Self::Weak => Some("weak"),
+            Self::Internal => Some("internal"),
+        }
+    }
+}
 pub struct Symbol {
     /// Backend spelling only. Semantic lookup uses `SymbolId` and source definition identities.
     pub name: String,
     pub signature: SignatureId,
     pub entry: bool,
+    pub binding: Binding,
     pub body: Option<Function>,
+}
+impl Symbol {
+    #[must_use]
+    pub fn native_binding(&self) -> Binding {
+        if self.body.is_none() && !self.entry && self.binding == Binding::Weak {
+            Binding::Weak
+        } else {
+            Binding::Strong
+        }
+    }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Name {
@@ -317,7 +345,9 @@ impl Program {
         if target.body.is_some() {
             return Err("multiple function definitions for one LowIR symbol");
         }
-        self.symbols[symbol.0 as usize].body = Some(body.take_exact());
+        let target = &mut self.symbols[symbol.0 as usize];
+        target.binding = Binding::Strong;
+        target.body = Some(body.take_exact());
         self.spare = Some(body);
         Ok(())
     }
@@ -422,6 +452,28 @@ impl Program {
         signature: SignatureId,
         entry: bool,
     ) -> Result<SymbolId, &'static str> {
+        self.declare_with_binding(name, signature, entry, Binding::Strong)
+    }
+
+    /// Declare a non-entry external function with a weak native reference.
+    ///
+    /// # Errors
+    /// Rejects invalid signatures, incompatible aliases and exhausted identities.
+    pub fn declare_weak_function(
+        &mut self,
+        name: String,
+        signature: SignatureId,
+    ) -> Result<SymbolId, &'static str> {
+        self.declare_with_binding(name, signature, false, Binding::Weak)
+    }
+
+    fn declare_with_binding(
+        &mut self,
+        name: String,
+        signature: SignatureId,
+        entry: bool,
+        binding: Binding,
+    ) -> Result<SymbolId, &'static str> {
         if signature.0 as usize >= self.signatures.len() {
             return Err("invalid LowIR signature");
         }
@@ -433,6 +485,9 @@ impl Program {
             if previous.entry != entry || !self.compatible(previous.signature, signature)? {
                 return Err("incompatible LowIR symbol declarations");
             }
+            if binding == Binding::Strong {
+                self.symbols[id.0 as usize].binding = binding;
+            }
             return Ok(id);
         }
         let id = SymbolId(index(self.symbols.len())?);
@@ -441,6 +496,7 @@ impl Program {
             name,
             signature,
             entry,
+            binding,
             body: None,
         });
         Ok(id)

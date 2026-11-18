@@ -445,6 +445,33 @@ def build_bridge():
     return BRIDGE_TARGET / "dev-fast"
 
 
+def require_bridge_weak_bindings(module, stated):
+    """Check the bridge's text and host ELF bindings in both code modes."""
+    data, function = "rg_library_weak_data", "rg_library_weak_function"
+    cell = "rg_library_weak_cells"
+    for kind, name in (("global", data), ("function", function)):
+        if not re.search(rf"^declare {kind} @{name}(?:\s|\()[^\n]*\bbinding=weak\b",
+                         stated, re.M):
+            raise ValueError(f"the library view lacks the weak {kind} declaration {name}")
+    if not re.search(rf"^global @{cell} : [^\n]*\bbinding=internal\b", stated, re.M):
+        raise ValueError("the library view lacks its internal weak-address cells")
+    elf = subprocess.check_output(["readelf", "--wide", "--symbols", "--relocs", str(module)],
+                                  timeout=5, text=True)
+    def symbols(name):
+        return re.findall(r"^\s*\d+:\s+\w+\s+\d+\s+\w+\s+(\w+)\s+\w+\s+(\w+)\s+"
+                          + re.escape(name) + r"\s*$", elf, re.M)
+    for name in (data, function):
+        if symbols(name) != [("WEAK", "UND")]:
+            raise ValueError(f"{module.name} does not bind {name} as weak undefined")
+        if not re.search(rf"^.*\bR_X86_64_64\b[^\n]*\b{name}\b", elf, re.M):
+            raise ValueError(f"{module.name} lacks a pointer relocation for {name}")
+    # The pinned host writer prefixes a local symbol without object= by '@'.
+    local_rows = symbols("@" + cell)
+    if (len(local_rows) != 1 or local_rows[0][0] != "LOCAL"
+            or not local_rows[0][1].isdigit() or symbols(cell)):
+        raise ValueError(f"{module.name} does not keep its cell private and defined")
+
+
 def test_bridge():
     """The Rust side of the library handshake: the module of library.c, built
     through RustGM's LowIR model and stated by the bridge crate."""
@@ -481,6 +508,7 @@ def test_bridge():
             invoke([tools["cppgm"], "-O0", *flags, "-c", str(source), "-o", str(compiled)])
             if module.read_bytes() != compiled.read_bytes():
                 raise ValueError(f"object compiled in process differs from the driver's object of the {name} ({form})")
+        require_bridge_weak_bindings(module, stated)
         require_instruction(module, "movntps", "0f 2b", ("rg_library_stream",))
         observer = folder / (form + "-observer")
         invoke([*strict, str(ROOT / "tests" / "backend" / "library-observer.c"), str(module), "-o", str(observer)])

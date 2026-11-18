@@ -127,6 +127,11 @@ fn entry(
         .foreign
         .as_deref()
         .and_then(|registry| registry.global(definition));
+    if previous.is_some_and(|global| global.weak.is_some()) {
+        return Err(error(
+            "selected weak foreign static requires its own metadata storage contract",
+        ));
+    }
     let imported = previous.is_some_and(|global| global.linkage == Linkage::Import);
     let mutable = if let Some(global) = previous {
         global.mutable
@@ -173,6 +178,7 @@ fn entry(
                     safety: previous.map_or(Safety::Default, |g| g.safety),
                     naming,
                     linkage: Linkage::Export,
+                    weak: None,
                 },
             )
             .map_err(error)?;

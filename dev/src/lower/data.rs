@@ -1,6 +1,7 @@
 //! Demand persistent objects by semantic identity, before traversing their data.
 mod init_array;
 mod initializer;
+mod weak_cells;
 mod zero;
 use super::context::Context;
 use crate::support::hash::HashMap;
@@ -77,6 +78,9 @@ impl Context<'_> {
         if let Some(record) = self.foreign.and_then(|registry| registry.global(id))
             && record.linkage == crate::support::linkage::Linkage::Import
         {
+            if let Some(weak) = record.weak {
+                return self.weak_static_data(id, record.ty, weak);
+            }
             let layout = self.layout(record.ty)?;
             let name = self.data_name(Key::Definition(id))?;
             let storage = self.data_storage(Key::Definition(id), record.ty, !record.mutable)?;

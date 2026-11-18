@@ -324,11 +324,20 @@ fn validate(
     {
         return Err("source promoted or deferred roots require a wider transport profile");
     }
-    if body
+    if let Some(values) = body
         .static_types
         .as_ref()
-        .is_some_and(|values| !values.is_empty())
+        .filter(|values| !values.is_empty())
     {
+        if let Some(registry) = &facts.foreign
+            && values.keys().any(|&definition| {
+                registry
+                    .global(definition)
+                    .is_some_and(|global| global.weak.is_some())
+            })
+        {
+            return Err("selected source body needs weak foreign static storage transport");
+        }
         return Err("source static type facts require a wider transport profile");
     }
     if body

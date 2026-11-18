@@ -30,7 +30,7 @@
 use rustgm::lowir::{
     asm::{self, Kind},
     boundary::{self, Class, Classes, ObjectValue, ResultValue},
-    data::{GlobalStorage, Item},
+    data::{GlobalStorage, Item, Target},
     program::{MemorySpan, Operand, Program, SignatureId, Terminator, Value},
     vocabulary::{Binary, Type, Vector},
     writer,
@@ -327,6 +327,43 @@ fn matched(program: &mut Program) -> Result<(), &'static str> {
     program.define(symbol, body.finish()?)
 }
 
+/// Keep both undefined addresses reachable through one private pointer pair.
+fn weak_bindings(program: &mut Program) -> Result<(), &'static str> {
+    let data = program.declare_weak_global(
+        "rg_library_weak_data".into(),
+        MemorySpan { bytes: 1, align: 1 },
+        GlobalStorage::Writable,
+    )?;
+    let signature = program.signature(&[Type::I32], Type::I32, false)?;
+    let function = program.declare_weak_function("rg_library_weak_function".into(), signature)?;
+    let cell = program.internal_global(
+        "rg_library_weak_cells".into(),
+        PAIR,
+        GlobalStorage::Writable,
+    )?;
+    program.initialize(
+        cell,
+        &[
+            Item::Address {
+                target: Target::Global(data),
+                addend: 0,
+            },
+            Item::Address {
+                target: Target::Function(function),
+                addend: 0,
+            },
+        ],
+    )?;
+    let signature = program.signature(&[], Type::Ptr, false)?;
+    let accessor = program.declare("rg_library_weak_addresses".into(), signature, false)?;
+    let mut body = program.body_builder();
+    let entry = body.block()?;
+    body.enter(entry)?;
+    let address = body.address(Operand::Global(cell))?;
+    body.terminate(Terminator::Return(Some(address)))?;
+    program.define(accessor, body.finish()?)
+}
+
 fn module() -> Result<Program, &'static str> {
     let mut program = Program::default();
     answer(&mut program)?;
@@ -343,6 +380,7 @@ fn module() -> Result<Program, &'static str> {
     stop(&mut program)?;
     matched(&mut program)?;
     tick(&mut program)?;
+    weak_bindings(&mut program)?;
     Ok(program)
 }
 

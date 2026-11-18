@@ -151,7 +151,7 @@ impl Consumer {
             "link" => Self::NativeLink,
             "rustc_strict_coherence" => Self::StrictCoherence,
             "fundamental" | "rustc_dyn_incompatible_trait" => Self::DeclarationPolicy,
-            "no_mangle" | "export_name" | "link_name" => Self::Linkage,
+            "no_mangle" | "export_name" | "link_name" | "linkage" => Self::Linkage,
             "target_feature" => Self::TargetFeature,
             "allow" | "warn" | "deny" | "forbid" | "expect" | "deprecated" => Self::SafetyLint,
             "doc" => Self::Documentation,
