@@ -64,7 +64,7 @@ fn imported_marker_bounds_pay_the_header_budget_once_per_marker() -> Result {
                 .source_bindings
                 .as_deref()
                 .ok_or("source client catalog")?
-                .auto_marker(role(marker).ok_or("marker role")?, true)?
+                .auto_marker(role(marker), true)?
                 .ok_or("imported marker")?;
             assert!(
                 matches!(declaration.origin, DeclarationOrigin::Imported(_)),
@@ -109,7 +109,7 @@ fn imported_applications_pay_their_attempted_growth_once() -> Result {
         .source_bindings
         .as_deref()
         .ok_or("source client catalog")?
-        .auto_marker(role(AutoTrait::Send).ok_or("marker role")?, true)?
+        .auto_marker(role(AutoTrait::Send), true)?
         .ok_or("imported Send")?;
     let arguments = facts
         .types
