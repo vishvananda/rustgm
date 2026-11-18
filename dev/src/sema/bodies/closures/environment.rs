@@ -159,26 +159,32 @@ impl Checker<'_> {
         let mut body_fold = self.capture_body_fold(source, solved)?;
         let (_, parent) = scheduler
             .stack
-            .last()
+            .last_mut()
             .ok_or_else(|| self.error(source, "missing capture formation parent"))?;
         let mut formation = metadata
             .lifetimes
             .closing_in_parent(&self.state.call_types, &parent.call_types)
             .map_err(|e| self.error(source, e))?;
-        let mut path_types = Vec::with_capacity(captures.types.len());
-        let mut formation_types = Vec::with_capacity(captures.types.len());
-        for term in &captures.types {
-            let ty = solved.types[term.0 as usize];
-            let parent = formation
-                .apply(&mut self.facts.types, ty)
-                .map_err(|e| self.error(source, e))?;
-            formation_types.push(parent);
-            path_types.push(
-                body_fold
-                    .apply(&mut self.facts.types, ty)
-                    .map_err(|e| self.error(source, e))?,
-            );
-        }
+        let mut closing = metadata
+            .lifetimes
+            .closing(&self.state.call_types, false)
+            .map_err(|e| self.error(source, e))?;
+        let formation_types = super::bindings::parent_paths(
+            self.facts,
+            &self.report.resolution.definitions,
+            parent,
+            &captures,
+            solved,
+            &mut formation,
+            &mut closing,
+        )
+        .map_err(|e| self.error(source, e))?;
+        let path_types = captures
+            .types
+            .iter()
+            .map(|term| body_fold.apply(&mut self.facts.types, solved.types[term.0 as usize]))
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| self.error(source, e))?;
         let field_types = metadata
             .fields
             .iter()
@@ -198,10 +204,7 @@ impl Checker<'_> {
             &captures.plan,
             &formation_types,
             &field_types,
-            &mut metadata
-                .lifetimes
-                .closing(&self.state.call_types, false)
-                .map_err(|e| self.error(source, e))?,
+            &mut closing,
         )
         .map_err(|e| self.error(source, e))?;
         let self_ty = body_fold

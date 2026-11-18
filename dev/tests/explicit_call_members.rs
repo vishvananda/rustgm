@@ -592,3 +592,53 @@ fn references_forward_calls_to_their_nominal_referents_execute() -> Result {
     }
     Ok(())
 }
+
+#[test]
+fn inferred_callable_arguments_keep_parent_capture_storage() -> Result {
+    let prefix =
+        crate::resolve::fixture("pa31/tests/spec/explicit-dynamic-call-members/prefix.rs")?;
+    let (roles, _) = prefix
+        .split_once("impl Clone for u32")
+        .ok_or("callable source roles")?;
+    for (name, callback, accepted) in [
+        ("by-value-callback-aggregate", "|x: &u8| *x", true),
+        ("escaping-callback-aggregate", "move |_| *self.byte", false),
+    ] {
+        let body = format!(
+            r"
+            struct Bytes<'a, F> {{ byte: &'a u8, callback: F }}
+            impl<F> Bytes<'_, F> {{ fn next(&mut self) -> u8 {{ *self.byte }} }}
+            fn map<'a, F: FnMut(&'a u8) -> u8>(byte: &'a u8, callback: F) -> Bytes<'a, F> {{
+                Bytes {{ byte, callback }}
+            }}
+            struct Source<'a> {{ byte: &'a u8 }}
+            impl<'a> Source<'a> {{
+                fn iter(&self) -> impl FnMut() -> u8 + 'a {{
+                    let mut bytes = map(self.byte, {callback});
+                    move || bytes.next()
+                }}
+            }}
+            fn main() {{}}
+        "
+        );
+        crate::qualify::qualify(name, &body, accepted)?;
+        let source = format!("#![feature(const_destruct)]\n{roles}{body}");
+        let mut config = Config::default();
+        config.set_lint_cap(LintCap::Allow);
+        let report = crate::resolve::source_provider_config(&source, "captured_callback", &config)?;
+        if accepted {
+            program(&report).map_err(|error| format!("{name}: {error}"))?;
+        } else {
+            let error = program(&report)
+                .err()
+                .ok_or("accepted an escaped capture")?;
+            assert!(
+                error
+                    .to_string()
+                    .contains("required lifetime does not outlive its target"),
+                "{name}: {error}"
+            );
+        }
+    }
+    Ok(())
+}

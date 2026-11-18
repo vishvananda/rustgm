@@ -91,6 +91,11 @@ impl Plan {
     pub fn parent(&self, path: PathId) -> Option<(PathId, Step)> {
         self.paths.get(path.0 as usize)?.parent
     }
+    pub(crate) fn path_origins(&self) -> impl Iterator<Item = (DefId, Option<PathId>)> + '_ {
+        self.paths
+            .iter()
+            .map(|path| (path.root, path.parent.map(|(parent, _)| parent)))
+    }
     #[must_use]
     pub fn path_count(&self) -> usize {
         self.paths.len()
