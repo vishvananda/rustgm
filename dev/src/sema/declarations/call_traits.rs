@@ -111,6 +111,7 @@ impl Checker<'_> {
         for role in crate::sema::compiler_items::guard_panics::ROLES
             .into_iter()
             .chain(crate::sema::compiler_items::WEAK_IMPORTS)
+            .chain([crate::support::bindings::LangItem::BeginPanic])
         {
             let Some(declaration) = self
                 .facts

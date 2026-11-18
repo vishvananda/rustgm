@@ -84,8 +84,8 @@ fn pinned_declaration_targets_formals_and_weak_only_policy_match_all_source_outc
 }
 #[test]
 fn append_only_vocabulary_preserves_ordinals_spellings_and_checked_profiles() -> TestResult {
-    assert_eq!(LangItem::ALL.len(), 212);
-    assert_eq!(LangItem::DECLARATIONS.len(), 125);
+    assert_eq!(LangItem::ALL.len(), 213);
+    assert_eq!(LangItem::DECLARATIONS.len(), 126);
     for (index, role) in LangItem::ALL.into_iter().enumerate() {
         assert_eq!(role.index(), index);
         assert_eq!(role.declaration_profile().is_some(), index >= 87);
@@ -110,7 +110,7 @@ fn append_only_vocabulary_preserves_ordinals_spellings_and_checked_profiles() ->
             expected
         );
     }
-    // Pinned rustc_hir/lang_items.rs declares these two roles separately
+    // Pinned rustc_hir/lang_items.rs declares these roles separately
     // from the preserved historical roles-v5.tsv inventory.
     for (name, ordinal, target, generics) in [
         (
@@ -123,6 +123,12 @@ fn append_only_vocabulary_preserves_ordinals_spellings_and_checked_profiles() ->
             "termination",
             211,
             DeclarationTarget::Trait,
+            GenericRequirement::Any,
+        ),
+        (
+            "begin_panic",
+            212,
+            DeclarationTarget::Function,
             GenericRequirement::Any,
         ),
     ] {

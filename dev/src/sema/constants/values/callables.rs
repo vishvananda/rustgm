@@ -126,12 +126,12 @@ impl Reader<'_> {
 }
 
 impl Evaluator<'_> {
-    pub(crate) fn checked_source_panic_display(
+    pub(crate) fn checked_source_const_panic(
         &self,
         instance: Instance,
         origin: crate::resolve::body_origin::BodyOrigin,
-    ) -> Result<Option<crate::sema::compiler_items::PanicDisplaySelection>, Failure> {
-        Ok(crate::sema::compiler_items::source_panic_display(
+    ) -> Result<Option<crate::sema::compiler_items::ConstPanicSelection>, Failure> {
+        Ok(crate::sema::compiler_items::source_const_panic(
             self.queries.report,
             self.facts(),
             instance,

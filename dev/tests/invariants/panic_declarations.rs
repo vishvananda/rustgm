@@ -208,7 +208,7 @@ fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles()
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     // The source panic hook extends cold tables; ordinary records stay fixed.
-    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 5272);
+    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 5296);
     // The cold provider includes 160 bytes of contracts, a second permission
     // word and one pointer for the bring-up guest crates, which the larger
     // source client variant already pays for in the boxed policy. The contracts

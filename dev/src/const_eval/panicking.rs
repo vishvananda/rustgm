@@ -10,7 +10,7 @@ impl Machine<'_, '_> {
     ) -> Result<(), Failure> {
         let Some(selected) = self
             .evaluator
-            .checked_source_panic_display(target, body.source)?
+            .checked_source_const_panic(target, body.source)?
         else {
             return Ok(());
         };
@@ -51,12 +51,12 @@ impl Machine<'_, '_> {
             .get(input.0 as usize)
             .is_none_or(|value| !selected.matches_input(&self.evaluator.facts().types, value.ty))
         {
-            return Err("source const panic changed its actual shared input".into());
+            return Err("source const panic changed its actual input".into());
         }
         // A reached Call has evaluated its real input even though it never returns.
         let _message = Self::value(frame, *input)?;
         Err(Failure::Fault(
-            "constant execution reached source panic_display",
+            selected.fault(&self.evaluator.facts().types),
         ))
     }
 }

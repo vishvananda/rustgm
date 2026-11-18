@@ -36,6 +36,7 @@ const fn ordinary_declaration(role: LangItem) -> bool {
             | LangItem::OwnedBox
             | LangItem::Start
             | LangItem::Termination
+            | LangItem::BeginPanic
             | LangItem::Reborrow
             | LangItem::CoerceShared
             | LangItem::FieldRepresentingType

@@ -6,7 +6,7 @@ use crate::{
         stability::{Level, Library},
     },
     syntax::ast::Kind,
-    types::{Kind as TypeKind, TypeId, infer::Solved},
+    types::{Kind as TypeKind, Primitive, TypeId, infer::Solved},
 };
 
 #[cfg(test)]
@@ -141,7 +141,10 @@ impl Checker<'_> {
         callable: TypeId,
         allowances: &mut MacroAllowanceSession<'_>,
     ) -> Result<(), Error> {
-        let Some(TypeKind::FunctionItem { item, .. }) = self.facts.types.kind(callable) else {
+        let Some(TypeKind::FunctionItem {
+            item, signature, ..
+        }) = self.facts.types.kind(callable)
+        else {
             return if owner.is_some() {
                 Err(self.error(
                     node,
@@ -154,6 +157,7 @@ impl Checker<'_> {
         let target = DefId(item.0);
         crate::resolve::stability::check_imported_api(self.report, self.key(node), target, false)?;
         if self.callee_use_effect()? != crate::support::constness::Constness::Ordinary {
+            self.check_const_begin_panic_payload(node, target, signature)?;
             crate::resolve::stability::check_imported_api(
                 self.report,
                 self.key(node),
@@ -237,6 +241,44 @@ impl Checker<'_> {
             ))
         }
     }
+    fn check_const_begin_panic_payload(
+        &mut self,
+        node: NodeId,
+        target: DefId,
+        signature: TypeId,
+    ) -> Result<(), Error> {
+        use crate::support::bindings::LangItem;
+        let Some(catalog) = self.facts.source_bindings.as_deref() else {
+            return Ok(());
+        };
+        if catalog
+            .language(LangItem::BeginPanic)
+            .is_none_or(|declaration| declaration.definition != target)
+        {
+            return Ok(());
+        }
+        catalog
+            .require_provider_report(self.report)
+            .map_err(|e| self.error(node, e))?;
+        self.state
+            .infer
+            .account_work(4)
+            .map_err(|e| self.error(node, e))?;
+        let store = &self.facts.types;
+        if matches!(store.kind(signature), Some(TypeKind::Function { parameters, .. })
+            if matches!(store.list(parameters), Some([input])
+                if matches!(store.kind(*input), Some(TypeKind::Reference { referent, .. })
+                    if referent == TypeId::primitive(Primitive::Str))))
+        {
+            Ok(())
+        } else {
+            Err(self.error(
+                node,
+                "source begin_panic requires a string slice payload in const code",
+            ))
+        }
+    }
+
     /// Const-stable, explicitly or implicitly const-stable-indirect bodies are
     /// recursively checked, so they are safe to expose to stable const code.
     fn safe_on_stable(

@@ -190,6 +190,7 @@ fn validate_profile(
 ) -> Result<(), Error> {
     facts.require_deprecated_safe_transport()?;
     crate::sema::compiler_items::require_startup_transport(facts).map_err(error)?;
+    crate::sema::compiler_items::require_begin_panic_transport(facts).map_err(error)?;
     facts
         .require_declaration_policy_transport(report)
         .map_err(error)?;

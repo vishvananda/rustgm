@@ -50,9 +50,8 @@ mod abort_declaration;
 mod display_panics;
 pub(in crate::sema) mod guard_panics;
 mod runtime_panics;
-pub(crate) use display_panics::{
-    Selection as PanicDisplaySelection, select as source_panic_display,
-};
+pub(in crate::sema) use display_panics::require_begin_panic_transport;
+pub(crate) use display_panics::{Selection as ConstPanicSelection, select as source_const_panic};
 pub(in crate::sema) use runtime_panics::complete as complete_runtime_panic_roles;
 pub(in crate::sema) use runtime_panics::runtime_body as runtime_panic_body;
 #[path = "compiler_items/location_intrinsic.rs"]

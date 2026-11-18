@@ -272,5 +272,6 @@ language_items! {
         OwnedBox = 209 => "owned_box", Struct, GenericRequirement::Any;
         Start = 210 => "start", Function, GenericRequirement::Exact(1);
         Termination = 211 => "termination", Trait, GenericRequirement::Any;
+        BeginPanic = 212 => "begin_panic", Function, GenericRequirement::Any;
     }
 }

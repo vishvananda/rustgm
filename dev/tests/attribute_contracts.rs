@@ -1227,3 +1227,139 @@ fn source_start_header_rejects_wrong_callback_pointee_and_formal() -> TestResult
     }
     Ok(())
 }
+
+fn begin_panic_source(tail: &str) -> TestResult<String> {
+    let prefix =
+        crate::resolve::fixture("pa31/tests/spec/source-functions-transport/minimal-provider.rs")?;
+    Ok(format!("{prefix}\n{tail}"))
+}
+
+#[test]
+fn source_begin_panic_runtime_demands_the_authored_generic_body() -> TestResult {
+    use rustgm::lowir::program::{Operand, Operation};
+    let body = r#"
+pub trait Payload: Sized { fn byte(self) -> u8; }
+impl Payload for u8 { fn byte(self) -> u8 { self } }
+unsafe extern "C" { safe fn panic_observe(value: u8); }
+#[lang = "begin_panic"]
+#[rustc_do_not_const_check]
+pub const fn renamed_begin<T: Payload>(payload: T) -> ! {
+    panic_observe(payload.byte());
+    loop {}
+}
+"#;
+    let source = begin_panic_source(&format!("{body}\nfn main() {{ renamed_begin(17u8); }}"))?;
+    let program = lower_used(&source)?;
+    assert!(
+        program
+            .symbols
+            .iter()
+            .filter_map(|symbol| symbol.body.as_ref())
+            .flat_map(|body| &body.instructions)
+            .any(|instruction| matches!(instruction.operation,
+                Operation::Call { callee: Operand::Symbol(target), .. }
+                    if program.symbols[target.0 as usize].name == "panic_observe")),
+        "runtime specialization lost the authored call to panic_observe"
+    );
+
+    let source = begin_panic_source(&format!("{body}\nfn main() {{ renamed_begin(17u16); }}"))?;
+    let error = lower_used(&source)
+        .err()
+        .ok_or("runtime begin_panic did not require its authored payload bound")?;
+    let message = error.to_string();
+    assert!(
+        message.contains("trait") || message.contains("bound"),
+        "{message}"
+    );
+    Ok(())
+}
+
+#[test]
+fn source_begin_panic_const_calls_preserve_payload_shape_reach_and_identity() -> TestResult {
+    let header = r#"
+fn runtime_only() {}
+#[lang = "begin_panic"]
+#[rustc_do_not_const_check]
+pub const fn renamed_begin<T>(_payload: T) -> ! { runtime_only(); loop {} }
+"#;
+    for (tail, cause) in [
+        (
+            r#"const VALUE: u8 = if false { renamed_begin("message") } else { 19 };"#,
+            None,
+        ),
+        (
+            r#"const VALUE: u8 = renamed_begin("message");"#,
+            Some("constant execution reached source begin_panic"),
+        ),
+        (
+            "const fn checked_only() -> u8 { if false { renamed_begin(7u8) } else { 19 } }",
+            Some("source begin_panic requires a string slice payload in const code"),
+        ),
+        (
+            r#"const fn checked_only() -> u8 { if false { renamed_begin(&"message") } else { 19 } }"#,
+            Some("source begin_panic requires a string slice payload in const code"),
+        ),
+        (
+            "const fn begin_panic(value: u8) -> u8 { value } const VALUE: u8 = begin_panic(19);",
+            None,
+        ),
+    ] {
+        let source = begin_panic_source(&format!("{header}\n{tail}"))?;
+        let report = crate::resolve::source_provider(&source, "begin_panic_const")?;
+        let result = rustgm::pipeline::analyze_source(&report);
+        if let Some(cause) = cause {
+            let error = result
+                .err()
+                .ok_or("invalid const begin_panic was accepted")?;
+            assert!(error.to_string().contains(cause), "{tail}: {error}");
+        } else {
+            result?;
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn selected_source_begin_panic_fences_both_writers() -> TestResult {
+    use rustgm::{
+        lower::instances::{SourcePublication, build_source_library_profile},
+        pipeline::Analysis,
+    };
+    let source = begin_panic_source(
+        r#"#[lang = "begin_panic"]
+        #[rustc_do_not_const_check]
+        const fn renamed_begin<T>(_payload: T) -> ! { loop {} }"#,
+    )?;
+    let report = crate::resolve::source_provider(&source, "begin_panic_transport")?;
+    let identity = report
+        .package
+        .source_core()
+        .ok_or("Source owner")?
+        .provider
+        .clone();
+    let Analysis {
+        mut facts,
+        prepared,
+    } = rustgm::pipeline::analyze_source(&report)?;
+    let scalar = rustgm::sema::crates::export(&report, &mut facts, identity.clone())
+        .err()
+        .ok_or("scalar writer would erase the selected Source begin_panic role")?;
+    let source = build_source_library_profile(
+        &report,
+        &mut facts,
+        identity,
+        prepared,
+        SourcePublication::ModuleBodyOperations,
+    )
+    .err()
+    .ok_or("Source writer would erase the selected begin_panic role")?;
+    for error in [scalar, source] {
+        assert!(
+            error
+                .to_string()
+                .contains("selected Source begin_panic requires its checked artifact transport"),
+            "{error}"
+        );
+    }
+    Ok(())
+}
