@@ -1,4 +1,5 @@
 //! Canonical feature symbols are data; actual consumers retain their authority.
+use crate::syntax::configuration::CfgGate;
 use std::borrow::Cow;
 use unicode_normalization::UnicodeNormalization;
 
@@ -51,6 +52,18 @@ mod tests;
 /// A name already canonicalized by its declaration or the existing name arena.
 #[derive(Clone)]
 pub struct FeatureName<'a>(Cow<'a, str>);
+impl FeatureName<'static> {
+    pub(crate) const fn for_cfg(gate: CfgGate) -> Self {
+        match gate {
+            CfgGate::UbChecks => KnownFeature::CfgUbChecks.name(),
+            CfgGate::TargetHasAtomic => KnownFeature::CfgTargetHasAtomic.name(),
+            CfgGate::Sanitize => KnownFeature::CfgSanitize.name(),
+            CfgGate::FloatReliability => KnownFeature::CfgFloatReliability.name(),
+            CfgGate::ThreadLocal => KnownFeature::CfgTargetThreadLocal.name(),
+            CfgGate::SanitizerCfi => Self(Cow::Borrowed("cfg_sanitizer_cfi")),
+        }
+    }
+}
 impl<'a> FeatureName<'a> {
     /// Prepare one canonical identifier for repeated provenance queries.
     /// This does not enable a crate feature or authorize an API use.

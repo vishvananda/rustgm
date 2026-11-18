@@ -2,7 +2,7 @@
 use crate::{
     lex::token::Punctuation,
     resolve::{
-        bindings::{FeatureName, KnownFeature},
+        bindings::FeatureName,
         expansion::{MacroAllowanceSession, Report},
         package::Error,
         unit::NodeKey,
@@ -32,7 +32,7 @@ impl Gate {
 #[derive(Default)]
 pub(super) struct Draft {
     gates: [Option<bool>; 2],
-    queries: [Option<bool>; 4],
+    queries: [Option<bool>; CfgGate::COUNT],
 }
 impl Draft {
     fn require(
@@ -152,14 +152,9 @@ impl Draft {
             self.queries[used.gate as usize] = Some(enabled);
             enabled
         };
-        let feature = match used.gate {
-            CfgGate::UbChecks => KnownFeature::CfgUbChecks,
-            CfgGate::TargetHasAtomic => KnownFeature::CfgTargetHasAtomic,
-            CfgGate::Sanitize => KnownFeature::CfgSanitize,
-            CfgGate::FloatReliability => KnownFeature::CfgFloatReliability,
-            CfgGate::ThreadLocal => KnownFeature::CfgTargetThreadLocal,
-        };
-        if !enabled && !allowances.allows_at(key.file, used.span, &feature.name())? {
+        if !enabled
+            && !allowances.allows_at(key.file, used.span, &FeatureName::for_cfg(used.gate))?
+        {
             return Err(error(
                 "documentation predicate requires its cfg feature or actual macro allowance",
             ));

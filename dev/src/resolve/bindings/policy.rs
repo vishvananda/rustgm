@@ -111,6 +111,7 @@ pub(in crate::resolve) enum Feature {
     FfiPure = 87,
     CfiEncoding = 88,
     Linkage = 89,
+    CfgSanitizerCfi = 90,
 }
 
 #[cfg(test)]
@@ -213,6 +214,7 @@ impl Request {
             "cfg_target_has_atomic" => Self::Capability(Feature::CfgTargetHasAtomic),
             "cfg_target_thread_local" => Self::Capability(Feature::CfgTargetThreadLocal),
             "cfg_sanitize" => Self::Capability(Feature::CfgSanitize),
+            "cfg_sanitizer_cfi" => Self::Capability(Feature::CfgSanitizerCfi),
             "cfg_target_has_reliable_f16_f128" => Self::Capability(Feature::CfgFloatReliability),
             "builtin_syntax" => Self::Capability(Feature::BuiltinSyntax),
             "offset_of_enum" => Self::Capability(Feature::OffsetOfEnum),
@@ -282,6 +284,7 @@ impl Features {
             || self.has(Feature::CfgTargetHasAtomic)
             || self.has(Feature::CfgTargetThreadLocal)
             || self.has(Feature::CfgSanitize)
+            || self.has(Feature::CfgSanitizerCfi)
             || self.has(Feature::CfgFloatReliability)
             || self.has(Feature::AbiUnadjusted)
             || self.has(Feature::NegativeCoherence)

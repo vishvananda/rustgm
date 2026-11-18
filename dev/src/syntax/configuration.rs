@@ -19,13 +19,19 @@ pub enum CfgGate {
     Sanitize,
     FloatReliability,
     ThreadLocal,
+    SanitizerCfi,
 }
 impl CfgGate {
+    pub(crate) const COUNT: usize = Self::SanitizerCfi as usize + 1;
+
     pub(crate) fn named(name: &str) -> Option<Self> {
         match name {
             "ub_checks" => Some(Self::UbChecks),
             "target_has_atomic_load_store" => Some(Self::TargetHasAtomic),
             "sanitize" => Some(Self::Sanitize),
+            "sanitizer_cfi_generalize_pointers" | "sanitizer_cfi_normalize_integers" => {
+                Some(Self::SanitizerCfi)
+            }
             "target_thread_local" => Some(Self::ThreadLocal),
             "target_has_reliable_f16"
             | "target_has_reliable_f16_math"

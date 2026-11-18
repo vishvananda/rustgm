@@ -2,7 +2,7 @@
 use super::{Engine, Error, FileId, Input, Location, MacroContext, Report, Sources, builtin};
 use crate::{
     expand::config::{CfgGate, CfgUse},
-    resolve::bindings::KnownFeature,
+    resolve::bindings::FeatureName,
     syntax::interpolation::{Inputs, Splice},
 };
 #[cfg(test)]
@@ -122,7 +122,7 @@ impl<S: Sources> Engine<'_, S> {
                     .package
                     .requested_cfg_gate(used.gate)
                     .map_err(|message| Error::at(file, site.span.start, message))?
-                    && !query.allows(site, &feature(used.gate).name())?
+                    && !query.allows(site, &FeatureName::for_cfg(used.gate))?
                 {
                     return Err(missing(site, used.gate));
                 }
@@ -138,15 +138,6 @@ fn site(file: FileId, used: CfgUse) -> Location {
         span: used.span,
     }
 }
-fn feature(gate: CfgGate) -> KnownFeature {
-    match gate {
-        CfgGate::UbChecks => KnownFeature::CfgUbChecks,
-        CfgGate::TargetHasAtomic => KnownFeature::CfgTargetHasAtomic,
-        CfgGate::Sanitize => KnownFeature::CfgSanitize,
-        CfgGate::FloatReliability => KnownFeature::CfgFloatReliability,
-        CfgGate::ThreadLocal => KnownFeature::CfgTargetThreadLocal,
-    }
-}
 fn missing(site: Location, gate: CfgGate) -> Error {
     Error::at(
         site.file,
@@ -160,6 +151,9 @@ fn missing(site: Location, gate: CfgGate) -> Error {
             }
             CfgGate::Sanitize => {
                 "cfg(sanitize) requires cfg_sanitize or its actual macro allowance"
+            }
+            CfgGate::SanitizerCfi => {
+                "CFI sanitizer cfg requires cfg_sanitizer_cfi or its actual macro allowance"
             }
             CfgGate::TargetHasAtomic => {
                 "cfg(target_has_atomic_load_store) requires cfg_target_has_atomic or its actual macro allowance"
@@ -204,7 +198,7 @@ pub(super) fn validate_attributes(report: &Report) -> Result<(), Error> {
                 .package
                 .requested_cfg_gate(used.gate())
                 .map_err(|message| Error::at(file, location.span.start, message))?
-                && !session.allows(location, &feature(used.gate()).name())?
+                && !session.allows(location, &FeatureName::for_cfg(used.gate()))?
             {
                 return Err(missing(location, used.gate()));
             }

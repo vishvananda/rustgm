@@ -151,6 +151,71 @@ fn unknown_source_requests_are_retained_then_rejected_by_completed_inventory() -
 }
 
 #[test]
+fn cfi_cfg_requires_its_own_gate_without_enabling_the_target_options() -> Result {
+    for predicate in [
+        "sanitizer_cfi_generalize_pointers",
+        "sanitizer_cfi_normalize_integers",
+    ] {
+        let tail = format!(
+            "#[cfg({predicate})] fn disabled() {{}}\n\
+             #[cfg(not({predicate}))] fn enabled() {{}}"
+        );
+        let text = format!("#![feature(cfg_sanitizer_cfi)]{HEADER}{tail}");
+        let expanded = expansion::analyze_with_context(
+            input(Path::new("lib.rs"), &text)?,
+            &mut Files::default(),
+            &Config::default(),
+            &context()?,
+        )?;
+        let report = resolve::analyze_expanded(expanded)?;
+        let definitions = &report.resolution.definitions;
+        assert!(
+            definitions
+                .iter()
+                .any(|definition| { report.package.names.get(definition.name) == "enabled" })
+        );
+        assert!(
+            !definitions
+                .iter()
+                .any(|definition| { report.package.names.get(definition.name) == "disabled" })
+        );
+
+        for request in ["", "#![feature(cfg_sanitize)]"] {
+            let text = format!("{request}{HEADER}#[cfg({predicate})] fn absent() {{}}");
+            let error = package(&text, &mut Files::default(), true)
+                .err()
+                .ok_or("a CFI predicate was allowed without its gate")?;
+            assert!(
+                error.to_string().contains("requires cfg_sanitizer_cfi"),
+                "{error}"
+            );
+        }
+        for argument in [predicate.to_owned(), format!("{predicate}=\"yes\"")] {
+            let error = Config::default()
+                .add(&argument)
+                .err()
+                .ok_or("CFI is a target option")?;
+            assert_eq!(error.message, "compiler-controlled cfg option");
+        }
+    }
+    let text =
+        format!("#![feature(cfg_sanitizer_cfi)]{HEADER}#[cfg(sanitize=\"cfi\")] fn absent() {{}}");
+    let error = package(&text, &mut Files::default(), true)
+        .err()
+        .ok_or("cfg_sanitizer_cfi granted the distinct cfg_sanitize gate")?;
+    assert!(
+        error.to_string().contains("requires cfg_sanitize"),
+        "{error}"
+    );
+    let mut config = Config::default();
+    config
+        .add("sanitizer_cfi_normalize_integers_fixture")
+        .map_err(|error| error.message)?;
+    assert!(config.contains("sanitizer_cfi_normalize_integers_fixture", None));
+    Ok(())
+}
+
+#[test]
 fn requests_follow_root_configuration_and_preserve_assembly_roles_and_contexts() -> Result {
     for request in [
         "#![cfg_attr(all(),feature(asm_experimental_arch))]",

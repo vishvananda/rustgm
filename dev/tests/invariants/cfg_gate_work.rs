@@ -11,6 +11,7 @@ fn usage(width: usize, calls: usize, gate: CfgGate) -> Result<usize> {
         CfgGate::UbChecks => ("cfg_ub_checks", "ub_checks"),
         CfgGate::ThreadLocal => ("cfg_target_thread_local", "target_thread_local"),
         CfgGate::Sanitize => ("cfg_sanitize", "sanitize=\"cfi\""),
+        CfgGate::SanitizerCfi => ("cfg_sanitizer_cfi", "sanitizer_cfi_normalize_integers"),
         CfgGate::FloatReliability => (
             "cfg_target_has_reliable_f16_f128",
             "target_has_reliable_f16",
@@ -59,6 +60,7 @@ fn cfg_expansion_repeated_queries_do_not_repeat_growing_allowance_header_walks()
         CfgGate::Sanitize,
         CfgGate::FloatReliability,
         CfgGate::ThreadLocal,
+        CfgGate::SanitizerCfi,
     ] {
         let base = usage(8, 1, gate)?;
         let repeated = usage(8, 32, gate)?
@@ -205,6 +207,6 @@ fn sanitize_cfg_uses_actual_set_and_same_feature_and_macro_authority() -> Result
         );
     }
     assert_eq!(size_of::<CfgGate>(), 1);
-    assert_eq!(size_of::<KnownFeature>(), 1);
+    assert_eq!(size_of::<crate::resolve::bindings::KnownFeature>(), 1);
     Ok(())
 }

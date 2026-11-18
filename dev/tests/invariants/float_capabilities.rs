@@ -77,5 +77,5 @@ fn reliability_permissions_never_enable_or_forge_backend_capabilities() {
         assert!(!config.contains(key, Some("yes")));
     }
     assert_eq!(size_of::<CfgGate>(), 1);
-    assert_eq!(size_of::<super::KnownFeature>(), 1);
+    assert_eq!(size_of::<crate::resolve::bindings::KnownFeature>(), 1);
 }

@@ -148,6 +148,7 @@ impl Config {
             return Err(error(0, "expected cfg option identifier"));
         }
         if name.starts_with("target_")
+            || CfgGate::named(name) == Some(CfgGate::SanitizerCfi)
             || matches!(
                 name,
                 "unix" | "windows" | "panic" | "debug_assertions" | "ub_checks" | "proc_macro"
