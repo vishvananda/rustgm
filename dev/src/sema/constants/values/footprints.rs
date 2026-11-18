@@ -1,7 +1,7 @@
 //! Raw access footprints reuse canonical ABI records after bounded readiness checks.
 use super::{Evaluator, Failure, Reader};
 use crate::{
-    abi::layout::Shape,
+    abi::layout::{PENDING_STORAGE_FIELDS, STORAGE_WORK_LIMIT, Shape, StorageReadiness},
     types::{Kind, TypeId},
 };
 
@@ -24,12 +24,42 @@ pub(crate) struct ProjectionLayout {
     pub storage: ProjectionStorage,
 }
 impl Evaluator<'_> {
-    fn storage_readiness(&self, ty: TypeId, limit: usize) -> Result<usize, Failure> {
-        let facts = self.facts();
+    fn storage_readiness(&mut self, ty: TypeId, limit: usize) -> Result<usize, Failure> {
+        let facts = &mut *self.queries.typing.facts;
+        let mut readiness = StorageReadiness::new(ty);
         let mut work = 0;
-        facts
-            .layouts
-            .storage_readiness(&facts.types, &facts.aggregates, ty, &mut work, limit)?;
+        let mut prepared = None;
+        while let Some(pending) = readiness.advance(
+            &facts.layouts,
+            &facts.types,
+            &facts.aggregates,
+            &mut work,
+            limit,
+        )? {
+            let Some(Kind::Adt(owner, _)) = facts.types.kind(pending) else {
+                return Err("missing nominal storage identity".into());
+            };
+            // Instantiation can finish a published field template. A second
+            // request for the same instance still needs semantic normalization.
+            if prepared == Some(pending) || facts.aggregates.get(owner).is_none() {
+                return Err(PENDING_STORAGE_FIELDS.into());
+            }
+            if work >= limit {
+                return Err(STORAGE_WORK_LIMIT.into());
+            }
+            let before = facts.aggregates.instantiation_steps();
+            facts.aggregates.instantiate(&mut facts.types, pending)?;
+            work = work
+                .checked_add(
+                    facts
+                        .aggregates
+                        .instantiation_steps()
+                        .saturating_sub(before),
+                )
+                .filter(|&cost| cost <= limit)
+                .ok_or(STORAGE_WORK_LIMIT)?;
+            prepared = Some(pending);
+        }
         Ok(work)
     }
 
@@ -70,7 +100,7 @@ impl Evaluator<'_> {
         work = work
             .checked_add(facts.layouts.steps - before)
             .filter(|n| *n <= limit)
-            .ok_or("constant storage layout work budget exceeded")?;
+            .ok_or(STORAGE_WORK_LIMIT)?;
         let layout = facts
             .layouts
             .at(id)

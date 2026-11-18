@@ -7,6 +7,18 @@ use crate::{
         aggregate::{Definitions, ShapeReadiness},
     },
 };
+
+pub(crate) const PENDING_STORAGE_FIELDS: &str = "constant storage layout requires completed fields";
+pub(crate) const STORAGE_WORK_LIMIT: &str = "constant storage layout work budget exceeded";
+
+/// Resume at the exact nominal whose structural field instance is missing.
+/// The caller may supply those fields before the walk reaches the ABI cache.
+pub(crate) struct StorageReadiness {
+    root: Option<TypeId>,
+    pending: Vec<TypeId>,
+    seen: HashSet<TypeId>,
+}
+
 impl Layouts {
     /// Prepay dense-state initialization and possible existing-buffer copying.
     /// A prepared layout needs neither this setup nor another ABI demand.
@@ -34,20 +46,35 @@ impl Layouts {
         work: &mut usize,
         limit: usize,
     ) -> Result<(), &'static str> {
-        charge(work, limit)?;
-        if self.get(ty).is_some() {
-            return Ok(());
+        if StorageReadiness::new(ty)
+            .advance(self, types, definitions, work, limit)?
+            .is_some()
+        {
+            return Err(PENDING_STORAGE_FIELDS);
         }
-        let mut pending = vec![ty];
-        let mut seen = HashSet::default();
-        let mut first = true;
-        while let Some(next) = pending.pop() {
-            if first {
-                first = false;
-            } else {
-                charge(work, limit)?;
-            }
-            if self.get(next).is_some() || !seen.insert(next) {
+        Ok(())
+    }
+}
+impl StorageReadiness {
+    pub(crate) fn new(ty: TypeId) -> Self {
+        Self {
+            root: Some(ty),
+            pending: Vec::new(),
+            seen: HashSet::default(),
+        }
+    }
+
+    pub(crate) fn advance(
+        &mut self,
+        layouts: &Layouts,
+        types: &Store,
+        definitions: &Definitions,
+        work: &mut usize,
+        limit: usize,
+    ) -> Result<Option<TypeId>, &'static str> {
+        while let Some(next) = self.root.take().or_else(|| self.pending.pop()) {
+            charge(work, limit)?;
+            if layouts.get(next).is_some() || !self.seen.insert(next) {
                 continue;
             }
             let fields = match types.kind(next).ok_or("missing storage type")? {
@@ -57,11 +84,11 @@ impl Layouts {
                     arguments,
                 } => Some(types.future_application(identity, arguments)?.storage),
                 Kind::Pattern { base, .. } => {
-                    pending.push(base);
+                    self.pending.push(base);
                     None
                 }
                 Kind::Opaque(..) => {
-                    pending.push(types.storage_head(next)?);
+                    self.pending.push(types.storage_head(next)?);
                     None
                 }
                 Kind::Foreign(_) => {
@@ -71,16 +98,18 @@ impl Layouts {
                     return Err("constant storage layout requires a closed normalized type");
                 }
                 Kind::Array { element, .. } => {
-                    pending.push(element);
+                    self.pending.push(element);
                     None
                 }
                 Kind::Closure { environment, .. } => {
-                    pending.push(environment);
+                    self.pending.push(environment);
                     None
                 }
                 Kind::Adt(item, _) => {
                     let ShapeReadiness::Ready(shape) = definitions.try_shape(types, next)? else {
-                        return Err("constant storage layout requires completed fields");
+                        self.seen.remove(&next);
+                        self.root = Some(next);
+                        return Ok(Some(next));
                     };
                     if shape.definition.kind == crate::types::aggregate::Kind::Enum
                         && !definitions.discriminants_ready(item)
@@ -90,42 +119,45 @@ impl Layouts {
                         );
                     }
                     for variant in shape.variants() {
-                        let fields = types.list(variant.fields).ok_or("missing storage fields")?;
-                        if work
-                            .saturating_add(pending.len())
-                            .saturating_add(fields.len())
-                            > limit
-                        {
-                            return Err("constant storage layout work budget exceeded");
-                        }
-                        pending.extend(fields.iter().copied());
+                        self.push_fields(types, variant.fields, *work, limit)?;
                     }
                     None
                 }
                 _ => None,
             };
             if let Some(fields) = fields {
-                let fields = types.list(fields).ok_or("missing storage fields")?;
-                if work
-                    .saturating_add(pending.len())
-                    .saturating_add(fields.len())
-                    > limit
-                {
-                    return Err("constant storage layout work budget exceeded");
-                }
-                pending.extend(fields.iter().copied());
+                self.push_fields(types, fields, *work, limit)?;
             }
         }
+        Ok(None)
+    }
+
+    fn push_fields(
+        &mut self,
+        types: &Store,
+        fields: crate::types::ListId,
+        work: usize,
+        limit: usize,
+    ) -> Result<(), &'static str> {
+        let fields = types.list(fields).ok_or("missing storage fields")?;
+        if work
+            .saturating_add(self.pending.len())
+            .saturating_add(fields.len())
+            > limit
+        {
+            return Err(STORAGE_WORK_LIMIT);
+        }
+        self.pending.extend_from_slice(fields);
         Ok(())
     }
 }
 fn charge(work: &mut usize, limit: usize) -> Result<(), &'static str> {
     let Some(next) = work.checked_add(1) else {
-        return Err("constant storage layout work budget exceeded");
+        return Err(STORAGE_WORK_LIMIT);
     };
     *work = next;
     if *work > limit {
-        return Err("constant storage layout work budget exceeded");
+        return Err(STORAGE_WORK_LIMIT);
     }
     Ok(())
 }

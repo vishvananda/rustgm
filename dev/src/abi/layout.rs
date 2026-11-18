@@ -11,6 +11,7 @@ mod simd;
 mod zero_carriers;
 use niches::Budget;
 pub use niches::{Niche, NicheId};
+pub(crate) use physical_ready::{PENDING_STORAGE_FIELDS, STORAGE_WORK_LIMIT, StorageReadiness};
 pub use zero_carriers::Carrier;
 
 pub(super) const MAX_SIZE: u64 = i64::MAX as u64;

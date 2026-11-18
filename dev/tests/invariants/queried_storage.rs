@@ -242,6 +242,62 @@ fn pending_field_publication() -> Result {
 }
 
 #[test]
+fn constant_layout_instantiates_new_nominal_fields_within_the_walk() -> Result {
+    use crate::{
+        sema::values::Evaluator,
+        types::{Kind, Primitive, RegionId, arguments::Argument},
+    };
+    let report = crate::test_source::source_provider(
+        &source("#[repr(u8)] enum Reply<T> { Value(T), Empty }")?,
+        "constant_storage_instance",
+    )?;
+    let mut facts = pipeline::analyze_source(&report)?.facts;
+    let owner = report
+        .resolution
+        .definitions
+        .iter()
+        .position(|d| report.package.names.get(d.name) == "Reply")
+        .ok_or("missing enum declaration")?;
+    let field = facts.types.intern(Kind::Reference {
+        mutable: false,
+        region: RegionId::STATIC,
+        referent: TypeId::primitive(Primitive::Str),
+    })?;
+    let args = facts.types.intern_arguments(&[Argument::Type(field)])?;
+    let reply = facts
+        .types
+        .intern(Kind::Adt(ItemId(u32::try_from(owner)?), args))?;
+    let members = facts.types.intern_list(&[reply])?;
+    let root = facts.types.intern(Kind::Tuple(members))?;
+    let mut evaluator = Evaluator::new(&report, &mut facts);
+    let before = evaluator.facts().aggregates.instantiation_steps();
+    assert!(evaluator.storage_layout(root, 2).is_err());
+    let facts = evaluator.facts();
+    assert_eq!(facts.aggregates.instantiation_steps(), before);
+    assert!(facts.aggregates.shape(&facts.types, reply).is_err());
+    assert!(facts.layouts.get(root).is_none());
+
+    let (layout, work) = evaluator.storage_layout(root, 100)?;
+    assert_eq!((layout.size, layout.align), (24, 8));
+    let facts = evaluator.facts();
+    let substituted = facts.aggregates.instantiation_steps() - before;
+    assert!(substituted > 0 && work > substituted);
+    let reply_fields = facts
+        .aggregates
+        .shape(&facts.types, reply)?
+        .variant(0)
+        .ok_or("missing prepared reply variant")?
+        .fields;
+    assert_eq!(facts.types.list(reply_fields), Some([field].as_slice()));
+    assert_eq!(evaluator.storage_layout(root, 1)?.1, 1);
+    assert_eq!(
+        evaluator.facts().aggregates.instantiation_steps(),
+        before + substituted
+    );
+    Ok(())
+}
+
+#[test]
 fn closed_projected_alignment_prepares_the_actual_stored_field() -> Result {
     for name in ["projection", "plain"] {
         let input = crate::test_source::fixture(&format!(
