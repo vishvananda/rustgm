@@ -446,6 +446,9 @@ impl Bound {
             charge(1, 0)?;
         }
         self.region_work(1)?;
+        if region == RegionId::ERASED && !matches!(self.action, Action::Shape { .. }) {
+            return Ok(region);
+        }
         self.prepare_observation_observed::<CHARGED>(region, depth, charge)?;
         if matches!(self.action, Action::Items(_) | Action::Normalize) {
             return Ok(region);
@@ -553,11 +556,22 @@ impl Bound {
         depth: u16,
         charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<super::GenericArgs, &'static str> {
+        self.fold_arguments::<CHARGED, false>(store, args, depth, charge)
+    }
+
+    fn fold_arguments<const CHARGED: bool, const CLOSURE: bool>(
+        &mut self,
+        store: &mut Store,
+        args: super::GenericArgs,
+        depth: u16,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<super::GenericArgs, &'static str> {
         if let Some(arguments) = store.region_args(args) {
             self.account_arguments(arguments.len())?;
             self.regions.clear();
             for region in arguments {
-                let region = self.region_observed::<CHARGED>(*region, depth, charge)?;
+                let region =
+                    self.fold_argument_region::<CHARGED, CLOSURE>(*region, depth, charge)?;
                 self.regions.push(region);
             }
             return store.intern_regions_observed::<CHARGED>(&self.regions, charge);
@@ -567,15 +581,27 @@ impl Bound {
         self.generic.clear();
         for argument in arguments {
             let argument = match argument {
-                Argument::Lifetime(region) => {
-                    Argument::Lifetime(self.region_observed::<CHARGED>(region, depth, charge)?)
-                }
+                Argument::Lifetime(region) => Argument::Lifetime(
+                    self.fold_argument_region::<CHARGED, CLOSURE>(region, depth, charge)?,
+                ),
                 Argument::Type(ty) => Argument::Type(self.child(store, ty, depth)?),
                 Argument::Const(id) => Argument::Const(self.constant(store, id)?),
             };
             self.generic.push(argument);
         }
         store.intern_arguments_observed::<CHARGED>(&self.generic, charge)
+    }
+
+    fn fold_argument_region<const CHARGED: bool, const CLOSURE: bool>(
+        &mut self,
+        region: RegionId,
+        depth: u16,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<RegionId, &'static str> {
+        if CLOSURE && let Some(mapped) = self.opaque_argument(region, depth)? {
+            return Ok(mapped);
+        }
+        self.region_observed::<CHARGED>(region, depth, charge)
     }
 
     fn account_arguments(&mut self, count: usize) -> Result<(), &'static str> {

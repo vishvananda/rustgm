@@ -164,6 +164,7 @@ impl Checker<'_> {
                 }
             }
             checked.finish(self)?;
+            let hidden = self.opaque_closure_arguments(node, application, hidden)?;
             let inferred = hidden;
             let mut uses = crate::types::bound_uses::Uses::including_free();
             uses.collect(&self.facts.types, hidden)
@@ -303,6 +304,40 @@ impl Checker<'_> {
             })
             .map_err(|e| self.error(node, e))?;
         self.alias_clause(node, clause)
+    }
+
+    fn opaque_closure_arguments(
+        &mut self,
+        node: NodeId,
+        application: super::TypeId,
+        hidden: super::TypeId,
+    ) -> Result<super::TypeId, Error> {
+        use crate::types::{Kind, bound_uses::Uses, substitute::Bound};
+        if self.facts.types.contains_callables(hidden) != Some(true) {
+            return Ok(hidden);
+        }
+        let Some(Kind::Opaque(id, captures)) = self.facts.types.kind(application) else {
+            return Err(self.error(node, "missing closure result capture declaration"));
+        };
+        if self.facts.is_named_opaque(id) {
+            return Ok(hidden);
+        }
+        let mut members = Uses::opaque_members();
+        members
+            .collect(&self.facts.types, hidden)
+            .map_err(|e| self.error(node, e))?;
+        let mut mask = Bound::opaque_arguments(
+            &self.facts.types,
+            captures,
+            self.state.call_types.universal_aliases(),
+            members.free_regions().collect(),
+        )
+        .map_err(|e| self.error(node, e))?;
+        let hidden = mask
+            .apply(&mut self.facts.types, hidden)
+            .map_err(|e| self.error(node, e))?;
+        self.facts.body_work.canonical_steps += members.steps + mask.steps;
+        Ok(hidden)
     }
 
     fn hidden_region_closure(

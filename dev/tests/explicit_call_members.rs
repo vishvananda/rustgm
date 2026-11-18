@@ -595,11 +595,7 @@ fn references_forward_calls_to_their_nominal_referents_execute() -> Result {
 
 #[test]
 fn inferred_callable_arguments_keep_parent_capture_storage() -> Result {
-    let prefix =
-        crate::resolve::fixture("pa31/tests/spec/explicit-dynamic-call-members/prefix.rs")?;
-    let (roles, _) = prefix
-        .split_once("impl Clone for u32")
-        .ok_or("callable source roles")?;
+    let roles = callable_source_roles()?;
     for (name, callback, accepted) in [
         ("by-value-callback-aggregate", "|x: &u8| *x", true),
         ("escaping-callback-aggregate", "move |_| *self.byte", false),
@@ -622,7 +618,7 @@ fn inferred_callable_arguments_keep_parent_capture_storage() -> Result {
         "
         );
         crate::qualify::qualify(name, &body, accepted)?;
-        let source = format!("#![feature(const_destruct)]\n{roles}{body}");
+        let source = format!("{roles}{body}");
         let mut config = Config::default();
         config.set_lint_cap(LintCap::Allow);
         let report = crate::resolve::source_provider_config(&source, "captured_callback", &config)?;
@@ -640,5 +636,55 @@ fn inferred_callable_arguments_keep_parent_capture_storage() -> Result {
             );
         }
     }
+    Ok(())
+}
+
+fn callable_source_roles() -> Result<String> {
+    let prefix =
+        crate::resolve::fixture("pa31/tests/spec/explicit-dynamic-call-members/prefix.rs")?;
+    let (roles, _) = prefix
+        .split_once("impl Clone for u32")
+        .ok_or("callable source roles")?;
+    Ok(format!("#![feature(const_destruct)]\n{roles}"))
+}
+
+#[test]
+fn legacy_opaque_closures_keep_real_captures() -> Result {
+    let roles = callable_source_roles()?;
+    let mut config = Config::default();
+    config.set_edition(rustgm::support::edition::Edition::Rust2015);
+    config.set_lint_cap(LintCap::Allow);
+    let positive = format!(
+        r#"
+        {roles}
+        fn helper<T>() {{}}
+        fn make<'a, 'b: 'a>(x: &'a u8, _: &'b u8) -> impl Fn() -> u8 + 'a {{
+            move || {{ helper::<&'b u8>(); *x }}
+        }}
+        pub extern "C" fn entry() -> u8 {{
+            let value = 7u8;
+            let other = 9u8;
+            make(&value, &other)()
+        }}
+    "#
+    );
+    let report = crate::resolve::source_provider_config(&positive, "legacy_opaque", &config)?;
+    program(&report)?;
+    let negative = format!(
+        r"
+        {roles}
+        fn escape<'a>(x: &'a u8) -> impl Fn() -> u8 {{ move || *x }}
+    "
+    );
+    let report = crate::resolve::source_provider_config(&negative, "legacy_opaque", &config)?;
+    let error = program(&report)
+        .err()
+        .ok_or("accepted an excluded capture")?;
+    assert!(
+        error
+            .to_string()
+            .contains("hidden lifetime has no unique permitted choice"),
+        "{error}"
+    );
     Ok(())
 }

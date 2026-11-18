@@ -2,7 +2,7 @@
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
     sema::closures::Execution,
-    types::{Kind, RegionId, Store, TypeId, region_graph::Error, structural::Compare},
+    types::{GenericArgs, Kind, RegionId, Store, TypeId, region_graph::Error, structural::Compare},
 };
 struct Matcher<'a> {
     types: &'a Store,
@@ -231,6 +231,19 @@ impl<'a> Compare<'a> for Matcher<'a> {
         self.charge(1)?;
         self.work.push((a, b, depth));
         Ok(())
+    }
+    fn closure_arguments(
+        &mut self,
+        a: GenericArgs,
+        b: GenericArgs,
+        depth: u16,
+    ) -> Result<bool, Error> {
+        self.compare_arguments_by(a, b, depth, |matcher, left, right, depth| {
+            if left == RegionId::ERASED || right == RegionId::ERASED {
+                return Ok(true);
+            }
+            matcher.regions(left, right, depth)
+        })
     }
     fn regions(&mut self, a: RegionId, b: RegionId, depth: u16) -> Result<bool, Error> {
         self.charge(1)?;

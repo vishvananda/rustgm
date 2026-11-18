@@ -473,6 +473,9 @@ fn connect(contract: &mut Contract, slot: u16, actual: RegionId) -> Result<(), &
     if u32::from(slot) >= contract.universals {
         return Err("instance early lifetime is outside its body binder");
     }
+    if actual == RegionId::ERASED {
+        return Ok(());
+    }
     let formal = RegionId::bound(0, slot)?;
     if actual != formal {
         contract

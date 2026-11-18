@@ -154,11 +154,28 @@ pub(crate) trait Compare<'t> {
     fn arguments(&mut self, a: GenericArgs, b: GenericArgs, depth: u16) -> Result<bool, Error> {
         self.compare_arguments(a, b, depth)
     }
+    fn closure_arguments(
+        &mut self,
+        a: GenericArgs,
+        b: GenericArgs,
+        depth: u16,
+    ) -> Result<bool, Error> {
+        self.arguments(a, b, depth)
+    }
     fn compare_arguments(
         &mut self,
         a: GenericArgs,
         b: GenericArgs,
         depth: u16,
+    ) -> Result<bool, Error> {
+        self.compare_arguments_by(a, b, depth, Self::regions)
+    }
+    fn compare_arguments_by(
+        &mut self,
+        a: GenericArgs,
+        b: GenericArgs,
+        depth: u16,
+        compare: impl Fn(&mut Self, RegionId, RegionId, u16) -> Result<bool, Error>,
     ) -> Result<bool, Error> {
         let a = self.types().arguments(a).ok_or(Error::Identity)?;
         let b = self.types().arguments(b).ok_or(Error::Identity)?;
@@ -170,7 +187,7 @@ pub(crate) trait Compare<'t> {
             match (a, b) {
                 (Argument::Type(a), Argument::Type(b)) => self.child(a, b, depth)?,
                 (Argument::Lifetime(a), Argument::Lifetime(b)) => {
-                    if !self.regions(a, b, depth)? {
+                    if !compare(self, a, b, depth)? {
                         return Ok(false);
                     }
                 }
@@ -218,7 +235,7 @@ pub(crate) trait Compare<'t> {
             ) if x == y => {
                 self.child(sa, sb, depth)?;
                 self.child(ea, eb, depth)?;
-                return self.arguments(a, b, depth);
+                return self.closure_arguments(a, b, depth);
             }
             (Kind::Never, Kind::Never) => {}
             (Kind::Foreign(a), Kind::Foreign(b)) if a == b => {}

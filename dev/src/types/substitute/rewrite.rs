@@ -8,6 +8,13 @@ pub(super) trait Folder {
     fn region(&mut self, region: RegionId, depth: u16) -> Result<RegionId, Self::Error>;
     fn list(&mut self, list: ListId, depth: u16) -> Result<ListId, Self::Error>;
     fn arguments(&mut self, args: GenericArgs, depth: u16) -> Result<GenericArgs, Self::Error>;
+    fn closure_arguments(
+        &mut self,
+        args: GenericArgs,
+        depth: u16,
+    ) -> Result<GenericArgs, Self::Error> {
+        self.arguments(args, depth)
+    }
     fn application(&mut self, id: ApplicationId, depth: u16) -> Result<ApplicationId, Self::Error>;
     fn constant(&mut self, id: ConstId) -> Result<ConstId, Self::Error>;
     fn constraint(
@@ -27,7 +34,7 @@ pub(super) fn rebuild<F: Folder>(folder: &mut F, kind: Kind, depth: u16) -> Resu
             environment,
         } => Kind::Closure {
             identity,
-            arguments: folder.arguments(arguments, depth)?,
+            arguments: folder.closure_arguments(arguments, depth)?,
             signature: folder.child(signature, depth)?,
             environment: folder.child(environment, depth)?,
         },
@@ -142,6 +149,14 @@ impl<F: Fn(usize, usize) -> Result<(), &'static str>, const CHARGED: bool> Folde
     fn arguments(&mut self, args: GenericArgs, depth: u16) -> Result<GenericArgs, Self::Error> {
         self.bound
             .arguments_observed::<CHARGED>(self.store, args, depth, self.charge)
+    }
+    fn closure_arguments(
+        &mut self,
+        args: GenericArgs,
+        depth: u16,
+    ) -> Result<GenericArgs, Self::Error> {
+        self.bound
+            .fold_arguments::<CHARGED, true>(self.store, args, depth, self.charge)
     }
     fn application(&mut self, id: ApplicationId, depth: u16) -> Result<ApplicationId, Self::Error> {
         let original = self

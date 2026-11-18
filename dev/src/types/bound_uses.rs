@@ -54,6 +54,7 @@ pub fn check_pointer(store: &Store, signature: TypeId) -> Result<(), &'static st
 #[derive(Default)]
 pub struct Uses {
     opaque_projections: bool,
+    opaque_members: bool,
     free: Option<HashSet<RegionId>>,
     pub indices: HashSet<u16>,
     seen: HashSet<(TypeId, u16)>,
@@ -66,6 +67,13 @@ impl Uses {
         Self {
             free: Some(HashSet::default()),
             ..Self::default()
+        }
+    }
+
+    pub(crate) fn opaque_members() -> Self {
+        Self {
+            opaque_members: true,
+            ..Self::including_free()
         }
     }
 
@@ -204,7 +212,9 @@ impl Uses {
                     environment,
                     ..
                 } => {
-                    self.arguments(store, arguments, depth)?;
+                    if !self.opaque_members {
+                        self.arguments(store, arguments, depth)?;
+                    }
                     self.push(signature, depth)?;
                     self.push(environment, depth)?;
                 }
@@ -306,6 +316,7 @@ impl Uses {
     }
     fn region(&mut self, region: RegionId, depth: u16) {
         if region != RegionId::STATIC
+            && region != RegionId::ERASED
             && region.bound_parts().is_none()
             && let Some(free) = &mut self.free
         {

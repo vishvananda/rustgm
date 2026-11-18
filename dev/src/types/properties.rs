@@ -83,7 +83,7 @@ impl Properties {
             self.escaping = self.escaping.max(depth + 1);
         } else {
             self.set(Property::FreeRegions, true);
-            if region != RegionId::STATIC {
+            if region != RegionId::STATIC && region != RegionId::ERASED {
                 self.set(Property::NonStaticFreeRegions, true);
             }
         }

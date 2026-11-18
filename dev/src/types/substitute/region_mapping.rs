@@ -1,9 +1,10 @@
 //! Simultaneous lifetime replacement preserves surrounding and nested binder identities.
 use super::{Action, Bound, RegionId};
-use crate::support::hash::HashMap;
+use crate::support::hash::{HashMap, HashSet};
 
 pub(super) enum Mode {
     Observe,
+    OpaqueArguments(Box<HashSet<RegionId>>),
     ObserveBudget(Box<super::restored::Owner>),
     Scopes(Vec<std::ops::Range<u32>>),
     Close(Box<super::equation_closure::Closing>),
@@ -75,7 +76,7 @@ impl Mapping {
         steps: &mut usize,
         charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<RegionId, &'static str> {
-        if original == RegionId::STATIC {
+        if original == RegionId::STATIC || matches!(self.mode, Mode::OpaqueArguments(_)) {
             return Ok(original);
         }
         if let Mode::Scopes(scopes) = &self.mode {
@@ -158,6 +159,59 @@ impl Mapping {
     }
 }
 impl Bound {
+    /// Keep private closure formals out of an opaque's exposed captures.
+    pub(crate) fn opaque_arguments(
+        store: &super::Store,
+        captures: crate::types::GenericArgs,
+        aliases: &[RegionId],
+        members: HashSet<RegionId>,
+    ) -> Result<Self, &'static str> {
+        let mut replacements = HashMap::default();
+        for argument in store.arguments(captures).ok_or("invalid opaque captures")? {
+            let crate::types::arguments::Argument::Lifetime(region) = argument else {
+                continue;
+            };
+            let Some((0, slot)) = region.bound_parts() else {
+                return Err("invalid declared opaque capture lifetime");
+            };
+            replacements.insert(region, region);
+            if let Some(&alias) = aliases.get(usize::from(slot)) {
+                replacements.insert(alias, region);
+            }
+        }
+        let mut fold = Self::new(Vec::new());
+        fold.action = Action::Regions(Box::new(Mapping {
+            mode: Mode::OpaqueArguments(Box::new(members)),
+            replacements,
+        }));
+        Ok(fold)
+    }
+
+    pub(super) fn opaque_argument(
+        &self,
+        region: RegionId,
+        depth: u16,
+    ) -> Result<Option<RegionId>, &'static str> {
+        let Action::Regions(mapping) = &self.action else {
+            return Ok(None);
+        };
+        let Mode::OpaqueArguments(members) = &mapping.mode else {
+            return Ok(None);
+        };
+        if matches!(region, RegionId::STATIC | RegionId::ERASED) || members.contains(&region) {
+            return Ok(Some(region));
+        }
+        let key = match region.bound_parts() {
+            Some((binder, _)) if binder < depth => return Ok(Some(region)),
+            Some((binder, slot)) => RegionId::bound(binder - depth, slot)?,
+            None => region,
+        };
+        let Some((0, slot)) = mapping.replacements.get(&key).and_then(|r| r.bound_parts()) else {
+            return Ok(Some(RegionId::ERASED));
+        };
+        RegionId::bound(depth, slot).map(Some)
+    }
+
     pub(crate) const fn region_mapping_bytes() -> usize {
         size_of::<Mapping>()
     }
@@ -327,7 +381,8 @@ impl Bound {
                 | Mode::Restore { .. }
                 | Mode::Rebase { .. }
                 | Mode::Close(_)
-                | Mode::Scopes(_) => None,
+                | Mode::Scopes(_)
+                | Mode::OpaqueArguments(_) => None,
             },
             _ => None,
         }
@@ -380,6 +435,10 @@ impl Mapping {
             | Mode::Restore {
                 retained: Retained::Stream(values),
             } => total.vector(values),
+            Mode::OpaqueArguments(value) => {
+                total.boxed(value.as_ref());
+                total.set(value);
+            }
             Mode::Close(value) => {
                 total.boxed(value.as_ref());
                 total.include(value.allocation());

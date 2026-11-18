@@ -59,6 +59,9 @@ pub struct ItemId(pub u32);
 pub struct RegionId(pub u32);
 impl RegionId {
     pub const STATIC: Self = Self(0);
+    /// An opaque representation omitted a closure's enclosing lifetime argument.
+    /// This slot supplies neither a storage lifetime nor an outlives premise.
+    pub(crate) const ERASED: Self = Self(0x7fff_ffff);
     /// # Errors
     /// Rejects binder depth beyond the compact bound-region encoding.
     pub const fn bound(depth: u16, index: u16) -> Result<Self, &'static str> {
