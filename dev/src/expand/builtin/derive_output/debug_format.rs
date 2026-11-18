@@ -50,6 +50,8 @@ impl Output<'_> {
                     error(self.site.original.start, "derived Debug item has no name")
                 })?;
             self.debug_call(shape, name, fields, Access::Receiver)?;
+        } else if variants.is_empty() {
+            self.text("match *self{}")?;
         } else {
             self.text("match self{")?;
             for row in variants {

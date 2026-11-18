@@ -37,6 +37,26 @@ fn receipts(report: &super::super::super::Report) -> TestResult {
     Ok(())
 }
 #[test]
+fn empty_enum_debug_matches_the_uninhabited_place() -> TestResult {
+    let input = test_source::fixture(
+        "pa31/tests/spec/debug-field-arrays-runtime/source-observer.rs",
+    )?
+        + "macro_rules! extern_ty { ($name:ident) => { #[derive(fmt::Debug)] pub enum $name {} }; }
+           extern_ty!(Timezone);
+           #[derive(fmt::Debug)] pub enum Disabled { #[cfg(any())] Hidden }";
+    let report = expanded_provider(&input, "empty_debug")?;
+    receipts(&report)?;
+    assert_eq!(
+        compact_generated(&report, input.len())
+            .matches("match*self{}")
+            .count(),
+        2
+    );
+    let report = crate::resolve::analyze_expanded(report)?;
+    crate::pipeline::analyze_source(&report)?;
+    Ok(())
+}
+#[test]
 fn original_function_pointer_and_five_six_seven_field_recipes_keep_real_arrays() -> TestResult {
     for shape in ["record", "tuple", "enum"] {
         for count in [5, 6, 7] {
