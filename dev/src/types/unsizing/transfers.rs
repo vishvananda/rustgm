@@ -1,5 +1,5 @@
 //! Closed public-layout recipes are data; selection and lifetime debts stay in bodies.
-use super::{ItemId, Kind, Rules, Store, TypeId};
+use super::{Definitions, ItemId, Kind, Rules, Store, TypeId, aggregate};
 use crate::support::retained::{self, Growth, Payment};
 
 /// The pointee of a nominal conversion's changed pointer field: a reference
@@ -17,8 +17,43 @@ pub(crate) fn terminal_pointee(types: &Store, ty: TypeId) -> Option<TypeId> {
     }
 }
 
+/// Find the array that supplies slice metadata for an already proved unsizing.
+/// Each enclosing struct keeps its owner and contributes its prepared last field.
+pub(crate) fn slice_terminal(
+    types: &Store,
+    aggregates: &Definitions,
+    (mut source, mut target): (TypeId, TypeId),
+    mut charge: impl FnMut() -> Result<(), &'static str>,
+) -> Result<Option<TypeId>, &'static str> {
+    let tail = |ty| {
+        let shape = aggregates.shape(types, ty)?;
+        shape
+            .variant(0)
+            .and_then(|variant| types.list(variant.fields))
+            .and_then(|fields| fields.last())
+            .copied()
+            .ok_or("nominal slice conversion lost its prepared struct tail")
+    };
+    loop {
+        charge()?;
+        match (types.kind(source), types.kind(target)) {
+            (Some(Kind::Array { .. }), Some(Kind::Slice(_))) => return Ok(Some(source)),
+            (Some(Kind::Adt(a, _)), Some(Kind::Adt(b, _)))
+                if a == b
+                    && aggregates
+                        .get(a)
+                        .is_some_and(|definition| definition.kind == aggregate::Kind::Struct) =>
+            {
+                (source, target) = (tail(source)?, tail(target)?);
+            }
+            _ => return Ok(None),
+        }
+    }
+}
+
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Step {
+    /// The terminal array supplies the length of the target slice, including a struct tail.
     Slice(TypeId),
     /// A thin pointer to `concrete` becomes a pointer to the trait object
     /// `object`, whose metadata is the concrete type's vtable.

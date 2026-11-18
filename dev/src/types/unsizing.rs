@@ -10,7 +10,8 @@ use super::{
 };
 use crate::support::hash::{HashMap, HashSet};
 pub(crate) use transfers::{
-    Plan as CoercionPlan, Span as CoercionSpan, Step as CoercionStep, terminal_pointee,
+    Plan as CoercionPlan, Span as CoercionSpan, Step as CoercionStep, slice_terminal,
+    terminal_pointee,
 };
 pub(crate) use wrappers::{Field as CoercionField, Schema as CoercionSchema};
 

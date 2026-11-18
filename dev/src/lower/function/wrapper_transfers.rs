@@ -5,7 +5,7 @@ use crate::{
     lowir::{program::MemorySpan, vocabulary::Type},
     types::{
         Kind, TypeId,
-        unsizing::{CoercionPlan, CoercionSpan, CoercionStep},
+        unsizing::{CoercionPlan, CoercionSpan, CoercionStep, slice_terminal, terminal_pointee},
     },
 };
 
@@ -51,7 +51,9 @@ impl Lower<'_, '_, '_> {
                 let b = self.offset(to, span.to)?;
                 if index == plan.changed as usize {
                     match plan.step {
-                        CoercionStep::Slice(array) => self.transfer_slice(span, array, a, b)?,
+                        CoercionStep::Slice(array) => {
+                            self.transfer_slice(span, array, (a, b), &mut steps)?;
+                        }
                         CoercionStep::Object { concrete, object } => {
                             self.transfer_object(span, (concrete, object), a, b)?;
                         }
@@ -140,13 +142,25 @@ impl Lower<'_, '_, '_> {
         &mut self,
         span: CoercionSpan,
         array: TypeId,
-        source: Address,
-        target: Address,
+        (source, target): (Address, Address),
+        steps: &mut usize,
     ) -> Result<(), &'static str> {
-        let pointee = |ty| crate::types::unsizing::terminal_pointee(self.context.types, ty);
-        if pointee(span.source) != Some(array)
-            || pointee(span.target)
-                .is_none_or(|ty| !matches!(self.context.types.kind(ty), Some(Kind::Slice(_))))
+        let pointee = |ty| terminal_pointee(self.context.types, ty);
+        let from = pointee(span.source).ok_or("nominal slice source is not a pointer")?;
+        let to = pointee(span.target).ok_or("nominal slice target is not a pointer")?;
+        let selected = slice_terminal(
+            self.context.types,
+            self.context.aggregates,
+            (from, to),
+            || {
+                *steps += 1;
+                if *steps > 1_000_000 {
+                    return Err("nominal runtime conversion work budget exceeded");
+                }
+                Ok(())
+            },
+        )?;
+        if selected != Some(array)
             || self.context.layout(span.source)?.size != 8
             || self.context.layout(span.target)?.size != 16
         {
@@ -170,7 +184,7 @@ impl Lower<'_, '_, '_> {
         source: Address,
         target: Address,
     ) -> Result<(), &'static str> {
-        let pointee = |ty| crate::types::unsizing::terminal_pointee(self.context.types, ty);
+        let pointee = |ty| terminal_pointee(self.context.types, ty);
         if pointee(span.source) != Some(concrete)
             || pointee(span.target) != Some(object)
             || self.context.layout(span.source)?.size != 8

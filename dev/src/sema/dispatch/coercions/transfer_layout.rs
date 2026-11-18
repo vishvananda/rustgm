@@ -3,8 +3,9 @@ use crate::{
     sema::model::Declarations,
     support::retained::Growth,
     types::{
-        ItemId, Kind, TypeId, aggregate,
-        unsizing::{CoercionPlan, CoercionSpan, CoercionStep},
+        ItemId, Kind, TypeId,
+        aggregate::{self, MetadataPreparation},
+        unsizing::{CoercionPlan, CoercionSpan, CoercionStep, slice_terminal, terminal_pointee},
     },
 };
 
@@ -72,12 +73,13 @@ pub(super) fn build(
     let changed = *fields
         .get(schema.changed as usize)
         .ok_or("nominal changed field is missing")?;
-    let step = step(&facts.types, changed.source, changed.target)?;
+    let index = schema.changed;
+    let step = step(facts, changed.source, changed.target)?;
     Ok(CoercionPlan {
         owner,
         source,
         target,
-        changed: schema.changed,
+        changed: index,
         fields,
         step,
     })
@@ -139,37 +141,51 @@ fn span(
 }
 
 fn step(
-    types: &crate::types::Store,
+    facts: &mut Declarations,
     source: TypeId,
     target: TypeId,
 ) -> Result<CoercionStep, &'static str> {
+    let types = &facts.types;
     if let (Some(Kind::Adt(a, _)), Some(Kind::Adt(b, _))) = (types.kind(source), types.kind(target))
         && a == b
     {
         return Ok(CoercionStep::Nested { source, target });
     }
     let (Some(a), Some(b)) = (
-        crate::types::unsizing::terminal_pointee(types, source),
-        crate::types::unsizing::terminal_pointee(types, target),
+        terminal_pointee(types, source),
+        terminal_pointee(types, target),
     ) else {
         return Err("nominal changed field lacks its checked physical conversion profile");
     };
-    match (types.kind(a), types.kind(b)) {
-        (Some(Kind::Array { .. }), Some(Kind::Slice(_))) => Ok(CoercionStep::Slice(a)),
-        // The selected `Unsize` proof made `a` a sized implementor of `b`.
-        (Some(kind), Some(Kind::Dynamic { .. }))
-            if !matches!(
-                kind,
-                Kind::Dynamic { .. }
-                    | Kind::Slice(_)
-                    | Kind::Primitive(crate::types::Primitive::Str)
-            ) =>
-        {
-            Ok(CoercionStep::Object {
-                concrete: a,
-                object: b,
-            })
-        }
-        _ => Err("nominal pointer terminal requires its wider checked conversion profile"),
+    let heads = (types.kind(a), types.kind(b));
+    // The selected `Unsize` proof made `a` a sized implementor of `b`.
+    if let (Some(kind), Some(Kind::Dynamic { .. })) = heads
+        && !matches!(
+            kind,
+            Kind::Dynamic { .. } | Kind::Slice(_) | Kind::Primitive(crate::types::Primitive::Str)
+        )
+    {
+        return Ok(CoercionStep::Object {
+            concrete: a,
+            object: b,
+        });
     }
+    if let (Some(Kind::Adt(from, _)), Some(Kind::Adt(to, _))) = heads
+        && from == to
+    {
+        for ty in [a, b] {
+            if facts
+                .aggregates
+                .prepare_physical_metadata(&mut facts.types, ty)?
+                != MetadataPreparation::Ready
+            {
+                return Err("nominal slice conversion requires completed struct tails");
+            }
+        }
+    }
+    slice_terminal(&facts.types, &facts.aggregates, (a, b), || {
+        facts.charge_caller_inputs(1, 0)
+    })?
+    .map(CoercionStep::Slice)
+    .ok_or("nominal pointer terminal requires its wider checked conversion profile")
 }

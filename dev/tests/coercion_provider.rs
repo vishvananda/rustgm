@@ -320,6 +320,67 @@ fn nominal_wrapper_values_preserve_transfer_effects_and_real_cleanup() -> TestRe
     Ok(())
 }
 #[test]
+#[ignore = "requires the pinned CPPGM object backend and a C compiler"]
+fn nominal_slice_tails_keep_the_base_address_and_element_count() -> TestResult {
+    let mut source = crate::resolve::fixture("pa31/tests/spec/nominal-coercions/values/native.rs")?;
+    source.push_str(
+        r#"
+#[repr(C)]
+struct InnerTail<T:?Sized> { head:u8, data:T }
+#[repr(C)]
+struct OuterTail<T:?Sized> { head:u8, inner:InnerTail<T> }
+#[repr(transparent)]
+struct SliceCarrier<T:PointeeSized> { ptr:*const T }
+#[unstable(feature="coerce_unsized",issue="18598")]
+impl<T:PointeeSized+Unsize<U>,U:PointeeSized> CoerceUnsized<*const U> for *const T {}
+impl<T:PointeeSized+Unsize<U>,U:PointeeSized> CoerceUnsized<SliceCarrier<U>> for SliceCarrier<T> {}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn observe_slice_tail()->u8 {
+    let value = OuterTail { head:17, inner:InnerTail{head:19, data:[23u8,47]} };
+    let thin = SliceCarrier { ptr:&value as *const OuterTail<[u8;2]> };
+    let wide:SliceCarrier<OuterTail<[u8]>> = thin;
+    let view = unsafe { &*wide.ptr };
+    unsafe { record(view.head); record(view.inner.head); }
+    second(&view.inner.data)
+}
+#[unsafe(no_mangle)]
+pub extern "C" fn observe_empty_tail()->u8 {
+    let value = OuterTail { head:29, inner:InnerTail{head:31, data:[]} };
+    let thin = SliceCarrier { ptr:&value as *const OuterTail<[u8;0]> };
+    let wide:SliceCarrier<OuterTail<[u8]>> = thin;
+    let view = unsafe { &*wide.ptr };
+    unsafe { record(view.head); record(view.inner.head); }
+    match &view.inner.data { []=>91, _=>0 }
+}
+"#,
+    );
+    let program = crate::ffi_program::exported(&source, "nominal_slice_tail")?;
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let folder = root.join("obj/parallel/nominal-coercions-v1/slice-tail-native");
+    std::fs::create_dir_all(&folder)?;
+    crate::ffi_program::check(
+        &root,
+        &folder,
+        "slice_tail",
+        &program,
+        r#"
+#include <stdint.h>
+#include <stdio.h>
+extern uint8_t observe_slice_tail(void), observe_empty_tail(void);
+void record(uint8_t tag) { printf("%u ", (unsigned)tag); }
+int main(void) {
+    printf("%u\n", (unsigned)observe_slice_tail());
+    printf("%u\n", (unsigned)observe_empty_tail());
+    return 0;
+}
+"#,
+        "17 19 47\n29 31 91\n",
+    )?;
+    Ok(())
+}
+
+#[test]
 #[ignore = "requires the pinned CPPGM backend and host C linker"]
 fn source_unsizing_goal_native_answers() -> TestResult {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
