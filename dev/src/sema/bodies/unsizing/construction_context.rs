@@ -1,8 +1,106 @@
 //! A borrowed constructor needs a sized input hint before its outer unsizing.
 use super::{Argument, Checker, Constructor, Error, NodeId, TermId};
-use crate::types::{Primitive, TypeId};
+use crate::types::{ItemId, Primitive, TypeId};
 
 impl Checker<'_> {
+    pub(in crate::sema::bodies) fn call_result_hint(
+        &mut self,
+        node: NodeId,
+        result: TermId,
+        expected: TermId,
+        constructor: bool,
+    ) -> Result<Option<TermId>, Error> {
+        if constructor {
+            return self.unsizing_constructor_context(node, result, Some(expected));
+        }
+        let (
+            Some(Constructor::AdtArgs(owner, _)),
+            Some(Constructor::Adt(target, _) | Constructor::AdtArgs(target, _)),
+        ) = (
+            self.contextual_head(node, result)?,
+            self.contextual_head(node, expected)?,
+        )
+        else {
+            return Ok(None);
+        };
+        if owner != target {
+            return Ok(None);
+        }
+        self.unsizing_constructor_context(node, result, Some(expected))?
+            .map(|hint| self.relax_nominal_result_hint(node, owner, result, hint))
+            .transpose()
+    }
+
+    /// A checked wrapper conversion can change an open result input. Let the
+    /// ordinary call obligations infer the source before its outer coercion.
+    fn relax_nominal_result_hint(
+        &mut self,
+        node: NodeId,
+        owner: ItemId,
+        result: TermId,
+        expected: TermId,
+    ) -> Result<TermId, Error> {
+        use crate::types::infer::Error as InferError;
+
+        let Some(rules) = self.facts.unsizing_rules.as_ref() else {
+            return Ok(expected);
+        };
+        let Some(slots) = rules
+            .nominal_hint_slots(&self.facts.types, owner)
+            .map_err(|error| self.error(node, error))?
+        else {
+            return Ok(expected);
+        };
+        self.state
+            .infer
+            .account_work(slots.len())
+            .map_err(|error| self.error(node, error))?;
+        let source = self
+            .state
+            .infer
+            .item_arguments(&self.facts.types, result)
+            .map_err(|error| self.error(node, error))?;
+        let mut target = self
+            .state
+            .infer
+            .item_arguments(&self.facts.types, expected)
+            .map_err(|error| self.error(node, error))?;
+        let mut changed = false;
+        for ((&hint, from), target) in slots.iter().zip(source).zip(&mut target) {
+            let (true, Argument::Type(from), Argument::Type(to)) = (hint, from, *target) else {
+                continue;
+            };
+            if self
+                .state
+                .infer
+                .unresolved_domain(from)
+                .map_err(|error| self.error(node, error))?
+                .is_none()
+            {
+                continue;
+            }
+            match self.state.infer.resolved(&mut self.facts.types, to) {
+                Ok(ty)
+                    if self.facts.types.contains_parameters(ty) == Some(false)
+                        && self.facts.types.is_sized(ty) == Some(false) =>
+                {
+                    *target = Argument::Type(from);
+                    changed = true;
+                }
+                Ok(_) | Err(InferError::Unresolved | InferError::Normalization) => {}
+                Err(error) => return Err(self.error(node, error)),
+            }
+        }
+        if changed {
+            self.state
+                .infer
+                .nominal(owner, &target)
+                .map_err(|error| self.error(node, error))
+        } else {
+            Ok(expected)
+        }
+    }
+
     /// Whether the expected result of a call gives a by-value formal input an
     /// unsized type, as `Box::new(array)` expected as `Box<[T]>` does. rustc
     /// then checks that argument against its formal type alone, so the result

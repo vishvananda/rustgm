@@ -203,6 +203,91 @@ fn nominal_value_typing_retains_actual_goals_and_full_source_opponents() -> Test
 }
 
 #[test]
+fn nominal_call_results_infer_from_the_argument_before_unsizing() -> TestResult {
+    let prefix =
+        crate::resolve::fixture("pa31/tests/spec/explicit-dynamic-call-members/prefix.rs")?;
+    let (prefix, _) = prefix
+        .split_once("pub struct Unique")
+        .ok_or("NonNull provider prefix")?;
+    let declarations = r#"
+        #[lang = "From"]
+        pub trait From<T>: Sized { fn from(value: T) -> Self; }
+        impl<T: PointeeSized> From<&T> for NonNull<T> {
+            fn from(value: &T) -> Self { NonNull { pointer: value as *const T } }
+        }
+        #[repr(C)]
+        pub struct Inner<T: ?Sized> { prefix: u8, data: T }
+    "#;
+    for (expression, target, expected) in [
+        ("NonNull::from(value)", "[u8]", Some(true)),
+        ("NonNull::<Inner<[u8; 1]>>::from(value)", "[u8]", Some(true)),
+        ("NonNull::from(value)", "[u8; 1]", Some(false)),
+        ("NonNull::<Inner<[u8]>>::from(value)", "[u8]", None),
+        ("NonNull::from(value)", "[u16]", None),
+    ] {
+        let text = format!(
+            "{prefix}{declarations}
+             pub fn select(value: &Inner<[u8; 1]>) -> NonNull<Inner<{target}>> {{
+                 let selected: NonNull<Inner<{target}>> = {expression};
+                 selected
+             }}"
+        );
+        let report = crate::resolve::source_provider(&text, "nominal_call_unsizing")?;
+        let result = rustgm::pipeline::analyze_source(&report);
+        if let Some(expected) = expected {
+            let analysis = result?;
+            let selected = analysis
+                .facts
+                .unsizing_adjustments
+                .values()
+                .any(|adjustment| {
+                    matches!(
+                        adjustment,
+                        rustgm::types::unsizing::Conversion::Nominal { .. }
+                    )
+                });
+            assert_eq!(selected, expected, "{expression} -> {target}");
+        } else {
+            let error = result
+                .err()
+                .ok_or_else(|| format!("accepted {expression} -> {target}"))?;
+            assert!(
+                error.message.contains("trait obligation requires"),
+                "{expression} -> {target}: {error}"
+            );
+        }
+    }
+    let text = format!(
+        "{prefix}{declarations}
+         pub struct Tagged<T: PointeeSized, A>(NonNull<T>, PhantomData<A>);
+         impl<T: PointeeSized + Unsize<U>, U: PointeeSized, A> CoerceUnsized<Tagged<U, A>>
+             for Tagged<T, A> {{}}
+         impl<T: PointeeSized, A: Copy> From<(&T, A)> for Tagged<T, A> {{
+             fn from(value: (&T, A)) -> Self {{ Tagged(NonNull::from(value.0), PhantomData) }}
+         }}
+         pub fn with_tag(value: &Inner<[u8; 1]>) -> Tagged<Inner<[u8]>, u8> {{
+             let selected: Tagged<Inner<[u8]>, u8> = Tagged::from((value, 7));
+             selected
+         }}"
+    );
+    let report = crate::resolve::source_provider(&text, "nominal_call_tag_hint")?;
+    let analysis = rustgm::pipeline::analyze_source(&report)?;
+    assert!(
+        analysis
+            .facts
+            .unsizing_adjustments
+            .values()
+            .any(|adjustment| {
+                matches!(
+                    adjustment,
+                    rustgm::types::unsizing::Conversion::Nominal { .. }
+                )
+            })
+    );
+    Ok(())
+}
+
+#[test]
 #[ignore = "requires the pinned CPPGM object backend and a C compiler"]
 fn nominal_wrapper_values_preserve_transfer_effects_and_real_cleanup() -> TestResult {
     let folder = "pa31/tests/spec/nominal-coercions/values";

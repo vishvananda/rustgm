@@ -2620,15 +2620,7 @@ impl Checker<'_> {
         };
         if let Some(expected) = expectation.ty() {
             let result = self.child(node, term, parameters as usize)?;
-            let nominal = matches!(
-                (self.contextual_head(node, result)?, self.contextual_head(node, expected)?),
-                (Some(Constructor::AdtArgs(owner, _)),
-                    Some(Constructor::Adt(target, _) | Constructor::AdtArgs(target, _)))
-                    if owner == target
-            );
-            if (constructor || nominal)
-                && let Some(expected) =
-                    self.unsizing_constructor_context(node, result, Some(expected))?
+            if let Some(expected) = self.call_result_hint(node, result, expected, constructor)?
                 && (constructor
                     || !self.unsized_input_expectation(node, term, parameters, result, expected)?)
                 && (constructor
