@@ -92,9 +92,12 @@ impl Checker<'_> {
             )
         })?;
         // Reverse insertion retains original expression order on the work stack.
-        self.state
-            .work
-            .extend((*casts).into_iter().rev().map(Work::Exit));
+        self.state.work.extend(
+            (*casts)
+                .into_iter()
+                .rev()
+                .map(|node| Work::Exit(node, None)),
+        );
         Ok(())
     }
 

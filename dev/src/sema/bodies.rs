@@ -283,7 +283,7 @@ enum Work {
     },
     Enter(NodeId, Option<TermId>),
     EnterUnsizedRvalue(NodeId, TermId),
-    Exit(NodeId),
+    Exit(NodeId, Option<TermId>),
     CompleteExpression(NodeId, TermId),
     /// Refresh an actual call after its simple binding's result coercion.
     RefineInitializerCall(NodeId),
@@ -1081,8 +1081,9 @@ impl Checker<'_> {
                 Work::AssignmentValue(node) => self.assignment_value(node)?,
                 Work::Assignee(node) => self.enter_assignee(node)?,
                 Work::AssigneeShell(node) => self.finish_assignee(node)?,
-                Work::Exit(node) => {
-                    if let Some(dependency) = self.complete_body_expression(node)? {
+                Work::Exit(node, expected) => {
+                    if let Some(dependency) = self.complete_body_expression(node, expected)? {
+                        self.state.work.push(Work::Exit(node, expected));
                         return Ok(Some(dependency));
                     }
                 }
@@ -1159,13 +1160,15 @@ impl Checker<'_> {
         }
         Ok(dependency)
     }
-    fn complete_body_expression(&mut self, node: NodeId) -> Result<Option<Dependency>, Error> {
-        if let Some(dependency) = self.call_result_readiness(node)? {
-            self.state.work.push(Work::Exit(node));
+    fn complete_body_expression(
+        &mut self,
+        node: NodeId,
+        expected: Option<TermId>,
+    ) -> Result<Option<Dependency>, Error> {
+        if let Some(dependency) = self.call_result_readiness(node, expected)? {
             return Ok(Some(dependency));
         }
         if let Some(dependency) = self.join_readiness(node)? {
-            self.state.work.push(Work::Exit(node));
             return Ok(Some(dependency));
         }
         if let Some(requirement) = self
@@ -1177,7 +1180,6 @@ impl Checker<'_> {
             .or(self.unary_readiness(node)?)
             .or_else(|| self.value_readiness(node))
         {
-            self.state.work.push(Work::Exit(node));
             return Ok(Some(Dependency {
                 requirement,
                 source: self.key(node),
@@ -1531,7 +1533,7 @@ impl Checker<'_> {
             }
             let child = super::closures::qualification::child(self.report, self.key(node))
                 .map_err(|e| self.error(node, e))?;
-            self.state.work.push(Work::Exit(node));
+            self.state.work.push(Work::Exit(node, None));
             return self.enter_closure(child.node, expected, Some(node));
         }
         if matches!(self.kind(node), Kind::Closure { .. }) {
@@ -1539,7 +1541,7 @@ impl Checker<'_> {
         }
         self.enter_safety(node)?;
         self.enter_control(node, expectation.hard())?;
-        self.state.work.push(Work::Exit(node));
+        self.state.work.push(Work::Exit(node, expectation.hard()));
         self.state.children.clear();
         match self.kind(node) {
             Kind::InlineAssembly(args) => self.enter_assembly(node, args)?,

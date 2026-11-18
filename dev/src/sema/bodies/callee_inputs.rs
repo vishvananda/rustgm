@@ -284,17 +284,12 @@ impl Checker<'_> {
     pub(super) fn call_result_readiness(
         &mut self,
         call: NodeId,
+        expected: Option<TermId>,
     ) -> Result<Option<Dependency>, Error> {
         if !matches!(
             self.kind(call),
             Kind::Call { .. } | Kind::MethodCall { .. } | Kind::GenericMethodCall { .. }
         ) {
-            return Ok(None);
-        }
-        // A contextual reference conversion must choose its result before
-        // selecting a closure output witness. Its ordinary completion already
-        // supplies that context; structural consumers have no such expectation.
-        if self.state.reference_expected.contains(&call) {
             return Ok(None);
         }
         let Some(active) = self.state.call_types.active.get(&call) else {
@@ -305,6 +300,14 @@ impl Checker<'_> {
             return Err(self.error(call, "call result lost its active signature"));
         };
         let result = self.child(call, signature, parameters as usize)?;
+        // A concrete reference expectation can constrain a closure output
+        // witness. An unsizing destination must let an open referent take
+        // its type from the call's ready obligations before coercion.
+        if self.state.reference_expected.contains(&call)
+            && !self.needs_referent_before_unsizing(call, result, expected)?
+        {
+            return Ok(None);
+        }
         if self
             .state
             .infer
@@ -325,6 +328,35 @@ impl Checker<'_> {
             super::projections::Advance::Ready(_) => Ok(None),
             super::projections::Advance::Definition(dependency) => Ok(Some(dependency)),
         }
+    }
+
+    fn needs_referent_before_unsizing(
+        &mut self,
+        call: NodeId,
+        result: TermId,
+        expected: Option<TermId>,
+    ) -> Result<bool, Error> {
+        let Some(expected) = expected else {
+            return Ok(false);
+        };
+        if !matches!(
+            self.contextual_head(call, expected)?,
+            Some(Constructor::Reference { .. })
+        ) || !matches!(
+            self.contextual_head(call, result)?,
+            Some(Constructor::Reference { .. })
+        ) {
+            return Ok(false);
+        }
+        let target = self.child(call, expected, 0)?;
+        if !matches!(
+            self.contextual_head(call, target)?,
+            Some(Constructor::Dynamic { .. } | Constructor::Slice)
+        ) {
+            return Ok(false);
+        }
+        let referent = self.child(call, result, 0)?;
+        Ok(self.contextual_head(call, referent)?.is_none())
     }
 
     fn call_parameter(&mut self, call: NodeId, parameter: u32) -> Result<TermId, Error> {

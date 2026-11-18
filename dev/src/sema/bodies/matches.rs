@@ -171,7 +171,7 @@ impl Checker<'_> {
         };
         let pattern = self.selected_pattern(pattern, term)?;
         self.facts.patterns.arms[index as usize].pattern = Some(pattern);
-        self.state.work.push(Work::Exit(arm.source.node));
+        self.state.work.push(Work::Exit(arm.source.node, None));
         self.state.work.push(expected.enter(arm.value.node));
         if let Some(guard) = arm.guard {
             let boolean = self.known(guard.node, TypeId::primitive(Primitive::Bool))?;

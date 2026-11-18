@@ -97,7 +97,7 @@ impl Checker<'_> {
         } = self.closure_identity(node, signature)?;
         self.closure_slot_ownership(node, closure, signature, &terms, bound_regions)?;
         self.save(node, closure);
-        self.state.work.push(Work::Exit(node));
+        self.state.work.push(Work::Exit(node, None));
         let imported_bindings: Vec<_> =
             bindings.iter().map(|&(definition, _)| definition).collect();
         let mut lifetimes = universes::Interface::new(
