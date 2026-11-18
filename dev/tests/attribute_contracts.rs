@@ -1626,3 +1626,225 @@ fn doc_masked_uses_its_own_lexical_invalid_owner_lint() -> TestResult {
     assert_eq!(std::mem::size_of::<rustgm::sema::model::NodeFacts>(), 80);
     Ok(())
 }
+
+const GNU_UNWIND_IMPORTS: &str = r#"
+#[lang = "Option"]
+pub enum Option<T> { #[lang = "None"] None, #[lang = "Some"] Some(T) }
+
+#[repr(C)]
+pub enum _Unwind_Reason_Code {
+    _URC_NO_REASON = 0,
+    _URC_FOREIGN_EXCEPTION_CAUGHT = 1,
+    _URC_FATAL_PHASE2_ERROR = 2,
+    _URC_FATAL_PHASE1_ERROR = 3,
+    _URC_NORMAL_STOP = 4,
+    _URC_END_OF_STACK = 5,
+    _URC_HANDLER_FOUND = 6,
+    _URC_INSTALL_CONTEXT = 7,
+    _URC_CONTINUE_UNWIND = 8,
+    _URC_FAILURE = 9,
+}
+
+pub type _Unwind_Exception_Cleanup_Fn =
+    Option<extern "C" fn(unwind_code: _Unwind_Reason_Code, exception: *mut _Unwind_Exception)>;
+
+#[repr(C)]
+pub struct _Unwind_Exception {
+    pub exception_class: u64,
+    pub exception_cleanup: _Unwind_Exception_Cleanup_Fn,
+    pub private: [*const u8; 2],
+}
+
+unsafe extern "C-unwind" {
+    pub fn _Unwind_Resume(exception: *mut _Unwind_Exception) -> !;
+}
+        unsafe extern "C-unwind" {
+            pub fn _Unwind_RaiseException(exception: *mut _Unwind_Exception) -> _Unwind_Reason_Code;
+        }
+"#;
+
+#[test]
+fn source_c_unwind_imports_keep_typed_abi_without_native_demand() -> TestResult {
+    use rustgm::{
+        resolve::model::DefId,
+        support::linkage::{Linkage, Naming},
+        types::{Kind, TypeId, callable::Abi},
+    };
+    let source = minimal_runtime_source(&format!(
+        r#"{GNU_UNWIND_IMPORTS}
+#[unsafe(no_mangle)]
+pub extern "C" fn ordinary_unwind_control() -> i32 {{ 19 }}
+fn main() {{}}"#
+    ))?;
+    let mut report = crate::resolve::source_provider(&source, "source_unwind_imports")?;
+    let analysis = rustgm::pipeline::analyze_source(&report)?;
+    let mut facts = analysis.facts;
+    let foreign = facts.foreign.as_deref().ok_or("foreign registry")?;
+    let definition = |name: &str| -> TestResult<u32> {
+        let position = report
+            .resolution
+            .definitions
+            .iter()
+            .position(|definition| report.package.names.get(definition.name) == name)
+            .ok_or("selected declaration")?;
+        Ok(u32::try_from(position)?)
+    };
+    let exception = definition("_Unwind_Exception")?;
+    let reason = definition("_Unwind_Reason_Code")?;
+    for (name, never) in [("_Unwind_Resume", true), ("_Unwind_RaiseException", false)] {
+        let record = foreign
+            .function(DefId(definition(name)?))
+            .ok_or("canonical foreign unwind import")?;
+        assert_eq!(record.linkage, Linkage::Import);
+        let Naming::Exact(id) = record.naming else {
+            return Err("foreign import lost native name".into());
+        };
+        assert_eq!(foreign.names().get(id), Some(name));
+        let Some(Kind::Function {
+            unsafe_: true,
+            convention,
+            parameters,
+            result,
+            ..
+        }) = facts.types.kind(record.signature)
+        else {
+            return Err("foreign unwind import lost its checked callable".into());
+        };
+        assert_eq!(convention.abi, Abi::CUnwind);
+        assert!(!convention.variadic);
+        let Some([parameter]) = facts.types.list(parameters) else {
+            return Err("unwind import lost its exception pointer parameter".into());
+        };
+        assert!(
+            matches!(facts.types.kind(*parameter), Some(Kind::Pointer { mutable: true, pointee })
+            if matches!(facts.types.kind(pointee), Some(Kind::Adt(owner, _)) if owner.0 == exception))
+        );
+        if never {
+            assert_eq!(result, TypeId::NEVER);
+        } else {
+            assert!(
+                matches!(facts.types.kind(result), Some(Kind::Adt(owner, _)) if owner.0 == reason)
+            );
+        }
+    }
+    let entry = rustgm::sema::entry::select(&mut report, &facts)?;
+    let program =
+        rustgm::lower::instances::build_prepared(&report, &mut facts, entry, analysis.prepared)?;
+    assert!(
+        program
+            .symbols
+            .iter()
+            .any(|symbol| { symbol.name == "ordinary_unwind_control" && symbol.body.is_some() })
+    );
+    assert!(!program.symbols.iter().any(|symbol| matches!(
+        symbol.name.as_str(),
+        "_Unwind_Resume" | "_Unwind_RaiseException"
+    )));
+    Ok(())
+}
+
+#[test]
+fn source_c_unwind_keeps_pointer_abi_and_fences_actual_native_calls() -> TestResult {
+    let mismatch = minimal_runtime_source(&format!(
+        r#"{GNU_UNWIND_IMPORTS}
+fn incompatible() -> unsafe extern "C" fn(*mut _Unwind_Exception) -> ! {{ _Unwind_Resume }}"#
+    ))?;
+    let report = crate::resolve::source_provider(&mismatch, "source_unwind_pointer_mismatch")?;
+    let error = rustgm::pipeline::analyze_source(&report)
+        .err()
+        .ok_or("C pointer accepted a C-unwind function item")?;
+    assert!(
+        error
+            .to_string()
+            .contains("incompatible callable convention or safety"),
+        "{error}"
+    );
+
+    for tail in [
+        r#"#[unsafe(no_mangle)]
+            pub unsafe extern "C" fn reached(exception: *mut _Unwind_Exception) -> ! {
+                unsafe { _Unwind_Resume(exception) }
+            }"#,
+        r#"#[unsafe(no_mangle)]
+            pub unsafe extern "C" fn reached(
+                callback: unsafe extern "C-unwind" fn(*mut _Unwind_Exception) -> !,
+                exception: *mut _Unwind_Exception,
+            ) -> ! {
+                unsafe { callback(exception) }
+            }"#,
+    ] {
+        let source =
+            minimal_runtime_source(&format!("{GNU_UNWIND_IMPORTS}\n{tail}\nfn main() {{}}"))?;
+        let mut report = crate::resolve::source_provider(&source, "source_unwind_native_gate")?;
+        let analysis = rustgm::pipeline::analyze_source(&report)?;
+        let mut facts = analysis.facts;
+        let entry = rustgm::sema::entry::select(&mut report, &facts)?;
+        let error =
+            rustgm::lower::instances::build_prepared(&report, &mut facts, entry, analysis.prepared)
+                .err()
+                .ok_or("native call erased its C-unwind contract")?;
+        assert!(
+            error
+                .to_string()
+                .contains("C-unwind native call or definition requires its unwind ABI lowering"),
+            "{error}"
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn selected_source_c_unwind_definition_fences_both_writers() -> TestResult {
+    use rustgm::lower::instances::{SourcePublication, build_source_library_profile};
+    let source = minimal_runtime_source(
+        r#"pub extern "C-unwind" fn source_unwind(value: i32) -> i32 { value }"#,
+    )?;
+    let report = crate::resolve::source_provider(&source, "source_unwind_wire_gate")?;
+    let identity = report
+        .package
+        .source_core()
+        .ok_or("Source owner")?
+        .provider
+        .clone();
+    let scalar_source = r#"#![feature(no_core, lang_items)]
+        #![no_core]
+        #[lang = "pointee_sized"] trait PointeeSized {}
+        #[lang = "meta_sized"] trait MetaSized: PointeeSized {}
+        #[lang = "sized"] trait Sized: MetaSized {}
+        pub extern "C-unwind" fn scalar_unwind(value: i32) -> i32 { value }"#;
+    let scalar_report = crate::resolve::source_provider(scalar_source, "scalar_unwind_wire_gate")?;
+    let scalar_identity = scalar_report
+        .package
+        .source_core()
+        .ok_or("scalar Source owner")?
+        .provider
+        .clone();
+    let mut scalar_facts = rustgm::pipeline::analyze_source(&scalar_report)?.facts;
+    let scalar = rustgm::sema::crates::export(&scalar_report, &mut scalar_facts, scalar_identity)
+        .err()
+        .ok_or("scalar metadata erased C-unwind")?;
+    assert!(
+        scalar
+            .to_string()
+            .contains("C-unwind export requires its versioned unwind ABI"),
+        "{scalar}"
+    );
+    let analysis = rustgm::pipeline::analyze_source(&report)?;
+    let mut facts = analysis.facts;
+    let source = build_source_library_profile(
+        &report,
+        &mut facts,
+        identity,
+        analysis.prepared,
+        SourcePublication::ModuleBodyOperations,
+    )
+    .err()
+    .ok_or("Source metadata erased C-unwind")?;
+    assert!(
+        source
+            .to_string()
+            .contains("C-unwind source metadata requires its versioned unwind ABI"),
+        "{source}"
+    );
+    Ok(())
+}

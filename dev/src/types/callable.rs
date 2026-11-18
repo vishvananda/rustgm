@@ -12,6 +12,13 @@ pub enum Abi {
     RustCall,
     C,
     Unadjusted,
+    /// The C calling convention with a distinct foreign-unwind contract.
+    CUnwind,
+}
+impl Abi {
+    pub(crate) const fn supports_c_variadic(self) -> bool {
+        matches!(self, Self::C | Self::CUnwind)
+    }
 }
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
 pub struct Convention {

@@ -236,6 +236,9 @@ pub(super) fn export_roots(
         abi: match convention.abi {
             crate::types::callable::Abi::Rust => Abi::Rust,
             crate::types::callable::Abi::C => Abi::C,
+            crate::types::callable::Abi::CUnwind => {
+                return Err(error("C-unwind export requires its versioned unwind ABI"));
+            }
             crate::types::callable::Abi::Unadjusted => {
                 return Err(error(
                     "unadjusted ABI export is outside the metadata profile",

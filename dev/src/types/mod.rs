@@ -578,7 +578,7 @@ impl Store {
             } => {
                 self.list(parameters).is_some()
                     && valid_type(result)
-                    && (!convention.variadic || convention.abi == callable::Abi::C)
+                    && (!convention.variadic || convention.abi.supports_c_variadic())
             }
             Kind::FunctionItem {
                 signature,

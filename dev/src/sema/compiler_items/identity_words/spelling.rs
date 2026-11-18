@@ -269,6 +269,7 @@ impl<'a> Spelling<'a> {
                     Abi::Rust => "Rust",
                     Abi::RustCall => "rust-call",
                     Abi::C => "C",
+                    Abi::CUnwind => "C-unwind",
                     Abi::Unadjusted => "unadjusted",
                 });
                 self.signature(parameters, result)

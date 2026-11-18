@@ -91,7 +91,10 @@ fn fixed_abort_profile_cannot_be_overridden_and_unwind_abi_stays_required() -> T
     let result = test_source::source_provider(&source("unwind-abi")?, "nounwind_future")
         .and_then(|report| pipeline::analyze_source(&report).map_err(|e| e.to_string()));
     let error = result.err().ok_or("unsupported unwind ABI admitted")?;
-    assert!(error.contains("ABI"), "{error}");
+    assert!(
+        error.contains("source nounwind requires its checked abort or non-unwinding ABI"),
+        "{error}"
+    );
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);

@@ -93,6 +93,8 @@ fn aborting_abi(abi: crate::types::callable::Abi) -> bool {
     use crate::types::callable::Abi;
     match abi {
         Abi::C | Abi::Unadjusted => true,
+        // This proof has no owner-specific foreign-unwind effect information.
+        Abi::CUnwind => false,
         Abi::Rust | Abi::RustCall => crate::resolve::package::Package::target_aborts_panics(),
     }
 }

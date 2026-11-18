@@ -921,6 +921,7 @@ impl Lower<'_, '_, '_> {
                 callee,
                 arguments,
             } => {
+                self.context.require_native_unwind_abi(signature)?;
                 if let Some(value) = self.source_vararg_read(id)? {
                     return Ok(value);
                 }

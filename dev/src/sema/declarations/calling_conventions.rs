@@ -84,7 +84,7 @@ pub(in crate::sema) fn with_variadic(
     mut convention: crate::types::callable::Convention,
     variadic: bool,
 ) -> Result<crate::types::callable::Convention, Error> {
-    if variadic && convention.abi != crate::types::callable::Abi::C {
+    if variadic && !convention.abi.supports_c_variadic() {
         return Err(Declarations::error(
             report,
             key,
@@ -147,6 +147,7 @@ pub(in crate::sema) fn callable_convention(
         b"Rust" => Abi::Rust,
         b"rust-call" if report.package.permits_source_rust_call() => Abi::RustCall,
         b"C" => Abi::C,
+        b"C-unwind" if report.package.source_core().is_some() => Abi::CUnwind,
         b"unadjusted" => Abi::Unadjusted,
         _ => return Err(Declarations::error(report, key, "unsupported callable ABI")),
     };

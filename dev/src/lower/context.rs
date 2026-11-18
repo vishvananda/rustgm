@@ -690,6 +690,14 @@ impl<'a> Context<'a> {
     fn body(&self, index: usize) -> &ir::Body {
         &self.bodies.as_slice()[index]
     }
+    pub(super) fn require_native_unwind_abi(&self, ty: TypeId) -> Result<(), &'static str> {
+        if matches!(self.types.kind(ty), Some(Kind::Function { convention, .. })
+            if convention.abi == crate::types::callable::Abi::CUnwind)
+        {
+            return Err("C-unwind native call or definition requires its unwind ABI lowering");
+        }
+        Ok(())
+    }
     pub fn signature(&mut self, ty: TypeId) -> Result<SignatureId, &'static str> {
         self.caller_signature(ty, false)
     }
@@ -698,6 +706,7 @@ impl<'a> Context<'a> {
         ty: TypeId,
         tracked: bool,
     ) -> Result<SignatureId, &'static str> {
+        self.require_native_unwind_abi(ty)?;
         if let Some(id) = self.signatures.get(&(ty, tracked)) {
             return Ok(*id);
         }
@@ -978,9 +987,13 @@ impl<'a> Context<'a> {
         if let Some(call) = self.objects.call(instance) {
             return self.virtual_method(instance, call);
         }
-        let Some(Kind::FunctionItem { item, .. }) = self.types.kind(instance.ty()) else {
+        let Some(Kind::FunctionItem {
+            item, signature, ..
+        }) = self.types.kind(instance.ty())
+        else {
             return Err("invalid demanded callable instance");
         };
+        self.require_native_unwind_abi(signature)?;
         let definition = DefId(item.0);
         if let Some(function) = self.foreign.and_then(|r| r.function(definition))
             && function.linkage == crate::support::linkage::Linkage::Import
