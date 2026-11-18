@@ -27,6 +27,51 @@ const CASES: &[Case] = &[
     ("utf8-reread-after-write", 0, [0, 0, 0], false),
     ("utf8-empty-local-cell", 0, [0, 0, 0], true),
 ];
+
+#[test]
+fn constant_string_ranges_keep_byte_backing_and_shared_reference_checks()
+-> Result<(), Box<dyn std::error::Error>> {
+    let source = crate::resolve::fixture("pa31/tests/spec/unsafe-cell-source/nullable-shapes.rs")?;
+    let (roles, _) = source
+        .split_once("pub enum Maybe<T>")
+        .ok_or("source roles")?;
+    let roles = format!(
+        r#"{roles}
+        #[lang="unsize"] #[rustc_deny_explicit_impl] #[rustc_dyn_incompatible_trait]
+        pub trait Unsize<T:PointeeSized>:PointeeSized {{}}
+        #[lang="coerce_unsized"] pub trait CoerceUnsized<T:PointeeSized>:Sized {{}}
+        impl<'a,'b:'a,T:PointeeSized+Unsize<U>,U:PointeeSized> CoerceUnsized<&'a U> for &'b T {{}}
+        pub mod intrinsics {{ #[rustc_intrinsic] pub const unsafe fn transmute<Src,Dst>(src:Src)->Dst; }}
+        "#
+    );
+    let accepted = format!(
+        r"{roles}
+        pub const SEPARATORS: &[&str] = &[
+            unsafe {{ intrinsics::transmute::<&[u8], &str>(&[47u8]) }},
+            unsafe {{ intrinsics::transmute::<&[u8], &str>(&[195u8, 169u8]) }},
+            unsafe {{ intrinsics::transmute::<&[i8], &str>(&[47i8]) }},
+        ];
+        pub const BYTES: &[i8] = unsafe {{ intrinsics::transmute::<&[u8], &[i8]>(&[47u8]) }};
+        "
+    );
+    let mut config = rustgm::expand::config::Config::default();
+    config.set_lint_cap(rustgm::support::diagnostics::LintCap::Allow);
+    let report = crate::resolve::source_provider_config(&accepted, "string_ranges", &config)?;
+    rustgm::pipeline::analyze_source(&report)?;
+
+    let rejected = format!("{roles} pub const BAD: &Slot<u32> = &Slot {{ value: 7u32 }};");
+    let report = crate::resolve::source_provider_config(&rejected, "mutable_range", &config)?;
+    let Err(error) = rustgm::pipeline::analyze_source(&report) else {
+        return Err("interior mutable allocation escaped".into());
+    };
+    assert!(
+        error
+            .to_string()
+            .contains("interior mutable allocation backing")
+    );
+    Ok(())
+}
+
 #[test]
 fn string_word_source_contracts() -> Result<(), Box<dyn std::error::Error>> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))

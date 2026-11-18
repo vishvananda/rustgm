@@ -1,5 +1,6 @@
 //! Final reference checks inspect only reachable immutable elements of a selected range.
 use super::{Answer, Constant, Inspection, Kind, Origin, TypeId, View};
+use crate::types::Primitive;
 impl Inspection<'_> {
     pub(super) fn range_reference(
         &mut self,
@@ -16,13 +17,20 @@ impl Inspection<'_> {
         else {
             return Err("constant range backing is not a canonical array");
         };
-        match self.reader.facts.types.kind(ty) {
+        let compatible = match self.reader.facts.types.kind(ty) {
             Some(Kind::Array {
                 element: actual,
                 length: n,
-            }) if self.reader.same_storage_type(actual, element) && n == length => {}
-            Some(Kind::Slice(actual)) if self.reader.same_storage_type(actual, element) => {}
-            _ => return Err("constant range referent differs from its selected element type"),
+            }) => n == length && self.reader.same_storage_type(actual, element),
+            Some(Kind::Slice(_) | Kind::Primitive(Primitive::Str)) => {
+                let selected = self.reader.sequence_element(ty)?;
+                self.reader.same_storage_type(selected, element)
+                    || self.reader.byte_reinterpretation(selected, element)
+            }
+            _ => false,
+        };
+        if !compatible {
+            return Err("constant range referent differs from its selected element type");
         }
         if from.checked_add(length).is_none_or(|end| end > bound) {
             return Err("constant range reference exceeds its backing");
@@ -58,7 +66,7 @@ impl Inspection<'_> {
                 })
             }
             View::Bytes(_) | View::ByteRange { .. }
-                if element == TypeId::primitive(crate::types::Primitive::U8) =>
+                if element == TypeId::primitive(Primitive::U8) =>
             {
                 self.reader.stored_bytes(parent.ty, value)?;
                 Ok(Answer::Ordinary)
