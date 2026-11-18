@@ -1,10 +1,13 @@
 //! Vtable conversion entries retain exact source Self before runtime erasure.
 use super::{Entry, call_signature, select_execution};
 use crate::{
-    body::{ir::Body, regions::Contract},
+    body::{
+        ir::{Body, ValueId},
+        regions::Contract,
+    },
     sema::model::Declarations,
     support::call_traits::CallTrait,
-    types::{Kind, RegionId, TypeId, substitute::Bound},
+    types::{Kind, RegionId, TypeId, substitute::Bound, unsizing},
 };
 
 #[derive(Clone, Copy)]
@@ -19,11 +22,24 @@ pub(super) fn select(
     facts: &mut Declarations,
     body: &Body,
     contract: &mut Contract,
-    concrete: TypeId,
-    object: TypeId,
-    operand: TypeId,
+    site: ValueId,
+    operand: ValueId,
+    conversion: unsizing::Conversion<TypeId>,
     proofs: &mut crate::body::instantiate::ProofCursor,
 ) -> Result<Option<[Option<Entry>; 2]>, &'static str> {
+    let (concrete, object, nominal_region) = match conversion {
+        unsizing::Conversion::Object { concrete, target } => (concrete, target, None),
+        unsizing::Conversion::Nominal { .. } => {
+            let row = body.nominal_use(&facts.types, site)?;
+            let Some((concrete, object, region)) = crate::sema::values::Reader::new(facts)
+                .nominal_object(row.source, row.from, row.to)?
+            else {
+                return Ok(None);
+            };
+            (concrete, object, Some(region))
+        }
+        _ => return Ok(None),
+    };
     let (leaf, visits) = crate::types::closure::reference_leaf(&facts.types, concrete)?;
     facts.body_work.canonical_steps += visits;
     let Some(leaf) = leaf else {
@@ -47,8 +63,20 @@ pub(super) fn select(
     let Some(Kind::Function { bound_regions, .. }) = facts.types.kind(signature) else {
         return Err("captured object entry lacks its public signature");
     };
-    let Some(Kind::Reference { region, .. }) = facts.types.kind(operand) else {
-        return Err("captured object entry requires a checked reference conversion");
+    let region = if let Some(region) = nominal_region {
+        // The checked pointer field supplies its borrow bound. For raw storage
+        // the object's own lifetime bounds the callable receiver.
+        region
+    } else {
+        let ty = body
+            .values
+            .get(operand.0 as usize)
+            .ok_or("captured conversion has an invalid input")?
+            .ty;
+        let Some(Kind::Reference { region, .. }) = facts.types.kind(ty) else {
+            return Err("captured object entry requires a checked reference conversion");
+        };
+        region
     };
     if body.source != contract.source {
         return Err("captured conversion differs from its lifetime owner");

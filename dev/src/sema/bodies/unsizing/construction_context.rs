@@ -88,6 +88,7 @@ impl Checker<'_> {
             .item_arguments(&self.facts.types, expected)
             .map_err(|error| self.error(node, error))?;
         let mut changed = false;
+        let mut callable_hints = Vec::new();
         for ((&hint, from), target) in slots.iter().zip(source).zip(&mut target) {
             let (true, Argument::Type(from), Argument::Type(to)) = (hint, from, *target) else {
                 continue;
@@ -106,12 +107,21 @@ impl Checker<'_> {
                     if self.facts.types.contains_parameters(ty) == Some(false)
                         && self.facts.types.is_sized(ty) == Some(false) =>
                 {
+                    if matches!(
+                        self.facts.types.kind(ty),
+                        Some(crate::types::Kind::Dynamic { .. })
+                    ) {
+                        callable_hints.push((from, to));
+                    }
                     *target = Argument::Type(from);
                     changed = true;
                 }
                 Ok(_) | Err(InferError::Unresolved | InferError::Normalization) => {}
                 Err(error) => return Err(self.error(node, error)),
             }
+        }
+        for (source, object) in callable_hints {
+            self.retain_object_closure_expectation(node, source, object)?;
         }
         if changed {
             self.state
@@ -287,9 +297,11 @@ impl Checker<'_> {
             self.contextual_head(node, term)?,
             Some(Constructor::Dynamic { .. })
         ) {
-            // An object target supplies obligations after the sized constructor's
-            // actual tail is inferred; it cannot become the stored field type.
-            self.variable(node, crate::types::infer::Domain::Any)?
+            // Keep the field sized and carry the callable signature into its
+            // initializer so a closure can check its parameters and result.
+            let source = self.variable(node, crate::types::infer::Domain::Any)?;
+            self.retain_object_closure_expectation(node, source, term)?;
+            source
         } else {
             self.array_tail_context(node, term)?
         };

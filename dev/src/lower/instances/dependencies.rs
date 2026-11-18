@@ -370,24 +370,13 @@ impl Discovered {
         index: usize,
         conversion: crate::types::unsizing::Conversion<TypeId>,
     ) -> Result<(), &'static str> {
-        match conversion {
-            crate::types::unsizing::Conversion::Object { concrete, target } => {
-                self.tables.push((concrete, target));
-                let id = crate::body::ir::ValueId(
-                    u32::try_from(index).map_err(|_| "too many conversion dependencies")?,
-                );
-                if let Some(entries) = body
-                    .closure_calls
-                    .as_deref()
-                    .and_then(|entries| entries.conversion(id))
-                {
-                    self.captured.push((concrete, entries));
-                }
-            }
+        let (concrete, object) = match conversion {
+            crate::types::unsizing::Conversion::Object { concrete, target } => (concrete, target),
             crate::types::unsizing::Conversion::Upcast { source, target } => {
                 self.upcasts.push((source, target));
+                return Ok(());
             }
-            crate::types::unsizing::Conversion::Slice(_) => {}
+            crate::types::unsizing::Conversion::Slice(_) => return Ok(()),
             crate::types::unsizing::Conversion::Bound { .. } => {
                 return Err("bound unsizing reached instance dependencies unresolved");
             }
@@ -398,23 +387,24 @@ impl Discovered {
                         u32::try_from(index).map_err(|_| "too many nominal conversions")?,
                     ),
                 )?;
-                let mut plan =
-                    Reader::new(facts).nominal_conversion(row.source, row.from, row.to)?;
-                // A trait-object terminal, however deeply nested, needs its table.
-                for _ in 0..1_000_000 {
-                    match plan.step {
-                        crate::types::unsizing::CoercionStep::Nested { source, target } => {
-                            plan = Reader::new(facts).nominal_plan(source, target)?;
-                        }
-                        crate::types::unsizing::CoercionStep::Object { concrete, object } => {
-                            self.tables.push((concrete, object));
-                            return Ok(());
-                        }
-                        crate::types::unsizing::CoercionStep::Slice(_) => return Ok(()),
-                    }
-                }
-                return Err("nested nominal conversion work budget exceeded");
+                let Some((concrete, object, _)) =
+                    Reader::new(facts).nominal_object(row.source, row.from, row.to)?
+                else {
+                    return Ok(());
+                };
+                (concrete, object)
             }
+        };
+        self.tables.push((concrete, object));
+        let site = crate::body::ir::ValueId(
+            u32::try_from(index).map_err(|_| "too many conversion dependencies")?,
+        );
+        if let Some(entries) = body
+            .closure_calls
+            .as_deref()
+            .and_then(|entries| entries.conversion(site))
+        {
+            self.captured.push((concrete, entries));
         }
         Ok(())
     }

@@ -215,31 +215,25 @@ pub(crate) fn select(
     for (index, value) in body.values.iter().enumerate() {
         if let Rvalue::Unsize {
             value: operand,
-            conversion: crate::types::unsizing::Conversion::Object { concrete, target },
+            conversion,
         } = value.kind
         {
-            let operand = body
-                .values
-                .get(operand.0 as usize)
-                .ok_or("captured conversion has an invalid input")?
-                .ty;
+            let site = ValueId(u32::try_from(index).map_err(|_| "too many conversion values")?);
             if let Some(selected) = vtable_entries::select(
                 facts,
                 body,
                 contract,
-                concrete,
-                target,
+                site,
                 operand,
+                conversion,
                 &mut proofs,
             )? {
-                let index =
-                    ValueId(u32::try_from(index).map_err(|_| "too many conversion values")?);
                 let entries = body.closure_calls.get_or_insert_with(Default::default);
                 entries.adapters |= selected
                     .iter()
                     .flatten()
                     .any(|entry| entry.adapter.is_some());
-                entries.conversions.insert(index, selected);
+                entries.conversions.insert(site, selected);
             }
             continue;
         }

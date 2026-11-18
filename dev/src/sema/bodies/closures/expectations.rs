@@ -46,6 +46,29 @@ impl Checker<'_> {
         node: NodeId,
         expected: TermId,
     ) -> Result<Option<TermId>, Error> {
+        let Some(hint) = self.object_closure_hint(node, expected)? else {
+            return Ok(None);
+        };
+        self.contextual_signature(node, hint)
+    }
+
+    pub(in crate::sema::bodies) fn retain_object_closure_expectation(
+        &mut self,
+        node: NodeId,
+        subject: TermId,
+        target: TermId,
+    ) -> Result<(), Error> {
+        if let Some(hint) = self.object_closure_hint(node, target)? {
+            self.retain_closure_hint(node, subject, hint)?;
+        }
+        Ok(())
+    }
+
+    fn object_closure_hint(
+        &mut self,
+        node: NodeId,
+        expected: TermId,
+    ) -> Result<Option<Hint>, Error> {
         if !matches!(
             self.contextual_head(node, expected)?,
             Some(Constructor::Dynamic { .. })
@@ -66,15 +89,12 @@ impl Checker<'_> {
         let [Argument::Type(inputs)] = binding.arguments.as_slice() else {
             return Err(self.error(node, "object callable context requires one input tuple"));
         };
-        self.contextual_signature(
-            node,
-            Hint {
-                inputs: *inputs,
-                result: binding.result,
-                regions: Some(binding.bound_regions),
-                order: 0,
-            },
-        )
+        Ok(Some(Hint {
+            inputs: *inputs,
+            result: binding.result,
+            regions: Some(binding.bound_regions),
+            order: 0,
+        }))
     }
 
     pub(in crate::sema::bodies) fn record_closure_expectation(
@@ -109,6 +129,24 @@ impl Checker<'_> {
         if !application.arguments.is_empty() {
             return Err(self.error(node, "callable output has unexpected family arguments"));
         }
+        self.retain_closure_hint(
+            node,
+            subject,
+            Hint {
+                inputs: *inputs,
+                result,
+                regions,
+                order: 0,
+            },
+        )
+    }
+
+    fn retain_closure_hint(
+        &mut self,
+        node: NodeId,
+        subject: TermId,
+        mut hint: Hint,
+    ) -> Result<(), Error> {
         self.state
             .call_types
             .closure_expectations
@@ -126,18 +164,9 @@ impl Checker<'_> {
             .closure_expectations
             .data
             .get_or_insert_with(Default::default);
-        let order = data.next;
+        hint.order = data.next;
         data.next += 1;
-        data.values
-            .entry(subject)
-            // Keep declaration order. Every original requirement still needs
-            // proof; this first contextual signature adds no trait authority.
-            .or_insert(Hint {
-                inputs: *inputs,
-                result,
-                regions,
-                order,
-            });
+        data.values.entry(subject).or_insert(hint);
         Ok(())
     }
 
