@@ -483,6 +483,11 @@ impl Collector<'_> {
                     .pattern;
                 self.scrutinee(checker, value, &[pattern])?;
             }
+            Kind::For { iterator, body, .. } => {
+                // IntoIterator consumes the expression. The iteration pattern binds only locals.
+                self.push(body, Use::Value);
+                self.push(iterator, Use::Value);
+            }
             Kind::Loop { body } | Kind::TryBlock { body, .. } => self.push(body, Use::Value),
             Kind::While { condition, body } => {
                 self.push(body, Use::Value);
