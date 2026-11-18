@@ -1,5 +1,8 @@
 //! Field discovery retains actual projection inputs until mutable-place choice settles.
-use super::{Checker, Error, NodeId, TermId};
+use super::{
+    Checker, Error, NodeId, TermId,
+    aggregates::{FieldPresence, PrivateField},
+};
 use crate::{
     support::{hash::HashSet, retained},
     types::infer::predicates::Predicate,
@@ -453,6 +456,7 @@ impl Checker<'_> {
         &mut self,
         node: NodeId,
         original: super::aggregates::Field,
+        mut private: Option<PrivateField>,
     ) -> Result<Option<super::Dependency>, Error> {
         self.advance_projections(node)?;
         let (mut receiver, mut dereferences) = self
@@ -466,7 +470,7 @@ impl Checker<'_> {
         if dereferences != 0 {
             self.check_union_receiver(node, value)?;
         }
-        let (field, kind) = loop {
+        let (field, accessible) = loop {
             let field = super::aggregates::Field {
                 receiver,
                 name: original.name,
@@ -475,17 +479,23 @@ impl Checker<'_> {
                 self.error(node, "field access requires a known tuple or struct type")
             })?;
             if let Some(item) = self.field_dependency(kind) {
-                self.state.work.push(super::Work::Field(node, original));
+                self.state
+                    .work
+                    .push(super::Work::Field(node, original, private));
                 return Ok(Some(super::Dependency {
                     requirement: super::Requirement::Nominal(item),
                     source: self.key(node),
                 }));
             }
-            // As rustc's autoderef, a box without the field steps into its
-            // content through the built-in dereference, never a `Deref` call.
+            match self.present_field(node, field, kind)? {
+                FieldPresence::Accessible => break (field, true),
+                FieldPresence::Private(candidate) => private = Some(candidate),
+                FieldPresence::Absent => {}
+            }
+            // A box without an accessible field steps into its content through
+            // the built-in dereference, never a `Deref` call.
             if let super::Constructor::Adt(item, _) | super::Constructor::AdtArgs(item, _) = kind
                 && self.facts.aggregates.owned_box() == Some(item)
-                && !self.present_field(node, field, kind)?
             {
                 let content = self.child(node, receiver, 0)?;
                 let (next, count) = self
@@ -501,11 +511,16 @@ impl Checker<'_> {
                     .ok_or_else(|| self.error(node, "field autodereference budget exceeded"))?;
                 continue;
             }
-            break (field, kind);
+            break (field, false);
         };
-        if self.present_field(node, field, kind)?
-            || !crate::sema::compiler_items::dereferencing::available(self.facts)
+        if !accessible
+            && let Some(private) = private
+            && !self.field_private_fallback_can_deref(node, receiver)?
         {
+            self.validate_private_field(node, field.name, private)?;
+            return Err(self.error(node, "aggregate field is private"));
+        }
+        if accessible || !crate::sema::compiler_items::dereferencing::available(self.facts) {
             let term = self.complete_field(node, field)?;
             if let Some(plan) = self.field_plan(node) {
                 self.complete_field_discovery(node, plan, receiver, dereferences)?;
@@ -531,8 +546,33 @@ impl Checker<'_> {
                 receiver: target,
                 name: original.name,
             },
+            private,
         ));
         Ok(None)
+    }
+
+    fn field_private_fallback_can_deref(
+        &mut self,
+        node: NodeId,
+        subject: TermId,
+    ) -> Result<bool, Error> {
+        if !crate::sema::compiler_items::dereferencing::available(self.facts) {
+            return Ok(false);
+        }
+        let (owner, _) = crate::sema::compiler_items::dereferencing::target(
+            self.report,
+            self.facts,
+            self.key(node),
+        )?;
+        let assumptions = self.trait_assumptions(node)?;
+        crate::sema::traits::selection::may_have_subject(
+            self.facts,
+            &mut self.state.infer,
+            crate::types::ItemId(owner.0),
+            subject,
+            assumptions.as_deref(),
+        )
+        .map_err(|e| self.error(node, e))
     }
 
     fn extend_field_discovery(&mut self, node: NodeId, index: u32) -> Result<(), Error> {

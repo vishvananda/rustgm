@@ -180,3 +180,111 @@ fn source_field_receiver_borrow_reads_union_storage_in_its_lexical_context() -> 
     }
     Ok(())
 }
+
+const BOX_FIELD_OWNER: &str = r#"
+mod owning {
+    use super::{Global, Sized, Unique};
+    #[lang="owned_box"] pub struct Box<T:?Sized,A=Global>(Unique<T>,A);
+    pub fn near(x: &Box<super::Bytes>) -> &Unique<super::Bytes> { &x.0 }
+}
+#[repr(transparent)] pub struct Bytes(pub [u8]);
+"#;
+const DEREF_FIELD_OWNER: &str = r"
+mod owning {
+    use super::{Bytes, Deref};
+    pub struct Wrap(u8, Bytes);
+    impl Deref for Wrap {
+        type Target = Bytes;
+        fn deref(&self) -> &Bytes { &self.1 }
+    }
+    pub fn near(x: &Wrap) -> &u8 { &x.0 }
+}
+pub struct Bytes(pub u8);
+";
+
+#[test]
+fn field_lookup_passes_private_candidates_without_granting_access() -> Result {
+    use rustgm::{
+        resolve::unit::{FileId, NodeKey},
+        sema::{members::Selection, model::Operation},
+        syntax::ast::NodeId,
+    };
+
+    let box_source = source::fixture("pa31/tests/spec/explicit-dynamic-call-members/prefix.rs")?;
+    let (box_prefix, _) = box_source
+        .split_once("#[lang=\"owned_box\"]")
+        .ok_or("owned Box fixture prefix")?;
+    let deref_source = source::fixture("pa31/tests/spec/source-field-deref/shadow.rs")?;
+    let (deref_prefix, _) = deref_source
+        .split_once("pub struct Leaf")
+        .ok_or("Deref fixture prefix")?;
+    for (prefix, owner, near, tail, has_plan) in [
+        (
+            box_prefix,
+            BOX_FIELD_OWNER,
+            "Box",
+            "pub fn far(x: &owning::Box<Bytes>) -> &[u8] { &x.0 }",
+            false,
+        ),
+        (
+            deref_prefix,
+            DEREF_FIELD_OWNER,
+            "Wrap",
+            "pub fn far(x: &owning::Wrap) -> &u8 { &x.0 }",
+            true,
+        ),
+    ] {
+        let text = format!("{prefix}{owner}{tail}");
+        let report = source::source_provider(&text, "private_field_candidates")?;
+        let facts = rustgm::pipeline::analyze_source(&report)?.facts;
+        let ast = &report.package.unit(FileId(0)).configured.ast;
+        let mut selected = Vec::new();
+        let first = text.find("pub fn near").ok_or("near control")?;
+        for (index, node) in ast.nodes.iter().enumerate() {
+            if (node.span.start as usize) < first || !matches!(node.kind, Kind::Field { .. }) {
+                continue;
+            }
+            let key = NodeKey {
+                file: FileId(0),
+                node: NodeId::new(u32::try_from(index)?),
+            };
+            if let Some(Operation::Field {
+                field: Selection::Nominal(field),
+                plan,
+            }) = facts.node(key).and_then(|fact| fact.operation)
+            {
+                let id = facts
+                    .members
+                    .identity(field)
+                    .ok_or("selected field identity")?;
+                let owner = &report.resolution.definitions[id.owner.0 as usize];
+                selected.push((
+                    report.package.names.get(owner.name),
+                    id.field,
+                    plan.is_some(),
+                ));
+            }
+        }
+        assert_eq!(selected, [(near, 0, false), ("Bytes", 0, has_plan)]);
+    }
+
+    for tail in [
+        "pub fn reject(x: &owning::Box<u8>) { let _ = &x.0; }",
+        "mod hidden { pub struct Both(u8); }\n\
+         pub fn reject(x: &owning::Box<hidden::Both>) { let _ = &x.0; }",
+    ] {
+        let text = format!("{box_prefix}{BOX_FIELD_OWNER}{tail}");
+        let report = source::source_provider(&text, "private_field_rejection")?;
+        let error = rustgm::pipeline::analyze_source(&report)
+            .err()
+            .ok_or("private field was accepted")?;
+        let site = text.rfind("x.0").ok_or("private field source")?;
+        assert_eq!(error.file.source(), Some(FileId(0)));
+        assert!(
+            (site..site + 3).contains(&(error.span.start as usize)),
+            "{error}"
+        );
+        assert_eq!(error.message, "aggregate field is private");
+    }
+    Ok(())
+}

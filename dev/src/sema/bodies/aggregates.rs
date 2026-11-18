@@ -19,6 +19,25 @@ pub(super) struct Field {
     pub name: Name,
 }
 
+/// A resolved but inaccessible field is a diagnostic fallback only.
+#[derive(Clone, Copy)]
+pub(super) struct PrivateField(std::num::NonZeroU32);
+impl PrivateField {
+    fn new(field: FieldId) -> Option<Self> {
+        Some(Self(std::num::NonZeroU32::new(field.0.checked_add(1)?)?))
+    }
+
+    fn field(self) -> FieldId {
+        FieldId(self.0.get() - 1)
+    }
+}
+
+pub(super) enum FieldPresence {
+    Absent,
+    Accessible,
+    Private(PrivateField),
+}
+
 impl Checker<'_> {
     pub(super) fn selected(&mut self, node: NodeId, operation: Operation) -> Result<(), Error> {
         let key = self.key(node);
@@ -349,16 +368,18 @@ impl Checker<'_> {
         field: FieldId,
         privacy: ModuleId,
     ) -> Result<(), Error> {
-        let access = self.facts.members.fields[field.0 as usize].access;
-        if access == Access::ExternalPrivate {
-            return Err(self.error(node, "aggregate field is private"));
+        if self.field_accessible(field, privacy) {
+            Ok(())
+        } else {
+            Err(self.error(node, "aggregate field is private"))
         }
-        if let Access::Within(module) = access
-            && !self.report.package.is_descendant(privacy, module)
-        {
-            return Err(self.error(node, "aggregate field is private"));
+    }
+    fn field_accessible(&self, field: FieldId, privacy: ModuleId) -> bool {
+        match self.facts.members.fields[field.0 as usize].access {
+            Access::ExternalPrivate => false,
+            Access::Within(module) => self.report.package.is_descendant(privacy, module),
+            Access::Public => true,
         }
-        Ok(())
     }
     fn field_adjustment(
         &self,
@@ -690,11 +711,11 @@ impl Checker<'_> {
         node: NodeId,
         field: Field,
         kind: Constructor,
-    ) -> Result<bool, Error> {
+    ) -> Result<FieldPresence, Error> {
         match kind {
             Constructor::Tuple => {
                 let Name::Index(index) = field.name else {
-                    return Ok(false);
+                    return Ok(FieldPresence::Absent);
                 };
                 let count = self
                     .state
@@ -702,7 +723,11 @@ impl Checker<'_> {
                     .arity(&self.facts.types, field.receiver)
                     .map_err(|e| self.error(node, e))?
                     .ok_or_else(|| self.error(node, "tuple field lost its known actual head"))?;
-                Ok((index as usize) < count)
+                Ok(if (index as usize) < count {
+                    FieldPresence::Accessible
+                } else {
+                    FieldPresence::Absent
+                })
             }
             Constructor::Adt(item, _) | Constructor::AdtArgs(item, _) => {
                 let definition = self
@@ -712,24 +737,61 @@ impl Checker<'_> {
                     .get(item.0 as usize)
                     .ok_or_else(|| self.error(node, "field owner has an invalid declaration"))?;
                 if definition.kind != DefKind::Struct {
-                    return Ok(false);
+                    return Ok(FieldPresence::Absent);
                 }
                 let variant = self.struct_variant(node, item)?;
                 let Kind::Field { name: span, .. } = self.kind(node) else {
                     return Err(self.error(node, "field lookup lost its actual source syntax"));
                 };
+                let adjustment = self.field_adjustment(node, item, span.start)?;
                 let context = match field.name {
-                    Name::Named(_) => self.field_adjustment(node, item, span.start)?.context,
+                    Name::Named(_) => adjustment.context,
                     Name::Index(_) => ItemContext::ROOT,
                 };
-                Ok(self
-                    .facts
-                    .members
-                    .field_in(variant, field.name, context)
-                    .is_some())
+                let Some(id) = self.facts.members.field_in(variant, field.name, context) else {
+                    return Ok(FieldPresence::Absent);
+                };
+                if self.field_accessible(id, adjustment.privacy) {
+                    Ok(FieldPresence::Accessible)
+                } else {
+                    PrivateField::new(id)
+                        .map(FieldPresence::Private)
+                        .ok_or_else(|| self.error(node, "private field identity overflow"))
+                }
             }
-            _ => Ok(false),
+            _ => Ok(FieldPresence::Absent),
         }
+    }
+    pub(super) fn validate_private_field(
+        &self,
+        node: NodeId,
+        name: Name,
+        private: PrivateField,
+    ) -> Result<(), Error> {
+        let field = private.field();
+        let identity =
+            self.facts.members.identity(field).ok_or_else(|| {
+                self.error(node, "field discovery lost its actual private candidate")
+            })?;
+        let owner = crate::types::ItemId(identity.owner.0);
+        let variant = self.struct_variant(node, owner)?;
+        let Kind::Field { name: span, .. } = self.kind(node) else {
+            return Err(self.error(
+                node,
+                "private field discovery lost its actual source syntax",
+            ));
+        };
+        let adjusted = self.field_adjustment(node, owner, span.start)?;
+        let context = match name {
+            Name::Named(_) => adjusted.context,
+            Name::Index(_) => ItemContext::ROOT,
+        };
+        if self.facts.members.field_in(variant, name, context) != Some(field)
+            || self.field_accessible(field, adjusted.privacy)
+        {
+            return Err(self.error(node, "field discovery changed its actual private candidate"));
+        }
+        Ok(())
     }
     pub(super) fn array_index(
         &mut self,

@@ -276,7 +276,7 @@ enum Work {
     CompleteExpression(NodeId, TermId),
     /// Refresh an actual call after its simple binding's result coercion.
     RefineInitializerCall(NodeId),
-    Field(NodeId, aggregates::Field),
+    Field(NodeId, aggregates::Field, Option<aggregates::PrivateField>),
     /// An index operand's next autoderef step, at its current subject.
     Index(NodeId, TermId),
     CoerceElement(NodeId, TermId),
@@ -1075,8 +1075,8 @@ impl Checker<'_> {
                         return Ok(Some(dependency));
                     }
                 }
-                Work::Field(node, field) => {
-                    if let Some(dependency) = self.progress_field(node, field)? {
+                Work::Field(node, field, private) => {
+                    if let Some(dependency) = self.progress_field(node, field, private)? {
                         return Ok(Some(dependency));
                     }
                 }
@@ -1174,7 +1174,7 @@ impl Checker<'_> {
         }
         if let Kind::Field { value, name } = self.kind(node) {
             let field = self.prepare_field(node, value, name)?;
-            return self.progress_field(node, field);
+            return self.progress_field(node, field, None);
         }
         if let Kind::Index { value, .. } = self.kind(node)
             && self.index_operand_steps()
