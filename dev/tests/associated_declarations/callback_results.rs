@@ -416,3 +416,204 @@ fn shared_projected_callback_inputs_scale_through_the_independent_anchor() -> Re
     }
     Ok(())
 }
+
+// Generated locally in each test from the registered Source callable prefix.
+mod method_result_context {
+    use super::{Result, source};
+    use rustgm::{
+        resolve::unit::{FileId, NodeKey},
+        sema::{members::Selection, model::Operation},
+        syntax::ast::{Kind, NodeId},
+        types,
+    };
+
+    const FOUNDATION: &str = r"
+pub trait FromIterator<T>: Sized {
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self;
+}
+
+pub trait Iterator {
+    type Item;
+    fn collect<B: FromIterator<Self::Item>>(self) -> B
+    where
+        Self: Sized,
+    {
+        FromIterator::from_iter(self)
+    }
+}
+
+pub trait IntoIterator {
+    type Item;
+    type IntoIter: Iterator<Item = Self::Item>;
+    fn into_iter(self) -> Self::IntoIter;
+}
+
+impl<I: Iterator> IntoIterator for I {
+    type Item = I::Item;
+    type IntoIter = I;
+    fn into_iter(self) -> I { self }
+}
+
+pub enum Ordering { Less, Equal, Greater }
+pub trait Ord {
+    fn cmp(&self, other: &Self) -> Ordering;
+}
+
+pub struct Vec<T> { slot: T }
+impl<T> FromIterator<T> for Vec<T> {
+    fn from_iter<I: IntoIterator<Item = T>>(_iter: I) -> Self { loop {} }
+}
+impl<T> Vec<T> {
+    fn sort_by<F: FnMut(&T, &T) -> Ordering>(&mut self, _f: F) {}
+}
+
+";
+
+    fn source_with(tail: &str) -> Result<String> {
+        let fixture = source::fixture("pa31/tests/spec/callable-result-heads/map-associated.rs")?;
+        let (prefix, _) = fixture
+            .split_once("enum Option<T>")
+            .ok_or("Source callable prefix")?;
+        Ok(format!("{prefix}{FOUNDATION}{tail}"))
+    }
+
+    fn checks_iterator_and_fields(tail: &str, ordinary_call: bool) -> Result {
+        let text = source_with(tail)?;
+        let report = source::source_provider(&text, "method_result_context")?;
+        let facts = rustgm::pipeline::analyze_source(&report)?.facts;
+        let ast = &report.package.unit(FileId(0)).configured.ast;
+        let mut collect = 0;
+        let mut fields = 0;
+        let mut free = 0;
+        for (index, node) in ast.nodes.iter().enumerate() {
+            let key = NodeKey {
+                file: FileId(0),
+                node: NodeId::new(u32::try_from(index)?),
+            };
+            if let Kind::MethodCall { name, .. } = node.kind
+                && text.get(name.start as usize..name.end as usize) == Some("collect")
+            {
+                let call = facts.methods.calls.get(&key).ok_or("actual collect call")?;
+                let owner = facts
+                    .associated
+                    .trait_owner(call.method)
+                    .ok_or("collect trait")?;
+                let definition = &report.resolution.definitions[owner.0 as usize];
+                assert_eq!(report.package.names.get(definition.name), "Iterator");
+                collect += 1;
+            }
+            if let Some(Operation::Field {
+                field: Selection::Tuple(0),
+                ..
+            }) = facts.node(key).and_then(|fact| fact.operation)
+            {
+                fields += 1;
+            }
+            if ordinary_call && let Kind::Call { callee, .. } = node.kind {
+                let callee = NodeKey {
+                    node: callee,
+                    ..key
+                };
+                if let Some(types::Kind::FunctionItem { item, .. }) = facts
+                    .node(callee)
+                    .and_then(|fact| fact.ty)
+                    .and_then(|ty| facts.types.kind(ty))
+                {
+                    let definition = &report.resolution.definitions[item.0 as usize];
+                    if report.package.names.get(definition.name) == "collect_pairs" {
+                        free += 1;
+                    }
+                }
+            }
+        }
+        assert_eq!(collect, 1);
+        assert_eq!(fields, 2);
+        assert_eq!(free, usize::from(ordinary_call));
+        Ok(())
+    }
+
+    fn rejects(tail: &str, operand: &str, causes: &[&str]) -> Result {
+        let text = source_with(tail)?;
+        let report = source::source_provider(&text, "method_result_context")?;
+        let error = rustgm::pipeline::analyze_source(&report)
+            .err()
+            .ok_or("invalid method result was accepted")?;
+        let start = text.rfind(operand).ok_or("actual rejected expression")?;
+        assert_eq!(error.file.source(), Some(FileId(0)));
+        assert!(
+            (start..start + operand.len()).contains(&(error.span.start as usize)),
+            "{error}"
+        );
+        assert!(
+            causes.iter().any(|cause| error.message.starts_with(cause)),
+            "{error}"
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn partial_nominal_method_results_keep_owned_iterator_proofs() -> Result {
+        for tail in [
+            r"pub fn sort_pairs<K: Ord, V, I: IntoIterator<Item = (K, V)>>(items: I) -> Vec<(K, V)> {
+    let mut inputs: Vec<_> = items.into_iter().collect();
+    inputs.sort_by(|a, b| a.0.cmp(&b.0));
+    inputs
+}
+",
+            r"pub fn sort_pairs<K: Ord, V, I: Iterator<Item = (K, V)>>(iter: I) -> Vec<(K, V)> {
+    let mut inputs: Vec<_> = iter.collect();
+    inputs.sort_by(|a, b| a.0.cmp(&b.0));
+    inputs
+}
+",
+            r"pub fn sort_pairs<K: Ord, V, I: IntoIterator<Item = (K, V)>>(items: I) -> Vec<(K, V)> {
+    let mut inputs: Vec<(K, V)> = items.into_iter().collect();
+    inputs.sort_by(|a, b| a.0.cmp(&b.0));
+    inputs
+}
+",
+        ] {
+            checks_iterator_and_fields(tail, false)?;
+        }
+        rejects(
+            r"pub fn sort_pairs<K, I: IntoIterator<Item = K>>(items: I) -> Vec<K> {
+    let mut inputs: Vec<_> = items.into_iter().collect();
+    inputs.sort_by(|a, b| a.0.cmp(&b.0));
+    inputs
+}
+",
+            "a.0",
+            &["field access requires a known tuple or struct type"],
+        )?;
+        rejects(
+            r"pub fn wrong<K, I: Iterator<Item = (K, u16)>>(iter: I) -> Vec<(K, u8)> {
+    let inputs: Vec<(_, u8)> = iter.collect();
+    inputs
+}
+",
+            "iter.collect()",
+            &[
+                "incompatible types",
+                "body types require a provable associated-result equality",
+                "trait obligation requires an unambiguous matching assumption or implementation",
+            ],
+        )
+    }
+
+    #[test]
+    fn partial_nominal_free_call_refreshes_its_actual_goal_owner() -> Result {
+        checks_iterator_and_fields(
+            r"fn collect_pairs<I: Iterator, B: FromIterator<I::Item>>(iter: I) -> B {
+    iter.collect()
+}
+
+pub fn sort_pairs<K: Ord, V, I: Iterator<Item = (K, V)>>(iter: I) -> Vec<(K, V)> {
+    let mut inputs: Vec<_> = collect_pairs(iter);
+    inputs.sort_by(|a, b| a.0.cmp(&b.0));
+    inputs
+}
+",
+            true,
+        )
+    }
+}

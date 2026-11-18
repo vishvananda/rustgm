@@ -113,7 +113,7 @@ fn unknown_source_requests_are_retained_then_rejected_by_completed_inventory() -
     assert!(
         error
             .to_string()
-            .contains("undefined library feature request"),
+            .contains("undefined library feature request `unknown_source_gate`"),
         "{error}"
     );
     assert!(
@@ -144,7 +144,7 @@ fn unknown_source_requests_are_retained_then_rejected_by_completed_inventory() -
     assert!(
         error
             .to_string()
-            .contains("undefined library feature request"),
+            .contains("undefined library feature request `unknown_source_gate`"),
         "{error}"
     );
     Ok(())

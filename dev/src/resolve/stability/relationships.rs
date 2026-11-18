@@ -108,7 +108,9 @@ impl Draft<'_> {
                 return Err(Error::at(
                     FileId(0),
                     0,
-                    "unsupported active source-core feature or undefined library feature request",
+                    format!(
+                        "unsupported active source-core feature or undefined library feature request `{name}`"
+                    ),
                 ));
             }
         }

@@ -247,6 +247,40 @@ impl Checker<'_> {
         Ok(false)
     }
 
+    /// A partial nominal can supply real information that the initializer's
+    /// original result poll did not have. Keep ordinary result coercion in charge.
+    pub(super) fn partial_nominal_initializer_call(
+        &mut self,
+        node: NodeId,
+        expected: TermId,
+    ) -> Result<bool, Error> {
+        if self.facts.source_bindings.is_none()
+            || !matches!(
+                self.kind(node),
+                Kind::Call { .. } | Kind::MethodCall { .. } | Kind::GenericMethodCall { .. }
+            )
+            || !matches!(
+                self.contextual_head(node, expected)?,
+                Some(Constructor::AdtArgs(..))
+            )
+        {
+            return Ok(false);
+        }
+        let actual = self.term(node)?;
+        let open = self
+            .state
+            .infer
+            .unresolved_domain(actual)
+            .map_err(|error| self.error(node, error))?
+            == Some(crate::types::infer::Domain::Any);
+        Ok(open
+            && !self
+                .state
+                .infer
+                .nominal_inputs_fixed(&self.facts.types, expected)
+                .map_err(|error| self.error(node, error))?)
+    }
+
     pub(super) fn call_result_readiness(
         &mut self,
         call: NodeId,

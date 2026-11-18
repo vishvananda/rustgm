@@ -26,6 +26,41 @@ impl Checker<'_> {
         self.state.work.push(Work::Enter(value, Some(expected)));
         Ok(())
     }
+    pub(super) fn finish_let(
+        &mut self,
+        node: NodeId,
+        pattern: NodeId,
+        value: Option<NodeId>,
+        otherwise: Option<NodeId>,
+    ) -> Result<TermId, Error> {
+        if let Some(otherwise) = otherwise {
+            let never = self.known(otherwise, TypeId::NEVER)?;
+            self.coerce(otherwise, never)?;
+        }
+        let mut diverges = false;
+        if let Some(value) = value {
+            diverges = self.state.diverges[value.get() as usize];
+            // Compound patterns were constrained after their initializer
+            // by BindPattern; a literal's node type may now be adjusted.
+            if otherwise.is_none() && self.simple_pattern(pattern) {
+                let expected = self.term(pattern)?;
+                let refresh = self.partial_nominal_initializer_call(value, expected)?;
+                self.coerce(value, expected)?;
+                if refresh {
+                    self.state.work.push(Work::RefineInitializerCall(value));
+                }
+            }
+        }
+        self.known(
+            node,
+            if diverges {
+                TypeId::NEVER
+            } else {
+                TypeId::UNIT
+            },
+        )
+    }
+
     pub(super) fn conditional_pattern(
         &mut self,
         node: NodeId,

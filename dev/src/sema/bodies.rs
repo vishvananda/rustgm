@@ -274,6 +274,8 @@ enum Work {
     EnterUnsizedRvalue(NodeId, TermId),
     Exit(NodeId),
     CompleteExpression(NodeId, TermId),
+    /// Refresh an actual call after its simple binding's result coercion.
+    RefineInitializerCall(NodeId),
     Field(NodeId, aggregates::Field),
     /// An index operand's next autoderef step, at its current subject.
     Index(NodeId, TermId),
@@ -1048,6 +1050,12 @@ impl Checker<'_> {
                     }
                 }
                 Work::CallArguments(node, expected) => self.call_arguments(node, expected)?,
+                work @ Work::RefineInitializerCall(call) => {
+                    if let Some(dependency) = self.refine_call_result(call)? {
+                        self.state.work.push(work);
+                        return Ok(Some(dependency));
+                    }
+                }
                 Work::MethodArguments(node, headers) => {
                     if let Some(dependency) = self.method_arguments(node, headers)? {
                         return Ok(Some(dependency));
@@ -1917,29 +1925,7 @@ impl Checker<'_> {
                 value,
                 otherwise,
                 ..
-            } => {
-                if let Some(otherwise) = otherwise {
-                    let never = self.known(otherwise, TypeId::NEVER)?;
-                    self.coerce(otherwise, never)?;
-                }
-                let mut diverges = false;
-                if let Some(value) = value {
-                    diverges = self.state.diverges[value.get() as usize];
-                    // Compound patterns were constrained after their initializer
-                    // by BindPattern; a literal's node type may now be adjusted.
-                    if otherwise.is_none() && self.simple_pattern(pattern) {
-                        self.coerce(value, self.term(pattern)?)?;
-                    }
-                }
-                self.known(
-                    node,
-                    if diverges {
-                        TypeId::NEVER
-                    } else {
-                        TypeId::UNIT
-                    },
-                )
-            }
+            } => self.finish_let(node, pattern, value, otherwise),
             Kind::Unary {
                 op: op @ (Unary::Negate | Unary::Not),
                 operand,
