@@ -27,6 +27,10 @@ impl Evaluator<'_> {
         length: u64,
         target: TypeId,
     ) -> Result<Constant, Failure> {
+        let cstr = crate::sema::compiler_items::c_strings::storage_profile(self.facts(), target)?;
+        if let Some(profile) = cstr {
+            self.queries.prepare_cstr_layout(profile)?;
+        }
         let reader = Reader::new(self.facts());
         let root = reader.location(address.root)?.ty;
         let super::super::StoredShape::Array {
@@ -55,10 +59,8 @@ impl Evaluator<'_> {
         }
         let mut pointer = super::super::references::Pointer::new(address.root.0);
         pointer.write = address.write;
-        if let Some(profile) =
-            crate::sema::compiler_items::c_strings::storage_profile(self.facts(), target)?
-        {
-            if address.offset != 0 || length != bound || stride != 1 || element != profile.element {
+        if cstr.is_some() {
+            if address.offset != 0 || length != bound || stride != 1 {
                 return Err(
                     "CStr word requires its exact zero-offset character-array backing".into(),
                 );

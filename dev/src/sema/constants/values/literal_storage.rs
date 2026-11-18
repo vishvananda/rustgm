@@ -44,6 +44,24 @@ impl Queries<'_> {
             element: profile.element,
             length,
         })?;
+        self.prepare_cstr_layout(profile)?;
+        let value = Constant(
+            self.typing
+                .facts
+                .constant_references
+                .literal_place(text, storage)?,
+        );
+        value
+            .with_metadata(Metadata::Length(length))
+            .map(|v| v.0)
+            .map_err(Failure::message)
+    }
+
+    pub(super) fn prepare_cstr_layout(
+        &mut self,
+        profile: crate::sema::compiler_items::c_strings::LiteralProfile,
+    ) -> Result<(), &'static str> {
+        let facts = &mut *self.typing.facts;
         let before = facts
             .layouts
             .metadata_steps()
@@ -85,12 +103,7 @@ impl Queries<'_> {
         if self.steps > self.limit {
             return Err("constant literal metadata work budget exceeded");
         }
-        prepared?;
-        let value = Constant(facts.constant_references.literal_place(text, storage)?);
-        value
-            .with_metadata(Metadata::Length(length))
-            .map(|v| v.0)
-            .map_err(Failure::message)
+        prepared
     }
 }
 
@@ -132,11 +145,11 @@ impl Reader<'_> {
                 .cached_unsized_field(types, owner, ordinal)
                 .ok_or("constant literal tail lacks its completed actual ABI field")??;
             if index != 0
-                || element != profile.element
+                || !self.byte_reinterpretation(element, profile.element)
                 || metadata != Metadata::Length(length)
                 || tail != target
                 || offset != crate::abi::tails::Offset::Fixed(0)
-                || !matches!(types.kind(target), Some(Kind::Slice(selected)) if selected == element)
+                || !matches!(types.kind(target), Some(Kind::Slice(selected)) if selected == profile.element)
             {
                 return Err("constant literal tail differs from its element, field or metadata");
             }

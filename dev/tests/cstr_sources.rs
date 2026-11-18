@@ -53,6 +53,32 @@ fn cstr_and_nominal_references_reconstruct_from_actual_symbolic_byte_words() -> 
     Ok(())
 }
 #[test]
+fn constant_slice_casts_to_the_actual_cstr_and_back() -> Result {
+    let original = source::fixture(&format!("{PACKET}/local-const.rs"))?;
+    let (roles, _) = original.split_once("fn ordinary()").ok_or("source roles")?;
+    let input = format!(
+        r#"#![feature(const_destruct)]
+        {roles}
+        #[lang="unsize"] #[rustc_deny_explicit_impl] #[rustc_dyn_incompatible_trait]
+        pub trait Unsize<T: PointeeSized>: PointeeSized {{}}
+        #[lang="coerce_unsized"] pub trait CoerceUnsized<T:PointeeSized>:Sized {{}}
+        impl<'a,'b:'a,T:PointeeSized+Unsize<U>,U:PointeeSized> CoerceUnsized<&'a U> for &'b T {{}}
+        const fn convert(bytes: &[u8]) -> &ffi::CStr {{
+            unsafe {{ &*(bytes as *const [u8] as *const ffi::CStr) }}
+        }}
+        const VALUE: &ffi::CStr = convert(b"\xFF\0");
+        const VIEW: &[u8] = VALUE.to_bytes_with_nul();
+        #[unsafe(no_mangle)] pub extern "C" fn bytes() -> *const u8 {{ VIEW.as_ptr() }}
+        #[unsafe(no_mangle)] pub extern "C" fn chars() -> *const i8 {{ VALUE.as_ptr() }}
+        "#
+    );
+    let mut config = Config::default();
+    config.set_lint_cap(LintCap::Allow);
+    let report = source::source_provider_config(&input, "constant_cstr_cast", &config)?;
+    crate::provider_traits::lower_report(&report)?;
+    Ok(())
+}
+#[test]
 fn constant_signed_c_strings_pass_shared_backing_inspection() -> Result {
     let original = source::fixture(&format!("{PACKET}/local-const.rs"))?;
     let (cstr, _) = original.split_once("impl CStr {").ok_or("source CStr")?;

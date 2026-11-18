@@ -25,9 +25,14 @@ impl Machine<'_, '_> {
             .evaluator
             .word_address(pointer, self.limits.steps.saturating_sub(self.work.steps))?;
         self.charge(work)?;
+        let root_ty = Reader::new(self.evaluator.facts())
+            .location(address.root())?
+            .ty;
+        self.footprint(root_ty)?;
         // Authenticate the same finite nominal/backing relation before validating
         // its actual slice field. The internal slice is not the returned type.
-        self.evaluator
+        let nominal = self
+            .evaluator
             .word_sequence_range(address, length, referent)?;
         let slice = Reader::new(self.evaluator.facts()).stored_child(profile.referent, None, 0)?;
         if !matches!(self.evaluator.facts().types.kind(slice), Some(crate::types::Kind::Slice(element)) if element == profile.element)
@@ -39,9 +44,9 @@ impl Machine<'_, '_> {
             match self.validate_sequence_word_reference(selected, slice, mutable)? {
                 Read::Pending => Read::Pending,
                 Read::Value(_) => Read::Value(if mutable {
-                    value
+                    nominal
                 } else {
-                    value.restrict_shared()
+                    nominal.restrict_shared()
                 }),
             },
         )
@@ -50,6 +55,7 @@ impl Machine<'_, '_> {
         &mut self,
         place: crate::const_eval::memory::Resolved,
         mutable: bool,
+        cstr: Option<crate::sema::compiler_items::c_strings::LiteralProfile>,
     ) -> Result<Option<Constant>, Failure> {
         let access = place
             .raw
@@ -59,6 +65,14 @@ impl Machine<'_, '_> {
             || place.union.is_some()
         {
             return Err("constant sequence reference differs from its raw anchor".into());
+        }
+        if let Some(profile) = cstr {
+            return self
+                .validate_cstr_word_reference(place.address, place.ty, profile, mutable)
+                .map(|value| match value {
+                    Read::Pending => None,
+                    Read::Value(value) => Some(value),
+                });
         }
         self.path(place.address)?;
         let (target, metadata) = self.evaluator.pointer_words(place.address)?;
