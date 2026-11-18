@@ -592,7 +592,21 @@ impl Resolver<'_> {
             prelude: None,
         };
         if let Some(library) = library.crate_name() {
-            let provider = self.guest_library(file, name, externs, library)?;
+            let (library_name, target, provider) =
+                self.guest_library(file, name, externs, library)?;
+            // Rust 2015 also introduces a private extern crate item at the root.
+            if self.package.unit(file).edition() == Edition::Rust2015 {
+                self.facts
+                    .bindings
+                    .insert_key(
+                        (scope, library_name, Namespace::Type, ItemContext::ROOT),
+                        Binding {
+                            access: Access::Within(module),
+                            ..public(target)
+                        },
+                    )
+                    .map_err(|message| Error::at(file, 0, message))?;
+            }
             root.prelude = Some(self.guest_prelude(file, name, provider, library)?);
             root.macro_use.push(provider);
         }
@@ -603,15 +617,15 @@ impl Resolver<'_> {
             .push(root);
         Ok((module, scope))
     }
-    /// The root scope of the standard library crate a guest's attributes
-    /// select, which must be the host or an earlier guest.
+    /// The name, definition and scope of the standard library crate a guest's
+    /// attributes select, which must be the host or an earlier guest.
     fn guest_library(
         &mut self,
         file: FileId,
         guest: NameId,
         externs: ScopeId,
         library: &str,
-    ) -> Result<ScopeId, Error> {
+    ) -> Result<(NameId, DefId, ScopeId), Error> {
         let name = self
             .package
             .names
@@ -620,7 +634,11 @@ impl Resolver<'_> {
         self.facts
             .bindings
             .get(externs, name, Namespace::Type)
-            .and_then(|binding| self.facts.definitions[binding.target.0 as usize].members)
+            .and_then(|binding| {
+                self.facts.definitions[binding.target.0 as usize]
+                    .members
+                    .map(|scope| (name, binding.target, scope))
+            })
             .ok_or_else(|| {
                 Error::at(
                     file,

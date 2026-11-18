@@ -126,3 +126,91 @@ fn guest_editions_do_not_change_the_host_or_allow_repeated_roots() -> Result {
     assert!(String::from_utf8_lossy(&output.stderr).contains("shares its root source"));
     Ok(())
 }
+
+#[test]
+fn rust_2015_guests_inject_a_private_crate_root_item() -> Result {
+    const STD: &str = "#![no_std]\n#![no_main]\n\
+        pub mod prelude { pub mod rust_2015 {} }\n\
+        pub mod sample { pub struct Selected; }";
+    let cases = [
+        (
+            "legacy-core",
+            2015,
+            "#![no_std]\n#![no_implicit_prelude]",
+            "mod nested {\n\
+                use core::prelude::rust_2024 as plain;\n\
+                use ::core::prelude::rust_2024 as absolute;\n\
+                use crate::core::prelude::rust_2024 as rooted;\n\
+                pub fn value() -> rooted::From2024 {\n\
+                    let _: plain::From2024 = absolute::From2024;\n\
+                    rooted::From2024\n\
+                }\n\
+            }",
+            None,
+        ),
+        (
+            "legacy-std",
+            2015,
+            "",
+            "mod nested { use std::sample; pub fn value() -> sample::Selected { sample::Selected } }",
+            None,
+        ),
+        (
+            "legacy-private",
+            2015,
+            "#![no_std]",
+            "pub use crate::core as exposed;",
+            Some("private import or widened visibility"),
+        ),
+        (
+            "legacy-duplicate",
+            2015,
+            "#![no_std]",
+            "extern crate core;",
+            Some("duplicate type name `core`"),
+        ),
+        (
+            "legacy-no-core",
+            2015,
+            "#![feature(no_core)]\n#![no_core]",
+            "use core::prelude;",
+            Some("unresolved import"),
+        ),
+        (
+            "modern-extern-prelude",
+            2018,
+            "#![no_std]",
+            "mod nested { use core::prelude::rust_2024; pub fn value() -> rust_2024::From2024 { rust_2024::From2024 } }",
+            None,
+        ),
+        (
+            "modern-no-root-item",
+            2018,
+            "#![no_std]",
+            "use crate::core::prelude;",
+            Some("unresolved import"),
+        ),
+    ];
+    for (name, edition, attrs, contents, expected) in cases {
+        let (folder, mut command) = prepare(name, &[])?;
+        let std = folder.join("std.rs");
+        std::fs::write(&std, STD)?;
+        let guest = folder.join("guest.rs");
+        std::fs::write(&guest, format!("#![no_main]\n{attrs}\n{contents}\n"))?;
+        let output = command
+            .arg("--bringup-guest")
+            .arg(format!("std@2018={}", std.display()))
+            .arg("--bringup-guest")
+            .arg(format!("app@{edition}={}", guest.display()))
+            .arg(folder.join("core.rs"))
+            .output()?;
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        if let Some(message) = expected {
+            assert_eq!(output.status.code(), Some(1), "{name}: {stderr}");
+            assert!(stderr.contains(message), "{name}: {stderr}");
+        } else {
+            assert!(output.status.success(), "{name}: {stderr}");
+        }
+    }
+    Ok(())
+}
