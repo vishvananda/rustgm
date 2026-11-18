@@ -22,6 +22,22 @@ pub(in crate::sema) struct Matched {
     permission: Permission,
 }
 
+struct Opened {
+    signature: Matched,
+    inputs: TermId,
+    expected: TermId,
+}
+impl Opened {
+    fn equate_inputs(
+        &self,
+        store: &mut crate::types::Store,
+        context: &mut Context,
+    ) -> Result<(), infer::Error> {
+        // Identical blocked projections need no reverse projection inference.
+        context.equate_scoped_inputs(store, self.inputs, self.expected)
+    }
+}
+
 enum Permission {
     Complete,
     Pending(ClosureId, CallKind),
@@ -67,6 +83,17 @@ pub(in crate::sema) fn match_signature(
     goal: &Predicate,
     first: u32,
 ) -> Result<Matched, infer::Error> {
+    let opened = open_signature(facts, context, goal, first)?;
+    opened.equate_inputs(&mut facts.types, context)?;
+    Ok(opened.signature)
+}
+
+fn open_signature(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Predicate,
+    first: u32,
+) -> Result<Opened, infer::Error> {
     let (item, _) = goal
         .trait_arguments()
         .ok_or(infer::Error::InvalidIdentity)?;
@@ -74,7 +101,7 @@ pub(in crate::sema) fn match_signature(
         .associated
         .callable(DefId(item.0))
         .ok_or(infer::Error::InvalidIdentity)?;
-    match_signature_as(facts, context, goal, kind, first)
+    open_signature_as(facts, context, goal, kind, first)
 }
 
 /// The signature equations are shared; the selecting protocol owns its actual
@@ -86,6 +113,18 @@ pub(in crate::sema) fn match_signature_as(
     kind: CallTrait,
     first: u32,
 ) -> Result<Matched, infer::Error> {
+    let opened = open_signature_as(facts, context, goal, kind, first)?;
+    opened.equate_inputs(&mut facts.types, context)?;
+    Ok(opened.signature)
+}
+
+fn open_signature_as(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Predicate,
+    kind: CallTrait,
+    first: u32,
+) -> Result<Opened, infer::Error> {
     let (_, arguments) = goal
         .trait_arguments()
         .ok_or(infer::Error::InvalidIdentity)?;
@@ -120,15 +159,14 @@ pub(in crate::sema) fn match_signature_as(
     for index in 0..parameters {
         children.push(context.child(&facts.types, tuple, index as usize)?);
     }
-    let inputs = context.construct(Constructor::Tuple, &children)?;
-    // Identical blocked projections need no reverse projection inference.
-    // This supplies signature equations only; the original operation's
-    // formation, trait and lifetime proofs still have to finish.
-    context.equate_scoped_inputs(&mut facts.types, inputs, *arguments)?;
-    Ok(Matched {
-        output: context.child(&facts.types, tuple, parameters as usize)?,
-        regions: first..end,
-        permission,
+    Ok(Opened {
+        signature: Matched {
+            output: context.child(&facts.types, tuple, parameters as usize)?,
+            regions: first..end,
+            permission,
+        },
+        inputs: context.construct(Constructor::Tuple, &children)?,
+        expected: *arguments,
     })
 }
 

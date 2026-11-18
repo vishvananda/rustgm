@@ -101,3 +101,52 @@ fn partial_callable_annotations_preserve_nominal_argument_binders() -> TestResul
     }
     Ok(())
 }
+
+#[test]
+fn constructor_result_resolves_projected_callable_input() -> TestResult {
+    let core = crate::resolve::fixture("pa31/tests/spec/specialization-fixpoint/core-extend.rs")?;
+    let (roles, _) = core.split_once("pub trait Iter {").ok_or("core roles")?;
+    for (input, constructor, accepted) in [
+        ("I::Item", "Variant::Present", true),
+        ("I::Item", "Variant::<I>::Present", true),
+        ("u8", "Variant::Present", false),
+        ("I::Item", "Variant::<Input>::Present", false),
+    ] {
+        let source = format!(
+            r#"{roles}
+            #[lang = "drop"] pub const trait Drop {{ fn drop(&mut self); }}
+            trait Source {{ type Item; }}
+            struct Input;
+            impl Source for Input {{ type Item = u8; }}
+            enum Variant<I: Source> {{ Present(I::Item) }}
+            enum Maybe<T> {{ Present(T), Empty }}
+            impl<T> Maybe<T> {{
+                fn map<U, F: FnOnce(T) -> U>(self, call: F) -> Maybe<U> {{
+                    match self {{
+                        Self::Present(value) => Maybe::Present(call(value)),
+                        Self::Empty => Maybe::Empty,
+                    }}
+                }}
+            }}
+            fn assign<I: Source>(target: &mut Maybe<Variant<I>>, source: Maybe<{input}>) {{
+                *target = source.map({constructor});
+            }}
+            #[unsafe(no_mangle)] pub extern "C" fn observe() -> u8 {{
+                let mut result: Maybe<Variant<Input>> = Maybe::Empty;
+                assign::<Input>(&mut result, Maybe::Present(7u8));
+                match result {{
+                    Maybe::Present(Variant::Present(value)) => value,
+                    Maybe::Empty => 0,
+                }}
+            }}"#
+        );
+        let result = crate::ffi_program::exported(&source, "projected_constructor");
+        match (accepted, result) {
+            (true, Ok(_)) | (false, Err(_)) => {}
+            (_, result) => {
+                return Err(format!("{input}, {constructor}: {:?}", result.err()).into());
+            }
+        }
+    }
+    Ok(())
+}

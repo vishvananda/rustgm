@@ -1,5 +1,5 @@
 //! A callable output equation can expose existing holes while its trait proof stays pending.
-use super::{Context, Declarations, TermId, infer, match_signature};
+use super::{Constructor, Context, Declarations, TermId, infer, open_signature};
 use crate::types::{infer::probe::Probe, lifetime_proof::Obligations, substitute::Bound};
 
 pub(in crate::sema) fn symbolic(
@@ -42,12 +42,34 @@ fn expose(
     proof
         .equalities
         .sort_unstable_by_key(|&(free, original)| (free.0, original.0));
-    let output = match match_signature(
+    let opened = open_signature(
         facts,
         probe.context(),
         &application.predicate,
         proof.regions.end,
-    ) {
+    )
+    .and_then(|opened| {
+        match opened.equate_inputs(&mut facts.types, probe.context()) {
+            Ok(()) => Ok(opened.signature),
+            // A declared generic function's result can determine its own item
+            // arguments before projecting its input types. Closure signatures
+            // can still be inferred from their input types and defining body.
+            Err(infer::Error::Unresolved | infer::Error::Normalization)
+                if matches!(
+                    probe
+                        .context()
+                        .head(&facts.types, application.predicate.subject())?,
+                    Some(Constructor::FunctionItemArgs(..))
+                ) && !probe
+                    .context()
+                    .inputs_fixed(&facts.types, opened.signature.output)? =>
+            {
+                Ok(opened.signature)
+            }
+            Err(error) => Err(error),
+        }
+    });
+    let output = match opened {
         Ok(matched) => {
             proof.regions.end = matched.regions.end;
             matched.output
