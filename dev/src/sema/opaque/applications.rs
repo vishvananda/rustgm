@@ -28,7 +28,7 @@ impl From<&'static str> for StorageFailure {
 
 #[derive(Default)]
 pub(super) struct Preparation {
-    pub layouts: crate::abi::templates::Templates,
+    pub layouts: crate::abi::templates::Templates<'static>,
     waiting: HashMap<OpaqueId, Vec<TypeId>>,
     pub ready: Vec<TypeId>,
     waiting_entries: usize,

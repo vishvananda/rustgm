@@ -230,3 +230,213 @@ fn another_opaque_identity_cannot_replace_an_owned_application() -> TestResult {
     );
     Ok(())
 }
+
+fn layout_source(suffix: &str) -> TestResult<Report> {
+    let mut source = crate::test_source::fixture(&format!("{PACKET}/foundation.rs"))?;
+    source.push_str(suffix);
+    Ok(crate::test_source::source_provider(
+        &source,
+        "named_layout_controls",
+    )?)
+}
+
+#[test]
+fn named_layout_waits_for_its_defining_original_before_computing_nested_union_size() -> TestResult {
+    let report = layout_source(
+        r#"
+        #[lang = "maybe_dangling"]
+        #[repr(transparent)]
+        pub struct MaybeDangling<T: ?Sized>(T);
+        #[lang = "manually_drop"]
+        #[repr(transparent)]
+        pub struct ManuallyDrop<T: ?Sized> { value: MaybeDangling<T> }
+        #[lang = "bikeshed_guaranteed_no_drop"]
+        #[rustc_deny_explicit_impl]
+        #[rustc_dyn_incompatible_trait]
+        pub trait GuaranteedNoDrop {}
+        pub type Lazy = impl Value;
+        #[define_opaque(Lazy)]
+        pub fn define() -> Lazy { 7u8 }
+        union Slot<F> { original: u8, deferred: ManuallyDrop<F> }
+        struct Layer<F> { data: Slot<F> }
+        enum Outer { Empty, Present(Layer<Lazy>) }
+        pub struct PendingStorage { inner: Outer }
+        "#,
+    )?;
+    let mut declarations = crate::sema::declarations::analyze(&report)?;
+    let root = declarations
+        .opaques
+        .named
+        .as_deref()
+        .and_then(|named| named.pending_layouts.last_root())
+        .ok_or("missing pending outer nominal")?;
+    assert!(declarations.layouts.get(root).is_none());
+    let strict = crate::abi::templates::Templates::default()
+        .declaration(
+            &mut declarations.types,
+            &mut declarations.aggregates,
+            &mut declarations.layouts,
+            root,
+        )
+        .err()
+        .ok_or("strict declaration proof accepted an unpublished hidden head")?;
+    assert_eq!(
+        strict.message,
+        "opaque storage requires a checked defining type"
+    );
+
+    let facts = crate::pipeline::analyze(&report, declarations)?.facts;
+    assert_eq!(
+        facts
+            .layouts
+            .get(root)
+            .ok_or("missing resumed layout")?
+            .size,
+        2
+    );
+    assert!(
+        facts
+            .opaques
+            .named
+            .as_deref()
+            .is_some_and(|named| named.pending_layouts.last_root().is_none())
+    );
+    Ok(())
+}
+
+#[test]
+fn named_layout_retries_transparent_side_fields_from_checked_hidden_size() -> TestResult {
+    for (value, expected) in [
+        ("Marker", None),
+        (
+            "7u8",
+            Some("transparent aggregate has more than one nontrivial field"),
+        ),
+    ] {
+        let report = layout_source(&format!(
+            "pub type Lazy = impl Value; #[define_opaque(Lazy)] pub fn define() -> Lazy {{ {value} }}
+             #[repr(transparent)] pub struct Wrapped(Lazy, u8);"
+        ))?;
+        let facts = crate::sema::declarations::analyze(&report)?;
+        let result = crate::pipeline::analyze(&report, facts);
+        match (expected, result) {
+            (None, Ok(_)) => {}
+            (Some(message), Err(error)) => assert_eq!(error.message, message),
+            (None, Err(error)) => return Err(error.into()),
+            (Some(_), Ok(_)) => return Err("accepted two nontrivial transparent fields".into()),
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn named_layout_cannot_waive_union_drop_or_reclassify_a_failed_defining_body() -> TestResult {
+    let report = layout_source(
+        "pub type Lazy = impl Value; #[define_opaque(Lazy)] pub fn define() -> Lazy { 7u8 }
+         pub union Wrong { value: Lazy }",
+    )?;
+    let error = crate::sema::declarations::analyze(&report)
+        .err()
+        .ok_or("accepted union field without a drop proof")?;
+    assert_eq!(
+        error.message,
+        "source union field requires its actual NoDrop or Copy proof"
+    );
+
+    let report = layout_source(
+        "pub type Lazy = impl Value; #[define_opaque(Lazy)] pub fn define() -> Lazy { () }
+         pub struct Waiting(Lazy);",
+    )?;
+    let facts = crate::sema::declarations::analyze(&report)?;
+    let owner = report
+        .named_opaque_definitions()
+        .and_then(|claims| claims.keys().next())
+        .and_then(|owner| report.resolution.definitions[owner.0 as usize].node)
+        .ok_or("missing defining body owner")?;
+    let span = report
+        .package
+        .unit(owner.file)
+        .configured
+        .ast
+        .node(owner.node)
+        .span;
+    let error = crate::pipeline::analyze(&report, facts)
+        .err()
+        .ok_or("accepted invalid defining body")?;
+    assert_eq!(error.file.source(), Some(owner.file));
+    assert!((span.start..span.end).contains(&error.span.start));
+    Ok(())
+}
+#[test]
+fn named_layout_closes_both_siblings_and_rejects_two_already_nontrivial_fields() -> TestResult {
+    let source = "pub type First = impl Value; pub type Second = impl Value;
+        #[define_opaque(First)] pub fn first() -> First { Marker }
+        #[define_opaque(Second)] pub fn second() -> Second { 7u8 }";
+    let report = layout_source(&format!("{source} pub struct Both(First, Second);"))?;
+    let declarations = crate::sema::declarations::analyze(&report)?;
+    let root = declarations
+        .opaques
+        .named
+        .as_deref()
+        .and_then(|named| named.pending_layouts.last_root())
+        .ok_or("missing two-dependency layout root")?;
+    let facts = crate::pipeline::analyze(&report, declarations)?.facts;
+    assert_eq!(
+        facts
+            .layouts
+            .get(root)
+            .ok_or("missing resumed layout")?
+            .size,
+        1
+    );
+    for id in facts.opaques.declarations.values() {
+        assert!(facts.types.storage_head(id.application).is_ok());
+    }
+    let report = layout_source(&format!(
+        "{source} #[repr(transparent)] pub struct Wrong(First, u8, u8);"
+    ))?;
+    let error = crate::sema::declarations::analyze(&report)
+        .err()
+        .ok_or("a pending field delayed an already-invalid representation")?;
+    assert_eq!(
+        error.message,
+        "transparent aggregate has more than one nontrivial field"
+    );
+    Ok(())
+}
+
+#[test]
+fn named_layout_closes_a_captured_backtrace_resolver() -> TestResult {
+    let mut source = crate::test_source::fixture(&format!("{PACKET}/backtrace-shaped.rs"))?;
+    source.push_str("\npub struct BacktraceLayout { inner: LazyResolve }\n");
+    let report = crate::test_source::source_provider(&source, "backtrace_closure_layout")?;
+    let declarations = crate::sema::declarations::analyze(&report)?;
+    let root = declarations
+        .opaques
+        .named
+        .as_deref()
+        .and_then(|named| named.pending_layouts.last_root())
+        .ok_or("missing pending Backtrace representation")?;
+    assert!(declarations.layouts.get(root).is_none());
+    let opaque = declarations
+        .opaques
+        .declarations
+        .values()
+        .next()
+        .ok_or("missing named resolver declaration")?
+        .application;
+    assert!(declarations.types.storage_head(opaque).is_err());
+
+    let facts = crate::pipeline::analyze(&report, declarations)?.facts;
+    let hidden = facts.types.storage_head(opaque)?;
+    assert!(matches!(
+        facts.types.kind(hidden),
+        Some(crate::types::Kind::Closure { .. })
+    ));
+    let layout = facts
+        .layouts
+        .get(root)
+        .ok_or("missing checked Backtrace layout")?;
+    assert_eq!(layout.size, 1);
+    Ok(())
+}

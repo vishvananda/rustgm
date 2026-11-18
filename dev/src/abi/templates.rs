@@ -1,17 +1,42 @@
 //! Prove representation constraints without inventing concrete layouts for rigid parameters.
 use super::layout::{Error, Layouts, validate_repr};
-use crate::support::hash::HashMap;
+use crate::support::{
+    hash::HashMap,
+    retained::{Growth, Payment},
+};
 use crate::types::{
     Kind, Primitive, Store, TypeId,
     aggregate::{self, Definitions, Representation},
+    opaque::OpaqueId,
 };
 #[cfg(test)]
 #[path = "../../tests/invariants/trailing_objects.rs"]
 mod tests;
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Readiness {
+    Ready,
+    Symbolic,
+    Pending(OpaqueId),
+}
+impl Readiness {
+    fn combine(self, child: Self) -> Self {
+        match (self, child) {
+            (Self::Ready, _) | (Self::Symbolic, Self::Pending(_)) => child,
+            _ => self,
+        }
+    }
+
+    fn dependency(self) -> Option<OpaqueId> {
+        match self {
+            Self::Pending(id) => Some(id),
+            _ => None,
+        }
+    }
+}
 #[derive(Clone, Copy)]
 struct Properties {
-    known: bool,
+    readiness: Readiness,
     /// repr(C) anywhere by value prevents a 1-ZST being a transparent side field.
     transparent: bool,
 }
@@ -24,13 +49,39 @@ enum State {
 /// Types and completed declaration templates stay immutable except for appended
 /// canonical instances. Storage recursion and the declaration packing graph
 /// must be checked before this query; neither is a property of one instance.
+struct Deferral<'a> {
+    eligible: &'a dyn Fn(OpaqueId) -> Result<bool, &'static str>,
+    pay: Payment<'a>,
+    missing: Vec<OpaqueId>,
+}
+
+/// Check declaration templates with a separate, explicitly configured early mode.
 #[derive(Default)]
-pub struct Templates {
+pub struct Templates<'a> {
+    deferral: Option<Box<Deferral<'a>>>,
     states: HashMap<TypeId, State>,
     work: Vec<(TypeId, bool)>,
     pub steps: usize,
 }
-impl Templates {
+impl<'a> Templates<'a> {
+    pub(crate) fn deferring(
+        eligible: &'a dyn Fn(OpaqueId) -> Result<bool, &'static str>,
+        pay: Payment<'a>,
+    ) -> Result<Self, &'static str> {
+        pay(1, size_of::<Deferral<'_>>())?;
+        Ok(Self {
+            deferral: Some(Box::new(Deferral {
+                eligible,
+                pay,
+                missing: Vec::new(),
+            })),
+            ..Self::default()
+        })
+    }
+
+    pub(crate) fn missing(self) -> Vec<OpaqueId> {
+        self.deferral.map_or_else(Vec::new, |mode| mode.missing)
+    }
     /// Validate one declaration without expanding all of its symbolic instances.
     /// Ordinary generic fields are proved at their own declarations. Only a
     /// transparent side-field question needs a symbolic layout dependency walk.
@@ -43,16 +94,28 @@ impl Templates {
         layouts: &mut Layouts,
         root: TypeId,
     ) -> Result<(), Error> {
+        self.declaration_pending(types, definitions, layouts, root)
+            .map(drop)
+    }
+
+    pub(crate) fn declaration_pending(
+        &mut self,
+        types: &mut Store,
+        definitions: &mut Definitions,
+        layouts: &mut Layouts,
+        root: TypeId,
+    ) -> Result<Option<OpaqueId>, Error> {
         self.declaration_inner(types, definitions, layouts, root)
             .map_err(|message| Error { ty: root, message })
     }
+
     fn declaration_inner(
         &mut self,
         types: &mut Store,
         definitions: &mut Definitions,
         layouts: &mut Layouts,
         root: TypeId,
-    ) -> Result<(), &'static str> {
+    ) -> Result<Option<OpaqueId>, &'static str> {
         let Some(Kind::Adt(item, _)) = types.kind(root) else {
             return Err("representation declaration requires a nominal type");
         };
@@ -67,6 +130,7 @@ impl Templates {
             .map(|v| v.fields)
             .collect();
         let mut nontrivial = false;
+        let mut pending = None;
         for list in lists {
             let count = types
                 .list(list)
@@ -76,23 +140,27 @@ impl Templates {
                 let field = types
                     .list(list)
                     .ok_or("missing representation declaration fields")?[index];
-                if transparent && count > 1 {
+                let side_field = transparent && count > 1;
+                if side_field || types.contains_parameters(field) == Some(false) {
                     self.demand(types, definitions, layouts, field)
                         .map_err(|e| e.message)?;
-                    if !self.trivial(layouts, field)? && std::mem::replace(&mut nontrivial, true) {
+                    if let Some(id) = self.properties(field)?.readiness.dependency() {
+                        pending.get_or_insert(id);
+                    } else if side_field
+                        && !self.trivial(layouts, field)?
+                        && std::mem::replace(&mut nontrivial, true)
+                    {
                         return Err("transparent aggregate has more than one nontrivial field");
                     }
-                } else if types.contains_parameters(field) == Some(false) {
-                    self.demand(types, definitions, layouts, field)
-                        .map_err(|error| error.message)?;
                 }
             }
         }
         if types.contains_parameters(root) == Some(false) {
             self.demand(types, definitions, layouts, root)
                 .map_err(|error| error.message)?;
+            pending = pending.or(self.properties(root)?.readiness.dependency());
         }
-        Ok(())
+        Ok(pending)
     }
     /// Validate known sublayouts and every representation encountered by value.
     /// Unknown parameter size/metadata leaves the template without a layout.
@@ -106,7 +174,9 @@ impl Templates {
         root: TypeId,
     ) -> Result<bool, Error> {
         match self.states.get(&root) {
-            Some(State::Complete(properties)) => return Ok(properties.known),
+            Some(State::Complete(properties)) => {
+                return Ok(properties.readiness == Readiness::Ready);
+            }
             Some(State::Failed(message)) => return Err(Error { ty: root, message }),
             _ => {}
         }
@@ -133,7 +203,7 @@ impl Templates {
             }
         }
         self.properties(root)
-            .map(|p| p.known)
+            .map(|p| p.readiness == Readiness::Ready)
             .map_err(|message| Error { ty: root, message })
     }
     fn fail(&mut self, root: TypeId, ty: TypeId, message: &'static str) -> Error {
@@ -176,7 +246,27 @@ impl Templates {
             self.states.insert(
                 ty,
                 State::Complete(Properties {
-                    known: false,
+                    readiness: Readiness::Symbolic,
+                    transparent: true,
+                }),
+            );
+            return Ok(());
+        }
+        if let Some(mode) = &mut self.deferral
+            && let Some(Kind::Opaque(id, _)) = types.kind(ty)
+            && types.storage_head(ty).is_err()
+            && (mode.eligible)(id)?
+        {
+            let growth = Growth::vector::<OpaqueId>(mode.missing.len(), mode.missing.capacity(), 1);
+            (mode.pay)(1 + growth.work, growth.bytes)?;
+            mode.missing
+                .try_reserve(1)
+                .map_err(|_| "pending opaque layout allocation failed")?;
+            mode.missing.push(id);
+            self.states.insert(
+                ty,
+                State::Complete(Properties {
+                    readiness: Readiness::Pending(id),
                     transparent: true,
                 }),
             );
@@ -202,12 +292,12 @@ impl Templates {
             .kind(ty)
             .ok_or("missing template representation type")?;
         let mut properties = Properties {
-            known: true,
+            readiness: Readiness::Ready,
             transparent: true,
         };
         children(types, definitions, ty, |child| {
             let child = self.properties(child)?;
-            properties.known &= child.known;
+            properties.readiness = properties.readiness.combine(child.readiness);
             properties.transparent &= child.transparent;
             Ok(())
         })?;
@@ -221,7 +311,7 @@ impl Templates {
             | Kind::Slice(_)
             | Kind::Dynamic { .. }
             | Kind::Primitive(Primitive::Str) => {
-                properties.known = false;
+                properties.readiness = properties.readiness.combine(Readiness::Symbolic);
             }
             Kind::Pointer { pointee, .. }
             | Kind::Reference {
@@ -231,7 +321,7 @@ impl Templates {
                 && types.is_sized(pointee) != Some(true)
                 && !matches!(types.kind(pointee), Some(Kind::Slice(_))) =>
             {
-                properties.known = false;
+                properties.readiness = properties.readiness.combine(Readiness::Symbolic);
             }
             Kind::Adt(..) => {
                 let shape = definitions.raw_shape(types, ty)?;
@@ -243,7 +333,7 @@ impl Templates {
             }
             _ => {}
         }
-        if properties.known {
+        if properties.readiness == Readiness::Ready {
             layouts
                 .demand(types, definitions, ty)
                 .map_err(|e| e.message)?;
@@ -327,7 +417,10 @@ impl Templates {
                 .list(variant.fields)
                 .ok_or("missing transparent field templates")?
             {
-                if !self.trivial(layouts, field)? && std::mem::replace(&mut nontrivial, true) {
+                if self.properties(field)?.readiness.dependency().is_none()
+                    && !self.trivial(layouts, field)?
+                    && std::mem::replace(&mut nontrivial, true)
+                {
                     return Err("transparent aggregate has more than one nontrivial field");
                 }
             }
@@ -336,7 +429,7 @@ impl Templates {
     }
     fn trivial(&self, layouts: &Layouts, field: TypeId) -> Result<bool, &'static str> {
         let properties = self.properties(field)?;
-        Ok(properties.known
+        Ok(properties.readiness == Readiness::Ready
             && properties.transparent
             && layouts
                 .get(field)

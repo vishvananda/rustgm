@@ -254,7 +254,24 @@ impl Checker<'_> {
             .aggregates
             .validate_packing(&self.facts.types)
             .map_err(|(item, message)| self.nominal_layout_error(item, message))?;
-        let mut templates = crate::abi::templates::Templates::default();
+        let named = self.facts.opaques.named.is_some();
+        let pay = |steps, bytes| self.report.package.pay_named_opaque(steps, bytes);
+        let eligible = |id| {
+            let Some(named) = self.facts.opaques.named.as_deref() else {
+                return Ok(false);
+            };
+            let Some(declaration) = self.facts.opaques.declarations.get(&id) else {
+                return Ok(false);
+            };
+            named.registered_layout(declaration.owner, id, &pay)
+        };
+        let mut templates = if named {
+            crate::abi::templates::Templates::deferring(&eligible, &pay)
+                .map_err(Error::unlocated)?
+        } else {
+            crate::abi::templates::Templates::default()
+        };
+        let mut pending = crate::sema::opaque::layouts::Pending::default();
         for item in items {
             let ty = self.facts.definitions[item.0 as usize]
                 .ok_or_else(|| Error::at(FileId(0), 0, "missing aggregate type"))?;
@@ -262,7 +279,8 @@ impl Checker<'_> {
                 self.facts.aggregates.get(item).is_some_and(|d| {
                     d.repr.representation == aggregate::Representation::Transparent
                 });
-            if self.facts.generics.storage.is_none()
+            if !named
+                && self.facts.generics.storage.is_none()
                 && !transparent
                 && !self.facts.associated.has_associated_types()
                 && self.facts.types.is_sized(ty) == Some(true)
@@ -273,14 +291,23 @@ impl Checker<'_> {
                     .map_err(|error| self.nominal_layout_error(item, error.message))?;
                 continue;
             }
-            templates
-                .declaration(
+            let dependency = templates
+                .declaration_pending(
                     &mut self.facts.types,
                     &mut self.facts.aggregates,
                     &mut self.facts.layouts,
                     ty,
                 )
                 .map_err(|error| self.nominal_layout_error(item, error.message))?;
+            if let Some(id) = dependency {
+                pending
+                    .push(item, ty, id, &pay)
+                    .map_err(|message| self.nominal_layout_error(item, message))?;
+            }
+        }
+        pending.dependencies = templates.missing();
+        if let Some(named) = self.facts.opaques.named.as_deref_mut() {
+            named.pending_layouts = pending;
         }
         Ok(())
     }

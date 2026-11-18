@@ -83,7 +83,7 @@ fn head(
     types: &mut Store,
     definitions: &mut Definitions,
     layouts: &mut Layouts,
-    templates: &mut Templates,
+    templates: &mut Templates<'_>,
     mut ty: TypeId,
     work: &mut usize,
     limit: usize,

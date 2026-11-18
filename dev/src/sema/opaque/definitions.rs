@@ -19,6 +19,7 @@ pub(crate) struct Named {
     pending: HashMap<OpaqueId, DefId>,
     previous: HashMap<OpaqueId, TypeId>,
     prepared: bool,
+    pub(crate) pending_layouts: super::layouts::Pending,
     image: Option<std::sync::Arc<crate::support::source::OriginalImage>>,
 }
 impl Declarations {
@@ -270,6 +271,19 @@ impl Declarations {
     }
 }
 impl Named {
+    pub(crate) fn registered_layout(
+        &self,
+        owner: DefId,
+        id: OpaqueId,
+        pay: crate::support::retained::Payment<'_>,
+    ) -> Result<bool, &'static str> {
+        let Some(ids) = self.aliases.get(&owner) else {
+            return Ok(false);
+        };
+        pay(ids.len(), 0)?;
+        Ok(ids.contains(&id))
+    }
+
     fn authenticate(&self, report: &Report) -> Result<(), &'static str> {
         if self.image.as_ref().is_none_or(|image| {
             !std::sync::Arc::ptr_eq(

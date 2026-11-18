@@ -204,6 +204,16 @@ pub(crate) fn analyze_defining(
             .facts
             .retain_error_warnings(report.diagnostic(error)));
     }
+    checker
+        .facts
+        .retry_pending_layouts(report, |facts, id| {
+            close(report, facts, DefiningRequest::Hidden(id))
+        })
+        .map_err(|error| {
+            checker
+                .facts
+                .retain_error_warnings(report.diagnostic(error))
+        })?;
     checker.complete_constant_patterns().map_err(|error| {
         checker
             .facts

@@ -9,6 +9,7 @@ mod futureform;
 pub(crate) use future_contract::check as check_future_contract;
 mod closing;
 pub(crate) mod definitions;
+pub(crate) mod layouts;
 pub(in crate::sema) mod overrides;
 pub(in crate::sema) mod refinement;
 mod reveal;
