@@ -140,7 +140,17 @@ execution after the callable and projection lifetime repairs. The original
 Linux `std` graph with those repairs and the ABI fix clears `Repr::fmt`. It
 now reports incompatible LowIR symbol declarations while lowering
 `panic_abort::__rust_start_panic`, with 58 unproven obligations, 14 waivers and
-an empty skip list.
+an empty skip list. A symbol trace identifies `__rust_abort` as the collision.
+`std` defines a Rust `fn() -> ()` that terminates the process, and `panic_abort`
+imports the same version-mangled symbol as `fn() -> !`. The checked lowering
+resolves this exact import to its compatible `std` export for the native symbol
+and preserves the caller's typed divergence. A focused control checks the
+single definition, unreachable continuation, standalone import and rejection
+of an incompatible export. The original shared graph clears the collision and
+reaches `Option::and_then` at `core/src/option.rs:1542`. Lowering reports
+`generic aggregate requires instantiated fields` in the match. The original
+inputs and empty skip list produce 49 unproven obligations, 43 waivers and no
+completed LowIR on the successor.
 
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
@@ -166,10 +176,19 @@ forwarding and unrelated-lifetime controls agree with pinned rustc. The concrete
 forwarding observer also mutates through the returned reference and passes native
 execution on both compilers. Strict `core` now reaches `Formatter::wrap_buf` at
 `core/src/fmt/mod.rs:1768`, where the wrapper passes `self.buf` through a callable
-that shortens the lifetime of its mutable trait-object reference. The strict
-replay still emits no metadata. All four frozen Unicode consumers match their
-declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
-runs remain due.
+that shortens the lifetime of its mutable trait-object reference. The reduction
+shows the borrow proof requiring both directions between the object bounds.
+The checked relation now permits shortening the immediate object bound on a
+selected reborrow. The original reference ancestry, nested mutable reference
+invariance and invariant trait inputs still participate in the proof. Positive
+and negative controls agree with pinned rustc. The native control mutates the
+original value from 7 to 9 on both compilers. The successor strict replay
+clears `Formatter::wrap_buf` and reaches `ControlFlow::break_value` at
+`core/src/ops/control_flow.rs:194`. The diagnostic is `active cleanup requires
+const Destruct in its actual defining environment`. There are no bring-up
+records or strict metadata artifacts. All four frozen Unicode consumers match
+their declared output on pinned rustc with prebuilt std at opt-level 2. Their
+RustGM runs remain due.
 
 ### Self-compile milestones
 
@@ -347,10 +366,28 @@ emit byte-identical LowIR. For 64 uses of a single lookup key, the body
 inference counter falls by 3,969, 8,001 and 24,129 steps at widths 64, 128 and
 384 respectively. Each of the 63 warm lookups saves the list width minus one
 step. All distinct-key and eight-impl controls match the old step count.
-Optimized timing remains open. The dedicated private test checks ordering,
+
+Immutable nonincremental opt-level 1 binaries emitted byte-identical LowIR in
+each observation across the four inputs below. Each wall measurement used
+eight A/A samples and eight alternating ABBA and BAAB blocks on CPU 12. A
+separate run used six paired blocks with fully active user instruction and
+cycle counters. The repeated wide control saves selection steps, with a small
+effect on total retired instructions.
+
+| Input | Paired wall change | A/A wall range / median | Paired user instruction change |
+| --- | ---: | ---: | ---: |
+| Ordinary generic call | −1.70% | 46.7% | +0.20% |
+| 8 headers, repeated key | −1.94% | 27.9% | +0.13% |
+| 384 headers, repeated key | +2.37% | 63.3% | −0.04% |
+| 384 headers, distinct keys | −0.44% | 37.4% | +0.29% |
+
+Raw wall, CPU, RSS, counter and output receipts are in the frontier checkout
+under `obj/parallel/candidate-owner-sharing/measurement/{paired,paired-pmu}`.
+Measure the same pair on the frozen original core and Unicode graph before
+judging end-to-end value. The dedicated private test checks ordering,
 storage identity and warm work. Its first build found two missing packed-derive
-fixture initializers, which are corrected. The rebuilt private harness exceeded
-the five-minute development budget before it could run that test.
+fixture initializers, which are corrected. The private harness build exceeded
+the five-minute development budget on the two subsequent attempts.
 
 1. **Index impl headers once.** Extract rigid constructors and their positions
    once per published header. Prototype shared paths or ordered posting lists
@@ -370,7 +407,13 @@ the five-minute development budget before it could run that test.
    equations and rollback state. Vary the number of alternatives, the size of
    the shared input and the number of bindings each candidate changes. Count
    shared edges, trial-local nodes, imported bytes and peak retained bytes.
-   [Trial construction](../dev/src/sema/traits/selection/search/frames.rs#L166)
+   Measure the same header across different requesting goals. The declared
+   effect-qualified conditions, the predicate's parameter uses and the
+   decisions about vacuous binders can be derived once per validated owner and
+   effect. The fresh captures, local type variables and proof evidence still
+   belong to the trial. Measure header preparation separately from replay into
+   the trial's inference context.
+   [Trial construction](../dev/src/sema/traits/selection/search/frames.rs#L166) · [Header instantiation](../dev/src/sema/traits/selection/instantiation.rs)
 3. **Reuse proof structure where the inputs permit it.** Measure repeated
    goals using a canonical key with alpha-renamed slots and the identity of the
    effective premises, binder scope, mode and registry view. Start with
@@ -389,6 +432,20 @@ construction, warm lookup, retained memory and the work at a changed registry
 or caller boundary. A repeated batch still has one result per request. The
 target is search and instantiation work that follows distinct reusable facts
 and real candidates, without charging each request for all shared structure.
+
+The fresh instance cleanup path is a separate opportunity to make work
+independent of unrelated state. Of 437 sampled destruction table resizes,
+427 occur during materialization and 223 pass through `with_contract`. The
+existing checked-caller path shares concrete answers across a demanded
+traversal and appears in one resize sample. Count total initialized slots, slots
+visited per fresh materialization and distinct visited `TypeId`s across
+materializations. Keep the reachable type graph fixed while adding unused
+types, then hold the store fixed and vary how much two adjacent instances
+share. Compare a demand-allocated table with sharing verified structural
+answers over one unchanged destructor registry, preserving per-instance
+work limits and accounting for arena identities, incomplete heads and failed
+queries. Keep a dense reachable-graph control.
+[Fresh materialization](../dev/src/body/instantiate.rs#L179) · [Destruction query](../dev/src/types/destruction.rs#L123)
 
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
