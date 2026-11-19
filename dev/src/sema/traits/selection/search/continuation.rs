@@ -56,6 +56,7 @@ impl Publication {
 pub(super) struct Query {
     pub reuse: Option<super::completed_proofs::Active>,
     pub refining: bool,
+    pub child_proof_work: u16,
     pub publication: Publication,
     pub suspended: Vec<Option<Frame>>,
     pub scopes: Option<Box<super::scopes::Scopes>>,
@@ -72,7 +73,7 @@ pub(super) struct Query {
     pub families: HashMap<super::member_conditions::Key, super::member_conditions::Entry>,
     // Completed answers belong to one immutable caller, mode and region scope.
     pub completed: HashMap<Predicate, Decision>,
-    pub cycles: usize,
+    pub cycles: u32,
     pub reused: bool,
     pub steps: usize,
     pub nested: u32,
@@ -154,6 +155,7 @@ impl<'a> Search<'a> {
             query: Query {
                 reuse: None,
                 refining: false,
+                child_proof_work: 0,
                 publication: Publication::Fresh,
                 suspended: Vec::new(),
                 scopes: None,
@@ -286,29 +288,9 @@ impl<'a> Search<'a> {
                     }
                 }
                 Action::Descend => {
-                    let mut child = if let Some(child) = self.formation_child(facts, frame)? {
-                        child
-                    } else if let Some(child) = self.storage_child(facts, frame)? {
-                        child
-                    } else if let Some(child) = self.auto_child(facts, frame)? {
-                        child
-                    } else if let Some(child) = self.language_child(facts, frame)? {
-                        child
-                    } else if let Some(child) = self.metadata_result_child(facts, frame)? {
-                        child
-                    } else if let Some(child) = self.inherited_result_child(facts, frame)? {
-                        child
-                    } else if let Some(child) = self.condition_child(facts, frame)? {
-                        child
-                    } else {
-                        frame.child(
-                            facts,
-                            self.query.allocations.floor(),
-                            &mut self.query.suspended,
-                        )?
-                    };
-                    self.prepare_automatic_child(facts, frame, &mut child)?;
-                    stack.push(child);
+                    if let Some(child) = self.descend(facts, frame)? {
+                        stack.push(child);
+                    }
                 }
                 Action::Complete(decision) => {
                     use super::member_conditions::Completion;
@@ -332,6 +314,45 @@ impl<'a> Search<'a> {
             }
         }
         Err("missing trait selection result".into())
+    }
+
+    fn descend(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &mut Frame,
+    ) -> Result<Option<Frame>, String> {
+        let mut child = if let Some(child) = self.formation_child(facts, frame)? {
+            child
+        } else if let Some(child) = self.storage_child(facts, frame)? {
+            child
+        } else if let Some(child) = self.auto_child(facts, frame)? {
+            child
+        } else if let Some(child) = self.language_child(facts, frame)? {
+            child
+        } else if let Some(child) = self.metadata_result_child(facts, frame)? {
+            child
+        } else if let Some(child) = self.inherited_result_child(facts, frame)? {
+            child
+        } else if let Some(child) = self.condition_child(facts, frame)? {
+            child
+        } else {
+            let probe = self.probe_child_proof(facts, frame);
+            if let super::child_proofs::Probe::Hit(node) = probe {
+                self.accept_trial_condition(facts, frame, Decision::Proven(node))?;
+                return Ok(None);
+            }
+            let mut child = frame.child(
+                facts,
+                self.query.allocations.floor(),
+                &mut self.query.suspended,
+            )?;
+            if let super::child_proofs::Probe::Watch(extent) = probe {
+                child.child_proof_extent = Some(extent);
+            }
+            child
+        };
+        self.prepare_automatic_child(facts, frame, &mut child)?;
+        Ok(Some(child))
     }
 
     fn finish_frame(
@@ -361,6 +382,7 @@ impl<'a> Search<'a> {
         if completed.formation_cacheable() {
             self.remember(facts, &completed, decision)?;
             self.query.export_completed(facts, decision)?;
+            self.remember_child_proof(facts, &completed, decision);
         }
         let decision = self.positive_child(facts, &mut completed, decision)?;
         self.accept(facts, parent, &mut completed, decision)?;

@@ -102,6 +102,7 @@ enum Mode<'a> {
     Normalized,
     Projection(crate::types::projection::Application),
     Refining(Option<&'a [u32]>),
+    MemoizedBody,
     Canonical(Option<u32>),
 }
 impl OwnedCaller {
@@ -171,7 +172,7 @@ pub(in crate::sema) fn begin_refining_untouched(
         goal,
         caller,
         availability,
-        Mode::Refining(None),
+        Mode::MemoizedBody,
         Hooks {
             reuse: None,
             untouched: Some(untouched),
@@ -395,7 +396,10 @@ fn begin_borrowed_inputs(
         }
         search.query.reuse = Some(super::completed_proofs::Active::new(std::mem::take(reuse)));
     }
-    search.query.refining = matches!(mode, Mode::Refining(_));
+    search.query.refining = matches!(mode, Mode::Refining(_) | Mode::MemoizedBody);
+    if matches!(mode, Mode::MemoizedBody) {
+        search.query.enable_child_proof_work();
+    }
     first.inference = if search.query.refining {
         super::frames::Inference::Selecting
     } else {

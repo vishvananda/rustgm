@@ -25,8 +25,10 @@ mod pointers;
 mod transmutability;
 pub(in crate::sema) use cloning::copying_predicate;
 pub(in crate::sema) use no_drop::no_drop_predicate;
+mod child_proofs;
 mod coherence;
 mod coinduction;
+pub(super) use child_proofs::ChildProofs;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/fn_copying.rs"]
 mod fn_copying_tests;
@@ -349,8 +351,15 @@ impl Search<'_> {
             .saturating_add(u32::try_from(work).unwrap_or(u32::MAX));
         self.within_work_budget()
     }
+    fn query_work_fits(&self, work: usize) -> bool {
+        self.query
+            .steps
+            .saturating_add(self.query.nested as usize)
+            .saturating_add(work)
+            <= 1_000_000
+    }
     fn within_work_budget(&self) -> Result<(), &'static str> {
-        if self.query.steps.saturating_add(self.query.nested as usize) > 1_000_000 {
+        if !self.query_work_fits(0) {
             return Err("trait selection work budget exceeded");
         }
         Ok(())
@@ -807,6 +816,19 @@ impl Search<'_> {
         {
             return self.accept_condition(frame, decision);
         }
+        self.accept_trial_condition(facts, frame, decision)
+    }
+
+    fn accept_trial_condition(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &mut Frame,
+        decision: Decision,
+    ) -> Result<(), String> {
+        let trial = frame
+            .trial
+            .as_mut()
+            .ok_or("missing parent trait candidate")?;
         let index = *trial
             .pending
             .get(trial.cursor)

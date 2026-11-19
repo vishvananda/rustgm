@@ -27,6 +27,15 @@ pub(super) struct Storage {
     slots: Slices<Slot>,
 }
 impl Context {
+    /// Read an existing canonical identity without a type-graph traversal.
+    pub(crate) fn settled_identity(&mut self, term: TermId) -> Result<Option<TypeId>, Error> {
+        let root = self.root(term)?;
+        if let Value::Known(ty) = self.terms[root.0 as usize].value {
+            return Ok(Some(ty));
+        }
+        Ok(self.settled_type(root))
+    }
+
     /// Inspect one nominal argument slot without opening its binder or copying it.
     pub(crate) fn has_single_lifetime_argument(
         &mut self,

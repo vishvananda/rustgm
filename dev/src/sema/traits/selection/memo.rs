@@ -6,7 +6,7 @@
 //! proof is reused, and only after a second identical search allocated no
 //! caller region and interned no canonical identity. Later uses then publish
 //! exactly the evidence a fresh search would.
-use super::{Evidence, Selection, Source};
+use super::{Evidence, Selection, Source, search::ChildProofs};
 use crate::resolve::model::DefId;
 use crate::support::hash::HashMap;
 use crate::types::{
@@ -33,12 +33,42 @@ pub(in crate::sema) struct Watch {
 }
 
 #[derive(Default)]
+pub(super) struct ChildWork {
+    pub goals: usize,
+    pub source_provider: usize,
+    pub hits: usize,
+}
+
+#[derive(Default)]
+struct Storage {
+    roots: HashMap<Vec<u32>, State>,
+    children: ChildProofs,
+}
+
+#[derive(Default)]
 pub(in crate::sema) struct Memo {
-    entries: HashMap<Vec<u32>, State>,
+    storage: Option<Box<Storage>>,
     /// The prepared key: trait item, effect, then every input type identity.
     key: Vec<u32>,
+    pub(super) child_work: ChildWork,
 }
 impl Memo {
+    pub(super) fn children(&self) -> Option<&ChildProofs> {
+        self.storage.as_ref().map(|storage| &storage.children)
+    }
+
+    pub(super) fn child_proofs(&mut self) -> &mut ChildProofs {
+        &mut self.storage.get_or_insert_with(Default::default).children
+    }
+
+    fn root(&self) -> Option<State> {
+        self.storage
+            .as_ref()?
+            .roots
+            .get(self.key.as_slice())
+            .copied()
+    }
+
     /// Prepare this goal's key. Ineligible goals keep the ordinary search.
     /// # Errors
     /// Rejects invalid inference identities.
@@ -70,11 +100,13 @@ impl Memo {
     /// The goals this memo has observed, verified or rejected.
     #[cfg(test)]
     pub(in crate::sema) fn entries(&self) -> usize {
-        self.entries.len()
+        self.storage
+            .as_ref()
+            .map_or(0, |storage| storage.roots.len())
     }
     /// A verified answer for the prepared key, as fresh evidence at `first`.
     pub fn reuse(&self, first: u32) -> Option<Selection> {
-        let State::Verified(answer) = self.entries.get(self.key.as_slice())? else {
+        let State::Verified(answer) = self.root()? else {
             return None;
         };
         Some(Selection::Proven(Evidence {
@@ -89,10 +121,7 @@ impl Memo {
     }
     /// Whether the upcoming search for the prepared key should be observed.
     pub fn watch(&self, store: &Store) -> Option<Watch> {
-        if matches!(
-            self.entries.get(self.key.as_slice()),
-            Some(State::Rejected | State::Verified(_))
-        ) {
+        if matches!(self.root(), Some(State::Rejected | State::Verified(_))) {
             return None;
         }
         Some(Watch {
@@ -107,7 +136,7 @@ impl Memo {
             _ => None,
         };
         let interned = store.interned_extent() != watch.extent;
-        let next = match (self.entries.get(self.key.as_slice()).copied(), answer) {
+        let next = match (self.root(), answer) {
             (None, Some(answer)) => State::Observed(answer),
             (Some(State::Observed(prior)), Some(answer)) if prior == answer && !interned => {
                 State::Verified(answer)
@@ -116,10 +145,11 @@ impl Memo {
             // Unproved, nontrivial or disagreeing results keep the ordinary search.
             _ => State::Rejected,
         };
-        if let Some(state) = self.entries.get_mut(self.key.as_slice()) {
+        let roots = &mut self.storage.get_or_insert_with(Default::default).roots;
+        if let Some(state) = roots.get_mut(self.key.as_slice()) {
             *state = next;
         } else {
-            self.entries.insert(self.key.clone(), next);
+            roots.insert(self.key.clone(), next);
         }
     }
 }
