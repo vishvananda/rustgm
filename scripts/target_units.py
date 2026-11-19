@@ -378,15 +378,24 @@ class Run:
         except subprocess.TimeoutExpired:
             status = None
         record = bringup_record(unit_folder / 'compile.stderr') if status == 0 else None
-        outputs = {}
-        for name, path in step.outputs:
-            path = Path(path)
-            if status == 0 and record is None and path.is_file() and not path.is_symlink() and path.stat().st_size:
-                outputs[name] = {'path': str(path), 'sha256': digest(path), 'bytes': path.stat().st_size}
-            elif path.exists():
-                # A failed or incomplete output is never consumed or published.
-                path.rename(path.with_name(path.name + '.rejected'))
-        return status, outputs, record
+        paths = {name: Path(path) for name, path in step.outputs}
+        sizes = {}
+        if status == 0 and record is None:
+            for name, path in paths.items():
+                if not path.is_symlink() and path.is_file():
+                    size = path.stat().st_size
+                    if size:
+                        sizes[name] = size
+        missing = sorted(paths.keys() - sizes.keys())
+        if missing:
+            # A partial output set cannot be published, even when the compiler exits zero.
+            for path in paths.values():
+                if path.exists() or path.is_symlink():
+                    path.rename(path.with_name(path.name + '.rejected'))
+            return status, {}, record, missing
+        outputs = {name: {'path': str(path), 'sha256': digest(path), 'bytes': sizes[name]}
+                   for name, path in paths.items()}
+        return status, outputs, record, missing
 
     def execute(self, packages):
         started = time.monotonic()
@@ -401,7 +410,7 @@ class Run:
                 if options:
                     self.fail(step, 'bringup', {'options': options})
                     break
-                status, outputs, record = self.compile(step)
+                status, outputs, record, missing = self.compile(step)
                 if status is None:
                     self.fail(step, 'timeout', {'timeout_seconds': step.timeout_seconds})
                     break
@@ -412,8 +421,8 @@ class Run:
                 if record is not None:
                     self.fail(step, 'bringup', {'record': record})
                     break
-                if set(outputs) != {name for name, _ in step.outputs}:
-                    self.fail(step, 'output', {'missing': sorted({n for n, _ in step.outputs} - set(outputs))})
+                if missing:
+                    self.fail(step, 'output', {'missing': missing})
                     break
                 self.receipt['completed'].append({'unit': step.unit, 'crate': step.crate_name, 'outputs': outputs,
                                                   'dropped_crate_types': list(step.dropped_crate_types)})

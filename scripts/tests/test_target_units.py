@@ -458,7 +458,12 @@ class Execution(unittest.TestCase):
         steps, packages, folder = self.graph()
         rustgm, sha = self.fake(nometa={'base'})
         receipt = execute(steps, packages, rustgm, sha, folder, {'root': 'authored'})
-        self.assertEqual(receipt['failure']['kind'], 'output')
+        self.assertEqual(receipt['failure'], {'unit': 0, 'crate': 'base', 'kind': 'output',
+                                              'detail': {'missing': ['metadata']}})
+        self.assertEqual(receipt['completed'], [])
+        self.assertEqual(len(self.invocations()), 1)
+        self.assertFalse((folder / 'unit-0/base.lowir').exists())
+        self.assertEqual((folder / 'unit-0/base.lowir.rejected').read_bytes(), b'lowir base')
         steps, packages, _ = self.graph()
         other = self.root / 'second'
         with self.assertRaisesRegex(ValueError, 'another folder'):
