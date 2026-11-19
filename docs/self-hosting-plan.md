@@ -319,7 +319,15 @@ original `println` consumer, with zero skips, 14 unproven obligations and
 exit status, stdout and stderr byte for byte. The exact receipt is under
 `obj/parallel/std-startup-optimized/std-consumer-println/` in the frontier
 checkout. The HashMap, environment and filesystem replays use the same
-compiler and source pins.
+compiler and source pins. HashMap and HashSet match all three declared
+native runs with zero skips, 18 unproven obligations and 60 waivers.
+The environment consumer reaches the trait obligation at
+`a.parse().ok()` in `env-args.rs:16`. The filesystem consumer reaches
+the nested caller-output transport fence in `std/src/sys/io/kernel_copy/linux.rs`.
+The three receipts are in `obj/parallel/std-startup-consumers/` in the
+frontier checkout. The startup code passes formatting, architecture and
+strict Clippy. The ten remaining std consumers use the same compiler and
+the shared oracle's exit, abort and stderr rules.
 
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
@@ -520,10 +528,15 @@ publication guard still rejects the marked provider. This validates target
 authority and local method lookup in the implementing crate. A separate
 client still needs transport of the validated foreign method index and
 complete dyn Self applications. Formatting, architecture and strict Clippy
-pass for the integrated change. The development compiler's strict original
-core replay hit its time limit. The optimized replay is running.
+pass for the integrated change. The optimized strict original core replay
+clears the inherent-target export gate in 33.77 seconds. The next failure is
+`method dispatch policy requires authenticated trait metadata transport`.
+It reports zero bring-up records and emits no artifacts. Original
+`core/src/iter/traits/collect.rs:280` marks `IntoIterator` with the array
+and boxed-slice flags. Reuse the checked trait policy in metadata and the
+method-name token's edition at adjusted-receiver lookup.
 Receipts are under `obj/parallel/v14-incoherent-authority/` and
-`obj/parallel/strict-core/incoherent-target/` in the performance checkout.
+`obj/parallel/strict-core/incoherent-target-optimized/` in the performance checkout.
 
 All four frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
