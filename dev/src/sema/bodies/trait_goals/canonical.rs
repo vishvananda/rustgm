@@ -90,7 +90,11 @@ impl Checker<'_> {
                         .map_err(|e| self.error(active.node, e))?;
                     (active.node, active.goal, active.reservation, progress)
                 } else if let Some((node, clause)) = pending.queued.pop_front() {
-                    let (goal, progress) = self.begin_canonical_requirement(node, clause, first)?;
+                    let Some((goal, progress)) =
+                        self.begin_canonical_requirement(node, clause, first)?
+                    else {
+                        continue;
+                    };
                     (node, goal, Reservation::default(), progress)
                 } else {
                     self.state.canonical_requirements = Some(pending);
@@ -143,7 +147,7 @@ impl Checker<'_> {
         node: NodeId,
         clause: Clause,
         first: u32,
-    ) -> Result<(Goal, selection::Progress), Error> {
+    ) -> Result<Option<(Goal, selection::Progress)>, Error> {
         let (predicate, count) = match clause {
             Clause::UnstableFeature(_) => {
                 return Err(self.error(
@@ -163,10 +167,6 @@ impl Checker<'_> {
         let assumptions = self.trait_assumptions(node)?.unwrap_or_default();
         let environment = self.trait_query_environment(node)?;
         let key = self.key(node);
-        let context = self
-            .state
-            .canonical_trait_inference
-            .get_or_insert_with(Default::default);
         let error = |message: String| super::super::Declarations::error(self.report, key, message);
         if count.is_none()
             && self.facts.types.nominal_sizes_sealed()
@@ -180,41 +180,48 @@ impl Checker<'_> {
                 .canonical_trait_proofs
                 .get_or_insert_with(Default::default);
         }
-        let mut substitution = Instantiation::new(context, &self.facts.types, &[])
-            .map_err(|e| error(e.to_string()))?;
-        let goal = context
-            .instantiate_predicate(&mut self.facts.types, predicate, &mut substitution)
-            .map_err(|e| error(e.to_string()))?;
         let reuse = self.state.canonical_trait_proofs.as_deref_mut();
-        let progress = if let Some(selected) = reuse
+        let selected = reuse
             .as_ref()
             .filter(|_| count.is_none())
             .map(|r| r.selection(self.facts, predicate, first))
             .transpose()
             .map_err(error)?
-            .flatten()
-        {
+            .flatten();
+        let context = self
+            .state
+            .canonical_trait_inference
+            .get_or_insert_with(Default::default);
+        if let Some(Selection::Proven(evidence)) = selected {
+            // The completed proof already owns the canonical input. A hit
+            // publishes its evidence without creating any inference terms.
             context.account_work(1).map_err(|e| error(e.to_string()))?;
-            selection::Progress::Ready(selected)
-        } else {
-            selection::begin_canonical(
-                self.facts,
-                context,
-                &goal,
-                selection::OwnedCaller {
-                    assumptions,
-                    environment,
-                    first_region: first,
-                    retain_sized: false,
-                    nesting: selection::Nesting::ROOT,
-                    placeholders: None,
-                },
-                (self.availability, count),
-                reuse,
-            )
-            .map_err(error)?
-        };
-        Ok((goal, progress))
+            self.retain_trait_evidence(node, evidence)?;
+            self.publish_canonical_equalities();
+            return Ok(None);
+        }
+        let mut substitution = Instantiation::new(context, &self.facts.types, &[])
+            .map_err(|e| error(e.to_string()))?;
+        let goal = context
+            .instantiate_predicate(&mut self.facts.types, predicate, &mut substitution)
+            .map_err(|e| error(e.to_string()))?;
+        let progress = selection::begin_canonical(
+            self.facts,
+            context,
+            &goal,
+            selection::OwnedCaller {
+                assumptions,
+                environment,
+                first_region: first,
+                retain_sized: false,
+                nesting: selection::Nesting::ROOT,
+                placeholders: None,
+            },
+            (self.availability, count),
+            reuse,
+        )
+        .map_err(error)?;
+        Ok(Some((goal, progress)))
     }
 
     fn publish_canonical_equalities(&mut self) {
