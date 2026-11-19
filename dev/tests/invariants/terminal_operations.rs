@@ -22,6 +22,43 @@ fn source(tail: &str) -> Result<String> {
     )?;
     Ok(format!("#![feature(intrinsics)]{foundation}{tail}"))
 }
+
+#[test]
+fn abort_profile_catch_unwind_calls_the_checked_try_pointer() -> Result {
+    let declaration = crate::test_source::fixture(
+        "pa28/tests/spec/intrinsic-declarations/positive/catch_unwind.rs",
+    )?;
+    let input = format!(
+        "{declaration}
+        unsafe fn run(p: *mut u8) {{ unsafe {{ *p = 23; }} }}
+        unsafe fn caught(p: *mut u8, _: *mut u8) {{ unsafe {{ *p = 99; }} }}
+        #[unsafe(no_mangle)] pub extern \"C\" fn probe() -> u8 {{
+            let mut data = 0u8;
+            if unsafe {{ catch_unwind(run, &raw mut data, caught) }} {{ 100 }} else {{ data }}
+        }}"
+    );
+    let report = crate::test_source::source_provider(&input, "abort_catch_unwind")?;
+    let crate::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = crate::pipeline::analyze_source(&report)?;
+    let program = crate::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        crate::lower::Roots {
+            entry: None,
+            exports: &[],
+        },
+        prepared,
+    )?;
+    let mut lowir = Vec::new();
+    crate::lowir::writer::write(&program, &mut lowir)?;
+    let text = std::str::from_utf8(&lowir)?;
+    assert!(text.contains("call void %") && text.contains("as (%p0 : ptr) -> void"));
+    assert!(!text.contains("rg.trap.catch_unwind"));
+    Ok(())
+}
+
 #[test]
 fn actual_terminal_abort_preserves_owned_scope_and_prepares_native_controls() -> Result {
     let input = source(OPERATIONS)?;

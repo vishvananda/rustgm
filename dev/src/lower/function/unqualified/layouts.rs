@@ -7,7 +7,7 @@ use super::{
 use crate::{
     body::ir,
     lowir::vocabulary::{Binary, Type},
-    types::{Kind, Primitive, TypeId, arguments::Argument},
+    types::{Kind, Primitive, TypeId, aggregate::ZeroFields, arguments::Argument},
 };
 
 impl Lower<'_, '_, '_> {
@@ -77,10 +77,20 @@ impl Lower<'_, '_, '_> {
         if call.result != TypeId::UNIT {
             return Ok(None);
         }
-        // A raw pointer holds when its referent is thin.
-        let (types, aggregates) = (self.context.types, self.context.aggregates);
-        let valid = aggregates.zero_valid(types, ty, |pointee| {
-            Ok(!self.context.wide_referent(pointee)?)
+        let context = &mut *self.context;
+        let valid = context.aggregates.zero_valid(types, ty, |ty| {
+            if let Some(Kind::Pointer { pointee, .. }) = types.kind(ty) {
+                return Ok(if context.wide_referent(pointee)? {
+                    ZeroFields::Unproven
+                } else {
+                    ZeroFields::Valid
+                });
+            }
+            context.layout(ty)?;
+            Ok(context
+                .layouts
+                .zero_enum_fields(types, ty)?
+                .map_or(ZeroFields::Unproven, ZeroFields::Visit))
         })?;
         Ok(valid.then_some(Selected::Unit))
     }

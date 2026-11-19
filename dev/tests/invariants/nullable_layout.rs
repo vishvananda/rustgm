@@ -32,6 +32,33 @@ fn wrapper(
     )?;
     types.intern(Kind::Adt(item, GenericArgs::EMPTY))
 }
+#[test]
+fn zero_enum_checks_use_the_physical_tag_or_niche() -> Result<(), String> {
+    let mut types = Store::default();
+    let mut definitions = Definitions::default();
+    let callback = types.intern(Kind::Function {
+        bound_regions: 0,
+        parameters: ListId(0),
+        result: TypeId::UNIT,
+        unsafe_: false,
+        convention: crate::types::callable::Convention::C,
+    })?;
+    let optional = nullable(&mut types, &mut definitions, ItemId(10), callback, true)?;
+    let tagged = nullable(&mut types, &mut definitions, ItemId(11), callback, false)?;
+    let mut layouts = Layouts::default();
+    for ty in [optional, tagged] {
+        layouts
+            .demand(&types, &definitions, ty)
+            .map_err(|error| error.to_string())?;
+    }
+    assert_eq!(layouts.zero_enum_fields(&types, optional)?, Some(ListId(0)));
+    assert_eq!(layouts.zero_enum_fields(&types, tagged)?, None);
+    assert!(!definitions.zero_valid(&types, callback, |_| {
+        Ok(aggregate::ZeroFields::Unproven)
+    })?);
+    Ok(())
+}
+
 fn nullable(
     types: &mut Store,
     definitions: &mut Definitions,

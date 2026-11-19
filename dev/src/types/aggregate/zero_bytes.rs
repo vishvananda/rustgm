@@ -1,18 +1,22 @@
 //! Whether all-zero bytes are a value of a type whose answer follows from
 //! its fields alone, as rustc's default zero-initialization check decides it.
 use super::{Definitions, Kind as Aggregate};
-use crate::types::{Kind, Primitive, Store, TypeId};
+use crate::types::{Kind, ListId, Primitive, Store, TypeId};
+
+pub(crate) enum ZeroFields {
+    Valid,
+    Visit(ListId),
+    Unproven,
+}
 
 impl Definitions {
-    /// Numbers, booleans, characters, arrays, tuples and structs of them hold;
-    /// a struct holds when each of its fields does. A raw pointer holds when
-    /// `thin` says its referent needs no metadata. Every other type, an enum
-    /// or a union among them, is left undecided (`false`).
+    /// Walk the structural parts of a zero value. Raw pointers and the
+    /// selected fields of enums require facts from the caller's physical view.
     pub(crate) fn zero_valid(
         &self,
         types: &Store,
         ty: TypeId,
-        mut thin: impl FnMut(TypeId) -> Result<bool, &'static str>,
+        mut physical: impl FnMut(TypeId) -> Result<ZeroFields, &'static str>,
     ) -> Result<bool, &'static str> {
         let mut pending = vec![ty];
         let mut visited = 0_u32;
@@ -20,26 +24,31 @@ impl Definitions {
             visited += 1;
             let fields = match types.kind(ty) {
                 Some(Kind::Primitive(primitive)) if primitive != Primitive::Str => continue,
-                Some(Kind::Pointer { pointee, .. }) if thin(pointee)? => continue,
+                Some(Kind::Pointer { .. }) => physical(ty)?,
                 Some(Kind::Array { element, .. }) => {
                     pending.push(element);
                     continue;
                 }
-                Some(Kind::Tuple(fields)) if visited < 1024 => fields,
+                Some(Kind::Tuple(fields)) if visited < 1024 => ZeroFields::Visit(fields),
                 Some(Kind::Adt(..)) if visited < 1024 => {
                     let shape = self.shape(types, ty)?;
-                    if !matches!(
-                        shape.definition.kind,
-                        Aggregate::Struct | Aggregate::PhantomData
-                    ) {
-                        return Ok(false);
+                    match shape.definition.kind {
+                        Aggregate::Struct | Aggregate::PhantomData => ZeroFields::Visit(
+                            shape
+                                .variant(0)
+                                .ok_or("asserted struct has no field group")?
+                                .fields,
+                        ),
+                        Aggregate::Enum => physical(ty)?,
+                        Aggregate::Union => ZeroFields::Unproven,
                     }
-                    shape
-                        .variant(0)
-                        .ok_or("asserted struct has no field group")?
-                        .fields
                 }
                 _ => return Ok(false),
+            };
+            let fields = match fields {
+                ZeroFields::Valid => continue,
+                ZeroFields::Visit(fields) => fields,
+                ZeroFields::Unproven => return Ok(false),
             };
             pending.extend_from_slice(
                 types

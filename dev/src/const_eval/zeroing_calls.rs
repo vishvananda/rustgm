@@ -56,11 +56,9 @@ impl Machine<'_, '_> {
         }
         let answer = match (selected.operation(), inputs) {
             (Operation::Assertion(subject), []) => {
-                // A raw pointer is left undecided here.
-                if !facts
-                    .aggregates
-                    .zero_valid(&facts.types, subject, |_| Ok(false))?
-                {
+                if !facts.aggregates.zero_valid(&facts.types, subject, |_| {
+                    Ok(crate::types::aggregate::ZeroFields::Unproven)
+                })? {
                     return Err("source intrinsic constant execution is not implemented".into());
                 }
                 self.evaluator.fields(&[], None)?

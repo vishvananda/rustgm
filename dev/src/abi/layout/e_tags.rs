@@ -1,10 +1,58 @@
-//! Fieldless enums with a stable integer tag can use its storage at ABI boundaries.
+//! Enum tag and niche queries use complete physical layouts.
 use super::{Budget, Layouts, Shape, primitive};
 use crate::types::{
-    Kind, Primitive, Store, TypeId,
+    Kind, ListId, Primitive, Store, TypeId,
     aggregate::{Definitions, Representation},
 };
 impl Layouts {
+    /// Select the active enum fields from the actual encoding of zero bytes.
+    /// The selected fields still need their own validity checks.
+    pub(crate) fn zero_enum_fields(
+        &mut self,
+        types: &Store,
+        owner: TypeId,
+    ) -> Result<Option<ListId>, &'static str> {
+        let layout = *self
+            .get(owner)
+            .ok_or("zero assertion requires a completed enum layout")?;
+        if !layout.inhabited {
+            return Ok(None);
+        }
+        let variants = self.variants(&layout);
+        if let Some(niche) = self.niche(&layout)? {
+            if niche.owner != owner {
+                return Err("zero assertion's nullable layout belongs to another owner");
+            }
+            let ordinal = if niche.carrier.empty_bits(types)? == 0 {
+                niche.empty
+            } else {
+                niche.payload
+            };
+            return variants
+                .get(ordinal as usize)
+                .map(|variant| Some(variant.fields))
+                .ok_or("zero assertion lost its selected nullable variant");
+        }
+        match (layout.shape, variants) {
+            (Shape::Aggregate { tag: Some(_), .. }, [first, ..]) if first.discriminant == 0 => {
+                Ok(Some(first.fields))
+            }
+            (Shape::Aggregate { tag: Some(_), .. }, variants) => {
+                let count = variants.len();
+                Budget::new(1_000_000)
+                    .charge(&mut self.steps, count)
+                    .map_err(|_| "zero assertion exceeds its enum layout work budget")?;
+                Ok(self
+                    .variants(&layout)
+                    .iter()
+                    .find(|variant| variant.discriminant == 0)
+                    .map(|variant| variant.fields))
+            }
+            (Shape::Aggregate { tag: None, .. }, [variant]) => Ok(Some(variant.fields)),
+            _ => Ok(None),
+        }
+    }
+
     pub(crate) fn fieldless_enum_scalar(
         &mut self,
         types: &Store,

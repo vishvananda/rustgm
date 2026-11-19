@@ -4,6 +4,8 @@ mod argument_sources;
 mod asm_invocations;
 mod c_boundary;
 mod callback_dispatch;
+mod catch_unwind;
+pub(super) use catch_unwind::checked_catch_unwind;
 #[path = "function/tracked_locations.rs"]
 mod caller_location;
 mod cleanup;
@@ -953,7 +955,7 @@ impl Lower<'_, '_, '_> {
                 if let Some(call) = self.runtime_select(id)? {
                     return self.selected_callback(call);
                 }
-                if let Some(value) = self.trapped_call(id)? {
+                if let Some(value) = self.bodiless_intrinsic(id)? {
                     return Ok(value);
                 }
                 return self.call(signature, callee, arguments, value.ty);

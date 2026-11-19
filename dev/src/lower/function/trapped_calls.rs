@@ -1,4 +1,4 @@
-//! Bring-up only: a direct call of an unlowered source intrinsic calls a trap.
+//! Bodyless source intrinsics dispatch from their completed declarations.
 use super::{Lower, Selected, ir};
 use crate::{
     lowir::program::Operand,
@@ -7,8 +7,7 @@ use crate::{
 };
 
 impl Lower<'_, '_, '_> {
-    /// The caller keeps its body; only reaching this call stops the program.
-    pub(super) fn trapped_call(
+    pub(super) fn bodiless_intrinsic(
         &mut self,
         id: ir::ValueId,
     ) -> Result<Option<Selected>, &'static str> {
@@ -34,9 +33,16 @@ impl Lower<'_, '_, '_> {
         let Some(Kind::FunctionItem { item, .. }) = self.context.types.kind(ty) else {
             return Ok(None);
         };
-        let Some(name) = self.context.constants.source_trap(DefId(item.0))? else {
+        let Some(name) = self
+            .context
+            .constants
+            .source_bodiless_intrinsic(DefId(item.0))?
+        else {
             return Ok(None);
         };
+        if name == "catch_unwind" {
+            return self.abort_profile_catch_unwind(id, ty).map(Some);
+        }
         if let Some(lowered) = self.unqualified_call(name, id)? {
             return Ok(Some(lowered));
         }

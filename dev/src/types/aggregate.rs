@@ -20,6 +20,7 @@ use super::{ItemId, ListId, Primitive, Store, TypeId};
 pub use instances::Shape;
 pub use metadata::MetadataPreparation;
 pub(crate) use simd::SimdShape;
+pub(crate) use zero_bytes::ZeroFields;
 
 /// Completed fields may still await concrete substitution or storage normalization.
 pub enum ShapeReadiness<'a> {
