@@ -42,6 +42,7 @@ class Job:
     local_packages: tuple[local_package.LocalPackage, ...] = ()
     panic: str | None = None
     profile: tuple[tuple[str, str], ...] = ()
+    binary: str | None = None
 
     def validate(self):
         for path, expected in ((self.cargo, self.cargo_sha256),
@@ -60,6 +61,9 @@ class Job:
                 raise ValueError('ambient Cargo configuration is outside the initial planner profile')
         if not re.fullmatch(r'[A-Za-z0-9_-]+', self.package):
             raise ValueError('invalid selected package name')
+        if self.binary is not None and (not isinstance(self.binary, str)
+                                        or not re.fullmatch(r'[A-Za-z0-9_-]+', self.binary)):
+            raise ValueError('invalid selected binary name')
         if not re.fullmatch(r'[A-Za-z0-9_-]+', self.target):
             raise ValueError('target must be an explicit built-in triple')
         if len(self.features) != len(set(self.features)) or any(
@@ -113,8 +117,9 @@ def execute(job, folder):
         environment['CARGO_PROFILE_DEV_PANIC'] = job.panic
     for key, value in job.profile:
         environment['CARGO_PROFILE_DEV_' + key.upper().replace('-', '_')] = value
+    selection = ['--lib'] if job.binary is None else ['--bin', job.binary]
     command = [str(job.cargo), 'build', '--manifest-path', str(job.manifest),
-               '-p', job.package, '--lib', '--target', job.target,
+               '-p', job.package, *selection, '--target', job.target,
                '--frozen', '--unit-graph', '-Z', 'unstable-options']
     if job.vendor is not None:
         command += job.vendor.arguments()
@@ -149,6 +154,11 @@ def execute(job, folder):
             raise ValueError(f'Cargo planning failed with status {result.returncode}')
         with (folder / 'graph.stdout').open('rb') as source:
             plan = parse(source.read(MAX_BYTES + 1), job.target)
+        if job.binary is not None:
+            targets = [plan.units[index].target for index in plan.roots]
+            roots = [(target.kind, target.crate_types, target.name) for target in targets]
+            if roots != [(('bin',), ('bin',), job.binary)]:
+                raise ValueError('unit graph does not have the selected binary as its sole root')
         inputs = dict(job.inputs)
         for package in job.local_packages:
             inputs.update((package.root / name, sha) for name, sha, _ in package.files)

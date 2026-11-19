@@ -180,9 +180,9 @@ class Planning(unittest.TestCase):
                    'app', TRIPLE), source
 
     @staticmethod
-    def process(source, *, status=0):
+    def process(source, *, status=0, kind='lib'):
         def run(command, *, cwd, env, stdout, stderr, timeout):
-            data = dict(version=1, roots=[0], units=[row('app')])
+            data = dict(version=1, roots=[0], units=[row('app', kind)])
             data['units'][0]['target']['src_path'] = str(source)
             stdout.write(json.dumps(data).encode())
             stderr.write(b'explicit planner diagnostics')
@@ -220,6 +220,21 @@ class Planning(unittest.TestCase):
                 self.assertEqual(receipt['state'], 'failed')
                 self.assertNotIn('order', receipt)
                 self.assertIn('graph.stderr_sha256', receipt)
+
+    def test_binary_selection_authenticates_the_only_graph_root(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            job, source = self.job(root)
+            job = replace(job, binary='app')
+            with patch('cargo_plan.subprocess.run', side_effect=self.process(source, kind='bin')) as run:
+                plan = execute(job, root / 'binary')
+            command = run.call_args.args[0]
+            self.assertEqual(command[command.index('--bin') + 1], 'app')
+            self.assertNotIn('--lib', command)
+            self.assertEqual(plan.units[plan.roots[0]].target.kind, ('bin',))
+            with patch('cargo_plan.subprocess.run', side_effect=self.process(source)), \
+                    self.assertRaisesRegex(ValueError, 'selected binary as its sole root'):
+                execute(job, root / 'wrong-root')
 
     def test_panic_selection_is_explicit_and_does_not_inherit_the_callers_profile(self):
         for panic in (None, 'abort', 'unwind'):
