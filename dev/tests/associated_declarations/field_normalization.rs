@@ -35,6 +35,59 @@ fn completed_body_demands_do_not_expand_discarded_constructor_templates()
     Ok(())
 }
 
+#[test]
+fn lifetime_only_wrapper_preserves_nested_projection_regions()
+-> Result<(), Box<dyn std::error::Error>> {
+    let prefix = "
+        trait Pattern { type Searcher<'a>; }
+        struct Search<'a> { input: &'a u8 }
+        impl Pattern for u8 { type Searcher<'a> = Search<'a>; }
+        struct Inner<'a, P: Pattern> { searcher: P::Searcher<'a> }
+        struct Outer<'a> { inner: Inner<'a, u8> }
+
+        fn wrap(input: &u8) -> Outer<'_> {
+            Outer { inner: Inner::<u8> { searcher: Search { input } } }
+        }
+    ";
+    for (name, result, tail, accepted) in [
+        ("body-borrow", "u8", "*outer.inner.searcher.input", true),
+        (
+            "escaping-borrow",
+            "&'static u8",
+            "outer.inner.searcher.input",
+            false,
+        ),
+    ] {
+        let source = format!(
+            "{prefix}fn first() -> {result} {{
+                let input = 7;
+                let outer = wrap(&input);
+                {tail}
+            }}
+            fn main() {{ let _ = first(); }}"
+        );
+        super::rustc::qualify(name, &source, accepted)?;
+        let result = semantic::analyze(&source).and_then(|(mut report, mut facts)| {
+            let entry = rustgm::sema::entry::select(&mut report, &facts)
+                .map_err(|error| error.to_string())?;
+            rustgm::lower::instances::build(&report, &mut facts, entry)
+                .map(|_| ())
+                .map_err(|error| error.to_string())
+        });
+        if accepted {
+            result?;
+        } else {
+            assert!(
+                result
+                    .as_ref()
+                    .is_err_and(|error| error.contains("does not outlive")),
+                "{name}: {result:?}"
+            );
+        }
+    }
+    Ok(())
+}
+
 const CASES: &[(&str, &str, bool)] = &[
     (
         "mixed-variance-still-infers-local-lifetime",

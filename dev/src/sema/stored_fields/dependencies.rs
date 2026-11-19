@@ -46,7 +46,7 @@ impl Reader {
             .ok_or("invalid storage dependency type")?
         {
             Kind::Adt(_, arguments) => {
-                facts.aggregates.instantiate(&mut facts.types, ty)?;
+                facts.aggregates.instantiate_storage(&mut facts.types, ty)?;
                 let parameterized = facts.types.contains_parameters(ty) != Some(false);
                 let projected =
                     (premise_free || !parameterized) && facts.aggregates.has_projected_fields(ty);

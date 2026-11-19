@@ -272,13 +272,35 @@ impl Definitions {
     /// # Errors
     /// Rejects missing templates, invalid arguments and bounded substitution work.
     pub fn instantiate(&mut self, types: &mut Store, ty: TypeId) -> Result<(), &'static str> {
+        self.instantiate_fields(types, ty, false)
+    }
+
+    /// A storage proof descends through nominal fields to find projections.
+    /// Give it the instance's lifetime arguments even when its immediate
+    /// fields can share a lifetime-erased shape for layout.
+    pub(crate) fn instantiate_storage(
+        &mut self,
+        types: &mut Store,
+        ty: TypeId,
+    ) -> Result<(), &'static str> {
+        self.instantiate_fields(types, ty, true)
+    }
+
+    fn instantiate_fields(
+        &mut self,
+        types: &mut Store,
+        ty: TypeId,
+        storage_proof: bool,
+    ) -> Result<(), &'static str> {
         let Some(super::Kind::Adt(item, arguments)) = types.kind(ty) else {
             return Err("field instantiation requires a nominal type");
         };
         let definition = *self.get(item).ok_or("missing aggregate field template")?;
         let templates = &self.variants[definition.start as usize..definition.end as usize];
         let instances = self.instances.get_or_insert_with(Default::default);
-        if types.region_args(arguments).is_some()
+        if types
+            .region_args(arguments)
+            .is_some_and(|regions| !storage_proof || regions.is_empty())
             && !instances.projected_template(types, item, templates)?
         {
             return Ok(());
