@@ -159,8 +159,16 @@ reuses the verified callable signature's field producer. Focused closure
 lowering and lifetime checks pass. The original shared graph clears
 `Option::and_then` and next reports `tracked function pointers require a genuine
 caller-location reification shim` during lowering attributed to `get_context`
-in `core/src/future/mod.rs`. The actual reified target still needs to be located.
-That replay retains the empty skip list, 47 unproven obligations and 50 waivers.
+in `core/src/future/mod.rs`. The emission trace identifies a different function
+item. The frozen expanded graph resolves `DefId(28340)` to `begin_panic`.
+The original `std/src/panicking.rs:44` initializes the used `EMPTY_PANIC`
+static with `begin_panic::<&'static str> as fn(&'static str) -> !`.
+On pinned Rust 1.98.0, a direct call to a tracked function observes the call
+site. Both a static function pointer and an equivalent local cast observe
+the function declaration site, at optimization levels 0 and 2. The graph
+still has an empty skip list, 47 unproven obligations and 50 waivers.
+The trace and independent observer are under `obj/parallel/next-library-probes/`
+in the performance checkout.
 
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
@@ -205,7 +213,11 @@ preserves the obligation for a separate argument of the same field type.
 Three focused source outcomes agree with pinned rustc. Strict `core` clears
 `break_value` and advances to the or-pattern in `ControlFlow::into_value`
 at `core/src/ops/control_flow.rs:417`. It requests `Destruct` even though
-both alternatives move the payload. The strict replay still has zero bring-up
+both alternatives move the payload. The reduced enum compiles with pinned
+rustc and fails with the same RustGM error. The original ownership trace
+marks two active physical whole-payload cleanups on the enum. The companion
+controls that leave a non-const payload or a separate argument alive fail
+on both compilers. The strict replay still has zero bring-up
 records and no metadata. All four frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
 runs remain due.
@@ -432,8 +444,26 @@ coherence, formatting, architecture and strict Clippy checks pass. The same
 immutable opt-level 1 measurements reproduce byte equality on four controls.
 The extension changes retired user instructions by +0.01% on the ordinary
 control, +0.18% at eight repeated headers, +0.31% at 384 repeated headers
-and +0.21% at 384 distinct headers. Whole-graph measurement is in progress.
+and +0.21% at 384 distinct headers. On original core and `unicode-ident`,
+the ABBA and BAAB blocks retire 0.035% and 0.037% more user instructions than
+the first candidate cache. Paired wall time moves by +0.005% and +15.43%,
+with A/A runs of 53.23 and 50.80 seconds. Every observation emits identical
+LowIR, native-link manifests and diagnostics. Raw observations are under
+`obj/parallel/candidate-owner-sharing/measurement/whole-graph-distinct/`.
 [Candidate lookup](../dev/src/sema/traits/implementations.rs#L194)
+
+Track reuse within each trial as well as across goals. An interned trait
+application already records the deepest escaping binder in its arguments and
+whether any argument contains a type or const parameter. When a substitution
+cannot change either, it can reuse the application ID in constant work even
+for distinct requests with large argument lists. Arguments that do change
+still use the shared fold and keep the trial's actual region and parameter
+mapping. The check uses the existing arena metadata. Fresh folders each take
+two charged steps including capture preparation at widths 8, 128 and 2,048.
+A bound lifetime in the same wide input still maps to its supplied capture.
+Five focused trait and projection checks, formatting, architecture and strict
+Clippy pass. The isolated optimized comparison is pending.
+[Application facts](../dev/src/types/traits.rs) · [Argument folding](../dev/src/types/substitute/predicates.rs)
 
 1. **Index impl headers once.** Extract rigid constructors and their positions
    once per published header. Prototype shared paths or ordered posting lists
@@ -453,6 +483,11 @@ and +0.21% at 384 distinct headers. Whole-graph measurement is in progress.
    equations and rollback state. Vary the number of alternatives, the size of
    the shared input and the number of bindings each candidate changes. Count
    shared edges, trial-local nodes, imported bytes and peak retained bytes.
+   The search frame resolves a canonical goal for completed-proof lookup.
+   Candidate lookup resolves the inference predicate again. Count how often
+   the second resolution can consume the first result and how much it revisits.
+   Only share that result while the frame retains the same inputs. A projection
+   rewrite or new inference equations can change the candidate set.
    Measure the same header across different requesting goals. The declared
    effect-qualified conditions, the predicate's parameter uses and the
    decisions about vacuous binders can be derived once per validated owner and
