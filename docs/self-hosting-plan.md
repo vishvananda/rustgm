@@ -574,6 +574,16 @@ The strict export must retain their checked function policy for a fresh client.
 The receipt is in `obj/parallel/strict-core/dispatch-policy/` in the frontier
 checkout.
 
+The v14 function header now carries named-function optimization intent. A
+fresh SourceClient reads `none`, `size` and `speed` from their actual imported
+functions, and reads checked absence on the unmarked function. Metadata
+round-trips byte for byte, and the four calls match the native C observer.
+Pinned rustc accepts the marked provider. The v13 source fence stays active,
+and an unmarked v13 provider emits identical metadata and LowIR on both
+compiler revisions. The focused compiler passes strict Clippy and the
+architecture audit. Receipts are in `obj/parallel/v14-optimization-intent-client/`
+in the frontier checkout. Closure intent still needs its body metadata.
+
 All four frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
 runs remain due.
