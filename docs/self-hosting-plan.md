@@ -839,6 +839,28 @@ root and unit order match. The receipt is under
 `obj/parallel/compiler-execution-freeze/`. The selected sysroot units and
 per-crate artifacts still need to join this plan.
 
+The six-unit Cargo inventory contains no sysroot dependency edges. The strict
+executor selects source-client mode from the dependency closure, so the
+combined inventory must bind each crate to its actual `core`, `compiler_builtins`,
+`alloc` and `std` artifacts. The current prelude adapter admits only `no_std`
+source clients. The frozen `rustgm` binary uses `std` and returns
+`std::process::ExitCode`. A reduced client should resolve the imported edition
+prelude and execute the imported startup specialization for its actual
+`Termination` implementation before the full binary replay.
+[Executor](../scripts/target_units.py) · [Prelude](../dev/src/resolve/standard_imports.rs) ·
+[Startup](../dev/src/sema/entry/startup.rs)
+
+The strict binary unit needs LowIR, terminal crate metadata and a native-link
+manifest. Validate all three outputs together before publishing them. A
+terminal metadata record carries the binary identity and its authenticated
+dependencies. Both dependency inputs must reject that record. Link the
+binary LowIR and its library closure in the frozen order, then pass the
+verified native objects and ordered library directives to the pinned linker.
+Add focused controls for a missing output, binary metadata supplied as a
+dependency, and a perturbed link order.
+[Artifact options](../dev/bin/crates.rs) · [Native manifest](../dev/bin/link_manifest.rs) ·
+[Backend linker](../scripts/backend.py)
+
 The PA45 stage comparator checks the same frozen graph and executor, the
 stage 1 compiler pin used by stage 2, and the actual strict compiler
 diagnostics. It compares every unit's LowIR and metadata and then the linked
