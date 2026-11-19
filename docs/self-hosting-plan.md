@@ -930,6 +930,16 @@ frontier checkout.
    repeated work even when whole-input timings grow linearly.
    [Trial construction](../dev/src/sema/traits/selection/search/frames.rs#L166) · [Header instantiation](../dev/src/sema/traits/selection/instantiation.rs)
 
+   The declared-condition prototype holds the candidate and trial count at
+   128 in each shared-owner and distinct-owner case. At widths 8, 32 and 64,
+   it retires 0.46%, 0.54% and 0.57% fewer user instructions in the shared
+   cases. The distinct cases retire 0.08–0.16% more, and the two ordinary
+   controls retire 0.05–0.10% more. All 272 samples emit identical LowIR.
+   Paired wall differences fall within A/A variation. The review identified
+   optional cache reservations on the mandatory source ledger. A separate
+   bounded-pool candidate awaits its exact qualification. Raw data is under
+   `obj/parallel/trait-header-reuse/paired-pmu/` in the performance checkout.
+
    Canonical trait arguments already have a slice ID. The inference predicate
    keeps an owned argument vector inside a boxed application. Instantiation
    copies the canonical argument slice to a temporary vector and builds the
@@ -1006,7 +1016,7 @@ frontier checkout.
 
    The probe counts fingerprints of mode, source policy and predicate at
    canonical search frames. Full reuse keys also need the caller and registry
-   dependencies. Timing remains unmeasured. Every trial imported zero
+   dependencies. Every trial imported zero
    inference edges. Both neutral variants had 32 distinct top-level body memo
    keys and 32 cold lookups. The memo records the same 30 hits in both premise
    variants. The fixed-size pairs expose repeated child search behind different
@@ -1047,6 +1057,19 @@ frontier checkout.
    [Canonical body proof map](../dev/src/sema/bodies/trait_goals/canonical.rs#L171) ·
    [Inferred body memo](../dev/src/sema/bodies/trait_goals/inference.rs#L515) ·
    [Deref proof consumer](../dev/src/sema/traits/selection/search/chain.rs#L17)
+
+   The prototype scoped to neutral body queries replays 31 selected child
+   DAGs and reduces validated trials from 96 to 34 on the shared input.
+   The 64 earlier trials are unchanged. It retires 8.25% fewer user
+   instructions there and 0.75% more on the neutral distinct-child control.
+   Both premise variants and the ordinary scalar control stay within 0.14%.
+   The preflight matches chosen proof graphs, semantic output, LowIR,
+   diagnostics and native outcomes. All 170 measurement observations match
+   in output. Paired wall time is within A/A variation. The measured path
+   applies to the neutral body mode. The review found that optional probes
+   can exhaust the ordinary query meter, so a bounded admission repair
+   precedes integration. Evidence is under `obj/parallel/child-proof-reuse/`
+   in the performance checkout.
 
 For each prototype, hold source size and request count fixed while varying the
 fraction of shared keys, subterms or premises. Separately grow the amount of
