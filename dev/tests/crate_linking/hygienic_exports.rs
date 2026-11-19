@@ -212,6 +212,55 @@ pub fn answer() -> u8 {
 }
 
 #[test]
+fn body_operations_replay_private_macro_helpers() -> Result {
+    let packet = Packet::new(GROUP, SPEC, "private-helpers", "provider")?;
+    let provider = generated(
+        &packet,
+        "private-helpers",
+        DECL_MACRO,
+        r"
+macro runtime($value:literal) {{
+    fn hidden() -> u8 { $value }
+    hidden()
+}}
+macro constant($value:literal) {{
+    const fn hidden() -> u8 { $value }
+    hidden()
+}}
+pub fn sum() -> u8 { runtime!(17) + runtime!(25) }
+pub const fn computed() -> u8 { constant!(42) }
+",
+    )?;
+    let mut producer = packet.export("module-body-operations-v14", &provider, &packet.metadata);
+    super::artifacts::checked("private-helpers", &packet.folder, &mut producer)?;
+    let bytes = std::fs::read(&packet.metadata)?;
+    assert_eq!(crates::encode(&crates::decode(&bytes)?)?, bytes);
+    let client = packet.folder.join("client.rs");
+    std::fs::write(
+        &client,
+        "#![feature(no_core)]#![no_core]\nconst VALUE:u8=base::computed();\n\
+         #[unsafe(no_mangle)] pub extern \"C\" fn answer() -> u8 {\n\
+             let _ = base::sum(); VALUE\n\
+         }\n",
+    )?;
+    super::artifacts::checked(
+        "helper-client",
+        &packet.folder,
+        &mut packet.consumer(&client, "client", &packet.metadata, &packet.owner()),
+    )?;
+    std::fs::write(
+        &client,
+        "#![feature(no_core)]#![no_core]\npub fn named() -> u8 { base::hidden() }\n",
+    )?;
+    packet.rejected(
+        "hidden-helper",
+        &mut packet.consumer(&client, "hidden-helper", &packet.metadata, &packet.owner()),
+        "unresolved value name",
+    )?;
+    Ok(())
+}
+
+#[test]
 fn marked_locals_opaque_marks_and_generated_exported_macros_stay_fenced() -> Result {
     let packet = Packet::new(GROUP, SPEC, "fences", "provider")?;
     for (label, opaque, control) in FENCED {

@@ -532,7 +532,7 @@ impl Stage {
         if stage.body_nodes() {
             stage.constant_headers(report, facts)?;
         }
-        stage.functions(report, facts)?;
+        stage.functions(report, facts, identity)?;
         stage.implementations(facts)?;
         stage.diagnostic_roles(report)?;
         stage.install_private_symbols(facts, identity)?;
@@ -944,6 +944,9 @@ fn scope_owners(
             .ok_or("source function has no actual indexed scope")?;
         owners[scope.0 as usize] = Some(function.definition);
     }
+    if stage.declaration_policies() {
+        stage.require_contextual_bindings(report, facts, &mut owners)?;
+    }
     Ok(owners)
 }
 
@@ -1096,7 +1099,9 @@ fn require_export_mode(
             return Err("source availability export requires its completed actual library policy");
         }
     }
-    require_name_provenance(report, facts, mode, languages)?;
+    if !languages || mode != ExportMode::CompilerOperations {
+        require_legacy_name_provenance(report, languages)?;
+    }
     facts
         .source_bindings
         .as_deref()
@@ -1114,48 +1119,63 @@ fn require_export_mode(
     Ok(())
 }
 
-fn require_name_provenance(
-    report: &Report,
-    facts: &Declarations,
-    mode: ExportMode,
-    languages: bool,
-) -> Result<(), &'static str> {
+const NAME_PROVENANCE: &str = "source macro/semantic-name provenance metadata is not implemented";
+
+fn require_legacy_name_provenance(report: &Report, languages: bool) -> Result<(), &'static str> {
     let bindings = &report.resolution.bindings;
-    // The originals retain checked local slots and CFG targets. For item
-    // names, require either explicit namespace transport or a checked slot.
-    let unsupported = if languages && mode == ExportMode::CompilerOperations {
-        bindings
-            .contextual_items()
-            .any(|(scope, name, namespace, binding)| {
-                report
-                    .resolution
-                    .definitions
-                    .get(binding.target.0 as usize)
-                    .is_none_or(|item| {
-                        binding.ambiguous
-                            || binding.origin != Origin::Direct
-                            || item.scope != scope
-                            || item.name != name
-                            || item.namespace != namespace
-                            || item.node.is_none()
-                            || binding.access != item.access
-                            || !matches!(item.access, Access::Within(_))
-                            || !contextual_slot(facts, binding.target, item.kind)
-                    })
-            })
+    let marked = if languages {
+        report.package.marks.has_item_contexts() || bindings.has_contextual_locals()
     } else {
-        bindings.has_contextual_items()
-            || if languages {
-                report.package.marks.has_item_contexts() || bindings.has_contextual_locals()
-            } else {
-                report.package.marks.context_count() != 1
-            }
+        report.package.marks.context_count() != 1
     };
-    if unsupported {
-        waiving(Err(
-            "source macro/semantic-name provenance metadata is not implemented",
-        ))
+    if marked || bindings.has_contextual_items() {
+        waiving(Err(NAME_PROVENANCE))
     } else {
+        Ok(())
+    }
+}
+
+impl Stage {
+    fn require_contextual_bindings(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        owners: &mut [Option<DefId>],
+    ) -> Result<(), &'static str> {
+        // Originals reconstruct checked slots and block targets. An item
+        // name can use that path only under its real lexical or trait owner.
+        for (scope, name, namespace, binding) in report.resolution.bindings.contextual_items() {
+            self.charge(1)?;
+            let definition = binding.target;
+            let item = report
+                .resolution
+                .definitions
+                .get(definition.0 as usize)
+                .ok_or("source contextual binding lost its actual declaration")?;
+            if binding.ambiguous
+                || binding.origin != Origin::Direct
+                || item.scope != scope
+                || item.name != name
+                || item.namespace != namespace
+                || item.node.is_none()
+                || binding.access != item.access
+                || !matches!(item.access, Access::Within(_))
+            {
+                return waiving(Err(NAME_PROVENANCE));
+            }
+            if contextual_slot(facts, definition, item.kind) {
+                continue;
+            }
+            if item.kind == DefKind::Function && facts.associated.owner(definition).is_none() {
+                let owner = find_owner(report, owners, scope, self)?;
+                if owner != definition
+                    && report.resolution.definitions[owner.0 as usize].kind == DefKind::Function
+                {
+                    continue;
+                }
+            }
+            return waiving(Err(NAME_PROVENANCE));
+        }
         Ok(())
     }
 }

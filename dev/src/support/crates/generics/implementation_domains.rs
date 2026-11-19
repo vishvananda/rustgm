@@ -359,7 +359,17 @@ impl ModuleContractColumns {
             | s::DefinitionKind::Trait
             | s::DefinitionKind::Struct
             | s::DefinitionKind::Enum => Namespace::Type,
-            s::DefinitionKind::Function => Namespace::Value,
+            s::DefinitionKind::Function => {
+                if super::callable_paths::nested_function(
+                    &rows.declarations,
+                    entry.target.declaration,
+                )
+                .is_some()
+                {
+                    return Err("module binding cannot name a body-local function");
+                }
+                Namespace::Value
+            }
             // Version thirteen: a named const binds in its module's value
             // namespace.
             s::DefinitionKind::Constant if variants => Namespace::Value,

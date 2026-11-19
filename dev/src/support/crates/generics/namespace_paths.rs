@@ -1,6 +1,31 @@
 //! A canonical callable path is borrowed structure, never an alias or paid proof.
-use super::super::{Declaration, DefinitionKind};
-use crate::support::crates::owner_catalog::DeclarationRef;
+use super::super::{Declaration, DefinitionKind, FunctionBody, FunctionHeader};
+use crate::support::crates::owner_catalog::{BodyRef, DeclarationRef};
+
+/// A function declaration whose actual namespace owner is another body.
+pub(crate) fn nested_function(
+    declarations: &[Declaration],
+    definition: DeclarationRef,
+) -> Option<&Declaration> {
+    let declaration = declarations.get(definition.0 as usize)?;
+    let parent = declarations.get(declaration.definition.parent?.0 as usize)?;
+    (declaration.definition.kind == DefinitionKind::Function
+        && parent.definition.kind == DefinitionKind::Function)
+        .then_some(declaration)
+}
+
+/// A private body original is addressed by its body and declaration slots.
+pub(crate) fn nested_original(
+    declarations: &[Declaration],
+    header: &FunctionHeader,
+) -> Option<BodyRef> {
+    let FunctionBody::Original(body) = header.body else {
+        return None;
+    };
+    let declaration = nested_function(declarations, header.declaration)?;
+    (!declaration.public && header.parent.is_none() && header.scope == header.declaration)
+        .then_some(body)
+}
 
 pub(crate) struct CallablePath<'a> {
     declarations: &'a [Declaration],

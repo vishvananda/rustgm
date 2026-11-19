@@ -528,7 +528,11 @@ fn functions(
                 );
             }
             FunctionBody::Original(_)
-                if parent_kind != super::super::DefinitionKind::Module && !associated =>
+                if parent_kind != super::super::DefinitionKind::Module
+                    && !associated
+                    && !(bodies
+                        && profile == NamespaceProfile::CompilerOperations
+                        && super::nested_original(&rows.declarations, header).is_some()) =>
             {
                 return Err("source original requires its actual supported root module owner");
             }

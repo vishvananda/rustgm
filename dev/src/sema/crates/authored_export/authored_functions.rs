@@ -54,6 +54,7 @@ impl Stage {
         &mut self,
         report: &Report,
         facts: &mut Declarations,
+        identity: &crate::support::crates::CrateIdentity,
     ) -> Result<(), &'static str> {
         let mut count = 0usize;
         for index in 0..self.definitions.len() {
@@ -123,6 +124,12 @@ impl Stage {
             self.prepare_signature_arena(facts, function.signature)?;
             self.function(report, facts, &function, declaration)?;
             self.exact_callable(facts, &function, declaration)?;
+            if self.declaration_policies()
+                && let Some(header) = self.rows.functions.last()
+                && s::nested_original(&self.rows.declarations, header).is_some()
+            {
+                self.install_private_symbol(facts, identity, definition)?;
+            }
             count = count
                 .checked_add(1)
                 .ok_or("source function count overflow")?;

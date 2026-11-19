@@ -56,14 +56,17 @@ pub(super) fn prepare(
         }
         if rows.descriptor().profile().feature_predicates() {
             work.charge(1)?;
-            if header.parent.is_some_and(|parent| {
-                matches!(
-                    rows.header(parent),
-                    Ok(Some(s::HeaderRef::Implementation(_)))
-                )
-            }) {
-                // The validated impl keeps its real catalog/body identity and
-                // derives its private symbol from that same canonical owner.
+            if (rows.descriptor().profile().declaration_policies()
+                && s::nested_original(&rows.declarations, header).is_some())
+                || header.parent.is_some_and(|parent| {
+                    matches!(
+                        rows.header(parent),
+                        Ok(Some(s::HeaderRef::Implementation(_)))
+                    )
+                })
+            {
+                // Private originals keep their actual body and declaration
+                // identity instead of entering an external callable path.
                 continue;
             }
         }

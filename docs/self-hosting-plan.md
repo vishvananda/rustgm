@@ -699,6 +699,15 @@ original body identities before they can pass this check. Five focused
 linking tests pass on the joined revision. Evidence is under
 `obj/parallel/v14-contextual-items/` in the frontier checkout.
 
+The next v14 slice publishes private functions owned by another function
+using their body and declaration coordinates. A fresh client calls two
+same-spelled helpers from distinct macro expansions, and a separate client
+evaluates an imported const helper. Both reductions return `42` natively.
+The focused regression rejects a direct call to the private helper through
+the module namespace. It also checks byte-exact metadata round-trip and the
+older provenance gates. Four focused cases and strict Clippy pass. The exact
+`core` replay is the remaining check for this slice.
+
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
 deprecated macro and accepts a call through an annotated `use` alias of a
@@ -1216,6 +1225,16 @@ frontier checkout.
    frame and trial counts. The bounded private harness attempts leave private
    execution pending. Evidence is under `obj/parallel/child-proof-reuse/` in
    the performance checkout.
+
+   A shadow observer on the original `core` and `unicode-ident` graph
+   counts 132,251 source-backed body roots and 24,372 ordinary child descents.
+   It prepares 715 ordered DAG captures and finds 658 warm completions that
+   could reuse the current recipe shape. They account for 2.70% of ordinary
+   child descents and 15,816 recorded query steps. The observer leaves normal
+   search in place and preserves output and diagnostics. No replay runs on
+   this path. The source admission guard stays in place while work moves to
+   trial frame copies and predicate graph imports. Evidence is under
+   `obj/parallel/source-child-headroom/` in the performance checkout.
 
 Source automatic-trait classification now compares canonical provider IDs in
 the compact language-role cells. A selected role still checks its declaration

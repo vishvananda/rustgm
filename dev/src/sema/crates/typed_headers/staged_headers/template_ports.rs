@@ -367,18 +367,7 @@ pub(in crate::sema::crates::typed_headers) fn symbol_from(
     let id = context.catalog.declaration(definition).map_err(error)?;
     let (owner, row, _) = context.catalog.declaration_coordinate(id).map_err(error)?;
     let rows = context.descriptor.rows();
-    if context.descriptor.profile().feature_predicates()
-        && let Some(s::HeaderRef::Function(index)) = rows.header(row).map_err(error)?
-        && rows.functions[index as usize].parent.is_some_and(|parent| {
-            matches!(
-                rows.header(parent),
-                Ok(Some(s::HeaderRef::Implementation(_)))
-            )
-        })
-    {
-        let s::FunctionBody::Original(reference) = rows.functions[index as usize].body else {
-            return Err(error("private source method omitted its actual original"));
-        };
+    if let Some(reference) = private_body(context.descriptor.profile(), rows, row)? {
         let body = context.catalog.body_at(owner, reference).map_err(error)?;
         context
             .catalog
@@ -410,6 +399,37 @@ pub(in crate::sema::crates::typed_headers) fn symbol_from(
         ));
     }
     super::super::symbol(&identity, budget)
+}
+
+fn private_body(
+    profile: s::Profile,
+    rows: s::ValidatedView<'_>,
+    row: crate::support::crates::owner_catalog::DeclarationRef,
+) -> Result<Option<crate::support::crates::owner_catalog::BodyRef>, Error> {
+    if !profile.feature_predicates() {
+        return Ok(None);
+    }
+    let Some(s::HeaderRef::Function(index)) = rows.header(row).map_err(error)? else {
+        return Ok(None);
+    };
+    let header = &rows.functions[index as usize];
+    if profile.declaration_policies()
+        && let Some(body) = s::nested_original(&rows.declarations, header)
+    {
+        return Ok(Some(body));
+    }
+    if header.parent.is_some_and(|parent| {
+        matches!(
+            rows.header(parent),
+            Ok(Some(s::HeaderRef::Implementation(_)))
+        )
+    }) {
+        let s::FunctionBody::Original(body) = header.body else {
+            return Err(error("private source method omitted its actual original"));
+        };
+        return Ok(Some(body));
+    }
+    Ok(None)
 }
 
 fn legacy_callable_path(

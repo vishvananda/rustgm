@@ -137,28 +137,38 @@ impl Stage {
             .copied()
             .collect::<Vec<_>>();
         for definition in definitions {
-            self.charge(3)?;
-            let declaration = self.declaration(definition)?;
-            let body = self
-                .functions
-                .bodies
-                .get(&definition)
-                .copied()
-                .ok_or("private method lost its real reserved original")?;
-            let growth = 4 * (identity.name().len() + identity.disambiguator().len() + 64);
-            self.charge(growth)?;
-            self.reserve(growth.saturating_add(retained::new_map::<DefId, String>(1)))?;
-            let symbol = identity.private_original_symbol(body, declaration);
-            let linkage = facts.crates.get_or_insert_default();
-            if linkage
-                .symbols
-                .get(&definition)
-                .is_some_and(|old| *old != symbol)
-            {
-                return Err("private original changed its canonical source symbol");
-            }
-            linkage.symbols.insert(definition, symbol);
+            self.install_private_symbol(facts, identity, definition)?;
         }
+        Ok(())
+    }
+
+    pub(super) fn install_private_symbol(
+        &mut self,
+        facts: &mut Declarations,
+        identity: &crate::support::crates::CrateIdentity,
+        definition: DefId,
+    ) -> Result<(), &'static str> {
+        self.charge(3)?;
+        let declaration = self.declaration(definition)?;
+        let body = self
+            .functions
+            .bodies
+            .get(&definition)
+            .copied()
+            .ok_or("private method lost its real reserved original")?;
+        let growth = 4 * (identity.name().len() + identity.disambiguator().len() + 64);
+        self.charge(growth)?;
+        self.reserve(growth.saturating_add(retained::new_map::<DefId, String>(1)))?;
+        let symbol = identity.private_original_symbol(body, declaration);
+        let linkage = facts.crates.get_or_insert_default();
+        if linkage
+            .symbols
+            .get(&definition)
+            .is_some_and(|old| *old != symbol)
+        {
+            return Err("private original changed its canonical source symbol");
+        }
+        linkage.symbols.insert(definition, symbol);
         Ok(())
     }
 }
