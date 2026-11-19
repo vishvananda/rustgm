@@ -592,6 +592,18 @@ source marks the actual generic `Simd` declaration with a limit of 64 in
 `crates/core_simd/src/vector.rs:107`. The receipt is in
 `obj/parallel/strict-core/optimization-intent/` in the frontier checkout.
 
+The v14 packed-SIMD producer and a fresh source client pass the four layout
+controls with a limit of eight. Six lanes have size 24 and alignment 8;
+eight lanes have size and alignment 32. The nine- and sixteen-lane imports
+fail at the actual struct's limit, with no published layout. The v13 producer
+rejects the authored limit, while a separate consumer can emit its own
+ordinary metadata with the v14 dependency. The frozen original PA41 provider
+and import sources match all nine pinned-rustc compile outcomes. A separate
+RustGM provider with bodiless `size_of` and `align_of` declarations reaches
+the intrinsic publication boundary. The passing reduction imports the
+generic `V` and demands concrete layout directly through the typed pipeline.
+Receipts are in `obj/parallel/v14-simd-limits-final/` in the frontier checkout.
+
 All four frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
 runs remain due.
@@ -937,7 +949,10 @@ frontier checkout.
    controls retire 0.05–0.10% more. All 272 samples emit identical LowIR.
    Paired wall differences fall within A/A variation. The review identified
    optional cache reservations on the mandatory source ledger. A separate
-   bounded-pool candidate awaits its exact qualification. Raw data is under
+   bounded-pool candidate saves 431 and 3,903 charged instantiation steps at
+   widths 8 and 64. The mixed ordinary control adds 67 lookups with zero hits.
+   The original-source observers reach their deadline before reporting
+   eligibility counts. The current changes remain experimental. Raw data is under
    `obj/parallel/trait-header-reuse/paired-pmu/` in the performance checkout.
 
    Canonical trait arguments already have a slice ID. The inference predicate
