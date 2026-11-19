@@ -9,6 +9,29 @@ use crate::{
     test_source,
     types::{GenericArgs, Primitive, TypeId},
 };
+
+#[test]
+fn provided_constant_restores_the_actual_caller_lifetime() -> Result<(), Box<dyn std::error::Error>>
+{
+    let mut report = test_source::resolve(
+        "trait Gate { const ALLOWED: bool = true; }
+         struct Borrow<'a>(&'a u8);
+         impl<'a> Gate for Borrow<'a> {}
+         fn check<T: Gate>(_: T) -> bool { const { T::ALLOWED } }
+         fn outer<'a>(input: &'a u8) -> bool { check(Borrow(input)) }
+         fn main() { let value = 4; if !outer(&value) { loop {} } }",
+        true,
+    )?;
+    let pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = pipeline::analyze_source(&report)?;
+    let entry = crate::sema::entry::select(&mut report, &facts)?;
+    let program = crate::lower::instances::build_prepared(&report, &mut facts, entry, prepared)?;
+    assert!(program.symbols.iter().any(|symbol| symbol.body.is_some()));
+    Ok(())
+}
+
 #[test]
 fn selected_cache_checks_canonical_results_before_reuse() -> Result<(), Box<dyn std::error::Error>>
 {

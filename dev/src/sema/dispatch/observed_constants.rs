@@ -50,6 +50,18 @@ impl Dispatcher {
             return Err("concrete constant retains unresolved arguments".into());
         }
         let (result, evidence) = self.constant_target(facts, instance, predicate)?;
+        let result = if result == instance && !evidence.equalities.is_empty() {
+            // A provided initializer retains the original argument graph. Open
+            // it in the same namespace in which selection made its equations.
+            let before = self.normalize.steps;
+            let opened = result.substitute(&mut facts.types, &mut self.normalize);
+            let work = self.normalize.steps - before;
+            facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work);
+            self.context.account_work(work).map_err(|e| e.to_string())?;
+            opened?
+        } else {
+            result
+        };
         let result = implementation::restore_constant(
             facts,
             &mut self.context,
