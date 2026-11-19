@@ -1215,10 +1215,18 @@ anonymous materializations at every width, with the same reached rows and
 steps as the type store grows from 61 to 8,253 entries. Its four focused
 public tests pass. Immutable optimized `19b7bb08c` and `eca64c7b1` runs match
 in all 136 observations. The 8,192-alias input retires 0.77% fewer instructions,
-and the ordinary control retires 0.22% more. Wall time stays within calibration
-spread. The candidate remains in the performance checkout while a bounded
-dense path for small stores is evaluated. Evidence is under
-`obj/parallel/initializer-sparse/` in that checkout.
+and the ordinary control retires 0.22% more. The integrated bounded variant
+chooses dense storage through 32 types after type preparation. The observer
+confirms dense storage at 31 and 32 types and sparse storage at 33, with the
+same three reached rows and six steps per materialization in that control.
+The ordinary instruction change is +0.01% within the 0.034% calibration
+spread. It retires 0.82% fewer instructions in the widest control, with costs
+of 0.22% at 33 and 0.11% at 61 types. All 204 optimized observations preserve
+output and diagnostics. The twelve preflight outcomes match pinned Rust and
+the four focused checks pass. Wall time stays within calibration spread, and
+the full source graph remains unmeasured for this change. Evidence is under
+`obj/parallel/initializer-sparse/` and `obj/parallel/bounded-fresh-destruction/`
+in the performance checkout.
 
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
