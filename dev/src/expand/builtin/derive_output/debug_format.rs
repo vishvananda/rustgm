@@ -136,15 +136,20 @@ impl Output<'_> {
         // The last field needs an extra indirection for possibly-unsized types.
         match access {
             Access::Receiver => {
-                self.text(if index + 1 == fields {
-                    "&&self."
-                } else {
-                    "&self."
+                // A block reads a packed field by value into aligned temporary storage.
+                self.text(match (self.site.packed_debug, index + 1 == fields) {
+                    (true, true) => "&&{self.",
+                    (true, false) => "&{self.",
+                    (false, true) => "&&self.",
+                    (false, false) => "&self.",
                 })?;
                 if let Some(name) = self.actual_field(field)?.0 {
                     self.spelling(name, false)?;
                 } else {
                     self.index(field, index)?;
+                }
+                if self.site.packed_debug {
+                    self.text("}")?;
                 }
                 Ok(())
             }

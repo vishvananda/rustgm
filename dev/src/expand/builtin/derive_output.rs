@@ -48,6 +48,7 @@ pub(crate) struct Site<'a> {
     pub members: [Option<MemberContext>; MEMBERS.len()],
     pub const_: bool,
     pub prior_copy: bool,
+    pub packed_debug: bool,
     pub enum_default: Option<NodeId>,
 }
 impl Site<'_> {

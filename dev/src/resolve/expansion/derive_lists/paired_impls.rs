@@ -5,11 +5,65 @@ use crate::{
         builtin::derive_output,
         marks::{SyntaxContextId, Transparency},
     },
-    syntax::{ast::Kind, token_tree::error},
+    lex::token::LexError,
+    resolve::unit::Unit,
+    syntax::{
+        ast::{Kind, NodeId},
+        attribute::Input,
+        item::ItemKind,
+        token_tree::{Delimiter, TreeKind, error},
+    },
 };
 
 const MEMBERS: [Builtin; derive_output::MEMBERS.len()] = derive_output::MEMBERS;
 type Selected = [Option<(usize, usize)>; MEMBERS.len()];
+
+/// Inspect the active owner attributes. The nominal checker validates the
+/// representation itself, including the optional packing alignment.
+fn packed_debug(
+    unit: &Unit,
+    owner: NodeId,
+    charge: &impl Fn(usize, usize) -> Result<(), LexError>,
+) -> Result<bool, LexError> {
+    let owner = unit.owner_indices[owner.get() as usize]
+        .and_then(|index| unit.configured.owners.get(index.get() as usize - 1))
+        .ok_or_else(|| error(0, "derive lost its configured representation owner"))?;
+    let source = unit.source.text();
+    for (attribute, forest) in unit.retained_attributes(owner.attributes.clone()) {
+        charge(1, 0)?;
+        let Input::Delimited(group) = attribute.input else {
+            continue;
+        };
+        if attribute.name(forest, source) != Some("repr")
+            || !forest.tree(group).is_some_and(|tree| {
+                matches!(
+                    tree.kind,
+                    TreeKind::Group {
+                        delimiter: Delimiter::Parenthesis,
+                        ..
+                    }
+                )
+            })
+        {
+            continue;
+        }
+        let range = forest.children(group).ok_or_else(|| {
+            error(
+                attribute.span.start,
+                "derive representation has no hint list",
+            )
+        })?;
+        let mut hint = range.start;
+        while hint < range.end {
+            charge(1, 0)?;
+            if forest.name(source, hint) == Some("packed") {
+                return Ok(true);
+            }
+            hint = forest.after(hint);
+        }
+    }
+    Ok(false)
+}
 
 impl<S: Sources> Engine<'_, S> {
     pub(in crate::resolve::expansion) fn finish_derive(
@@ -176,6 +230,11 @@ impl<S: Sources> Engine<'_, S> {
         let list = self.calls[index].selected.ok_or_else(|| {
             self.calls[index].diagnostic("derive list lost its selected definition")
         })?;
+        let item = unit.configured.ast.items[item as usize];
+        let packed_debug = selected[2].is_some()
+            && matches!(item.kind, ItemKind::Struct { .. })
+            && packed_debug(unit, owner, &charge)
+                .map_err(|failure| Error::at(file, failure.offset, failure.message))?;
         let generated = derive_output::build(
             &derive_output::Site {
                 file,
@@ -183,7 +242,7 @@ impl<S: Sources> Engine<'_, S> {
                 ast: &unit.configured.ast,
                 literals: &unit.literals,
                 active: &unit.configured.active,
-                item: unit.configured.ast.items[item as usize],
+                item,
                 original,
                 crate_id: super::super::transported_macros::imported(&self.paths.state.facts, list)
                     .map_or_else(
@@ -205,6 +264,7 @@ impl<S: Sources> Engine<'_, S> {
                     Body::Builtin(Builtin::DeriveConst)
                 ),
                 prior_copy: self.completed_copy(index)?,
+                packed_debug,
                 enum_default: choice.map(|choice| choice.variant),
             },
             self.config,

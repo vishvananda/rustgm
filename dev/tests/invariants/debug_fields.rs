@@ -6,6 +6,37 @@ fn source() -> TestResult<String> {
 }
 
 #[test]
+fn packed_debug_copies_fields_and_bounds_type_and_projection_inputs() -> TestResult {
+    let source = source()?
+        + r"
+use crate::fmt::Debug;
+trait Family { type Output; }
+#[derive(Debug)]
+#[cfg_attr(unix, repr(C, packed))]
+struct Packed<T: Family> { head: T, tail: T::Output }
+#[derive(Debug)]
+#[repr(packed(2))]
+struct Wide<T>(T, u8, u8, u8, u8, u8);
+#[derive(Debug)]
+#[cfg_attr(windows, repr(packed))]
+struct Ordinary<T>(T, u64);
+";
+    let report = expanded_provider(&source, "packed_debug")?;
+    let unit = report.package.unit(FileId(0));
+    let generated: String = unit.source.text()[source.len()..]
+        .chars()
+        .filter(|letter| !letter.is_whitespace())
+        .collect();
+    assert!(generated.contains("T:Family+crate::fmt::Debug+crate::marker::Copy"));
+    assert!(generated.contains("T::Output:crate::fmt::Debug+crate::marker::Copy"));
+    assert!(generated.contains("\"head\",&{self.head},\"tail\",&&{self.tail}"));
+    assert!(generated.contains("&{self.0},&{self.1},&{self.2},&{self.3},&{self.4},&&{self.5}"));
+    assert!(generated.contains("T:crate::fmt::Debug,>crate::fmt::DebugforOrdinary"));
+    assert!(generated.contains("\"Ordinary\",&self.0,&&self.1"));
+    Ok(())
+}
+
+#[test]
 fn panic_info_debug_and_argument_enum_keep_real_fields_and_once_parsed_receipts() -> TestResult {
     let source = source()?;
     let mut report = expanded_provider(&source, "panic_debug")?;

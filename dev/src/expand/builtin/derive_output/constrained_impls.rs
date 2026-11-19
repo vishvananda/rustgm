@@ -61,7 +61,7 @@ impl Output<'_> {
             && !(path == "crate::default::Default"
                 && matches!(self.site.item.kind, ItemKind::Enum { .. }))
     }
-    /// The derived trait, after `Copy` for a union's `Clone`.
+    /// Packed Debug copies fields before borrowing the temporary.
     fn derived_bound(&mut self, path: &str) -> Result<(), LexError> {
         if matches!(self.site.item.kind, ItemKind::Union { .. })
             && matches!(path, "crate::clone::Clone" | "crate::clone::TrivialClone")
@@ -71,7 +71,11 @@ impl Output<'_> {
         if self.site.const_ {
             self.text("[const]")?;
         }
-        self.text(path)
+        self.text(path)?;
+        if self.site.packed_debug && path == "crate::fmt::Debug" {
+            self.text("+crate::marker::Copy")?;
+        }
+        Ok(())
     }
     fn bounds(&mut self, bounds: List) -> Result<(), LexError> {
         for (index, &node) in self.site.ast.list(bounds).iter().enumerate() {
