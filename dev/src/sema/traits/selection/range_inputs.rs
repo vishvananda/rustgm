@@ -56,11 +56,12 @@ pub(in crate::sema) fn range_element(
     else {
         return Ok(None);
     };
+    let owners = owners.as_slice();
     if owners.is_empty() {
         return Ok(None);
     }
     let mut applicable = false;
-    for owner in owners {
+    for &owner in owners {
         context.account_work(1).map_err(|e| e.to_string())?;
         let Some(original) = facts
             .iteration

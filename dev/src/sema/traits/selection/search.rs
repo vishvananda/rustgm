@@ -435,7 +435,7 @@ impl Search<'_> {
         if frame.trial.is_some() {
             return self.advance_trial(facts, frame);
         }
-        if let Some(&owner) = frame.candidates.get(frame.cursor) {
+        if let Some(&owner) = frame.candidates.as_slice().get(frame.cursor) {
             frame.cursor += 1;
             if super::refutation::implementation_negative(facts, owner)?
                 && frame.canonical.is_none()
@@ -650,8 +650,10 @@ impl Search<'_> {
         }
         #[cfg(test)]
         self.query.candidate_lists.push(match &candidates {
-            crate::sema::traits::implementations::Candidates::Ready(owners)
-            | crate::sema::traits::implementations::Candidates::Pending(owners)
+            crate::sema::traits::implementations::Candidates::Ready(owners) => {
+                owners.as_slice().len()
+            }
+            crate::sema::traits::implementations::Candidates::Pending(owners)
             | crate::sema::traits::implementations::Candidates::Unvalidated(owners) => owners.len(),
         });
         match candidates {

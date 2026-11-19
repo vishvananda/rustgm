@@ -1,4 +1,5 @@
 //! Prepared headers may discharge declaration obligations; bodies require completed impls.
+mod candidate_lists;
 mod identity;
 mod member_contracts;
 mod open_arguments;
@@ -21,6 +22,8 @@ use crate::{
     resolve::{model::DefId, unit::NodeKey},
     types::{ItemId, Kind, Store, parameters::predicates::Predicate, shape_key::ShapeKey},
 };
+pub(in crate::sema) use candidate_lists::Owners as CandidateOwners;
+use candidate_lists::{Collected, Lookup};
 pub(in crate::sema) use member_contracts::ConstantRequest;
 pub(in crate::sema) type OverlapPair = ((Predicate, DefId), (Predicate, DefId));
 #[cfg(test)]
@@ -92,6 +95,7 @@ pub(in crate::sema) struct Implementations {
     closed: HashMap<(Identity, ShapeKey), Vec<usize>>,
     pairs: Vec<(usize, usize)>,
     graph: Option<Box<crate::sema::specialization::Graph>>,
+    candidate_lists: Option<Box<candidate_lists::Cache>>,
 }
 impl Implementations {
     pub(in crate::sema) fn pending_owners(&self) -> impl Iterator<Item = DefId> + '_ {
@@ -207,7 +211,7 @@ impl Implementations {
             return Ok(Candidates::Pending(owners));
         }
         let Some(subject) = subject else {
-            return Ok(Candidates::Ready(Vec::new()));
+            return Ok(Candidates::Ready(CandidateOwners::default()));
         };
         let (shape, argument) = match context.resolved_predicate(store, goal) {
             Ok(value)
@@ -224,7 +228,44 @@ impl Implementations {
             Ok(_) | Err(Error::Unresolved) => (None, None),
             Err(error) => return Err(error),
         };
-        let mut result = Vec::new();
+        let lookup = Lookup {
+            item,
+            subject,
+            shape,
+            argument,
+        };
+        let eligible = self.headers_validated()
+            && purpose == Purpose::Use
+            && availability == Availability::Validated
+            && CandidateOwners::share_width(self.traits.get(&item).map_or(0, Vec::len));
+        if eligible
+            && let Some(owners) = self
+                .candidate_lists
+                .as_ref()
+                .and_then(|cache| cache.get(lookup))
+        {
+            context.account_work(1)?;
+            return Ok(Candidates::Ready(owners));
+        }
+        let candidates = self.collect_candidates(context, lookup, availability, purpose)?;
+        if eligible && let Candidates::Ready(owners) = &candidates {
+            candidate_lists::retain(&mut self.candidate_lists, lookup, owners);
+        }
+        Ok(candidates)
+    }
+    fn collect_candidates(
+        &self,
+        context: &mut crate::types::infer::Context,
+        Lookup {
+            item,
+            subject,
+            shape,
+            argument,
+        }: Lookup,
+        availability: Availability,
+        purpose: Purpose,
+    ) -> Result<Candidates, crate::types::infer::Error> {
+        let mut result = Collected::default();
         let mut unvalidated = Vec::new();
         if let Some(shape) = shape {
             self.append_candidates(
@@ -272,8 +313,7 @@ impl Implementations {
             unvalidated.sort_unstable_by_key(|id| id.0);
             return Ok(Candidates::Unvalidated(unvalidated));
         }
-        result.sort_unstable_by_key(|id| id.0);
-        Ok(Candidates::Ready(result))
+        Ok(Candidates::Ready(result.sorted()))
     }
     fn pending_candidates(
         &self,
@@ -357,7 +397,7 @@ impl Implementations {
         bucket: &[usize],
         availability: Availability,
         purpose: Purpose,
-        output: &mut Vec<DefId>,
+        output: &mut Collected,
         unvalidated: &mut Vec<DefId>,
     ) -> Result<(), crate::types::infer::Error> {
         context.account_work(bucket.len())?;
@@ -597,6 +637,7 @@ impl Implementations {
             status,
             checked_constants: HashMap::default(),
         });
+        self.candidate_lists = None;
         Ok(if CHARGED {
             shape_bytes.saturating_add(
                 self.insertion_allocation(item, head, shape, argument)
@@ -727,6 +768,7 @@ impl Implementations {
         entry.value.types = types;
         entry.value.constants = constants;
         entry.status = entry.status.complete();
+        self.candidate_lists = None;
         Ok(())
     }
 }

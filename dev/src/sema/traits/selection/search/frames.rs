@@ -4,6 +4,7 @@ use super::{
 };
 use crate::{
     resolve::model::DefId,
+    sema::traits::implementations::CandidateOwners,
     sema::traits::selection::instantiation::{self, Instance},
     types::{infer, lifetime_proof::ScopeId, parameters::predicates::Bound, shape_key::ShapeKey},
 };
@@ -47,7 +48,7 @@ pub(super) struct Frame {
     pub key: Option<ShapeKey>,
     pub canonical: Option<Predicate>,
     pub cycles: usize,
-    pub candidates: Vec<DefId>,
+    pub candidates: CandidateOwners,
     pub pending_headers: Option<std::vec::IntoIter<DefId>>,
     pub cursor: usize,
     pub trial: Option<Trial>,
@@ -149,7 +150,7 @@ impl Frame {
             key: None,
             canonical: None,
             cycles: 0,
-            candidates: Vec::new(),
+            candidates: CandidateOwners::default(),
             pending_headers: None,
             cursor: 0,
             trial: None,

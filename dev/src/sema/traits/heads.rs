@@ -2,7 +2,7 @@
 pub(in crate::sema) use crate::types::subject_head::Head;
 use crate::types::{Primitive, infer::Constructor};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) enum Subject {
     Rigid(Head),
     Integer,

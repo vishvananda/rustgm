@@ -77,7 +77,7 @@ fn open_argument_candidates(width: u32) -> Result<usize, Box<dyn std::error::Err
             &goal,
             super::Availability::Declarations
         )?,
-        Candidates::Ready(vec![DefId(10), DefId(11), DefId(width + 11)]),
+        Candidates::ready([DefId(10), DefId(11), DefId(width + 11)]),
     );
     Ok(context.steps - before)
 }
@@ -87,6 +87,55 @@ fn unrelated_open_nominal_arguments_do_not_enter_candidate_trials()
 -> Result<(), Box<dyn std::error::Error>> {
     let small = open_argument_candidates(8)?;
     assert_eq!(open_argument_candidates(128)?, small);
+    Ok(())
+}
+
+#[test]
+fn repeated_validated_lookups_share_the_wide_ordered_candidate_list()
+-> Result<(), Box<dyn std::error::Error>> {
+    use super::Availability;
+    use crate::types::infer::{Context, Instantiation};
+
+    let mut store = Store::default();
+    let mut registry = Implementations::default();
+    let predicate = header(&mut store, 0, &[])?.predicate;
+    for ordinal in (0..64).rev() {
+        let value = header(&mut store, ordinal, &[])?;
+        let owner = value.owner;
+        registry.prepare(&mut store, ItemId(1), value)?;
+        registry.complete(owner, Vec::new(), Vec::new(), Vec::new())?;
+    }
+    registry.finish_constant_headers(|_| false)?;
+    registry.finish_validation()?;
+    let mut context = Context::default();
+    let mut substitution = Instantiation::new(&mut context, &store, &[])?;
+    let goal = context.instantiate_predicate(&mut store, predicate, &mut substitution)?;
+    let Candidates::Ready(cold) =
+        registry.candidates(&mut store, &mut context, &goal, Availability::Validated)?
+    else {
+        return Err("validated lookup did not publish candidates".into());
+    };
+    let expected = (10..74).map(DefId).collect::<Vec<_>>();
+    assert_eq!(cold.as_slice(), expected);
+    for _ in 0..4 {
+        let before = context.steps;
+        let Candidates::Ready(warm) =
+            registry.candidates(&mut store, &mut context, &goal, Availability::Validated)?
+        else {
+            return Err("warm candidate list was not ready".into());
+        };
+        assert!(std::ptr::eq(warm.as_slice(), cold.as_slice()));
+        assert!(context.steps - before < 16);
+    }
+    let before = context.steps;
+    let Candidates::Ready(declaration) =
+        registry.candidates(&mut store, &mut context, &goal, Availability::Declarations)?
+    else {
+        return Err("declaration lookup did not publish candidates".into());
+    };
+    assert_eq!(declaration.as_slice(), cold.as_slice());
+    assert!(!std::ptr::eq(declaration.as_slice(), cold.as_slice()));
+    assert!(context.steps - before >= expected.len());
     Ok(())
 }
 
@@ -122,7 +171,7 @@ fn unrelated_closed_arguments_do_not_create_overlap_probes()
             &goal,
             super::Availability::Validated
         )?,
-        Candidates::Ready(Vec::new())
+        Candidates::ready([])
     );
     let before = context.steps;
     assert_eq!(
@@ -132,7 +181,7 @@ fn unrelated_closed_arguments_do_not_create_overlap_probes()
             &goal,
             super::Availability::Declarations
         )?,
-        Candidates::Ready(vec![owner])
+        Candidates::ready([owner])
     );
     assert!(context.steps - before < 100);
     assert!(!registry.is_validated(owner));
@@ -146,7 +195,7 @@ fn unrelated_closed_arguments_do_not_create_overlap_probes()
             &goal,
             super::Availability::Validated
         )?,
-        Candidates::Ready(vec![owner])
+        Candidates::ready([owner])
     );
     assert!(context.steps - before < 100, "{}", context.steps - before);
     Ok(())

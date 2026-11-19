@@ -1,7 +1,7 @@
 //! Pending headers are scheduling dependencies, never implementation evidence.
 mod collections;
 mod progression_heads;
-use super::{DefId, Head, Identity, Subject};
+use super::{CandidateOwners, DefId, Head, Identity, Subject};
 use crate::support::hash::{HashMap, HashSet};
 use crate::types::infer::{Context, Error};
 #[cfg(test)]
@@ -18,10 +18,20 @@ pub(in crate::sema) struct Header {
 
 #[derive(Debug, PartialEq, Eq)]
 pub(in crate::sema) enum Candidates {
-    Ready(Vec<DefId>),
+    Ready(CandidateOwners),
     Pending(Vec<DefId>),
     /// Header construction is complete; semantic conformance is a separate duty.
     Unvalidated(Vec<DefId>),
+}
+#[cfg(test)]
+impl Candidates {
+    pub(super) fn ready(owners: impl IntoIterator<Item = DefId>) -> Self {
+        let mut collected = super::Collected::default();
+        for owner in owners {
+            collected.push(owner);
+        }
+        Self::Ready(collected.sorted())
+    }
 }
 
 #[derive(Default)]

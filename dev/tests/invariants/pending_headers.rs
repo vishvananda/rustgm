@@ -84,11 +84,11 @@ fn selection_waits_for_all_compatible_headers_without_unrelated_owners()
     registry.prepare(&mut store, ItemId(1), alternative)?;
     assert_eq!(
         registry.candidates(&mut store, &mut context, &goal, Availability::Declarations)?,
-        Candidates::Ready(vec![DefId(10), DefId(11)])
+        Candidates::ready([DefId(10), DefId(11)])
     );
     assert_eq!(
         registry.candidates(&mut store, &mut context, &goal, Availability::Validated)?,
-        Candidates::Ready(Vec::new())
+        Candidates::ready([])
     );
     assert!(registry.may_have_subject(ItemId(2), Subject::Rigid(Head::Primitive(Primitive::U8))));
     assert!(!registry.may_have_subject(ItemId(2), Subject::Rigid(Head::Primitive(Primitive::U16))));
@@ -144,13 +144,13 @@ fn executable_candidates_distinguish_header_validation_and_completed_absence()
         }
         assert_eq!(
             registry.candidates(&mut store, &mut context, &goal, Availability::Validated)?,
-            Candidates::Ready(Vec::new()),
+            Candidates::ready([]),
         );
         assert!(!registry.is_validated(DefId(10)));
         registry.complete(DefId(10), Vec::new(), Vec::new(), Vec::new())?;
         assert_eq!(
             registry.candidates(&mut store, &mut context, &goal, Availability::Executable)?,
-            Candidates::Ready(vec![DefId(10)]),
+            Candidates::ready([DefId(10)]),
         );
         let unrelated = implementation(&mut store, 11, 3, TypeId::primitive(Primitive::U8))?;
         let mut substitution = Instantiation::new(&mut context, &store, &[])?;
@@ -158,7 +158,7 @@ fn executable_candidates_distinguish_header_validation_and_completed_absence()
             context.instantiate_predicate(&mut store, unrelated.predicate, &mut substitution)?;
         assert_eq!(
             registry.candidates(&mut store, &mut context, &goal, Availability::Executable)?,
-            Candidates::Ready(Vec::new()),
+            Candidates::ready([]),
         );
     }
     let mut store = Store::default();

@@ -93,7 +93,7 @@ pub(in crate::sema) fn symbolic_result(
     else {
         return Ok(None);
     };
-    let Some(owners) = positive(facts, source, root, caller, owners)? else {
+    let Some(owners) = positive(facts, source, root, caller, owners.as_slice())? else {
         return Ok(None);
     };
     if let ResultId::Associated(item) = application.result
@@ -155,10 +155,10 @@ fn positive(
     source: &mut Context,
     root: TermId,
     caller: &Caller<'_>,
-    owners: Vec<DefId>,
+    owners: &[DefId],
 ) -> Result<Option<Vec<DefId>>, String> {
     let mut positive = Vec::with_capacity(owners.len());
-    for owner in owners {
+    for &owner in owners {
         if !super::refutation::implementation_negative(facts, owner)? {
             positive.push(owner);
             continue;
