@@ -1079,18 +1079,20 @@ frontier checkout.
    [Inferred body memo](../dev/src/sema/bodies/trait_goals/inference.rs#L515) ·
    [Deref proof consumer](../dev/src/sema/traits/selection/search/chain.rs#L17)
 
-   The prototype scoped to neutral body queries replays 31 selected child
+   The bounded candidate for neutral body queries replays 31 selected child
    DAGs and reduces validated trials from 96 to 34 on the shared input.
-   The 64 earlier trials are unchanged. It retires 8.25% fewer user
-   instructions there and 0.75% more on the neutral distinct-child control.
-   Both premise variants and the ordinary scalar control stay within 0.14%.
-   The preflight matches chosen proof graphs, semantic output, LowIR,
-   diagnostics and native outcomes. All 170 measurement observations match
-   in output. Paired wall time is within A/A variation. The measured path
-   applies to the neutral body mode. The review found that optional probes
-   can exhaust the ordinary query meter, so a bounded admission repair
-   precedes integration. Evidence is under `obj/parallel/child-proof-reuse/`
-   in the performance checkout.
+   The 64 earlier trials are unchanged. It retires 8.24% fewer user
+   instructions there and 0.74% more on the neutral distinct-child control.
+   Both premise variants and the ordinary scalar control stay within 0.11%.
+   The fallback control reaches the optional limit twice, continues through
+   ordinary search and also records four successful replays. Across the
+   positive controls all 134 ordered proof graphs, semantic output, LowIR,
+   diagnostics and native outcomes match. The frozen rejection and all 170
+   measurement observations match in output. The 2.47% paired wall reduction
+   remains within the 2.91% shared-case A/A spread. The production gates pass.
+   The separate early guard for source-backed queries and private execution
+   remain pending. Evidence is under `obj/parallel/child-proof-reuse/` in the
+   performance checkout.
 
 For each prototype, hold source size and request count fixed while varying the
 fraction of shared keys, subterms or premises. Separately grow the amount of
