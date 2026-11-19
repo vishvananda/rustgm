@@ -18,14 +18,7 @@ pub(crate) fn select(
     physical_cleanup: bool,
 ) -> Result<(), String> {
     let mut work = Work::new(1_000_000);
-    if !matches!(
-        body.owner,
-        Owner::Function {
-            execution: None,
-            ..
-        }
-    ) && crate::body::bringup::unproven(body.source, NESTED)
-    {
+    if !original_owner(body.owner) && crate::body::bringup::unproven(body.source, NESTED) {
         // Bring-up leaves a nested body's cleanups without their const proof.
         return Ok(());
     }
@@ -233,63 +226,52 @@ pub(super) fn goals(
     Ok(goals)
 }
 
+fn original_owner(owner: Owner) -> bool {
+    matches!(
+        owner,
+        Owner::Function {
+            execution: None,
+            ..
+        } | Owner::Closure { .. }
+    )
+}
+
 pub(super) fn prepare(
     facts: &mut Declarations,
     body: &Body,
     contract: &Contract,
     work: &mut Work,
 ) -> Result<Prepared, String> {
-    let Owner::Function {
-        definition,
-        signature,
-        execution: None,
-    } = body.owner
-    else {
+    if !original_owner(body.owner) {
         return Err(NESTED.into());
-    };
+    }
     if body.instance.is_some() {
         return Err("const cleanup specialization requires its original defining proof".into());
     }
-    let default = facts
-        .associated
-        .trait_owner(definition)
-        .is_some_and(|owner| facts.associated.constant_trait(owner) == Some(true));
-    let actual = super::active_definition(facts, definition, body.source, &mut 0, default)?
-        .ok_or("active const cleanup lost its actual source definition")?;
-    super::validate_contract(actual, contract)?;
-    if signature != actual.signature || contract.signature != Some(signature) {
-        return Err("active const cleanup changed its actual signature".into());
-    }
+    let (signature, owned_signature) = body.owner.signatures().ok_or(NESTED)?;
     let builtins = contract
         .builtins
         .as_deref()
         .ok_or("active const cleanup has no actual source policy")?;
-    let environment = Arc::clone(
-        builtins
-            .environment
-            .as_ref()
-            .ok_or("active const cleanup lost its environment")?,
-    );
-    if let Some(expected) = facts.generics.body_environment(definition) {
-        if !Arc::ptr_eq(expected, &environment) {
-            return Err("active const cleanup changed its defining environment".into());
-        }
-    } else if facts.generics.caller_scope_pending(definition)
-        || !contract.parameters.is_empty()
-        || !contract.type_assumptions.is_empty()
-    {
-        return Err("active const cleanup requires its completed defining environment".into());
+    let environment = builtins
+        .environment
+        .as_ref()
+        .ok_or("active const cleanup lost its environment")?;
+    let actual = actual_definition(facts, body, contract, environment, work)?;
+    super::validate_contract(actual, contract)?;
+    if signature != actual.signature || contract.signature != Some(owned_signature) {
+        return Err("active const cleanup changed its actual signature".into());
     }
     let role = claims::Role::current(facts, crate::support::bindings::LangItem::Destruct, work)?;
     let copy_role = claims::Role::current(facts, crate::support::bindings::LangItem::Copy, work)?;
     let mut prepared = Prepared {
         definition: actual,
-        owned_signature: signature,
+        owned_signature,
         const_context: body.const_context,
-        environment: Arc::clone(&environment),
+        environment: Arc::clone(environment),
         role,
         copy_role,
-        claims: claims::Claims::new(facts, &environment, role, copy_role, work)?,
+        claims: claims::Claims::new(facts, environment, role, copy_role, work)?,
     };
     if let Some(state @ State::Prepared(_)) = builtins.defining() {
         let prior = state.checked(body, builtins.environment.as_ref(), work)?;
@@ -299,4 +281,81 @@ pub(super) fn prepare(
             .retain_selected(&mut facts.types, &prior.claims, effect, work)?;
     }
     Ok(prepared)
+}
+
+fn actual_definition(
+    facts: &Declarations,
+    body: &Body,
+    contract: &Contract,
+    environment: &Arc<crate::types::parameters::environment::Environment>,
+    work: &mut Work,
+) -> Result<super::Definition, String> {
+    if matches!(body.owner, Owner::Closure { .. }) {
+        return closure_definition(facts, body, environment, work).map_err(String::from);
+    }
+    let Owner::Function {
+        definition,
+        execution: None,
+        ..
+    } = body.owner
+    else {
+        return Err(NESTED.into());
+    };
+    let default = facts
+        .associated
+        .trait_owner(definition)
+        .is_some_and(|owner| facts.associated.constant_trait(owner) == Some(true));
+    let actual = super::active_definition(facts, definition, body.source, &mut 0, default)?
+        .ok_or("active const cleanup lost its actual source definition")?;
+    if let Some(expected) = facts.generics.body_environment(definition) {
+        if !Arc::ptr_eq(expected, environment) {
+            return Err("active const cleanup changed its defining environment".into());
+        }
+    } else if facts.generics.caller_scope_pending(definition)
+        || !contract.parameters.is_empty()
+        || !contract.type_assumptions.is_empty()
+    {
+        return Err("active const cleanup requires its completed defining environment".into());
+    }
+    Ok(actual)
+}
+
+fn closure_definition(
+    facts: &Declarations,
+    body: &Body,
+    environment: &Arc<crate::types::parameters::environment::Environment>,
+    work: &mut Work,
+) -> Result<super::Definition, &'static str> {
+    work.charge(8)?;
+    let source = body
+        .source
+        .source()
+        .ok_or("const closure cleanup requires its actual source")?;
+    let closure = facts
+        .closures
+        .get(source)
+        .ok_or("const closure cleanup lost its actual source closure")?;
+    let expected = facts
+        .generics
+        .builtin_requirements
+        .get(&source)
+        .and_then(|inputs| inputs.environment.as_ref())
+        .ok_or("const closure cleanup lost its actual defining environment")?;
+    let execution = closure
+        .execution
+        .map_or(closure.signature, |execution| execution.signature);
+    if closure.constant.is_none()
+        || !body.const_context
+        || body.key() != crate::body::ir::BodyKey::Closure(closure.identity)
+        || body.owner.signatures() != Some((closure.signature, execution))
+        || !Arc::ptr_eq(expected, environment)
+    {
+        return Err("active const cleanup changed its actual closure or defining environment");
+    }
+    Ok(super::Definition {
+        body: super::DefiningBody::Closure(closure.identity),
+        context: super::FunctionContext::ConstFunction,
+        source: body.source,
+        signature: closure.signature,
+    })
 }

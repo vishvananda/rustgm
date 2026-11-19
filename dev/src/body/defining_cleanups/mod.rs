@@ -43,11 +43,26 @@ pub(crate) use preparation::{
 use std::sync::Arc;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum DefiningBody {
+    Function(DefId),
+    Closure(crate::types::closure::ClosureId),
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct Definition {
-    function: DefId,
+    body: DefiningBody,
     context: FunctionContext,
     source: BodyOrigin,
     signature: TypeId,
+}
+
+impl Definition {
+    const fn key(self) -> BodyKey {
+        match self.body {
+            DefiningBody::Function(owner) => BodyKey::Declaration(owner),
+            DefiningBody::Closure(identity) => BodyKey::Closure(identity),
+        }
+    }
 }
 
 /// Required is not a completed negative, empty proof or executable permission.
@@ -128,7 +143,7 @@ impl State {
             return Err("const-trait defining cleanup requires completed body preparation");
         };
         work.charge(5)?;
-        if body.key() != BodyKey::Declaration(prepared.definition.function)
+        if body.key() != prepared.definition.key()
             || body.source != prepared.definition.source
             || body.instance.is_some()
             || body.const_context != prepared.const_context
@@ -319,7 +334,7 @@ fn active_definition(
         return Err("defining cleanup changed its actual function source");
     }
     Ok(Some(Definition {
-        function: definition,
+        body: DefiningBody::Function(definition),
         context,
         source,
         signature: header.signature,
@@ -364,9 +379,7 @@ fn generic_const_function(facts: &Declarations, id: DefId) -> bool {
 }
 
 fn validate_contract(definition: Definition, contract: &Contract) -> Result<(), &'static str> {
-    if contract.key != BodyKey::Declaration(definition.function)
-        || contract.source != definition.source
-    {
+    if contract.key != definition.key() || contract.source != definition.source {
         return Err("defining cleanup contract changed its actual owner or source");
     }
     Ok(())

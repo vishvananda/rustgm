@@ -203,8 +203,6 @@ fn callable_scaling(packet: &str, prefix: &str) -> Result {
 }
 #[test]
 fn captured_local_cleanup_and_ctfe_remain_accepting_requirements() -> Result {
-    // Independent Rust accepts every positive below. Keep the concrete unfinished
-    // boundary explicit rather than recording those programs as expected rejects.
     for name in [
         "owned-mut",
         "owned-shared",
@@ -214,33 +212,17 @@ fn captured_local_cleanup_and_ctfe_remain_accepting_requirements() -> Result {
         "scaling-8",
         "scaling-32",
         "scaling-128",
+        "returned-once",
     ] {
-        let error = packet_report(CAPTURED, name)
+        packet_report(CAPTURED, name)
             .and_then(|report| program(&report))
-            .err()
-            .ok_or_else(|| format!("{name}: update completed accepting requirement"))?;
-        assert!(
-            error
-                .to_string()
-                .contains("active cleanup requires const Destruct"),
-            "{name}: {error}"
-        );
+            .map_err(|error| format!("{name}: {error}"))?;
     }
     let error = packet_report(CAPTURED, "native-ctfe")
         .and_then(|report| program(&report))
         .err()
         .ok_or("update completed CTFE accepting requirement")?;
     assert!(error.to_string().contains("known function type"), "{error}");
-    let error = packet_report(CAPTURED, "returned-once")
-        .and_then(|report| program(&report))
-        .err()
-        .ok_or("update completed consuming closure cleanup requirement")?;
-    assert!(
-        error
-            .to_string()
-            .contains("const cleanup selection requires its actual source function"),
-        "{error}"
-    );
     Ok(())
 }
 #[test]
@@ -362,6 +344,44 @@ fn const_closure_members_keep_their_actual_source_owner_and_effect() -> Result {
     }
     Ok(())
 }
+#[test]
+fn closure_cleanup_uses_its_declaring_parameter_premises() -> Result {
+    let provider =
+        crate::resolve::fixture("pa25/tests/spec/const-closures/source-execution-v3.rs")?;
+    let (prefix, _) = provider
+        .split_once("pub const fn folded")
+        .ok_or("callable provider prefix")?;
+    let body = r"
+pub const fn folded<T, F: [const] FnMut(usize, T) -> usize>(value: T, mut call: F) -> usize
+where F: [const] Destruct {
+    call(0, value)
+}
+pub const fn counted<TBOUND>(value: T) -> usize {
+    folded(value, #[rustc_inherit_overflow_checks] const |accum, _elem| accum + 1)
+}
+fn entry() -> usize { counted(4u8) }
+";
+    let mut config = Config::default();
+    config.set_lint_cap(LintCap::Allow);
+    for (bound, accepted) in [("T: [const] Destruct", true), ("T", false)] {
+        let source = format!("{prefix}{}", body.replace("TBOUND", bound));
+        let report = crate::resolve::source_provider_config(&source, "closure_cleanup", &config)?;
+        let lowered = program(&report);
+        if accepted {
+            lowered?;
+        } else {
+            let error = lowered.err().ok_or("accepted unpaid closure cleanup")?;
+            assert!(
+                error
+                    .to_string()
+                    .contains("active cleanup requires const Destruct"),
+                "{error}"
+            );
+        }
+    }
+    Ok(())
+}
+
 #[test]
 fn const_closure_member_work_tracks_actual_source_calls() -> Result {
     callable_scaling(MEMBERS, "scaling")

@@ -111,7 +111,7 @@ fn begin_counted(
     if let Some(builtins) = contract.builtins.as_mut() {
         let stale = match builtins.defining() {
             Some(State::Prepared(prepared))
-                if prepared.definition.function == id
+                if prepared.definition.key() == crate::body::ir::BodyKey::Declaration(id)
                     && prepared.definition.source == body.source =>
             {
                 Some(prepared.definition)
@@ -284,7 +284,7 @@ fn clear_instance(
         let header = facts
             .function_header(definition)?
             .ok_or("defining cleanup instance header is pending")?;
-        if required.function != definition
+        if required.key() != crate::body::ir::BodyKey::Declaration(definition)
             || required.source != body.source
             || counted_definition(facts, definition, body.source, work)? != Some(required)
             || header.body != Some(required.source)
