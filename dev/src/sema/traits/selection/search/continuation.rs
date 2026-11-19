@@ -365,7 +365,9 @@ impl<'a> Search<'a> {
         stack: &mut Vec<Frame>,
         decision: Decision,
     ) -> Result<Option<Progress>, String> {
-        let mut completed = stack.pop().ok_or("missing completed selection frame")?;
+        let (completed, parents) = stack
+            .split_last_mut()
+            .ok_or("missing completed selection frame")?;
         if let Some(key) = completed.key {
             self.query.active.remove(&key);
             if let Some(goal) = completed.canonical {
@@ -373,24 +375,38 @@ impl<'a> Search<'a> {
             }
         }
         if !matches!(decision, Decision::Proven(_)) {
-            self.query.invalidate_auto(&completed);
+            self.query.invalidate_auto(completed);
         }
-        let Some(parent) = stack.last_mut() else {
-            if self.query.universal.is_some() {
-                stack.push(completed);
-                self.query.stack = std::mem::take(stack);
-            }
-            self.query.decision = Some(decision);
-            return Ok(Some(Progress::Ready(decision)));
-        };
+        if let Some(parent) = parents.last_mut() {
+            let result = self.finish_child(facts, parent, completed, decision);
+            // Drop the completed child even if recording or accepting its proof failed.
+            stack.truncate(stack.len() - 1);
+            result?;
+            return Ok(None);
+        }
+        if self.query.universal.is_some() {
+            // The caller still needs the original root to publish its refined inputs.
+            self.query.stack = std::mem::take(stack);
+        }
+        self.query.decision = Some(decision);
+        stack.clear();
+        Ok(Some(Progress::Ready(decision)))
+    }
+
+    fn finish_child(
+        &mut self,
+        facts: &mut Declarations,
+        parent: &mut Frame,
+        completed: &mut Frame,
+        decision: Decision,
+    ) -> Result<(), String> {
         if completed.formation_cacheable() {
-            self.remember(facts, &completed, decision)?;
+            self.remember(facts, completed, decision)?;
             self.query.export_completed(facts, decision)?;
-            self.remember_child_proof(facts, &completed, decision);
+            self.remember_child_proof(facts, completed, decision);
         }
-        let decision = self.positive_child(facts, &mut completed, decision)?;
-        self.accept(facts, parent, &mut completed, decision)?;
-        Ok(None)
+        let decision = self.positive_child(facts, completed, decision)?;
+        self.accept(facts, parent, completed, decision)
     }
 
     pub(super) fn resume_at(&mut self, first: u32) -> Result<(), String> {
