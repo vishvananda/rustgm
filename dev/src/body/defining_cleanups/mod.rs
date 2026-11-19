@@ -85,7 +85,10 @@ impl State {
             return Err("executable cleanup requires its completed defining State");
         };
         if !prepared.const_context
-            || prepared.effect() != crate::support::constness::Constness::Const
+            || matches!(
+                prepared.definition.context,
+                FunctionContext::ConstTraitDefault { .. }
+            )
         {
             return Err("conditional-parent cleanup execution is not implemented");
         }
@@ -140,13 +143,16 @@ impl State {
 }
 impl Prepared {
     fn effect(&self) -> crate::support::constness::Constness {
-        if matches!(
-            self.definition.context,
-            FunctionContext::ConstTraitDefault { .. }
-        ) {
-            crate::support::constness::Constness::Conditional
-        } else {
-            crate::support::constness::Constness::Const
+        use crate::support::constness::Constness;
+        // Definition checking of ordinary const functions may use their own
+        // conditional declaration premises. A comptime-only body always
+        // runs in a const context. Reached execution proves its exact target.
+        match self.definition.context {
+            FunctionContext::ConstFunction | FunctionContext::ConstTraitDefault { .. } => {
+                Constness::Conditional
+            }
+            FunctionContext::Comptime => Constness::Const,
+            FunctionContext::Runtime => Constness::Ordinary,
         }
     }
 
