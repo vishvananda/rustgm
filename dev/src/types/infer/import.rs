@@ -52,9 +52,11 @@ impl Context {
         mappings: &mut Mapping<impl Tracking>,
     ) -> Result<TermId, Error> {
         let root = source.root(root)?;
-        let mut work = vec![(root, false)];
+        // A root that completes on its first visit needs no traversal allocation.
+        let mut first = Some((root, false));
+        let mut work = Vec::new();
         let mut children = Vec::new();
-        while let Some((id, finish)) = work.pop() {
+        while let Some((id, finish)) = first.take().or_else(|| work.pop()) {
             self.step()?;
             let id = source.root(id)?;
             if let Some(&copied) = mappings.types.get(&id) {
