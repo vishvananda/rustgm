@@ -736,6 +736,26 @@ ordinary impl and const impl pass pinned Rust and reach the same export fence
 in RustGM. Both compilers reject the ordinary impl used from a const function.
 The reduced receipts are under `obj/parallel/v14-division-transport/baseline/`.
 
+Version fourteen now publishes the required `Div` declaration and ordinary
+implementation. The importer uses the authenticated trait's implicit `Self`
+clause to check const use. The fresh runtime client prints `42` under both
+compilers. Both reject that same implementation from a const initializer
+because it does not satisfy the const trait obligation. Version thirteen
+retains its division gate. Four focused tests pass. A source-marked non-const
+method and an effective const implementation still reach their own export
+fences. A provider wrapper that calls `Div` also requires applied-signature
+normalization during replay. Evidence is under
+`obj/parallel/v14-division-transport/`.
+
+The optimized `cd2522f2a` replay of the same 309 `core` inputs passes the
+division declaration gate and stops at
+`source range helper contract transport is not implemented`. The run takes
+28.80 seconds, records zero bring-up entries and emits no artifacts. The
+range roles come from `RangePattern` in `core/src/pat.rs`. It has two required
+associated constants, a caller-tracked `sub_one` method and original const
+implementations. The replay receipt is under
+`obj/parallel/strict-core/division-roles/`.
+
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
 deprecated macro and accepts a call through an annotated `use` alias of a
@@ -797,6 +817,14 @@ The run leaves the skip list empty and emits no artifact. The strict
 transport gate with zero bring-up records. Receipts are under
 `obj/parallel/m4-small-vectors-associated-path/` and
 `obj/parallel/strict-core/latest/`.
+
+The reduced small-vector call fails with the real `IntoIterator<Item =
+A::Item>` bound even when the inherent method body is empty. An equivalent
+local trait, a direct projection through the same generic array impl and
+ordinary associated type method inputs all pass. Both compilers reject a
+wrong scalar argument. A trait impl using `IntoIterator` also reaches an
+associated equality ambiguity before its body is needed. The reductions
+are under `obj/parallel/m4-arrayvec-extend/`.
 
 Normalization and identifier
 consumers require independent guest feature scopes because the Cargo graph
