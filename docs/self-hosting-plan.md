@@ -299,11 +299,16 @@ and the original `println` replay, use the same candidate build under
 `obj/parallel/std-startup-successor/` in the frontier checkout.
 The four native enum controls agree with pinned rustc. Both zero-valid
 inputs return successfully, and the nonzero tag and bare function pointer
-terminate with SIGABRT. The focused callback harness used an unavailable
-comparison declaration. The frozen original `println` replay fails earlier,
-in lowering the specialized `catch_unwind` at `std/src/panicking.rs:544`:
-the candidate rejects its checked callback and data signature. The startup
-candidate remains unintegrated.
+terminate with SIGABRT. The plain callback and generic data-struct callback
+both pass the native observer with result 23. The frozen original `println`
+replay fails before emission at the specialized `catch_unwind` in
+`std/src/panicking.rs:544`. The debugger confirms that the selected
+function-item signature and the checked call-site signature have distinct
+canonical IDs. The checked try and catch callbacks both take the
+specialization's data pointer. The actual data argument in the checked call
+has a distinct pointee `TypeId`. The raw records are in
+`std-startup-successor/callback-parameters.txt` in the frontier checkout.
+The startup candidate remains unintegrated.
 
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
@@ -851,8 +856,8 @@ frontier checkout.
    plus indexed changed slots with interned blocks that can be compared by ID.
    Use both common-prefix and scattered changes. Include short applications
    so extra metadata and indirection are charged on ordinary inputs.
-   Reuse the canonical application at construction and trial import so the
-   fast path does not reconstruct a full slice just to recover its identity.
+   Carry the canonical application through construction and trial import
+   so warm lookup can read its existing identity directly.
    After one pass to prepare a width-`W` base, target constant work for an
    unchanged application and work proportional to the number `K` of changed
    slots for related applications with the same base. For independently
@@ -862,6 +867,18 @@ frontier checkout.
    short lists and compare cold interning, warm relations and retained bytes.
    [Local term allocation](../dev/src/types/infer.rs#L258) ·
    [Argument relations](../dev/src/types/infer/predicates/equations.rs#L79)
+
+   Deferred canonical body requirements now check the existing completed
+   proof map before constructing an inference predicate. A hit charges one
+   lookup step, publishes the existing evidence, and creates zero inference
+   terms. Immutable development binaries agree byte for byte on semantic
+   output and diagnostics for seven sizing and formation positives, an
+   unpaid bound rejection and an ordinary scalar control. Formatting, the
+   architecture audit and strict Clippy pass. The initial focused integration
+   build hit its development deadline. Optimized timings remain pending.
+   The controls and receipt are under `obj/parallel/canonical-hit-placement/`
+   in the performance checkout.
+   [Deferred canonical requirements](../dev/src/sema/bodies/trait_goals/canonical.rs)
 3. **Reuse proof structure where the inputs permit it.** Measure repeated
    goals using a canonical key with alpha-renamed slots and the identity of the
    effective premises, binder scope, mode and registry view. Start with
