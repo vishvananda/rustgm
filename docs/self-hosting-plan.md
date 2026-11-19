@@ -148,9 +148,11 @@ and preserves the caller's typed divergence. A focused control checks the
 single definition, unreachable continuation, standalone import and rejection
 of an incompatible export. The original shared graph clears the collision and
 reaches `Option::and_then` at `core/src/option.rs:1542`. Lowering reports
-`generic aggregate requires instantiated fields` in the match. The original
-inputs and empty skip list produce 49 unproven obligations, 43 waivers and no
-completed LowIR on the successor.
+`generic aggregate requires instantiated fields` at the callback invocation.
+The trace locates the missing `Option<&bool>` fields in the selected closure's
+native signature. Three ordinary closure and generic-enum reductions pass on
+both compilers. The original inputs and empty skip list produce 49 unproven
+obligations, 43 waivers and no completed LowIR on the successor.
 
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
@@ -185,10 +187,13 @@ and negative controls agree with pinned rustc. The native control mutates the
 original value from 7 to 9 on both compilers. The successor strict replay
 clears `Formatter::wrap_buf` and reaches `ControlFlow::break_value` at
 `core/src/ops/control_flow.rs:194`. The diagnostic is `active cleanup requires
-const Destruct in its actual defining environment`. There are no bring-up
-records or strict metadata artifacts. All four frozen Unicode consumers match
-their declared output on pinned rustc with prebuilt std at opt-level 2. Their
-RustGM runs remain due.
+const Destruct in its actual defining environment`. The typed trace requests
+whole-field destruction for the discarded `Continue` payload. The defining
+environment carries a conditional `Destruct` premise on `Self`. The local
+enum reduction with the same premise passes pinned rustc and fails RustGM
+with the same diagnostic. There are no bring-up records or strict metadata
+artifacts. All four frozen Unicode consumers match their declared output on
+pinned rustc with prebuilt std at opt-level 2. Their RustGM runs remain due.
 
 ### Self-compile milestones
 
@@ -350,9 +355,12 @@ instantiation probe should compare distinct
 `(impl owner, effect)` recipes and count repeated lowering of declared
 conditions, parameter shapes and capture-independent substitutions. The current
 data prioritizes those immutable header facts over a general inference overlay.
-The body memo currently keys only on the trait and type inputs. Qualifiers must
-participate in any certified key, and rejected entries need a cause breakdown
-before reconsidering eligibility.
+The body memo keys on the trait, requested const effect and input type IDs.
+A direct probe populated the memo from a completed ordinary `Clone` impl.
+With the earlier key, conditional and const requests could retrieve the warm
+ordinary answer. The corrected key isolates those requests and retains the
+ordinary hit. The dedicated private regression exceeded the development
+harness budget. A cause breakdown of rejected entries remains open.
 
 The candidate-list prototype keeps four owner IDs inline and shares wider
 ordered lists in validated ordinary selection. It checks pending dependencies
