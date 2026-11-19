@@ -1,4 +1,5 @@
 //! Only completed source-derived vocabulary can consume its selected header grant.
+use super::super::permission_session::Memo;
 use super::{Body, Builtin, Error, NodeKey, Transaction};
 use crate::{
     expand::stream::{Location, OriginKind},
@@ -74,6 +75,7 @@ impl Report {
         &self,
         site: Location,
         feature: &FeatureName<'_>,
+        memo: &mut Option<Box<Memo>>,
     ) -> Result<Option<bool>, Error> {
         let error = |message| Error::at(site.file, site.span.start, message);
         let Some(ledger) = super::derive_ledger(&self.package).map_err(error)? else {
@@ -130,7 +132,7 @@ impl Report {
             ));
         }
         let entry = self.literal_transaction(member_index)?;
-        self.expanded_derive(entry.owner, entry.effect)?;
+        self.expanded_derive_receipt(entry.owner, entry.effect, Some(memo))?;
         let node = definition
             .node
             .ok_or_else(|| error("derive grant lost its source declaration"))?;

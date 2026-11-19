@@ -154,11 +154,24 @@ fn forged_grants() -> TestResult {
         .find(|span| (span.start as usize) < source.len())
         .ok_or("actual caller coverage")?;
     let feature = crate::resolve::bindings::FeatureName::new("coverage_attribute")?;
-    assert!(
-        report
-            .macro_allowances()
-            .allows_at(FileId(0), generated, &feature)?
-    );
+    {
+        let ledger = super::super::derive_ledger(&report.package)?.ok_or("actual derive ledger")?;
+        let mut session = report.macro_allowances();
+        let before = ledger.usage().0;
+        assert!(session.allows_at(FileId(0), generated, &feature)?);
+        let after_cold = ledger.usage().0;
+        for _ in 0..8 {
+            assert!(session.allows_at(FileId(0), generated, &feature)?);
+        }
+        let cold = after_cold - before;
+        let warm = (ledger.usage().0 - after_cold) / 8;
+        assert!(cold.saturating_sub(warm) > 16, "{cold} vs {warm}");
+        let unrelated = crate::resolve::bindings::FeatureName::new("absent_derive_feature")?;
+        assert!(!session.allows_at(FileId(0), generated, &unrelated)?);
+        let mut escaped = generated;
+        escaped.end = u32::MAX;
+        assert!(session.allows_at(FileId(0), escaped, &feature).is_err());
+    }
     assert!(
         !report
             .macro_allowances()

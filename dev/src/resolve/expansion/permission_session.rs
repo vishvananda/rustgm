@@ -9,7 +9,10 @@ use crate::{
         },
         unit::{NodeKey, contexts},
     },
-    support::{hash::HashMap, names::NameId},
+    support::{
+        hash::{HashMap, HashSet},
+        names::NameId,
+    },
     syntax::{
         attribute::{Attribute, Input},
         token_tree::{Forest, Span, TreeKind, TreeRange},
@@ -161,6 +164,7 @@ enum Grant<'view> {
 pub(super) struct Memo {
     frames: HashMap<ExpansionId, Frame>,
     headers: HashMap<NodeKey, CachedHeader>,
+    derive_intervals: HashSet<usize>,
     origin_links: usize,
     origin_lookups: usize,
 }
@@ -181,6 +185,44 @@ impl Memo {
                     .capacity()
                     .saturating_mul(size_of::<(NodeKey, CachedHeader)>()),
             )
+            .saturating_add(
+                self.derive_intervals
+                    .capacity()
+                    .saturating_mul(size_of::<usize>()),
+            )
+    }
+
+    /// Share a checked origin walk only within this immutable report borrow.
+    pub(super) fn derive_interval(
+        memo: &mut Option<Box<Self>>,
+        ledger: &panic_contracts::Contracts,
+        position: usize,
+        site: Location,
+        check: impl FnOnce() -> Result<(), Error>,
+    ) -> Result<(), Error> {
+        let error = |message| Error::at(site.file, site.span.start, message);
+        ledger.charge(1, 0).map_err(error)?;
+        if memo
+            .as_ref()
+            .is_some_and(|memo| memo.derive_intervals.contains(&position))
+        {
+            return Ok(());
+        }
+        check()?;
+        if memo.is_none() {
+            ledger.charge(1, 4 * size_of::<Self>()).map_err(error)?;
+            *memo = Some(Box::default());
+        }
+        let memo = memo
+            .as_deref_mut()
+            .ok_or_else(|| error("missing derive interval memo"))?;
+        ledger.charge(1, 4 * size_of::<usize>()).map_err(error)?;
+        memo.derive_intervals
+            .try_reserve(1)
+            .map_err(|_| error("derive interval memo allocation failed"))?;
+        ledger.memo_payload(memo.payload()).map_err(error)?;
+        memo.derive_intervals.insert(position);
+        Ok(())
     }
 }
 
@@ -223,7 +265,10 @@ impl MacroAllowanceSession<'_> {
     /// # Errors
     /// Rejects changed identities, invalid provenance and exhausted work/storage.
     pub fn allows(&mut self, site: Location, feature: &FeatureName<'_>) -> Result<bool, Error> {
-        if let Some(allowed) = self.report.derived_literal_allowance(site, feature)? {
+        if let Some(allowed) =
+            self.report
+                .derived_literal_allowance(site, feature, &mut self.memo)?
+        {
             return Ok(allowed);
         }
         self.query().allows(site, feature)

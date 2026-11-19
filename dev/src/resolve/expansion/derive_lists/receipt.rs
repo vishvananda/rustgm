@@ -82,6 +82,15 @@ pub(super) fn current(
 }
 impl Report {
     pub(crate) fn expanded_derive(&self, owner: NodeKey, effect: usize) -> Result<(), Error> {
+        self.expanded_derive_receipt(owner, effect, None)
+    }
+
+    pub(super) fn expanded_derive_receipt(
+        &self,
+        owner: NodeKey,
+        effect: usize,
+        memo: Option<&mut Option<Box<super::super::permission_session::Memo>>>,
+    ) -> Result<(), Error> {
         let failure = || {
             Error::at(
                 owner.file,
@@ -127,35 +136,59 @@ impl Report {
         {
             return Err(failure());
         }
+        self.check_derive_members(entry, invocation, ledger, failure)?;
+        let check = || super::vocabulary::require(self, entry, invocation);
+        match memo {
+            Some(memo) => super::super::permission_session::Memo::derive_interval(
+                memo,
+                ledger,
+                position,
+                super::super::Location {
+                    file: owner.file,
+                    span: invocation.original,
+                },
+                check,
+            ),
+            None => check(),
+        }
+    }
+
+    fn check_derive_members(
+        &self,
+        entry: &Transaction,
+        invocation: &super::super::Invocation,
+        ledger: &panic_contracts::Contracts,
+        failure: impl Fn() -> Error,
+    ) -> Result<(), Error> {
+        let view = super::super::permission_frames::FrameView {
+            package: &self.package,
+            definitions: &self.definitions,
+            invocations: &self.invocations,
+            facts: &self.resolution,
+        };
         for index in entry.contexts.clone() {
             ledger
                 .charge(1, 0)
-                .map_err(|message| Error::at(owner.file, 0, message))?;
-            let member = self.invocations.get(index).ok_or_else(failure)?;
-            if member.node != owner
+                .map_err(|message| Error::at(entry.owner.file, 0, message))?;
+            let member = self.invocations.get(index).ok_or_else(&failure)?;
+            if member.node != entry.owner
                 || member.parent != invocation.context
                 || member.original != invocation.original
                 || member.generated != invocation.generated
             {
                 return Err(failure());
             }
-            let view = super::super::permission_frames::FrameView {
-                package: &self.package,
-                definitions: &self.definitions,
-                invocations: &self.invocations,
-                facts: &self.resolution,
-            };
             let definition = self
                 .definitions
                 .get(member.definition)
-                .ok_or_else(failure)?;
+                .ok_or_else(&failure)?;
             let Body::Builtin(role) = definition.body else {
                 return Err(failure());
             };
             if !crate::expand::builtin::derive_output::MEMBERS.contains(&role) {
                 return Err(failure());
             }
-            let node = definition.node.ok_or_else(failure)?;
+            let node = definition.node.ok_or_else(&failure)?;
             let header =
                 panic_contracts::published(&self.package, node, definition.header.as_ref(), 1)?;
             if header.builtin != Some(role)
@@ -169,7 +202,6 @@ impl Report {
             }
             // No non-Bang allowance frame or feature grant is created here.
         }
-        super::vocabulary::require(self, entry, invocation)?;
         Ok(())
     }
 }
