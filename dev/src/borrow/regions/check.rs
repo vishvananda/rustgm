@@ -614,7 +614,7 @@ fn apply<'a>(
                     source,
                 )
             } else {
-                constraints.coerce(actual, expected, unsize, source)
+                constraints.body_coercion(actual, expected, unsize, source)
             }
             .map_err(|e| e.to_string())?;
         }

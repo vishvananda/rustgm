@@ -100,6 +100,39 @@ fn main() {}
 ",
         false,
     ),
+    (
+        "forwarded-gat-lifetime",
+        r"
+trait Call<Args> {
+    type Fut<'a> where Self: 'a;
+    fn call(&mut self, args: Args) -> Self::Fut<'_>;
+}
+struct Wrapper<F>(F);
+impl<F> Wrapper<F> {
+    fn get_mut(&mut self) -> &mut F { &mut self.0 }
+}
+impl<F: Call<Args>, Args> Call<Args> for Wrapper<F> {
+    type Fut<'a> = F::Fut<'a> where F: 'a;
+    fn call(&mut self, args: Args) -> Self::Fut<'_> { self.get_mut().call(args) }
+}
+fn main() {}
+",
+        true,
+    ),
+    (
+        "unrelated-gat-lifetime",
+        r"
+trait Call {
+    type Fut<'a> where Self: 'a;
+    fn call(&mut self) -> Self::Fut<'_>;
+}
+fn escape<'a, 'b, F: Call + 'a + 'b>(value: &'a mut F, _: &'b ()) -> F::Fut<'b> {
+    value.call()
+}
+fn main() {}
+",
+        false,
+    ),
 ];
 
 #[test]

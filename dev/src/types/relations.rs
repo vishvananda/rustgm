@@ -386,6 +386,18 @@ impl<'a> Constraints<'a> {
     ) -> Result<(), Error> {
         self.coerce_inside::<false>(actual, expected, unsize, source)
     }
+    /// An actual body coercion can choose inference regions to satisfy the
+    /// invariant inputs of a matching projection. Rigid inputs still need
+    /// proof in the body's own region environment.
+    pub(crate) fn body_coercion(
+        &mut self,
+        actual: TypeId,
+        expected: TypeId,
+        unsize: bool,
+        source: u32,
+    ) -> Result<(), Error> {
+        self.coerce_inside::<true>(actual, expected, unsize, source)
+    }
     /// A method override chooses existential implementation late lifetimes in
     /// this private conformance graph. Projection input equality is sufficient
     /// evidence, never a new caller assumption or type/const inference rule.

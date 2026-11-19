@@ -1,4 +1,4 @@
-//! Complete projection inputs support verification and local method lifetime choices.
+//! Complete projection inputs support verification and local lifetime choices.
 use super::{Constraints, Error, Region, RegionId, Relation, Scope, TypeId, structural::Compare};
 use crate::support::hash::HashSet;
 use crate::types::{outlives::Projection, region_graph::VerificationId};
@@ -18,8 +18,9 @@ struct Match<'a, 't, const CHOOSE: bool> {
     source: u32,
 }
 impl Constraints<'_> {
-    /// Equal complete inputs suffice for opaque result identity. Their equality
-    /// is a condition to verify, never an equation inferred from equal results.
+    /// Equal complete inputs suffice for opaque result identity. When a
+    /// coercion owns inference variables, it can require that equality.
+    /// Comparing an assumed result never chooses its projection inputs.
     pub(super) fn relate_projection<const METHOD: bool>(
         &mut self,
         relation: Relation,
