@@ -832,6 +832,15 @@ wrong scalar argument. A trait impl using `IntoIterator` also reaches an
 associated equality ambiguity before its body is needed. The reductions
 are under `obj/parallel/m4-arrayvec-extend/`.
 
+Three additional controls use the unchanged original `core`, `alloc` and
+`std` sources with the reduced application as the guest. The direct array
+bound and both projected bounds produce LowIR. The projected calls pass
+with explicit and inferred element types. The first explicit run reaches
+its 75-second limit, and the retry finishes in 45.61 seconds. The inferred
+run finishes in 45.67 seconds. The next reduction uses the actual
+`core::iter::Extend` trait from the library. Evidence is under
+`obj/parallel/m4-arrayvec-extend/original-iterator-controls/`.
+
 Normalization and identifier
 consumers require independent guest feature scopes because the Cargo graph
 enables `std` for `unicode-normalization` and leaves it off for `tinyvec`.
@@ -1532,6 +1541,17 @@ observations match. A typed driver confirms the work-limit boundary and
 named-to-static equality after the private harness reaches its build
 deadline. The candidate remains in the performance checkout, with receipts
 under `obj/parallel/proven-static-region/`.
+
+Comparison calls make 70,642 owner reads on the original graph. The observer
+finds 64,988 reusable reads, covering 9,765,448 witness-validation steps and
+214,408,088 bytes of witness rows. Sharing the existing table displaces a net
+2,343 comptime hits. The paired `128d56267` experiment preserves the work
+ledger, diagnostics, LowIR and native results. Retired instructions fall
+2.85% in both orders. The paired wall medians rise from 29.650 to 37.162
+seconds in ABBA and from 29.575 to 31.610 seconds in BAAB. User cycles increase
+in both orders. Separate calibration windows run the same baseline in 29.4
+to 49.2 seconds. The candidate remains isolated. Evidence is under
+`obj/parallel/comparison-owner-receipts/` in the performance checkout.
 
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
