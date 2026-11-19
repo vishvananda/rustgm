@@ -629,6 +629,9 @@ The importer currently derives checked absence from the availability profile.
 Extend that query to read the new policy while retaining the earlier profile
 behavior. Cover active, `TBD`, staged future, and inherited cases in a fresh
 client with its own lint level and expectation accounting.
+Pinned rustc matches all six predeclared cases, including the `allow` and
+fulfilled `expect` controls, under `obj/parallel/v14-deprecation-design/` in
+the frontier checkout.
 
 All four frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
@@ -980,6 +983,16 @@ frontier checkout.
    The original-source observers reach their deadline before reporting
    eligibility counts. The current changes remain experimental. Raw data is under
    `obj/parallel/trait-header-reuse/paired-pmu/` in the performance checkout.
+
+   Impl instantiation now streams canonical formals and reads the existing
+   type ID for implicit `Sized`. The fixed 32-trial cases hold owner count,
+   inputs and output constant between revisions. All ten optimized controls
+   retire 0.15–0.31% fewer instructions, including the distinct-owner and
+   lifetime-only controls. Wall time and cycles remain within A/A variation.
+   All 340 timed outputs match, and 16 optimized positive and rejection
+   controls agree on LowIR and diagnostics. Four focused public tests pass.
+   Evidence is under `obj/parallel/trait-parameter-inputs/` in the performance
+   checkout.
 
    Canonical trait arguments already have a slice ID. The inference predicate
    keeps an owned argument vector inside a boxed application. Instantiation
