@@ -550,6 +550,18 @@ method-name token's edition at adjusted-receiver lookup.
 Receipts are under `obj/parallel/v14-incoherent-authority/` and
 `obj/parallel/strict-core/incoherent-target-optimized/` in the performance checkout.
 
+The v14 exporter now carries both authenticated method-dispatch flags in the
+defining trait row. Six fresh array clients match their pinned Rust outcomes
+through native execution. The marked trait selects the borrowed impl in 2015
+and 2018 and the owned impl in 2021 and 2024. The unmarked and qualified 2018
+calls select the owned impl. The v13 exporter rejects the marked trait, and
+the separate fixture using synthesized iteration authority keeps its legacy
+fence. An initial provider with the borrowed impl in its own artifact reached
+the separate early/captured callable frame transport fence. The passing
+clients declare the impls locally with a local trait parameter. Receipts are
+under `obj/parallel/v14-dispatch-policy/` and
+`obj/parallel/v14-dispatch-client-impl/` in the frontier checkout.
+
 All four frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
 runs remain due.
