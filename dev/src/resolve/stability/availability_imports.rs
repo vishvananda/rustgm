@@ -121,6 +121,7 @@ pub(in crate::resolve) struct Imports {
     entries: Vec<PathEntry>,
     paths: Vec<path_compatibility::PathUse>,
     paths_complete: bool,
+    has_deprecations: bool,
     /// Denied uses inside expansions, awaiting their frames' allowance lists.
     deferred: RefCell<Vec<Deferred>>,
     budget: Cell<Budget>,
@@ -550,6 +551,7 @@ pub(in crate::resolve) fn prepare(
         entries: Vec::new(),
         paths: Vec::new(),
         paths_complete: false,
+        has_deprecations: false,
         deferred: RefCell::default(),
         budget: Cell::new(budget),
     };
@@ -568,12 +570,9 @@ pub(in crate::resolve) fn prepare(
         if !descriptor.profile().availability() {
             continue;
         }
-        result.features(
-            &descriptor
-                .availability()
-                .map_err(Error::unlocated)?
-                .policies,
-        )?;
+        let availability = descriptor.availability().map_err(Error::unlocated)?;
+        result.has_deprecations |= availability.deprecations.is_some();
+        result.features(&availability.policies)?;
         for (ordinal, row) in descriptor
             .module_contracts()
             .map_err(Error::unlocated)?
@@ -738,8 +737,31 @@ fn owner<'a>(
     Ok(availability)
 }
 
-/// Only the explicit v6 source contract excludes deprecated declaration rows.
-/// Missing/legacy origin profiles retain unknown knowledge, even through aliases.
+pub(crate) enum ImportedDeprecation<'a> {
+    Active(&'a str),
+    Inactive,
+}
+
+pub(crate) fn declaration_deprecation(
+    report: &Report,
+    definition: DefId,
+) -> Result<Option<ImportedDeprecation<'_>>, Error> {
+    let Some(imported) = report.resolution.crates.as_deref() else {
+        return Ok(None);
+    };
+    let Some(imports) = imported
+        .availability
+        .as_deref()
+        .filter(|imports| imports.has_deprecations)
+    else {
+        return Ok(None);
+    };
+    imports.same_owner(imported)?;
+    imports.declaration_deprecation(definition)
+}
+
+/// Earlier compatibility profiles exclude deprecated declarations. The
+/// version-fourteen profile can also carry a checked positive policy.
 pub(crate) fn declaration_deprecation_absent(
     report: &crate::resolve::expansion::Report,
     definition: DefId,

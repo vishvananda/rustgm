@@ -1,7 +1,7 @@
 //! Real path groups preserve terminal identity before checking module prefixes.
 use super::{
-    Declaration, Error, Imports, NodeKey, Package, PathEntry, Resolution, Selection, Target, owner,
-    retained, s,
+    Declaration, Error, ImportedDeprecation, Imports, NodeKey, Package, PathEntry, Resolution,
+    Selection, Target, owner, retained, s,
 };
 use crate::resolve::{
     expansion::Report,
@@ -296,9 +296,95 @@ impl Imports {
             return Ok(false);
         };
         // This guarantee belongs to the actual leaf's origin, including reexports.
-        Ok(self.inventory.artifacts()[mapped.artifact]
+        let complete = self.inventory.artifacts()[mapped.artifact]
             .source_descriptor()
-            .is_some_and(|descriptor| descriptor.profile().module_compatibility()))
+            .is_some_and(|descriptor| descriptor.profile().module_compatibility());
+        Ok(complete && self.declaration_deprecation(definition)?.is_none())
+    }
+
+    pub(super) fn declaration_deprecation(
+        &self,
+        definition: DefId,
+    ) -> Result<Option<ImportedDeprecation<'_>>, Error> {
+        if !self.has_deprecations {
+            return Ok(None);
+        }
+        self.charge(1, 0)?;
+        let Some(Some(mapped)) = self.declarations.get(&definition) else {
+            return Ok(None);
+        };
+        let availability = self.rows(mapped.artifact)?;
+        let Some(columns) = &availability.deprecations else {
+            return Ok(None);
+        };
+        self.charge(
+            columns.declarations.len().checked_ilog2().unwrap_or(0) as usize + 1,
+            0,
+        )?;
+        let Ok(index) = columns
+            .declarations
+            .binary_search_by_key(&mapped.reference.0, |row| row.declaration.0)
+        else {
+            return Ok(None);
+        };
+        self.declared_policy(definition)?
+            .ok_or_else(|| Error::unlocated("imported deprecation lost its actual declaration"))?;
+        self.deprecation_at(mapped.artifact, columns, columns.declarations[index].owner)
+            .map(Some)
+    }
+
+    fn deprecation_at<'a>(
+        &self,
+        artifact: usize,
+        columns: &'a s::DeprecationColumns,
+        owner: crate::support::crates::owner_catalog::DeclarationRef,
+    ) -> Result<ImportedDeprecation<'a>, Error> {
+        self.charge(
+            columns.notices.len().checked_ilog2().unwrap_or(0) as usize + 1,
+            0,
+        )?;
+        let index = columns
+            .notices
+            .binary_search_by_key(&owner.0, |notice| notice.owner.0)
+            .map_err(|_| Error::unlocated("imported deprecation owner is missing"))?;
+        let notice = &columns.notices[index];
+        let descriptor = self.inventory.artifacts()[artifact]
+            .source_descriptor()
+            .ok_or_else(|| Error::unlocated("imported deprecation descriptor disappeared"))?;
+        let root = descriptor
+            .module_contracts()
+            .map_err(Error::unlocated)?
+            .rows()
+            .namespace
+            .root;
+        let staged = self
+            .rows(artifact)?
+            .declarations
+            .get(root.0 as usize)
+            .ok_or_else(|| Error::unlocated("imported deprecation root is missing"))?
+            .regular
+            .is_some();
+        let active = match notice.since {
+            s::DeprecationSince::Future => false,
+            s::DeprecationSince::Version(s::AvailabilitySince::Version {
+                major,
+                minor,
+                patch,
+            }) if staged => {
+                (major, minor, patch) <= crate::resolve::stability::Since::Current.release()
+            }
+            _ => true,
+        };
+        Ok(if active {
+            ImportedDeprecation::Active(
+                notice
+                    .note
+                    .as_deref()
+                    .unwrap_or("use of deprecated declaration"),
+            )
+        } else {
+            ImportedDeprecation::Inactive
+        })
     }
 }
 pub(crate) fn visit_warnings(

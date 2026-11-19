@@ -63,13 +63,18 @@ impl Stage {
         facts: &Declarations,
         modules: &s::ModuleContractRows,
     ) -> Result<s::AvailabilityRows, &'static str> {
-        let Some(library) = report.package.library_policy() else {
-            return self.unstaged_availability(report, facts, modules);
+        let mut rows = if let Some(library) = report.package.library_policy() {
+            let inventory = library
+                .inventory()
+                .ok_or("conversion availability lacks its completed source inventory")?;
+            self.availability_inventory(report, facts, modules, inventory)?
+        } else {
+            self.unstaged_availability(report, facts, modules)?
         };
-        let inventory = library
-            .inventory()
-            .ok_or("conversion availability lacks its completed source inventory")?;
-        self.availability_inventory(report, facts, modules, inventory)
+        if self.declaration_policies() {
+            rows.deprecations = self.deprecations(report, facts)?;
+        }
+        Ok(rows)
     }
 
     /// Successful reservation capture has checked every active stability
@@ -93,6 +98,7 @@ impl Stage {
         )?;
         let mut rows = s::AvailabilityRows {
             const_bodies: None,
+            deprecations: None,
             policies: Vec::new(),
             declarations: Vec::with_capacity(count),
             bindings: Vec::with_capacity(bindings),
@@ -212,6 +218,7 @@ impl Stage {
         let const_bodies = self.const_body_contracts(inventory, &origins.definitions)?;
         Ok(s::AvailabilityRows {
             const_bodies,
+            deprecations: None,
             policies: policies.rows,
             declarations,
             bindings,

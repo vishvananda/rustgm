@@ -9,6 +9,7 @@ mod canonical_nodes;
 mod collected_formals;
 mod collected_provider;
 mod contract_rows;
+mod deprecation_rows;
 mod evaluated_constants;
 mod exposed_bindings;
 mod implementation_headers;
@@ -1038,11 +1039,13 @@ fn require_export_mode(
         ))?;
     }
     if let Some(producer) = report.lint_producer() {
-        waiving(
-            producer
-                .require_deprecation_transport(&report.package)
-                .map_err(|error| error.message),
-        )?;
+        if !languages || mode != ExportMode::CompilerOperations {
+            waiving(
+                producer
+                    .require_deprecation_transport(&report.package)
+                    .map_err(|error| error.message),
+            )?;
+        }
         waiving(
             producer
                 .require_impl_annotation_transport(&report.package, mode.feature_predicates())

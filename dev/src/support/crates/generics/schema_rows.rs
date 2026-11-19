@@ -48,7 +48,8 @@ pub(crate) use availability::{AvailabilityAncestry, AvailabilityColumns};
 pub use availability::{
     AvailabilityKind, AvailabilityLevel, AvailabilityOrigin, AvailabilityPolicy, AvailabilityRef,
     AvailabilityRows, AvailabilitySince, BindingAvailability, ConstBodyContracts, ConstBodyGrant,
-    DeclarationAvailability,
+    DeclarationAvailability, DeprecatedDeclaration, DeprecationColumns, DeprecationNotice,
+    DeprecationSince,
 };
 pub use bodies::*;
 pub(crate) use descriptor::canonical_order;

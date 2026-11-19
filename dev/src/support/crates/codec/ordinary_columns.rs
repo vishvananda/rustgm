@@ -24,6 +24,7 @@ mod ir_nodes;
 mod namespace_rows;
 #[path = "ordinary_columns/record_wire.rs"]
 mod nominal_rows;
+mod notice_wire;
 mod operation_columns;
 mod owner_rows;
 #[path = "ordinary_columns/supplied_extensions.rs"]
@@ -114,13 +115,20 @@ pub(super) fn encode_module_availability(
         enums_wire::encode(out, rows)?;
         free_constants_wire::encode(out, rows)?;
     }
-    let const_bodies = rows.availability()?.const_bodies.as_deref();
-    if rows.descriptor().profile().compiler_operations() {
-        out.u8(u8::from(const_bodies.is_some()))?;
+    let availability = rows.availability()?;
+    let const_bodies = availability.const_bodies.as_deref();
+    let profile = rows.descriptor().profile();
+    if profile.compiler_operations() {
+        out.u8(
+            u8::from(const_bodies.is_some()) | (u8::from(availability.deprecations.is_some()) << 1)
+        )?;
     }
     exemption_wire::encode(out, const_bodies)?;
-    if rows.descriptor().profile().compiler_operations() {
-        if rows.descriptor().profile().body_nodes() {
+    if let Some(deprecations) = &availability.deprecations {
+        notice_wire::encode(out, deprecations)?;
+    }
+    if profile.compiler_operations() {
+        if profile.body_nodes() {
             compiler_wire::encode_operations(out, rows)?;
         } else {
             compiler_wire::encode(out, rows)?;
@@ -233,18 +241,7 @@ fn decode_availability_profile(
         enums_wire::decode(&mut read, &mut rows)?;
         free_constants_wire::decode(&mut read, &mut rows)?;
     }
-    availability.const_bodies = if profile.compiler_operations() {
-        match read.reader.u8()? {
-            0 => None,
-            1 => Some(
-                exemption_wire::decode(&mut read)?
-                    .ok_or("compiler-operation const-body trailer is missing")?,
-            ),
-            _ => return Err("invalid compiler-operation const-body trailer presence"),
-        }
-    } else {
-        exemption_wire::decode(&mut read)?
-    };
+    decode_availability_trailers(&mut read, &mut availability)?;
     if profile.compiler_operations() {
         if profile.body_nodes() {
             compiler_wire::decode_operations(&mut read, &mut rows)?;
@@ -258,6 +255,30 @@ fn decode_availability_profile(
         modules,
         availability,
     })
+}
+
+fn decode_availability_trailers(
+    read: &mut Input<'_, '_>,
+    availability: &mut s::AvailabilityRows,
+) -> Result<(), &'static str> {
+    if !read.profile.compiler_operations() {
+        availability.const_bodies = exemption_wire::decode(read)?;
+        return Ok(());
+    }
+    let flags = read.reader.u8()?;
+    if flags > 3 || flags > 1 && !read.profile.declaration_policies() {
+        return Err("invalid compiler-operation const-body trailer presence");
+    }
+    if flags & 1 != 0 {
+        availability.const_bodies = Some(
+            exemption_wire::decode(read)?
+                .ok_or("compiler-operation const-body trailer is missing")?,
+        );
+    }
+    if flags & 2 != 0 {
+        availability.deprecations = Some(Box::new(notice_wire::decode(read)?));
+    }
+    Ok(())
 }
 pub(super) fn encode_provided_contracts(
     out: &mut Writer,

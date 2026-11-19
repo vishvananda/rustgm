@@ -36,6 +36,7 @@ pub(super) fn decode(
     read.reserve(size_of::<s::AvailabilityRows>())?;
     Ok(s::AvailabilityRows {
         const_bodies: None,
+        deprecations: None,
         policies: read.list(MAX_COMPONENTS, 13, |read| policy_read(read, compatibility))?,
         declarations: read.list(MAX_COMPONENTS, 6, |read| {
             Ok(s::DeclarationAvailability {

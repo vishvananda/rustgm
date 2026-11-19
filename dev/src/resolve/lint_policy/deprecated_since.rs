@@ -3,7 +3,8 @@
 use super::{Violation, expectations::Deprecation};
 use crate::resolve::{package::Package, stability, unit::NodeKey};
 
-pub(super) enum Since {
+#[derive(Clone, Copy)]
+pub(crate) enum Since {
     Unspecified,
     Future,
     Version(stability::Since),
@@ -17,7 +18,7 @@ impl Since {
             Some(text) => stability::parse_version(text).map_or(Self::NonStandard, Self::Version),
         }
     }
-    fn active(&self, staged: bool) -> bool {
+    fn active(self, staged: bool) -> bool {
         match self {
             Self::Future => false,
             Self::Version(version) if staged => {

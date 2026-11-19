@@ -84,25 +84,7 @@ pub(super) fn check(
         .get(target.0 as usize)
         .ok_or_else(|| Error::at(site.file, 0, "deprecated use lost actual declaration"))?;
     let Some(key) = declared.node else {
-        // This finite producer admits local/source identities. Source-free
-        // artifacts retain the legacy profile; an explicit deprecation request
-        // cannot treat their missing contract as known absence.
-        if !facts.safety_policies.explicit_deprecation(site)
-            || facts.safety_policies.deprecated(site) == super::safety::Level::Allow
-        {
-            return Ok(());
-        }
-        if crate::resolve::stability::declaration_deprecation_absent(report, target)? {
-            return Ok(());
-        }
-        if super::header_attributes::bootstrap_owner(report, target)? {
-            return Ok(());
-        }
-        return Err(Error::at(
-            site.file,
-            0,
-            "imported deprecation contract transport is not implemented",
-        ));
+        return check_imported(report, facts, site, target);
     };
     let Some(producer) = report.lint_producer() else {
         return Ok(());
@@ -116,7 +98,47 @@ pub(super) fn check(
     if facts.safety_policies.deprecated_origin(site) == Some(origin) {
         return Ok(());
     }
-    producer.diagnostic_read(site, note.len().saturating_add(40))?;
+    emit(report, facts, site, target, note)
+}
+
+fn check_imported(
+    report: &Report,
+    facts: &mut Declarations,
+    site: NodeKey,
+    target: DefId,
+) -> Result<(), Error> {
+    use crate::resolve::stability::{self, ImportedDeprecation};
+    if facts.safety_policies.deprecated(site) == super::safety::Level::Allow {
+        return Ok(());
+    }
+    match stability::declaration_deprecation(report, target)? {
+        Some(ImportedDeprecation::Active(note)) => return emit(report, facts, site, target, note),
+        Some(ImportedDeprecation::Inactive) => return Ok(()),
+        None => {}
+    }
+    if !facts.safety_policies.explicit_deprecation(site)
+        || stability::declaration_deprecation_absent(report, target)?
+        || super::header_attributes::bootstrap_owner(report, target)?
+    {
+        return Ok(());
+    }
+    Err(Error::at(
+        site.file,
+        0,
+        "imported deprecation contract transport is not implemented",
+    ))
+}
+
+fn emit(
+    report: &Report,
+    facts: &mut Declarations,
+    site: NodeKey,
+    target: DefId,
+    note: &str,
+) -> Result<(), Error> {
+    if let Some(producer) = report.lint_producer() {
+        producer.diagnostic_read(site, note.len().saturating_add(40))?;
+    }
     let message = format!("use of deprecated declaration: {note}");
     let offset = report
         .package

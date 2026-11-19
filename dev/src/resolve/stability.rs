@@ -367,8 +367,8 @@ impl Draft<'_> {
 }
 pub(super) use attributes::collect;
 pub(crate) use availability_imports::{
-    check as check_imported_api, declaration_deprecation_absent,
-    visit_warnings as visit_compatibility_warnings,
+    ImportedDeprecation, check as check_imported_api, declaration_deprecation,
+    declaration_deprecation_absent, visit_warnings as visit_compatibility_warnings,
 };
 pub(in crate::resolve) use compatibility_notes::{
     collect as collect_compatibility, finish as finish_compatibility,

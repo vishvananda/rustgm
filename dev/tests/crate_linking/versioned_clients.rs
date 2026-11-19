@@ -2,6 +2,24 @@
 use std::{path::Path, process::Command};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
+const DEPRECATED_PROVIDER: &str = r#"
+#[stable(feature="deprecation_contract",since="1.0.0")]
+#[deprecated(since="1.0.0",note="use the replacement")]
+pub fn removed() {}
+#[stable(feature="deprecation_contract",since="1.0.0")]
+#[deprecated(since="1.0.0",note="use the current module")]
+pub mod old {
+    #[stable(feature="deprecation_contract",since="1.0.0")]
+    pub fn inside() {}
+}
+#[stable(feature="deprecation_contract",since="1.0.0")]
+#[deprecated(since="TBD",note="scheduled")]
+pub fn scheduled() {}
+#[stable(feature="deprecation_contract",since="1.0.0")]
+#[deprecated(since="1.99.0",note="next release")]
+pub fn next_release() {}
+"#;
+
 fn qualify(native: bool) -> Result {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -78,6 +96,95 @@ fn source_export(
         .arg(fixture);
     command
 }
+
+#[test]
+fn cli_version_fourteen_preserves_actual_deprecation_and_client_policy() -> Result {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root.join(format!(
+        "obj/parallel/deprecation-metadata-v14/cli-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let foundation = std::fs::read_to_string(
+        root.join("pa31/tests/spec/source-availability-transport/provider.rs"),
+    )?;
+    let foundation = foundation
+        .split_once("\n#[unstable(feature=\"experimental_identity\"")
+        .ok_or("source availability fixture lost its role-only prefix")?
+        .0;
+    let source = folder.join("provider.rs");
+    std::fs::write(&source, format!("{foundation}\n{DEPRECATED_PROVIDER}"))?;
+    let metadata = folder.join("provider.rgcrate");
+    let mut command = source_export(
+        "module-body-operations-v14",
+        &source,
+        &metadata,
+        &folder.join("provider.lowir"),
+        true,
+    );
+    command.arg("--cap-lints=allow");
+    super::artifacts::checked("provider", &folder, &mut command)?;
+    let bytes = std::fs::read(&metadata)?;
+    assert_eq!(
+        rustgm::support::crates::encode(&rustgm::support::crates::decode(&bytes)?)?,
+        bytes
+    );
+    for (case, policy, callee, diagnostic) in [
+        ("active", "deny", "removed", Some("use the replacement")),
+        (
+            "inherited",
+            "deny",
+            "old::inside",
+            Some("use the current module"),
+        ),
+        ("tbd", "deny", "scheduled", None),
+        ("next", "deny", "next_release", None),
+        ("allow", "allow", "removed", None),
+        ("expect", "expect", "removed", None),
+    ] {
+        let source = folder.join(format!("{case}.rs"));
+        let text = format!(
+            "#![feature(no_core)]#![no_core]#![deny(unfulfilled_lint_expectations)]\n\
+             extern crate base;#[{policy}(deprecated)]fn main(){{base::{callee}();}}"
+        );
+        std::fs::write(&source, text)?;
+        let output = Command::new(env!("CARGO_BIN_EXE_rustgm"))
+            .args([
+                "--emit-lowir",
+                "--edition=2024",
+                "--crate-name",
+                "client",
+                "--crate-disambiguator",
+                "exact_cli",
+                "--source-client",
+                "base@exact_cli",
+                "--extern",
+            ])
+            .arg(format!("base={}", metadata.display()))
+            .arg("-o")
+            .arg(folder.join(format!("{case}.lowir")))
+            .arg(source)
+            .output()?;
+        let stderr = String::from_utf8(output.stderr)?;
+        assert_eq!(
+            output.status.code(),
+            Some(i32::from(diagnostic.is_some())),
+            "{case}: {stderr}"
+        );
+        if let Some(note) = diagnostic {
+            assert!(
+                stderr.contains(&format!("use of deprecated declaration: {note}")),
+                "{case}: {stderr}"
+            );
+        } else {
+            assert!(stderr.is_empty(), "{case}: {stderr}");
+        }
+    }
+    Ok(())
+}
+
 #[test]
 fn cli_version_five_keeps_exact_c_publication_and_source_provider_boundaries() -> Result {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))

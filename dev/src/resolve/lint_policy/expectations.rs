@@ -4,7 +4,7 @@
 mod completion_tests;
 use super::{
     Lint, Violation,
-    producer::{Producer, Tail, invalid},
+    producer::{Producer, Tail, deprecation_declaration, invalid},
 };
 use crate::support::hash::HashMap;
 use crate::{
@@ -33,6 +33,15 @@ pub(super) struct Deprecation {
     pub since: Option<Box<str>>,
     pub suggestion: Option<(Box<str>, Span)>,
     pub release: super::deprecated_since::Since,
+}
+pub(crate) struct SourceDeprecation<'a> {
+    pub key: NodeKey,
+    pub declaration: NodeKey,
+    pub tail: Tail,
+    pub release: super::deprecated_since::Since,
+    pub since: Option<&'a str>,
+    pub note: Option<&'a str>,
+    pub suggestion: Option<&'a str>,
 }
 pub(crate) struct PendingExpectation<'a> {
     pub id: ExpectationId,
@@ -465,6 +474,37 @@ impl Producer {
 }
 
 impl Producer {
+    pub(crate) fn source_deprecations<'a>(
+        &'a self,
+        package: &'a Package,
+    ) -> impl Iterator<Item = Result<SourceDeprecation<'a>, Violation>> + 'a {
+        self.owners.iter().filter_map(move |owner| {
+            if let Err(error) = self.attribute_read(owner.key, 1) {
+                return Some(Err(error));
+            }
+            let row = owner.parsed.deprecated.as_ref()?;
+            Some((|| {
+                owner.validate(package, &self.reads)?;
+                row.validate_staged(package, owner.key)?;
+                let tail =
+                    self.index.get(&owner.key).copied().ok_or_else(|| {
+                        invalid(owner.key, "source deprecation owner lost its index")
+                    })?;
+                Ok(SourceDeprecation {
+                    key: owner.key,
+                    declaration: deprecation_declaration(package, owner.key, |source| {
+                        self.attribute_read(source, 1)
+                    })?,
+                    tail,
+                    release: row.release,
+                    since: row.since.as_deref(),
+                    note: row.note.as_deref(),
+                    suggestion: row.suggestion.as_ref().map(|(text, _)| text.as_ref()),
+                })
+            })())
+        })
+    }
+
     pub(crate) fn has_expectations(&self) -> bool {
         !self.expectation_owners.is_empty()
     }

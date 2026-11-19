@@ -75,6 +75,21 @@ pub(super) struct Owner {
     ),
     pub(super) parsed: Parsed,
 }
+
+pub(super) fn deprecation_declaration(
+    package: &Package,
+    mut key: NodeKey,
+    mut charge: impl FnMut(NodeKey) -> Result<(), Violation>,
+) -> Result<NodeKey, Violation> {
+    let unit = package.unit(key.file);
+    while let crate::syntax::ast::Kind::Attributed { value, .. } =
+        unit.configured.ast.node(key.node).kind
+    {
+        charge(key)?;
+        key.node = value;
+    }
+    Ok(key)
+}
 /// Fixed per-crate setup floor: the former whole-crate limits, so no previously
 /// accepted input loses budget.
 const SETUP_STEPS: usize = 10_000_000;
@@ -407,14 +422,8 @@ impl Producer {
             .last()
             .is_some_and(|owner| owner.parsed.deprecated.is_some())
         {
-            let unit = package.unit(key.file);
-            let mut declaration = key;
-            while let crate::syntax::ast::Kind::Attributed { value, .. } =
-                unit.configured.ast.node(declaration.node).kind
-            {
-                self.work.charge(key, 1, 0)?;
-                declaration.node = value;
-            }
+            let declaration =
+                deprecation_declaration(package, key, |source| self.work.charge(source, 1, 0))?;
             self.work.charge(
                 key,
                 1,

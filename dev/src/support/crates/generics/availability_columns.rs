@@ -7,6 +7,9 @@ use crate::support::{
 #[path = "availability_columns/exemption_columns.rs"]
 mod exemption_columns;
 pub use exemption_columns::{ConstBodyContracts, ConstBodyGrant};
+#[path = "availability_columns/notices.rs"]
+mod notices;
+pub use notices::{DeprecatedDeclaration, DeprecationColumns, DeprecationNotice, DeprecationSince};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum AvailabilityKind {
@@ -66,6 +69,7 @@ pub struct AvailabilityRows {
     pub declarations: Vec<DeclarationAvailability>,
     pub bindings: Vec<BindingAvailability>,
     pub const_bodies: Option<Box<ConstBodyContracts>>,
+    pub deprecations: Option<Box<DeprecationColumns>>,
 }
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) struct AvailabilityColumns {
@@ -137,6 +141,9 @@ impl AvailabilityRows {
         if let Some(contracts) = &self.const_bodies {
             bytes = bytes.saturating_add(contracts.storage_bytes(work)?);
         }
+        if let Some(deprecations) = &self.deprecations {
+            bytes = bytes.saturating_add(deprecations.storage_bytes(work)?);
+        }
         if bytes > MAX_BYTES {
             return Err("availability const contracts exceed storage budget");
         }
@@ -152,6 +159,9 @@ impl AvailabilityRows {
         profile: super::Profile,
     ) -> Result<AvailabilityColumns, &'static str> {
         let bytes = self.storage_bytes(work)?;
+        if self.deprecations.is_some() && !profile.declaration_policies() {
+            return Err("deprecation columns require the version-fourteen profile");
+        }
         if let Some(contracts) = &self.const_bodies {
             contracts.validate(columns, headers, modules, &self, work)?;
         }
@@ -166,6 +176,15 @@ impl AvailabilityRows {
                 .get(modules.namespace.root.0 as usize)
                 .is_some_and(|row| row.regular.is_none())
         {
+            if let Some(deprecations) = &self.deprecations {
+                let ancestry = AvailabilityAncestry::new(
+                    &columns.declarations,
+                    modules.namespace.root,
+                    base.saturating_add(bytes),
+                    work,
+                )?;
+                deprecations.validate(&columns.declarations, &ancestry, false, work)?;
+            }
             return self.ordinary_absence(work);
         }
         self.staged(columns, headers, modules, base.saturating_add(bytes), work)
@@ -194,6 +213,9 @@ impl AvailabilityRows {
                 .saturating_add(origins),
             work,
         )?;
+        if let Some(deprecations) = &self.deprecations {
+            deprecations.validate(&columns.declarations, &ancestry, true, work)?;
+        }
         let view = Validation {
             columns,
             headers,
