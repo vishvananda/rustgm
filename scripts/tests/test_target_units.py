@@ -21,6 +21,7 @@ from target_units import TargetPackage, execute, plan_units
 ROOT = Path(__file__).resolve().parents[2]
 TRIPLE = 'x86_64-unknown-linux-gnu'
 OUT = Path('/out')
+EMPTY_LINK_MANIFEST = b'{"schema":1,"target":"x86_64-linux","libraries":[]}\n'
 # RustGM's fixed course profile, as Cargo would resolve a matching custom profile.
 PROFILE = dict(name='release', opt_level='0', lto='false', codegen_backend=None, codegen_units=None,
                debuginfo=0, split_debuginfo=None, debug_assertions=False, overflow_checks=True,
@@ -107,7 +108,8 @@ class FrozenPlans(unittest.TestCase):
         self.assertEqual(core.arguments, (
             '--emit-lowir', '--edition=2024', '--crate-type=lib', '--crate-name', 'core',
             '--crate-disambiguator', core.disambiguator, '--ub-checks=no', '--source-core', name,
-            '--metadata-output', '/out/core/unit-0/core.rgcrate', '-o', '/out/core/unit-0/core.lowir',
+            '--metadata-output', '/out/core/unit-0/core.rgcrate',
+            '--native-links-output', '/out/core/unit-0/core.native-links.json', '-o', '/out/core/unit-0/core.lowir',
             '/frozen/rust/library/core/src/lib.rs'))
         # Only the unreadable test root remains: its manifest environment.
         self.assertEqual([(gap.field, gap.value) for gap in core.gaps], [('package.environment', core.package)])
@@ -161,7 +163,8 @@ class FrozenPlans(unittest.TestCase):
             '--extern', f'core={dict(workspace.outputs)["metadata"]}',
             '--dependency-metadata', dict(core.outputs)['metadata'],
             '--dependency-metadata', dict(builtins.outputs)['metadata'],
-            '--metadata-output', '/out/std/unit-1/cfg_if.rgcrate', '-o', '/out/std/unit-1/cfg_if.lowir',
+            '--metadata-output', '/out/std/unit-1/cfg_if.rgcrate',
+            '--native-links-output', '/out/std/unit-1/cfg_if.native-links.json', '-o', '/out/std/unit-1/cfg_if.lowir',
             '/frozen/vendor/cfg-if-1.0.4/src/lib.rs'))
         alloc = plan_frozen('alloc')['alloc']
         self.assertIn('public dependency core', alloc.lint_inputs)
@@ -352,6 +355,8 @@ if name in {fail!r}:
     sys.exit(1)
 if value('--metadata-output') and name not in {nometa!r}:
     Path(value('--metadata-output')).write_text('meta ' + name)
+if value('--native-links-output'):
+    Path(value('--native-links-output')).write_bytes({native_manifest!r})
 if name in {bringup!r}:
     print('warning: ' + 'x' * 8192, file=sys.stderr)
     print('bringup-unproven\\tfile.rs\\t7\\t' + name + '\\tunproved', file=sys.stderr)
@@ -370,7 +375,8 @@ class Execution(unittest.TestCase):
     def fake(self, fail=(), nometa=(), slow=(), usage=(), bringup=()):
         path = self.root / 'rustgm'
         path.write_text(FAKE.format(python=sys.executable, log=str(self.log), fail=set(fail), nometa=set(nometa),
-                                    slow=set(slow), usage=set(usage), bringup=set(bringup)))
+                                    slow=set(slow), usage=set(usage), bringup=set(bringup),
+                                    native_manifest=EMPTY_LINK_MANIFEST))
         path.chmod(path.stat().st_mode | stat.S_IXUSR)
         return path, hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -396,6 +402,10 @@ class Execution(unittest.TestCase):
         self.assertEqual(app[app.index('--dependency-metadata') + 1], f'{folder}/unit-0/base.rgcrate')
         self.assertIn('--crate-type=bin', app)
         self.assertNotIn('--metadata-output', app)
+        self.assertEqual(app[app.index('--native-links-output') + 1], f'{folder}/unit-3/app.native-links.json')
+        for finished in receipt['completed']:
+            native = finished['outputs']['native_links']
+            self.assertEqual(native['sha256'], hashlib.sha256(EMPTY_LINK_MANIFEST).hexdigest())
         meta = receipt['completed'][0]['outputs']['metadata']
         self.assertEqual(meta['sha256'], hashlib.sha256(b'meta base').hexdigest())
         saved = json.loads((folder / 'receipt.json').read_text())
@@ -464,6 +474,9 @@ class Execution(unittest.TestCase):
         self.assertEqual(len(self.invocations()), 1)
         self.assertFalse((folder / 'unit-0/base.lowir').exists())
         self.assertEqual((folder / 'unit-0/base.lowir.rejected').read_bytes(), b'lowir base')
+        manifest = folder / 'unit-0/base.native-links.json'
+        self.assertFalse(manifest.exists())
+        self.assertEqual(manifest.with_suffix('.json.rejected').read_bytes(), EMPTY_LINK_MANIFEST)
         steps, packages, _ = self.graph()
         other = self.root / 'second'
         with self.assertRaisesRegex(ValueError, 'another folder'):
@@ -484,7 +497,7 @@ class Execution(unittest.TestCase):
         self.assertEqual([row['crate'] for row in receipt['completed']], ['base'])
         self.assertEqual(receipt['blocked'], [{'unit': 3, 'crate': 'app', 'blocked_by': 1}])
         self.assertEqual(len(self.invocations()), 2)
-        for output in ('mid.lowir', 'mid.rgcrate'):
+        for output in ('mid.lowir', 'mid.rgcrate', 'mid.native-links.json'):
             self.assertFalse((folder / 'unit-1' / output).exists())
             self.assertTrue((folder / 'unit-1' / (output + '.rejected')).is_file())
 

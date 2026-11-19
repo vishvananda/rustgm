@@ -285,7 +285,9 @@ class Planner:
                            script_key))
         disambiguator = 'h' + key[:20]
         unit_folder = folder / f'unit-{index}'
-        outputs = [('lowir', str(unit_folder / f'{name}.lowir'))]
+        lowir = str(unit_folder / f'{name}.lowir')
+        native_links = str(unit_folder / f'{name}.native-links.json')
+        outputs = [('lowir', lowir), ('native_links', native_links)]
         arguments = ['--emit-lowir', f'--edition={unit.target.edition}',
                      '--crate-type=lib' if library else '--crate-type=bin',
                      '--crate-name', name, '--crate-disambiguator', disambiguator,
@@ -297,9 +299,10 @@ class Planner:
             arguments += ['--cfg', 'feature=' + json.dumps(feature)]
         arguments += script_arguments + dependency_arguments
         if library:
-            outputs.append(('metadata', str(unit_folder / f'{name}.rgcrate')))
-            arguments += ['--metadata-output', outputs[1][1]]
-        arguments += ['-o', outputs[0][1], str(source)]
+            metadata = str(unit_folder / f'{name}.rgcrate')
+            outputs.append(('metadata', metadata))
+            arguments += ['--metadata-output', metadata]
+        arguments += ['--native-links-output', native_links, '-o', lowir, str(source)]
         environment = {**ENVIRONMENT, **dict(package.environment or ()), 'CARGO_CRATE_NAME': name,
                        **script_environment}
         return Step(index, package.identity, name, disambiguator, library, str(source), tuple(arguments),
