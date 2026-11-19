@@ -76,6 +76,33 @@ fn select(
     )?)
 }
 #[test]
+fn verified_body_selection_depends_on_the_requested_effect() -> Result {
+    let mut facts = provider(false)?;
+    let ordinary = predicate(&mut facts, Constness::Ordinary)?;
+    let source = select(&mut facts, ordinary, &mut Reuse::default())?;
+    let mut memo = selection::Memo::default();
+    let mut context = Context::default();
+    let mut fold = Instantiation::new(&mut context, &facts.types, &[])?;
+    let goal = context.instantiate_predicate(&mut facts.types, ordinary, &mut fold)?;
+    assert!(memo.prepare(&facts.types, &mut context, &goal)?);
+    for _ in 0..2 {
+        let mut watch = memo.watch(&facts.types).ok_or("missing ordinary watch")?;
+        watch.untouched = true;
+        memo.record(&facts.types, &watch, 1, &source);
+    }
+    assert!(memo.reuse(1).is_some());
+    for effect in [Constness::Conditional, Constness::Const] {
+        let predicate = predicate(&mut facts, effect)?;
+        let goal = context.instantiate_predicate(&mut facts.types, predicate, &mut fold)?;
+        assert!(memo.prepare(&facts.types, &mut context, &goal)?);
+        assert!(memo.reuse(1).is_none());
+        assert!(memo.watch(&facts.types).is_some());
+    }
+    assert!(memo.prepare(&facts.types, &mut context, &goal)?);
+    assert!(memo.reuse(1).is_some());
+    Ok(())
+}
+#[test]
 fn actual_const_impl_uses_preserve_canonical_capability_and_effect_cache_keys() -> Result {
     for constant in [false, true] {
         for order in [

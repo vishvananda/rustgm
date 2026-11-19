@@ -35,7 +35,7 @@ pub(in crate::sema) struct Watch {
 #[derive(Default)]
 pub(in crate::sema) struct Memo {
     entries: HashMap<Vec<u32>, State>,
-    /// The prepared key: trait item, then every input type identity.
+    /// The prepared key: trait item, effect, then every input type identity.
     key: Vec<u32>,
 }
 impl Memo {
@@ -49,10 +49,10 @@ impl Memo {
         goal: &Goal,
     ) -> Result<bool, infer::Error> {
         self.key.clear();
-        let Some((item, _)) = goal.trait_arguments() else {
+        let (Some((item, _)), Some(effect)) = (goal.trait_arguments(), goal.constness()) else {
             return Ok(false);
         };
-        self.key.push(item.0);
+        self.key.extend([item.0, effect as u32]);
         for argument in goal.arguments() {
             let Argument::Type(term) = argument else {
                 return Ok(false);
