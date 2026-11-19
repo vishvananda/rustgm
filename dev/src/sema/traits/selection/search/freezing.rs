@@ -95,7 +95,7 @@ impl Search<'_> {
         let Some((item, arguments)) = goal.trait_arguments() else {
             return Ok(None);
         };
-        for marker in [
+        let candidates = [
             AutoTrait::Freeze,
             AutoTrait::Send,
             AutoTrait::Sync,
@@ -103,21 +103,17 @@ impl Search<'_> {
             AutoTrait::UnsafeUnpin,
             AutoTrait::UnwindSafe,
             AutoTrait::RefUnwindSafe,
-        ] {
-            let role = role(marker);
-            if catalog
-                .auto_marker(role, false)?
-                .is_none_or(|declaration| declaration.definition != DefId(item.0))
-            {
-                continue;
-            }
-            catalog.auto_marker(role, true)?;
-            if !arguments.is_empty() || goal.constness() != Some(Constness::Ordinary) {
-                return Err("source auto trait requires an ordinary complete application".into());
-            }
-            return Ok(Some(marker));
+        ]
+        .into_iter()
+        .map(|marker| (marker, role(marker)));
+        let Some((marker, role)) = catalog.matching_role(DefId(item.0), candidates)? else {
+            return Ok(None);
+        };
+        catalog.auto_marker(role, true)?;
+        if !arguments.is_empty() || goal.constness() != Some(Constness::Ordinary) {
+            return Err("source auto trait requires an ordinary complete application".into());
         }
-        Ok(None)
+        Ok(Some(marker))
     }
     pub(super) fn source_auto_goal(facts: &Declarations, goal: &Goal) -> Result<bool, String> {
         Ok(Self::source_auto_kind(facts, goal)?.is_some()

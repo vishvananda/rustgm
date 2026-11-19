@@ -177,6 +177,29 @@ impl Catalog {
             Bindings::Imported(imported) => imported.role(role, &self.provider),
         }
     }
+
+    /// Compare declaration identities in the caller's precedence order.
+    /// Imported claims still authenticate their remapped origin at each lookup.
+    pub(in crate::sema) fn matching_role<T>(
+        &self,
+        definition: DefId,
+        candidates: impl Iterator<Item = (T, LangItem)>,
+    ) -> Result<Option<(T, LangItem)>, &'static str> {
+        match &self.bindings {
+            Bindings::Provider(languages) => Ok(languages.matching_role(definition, candidates)),
+            Bindings::Imported(imported) => {
+                for (value, role) in candidates {
+                    if imported
+                        .role(role, &self.provider)?
+                        .is_some_and(|declaration| declaration.definition == definition)
+                    {
+                        return Ok(Some((value, role)));
+                    }
+                }
+                Ok(None)
+            }
+        }
+    }
 }
 
 pub(super) fn client_catalog(report: &Report) -> Result<Box<Catalog>, &'static str> {

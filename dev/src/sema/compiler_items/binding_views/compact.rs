@@ -31,6 +31,18 @@ impl Provider {
     pub(in crate::sema::compiler_items) fn get(&self, kind: LangItem) -> Option<Declaration> {
         self.roles[kind.index()].map(Cell::decode)
     }
+    pub(in crate::sema::compiler_items) fn matching_role<T>(
+        &self,
+        definition: DefId,
+        mut roles: impl Iterator<Item = (T, LangItem)>,
+    ) -> Option<(T, LangItem)> {
+        let definition = identity(definition).ok()?;
+        roles.find(|&(_, kind)| {
+            self.roles[kind.index()]
+                .as_ref()
+                .is_some_and(|role| role.definition == definition)
+        })
+    }
     #[cfg(test)]
     pub(in crate::sema::compiler_items) fn replace(
         &mut self,
@@ -98,6 +110,45 @@ mod tests {
         }
         assert_eq!(size_of::<Option<Cell>>(), 16);
         assert_eq!(size_of::<Provider>(), 16 * LangItem::ALL.len());
+        Ok(())
+    }
+
+    #[test]
+    fn definition_lookup_preserves_absence_identity_and_order() -> Result<(), &'static str> {
+        let mut provider = Provider {
+            roles: [None; LangItem::ALL.len()],
+        };
+        let declaration = Declaration {
+            definition: DefId(0),
+            parent: Some(DefId(17)),
+            origin: NodeKey {
+                file: crate::resolve::unit::FileId(3),
+                node: crate::syntax::ast::NodeId::new(31),
+            },
+        };
+        let candidates = [
+            (0, LangItem::Freeze),
+            (1, LangItem::Sync),
+            (2, LangItem::Send),
+        ];
+        assert_eq!(
+            provider.matching_role(DefId(0), candidates.into_iter()),
+            None
+        );
+        provider.replace(LangItem::Send, Some(declaration))?;
+        provider.replace(LangItem::Sync, Some(declaration))?;
+        assert_eq!(
+            provider.matching_role(DefId(0), candidates.into_iter()),
+            Some((1, LangItem::Sync)),
+        );
+        assert_eq!(
+            provider.matching_role(DefId(17), candidates.into_iter()),
+            None
+        );
+        assert_eq!(
+            provider.matching_role(DefId(u32::MAX), candidates.into_iter()),
+            None,
+        );
         Ok(())
     }
 }
