@@ -252,6 +252,15 @@ link. The exact receipt is under
 `obj/parallel/checked-source-start/std-consumer-println/` in the frontier
 checkout.
 
+A standalone trait default and a lifetime-bearing argument reproduce the
+B-tree diagnostic. The associated constant also reproduces it outside an
+inline const. The frozen compiler's trace reaches associated constant
+selection after opening the caller lifetime in the trait goal. The selected
+provided initializer still carries the original bound slot. Restoration
+tries to apply equalities from the opened selection to that original slot.
+The nine pinned-rustc controls and the failing restoration trace are under
+`obj/parallel/btree-inline-lifetime/` in the frontier checkout.
+
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
 programs reproduce the lifetime failure when an inferred trait method item goes
@@ -400,7 +409,16 @@ checks. The captured CTFE control still reaches its callable-type error.
 The receipts are under `obj/parallel/strict-const-closure-candidate/`,
 `obj/parallel/strict-const-closure-projections/` and
 `obj/parallel/const-closure-captured-controls/` in the performance checkout.
-The full strict core replay of this closure successor remains due.
+The strict original core replay advances through the closure cleanup frontier.
+On the same frozen source hashes and environment, it reaches the export guard
+`general fundamental policy requires authenticated trait/nominal metadata transport`
+in 37.78 seconds. It records zero bring-up rows and emits no artifacts. The
+existing export path recognizes fundamental transport for validated sizing-role
+traits. The strict library now needs transport of the authenticated general
+declaration policy and a fresh consumer that uses it in coherence. The replay
+is under `obj/parallel/strict-core/const-closure-environment/` in the performance
+checkout. [Policy transport guard](../dev/src/sema/header_attributes/definition_policy.rs#L389) ·
+[Local policy and cross-crate controls](pa31-fundamental-policy-checkpoint.md)
 
 All four frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
