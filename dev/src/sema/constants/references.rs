@@ -66,7 +66,7 @@ pub(in crate::sema) struct References {
     projections: Vec<Projection>,
     ranges: Option<Vec<ranges::Subsequence>>,
     statics: HashMap<DefId, Id>,
-    pub(super) reified: Option<Box<HashMap<DefId, Id>>>,
+    pub(super) caller_declarations: Option<Box<HashMap<DefId, Id>>>,
     literals: HashMap<(crate::sema::text::Id, TypeId), Id>,
     pub(super) static_order: Vec<DefId>,
 }

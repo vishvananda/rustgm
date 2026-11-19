@@ -69,9 +69,10 @@ struct Discovered {
     upcasts: Vec<(TypeId, TypeId)>,
     operators: Vec<(TypeId, crate::support::call_traits::CallTrait, TypeId)>,
     futures: Option<Box<FutureDemands>>,
+    invocation_locations: u8,
 }
 
-const _: [(); 248] = [(); size_of::<Discovered>()];
+const _: [(); 256] = [(); size_of::<Discovered>()];
 
 /// Classify only an actual direct operation, never a reified/Invoke target.
 /// Registry identity and signature data do not supply its later execution proof.
@@ -428,6 +429,7 @@ impl Discovered {
         object_types: &mut Vec<TypeId>,
         reified: &mut Vec<Instance>,
         closures: &mut Vec<TypeId>,
+        invocation_locations: &mut u8,
     ) -> Result<(), String> {
         for id in crate::sema::vtable_plans::complete_tables(facts)? {
             let table = facts
@@ -440,13 +442,13 @@ impl Discovered {
                 .ok_or("missing demanded object shape")?;
             for (index, target) in table.methods.iter().enumerate() {
                 let Some(target) = target else { continue };
+                let slot = shape
+                    .slots
+                    .get(index)
+                    .ok_or("missing demanded object slot")?;
                 match *target {
                     crate::sema::vtable_plans::Target::Function(instance) => {
                         concrete.push(instance);
-                        let slot = shape
-                            .slots
-                            .get(index)
-                            .ok_or("missing demanded object slot")?;
                         let tracked = match slot.method {
                             crate::sema::vtable_plans::Method::Declared(definition) => {
                                 facts.recorded_caller_tracking(definition)?
@@ -458,18 +460,39 @@ impl Discovered {
                         }
                     }
                     crate::sema::vtable_plans::Target::Callable(callable) => {
-                        match facts.types.kind(callable.concrete) {
-                            Some(Kind::FunctionItem { .. }) => {
-                                concrete.push(Instance::new(&facts.types, callable.concrete)?);
-                            }
-                            Some(Kind::Closure { .. }) => closures.push(callable.concrete),
-                            _ => {}
-                        }
+                        Self::collect_table_callable(
+                            facts,
+                            callable.concrete,
+                            slot.method,
+                            concrete,
+                            closures,
+                            invocation_locations,
+                        )?;
                     }
                     crate::sema::vtable_plans::Target::Captured(_) => {}
                 }
             }
             object_types.push(table.concrete);
+        }
+        Ok(())
+    }
+    fn collect_table_callable(
+        facts: &Declarations,
+        ty: TypeId,
+        method: crate::sema::vtable_plans::Method,
+        concrete: &mut Vec<Instance>,
+        closures: &mut Vec<TypeId>,
+        invocation_locations: &mut u8,
+    ) -> Result<(), &'static str> {
+        match facts.types.kind(ty) {
+            Some(Kind::FunctionItem { item, .. }) => {
+                concrete.push(Instance::new(&facts.types, ty)?);
+                if facts.recorded_caller_tracking(crate::resolve::model::DefId(item.0))? {
+                    *invocation_locations |= 1 << method.require_callable()? as u8;
+                }
+            }
+            Some(Kind::Closure { .. }) => closures.push(ty),
+            _ => {}
         }
         Ok(())
     }
@@ -663,8 +686,20 @@ impl Dependencies {
             &mut object_types,
             &mut result.reified,
             &mut result.closures,
+            &mut result.invocation_locations,
         )?;
         self.prepare_reified(report, facts, result.reified)?;
+        if result.invocation_locations != 0 {
+            let mut values = crate::sema::values::Evaluator::new(report, facts);
+            for kind in crate::support::call_traits::CallTrait::ALL {
+                if result.invocation_locations & (1 << kind as u8) != 0 {
+                    self.charge(1)?;
+                    values
+                        .prepare_invocation_location(kind)
+                        .map_err(crate::sema::values::Failure::message)?;
+                }
+            }
+        }
         Ok(Demands {
             adapters: result.adapters,
             closures: result.closures,
@@ -869,6 +904,18 @@ impl Dependencies {
         if matches!(facts.types.kind(ty), Some(Kind::Dynamic { .. })) {
             result.operators.push((receiver, kind, signature));
             return Ok(());
+        }
+        if matches!(facts.types.kind(ty), Some(Kind::FunctionItem { .. })) {
+            let raw = Instance::new(&facts.types, ty)?;
+            let target = body.callable_target(raw);
+            let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(target.ty()) else {
+                return Err("invocation lost its actual function item");
+            };
+            if facts.recorded_caller_tracking(crate::resolve::model::DefId(item.0))? {
+                let kind =
+                    crate::body::invocation_entries::item_trait(&facts.types, receiver, kind)?;
+                result.invocation_locations |= 1 << kind as u8;
+            }
         }
         result.callable(&facts.types, ty, None)
     }

@@ -120,7 +120,8 @@ impl Context<'_> {
                             self.object_method_target(slot.method, instance)?
                         }
                         crate::sema::vtable_plans::Target::Callable(callable) => {
-                            self.callable_target(callable)?
+                            let slot = shape.slots.get(index).ok_or("missing callable slot")?;
+                            self.callable_target(callable, slot.method.require_callable()?)?
                         }
                         crate::sema::vtable_plans::Target::Captured(entry) => {
                             self.demand_captured(entry)?

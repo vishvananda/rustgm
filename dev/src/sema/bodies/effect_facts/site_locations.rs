@@ -235,11 +235,7 @@ impl Checker<'_> {
             let callable = if let Some(call) = self.facts.methods.calls.get(&self.key(node)) {
                 call.callable
             } else if let Syntax::Call { callee, .. } = self.kind(node) {
-                let term = self.term(callee)?;
-                *solved
-                    .types
-                    .get(term.0 as usize)
-                    .ok_or_else(|| self.error(node, "caller site lost solved callee"))?
+                self.solved_caller_callable(node, callee, solved)?
             } else {
                 continue;
             };

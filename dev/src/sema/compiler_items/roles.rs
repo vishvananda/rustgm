@@ -17,8 +17,8 @@ pub(crate) use glue::member as drop_glue_member;
 pub(super) mod admitted_headers;
 mod invocation;
 pub(crate) use invocation::{
-    definition as callable_role, member as callable_member, operator_item as callable_operator,
-    output as callable_output_role,
+    definition as callable_role, member as callable_member, method as callable_method_definition,
+    operator_item as callable_operator, output as callable_output_role,
 };
 mod unsizing;
 use super::Catalog;

@@ -24,6 +24,33 @@ pub(super) fn subject(
     }
     types.storage_head(referent)
 }
+/// Resolve the actual member used after the call receiver's ABI borrow.
+pub(crate) fn item_trait(
+    types: &Store,
+    receiver: TypeId,
+    mut kind: CallTrait,
+) -> Result<CallTrait, &'static str> {
+    let mut subject = subject(types, receiver, kind)?;
+    let mut steps = 0;
+    while let Some(Type::Reference {
+        referent, mutable, ..
+    }) = types.kind(subject)
+    {
+        steps += 1;
+        if steps > 1_000_000 {
+            return Err("tracked invocation receiver exceeds its work budget");
+        }
+        kind = kind
+            .referent(mutable)
+            .ok_or("tracked invocation reference lacks its selected callable permission")?;
+        subject = types.storage_head(referent)?;
+    }
+    if !matches!(types.kind(subject), Some(Type::FunctionItem { .. })) {
+        return Err("tracked invocation lost its actual function item");
+    }
+    Ok(kind)
+}
+
 pub(super) fn adapter(
     types: &Store,
     instance: crate::types::instance::Instance,

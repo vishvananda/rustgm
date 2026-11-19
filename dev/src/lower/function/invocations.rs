@@ -2,14 +2,15 @@
 use super::{Lower, Selected};
 use crate::{
     body::ir::ValueList,
-    lowir::vocabulary::Type,
+    lowir::{program::Operand, vocabulary::Type},
+    support::call_traits::CallTrait,
     types::{Kind, TypeId, instance::Instance},
 };
 impl Lower<'_, '_, '_> {
     pub(super) fn invoke(
         &mut self,
         id: crate::body::ir::ValueId,
-        kind: crate::support::call_traits::CallTrait,
+        kind: CallTrait,
         signature: TypeId,
         arguments: ValueList,
         result: TypeId,
@@ -53,9 +54,10 @@ impl Lower<'_, '_, '_> {
         let mut value = self.value(receiver)?;
         while let Some(Kind::Reference { referent, .. }) = self.context.types.kind(ty) {
             ty = self.context.types.storage_head(referent)?;
-            if matches!(self.context.types.kind(ty), Some(Kind::FunctionItem { .. })) {
-                value = Selected::Item(Instance::new(self.context.types, ty)?);
-            } else if !matches!(self.context.types.kind(ty), Some(Kind::Closure { .. })) {
+            if !matches!(
+                self.context.types.kind(ty),
+                Some(Kind::FunctionItem { .. } | Kind::Closure { .. })
+            ) {
                 let pointer = value.runtime()?;
                 value = Selected::Runtime(self.builder.load(Type::Ptr, pointer.operand)?);
             }
@@ -76,7 +78,18 @@ impl Lower<'_, '_, '_> {
             Some(Kind::FunctionItem { .. }) => {
                 // An owned opaque result may physically store only a ZST. Its
                 // revealed item identity still selects the executable target.
-                value = Selected::Item(Instance::new(self.context.types, ty)?);
+                let raw = Instance::new(self.context.types, ty)?;
+                let instance = self.body.callable_target(raw);
+                return self.invoke_function_item(
+                    instance,
+                    (receiver_type, kind),
+                    signature,
+                    ValueList {
+                        start: arguments.start + 1,
+                        ..arguments
+                    },
+                    result,
+                );
             }
             Some(Kind::Function { .. }) => {}
             _ => return Err("call operator requires a concrete executable adapter"),
@@ -91,6 +104,43 @@ impl Lower<'_, '_, '_> {
             result,
         )
     }
+    fn invoke_function_item(
+        &mut self,
+        instance: Instance,
+        receiver: (TypeId, CallTrait),
+        signature: TypeId,
+        arguments: ValueList,
+        result: TypeId,
+    ) -> Result<Selected, &'static str> {
+        let Some(Kind::FunctionItem { item, .. }) = self.context.types.kind(instance.ty()) else {
+            return Err("invocation lost its actual function item");
+        };
+        let location = if self
+            .context
+            .constants
+            .caller_tracking(crate::resolve::model::DefId(item.0))?
+        {
+            let kind = crate::body::invocation_entries::item_trait(
+                self.context.types,
+                receiver.0,
+                receiver.1,
+            )?;
+            let location = self.context.constants.invocation_location(kind)?;
+            let global = self.context.caller_location_global(location)?;
+            Some(self.builder.address(Operand::Global(global))?)
+        } else {
+            None
+        };
+        let symbol = self.context.demand(instance)?;
+        self.call_arguments_with_caller(
+            signature,
+            Operand::Symbol(symbol),
+            super::argument_sources::Arguments::Values(arguments),
+            result,
+            location,
+        )
+    }
+
     /// The selected source member takes the receiver and one owned `Args`
     /// tuple built from the evaluated call operands.
     fn invoke_member(

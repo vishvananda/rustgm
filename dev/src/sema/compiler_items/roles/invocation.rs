@@ -58,6 +58,18 @@ pub(crate) fn member(
         .map(|_| kind))
 }
 
+/// The actual method declaration also anchors a mechanical callable shim.
+pub(crate) fn method(facts: &Declarations, kind: CallTrait) -> Result<DefId, &'static str> {
+    let parent = definition(facts, kind)?;
+    facts
+        .source_bindings
+        .as_deref()
+        .and_then(|catalog| catalog.traits.as_deref())
+        .and_then(|roles| roles.methods[kind as usize])
+        .filter(|&method| facts.associated.trait_owner(method) == Some(parent))
+        .ok_or("source call operator requires its actual call-trait method")
+}
+
 /// The unselected trait callable a call operator names on a concrete `Self`
 /// and tuple `Args`. Identity only: dispatch still selects and proves the
 /// implementation whose body executes the call.
@@ -67,13 +79,11 @@ pub(crate) fn operator_item(
     subject: TypeId,
     tuple: TypeId,
 ) -> Result<TypeId, &'static str> {
-    let parent = definition(facts, kind)?;
-    let method = facts
-        .source_bindings
-        .as_deref()
-        .and_then(|catalog| catalog.traits.as_deref())
-        .and_then(|roles| roles.methods[kind as usize])
-        .ok_or("source call operator requires its actual call-trait method")?;
+    let method = method(facts, kind)?;
+    let parent = facts
+        .associated
+        .trait_owner(method)
+        .ok_or("source call method lost its owner")?;
     let self_type = facts
         .associated
         .schema(parent)

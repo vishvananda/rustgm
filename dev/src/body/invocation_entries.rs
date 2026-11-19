@@ -1,5 +1,6 @@
 //! Sparse execution entries retain canonical closure identity and receiver permission.
 mod borrowed;
+pub(crate) use borrowed::item_trait;
 mod candidates;
 mod matching;
 mod shaping;

@@ -8,12 +8,13 @@ use crate::{
         vocabulary::Type,
     },
     sema::vtable_plans::{Callable, Operator, ShapeId},
+    support::call_traits::CallTrait,
     types::{Kind, TypeId, instance::Instance},
 };
 
 #[derive(Default)]
 pub(in crate::lower) struct Callables {
-    entries: HashMap<Callable, SymbolId>,
+    entries: HashMap<(Callable, Option<CallTrait>), SymbolId>,
     pub(super) members: HashMap<crate::sema::vtable_plans::Member, SymbolId>,
     calls: HashMap<(ShapeId, u32, u32), SymbolId>,
 }
@@ -62,11 +63,19 @@ impl Context<'_> {
     pub(in crate::lower) fn callable_target(
         &mut self,
         target: Callable,
+        kind: CallTrait,
     ) -> Result<SymbolId, &'static str> {
+        let tracked = match self.types.kind(target.concrete) {
+            Some(Kind::FunctionItem { item, .. }) => self
+                .constants
+                .caller_tracking(crate::resolve::model::DefId(item.0))?,
+            _ => false,
+        };
+        let key = (target, tracked.then_some(kind));
         if let Some(symbol) = self
             .object_callables
             .as_ref()
-            .and_then(|s| s.entries.get(&target))
+            .and_then(|s| s.entries.get(&key))
         {
             return Ok(*symbol);
         }
@@ -78,7 +87,7 @@ impl Context<'_> {
             Representation::Object(_)
         ));
         let entry = self.signature(target.execution)?;
-        let signature = self.signature(target.signature)?;
+        let signature = self.caller_signature(target.signature, tracked)?;
         let index = self
             .object_callables
             .as_ref()
@@ -107,6 +116,11 @@ impl Context<'_> {
             Some(Kind::Function { .. }) => builder.load(Type::Ptr, receiver.operand)?.operand,
             _ => return Err("object callable target requires a checked captured adapter"),
         };
+        if tracked {
+            let location = self.constants.invocation_location(kind)?;
+            let global = self.caller_location_global(location)?;
+            arguments.push(builder.address(Operand::Global(global))?);
+        }
         let native = self.output.scalar_signature(signature)?;
         let result = builder.call(signature, native.result, callee, &arguments)?;
         builder.terminate(if native.noreturn {
@@ -118,7 +132,7 @@ impl Context<'_> {
         self.object_callables
             .get_or_insert_with(Default::default)
             .entries
-            .insert(target, symbol);
+            .insert(key, symbol);
         Ok(symbol)
     }
 }

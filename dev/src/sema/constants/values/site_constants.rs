@@ -10,8 +10,31 @@ use crate::{
 impl Evaluator<'_> {
     /// Demand the definition site only for the address of a tracked function.
     pub(crate) fn prepare_reified_location(&mut self, target: DefId) -> Result<(), Failure> {
-        if Reader::new(self.facts()).reified_location(target).is_some()
+        if Reader::new(self.facts())
+            .declaration_location(target)
+            .is_some()
             || !self.facts().recorded_caller_tracking(target)?
+        {
+            return Ok(());
+        }
+        if !self.checked_caller_tracking(target)? {
+            return Err("reified location does not belong to a tracked function".into());
+        }
+        self.prepare_declaration_location(target)
+    }
+
+    pub(crate) fn prepare_invocation_location(
+        &mut self,
+        kind: crate::support::call_traits::CallTrait,
+    ) -> Result<(), Failure> {
+        let method = crate::sema::compiler_items::callable_method_definition(self.facts(), kind)?;
+        self.prepare_declaration_location(method)
+    }
+
+    fn prepare_declaration_location(&mut self, target: DefId) -> Result<(), Failure> {
+        if Reader::new(self.facts())
+            .declaration_location(target)
+            .is_some()
         {
             return Ok(());
         }
@@ -22,11 +45,12 @@ impl Evaluator<'_> {
             .definitions
             .get(target.0 as usize)
             .and_then(|definition| definition.node)
-            .ok_or("tracked reification requires its original source declaration")?;
-        if !self.checked_caller_tracking(target)? {
-            return Err("reified location does not belong to a tracked function".into());
-        }
-        let current = self.facts().constant_references.reified.as_deref();
+            .ok_or("caller location requires its original source declaration")?;
+        let current = self
+            .facts()
+            .constant_references
+            .caller_declarations
+            .as_deref();
         let (len, capacity) =
             current.map_or((0, 0), |locations| (locations.len(), locations.capacity()));
         let growth =
@@ -43,11 +67,11 @@ impl Evaluator<'_> {
             .typing
             .facts
             .constant_references
-            .reified
+            .caller_declarations
             .get_or_insert_with(Default::default);
         sites
             .try_reserve(1)
-            .map_err(|_| "reified location inventory allocation failed")?;
+            .map_err(|_| "caller declaration location inventory allocation failed")?;
         sites.insert(target, location.0);
         Ok(())
     }
@@ -122,14 +146,23 @@ impl Evaluator<'_> {
 }
 
 impl Reader<'_> {
-    pub(crate) fn reified_location(self, target: DefId) -> Option<LocationId> {
+    pub(crate) fn declaration_location(self, target: DefId) -> Option<LocationId> {
         self.facts
             .constant_references
-            .reified
+            .caller_declarations
             .as_deref()?
             .get(&target)
             .copied()
             .map(LocationId)
+    }
+
+    pub(crate) fn invocation_location(
+        self,
+        kind: crate::support::call_traits::CallTrait,
+    ) -> Result<LocationId, &'static str> {
+        let method = crate::sema::compiler_items::callable_method_definition(self.facts, kind)?;
+        self.declaration_location(method)
+            .ok_or("tracked invocation lacks its prepared callable member location")
     }
 
     pub(crate) fn source_caller_location(

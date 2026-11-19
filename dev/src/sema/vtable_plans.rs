@@ -55,6 +55,16 @@ pub(crate) enum Method {
     Declared(DefId),
     Callable(crate::support::call_traits::CallTrait),
 }
+impl Method {
+    pub(crate) const fn require_callable(
+        self,
+    ) -> Result<crate::support::call_traits::CallTrait, &'static str> {
+        match self {
+            Self::Callable(kind) => Ok(kind),
+            Self::Declared(_) => Err("mechanical callable has no actual call-trait slot"),
+        }
+    }
+}
 pub(crate) struct Shape {
     pub object: TypeId,
     pub slots: Vec<Slot>,

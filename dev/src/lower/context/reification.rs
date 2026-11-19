@@ -36,7 +36,7 @@ impl Context<'_> {
         }
         let location = self
             .constants
-            .reified_location(target)
+            .declaration_location(target)
             .ok_or("tracked reification lacks the prepared declaration location")?;
         let caller_location = self.caller_location_global(location)?;
         let entry = self.signature(signature)?;

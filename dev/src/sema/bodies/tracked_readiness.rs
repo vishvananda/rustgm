@@ -65,7 +65,7 @@ impl Checker<'_> {
             let (node, _) = self.state.calls[index];
             self.caller_readiness_step(node)?;
             if let Kind::Call { callee, .. } = self.kind(node) {
-                let callable = solved.types[self.term(callee)?.0 as usize];
+                let callable = self.solved_caller_callable(node, callee, solved)?;
                 if self.requires_caller_site(node, callable)? {
                     return Ok(Some(node));
                 }
@@ -89,6 +89,22 @@ impl Checker<'_> {
             }
         }
         Ok(None)
+    }
+    pub(super) fn solved_caller_callable(
+        &mut self,
+        node: NodeId,
+        callee: NodeId,
+        solved: &Solved,
+    ) -> Result<crate::types::TypeId, Error> {
+        let mut ty = *solved
+            .types
+            .get(self.term(callee)?.0 as usize)
+            .ok_or_else(|| self.error(node, "caller site lost solved callee"))?;
+        while let Some(crate::types::Kind::Reference { referent, .. }) = self.facts.types.kind(ty) {
+            self.caller_readiness_step(node)?;
+            ty = referent;
+        }
+        Ok(ty)
     }
     fn caller_readiness_step(&mut self, node: NodeId) -> Result<(), Error> {
         self.state.steps = self.state.steps.saturating_add(1);
