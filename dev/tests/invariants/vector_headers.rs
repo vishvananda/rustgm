@@ -1,14 +1,15 @@
 //! Version thirteen's nominal header representation byte 3 is SIMD. It is
-//! read only under `body_nodes()`, every byte from 4 up stays unknown, and
-//! neither the representation nor the header row grows.
+//! read only under `body_nodes()`, and bytes from 4 up are unknown to that
+//! profile. Version fourteen adds explicit packed and lane-limit flags.
 use super::*;
 use crate::support::crates::{RecordRepr, owner_catalog::DeclarationRef};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 type Row<T> = std::result::Result<T, &'static str>;
 
-// The representation stays one byte, so the header row keeps its layout.
+// The representation stays one byte. The v14 header also owns its full
+// optional u64 lane limit, including zero and the maximum literal.
 const _: [(); 1] = [(); size_of::<RecordRepr>()];
-const _: [(); 104] = [(); size_of::<s::NominalHeader>()];
+const _: [(); 120] = [(); size_of::<s::NominalHeader>()];
 
 const BODIES: s::Profile = s::Profile::Source2024ModuleBodies;
 const BRANCHES: s::Profile = s::Profile::Source2024ModuleBranches;
@@ -35,6 +36,8 @@ fn header(repr: RecordRepr) -> s::NominalHeader {
         repr,
         fundamental: false,
         incoherent_inherent: false,
+        packed_simd: false,
+        simd_lane_limit: None,
     }
 }
 fn written(repr: RecordRepr) -> Result<Vec<u8>> {
@@ -83,6 +86,25 @@ fn simd_headers_write_byte_three_and_read_it_only_under_body_nodes() -> Result {
         assert_eq!(row.last(), Some(&byte));
         assert_eq!(read(&row, BODIES)?, header(repr));
         assert_eq!(read(&row, BRANCHES).is_ok(), older, "{repr:?}");
+    }
+    Ok(())
+}
+
+#[test]
+fn simd_header_policy_roundtrips_full_lane_limit_only_in_version_fourteen() -> Result {
+    for limit in [0, 6, u64::MAX] {
+        let mut expected = header(RecordRepr::Simd);
+        expected.packed_simd = true;
+        expected.simd_lane_limit = Some(limit);
+        let mut out = Writer::default();
+        nominal_rows::nominal_write(&mut out, &expected)?;
+        let bytes = out.finish();
+        assert!(bytes.ends_with(&limit.to_le_bytes()));
+        assert_eq!(
+            read(&bytes, s::Profile::Source2024ModuleBodyOperations)?,
+            expected
+        );
+        assert_eq!(read(&bytes, BODIES).err(), Some(UNKNOWN));
     }
     Ok(())
 }
