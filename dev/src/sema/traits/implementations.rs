@@ -23,7 +23,7 @@ use crate::{
     types::{ItemId, Kind, Store, parameters::predicates::Predicate, shape_key::ShapeKey},
 };
 pub(in crate::sema) use candidate_lists::Owners as CandidateOwners;
-use candidate_lists::{Collected, Lookup};
+use candidate_lists::{ClosedMatch, Collected, Lookup};
 pub(in crate::sema) use member_contracts::ConstantRequest;
 pub(in crate::sema) type OverlapPair = ((Predicate, DefId), (Predicate, DefId));
 #[cfg(test)]
@@ -228,10 +228,21 @@ impl Implementations {
             Ok(_) | Err(Error::Unresolved) => (None, None),
             Err(error) => return Err(error),
         };
+        // Only a matching closed bucket adds shape-specific owners. Distinct
+        // resolved goals with the same open buckets can share that ordered list.
+        let (match_kind, closed) = match shape {
+            None => (ClosedMatch::Unresolved, &[][..]),
+            Some(shape) => self
+                .closed
+                .get(&(item, shape))
+                .map_or((ClosedMatch::Absent, &[][..]), |entries| {
+                    (ClosedMatch::Present(shape), entries.as_slice())
+                }),
+        };
         let lookup = Lookup {
             item,
             subject,
-            shape,
+            closed: match_kind,
             argument,
         };
         let eligible = self.headers_validated()
@@ -247,7 +258,7 @@ impl Implementations {
             context.account_work(1)?;
             return Ok(Candidates::Ready(owners));
         }
-        let candidates = self.collect_candidates(context, lookup, availability, purpose)?;
+        let candidates = self.collect_candidates(context, lookup, closed, availability, purpose)?;
         if eligible && let Candidates::Ready(owners) = &candidates {
             candidate_lists::retain(&mut self.candidate_lists, lookup, owners);
         }
@@ -259,18 +270,19 @@ impl Implementations {
         Lookup {
             item,
             subject,
-            shape,
+            closed: match_kind,
             argument,
         }: Lookup,
+        closed: &[usize],
         availability: Availability,
         purpose: Purpose,
     ) -> Result<Candidates, crate::types::infer::Error> {
         let mut result = Collected::default();
         let mut unvalidated = Vec::new();
-        if let Some(shape) = shape {
+        if !closed.is_empty() {
             self.append_candidates(
                 context,
-                self.closed.get(&(item, shape)).map_or(&[], Vec::as_slice),
+                closed,
                 availability,
                 purpose,
                 &mut result,
@@ -278,17 +290,17 @@ impl Implementations {
             )?;
         }
         for head in subject.heads() {
-            let buckets: [&[usize]; 2] = if shape.is_some() {
-                self.open
-                    .get(&(item, Some(head)))
-                    .map_or([&[]; 2], |bucket| bucket.candidates(argument))
-            } else {
+            let buckets: [&[usize]; 2] = if matches!(match_kind, ClosedMatch::Unresolved) {
                 [
                     self.heads
                         .get(&(item, Some(head)))
                         .map_or(&[], Vec::as_slice),
                     &[],
                 ]
+            } else {
+                self.open
+                    .get(&(item, Some(head)))
+                    .map_or([&[]; 2], |bucket| bucket.candidates(argument))
             };
             for bucket in buckets {
                 self.append_candidates(

@@ -140,6 +140,62 @@ fn repeated_validated_lookups_share_the_wide_ordered_candidate_list()
 }
 
 #[test]
+fn distinct_goals_share_open_candidates_without_hiding_closed_headers()
+-> Result<(), Box<dyn std::error::Error>> {
+    use super::Availability;
+    use crate::types::{
+        infer::{Context, Instantiation},
+        parameters::{Parameter, ParameterKind},
+    };
+
+    let mut store = Store::default();
+    let mut registry = Implementations::default();
+    let formal = store.intern_parameter(Parameter {
+        owner: ItemId(2),
+        index: 0,
+        kind: ParameterKind::Type { sized: true },
+    })?;
+    let open = Argument::Type(store.intern(Kind::Parameter(formal))?);
+    let exact = Argument::Type(TypeId::primitive(Primitive::U8));
+    for ordinal in 0..65 {
+        let argument = if ordinal < 64 { open } else { exact };
+        let value = header(&mut store, ordinal, &[argument])?;
+        let owner = value.owner;
+        registry.prepare(&mut store, ItemId(1), value)?;
+        registry.complete(owner, Vec::new(), Vec::new(), Vec::new())?;
+    }
+    registry.finish_constant_headers(|_| false)?;
+    registry.finish_validation()?;
+
+    let mut lists = Vec::new();
+    for argument in [
+        Argument::Type(TypeId::primitive(Primitive::I32)),
+        Argument::Type(TypeId::primitive(Primitive::U32)),
+        exact,
+        open,
+    ] {
+        let predicate = header(&mut store, 100, &[argument])?.predicate;
+        let mut context = Context::default();
+        let mut substitution = Instantiation::new(&mut context, &store, &[])?;
+        let goal = context.instantiate_predicate(&mut store, predicate, &mut substitution)?;
+        let Candidates::Ready(owners) =
+            registry.candidates(&mut store, &mut context, &goal, Availability::Validated)?
+        else {
+            return Err("validated lookup did not publish candidates".into());
+        };
+        lists.push(owners);
+    }
+    let [first, second, matched, unresolved] = lists.as_slice() else {
+        return Err("missing candidate lists".into());
+    };
+    assert_eq!(first.as_slice(), (10..74).map(DefId).collect::<Vec<_>>());
+    assert!(std::ptr::eq(first.as_slice(), second.as_slice()));
+    assert_eq!(matched.as_slice(), (10..75).map(DefId).collect::<Vec<_>>());
+    assert_eq!(unresolved.as_slice(), matched.as_slice());
+    Ok(())
+}
+
+#[test]
 fn unrelated_closed_arguments_do_not_create_overlap_probes()
 -> Result<(), Box<dyn std::error::Error>> {
     let mut store = Store::default();

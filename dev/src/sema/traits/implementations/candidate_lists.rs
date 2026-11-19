@@ -80,10 +80,17 @@ impl Collected {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub(super) enum ClosedMatch {
+    Unresolved,
+    Absent,
+    Present(ShapeKey),
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) struct Lookup {
     pub(super) item: Identity,
     pub(super) subject: Subject,
-    pub(super) shape: Option<ShapeKey>,
+    pub(super) closed: ClosedMatch,
     pub(super) argument: Option<ItemId>,
 }
 
