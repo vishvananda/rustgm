@@ -289,6 +289,15 @@ are in the frontier checkout. The zero-validity probe is consistent with the
 Verify the exact instance and use its retained niche layout to determine which
 variant zero bytes select.
 
+The startup successor takes enum fields from the retained niche or tag and
+checks the selected fields for zero validity. A null function-pointer niche
+selects the empty variant. A bare function pointer still fails the check.
+The longer tagged scan charges the layout work budget, while the common
+first-variant zero tag is a direct read. The CTFE route retains its
+existing conservative behavior. The optimized callback and enum controls,
+and the original `println` replay, use the same candidate build under
+`obj/parallel/std-startup-successor/` in the frontier checkout.
+
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
 programs reproduce the lifetime failure when an inferred trait method item goes
@@ -455,10 +464,28 @@ ledger. The older formats retain their source publication guard. Six pinned
 rustc provider/client controls agree with their declared outcomes for
 fundamental locality, closed trait disjointness and forced dyn incompatibility.
 Formatting and architecture checks pass. The private harness builds timed out.
-The optimized candidate is building for the six fresh consumers and the
-original strict `core` replay. The sources and receipts are in the performance
-checkout under `obj/parallel/v14-definition-policy-rustc/` and
-`obj/parallel/v14-definition-policy-successor/`.
+The optimized provider emits v14 metadata. Fresh consumers accept closed trait
+disjointness, reject overlap for the ordinary trait, reject the ordinary
+foreign wrapper, and reject the forced trait object. The marked-wrapper client
+reaches traversal but lacks a completed local source producer for scratch
+accounting. Its successor charges the existing local input-graph budget.
+The ordinary trait object passes formation and later fails the consumer's
+scalar export profile, so the focused successor checks a private declaration.
+Receipts are under `obj/parallel/v14-definition-policy-rustc/`,
+`obj/parallel/v14-definition-policy-successor/`, and
+`obj/parallel/v14-definition-policy-repaired/` in the performance checkout.
+
+The unchanged strict `core` replay with this encoding advances to
+`incoherent target authority and inherent index require their wider metadata profile`.
+It takes 36.86 seconds, records zero bring-up obligations and emits no artifacts.
+The pinned core sources mark `core::error::Error`, `ffi::CStr`, `wtf8::Wtf8`
+and the I/O error struct. Downstream alloc and std declare inherent methods on
+these owners or their trait objects. Each consumer must authenticate the
+defining target and its own marked methods, then join their validated headers
+to the existing nominal or principal-trait method bucket. The current
+inherent metadata profile covers provider-owned nominals. The strict receipt is
+under `obj/parallel/strict-core/definition-policy/`.
+[Local target contract](pa31-incoherent-target-checkpoint.md)
 
 All four frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
