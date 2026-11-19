@@ -118,7 +118,10 @@ fn decoded_definition_policies_control_coherence_and_dyn_formation() -> TestResu
             Some("overlapping trait implementation"),
         ),
         ("fn take(_: &dyn base::Closed) {}", None),
-        ("fn take(_: &dyn base::Forced) {}", Some("not dyn compatible")),
+        (
+            "fn take(_: &dyn base::Forced) {}",
+            Some("not dyn compatible"),
+        ),
     ] {
         let source = format!("#![feature(no_core)]\n#![no_core]\nextern crate base;\n{body}");
         let result = crate::source_packets::client_analysis(crates::decode(&bytes)?, &source);
