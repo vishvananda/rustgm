@@ -11,6 +11,11 @@ const CASES: &[(&str, &str, bool)] = &[
         false,
     ),
     (
+        "mutable-object-reborrow-shortens-bound",
+        "trait Write{fn write(&mut self);}impl Write for u8{fn write(&mut self){*self+=2;}}struct Formatter<'a>{buf:&'a mut(dyn Write+'a)}impl<'a> Formatter<'a>{fn wrap<'b,'c,F>(&'b mut self,f:F)->Formatter<'c>where 'b:'c,F:FnOnce(&'b mut(dyn Write+'b))->&'c mut(dyn Write+'c){Formatter{buf:f(self.buf)}}}fn main(){let mut v=7u8;let mut a=Formatter{buf:&mut v};let b=a.wrap(|w|w);b.buf.write();check(v==9);}",
+        false,
+    ),
+    (
         "upcast-constant",
         "trait A{fn a(&self)->u8;}trait B:A{}impl A for u8{fn a(&self)->u8{*self}}impl B for u8{}const P:&dyn B=&7u8;const Q:&dyn A=P;fn main(){check(Q.a()==7);}",
         false,
@@ -86,6 +91,18 @@ const REJECTED: &[(&str, &str)] = &[
     (
         "upcast-strengthened-object-lifetime",
         "trait A{}trait B:A{}fn bad<'a>(x:&'a(dyn B+'a))->&'a(dyn A+'static){x}fn main(){}",
+    ),
+    (
+        "mutable-object-reborrow-cannot-strengthen-bound",
+        "trait A{}fn bad<'s,'a:'s>(x:&'s mut(dyn A+'a))->&'s mut(dyn A+'static){x}fn main(){}",
+    ),
+    (
+        "mutable-object-reborrow-cannot-change-nested-reference",
+        "trait A{}fn bad<'s,'a:'s>(x:&'s mut &'s mut(dyn A+'a))->&'s mut &'s mut(dyn A+'s){x}fn main(){}",
+    ),
+    (
+        "mutable-object-reborrow-keeps-trait-input-invariant",
+        "trait A<'a>{}fn bad<'s,'a:'s>(x:&'s mut(dyn A<'a>+'a))->&'s mut(dyn A<'s>+'s){x}fn main(){}",
     ),
     (
         "upcast-shared-to-mutable",

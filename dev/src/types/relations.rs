@@ -539,11 +539,22 @@ impl<'a> Constraints<'a> {
                         if y { Variance::Invariant } else { covariant },
                     )?;
                 } else {
+                    // A selected reborrow can shorten the immediate object's
+                    // lifetime with the same metadata. The dynamic relation
+                    // still compares its trait inputs invariantly. Child
+                    // relations do not inherit the reborrow permission.
+                    let invariant = y
+                        && !(relation.reborrow
+                            && matches!(self.types.kind(left), Some(Kind::Dynamic { .. })));
                     self.child(
                         relation,
                         left,
                         right,
-                        if y { Variance::Invariant } else { covariant },
+                        if invariant {
+                            Variance::Invariant
+                        } else {
+                            covariant
+                        },
                     )?;
                 }
             }
