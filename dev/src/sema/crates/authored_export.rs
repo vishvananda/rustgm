@@ -29,7 +29,7 @@ mod verbatim_exports;
 use crate::{
     resolve::{
         expansion::Report,
-        model::{Access, DefId, DefKind, Namespace, ScopeId},
+        model::{Access, DefId, DefKind, Namespace, Origin, ScopeId},
     },
     sema::{associated::OwnerKind, model::Declarations},
     support::{
@@ -1096,21 +1096,7 @@ fn require_export_mode(
             return Err("source availability export requires its completed actual library policy");
         }
     }
-    // Version fourteen transports the checked local and parameter slots and
-    // CFG targets. Their syntax marks only affect resolution in this crate.
-    // Contextual item bindings still require their name lookup provenance.
-    let marked = if languages {
-        mode != ExportMode::CompilerOperations
-            && (report.package.marks.has_item_contexts()
-                || report.resolution.bindings.has_contextual_locals())
-    } else {
-        report.package.marks.context_count() != 1
-    };
-    if report.resolution.bindings.has_contextual_items() || marked {
-        waiving(Err(
-            "source macro/semantic-name provenance metadata is not implemented",
-        ))?;
-    }
+    require_name_provenance(report, facts, mode, languages)?;
     facts
         .source_bindings
         .as_deref()
@@ -1126,4 +1112,78 @@ fn require_export_mode(
         languages,
     )?;
     Ok(())
+}
+
+fn require_name_provenance(
+    report: &Report,
+    facts: &Declarations,
+    mode: ExportMode,
+    languages: bool,
+) -> Result<(), &'static str> {
+    let bindings = &report.resolution.bindings;
+    // The originals retain checked local slots and CFG targets. For item
+    // names, require either explicit namespace transport or a checked slot.
+    let unsupported = if languages && mode == ExportMode::CompilerOperations {
+        bindings
+            .contextual_items()
+            .any(|(scope, name, namespace, binding)| {
+                report
+                    .resolution
+                    .definitions
+                    .get(binding.target.0 as usize)
+                    .is_none_or(|item| {
+                        binding.ambiguous
+                            || binding.origin != Origin::Direct
+                            || item.scope != scope
+                            || item.name != name
+                            || item.namespace != namespace
+                            || item.node.is_none()
+                            || binding.access != item.access
+                            || !matches!(item.access, Access::Within(_))
+                            || !contextual_slot(facts, binding.target, item.kind)
+                    })
+            })
+    } else {
+        bindings.has_contextual_items()
+            || if languages {
+                report.package.marks.has_item_contexts() || bindings.has_contextual_locals()
+            } else {
+                report.package.marks.context_count() != 1
+            }
+    };
+    if unsupported {
+        waiving(Err(
+            "source macro/semantic-name provenance metadata is not implemented",
+        ))
+    } else {
+        Ok(())
+    }
+}
+
+fn contextual_slot(facts: &Declarations, target: DefId, kind: DefKind) -> bool {
+    match kind {
+        // An actual formal owns a typed edge in its function or type scheme.
+        DefKind::Generic => true,
+        // A trait impl uses the checked owner and member mapping on import.
+        DefKind::Function | DefKind::TypeAlias => facts
+            .associated
+            .owner(target)
+            .and_then(|owner| facts.associated.get(owner))
+            .is_some_and(|owner| {
+                owner.source.is_some()
+                    && matches!(
+                        owner.kind,
+                        OwnerKind::Impl {
+                            trait_type: Some(_),
+                            ..
+                        }
+                    )
+                    && facts
+                        .generics
+                        .implementations
+                        .as_ref()
+                        .is_some_and(|registry| registry.is_validated(owner.self_definition))
+            }),
+        _ => false,
+    }
 }

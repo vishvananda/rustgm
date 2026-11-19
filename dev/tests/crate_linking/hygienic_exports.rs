@@ -159,6 +159,59 @@ pub fn observed() -> u8 { identity(answer!()) }
 }
 
 #[test]
+fn body_operations_preserve_contextual_formals_and_trait_members() -> Result {
+    let packet = Packet::new(GROUP, SPEC, "contextual-slots", "provider")?;
+    let provider = generated(
+        &packet,
+        "contextual-slots",
+        DECL_MACRO,
+        r"
+pub struct Marker;
+pub trait Read { type Output; fn read(&self) -> u8; }
+macro implement() {
+    impl Read for Marker {
+        type Output = u8;
+        fn read(&self) -> u8 { 42 }
+    }
+}
+implement!();
+macro generic($name:ident) { pub fn $name<T>(value: T) -> T { value } }
+generic!(identity);
+pub fn answer() -> u8 {
+    let value = Marker;
+    identity(<Marker as Read>::read(&value))
+}
+",
+    )?;
+    let mut export = packet.export("module-body-operations-v14", &provider, &packet.metadata);
+    super::artifacts::checked("contextual-slots", &packet.folder, &mut export)?;
+    packet.rejected(
+        "contextual-slots-v13",
+        &mut packet.export(PROFILE, &provider, &packet.folder.join("legacy.rgcrate")),
+        PROVENANCE,
+    )?;
+    for (label, value) in [("exact-type", "base::answer()"), ("other-type", "42u16")] {
+        let client = packet.folder.join(format!("{label}.rs"));
+        std::fs::write(
+            &client,
+            format!(
+                "#![feature(no_core)]#![no_core]\n#[unsafe(no_mangle)]\n\
+                 pub extern \"C\" fn answer() -> u8 {{\n\
+                     let value: <base::Marker as base::Read>::Output = {value}; value\n\
+                 }}\n"
+            ),
+        )?;
+        let mut command = packet.consumer(&client, label, &packet.metadata, &packet.owner());
+        if label == "exact-type" {
+            super::artifacts::checked(label, &packet.folder, &mut command)?;
+        } else {
+            packet.rejected(label, &mut command, "incompatible types")?;
+        }
+    }
+    Ok(())
+}
+
+#[test]
 fn marked_locals_opaque_marks_and_generated_exported_macros_stay_fenced() -> Result {
     let packet = Packet::new(GROUP, SPEC, "fences", "provider")?;
     for (label, opaque, control) in FENCED {

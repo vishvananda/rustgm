@@ -1,5 +1,5 @@
 //! Non-root item keys share the table's declaration ordinals and scope order.
-use super::{BindingKey, BindingTable};
+use super::{Binding, BindingKey, BindingTable, NameId, Namespace, ScopeId};
 use crate::{
     expand::marks::{ItemContext, LocalContext},
     support::hash::HashMap,
@@ -20,6 +20,18 @@ impl BindingTable {
     #[must_use]
     pub fn has_contextual_items(&self) -> bool {
         self.contextual.is_some()
+    }
+    /// Bindings whose item namespace key carries a non-root context.
+    pub(crate) fn contextual_items(
+        &self,
+    ) -> impl Iterator<Item = (ScopeId, NameId, Namespace, &Binding)> {
+        self.contextual
+            .iter()
+            .flat_map(|index| index.forward.iter())
+            .filter_map(|(&(scope, name, namespace, _), &index)| {
+                let binding = self.entries.get(index as usize)?.binding.as_ref()?;
+                Some((scope, name, namespace, binding))
+            })
     }
     /// A local, parameter or label bound by a marked name token. Body-local
     /// declaration rows carry only a spelling, never this context.
