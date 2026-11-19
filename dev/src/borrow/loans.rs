@@ -412,6 +412,28 @@ impl Flow<'_> {
         }
         Ok(())
     }
+    fn statement<const RECORD: bool>(
+        &mut self,
+        state: &mut Set,
+        action: Action,
+        point: Point,
+        inspect: bool,
+    ) -> Result<(), &'static str> {
+        if let Action::Evaluate(id) = action {
+            self.activation(state, id, inspect)?;
+        }
+        if RECORD && inspect {
+            inspection::record(&mut self.snapshots, point, state)?;
+        }
+        if inspect {
+            self.inspect(state, action)?;
+        }
+        match action {
+            Action::Evaluate(id) => self.generate(state, id, point, inspect),
+            Action::Store { place, .. } => self.replace_slot(state, place),
+            _ => Ok(()),
+        }
+    }
     fn transfer<const RECORD: bool>(
         &mut self,
         block: usize,
@@ -479,18 +501,8 @@ impl Flow<'_> {
                 continue;
             }
             let action = self.body.statements[current as usize].action;
-            if let Action::Evaluate(id) = action {
-                self.activation(state, id, inspect).map_err(error)?;
-            }
-            if RECORD && inspect {
-                inspection::record(&mut self.snapshots, point, state).map_err(error)?;
-            }
-            if inspect {
-                self.inspect(state, action).map_err(error)?;
-            }
-            if let Action::Evaluate(id) = action {
-                self.generate(state, id, point, inspect).map_err(error)?;
-            }
+            self.statement::<RECORD>(state, action, point, inspect)
+                .map_err(error)?;
         }
         Ok(())
     }
@@ -825,7 +837,8 @@ fn finish<const RECORD: bool>(
         snapshots: Vec::new(),
     };
     flow.collect(types, contract).map_err(error)?;
-    let replacements = replacements::Replacements::new(&flow.loans, &flow.places).map_err(error)?;
+    let replacements =
+        replacements::Replacements::new(&flow.loans, &mut flow.places).map_err(error)?;
     flow.charge(replacements.steps).map_err(error)?;
     flow.replacements = replacements;
     flow.expirations = expiration::Expirations::new(&flow.loans, &flow.regions).map_err(error)?;

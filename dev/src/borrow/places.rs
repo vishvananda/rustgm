@@ -334,6 +334,27 @@ impl Index {
     pub fn root(&self, id: Id) -> Place {
         self.paths[id.0].root
     }
+    /// Deepest definite owned slot whose replacement changes the loan's reference base.
+    pub fn reference_slot(&mut self, mut id: Id) -> Result<Option<Id>, &'static str> {
+        if !matches!(self.root(id), Place::Local(_)) {
+            return Ok(None);
+        }
+        let mut slot = None;
+        while let Some(parent) = self.parent(id) {
+            self.charge(1)?;
+            match self.paths[id.0].step {
+                Some(Step::Dereference { .. }) => slot = Some(parent),
+                Some(Step::Field(_) | Step::FutureField(_) | Step::Element(_)) => {}
+                _ if slot.is_some() => slot = Some(parent),
+                _ => {}
+            }
+            id = parent;
+        }
+        Ok(slot)
+    }
+    pub fn parent(&self, id: Id) -> Option<Id> {
+        self.paths[id.0].parent
+    }
     pub fn conflicts(
         &mut self,
         loan: Id,

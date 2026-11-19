@@ -1,8 +1,8 @@
 //! Destructor access and storage endpoints use the same ordered points as liveness.
-use super::{Depth, Error, Flow, Mode, Point, Set, inspection};
+use super::{Depth, Error, Flow, Mode, Point, Set};
 use crate::{
     body::{
-        ir::{Action, BlockId, Place},
+        ir::{BlockId, Place},
         storage::Location,
     },
     borrow::{
@@ -91,18 +91,8 @@ impl Flow<'_> {
                         return Err(error("cleanup statement is on an edge"));
                     };
                     let action = self.body.statements[before as usize].action;
-                    if let Action::Evaluate(id) = action {
-                        self.activation(state, id, inspect).map_err(error)?;
-                    }
-                    if RECORD && inspect {
-                        inspection::record(&mut self.snapshots, point, state).map_err(error)?;
-                    }
-                    if inspect {
-                        self.inspect(state, action).map_err(error)?;
-                    }
-                    if let Action::Evaluate(id) = action {
-                        self.generate(state, id, point, inspect).map_err(error)?;
-                    }
+                    self.statement::<RECORD>(state, action, point, inspect)
+                        .map_err(error)?;
                 }
                 Effect::Cleanup(id) if inspect => {
                     let cleanup = plan

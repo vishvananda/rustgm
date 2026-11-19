@@ -148,6 +148,36 @@ fn last_uses_aliases_and_reborrow_permissions() -> Result<(), Box<dyn std::error
 }
 
 #[test]
+fn replacing_reference_slots_retires_only_old_referent_paths()
+-> Result<(), Box<dyn std::error::Error>> {
+    cases(
+        "reference-slot",
+        &[
+            (
+                "fn same(x:&mut u8)->&mut u8{x}fn f(mut x:&mut u8,b:bool){while b{x=same(x);}}",
+                true,
+            ),
+            (
+                "struct Slot<'a>{p:&'a mut u8}fn same(x:&mut u8)->&mut u8{x}                 fn f(mut x:Slot<'_>,b:bool){while b{x.p=same(x.p);}}",
+                true,
+            ),
+            (
+                "fn f<'a>(mut x:&'a mut u8,y:&'a mut u8,b:bool){                 let q=&mut *x;if b{x=y;}*x=1;*q=2;}",
+                false,
+            ),
+            (
+                "fn f<'a>(mut x:&'a mut u8,y:&'a mut u8){let q=&x;x=y;let _r=**q;}",
+                false,
+            ),
+            (
+                "fn f(){let mut a=0;let mut b=0;let mut x=&mut a;                 let q=&mut *x;x=&mut b;a=1;*q=2;*x=3;}",
+                false,
+            ),
+        ],
+    )
+}
+
+#[test]
 fn cli_checks_loans_and_keeps_reference_lowering_explicit() -> Result<(), Box<dyn std::error::Error>>
 {
     use std::{
