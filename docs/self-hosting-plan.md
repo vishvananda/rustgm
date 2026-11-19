@@ -705,8 +705,14 @@ same-spelled helpers from distinct macro expansions, and a separate client
 evaluates an imported const helper. Both reductions return `42` natively.
 The focused regression rejects a direct call to the private helper through
 the module namespace. It also checks byte-exact metadata round-trip and the
-older provenance gates. Four focused cases and strict Clippy pass. The exact
-`core` replay is the remaining check for this slice.
+older provenance gates. Four focused cases and strict Clippy pass.
+
+The optimized `036ba5ddd` replay clears name provenance on the same 309
+`core` inputs and reaches `source type reflection contract transport is not
+implemented` after 28.14 seconds. It records zero bring-up rows and emits no
+artifacts. The actual declarations are `TypeId` in `core/src/any.rs:723` and
+`Type` in `core/src/mem/type_info.rs:13`. The receipt is under
+`obj/parallel/strict-core/private-helpers/` in the frontier checkout.
 
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
