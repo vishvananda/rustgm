@@ -44,6 +44,7 @@ pub(super) fn prepare(
     let mut members = Vec::with_capacity(rows.nominals.len());
     let mut shapes = Vec::with_capacity(rows.nominals.len());
     let mut owners = Vec::with_capacity(rows.nominals.len());
+    let mut limits = Vec::new();
     let (mut enum_members, mut enum_shapes) = (Vec::new(), Vec::new());
     let constructors = super::definition_cells::struct_constructors(rows, budget)?;
     for (row, constructor) in rows.nominals.iter().zip(constructors) {
@@ -73,16 +74,7 @@ pub(super) fn prepare(
             record_fields(graph, facts, budget, owner, raw_fields)?
         };
         let fields_type = facts.types.intern_list(&types).map_err(error)?;
-        let repr = aggregate::Repr {
-            representation: match row.repr {
-                RecordRepr::Rust => aggregate::Representation::Rust,
-                RecordRepr::C => aggregate::Representation::C,
-                // The consumer's own layout pass re-proves it.
-                RecordRepr::Transparent => aggregate::Representation::Transparent,
-                RecordRepr::Simd => aggregate::Representation::Simd,
-            },
-            ..aggregate::Repr::default()
-        };
+        let repr = mapped_repr(row);
         // Version thirteen: a tuple or unit struct publishes its single field
         // group with its constructor, as an enum publishes each variant's.
         if let Some(constructor) = constructor {
@@ -103,6 +95,10 @@ pub(super) fn prepare(
         } else {
             members.push((ItemId(owner.0), fields));
         }
+        if let Some(limit) = row.simd_lane_limit {
+            budget.reserve(4 * size_of::<(ItemId, u64)>())?;
+            limits.push((ItemId(owner.0), limit));
+        }
         shapes.push((ItemId(owner.0), repr, fields_type));
         owners.push(owner);
     }
@@ -121,13 +117,26 @@ pub(super) fn prepare(
         .map_err(error)?;
     let shapes = facts
         .aggregates
-        .prepare_imported_nominals(&facts.types, &shapes, &enum_shapes, phantom, pay)
+        .prepare_imported_nominals(&facts.types, &shapes, &enum_shapes, phantom, &limits, pay)
         .map_err(error)?;
     Ok(Some(Prepared {
         members,
         shapes,
         owners,
     }))
+}
+
+fn mapped_repr(row: &s::NominalHeader) -> aggregate::Repr {
+    aggregate::Repr {
+        representation: match row.repr {
+            RecordRepr::Rust => aggregate::Representation::Rust,
+            RecordRepr::C => aggregate::Representation::C,
+            RecordRepr::Transparent => aggregate::Representation::Transparent,
+            RecordRepr::Simd => aggregate::Representation::Simd,
+        },
+        packed: row.packed_simd.then_some(1),
+        ..aggregate::Repr::default()
+    }
 }
 /// The declaration the packet's own `PhantomData` role names. Only a struct
 /// with it is interned with a logical argument; the role re-proof later

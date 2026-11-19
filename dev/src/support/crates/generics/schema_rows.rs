@@ -513,6 +513,10 @@ pub struct NominalHeader {
     /// Locality policy on the defining struct, independent of its representation.
     pub fundamental: bool,
     pub incoherent_inherent: bool,
+    /// Packed alignment one on the actual SIMD representation.
+    pub packed_simd: bool,
+    /// The defining struct's checked monomorphization lane limit.
+    pub simd_lane_limit: Option<u64>,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct NominalField {

@@ -20,6 +20,15 @@ pub(super) fn require_profile(
         if rows.nominals.iter().any(|row| row.incoherent_inherent) {
             return Err("source incoherent nominal requires the declaration policy profile");
         }
+        if rows
+            .nominals
+            .iter()
+            .any(|row| row.packed_simd || row.simd_lane_limit.is_some())
+        {
+            return Err(
+                "source SIMD representation policy requires the declaration policy profile",
+            );
+        }
     }
     for body in &rows.originals {
         work.charge(
@@ -104,6 +113,14 @@ pub(super) fn headers(
             .ok_or("unknown source nominal declaration")?;
         if row.fundamental && declaration.definition.kind != DefinitionKind::Struct {
             return Err("source fundamental nominal must name its actual struct");
+        }
+        if (row.packed_simd || row.simd_lane_limit.is_some())
+            && declaration.definition.kind != DefinitionKind::Struct
+        {
+            return Err("source SIMD representation policy must name its actual struct");
+        }
+        if row.packed_simd && row.repr != crate::support::crates::RecordRepr::Simd {
+            return Err("source SIMD packing requires an actual SIMD representation");
         }
         let cell = headers
             .get_mut(row.declaration.0 as usize)

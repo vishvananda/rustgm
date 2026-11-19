@@ -50,11 +50,14 @@ impl Definitions {
     pub(crate) fn simd_lane_limit(&self, item: ItemId) -> Option<u64> {
         self.simd_limits.as_deref()?.get(&item).copied()
     }
-    pub(crate) fn require_simd_limit_transport(&self) -> Result<(), &'static str> {
+    pub(crate) fn require_simd_limit_transport(
+        &self,
+        authored: impl Fn(ItemId) -> bool,
+    ) -> Result<(), &'static str> {
         if self
             .simd_limits
             .as_deref()
-            .is_some_and(|rows| !rows.is_empty())
+            .is_some_and(|rows| rows.keys().copied().any(authored))
         {
             return Err("SIMD lane limits require authenticated representation metadata transport");
         }

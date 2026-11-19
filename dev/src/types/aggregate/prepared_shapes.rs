@@ -37,6 +37,7 @@ impl Definitions {
         structs: &[(ItemId, Repr, ListId)],
         rows: &[ImportedEnum],
         phantom: Option<ItemId>,
+        limits: &[(ItemId, u64)],
         mut pay: impl FnMut(usize, usize) -> Result<(), &'static str>,
     ) -> Result<Prepared, &'static str> {
         let variants = rows
@@ -56,8 +57,12 @@ impl Definitions {
                 .map_err(|_| "external enum nullable policy reservation failed")?;
         }
         let count = rows.len().saturating_add(structs.len());
+        let limit_bytes = self.reserve_imported_simd_limits(limits.len(), &mut pay)?;
         self.prepare_staged(count, variants, pay, |staged, destination| {
-            stage_structs(staged, destination, structs, phantom)?;
+            stage_structs(staged, destination, types, structs, phantom)?;
+            for &(item, limit) in limits {
+                staged.register_simd_limit(item, limit, limit_bytes)?;
+            }
             for row in rows {
                 if destination.get(row.item).is_some()
                     || destination.nullable_enum(row.item).is_some()
@@ -72,6 +77,38 @@ impl Definitions {
             }
             Ok(())
         })
+    }
+    fn reserve_imported_simd_limits(
+        &mut self,
+        count: usize,
+        pay: &mut impl FnMut(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<usize, &'static str> {
+        if count == 0 {
+            return Ok(0);
+        }
+        let limit_bytes = std::mem::size_of::<super::lane_limits::Limits>()
+            + retained::new_map::<ItemId, u64>(count);
+        let (len, capacity) = self
+            .simd_limits
+            .as_deref()
+            .map_or((0, 0), |limits| (limits.len(), limits.capacity()));
+        let growth = retained::Growth::map::<ItemId, u64>(len, capacity, count);
+        let owner = if self.simd_limits.is_none() {
+            std::mem::size_of::<super::lane_limits::Limits>()
+        } else {
+            0
+        };
+        pay(
+            count.saturating_add(growth.work),
+            limit_bytes
+                .saturating_add(growth.bytes)
+                .saturating_add(owner),
+        )?;
+        self.simd_limits
+            .get_or_insert_default()
+            .try_reserve(count)
+            .map_err(|_| "external SIMD limit reservation failed")?;
+        Ok(limit_bytes)
     }
     fn prepare_staged(
         &mut self,
@@ -139,6 +176,7 @@ impl Definitions {
 fn stage_structs(
     staged: &mut Definitions,
     destination: &Definitions,
+    types: &crate::types::Store,
     rows: &[(ItemId, Repr, ListId)],
     phantom: Option<ItemId>,
 ) -> Result<(), &'static str> {
@@ -159,6 +197,12 @@ fn stage_structs(
                 discriminant: 0,
             }],
         )?;
+        if repr.representation == super::Representation::Simd {
+            let shape = staged
+                .get(item)
+                .ok_or("imported SIMD struct lost its staged definition")?;
+            staged.validate_simd_declaration(types, shape)?;
+        }
     }
     Ok(())
 }
@@ -200,6 +244,10 @@ impl Ready<'_> {
                 .nullable_enums
                 .get_or_insert_with(Default::default)
                 .extend(*policies);
+        }
+        if let Some(limits) = self.rows.simd_limits {
+            // Preparation prepaid and reserved one destination slot per limit.
+            target.simd_limits.get_or_insert_default().extend(*limits);
         }
         for (item, index) in self.rows.index {
             target.index.insert(item, index + entry_base);

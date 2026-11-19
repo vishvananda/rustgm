@@ -3,6 +3,8 @@ use super::{Input, Writer, id, range, s};
 use crate::support::crates::{RecordRepr, generics::TypeRef, owner_catalog::DeclarationRef};
 const FUNDAMENTAL: u8 = 128;
 const INCOHERENT_INHERENT: u8 = 64;
+const SIMD_LANE_LIMIT: u8 = 32;
+const PACKED_SIMD: u8 = 16;
 
 pub(super) fn encode(out: &mut Writer, rows: s::ValidatedView<'_>) -> Result<(), &'static str> {
     // Version thirteen alone carries a transparent or SIMD struct header.
@@ -33,7 +35,13 @@ pub(super) fn nominal_write(out: &mut Writer, row: &s::NominalHeader) -> Result<
     };
     out.u8(repr
         | (u8::from(row.fundamental) * FUNDAMENTAL)
-        | (u8::from(row.incoherent_inherent) * INCOHERENT_INHERENT))
+        | (u8::from(row.incoherent_inherent) * INCOHERENT_INHERENT)
+        | (u8::from(row.simd_lane_limit.is_some()) * SIMD_LANE_LIMIT)
+        | (u8::from(row.packed_simd) * PACKED_SIMD))?;
+    if let Some(limit) = row.simd_lane_limit {
+        out.bytes(&limit.to_le_bytes())?;
+    }
+    Ok(())
 }
 pub(super) fn nominal_read(read: &mut Input<'_, '_>) -> Result<s::NominalHeader, &'static str> {
     let mut row = s::NominalHeader {
@@ -47,12 +55,18 @@ pub(super) fn nominal_read(read: &mut Input<'_, '_>) -> Result<s::NominalHeader,
         repr: RecordRepr::Rust,
         fundamental: false,
         incoherent_inherent: false,
+        packed_simd: false,
+        simd_lane_limit: None,
     };
     let flags = read.reader.u8()?;
     let repr = if read.profile.declaration_policies() {
         row.fundamental = flags & FUNDAMENTAL != 0;
         row.incoherent_inherent = flags & INCOHERENT_INHERENT != 0;
-        flags & !(FUNDAMENTAL | INCOHERENT_INHERENT)
+        row.packed_simd = flags & PACKED_SIMD != 0;
+        if flags & SIMD_LANE_LIMIT != 0 {
+            row.simd_lane_limit = Some(read.reader.u64()?);
+        }
+        flags & !(FUNDAMENTAL | INCOHERENT_INHERENT | SIMD_LANE_LIMIT | PACKED_SIMD)
     } else {
         flags
     };

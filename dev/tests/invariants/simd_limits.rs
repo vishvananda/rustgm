@@ -181,7 +181,7 @@ fn old_metadata_profiles_cannot_silently_drop_limits() -> TestResult {
         analysis
             .facts
             .aggregates
-            .require_simd_limit_transport()
+            .require_simd_limit_transport(|_| true)
             .is_err()
     );
     Ok(())

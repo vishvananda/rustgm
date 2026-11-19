@@ -29,6 +29,19 @@ pub struct Exports {
     pub interface: Interface,
     pub roots: Vec<DefId>,
 }
+
+pub(super) fn require_local_simd_limit_transport(
+    report: &Report,
+    facts: &Declarations,
+) -> Result<(), &'static str> {
+    facts.aggregates.require_simd_limit_transport(|item| {
+        report
+            .resolution
+            .definitions
+            .get(item.0 as usize)
+            .is_none_or(|definition| definition.node.is_some())
+    })
+}
 /// Publish a supported metadata profile after ordinary semantic checking.
 /// The caller must complete body proofs/lowering before writing the artifact.
 /// # Errors
@@ -202,10 +215,7 @@ fn validate_profile(
     facts
         .require_dispatch_policy_transport(report, false)
         .map_err(error)?;
-    facts
-        .aggregates
-        .require_simd_limit_transport()
-        .map_err(error)?;
+    require_local_simd_limit_transport(report, facts).map_err(error)?;
     facts
         .require_optimization_transport(report)
         .map_err(error)?;

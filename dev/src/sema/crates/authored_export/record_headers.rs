@@ -100,8 +100,12 @@ impl Stage {
             .get(item)
             .ok_or("source nominal lacks its completed shape")?;
         let enumeration = shape.kind == aggregate::Kind::Enum;
-        let repr = record_repr(shape.repr, enumeration, self.body_nodes())?;
-        concrete_simd(facts, owner, repr)?;
+        let policies = self.declaration_policies();
+        let (repr, packed_simd) =
+            record_repr(shape.repr, enumeration, self.body_nodes(), policies)?;
+        if !policies {
+            concrete_simd(facts, owner, repr)?;
+        }
         if facts.aggregates.shared_mutation(item) != Some(aggregate::SharedMutation::Ordinary)
             || facts.aggregates.permits_dangling_pointers(item) != Some(false)
             || !(shape.kind == aggregate::Kind::Struct
@@ -150,24 +154,7 @@ impl Stage {
         self.nominal_fields(report, facts, fields, declaration, context, modules)?;
         let end = u32::try_from(self.rows.fields.len())
             .map_err(|_| "source nominal field count overflow")?;
-        let input_start =
-            u32::try_from(self.rows.clauses.len()).map_err(|_| "source nominal clause overflow")?;
-        for input in
-            crate::sema::declaration_inputs::own(&facts.generics, facts.crates.as_deref(), owner)?
-        {
-            self.clause(facts, input, context, None)?;
-        }
-        let input_end =
-            u32::try_from(self.rows.clauses.len()).map_err(|_| "source nominal clause overflow")?;
-        let declared_inputs = u32::try_from(
-            crate::sema::declaration_inputs::declared(
-                &facts.generics,
-                facts.crates.as_deref(),
-                owner,
-            )?
-            .count(),
-        )
-        .map_err(|_| "source nominal declared input count overflow")?;
+        let (inputs, declared_inputs) = self.nominal_inputs(facts, owner, context)?;
         let fundamental = self.declaration_policies()
             && facts.authored_definition_policy(owner)? & s::TraitFlags::FUNDAMENTAL != 0;
         let incoherent_inherent =
@@ -179,19 +166,48 @@ impl Stage {
             scope: declaration,
             self_type,
             fields: g::Range { start, end },
-            inputs: g::Range {
-                start: input_start,
-                end: input_end,
-            },
+            inputs,
             declared_inputs,
             repr,
             fundamental,
             incoherent_inherent,
+            packed_simd,
+            simd_lane_limit: if policies {
+                facts.aggregates.simd_lane_limit(item)
+            } else {
+                None
+            },
         });
         if enumeration {
             self.enum_header(facts, owner, declaration, context)?;
         }
         Ok(())
+    }
+    fn nominal_inputs(
+        &mut self,
+        facts: &Declarations,
+        owner: DefId,
+        context: super::Context,
+    ) -> Result<(g::Range, u32), &'static str> {
+        let start =
+            u32::try_from(self.rows.clauses.len()).map_err(|_| "source nominal clause overflow")?;
+        for input in
+            crate::sema::declaration_inputs::own(&facts.generics, facts.crates.as_deref(), owner)?
+        {
+            self.clause(facts, input, context, None)?;
+        }
+        let end =
+            u32::try_from(self.rows.clauses.len()).map_err(|_| "source nominal clause overflow")?;
+        let declared = u32::try_from(
+            crate::sema::declaration_inputs::declared(
+                &facts.generics,
+                facts.crates.as_deref(),
+                owner,
+            )?
+            .count(),
+        )
+        .map_err(|_| "source nominal declared input count overflow")?;
+        Ok((g::Range { start, end }, declared))
     }
     fn nominal_fields(
         &mut self,
@@ -283,8 +299,19 @@ fn record_repr(
     repr: aggregate::Repr,
     enumeration: bool,
     body_nodes: bool,
-) -> Result<RecordRepr, &'static str> {
-    Ok(match repr {
+    policies: bool,
+) -> Result<(RecordRepr, bool), &'static str> {
+    let packed_simd =
+        repr.packed == Some(1) && repr.representation == aggregate::Representation::Simd;
+    let repr = aggregate::Repr {
+        packed: if packed_simd && policies {
+            None
+        } else {
+            repr.packed
+        },
+        ..repr
+    };
+    let record = match repr {
         aggregate::Repr {
             representation: aggregate::Representation::Rust,
             packed: None,
@@ -322,5 +349,6 @@ fn record_repr(
             arguments: aggregate::ArgumentPassing::Ordinary,
         } if enumeration => RecordRepr::Rust,
         _ => return Err("source nominal representation requires its wider complete contract"),
-    })
+    };
+    Ok((record, packed_simd))
 }

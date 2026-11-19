@@ -8370,7 +8370,12 @@ trait at the unborrowed adjusted receiver and takes the edition from the method
 identifier's token origin. The nominal representation byte carries fundamental
 struct policy in bit 7 and incoherent inherent target policy for structs and
 enums in bit 6.
-The lower bits retain the representation.
+Bit 5 identifies an optional 64-bit SIMD lane limit on the defining struct.
+Bit 4 carries packed alignment one on a SIMD representation. Lower bits
+retain the representation. The importer stages the limit with the actual
+struct and checks the mapped array field shape before publishing either fact.
+Concrete imports use the same substituted lane and packed layout checks as
+local structs.
 The consumer validates the defining artifact, owner and record kind before
 retaining any of these promises. A symbolic helper
 has no ordinary executable body. Ordinary originals retain their own parameter,
