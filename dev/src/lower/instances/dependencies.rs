@@ -61,6 +61,7 @@ struct Discovered {
     adapters: Vec<crate::body::invocation_entries::Entry>,
     closures: Vec<TypeId>,
     calls: Vec<Instance>,
+    reified: Vec<Instance>,
     selectors: Vec<crate::body::ir::ValueId>,
     layouts: Vec<crate::body::ir::ValueId>,
     tables: Vec<(TypeId, TypeId)>,
@@ -70,7 +71,7 @@ struct Discovered {
     futures: Option<Box<FutureDemands>>,
 }
 
-const _: [(); 224] = [(); size_of::<Discovered>()];
+const _: [(); 248] = [(); size_of::<Discovered>()];
 
 /// Classify only an actual direct operation, never a reified/Invoke target.
 /// Registry identity and signature data do not supply its later execution proof.
@@ -315,7 +316,8 @@ impl Discovered {
             }
             None => {
                 if !self.future_operand(facts, body, index, ty)? {
-                    self.callable(&facts.types, ty)?;
+                    let reify = !matches!(value.kind, Rvalue::Call { .. });
+                    self.callable(&facts.types, ty, reify.then_some(body))?;
                 }
             }
         }
@@ -420,10 +422,70 @@ impl Discovered {
         }
         Ok(())
     }
-    fn callable(&mut self, types: &crate::types::Store, ty: TypeId) -> Result<(), &'static str> {
+    fn collect_tables(
+        facts: &mut Declarations,
+        concrete: &mut Vec<Instance>,
+        object_types: &mut Vec<TypeId>,
+        reified: &mut Vec<Instance>,
+        closures: &mut Vec<TypeId>,
+    ) -> Result<(), String> {
+        for id in crate::sema::vtable_plans::complete_tables(facts)? {
+            let table = facts
+                .objects
+                .table(id)
+                .ok_or("missing demanded object table")?;
+            let shape = facts
+                .objects
+                .shape(table.shape)
+                .ok_or("missing demanded object shape")?;
+            for (index, target) in table.methods.iter().enumerate() {
+                let Some(target) = target else { continue };
+                match *target {
+                    crate::sema::vtable_plans::Target::Function(instance) => {
+                        concrete.push(instance);
+                        let slot = shape
+                            .slots
+                            .get(index)
+                            .ok_or("missing demanded object slot")?;
+                        let tracked = match slot.method {
+                            crate::sema::vtable_plans::Method::Declared(definition) => {
+                                facts.recorded_caller_tracking(definition)?
+                            }
+                            crate::sema::vtable_plans::Method::Callable(_) => false,
+                        };
+                        if !tracked {
+                            reified.push(instance);
+                        }
+                    }
+                    crate::sema::vtable_plans::Target::Callable(callable) => {
+                        match facts.types.kind(callable.concrete) {
+                            Some(Kind::FunctionItem { .. }) => {
+                                concrete.push(Instance::new(&facts.types, callable.concrete)?);
+                            }
+                            Some(Kind::Closure { .. }) => closures.push(callable.concrete),
+                            _ => {}
+                        }
+                    }
+                    crate::sema::vtable_plans::Target::Captured(_) => {}
+                }
+            }
+            object_types.push(table.concrete);
+        }
+        Ok(())
+    }
+    fn callable(
+        &mut self,
+        types: &crate::types::Store,
+        ty: TypeId,
+        reify: Option<&Body>,
+    ) -> Result<(), &'static str> {
         match types.kind(ty) {
             Some(Kind::FunctionItem { .. }) => {
-                self.calls.push(Instance::new(types, ty)?);
+                let instance = Instance::new(types, ty)?;
+                self.calls.push(instance);
+                if let Some(body) = reify {
+                    self.reified.push(body.callable_target(instance));
+                }
             }
             Some(Kind::Closure { .. }) => self.closures.push(ty),
             _ => {}
@@ -595,30 +657,14 @@ impl Dependencies {
         for (source, target) in result.upcasts {
             crate::sema::vtable_plans::prepare_upcast(report, facts, source, target)?;
         }
-        for id in crate::sema::vtable_plans::complete_tables(facts)? {
-            let table = facts
-                .objects
-                .table(id)
-                .ok_or("missing demanded object table")?;
-            for target in table.methods.iter().flatten() {
-                match *target {
-                    crate::sema::vtable_plans::Target::Function(instance) => {
-                        concrete.push(instance);
-                    }
-                    crate::sema::vtable_plans::Target::Callable(callable) => {
-                        match facts.types.kind(callable.concrete) {
-                            Some(Kind::FunctionItem { .. }) => {
-                                concrete.push(Instance::new(&facts.types, callable.concrete)?);
-                            }
-                            Some(Kind::Closure { .. }) => result.closures.push(callable.concrete),
-                            _ => {}
-                        }
-                    }
-                    crate::sema::vtable_plans::Target::Captured(_) => {}
-                }
-            }
-            object_types.push(table.concrete);
-        }
+        Discovered::collect_tables(
+            facts,
+            &mut concrete,
+            &mut object_types,
+            &mut result.reified,
+            &mut result.closures,
+        )?;
+        self.prepare_reified(report, facts, result.reified)?;
         Ok(Demands {
             adapters: result.adapters,
             closures: result.closures,
@@ -626,6 +672,28 @@ impl Dependencies {
             object_types,
             futures: result.futures,
         })
+    }
+    fn prepare_reified(
+        &mut self,
+        report: &crate::resolve::expansion::Report,
+        facts: &mut Declarations,
+        instances: Vec<Instance>,
+    ) -> Result<(), &'static str> {
+        if instances.is_empty() {
+            return Ok(());
+        }
+        self.charge(instances.len())?;
+        let mut values = crate::sema::values::Evaluator::new(report, facts);
+        for instance in instances {
+            let Some(Kind::FunctionItem { item, .. }) = values.facts().types.kind(instance.ty())
+            else {
+                return Err("reification dependency lost its selected function item");
+            };
+            values
+                .prepare_reified_location(crate::resolve::model::DefId(item.0))
+                .map_err(crate::sema::values::Failure::message)?;
+        }
+        Ok(())
     }
     fn charge(&mut self, count: usize) -> Result<(), &'static str> {
         self.steps = self.steps.saturating_add(count);
@@ -800,7 +868,7 @@ impl Dependencies {
             result.operators.push((receiver, kind, signature));
             return Ok(());
         }
-        result.callable(&facts.types, ty)
+        result.callable(&facts.types, ty, None)
     }
     fn image_dependencies(
         &mut self,
@@ -820,7 +888,10 @@ impl Dependencies {
             match fragment.target {
                 crate::sema::values::WordTarget::Value(value) => match reader.view(value)? {
                     View::Reference(id) => work.push(Work::Location(id)),
-                    View::Function(instance) => result.calls.push(instance),
+                    View::Function(instance) => {
+                        result.calls.push(instance);
+                        result.reified.push(instance);
+                    }
                     _ => return Err("constant image has an invalid dependency word"),
                 },
                 crate::sema::values::WordTarget::Vtable { concrete, target } => {
@@ -886,7 +957,10 @@ impl Dependencies {
                         continue;
                     }
                     match reader.view(value)? {
-                        View::Function(instance) => result.calls.push(instance),
+                        View::Function(instance) => {
+                            result.calls.push(instance);
+                            result.reified.push(instance);
+                        }
                         View::Image { .. } => {
                             self.image_dependencies(reader, ty, value, &mut work, result)?;
                         }

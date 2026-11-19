@@ -50,6 +50,7 @@ impl Context<'_> {
             operator.call,
             operator.dereferences,
             format!("rg.callable.virtual.{index}"),
+            false,
         )?;
         self.object_callables
             .get_or_insert_with(Default::default)

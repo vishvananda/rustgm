@@ -1,5 +1,5 @@
 //! Compiler-created caller locations use the actual source nominal and immutable storage.
-use super::{Constant, Evaluator, Failure, LocationId, Metadata};
+use super::{Constant, DefId, Evaluator, Failure, LocationId, Metadata, Reader};
 use crate::{
     resolve::unit::NodeKey,
     sema::model::Scalar,
@@ -8,6 +8,50 @@ use crate::{
 };
 
 impl Evaluator<'_> {
+    /// Demand the definition site only for the address of a tracked function.
+    pub(crate) fn prepare_reified_location(&mut self, target: DefId) -> Result<(), Failure> {
+        if Reader::new(self.facts()).reified_location(target).is_some()
+            || !self.facts().recorded_caller_tracking(target)?
+        {
+            return Ok(());
+        }
+        let source = self
+            .queries
+            .report
+            .resolution
+            .definitions
+            .get(target.0 as usize)
+            .and_then(|definition| definition.node)
+            .ok_or("tracked reification requires its original source declaration")?;
+        if !self.checked_caller_tracking(target)? {
+            return Err("reified location does not belong to a tracked function".into());
+        }
+        let current = self.facts().constant_references.reified.as_deref();
+        let (len, capacity) =
+            current.map_or((0, 0), |locations| (locations.len(), locations.capacity()));
+        let growth =
+            crate::support::retained::Growth::map::<DefId, super::references::Id>(len, capacity, 1);
+        let owner = usize::from(current.is_none())
+            * size_of::<crate::support::hash::HashMap<DefId, super::references::Id>>();
+        self.facts().charge_caller_inputs(
+            growth.work.saturating_add(1),
+            growth.bytes.saturating_add(owner),
+        )?;
+        let location = self.prepare_source_location(source)?;
+        let sites = self
+            .queries
+            .typing
+            .facts
+            .constant_references
+            .reified
+            .get_or_insert_with(Default::default);
+        sites
+            .try_reserve(1)
+            .map_err(|_| "reified location inventory allocation failed")?;
+        sites.insert(target, location.0);
+        Ok(())
+    }
+
     pub(crate) fn prepare_source_location(
         &mut self,
         source: NodeKey,
@@ -77,7 +121,17 @@ impl Evaluator<'_> {
     }
 }
 
-impl super::Reader<'_> {
+impl Reader<'_> {
+    pub(crate) fn reified_location(self, target: DefId) -> Option<LocationId> {
+        self.facts
+            .constant_references
+            .reified
+            .as_deref()?
+            .get(&target)
+            .copied()
+            .map(LocationId)
+    }
+
     pub(crate) fn source_caller_location(
         self,
         instance: crate::types::instance::Instance,

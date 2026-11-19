@@ -410,7 +410,8 @@ pub struct UnionWork {
 ///   inline assembly;
 /// - one pointer for the cold names of inherent methods declared with smart
 ///   receivers;
-/// - one cold relation for source-only named opaque defining bodies.
+/// - one cold relation for source-only named opaque defining bodies;
+/// - one pointer for declaration locations of reified tracked functions.
 ///
 /// The operand plans of index expressions that take source Deref calls share
 /// the existing cold comparison operand box.
@@ -420,7 +421,7 @@ pub(crate) const DECLARATIONS_SIZE: usize = 7048
     + 6 * size_of::<usize>()
     + 2 * size_of::<usize>()
     + size_of::<usize>()
-    + 6 * size_of::<Option<Box<()>>>()
+    + 7 * size_of::<Option<Box<()>>>()
     + size_of::<Option<crate::types::ItemId>>();
 pub struct Declarations {
     pub(super) must_use_contracts: Option<Box<super::must_use::Contracts>>,

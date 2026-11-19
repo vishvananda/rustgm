@@ -4,6 +4,7 @@ mod c_boundary;
 mod callsite_owners;
 mod disposal;
 mod niches;
+mod reification;
 use super::{Error, data, function, remainder};
 use crate::support::hash::HashMap;
 use crate::{
@@ -51,6 +52,7 @@ pub(super) struct Context<'a> {
     instance_indices: HashMap<Instance, usize>,
     symbols: Vec<Option<SymbolId>>,
     signatures: HashMap<(TypeId, bool), SignatureId>,
+    reified_symbols: HashMap<Instance, SymbolId>,
     representations: Vec<Option<Representation>>,
     c_abi: Option<Box<crate::abi::classification::Plans>>,
     queue: Vec<usize>,
@@ -404,6 +406,7 @@ impl<'a> Context<'a> {
             adapter_indices: HashMap::default(),
             instance_indices: HashMap::default(),
             signatures: HashMap::default(),
+            reified_symbols: HashMap::default(),
             representations: Vec::new(),
             c_abi: None,
             queue: Vec::new(),
@@ -961,12 +964,12 @@ impl<'a> Context<'a> {
         Ok(symbol)
     }
     pub(super) fn demand_reified(&mut self, instance: Instance) -> Result<SymbolId, &'static str> {
-        if let Some(Kind::FunctionItem { item, .. }) = self.types.kind(instance.ty())
+        if let Some(Kind::FunctionItem {
+            item, signature, ..
+        }) = self.types.kind(instance.ty())
             && self.constants.caller_tracking(DefId(item.0))?
         {
-            return Err(
-                "tracked function pointers require a genuine caller-location reification shim",
-            );
+            return self.tracked_reification(instance, DefId(item.0), signature);
         }
         self.demand(instance)
     }

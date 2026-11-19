@@ -63,7 +63,10 @@ impl Context<'_> {
             return Err("virtual receiver differs from its object bounds");
         }
         let name = format!("rg.virtual.{}.{}", call.shape.0, call.slot);
-        let symbol = self.emit_virtual(signature, call, 0, name)?;
+        let tracked = self
+            .constants
+            .caller_tracking(crate::resolve::model::DefId(item.0))?;
+        let symbol = self.emit_virtual(signature, call, 0, name, tracked)?;
         self.virtual_symbols.insert(key, symbol);
         Ok(symbol)
     }
@@ -74,6 +77,7 @@ impl Context<'_> {
         call: Virtual,
         dereferences: u32,
         name: String,
+        tracked: bool,
     ) -> Result<SymbolId, &'static str> {
         let Some(Kind::Function { result, .. }) = self.types.kind(signature) else {
             return Err("virtual entry requires a function signature");
@@ -82,7 +86,7 @@ impl Context<'_> {
             self.representation(result)?,
             Representation::Object(_)
         ));
-        let signature = self.signature(signature)?;
+        let signature = self.caller_signature(signature, tracked)?;
         let symbol = self
             .output
             .declare(self.internal_name(name), signature, false)?;
@@ -110,7 +114,7 @@ impl Context<'_> {
     }
 }
 
-fn parameters(
+pub(super) fn parameters(
     output: &crate::lowir::program::Program,
     signature: crate::lowir::program::SignatureId,
 ) -> Result<Vec<Value>, &'static str> {

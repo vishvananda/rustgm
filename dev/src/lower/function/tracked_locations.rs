@@ -45,14 +45,7 @@ impl Lower<'_, '_, '_> {
         self.static_caller_pointer(site.location)
     }
     fn static_caller_pointer(&mut self, location: LocationId) -> Result<Value, &'static str> {
-        self.context.constants.caller_location_value(location)?;
-        let data = self.context.constants.location(location)?;
-        let global = self.context.constant_data(
-            super::super::data::Key::Location(location),
-            data.value.ok_or("caller allocation is uninitialized")?,
-            data.ty,
-            true,
-        )?;
+        let global = self.context.caller_location_global(location)?;
         self.builder.address(Operand::Global(global))
     }
     pub(super) fn source_caller_location(

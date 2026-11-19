@@ -48,6 +48,28 @@ impl Context<'_> {
         self.table_queue.push(id);
         Ok(global)
     }
+    fn object_method_target(
+        &mut self,
+        method: crate::sema::vtable_plans::Method,
+        instance: crate::types::instance::Instance,
+    ) -> Result<crate::lowir::program::SymbolId, &'static str> {
+        use crate::{sema::vtable_plans::Method, types::Kind};
+        if let Method::Declared(definition) = method
+            && self.constants.caller_tracking(definition)?
+        {
+            let Some(Kind::FunctionItem { item, .. }) = self.types.kind(instance.ty()) else {
+                return Err("tracked virtual slot lost its selected function");
+            };
+            if !self
+                .constants
+                .caller_tracking(crate::resolve::model::DefId(item.0))?
+            {
+                return Err("tracked virtual slot requires a tracked implementation");
+            }
+            return self.demand(instance);
+        }
+        self.demand_reified(instance)
+    }
     pub(in crate::lower) fn initialize_table(&mut self, id: TableId) -> Result<(), &'static str> {
         let global = *self
             .table_symbols
@@ -86,12 +108,16 @@ impl Context<'_> {
                 bits: u128::from(layout.align),
             },
         ];
-        for &method in &table.methods {
+        for (index, &method) in table.methods.iter().enumerate() {
             items.push(if let Some(method) = method {
                 Item::Address {
                     target: Target::Function(match method {
                         crate::sema::vtable_plans::Target::Function(instance) => {
-                            self.demand_reified(instance)?
+                            let slot = shape
+                                .slots
+                                .get(index)
+                                .ok_or("missing selected object slot")?;
+                            self.object_method_target(slot.method, instance)?
                         }
                         crate::sema::vtable_plans::Target::Callable(callable) => {
                             self.callable_target(callable)?
