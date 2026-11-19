@@ -1,8 +1,9 @@
 //! One symbol selector separates canonical Rust identity from explicit foreign spelling.
 use crate::{
     resolve::model::DefId,
+    sema::foreign::Function,
     support::linkage::{Naming, SymbolNames},
-    types::instance::Instance,
+    types::{Kind, Store, TypeId, callable::Convention, instance::Instance},
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -42,6 +43,36 @@ pub fn select(
 }
 
 impl super::context::Context<'_> {
+    // The panic runtime declares `__rust_abort` as diverging. Std defines the
+    // same native symbol with a unit result and terminates the process in its
+    // body. Use that definition's ABI; the call retains its own signature and
+    // unreachable continuation. An external declaration still stands alone
+    // when the export is absent.
+    pub(super) fn runtime_abort_export(
+        &self,
+        import: Function,
+    ) -> Result<Option<DefId>, &'static str> {
+        let (Some(registry), Naming::Exact(name)) = (self.foreign, import.naming) else {
+            return Ok(None);
+        };
+        let Some(spelling) = registry.names().get(name) else {
+            return Ok(None);
+        };
+        if !spelling.ends_with("__rust_abort")
+            || spelling != crate::support::linkage::internal_symbol("__rust_abort")?
+            || !rust_nullary(self.types, import.signature, TypeId::NEVER)
+        {
+            return Ok(None);
+        }
+        let Some(owner) = registry.exporter(name) else {
+            return Ok(None);
+        };
+        let compatible = registry
+            .function(owner)
+            .is_some_and(|export| rust_nullary(self.types, export.signature, TypeId::UNIT))
+            && !self.constants.caller_tracking(owner)?;
+        Ok(compatible.then_some(owner))
+    }
     pub(super) fn internal_name(&self, legacy: String) -> String {
         if let Some(prefix) = self.crates.and_then(crate::sema::crates::Linkage::prefix) {
             format!("{prefix}internal${legacy}")
@@ -89,4 +120,14 @@ impl super::context::Context<'_> {
         );
         Ok(self.internal_name(legacy))
     }
+}
+
+fn rust_nullary(types: &Store, signature: TypeId, expected_result: TypeId) -> bool {
+    matches!(types.kind(signature), Some(Kind::Function {
+        bound_regions: 0,
+        convention: Convention::RUST,
+        parameters,
+        result,
+        ..
+    }) if result == expected_result && types.list(parameters).is_some_and(<[_]>::is_empty))
 }

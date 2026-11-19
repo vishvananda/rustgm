@@ -1008,6 +1008,11 @@ impl<'a> Context<'a> {
             {
                 return self.demand_llvm(instance, function, intrinsic);
             }
+            if let Some(export) = self.runtime_abort_export(function)? {
+                let symbol = self.demand_definition(export)?;
+                self.imported_symbols.insert(definition, symbol);
+                return Ok(symbol);
+            }
             let signature = self.signature(function.signature)?;
             let name = super::linkage::select(
                 self.foreign.map(crate::sema::foreign::Registry::names),

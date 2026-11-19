@@ -455,6 +455,48 @@ fn internal_symbols_take_the_version_mangled_names_rustc_gives_them() -> Result 
     Ok(())
 }
 
+#[test]
+fn internal_abort_call_retains_its_diverging_continuation() -> Result {
+    let import = r#"
+mod panic_runtime {
+    unsafe extern "Rust" {
+        #[rustc_std_internal_symbol]
+        safe fn __rust_abort() -> !;
+    }
+    #[unsafe(no_mangle)]
+    pub fn panic_entry() -> ! {
+        __rust_abort()
+    }
+}
+"#;
+    let export = r#"
+#[rustc_std_internal_symbol]
+fn __rust_abort() {
+    unsafe extern "C" { safe fn _exit(code: i32) -> !; }
+    _exit(42);
+}
+"#;
+    let name = rustgm::support::linkage::internal_symbol("__rust_abort")?;
+    let external = lowered(&format!("{CORE}{import}"))?;
+    assert!(has_symbol(&external, &name, true));
+    let linked = lowered(&format!("{CORE}{import}{export}"))?;
+    assert!(has_symbol(&linked, &name, false));
+    assert!(!has_symbol(&linked, &name, true));
+    let (_, caller) = linked
+        .split_once("function @panic_entry(")
+        .ok_or("missing panic entry")?;
+    let (caller, _) = caller.split_once('}').ok_or("missing panic entry body")?;
+    assert!(caller.contains(&format!("call void @{name}()")), "{caller}");
+    assert!(caller.contains("unreachable"), "{caller}");
+
+    let wrong_export = export.replace("fn __rust_abort() {", "fn __rust_abort(_: i32) {");
+    assert!(
+        rejected(&format!("{CORE}{import}{wrong_export}"))
+            .contains("incompatible LowIR symbol declarations")
+    );
+    Ok(())
+}
+
 /// rustc's four allocator functions, as `nm` shows them in its objects.
 const GLOBAL_FUNCTIONS: [&str; 4] = [
     "_RNvCs6rREvFdRhLb_7___rustc12___rust_alloc",
