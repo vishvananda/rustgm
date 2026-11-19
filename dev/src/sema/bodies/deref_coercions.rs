@@ -78,6 +78,9 @@ impl Checker<'_> {
             .access()
             .ok_or_else(|| self.error(node, "reference conversion lost its actual access"))?;
         self.shape_equation(node, access.receiver, target)?;
+        if mutable {
+            self.mark_mutable_language_place(node)?;
+        }
         let region = self.body_region(node, BodyRegionOrigin::Inference)?;
         let borrow = self
             .state

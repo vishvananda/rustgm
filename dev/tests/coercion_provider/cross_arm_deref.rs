@@ -97,3 +97,85 @@ fn reference_result_rejects_shared_and_shorter_branch_loans() -> TestResult {
     }
     Ok(())
 }
+
+#[test]
+fn mutable_call_reborrows_refine_the_dereferenced_place() -> TestResult {
+    let dispatch = crate::resolve::fixture("pa31/tests/spec/source-object-calls/shared.rs")?;
+    let (dispatch, _) = dispatch.split_once("fn call(f:").ok_or("callable roles")?;
+    let deref = crate::resolve::fixture("pa31/tests/spec/dereference-source/foundation.rs")?;
+    let (_, deref) = deref.split_once("#[lang=\"deref\"]").ok_or("Deref roles")?;
+    let cases = [
+        (
+            "direct",
+            "fn(&mut u8) -> u8",
+            "read",
+            "mut guard",
+            "*guard",
+            true,
+        ),
+        (
+            "dynamic",
+            "&dyn Fn(&mut u8) -> u8",
+            "&read",
+            "mut guard",
+            "*guard",
+            true,
+        ),
+        (
+            "explicit",
+            "&dyn Fn(&mut u8) -> u8",
+            "&read",
+            "mut guard",
+            "&mut **guard",
+            true,
+        ),
+        (
+            "immutable",
+            "&dyn Fn(&mut u8) -> u8",
+            "&read",
+            "guard",
+            "*guard",
+            false,
+        ),
+    ];
+    for (name, callable, argument, binding, operand, accepted) in cases {
+        let source = format!(
+            r#"{dispatch}#[lang="deref"]{deref}
+            struct Guard<'a>(&'a mut u8);
+            impl<'a> Deref for Guard<'a> {{
+                type Target = &'a mut u8;
+                fn deref(&self) -> &Self::Target {{ &self.0 }}
+            }}
+            impl<'a> DerefMut for Guard<'a> {{
+                fn deref_mut(&mut self) -> &mut Self::Target {{ &mut self.0 }}
+            }}
+            fn dispatch(value: &mut u8, take: {callable}) -> u8 {{
+                let {binding} = Guard(value);
+                take({operand})
+            }}
+            fn read(value: &mut u8) -> u8 {{ *value }}
+            #[unsafe(no_mangle)] pub extern "C" fn observe() -> u8 {{
+                let mut value = 7u8;
+                dispatch(&mut value, {argument})
+            }}"#
+        );
+        let result = crate::ffi_program::exported(&source, "call_reborrow");
+        if accepted {
+            let program = result.map_err(|error| format!("{name}: {error}"))?;
+            assert!(
+                program
+                    .symbols
+                    .iter()
+                    .any(|symbol| symbol.name == "observe" && symbol.body.is_some()),
+                "{name}"
+            );
+        } else {
+            let error = result.err().ok_or("immutable guard was borrowed mutably")?;
+            assert!(
+                error.to_string().contains("immutable local"),
+                "{name}: {error}"
+            );
+        }
+    }
+    Ok(())
+}

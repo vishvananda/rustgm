@@ -168,6 +168,9 @@ impl Checker<'_> {
             let Some(Constructor::Reference { mutable, .. }) = self.head(node, expected)? else {
                 return Err(self.error(node, "missing reference coercion target"));
             };
+            if mutable {
+                self.mark_mutable_language_place(node)?;
+            }
             let referent = if unsizing.is_some() {
                 let mut source = actual;
                 for _ in 0..selection.dereferences {
