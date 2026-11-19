@@ -124,11 +124,10 @@ impl<P: Payload> Prepared<'_, P> {
             .filter(move |_| selected.is_none())
             .filter_map(|cleanup| {
                 cleanup.live_type.map(|ty| {
-                    Ok(crate::body::defining_cleanups::Subject {
-                        purpose: crate::body::defining_cleanups::Purpose::Body,
+                    Ok(crate::body::defining_cleanups::Subject::root(
                         ty,
-                        access: cleanup.access,
-                    })
+                        cleanup.access,
+                    ))
                 })
             });
         full.chain(errors).chain(whole)

@@ -42,7 +42,7 @@ pub(crate) fn select(
             .claims
             .retain_declared(ty, subject.purpose, &mut work)?;
         if prepared
-            .requirement(&facts.types, ty, subject.purpose, &mut work)
+            .require_subject(&facts.types, subject, &mut work)
             .is_ok()
         {
             continue;

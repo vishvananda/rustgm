@@ -39,16 +39,14 @@ impl<'a> Formed<'a> {
     ) -> Result<(), &'static str> {
         self.check_for(
             types,
-            ty,
-            crate::body::defining_cleanups::Purpose::Body,
+            crate::body::defining_cleanups::Subject::root(ty, true),
             work,
         )
     }
     pub(super) fn check_for(
         &self,
         types: &Store,
-        ty: crate::types::TypeId,
-        purpose: crate::body::defining_cleanups::Purpose,
+        subject: crate::body::defining_cleanups::Subject,
         work: &mut Work,
     ) -> Result<(), &'static str> {
         // The actual source producer may give a const panic declaration an
@@ -60,7 +58,7 @@ impl<'a> Formed<'a> {
         }
         // Both declaration forms are usable only after this view's actual proof check.
         self.prepared
-            .requirement(types, ty, purpose, work)
+            .require_subject(types, subject, work)
             .map(|_| ())
     }
 }

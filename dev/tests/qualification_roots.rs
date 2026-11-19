@@ -89,6 +89,52 @@ fn unpaid_and_lookalike_bounds_reject_actual_reached_cleanup() -> Result {
     }
     Ok(())
 }
+
+#[test]
+fn aggregate_destruct_premise_only_pays_its_owned_cleanup_fields() -> Result {
+    let provider = source::fixture("pa31/tests/spec/projected-copy-cleanup/declared-copy.rs")?;
+    let (prefix, _) = provider
+        .split_once("pub trait Has")
+        .ok_or("provider prefix")?;
+    let common = r#"
+pub enum Maybe<T> { Some(T), None }
+pub enum Flow<B, C> { Continue(C), Break(B) }
+impl<B, C> Flow<B, C> {
+    pub const fn break_value(self ARGUMENT) -> Maybe<B> PREMISE {
+        match self {
+            Self::Continue(..) => Maybe::None,
+            Self::Break(x) => Maybe::Some(x),
+        }
+    }
+}
+#[unsafe(no_mangle)] pub extern "C" fn observe() -> u8 { 7 }
+"#;
+    for (argument, premise, accepted) in [
+        ("", "where Self: [const] Destruct", true),
+        ("", "", false),
+        (", _other: C", "where Self: [const] Destruct", false),
+    ] {
+        let body = common
+            .replace("ARGUMENT", argument)
+            .replace("PREMISE", premise);
+        let input = format!("#![feature(const_precise_live_drops)]\n{prefix}{body}");
+        let report = source::source_provider(&input, "aggregate_cleanup")?;
+        let lowered = crate::provider_traits::lower_report(&report);
+        if accepted {
+            lowered?;
+        } else {
+            let error = lowered.err().ok_or("unpaid cleanup accepted")?;
+            assert!(
+                error
+                    .to_string()
+                    .contains("active cleanup requires const Destruct"),
+                "{error}"
+            );
+        }
+    }
+    Ok(())
+}
+
 #[test]
 fn repeated_projected_roots_have_bounded_qualification_work() -> Result {
     let mut previous: Option<[usize; 3]> = None;

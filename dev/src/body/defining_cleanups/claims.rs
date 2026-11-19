@@ -55,6 +55,7 @@ pub(super) enum Claim {
     NoDrop,
     Selected(crate::support::constness::Constness),
     ConditionalDestruct,
+    AggregateDestruct,
     ProjectedDestruct,
     PendingCopy,
 }
@@ -62,7 +63,7 @@ impl Claim {
     fn priority(self) -> u8 {
         match self {
             Self::PendingCopy => 0,
-            Self::ConditionalDestruct | Self::ProjectedDestruct => 1,
+            Self::ConditionalDestruct | Self::AggregateDestruct | Self::ProjectedDestruct => 1,
             Self::NoDrop => 2,
             Self::Selected(_) => 3,
         }
@@ -143,7 +144,11 @@ impl Claims {
             .kind(predicate.ty)
             .ok_or("invalid defining cleanup subject")?;
         let projected = destruct && matches!(subject, Kind::Projection(_));
-        if !(matches!(subject, Kind::Parameter(_)) || projected)
+        let aggregate = destruct
+            && matches!(subject, Kind::Adt(item, _)
+            if facts.aggregates.destruction(item) == Some(crate::types::aggregate::FieldDestruction::Fields)
+                && facts.aggregates.get(item).is_some_and(|definition| definition.kind != crate::types::aggregate::Kind::Union));
+        if !(matches!(subject, Kind::Parameter(_)) || projected || aggregate)
             || facts
                 .types
                 .arguments(application.arguments)
@@ -162,6 +167,8 @@ impl Claims {
             if projected {
                 self.require_projected_header(facts, predicate.ty, work)?;
                 Claim::ProjectedDestruct
+            } else if aggregate {
+                Claim::AggregateDestruct
             } else {
                 Claim::ConditionalDestruct
             }

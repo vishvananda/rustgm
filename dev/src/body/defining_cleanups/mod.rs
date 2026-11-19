@@ -10,8 +10,20 @@ pub(crate) use qualify::{Qualification, qualify};
 #[derive(Clone, Copy)]
 pub(crate) struct Subject {
     pub(crate) ty: crate::types::TypeId,
+    /// The intact type of the actual cleanup place from which this part came.
+    pub(crate) enclosing: crate::types::TypeId,
     pub(crate) access: bool,
     pub(crate) purpose: Purpose,
+}
+impl Subject {
+    pub(crate) const fn root(ty: crate::types::TypeId, access: bool) -> Self {
+        Self {
+            ty,
+            enclosing: ty,
+            access,
+            purpose: Purpose::Body,
+        }
+    }
 }
 #[cfg(test)]
 #[path = "../../../tests/invariants/destruct_contracts.rs"]
@@ -181,7 +193,7 @@ impl Prepared {
             Some(claims::Claim::NoDrop) => {
                 return Err("Copy cannot pay selected whole-field or own Drop eligibility");
             }
-            Some(claims::Claim::ConditionalDestruct) => {
+            Some(claims::Claim::ConditionalDestruct | claims::Claim::AggregateDestruct) => {
                 self.role.require()?;
                 return Ok(Requirement::Declared);
             }
@@ -214,6 +226,27 @@ impl Prepared {
                 "const-trait defining cleanup requires a retained conditional Destruct obligation; implied proofs are not implemented"
             },
         )
+    }
+
+    pub(crate) fn require_subject(
+        &self,
+        types: &crate::types::Store,
+        subject: Subject,
+        work: &mut Work,
+    ) -> Result<Requirement, &'static str> {
+        if subject.purpose == Purpose::Whole && subject.enclosing != subject.ty {
+            work.charge(1)?;
+            // The initialized plan authenticated this owned field under the
+            // cleanup place. Use its exact aggregate premise here. The same
+            // field type in a new place still needs its own proof.
+            if self.claims.get(subject.enclosing, Purpose::Body)
+                == Some(claims::Claim::AggregateDestruct)
+            {
+                self.role.require()?;
+                return Ok(Requirement::Declared);
+            }
+        }
+        self.requirement(types, subject.ty, subject.purpose, work)
     }
 }
 

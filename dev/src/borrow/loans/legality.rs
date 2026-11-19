@@ -29,7 +29,7 @@ pub(super) fn check(
                         if !subject.access {
                             continue;
                         }
-                        prepared.check_for(types, subject.ty, subject.purpose, work)?;
+                        prepared.check_for(types, *subject, work)?;
                     }
                 } else {
                     prepared.check(types, ty, work)?;

@@ -70,6 +70,7 @@ impl Selected {
                 };
                 self.subjects.push(Subject {
                     ty,
+                    enclosing: row.cleanup.live_type.unwrap_or(ty),
                     purpose: leaf.purpose,
                     access: leaf.access && (leaf.history || row.cleanup.access),
                 });
