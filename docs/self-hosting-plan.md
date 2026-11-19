@@ -623,19 +623,41 @@ seconds and reaches `deprecation declaration transport is not implemented
 for this metadata profile`. It reports zero bring-up records and emits no
 artifacts. The receipt is in `obj/parallel/strict-core/simd-limits/` in the
 frontier checkout.
-The deprecation transport must preserve the declaring crate's release rule,
-the actual declaration or inherited module origin, and the diagnostic note.
-The importer currently derives checked absence from the availability profile.
-Extend that query to read the new policy while retaining the earlier profile
-behavior. Cover active, `TBD`, staged future, and inherited cases in a fresh
-client with its own lint level and expectation accounting.
-Pinned rustc matches all six predeclared cases, including the `allow` and
-fulfilled `expect` controls, under `obj/parallel/v14-deprecation-design/` in
-the frontier checkout.
+The v14 declaration checkpoint carries each checked notice once and maps
+affected declarations to its actual lexical origin. The importer applies the
+declaring crate's release rule and uses the consuming crate's lint policy.
+Fresh clients match pinned Rust for active and inherited diagnostics, `TBD`,
+a future staged version, `allow` and `expect`. The focused suite checks the
+metadata round-trip, existing compatibility warnings and the legacy import fence.
+The same unmarked provider emits identical LowIR and metadata bytes. Version
+thirteen still rejects a provider with deprecation annotations. The frozen
+inputs and focused comparisons are under `obj/parallel/v14-deprecation-design/`
+and `obj/parallel/v14-deprecation-candidate/` in the frontier checkout.
 
-All four frozen Unicode consumers match their
-declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
-runs remain due.
+The exact 309-input strict replay on the optimized observation compiler clears
+the deprecation fence in 34.43 seconds. It reaches `reservation implementation
+transport requires a wider metadata profile` with zero bring-up records and
+no artifacts. The original declaration is `const impl<T> From<!> for T` at
+`core/src/convert/mod.rs:804`. Pinned Rust confirms that a matching reservation
+alone cannot prove a use-site obligation, a real implementation can provide
+an executable answer, and the reservation still participates in compatible-world
+overlap. References and the native result `7` are under
+`obj/parallel/v14-reservation-reference/`. The original strict observation is
+under `obj/parallel/strict-core/deprecation-optimized/` in the frontier checkout.
+
+Macro deprecation still requires its own published definition and
+expansion-time diagnostics. The independent staged reference diagnoses a
+deprecated macro and accepts a call through an annotated `use` alias of a
+current function. [Deprecation CLI regression](../dev/tests/crate_linking/versioned_clients.rs)
+
+All four frozen Unicode consumers match their declared output on pinned rustc
+with prebuilt std at opt-level 2. RustGM's XID scalar sweep matches all three
+native executions against the original `std` bring-up graph and locked
+`unicode-ident` 1.0.24. The frontend emits 7,318,968 LowIR bytes in 46.78 seconds
+with zero skips, 14 unproven obligations and 50 waivers. Source hashes, the unit
+plan, link manifest and runtime receipts are under `obj/parallel/m4-xid-frozen/`
+in the frontier checkout. The three other Unicode consumers still need runs
+with their own dependency features. [Declared Unicode outcomes](../pa35/tests/unicode-consumer-outcomes.json)
 
 ### Self-compile milestones
 
@@ -653,6 +675,17 @@ LowIR or metadata. The one-record control gives the process a successful exit
 with both outputs present. The gate quarantines both outputs and prevents the
 dependent crate from starting. All 23 target-unit tests pass, including the
 empty-graph rejection. [Executor](../scripts/target_units.py) · [Controls](../scripts/tests/test_target_units.py)
+
+The binary-root planner freezes the original `dev/bin/rustgm.rs` as the sole
+target and its dependency on `dev/src/lib.rs`. The pinned Cargo 1.98.0 run for
+`19b7bb08c` records six units for Linux x86-64 with abort, opt-level 1 and overflow
+checks. The four registry archives match `Cargo.lock`. The graph retains each
+unit's edition, cfg features and extern aliases, including the `alloc` feature
+on `tinyvec` and `std` on `unicode-normalization`. The two compiler targets and
+`unicode-ident` have no package features. All 35 planner and snapshot controls
+pass. The exact tool, source and graph pins are under
+`obj/parallel/compiler-dependency-freeze/` in the frontier checkout. Compiler
+artifacts and the strict sysroot graph still require execution. [Planner](../scripts/cargo_plan.py)
 
 The PA45 stage comparator checks the same frozen graph and executor, the
 stage 1 compiler pin used by stage 2, and the actual strict compiler
@@ -1129,6 +1162,20 @@ frontier checkout.
    frame and trial counts. The bounded private harness attempts leave private
    execution pending. Evidence is under `obj/parallel/child-proof-reuse/` in
    the performance checkout.
+
+Source automatic-trait classification now compares canonical provider IDs in
+the compact language-role cells. A selected role still checks its declaration
+and ordinary application. The imported catalog retains its ordered origin
+checks. The exact optimized `5ac9117de` and `a134aa651` comparison retires
+**1.60–1.61% fewer instructions** on the original `core` and `unicode-ident`
+bring-up graph, from 96.12 billion to 94.58 billion. All ten observations
+match LowIR, native-link manifests and diagnostics, and both native scalar
+sweeps agree. The graph still reports zero skips, one unproven obligation and
+seven waivers. Paired wall changes fall within the 25.4% A/A spread. Focused
+source controls retire 0.35–1.56% fewer instructions, with the ordinary scalar
+control flat. The source child-proof guard still records six memoizing queries
+and zero probes. Evidence is under `obj/parallel/compact-provider-marker/`
+in the performance checkout. [Provider role lookup](../dev/src/sema/compiler_items/binding_views/compact.rs)
 
 For each prototype, hold source size and request count fixed while varying the
 fraction of shared keys, subterms or premises. Separately grow the amount of
