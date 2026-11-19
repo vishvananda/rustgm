@@ -40,6 +40,7 @@ pub(super) fn required_member(
     headers: &HeaderIndex<'_>,
     function: &s::FunctionHeader,
     role: Option<DeclarationRef>,
+    exact_effect: bool,
     work: &mut Work,
 ) -> Result<bool, &'static str> {
     if function.parent.is_none() || function.parent != role || function.body != FunctionBody::Absent
@@ -53,10 +54,18 @@ pub(super) fn required_member(
         return Err("source required conversion has a nontrait parent");
     };
     work.charge(1)?;
-    Ok(
-        rows.traits[index as usize].flags.bits() & TraitFlags::CONST != 0
-            && function.constness == Constness::Conditional,
-    )
+    let constant = rows.traits[index as usize].flags.bits() & TraitFlags::CONST != 0;
+    if exact_effect {
+        let expected = if constant {
+            Constness::Conditional
+        } else {
+            Constness::Ordinary
+        };
+        if function.constness != expected {
+            return Err("source division method changed its actual required effect");
+        }
+    }
+    Ok(constant && function.constness == Constness::Conditional)
 }
 
 /// `unsafe_impls` admits a method of an unsafe impl: version thirteen's

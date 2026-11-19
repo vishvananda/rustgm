@@ -5,7 +5,7 @@ use super::{
 };
 use crate::{
     support::crates::owner_catalog::{BodyKind, BodyOwner, BodyRef},
-    support::{constness::Constness, hash::HashMap, retained},
+    support::{bindings::LangItem, constness::Constness, hash::HashMap, retained},
     types::Kind,
 };
 
@@ -225,7 +225,7 @@ impl Stage {
                 let roles = RequiredRoles {
                     conversions: self.conversion_roles(),
                     callables: self.body_nodes(),
-                    reservations: self.declaration_policies(),
+                    declaration_policies: self.declaration_policies(),
                 };
                 written_constness(report, facts, function, roles)?
             } else if facts.is_const_function(function.definition) {
@@ -403,12 +403,12 @@ impl Stage {
 }
 
 /// Which const-trait roles may own a conditional required member: `From`
-/// from version nine, and the three callable roles from version thirteen.
+/// from version nine, the callable roles from thirteen and Div from fourteen.
 #[derive(Clone, Copy)]
 struct RequiredRoles {
     conversions: bool,
     callables: bool,
-    reservations: bool,
+    declaration_policies: bool,
 }
 fn written_constness(
     report: &Report,
@@ -428,7 +428,7 @@ fn written_constness(
     else {
         return Err("source callable effect owner is not a function");
     };
-    if roles.conversions && required_conversion_member(report, facts, function, roles.callables)? {
+    if roles.conversions && required_trait_member(report, facts, function, roles)? {
         if flags.constant || facts.is_const_function(function.definition) {
             return Err(
                 "required conversion member changed its written/effective const eligibility",
@@ -437,7 +437,7 @@ fn written_constness(
         return Ok(Constness::Conditional);
     }
     let effective = facts.is_const_function(function.definition);
-    if effective && !flags.constant && roles.reservations {
+    if effective && !flags.constant && roles.declaration_policies {
         let parent = facts
             .associated
             .owner(function.definition)
@@ -467,13 +467,12 @@ fn written_constness(
 
 /// A required const-trait declaration is conditional, never a const body or an
 /// executable impl. The indexed actual parent supplies the declaration fact;
-/// a member's name and signature cannot create the language role. With
-/// `callables`, the completed `FnOnce`, `FnMut` and `Fn` roles own their call methods.
-fn required_conversion_member(
+/// a member's name and signature cannot create the language role.
+fn required_trait_member(
     report: &Report,
     facts: &Declarations,
     function: &crate::sema::model::Function,
-    callables: bool,
+    roles: RequiredRoles,
 ) -> Result<bool, &'static str> {
     let Some(owner_id) = facts.associated.owner(function.definition) else {
         return Ok(false);
@@ -495,21 +494,30 @@ fn required_conversion_member(
         .as_deref()
         .ok_or("conversion member lost its actual language catalog")?;
     catalog.require_provider_report(report)?;
-    let mut callable = None;
-    if callables {
-        use crate::support::bindings::LangItem;
+    let mut selected = if roles.declaration_policies {
+        // The role walk already authenticated this exact operator header.
+        catalog
+            .language(LangItem::Div)
+            .filter(|role| role.definition == definition)
+    } else {
+        None
+    };
+    if selected.is_some() && facts.nonconst_trait_member(function.definition)? {
+        return Err("source non-const Div method requires its actual policy transport");
+    }
+    if roles.callables {
         for role in [LangItem::FnOnce, LangItem::FnMut, LangItem::Fn] {
             if let Some(found) = catalog.header_role(role)?
                 && found.definition == definition
             {
-                callable = Some(found);
+                selected = Some(found);
             }
         }
     }
-    let role = match callable {
+    let role = match selected {
         Some(role) => role,
         None => catalog
-            .header_role(crate::support::bindings::LangItem::From)?
+            .header_role(LangItem::From)?
             .ok_or("conditional member requires its actual From declaration")?,
     };
     if role.definition != definition {

@@ -319,13 +319,14 @@ fn trait_headers(
             );
         }
         let conversion = profile.conversions() && roles.conversion == Some(header.declaration);
+        let division = roles.division == Some(header.declaration);
         if conversion {
             conversions::trait_header(rows, headers, header, work)?;
         }
         // Version thirteen also admits an unsafe trait that is not auto.
         if flags & TraitFlags::AUTO != 0
             || flags & TraitFlags::UNSAFE != 0 && !roles.languages
-            || flags & TraitFlags::CONST != 0 && !conversion
+            || flags & TraitFlags::CONST != 0 && !conversion && !division
         {
             return Err("source const/auto/unsafe traits require a wider explicit profile");
         }
@@ -458,8 +459,7 @@ fn functions(
         let safety = free_effects || (bodies && header.parent.is_some());
         let callable = callable_roles::required_member(header, roles.callables, work)?;
         let required = callable
-            || profile.conversions()
-                && conversions::required_member(rows, headers, header, roles.conversion, work)?;
+            || profile.conversions() && roles.required_member(rows, headers, header, work)?;
         let inherent_const = bodies && inherent_const(rows, headers, header, work)?;
         let reservation_const = bodies
             && !inherent_const
@@ -832,6 +832,7 @@ pub(super) struct Bindings {
     destruct: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     freeze: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     conversion: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    division: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     callables: callable_roles::Roles,
     /// Version thirteen: exact empty auto declarations, unsafe traits and
     /// every trait impl's own safety and polarity.
@@ -841,6 +842,26 @@ pub(super) struct Bindings {
     markers: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 4],
 }
 impl Bindings {
+    fn required_member(
+        &self,
+        rows: &SourceRows,
+        headers: &HeaderIndex<'_>,
+        function: &super::super::FunctionHeader,
+        work: &mut Work,
+    ) -> Result<bool, &'static str> {
+        let division = self
+            .division
+            .filter(|&owner| function.parent == Some(owner));
+        conversions::required_member(
+            rows,
+            headers,
+            function,
+            division.or(self.conversion),
+            division.is_some(),
+            work,
+        )
+    }
+
     fn marker(
         &self,
         declaration: crate::support::crates::owner_catalog::DeclarationRef,
@@ -985,6 +1006,9 @@ pub(super) fn bindings(
         ))
         .then_some(declarations[LangItem::From.index()])
         .flatten(),
+        division: (profile == BindingProfile::BodyOperations)
+            .then_some(declarations[LangItem::Div.index()])
+            .flatten(),
         sizing,
         destruct: if matches!(
             profile,

@@ -272,18 +272,25 @@ impl Declarations {
             }
             _ => return Ok(false),
         }
+        let Some(function) = self
+            .function_indices
+            .get(&definition)
+            .and_then(|&index| self.functions.get(index))
+            .filter(|function| function.definition == definition)
+        else {
+            // The division profile admits required members and rejects a
+            // written non-const marker before publishing that conditional row.
+            if self.imported_division_trait(definition)?.is_some() {
+                return Ok(false);
+            }
+            return Err("trait member constness lacks its actual function");
+        };
         let local = &self
             .must_use_contracts
             .as_deref()
             .and_then(|row| row.headers.as_deref())
             .ok_or("trait member constness lacks its completed source ledger")?
             .local;
-        let function = self
-            .function_indices
-            .get(&definition)
-            .and_then(|&index| self.functions.get(index))
-            .filter(|function| function.definition == definition)
-            .ok_or("trait member constness lacks its actual function")?;
         let actual = local
             .definitions
             .get(&definition)

@@ -53,7 +53,7 @@ pub(super) fn require_role_transport(
     if !conversions && catalog.language(LangItem::From).is_some() {
         return Err("source From contract transport is not implemented");
     }
-    if catalog.language(LangItem::Div).is_some() {
+    if !(compiler_operations && languages) && catalog.language(LangItem::Div).is_some() {
         return Err("source Div contract transport is not implemented");
     }
     if [LangItem::RangeMin, LangItem::RangeMax, LangItem::RangeSub]

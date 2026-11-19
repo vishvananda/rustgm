@@ -20,6 +20,18 @@ pub fn scheduled() {}
 pub fn next_release() {}
 "#;
 
+const DIVISION_PROVIDER: &str = r#"
+#[lang="div"]
+pub const trait Div<Rhs = Self> {
+    type Output;
+    fn div(self, rhs: Rhs) -> Self::Output;
+}
+impl Div for u8 {
+    type Output = u8;
+    fn div(self, _rhs: u8) -> u8 { self }
+}
+"#;
+
 const RESERVATION_PROVIDER: &str = r#"
 #[stable(feature="reservation_transport",since="1.0.0")]
 #[rustc_const_unstable(feature="reservation_effect",issue="none")]
@@ -120,6 +132,15 @@ fn availability_foundation(root: &Path) -> Result<String> {
     Ok(source
         .split_once("\n#[unstable(feature=\"experimental_identity\"")
         .ok_or("source availability fixture lost its role-only prefix")?
+        .0
+        .to_owned())
+}
+
+fn macro_role_foundation(root: &Path) -> Result<String> {
+    let source = std::fs::read_to_string(root.join("pa29/tests/spec/macro-contexts/provider.rs"))?;
+    Ok(source
+        .split_once("// Authored macro-context transport controls.")
+        .ok_or("macro-context fixture lost its role foundation")?
         .0
         .to_owned())
 }
@@ -279,6 +300,76 @@ fn cli_version_fourteen_preserves_const_reservation_for_coherence() -> Result {
 }
 
 #[test]
+fn cli_version_fourteen_transports_ordinary_division_and_preserves_const_rejection() -> Result {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root.join(format!(
+        "obj/parallel/v14-division-transport/cli-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let foundation = macro_role_foundation(root)?;
+    let provider = folder.join("provider.rs");
+    std::fs::write(&provider, format!("{foundation}{DIVISION_PROVIDER}"))?;
+    let metadata = folder.join("provider.rgcrate");
+    let lowir = folder.join("provider.lowir");
+    let mut producer = source_export(
+        "module-body-operations-v14",
+        &provider,
+        &metadata,
+        &lowir,
+        true,
+    );
+    producer.arg("--cap-lints=allow");
+    super::artifacts::checked("provider", &folder, &mut producer)?;
+    let bytes = std::fs::read(&metadata)?;
+    assert_eq!(
+        rustgm::support::crates::encode(&rustgm::support::crates::decode(&bytes)?)?,
+        bytes
+    );
+    let client = folder.join("client.rs");
+    std::fs::write(
+        &client,
+        r#"#![feature(no_core)]#![no_core]
+#[unsafe(no_mangle)] pub extern "C" fn observed() -> u8 { <u8 as base::Div>::div(42, 2) }
+fn main() {}
+"#,
+    )?;
+    let client_lowir = folder.join("client.lowir");
+    super::artifacts::checked(
+        "client",
+        &folder,
+        &mut source_client(&client, &metadata, &client_lowir),
+    )?;
+    let text = std::fs::read_to_string(client_lowir)?;
+    assert!(text.contains("call u8 @rgc$"), "{text}");
+    assert!(text.contains("(42, 2)"), "{text}");
+    let constant = folder.join("constant.rs");
+    std::fs::write(
+        &constant,
+        "#![feature(no_core,const_trait_impl)]#![no_core]\n\
+        const VALUE: u8 = <u8 as base::Div>::div(42, 2);\nfn main() {}\n",
+    )?;
+    let rejected = source_client(&constant, &metadata, &folder.join("constant.lowir")).output()?;
+    let stderr = String::from_utf8(rejected.stderr)?;
+    assert_eq!(rejected.status.code(), Some(1), "{stderr}");
+    assert!(stderr.contains("trait obligation"), "{stderr}");
+    let legacy = folder.join("legacy.rgcrate");
+    let rejected = source_export("module-bodies-v13", &provider, &legacy, &lowir, true)
+        .arg("--cap-lints=allow")
+        .output()?;
+    let stderr = String::from_utf8(rejected.stderr)?;
+    assert_eq!(rejected.status.code(), Some(1), "{stderr}");
+    assert!(
+        stderr.contains("source Div contract transport is not implemented"),
+        "{stderr}"
+    );
+    assert!(!legacy.exists());
+    Ok(())
+}
+
+#[test]
 fn cli_version_fourteen_transports_exact_reflection_nominal_roles() -> Result {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -288,11 +379,7 @@ fn cli_version_fourteen_transports_exact_reflection_nominal_roles() -> Result {
         std::process::id()
     ));
     std::fs::create_dir_all(&folder)?;
-    let foundation =
-        std::fs::read_to_string(root.join("pa29/tests/spec/macro-contexts/provider.rs"))?;
-    let (foundation, _) = foundation
-        .split_once("// Authored macro-context transport controls.")
-        .ok_or("macro-context fixture lost its role foundation")?;
+    let foundation = macro_role_foundation(root)?;
     let provider = folder.join("provider.rs");
     std::fs::write(
         &provider,

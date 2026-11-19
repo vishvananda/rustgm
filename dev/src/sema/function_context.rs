@@ -1,6 +1,6 @@
 //! Defining const checking is distinct from executable function eligibility.
 use super::{associated::OwnerKind, model::Declarations};
-use crate::resolve::{model::DefId, unit::NodeKey};
+use crate::resolve::{body_origin::ProofSite, model::DefId, unit::NodeKey};
 use crate::types::parameters::{
     clauses::Clause,
     predicates::{Bound, Predicate},
@@ -158,8 +158,12 @@ impl Declarations {
             .owner(trait_definition)
             .and_then(|id| self.associated.get(id))
             .ok_or("const member requirement has no actual trait owner")?;
-        let source = owner.source.ok_or("imported const-member defining requests require their authenticated source-profile counterpart")?;
-        if input.source.source() != Some(source) {
+        let site = if let Some(source) = owner.source {
+            source.into()
+        } else {
+            self.imported_member_self_site(definition, trait_definition)?
+        };
+        if input.source != site {
             return Ok(clause);
         }
         let mut implicit = self.const_self_predicate(trait_definition)?;
@@ -171,6 +175,61 @@ impl Declarations {
         };
         implicit.bound = Bound::trait_application(application, effect);
         Ok(implicit.into())
+    }
+
+    /// Version fourteen transports the actual required division declaration.
+    /// Its identity and absent original establish no executable permission.
+    pub(in crate::sema) fn imported_division_trait(
+        &self,
+        definition: DefId,
+    ) -> Result<Option<DefId>, &'static str> {
+        let Some(catalog) = self.source_bindings.as_deref() else {
+            return Ok(None);
+        };
+        let Some(role) = catalog.role(crate::support::bindings::LangItem::Div)? else {
+            return Ok(None);
+        };
+        if role.origin.source().is_some()
+            || self.associated.trait_owner(definition) != Some(role.definition)
+            || self
+                .declaration_header(definition)?
+                .is_none_or(|header| header.declaration.source().is_some() || header.body.is_some())
+        {
+            return Ok(None);
+        }
+        Ok(Some(role.definition))
+    }
+
+    fn imported_member_self_site(
+        &self,
+        definition: DefId,
+        trait_definition: DefId,
+    ) -> Result<ProofSite, &'static str> {
+        if self.imported_division_trait(definition)? != Some(trait_definition) {
+            return Err(
+                "imported const-member defining requests require their authenticated source-profile counterpart",
+            );
+        }
+        let catalog = self
+            .crates
+            .as_deref()
+            .and_then(super::crates::Linkage::origin_catalog)
+            .ok_or("imported const member lost its actual origin catalog")?;
+        let trait_header = self
+            .generics
+            .traits
+            .as_deref()
+            .and_then(|traits| traits.header(crate::types::ItemId(trait_definition.0)))
+            .ok_or("imported const member lost its actual trait header")?;
+        // Import preparation authenticates the implicit Self clause at the
+        // first position after the canonical prefix of these same rows.
+        let (inputs, canonical) = trait_header
+            .inputs
+            .imported_parts(catalog, trait_definition)?;
+        let input = inputs
+            .get(canonical.len())
+            .ok_or("imported const member lost its actual implicit Self input")?;
+        Ok(input.source)
     }
 
     fn const_self_predicate(&self, definition: DefId) -> Result<Predicate, &'static str> {
