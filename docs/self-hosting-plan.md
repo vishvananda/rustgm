@@ -657,6 +657,16 @@ same unwind-marker publication fence on both revisions. Candidate observations
 are under `obj/parallel/v14-reservation-candidate/` in the frontier checkout.
 [Fresh client regression](../dev/tests/crate_linking/versioned_clients.rs)
 
+The optimized strict replay at `cbc823943` clears the reservation gate on all
+309 unchanged `core` inputs. After 28.72 seconds it reaches `source
+macro/semantic-name provenance metadata is not implemented`, with zero
+bring-up records and no artifacts. The gate checks contextual item bindings,
+opaque item marks and marked local bindings together. The next reduction
+needs to identify which names a published row would have to resolve and which
+references already use checked declaration identities. The receipt is under
+`obj/parallel/strict-core/reservation/` in the frontier checkout.
+[Existing provenance boundary](parallel/macro-contexts.md)
+
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
 deprecated macro and accepts a call through an annotated `use` alias of a
