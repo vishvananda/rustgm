@@ -685,13 +685,15 @@ impl Dependencies {
         self.charge(instances.len())?;
         let mut values = crate::sema::values::Evaluator::new(report, facts);
         for instance in instances {
-            let Some(Kind::FunctionItem { item, .. }) = values.facts().types.kind(instance.ty())
-            else {
-                return Err("reification dependency lost its selected function item");
-            };
-            values
-                .prepare_reified_location(crate::resolve::model::DefId(item.0))
-                .map_err(crate::sema::values::Failure::message)?;
+            match values.facts().types.kind(instance.ty()) {
+                Some(Kind::FunctionItem { item, .. }) => values
+                    .prepare_reified_location(crate::resolve::model::DefId(item.0))
+                    .map_err(crate::sema::values::Failure::message)?,
+                // A typed constant can hold a noncapturing closure's address.
+                // Its checked closure entry owns the ABI and has no caller attribute.
+                Some(Kind::Closure { .. }) => {}
+                _ => return Err("reification dependency lost its selected callable"),
+            }
         }
         Ok(())
     }
