@@ -165,10 +165,21 @@ The original `std/src/panicking.rs:44` initializes the used `EMPTY_PANIC`
 static with `begin_panic::<&'static str> as fn(&'static str) -> !`.
 On pinned Rust 1.98.0, a direct call to a tracked function observes the call
 site. Both a static function pointer and an equivalent local cast observe
-the function declaration site, at optimization levels 0 and 2. The graph
-still has an empty skip list, 47 unproven obligations and 50 waivers.
-The trace and independent observer are under `obj/parallel/next-library-probes/`
-in the performance checkout.
+the function declaration site, at optimization levels 0 and 2. The native
+lowering now prepares the actual declaration location when an address is
+demanded and emits one forwarding shim per selected instance. The ordinary
+pointer ABI includes the full arguments and result. The shim supplies the
+extra location argument and preserves a diverging target. A virtual call to
+a tracked trait declaration forwards the caller location. An impl-only
+attribute reaches the definition location through a shim. Six native controls
+match pinned rustc, including aggregate results, a retained static with a
+diverging pointer and both virtual cases. The existing transport-fence tests
+also pass. The first integrated original replay found a stored noncapturing
+closure while preparing caller-location dependencies in
+`std/src/panicking.rs::increase`. It reports 44 unproven obligations and eight
+waivers, with an empty skip list and no LowIR. The caller-location preparation
+keeps that closure on its existing checked closure entry. Receipts are under
+`obj/parallel/tracked-reify-check/` in the frontier checkout.
 
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
@@ -222,9 +233,19 @@ from distinct variant tests during unguarded capture. The reduced enum moves
 past the cleanup check to source transport validation, and both live-value
 opponents still fail the cleanup check. Three focused tests pass. The original
 strict core replay clears `ControlFlow::into_value` and reaches the body of
-the array `try_map` implementation at `core/src/array/mod.rs:641`. It reports
+the array `try_map` implementation at `core/src/array/mod.rs:640`. It reports
 `active cleanup requires const Drop in its actual defining environment`.
-The replay retains zero bring-up records and emits no metadata. All four
+The trace identifies `Drain<'_, '_, T, F>` and the actual conditional `Drop`
+implementation. The environment carries `T: [const] Destruct`, while the
+defining cleanup requested unconditional `Drop`. The repair uses the same
+conditional effect as ordinary const-function body checking. The exact closed
+destructor selection and execution checks remain separate.
+Two reduced const cases pass cleanup selection and reach later transport
+checks. The missing-bound case is rejected, and the ordinary control reaches
+the same transport check. Four focused cleanup tests pass. The strict core
+replay now reaches `try_from_fn_erased` at `core/src/array/mod.rs:909` with
+`projected lifetime components require a scoped proof`. It has zero bring-up
+records and emits no metadata. All four
 frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
 runs remain due.
@@ -238,6 +259,13 @@ runs remain due.
 | 3. Close M4 and exercise crate transport | Vendor the locked `unicode-ident`, `tinyvec_macros`, `tinyvec` and `unicode-normalization` sources. Take editions, features and dependency edges from the frozen unit plan. Bring up the dependency graph and execute the Unicode consumers. In parallel, advance real per-crate export/import from `core` through `alloc`, the selected `std` graph and the compiler dependencies. | The four Unicode consumers match the declared outcomes. A fresh dependent reads authenticated metadata and links RustGM-generated objects. Cover the demanded generic and const bodies, resolved identities, proof inputs and native links with cross-crate positive and rejection controls. Guests can expose later source failures while this transport is being built. |
 | 4. Build stage 1 (M5) | Freeze the stage procedure, including the locked graph, unmodified `dev/src/lib.rs` and `dev/bin/rustgm.rs` and their reachable sources. Use the pinned rustc-built stage 0 to compile target Rust, then use the pinned CPPGM object path to link the compiler. Start with a CLI invocation that exercises a real input and drive remaining failures from the compiler's demand list. | The resulting stage 1 executable, selected through `RUSTGM_TEST_APP`, passes every committed PA1–PA24 text oracle. Record the executable hash, expected and executed case counts, and exact receipts. |
 | 5. Rebuild and qualify (M6–M7) | Have stage 1 rebuild the same frozen graph. Work through strict-mode blockers by cause, starting as soon as each crate can be replayed. Account for the existing core/alloc and std obligations and waivers individually. Rerun both stages strictly from clean directories for qualification. | Compare every crate's LowIR and metadata and the linked compiler byte for byte. Require zero bring-up records and zero trapping stubs across both strict builds. Exercise the perturbed-input comparison failure and the one-record strict-gate failure required by PA45. |
+
+The target-unit executor rejects explicit bring-up options before launch and
+checks successful compilation stderr for bring-up records before publishing
+LowIR or metadata. The one-record control gives the process a successful exit
+with both outputs present. The gate quarantines both outputs and prevents the
+dependent crate from starting. All 23 target-unit tests pass, including the
+empty-graph rejection. [Executor](../scripts/target_units.py) · [Controls](../scripts/tests/test_target_units.py)
 
 For the first checkpoint, preserve body-region identity through storage
 normalization and exercise the two existing body-region cases from the trace.
