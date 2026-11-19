@@ -604,6 +604,12 @@ the intrinsic publication boundary. The passing reduction imports the
 generic `V` and demands concrete layout directly through the typed pipeline.
 Receipts are in `obj/parallel/v14-simd-limits-final/` in the frontier checkout.
 
+The unchanged 309-input strict core replay clears the SIMD gate in 28.04
+seconds and reaches `deprecation declaration transport is not implemented
+for this metadata profile`. It reports zero bring-up records and emits no
+artifacts. The receipt is in `obj/parallel/strict-core/simd-limits/` in the
+frontier checkout.
+
 All four frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
 runs remain due.
