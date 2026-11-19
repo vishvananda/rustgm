@@ -244,8 +244,11 @@ Two reduced const cases pass cleanup selection and reach later transport
 checks. The missing-bound case is rejected, and the ordinary control reaches
 the same transport check. Four focused cleanup tests pass. The strict core
 replay now reaches `try_from_fn_erased` at `core/src/array/mod.rs:909` with
-`projected lifetime components require a scoped proof`. It has zero bring-up
-records and emits no metadata. All four
+`projected lifetime components require a scoped proof`. The trace reaches
+`TypeComponents::drop_inputs` from destruction-region liveness during the
+staged loan proof. Its scalar-only return rejects the depth-zero projected
+argument. The strict replay has zero bring-up records and emits no metadata.
+All four
 frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
 runs remain due.
