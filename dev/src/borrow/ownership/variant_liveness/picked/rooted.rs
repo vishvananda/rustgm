@@ -72,7 +72,8 @@ impl Selected {
                     ty,
                     enclosing: row.cleanup.live_type.unwrap_or(ty),
                     purpose: leaf.purpose,
-                    access: leaf.access && (leaf.history || row.cleanup.access),
+                    // Qualification history can outlive the scheduled drop.
+                    access: leaf.access && row.cleanup.access,
                 });
             }
             row.subjects = super::Range {
