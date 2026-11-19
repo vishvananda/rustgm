@@ -217,12 +217,14 @@ both alternatives move the payload. The reduced enum compiles with pinned
 rustc and fails with the same RustGM error. The original ownership trace
 marks two active physical whole-payload cleanups on the enum. The companion
 controls that leave a non-const payload or a separate argument alive fail
-on both compilers. The candidate repair recovers the selected owned fields
+on both compilers. The repair recovers the selected owned fields
 from distinct variant tests during unguarded capture. The reduced enum moves
 past the cleanup check to source transport validation, and both live-value
-opponents still fail the cleanup check. Three focused tests pass in the
-performance checkout. The original replay of this candidate is pending.
-The last strict replay has zero bring-up records and no metadata. All four
+opponents still fail the cleanup check. Three focused tests pass. The original
+strict core replay clears `ControlFlow::into_value` and reaches the body of
+the array `try_map` implementation at `core/src/array/mod.rs:641`. It reports
+`active cleanup requires const Drop in its actual defining environment`.
+The replay retains zero bring-up records and emits no metadata. All four
 frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
 runs remain due.
