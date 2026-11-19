@@ -35,7 +35,8 @@ pub(in crate::sema) struct Watch {
 #[derive(Default)]
 pub(super) struct ChildWork {
     pub goals: usize,
-    pub source_provider: usize,
+    /// Memoizing root queries whose authenticated provider excludes child reuse.
+    pub source_queries: usize,
     pub hits: usize,
 }
 

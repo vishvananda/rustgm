@@ -112,10 +112,6 @@ impl Search<'_> {
             return Probe::Ordinary;
         }
         facts.generics.selection_memo.child_work.goals += 1;
-        if facts.source_bindings.is_some() {
-            facts.generics.selection_memo.child_work.source_provider += 1;
-            return Probe::Ordinary;
-        }
         let Some(application) = facts.types.find_trait_application(Application {
             item,
             arguments: GenericArgs::EMPTY,
@@ -160,6 +156,7 @@ impl Search<'_> {
 
     fn neutral_child_query(&self, facts: &Declarations) -> bool {
         self.query.child_proof_work != 0
+            && facts.source_bindings.is_none()
             && self.query.purpose == Purpose::Use
             && self.query.availability == Availability::Validated
             && self.query.allocations.untouched()

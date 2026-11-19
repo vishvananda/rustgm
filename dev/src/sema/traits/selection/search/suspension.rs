@@ -398,7 +398,11 @@ fn begin_borrowed_inputs(
     }
     search.query.refining = matches!(mode, Mode::Refining(_) | Mode::MemoizedBody);
     if matches!(mode, Mode::MemoizedBody) {
-        search.query.enable_child_proof_work();
+        if facts.source_bindings.is_some() {
+            facts.generics.selection_memo.child_work.source_queries += 1;
+        } else {
+            search.query.enable_child_proof_work();
+        }
     }
     first.inference = if search.query.refining {
         super::frames::Inference::Selecting

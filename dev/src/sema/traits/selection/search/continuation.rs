@@ -336,7 +336,11 @@ impl<'a> Search<'a> {
         } else if let Some(child) = self.condition_child(facts, frame)? {
             child
         } else {
-            let probe = self.probe_child_proof(facts, frame);
+            let probe = if self.query.child_proof_work == 0 {
+                super::child_proofs::Probe::Ordinary
+            } else {
+                self.probe_child_proof(facts, frame)
+            };
             if let super::child_proofs::Probe::Hit(node) = probe {
                 self.accept_trial_condition(facts, frame, Decision::Proven(node))?;
                 return Ok(None);
