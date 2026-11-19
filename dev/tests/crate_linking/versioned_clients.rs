@@ -477,6 +477,91 @@ fn required_range_headers(metadata: &Path) -> Result {
 }
 
 #[test]
+fn cli_version_fourteen_binds_private_self_alias_to_actual_root() -> Result {
+    use rustgm::support::crates::{self, generics::source::BindingSource};
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root.join(format!(
+        "obj/parallel/v14-root-self-alias/cli-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let foundation = macro_role_foundation(root)?;
+    let provider = folder.join("provider.rs");
+    std::fs::write(
+        &provider,
+        format!(
+            "{foundation}
+extern crate self as local;
+pub mod values {{ pub fn seven() -> u8 {{ 7 }} }}
+pub fn observed() -> u8 {{ local::values::seven() }}
+"
+        ),
+    )?;
+    let metadata = folder.join("provider.rgcrate");
+    let lowir = folder.join("provider.lowir");
+    super::artifacts::checked(
+        "provider",
+        &folder,
+        source_export(
+            "module-body-operations-v14",
+            &provider,
+            &metadata,
+            &lowir,
+            true,
+        )
+        .arg("--cap-lints=allow"),
+    )?;
+    let bytes = std::fs::read(&metadata)?;
+    let packet = crates::decode(&bytes)?;
+    assert_eq!(crates::encode(&packet)?, bytes);
+    let source = packet.source_descriptor().ok_or("source descriptor")?;
+    let rows = source.module_contracts()?.rows();
+    let alias = rows
+        .namespace
+        .bindings
+        .iter()
+        .find(|binding| binding.name == "local")
+        .ok_or("root alias binding")?;
+    let root = rows.namespace.root;
+    assert_eq!(alias.module, root);
+    assert_eq!(alias.target.declaration, root);
+    assert_eq!(alias.source, BindingSource::Import);
+    assert_eq!(
+        alias.visibility,
+        crates::generics::source::ModuleVisibility::Within(root)
+    );
+    for (name, call, status) in [
+        ("allowed", "base::observed", 0),
+        ("private", "base::local::values::seven", 1),
+    ] {
+        let client = folder.join(format!("{name}.rs"));
+        std::fs::write(
+            &client,
+            format!("#![feature(no_core)]#![no_core]\npub fn read() -> u8 {{ {call}() }}\n"),
+        )?;
+        let output = source_client(&client, &metadata, &folder.join(format!("{name}.lowir")))
+            .args(["--crate-type=lib", "--cap-lints=allow"])
+            .output()?;
+        let stderr = String::from_utf8(output.stderr)?;
+        assert_eq!(output.status.code(), Some(status), "{name}: {stderr}");
+        if status == 1 {
+            assert!(stderr.contains("private"), "{stderr}");
+        }
+    }
+    let legacy = folder.join("legacy.rgcrate");
+    let output = source_export("module-bodies-v13", &provider, &legacy, &lowir, true)
+        .arg("--cap-lints=allow")
+        .output()?;
+    let stderr = String::from_utf8(output.stderr)?;
+    assert_eq!(output.status.code(), Some(1), "{stderr}");
+    assert!(stderr.contains("source declaration kind is outside the initial source profile"));
+    assert!(!legacy.exists());
+    Ok(())
+}
+
+#[test]
 fn cli_version_fourteen_transports_exact_reflection_nominal_roles() -> Result {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()

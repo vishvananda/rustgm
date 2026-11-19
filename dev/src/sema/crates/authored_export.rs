@@ -601,16 +601,25 @@ impl Stage {
         mode: ExportMode,
     ) -> Result<Option<s::DefinitionKind>, &'static str> {
         let definition = &report.resolution.definitions[id.0 as usize];
-        if self.declaration_policies() && definition.kind == DefKind::Label {
-            // The checked CFG retains each destination as a block identity.
-            if definition.namespace != Namespace::Label
-                || definition.node.is_none()
-                || definition.members.is_some()
-                || !matches!(definition.access, Access::Within(_))
-            {
-                return Err("source label changed its actual lexical declaration");
+        if self.declaration_policies() {
+            match definition.kind {
+                DefKind::ExternCrate => {
+                    self.private_self_alias(report, id)?;
+                    return Ok(None);
+                }
+                DefKind::Label => {
+                    // The checked CFG owns each destination as a block identity.
+                    if definition.namespace != Namespace::Label
+                        || definition.node.is_none()
+                        || definition.members.is_some()
+                        || !matches!(definition.access, Access::Within(_))
+                    {
+                        return Err("source label changed its actual lexical declaration");
+                    }
+                    return Ok(None);
+                }
+                _ => {}
             }
-            return Ok(None);
         }
         let associated = (mode == ExportMode::CompilerOperations || self.body_nodes())
             && facts.associated.type_contract(id).is_some();
@@ -906,7 +915,9 @@ fn scope_owners(
     owners[scope.0 as usize] = Some(root);
     for (index, definition) in report.resolution.definitions.iter().enumerate() {
         stage.charge(1)?;
-        if let Some(scope) = definition.members {
+        if let Some(scope) = definition.members
+            && definition.kind != DefKind::ExternCrate
+        {
             owners[scope.0 as usize] = Some(DefId(
                 u32::try_from(index).map_err(|_| "source owner identity overflow")?,
             ));

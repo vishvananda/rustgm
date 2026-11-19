@@ -159,7 +159,8 @@ impl Stage {
                         return Err("foreign private module binding is unsupported");
                     }
                 };
-                let (source, node) = binding_origin(report, scope, binding)?;
+                let (target, alias) = self.module_binding_target(report, binding.target)?;
+                let (source, node) = binding_origin(report, scope, binding, alias)?;
                 let source_site = self.site(module.declaration, node)?;
                 let name = report.package.names.get(name);
                 self.charge(name.len())?;
@@ -168,7 +169,7 @@ impl Stage {
                     module: module.declaration,
                     name: name.to_owned(),
                     namespace,
-                    target: self.address(binding.target)?,
+                    target,
                     visibility,
                     source,
                     source_site,
@@ -176,6 +177,47 @@ impl Stage {
             }
         }
         Ok(())
+    }
+    /// The alias borrows the root's members and exports a binding to that root.
+    pub(super) fn private_self_alias(
+        &mut self,
+        report: &Report,
+        actual: DefId,
+    ) -> Result<(DefId, NodeKey), &'static str> {
+        self.charge(4)?;
+        let definition = &report.resolution.definitions[actual.0 as usize];
+        let module = crate::resolve::package::ModuleId(0);
+        if !self.declaration_policies() || definition.access != Access::Within(module) {
+            return Err("source extern crate declaration requires its wider profile");
+        }
+        let source = crate::resolve::root_self_alias(
+            &report.package,
+            &report.resolution,
+            definition.name,
+            actual,
+        )
+        .ok_or("source extern crate requires its actual private root self alias")?;
+        let root = report
+            .resolution
+            .crate_root
+            .filter(|root| {
+                let row = &report.resolution.definitions[root.0 as usize];
+                row.kind == DefKind::Module && row.members == definition.members
+            })
+            .ok_or("source self alias lost its actual root declaration")?;
+        Ok((root, source))
+    }
+    pub(super) fn module_binding_target(
+        &mut self,
+        report: &Report,
+        actual: DefId,
+    ) -> Result<(s::DeclarationAddress, Option<NodeKey>), &'static str> {
+        if report.resolution.definitions[actual.0 as usize].kind == DefKind::ExternCrate {
+            let (root, source) = self.private_self_alias(report, actual)?;
+            Ok((self.address(root)?, Some(source)))
+        } else {
+            Ok((self.address(actual)?, None))
+        }
     }
     /// Only the defining private name of a positively checked transparent alias
     /// disappears. Imports/reexports still require their genuine named row.
@@ -327,7 +369,11 @@ fn binding_origin(
     report: &Report,
     scope: super::ScopeId,
     binding: &Binding,
+    alias: Option<NodeKey>,
 ) -> Result<(s::BindingSource, NodeKey), &'static str> {
+    if let (Origin::Direct, Some(site)) = (binding.origin, alias) {
+        return Ok((s::BindingSource::Import, site));
+    }
     match binding.origin {
         Origin::Direct => Ok((
             s::BindingSource::Declaration,

@@ -192,7 +192,7 @@ impl Stage {
                     .ok_or("availability binding has no completed target declaration")?
                     .regular
             } else {
-                let import = actual_import(report, self, &origins, binding)?;
+                let policy = import_policy(report, self, &origins, binding, inventory)?;
                 self.availability_policy(
                     report,
                     inventory,
@@ -203,7 +203,7 @@ impl Stage {
                         index: u32::try_from(index).map_err(|_| "availability binding overflow")?,
                         site: binding.source_site,
                     },
-                    inventory.import_id(import)?,
+                    policy,
                 )?
             };
             bindings.push(s::BindingAvailability {
@@ -567,12 +567,13 @@ impl Stage {
         Err("availability policy has no actual emitted declaration/import origin")
     }
 }
-fn actual_import(
+fn import_policy(
     report: &Report,
     stage: &mut Stage,
     origins: &Origins,
     row: &s::ModuleBindingRow,
-) -> Result<usize, &'static str> {
+    inventory: &Inventory,
+) -> Result<Option<usize>, &'static str> {
     // The emitted binding retains actual scope/name/namespace; no target spelling is guessed.
     stage.charge(1)?;
     let actual = origins
@@ -601,8 +602,18 @@ fn actual_import(
         .bindings
         .get(scope, name, namespace)
         .ok_or("availability binding has no actual resolved source")?;
-    if stage.address(binding.target)? != row.target {
+    let (target, alias) = stage.module_binding_target(report, binding.target)?;
+    if target != row.target {
         return Err("availability import changed its actual resolved target");
+    }
+    if let (Origin::Direct, s::BindingSource::Import, Some(source)) =
+        (binding.origin, row.source, alias)
+    {
+        let (regular, constant) = inventory.declaration_ids(binding.target)?;
+        if constant.is_some() || stage.known_site(row.module, source)? != Some(row.source_site) {
+            return Err("availability self alias changed its actual policy or source site");
+        }
+        return Ok(regular);
     }
     let index = match (binding.origin, row.source) {
         (Origin::Import(index), s::BindingSource::Import)
@@ -620,7 +631,7 @@ fn actual_import(
     if stage.known_site(row.module, import.node)? != Some(row.source_site) {
         return Err("availability import changed its actual leaf site");
     }
-    Ok(index)
+    inventory.import_id(index)
 }
 
 fn since_value(since: Since) -> s::AvailabilitySince {

@@ -5,9 +5,10 @@ mod primitives;
 mod traits;
 use super::{
     index::{Context, Resolver},
-    model::{Access, Binding, DefId, DefKind, Definition, Namespace, Origin, ScopeId},
+    model::{Access, Binding, DefId, DefKind, Definition, Namespace, Origin, Resolution, ScopeId},
     names::NameId,
-    package::{Error, ModuleId},
+    package::{Error, ModuleId, Package},
+    unit::NodeKey,
 };
 use crate::syntax::{
     ast::NodeId,
@@ -480,48 +481,52 @@ impl Resolver<'_> {
     /// bootstrap library or imported crate. Its current declaration still owns
     /// the root members; neither an arbitrary module nor missing metadata does.
     fn self_alias(&self, name: NameId, binding: &Binding) -> bool {
-        let Some(definition) = self.facts.definitions.get(binding.target.0 as usize) else {
-            return false;
-        };
-        let Some(key) = definition.node else {
-            return false;
-        };
-        let root = &self.package.modules[0];
-        if definition.name != name
-            || definition.kind != DefKind::ExternCrate
-            || definition.namespace != Namespace::Type
-            || definition.scope != ScopeId(0)
-            || definition.members != self.facts.module_scopes.first().copied()
-            || key.file != root.file
-            || binding.access != Access::Public
-            || binding.origin != Origin::Direct
-            || binding.ambiguous
-        {
-            return false;
-        }
-        let unit = self.package.unit(key.file);
-        let Some(crate::syntax::ast::Node {
-            kind: crate::syntax::ast::Kind::Item(index),
-            ..
-        }) = unit.configured.ast.nodes.get(key.node.get() as usize)
-        else {
-            return false;
-        };
-        let Some(item) = unit.configured.ast.items.get(*index as usize) else {
-            return false;
-        };
-        matches!(item.kind, ItemKind::ExternCrate { rename: Some(_) })
-            && item
-                .name
-                .is_some_and(|span| matches!(unit.spelling(span), Ok("self")))
-            && unit.configured.active.get(key.node.get() as usize) == Some(&true)
-            && self.binding_key(definition).is_ok_and(|key| {
-                self.facts
-                    .bindings
-                    .get_key(key)
-                    .is_some_and(|current| current.target == binding.target && !current.ambiguous)
-            })
+        binding.access == Access::Public
+            && binding.origin == Origin::Direct
+            && !binding.ambiguous
+            && root_self_alias(self.package, self.facts, name, binding.target).is_some()
     }
+}
+
+/// Locate the active declaration and direct binding of a root self alias.
+pub(crate) fn root_self_alias(
+    package: &Package,
+    facts: &Resolution,
+    name: NameId,
+    target: DefId,
+) -> Option<NodeKey> {
+    let definition = facts.definitions.get(target.0 as usize)?;
+    let key = definition.node?;
+    let root = package.modules.first()?;
+    let root_scope = *facts.module_scopes.first()?;
+    if definition.name != name
+        || definition.kind != DefKind::ExternCrate
+        || definition.namespace != Namespace::Type
+        || definition.scope != root_scope
+        || definition.members != Some(root_scope)
+        || key.file != root.file
+    {
+        return None;
+    }
+    let unit = package.unit(key.file);
+    let index = key.node.get() as usize;
+    let crate::syntax::ast::Kind::Item(item) = unit.configured.ast.nodes.get(index)?.kind else {
+        return None;
+    };
+    let item = unit.configured.ast.items.get(item as usize)?;
+    let span = item.name?;
+    if !matches!(item.kind, ItemKind::ExternCrate { rename: Some(_) })
+        || unit.spelling(span).ok()? != "self"
+        || unit.configured.active.get(index) != Some(&true)
+    {
+        return None;
+    }
+    let context = super::hygiene::definition_context(package, definition).ok()?;
+    let binding = facts
+        .bindings
+        .get_key((root_scope, name, Namespace::Type, context))?;
+    (binding.target == target && binding.origin == Origin::Direct && !binding.ambiguous)
+        .then_some(key)
 }
 
 #[cfg(test)]
