@@ -260,6 +260,14 @@ provided initializer still carries the original bound slot. Restoration
 tries to apply equalities from the opened selection to that original slot.
 The nine pinned-rustc controls and the failing restoration trace are under
 `obj/parallel/btree-inline-lifetime/` in the frontier checkout.
+Pinned rustc also builds and runs the borrowed reducer and rejects its
+static-only impl twin. The receipt is under `obj/parallel/btree-default-oracle/`
+in the performance checkout. The candidate opens the provided initializer's
+original arguments in the dispatcher's existing mapping before applying the
+selection's equations. Formatting and architecture checks pass. Private
+validation timed out building the test harness, and the optimized replay of
+the reducer and original `println` is pending in the frontier checkout under
+`obj/parallel/btree-default-successor/`.
 
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
