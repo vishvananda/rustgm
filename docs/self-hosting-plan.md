@@ -805,9 +805,10 @@ frontier checkout.
    The probe counts fingerprints of mode, source policy and predicate at
    canonical search frames. Full reuse keys also need the caller and registry
    dependencies. Timing remains unmeasured. Every trial imported zero
-   inference edges. The top-level body memo records the same 30 hits in both
-   premise variants. The fixed-size pairs expose repeated child search behind
-   different parents even when a whole-goal cache sees distinct requests.
+   inference edges. Both neutral variants had 32 distinct top-level body memo
+   keys and 32 cold lookups. The memo records the same 30 hits in both premise
+   variants. The fixed-size pairs expose repeated child search behind different
+   parents even when a whole-goal cache sees distinct requests.
    Prototype reuse at the child frame. Measure registry and effective caller
    dependencies from the whole search, including alternatives and refutations.
    In the repeated family the target is one child search per compatible context
