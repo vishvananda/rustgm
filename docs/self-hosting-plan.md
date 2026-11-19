@@ -339,6 +339,19 @@ the parent before the outstanding child reference's use. The replay and
 controls are under `obj/parallel/strict-core/precise-borrow-history-opt/` and
 `obj/parallel/strict-quicksort-reducer/` in the performance checkout.
 
+The scalar body's typed CFG borrows through the local pointer, evaluates the
+returning call and stores the returned reference into that pointer. The next
+iteration previously saw the loan through the pointer's prior value. The loan
+transfer now indexes those loans by definite containing storage slots and
+retires their masks after checking the write. The original referent's other
+loans still have their own identities. Both the regular and ordered-cleanup
+transfers use the same statement path. Four exact ownership and loop tests
+pass, including projected reference slots, a conditional replacement, a loan
+on the pointer storage, and a live loan on the original referent. RustGM and
+pinned rustc accept both loop reductions and reject the premature parent
+write. The successor controls are under
+`obj/parallel/strict-quicksort-candidate/` in the performance checkout.
+
 All four frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
 runs remain due.
