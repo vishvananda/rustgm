@@ -75,6 +75,7 @@ pub(super) fn method(
     headers: &HeaderIndex<'_>,
     function: &s::FunctionHeader,
     unsafe_impls: bool,
+    impl_effect: Constness,
     work: &mut Work,
 ) -> Result<bool, &'static str> {
     let Some(parent) = function.parent else {
@@ -86,7 +87,7 @@ pub(super) fn method(
     let implementation = &rows.implementations[index as usize];
     work.charge(5)?;
     if implementation.self_definition != parent
-        || implementation.constant
+        || implementation.constant != (impl_effect == Constness::Const)
         || !implementation.polarity.is_positive()
         || implementation.unsafe_ && !unsafe_impls
         || implementation.region_captures != 0

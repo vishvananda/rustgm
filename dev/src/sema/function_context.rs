@@ -179,7 +179,7 @@ impl Declarations {
 
     /// Version fourteen transports the actual required division declaration.
     /// Its identity and absent original establish no executable permission.
-    pub(in crate::sema) fn imported_division_trait(
+    pub(crate) fn imported_division_trait(
         &self,
         definition: DefId,
     ) -> Result<Option<DefId>, &'static str> {

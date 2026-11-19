@@ -109,20 +109,26 @@ pub(in crate::sema::crates::typed_headers) fn inherent_captures(
         })
 }
 
-pub(in crate::sema::crates::typed_headers) fn reservation_body(
+pub(super) fn transported_const_impl(descriptor: s::Descriptor<'_>, owner: &s::ImplHeader) -> bool {
+    // The version-fourteen validator admits a positive const bit only on its
+    // actual division role. The validated rows carry that restriction here.
+    descriptor.profile().declaration_policies()
+        && owner.constant
+        && (owner.polarity == crate::sema::associated::ImplPolarity::Reservation
+            || (owner.polarity.is_positive() && owner.trait_application.is_some()))
+}
+
+pub(in crate::sema::crates::typed_headers) fn const_impl_body(
     descriptor: s::Descriptor<'_>,
     raw: &s::FunctionHeader,
 ) -> bool {
     let rows = descriptor.rows();
-    descriptor.profile().declaration_policies()
-        && raw.parent.is_some_and(|parent| {
-            matches!(rows.header(parent), Ok(Some(s::HeaderRef::Implementation(index)))
-            if rows.implementations.get(index as usize).is_some_and(|owner| {
-                owner.self_definition == parent
-                    && owner.constant
-                    && owner.polarity == crate::sema::associated::ImplPolarity::Reservation
-            }))
-        })
+    raw.parent.is_some_and(|parent| {
+        matches!(rows.header(parent), Ok(Some(s::HeaderRef::Implementation(index)))
+        if rows.implementations.get(index as usize).is_some_and(|owner| {
+            owner.self_definition == parent && transported_const_impl(descriptor, owner)
+        }))
+    })
 }
 
 pub(super) fn callable_effect(
@@ -131,9 +137,9 @@ pub(super) fn callable_effect(
     budget: &mut Headers,
 ) -> Result<bool, Error> {
     let constant = raw.constness == Constness::Const;
-    let reservation_const = if constant && raw.parent.is_some() {
+    let implementation_const = if constant && raw.parent.is_some() {
         budget.charge(1)?;
-        reservation_body(descriptor, raw)
+        const_impl_body(descriptor, raw)
     } else {
         false
     };
@@ -149,7 +155,7 @@ pub(super) fn callable_effect(
             && !(constant
                 && descriptor.profile().unconditional_callables()
                 && (raw.parent.is_none()
-                    || reservation_const
+                    || implementation_const
                     || inherent_captures(descriptor, raw))))
     {
         return Err(error(

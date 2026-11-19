@@ -437,23 +437,12 @@ fn written_constness(
         return Ok(Constness::Conditional);
     }
     let effective = facts.is_const_function(function.definition);
-    if effective && !flags.constant && roles.declaration_policies {
-        let parent = facts
-            .associated
-            .owner(function.definition)
-            .and_then(|id| facts.associated.get(id));
-        if parent.is_some_and(|owner| {
-            matches!(
-                owner.kind,
-                OwnerKind::Impl {
-                    constant: true,
-                    polarity: crate::sema::associated::ImplPolarity::Reservation,
-                    ..
-                }
-            )
-        }) {
-            return Ok(Constness::Const);
-        }
+    if effective
+        && !flags.constant
+        && roles.declaration_policies
+        && effective_impl_constness(report, facts, function.definition)?
+    {
+        return Ok(Constness::Const);
     }
     if flags.constant != effective {
         return Err("source effective const eligibility requires its actual marker transport");
@@ -463,6 +452,62 @@ fn written_constness(
     } else {
         Constness::Ordinary
     })
+}
+
+/// Only the authenticated const impl supplies a method's unwritten effect.
+fn effective_impl_constness(
+    report: &Report,
+    facts: &Declarations,
+    definition: DefId,
+) -> Result<bool, &'static str> {
+    use crate::sema::associated::ImplPolarity;
+    let Some(owner) = facts
+        .associated
+        .owner(definition)
+        .and_then(|id| facts.associated.get(id))
+    else {
+        return Ok(false);
+    };
+    let OwnerKind::Impl {
+        constant: true,
+        polarity,
+        ..
+    } = owner.kind
+    else {
+        return Ok(false);
+    };
+    if polarity == ImplPolarity::Reservation {
+        return Ok(true);
+    }
+    if !polarity.is_positive() {
+        return Ok(false);
+    }
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("source effective const method lost its actual language catalog")?;
+    catalog.require_provider_report(report)?;
+    let Some(division) = catalog.language(LangItem::Div) else {
+        return Ok(false);
+    };
+    let implementations = facts
+        .generics
+        .implementations
+        .as_deref()
+        .ok_or("source effective const method lost its implementation registry")?;
+    if !implementations.is_validated(owner.self_definition) {
+        return Err("source effective const method requires its validated implementation");
+    }
+    let implementation =
+        implementations.checked_entry(implementations.entry_key(owner.self_definition)?)?;
+    let Some((application, Constness::Const)) = implementation.predicate.bound.trait_parts() else {
+        return Err("source effective const method changed its actual impl effect");
+    };
+    Ok(implementation.source == owner.source
+        && facts
+            .types
+            .trait_application(application)
+            .is_some_and(|application| application.item.0 == division.definition.0))
 }
 
 /// A required const-trait declaration is conditional, never a const body or an

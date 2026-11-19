@@ -300,7 +300,7 @@ fn cli_version_fourteen_preserves_const_reservation_for_coherence() -> Result {
 }
 
 #[test]
-fn cli_version_fourteen_transports_ordinary_division_and_preserves_const_rejection() -> Result {
+fn cli_version_fourteen_uses_exact_division_impl_effects() -> Result {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .ok_or("root")?;
@@ -348,13 +348,40 @@ fn main() {}
     let constant = folder.join("constant.rs");
     std::fs::write(
         &constant,
-        "#![feature(no_core,const_trait_impl)]#![no_core]\n\
-        const VALUE: u8 = <u8 as base::Div>::div(42, 2);\nfn main() {}\n",
+        r#"#![feature(no_core,const_trait_impl)]#![no_core]
+const VALUE: u8 = <u8 as base::Div>::div(42, 2);
+#[unsafe(no_mangle)] pub extern "C" fn observed() -> u8 { VALUE }
+fn main() {}
+"#,
     )?;
     let rejected = source_client(&constant, &metadata, &folder.join("constant.lowir")).output()?;
     let stderr = String::from_utf8(rejected.stderr)?;
     assert_eq!(rejected.status.code(), Some(1), "{stderr}");
     assert!(stderr.contains("trait obligation"), "{stderr}");
+    let const_provider = folder.join("const-provider.rs");
+    let const_trait = DIVISION_PROVIDER.replace("impl Div for u8", "const impl Div for u8");
+    std::fs::write(&const_provider, format!("{foundation}{const_trait}"))?;
+    let const_metadata = folder.join("const-provider.rgcrate");
+    super::artifacts::checked(
+        "const-provider",
+        &folder,
+        source_export(
+            "module-body-operations-v14",
+            &const_provider,
+            &const_metadata,
+            &lowir,
+            true,
+        )
+        .arg("--cap-lints=allow"),
+    )?;
+    let const_lowir = folder.join("const-client.lowir");
+    super::artifacts::checked(
+        "const-client",
+        &folder,
+        &mut source_client(&constant, &const_metadata, &const_lowir),
+    )?;
+    let text = std::fs::read_to_string(const_lowir)?;
+    assert!(text.contains("return u8 42"), "{text}");
     let legacy = folder.join("legacy.rgcrate");
     let rejected = source_export("module-bodies-v13", &provider, &legacy, &lowir, true)
         .arg("--cap-lints=allow")

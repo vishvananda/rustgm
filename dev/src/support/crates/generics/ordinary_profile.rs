@@ -186,7 +186,9 @@ fn validate_with(
         if reservation && binding != BindingProfile::BodyOperations {
             return Err("reservation implementation transport requires a wider metadata profile");
         }
-        if header.constant && !reservation
+        if header.constant
+            && !reservation
+            && !roles.const_division_impl(rows, headers, header, work)?
             || (!header.polarity.is_positive() || header.unsafe_)
                 && !(roles.languages && header.trait_application.is_some())
         {
@@ -384,10 +386,16 @@ fn associated_method(
     ) && primitive_method(rows, headers, header, work)?;
     Ok(primitive
         || profile.conversions()
-            && (conversions::method(rows, headers, header, roles.languages, work)?
-                || bodies
-                    && (captured::method(rows, headers, header, work)?
-                        || reservation_parent(rows, headers, header, work)?.is_some())))
+            && (conversions::method(
+                rows,
+                headers,
+                header,
+                roles.languages,
+                Constness::Ordinary,
+                work,
+            )? || bodies
+                && (captured::method(rows, headers, header, work)?
+                    || reservation_parent(rows, headers, header, work)?.is_some())))
 }
 
 fn reservation_parent<'a>(
@@ -410,6 +418,35 @@ fn reservation_parent<'a>(
                 && implementation.polarity == ImplPolarity::Reservation
         }))
 }
+fn trait_const_method(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    header: &super::super::FunctionHeader,
+    roles: &Bindings,
+    work: &mut Work,
+) -> Result<bool, &'static str> {
+    let Some(parent) = header
+        .parent
+        .filter(|_| header.constness == Constness::Const)
+    else {
+        return Ok(false);
+    };
+    let Some(super::super::HeaderRef::Implementation(index)) = headers.header(parent, work)? else {
+        return Ok(false);
+    };
+    let implementation = &rows.implementations[index as usize];
+    if implementation.self_definition != parent || !implementation.constant {
+        return Ok(false);
+    }
+    if implementation.polarity == ImplPolarity::Reservation {
+        return Ok(true);
+    }
+    Ok(
+        roles.const_division_impl(rows, headers, implementation, work)?
+            && conversions::method(rows, headers, header, false, Constness::Const, work)?,
+    )
+}
+
 /// Version thirteen: an inherent method may be `const`. Its original is then
 /// a const definition re-checked by every consumer, as a free one is.
 fn inherent_const(
@@ -461,10 +498,8 @@ fn functions(
         let required = callable
             || profile.conversions() && roles.required_member(rows, headers, header, work)?;
         let inherent_const = bodies && inherent_const(rows, headers, header, work)?;
-        let reservation_const = bodies
-            && !inherent_const
-            && header.constness == Constness::Const
-            && reservation_parent(rows, headers, header, work)?.is_some_and(|owner| owner.constant);
+        let trait_const =
+            bodies && !inherent_const && trait_const_method(rows, headers, header, roles, work)?;
         let supported_signature = |signature: super::super::Signature| {
             (safety || !signature.unsafe_)
                 && !signature.variadic
@@ -474,7 +509,7 @@ fn functions(
         if (!free_effects
             && !required
             && !inherent_const
-            && !reservation_const
+            && !trait_const
             && header.constness != Constness::Ordinary)
             || !required && header.constness == Constness::Conditional
             || !supported_signature(header.original)
@@ -495,8 +530,8 @@ fn functions(
         if bodies && header.parent.is_some() && header.original.unsafe_ != header.callable.unsafe_ {
             return Err("source associated callable changed its actual original/public safety");
         }
-        let associated = reservation_const
-            || associated_method(rows, headers, header, work, profile, roles, bodies)?;
+        let associated =
+            trait_const || associated_method(rows, headers, header, work, profile, roles, bodies)?;
         if matches!(header.body, FunctionBody::Original(_))
             && header.parent.is_some()
             && !associated
@@ -842,6 +877,38 @@ pub(super) struct Bindings {
     markers: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 4],
 }
 impl Bindings {
+    fn const_division_impl(
+        &self,
+        rows: &SourceRows,
+        headers: &HeaderIndex<'_>,
+        implementation: &super::super::ImplHeader,
+        work: &mut Work,
+    ) -> Result<bool, &'static str> {
+        let (Some(division), Some(application)) = (self.division, implementation.trait_application)
+        else {
+            return Ok(false);
+        };
+        if !implementation.constant
+            || implementation.unsafe_
+            || !implementation.polarity.is_positive()
+        {
+            return Ok(false);
+        }
+        work.charge(1)?;
+        let declaration = rows
+            .trait_applications
+            .get(application.0 as usize)
+            .ok_or("source const division impl lost its actual trait application")?
+            .declaration;
+        if declaration.artifact.0 != 0 || declaration.declaration != division {
+            return Ok(false);
+        }
+        let Some(super::super::HeaderRef::Trait(index)) = headers.header(division, work)? else {
+            return Err("source const division impl lost its actual trait header");
+        };
+        Ok(rows.traits[index as usize].flags.bits() & TraitFlags::CONST != 0)
+    }
+
     fn required_member(
         &self,
         rows: &SourceRows,

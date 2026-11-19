@@ -2,7 +2,7 @@
 use super::{Checker, DefId, Error};
 use crate::{
     sema::associated::{ImplPolarity, Owner, OwnerKind},
-    support::bindings::LangItem,
+    support::{bindings::LangItem, constness::Constness},
     types::{
         outlives::Queries,
         parameters::{
@@ -42,17 +42,18 @@ impl Checker<'_> {
             .associated
             .imported_implementation(&self.facts.types, owner, predicate)
             .map_err(Error::unlocated)?;
-        let Bound::Trait(application) = predicate.bound else {
-            return Err(Error::unlocated(
-                "imported impl effect requires its wider explicit profile",
-            ));
-        };
+        let (application, effect) = predicate.bound.trait_parts().ok_or_else(|| {
+            Error::unlocated("imported impl effect requires its wider explicit profile")
+        })?;
         let trait_definition = self
             .facts
             .types
             .trait_application(application)
             .map(|application| DefId(application.item.0))
             .ok_or_else(|| Error::unlocated("imported impl lacks its actual trait application"))?;
+        if effect != Constness::Ordinary {
+            self.require_imported_const_division(trait_definition, effect)?;
+        }
         if let Some(methods) = methods {
             methods
                 .require(&self.facts, definition, predicate)
@@ -73,6 +74,33 @@ impl Checker<'_> {
             .ok_or_else(|| {
                 Error::unlocated("imported impl lacks its complete actual input environment")
             })
+    }
+
+    fn require_imported_const_division(
+        &self,
+        definition: DefId,
+        effect: Constness,
+    ) -> Result<(), Error> {
+        let Some(catalog) = self.facts.source_bindings.as_deref() else {
+            return Err(Error::unlocated(
+                "imported const impl lacks its actual role catalog",
+            ));
+        };
+        let role = catalog.role(LangItem::Div).map_err(Error::unlocated)?;
+        let Some(role) = role.filter(|role| {
+            effect == Constness::Const
+                && role.definition == definition
+                && role.origin.source().is_none()
+                && self.facts.associated.constant_trait(definition) == Some(true)
+        }) else {
+            return Err(Error::unlocated(
+                "imported impl effect requires its wider explicit profile",
+            ));
+        };
+        self.facts
+            .associated
+            .require_imported_role(role)
+            .map_err(Error::unlocated)
     }
 
     fn require_imported_receiver_trait(&self, definition: DefId) -> Result<(), Error> {

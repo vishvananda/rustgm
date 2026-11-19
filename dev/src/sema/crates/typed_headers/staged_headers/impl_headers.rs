@@ -2,7 +2,6 @@
 use super::{Declarations, Error, Headers, error, mapped_source, predicate_remap, s};
 use crate::{
     resolve::body_origin::ImportedDeclarationId,
-    sema::associated::ImplPolarity,
     support::crates::owner_catalog::DeclarationRef,
     types::{TypeId, outlives::Pair, parameters::predicates::Predicate},
 };
@@ -31,7 +30,7 @@ pub(super) fn prepare(
     let raw = &rows.implementations[index as usize];
     if raw.self_definition != declaration
         || raw.scope != declaration
-        || raw.constant && raw.polarity != ImplPolarity::Reservation
+        || raw.constant && !super::scheme_ports::transported_const_impl(context.descriptor, raw)
         || (raw.members.start != raw.members.end
             && !context.descriptor.profile().feature_predicates())
     {
