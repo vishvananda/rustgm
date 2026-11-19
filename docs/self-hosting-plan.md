@@ -152,7 +152,15 @@ reaches `Option::and_then` at `core/src/option.rs:1542`. Lowering reports
 The trace locates the missing `Option<&bool>` fields in the selected closure's
 native signature. Three ordinary closure and generic-enum reductions pass on
 both compilers. The original inputs and empty skip list produce 49 unproven
-obligations, 43 waivers and no completed LowIR on the successor.
+obligations, 43 waivers and no completed LowIR on that replay. The selected
+original closure's public result uses its own eight-region binder, with a
+different canonical type from the opened body result. Native preparation now
+reuses the verified callable signature's field producer. Focused closure
+lowering and lifetime checks pass. The original shared graph clears
+`Option::and_then` and next reports `tracked function pointers require a genuine
+caller-location reification shim` during lowering attributed to `get_context`
+in `core/src/future/mod.rs`. The actual reified target still needs to be located.
+That replay retains the empty skip list, 47 unproven obligations and 50 waivers.
 
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
@@ -190,10 +198,17 @@ clears `Formatter::wrap_buf` and reaches `ControlFlow::break_value` at
 const Destruct in its actual defining environment`. The typed trace requests
 whole-field destruction for the discarded `Continue` payload. The defining
 environment carries a conditional `Destruct` premise on `Self`. The local
-enum reduction with the same premise passes pinned rustc and fails RustGM
-with the same diagnostic. There are no bring-up records or strict metadata
-artifacts. All four frozen Unicode consumers match their declared output on
-pinned rustc with prebuilt std at opt-level 2. Their RustGM runs remain due.
+enum reduction with the same premise reproduces the failure. The cleanup
+selector now keeps the exact enclosing type of an initialized field. It uses
+an explicit aggregate `Destruct` premise on that place for the field and
+preserves the obligation for a separate argument of the same field type.
+Three focused source outcomes agree with pinned rustc. Strict `core` clears
+`break_value` and advances to the or-pattern in `ControlFlow::into_value`
+at `core/src/ops/control_flow.rs:417`. It requests `Destruct` even though
+both alternatives move the payload. The strict replay still has zero bring-up
+records and no metadata. All four frozen Unicode consumers match their
+declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
+runs remain due.
 
 ### Self-compile milestones
 
@@ -413,8 +428,11 @@ headers, and from 1,161,963 to 1,137,834 at 384 headers. The repeated and
 eight-header controls retain their prior charges. All nine frozen inputs
 emit byte-identical LowIR, including a mixed open and closed dispatch case
 that executes successfully on both compilers. Focused projection, negative
-coherence, formatting, architecture and strict Clippy checks pass. Optimized
-measurements for this extension remain open.
+coherence, formatting, architecture and strict Clippy checks pass. The same
+immutable opt-level 1 measurements reproduce byte equality on four controls.
+The extension changes retired user instructions by +0.01% on the ordinary
+control, +0.18% at eight repeated headers, +0.31% at 384 repeated headers
+and +0.21% at 384 distinct headers. Whole-graph measurement is in progress.
 [Candidate lookup](../dev/src/sema/traits/implementations.rs#L194)
 
 1. **Index impl headers once.** Extract rigid constructors and their positions
@@ -472,7 +490,17 @@ types, then hold the store fixed and vary how much two adjacent instances
 share. Compare a demand-allocated table with sharing verified structural
 answers over one unchanged destructor registry, preserving per-instance
 work limits and accounting for arena identities, incomplete heads and failed
-queries. Keep a dense reachable-graph control.
+queries. Fresh `with_contract` queries now use sparse ordinary state in place
+of allocating across the type store. They preserve the existing ordinary
+Copy and opaque rules. In the storage probe, adding 65,536 unrelated types to
+a reachable graph of ten raised the old initialized row count from 30 to
+65,566. The sparse query keeps ten rows and 756 bytes of accounted storage
+throughout. Answers and query steps match. At 8,194 reachable types, the dense
+and sparse controls account for 328,312 and 589,992 bytes respectively. The
+existing long-lived queries retain dense storage. Three focused cleanup tests,
+format, strict Clippy and architecture completed successfully. Their overall
+runner hit its deadline after recording the test results. Optimized timings
+and execution of the private storage invariant remain pending.
 [Fresh materialization](../dev/src/body/instantiate.rs#L179) · [Destruction query](../dev/src/types/destruction.rs#L123)
 
 The matcher scratch change passed its focused regression and an opt-level 1
