@@ -2,7 +2,7 @@
 use super::*;
 use crate::{
     expand::{
-        builtin::delegation::Site,
+        builtin::delegation::{Handler, Site},
         marks::{ExpansionId, Marks, Transparency},
         registry::Registry,
         stream::Location,
@@ -52,6 +52,7 @@ fn generated(
                 crate_id: 0,
             },
             edition: Edition::Rust2024,
+            handler: Handler::Panic2021,
             input: &input,
             registry: &registry,
             inputs: &inputs,

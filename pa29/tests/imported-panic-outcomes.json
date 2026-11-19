@@ -17,7 +17,8 @@
   "panic-legacy-client: declared diagnostic \"the pre-2021 panic macro form is not implemented for edition 2018\"; the same 2024-profile rejection precedes it, so only the substring changed",
   "panic-operators-provider: declared diagnostic \"source rvalue requires a complete wider transport row\" from a probe without LegacyReceiver; the fixture fails first at \"source role requires its exact pinned supertrait\", so only the substring changed",
   "panic-legacy-native-client: 2015/2018 source clients are admitted for the legacy rules original std needs (std profile decision of 2026-11-07); the provider-row edition walk selects panic_2021 (41), the originally declared frontend outcome (plan 4)",
-  "panic-legacy-client: with 2018 source clients admitted, the skipped wrapper reaches its 2018 call site, whose panic_2015 rule stays fenced by name: the originally declared diagnostic (plan 4)"
+  "panic-legacy-client: with 2018 source clients admitted, the skipped wrapper reaches its 2018 call site, whose panic_2015 rule stays fenced by name: the originally declared diagnostic (plan 4)",
+  "Version 4 legacy dispatch checkpoint: before testing the candidate, predict acceptance for the frozen 2018 skipped-wrapper and 2015 direct panic clients, matching their unchanged pinned Rust outcomes."
  ],
  "cases": [
   {
@@ -97,14 +98,13 @@
    },
    "rustc": 0,
    "rustc_codes": [],
-   "frontend_diagnostic": "the pre-2021 panic macro form is not implemented for edition 2018",
    "source_client": "panic-provider",
    "rustc_environment": {
     "RUSTC_BOOTSTRAP": "1"
    },
    "native": false,
-   "frontend_expected_after_implementation": 1,
-   "note": "requirement: the skipped wrapper reaches the 2018 call site, which needs panic_2015 delegation, a legacy rule RustGM keeps rejected by name; amended after candidate round 1 while source clients required Rust 2024, restored in plan 4 when 2015/2018 source clients were admitted"
+   "frontend_expected_after_implementation": 0,
+   "note": "the skipped wrapper reaches its 2018 call site, which selects the actual imported panic_2015 handler"
   },
   {
    "name": "panic-format-client",
@@ -378,9 +378,8 @@
     "RUSTC_BOOTSTRAP": "1"
    },
    "native": false,
-   "frontend_expected_after_implementation": 1,
-   "frontend_diagnostic": "the pre-2021 panic macro form is not implemented for edition 2015",
-   "note": "opponent: a 2015 builtin panic call site selects panic_2015 in rustc (45); RustGM keeps that rule rejected by name"
+   "frontend_expected_after_implementation": 0,
+   "note": "the direct 2015 builtin panic call selects the actual imported panic_2015 handler"
   }
  ]
 }

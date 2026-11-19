@@ -4,6 +4,33 @@ type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const PACKET: &str = "pa31/tests/spec/assertion-panics";
 
 #[test]
+fn legacy_assertion_messages_resolve_the_callers_panic_macro() -> Result {
+    use rustgm::{expand::config::Config, support::edition::Edition};
+
+    let mut provider = String::from(concat!(
+        "#![feature(no_core,lang_items,rustc_attrs,allow_internal_unstable,staged_api)]",
+        "#![no_core]#![unstable(feature=\"assert_consumer\",issue=\"none\")]",
+    ));
+    provider.push_str(&source::fixture(
+        "pa31/tests/spec/formatter-derives/assert-declaration.rs",
+    )?);
+    provider.push_str(concat!(
+        "mod nested { macro_rules! panic { (\"legacy {}\", 7) => { () }; } ",
+        "fn check() { assert!(false, \"legacy {}\", 7); } }",
+    ));
+    for edition in [Edition::Rust2015, Edition::Rust2018] {
+        let config = Config::in_edition(edition);
+        source::source_provider_config(&provider, "legacy_assertion", &config)?;
+        let wrong_message = provider.replace("false, \"legacy {}\", 7", "false, \"legacy {}\", 8");
+        let error = source::source_provider_config(&wrong_message, "legacy_assertion", &config)
+            .err()
+            .ok_or("the caller's panic macro accepted the wrong arguments")?;
+        assert!(error.contains("no macro rule matches"), "{error}");
+    }
+    Ok(())
+}
+
+#[test]
 fn panic_hook_headers_preserve_unused_shapes_and_real_ordinary_body_proof() -> Result {
     let mut failures = Vec::new();
     let mut count = 0;

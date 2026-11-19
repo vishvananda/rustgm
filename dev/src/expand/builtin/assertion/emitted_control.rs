@@ -4,11 +4,12 @@ use crate::{
     expand::{
         builtin::{
             choice::Charge,
-            delegation::{Delegated, Site},
+            delegation::{Delegated, Handler, Site},
         },
         config::Config,
         crate_syntax,
         macros::input::Input,
+        marks::SyntaxContextId,
         registry::Registry,
         stream::Stream,
     },
@@ -24,6 +25,7 @@ use crate::{
 pub(crate) struct Request<'a> {
     pub site: Site<'a>,
     pub edition: Edition,
+    pub handler: Handler,
     pub input: &'a Input,
     pub registry: &'a Registry,
     pub inputs: &'a dyn Inputs,
@@ -48,6 +50,7 @@ pub(crate) fn build(
         config,
         charge,
         edition,
+        handler,
         registry,
     } = request;
     if !matches!(
@@ -94,7 +97,7 @@ pub(crate) fn build(
     let failure = if let Some(message) = message {
         output.default_call(message)?
     } else {
-        output.message_call(input, suffix, registry, &mut provenance)?
+        output.message_call(*handler, input, suffix, registry, &mut provenance)?
     };
     let then = output.node(
         block,
@@ -153,6 +156,13 @@ impl Output<'_> {
         })
     }
     fn text(&mut self, text: &str) -> Result<Span, LexError> {
+        self.text_with_context(text, self.site.path_context)
+    }
+    fn text_with_context(
+        &mut self,
+        text: &str,
+        context: SyntaxContextId,
+    ) -> Result<Span, LexError> {
         let bytes = Growth::vector::<u8>(
             self.stream.source.len(),
             self.stream.source.capacity(),
@@ -172,7 +182,7 @@ impl Output<'_> {
         self.stream.synthetic_image(
             text,
             self.site.original,
-            self.site.path_context,
+            context,
             self.site.introduction,
             self.edition,
         )
@@ -257,12 +267,26 @@ impl Output<'_> {
     }
     fn message_call(
         &mut self,
+        handler: Handler,
         input: &Input,
         suffix: std::ops::Range<usize>,
         registry: &Registry,
         provenance: impl FnMut(Token) -> Result<(crate::expand::marks::SyntaxContextId, bool), LexError>,
     ) -> Result<NodeId, LexError> {
-        let path = self.path("panic", "panic_2021")?;
+        let path = if matches!(handler, Handler::Panic2015) {
+            let span = self.text_with_context("panic", self.site.call_context)?;
+            let name = self.node(span, Kind::Name(span, None))?;
+            let segments = self.list(&[name])?;
+            self.node(
+                span,
+                Kind::Path {
+                    absolute: false,
+                    segments,
+                },
+            )?
+        } else {
+            self.path("panic", "panic_2021")?
+        };
         let first = self.stream.tokens.len();
         let opening = self.text("(")?;
         self.stream.tokens.push(Token {

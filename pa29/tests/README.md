@@ -200,7 +200,7 @@ and four semiopaque `pub macro` rows in its `panic` module. `native-client.rs`
 runs the imported roles in a fresh 2024 consumer and links with
 `native-driver.c`. `legacy-native-client.rs` with `legacy-driver.c` is a 2018
 client whose wrapper call selects `panic_2021`; `legacy-client.rs` reaches a
-2018 `panic_2015` call site, which stays rejected by name.
+2018 call site and selects `panic_2015`.
 `legacy-unreachable-client.rs` with `legacy-unreachable-driver.c` runs in 2015
 and 2018 and selects `unreachable_2015`, as rustc-demangle calls core's;
 `legacy-panic-client.rs` is its 2015 `panic_2015` opponent. Further clients

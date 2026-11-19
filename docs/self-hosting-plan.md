@@ -724,7 +724,17 @@ Both native observers return `42`. Three malformed source roles and three
 accepted providers match the pinned Rust outcomes. The v13 producer gate is
 preserved. In each profile, the unmarked provider emits identical metadata
 and LowIR on both compiler revisions. Reflection intrinsics still require
-their own operation and provenance proofs. The receipts are under `obj/parallel/v14-reflection-declarations/`.
+their own operation and provenance proofs. The receipts are under
+`obj/parallel/v14-reflection-declarations/`.
+
+The optimized `dd7cd52df` replay checks contextual names before reflection on
+all 309 unchanged `core` inputs. It passes both declaration checks and
+reaches `source Div contract transport is not implemented` in 31.62 seconds
+with zero bring-up records and no artifacts. The receipt is under
+`obj/parallel/strict-core/reflection-roles/`. The reduced `Div` declaration,
+ordinary impl and const impl pass pinned Rust and reach the same export fence
+in RustGM. Both compilers reject the ordinary impl used from a const function.
+The reduced receipts are under `obj/parallel/v14-division-transport/baseline/`.
 
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
@@ -737,8 +747,30 @@ native executions against the original `std` bring-up graph and locked
 `unicode-ident` 1.0.24. The frontend emits 7,318,968 LowIR bytes in 46.78 seconds
 with zero skips, 14 unproven obligations and 50 waivers. Source hashes, the unit
 plan, link manifest and runtime receipts are under `obj/parallel/m4-xid-frozen/`
-in the frontier checkout. The three other Unicode consumers still need runs
-with their own dependency features. [Declared Unicode outcomes](../pa35/tests/unicode-consumer-outcomes.json)
+in the frontier checkout. The small-vector replay adds the three locked
+`tinyvec` cfg values to the shared session for this input. A scan of 2,132
+other source files finds those values only in two stability attributes. The
+replay reaches `ArrayVec::append` in the locked Rust 2018 `tinyvec` and stops
+at its custom-message `assert!`. The original replay is under
+`obj/parallel/m4-small-vectors-frozen/`.
+
+Source panic dispatch now selects the original `panic_2015` handler for
+direct legacy panic calls. A custom-message legacy assertion resolves the
+caller's `panic!` and preserves the actual message tokens. The focused
+selection passes all 118 macro-metadata cases, the caller-scope cases and
+the existing guard check. The 2015 and 2018 native clients each print
+`45 46 41`, matching the independent compiler. The modern wrapper retains
+its provider edition. The small-vector graph passes expansion and stops at
+coherence on `impl<A: Array> Into<Vec<A::Item>> for TinyVec<A>` at
+`tinyvec.rs:1427`. It emits no artifact. Evidence is under
+`obj/parallel/legacy-panic-native/` and `obj/parallel/m4-small-vectors-legacy/`.
+[Pinned Rust assertion dispatch](https://github.com/rust-lang/rust/blob/88d9e12ae/compiler/rustc_builtin_macros/src/assert.rs) ·
+[Pinned Rust panic dispatch](https://github.com/rust-lang/rust/blob/88d9e12ae/compiler/rustc_builtin_macros/src/edition_panic.rs)
+
+Normalization and identifier
+consumers require independent guest feature scopes because the Cargo graph
+enables `std` for `unicode-normalization` and leaves it off for `tinyvec`.
+[Declared Unicode outcomes](../pa35/tests/unicode-consumer-outcomes.json)
 
 ### Self-compile milestones
 
@@ -767,6 +799,14 @@ on `tinyvec` and `std` on `unicode-normalization`. The two compiler targets and
 pass. The exact tool, source and graph pins are under
 `obj/parallel/compiler-dependency-freeze/` in the frontier checkout. Compiler
 artifacts and the strict sysroot graph still require execution. [Planner](../scripts/cargo_plan.py)
+
+The execution profile freezes those same six units from `dd7cd52df` at the
+target executor's current opt-level 0 with abort and overflow checks. All
+six units pass the executor's profile validation. Opt-level 1 was the sole
+profile gap in the earlier inventory. Dependencies, features, editions,
+root and unit order match. The receipt is under
+`obj/parallel/compiler-execution-freeze/`. The selected sysroot units and
+per-crate artifacts still need to join this plan.
 
 The PA45 stage comparator checks the same frozen graph and executor, the
 stage 1 compiler pin used by stage 2, and the actual strict compiler
