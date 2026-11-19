@@ -42,6 +42,7 @@ fn spare_capacity_and_failed_growth_keep_attempts_and_unpublished_rows() -> Test
         members: [None; super::super::MEMBERS.len()],
         const_: false,
         prior_copy: false,
+        packed_debug: false,
         enum_default: None,
     };
     let usage = Cell::new((0_usize, 0_usize));
@@ -140,6 +141,7 @@ fn derive_text_roots_name_the_defining_crate_and_keep_other_words() -> TestResul
             members: [None; super::super::MEMBERS.len()],
             const_: false,
             prior_copy: false,
+            packed_debug: false,
             enum_default: None,
         };
         let charge = |_: usize, _: usize| -> Result<(), crate::lex::token::LexError> { Ok(()) };
