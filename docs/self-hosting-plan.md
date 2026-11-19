@@ -562,6 +562,14 @@ clients declare the impls locally with a local trait parameter. Receipts are
 under `obj/parallel/v14-dispatch-policy/` and
 `obj/parallel/v14-dispatch-client-impl/` in the frontier checkout.
 
+The optimized replay of the same 309 strict core inputs clears the dispatch
+gate in 32.90 seconds and reaches `optimization intent requires authenticated
+metadata transport`. It records zero bring-up entries and emits no artifacts.
+The original source uses `optimize(size)` on abort-profile panic functions.
+The strict export must retain their checked function policy for a fresh client.
+The receipt is in `obj/parallel/strict-core/dispatch-policy/` in the frontier
+checkout.
+
 All four frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
 runs remain due.
