@@ -741,11 +741,17 @@ implementation. The importer uses the authenticated trait's implicit `Self`
 clause to check const use. The fresh runtime client prints `42` under both
 compilers. Both reject that same implementation from a const initializer
 because it does not satisfy the const trait obligation. Version thirteen
-retains its division gate. Four focused tests pass. A source-marked non-const
-method and an effective const implementation still reach their own export
-fences. A provider wrapper that calls `Div` also requires applied-signature
-normalization during replay. Evidence is under
-`obj/parallel/v14-division-transport/`.
+retains its division gate. A source-marked non-const method reaches its own
+policy fence. A provider wrapper that calls `Div` also reaches a separate
+applied-signature normalization error during replay.
+
+`68d0e2474` adds positive const implementation transport for the authenticated
+`Div` role. A fresh importer re-proves the actual implementation's effect,
+method conformance and associated result. The const client folds the call
+to `return u8 42`. Both fresh native binaries print `42`, and the paired
+ordinary implementation still fails the const obligation. Three focused
+checks pass with the exact effect regression. Evidence is under
+`obj/parallel/v14-division-transport/const-positive-final/`.
 
 The optimized `cd2522f2a` replay of the same 309 `core` inputs passes the
 division declaration gate and stops at
