@@ -321,6 +321,7 @@ impl Stage {
         };
         let policy = if self.declaration_policies() {
             facts.authored_definition_policy(header.definition)?
+                | facts.authored_dispatch_bits(header.definition)?
                 | (u16::from(facts.authored_incoherent_target(header.definition)?)
                     * s::TraitFlags::INCOHERENT_INHERENT)
         } else {

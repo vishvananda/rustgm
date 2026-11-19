@@ -6,6 +6,7 @@ use crate::{
         model::{DefKind, Namespace},
     },
     sema::header_attributes::{ContractKnowledge, SourceContractSite},
+    support::crates::generics::source::TraitFlags,
     syntax::{
         ast::Kind,
         attribute::{Attribute, Input},
@@ -22,6 +23,12 @@ mod tests;
 pub struct DispatchPolicy {
     pub array: bool,
     pub boxed_slice: bool,
+}
+impl DispatchPolicy {
+    fn bits(self) -> u16 {
+        (u16::from(self.array) * TraitFlags::SKIP_ARRAY_DISPATCH)
+            | (u16::from(self.boxed_slice) * TraitFlags::SKIP_BOXED_SLICE_DISPATCH)
+    }
 }
 pub struct DispatchPolicyView {
     pub source: SourceContractSite,
@@ -44,6 +51,9 @@ fn header(facts: &Declarations, key: NodeKey) -> Option<&Header> {
         .local
         .declarations
         .get(&key)
+}
+fn marker(header: &Header) -> Option<&Marker> {
+    header.promises.as_deref()?.dispatch.as_deref()
 }
 pub(in crate::sema) fn consume(
     report: &Report,
@@ -197,11 +207,7 @@ fn current(
             "method dispatch source owner is no longer a trait",
         ));
     }
-    let Some(marker) = actual
-        .promises
-        .as_deref()
-        .and_then(|row| row.dispatch.as_deref())
-    else {
+    let Some(marker) = marker(actual) else {
         return Ok(None);
     };
     let owner = actual
@@ -271,6 +277,52 @@ pub(super) fn bind(
     Ok(())
 }
 impl Declarations {
+    fn local_dispatch_headers(&self) -> Option<&super::Headers> {
+        self.must_use_contracts
+            .as_deref()?
+            .headers
+            .as_deref()
+            .map(|headers| &headers.local)
+            .filter(|local| local.first_skipped_trait.is_some())
+    }
+
+    pub(in crate::sema) fn authored_dispatch_bits(&self, id: DefId) -> Result<u16, &'static str> {
+        let Some(local) = self.local_dispatch_headers() else {
+            return Ok(0);
+        };
+        super::charge_query(local, 2)
+            .map_err(|_| "method dispatch policy query exceeds source contract budget")?;
+        let Some(marker) = local
+            .definitions
+            .get(&id)
+            .and_then(|key| local.declarations.get(key))
+            .and_then(marker)
+        else {
+            return Ok(0);
+        };
+        if marker.definition != Some(id) || !local.comptime_complete {
+            return Err("method dispatch policy requires its completed defining trait");
+        }
+        Ok(marker.policy.bits())
+    }
+
+    pub(in crate::sema) fn method_dispatch_bits(&self, id: DefId) -> Result<u16, &'static str> {
+        let local = self.authored_dispatch_bits(id)?;
+        if local != 0 {
+            return Ok(local);
+        }
+        Ok(super::super::imported::definition_policy(self, id)? & TraitFlags::DISPATCH_POLICIES)
+    }
+
+    pub(in crate::sema) fn has_method_dispatch_headers(&self) -> bool {
+        self.local_dispatch_headers().is_some()
+            || self
+                .must_use_contracts
+                .as_deref()
+                .and_then(|row| row.headers.as_deref())
+                .is_some_and(|rows| rows.imported.is_some())
+    }
+
     /// Query original declaration facts; imported absence needs an explicit profile.
     /// # Errors
     /// Rejects changed original owners, syntax, images and exhausted work budgets.
@@ -317,22 +369,40 @@ impl Declarations {
     pub(crate) fn require_dispatch_policy_transport(
         &self,
         report: &Report,
+        policies: bool,
     ) -> Result<(), &'static str> {
-        if let Some(id) = self
-            .must_use_contracts
-            .as_deref()
-            .and_then(|row| row.headers.as_deref())
-            .and_then(|row| row.local.first_skipped_trait)
-        {
-            if !matches!(
-                self.source_method_dispatch_policy(report, id).map_err(
-                    |_| "method dispatch policy lost its authenticated trait before export"
-                )?,
-                ContractKnowledge::KnownPresent(_)
-            ) {
-                return Err("method dispatch policy lost its completed source contract");
-            }
+        let Some(local) = self.local_dispatch_headers() else {
+            return Ok(());
+        };
+        if !policies {
+            let first = local
+                .first_skipped_trait
+                .ok_or("missing indexed dispatch trait")?;
+            self.validate_dispatch_export(report, first)?;
             return Err("method dispatch policy requires authenticated trait metadata transport");
+        }
+        super::charge_query(local, local.definitions.len())
+            .map_err(|_| "method dispatch policy export exceeds source contract budget")?;
+        for (&id, key) in &local.definitions {
+            if local
+                .declarations
+                .get(key)
+                .and_then(marker)
+                .is_some_and(|mark| mark.definition == Some(id))
+            {
+                self.validate_dispatch_export(report, id)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn validate_dispatch_export(&self, report: &Report, id: DefId) -> Result<(), &'static str> {
+        if !matches!(
+            self.source_method_dispatch_policy(report, id)
+                .map_err(|_| "method dispatch policy lost its authenticated trait before export")?,
+            ContractKnowledge::KnownPresent(_)
+        ) {
+            return Err("method dispatch policy lost its completed source contract");
         }
         Ok(())
     }

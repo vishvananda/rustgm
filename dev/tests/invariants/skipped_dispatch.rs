@@ -216,7 +216,11 @@ fn older_metadata_profiles_do_not_erase_the_checked_trait_policy() -> TestResult
         error.contains("method dispatch policy requires authenticated trait metadata transport"),
         "{error}"
     );
-    assert!(facts.require_dispatch_policy_transport(&report).is_err());
+    assert!(
+        facts
+            .require_dispatch_policy_transport(&report, false)
+            .is_err()
+    );
     Ok(())
 }
 #[test]

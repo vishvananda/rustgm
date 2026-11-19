@@ -8,6 +8,7 @@ use crate::{
         unit::NodeKey,
     },
     sema::model::Declarations,
+    support::crates::generics::source::TraitFlags,
     types::{
         RegionId, TypeId,
         infer::{Constructor, Context, TermId},
@@ -47,6 +48,7 @@ struct Search<'a> {
     library: Option<DefId>,
     traits: [Vec<DefId>; 2],
     object: bool,
+    dispatch: u16,
 }
 
 pub(in crate::sema) fn choose(
@@ -127,9 +129,8 @@ fn choose_at(
         .head(&facts.types, base)
         .map_err(inference)
         .map_err(error)?;
-    if depth == 0 && array(head) {
-        legacy_array_into_iter(report, key, site).map_err(error)?;
-    }
+    let dispatch =
+        dispatch_policy(report, facts, source, key, site, (base, depth, head)).map_err(error)?;
     let mut inherent =
         inherent_candidates(report, facts, source, (term, base), head, site, identifier)
             .map_err(error)?;
@@ -184,6 +185,7 @@ fn choose_at(
         library,
         traits,
         object: matches!(head, Some(Constructor::Dynamic { .. })),
+        dispatch,
     };
     for dereferences in 0..=depth {
         if let Some(selected) = search.at(term, dereferences, false).map_err(error)? {
@@ -444,6 +446,13 @@ impl Search<'_> {
                 continue;
             }
             let owner = if let Some(owner) = self.facts.associated.trait_owner(method) {
+                if self.dispatch != 0
+                    && borrow.is_none()
+                    && dereferences == self.depth
+                    && self.facts.method_dispatch_bits(owner)? & self.dispatch != 0
+                {
+                    continue;
+                }
                 if !self.possible_trait(owner, receiver, references, term)? {
                     continue;
                 }
@@ -707,21 +716,74 @@ fn inference(error: crate::types::infer::Error) -> &'static str {
     )
 }
 
-/// Before 2021 a by-value array receiver skips `IntoIterator::into_iter`; the
-/// method name's own edition selects that probe, which is fenced explicitly.
-fn legacy_array_into_iter(report: &Report, key: NodeKey, site: MethodCall) -> Result<(), &str> {
-    if report.package.names.get(site.name) != "into_iter" {
-        return Ok(());
+/// The edition belongs to the method name. After choosing the actual receiver
+/// shape, only the unborrowed probe at that shape can apply this mask.
+fn dispatch_policy(
+    report: &Report,
+    facts: &Declarations,
+    source: &mut Context,
+    key: NodeKey,
+    site: MethodCall,
+    (base, depth, head): (TermId, u32, Option<Constructor>),
+) -> Result<u16, &'static str> {
+    let array = array(head);
+    let boxed = matches!(
+        head,
+        Some(Constructor::Adt(item, _) | Constructor::AdtArgs(item, _))
+            if facts.aggregates.owned_box() == Some(item)
+    );
+    if !array && !boxed {
+        return Ok(0);
     }
-    let node = site.method.unwrap_or(key.node);
-    let span = report.package.unit(key.file).configured.ast.node(node).span;
+    let legacy_name = array && depth == 0 && report.package.names.get(site.name) == "into_iter";
+    let has_headers = facts.has_method_dispatch_headers();
+    if !has_headers && !legacy_name {
+        return Ok(0);
+    }
+    let span = super::names::receiver_span(report, key, site)?;
     let edition = crate::resolve::unit::editions::introducer(key.file, span, |file| {
         report.package.units.get(file.0 as usize)
     })
     .map_err(|error| error.message)?;
-    edition.legacy().map_or(Ok(()), |legacy| {
-        Err(crate::support::edition::LegacyRule::ArrayIntoIterator.unsupported(legacy))
-    })
+    if array && let Some(legacy) = edition.legacy() {
+        let mask = TraitFlags::SKIP_ARRAY_DISPATCH;
+        let canonical = report
+            .resolution
+            .builtin_traits
+            .iteration()
+            .map(|iteration| {
+                iteration
+                    .get(crate::support::iteration::Trait::IntoIterator)
+                    .definition
+            });
+        if legacy_name
+            && (!has_headers
+                || canonical.is_some_and(|owner| {
+                    report.resolution.definitions[owner.0 as usize]
+                        .node
+                        .is_none()
+                }))
+            && canonical
+                .map(|owner| facts.method_dispatch_bits(owner))
+                .transpose()?
+                .unwrap_or(0)
+                & mask
+                == 0
+        {
+            return Err(crate::support::edition::LegacyRule::ArrayIntoIterator.unsupported(legacy));
+        }
+        return Ok(mask);
+    }
+    if boxed && edition.before_2024() {
+        let content = source.child(&facts.types, base, 0).map_err(inference)?;
+        if matches!(
+            source.head(&facts.types, content).map_err(inference)?,
+            Some(Constructor::Slice)
+        ) {
+            return Ok(TraitFlags::SKIP_BOXED_SLICE_DISPATCH);
+        }
+    }
+    Ok(0)
 }
 fn array(head: Option<Constructor>) -> bool {
     matches!(

@@ -25,6 +25,9 @@ pub(super) fn validate(
         if header.flags.bits() & s::TraitFlags::INCOHERENT_INHERENT != 0 {
             return Err("source incoherent trait requires the declaration policy profile");
         }
+        if header.flags.bits() & s::TraitFlags::DISPATCH_POLICIES != 0 {
+            return Err("source trait dispatch requires the declaration policy profile");
+        }
     }
     for declaration in &rows.declarations {
         work.charge(1)?;

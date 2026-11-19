@@ -252,6 +252,9 @@ fn trait_headers(
         if flags & TraitFlags::INCOHERENT_INHERENT & !roles.definition_policies != 0 {
             return Err("source incoherent trait requires the declaration policy profile");
         }
+        if flags & TraitFlags::DISPATCH_POLICIES & !roles.definition_policies != 0 {
+            return Err("source trait dispatch requires the declaration policy profile");
+        }
         let role_header = super::super::TraitHeader {
             flags: TraitFlags::from_bits(flags & !roles.definition_policies)?,
             ..*header

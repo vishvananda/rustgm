@@ -1024,7 +1024,10 @@ fn require_export_mode(
         report,
         languages && mode == ExportMode::CompilerOperations,
     ))?;
-    waiving(facts.require_dispatch_policy_transport(report))?;
+    waiving(facts.require_dispatch_policy_transport(
+        report,
+        languages && mode == ExportMode::CompilerOperations,
+    ))?;
     waiving(facts.require_optimization_transport(report))?;
     waiving(crate::sema::coherence_policy::require_transport(facts))?;
     waiving(facts.aggregates.require_simd_limit_transport())?;

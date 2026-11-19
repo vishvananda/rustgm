@@ -10,9 +10,29 @@ use crate::{
         unit::NodeKey,
     },
     support::hash::HashMap,
-    syntax::ast::Kind,
+    syntax::{ast::Kind, token_tree::Span},
     types::ItemId,
 };
+
+pub(super) fn receiver_span(
+    report: &Report,
+    key: NodeKey,
+    site: MethodCall,
+) -> Result<Span, &'static str> {
+    let node = report
+        .package
+        .unit(key.file)
+        .configured
+        .ast
+        .node(site.method.unwrap_or(key.node));
+    if site.method.is_some() {
+        return Ok(node.span);
+    }
+    let Kind::MethodCall { name, .. } = node.kind else {
+        return Err("method lookup has no actual identifier");
+    };
+    Ok(name)
+}
 
 type Key = (ItemId, NameId);
 #[cfg(test)]
@@ -105,20 +125,8 @@ impl Use {
     }
 
     pub fn receiver(report: &Report, key: NodeKey, site: MethodCall) -> Result<Self, Error> {
-        if let Some(node) = site.method {
-            return Self::path(report, NodeKey { node, ..key }, site.scope);
-        }
-        let Kind::MethodCall { name, .. } = report
-            .package
-            .unit(key.file)
-            .configured
-            .ast
-            .node(key.node)
-            .kind
-        else {
-            return Err(Error::unlocated("method lookup has no actual identifier"));
-        };
-        Self::at(report, key, name.start, site.scope)
+        let span = receiver_span(report, key, site).map_err(Error::unlocated)?;
+        Self::at(report, key, span.start, site.scope)
     }
 
     fn at(report: &Report, key: NodeKey, offset: u32, scope: ScopeId) -> Result<Self, Error> {

@@ -200,7 +200,7 @@ fn validate_profile(
         .require_incoherent_target_transport(report, false)
         .map_err(error)?;
     facts
-        .require_dispatch_policy_transport(report)
+        .require_dispatch_policy_transport(report, false)
         .map_err(error)?;
     facts
         .aggregates

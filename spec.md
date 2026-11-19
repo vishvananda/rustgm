@@ -8359,9 +8359,13 @@ ordinary v13 body nodes with authenticated v11 compiler-operation data. Keep all
 older envelopes/versions and the declarative macro envelope14 unchanged. Encode
 associated result authority once; the operation trailer retains explicit optional
 const-body presence followed by actual opaque/operation records. General
-fundamental, forced-dyn and incoherent inherent target policy use the checked
-trait flags. The nominal representation byte carries fundamental struct policy
-in bit 7 and incoherent inherent target policy for structs and enums in bit 6.
+fundamental, forced-dyn, incoherent inherent target and method-dispatch policy
+use the checked trait flags. The array and boxed-slice dispatch policies use
+bits 10 and 11, respectively. Method lookup reads the policy of the declaring
+trait at the unborrowed adjusted receiver and takes the edition from the method
+identifier's token origin. The nominal representation byte carries fundamental
+struct policy in bit 7 and incoherent inherent target policy for structs and
+enums in bit 6.
 The lower bits retain the representation.
 The consumer validates the defining artifact, owner and record kind before
 retaining any of these promises. A symbolic helper
