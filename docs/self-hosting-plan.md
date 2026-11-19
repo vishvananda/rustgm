@@ -741,6 +741,24 @@ frontier checkout.
    processing. Measure the cold application preparation and the warm work as
    the fixed width grows with the number of affected slots held constant.
    [Inferred predicate](../dev/src/types/infer/predicates.rs#L17) · [Trial input mapping](../dev/src/types/infer/refinement.rs#L91)
+
+   The inference arena registers a new local term even when its value is
+   already a canonical type. A shared vector of local term IDs would still
+   bind the representation to a single trial. Reuse the canonical application
+   and materialize local terms only where a relation needs them. For equality
+   between two applications, compare unchanged canonical slices by ID before
+   visiting their changed positions. Keep the full comparison when the
+   canonical slices differ and the solver has no indexed evidence for a
+   rejection. Count local term creation and argument visits separately from
+   copied graph edges. Zero imported edges currently allows both costs to grow
+   with argument width.
+   The existing slice ID captures whole-list equality. For wide lists with
+   different IDs and mostly equal positions, compare a shared fixed portion
+   plus indexed changed slots with interned blocks that can be compared by ID.
+   Use both common-prefix and scattered changes. Include short applications
+   so extra metadata and indirection are charged on ordinary inputs.
+   [Local term allocation](../dev/src/types/infer.rs#L258) ·
+   [Argument relations](../dev/src/types/infer/predicates/equations.rs#L79)
 3. **Reuse proof structure where the inputs permit it.** Measure repeated
    goals using a canonical key with alpha-renamed slots and the identity of the
    effective premises, binder scope, mode and registry view. Start with
@@ -778,6 +796,21 @@ frontier checkout.
    and a lookup per requesting parent. The sources, compiler hash, native
    checks and raw counters are in the frontier checkout under
    `obj/parallel/trait-shared-child/`.
+
+   The local query's completed map can reuse a child within one search.
+   Cross-query child reuse is opt-in. The body allocates its reusable proof map
+   on the canonical requirement path for qualifying sizing goals, while the
+   inferred body goal path probes the neutral-caller memo only at the root.
+   Start the child experiment with debt-free closed goals under a fixed,
+   validated registry and neutral caller. Tag selection mode and source
+   policy in the reuse identity. Count completed eligible children, searches
+   actually avoided, and retained entries across distinct roots before testing
+   selective dependence on non-neutral caller premises. This first prototype
+   can expose the gain from placement of the memo without first implementing
+   a caller premise dependency index.
+   [Child completion](../dev/src/sema/traits/selection/search/continuation.rs#L337) ·
+   [Canonical body proof map](../dev/src/sema/bodies/trait_goals/canonical.rs#L171) ·
+   [Inferred body memo](../dev/src/sema/bodies/trait_goals/inference.rs#L515)
 
 For each prototype, hold source size and request count fixed while varying the
 fraction of shared keys, subterms or premises. Separately grow the amount of
