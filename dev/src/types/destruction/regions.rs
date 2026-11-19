@@ -242,6 +242,25 @@ impl Regions {
         }
         Ok(())
     }
+    fn argument_inputs(&mut self, types: &Store, ty: TypeId) -> Result<Values, &'static str> {
+        let components = self.components.get_or_insert_with(Default::default);
+        let parts = components.drop_inputs(types, ty, self.environment.is_some())?;
+        if let Some(environment) = &self.environment {
+            if parts
+                .parameters
+                .iter()
+                .any(|p| environment.abilities(*p).is_none())
+            {
+                return Err("drop parameter is outside its environment");
+            }
+        } else if !parts.parameters.is_empty() {
+            return Err("generic drop checking requires a parameter environment");
+        }
+        let mut values = Values::default();
+        values.extend(parts);
+        self.charge(values.parts().len())?;
+        Ok(values)
+    }
     fn finish(
         &mut self,
         types: &Store,
@@ -252,34 +271,16 @@ impl Regions {
         if let Key::Type(ty) = key
             && matches!(types.kind(ty), Some(Kind::Dynamic { .. }))
         {
-            let components = self.components.get_or_insert_with(Default::default);
-            values.extend(components.drop_inputs(types, ty)?);
-            self.charge(values.parts().len())?;
-            return Ok(values);
+            return self.argument_inputs(types, ty);
         }
         if let Key::Type(ty) = key
             && let Some(Kind::Adt(item, args)) = types.kind(ty)
         {
             if types.region_args(args).is_none() {
                 if self.custom.contains(&item) {
-                    let components = self.components.get_or_insert_with(Default::default);
-                    let parts = components.drop_inputs(types, ty)?;
-                    if let Some(environment) = &self.environment {
-                        if parts
-                            .parameters
-                            .iter()
-                            .any(|p| environment.abilities(*p).is_none())
-                        {
-                            return Err("drop parameter is outside its environment");
-                        }
-                    } else if !parts.parameters.is_empty() {
-                        return Err("generic drop checking requires a parameter environment");
-                    }
-                    values.extend(parts);
-                    self.charge(values.parts().len())?;
-                } else {
-                    self.collect(types, definitions, key, &mut values)?;
+                    return self.argument_inputs(types, ty);
                 }
+                self.collect(types, definitions, key, &mut values)?;
                 return Ok(values);
             }
             let arguments = types

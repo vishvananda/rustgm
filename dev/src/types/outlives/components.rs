@@ -31,7 +31,14 @@ pub(super) enum ComponentKind {
     LiveValue,
     /// Custom destruction retains all type arguments, including zero-length arrays.
     DropInputs,
+    ScopedDropInputs,
     ProjectionInputs,
+}
+impl ComponentKind {
+    fn expands_result(self, result: Kind) -> bool {
+        matches!(self, Self::LiveValue | Self::ScopedDropInputs)
+            || self == Self::DropInputs && matches!(result, Kind::Opaque(..))
+    }
 }
 /// All components a type bound can constrain, including nested referents and
 /// zero-length element types. Unlike owned-drop queries, Copy removes nothing.
@@ -114,9 +121,15 @@ impl TypeComponents {
         &mut self,
         types: &Store,
         ty: TypeId,
+        scoped: bool,
     ) -> Result<Parts<'_>, &'static str> {
+        let kind = if scoped {
+            ComponentKind::ScopedDropInputs
+        } else {
+            ComponentKind::DropInputs
+        };
         self.components
-            .get(types, ty, 0, ComponentKind::DropInputs, &mut self.budget)?
+            .get(types, ty, 0, kind, &mut self.budget)?
             .scalar_only()
     }
 }
@@ -315,25 +328,14 @@ impl Walk {
                     budget,
                 )?,
                 Kind::Array { length: 0, .. } if kind == ComponentKind::LiveValue => {}
-                Kind::Opaque(id, args) => {
-                    if matches!(kind, ComponentKind::LiveValue | ComponentKind::DropInputs) {
-                        let mut cost = 0;
-                        let bound = types.opaque_live_bound(id, args, depth, &mut cost)?;
-                        budget.work(cost)?;
-                        if let Some(bound) = bound {
-                            self.record_region(bound, 0, &mut values, budget)?;
-                            continue;
-                        }
-                    } else if expanded != Some(ty) {
-                        budget.push(&mut projections, Projection { ty, depth })?;
-                        continue;
+                result_kind @ (Kind::Opaque(..) | Kind::Projection(_)) => {
+                    let result = Projection { ty, depth };
+                    let expand = kind.expands_result(result_kind);
+                    if expand || expanded == Some(ty) {
+                        self.result_inputs(types, result_kind, depth, expand, &mut values, budget)?;
+                    } else {
+                        budget.push(&mut projections, result)?;
                     }
-                    self.arguments(
-                        types.arguments(args).ok_or("missing live-value captures")?,
-                        depth,
-                        &mut values,
-                        budget,
-                    )?;
                 }
                 Kind::Adt(_, args)
                 | Kind::FunctionItem {
@@ -346,25 +348,48 @@ impl Walk {
                         budget,
                     )?;
                 }
-                Kind::Projection(application) => {
-                    if kind != ComponentKind::LiveValue && expanded != Some(ty) {
-                        budget.push(&mut projections, Projection { ty, depth })?;
-                        continue;
-                    }
-                    // Every input outliving a use is sufficient for its associated
-                    // result to outlive that use. This conservative liveness route
-                    // grants no declared result bound or reverse input assumption.
-                    self.arguments(
-                        types.projection_inputs(application)?,
-                        depth,
-                        &mut values,
-                        budget,
-                    )?;
-                }
                 _ => children(types, ty, depth, &mut self.work, budget)?,
             }
         }
         Ok((values, parameters, projections))
+    }
+    fn result_inputs(
+        &mut self,
+        types: &Store,
+        kind: Kind,
+        depth: u16,
+        use_bounds: bool,
+        values: &mut Vec<RegionId>,
+        budget: &mut Budget<'_>,
+    ) -> Result<(), &'static str> {
+        match kind {
+            Kind::Opaque(id, args) => {
+                if use_bounds {
+                    let mut cost = 0;
+                    let bound = types.opaque_live_bound(id, args, depth, &mut cost)?;
+                    budget.work(cost)?;
+                    if let Some(bound) = bound {
+                        return self.record_region(bound, 0, values, budget);
+                    }
+                }
+                let arguments = types.arguments(args).ok_or("missing live-value captures")?;
+                self.arguments(arguments, depth, values, budget)
+            }
+            Kind::Projection(application) => {
+                if use_bounds {
+                    for bound in types.projection_outlives(application, depth)? {
+                        budget.work(1)?;
+                        if bound? == Some(RegionId::STATIC) {
+                            return Ok(());
+                        }
+                    }
+                }
+                // Keeping every input live is sufficient to keep its result
+                // live. The reverse relationship requires separate evidence.
+                self.arguments(types.projection_inputs(application)?, depth, values, budget)
+            }
+            _ => Err("lifetime result inputs require an associated or opaque type"),
+        }
     }
     fn fields(
         &mut self,

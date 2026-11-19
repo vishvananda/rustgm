@@ -268,3 +268,52 @@ fn replacement_ends_old_loans_only_when_every_live_holder_is_gone()
     }
     Ok(())
 }
+
+#[test]
+fn custom_destructors_check_live_associated_arguments_in_the_defining_scope()
+-> Result<(), Box<dyn std::error::Error>> {
+    let base = r"
+struct Guard<T>(T);
+impl<T> Drop for Guard<T> { fn drop(&mut self) {} }
+trait Make<'a> { type ItemBOUND; fn make(&'a mut self) -> Self::Item; }
+fn keep<T>(mut producer: T) where T: for<'a> Make<'a> { BODY }
+fn main() {}
+";
+    let active = "let _g = Guard(producer.make()); let _r = &mut producer;";
+    for (name, bound, body, accepted) in [
+        (
+            "released",
+            "",
+            "{ let _g = Guard(producer.make()); } let _r = &mut producer;",
+            true,
+        ),
+        ("active", "", active, false),
+        ("static", ": 'static", active, true),
+    ] {
+        let source = base.replace("BOUND", bound).replace("BODY", body);
+        rustc::qualify(&format!("projected-destructor-{name}"), &source, accepted)?;
+        let mut report = semantic::resolve(&source)?;
+        let checked = (|| -> Result<_, Box<dyn std::error::Error>> {
+            let rustgm::pipeline::Analysis {
+                mut facts,
+                prepared,
+            } = rustgm::pipeline::analyze_source(&report)?;
+            let entry = rustgm::sema::entry::select(&mut report, &facts)?;
+            Ok(rustgm::lower::instances::build_prepared(
+                &report, &mut facts, entry, prepared,
+            )?)
+        })();
+        if accepted {
+            checked.map_err(|error| format!("{name}: {error}"))?;
+        } else {
+            let error = checked
+                .err()
+                .ok_or("projected loan remains live through cleanup")?;
+            assert!(
+                error.to_string().contains("live reference loan"),
+                "{name}: {error}"
+            );
+        }
+    }
+    Ok(())
+}
