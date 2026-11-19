@@ -98,6 +98,7 @@ impl Search<'_> {
                             &frame.goal,
                             self.query.availability,
                             self.query.purpose,
+                            None,
                         )
                         .map_err(inference)?;
                     match candidates {

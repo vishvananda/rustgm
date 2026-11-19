@@ -220,7 +220,7 @@ impl Search<'_> {
         if let Some(action) = self.derive_result(facts, frame)? {
             return Ok(action);
         }
-        self.candidates(facts, frame)
+        self.candidates(facts, frame, None)
     }
 
     pub(super) fn input_evidence(

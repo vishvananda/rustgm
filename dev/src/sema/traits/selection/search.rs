@@ -527,7 +527,17 @@ impl Search<'_> {
         if declared && let Some(action) = self.derive_result(facts, frame)? {
             return Ok(action);
         }
-        self.candidates(facts, frame)
+        // Candidate indexing can reuse the proof lookup's concrete input on
+        // this startup path. Normalization and resumed searches use live inputs.
+        let resolved = match frame.canonical {
+            Some(goal)
+                if goal.is_concrete(&facts.types)? && !goal.contains_opaques(&facts.types)? =>
+            {
+                Some(goal)
+            }
+            _ => None,
+        };
+        self.candidates(facts, frame, resolved)
     }
     fn assume(
         &mut self,
@@ -592,6 +602,7 @@ impl Search<'_> {
         &mut self,
         facts: &mut Declarations,
         frame: &mut Frame,
+        resolved: Option<Predicate>,
     ) -> Result<Action, String> {
         if let Some(action) = self.prepare_nominal_formation(facts, frame)? {
             return Ok(action);
@@ -602,13 +613,14 @@ impl Search<'_> {
         if let Some(action) = self.start_async_callable(facts, frame)? {
             return Ok(action);
         }
-        self.implementation_candidates(facts, frame)
+        self.implementation_candidates(facts, frame, resolved)
     }
     /// Source and user impls, after any language evidence declined the goal.
     fn implementation_candidates(
         &mut self,
         facts: &mut Declarations,
         frame: &mut Frame,
+        resolved: Option<Predicate>,
     ) -> Result<Action, String> {
         let Some(registry) = &mut facts.generics.implementations else {
             return self.language_result(facts, frame);
@@ -620,6 +632,7 @@ impl Search<'_> {
                 &frame.goal,
                 self.query.availability,
                 self.query.purpose,
+                resolved,
             )
             .map_err(inference)?;
         // A census lookahead after unfinished validation must not read the
@@ -641,6 +654,7 @@ impl Search<'_> {
                         &frame.goal,
                         super::Availability::Executable,
                         self.query.purpose,
+                        resolved,
                     )
                     .map_err(inference)?,
                 crate::sema::traits::implementations::Candidates::Ready(_)

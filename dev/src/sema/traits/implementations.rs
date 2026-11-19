@@ -193,7 +193,7 @@ impl Implementations {
         goal: &crate::types::infer::predicates::Predicate,
         availability: Availability,
     ) -> Result<Candidates, crate::types::infer::Error> {
-        self.candidates_for(store, context, goal, availability, Purpose::Use)
+        self.candidates_for(store, context, goal, availability, Purpose::Use, None)
     }
     pub(in crate::sema) fn candidates_for(
         &mut self,
@@ -202,6 +202,7 @@ impl Implementations {
         goal: &crate::types::infer::predicates::Predicate,
         availability: Availability,
         purpose: Purpose,
+        resolved: Option<Predicate>,
     ) -> Result<Candidates, crate::types::infer::Error> {
         use crate::types::infer::Error;
         let item = Identity::goal(goal)?;
@@ -213,7 +214,8 @@ impl Implementations {
         let Some(subject) = subject else {
             return Ok(Candidates::Ready(CandidateOwners::default()));
         };
-        let (shape, argument) = match context.resolved_predicate(store, goal) {
+        let resolved = resolved.map_or_else(|| context.resolved_predicate(store, goal), Ok);
+        let (shape, argument) = match resolved {
             Ok(value)
                 if !value
                     .contains_parameters(store)

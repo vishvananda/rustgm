@@ -86,7 +86,7 @@ impl Search<'_> {
         }
         // The actual trait still needs its own ordinary selection; formation-only
         // completion supplies no implementation, assumption or callable permission.
-        self.candidates(facts, frame)
+        self.candidates(facts, frame, None)
     }
     pub(super) fn complete_nominal_formation(
         &mut self,

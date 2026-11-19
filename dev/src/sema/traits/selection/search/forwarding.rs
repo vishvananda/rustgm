@@ -242,7 +242,7 @@ impl Search<'_> {
                 // Other forwarding follows those candidates, so it never relists them.
                 (Origin::Referent, Decision::Absent) => {
                     frame.language = None;
-                    self.implementation_candidates(facts, frame)
+                    self.implementation_candidates(facts, frame, None)
                 }
                 (Origin::Operation(_), Decision::Absent) => Ok(Action::Complete(
                     if frame.deferred || frame.partial.is_some() {

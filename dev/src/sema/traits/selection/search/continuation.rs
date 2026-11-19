@@ -466,7 +466,7 @@ impl<'a> Search<'a> {
         {
             self.complete_builtin(facts, frame)
         } else {
-            self.candidates(facts, frame)
+            self.candidates(facts, frame, None)
         }
     }
 }
