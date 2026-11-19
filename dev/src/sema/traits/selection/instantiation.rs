@@ -6,6 +6,7 @@ mod region_sugar_tests;
 #[path = "../../../../tests/invariants/fn_sugar_impl_parameters.rs"]
 mod sugar_tests;
 use super::{Context, Declarations, DefId, Goal, RegionId, inference};
+use crate::sema::generics::parameter_id;
 use crate::types::{
     arguments::Argument as Canonical,
     infer::{Instantiation, arguments::Argument},
@@ -65,21 +66,30 @@ pub(super) fn instantiate(
         };
         outlives.push((a, b));
     }
-    let ids = facts.generics.parameter_ids(&facts.types, owner)?;
-    let mut bindings = Vec::with_capacity(ids.len());
+    let formals = facts
+        .generics
+        .parameters
+        .get(&owner)
+        .map_or(&[][..], Vec::as_slice)
+        .iter()
+        .map(|parameter| parameter.argument)
+        .filter(|argument| !matches!(argument, Canonical::Lifetime(_)));
+    let mut bindings = Vec::with_capacity(formals.clone().count());
     let mut predicates = Vec::new();
-    for id in ids {
+    for formal in formals {
+        let id = parameter_id(&facts.types, formal)?;
         bindings.push((
             id,
             context
                 .parameter_variable(&facts.types, id)
                 .map_err(inference)?,
         ));
-        if matches!(
-            facts.types.parameter(id).map(|p| p.kind),
-            Some(ParameterKind::Type { sized: true })
-        ) {
-            let ty = facts.types.intern(crate::types::Kind::Parameter(id))?;
+        if let Canonical::Type(ty) = formal
+            && matches!(
+                facts.types.parameter(id).map(|p| p.kind),
+                Some(ParameterKind::Type { sized: true })
+            )
+        {
             predicates.push(Predicate {
                 ty,
                 bound: Bound::Sized,
