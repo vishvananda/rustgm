@@ -1090,9 +1090,12 @@ frontier checkout.
    diagnostics and native outcomes match. The frozen rejection and all 170
    measurement observations match in output. The 2.47% paired wall reduction
    remains within the 2.91% shared-case A/A spread. The production gates pass.
-   The separate early guard for source-backed queries and private execution
-   remain pending. Evidence is under `obj/parallel/child-proof-reuse/` in the
-   performance checkout.
+   The integrated early source guard reduces 44 child probes to zero across
+   six source-backed body queries, with identical outputs and diagnostics.
+   Five standalone controls preserve the measured revision's exact replay,
+   frame and trial counts. The bounded private harness attempts leave private
+   execution pending. Evidence is under `obj/parallel/child-proof-reuse/` in
+   the performance checkout.
 
 For each prototype, hold source size and request count fixed while varying the
 fraction of shared keys, subterms or premises. Separately grow the amount of
