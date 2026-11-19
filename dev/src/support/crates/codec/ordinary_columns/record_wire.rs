@@ -2,6 +2,7 @@
 use super::{Input, Writer, id, range, s};
 use crate::support::crates::{RecordRepr, generics::TypeRef, owner_catalog::DeclarationRef};
 const FUNDAMENTAL: u8 = 128;
+const INCOHERENT_INHERENT: u8 = 64;
 
 pub(super) fn encode(out: &mut Writer, rows: s::ValidatedView<'_>) -> Result<(), &'static str> {
     // Version thirteen alone carries a transparent or SIMD struct header.
@@ -30,7 +31,9 @@ pub(super) fn nominal_write(out: &mut Writer, row: &s::NominalHeader) -> Result<
         RecordRepr::Transparent => 2,
         RecordRepr::Simd => 3,
     };
-    out.u8(repr | (u8::from(row.fundamental) * FUNDAMENTAL))
+    out.u8(repr
+        | (u8::from(row.fundamental) * FUNDAMENTAL)
+        | (u8::from(row.incoherent_inherent) * INCOHERENT_INHERENT))
 }
 pub(super) fn nominal_read(read: &mut Input<'_, '_>) -> Result<s::NominalHeader, &'static str> {
     let mut row = s::NominalHeader {
@@ -43,11 +46,13 @@ pub(super) fn nominal_read(read: &mut Input<'_, '_>) -> Result<s::NominalHeader,
         declared_inputs: read.id()?,
         repr: RecordRepr::Rust,
         fundamental: false,
+        incoherent_inherent: false,
     };
     let flags = read.reader.u8()?;
-    row.fundamental = flags & FUNDAMENTAL != 0 && read.profile.declaration_policies();
-    let repr = if row.fundamental {
-        flags & !FUNDAMENTAL
+    let repr = if read.profile.declaration_policies() {
+        row.fundamental = flags & FUNDAMENTAL != 0;
+        row.incoherent_inherent = flags & INCOHERENT_INHERENT != 0;
+        flags & !(FUNDAMENTAL | INCOHERENT_INHERENT)
     } else {
         flags
     };

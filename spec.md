@@ -570,10 +570,14 @@ separately from a method's Allow permission. Retain this sparse promise in the
 existing cold source-header owner and bind it in the existing definition walk;
 do not create ordinary nominal header rows merely to record absence. Source
 queries authenticate the current image, configured effect and target kind.
-Keep old imported profiles Unknown and explicitly reject exports that would
-lose target authority or its validated inherent candidate index. Local ownership
-does not require Has. The [source checkpoint](docs/pa31-incoherent-target-checkpoint.md)
-retains the wider foreign/metadata requirements.
+Body-operations v14 carries Has on the actual defining struct, enum or trait.
+Consumers join the mark to the declaration's catalog coordinates and combine
+it with the implementing crate's own feature permission and every actual
+member's Allow. Older imports supply no Has authority. Publication requires
+wire support for the target and all of its checked inherent-method entries.
+Local ownership keeps the ordinary inherent rules. The
+[source checkpoint](docs/pa31-incoherent-target-checkpoint.md) records the
+independent source and cross-crate contracts.
 
 Header diagnostic and advisory contracts use complete versioned cold columns.
 Authenticate local declaration, configured owner and retained source incarnation;
@@ -8355,9 +8359,10 @@ ordinary v13 body nodes with authenticated v11 compiler-operation data. Keep all
 older envelopes/versions and the declarative macro envelope14 unchanged. Encode
 associated result authority once; the operation trailer retains explicit optional
 const-body presence followed by actual opaque/operation records. General
-fundamental and forced-dyn policy use the checked trait flags. The nominal
-record uses the reserved high bit of the representation byte for an actual
-fundamental struct, while retaining the representation in the lower bits.
+fundamental, forced-dyn and incoherent inherent target policy use the checked
+trait flags. The nominal representation byte carries fundamental struct policy
+in bit 7 and incoherent inherent target policy for structs and enums in bit 6.
+The lower bits retain the representation.
 The consumer validates the defining artifact, owner and record kind before
 retaining any of these promises. A symbolic helper
 has no ordinary executable body. Ordinary originals retain their own parameter,

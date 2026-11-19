@@ -140,10 +140,10 @@ impl Checker<'_> {
                 .ok_or_else(|| {
                     self.error(source, "inherent object impl requires a principal trait")
                 })?;
-            return self.require_local_principal(source, item);
+            return self.require_inherent_principal(owner, source, item);
         }
         if let Type::Adt(item, _) = kind {
-            return self.require_local_inherent(source, item);
+            return self.require_inherent_nominal(owner, source, item);
         }
         if !matches!(
             kind,
@@ -172,7 +172,12 @@ impl Checker<'_> {
         Err(self.error(source, "inherent impl requires a local nominal type"))
     }
 
-    fn require_local_principal(&self, source: NodeKey, item: ItemId) -> Result<(), Error> {
+    fn require_inherent_principal(
+        &self,
+        implementation: DefId,
+        source: NodeKey,
+        item: ItemId,
+    ) -> Result<(), Error> {
         let definition = DefId(item.0);
         let actual = self
             .report
@@ -213,6 +218,11 @@ impl Checker<'_> {
                 .then_some(auto_)
             });
         let Some(auto_) = auto_ else {
+            if actual.node.is_none()
+                && self.permits_imported_inherent(implementation, source, definition)?
+            {
+                return Ok(());
+            }
             return Err(self.error(source,
                 "foreign object inherent permission and lookup require their wider authenticated profile"));
         };
@@ -222,7 +232,12 @@ impl Checker<'_> {
         Ok(())
     }
 
-    fn require_local_inherent(&self, source: NodeKey, item: ItemId) -> Result<(), Error> {
+    fn require_inherent_nominal(
+        &self,
+        implementation: DefId,
+        source: NodeKey,
+        item: ItemId,
+    ) -> Result<(), Error> {
         let actual = self
             .report
             .resolution
@@ -237,9 +252,31 @@ impl Checker<'_> {
             .is_some()
             || actual.node.is_none()
         {
+            if actual.node.is_none()
+                && self.permits_imported_inherent(implementation, source, DefId(item.0))?
+            {
+                return Ok(());
+            }
             return Err(self.error(source, "inherent impl requires a local nominal type; foreign permissions require their wider profile"));
         }
         Ok(())
+    }
+
+    fn permits_imported_inherent(
+        &self,
+        implementation: DefId,
+        source: NodeKey,
+        definition: DefId,
+    ) -> Result<bool, Error> {
+        if !self.inherent_headers.permitted(
+            implementation,
+            self.report.package.requested_internal_attributes(),
+        ) {
+            return Ok(false);
+        }
+        self.facts
+            .imported_incoherent_target(definition)
+            .map_err(|message| self.error(source, message))
     }
 }
 

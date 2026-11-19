@@ -55,6 +55,9 @@ impl Target {
                 | (Self::Foreign, DefKind::ForeignType)
         )
     }
+    const fn transported(self) -> bool {
+        matches!(self, Self::Trait { .. } | Self::Struct | Self::Enum)
+    }
 }
 #[derive(Clone, Copy)]
 pub(super) struct Marker {
@@ -62,6 +65,7 @@ pub(super) struct Marker {
     effect: usize,
     attribute: Attribute,
     target: Target,
+    definition: Option<DefId>,
 }
 fn header(facts: &Declarations, key: NodeKey) -> Option<&Header> {
     facts
@@ -73,10 +77,11 @@ fn header(facts: &Declarations, key: NodeKey) -> Option<&Header> {
         .declarations
         .get(&key)
 }
+fn target_marker(header: &Header) -> Option<&Marker> {
+    header.promises.as_deref()?.incoherent.as_ref()
+}
 pub(super) fn marked(facts: &Declarations, key: NodeKey) -> bool {
-    header(facts, key)
-        .and_then(|row| row.promises.as_deref())
-        .is_some_and(|row| row.incoherent.is_some())
+    header(facts, key).and_then(target_marker).is_some()
 }
 pub(in crate::sema) fn consume(
     report: &Report,
@@ -150,6 +155,7 @@ pub(in crate::sema) fn consume(
         effect,
         attribute,
         target,
+        definition: None,
     });
     Ok(())
 }
@@ -162,11 +168,7 @@ pub(super) fn bind(
     let Some(actual) = header(facts, key) else {
         return Ok(());
     };
-    let Some(marker) = actual
-        .promises
-        .as_deref()
-        .and_then(|row| row.incoherent.as_ref())
-    else {
+    let Some(marker) = target_marker(actual) else {
         return Ok(());
     };
     if report
@@ -191,10 +193,22 @@ pub(super) fn bind(
             )
         })?;
     validate(report, facts, key, actual, marker)?;
-    ledger(facts, 0)?
-        .local
-        .first_incoherent_target
-        .get_or_insert(definition);
+    let local = &mut ledger(facts, 0)?.local;
+    let marker = local
+        .declarations
+        .get_mut(&key)
+        .and_then(|row| row.promises.as_deref_mut())
+        .and_then(|row| row.incoherent.as_mut())
+        .ok_or_else(|| Error::at(key.file, 0, "incoherent target marker disappeared"))?;
+    if marker.definition.is_some_and(|bound| bound != definition) {
+        return Err(Error::at(
+            key.file,
+            0,
+            "incoherent target has two actual definitions",
+        ));
+    }
+    marker.definition = Some(definition);
+    local.first_incoherent_target.get_or_insert(definition);
     Ok(())
 }
 fn validate(
@@ -228,6 +242,44 @@ fn validate(
     })
 }
 impl Declarations {
+    /// Read the completed source mark when building the canonical header row.
+    pub(crate) fn authored_incoherent_target(
+        &self,
+        definition: DefId,
+    ) -> Result<bool, &'static str> {
+        let Some(local) = self
+            .must_use_contracts
+            .as_deref()
+            .and_then(|row| row.headers.as_deref())
+            .map(|ledger| &ledger.local)
+            .filter(|local| local.first_incoherent_target.is_some())
+        else {
+            return Ok(false);
+        };
+        super::charge_query(local, 2)
+            .map_err(|_| "incoherent target publication exceeds source contract budget")?;
+        let marked = local
+            .definitions
+            .get(&definition)
+            .and_then(|key| local.declarations.get(key))
+            .and_then(target_marker)
+            .is_some_and(|marker| marker.definition == Some(definition));
+        if marked && !local.comptime_complete {
+            return Err("incoherent target publication requires its completed source contract");
+        }
+        Ok(marked)
+    }
+
+    pub(in crate::sema) fn imported_incoherent_target(
+        &self,
+        definition: DefId,
+    ) -> Result<bool, &'static str> {
+        use crate::support::crates::generics::source::TraitFlags;
+        Ok(super::super::imported::definition_policy(self, definition)?
+            & TraitFlags::INCOHERENT_INHERENT
+            != 0)
+    }
+
     /// Has belongs to this actual defining declaration. Legacy imports stay unknown.
     pub(crate) fn incoherent_inherent_contract(
         &self,
@@ -266,14 +318,10 @@ impl Declarations {
         }) else {
             return Ok(ContractKnowledge::Unknown);
         };
-        match actual
-            .promises
-            .as_deref()
-            .and_then(|row| row.incoherent.as_ref())
-        {
-            Some(marker) if marker.target == target => Ok(ContractKnowledge::KnownPresent(
-                validate(report, self, key, actual, marker)?,
-            )),
+        match target_marker(actual) {
+            Some(marker) if marker.target == target && marker.definition == Some(definition) => Ok(
+                ContractKnowledge::KnownPresent(validate(report, self, key, actual, marker)?),
+            ),
             Some(_) => Err(Error::at(
                 key.file,
                 0,
@@ -285,17 +333,40 @@ impl Declarations {
             }
         }
     }
-    /// Existing wire profiles carry neither target Has nor an incoherent impl index.
+    /// Validate every published source mark while preserving the older profile fence.
     pub(crate) fn require_incoherent_target_transport(
         &self,
         report: &Report,
+        policies: bool,
     ) -> Result<(), &'static str> {
-        if let Some(definition) = self
+        let Some(local) = self
             .must_use_contracts
             .as_deref()
             .and_then(|row| row.headers.as_deref())
-            .and_then(|ledger| ledger.local.first_incoherent_target)
-        {
+            .map(|ledger| &ledger.local)
+            .filter(|local| local.first_incoherent_target.is_some())
+        else {
+            return Ok(());
+        };
+        let error =
+            "incoherent target authority and inherent index require their wider metadata profile";
+        if !policies {
+            return Err(error);
+        }
+        super::charge_query(local, local.definitions.len())
+            .map_err(|_| "incoherent target publication exceeds source contract budget")?;
+        for (&definition, key) in &local.definitions {
+            let Some(marker) = local
+                .declarations
+                .get(key)
+                .and_then(target_marker)
+                .filter(|marker| marker.definition == Some(definition))
+            else {
+                continue;
+            };
+            if !marker.target.transported() {
+                return Err(error);
+            }
             if !matches!(
                 self.incoherent_inherent_contract(report, definition)
                     .map_err(
@@ -305,9 +376,6 @@ impl Declarations {
             ) {
                 return Err("incoherent target transport lost its completed source contract");
             }
-            return Err(
-                "incoherent target authority and inherent index require their wider metadata profile",
-            );
         }
         Ok(())
     }

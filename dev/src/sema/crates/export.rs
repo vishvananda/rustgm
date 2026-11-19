@@ -197,7 +197,7 @@ fn validate_profile(
         .map_err(error)?;
     crate::sema::coherence_policy::require_transport(facts).map_err(error)?;
     facts
-        .require_incoherent_target_transport(report)
+        .require_incoherent_target_transport(report, false)
         .map_err(error)?;
     facts
         .require_dispatch_policy_transport(report)

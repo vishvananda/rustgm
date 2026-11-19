@@ -140,6 +140,22 @@ fn profile_has_complete_attributes(profile: s::Profile) -> bool {
             | s::Profile::Source2024ProvidedContracts
     )
 }
+
+fn nominal_header(
+    row: &s::NominalHeader,
+    declarations: &[s::Declaration],
+) -> (DeclarationRef, DefKind, u16) {
+    let policy = (u16::from(row.fundamental) * s::TraitFlags::FUNDAMENTAL)
+        | (u16::from(row.incoherent_inherent) * s::TraitFlags::INCOHERENT_INHERENT);
+    let kind =
+        if declarations[row.declaration.0 as usize].definition.kind == s::DefinitionKind::Enum {
+            DefKind::Enum
+        } else {
+            DefKind::Struct
+        };
+    (row.declaration, kind, policy)
+}
+
 pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     let Some(imported) = &report.resolution.crates else {
         return Ok(());
@@ -174,7 +190,7 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
         }
         let rows = descriptor.rows();
         let policy_mask = if descriptor.profile().declaration_policies() {
-            s::TraitFlags::FUNDAMENTAL | s::TraitFlags::DYN_INCOMPATIBLE
+            s::TraitFlags::DECLARATION_POLICIES
         } else {
             0
         };
@@ -189,10 +205,11 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
                     row.flags.bits() & policy_mask,
                 )
             }))
-            .chain(rows.nominals.iter().map(|row| {
-                let bits = u16::from(row.fundamental) * s::TraitFlags::FUNDAMENTAL;
-                (row.declaration, DefKind::Struct, bits)
-            }))
+            .chain(
+                rows.nominals
+                    .iter()
+                    .map(|row| nominal_header(row, &rows.declarations)),
+            )
         {
             headers.charge(1)?;
             bytes = bytes.saturating_add(retained::new_map::<DefId, Header>(1));

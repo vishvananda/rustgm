@@ -249,6 +249,9 @@ fn trait_headers(
     for header in &rows.traits {
         work.charge(1)?;
         let flags = header.flags.bits();
+        if flags & TraitFlags::INCOHERENT_INHERENT & !roles.definition_policies != 0 {
+            return Err("source incoherent trait requires the declaration policy profile");
+        }
         let role_header = super::super::TraitHeader {
             flags: TraitFlags::from_bits(flags & !roles.definition_policies)?,
             ..*header
@@ -257,7 +260,7 @@ fn trait_headers(
             // Destruct requires its actual forced-dyn restriction.
             let destruct = super::super::TraitHeader {
                 flags: TraitFlags::from_bits(
-                    flags & !(roles.definition_policies & TraitFlags::FUNDAMENTAL),
+                    flags & !(roles.definition_policies & !TraitFlags::DYN_INCOMPATIBLE),
                 )?,
                 ..*header
             };
@@ -787,7 +790,7 @@ impl BindingProfile {
     }
     fn definition_policies(self) -> u16 {
         if self == Self::BodyOperations {
-            TraitFlags::FUNDAMENTAL | TraitFlags::DYN_INCOMPATIBLE
+            TraitFlags::DECLARATION_POLICIES
         } else {
             0
         }

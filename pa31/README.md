@@ -650,10 +650,11 @@ permission. A foreign nominal or dyn-principal implementation additionally needs
 its own internal-attribute feature and Allow on every actual inherent method.
 Local dyn ownership follows the principal trait and uses ordinary local rules.
 Preserve complete Self arguments, auto traits, lifetimes, receivers, coherence,
-privacy, const and unsafe checks. The target permission and validated incoherent
-candidate index must survive genuine cross-crate transport; the local-only Allow
-attribute is not itself exported. Existing narrower metadata profiles must reject
-unsupported transport explicitly. This contract remains required implementation.
+privacy, const and unsafe checks. Body-operations v14 supplies the defining
+struct, enum or trait's permission to a fresh implementing crate. A downstream
+client must also receive the validated incoherent candidate index. Allow is
+checked on the implementing source. The consumer reuses the validated index.
+Older metadata profiles reject target permission publication explicitly.
 
 The [selected source handler checkpoint](../docs/pa31-source-panic-handler-checkpoint.md)
 executes genuine Location/PanicInfo/panic/handler bodies through LowIR and the

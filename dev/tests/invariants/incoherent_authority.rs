@@ -235,6 +235,74 @@ fn existing_scalar_and_source_metadata_cannot_drop_target_authority() -> TestRes
     );
     Ok(())
 }
+
+#[test]
+fn v14_inherent_target_authority_comes_from_the_defining_artifact() -> TestResult {
+    use crate::{lower::instances::SourcePublication, support::crates};
+    let base =
+        test_source::fixture("pa31/tests/spec/source-functions-transport/minimal-provider.rs")?;
+    let declarations = "
+        #[rustc_has_incoherent_inherent_impls] pub struct Marked { pub value: u8 }
+        pub struct Plain { pub value: u8 }
+        #[rustc_has_incoherent_inherent_impls] pub enum MarkedEnum { Unit }
+        #[rustc_has_incoherent_inherent_impls] pub trait MarkedTrait {}
+        pub trait PlainTrait {}
+    ";
+    let artifact = crate::module_packets::exported_profile(
+        &format!("{base}\n{declarations}"),
+        SourcePublication::ModuleBodyOperations,
+        "incoherent_target_transport",
+    )?;
+    let bytes = crates::encode(&artifact)?;
+    assert_eq!(crates::encode(&crates::decode(&bytes)?)?, bytes);
+    for (target, body, message) in [
+        (
+            "base::Marked",
+            "#[rustc_allow_incoherent_impl] fn ext(&self) -> u8 { 7 }",
+            None,
+        ),
+        (
+            "base::MarkedEnum",
+            "#[rustc_allow_incoherent_impl] fn ext() -> u8 { 3 }",
+            None,
+        ),
+        (
+            "dyn base::MarkedTrait",
+            "#[rustc_allow_incoherent_impl] fn ext(&self) -> u8 { 3 }",
+            None,
+        ),
+        (
+            "base::Marked",
+            "#[rustc_allow_incoherent_impl] fn ext() {} fn unmarked() {}",
+            Some("requires a local nominal type"),
+        ),
+        (
+            "base::Plain",
+            "#[rustc_allow_incoherent_impl] fn ext() {}",
+            Some("requires a local nominal type"),
+        ),
+        (
+            "dyn base::PlainTrait",
+            "#[rustc_allow_incoherent_impl] fn ext(&self) {}",
+            Some("foreign object inherent permission"),
+        ),
+    ] {
+        let source = format!(
+            "#![feature(no_core,rustc_attrs)]\n#![no_core]\nextern crate base;\nimpl {target} {{ {body} }}"
+        );
+        let result = crate::source_packets::client_analysis(crates::decode(&bytes)?, &source);
+        if let Some(message) = message {
+            let error = result
+                .err()
+                .ok_or("inherent extension accepted without its defining permission")?
+                .to_string();
+            assert!(error.contains(message), "{target}: {error}");
+        } else {
+            result.map_err(|error| format!("{target}: {error}"))?;
+        }
+    }
+    Ok(())
+}
 #[test]
 fn sparse_target_retention_and_warm_queries_scale_linearly() -> TestResult {
     let mut previous = None;

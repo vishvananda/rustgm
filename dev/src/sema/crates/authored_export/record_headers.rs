@@ -170,6 +170,8 @@ impl Stage {
         .map_err(|_| "source nominal declared input count overflow")?;
         let fundamental = self.declaration_policies()
             && facts.authored_definition_policy(owner)? & s::TraitFlags::FUNDAMENTAL != 0;
+        let incoherent_inherent =
+            self.declaration_policies() && facts.authored_incoherent_target(owner)?;
         self.reserve(4 * size_of::<s::NominalHeader>())?;
         self.rows.nominals.push(s::NominalHeader {
             contract,
@@ -184,6 +186,7 @@ impl Stage {
             declared_inputs,
             repr,
             fundamental,
+            incoherent_inherent,
         });
         if enumeration {
             self.enum_header(facts, owner, declaration, context)?;

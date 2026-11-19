@@ -369,10 +369,14 @@ impl TraitFlags {
     pub const DYN_INCOMPATIBLE: u16 = 128;
     /// Structural claim requiring the complete version-two domain row.
     pub const RESTRICTED_IMPL: u16 = 256;
+    /// The actual defining trait permits authenticated foreign inherent methods.
+    pub const INCOHERENT_INHERENT: u16 = 512;
+    pub(crate) const DECLARATION_POLICIES: u16 =
+        Self::FUNDAMENTAL | Self::DYN_INCOMPATIBLE | Self::INCOHERENT_INHERENT;
     /// # Errors
     /// Rejects claims outside this exact supported structural vocabulary.
     pub fn from_bits(bits: u16) -> Result<Self, &'static str> {
-        if bits & !511 != 0 {
+        if bits & !1023 != 0 {
             return Err("unknown source trait attribute claim");
         }
         Ok(Self(bits))
@@ -502,6 +506,7 @@ pub struct NominalHeader {
     pub repr: crate::support::crates::RecordRepr,
     /// Locality policy on the defining struct, independent of its representation.
     pub fundamental: bool,
+    pub incoherent_inherent: bool,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct NominalField {

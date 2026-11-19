@@ -33,6 +33,7 @@ fn header(repr: RecordRepr) -> s::NominalHeader {
         declared_inputs: 0,
         repr,
         fundamental: false,
+        incoherent_inherent: false,
     }
 }
 fn written(repr: RecordRepr) -> Result<Vec<u8>> {
