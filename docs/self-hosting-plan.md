@@ -178,7 +178,14 @@ also pass. The first integrated original replay found a stored noncapturing
 closure while preparing caller-location dependencies in
 `std/src/panicking.rs::increase`. It reports 44 unproven obligations and eight
 waivers, with an empty skip list and no LowIR. The caller-location preparation
-keeps that closure on its existing checked closure entry. Receipts are under
+keeps that closure on its existing checked closure entry. The replay with that
+repair crosses caller-location preparation and reaches
+`std/src/sys/thread_local/destructors/linux_like.rs:register` in C ABI
+classification. The callback uses a local `repr(transparent)` wrapper around
+`c_int` as its result. The classifier's transparent scalar route asks for a
+nullable carrier, and the carrier walk does not recognize a plain integer
+leaf. The replay took 48.30 seconds, with 41 unproven obligations, 50 waivers,
+zero skips and no LowIR. Receipts are under
 `obj/parallel/tracked-reify-check/` in the frontier checkout.
 
 The separate strict core export fails before metadata publication in
@@ -547,9 +554,14 @@ frontier checkout.
    Measure the same header across different requesting goals. The declared
    effect-qualified conditions, the predicate's parameter uses and the
    decisions about vacuous binders can be derived once per validated owner and
-   effect. The fresh captures, local type variables and proof evidence still
-   belong to the trial. Measure header preparation separately from replay into
-   the trial's inference context.
+   effect. Keep the resulting ordered clauses as canonical IDs and record which
+   roots need trial-local type, const or lifetime substitutions. Test whether a
+   trial can copy only those bindings while retaining the other roots by ID.
+   The fresh captures, local type variables and proof evidence still belong to
+   the trial. Count distinct prepared owners and effects, unique clause and
+   application IDs, dependent roots and replayed edges. Hold trial count and
+   header width fixed while varying the fraction of shared roots. This exposes
+   repeated work even when whole-input timings grow linearly.
    [Trial construction](../dev/src/sema/traits/selection/search/frames.rs#L166) · [Header instantiation](../dev/src/sema/traits/selection/instantiation.rs)
 3. **Reuse proof structure where the inputs permit it.** Measure repeated
    goals using a canonical key with alpha-renamed slots and the identity of the
