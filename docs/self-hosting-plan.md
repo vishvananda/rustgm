@@ -762,6 +762,16 @@ associated constants, a caller-tracked `sub_one` method and original const
 implementations. The replay receipt is under
 `obj/parallel/strict-core/division-roles/`.
 
+`be9de53f0` transports the pinned `RangePattern` declaration in version
+fourteen. The two required constants retain their `Self` types and absent
+values. The imported `sub_one` header preserves its conditional effect,
+caller tracking and absent body. A fresh client accepts the trait bound
+and rejects a call that requires an absent `u8` implementation, matching
+pinned Rust. Version thirteen preserves its range fence. The focused tests
+and deterministic metadata round trip pass. The concrete integer and char
+implementations still need their associated values and checked bodies.
+Evidence is under `obj/parallel/v14-range-transport/declaration-final/`.
+
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
 deprecated macro and accepts a call through an annotated `use` alias of a
