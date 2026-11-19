@@ -4,6 +4,57 @@ use super::{cases, rustc, semantic};
 const CUSTOM_DROP: &str = "struct D<'a>(&'a mut u8);impl<'a> Drop for D<'a>{fn drop(&mut self){*self.0+=1;}}mod shadow{pub trait Drop{}pub struct S<'a>(pub super::D<'a>);impl<'a> Drop for S<'a>{}}fn main(){let mut count=0;{let _s=shadow::S(D(&mut count));}check(count==1);}";
 
 #[test]
+fn projected_conversion_headers_preserve_real_overlap_and_closed_absence()
+-> Result<(), Box<dyn std::error::Error>> {
+    let declarations = "
+        trait FromType<T> {}
+        trait IntoType<U> {}
+        impl<T, U> IntoType<U> for T where U: FromType<T> {}
+        trait Array { type Item; }
+        struct Tiny<A>(A);
+        struct Vector<T>(T);
+        fn main() {}
+    ";
+    let closed = "impl<A: Array> IntoType<Vector<A::Item>> for Tiny<A> {}";
+    for (name, target, competing, accepted) in [
+        (
+            "projected-closed",
+            closed,
+            "impl<T> FromType<T> for T {}",
+            true,
+        ),
+        (
+            "projected-matching",
+            closed,
+            "impl<A: Array, T> FromType<Tiny<A>> for Vector<T> {}",
+            false,
+        ),
+        (
+            "projected-exposed",
+            "impl<A: Array> IntoType<A::Item> for Tiny<A> {}",
+            "",
+            false,
+        ),
+    ] {
+        let text = format!("{declarations}{target}{competing}");
+        rustc::qualify(name, &text, accepted)?;
+        let result = super::prove(&text);
+        if accepted {
+            result?;
+        } else {
+            let error = result.err().ok_or("overlapping headers accepted")?;
+            assert!(
+                error
+                    .to_string()
+                    .contains("overlapping trait implementation headers require coherence proof"),
+                "{name}: {error}"
+            );
+        }
+    }
+    Ok(())
+}
+
+#[test]
 fn a_custom_drop_marker_preserves_field_cleanup() -> Result<(), Box<dyn std::error::Error>> {
     cases(&[(
         "impl-marker-custom-drop-cleanup",

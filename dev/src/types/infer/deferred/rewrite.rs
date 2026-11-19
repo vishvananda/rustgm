@@ -19,13 +19,18 @@ impl<K> Default for Rewriting<K> {
     }
 }
 
+pub(super) enum Replacement {
+    Normal(TypeId),
+    Existential,
+}
+
 pub(super) trait Scope {
     const COMPLETE: bool = false;
     type Key: Copy + Eq + Hash;
     fn key(&self, scope: ScopeId, term: TermId) -> Self::Key;
     fn parts(&self, key: Self::Key) -> (ScopeId, TermId);
     fn children(&self, key: Self::Key, kind: Constructor) -> Result<ScopeId, Error>;
-    fn replacement(&self, key: Self::Key) -> Option<TypeId>;
+    fn replacement(&self, key: Self::Key) -> Option<Replacement>;
 }
 
 impl Scope for HashMap<TermId, TypeId> {
@@ -43,8 +48,8 @@ impl Scope for HashMap<TermId, TypeId> {
         Ok(ScopeId::ROOT)
     }
 
-    fn replacement(&self, key: Self::Key) -> Option<TypeId> {
-        self.get(&key).copied()
+    fn replacement(&self, key: Self::Key) -> Option<Replacement> {
+        self.get(&key).copied().map(Replacement::Normal)
     }
 }
 
@@ -110,12 +115,17 @@ impl Context {
             if results.contains_key(&key) {
                 continue;
             }
-            if let Some(ty) = replacements.replacement(key) {
+            if let Some(replacement) = replacements.replacement(key) {
                 if !self.is_projection(store, id)? {
                     return Err(Error::InvalidIdentity);
                 }
-                let normal = self.known(store, ty)?;
-                if S::COMPLETE {
+                let normal = match replacement {
+                    Replacement::Normal(ty) => self.known(store, ty)?,
+                    Replacement::Existential => self.variable(super::super::Domain::Any)?,
+                };
+                if S::COMPLETE
+                    && let Replacement::Normal(ty) = replacement
+                {
                     // A complete plan holds finished search fold outputs, whose
                     // remaining projections are this frame's normal forms. Only
                     // the certified premise and candidate header relations read

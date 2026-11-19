@@ -767,6 +767,17 @@ coherence on `impl<A: Array> Into<Vec<A::Item>> for TinyVec<A>` at
 [Pinned Rust assertion dispatch](https://github.com/rust-lang/rust/blob/88d9e12ae/compiler/rustc_builtin_macros/src/assert.rs) ·
 [Pinned Rust panic dispatch](https://github.com/rust-lang/rust/blob/88d9e12ae/compiler/rustc_builtin_macros/src/edition_panic.rs)
 
+Coherence can now retry a deferred query with fresh existential variables for
+its projected inputs. It uses absence from that broader query only when the
+actual crate perspective still closes the inputs. All seven reduced conversion
+cases match pinned Rust, including an exposed projection and two genuinely
+competing impls. The existing fundamental and cross-crate regressions pass.
+The unchanged small-vector build clears conversion coherence and reaches
+`tinyvec.rs:154`. The generated `DerefMut::deref_mut` body reports
+`unknown enum variant`. The run emits no artifacts and leaves the skip list
+empty. Evidence is under `obj/parallel/m4-into-overlap/` and
+`obj/parallel/m4-small-vectors-projection/`.
+
 Normalization and identifier
 consumers require independent guest feature scopes because the Cargo graph
 enables `std` for `unicode-normalization` and leaves it off for `tinyvec`.

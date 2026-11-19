@@ -126,8 +126,40 @@ pub(in crate::sema) fn may_overlap_with(
                 })
                 .map(|disjoint| !disjoint)
         }
+        continuation::Progress::Ready(Decision::Deferred)
+            if mode == crate::sema::coherence_policy::Mode::Stable
+                && goal.trait_arguments().is_some() =>
+        {
+            projected_inputs_may_overlap(facts, context, goal, perspective)
+        }
         _ => Ok(true),
     }
+}
+
+fn projected_inputs_may_overlap(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Goal,
+    perspective: Perspective,
+) -> Result<bool, String> {
+    let Some(abstracted) = context
+        .abstract_coherence_projections(&facts.types, goal)
+        .map_err(|error| error.to_string())?
+    else {
+        return Ok(true);
+    };
+    if !crate::sema::traits::implementations::overlap::absence_closed(
+        facts,
+        context,
+        &abstracted,
+        perspective,
+    )? {
+        return Ok(true);
+    }
+    // Every unresolved result is an unconstrained variable. Absence for the
+    // wider question excludes the original premise. This view has no input
+    // projections left, so a deferred answer cannot start another search.
+    may_overlap(facts, context, &abstracted, perspective)
 }
 
 #[cfg(test)]

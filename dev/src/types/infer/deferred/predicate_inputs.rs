@@ -1,5 +1,8 @@
 //! A predicate's normalization plan owns its callable occurrences and replacement identities.
-use super::super::{Constructor, Context, Error, Store, TermId, TypeId, predicates::Predicate};
+use super::{
+    super::{Constructor, Context, Error, Store, TermId, TypeId, predicates::Predicate},
+    rewrite::{Replacement, Scope},
+};
 use crate::support::hash::HashMap;
 use crate::types::lifetime_proof::ScopeId;
 
@@ -41,6 +44,21 @@ impl Context {
             callables,
             replacements,
         })
+    }
+
+    /// Broaden an existential coherence question to every possible output of
+    /// its unresolved projections. The original type graph stays available.
+    pub(crate) fn abstract_coherence_projections(
+        &mut self,
+        store: &Store,
+        predicate: &Predicate,
+    ) -> Result<Option<Predicate>, Error> {
+        let plan = self.projected_inputs(store, predicate)?;
+        if plan.roots.is_empty() || plan.roots.iter().any(|&(scope, _)| scope != ScopeId::ROOT) {
+            return Ok(None);
+        }
+        self.rewrite_inputs(store, predicate, &Existential(&plan))
+            .map(Some)
     }
 }
 
@@ -116,7 +134,35 @@ impl super::rewrite::Scope for ProjectionInputs {
         }
     }
 
-    fn replacement(&self, key: Self::Key) -> Option<TypeId> {
-        self.replacements.get(&key).copied().flatten()
+    fn replacement(&self, key: Self::Key) -> Option<Replacement> {
+        self.replacements
+            .get(&key)
+            .copied()
+            .flatten()
+            .map(Replacement::Normal)
+    }
+}
+
+struct Existential<'a>(&'a ProjectionInputs);
+impl Scope for Existential<'_> {
+    type Key = (ScopeId, TermId);
+
+    fn key(&self, scope: ScopeId, term: TermId) -> Self::Key {
+        self.0.key(scope, term)
+    }
+
+    fn parts(&self, key: Self::Key) -> (ScopeId, TermId) {
+        self.0.parts(key)
+    }
+
+    fn children(&self, key: Self::Key, kind: Constructor) -> Result<ScopeId, Error> {
+        self.0.children(key, kind)
+    }
+
+    fn replacement(&self, key: Self::Key) -> Option<Replacement> {
+        self.0
+            .replacements
+            .contains_key(&key)
+            .then_some(Replacement::Existential)
     }
 }
