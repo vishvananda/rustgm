@@ -42,14 +42,26 @@ fn unmarked_local_objects_keep_real_self_receiver_bounds_and_virtual_bodies() ->
 
 #[test]
 fn local_principal_cannot_be_replaced_by_a_nominal_or_missing_source_owner() -> Result {
-    let report = crate::test_source::resolve("struct Nominal;trait Value{}fn main(){}", true)?;
-    let (definition, source) = actual_declaration(&report, "Value", DefKind::Trait)?;
+    let report = crate::test_source::resolve(
+        "struct Nominal;trait Value{}impl dyn Value{fn local(&self){}}fn main(){}",
+        true,
+    )?;
+    let (definition, _) = actual_declaration(&report, "Value", DefKind::Trait)?;
     let (nominal, nominal_source) = actual_declaration(&report, "Nominal", DefKind::Struct)?;
     let mut checker = Checker::new(&report)?;
-    checker.require_local_principal(source, ItemId(definition.0))?;
+    let owner = checker
+        .facts
+        .associated
+        .owners()
+        .iter()
+        .find(|owner| matches!(owner.kind, OwnerKind::Impl { trait_type: None, .. }))
+        .ok_or("actual inherent impl")?;
+    let implementation = owner.self_definition;
+    let source = owner.source.ok_or("actual inherent impl source")?;
+    checker.require_inherent_principal(implementation, source, ItemId(definition.0))?;
     assert!(
         checker
-            .require_local_principal(source, ItemId(nominal.0))
+            .require_inherent_principal(implementation, source, ItemId(nominal.0))
             .is_err()
     );
     let id = checker
@@ -66,7 +78,7 @@ fn local_principal_cannot_be_replaced_by_a_nominal_or_missing_source_owner() -> 
         .source = None;
     assert!(
         checker
-            .require_local_principal(source, ItemId(definition.0))
+            .require_inherent_principal(implementation, source, ItemId(definition.0))
             .is_err()
     );
     *checker
@@ -82,7 +94,7 @@ fn local_principal_cannot_be_replaced_by_a_nominal_or_missing_source_owner() -> 
         .source = Some(nominal_source);
     assert!(
         checker
-            .require_local_principal(source, ItemId(definition.0))
+            .require_inherent_principal(implementation, source, ItemId(definition.0))
             .is_err(),
         "a different present source key cannot replay the actual trait owner"
     );
@@ -106,7 +118,7 @@ fn local_principal_cannot_be_replaced_by_a_nominal_or_missing_source_owner() -> 
     *current = nominal;
     assert!(
         checker
-            .require_local_principal(source, ItemId(definition.0))
+            .require_inherent_principal(implementation, source, ItemId(definition.0))
             .is_err()
     );
     Ok(())
