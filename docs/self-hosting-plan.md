@@ -636,6 +636,17 @@ frontier checkout.
    header width fixed while varying the fraction of shared roots. This exposes
    repeated work even when whole-input timings grow linearly.
    [Trial construction](../dev/src/sema/traits/selection/search/frames.rs#L166) · [Header instantiation](../dev/src/sema/traits/selection/instantiation.rs)
+
+   Canonical trait arguments already have a slice ID. The inference predicate
+   keeps an owned argument vector inside a boxed application. Instantiation
+   copies the canonical argument slice to a temporary vector and builds the
+   inference vector. Isolating a trial maps every argument into a new vector
+   even when the trial imports zero graph edges. Test a canonical application
+   ID with a sparse overlay for inference-local slots. Reuse fixed arguments
+   and retain any const, region, normalization or slot facts that require local
+   processing. Measure the cold application preparation and the warm work as
+   the fixed width grows with the number of affected slots held constant.
+   [Inferred predicate](../dev/src/types/infer/predicates.rs#L17) · [Trial input mapping](../dev/src/types/infer/refinement.rs#L91)
 3. **Reuse proof structure where the inputs permit it.** Measure repeated
    goals using a canonical key with alpha-renamed slots and the identity of the
    effective premises, binder scope, mode and registry view. Start with
@@ -646,6 +657,33 @@ frontier checkout.
    the selected proof. Test different premises for the same
    goal, fresh caller lifetimes, pending publication, negative evidence,
    specialization, cycles and ambiguity.
+
+   A fixed-size control has 32 distinct outer goals with one compatible impl
+   apiece. Each impl requires a child trait proof. Both variants declare the
+   same inventory and differ only in whether their conditions all name the
+   same child or use different children. A second pair adds an identical
+   unrelated caller premise. All four variants emit identical LowIR and pass
+   the same native sum check with the instrumented compiler and pinned rustc.
+
+   | Caller and child pattern | Distinct canonical fingerprints | Trials | Charged trial setup steps |
+   | --- | ---: | ---: | ---: |
+   | Neutral, distinct children | 160 | 160 | 2,464 |
+   | Neutral, shared child | 36 | 160 | 2,464 |
+   | Unrelated premise, distinct children | 162 | 194 | 2,600 |
+   | Unrelated premise, shared child | 38 | 194 | 2,600 |
+
+   The probe counts fingerprints of mode, source policy and predicate at
+   canonical search frames. Full reuse keys also need the caller and registry
+   dependencies. Timing remains unmeasured. Every trial imported zero
+   inference edges. The top-level body memo records the same 30 hits in both
+   premise variants. The fixed-size pairs expose repeated child search behind
+   different parents even when a whole-goal cache sees distinct requests.
+   Prototype reuse at the child frame. Measure registry and effective caller
+   dependencies from the whole search, including alternatives and refutations.
+   In the repeated family the target is one child search per compatible context
+   and a lookup per requesting parent. The sources, compiler hash, native
+   checks and raw counters are in the frontier checkout under
+   `obj/parallel/trait-shared-child/`.
 
 For each prototype, hold source size and request count fixed while varying the
 fraction of shared keys, subterms or premises. Separately grow the amount of
