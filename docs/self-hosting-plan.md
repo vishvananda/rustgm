@@ -312,9 +312,14 @@ The next trace reaches the same closure identity in both Data applications.
 Its enclosing-region arguments and capture environment use different
 canonical coordinates. The startup successor compares type structure at
 this ABI boundary and keeps lifetime checking with the reached call's
-proof. The development compiler builds. Its original `println` replay hits
-the frontend time limit. The optimized observation build and replay are
-under `obj/parallel/std-startup-optimized/` in the frontier checkout.
+proof. The development compiler's replay hits the frontend time limit.
+The optimized observation compiler emits 8,331,309 bytes of LowIR for the
+original `println` consumer, with zero skips, 14 unproven obligations and
+55 waivers. CPPGM links it and all three executions match the declared
+exit status, stdout and stderr byte for byte. The exact receipt is under
+`obj/parallel/std-startup-optimized/std-consumer-println/` in the frontier
+checkout. The HashMap, environment and filesystem replays use the same
+compiler and source pins.
 
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
