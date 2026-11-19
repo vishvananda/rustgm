@@ -843,10 +843,13 @@ enables `std` for `unicode-normalization` and leaves it off for `tinyvec`.
 
 The target-unit executor rejects explicit bring-up options before launch and
 checks successful compilation stderr for bring-up records before publishing
-LowIR or metadata. The one-record control gives the process a successful exit
-with both outputs present. The gate quarantines both outputs and prevents the
-dependent crate from starting. All 23 target-unit tests pass, including the
-empty-graph rejection. [Executor](../scripts/target_units.py) · [Controls](../scripts/tests/test_target_units.py)
+LowIR or metadata. A successful command with a bring-up record or a missing
+artifact quarantines the unit's complete set of emitted peers. Its dependent
+crates stay blocked. All 23 target-unit and six comparison tests pass. The
+repeat fixture builds emit the same LowIR, library metadata and native-link
+manifests in independent directories. Receipts are under
+`obj/parallel/compiler-execution-freeze/strict-native-manifests/`.
+[Executor](../scripts/target_units.py) · [Controls](../scripts/tests/test_target_units.py)
 
 The binary-root planner freezes the original `dev/bin/rustgm.rs` as the sole
 target and its dependency on `dev/src/lib.rs`. The pinned Cargo 1.98.0 run for
@@ -878,10 +881,10 @@ prelude and execute the imported startup specialization for its actual
 [Executor](../scripts/target_units.py) · [Prelude](../dev/src/resolve/standard_imports.rs) ·
 [Startup](../dev/src/sema/entry/startup.rs)
 
-The strict binary unit needs LowIR, terminal crate metadata and a native-link
-manifest. Validate all three outputs together before publishing them. A
-terminal metadata record carries the binary identity and its authenticated
-dependencies. Both dependency inputs must reject that record. Link the
+The executor now requires LowIR and a native-link manifest for every unit
+and metadata for library units. Add a terminal metadata record carrying the
+binary identity and its authenticated dependencies. Both dependency inputs
+must reject that record. Link the
 binary LowIR and its library closure in the frozen order, then pass the
 verified native objects and ordered library directives to the pinned linker.
 Add focused controls for a missing output, binary metadata supplied as a
@@ -1512,6 +1515,17 @@ match, as do 70 focused observations and 98 ordered proof graphs. Six direct
 mapping controls preserve the results and charged work. The optimized code
 is integrated at `942bb15f6`. Raw counters and allocation profiles are
 under `obj/parallel/trait-first-map/` in the performance checkout.
+
+Equality publication sees 18,903 of 36,130 original-graph requests with
+`'static` as the sole publishable lifetime name. The isolated `33de8a3db`
+candidate skips SCC reconstruction on those requests when a conservative
+bound fits the original work limit. It retires 0.080% fewer instructions,
+0.111% fewer load operations and 0.087% fewer stores. Wall times stay within
+A/A variation. Six whole-graph samples, two native results and 42 focused
+observations match. A typed driver confirms the work-limit boundary and
+named-to-static equality after the private harness reaches its build
+deadline. The candidate remains in the performance checkout, with receipts
+under `obj/parallel/proven-static-region/`.
 
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
