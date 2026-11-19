@@ -1,5 +1,5 @@
 //! Always-const source policy is independent of API, safety and pointer calls.
-use super::{Declarations, DefId, Error, Header, NodeKey, Report, ledger};
+use super::{Declarations, DefId, Error, Header, NodeKey, OwnerReads, Report, ledger};
 use crate::{
     sema::{
         associated::OwnerKind,
@@ -293,6 +293,21 @@ impl Declarations {
         report: &Report,
         definition: DefId,
     ) -> Result<ContractKnowledge<SourceContractSite>, Error> {
+        self.comptime_contract(report, definition, None)
+    }
+    pub(in crate::sema) fn comptime_contract_with_owner_reads(
+        &self,
+        reads: &mut OwnerReads<'_>,
+        definition: DefId,
+    ) -> Result<ContractKnowledge<SourceContractSite>, Error> {
+        self.comptime_contract(reads.report(), definition, Some(reads))
+    }
+    fn comptime_contract(
+        &self,
+        report: &Report,
+        definition: DefId,
+        reads: Option<&mut OwnerReads<'_>>,
+    ) -> Result<ContractKnowledge<SourceContractSite>, Error> {
         self.require_lint_context(report)?;
         let actual = report
             .resolution
@@ -355,7 +370,7 @@ impl Declarations {
                 "comptime declaration identity is pending or changed",
             ));
         }
-        super::validate_header(report, self, definition, key, header)?;
+        super::validate_header_with(report, self, definition, key, header, reads)?;
         let Some(marker) = header
             .promises
             .as_deref()

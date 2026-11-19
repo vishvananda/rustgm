@@ -58,7 +58,7 @@ impl Checker<'_> {
         }
         match self
             .facts
-            .source_comptime_contract(self.report, definition)?
+            .comptime_contract_with_owner_reads(&mut self.owner_reads, definition)?
         {
             ContractKnowledge::KnownAbsent => return Ok(()),
             ContractKnowledge::KnownPresent(_) => {}

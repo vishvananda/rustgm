@@ -3,6 +3,7 @@ use super::{ContractKnowledge, ContractOrigin, HeaderAttributeView, Ledger, Sour
 use crate::{
     resolve::{
         expansion::Report,
+        lint_policy::producer::OwnerReads,
         model::{DefId, DefKind},
         package::Error,
         unit::NodeKey,
@@ -550,6 +551,16 @@ fn validate_header(
     key: NodeKey,
     header: &Header,
 ) -> Result<(), Error> {
+    validate_header_with(report, facts, definition, key, header, None)
+}
+fn validate_header_with(
+    report: &Report,
+    facts: &Declarations,
+    definition: DefId,
+    key: NodeKey,
+    header: &Header,
+    reads: Option<&mut OwnerReads<'_>>,
+) -> Result<(), Error> {
     if !admitted(report, key) {
         return Err(Error::at(
             key.file,
@@ -557,7 +568,7 @@ fn validate_header(
             "source header completion incarnation changed",
         ));
     }
-    validate_source(facts, report, key, header)?;
+    validate_source_with(facts, report, key, header, reads)?;
     match report.resolution.definitions[definition.0 as usize].kind {
         DefKind::Function => {
             // An absent declaration header is an unprepared prerequisite: demand
@@ -825,6 +836,16 @@ fn validate_source(
     key: NodeKey,
     header: &Header,
 ) -> Result<(), Error> {
+    validate_source_with(facts, report, key, header, None)
+}
+fn validate_source_with(
+    facts: &Declarations,
+    report: &Report,
+    key: NodeKey,
+    header: &Header,
+    reads: Option<&mut OwnerReads<'_>>,
+) -> Result<(), Error> {
+    let mut reads = reads.filter(|reads| std::ptr::eq(reads.report(), report));
     let unit = report.package.unit(key.file);
     if !header.source.current(unit, key.node)
         || unit.configured.active.get(key.node.get() as usize) != Some(&true)
@@ -859,11 +880,17 @@ fn validate_source(
             ));
         }
         if !owner.effects.is_empty() {
-            report
-                .lint_producer()
-                .ok_or_else(|| Error::at(owner.key.file, 0, "source header owner has no producer"))?
-                .validate_owner(&report.package, owner.key)
-                .map_err(Error::from)?;
+            if let Some(reads) = reads.as_deref_mut() {
+                reads.validate_owner(owner.key).map_err(Error::from)?;
+            } else {
+                report
+                    .lint_producer()
+                    .ok_or_else(|| {
+                        Error::at(owner.key.file, 0, "source header owner has no producer")
+                    })?
+                    .validate_owner(&report.package, owner.key)
+                    .map_err(Error::from)?;
+            }
         }
     }
     Ok(())

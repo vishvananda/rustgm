@@ -357,6 +357,7 @@ pub(super) struct Checker<'a> {
     pattern_queries: Option<Box<super::constants::Scratch>>,
     pub(super) availability: super::traits::implementations::Availability,
     report: &'a Report,
+    owner_reads: crate::resolve::lint_policy::producer::OwnerReads<'a>,
     pub(super) facts: &'a mut Declarations,
     state: State,
 }
@@ -568,6 +569,7 @@ impl<'a> Checker<'a> {
         Self {
             availability: super::traits::implementations::Availability::Validated,
             report,
+            owner_reads: crate::resolve::lint_policy::producer::OwnerReads::new(report),
             facts,
             pattern_queries: None,
             unsized_parameters: super::unsized_parameters::Draft::default(),

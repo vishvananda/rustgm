@@ -3,6 +3,7 @@
 #[path = "../../../tests/invariants/capped_storage.rs"]
 mod cap_tests;
 mod snapshots;
+pub(crate) use snapshots::OwnerReads;
 #[cfg(test)]
 #[path = "../../../tests/invariants/lint_storage.rs"]
 mod storage_tests;
@@ -640,6 +641,11 @@ impl Producer {
     }
     /// Authenticate an already produced owner without composing ancestor policy.
     pub(crate) fn validate_owner(&self, package: &Package, key: NodeKey) -> Result<(), Violation> {
+        self.read_owner(package, key)?
+            .1
+            .validate(package, &self.reads)
+    }
+    fn read_owner(&self, package: &Package, key: NodeKey) -> Result<(Tail, &Owner), Violation> {
         self.require_cap(package, key)?;
         self.charge_read(key, 1)?;
         let tail = self
@@ -647,7 +653,7 @@ impl Producer {
             .get(&key)
             .copied()
             .ok_or_else(|| invalid(key, "source header owner was not positively produced"))?;
-        self.record(tail, key)?.validate(package, &self.reads)
+        Ok((tail, self.record(tail, key)?))
     }
     pub(crate) fn changes(
         &self,

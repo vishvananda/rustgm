@@ -157,6 +157,63 @@ fn stale_effect_source_image_and_unseen_owner_are_rejected_with_charged_failed_r
 }
 
 #[test]
+fn a_warm_owner_read_preserves_the_first_ordered_budget_failure() -> TestResult {
+    let mut report = report("#[doc=\"first\"] #[doc=\"second\"] fn f(){}")?;
+    let producer = report
+        .attribute_effects
+        .as_deref_mut()
+        .and_then(|effects| effects.policy.as_mut())
+        .ok_or("missing lint producer")?;
+    producer.work.steps = 0;
+    assert!(producer.sealed);
+    let owner = &producer.owners[0];
+    let key = owner.key;
+    let [first, second] = owner.parsed.witnesses.as_ref() else {
+        return Err("expected two ordered attribute witnesses".into());
+    };
+    let first = 1 + first.tree_count as usize;
+    let second = 1 + second.tree_count as usize;
+    let mandatory = 3 + 1 + owner.effects.len();
+    let mut reads = OwnerReads::new(&report);
+    let producer = report
+        .lint_producer()
+        .ok_or("missing sealed lint producer")?;
+    let before = producer.reads.get().steps;
+    reads.validate_owner(key).map_err(Error::from)?;
+    assert_eq!(
+        producer.reads.get().steps - before,
+        mandatory + first + second
+    );
+    let before = producer.reads.get().steps;
+    reads.validate_owner(key).map_err(Error::from)?;
+    assert_eq!(
+        producer.reads.get().steps - before,
+        mandatory + first + second
+    );
+
+    let mut near_limit = producer.reads.get();
+    let limit = near_limit.limits().0;
+    near_limit.steps = limit - (mandatory + first);
+    producer.reads.set(near_limit);
+    let warm = reads
+        .validate_owner(key)
+        .err()
+        .ok_or("warm read exhausted")?;
+    assert_eq!(producer.reads.get().steps, limit + second);
+    producer.reads.set(near_limit);
+    let cold = producer
+        .validate_owner(&report.package, key)
+        .err()
+        .ok_or("cold read exhausted")?;
+    assert_eq!(producer.reads.get().steps, limit + second);
+    assert_eq!(
+        (warm.key, warm.offset, warm.message),
+        (cold.key, cold.offset, cold.message)
+    );
+    assert_eq!(warm.message, "source lint policy work budget exceeded");
+    Ok(())
+}
+#[test]
 fn combined_limits_report_actual_storage_then_work_and_keep_failed_attempts() -> TestResult {
     let report = report("fn f(){}")?;
     let key = NodeKey {

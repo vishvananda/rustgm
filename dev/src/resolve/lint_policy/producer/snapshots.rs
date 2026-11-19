@@ -1,11 +1,74 @@
 //! Authenticate retained source owners without parsing their attributes again.
-use super::{Owner, Producer, Violation, Work, invalid};
+use super::{Owner, Producer, Tail, Violation, Work, invalid};
 use crate::resolve::{
+    expansion::Report,
     package::Package,
     unit::{FileId, NodeKey},
 };
 use std::cell::Cell;
 use std::sync::Arc;
+
+const OWNER_RECEIPTS: usize = 32;
+
+#[derive(Clone, Copy)]
+struct Receipt {
+    tail: Tail,
+    steps: usize,
+}
+
+/// Completed reads belong to one borrow of the actual sealed producer and syntax.
+pub(crate) struct OwnerReads<'a> {
+    report: &'a Report,
+    receipts: Vec<Option<Receipt>>,
+}
+
+impl<'a> OwnerReads<'a> {
+    pub(crate) const fn new(report: &'a Report) -> Self {
+        Self {
+            report,
+            receipts: Vec::new(),
+        }
+    }
+
+    pub(crate) const fn report(&self) -> &'a Report {
+        self.report
+    }
+
+    pub(crate) fn validate_owner(&mut self, key: NodeKey) -> Result<(), Violation> {
+        let producer = self
+            .report
+            .lint_producer()
+            .ok_or_else(|| invalid(key, "source header owner has no producer"))?;
+        let package = &self.report.package;
+        let (tail, owner) = producer.read_owner(package, key)?;
+        if !producer.sealed {
+            return owner.validate(package, &producer.reads);
+        }
+        let slot = tail.0.get() as usize % OWNER_RECEIPTS;
+        let before = producer.reads.get();
+        if let Some(receipt) = self.receipts.get(slot).copied().flatten()
+            && receipt.tail == tail
+        {
+            let mut charged = before;
+            if charged.charge(key, receipt.steps, 0).is_ok() {
+                producer.reads.set(charged);
+                return Ok(());
+            }
+            // Exhaustion must report the first ordered failed charge.
+            return owner.validate(package, &producer.reads);
+        }
+        owner.validate(package, &producer.reads)?;
+        let steps = producer.reads.get().steps.saturating_sub(before.steps);
+        if self.receipts.is_empty() {
+            if self.receipts.try_reserve_exact(OWNER_RECEIPTS).is_err() {
+                return Ok(());
+            }
+            self.receipts.resize(OWNER_RECEIPTS, None);
+        }
+        self.receipts[slot] = Some(Receipt { tail, steps });
+        Ok(())
+    }
+}
 
 pub(super) fn configured(
     package: &Package,
