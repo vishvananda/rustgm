@@ -14,6 +14,7 @@ use crate::{
 
 pub(super) struct Plan {
     pub(super) choices: HashMap<PatternId, LocalId>,
+    variant_choices: HashSet<PatternId>,
     bindings: Vec<PatternId>,
     borrowed: HashSet<crate::resolve::model::DefId>,
     capture_choices: Option<HashSet<PatternId>>,
@@ -64,6 +65,7 @@ enum Commit {
         next: u32,
         end: u32,
         join: BlockId,
+        by_variant: bool,
     },
     Jump(NodeId, BlockId),
     Switch(BlockId),
@@ -296,9 +298,16 @@ impl Builder<'_> {
         }
         let captures = self.captured_patterns(&order);
         let mut choices = HashMap::default();
+        let mut variant_choices = HashSet::default();
         for id in order {
             let pattern = &self.facts.patterns.nodes[id.0 as usize];
-            if matches!(pattern.kind, Kind::Or(_)) && (retries || captures.contains(&id)) {
+            if let Kind::Or(alternatives) = pattern.kind
+                && (retries || captures.contains(&id))
+            {
+                if !retries && self.distinct_variants(alternatives) {
+                    variant_choices.insert(id);
+                    continue;
+                }
                 let node = pattern.source.node;
                 let local = self.local(
                     node,
@@ -323,10 +332,25 @@ impl Builder<'_> {
         });
         Ok(Plan {
             choices,
+            variant_choices,
             bindings,
             borrowed,
             capture_choices,
         })
+    }
+    /// The successful tests leave the matched place unchanged. Distinct variant
+    /// tags identify the selected alternative and preserve its initialized fields.
+    fn distinct_variants(&self, alternatives: crate::sema::patterns::Alternatives) -> bool {
+        let ids = self.facts.patterns.alternatives(alternatives);
+        let mut seen = HashSet::default();
+        ids.len() > 1
+            && ids.iter().all(|id| {
+                matches!(
+                    self.facts.patterns.nodes[id.0 as usize].kind,
+                    Kind::Product { variant: Some(variant), .. }
+                        if self.facts.members.needs_test(variant) && seen.insert(variant)
+                )
+            })
     }
     fn captured_patterns(&self, order: &[PatternId]) -> HashSet<PatternId> {
         let mut captures = HashSet::default();
@@ -484,28 +508,20 @@ impl Builder<'_> {
                     next,
                     end,
                     join,
+                    by_variant,
                 } => {
                     let node = self.facts.patterns.nodes[pattern.0 as usize].source.node;
+                    let alternative = self.facts.patterns.alternatives[next as usize];
                     if next + 1 < end {
                         let yes = self.new_block(node)?;
                         let no = self.new_block(node)?;
-                        let ty = TypeId::primitive(Primitive::U32);
-                        let input = self.evaluate(
-                            node,
-                            ty,
-                            Rvalue::Read(Place::Local(plan.choices[&pattern])),
-                        )?;
-                        let value = self.choice_value(node, next)?;
-                        let condition = self.evaluate(
-                            node,
-                            TypeId::primitive(Primitive::Bool),
-                            Rvalue::Binary {
-                                operands: crate::body::ir::BinaryOperands::Neither,
-                                operator: Op::EqualEqual,
-                                left: input,
-                                right: value,
-                            },
-                        )?;
+                        let condition = if by_variant {
+                            self.pattern_condition(alternative, base)?.ok_or_else(|| {
+                                self.error(node, "missing recorded variant choice")
+                            })?
+                        } else {
+                            self.capture_choice_condition(node, plan.choices[&pattern], next)?
+                        };
                         self.terminate(node, Terminator::Branch { condition, yes, no });
                         work.push(Commit::Alternatives {
                             pattern,
@@ -513,27 +529,43 @@ impl Builder<'_> {
                             next: next + 1,
                             end,
                             join,
+                            by_variant,
                         });
                         work.push(Commit::Switch(no));
                         work.push(Commit::Jump(node, join));
-                        work.push(Commit::Pattern(
-                            self.facts.patterns.alternatives[next as usize],
-                            base,
-                            None,
-                        ));
+                        work.push(Commit::Pattern(alternative, base, None));
                         work.push(Commit::Switch(yes));
                     } else {
                         work.push(Commit::Jump(node, join));
-                        work.push(Commit::Pattern(
-                            self.facts.patterns.alternatives[next as usize],
-                            base,
-                            None,
-                        ));
+                        work.push(Commit::Pattern(alternative, base, None));
                     }
                 }
             }
         }
         Ok(())
+    }
+    fn capture_choice_condition(
+        &mut self,
+        node: NodeId,
+        local: LocalId,
+        choice: u32,
+    ) -> Result<super::ValueId, Error> {
+        let input = self.evaluate(
+            node,
+            TypeId::primitive(Primitive::U32),
+            Rvalue::Read(Place::Local(local)),
+        )?;
+        let value = self.choice_value(node, choice)?;
+        self.evaluate(
+            node,
+            TypeId::primitive(Primitive::Bool),
+            Rvalue::Binary {
+                operands: crate::body::ir::BinaryOperands::Neither,
+                operator: Op::EqualEqual,
+                left: input,
+                right: value,
+            },
+        )
     }
     fn commit_capture(
         &mut self,
@@ -658,11 +690,12 @@ impl Builder<'_> {
                 }
             }
             Kind::Or(alternatives)
-                if plan.choices.contains_key(&id)
-                    && plan
-                        .capture_choices
-                        .as_ref()
-                        .is_none_or(|choices| choices.contains(&id)) =>
+                if plan.variant_choices.contains(&id)
+                    || plan.choices.contains_key(&id)
+                        && plan
+                            .capture_choices
+                            .as_ref()
+                            .is_none_or(|choices| choices.contains(&id)) =>
             {
                 let join = self.new_block(node)?;
                 work.push(Commit::Switch(join));
@@ -672,6 +705,7 @@ impl Builder<'_> {
                     next: alternatives.start,
                     end: alternatives.end,
                     join,
+                    by_variant: plan.variant_choices.contains(&id),
                 });
             }
             Kind::Wildcard | Kind::Range(_) | Kind::Text(_) | Kind::Or(_) => {}
