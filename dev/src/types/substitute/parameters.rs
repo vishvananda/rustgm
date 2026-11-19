@@ -124,6 +124,9 @@ impl Bound {
     ) -> Result<Self, &'static str> {
         let mut bound = Self::new(regions);
         bound.account_arguments(arguments.len().saturating_add(bound.arguments.len()))?;
+        if arguments.is_empty() {
+            return Ok(bound);
+        }
         let mut mappings = HashMap::with_capacity_and_hasher(
             arguments.len(),
             crate::support::hash::BuildFxHasher::default(),

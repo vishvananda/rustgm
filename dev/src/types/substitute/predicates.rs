@@ -1,5 +1,5 @@
 //! Predicate substitution transforms both the subject and the complete trait arguments.
-use super::Bound;
+use super::{Action, Bound};
 use crate::support::hash::HashMap;
 use crate::types::{
     Store,
@@ -219,6 +219,23 @@ impl Bound {
         }
         let depth = self.cache_depth(depth);
         self.region_work(1)?;
+        // These folds preserve free regions and lifetimes under retained binders.
+        // The application already owns its complete immutable argument list.
+        if matches!(
+            self.action,
+            Action::Remove | Action::Shift(_) | Action::Lower(_)
+        ) {
+            let properties = store
+                .trait_properties(id)
+                .ok_or("invalid substituted trait application")?;
+            if properties.escaping <= depth
+                && (self.parameters.is_none()
+                    || !properties.has(crate::types::Property::Parameters))
+            {
+                self.account_arguments(1)?;
+                return Ok(id);
+            }
+        }
         if let Some(result) = self
             .applications
             .as_ref()

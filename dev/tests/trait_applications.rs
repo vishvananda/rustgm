@@ -274,6 +274,34 @@ fn repeated_wide_trait_arguments_share_substitution_and_occurrence_work()
 }
 
 #[test]
+fn fresh_capture_folds_share_wide_unchanged_trait_inputs() -> Result<(), Box<dyn std::error::Error>>
+{
+    let mut store = Store::default();
+    let t = parameter(&mut store, 0, ParameterKind::Type { sized: true })?;
+    let ty = store.intern(Kind::Parameter(t))?;
+    let local = binders::reference(&mut store, 0, 0)?;
+    let callable = binders::function(&mut store, 1, &[local], ty)?;
+    let capture = RegionId(7);
+    for width in [8, 128, 2048] {
+        let mut arguments = vec![Argument::Type(callable); width];
+        arguments.push(Argument::Lifetime(RegionId::STATIC));
+        let closed = application(&mut store, 200, &arguments)?;
+        *arguments.last_mut().ok_or("missing capture slot")? =
+            Argument::Lifetime(RegionId::bound(0, 0)?);
+        let open = application(&mut store, 200, &arguments)?;
+        *arguments.last_mut().ok_or("missing capture slot")? = Argument::Lifetime(capture);
+        let opened = application(&mut store, 200, &arguments)?;
+        for _ in 0..32 {
+            let mut fold = substitute::Bound::parameters_captured(&store, &[], vec![capture])?;
+            assert_eq!(fold.trait_application(&mut store, closed)?, closed);
+            assert_eq!(fold.steps, 2);
+            assert_eq!(fold.trait_application(&mut store, open)?, opened);
+        }
+    }
+    Ok(())
+}
+
+#[test]
 fn inferred_predicates_resolve_type_and_const_equivalence_classes()
 -> Result<(), Box<dyn std::error::Error>> {
     let mut store = Store::default();
