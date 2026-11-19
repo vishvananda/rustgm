@@ -132,8 +132,15 @@ source declaration and definition are `__rust_panic_cleanup` in `std` and
 `panic_abort`. Pinned rustc passes the data and metadata as two x86-64 SysV integer
 words. The classifier now uses that layout for direct wide raw pointers. Native
 round trips through an independent C provider verify the vtable pointer, slice
-address and length on both compilers. The original graph must still replay
-through the repaired ABI boundary.
+address and length on both compilers. The latest original graph clears that
+boundary and stops in `core::io::error::Repr::fmt` at `core/src/io/error.rs:495`.
+It still records 87 unproven obligations and 10 waivers with an empty skip list.
+The actual `core::io::Error` formatting observer passes through native
+execution after the callable and projection lifetime repairs. The original
+Linux `std` graph with those repairs and the ABI fix clears `Repr::fmt`. It
+now reports incompatible LowIR symbol declarations while lowering
+`panic_abort::__rust_start_panic`, with 58 unproven obligations, 14 waivers and
+an empty skip list.
 
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
@@ -145,9 +152,24 @@ that allocation in the callable binder. The exact native projection suite passes
 The original strict replay now passes that site and stops at `flatten.rs:569`,
 where `FlattenCompat::try_fold` passes a returned opaque `FnMut` to a
 higher-ranked input. The small adapter reducer matches this failure on RustGM
-and compiles on pinned rustc. Strict core still emits no metadata. All four
-frozen Unicode consumers match their declared output on pinned rustc with
-prebuilt std at opt-level 2. Their RustGM runs remain due.
+and compiles on pinned rustc. The second fix retains the witness allocated when
+expanding the opaque callable's declared inputs. Seven positive reducers pass
+and the static-only callback still fails on both compilers. The next strict
+core replay reaches `SyncView::async_call_mut` in `core/src/sync/sync_view.rs:271`
+and fails to prove the method's returned associated type outlives its target.
+A generic forwarding method reproduces the failure, while the equivalent UFCS
+call passes. The captured arguments identify the same associated type and
+distinct lifetime slots, one owned by receiver inference and the other by the
+caller's signature. The body-coercion fix uses the existing projection input
+matcher to solve that invariant relation in the caller's lifetime graph. The
+forwarding and unrelated-lifetime controls agree with pinned rustc. The concrete
+forwarding observer also mutates through the returned reference and passes native
+execution on both compilers. Strict `core` now reaches `Formatter::wrap_buf` at
+`core/src/fmt/mod.rs:1768`, where the wrapper passes `self.buf` through a callable
+that shortens the lifetime of its mutable trait-object reference. The strict
+replay still emits no metadata. All four frozen Unicode consumers match their
+declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
+runs remain due.
 
 ### Self-compile milestones
 
@@ -312,6 +334,23 @@ data prioritizes those immutable header facts over a general inference overlay.
 The body memo currently keys only on the trait and type inputs. Qualifiers must
 participate in any certified key, and rejected entries need a cause breakdown
 before reconsidering eligibility.
+
+The candidate-list prototype keeps four owner IDs inline and shares wider
+ordered lists in validated ordinary selection. It checks pending dependencies
+before cache lookup and clears the cache when a header is published or
+validated. The cache keeps at most 256 entries and admits lists with 16 to 512
+owner slots. Projection and negative-coherence checks pass. Six frozen inputs
+with 8, 64 and 128 open impls emit byte-identical LowIR. The 384-header method
+control exhausts the baseline's method-selection budget. Eight independent
+trait-obligation inputs with the same registry sizes and a 384-impl group also
+emit byte-identical LowIR. For 64 uses of a single lookup key, the body
+inference counter falls by 3,969, 8,001 and 24,129 steps at widths 64, 128 and
+384 respectively. Each of the 63 warm lookups saves the list width minus one
+step. All distinct-key and eight-impl controls match the old step count.
+Optimized timing remains open. The dedicated private test checks ordering,
+storage identity and warm work. Its first build found two missing packed-derive
+fixture initializers, which are corrected. The rebuilt private harness exceeded
+the five-minute development budget before it could run that test.
 
 1. **Index impl headers once.** Extract rigid constructors and their positions
    once per published header. Prototype shared paths or ordered posting lists
