@@ -294,6 +294,10 @@ fn trait_headers(
                 super::super::phantom::imported(facts, catalog, declaration, steps)?;
                 complete.insert(role);
             }
+            LangItem::TypeInfo | LangItem::TypeId => {
+                super::super::reflection::imported(facts, declaration, steps)?;
+                complete.insert(role);
+            }
             _ => return Err("imported source role requires its wider explicit header profile"),
         }
     }

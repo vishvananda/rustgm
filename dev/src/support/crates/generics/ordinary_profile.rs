@@ -852,6 +852,9 @@ impl Bindings {
     }
 }
 fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
+    if matches!(role, LangItem::TypeInfo | LangItem::TypeId) {
+        return profile == BindingProfile::BodyOperations;
+    }
     if matches!(role, LangItem::UnwindSafe | LangItem::RefUnwindSafe) {
         return false;
     }
@@ -1079,6 +1082,11 @@ fn role_header(
     header: Option<super::super::HeaderRef>,
 ) -> Result<(), &'static str> {
     match (role, header) {
+        (LangItem::TypeInfo | LangItem::TypeId, Some(super::super::HeaderRef::Nominal(_)))
+            if profile == BindingProfile::BodyOperations => {}
+        (LangItem::TypeInfo | LangItem::TypeId, _) => {
+            return Err("source reflection role requires its actual struct header");
+        }
         (
             LangItem::CloneFn | LangItem::FuturePoll | LangItem::AsyncDropInPlace,
             Some(super::super::HeaderRef::Function(_)),

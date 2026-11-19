@@ -279,6 +279,86 @@ fn cli_version_fourteen_preserves_const_reservation_for_coherence() -> Result {
 }
 
 #[test]
+fn cli_version_fourteen_transports_exact_reflection_nominal_roles() -> Result {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root.join(format!(
+        "obj/parallel/reflection-metadata-v14/cli-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let foundation =
+        std::fs::read_to_string(root.join("pa29/tests/spec/macro-contexts/provider.rs"))?;
+    let (foundation, _) = foundation
+        .split_once("// Authored macro-context transport controls.")
+        .ok_or("macro-context fixture lost its role foundation")?;
+    let provider = folder.join("provider.rs");
+    std::fs::write(
+        &provider,
+        format!(
+            r#"{foundation}
+pub mod reflected {{
+    #[lang = "type_info"]
+    #[non_exhaustive]
+    pub struct Info {{ pub kind: u8 }}
+    #[lang = "type_id"]
+    pub struct Identity {{ pub data: [*const (); 2] }}
+}}
+pub fn describe() -> reflected::Info {{ reflected::Info {{ kind: 42 }} }}
+"#
+        ),
+    )?;
+    let metadata = folder.join("provider.rgcrate");
+    let lowir = folder.join("provider.lowir");
+    let mut producer = source_export(
+        "module-body-operations-v14",
+        &provider,
+        &metadata,
+        &lowir,
+        true,
+    );
+    producer.arg("--cap-lints=allow");
+    super::artifacts::checked("provider", &folder, &mut producer)?;
+    let bytes = std::fs::read(&metadata)?;
+    assert_eq!(
+        rustgm::support::crates::encode(&rustgm::support::crates::decode(&bytes)?)?,
+        bytes
+    );
+    let client = folder.join("client.rs");
+    std::fs::write(
+        &client,
+        "#![feature(no_core)]#![no_core]\n\
+         #[unsafe(no_mangle)] pub extern \"C\" fn observed() -> u8 { base::describe().kind }\n\
+         #[unsafe(no_mangle)] pub extern \"C\" fn words(raw: usize) -> usize {\n\
+             let value = raw as *const base::reflected::Identity;\n\
+             unsafe { (&raw const (*value).data) as usize }\n\
+         }\nfn main() {}\n",
+    )?;
+    super::artifacts::checked(
+        "client",
+        &folder,
+        &mut source_client(&client, &metadata, &folder.join("client.lowir")),
+    )?;
+    let legacy = source_export(
+        "module-bodies-v13",
+        &provider,
+        &folder.join("legacy.rgcrate"),
+        &folder.join("legacy.lowir"),
+        true,
+    )
+    .arg("--cap-lints=allow")
+    .output()?;
+    assert_eq!(legacy.status.code(), Some(1));
+    let stderr = String::from_utf8(legacy.stderr)?;
+    assert!(
+        stderr.contains("source type reflection contract transport is not implemented"),
+        "{stderr}"
+    );
+    Ok(())
+}
+
+#[test]
 fn cli_version_five_keeps_exact_c_publication_and_source_provider_boundaries() -> Result {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()

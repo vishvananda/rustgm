@@ -43,9 +43,10 @@ pub(super) fn require_role_transport(
     }) {
         return Err("source compiler language contract transport is not implemented");
     }
-    if [LangItem::TypeInfo, LangItem::TypeId]
-        .into_iter()
-        .any(|role| catalog.language(role).is_some())
+    if !(compiler_operations && languages)
+        && [LangItem::TypeInfo, LangItem::TypeId]
+            .into_iter()
+            .any(|role| catalog.language(role).is_some())
     {
         return Err("source type reflection contract transport is not implemented");
     }
@@ -182,6 +183,9 @@ impl Stage {
             // The consumer re-proves the named unit struct and interns its
             // logical argument; no variance or ownership fact travels.
             DefKind::Struct if role == LangItem::PhantomData && self.body_nodes() => {}
+            DefKind::Struct
+                if self.declaration_policies()
+                    && matches!(role, LangItem::TypeInfo | LangItem::TypeId) => {}
             // The consumer re-proves the named declaration's installed header.
             DefKind::Function if role == LangItem::Panic => {
                 if !self.body_nodes() {

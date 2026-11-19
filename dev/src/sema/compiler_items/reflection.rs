@@ -19,20 +19,31 @@ pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Re
         let error = |message| Declarations::error(report, declaration.origin, message);
         catalog.require_provider_report(report).map_err(error)?;
         header_attributes::charge_source_contract_query(facts, 1)?;
-        let definition = facts
-            .aggregates
-            .get(ItemId(declaration.definition.0))
-            .ok_or_else(|| {
-                error("source reflection role requires its completed nominal declaration")
-            })?;
-        if definition.kind != Kind::Struct {
-            return Err(error(
-                "source reflection role requires its actual struct definition",
-            ));
-        }
+        require_struct(facts, ItemId(declaration.definition.0)).map_err(error)?;
         super::roles::complete_nominal(facts, role, declaration)?;
     }
     Ok(())
+}
+
+pub(super) fn imported(
+    facts: &Declarations,
+    declaration: super::Role,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    *steps = steps.saturating_add(1);
+    require_struct(facts, ItemId(declaration.definition.0))
+}
+
+fn require_struct(facts: &Declarations, item: ItemId) -> Result<(), &'static str> {
+    let definition = facts
+        .aggregates
+        .get(item)
+        .ok_or("source reflection role requires its completed nominal declaration")?;
+    if definition.kind == Kind::Struct {
+        Ok(())
+    } else {
+        Err("source reflection role requires its actual struct definition")
+    }
 }
 
 #[cfg(test)]
