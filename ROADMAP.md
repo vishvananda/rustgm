@@ -111,11 +111,12 @@ original library artifact or additional whole assignment is complete.
 The [adopted assignment-order review](docs/assignment-order.md) replaces the old
 numeric work/release chain for incomplete assignments. Keep PA numbers and
 fixture paths as ownership IDs; use the machine-checked
-[dependency plan](assignment-plan.json) for actual implementation and component
-publication order. It has37 phase units,10 implemented finite components and
-46 explicitly retained PA25–PA30 requirement families. All component publications
-are still pending. Whole-PA completion requires its entire handout and release
-checks, not only one working subset.
+[dependency plan](assignment-plan.json) for implementation and publication
+order. Of its 38 work units, ten are implemented and eight have been released.
+The released components listed below cover 2,078 cases. PA25–PA45 remain
+planned. Whole-assignment completion requires the entire handout contract,
+release of each owned work unit, a nonempty active oracle manifest, and release
+evidence.
 
 Source-declaration binding precedes source consumers; runtime memory precedes
 symbolic CTFE; declaration metadata precedes body/value transport; required

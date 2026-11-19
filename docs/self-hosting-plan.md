@@ -772,6 +772,15 @@ and deterministic metadata round trip pass. The concrete integer and char
 implementations still need their associated values and checked bodies.
 Evidence is under `obj/parallel/v14-range-transport/declaration-final/`.
 
+The optimized `be9de53f0` replay of the unchanged 309 inputs clears the range
+declaration gate. It stops during metadata export after 31.65 seconds with
+`source declaration kind is outside the initial source profile`, zero bring-up
+records and no artifacts. Adding the original `extern crate self as core`
+declaration to a reduced provider reproduces the same fence. Pinned Rust
+accepts both reduced providers, and RustGM emits strict artifacts for the one
+without the alias. The replay and controls are under
+`obj/parallel/strict-core/range-declarations/` in the frontier checkout.
+
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
 deprecated macro and accepts a call through an annotated `use` alias of a
