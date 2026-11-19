@@ -2,6 +2,7 @@
 use super::{Checker, DefId, DefKind, Error, NodeKey, Predicate};
 use crate::{
     resolve::{expansion::Report, model::BuiltinTrait},
+    sema::header_attributes::charge_attribute_retention,
     types::{ItemId, Kind, TypeId, arguments::Argument},
 };
 
@@ -155,9 +156,14 @@ impl Checker<'_> {
                             pending.capacity(),
                             arguments.len(),
                         );
-                        crate::sema::header_attributes::charge_source_retention(
+                        // The checked fundamental policy can come from an import.
+                        // Scratch belongs to the client's own bounded account.
+                        charge_attribute_retention(
                             &self.facts,
-                            growth.work + arguments.len(),
+                            growth
+                                .work
+                                .saturating_add(arguments.len())
+                                .saturating_add(1),
                             growth.bytes,
                         )?;
                         pending.try_reserve(arguments.len()).map_err(|_| {
@@ -200,11 +206,7 @@ impl Checker<'_> {
             visited.capacity(),
             usize::from(!visited.contains(&ty)),
         );
-        crate::sema::header_attributes::charge_source_retention(
-            &self.facts,
-            growth.work + 1,
-            growth.bytes,
-        )?;
+        charge_attribute_retention(&self.facts, growth.work.saturating_add(2), growth.bytes)?;
         if visited.contains(&ty) {
             return Ok(false);
         }

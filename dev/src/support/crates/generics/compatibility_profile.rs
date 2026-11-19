@@ -3,6 +3,11 @@ use super::{Profile, SourceRows, ValidatedRows, Work};
 use crate::support::crates::{CrateIdentity, generics::source as s};
 
 impl Profile {
+    /// Version fourteen carries declaration policy independently of language roles.
+    pub(crate) const fn declaration_policies(self) -> bool {
+        matches!(self, Self::Source2024ModuleBodyOperations)
+    }
+
     #[must_use]
     pub const fn compiler_operations(self) -> bool {
         matches!(

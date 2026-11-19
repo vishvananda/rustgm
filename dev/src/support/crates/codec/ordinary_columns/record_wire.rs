@@ -1,6 +1,8 @@
 //! Version ten owns complete source struct fields independently of resolver IDs.
 use super::{Input, Writer, id, range, s};
 use crate::support::crates::{RecordRepr, generics::TypeRef, owner_catalog::DeclarationRef};
+const FUNDAMENTAL: u8 = 128;
+
 pub(super) fn encode(out: &mut Writer, rows: s::ValidatedView<'_>) -> Result<(), &'static str> {
     // Version thirteen alone carries a transparent or SIMD struct header.
     if !rows.descriptor().profile().body_nodes()
@@ -22,15 +24,16 @@ pub(super) fn nominal_write(out: &mut Writer, row: &s::NominalHeader) -> Result<
     range(out, row.fields)?;
     range(out, row.inputs)?;
     id(out, row.declared_inputs)?;
-    out.u8(match row.repr {
+    let repr = match row.repr {
         RecordRepr::Rust => 0,
         RecordRepr::C => 1,
         RecordRepr::Transparent => 2,
         RecordRepr::Simd => 3,
-    })
+    };
+    out.u8(repr | (u8::from(row.fundamental) * FUNDAMENTAL))
 }
 pub(super) fn nominal_read(read: &mut Input<'_, '_>) -> Result<s::NominalHeader, &'static str> {
-    Ok(s::NominalHeader {
+    let mut row = s::NominalHeader {
         contract: super::header_facts::row_read(read)?,
         declaration: DeclarationRef(read.id()?),
         scope: DeclarationRef(read.id()?),
@@ -38,14 +41,24 @@ pub(super) fn nominal_read(read: &mut Input<'_, '_>) -> Result<s::NominalHeader,
         fields: read.range()?,
         inputs: read.range()?,
         declared_inputs: read.id()?,
-        repr: match read.reader.u8()? {
-            0 => RecordRepr::Rust,
-            1 => RecordRepr::C,
-            2 if read.profile.body_nodes() => RecordRepr::Transparent,
-            3 if read.profile.body_nodes() => RecordRepr::Simd,
-            _ => return Err("unknown source nominal representation"),
-        },
-    })
+        repr: RecordRepr::Rust,
+        fundamental: false,
+    };
+    let flags = read.reader.u8()?;
+    row.fundamental = flags & FUNDAMENTAL != 0 && read.profile.declaration_policies();
+    let repr = if row.fundamental {
+        flags & !FUNDAMENTAL
+    } else {
+        flags
+    };
+    row.repr = match repr {
+        0 => RecordRepr::Rust,
+        1 => RecordRepr::C,
+        2 if read.profile.body_nodes() => RecordRepr::Transparent,
+        3 if read.profile.body_nodes() => RecordRepr::Simd,
+        _ => return Err("unknown source nominal representation"),
+    };
+    Ok(row)
 }
 fn field_write(out: &mut Writer, row: &s::NominalField) -> Result<(), &'static str> {
     id(out, row.owner.0)?;

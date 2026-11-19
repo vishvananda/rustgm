@@ -249,18 +249,29 @@ fn trait_headers(
     for header in &rows.traits {
         work.charge(1)?;
         let flags = header.flags.bits();
+        let role_header = super::super::TraitHeader {
+            flags: TraitFlags::from_bits(flags & !roles.definition_policies)?,
+            ..*header
+        };
         if roles.destruct == Some(header.declaration) {
+            // Destruct requires its actual forced-dyn restriction.
+            let destruct = super::super::TraitHeader {
+                flags: TraitFlags::from_bits(
+                    flags & !(roles.definition_policies & TraitFlags::FUNDAMENTAL),
+                )?,
+                ..*header
+            };
             callable_traits::destruct(
                 rows,
                 headers,
-                header,
+                &destruct,
                 sizing[2].ok_or("source Destruct lacks its actual PointeeSized role")?,
                 work,
             )?;
             continue;
         }
         if roles.freeze == Some(header.declaration) {
-            callable_traits::freeze(rows, headers, header, work)?;
+            callable_traits::freeze(rows, headers, &role_header, work)?;
             continue;
         }
         // Version thirteen: an auto trait is admitted only as its exact empty
@@ -269,13 +280,15 @@ fn trait_headers(
             callable_traits::automatic(
                 rows,
                 headers,
-                header,
+                &role_header,
                 roles.marker(header.declaration),
                 work,
             )?;
             continue;
         }
-        if callable_roles::trait_header(rows, headers, header, roles.callables, work)?.is_some() {
+        if callable_roles::trait_header(rows, headers, &role_header, roles.callables, work)?
+            .is_some()
+        {
             continue;
         }
         if flags & TraitFlags::RESTRICTED_IMPL != 0
@@ -305,19 +318,24 @@ fn trait_headers(
         {
             return Err("source const/auto/unsafe traits require a wider explicit profile");
         }
-        if flags
-            & (TraitFlags::FUNDAMENTAL
-                | TraitFlags::SPECIALIZATION
-                | TraitFlags::COINDUCTIVE
-                | TraitFlags::DENY_IMPL)
-            != 0
-            && (!sizing.contains(&Some(header.declaration)) || flags & TraitFlags::DENY_IMPL == 0)
-        {
+        let sizing_role = sizing.contains(&Some(header.declaration));
+        let sizing_only = TraitFlags::FUNDAMENTAL
+            | TraitFlags::SPECIALIZATION
+            | TraitFlags::COINDUCTIVE
+            | TraitFlags::DENY_IMPL;
+        let sizing_flags = if sizing_role {
+            flags
+        } else {
+            role_header.flags.bits()
+        };
+        if sizing_flags & sizing_only != 0 && (!sizing_role || flags & TraitFlags::DENY_IMPL == 0) {
             return Err(
                 "source sizing attributes require exact sizing role and deny-impl ownership",
             );
         }
-        if flags & TraitFlags::DYN_INCOMPATIBLE != 0 && Some(header.declaration) != sizing[0] {
+        if role_header.flags.bits() & TraitFlags::DYN_INCOMPATIBLE != 0
+            && Some(header.declaration) != sizing[0]
+        {
             return Err(
                 "source dyn incompatibility claim requires its actual supported Sized role",
             );
@@ -767,6 +785,13 @@ impl BindingProfile {
     fn languages(self) -> bool {
         matches!(self, Self::Languages | Self::BodyOperations)
     }
+    fn definition_policies(self) -> u16 {
+        if self == Self::BodyOperations {
+            TraitFlags::FUNDAMENTAL | TraitFlags::DYN_INCOMPATIBLE
+        } else {
+            0
+        }
+    }
 }
 pub(super) struct Bindings {
     sizing: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 3],
@@ -777,6 +802,7 @@ pub(super) struct Bindings {
     /// Version thirteen: exact empty auto declarations, unsafe traits and
     /// every trait impl's own safety and polarity.
     languages: bool,
+    definition_policies: u16,
     /// The role-bound auto markers, in `callable_traits::MARKERS` order.
     markers: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 4],
 }
@@ -902,6 +928,7 @@ pub(super) fn bindings(
     Ok(Bindings {
         callables,
         languages,
+        definition_policies: profile.definition_policies(),
         markers: if languages {
             [
                 send,
@@ -996,7 +1023,10 @@ fn diagnostic_bindings(
                     return Err(SEND);
                 };
                 if kind != Some(super::super::DefinitionKind::Trait)
-                    || rows.traits.get(index as usize).map(|t| t.flags.bits())
+                    || rows
+                        .traits
+                        .get(index as usize)
+                        .map(|t| t.flags.bits() & !profile.definition_policies())
                         != Some(TraitFlags::UNSAFE | TraitFlags::AUTO)
                 {
                     return Err(SEND);

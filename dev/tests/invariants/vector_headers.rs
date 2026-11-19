@@ -32,6 +32,7 @@ fn header(repr: RecordRepr) -> s::NominalHeader {
         inputs: g::Range { start: 0, end: 0 },
         declared_inputs: 0,
         repr,
+        fundamental: false,
     }
 }
 fn written(repr: RecordRepr) -> Result<Vec<u8>> {

@@ -27,6 +27,7 @@ struct Header {
     declaration: DeclarationRef,
     handle: ImportedDeclarationId,
     external: Option<ExternalDef>,
+    definition_policy: u16,
 }
 pub(super) struct Headers {
     catalog: Rc<Catalog>,
@@ -49,6 +50,45 @@ impl Headers {
             ));
         }
         Ok(())
+    }
+    fn installed_header(
+        &self,
+        artifact: usize,
+        definition: DefId,
+        (declaration, kind, policy): (DeclarationRef, DefKind, u16),
+    ) -> Result<Header, Error> {
+        let handle = self
+            .catalog
+            .declaration(definition)
+            .map_err(Error::unlocated)?;
+        if policy != 0 {
+            self.catalog
+                .validate_declaration(handle, definition, kind)
+                .map_err(Error::unlocated)?;
+            let interface = &self.inventory.artifacts()[artifact];
+            let descriptor = interface
+                .source_descriptor()
+                .ok_or_else(|| Error::unlocated("imported policy descriptor is absent"))?;
+            let (owner, ordinal, edition) = self
+                .catalog
+                .declaration_coordinate(handle)
+                .map_err(Error::unlocated)?;
+            if owner != interface.identity()
+                || ordinal != declaration
+                || edition != descriptor.edition()
+            {
+                return Err(Error::unlocated(
+                    "imported definition policy changed its actual declaration origin",
+                ));
+            }
+        }
+        Ok(Header {
+            artifact,
+            declaration,
+            handle,
+            external: None,
+            definition_policy: policy,
+        })
     }
 }
 fn profile_has_inventory(
@@ -133,12 +173,26 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
             continue;
         }
         let rows = descriptor.rows();
-        for declaration in rows
+        let policy_mask = if descriptor.profile().declaration_policies() {
+            s::TraitFlags::FUNDAMENTAL | s::TraitFlags::DYN_INCOMPATIBLE
+        } else {
+            0
+        };
+        for (declaration, kind, policy) in rows
             .functions
             .iter()
-            .map(|row| row.declaration)
-            .chain(rows.traits.iter().map(|row| row.declaration))
-            .chain(rows.nominals.iter().map(|row| row.declaration))
+            .map(|row| (row.declaration, DefKind::Function, 0))
+            .chain(rows.traits.iter().map(|row| {
+                (
+                    row.declaration,
+                    DefKind::Trait,
+                    row.flags.bits() & policy_mask,
+                )
+            }))
+            .chain(rows.nominals.iter().map(|row| {
+                let bits = u16::from(row.fundamental) * s::TraitFlags::FUNDAMENTAL;
+                (row.declaration, DefKind::Struct, bits)
+            }))
         {
             headers.charge(1)?;
             bytes = bytes.saturating_add(retained::new_map::<DefId, Header>(1));
@@ -150,23 +204,9 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
             let definition = imported
                 .generic_definition(interface.identity(), declaration)
                 .map_err(Error::unlocated)?;
-            let handle = headers
-                .catalog
-                .declaration(definition)
-                .map_err(Error::unlocated)?;
-            if headers
-                .entries
-                .insert(
-                    definition,
-                    Header {
-                        artifact,
-                        declaration,
-                        handle,
-                        external: None,
-                    },
-                )
-                .is_some()
-            {
+            let header =
+                headers.installed_header(artifact, definition, (declaration, kind, policy))?;
+            if headers.entries.insert(definition, header).is_some() {
                 return Err(Error::unlocated(
                     "duplicate imported header contract identity",
                 ));
@@ -331,6 +371,28 @@ pub(in crate::sema) fn target_features(
     )
     .map(Some)
 }
+/// Coherence and dyn checking use the imported declaration's validated header.
+pub(super) fn definition_policy(
+    facts: &Declarations,
+    definition: DefId,
+) -> Result<u16, &'static str> {
+    let Some(headers) = facts
+        .must_use_contracts
+        .as_deref()
+        .and_then(|owner| owner.headers.as_deref())
+        .and_then(|ledger| ledger.imported.as_deref())
+    else {
+        return Ok(0);
+    };
+    headers
+        .charge(1)
+        .map_err(|_| "imported definition policy work exceeds profile limit")?;
+    Ok(headers
+        .entries
+        .get(&definition)
+        .map_or(0, |row| row.definition_policy))
+}
+
 pub(super) fn query<'a>(
     facts: &'a Declarations,
     report: &Report,

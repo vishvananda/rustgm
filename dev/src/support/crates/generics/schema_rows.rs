@@ -500,6 +500,8 @@ pub struct NominalHeader {
     pub inputs: Range,
     pub declared_inputs: u32,
     pub repr: crate::support::crates::RecordRepr,
+    /// Locality policy on the defining struct, independent of its representation.
+    pub fundamental: bool,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct NominalField {

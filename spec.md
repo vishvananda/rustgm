@@ -515,9 +515,9 @@ once per foreign-wrapper traversal, with paid storage and an allocation-free
 ordinary root path. Separately, closed fundamental trait obligations may exclude
 future upstream implementations; open/downstream inputs remain possible.
 Internal consumers reuse completed typed declarations, not repeated AST scans.
-Existing exact sizing-role wire flags stay supported; publication of unencoded
-general nominal/trait policy must fail explicitly until authenticated transport
-is implemented. General coinductive and forced-dyn policy have their own real
+Body-operations v14 authenticates general nominal and trait policy on the
+defining record. Existing exact sizing-role wire flags stay supported.
+Profiles without the general policy flag reject its publication. General coinductive and forced-dyn policy have their own real
 solver/object requirements and must not be inferred from fundamental acceptance.
 The [fundamental checkpoint](docs/pa31-fundamental-policy-checkpoint.md) records
 the independently qualified local profile and explicitly required import closure.
@@ -532,8 +532,9 @@ rejection as a typed incompatible contract so shared ancestors and repeated
 demands reuse the cached failure; do not flatten inherited member prefixes.
 Preserve lazy unused aliases and the absence of a principal in marker-only auto
 objects. Shared failed source payment cannot become policy absence. Existing
-exact sizing-role wire flags remain supported; general unencoded policy must
-fail publication rather than disappear. The
+exact sizing-role wire flags remain supported. Body-operations v14 carries
+the general policy on the authenticated trait record. Older profiles reject
+publication of a general restriction. The
 [forced-dyn checkpoint](docs/pa31-forced-dyn-policy-checkpoint.md) records the
 source contract, independent observations and remaining transport/Field work.
 
@@ -7645,9 +7646,9 @@ attribute fact. rustc 1.98's fundamental traits are `PointeeSized`,
 fundamental nominals `Pin`, `FieldRepresentingType` and alloc's `Box`. rustc
 takes the first owned input with no uncovered parameter before it. Closed
 inputs have no uncovered parameter, so any owned input is that first one, and
-a widening to open inputs must restore the order. A packet cannot carry a
-`#[fundamental]` nominal, so an imported one is never peeled. `dyn` and
-foreign types are never owned inputs. Both limits are conservative. The
+a widening to open inputs must restore the order. An imported
+`#[fundamental]` nominal is peeled only when its defining v14 record carries
+the authenticated policy. `dyn` and foreign types are never owned inputs. The
 [knowable-absence packet](pa29/tests/spec/knowable-absence/README.md) records
 independent outcomes.
 
@@ -8353,7 +8354,12 @@ Source metadata `module-body-operations-v14` uses envelope10/version14 to combin
 ordinary v13 body nodes with authenticated v11 compiler-operation data. Keep all
 older envelopes/versions and the declarative macro envelope14 unchanged. Encode
 associated result authority once; the operation trailer retains explicit optional
-const-body presence followed by actual opaque/operation records. A symbolic helper
+const-body presence followed by actual opaque/operation records. General
+fundamental and forced-dyn policy use the checked trait flags. The nominal
+record uses the reserved high bit of the representation byte for an actual
+fundamental struct, while retaining the representation in the lower bits.
+The consumer validates the defining artifact, owner and record kind before
+retaining any of these promises. A symbolic helper
 has no ordinary executable body. Ordinary originals retain their own parameter,
 region, environment and proof domains even beside a symbolic operation. Reuse
 actual declaration opaque reservations and the checked BodyRef-to-ordinary-row

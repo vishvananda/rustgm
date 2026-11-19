@@ -79,6 +79,62 @@ fn general_policy_is_not_lost_and_existing_sizing_metadata_remains_supported() -
     }
     Ok(())
 }
+
+#[test]
+fn decoded_definition_policies_control_coherence_and_dyn_formation() -> TestResult {
+    use crate::{lower::instances::SourcePublication, support::crates};
+    let base = crate::test_source::fixture(
+        "pa31/tests/spec/source-functions-transport/minimal-provider.rs",
+    )?;
+    let declarations = "
+        #[fundamental] pub struct Wrap<T> { pub value: T }
+        pub struct Plain<T> { pub value: T }
+        pub trait Foreign {}
+        #[fundamental] pub trait Closed {}
+        #[rustc_dyn_incompatible_trait] pub trait Forced {}
+    ";
+    let artifact = crate::module_packets::exported_profile(
+        &format!("{base}\n{declarations}"),
+        SourcePublication::ModuleBodyOperations,
+        "definition_policies",
+    )?;
+    let bytes = crates::encode(&artifact)?;
+    assert_eq!(crates::encode(&crates::decode(&bytes)?)?, bytes);
+    for (body, failure) in [
+        (
+            "struct Local; impl base::Foreign for base::Wrap<Local> {}",
+            None,
+        ),
+        (
+            "struct Local; impl base::Foreign for base::Plain<Local> {}",
+            Some("requires a local type"),
+        ),
+        (
+            "trait Select {} impl<T: base::Closed> Select for T {} impl Select for u8 {}",
+            None,
+        ),
+        (
+            "trait Select {} impl<T: base::Foreign> Select for T {} impl Select for u8 {}",
+            Some("overlapping trait implementation"),
+        ),
+        ("fn take(_: &dyn base::Closed) {}", None),
+        ("fn take(_: &dyn base::Forced) {}", Some("not dyn compatible")),
+    ] {
+        let source = format!("#![feature(no_core)]\n#![no_core]\nextern crate base;\n{body}");
+        let result = crate::source_packets::client_analysis(crates::decode(&bytes)?, &source);
+        if let Some(needle) = failure {
+            let error = result
+                .err()
+                .ok_or_else(|| format!("opposing policy accepted: {body}"))?
+                .to_string();
+            assert!(error.contains(needle), "{body}: {error}");
+        } else {
+            result.map_err(|error| format!("{body}: {error}"))?;
+        }
+    }
+    Ok(())
+}
+
 #[test]
 fn failed_queries_keep_the_shared_source_budget_exhausted() -> TestResult {
     let report = crate::test_source::source_provider(&source("unit")?, "fundamental_budget")?;
@@ -86,7 +142,11 @@ fn failed_queries_keep_the_shared_source_budget_exhausted() -> TestResult {
     assert!(
         crate::sema::header_attributes::charge_source_contract_query(&facts, usize::MAX).is_err()
     );
-    assert!(facts.require_declaration_policy_transport(&report).is_err());
+    assert!(
+        facts
+            .require_declaration_policy_transport(&report, true)
+            .is_err()
+    );
     assert!(crate::sema::header_attributes::charge_source_contract_query(&facts, 0).is_err());
     Ok(())
 }

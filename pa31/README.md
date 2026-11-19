@@ -757,15 +757,15 @@ actual trait principal/supertrait restriction independently of language-item
 spelling. Preserve ordinary impl/generic/static use, lazy unused aliases and
 marker-only objects. Share authenticated defining headers and cached typed
 rejections, preserving feature/name allowance, failed budgets and exact sizing
-wire flags. General policy transport and actual Field/reflection consumers are
-required independently of accepting the annotation.
+wire flags. Body-operations v14 carries the restriction on the authenticated
+trait header. Actual Field/reflection consumers remain required.
 
 The [fundamental source contracts](tests/spec/fundamental-policy/README.md)
 separate real struct argument locality from trait compatible-world reasoning.
 Preserve the distinct fundamental feature, actual macro-name allowance, source
-owner, ordinary runtime behavior and existing sizing metadata. General policy
-transport and original nominal/callable declaration/body graphs remain required;
-no sizing-language role or compiler operation may stand in for an ordinary owner.
+owner, ordinary runtime behavior and existing sizing metadata. Body-operations
+v14 carries the general flag on the authenticated struct or trait header.
+Original nominal/callable declaration and body graphs remain required.
 
 Publish the semantic/lowering boundary, nonempty `tests/manifest.json`, text
 formats and generated references together after independent outcome review.

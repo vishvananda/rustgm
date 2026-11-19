@@ -174,6 +174,9 @@ impl Stage {
     pub(crate) fn body_nodes(&self) -> bool {
         self.body_transport == BodyTransport::Nodes
     }
+    fn declaration_policies(&self) -> bool {
+        self.body_nodes() && self.compiler_operations
+    }
     pub(crate) fn callable_effects(&self) -> bool {
         self.functions.callable_effects
     }
@@ -1013,7 +1016,10 @@ fn require_export_mode(
     languages: bool,
 ) -> Result<(), &'static str> {
     // The bring-up profile publishes without the facts these fences protect.
-    waiving(facts.require_declaration_policy_transport(report))?;
+    waiving(facts.require_declaration_policy_transport(
+        report,
+        languages && mode == ExportMode::CompilerOperations,
+    ))?;
     waiving(facts.require_incoherent_target_transport(report))?;
     waiving(facts.require_dispatch_policy_transport(report))?;
     waiving(facts.require_optimization_transport(report))?;

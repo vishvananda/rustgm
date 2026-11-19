@@ -82,7 +82,11 @@ fn source_policy_budget_cannot_be_restarted_or_converted_into_absence() -> TestR
     assert!(super::forced_dyn_policy(&facts, forced).is_err());
     assert!(super::forced_dyn_policy(&facts, ordinary).is_err());
     assert!(super::fundamental_policy(&facts, ordinary).is_err());
-    assert!(facts.require_declaration_policy_transport(&report).is_err());
+    assert!(
+        facts
+            .require_declaration_policy_transport(&report, false)
+            .is_err()
+    );
     Ok(())
 }
 #[test]

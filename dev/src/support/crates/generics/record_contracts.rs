@@ -12,6 +12,12 @@ pub(super) fn require_profile(
             .saturating_add(rows.declarations.len())
             .saturating_add(1),
     )?;
+    if !profile.declaration_policies() {
+        work.charge(rows.nominals.len())?;
+        if rows.nominals.iter().any(|row| row.fundamental) {
+            return Err("source fundamental nominal requires the declaration policy profile");
+        }
+    }
     for body in &rows.originals {
         work.charge(
             body.values
@@ -93,6 +99,9 @@ pub(super) fn headers(
             .declarations
             .get(row.declaration.0 as usize)
             .ok_or("unknown source nominal declaration")?;
+        if row.fundamental && declaration.definition.kind != DefinitionKind::Struct {
+            return Err("source fundamental nominal must name its actual struct");
+        }
         let cell = headers
             .get_mut(row.declaration.0 as usize)
             .ok_or("unknown source nominal header")?;

@@ -319,7 +319,12 @@ impl Stage {
             end: u32::try_from(self.rows.members.len())
                 .map_err(|_| "source member table overflow")?,
         };
-        let flags = flags(header, reserved)?;
+        let policy = if self.declaration_policies() {
+            facts.authored_definition_policy(header.definition)?
+        } else {
+            0
+        };
+        let flags = flags(header, reserved, policy)?;
         self.reserve(4 * size_of::<s::TraitHeader>())?;
         self.rows.traits.push(s::TraitHeader {
             declaration,
@@ -388,7 +393,11 @@ impl Stage {
     }
 }
 
-fn flags(header: &Trait<'_>, reserved: &Reservations) -> Result<s::TraitFlags, &'static str> {
+fn flags(
+    header: &Trait<'_>,
+    reserved: &Reservations,
+    policy: u16,
+) -> Result<s::TraitFlags, &'static str> {
     if header.attributes.contains(HeaderAttribute::Marker) {
         return Err("source marker trait contract transport is not implemented");
     }
@@ -412,5 +421,5 @@ fn flags(header: &Trait<'_>, reserved: &Reservations) -> Result<s::TraitFlags, &
             bits |= flag;
         }
     }
-    s::TraitFlags::from_bits(bits)
+    s::TraitFlags::from_bits(bits | policy)
 }

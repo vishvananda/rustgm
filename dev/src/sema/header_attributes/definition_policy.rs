@@ -3,6 +3,7 @@ use super::{Declarations, DefId, Error, Header, NodeKey, Report, ledger};
 use crate::{
     resolve::{bindings::FeatureName, expansion::MacroAllowanceSession, model::DefKind},
     sema::header_attributes::{ContractKnowledge, SourceContractSite},
+    support::crates::generics::source::TraitFlags,
     syntax::{
         ast::Kind,
         attribute::{Attribute, Input, Style},
@@ -20,6 +21,12 @@ impl Policy {
     const ALL: [Self; 2] = [Self::Fundamental, Self::ForcedDyn];
     const fn slot(self) -> usize {
         self as usize
+    }
+    const fn wire_bit(self) -> u16 {
+        match self {
+            Self::Fundamental => TraitFlags::FUNDAMENTAL,
+            Self::ForcedDyn => TraitFlags::DYN_INCOMPATIBLE,
+        }
     }
     fn named(name: &str) -> Option<Self> {
         match name {
@@ -265,8 +272,7 @@ fn validate(
         span: a.attribute.span,
     })
 }
-/// Internal typed consumers reuse completed producer facts without AST rescans.
-fn read(facts: &Declarations, id: DefId, policy: Policy) -> Result<bool, &'static str> {
+fn authored_marker(facts: &Declarations, id: DefId) -> Result<Option<&Marker>, &'static str> {
     let local = facts
         .must_use_contracts
         .as_deref()
@@ -279,11 +285,20 @@ fn read(facts: &Declarations, id: DefId, policy: Policy) -> Result<bool, &'stati
     if let Some(local) = local
         && let Some(key) = local.definitions.get(&id)
         && let Some(m) = local.declarations.get(key).and_then(marker)
-        && m.annotations[policy.slot()].is_some()
     {
         if !local.comptime_complete || m.definition != Some(id) {
             return Err("declaration policy query requires its completed defining identity");
         }
+        return Ok(Some(m));
+    }
+    Ok(None)
+}
+/// Internal typed consumers reuse completed producer facts without AST rescans.
+fn read(facts: &Declarations, id: DefId, policy: Policy) -> Result<bool, &'static str> {
+    if authored_marker(facts, id)?.is_some_and(|m| m.annotations[policy.slot()].is_some()) {
+        return Ok(true);
+    }
+    if super::super::imported::definition_policy(facts, id)? & policy.wire_bit() != 0 {
         return Ok(true);
     }
     if let Some(catalog) = facts.source_bindings.as_deref() {
@@ -389,6 +404,7 @@ impl Declarations {
     pub(crate) fn require_declaration_policy_transport(
         &self,
         report: &Report,
+        ordinary_headers: bool,
     ) -> Result<(), &'static str> {
         let Some(local) = self
             .must_use_contracts
@@ -424,6 +440,9 @@ impl Declarations {
                         "declaration policy publication requires its completed source contract",
                     );
                 }
+                if ordinary_headers {
+                    continue;
+                }
                 let transported = self
                     .source_bindings
                     .as_deref()
@@ -442,6 +461,15 @@ impl Declarations {
             }
         }
         Ok(())
+    }
+
+    pub(crate) fn authored_definition_policy(&self, id: DefId) -> Result<u16, &'static str> {
+        Ok(authored_marker(self, id)?.map_or(0, |m| {
+            Policy::ALL
+                .into_iter()
+                .filter(|policy| m.annotations[policy.slot()].is_some())
+                .fold(0, |bits, policy| bits | policy.wire_bit())
+        }))
     }
 }
 
