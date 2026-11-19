@@ -208,17 +208,28 @@ the original core and alloc graph with 27 unproven obligations, 19 waivers and
 zero skips. Pinned CPPGM compiles that merged LowIR to a 206,232-byte object and
 `ar` packages it into a native archive. The native core and alloc receipts are
 under `transparent-scalar-boundary/alloc-native/` in the frontier checkout.
-CPPGM rejects the std LowIR at line 160968. The call supplies one
-argument to a tracked function whose native signature has two. The target
-forwards its second argument to the panic routine. Pinned rustc reports the
+CPPGM rejected that std LowIR at line 160968. The call supplied one
+argument to a tracked `Result::unwrap` whose native signature has two. The
+target forwards its second argument to the panic routine. Pinned rustc reports the
 ordinary source call site for a direct tracked item call, the actual core
-`FnOnce::call_once` or `Fn::call` member site for generic invocation, and the
-function definition for a reified pointer. These outcomes distinguish the
-operator path from direct calls and pointer reification. The unchanged M3
-`println` consumer in the same guest graph reaches
-`selected Source start requires checked startup instance lowering`. Record
-the backend and startup paths independently. The whole-graph receipt is
-`tracked-reify-check/integrated-std-transparent-scalar/receipt.json`.
+`FnOnce::call_once`, `FnMut::call_mut` or `Fn::call` member site for generic
+invocation, and the function definition for a reified pointer. The original
+graph now supplies the checked caller-location operand at that call. It emits
+5,344,907 bytes of LowIR with 41 unproven obligations, 52 waivers and zero
+skips. Pinned CPPGM produces a 1,599,216-byte object, and `ar` packages it
+into a 2,028,120-byte archive. Separate original-core guests match pinned
+rustc for seven direct, generic and reified call forms and two virtual
+calls. An explicit `FnOnce::call_once` guest still reaches symbolic concrete
+dispatch. Formatting, architecture and strict Clippy passed, and the
+focused development batch timed out during the test build. The original
+std replay is under `tracked-reify-check/integrated-std-tracked-invoke/` and
+the backend and guest receipts are under `tracked-item-invoke/` in the
+frontier checkout.
+
+The unchanged M3 `println` consumer still reaches
+`selected Source start requires checked startup instance lowering` with the
+caller-location repair. Its receipt is under
+`tracked-item-invoke/std-consumer-println/` in the frontier checkout.
 
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
@@ -315,6 +326,18 @@ are under `obj/parallel/projected-drop-scope/source-controls/` and the replay
 is under `obj/parallel/strict-core/projected-drop-scope/` in the performance
 checkout. The mutable-borrow controls are under
 `obj/parallel/precise-borrow-history/` there.
+
+The optimized strict replay crosses the array cleanup check and reaches
+`core/src/slice/sort/stable/quicksort.rs:24` with
+`access conflicts with a live reference loan`. It emits zero bring-up records
+and no artifact. A loop that replaces its mutable slice with a borrowed
+subslice contains the same ownership pattern as a scalar control that assigns
+`v = identity(v)` on successive iterations. RustGM rejects both the scalar
+control and the loop with tupled reborrow results. Pinned rustc accepts both.
+Both compilers accept the one-shot tuple control and reject a write through
+the parent before the outstanding child reference's use. The replay and
+controls are under `obj/parallel/strict-core/precise-borrow-history-opt/` and
+`obj/parallel/strict-quicksort-reducer/` in the performance checkout.
 
 All four frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
