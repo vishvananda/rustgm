@@ -1209,6 +1209,17 @@ runner hit its deadline after recording the test results. Optimized timings
 and execution of the private storage invariant remain pending.
 [Fresh materialization](../dev/src/body/instantiate.rs#L179) · [Destruction query](../dev/src/types/destruction.rs#L123)
 
+The initializer and anonymous-body candidate extends sparse ordinary cleanup
+to both fresh paths. The source observer counts 32 initializer and 96
+anonymous materializations at every width, with the same reached rows and
+steps as the type store grows from 61 to 8,253 entries. Its four focused
+public tests pass. Immutable optimized `19b7bb08c` and `eca64c7b1` runs match
+in all 136 observations. The 8,192-alias input retires 0.77% fewer instructions,
+and the ordinary control retires 0.22% more. Wall time stays within calibration
+spread. The candidate remains in the performance checkout while a bounded
+dense path for small stores is evaluated. Evidence is under
+`obj/parallel/initializer-sparse/` in that checkout.
+
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
 positions and 16,384 invocations the median was 1,117.90 ms before and 67.79 ms
