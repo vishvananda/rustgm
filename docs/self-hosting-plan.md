@@ -396,6 +396,19 @@ storage identity and warm work. Its first build found two missing packed-derive
 fixture initializers, which are corrected. The private harness build exceeded
 the five-minute development budget on the two subsequent attempts.
 
+Resolved goals now share an ordered list when they select the same open
+buckets and their closed-shape lookups are both empty. A matching closed
+bucket retains its shape identity. Unresolved goals retain their existing
+conservative lookup. In the 64-query distinct controls, body inference work
+falls from 197,803 to 193,834 at 64 headers, from 390,635 to 382,634 at 128
+headers, and from 1,161,963 to 1,137,834 at 384 headers. The repeated and
+eight-header controls retain their prior charges. All nine frozen inputs
+emit byte-identical LowIR, including a mixed open and closed dispatch case
+that executes successfully on both compilers. Focused projection, negative
+coherence, formatting, architecture and strict Clippy checks pass. Optimized
+measurements for this extension remain open.
+[Candidate lookup](../dev/src/sema/traits/implementations.rs#L194)
+
 1. **Index impl headers once.** Extract rigid constructors and their positions
    once per published header. Prototype shared paths or ordered posting lists
    for lookup and coherence. Preserve wildcard, pending, projection and opaque
