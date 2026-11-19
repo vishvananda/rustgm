@@ -262,12 +262,22 @@ The nine pinned-rustc controls and the failing restoration trace are under
 `obj/parallel/btree-inline-lifetime/` in the frontier checkout.
 Pinned rustc also builds and runs the borrowed reducer and rejects its
 static-only impl twin. The receipt is under `obj/parallel/btree-default-oracle/`
-in the performance checkout. The candidate opens the provided initializer's
+in the performance checkout. The fix opens the provided initializer's
 original arguments in the dispatcher's existing mapping before applying the
-selection's equations. Formatting and architecture checks pass. Private
-validation timed out building the test harness, and the optimized replay of
-the reducer and original `println` is pending in the frontier checkout under
-`obj/parallel/btree-default-successor/`.
+selection's equations. The optimized compiler builds all nine reducers, and
+their native runs match the declared outcomes. The three already supported
+controls keep byte-identical LowIR. Both compilers reject the static-only
+impl. Formatting and architecture checks pass. Private validation timed out
+building the test harness.
+
+The original `println` guest now emits 8,332,813 bytes of LowIR with zero skips,
+14 unproven obligations and 57 waivers, and CPPGM links the executable. It
+aborts before printing in the `catch_unwind` shim. A diagnostic copy of its
+LowIR runs the try callback in four such shims and advances to the
+`assert_zero_valid` shim. The original emitted program, native reducer results
+and backtraces are under `obj/parallel/btree-default-successor/`,
+`obj/parallel/btree-reducer-native/` and `obj/parallel/println-native-abort/`
+in the frontier checkout.
 
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
