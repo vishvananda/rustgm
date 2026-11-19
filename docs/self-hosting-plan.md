@@ -352,6 +352,21 @@ pinned rustc accept both loop reductions and reject the premature parent
 write. The successor controls are under
 `obj/parallel/strict-quicksort-candidate/` in the performance checkout.
 
+The optimized replay crosses quicksort and reaches
+`core/src/iter/traits/iterator.rs:232` in `Iterator::count`. The const
+closure consumes an owned `Self::Item`, with a conditional `Destruct` premise
+on the enclosing method. The strict diagnostic is
+`const cleanup selection requires its actual source function`. The original
+closure already carries its defining owner and inherited parameter context in
+its region contract. Cleanup selection currently requires a function body key.
+The owned generic reduction reproduces the failure. Pinned rustc accepts it
+with the declaring premise and reports E0493 when that premise is removed.
+The borrowed and concrete controls clear cleanup selection in both compilers
+and RustGM reaches the subsequent source-role transport check. The original
+replay records zero bring-up rows and emits no artifacts. Receipts are under
+`obj/parallel/strict-core/loan-slot-replacement/` and
+`obj/parallel/strict-const-closure-cleanup/` in the performance checkout.
+
 All four frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
 runs remain due.
