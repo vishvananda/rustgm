@@ -561,6 +561,10 @@ the separate early/captured callable frame transport fence. The passing
 clients declare the impls locally with a local trait parameter. Receipts are
 under `obj/parallel/v14-dispatch-policy/` and
 `obj/parallel/v14-dispatch-client-impl/` in the frontier checkout.
+The unchanged PA34 by-value `Box<[u8]>` fixture links with the original std
+graph and matches stdout `9` in 2018 and `7` in 2024. Its bring-up skip lists
+are empty. The receipt is under `obj/parallel/dispatch-boxed-original/` in
+the frontier checkout.
 
 The optimized replay of the same 309 strict core inputs clears the dispatch
 gate in 32.90 seconds and reaches `optimization intent requires authenticated
