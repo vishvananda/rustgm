@@ -1448,6 +1448,21 @@ candidate pair. A/A also varied, leaving the wall effect unresolved.
 Evidence is under `obj/parallel/trait-predicate-import/` in the performance
 checkout.
 
+Tracked inference imports now keep the first term mapping in the temporary
+tracker. On the frozen original graph, 1,670,351 of 2,029,613 tracked maps
+had exactly one type key. DHAT measures 8,238 to 30 tracked map allocations
+on the source-backed shared control and 320 to zero on the distinct control.
+The ordinary scalar control has 256 total allocations on both builds.
+
+The immutable `f688afa46` comparison retires 0.726% fewer instructions,
+0.558% fewer load operations and 0.613% fewer stores on the original graph.
+Wall medians are 30.583 and 31.208 seconds within the A/A spread of
+29.200 to 40.338 seconds. All six graph observations and both native results
+match, as do 70 focused observations and 98 ordered proof graphs. Six direct
+mapping controls preserve the results and charged work. The optimized code
+is integrated at `942bb15f6`. Raw counters and allocation profiles are
+under `obj/parallel/trait-first-map/` in the performance checkout.
+
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
 positions and 16,384 invocations the median was 1,117.90 ms before and 67.79 ms
