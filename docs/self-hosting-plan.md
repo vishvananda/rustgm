@@ -230,6 +230,17 @@ The unchanged M3 `println` consumer still reaches
 `selected Source start requires checked startup instance lowering` with the
 caller-location repair. Its receipt is under
 `tracked-item-invoke/std-consumer-println/` in the frontier checkout.
+The startup successor prepares the actual generic callable template, proves
+the main result's `Termination` and declared startup bounds, and queues that
+specialization with the ordinary executable demand roots. Its C entry passes
+the reified Rust main, sign-extended argument count, original argument vector,
+and the pinned default SIGPIPE byte. It truncates the returned status to
+`i32`. Both exact startup tests pass. Through CPPGM's object bridge the
+authored Source control receives three arguments and exits with status 23,
+matching pinned rustc. Both compilers reject the control with its
+`Termination` implementation removed. Startup artifact transport retains its
+existing fence. ABI observations and the native receipts are under
+`obj/parallel/checked-source-start/` in the frontier checkout.
 
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
