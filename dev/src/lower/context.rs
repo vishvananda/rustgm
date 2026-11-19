@@ -208,14 +208,12 @@ fn run(
                 })?;
         }
     }
-    let mut layouts = std::mem::take(&mut facts.layouts);
-    let result = Context::build(
-        facts,
-        &mut layouts,
-        (bodies, destruction, plans, forwarding),
-        roots,
-    );
-    facts.layouts = layouts;
+    let result = prepare_runtime_entries(facts, bodies.as_slice(), forwarding).and_then(|()| {
+        let mut layouts = std::mem::take(&mut facts.layouts);
+        let result = Context::build(facts, &mut layouts, (bodies, destruction, plans), roots);
+        facts.layouts = layouts;
+        result
+    });
     facts.settle_demand();
     let (program, steps) = result?;
     // Demanded bodies' emission work joins the demand traversal's.
@@ -265,8 +263,8 @@ impl Representation {
         }
     }
 }
-fn require_runtime_entries(
-    facts: &Declarations,
+fn prepare_runtime_entries(
+    facts: &mut Declarations,
     bodies: &[crate::body::ir::Body],
     forwarding: Option<&crate::borrow::incremental::Forwarding>,
 ) -> Result<(), Error> {
@@ -275,6 +273,12 @@ fn require_runtime_entries(
             node: Some(body.source.root_site()),
             message,
         };
+        if matches!(body.owner, Owner::Closure { .. }) && body.instance.is_none() {
+            // The original body has an opened result. Its public callable
+            // keeps the source binder and can have different field identities.
+            crate::body::instantiate::prepare_signature(facts, body.owner).map_err(error)?;
+            continue;
+        }
         if let Owner::FutureEntry { key, .. } = body.owner {
             let Some(crate::borrow::incremental::Bridge::Factory(permit)) =
                 forwarding.and_then(|origins| origins.get(&index))
@@ -345,15 +349,13 @@ impl<'a> Context<'a> {
     fn build(
         facts: &'a Declarations,
         layouts: &'a mut Layouts,
-        (bodies, destruction, plans, forwarding): (
+        (bodies, destruction, plans): (
             Bodies<'a>,
             Option<&'a crate::borrow::destruction::Proof>,
             Option<Plans>,
-            Option<&crate::borrow::incremental::Forwarding>,
         ),
         roots: super::roots::Selected<'_>,
     ) -> Result<(Program, usize), Error> {
-        require_runtime_entries(facts, bodies.as_slice(), forwarding)?;
         let source = bodies
             .as_slice()
             .first()

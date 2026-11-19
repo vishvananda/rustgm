@@ -46,7 +46,7 @@ pub(super) fn finish_owner(
 /// The selected public callable keeps its own binder, distinct from the body's
 /// opened proof interface. Prepare its physical roots without substituting them
 /// again or treating field readiness as lifetime or callable evidence.
-pub(super) fn prepare_signature(
+pub(crate) fn prepare_signature(
     facts: &mut Declarations,
     owner: Owner,
 ) -> Result<(), &'static str> {
