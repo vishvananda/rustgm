@@ -53,6 +53,11 @@ const CASES: &[(&str, &str, bool)] = &[
         true,
     ),
     (
+        "associated-table",
+        "struct Hooks{invoke:fn(&u8)->&u8}struct Engine;impl Engine{const DEFAULT:&'static Hooks=&Hooks{invoke:|x|x};}static HOOKS:&Hooks=Engine::DEFAULT;fn main(){let x=9;check(*(HOOKS.invoke)(&x)==9);}",
+        true,
+    ),
+    (
         "promotion",
         "fn main(){let fs:&[fn(u8)->u8;2]=&[|x|x+1,|x|x+2];check(fs[0](7)==8);check(fs[1](7)==9);}",
         true,

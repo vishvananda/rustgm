@@ -1306,7 +1306,12 @@ pub(super) fn prepare_ordinary<C: Collect>(
 }
 
 fn checked_callable(facts: &Declarations, templates: &Checked<'_>, owner: DefId) -> bool {
-    if templates.get(ItemId(owner.0)).is_some() {
+    // A closed associated initializer has a template of its own while its
+    // nongeneric child closures still need ordinary executable bodies.
+    if templates
+        .get(ItemId(owner.0))
+        .is_some_and(|template| matches!(template.body.owner, Owner::Function { .. }))
+    {
         return true;
     }
     facts
