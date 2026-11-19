@@ -145,7 +145,7 @@ impl Search<'_> {
         }
         inputs.bridges = inputs.closing.exported_regions().len();
         self.query.allocations.record(end);
-        self.query.retain_scoped_exports(parent_scope, first..end)?;
+        self.query.retain_scoped_regions(parent_scope, first..end)?;
         Ok(())
     }
 }

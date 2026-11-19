@@ -54,15 +54,17 @@ impl Scopes {
 }
 
 impl Query {
-    pub(in crate::sema::traits::selection::search) fn retain_scoped_exports(
+    /// These regions belong to the selected scope's continuing inputs.
+    /// A single proof node need not own the allocation.
+    pub(in crate::sema::traits::selection::search) fn retain_scoped_regions(
         &mut self,
-        parent: ScopeId,
+        owner: ScopeId,
         regions: Range<u32>,
     ) -> Result<(), &'static str> {
-        if regions.is_empty() || parent == ScopeId::ROOT {
+        if regions.is_empty() || owner == ScopeId::ROOT {
             return Ok(());
         }
-        self.reserve(parent, regions.clone())?;
+        self.reserve(owner, regions.clone())?;
         let scope = self
             .scopes
             .as_mut()
@@ -70,11 +72,11 @@ impl Query {
         let reservation = scope
             .reservations
             .last_mut()
-            .ok_or("missing scoped witness reservation")?;
-        if reservation.scope != parent || reservation.regions != regions {
-            return Err("scoped witness reservation changed ownership");
+            .ok_or("missing retained scoped region reservation")?;
+        if reservation.scope != owner || reservation.regions != regions {
+            return Err("retained scoped region reservation changed ownership");
         }
-        reservation.exported = true;
+        reservation.retained_with_scope = true;
         Ok(())
     }
 }

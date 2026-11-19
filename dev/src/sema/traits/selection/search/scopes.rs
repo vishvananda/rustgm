@@ -26,7 +26,7 @@ struct Reservation {
     scope: ScopeId,
     regions: Range<u32>,
     alias: bool,
-    exported: bool,
+    retained_with_scope: bool,
     selected: bool,
 }
 #[derive(Default)]
@@ -391,7 +391,7 @@ impl Scopes {
             scope,
             regions,
             alias,
-            exported: false,
+            retained_with_scope: false,
             selected: false,
         });
         Ok(())
@@ -635,7 +635,7 @@ impl Scopes {
         }
         for reservation in self.reservations {
             if !(reservation.selected
-                || (reservation.alias || reservation.exported)
+                || (reservation.alias || reservation.retained_with_scope)
                     && self.universes[reservation.scope.0 as usize - 1].selected)
             {
                 continue;

@@ -47,6 +47,39 @@ const CASES: &[(&str, &str, bool)] = &[
         "trait A<'a>{type Out:A<'a>;}impl<'a>A<'a>for u8{type Out=u8;}type Value<'a,T>=<<T as A<'a>>::Out as A<'a>>::Out;fn f<'a,T:A<'a>>(x:Value<'a,T>)->Value<'a,T>{x}fn main(){check(f::<u8>(7)==7);}",
         true,
     ),
+    (
+        "inferred-trait-method-callback",
+        r"
+trait Step { type Item; fn next(&mut self) -> Option<Self::Item>; }
+struct Counter(u32);
+impl Step for Counter {
+    type Item = u32;
+    fn next(&mut self) -> Option<u32> {
+        self.0 += 1;
+        Some(self.0)
+    }
+}
+fn apply<T,U>(it: &mut T, f: impl FnOnce(&mut T) -> Option<U>) -> Option<U> { f(it) }
+fn run<T: Step>(it: &mut T) -> Option<T::Item> { apply(it, Step::next) }
+fn main() {
+    let mut counter = Counter(0);
+    let correct = match run(&mut counter) { Some(1) => true, _ => false };
+    check(correct && counter.0 == 1);
+}",
+        true,
+    ),
+    (
+        "static-callback-lacks-higher-ranked-input",
+        r"
+fn apply(f: impl FnOnce(&mut u32) -> u32) -> u32 {
+    let mut value = 1;
+    f(&mut value)
+}
+fn static_only(value: &'static mut u32) -> u32 { *value }
+fn main() { let _ = apply(static_only); }
+",
+        false,
+    ),
 ];
 
 #[test]

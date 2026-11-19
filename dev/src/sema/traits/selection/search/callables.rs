@@ -108,13 +108,18 @@ impl Search<'_> {
             first,
         )? {
             self.query.allocations.record(inputs.regions.end);
-            self.query.reserve(frame.scope, inputs.regions)?;
+            self.query
+                .retain_scoped_regions(frame.scope, inputs.regions)?;
             return Ok(true);
         }
         match callables::match_signature(facts, &mut frame.inputs.context, &frame.goal, first) {
             Ok(matched) => {
                 self.query.allocations.record(matched.regions.end);
-                self.query.reserve(frame.scope, matched.regions)?;
+                // Normalization continues with the refined inputs and their
+                // equations. Retain their witnesses in this same binder even
+                // when a later proof node opens its own callable signature.
+                self.query
+                    .retain_scoped_regions(frame.scope, matched.regions)?;
             }
             Err(
                 infer::Error::Unresolved
