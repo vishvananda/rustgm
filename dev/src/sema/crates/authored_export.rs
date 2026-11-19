@@ -946,6 +946,7 @@ fn scope_owners(
     }
     if stage.declaration_policies() {
         stage.require_contextual_bindings(report, facts, &mut owners)?;
+        authored_traits::require_role_transport(facts, true, true, true)?;
     }
     Ok(owners)
 }
@@ -1107,15 +1108,17 @@ fn require_export_mode(
         .as_deref()
         .ok_or("source export has no actual role catalog")?
         .require_provider_report(report)?;
-    authored_traits::require_role_transport(
-        facts,
-        matches!(
-            mode,
-            ExportMode::Conversions | ExportMode::Nominals | ExportMode::CompilerOperations
-        ),
-        mode == ExportMode::CompilerOperations,
-        languages,
-    )?;
+    if !languages || mode != ExportMode::CompilerOperations {
+        authored_traits::require_role_transport(
+            facts,
+            matches!(
+                mode,
+                ExportMode::Conversions | ExportMode::Nominals | ExportMode::CompilerOperations
+            ),
+            mode == ExportMode::CompilerOperations,
+            languages,
+        )?;
+    }
     Ok(())
 }
 

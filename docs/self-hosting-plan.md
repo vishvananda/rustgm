@@ -707,12 +707,24 @@ The focused regression rejects a direct call to the private helper through
 the module namespace. It also checks byte-exact metadata round-trip and the
 older provenance gates. Four focused cases and strict Clippy pass.
 
-The optimized `036ba5ddd` replay clears name provenance on the same 309
-`core` inputs and reaches `source type reflection contract transport is not
-implemented` after 28.14 seconds. It records zero bring-up rows and emits no
-artifacts. The actual declarations are `TypeId` in `core/src/any.rs:723` and
-`Type` in `core/src/mem/type_info.rs:13`. The receipt is under
-`obj/parallel/strict-core/private-helpers/` in the frontier checkout.
+The optimized `036ba5ddd` replay reaches `source type reflection contract
+transport is not implemented` after 28.14 seconds on the same 309 `core`
+inputs. This revision checks reflection before contextual names, so the
+replay leaves the full contextual binding check pending. It records zero
+bring-up rows and emits no artifacts. The actual declarations are `TypeId`
+in `core/src/any.rs:723` and `Type` in `core/src/mem/type_info.rs:13`. The
+receipt is under `obj/parallel/strict-core/private-helpers/` in the frontier
+checkout.
+
+Version fourteen carries the actual reflection struct declarations and
+revalidates their imported nominal kinds. A fresh native client reads the
+nonexhaustive description and observes the identity's two pointer words.
+A separate client exercises generic and lifetime-parameterized declarations.
+Both native observers return `42`. Three malformed source roles and three
+accepted providers match the pinned Rust outcomes. The v13 producer gate is
+preserved. In each profile, the unmarked provider emits identical metadata
+and LowIR on both compiler revisions. Reflection intrinsics still require
+their own operation and provenance proofs. The receipts are under `obj/parallel/v14-reflection-declarations/`.
 
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
@@ -1336,6 +1348,18 @@ the disposable observer CLI. The joined development compiler reproduces all
 ten frozen output and diagnostic checks. The private harness reached its
 deadline before executing the selected inventory. Evidence is under
 `obj/parallel/lint-owner-witness/` in the performance checkout.
+
+Completing trait search frames in their stack slots removes six compiled
+completion copy sites. The original `core` and `unicode-ident` bring-up graph
+retires 0.803% fewer instructions, 0.900% fewer load operations and 1.233%
+fewer store operations in the paired run. All six observations and both
+native executables match. Wall time and cycles stay inside A/A variation.
+Nineteen optimized outcomes and 98 ordered selected proof graphs match,
+including the original trial, frame and replay counts. All nineteen outputs
+also match after integration with version fourteen transport. Both source controls
+retire 1.37–1.39% fewer instructions. The private harness reaches its build
+deadline before running cases. Evidence is under
+`obj/parallel/trait-frame-import/` in the performance checkout.
 
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
