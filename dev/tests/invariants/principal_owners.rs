@@ -54,7 +54,15 @@ fn local_principal_cannot_be_replaced_by_a_nominal_or_missing_source_owner() -> 
         .associated
         .owners()
         .iter()
-        .find(|owner| matches!(owner.kind, OwnerKind::Impl { trait_type: None, .. }))
+        .find(|owner| {
+            matches!(
+                owner.kind,
+                OwnerKind::Impl {
+                    trait_type: None,
+                    ..
+                }
+            )
+        })
         .ok_or("actual inherent impl")?;
     let implementation = owner.self_definition;
     let source = owner.source.ok_or("actual inherent impl source")?;
