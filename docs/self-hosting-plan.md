@@ -787,6 +787,17 @@ inspection view. The focused execution test instantiates the generic method
 and lowers a concrete mutation through its returned reference. Evidence is
 under `obj/parallel/m4-mirrored-variant/`.
 
+The optimized `104856e7e` compiler clears the enum signature error on the
+unchanged small-vector graph. It reports 12 body blockers in the three
+`tinyvec` modules and the consumer. They concern projection normalization,
+finding an unambiguous associated type implementation and comparison method
+selection. The consumer itself reaches a projection-normalization error.
+The run leaves the skip list empty and emits no artifact. The strict
+309-input `core` replay with the same compiler still reaches the division
+transport gate with zero bring-up records. Receipts are under
+`obj/parallel/m4-small-vectors-associated-path/` and
+`obj/parallel/strict-core/latest/`.
+
 Normalization and identifier
 consumers require independent guest feature scopes because the Cargo graph
 enables `std` for `unicode-normalization` and leaves it off for `tinyvec`.
