@@ -1,5 +1,7 @@
 //! Source-query budgets cover owned logical slots before registry or work growth.
-use super::{Definitions, HashSet, ItemId, NeedsDrop, Scope, State, Store, TypeId, catalogue};
+use super::{
+    Definitions, HashSet, ItemId, NeedsDrop, Scope, ScopeMode, State, Store, TypeId, catalogue,
+};
 use crate::support::retained;
 
 impl NeedsDrop {
@@ -14,7 +16,7 @@ impl NeedsDrop {
             .scope
             .as_deref_mut()
             .ok_or("missing scoped destruction query")?
-            .environment = Some(environment);
+            .mode = ScopeMode::Symbolic(environment);
         Ok(query)
     }
     /// Seed this fresh runtime-property cache only from completed scoped Copy decisions.
@@ -29,10 +31,7 @@ impl NeedsDrop {
             .scope
             .as_deref()
             .ok_or("Copy qualification requires its scoped query")?;
-        if scope
-            .environment
-            .as_ref()
-            .is_none_or(|actual| !std::sync::Arc::ptr_eq(actual, environment))
+        if !matches!(&scope.mode, ScopeMode::Symbolic(actual) if std::sync::Arc::ptr_eq(actual, environment))
             || !scope.states.is_empty()
             || !self.work.is_empty()
             || scope.builtins.is_some()
@@ -137,10 +136,13 @@ impl NeedsDrop {
         retained::sum([
             size_of::<Self>(),
             self.scope.as_ref().map_or(0, |_| size_of::<Scope>()),
-            self.scope
-                .as_ref()
-                .and_then(|s| s.binding.as_ref())
-                .map_or(0, |_| catalogue::Binding::allocation_bytes()),
+            self.scope.as_ref().map_or(0, |scope| {
+                if matches!(scope.mode, ScopeMode::Exact(Some(_))) {
+                    catalogue::Binding::allocation_bytes()
+                } else {
+                    0
+                }
+            }),
             size_of::<HashSet<ItemId>>(),
             self.custom.capacity().saturating_mul(size_of::<ItemId>()),
             states.saturating_mul(size_of::<(TypeId, State)>()),
@@ -171,7 +173,7 @@ impl NeedsDrop {
         let Some(scope) = &mut self.scope else {
             return Ok(None);
         };
-        let Some(environment) = &scope.environment else {
+        let ScopeMode::Symbolic(environment) = &scope.mode else {
             return Ok(None);
         };
         let steps = Cell::new(self.steps);

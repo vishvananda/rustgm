@@ -1,5 +1,5 @@
 //! Exact exposure queries bind stable arenas; legacy dense queries keep their contract.
-use super::{Definitions, HashSet, NeedsDrop, Scope, Store, TypeId};
+use super::{Definitions, HashSet, NeedsDrop, Scope, ScopeMode, Store, TypeId};
 use crate::{support::retained, types::arena::Identity};
 
 pub(super) struct Binding {
@@ -34,10 +34,10 @@ impl NeedsDrop {
             .scope
             .as_deref_mut()
             .ok_or("missing exact exposure scope")?;
-        scope.binding = Some(Box::new(Binding {
+        scope.mode = ScopeMode::Exact(Some(Box::new(Binding {
             types: types.arena_identity(),
             definitions: definitions.arena_identity(),
-        }));
+        })));
         Ok(query)
     }
     pub(crate) fn require_catalogue_environment(
@@ -45,7 +45,8 @@ impl NeedsDrop {
         types: &Store,
         definitions: &Definitions,
     ) -> Result<(), &'static str> {
-        if let Some(binding) = self.scope.as_ref().and_then(|s| s.binding.as_deref())
+        if let Some(ScopeMode::Exact(Some(binding))) =
+            self.scope.as_deref().map(|scope| &scope.mode)
             && (!types.has_identity(&binding.types)
                 || !definitions.has_identity(&binding.definitions))
         {
@@ -55,11 +56,9 @@ impl NeedsDrop {
     }
     /// Only the new bound exact mode reports owned query storage to the recipe budget.
     pub(crate) fn catalogue_bytes(&self) -> Result<Option<usize>, &'static str> {
-        match &self.scope {
-            None => Ok(None),
-            Some(scope) if scope.environment.is_none() && scope.binding.is_some() => {
-                Ok(Some(self.retained_bytes()))
-            }
+        match self.scope.as_deref().map(|scope| &scope.mode) {
+            None | Some(ScopeMode::Ordinary) => Ok(None),
+            Some(ScopeMode::Exact(Some(_))) => Ok(Some(self.retained_bytes())),
             Some(_) => Err("destruction catalog cannot consume an unbound or symbolic query"),
         }
     }

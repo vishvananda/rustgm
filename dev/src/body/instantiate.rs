@@ -182,7 +182,11 @@ pub fn with_contract(
     instance: Instance,
     original: &super::regions::Contract,
 ) -> Result<Materialized, &'static str> {
-    let mut cleanup = Cleanup::new(facts);
+    let mut cleanup = Cleanup {
+        needed: NeedsDrop::sparse_ordinary(
+            facts.destructors.implementations().iter().map(|i| i.item),
+        ),
+    };
     with_premises(
         facts,
         template,

@@ -31,12 +31,26 @@ enum State {
     Ready(bool),
     Failed(&'static str),
 }
+enum ScopeMode {
+    Ordinary,
+    Exact(Option<Box<catalogue::Binding>>),
+    Symbolic(Arc<Environment>),
+}
 struct Scope {
-    environment: Option<Arc<Environment>>,
+    mode: ScopeMode,
     builtins: Option<Box<BuiltinQuery>>,
     builtin_bytes: usize,
-    binding: Option<Box<catalogue::Binding>>,
     states: HashMap<TypeId, State>,
+}
+impl Scope {
+    fn new(mode: ScopeMode) -> Self {
+        Self {
+            mode,
+            builtins: None,
+            builtin_bytes: 0,
+            states: HashMap::default(),
+        }
+    }
 }
 /// One canonical store, completed nominal definitions and immutable custom Drop set.
 /// A symbolic query additionally owns one fixed parameter environment. `true`
@@ -63,13 +77,14 @@ impl NeedsDrop {
     #[allow(dead_code)] // The source needs_drop consumer awaits validated source roles.
     pub(crate) fn concrete_sparse(custom: impl IntoIterator<Item = ItemId>) -> Self {
         let mut query = Self::new(custom);
-        query.scope = Some(Box::new(Scope {
-            environment: None,
-            builtins: None,
-            builtin_bytes: 0,
-            binding: None,
-            states: HashMap::default(),
-        }));
+        query.scope = Some(Box::new(Scope::new(ScopeMode::Exact(None))));
+        query
+    }
+    /// A fresh ordinary query stores only types reached by its body. Ordinary
+    /// Copy promises and opaque heads keep the same law as the dense query.
+    pub(crate) fn sparse_ordinary(custom: impl IntoIterator<Item = ItemId>) -> Self {
+        let mut query = Self::new(custom);
+        query.scope = Some(Box::new(Scope::new(ScopeMode::Ordinary)));
         query
     }
     /// Copy assumptions prove absence of destruction. Unconstrained parameters
@@ -85,13 +100,7 @@ impl NeedsDrop {
     #[must_use]
     pub fn scoped(&self, environment: Arc<Environment>) -> Self {
         Self {
-            scope: Some(Box::new(Scope {
-                environment: Some(environment),
-                builtins: None,
-                builtin_bytes: 0,
-                binding: None,
-                states: HashMap::default(),
-            })),
+            scope: Some(Box::new(Scope::new(ScopeMode::Symbolic(environment)))),
             custom: Arc::clone(&self.custom),
             states: Vec::new(),
             work: Vec::new(),
@@ -167,12 +176,12 @@ impl NeedsDrop {
     fn symbolic(&self) -> bool {
         self.scope
             .as_ref()
-            .is_some_and(|scope| scope.environment.is_some())
+            .is_some_and(|scope| matches!(scope.mode, ScopeMode::Symbolic(_)))
     }
     fn exact_heads(&self) -> bool {
         self.scope
             .as_ref()
-            .is_some_and(|scope| scope.environment.is_none())
+            .is_some_and(|scope| matches!(scope.mode, ScopeMode::Exact(_)))
     }
     fn record<const BOUNDED: bool>(
         &mut self,
@@ -241,7 +250,7 @@ impl NeedsDrop {
         let copy = if BOUNDED {
             self.assumed_bounded(types, ty, limit)?
         } else if let Some(scope) = &mut self.scope
-            && let Some(environment) = &scope.environment
+            && let ScopeMode::Symbolic(environment) = &scope.mode
         {
             // An unobserved reuse cannot keep a prior bounded allocation claim.
             // Existing ordinary scopes retain their old zero-counter fast path.
@@ -256,11 +265,11 @@ impl NeedsDrop {
             if abilities.copy {
                 return Ok(Some(false));
             }
-            let environment = self
-                .scope
-                .as_ref()
-                .and_then(|s| s.environment.as_ref())
-                .ok_or("destruction assumption lost its actual scope")?;
+            let Some(ScopeMode::Symbolic(environment)) =
+                self.scope.as_deref().map(|scope| &scope.mode)
+            else {
+                return Err("destruction assumption lost its actual scope");
+            };
             if let Kind::Parameter(id) = kind {
                 return Ok(Some(
                     !environment

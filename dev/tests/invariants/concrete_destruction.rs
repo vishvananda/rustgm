@@ -29,7 +29,7 @@ fn concrete_destruction_storage_depends_on_reachable_graph_not_store() -> Result
                 assert!(!query.demand(&types, &Definitions::default(), ty)?);
                 assert!(query.states.is_empty());
                 let scope = query.scope.as_deref().ok_or("sparse states")?;
-                assert!(scope.environment.is_none());
+                assert!(matches!(scope.mode, ScopeMode::Exact(None)));
                 assert_eq!(scope.states.len(), depth + 1);
                 let measured = (query.steps, scope.states.len(), scope.states.capacity());
                 assert!(query.steps <= 4 * width * depth + 2);
@@ -43,6 +43,19 @@ fn concrete_destruction_storage_depends_on_reachable_graph_not_store() -> Result
                     assert!(!query.demand(&types, &Definitions::default(), ty)?);
                 }
                 assert_eq!(query.steps, steps);
+                let mut ordinary = NeedsDrop::sparse_ordinary([]);
+                assert!(!ordinary.demand(&types, &Definitions::default(), ty)?);
+                assert!(ordinary.states.is_empty());
+                assert_eq!(
+                    ordinary
+                        .scope
+                        .as_deref()
+                        .ok_or("ordinary states")?
+                        .states
+                        .len(),
+                    depth + 1
+                );
+                assert_eq!(ordinary.steps, steps);
             }
         }
     }
@@ -107,6 +120,7 @@ fn concrete_destruction_requires_projection_normalization_even_with_copy_schema(
     }))?;
     let definitions = Definitions::default();
     assert!(!NeedsDrop::new([]).demand(&types, &definitions, ty)?);
+    assert!(!NeedsDrop::sparse_ordinary([]).demand(&types, &definitions, ty)?);
     assert_eq!(
         NeedsDrop::concrete_sparse([]).demand(&types, &definitions, ty),
         Err("associated type destruction checking requires normalization")
