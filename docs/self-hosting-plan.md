@@ -383,8 +383,15 @@ effect on total retired instructions.
 
 Raw wall, CPU, RSS, counter and output receipts are in the frontier checkout
 under `obj/parallel/candidate-owner-sharing/measurement/{paired,paired-pmu}`.
-Measure the same pair on the frozen original core and Unicode graph before
-judging end-to-end value. The dedicated private test checks ordering,
+The same immutable pair ran on the frozen original core and `unicode-ident`
+graph, through LowIR. Two A/A runs took 32.01 and 30.80 seconds. The ABBA and
+BAAB blocks retired 0.522% and 0.524% fewer user instructions, respectively,
+with byte-identical LowIR, native-link manifests and diagnostics. Paired wall
+time moved by +4.17% and −2.42%. Peak RSS stayed near 915,700 KiB. Each run
+had zero skips, 46 unproven obligations and eight waivers. The raw receipt is
+under `obj/parallel/candidate-owner-sharing/measurement/whole-graph/`.
+
+The dedicated private test checks ordering,
 storage identity and warm work. Its first build found two missing packed-derive
 fixture initializers, which are corrected. The private harness build exceeded
 the five-minute development budget on the two subsequent attempts.
