@@ -529,9 +529,13 @@ frontier checkout.
 [Application facts](../dev/src/types/traits.rs) · [Argument folding](../dev/src/types/substitute/predicates.rs)
 
 1. **Index impl headers once.** Extract rigid constructors and their positions
-   once per published header. Prototype shared paths or ordered posting lists
-   for lookup and coherence. Preserve wildcard, pending, projection and opaque
-   candidates and deterministic order. The current lookup gathers and sorts a
+   once per published header. For a crowded receiver bucket, choose a nested
+   path that separates rigid headers. Store owner IDs by constructor at that
+   path, with one ordered fallback list for headers that give no rigid answer.
+   For a rigid query at that path, merge the matching and fallback lists in
+   their existing order. Track how often an unresolved query needs the whole
+   bucket. Evaluate this index in both lookup and coherence while preserving
+   wildcard, pending, projection and opaque candidates. The current lookup gathers and sorts a
    fresh owner list. In a fixed registry view, reuse immutable ordered slices
    or lazily merge a few slices when query filters differ. Candidate identities
    can be shared across distinct goals and caller environments. Cache the
@@ -546,17 +550,34 @@ frontier checkout.
    equations and rollback state. Vary the number of alternatives, the size of
    the shared input and the number of bindings each candidate changes. Count
    shared edges, trial-local nodes, imported bytes and peak retained bytes.
-   The search frame resolves a canonical goal for completed-proof lookup.
-   Candidate lookup resolves the inference predicate again. Count how often
-   the second resolution can consume the first result and how much it revisits.
-   Only share that result while the frame retains the same inputs. A projection
-   rewrite or new inference equations can change the candidate set.
+   The search frame now passes its resolved concrete, opaque-free predicate
+   from the completed-proof lookup into candidate indexing on the same startup
+   path. The handoff takes constant work in the width of the trait input.
+   Pending headers are still checked on the live goal. Normalized and resumed
+   paths resolve their actual inputs. Six focused tests pass, including caller
+   premises, projected headers, callable aliases and negative implementations.
+   Frozen controls run on immutable optimized binaries with eight A/A
+   observations and six ABBA or BAAB blocks each. With 32 distinct requesting
+   goals, 8, 64 and 256 trait arguments retire 0.50%, 1.42% and 2.48% fewer user
+   instructions, respectively. The ordinary control retires 0.09% fewer. The
+   LowIR bytes match in all observations. On the frozen original core and
+   `unicode-ident` graph the ABBA and BAAB blocks retire 0.765% and 0.759%
+   fewer instructions. Paired wall time moves by −2.10% and −9.79%, with A/A
+   observations of 51.51 and 66.49 seconds. All ten runs agree byte for byte on
+   LowIR, native-link manifests and diagnostics. Each reports 46 unproven
+   obligations, eight waivers and zero skips in the shared bring-up profile.
+   Raw observations are under
+   `obj/parallel/trait-resolved-inputs/{paired-pmu,whole-graph}/` in the
+   frontier checkout.
+
    Measure the same header across different requesting goals. The declared
    effect-qualified conditions, the predicate's parameter uses and the
    decisions about vacuous binders can be derived once per validated owner and
    effect. Keep the resulting ordered clauses as canonical IDs and record which
-   roots need trial-local type, const or lifetime substitutions. Test whether a
-   trial can copy only those bindings while retaining the other roots by ID.
+   roots need trial-local type, const or lifetime substitutions. A canonical
+   clause lowered out of an empty binder can also be shared across owners at
+   the same effect. Test whether a trial can copy only the bindings it changes
+   while retaining unaffected roots by ID.
    The fresh captures, local type variables and proof evidence still belong to
    the trial. Count distinct prepared owners and effects, unique clause and
    application IDs, dependent roots and replayed edges. Hold trial count and
