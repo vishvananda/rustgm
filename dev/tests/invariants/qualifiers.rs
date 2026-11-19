@@ -52,7 +52,11 @@ fn qualifiers_survive_inference_substitution_and_shape_keys() -> TestResult {
         let mut context = Context::default();
         let mut substitution = Instantiation::new(&mut context, &store, &[])?;
         let goal = context.instantiate_predicate(&mut store, canonical, &mut substitution)?;
+        assert!(matches!(goal.requirement, Requirement::EmptyTrait { .. }));
         let mapped = goal.map_arguments(Ok)?;
+        let mapped = mapped.map_inputs(Ok)?;
+        assert!(matches!(mapped.requirement, Requirement::EmptyTrait { .. }));
+        assert_eq!(mapped.trait_arguments(), Some((ItemId(1), &[][..])));
         assert_eq!(mapped.constness(), Some(constness));
         assert_eq!(context.resolved_predicate(&mut store, &mapped)?, canonical);
         let mut fold = substitute::Bound::parameters(&store, &[])?;

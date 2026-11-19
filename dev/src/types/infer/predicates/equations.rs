@@ -91,28 +91,28 @@ impl Context {
             }
             return self.relate_predicate_types(store, left.subject, right.subject, relation);
         }
-        let (Requirement::Trait(a), Requirement::Trait(b)) =
-            (&left.requirement, &right.requirement)
+        let (Some((left_item, left_effect, actual)), Some((right_item, right_effect, expected))) =
+            (left.trait_parts(), right.trait_parts())
         else {
             return Err(Error::InvalidIdentity);
         };
-        if a.item != b.item
-            || a.arguments.len() != b.arguments.len()
-            || (matches!(relation, Relation::Scoped) && a.constness != b.constness)
+        if left_item != right_item
+            || actual.len() != expected.len()
+            || (matches!(relation, Relation::Scoped) && left_effect != right_effect)
         {
             return Err(Error::Mismatch);
         }
-        self.account_work(1 + a.arguments.len())?;
+        self.account_work(1 + actual.len())?;
         if matches!(relation, Relation::Scoped) {
             let inputs: Vec<_> =
                 std::iter::once((Argument::Type(left.subject), Argument::Type(right.subject)))
-                    .chain(a.arguments.iter().copied().zip(b.arguments.iter().copied()))
+                    .chain(actual.iter().copied().zip(expected.iter().copied()))
                     .collect();
             return self.equate_input_pairs(store, &inputs);
         }
         // A successful root pair remains equal under compatible later equations.
         // Share evidence only within this relation and its enclosing binder scope.
-        let mut proved = (a.arguments.len() > 1).then(HashSet::default);
+        let mut proved = (actual.len() > 1).then(HashSet::default);
         let mut relate = |context: &mut Self, left, right| {
             if let Some(proved) = &mut proved {
                 let pair = (context.root(left)?, context.root(right)?);
@@ -123,7 +123,7 @@ impl Context {
             context.relate_predicate_types(store, left, right, relation)
         };
         relate(self, left.subject, right.subject)?;
-        for (&a, &b) in a.arguments.iter().zip(&b.arguments) {
+        for (&a, &b) in actual.iter().zip(expected) {
             match (a, b) {
                 (Argument::Type(a), Argument::Type(b)) => {
                     relate(self, a, b)?;
@@ -223,23 +223,23 @@ impl Context {
         ambient: &[u32],
         premise: Option<&mut super::normal_premises::Premise>,
     ) -> Result<(), Error> {
-        let Requirement::Trait(trait_) = &predicate.requirement else {
+        let Some((item, effect, arguments)) = predicate.trait_parts() else {
             return Err(Error::Mismatch);
         };
         let Some((id, constness)) = assumption.bound.trait_parts() else {
             return Err(Error::Mismatch);
         };
-        if !constness.proves(trait_.constness) {
+        if !constness.proves(effect) {
             return Err(Error::Mismatch);
         }
         let application = store.trait_application(id).ok_or(Error::InvalidIdentity)?;
-        if application.item != trait_.item {
+        if application.item != item {
             return Err(Error::Mismatch);
         }
         self.equate_canonical_inputs(
             store,
             Some((predicate.subject, assumption.ty)),
-            &trait_.arguments,
+            arguments,
             application.arguments,
             ambient,
             premise,

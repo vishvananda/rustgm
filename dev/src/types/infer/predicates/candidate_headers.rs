@@ -1,5 +1,5 @@
 //! An implementation header cannot equal a goal's rigid normal form with another head.
-use super::{Context, Error, Predicate, Requirement, Store, TermId};
+use super::{Context, Error, Predicate, Store, TermId};
 use crate::types::{
     infer::{Constructor, Value, arguments::Argument, scoped::Blocked},
     parameters::predicates::Bound,
@@ -161,15 +161,19 @@ fn header_inputs<'a>(
     right: &'a Predicate,
     effects: bool,
 ) -> Result<impl Iterator<Item = (Argument, Argument)> + 'a, Error> {
-    let (actual, pattern) = match (&left.requirement, &right.requirement) {
-        (Requirement::Trait(a), Requirement::Trait(b))
-            if a.item == b.item
-                && a.arguments.len() == b.arguments.len()
-                && (!effects || a.constness == b.constness) =>
+    let (actual, pattern) = match (left.trait_parts(), right.trait_parts()) {
+        (Some((left_item, left_effect, actual)), Some((right_item, right_effect, pattern)))
+            if left_item == right_item
+                && actual.len() == pattern.len()
+                && (!effects || left_effect == right_effect) =>
         {
-            (a.arguments.as_slice(), b.arguments.as_slice())
+            (actual, pattern)
         }
-        (Requirement::Builtin(Bound::Auto(a)), Requirement::Builtin(Bound::Auto(b))) if a == b => {
+        _ if matches!(
+            (left.builtin_bound(), right.builtin_bound()),
+            (Some(Bound::Auto(a)), Some(Bound::Auto(b))) if a == b
+        ) =>
+        {
             (&[][..], &[][..])
         }
         _ => return Err(Error::Mismatch),
