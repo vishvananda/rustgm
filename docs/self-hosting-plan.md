@@ -297,6 +297,13 @@ first-variant zero tag is a direct read. The CTFE route retains its
 existing conservative behavior. The optimized callback and enum controls,
 and the original `println` replay, use the same candidate build under
 `obj/parallel/std-startup-successor/` in the frontier checkout.
+The four native enum controls agree with pinned rustc. Both zero-valid
+inputs return successfully, and the nonzero tag and bare function pointer
+terminate with SIGABRT. The focused callback harness used an unavailable
+comparison declaration. The frozen original `println` replay fails earlier,
+in lowering the specialized `catch_unwind` at `std/src/panicking.rs:544`:
+the candidate rejects its checked callback and data signature. The startup
+candidate remains unintegrated.
 
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
@@ -457,7 +464,7 @@ is under `obj/parallel/strict-core/const-closure-environment/` in the performanc
 checkout. [Policy transport guard](../dev/src/sema/header_attributes/definition_policy.rs#L389) ·
 [Local policy and cross-crate controls](pa31-fundamental-policy-checkpoint.md)
 
-The v14 declaration-policy candidate carries the two trait policy bits and a
+The v14 declaration-policy transport carries the two trait policy bits and a
 reserved bit in the nominal header for fundamental structs. The consumer binds
 those facts once to the validated declaration in its existing imported header
 ledger. The older formats retain their source publication guard. Six pinned
@@ -468,9 +475,11 @@ The optimized provider emits v14 metadata. Fresh consumers accept closed trait
 disjointness, reject overlap for the ordinary trait, reject the ordinary
 foreign wrapper, and reject the forced trait object. The marked-wrapper client
 reaches traversal but lacks a completed local source producer for scratch
-accounting. Its successor charges the existing local input-graph budget.
-The ordinary trait object passes formation and later fails the consumer's
-scalar export profile, so the focused successor checks a private declaration.
+accounting in the first candidate. The integrated version charges the
+existing local input-graph budget. The provider's metadata matches the first
+candidate byte for byte, and all six fresh consumers match their declared
+outcomes. Both trait-object cases use private declarations to isolate
+formation from scalar signature export.
 Receipts are under `obj/parallel/v14-definition-policy-rustc/`,
 `obj/parallel/v14-definition-policy-successor/`, and
 `obj/parallel/v14-definition-policy-repaired/` in the performance checkout.
@@ -842,6 +851,15 @@ frontier checkout.
    plus indexed changed slots with interned blocks that can be compared by ID.
    Use both common-prefix and scattered changes. Include short applications
    so extra metadata and indirection are charged on ordinary inputs.
+   Reuse the canonical application at construction and trial import so the
+   fast path does not reconstruct a full slice just to recover its identity.
+   After one pass to prepare a width-`W` base, target constant work for an
+   unchanged application and work proportional to the number `K` of changed
+   slots for related applications with the same base. For independently
+   formed bases, an interned tree of fixed-size blocks can skip equal
+   subtrees, with up to `O(K log W)` visited nodes for sparse differences
+   when the two trees have the same shape. Keep a flat representation for
+   short lists and compare cold interning, warm relations and retained bytes.
    [Local term allocation](../dev/src/types/infer.rs#L258) ·
    [Argument relations](../dev/src/types/infer/predicates/equations.rs#L79)
 3. **Reuse proof structure where the inputs permit it.** Measure repeated
@@ -876,6 +894,11 @@ frontier checkout.
    keys and 32 cold lookups. The memo records the same 30 hits in both premise
    variants. The fixed-size pairs expose repeated child search behind different
    parents even when a whole-goal cache sees distinct requests.
+   Each of the 160 neutral trials receives a one-owner candidate list and
+   allocates one local input term, despite importing zero inference edges.
+   The shared variant has 124 repeated fingerprint visits. This is an upper
+   bound on exact-fingerprint reuse in this control. The safe share depends
+   on complete eligibility and evidence at each visit.
    Prototype reuse at the child frame. Measure registry and effective caller
    dependencies from the whole search, including alternatives and refutations.
    In the repeated family the target is one child search per compatible context
@@ -894,9 +917,19 @@ frontier checkout.
    selective dependence on non-neutral caller premises. This first prototype
    can expose the gain from placement of the memo without first implementing
    a caller premise dependency index.
+   Preserve selected proof structure where a consumer reads it. For
+   example, the Deref projection path collects implementation evidence from
+   child nodes. Reusing only its root source would lose those descendants.
+   Use a shared proof reference or decline reuse for that consumer. For
+   later reuse across different premises, track which premise buckets the
+   search consulted, including empty buckets that affected candidate
+   eligibility. Validate their identities with the existing premise index.
+   Keep scope- and witness-dependent proofs on the original path until
+   replay can restore their local bindings.
    [Child completion](../dev/src/sema/traits/selection/search/continuation.rs#L337) ·
    [Canonical body proof map](../dev/src/sema/bodies/trait_goals/canonical.rs#L171) ·
-   [Inferred body memo](../dev/src/sema/bodies/trait_goals/inference.rs#L515)
+   [Inferred body memo](../dev/src/sema/bodies/trait_goals/inference.rs#L515) ·
+   [Deref proof consumer](../dev/src/sema/traits/selection/search/chain.rs#L17)
 
 For each prototype, hold source size and request count fixed while varying the
 fraction of shared keys, subterms or premises. Separately grow the amount of
