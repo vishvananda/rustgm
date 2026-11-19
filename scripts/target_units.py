@@ -51,6 +51,20 @@ LINT_POLICY = {
 STATUS_KINDS = {1: 'compile', 2: 'usage'}
 DIAGNOSTIC_BYTES = 4096
 MAX_STDERR_BYTES = 16 * 1024 * 1024
+BRINGUP_OPTIONS = {'--bringup-skip-list', '--bringup-guest'}
+BRINGUP_RECORDS = (b'bringup-blocker\t', b'bringup-unattributed\t',
+                   b'bringup-unproven\t', b'bringup-waived\t')
+
+
+def bringup_record(path):
+    """Read compiler records across the whole stderr without retaining oversized lines."""
+    with path.open('rb') as stream:
+        while part := stream.readline(DIAGNOSTIC_BYTES):
+            if part.startswith(BRINGUP_RECORDS):
+                return part.rstrip(b'\r\n').decode('utf-8', 'replace')
+            while part and not part.endswith(b'\n'):
+                part = stream.readline(DIAGNOSTIC_BYTES)
+    return None
 
 
 @dataclass(frozen=True)
@@ -323,7 +337,8 @@ class Run:
     def __init__(self, steps, rustgm, rustgm_sha256, folder, graph):
         self.steps, self.rustgm, self.rustgm_sha256, self.folder = steps, Path(rustgm), rustgm_sha256, folder
         self.implementation = {name: digest(Path(__file__).with_name(name)) for name in IMPLEMENTATION}
-        self.receipt = {'state': 'running', 'analysis': 'RustGM target units; no Cargo or rustc target compile',
+        self.receipt = {'state': 'running', 'profile': 'strict',
+                        'analysis': 'RustGM target units; no Cargo or rustc target compile',
                         'graph': graph, 'rustgm': {'path': str(rustgm), 'sha256': rustgm_sha256},
                         'implementation_sha256': self.implementation, 'lint_policy': LINT_POLICY,
                         'steps': [asdict(step) for step in steps], 'completed': [], 'failure': None,
@@ -362,15 +377,16 @@ class Run:
                              step.timeout_seconds)
         except subprocess.TimeoutExpired:
             status = None
+        record = bringup_record(unit_folder / 'compile.stderr') if status == 0 else None
         outputs = {}
         for name, path in step.outputs:
             path = Path(path)
-            if status == 0 and path.is_file() and not path.is_symlink() and path.stat().st_size:
+            if status == 0 and record is None and path.is_file() and not path.is_symlink() and path.stat().st_size:
                 outputs[name] = {'path': str(path), 'sha256': digest(path), 'bytes': path.stat().st_size}
             elif path.exists():
                 # A failed or incomplete output is never consumed or published.
                 path.rename(path.with_name(path.name + '.rejected'))
-        return status, outputs
+        return status, outputs, record
 
     def execute(self, packages):
         started = time.monotonic()
@@ -381,13 +397,20 @@ class Run:
                 if step.gaps:
                     self.fail(step, 'unsupported', [asdict(gap) for gap in step.gaps])
                     break
-                status, outputs = self.compile(step)
+                options = sorted({arg.partition('=')[0] for arg in step.arguments} & BRINGUP_OPTIONS)
+                if options:
+                    self.fail(step, 'bringup', {'options': options})
+                    break
+                status, outputs, record = self.compile(step)
                 if status is None:
                     self.fail(step, 'timeout', {'timeout_seconds': step.timeout_seconds})
                     break
                 if status != 0:
                     self.fail(step, STATUS_KINDS.get(status, 'abnormal'),
                               {'status': status, 'diagnostic': self.diagnostic(step)})
+                    break
+                if record is not None:
+                    self.fail(step, 'bringup', {'record': record})
                     break
                 if set(outputs) != {name for name, _ in step.outputs}:
                     self.fail(step, 'output', {'missing': sorted({n for n, _ in step.outputs} - set(outputs))})
@@ -402,6 +425,8 @@ class Run:
                     digest(Path(__file__).with_name(name)) != sha for name, sha in self.implementation.items()):
                 raise ValueError('RustGM or executor implementation changed during execution')
             self.receipt['state'] = 'failed' if self.receipt['failure'] else 'complete'
+            if self.receipt['state'] == 'complete':
+                self.receipt['bringup_records'] = 0
         except (OSError, ValueError, subprocess.TimeoutExpired) as error:
             self.receipt.update(state='infrastructure failure', error=str(error))
         finally:
@@ -412,6 +437,8 @@ class Run:
 
 def execute(steps, packages, rustgm, rustgm_sha256, folder, graph):
     """Run planned steps in order; a receipt is complete only if every unit built."""
+    if not steps:
+        raise ValueError('strict target build requires at least one unit')
     folder = Path(folder).absolute()
     if folder.exists() or folder.is_symlink():
         raise ValueError('target unit output already exists')

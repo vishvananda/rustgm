@@ -352,6 +352,9 @@ if name in {fail!r}:
     sys.exit(1)
 if value('--metadata-output') and name not in {nometa!r}:
     Path(value('--metadata-output')).write_text('meta ' + name)
+if name in {bringup!r}:
+    print('warning: ' + 'x' * 8192, file=sys.stderr)
+    print('bringup-unproven\\tfile.rs\\t7\\t' + name + '\\tunproved', file=sys.stderr)
 """
 
 
@@ -364,10 +367,10 @@ class Execution(unittest.TestCase):
     def tearDown(self):
         self.temp.cleanup()
 
-    def fake(self, fail=(), nometa=(), slow=(), usage=()):
+    def fake(self, fail=(), nometa=(), slow=(), usage=(), bringup=()):
         path = self.root / 'rustgm'
         path.write_text(FAKE.format(python=sys.executable, log=str(self.log), fail=set(fail), nometa=set(nometa),
-                                    slow=set(slow), usage=set(usage)))
+                                    slow=set(slow), usage=set(usage), bringup=set(bringup)))
         path.chmod(path.stat().st_mode | stat.S_IXUSR)
         return path, hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -386,6 +389,7 @@ class Execution(unittest.TestCase):
         rustgm, sha = self.fake()
         receipt = execute(steps, packages, rustgm, sha, folder, {'root': 'authored'})
         self.assertEqual(receipt['state'], 'complete')
+        self.assertEqual((receipt['profile'], receipt['bringup_records']), ('strict', 0))
         self.assertEqual([row['crate'] for row in receipt['completed']], ['base', 'mid', 'app', 'other'])
         app = self.invocations()[2]
         self.assertEqual(app[app.index('--extern') + 1], f'mid={folder}/unit-1/mid.rgcrate')
@@ -463,6 +467,34 @@ class Execution(unittest.TestCase):
         receipt = execute(steps, authored([row('base')], [0])[1], rustgm, '0' * 64, other, {})
         self.assertEqual(receipt['state'], 'infrastructure failure')
         self.assertEqual(receipt['completed'], [])
+
+    def test_strict_build_rejects_one_bringup_record_from_a_successful_process(self):
+        steps, packages, folder = self.graph()
+        rustgm, sha = self.fake(bringup={'mid'})
+        receipt = execute(steps, packages, rustgm, sha, folder, {})
+        self.assertEqual(receipt['state'], 'failed')
+        self.assertEqual(receipt['failure'], {'unit': 1, 'crate': 'mid', 'kind': 'bringup', 'detail': {
+            'record': 'bringup-unproven\tfile.rs\t7\tmid\tunproved'}})
+        self.assertNotIn('bringup_records', receipt)
+        self.assertEqual([row['crate'] for row in receipt['completed']], ['base'])
+        self.assertEqual(receipt['blocked'], [{'unit': 3, 'crate': 'app', 'blocked_by': 1}])
+        self.assertEqual(len(self.invocations()), 2)
+        for output in ('mid.lowir', 'mid.rgcrate'):
+            self.assertFalse((folder / 'unit-1' / output).exists())
+            self.assertTrue((folder / 'unit-1' / (output + '.rejected')).is_file())
+
+    def test_strict_build_rejects_bringup_options_before_execution(self):
+        steps, packages, folder = self.graph()
+        base = replace(steps[0], arguments=(*steps[0].arguments, '--bringup-skip-list', '/empty'))
+        rustgm, sha = self.fake()
+        receipt = execute((base, *steps[1:]), packages, rustgm, sha, folder, {})
+        self.assertEqual(receipt['failure']['detail'], {'options': ['--bringup-skip-list']})
+        self.assertEqual(receipt['completed'], [])
+        self.assertEqual(self.invocations(), [])
+
+    def test_empty_target_graph_cannot_qualify(self):
+        with self.assertRaisesRegex(ValueError, 'at least one unit'):
+            execute((), {}, self.root / 'rustgm', '0' * 64, self.root / 'empty', {})
 
 
 if __name__ == '__main__':
