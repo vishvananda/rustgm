@@ -14,7 +14,9 @@ use crate::{
 };
 pub(super) use forwarders::Callables;
 
-pub(super) const HEADER_BYTES: u64 = 24;
+pub(super) const SIZE_OFFSET: u64 = 8;
+pub(super) const ALIGN_OFFSET: u64 = 16;
+pub(super) const HEADER_BYTES: u64 = ALIGN_OFFSET + 8;
 
 impl Context<'_> {
     pub(super) fn virtual_method(

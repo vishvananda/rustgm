@@ -6,6 +6,7 @@ use crate::{
         tails::{Alignment, Offset},
     },
     body::ir::Place,
+    lower::virtual_dispatch::ALIGN_OFFSET,
     lowir::{
         program::Value,
         vocabulary::{Binary, Convert, Predicate, Type, Unary},
@@ -67,7 +68,7 @@ impl Lower<'_, '_, '_> {
                 operand: table.operand,
                 align: 8,
             },
-            16,
+            ALIGN_OFFSET,
         )?;
         let value = self.builder.load(Type::I64, address.operand)?;
         let value = self.clamp_alignment(value, alignment)?;
