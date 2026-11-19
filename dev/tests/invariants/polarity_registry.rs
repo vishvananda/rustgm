@@ -40,6 +40,56 @@ fn header(
     })
 }
 
+fn open_argument_candidates(width: u32) -> Result<usize, Box<dyn std::error::Error>> {
+    use crate::types::{
+        GenericArgs,
+        infer::{Context, Instantiation},
+        parameters::{Parameter, ParameterKind},
+    };
+    let mut store = Store::default();
+    let mut registry = Implementations::default();
+    let parameter = store.intern_parameter(Parameter {
+        owner: ItemId(2),
+        index: 0,
+        kind: ParameterKind::Type { sized: true },
+    })?;
+    let parameter = Argument::Type(store.intern(Kind::Parameter(parameter))?);
+    let prefix = header(&mut store, 0, &[parameter, parameter])?;
+    registry.prepare(&mut store, ItemId(1), prefix)?;
+    for ordinal in 1..=width {
+        let tag = store.intern(Kind::Adt(ItemId(100 + ordinal), GenericArgs::EMPTY))?;
+        let header = header(&mut store, ordinal, &[Argument::Type(tag), parameter])?;
+        registry.prepare(&mut store, ItemId(1), header)?;
+    }
+    let suffix = header(&mut store, width + 1, &[parameter, parameter])?;
+    registry.prepare(&mut store, ItemId(1), suffix)?;
+    let tag = store.intern(Kind::Adt(ItemId(101), GenericArgs::EMPTY))?;
+    let word = Argument::Type(TypeId::primitive(Primitive::U8));
+    let goal = header(&mut store, width + 2, &[Argument::Type(tag), word])?.predicate;
+    let mut context = Context::default();
+    let mut substitution = Instantiation::new(&mut context, &store, &[])?;
+    let goal = context.instantiate_predicate(&mut store, goal, &mut substitution)?;
+    let before = context.steps;
+    assert_eq!(
+        registry.candidates(
+            &mut store,
+            &mut context,
+            &goal,
+            super::Availability::Declarations
+        )?,
+        Candidates::Ready(vec![DefId(10), DefId(11), DefId(width + 11)]),
+    );
+    Ok(context.steps - before)
+}
+
+#[test]
+fn unrelated_open_nominal_arguments_do_not_enter_candidate_trials()
+-> Result<(), Box<dyn std::error::Error>> {
+    let small = open_argument_candidates(8)?;
+    assert_eq!(open_argument_candidates(128)?, small);
+    Ok(())
+}
+
 #[test]
 fn unrelated_closed_arguments_do_not_create_overlap_probes()
 -> Result<(), Box<dyn std::error::Error>> {

@@ -1,6 +1,7 @@
 //! Prepared headers may discharge declaration obligations; bodies require completed impls.
 mod identity;
 mod member_contracts;
+mod open_arguments;
 mod registry_keys;
 #[path = "implementations/coherence_owner.rs"]
 mod specialization_access;
@@ -87,7 +88,7 @@ pub(in crate::sema) struct Implementations {
     owners: HashMap<DefId, usize>,
     traits: HashMap<Identity, Vec<usize>>,
     heads: HashMap<(Identity, Option<Head>), Vec<usize>>,
-    open: HashMap<(Identity, Option<Head>), Vec<usize>>,
+    open: HashMap<(Identity, Option<Head>), open_arguments::Bucket>,
     closed: HashMap<(Identity, ShapeKey), Vec<usize>>,
     pairs: Vec<(usize, usize)>,
     graph: Option<Box<crate::sema::specialization::Graph>>,
@@ -208,7 +209,7 @@ impl Implementations {
         let Some(subject) = subject else {
             return Ok(Candidates::Ready(Vec::new()));
         };
-        let shape = match context.resolved_predicate(store, goal) {
+        let (shape, argument) = match context.resolved_predicate(store, goal) {
             Ok(value)
                 if !value
                     .contains_parameters(store)
@@ -216,10 +217,11 @@ impl Implementations {
             {
                 let (shape, work) =
                     candidate_shape(store, value).map_err(|_| Error::InvalidIdentity)?;
-                context.account_work(work)?;
-                Some(shape)
+                let (argument, inspected) = open_arguments::nominal(store, value);
+                context.account_work(work.saturating_add(inspected))?;
+                (Some(shape), argument)
             }
-            Ok(_) | Err(Error::Unresolved) => None,
+            Ok(_) | Err(Error::Unresolved) => (None, None),
             Err(error) => return Err(error),
         };
         let mut result = Vec::new();
@@ -227,7 +229,7 @@ impl Implementations {
         if let Some(shape) = shape {
             self.append_candidates(
                 context,
-                self.closed.get(&(item, shape)),
+                self.closed.get(&(item, shape)).map_or(&[], Vec::as_slice),
                 availability,
                 purpose,
                 &mut result,
@@ -235,23 +237,32 @@ impl Implementations {
             )?;
         }
         for head in subject.heads() {
-            let bucket = if shape.is_some() {
-                self.open.get(&(item, Some(head)))
+            let buckets: [&[usize]; 2] = if shape.is_some() {
+                self.open
+                    .get(&(item, Some(head)))
+                    .map_or([&[]; 2], |bucket| bucket.candidates(argument))
             } else {
-                self.heads.get(&(item, Some(head)))
+                [
+                    self.heads
+                        .get(&(item, Some(head)))
+                        .map_or(&[], Vec::as_slice),
+                    &[],
+                ]
             };
-            self.append_candidates(
-                context,
-                bucket,
-                availability,
-                purpose,
-                &mut result,
-                &mut unvalidated,
-            )?;
+            for bucket in buckets {
+                self.append_candidates(
+                    context,
+                    bucket,
+                    availability,
+                    purpose,
+                    &mut result,
+                    &mut unvalidated,
+                )?;
+            }
         }
         self.append_candidates(
             context,
-            self.heads.get(&(item, None)),
+            self.heads.get(&(item, None)).map_or(&[], Vec::as_slice),
             availability,
             purpose,
             &mut result,
@@ -343,14 +354,14 @@ impl Implementations {
     fn append_candidates(
         &self,
         context: &mut crate::types::infer::Context,
-        bucket: Option<&Vec<usize>>,
+        bucket: &[usize],
         availability: Availability,
         purpose: Purpose,
         output: &mut Vec<DefId>,
         unvalidated: &mut Vec<DefId>,
     ) -> Result<(), crate::types::infer::Error> {
-        context.account_work(bucket.map_or(0, Vec::len))?;
-        for &index in bucket.into_iter().flatten() {
+        context.account_work(bucket.len())?;
+        for &index in bucket {
             let entry = &self.entries[index];
             if matches!(purpose, Purpose::Coherence(_)) && entry.status.negative() {
                 continue;
@@ -399,6 +410,7 @@ impl Implementations {
         item: Identity,
         head: Option<Head>,
         shape: Option<ShapeKey>,
+        argument: Option<ItemId>,
         pairs: usize,
     ) -> crate::support::retained::Growth {
         use crate::support::retained::Growth;
@@ -410,11 +422,23 @@ impl Implementations {
         ));
         growth.include(bucket_growth(&self.traits, &item));
         growth.include(bucket_growth(&self.heads, &(item, head)));
-        growth.include(if let Some(shape) = shape {
-            bucket_growth(&self.closed, &(item, shape))
+        if let Some(shape) = shape {
+            growth.include(bucket_growth(&self.closed, &(item, shape)));
         } else {
-            bucket_growth(&self.open, &(item, head))
-        });
+            let bucket = self.open.get(&(item, head));
+            growth.include(Growth::map::<
+                (Identity, Option<Head>),
+                open_arguments::Bucket,
+            >(
+                self.open.len(),
+                self.open.capacity(),
+                usize::from(bucket.is_none()),
+            ));
+            growth.include(bucket.map_or_else(
+                || open_arguments::Bucket::default().growth(argument),
+                |bucket| bucket.growth(argument),
+            ));
+        }
         growth.include(Growth::vector::<(usize, usize)>(
             self.pairs.len(),
             self.pairs.capacity(),
@@ -428,6 +452,7 @@ impl Implementations {
         item: Identity,
         head: Option<Head>,
         shape: Option<ShapeKey>,
+        argument: Option<ItemId>,
     ) -> usize {
         use crate::support::retained::{map, vector};
         vector(&self.entries)
@@ -442,18 +467,19 @@ impl Implementations {
             .saturating_add(if let Some(shape) = shape {
                 self.closed.get(&(item, shape)).map_or(0, vector)
             } else {
-                self.open.get(&(item, head)).map_or(0, vector)
+                self.open
+                    .get(&(item, head))
+                    .map_or(0, |bucket| bucket.allocation(argument))
             })
     }
 
-    fn prepare_with_observer<const CHARGED: bool>(
-        &mut self,
-        store: &mut Store,
+    /// Check that the registry may publish this header before deriving its indexes.
+    fn registration_head(
+        &self,
+        store: &Store,
         item: Identity,
-        value: Implementation,
-        status: Status,
-        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
-    ) -> Result<usize, &'static str> {
+        value: &Implementation,
+    ) -> Result<Option<Head>, &'static str> {
         if self.headers != Headers::Open
             && (!value.constants.is_empty()
                 || !self
@@ -466,7 +492,6 @@ impl Implementations {
         if self.owners.contains_key(&value.owner) {
             return Err("trait implementation was prepared twice");
         }
-        let index = self.entries.len();
         let kind = store
             .kind(value.predicate.ty)
             .ok_or("invalid implementation subject")?;
@@ -481,27 +506,49 @@ impl Implementations {
         if let Some(pending) = &self.pending {
             pending.validate(value.owner, item, head)?;
         }
+        Ok(head)
+    }
+
+    fn prepare_with_observer<const CHARGED: bool>(
+        &mut self,
+        store: &mut Store,
+        item: Identity,
+        value: Implementation,
+        status: Status,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<usize, &'static str> {
+        let head = self.registration_head(store, item, &value)?;
+        let index = self.entries.len();
         let (shape, shape_bytes) = registration_shape::<CHARGED>(store, value.predicate, charge)?;
-        let (first, second, third) = if let Some(shape) = shape {
-            (
+        let (argument, inspected) = if shape.is_none() && head.is_some() {
+            open_arguments::nominal(store, value.predicate)
+        } else {
+            (None, 0)
+        };
+        let [first, second, third] = if let Some(shape) = shape {
+            [
                 self.closed
                     .get(&(item, shape))
                     .map_or(&[][..], Vec::as_slice),
-                self.open.get(&(item, head)).map_or(&[][..], Vec::as_slice),
-                self.open.get(&(item, None)).map_or(&[][..], Vec::as_slice),
-            )
+                self.open
+                    .get(&(item, head))
+                    .map_or(&[][..], open_arguments::Bucket::all),
+                self.open
+                    .get(&(item, None))
+                    .map_or(&[][..], open_arguments::Bucket::all),
+            ]
         } else if head.is_none() {
-            (
+            [
                 self.traits.get(&item).map_or(&[][..], Vec::as_slice),
                 &[][..],
                 &[][..],
-            )
+            ]
         } else {
-            (
+            [
                 self.heads.get(&(item, head)).map_or(&[][..], Vec::as_slice),
                 self.heads.get(&(item, None)).map_or(&[][..], Vec::as_slice),
                 &[][..],
-            )
+            ]
         };
         let count = first
             .len()
@@ -511,12 +558,16 @@ impl Implementations {
             return Err("trait implementation overlap pair budget exceeded");
         }
         let previous = if CHARGED {
-            let growth = self.insertion_growth(item, head, shape, count);
+            let growth = self.insertion_growth(item, head, shape, argument, count);
             charge(
-                growth.work.saturating_add(count).saturating_add(1),
+                growth
+                    .work
+                    .saturating_add(count)
+                    .saturating_add(inspected)
+                    .saturating_add(1),
                 growth.bytes,
             )?;
-            self.insertion_allocation(item, head, shape)
+            self.insertion_allocation(item, head, shape, argument)
         } else {
             0
         };
@@ -533,7 +584,10 @@ impl Implementations {
         if let Some(shape) = shape {
             self.closed.entry((item, shape)).or_default().push(index);
         } else {
-            self.open.entry((item, head)).or_default().push(index);
+            self.open
+                .entry((item, head))
+                .or_default()
+                .push(index, argument);
         }
         if let Some(pending) = &mut self.pending {
             pending.complete(value.owner);
@@ -545,7 +599,7 @@ impl Implementations {
         });
         Ok(if CHARGED {
             shape_bytes.saturating_add(
-                self.insertion_allocation(item, head, shape)
+                self.insertion_allocation(item, head, shape, argument)
                     .saturating_sub(previous),
             )
         } else {
