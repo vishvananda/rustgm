@@ -16,6 +16,47 @@ fn build(
     let output = crate::lower::instances::build(&report, &mut facts, entry)?;
     Ok((facts, output))
 }
+
+#[test]
+fn vtable_erasure_preserves_nested_callable_lifetime_slots() -> Result<(), &'static str> {
+    use crate::types::{Kind, RegionId, Store, callable::Convention};
+
+    fn signature(types: &mut Store, inputs: &[TypeId]) -> Result<TypeId, &'static str> {
+        let parameters = types.intern_list(inputs)?;
+        types.intern(Kind::Function {
+            bound_regions: 1,
+            parameters,
+            result: TypeId::UNIT,
+            unsafe_: false,
+            convention: Convention::RUST,
+        })
+    }
+
+    let mut types = Store::default();
+    let mut reference = |region| {
+        types.intern(Kind::Reference {
+            mutable: false,
+            region,
+            referent: TypeId::UNIT,
+        })
+    };
+    let own = reference(RegionId::bound(0, 0)?)?;
+    let enclosing = reference(RegionId::bound(1, 0)?)?;
+    let free = reference(RegionId(1))?;
+    let static_ = reference(RegionId::STATIC)?;
+    let inner = signature(&mut types, &[own, enclosing, free])?;
+    let outer = signature(&mut types, &[inner])?;
+    let expected_inner = signature(&mut types, &[own, static_, static_])?;
+    let inner_under_outer = signature(&mut types, &[own, enclosing, static_])?;
+    let expected_outer = signature(&mut types, &[inner_under_outer])?;
+
+    let mut erase = Bound::vtable();
+    assert_eq!(erase.apply(&mut types, outer)?, expected_outer);
+    assert_eq!(erase.apply(&mut types, inner)?, expected_inner);
+    assert_eq!(erase.apply(&mut types, outer)?, expected_outer);
+    Ok(())
+}
+
 #[test]
 fn complete_callable_inputs_keep_distinct_slots() -> Result<(), Box<dyn std::error::Error>> {
     let source = "fn a(x:u8)->u8{x}fn b(x:u16)->u16{x}fn main(){let p:&dyn Fn(u8)->u8=&a;let q:&dyn Fn(u16)->u16=&b;let _=p(1);let _=q(2);}";

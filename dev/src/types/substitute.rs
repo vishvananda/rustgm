@@ -39,6 +39,7 @@ enum Action {
     Regions(Box<region_mapping::Mapping>),
     BodyScope(std::sync::Arc<super::relations::BodyAliases>),
     Shape { preserve_static: bool },
+    Vtable,
     Normalize,
 }
 
@@ -115,6 +116,14 @@ impl Bound {
         bound.action = Action::Shape {
             preserve_static: true,
         };
+        bound
+    }
+
+    /// Erase enclosing lifetime identities after proof. Locally bound slots
+    /// still describe the callable or object passed to closed dispatch.
+    pub(crate) fn vtable() -> Self {
+        let mut bound = Self::new(Vec::new());
+        bound.action = Action::Vtable;
         bound
     }
 
@@ -262,7 +271,7 @@ impl Bound {
                 && store.contains_late_callables(key.0) == Some(false)
         } else if matches!(
             self.action,
-            Action::Universals(_) | Action::Regions(_) | Action::BodyScope(_)
+            Action::Universals(_) | Action::Regions(_) | Action::BodyScope(_) | Action::Vtable
         ) {
             store.has_free_regions(key.0, key.1) == Some(false)
         } else {
@@ -446,6 +455,18 @@ impl Bound {
             charge(1, 0)?;
         }
         self.region_work(1)?;
+        if matches!(self.action, Action::Vtable) {
+            return Ok(
+                if region
+                    .bound_parts()
+                    .is_some_and(|(binder, _)| binder < depth)
+                {
+                    region
+                } else {
+                    RegionId::STATIC
+                },
+            );
+        }
         if region == RegionId::ERASED && !matches!(self.action, Action::Shape { .. }) {
             return Ok(region);
         }

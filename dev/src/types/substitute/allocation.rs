@@ -56,6 +56,7 @@ impl Bound {
                 | Action::Shift(_)
                 | Action::Lower(_)
                 | Action::Shape { .. }
+                | Action::Vtable
                 | Action::Normalize => {}
             }
         }

@@ -39,6 +39,13 @@ pub(crate) fn prepare_operator(
     let object = storage.erase.apply(&mut facts.types, object)?;
     let erased_receiver = storage.erase.apply(&mut facts.types, receiver)?;
     let erased = storage.erase.apply(&mut facts.types, signature)?;
+    let Some(Kind::Function { parameters, .. }) = facts.types.kind(erased) else {
+        return Err("object invocation lacks a selected signature".into());
+    };
+    // Slot lookup erases the invoked signature's outer binder. Nested
+    // callable types within its parameters retain their own binders.
+    let tuple = facts.types.intern(Kind::Tuple(parameters))?;
+    let tuple = storage.erase.apply(&mut facts.types, tuple)?;
     storage.charge(
         storage
             .erase
@@ -47,10 +54,6 @@ pub(crate) fn prepare_operator(
             .saturating_add(references as usize),
     )?;
     let shape = shapes::prepare(report, facts, object)?;
-    let Some(Kind::Function { parameters, .. }) = facts.types.kind(erased) else {
-        return Err("object invocation lacks a selected signature".into());
-    };
-    let tuple = facts.types.intern(Kind::Tuple(parameters))?;
     let arguments = facts.types.intern_arguments(&[Argument::Type(tuple)])?;
     // A source core declares its own call traits; both kinds register here.
     let declaration = facts
@@ -182,6 +185,7 @@ pub(super) fn target(facts: &mut Declarations, concrete: TypeId) -> Result<Calla
 
 fn prepend(types: &mut Store, receiver: TypeId, signature: TypeId) -> Result<TypeId, &'static str> {
     let Some(Kind::Function {
+        bound_regions,
         parameters,
         result,
         unsafe_: false,
@@ -199,7 +203,7 @@ fn prepend(types: &mut Store, receiver: TypeId, signature: TypeId) -> Result<Typ
     parameters.extend_from_slice(values);
     let parameters = types.intern_list(&parameters)?;
     types.intern(Kind::Function {
-        bound_regions: 0,
+        bound_regions,
         parameters,
         result,
         unsafe_: false,

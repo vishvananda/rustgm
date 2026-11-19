@@ -117,7 +117,7 @@ impl Default for Storage {
             pending: Vec::new(),
             pending_keys: crate::support::hash::HashSet::default(),
             fresh: Vec::new(),
-            erase: Bound::shape(),
+            erase: Bound::vtable(),
             compatibility: super::dyn_compat::Queries::default(),
             steps: 0,
         }
