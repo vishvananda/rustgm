@@ -191,6 +191,20 @@ impl Plans {
         {
             return Ok(Passing::Scalar(ty));
         }
+        if matches!(
+            (kind, layout.shape),
+            (Kind::Pointer { .. }, Shape::WidePointer)
+        ) {
+            // The data address and metadata occupy one SysV INTEGER eightbyte each.
+            return Ok(Passing::Object(Object {
+                bytes: layout.size,
+                align: layout.align,
+                classes: Classes::Eightbytes {
+                    first: Class::Integer,
+                    second: Some(Class::Integer),
+                },
+            }));
+        }
         if let Some(tag) = layouts.fieldless_enum_scalar(types, definitions, head)? {
             return Ok(Passing::Scalar(tag));
         }
@@ -219,6 +233,16 @@ impl Plans {
         {
             return Err("C aggregate ABI profile requires a nonempty aligned repr(C) struct");
         }
+        self.repr_c_struct(types, definitions, layouts, head, layout)
+    }
+    fn repr_c_struct(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        layouts: &mut Layouts,
+        head: TypeId,
+        layout: super::layout::Layout,
+    ) -> Result<Passing, &'static str> {
         let variant = *layouts
             .variants(&layout)
             .first()

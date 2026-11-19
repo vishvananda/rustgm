@@ -47,6 +47,48 @@ fn aggregate_profile_has_explicit_language_and_implementation_boundaries()
     }
     Ok(())
 }
+
+#[test]
+fn direct_wide_raw_pointer_calls_preserve_both_integer_words()
+-> Result<(), Box<dyn std::error::Error>> {
+    use rustgm::lowir::boundary::{Class, Classes, Type};
+
+    let source = r#"
+trait Payload {}
+unsafe extern "C" { fn imported(pointer: *mut dyn Payload) -> *mut dyn Payload; }
+#[unsafe(no_mangle)]
+unsafe extern "C" fn round_trip(pointer: *mut dyn Payload) -> *mut dyn Payload {
+    unsafe { imported(pointer) }
+}
+#[unsafe(no_mangle)]
+extern "C" fn round_trip_slice(pointer: *mut [u8]) -> *mut [u8] { pointer }
+fn main() {}
+"#;
+    let program = frontend::checked(source)?;
+    for name in ["imported", "round_trip", "round_trip_slice"] {
+        let symbol = program
+            .symbols
+            .iter()
+            .find(|symbol| symbol.name == name)
+            .ok_or_else(|| format!("missing C symbol {name}"))?;
+        let boundary = program.object_boundary(symbol.signature)?;
+        let Type::Object(result) = boundary.result else {
+            return Err(format!("{name} returned a scalar").into());
+        };
+        assert_eq!((result.span.bytes, result.span.align), (16, 8));
+        assert_eq!(
+            result.classes,
+            Classes::Eightbytes {
+                first: Class::Integer,
+                second: Some(Class::Integer),
+            }
+        );
+        assert_eq!(boundary.parameters.as_ref(), &[Type::Object(result)]);
+        assert_eq!(symbol.body.is_some(), name != "imported");
+    }
+    Ok(())
+}
+
 #[test]
 #[ignore = "requires the optional pinned CPPGM object profile and host C compiler"]
 fn aggregate_calls_match_independent_rust_and_c() -> Result<(), Box<dyn std::error::Error>> {
