@@ -678,6 +678,16 @@ v13 and v14 providers emit byte-identical LowIR and metadata. The four
 focused checks pass. Receipts are in `obj/parallel/v14-macro-provenance/`
 in the frontier checkout. [Fresh body regression](../dev/tests/crate_linking/hygienic_exports.rs)
 
+The unchanged `core` replay still hits the name-provenance gate on the
+optimized `e4e134081` observation after 37.85 seconds. It records zero bring-up
+rows and emits no artifacts. At this profile the check is specifically for
+contextual item bindings. A separate resolution observer finds 1,083 marked
+declaration candidates without their own root binding, including generated
+trait methods, generic parameters, anonymous const assertions and local
+helpers. The count uses token marks and root-key comparisons. The replay is
+under `obj/parallel/strict-core/macro-body-names/`, and the declaration survey
+is under `obj/parallel/v14-macro-provenance/name-observer-all/`.
+
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
 deprecated macro and accepts a call through an annotated `use` alias of a
