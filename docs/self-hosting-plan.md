@@ -331,8 +331,11 @@ the shared oracle's exit, abort and stderr rules. `process-exit`, `exit-code`,
 `sync-local`, `path-ffi-time`, `panic-default` and `panic-hook` each match
 their declared outcomes in three native runs. `main-result` and `float-math`
 emit LowIR and link, then abort where the oracle expects exit 1 and 0,
-respectively. `io-stdin` stops in the frontend at an unambiguous trait
-obligation in `main`. `threads` stops in `alloc/src/boxed.rs` because the
+respectively. Native debugger replays of the same executable hashes locate
+the first traps at `size_of_val` during drop in `main-result` and `floorf64`
+before the first output in `float-math`. `io-stdin` stops in the frontend at
+an unambiguous trait obligation in `main`. `threads` stops in
+`alloc/src/boxed.rs` because the
 reached `call_once` has neither a concrete body nor a checked template.
 The batch receipt and per-case diagnostics are in
 `obj/parallel/std-startup-remaining/` in the frontier checkout. Eight of
