@@ -279,6 +279,16 @@ and backtraces are under `obj/parallel/btree-default-successor/`,
 `obj/parallel/btree-reducer-native/` and `obj/parallel/println-native-abort/`
 in the frontier checkout.
 
+The abort-profile candidate validates the existing intrinsic prototype and
+reached direct call, emits the try callback with its actual data pointer and
+returns false after normal completion. Pinned rustc executes the focused
+observer and returns 23 from the try callback. The RustGM code and focused gate
+are in the frontier checkout. The zero-validity probe is consistent with the
+152-byte Linux `sigaction` in std startup. Its actual libc fields include
+`Option<extern "C" fn()>`. The unqualified checker currently declines enums.
+Verify the exact instance and use its retained niche layout to determine which
+variant zero bytes select.
+
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
 programs reproduce the lifetime failure when an inferred trait method item goes
@@ -437,6 +447,18 @@ declaration policy and a fresh consumer that uses it in coherence. The replay
 is under `obj/parallel/strict-core/const-closure-environment/` in the performance
 checkout. [Policy transport guard](../dev/src/sema/header_attributes/definition_policy.rs#L389) ·
 [Local policy and cross-crate controls](pa31-fundamental-policy-checkpoint.md)
+
+The v14 declaration-policy candidate carries the two trait policy bits and a
+reserved bit in the nominal header for fundamental structs. The consumer binds
+those facts once to the validated declaration in its existing imported header
+ledger. The older formats retain their source publication guard. Six pinned
+rustc provider/client controls agree with their declared outcomes for
+fundamental locality, closed trait disjointness and forced dyn incompatibility.
+Formatting and architecture checks pass. The private harness builds timed out.
+The optimized candidate is building for the six fresh consumers and the
+original strict `core` replay. The sources and receipts are in the performance
+checkout under `obj/parallel/v14-definition-policy-rustc/` and
+`obj/parallel/v14-definition-policy-successor/`.
 
 All four frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
