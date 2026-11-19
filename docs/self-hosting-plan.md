@@ -1250,6 +1250,20 @@ the full source graph remains unmeasured for this change. Evidence is under
 `obj/parallel/initializer-sparse/` and `obj/parallel/bounded-fresh-destruction/`
 in the performance checkout.
 
+The inferred predicate now stores the trait identity and effect inline when
+the application has no explicit arguments. The record stays at 24 bytes on
+x86-64. A debugger sample counted 294 such goals among the first 512 canonical
+trait constructions in body semantics. The immutable optimized pair at
+`558ea1a22` and `7e15ac62d` retires 0.252% fewer instructions in both paired
+blocks on the original `core` and `unicode-ident` bring-up graph, from 94.501
+billion to 94.263 billion. All ten observations preserve LowIR, diagnostic
+and native output. The focused comparisons preserve 98 ordered selected
+proof graphs, with no extra source child-proof probes and a flat scalar
+control. Wall time and cycles vary across blocks. Three focused public
+tests and fourteen CLI outcomes pass. Four private tests remain pending
+after the harness builds reached their deadlines. Evidence is under
+`obj/parallel/inline-empty-trait/` in the performance checkout.
+
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
 positions and 16,384 invocations the median was 1,117.90 ms before and 67.79 ms
