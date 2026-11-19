@@ -108,3 +108,291 @@ a backend that handles the LowIR volume. The runtime lane probes these now.
   crates), PA36 (M3), PA44 and PA45 (M5 to M7).
 - **Independent feature work:** PA37/38 after std; PA39 to PA43 in parallel
   when a lane is free.
+
+## Execution after the November 19 handoff
+
+The compiler at `314833ada` emits original `core + alloc` LowIR, a bring-up
+stamp and a native-link manifest with an empty skip list. That run still has 54
+unproven obligations and 20 waivers. At that checkpoint the original Linux
+`std` replay failed in `quota_v2`. The handoff records the saved commands,
+artifacts and traces. [November 19 handoff](../handoff.md)
+
+Subsequent fixes cleared `quota_v2`, the exclusive hashbrown reborrow and the
+closure from an associated initializer. Vtable preparation now retains locally
+bound callback lifetimes. Two real-core `Debug` programs passed native execution
+with empty skip lists, and the regular and native object-dispatch selections
+passed. Original `std` moves past the callback failure to a generated `Debug`
+implementation in libc that borrows an unaligned packed field. The packed derive
+repair copies fields before borrowing them and adds the required `Copy` bounds.
+It passes the native formatting observer and preserves the rejection of a
+written packed-field borrow. The next original `std` replay reports a C aggregate
+ABI error at `core/src/future/mod.rs`. The rejected signature takes a thin raw
+pointer and returns a wide raw pointer in the C convention. The corresponding
+source declaration and definition are `__rust_panic_cleanup` in `std` and
+`panic_abort`. Pinned rustc passes the data and metadata as two x86-64 SysV integer
+words. The classifier now uses that layout for direct wide raw pointers. Native
+round trips through an independent C provider verify the vtable pointer, slice
+address and length on both compilers. The original graph must still replay
+through the repaired ABI boundary.
+
+The separate strict core export fails before metadata publication in
+`FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
+programs reproduce the lifetime failure when an inferred trait method item goes
+to a higher-ranked `FnOnce` parameter. A closure, a free function item and the
+fully qualified trait method pass. Proof extraction retained an input-refinement
+equation while dropping its witness's scoped allocation. The checked fix retains
+that allocation in the callable binder. The exact native projection suite passes.
+The original strict replay now passes that site and stops at `flatten.rs:569`,
+where `FlattenCompat::try_fold` passes a returned opaque `FnMut` to a
+higher-ranked input. The small adapter reducer matches this failure on RustGM
+and compiles on pinned rustc. Strict core still emits no metadata. All four
+frozen Unicode consumers match their declared output on pinned rustc with
+prebuilt std at opt-level 2. Their RustGM runs remain due.
+
+### Self-compile milestones
+
+| Order | Work | Exit evidence |
+| --- | --- | --- |
+| 1. Unblock `std` | Trace the projected field's bound lifetime back from `Batch::publish` through `storage_roots` and field instantiation. Identify the source expression and distinguish a provisional signature root from a lost caller substitution. Put the fix at the producer. | A pinned-rustc positive that exercises the same producer, a genuine lifetime-escape rejection and a focused RustGM gate. Use the original `quota_v2` replay as the exact regression until a reduction reproduces its failure. Both original `core + alloc` and Linux `std` replay with their saved inputs, environment, empty skip list and limits. The invalid binder remains a hard error. |
+| 2. Close M1–M3 | Complete the zero-skip retest of the 18 core consumers, carrying forward verified results where the inputs and affected paths permit. Repair the `Box::call_once` concrete callable or template issue, the B-tree `descend` lifetime mapping and Rc/Arc call syntax through `Deref` to `dyn Fn`. Continue original `std` from each concrete blocker through LowIR, static library artifacts for the abort profile, and native linking. | Complete core and alloc consumer receipts, including Vec and String after affected changes. The `std` println, fs, env and HashMap consumer matches its declared native outcome, followed by the remaining declared std cases. Record emitted artifacts and any remaining bring-up obligations or waivers. |
+| 3. Close M4 and exercise crate transport | Vendor the locked `unicode-ident`, `tinyvec_macros`, `tinyvec` and `unicode-normalization` sources. Take editions, features and dependency edges from the frozen unit plan. Bring up the dependency graph and execute the Unicode consumers. In parallel, advance real per-crate export/import from `core` through `alloc`, the selected `std` graph and the compiler dependencies. | The four Unicode consumers match the declared outcomes. A fresh dependent reads authenticated metadata and links RustGM-generated objects. Cover the demanded generic and const bodies, resolved identities, proof inputs and native links with cross-crate positive and rejection controls. Guests can expose later source failures while this transport is being built. |
+| 4. Build stage 1 (M5) | Freeze the stage procedure, including the locked graph, unmodified `dev/src/lib.rs` and `dev/bin/rustgm.rs` and their reachable sources. Use the pinned rustc-built stage 0 to compile target Rust, then use the pinned CPPGM object path to link the compiler. Start with a CLI invocation that exercises a real input and drive remaining failures from the compiler's demand list. | The resulting stage 1 executable, selected through `RUSTGM_TEST_APP`, passes every committed PA1–PA24 text oracle. Record the executable hash, expected and executed case counts, and exact receipts. |
+| 5. Rebuild and qualify (M6–M7) | Have stage 1 rebuild the same frozen graph. Work through strict-mode blockers by cause, starting as soon as each crate can be replayed. Account for the existing core/alloc and std obligations and waivers individually. Rerun both stages strictly from clean directories for qualification. | Compare every crate's LowIR and metadata and the linked compiler byte for byte. Require zero bring-up records and zero trapping stubs across both strict builds. Exercise the perturbed-input comparison failure and the one-record strict-gate failure required by PA45. |
+
+For the first checkpoint, preserve body-region identity through storage
+normalization and exercise the two existing body-region cases from the trace.
+Include `field_outlives::preparation_preserves_the_occurrence_binder_and_shares_large_graphs`
+and `field_outlives::recursive_requirements_remap_complete_projected_inputs` in
+the focused selection alongside the new exact control. Track implicit opaque
+lifetime shortening from `'b: 'a` as its own regression. After the original
+`std` replay, record the next failing phase or the emitted artifacts before
+selecting the next batch. [Field storage](../dev/src/sema/bodies/field_storage.rs) · [Field dependency traversal](../dev/src/sema/stored_fields/dependencies.rs) · [Region proof](../dev/src/borrow/regions/check.rs)
+
+Use the saved guest command and the finite source-proportional work allowance
+with the 1 GiB attempted and 64 MiB retained caps for frontier replays. For
+empty-skip native evidence, use one frozen compile per consumer or give the
+runner an explicit mode that treats any added skip as a failure. The current
+`bringup_linked.py` can extend the copied skip list and still pass on exit zero
+and matching stdout. It also carries the historical fixed work cap. Drive
+consumer execution from the declared args, environment, stdin, status, stdout
+and stderr, including expected aborts. Recheck the atomics widths, hashbrown
+SIMD, allocator/start/TLS, platform symbols and the actual LowIR volume at the
+native boundary as the workload reaches them. [Bring-up runner](../scripts/bringup_linked.py) · [Consumer outcomes and runtime probes](self-hosting-runtime.md)
+
+Start the strict executor from the existing target-unit and link tooling. Freeze
+an ordered per-unit inventory with source hashes, crate identities, extern aliases,
+features, target cfg, generated inputs and environment. Pin stage 0, CPPGM, the
+native linker, native inputs and link order. The current target executor emits
+metadata for library units only, and the CLI rejects binary `--metadata-output`.
+Close that gap in the existing typed output path for the PA45 per-crate
+comparison. Run `scripts/course.py paN --app "$RUSTGM_TEST_APP"` for each of
+PA1–PA24 under the shared guards with the variable set to the pinned stage 1
+executable. Compare raw bytes from independently built directories to catch
+path and ordering leaks. Diagnose differences at the first differing unit
+before investigating the linked image. Capture elapsed time and peak memory
+per stage and publish the frozen
+procedure, nonempty manifest and stage hashes after independent review and the
+PA45 release checks. [Target executor](../scripts/target_units.py) · [CLI artifact options](../dev/bin/crates.rs) · [Backend link tooling](../scripts/backend.py) · [PA45 contract](../pa45/README.md)
+
+### Performance work from the agent audits
+
+The audits were source reviews at `707b5b9d`. The macro-cap replay isolates the
+earlier limit symptom. Establish current work counters before using any historical
+counts as a baseline. The table gives the initial order within each workstream.
+
+| Work | Implementation to test | Work counters and equivalence controls |
+| --- | --- | --- |
+| 1. Macro matcher scratch | Grow the three generation-tagged tables only when an arm exceeds the initialized length. Preserve the existing generation rollover reset. [Matcher](../dev/src/expand/macros/matcher.rs#L194) | Vary a first-token-failing wide arm and short successful invocation count independently. Count initialized entries and matcher steps. Initialization follows maximum width, with a separate rollover control and byte-equal expansions and ambiguity diagnostics. |
+| 2. Derive literal grants | Verify the immutable origin interval once per receipt within the allowance session. Retain per-use token, member, role and feature checks. [Literal grants](../dev/src/resolve/expansion/derive_lists/literal_grants.rs#L132) · [Origin validation](../dev/src/resolve/expansion/derive_lists/vocabulary.rs#L31) | Vary interval width and qualifying requests independently. Count visits per receipt and per-use checks. Exercise invalid receipts and wrong-token/role/feature requests after a warm hit. |
+| 3. Expansion frame charge | Validate the immediate parent by exact indexed record and charge for the actual read. [Permission frames](../dev/src/resolve/expansion/permission_frames.rs#L128) | Vary frame ordinal and nesting separately. Count reads and ledger work, and keep wrong-parent, inactive-source and missing-frame diagnostics. |
+| 4. Formatting provenance | Reuse the completed provenance and header evidence when semantic readiness resumes at the same format site. Keep the checked constructor proof tied to the actual request. [Resolve](../dev/src/resolve/expansion/format_values.rs#L100) · [Semantic body checking](../dev/src/sema/bodies/formatting_values.rs#L31) | Count origin/header lookups by distinct site and readiness resumes. Compare formatting output and constructor selection, and retain the malformed-origin and wrong-constructor controls. |
+| 5. Trait coherence | Filter incompatible rigid nested constructors before queueing open impl pairs. Keep candidates that can still unify, including wildcard, projection and blanket cases, in the existing diagnostic order. [Pair registration](../dev/src/sema/traits/implementations.rs#L484) · [Nested-head control](../dev/tests/invariants/rejected_overlap_pairs.rs#L154) | Count candidates inspected, retained pairs and instantiations as header count and nesting width grow. Replay original core and compare true overlaps and specialization diagnostics. The historical 20,986 rigid rejections out of 22,895 pairs give a starting hypothesis. |
+| 6. Textual macro lookup | Index names and hygiene contexts across immutable lexical segments. Keep pending output barriers and their publication/wake behavior. [Textual lookup](../dev/src/expand/textual.rs#L152) | Vary scope depth and distinct names independently and together. Count link visits and retained lookup rows. Exercise warm and cold queries, nearest shadowing, hygienic lookup, completed output and sibling scope isolation. |
+| 7. Body outlives proofs | Reuse bounded, lazy reachability per source within one immutable body proof. Preserve query order and the first failure. Schedule after the `quota_v2` producer fix so the two changes have independent evidence. [Region graph](../dev/src/types/region_graph.rs#L338) · [Declaration scaling control](../dev/tests/invariants/input_contracts/answers.rs#L67) | Scale one source against many targets in a chain, then vary sources and include a single-query control. Count traversed nodes/edges and retained bytes. Include cycles, unreachable targets, universe boundaries and the lifetime-escape rejection. |
+| 8. Borrow dataflow | Prototype sparse or touched-word state for value liveness, cleanup and loans with measured dense behavior. Scope each change to its own pass and preserve CFG joins and ordered cleanup. [Value liveness](../dev/src/borrow/liveness.rs#L347) · [Cleanup](../dev/src/borrow/liveness/cleanup.rs#L245) · [Loans](../dev/src/borrow/loans.rs#L504) | Vary tracked values or loans and CFG blocks separately. Count touched words, component resets and peak state bytes for sequential short-lived borrows, then check dense joins, loops, loan conflicts and native drop order. |
+| 9. Configuration walks | Reuse precise subtree starts for attributed owners, with demand-local or parser-owned range facts. [Configured syntax](../dev/src/expand/crate_syntax.rs#L75) | Vary nested owner depth and innermost list width. Count visited nodes and retained ranges. Preserve enabled/disabled subtree behavior and deferred literal diagnostic order. |
+| 10. File-module ancestry | Reuse canonical file-identity membership along each inherited module path, including deferred resumes. [Module loader](../dev/src/resolve/load.rs#L470) | Count membership work and retained state as same-directory nesting grows. Exercise alias cycles, deferred file modules and legal file reuse by siblings. |
+
+The first fixed-CPU profile of the original core, `unicode-ident` and native
+consumer graph put 45.07 of 77.79 measured CPU seconds in body inference and
+12.66 in declarations. Parsing and expansion took 5.00 seconds. The profiled
+opt3 compiler at `c7e4d7378` emitted the same LowIR, native-link manifest and
+native executable as the timed run. On three smaller, identical-source native
+controls, current RustGM took 4–7% longer than the rebuilt October 17 compiler
+at `8d2e03b5f` and remained 1.81–2.01× faster than the pinned rustc. The
+historical timing programs are unavailable for an exact replay, and the
+standalone controls time a different scope from compiling the real core graph.
+[Historical timing record](pa18-pa21-buildout.md#L8877)
+
+Hardware call-stack samples attribute 57.8% of user cycles to the body inference
+phase. Trait-selection frames appear in 46.0% of that phase's samples, inference
+frames in 28.9%, and substitution or interning frames in 15.6%. These shares
+overlap. Macro matching appears in about 0.23% of full-graph samples. Preparing
+demanded instances accounts for another 10.5% of cycles. Dense initialization of
+destruction state accounts for 15.7% of the cycles within that phase. Trait
+coherence appears in 0.77% of declaration samples. Its separate scaling control
+still queues 15, 276 and 4,560 pairs for 6, 24 and 96 open impls whose nested
+heads are disjoint.
+
+The open impl lookup control uses one receiver type and distinct rigid trait
+arguments. Raising both the impl and query count from 8 to 16, 32 and 64
+raised observed body trials from 64 to 256, 1,024 and 4,096. The instance
+stage repeats that work. Each query has one matching header. RustGM and rustc
+executed the same declared native outcomes.
+
+The first index keys open impls by the nominal constructor of their first
+non-lifetime trait argument for fully resolved goals. The same four inputs now
+take 8, 16, 32 and 64 trials in each stage. Holding eight goals fixed also
+holds selection to eight trials as the registry grows from 8 to 32 impls.
+All nine replays produced byte-identical LowIR and native executables.
+These are deterministic work counts from the development build. Optimized
+elapsed-time measurements and indexing deeper arguments remain open.
+[Open argument buckets](../dev/src/sema/traits/implementations/open_arguments.rs)
+
+Prioritize work counters in body inference and declaration semantics on the
+real core graph. Start from existing `BodyWork` counters for trait selections,
+canonical inference, projection selection and suspensions. Track candidate
+visits, substitutions and readiness retries independently so the largest source
+of repeated semantic work is visible. Measure coherence pairs on original core.
+
+### Trait query representation and reuse
+
+The type store interns types and their child lists. Its structural `ShapeKey`
+folder already shares canonical transformations between independent queries.
+Candidate trials reuse these type identities, while each trial imports the live
+inference terms it needs.
+Completed proof reuse already covers concrete, debt-free answers within one
+fixed caller. Crate-wide body reuse covers verified concrete implementation
+answers in neutral callers. Closed dispatch also has an independently certified
+cache for eligible selections. Measure how often each reuse path applies, hits
+or declines on the frozen real-core graph. Count requests and distinct identities
+by phase, including repeated subgoals and goals that appear in both body and
+closed instance selection. Trial setup appeared in 12.99% of body-phase cycle
+samples. The profile does not quantify how much of that work can be shared.
+[Type store](../dev/src/types/mod.rs#L260) · [Caller reuse](../dev/src/sema/traits/selection/search/completed_proofs.rs#L6) · [Crate-wide reuse](../dev/src/sema/traits/selection/memo.rs#L1) · [Closed dispatch reuse](../dev/src/sema/dispatch.rs#L535)
+
+On the frozen core and Unicode identifier graph, the typed body facts retain
+169,870 implementation-selection rows. The 162,229 rows with concrete
+arguments name 3,337 distinct `(impl owner, arguments)` identities, of which
+2,935 appear at multiple source sites and 730 appear in multiple files. These
+counts quantify repeated targets. To estimate reusable solver work, measure
+the distinct requesting goals and effective premises that can produce each
+target, along with the existing memo hit rates.
+
+An instrumented run of the original strict core sources and the original
+core/alloc/std bring-up graph counted the work through their current failure
+frontiers. It counted distinct lookup fingerprints, so the cardinalities below
+are estimates. Instrumented builds supply work counts only.
+
+| Quantity | Strict core | Shared core/alloc/std |
+| --- | ---: | ---: |
+| Validated candidate lookups | 768,399 | 1,167,551 |
+| Distinct validated candidate lookup keys | 13,878 | 28,734 |
+| All ready candidate lists | 932,339 | 1,366,368 |
+| Ready lists with zero or one owner | 782,065 | 1,189,176 |
+| Ready lists with 256 or more owners | 7,560 | 8,498 |
+| Implementation trials | 742,205 | 957,492 |
+| Trials with no input graph edges | 718,871 | 931,059 |
+| Charged work importing trial inputs | 2,484,625 | 3,097,114 |
+| Additional charged work instantiating headers and conditions | 8,444,434 | 12,026,977 |
+| Existing crate-wide memo hits | 70,855 | 79,779 |
+| Queries whose memo key was in the rejected state | 123,067 | 142,850 |
+| Memo lookup requests from effect-qualified goals | 27,102 | 27,779 |
+
+The validated candidate key uses registry extent, selection availability and
+purpose, trait identity, the receiver head, structural shape, and the
+discriminating argument. Prototype sharing ordered lists for repeated lookups
+with multiple owners. Lists of at least 256 owners account for under 1% of
+the lists and at least 49% of emitted owner entries in each run. Include the
+empty and single-owner common cases as overhead controls. The next
+instantiation probe should compare distinct
+`(impl owner, effect)` recipes and count repeated lowering of declared
+conditions, parameter shapes and capture-independent substitutions. The current
+data prioritizes those immutable header facts over a general inference overlay.
+The body memo currently keys only on the trait and type inputs. Qualifiers must
+participate in any certified key, and rejected entries need a cause breakdown
+before reconsidering eligibility.
+
+1. **Index impl headers once.** Extract rigid constructors and their positions
+   once per published header. Prototype shared paths or ordered posting lists
+   for lookup and coherence. Preserve wildcard, pending, projection and opaque
+   candidates and deterministic order. The current lookup gathers and sorts a
+   fresh owner list. In a fixed registry view, reuse immutable ordered slices
+   or lazily merge a few slices when query filters differ. Candidate identities
+   can be shared across distinct goals and caller environments. Cache the
+   discriminating shape by canonical input ID where available so key building
+   can reuse the same structure. Aim for work proportional to the queried path
+   and compatible headers, independent of total registry size when wildcard
+   fanout stays bounded.
+   [Candidate lookup](../dev/src/sema/traits/implementations.rs#L194)
+2. **Share unchanged inputs between trials.** Keep canonical subterms as IDs
+   and test whether a frame can prepare its remaining immutable goal structure
+   once. Let each trial own the changed type and const bindings, lifetime
+   equations and rollback state. Vary the number of alternatives, the size of
+   the shared input and the number of bindings each candidate changes. Count
+   shared edges, trial-local nodes, imported bytes and peak retained bytes.
+   [Trial construction](../dev/src/sema/traits/selection/search/frames.rs#L166)
+3. **Reuse proof structure where the inputs permit it.** Measure repeated
+   goals using a canonical key with alpha-renamed slots and the identity of the
+   effective premises, binder scope, mode and registry view. Start with
+   completed answers and test whether recipes can retain shared subproofs and
+   replay fresh bindings for caller-dependent obligations. Count recipe misses,
+   hits, bytes and replayed obligations. Account for competing candidates whose
+   eligibility can change with an added premise, including premises absent from
+   the selected proof. Test different premises for the same
+   goal, fresh caller lifetimes, pending publication, negative evidence,
+   specialization, cycles and ambiguity.
+
+For each prototype, hold source size and request count fixed while varying the
+fraction of shared keys, subterms or premises. Separately grow the amount of
+irrelevant registry data at fixed compatible fanout. Track cold index and key
+construction, warm lookup, retained memory and the work at a changed registry
+or caller boundary. A repeated batch still has one result per request. The
+target is search and instantiation work that follows distinct reusable facts
+and real candidates, without charging each request for all shared structure.
+
+The matcher scratch change passed its focused regression and an opt-level 1
+paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
+positions and 16,384 invocations the median was 1,117.90 ms before and 67.79 ms
+after. The ordinary control moved from 28.88 ms to 32.48 ms, with 21.1% A/A
+spread and all three paired blocks slower. A fixed-CPU rerun of the ordinary
+control used 12 alternating paired blocks. It measured 41.60 ms before and
+40.33 ms after, with a median paired ratio of 0.977 and 16.7% A/A spread. The
+ordinary case has no stable speed estimate at that noise level. Attribute ledger
+charges by caller and phase, including the first sticky transition, to order the
+frame and formatting changes. Land each algorithmic change independently so a
+frontier advance or regression can be attributed to its cause.
+
+The expansion-frame check now reads the recorded immediate parent by index. At
+flat widths 8, 32 and 128, the public allowance observer paid the same charge
+for the first and last invocation in each run. Previously the last invocation
+paid 3, 5 and 7 extra units respectively. A forged grandparent failed at all
+three nested depths, and the two focused source-panic permission tests passed.
+[Macro ledger attribution](parallel/macro-budget.md#attribution-analysis-only)
+
+The derive-origin memo reduces the ledger work for 64 requests for the same
+formatter receipt from 38,464 to 11,818. The new implementation takes 604 units
+for the first request and 178 for each subsequent request in the same allowance
+session. Repeating the requests in fresh sessions takes 38,656 units. The
+focused integration passed, including the independent Rust outcomes. A public
+API probe confirmed that a warm memo still rejects an invalid token span and
+withholds an unrelated feature. The private harness build reached the
+five-minute gate before it could run.
+
+For each change, define the work bound and cache lifetime before implementation.
+Run the exact affected `make fastcheck` selections, independent source outcomes
+where applicable, a scaling control and an ordinary control. At meaningful
+algorithm checkpoints, use immutable measurement binaries of the same build
+profile, frozen inputs, an exclusive resource lease, A/A calibration and paired
+ABBA runs. Retain raw samples, peak memory, work and storage counts, and byte
+equality of the affected outputs. On the failing original std graph, require the
+same diagnostic and frontier for equivalent performance runs. Repeat on the
+successful graph when available. Run the broad matrix at qualification or when
+investigating a regression. [Performance contract](../spec.md#ownership-allocation-and-complexity) · [Validation rules](../TESTING_AND_REFERENCES.md#development-checkpoints)
+
+Keep the frontier's source replays and repairs in `rustgm-pa26-work`. The runtime
+lane owns consumer and link evidence, and the publication lane prepares the
+stage receipt and release checks. Assign performance batches to a free existing
+worktree. Use the shared resource and storage wrappers, the 150 GiB disk reserve
+and the frontier's 24 GiB output cap. Keep `make observe` for frontier diagnosis,
+and record raw evidence under `obj/`. [Resource controller](parallel-work.md#resource-controller)
