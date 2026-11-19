@@ -217,8 +217,13 @@ both alternatives move the payload. The reduced enum compiles with pinned
 rustc and fails with the same RustGM error. The original ownership trace
 marks two active physical whole-payload cleanups on the enum. The companion
 controls that leave a non-const payload or a separate argument alive fail
-on both compilers. The strict replay still has zero bring-up
-records and no metadata. All four frozen Unicode consumers match their
+on both compilers. The candidate repair recovers the selected owned fields
+from distinct variant tests during unguarded capture. The reduced enum moves
+past the cleanup check to source transport validation, and both live-value
+opponents still fail the cleanup check. Three focused tests pass in the
+performance checkout. The original replay of this candidate is pending.
+The last strict replay has zero bring-up records and no metadata. All four
+frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
 runs remain due.
 
@@ -462,7 +467,25 @@ mapping. The check uses the existing arena metadata. Fresh folders each take
 two charged steps including capture preparation at widths 8, 128 and 2,048.
 A bound lifetime in the same wide input still maps to its supplied capture.
 Five focused trait and projection checks, formatting, architecture and strict
-Clippy pass. The isolated optimized comparison is pending.
+Clippy pass. Immutable nonincremental opt-level 1 binaries differ only in this
+change. Each control uses eight A/A observations and six paired ABBA or BAAB
+blocks. Every pair emits byte-identical LowIR.
+
+| Input | Paired user instruction change | Paired wall change |
+| --- | ---: | ---: |
+| Ordinary generic call | −0.48% | −0.03% |
+| 8 trait arguments, 32 distinct requesting goals | −1.88% | +0.02% |
+| 64 trait arguments, 32 distinct requesting goals | −4.19% | −0.21% |
+| 256 trait arguments, 32 distinct requesting goals | −6.61% | −1.93% |
+
+The A/A wall ranges are 1.96% to 4.78% of the respective medians. On the frozen
+original core and `unicode-ident` graph, the ABBA and BAAB blocks retire 2.254%
+and 2.252% fewer user instructions. Wall time moves by −16.19% and +10.50%, with
+A/A observations of 51.55 and 52.50 seconds. All ten runs emit identical LowIR,
+native-link manifests and diagnostics. They record zero skips, 46 unproven
+obligations and eight waivers. Peak RSS stays near 915,000 KiB. Raw observations
+are under `obj/parallel/trait-capture-fold/{paired-pmu,whole-graph}/` in the
+frontier checkout.
 [Application facts](../dev/src/types/traits.rs) · [Argument folding](../dev/src/types/substitute/predicates.rs)
 
 1. **Index impl headers once.** Extract rigid constructors and their positions
