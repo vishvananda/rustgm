@@ -348,6 +348,12 @@ aborts on the predecessor and passes with zero skips on the candidate.
 Both intrinsic names still report their bring-up qualification waivers.
 Receipts are in `obj/parallel/dynamic-extent-predecessor/` and
 `obj/parallel/dynamic-extent-independent-pointers/` in the frontier checkout.
+The optimized compiler also passes the complete std-graph extent probe and
+the original `main-result` consumer in three native runs each. The original
+consumer emits 7,499,385 bytes of LowIR with zero skips, 14 unproven
+obligations and 51 waivers. All three runs match the declared output and
+exit status 1. Nine of fourteen original std consumers now match in bring-up.
+The exact receipts are in `obj/parallel/dynamic-object-extent/`.
 
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
