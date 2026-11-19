@@ -778,6 +778,15 @@ The unchanged small-vector build clears conversion coherence and reaches
 empty. Evidence is under `obj/parallel/m4-into-overlap/` and
 `obj/parallel/m4-small-vectors-projection/`.
 
+The enum method reduction reproduces that error with a direct
+`Self::Target` signature. The annotation walk now honors the projection
+already retained for that path. The enum variant and qualified function
+controls pass, and eight reduced type-check outcomes agree with pinned Rust.
+Two generic bodies reach the ownership and destruction gate in the loan
+inspection view. The focused execution test instantiates the generic method
+and lowers a concrete mutation through its returned reference. Evidence is
+under `obj/parallel/m4-mirrored-variant/`.
+
 Normalization and identifier
 consumers require independent guest feature scopes because the Cargo graph
 enables `std` for `unicode-normalization` and leaves it off for `tinyvec`.

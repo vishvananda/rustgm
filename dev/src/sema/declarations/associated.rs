@@ -51,6 +51,17 @@ impl Checker<'_> {
             .associated_paths
             .get(&key)
             .ok_or_else(|| self.error(key, "missing associated path facts"))?;
+        // An enum impl's signature may already bind Self::Name through a
+        // trait. The later annotation walk also visits that typed path.
+        if path.namespace == Namespace::Type
+            && self
+                .facts
+                .unreduced
+                .node(key)
+                .is_some_and(|ty| matches!(self.facts.types.kind(ty), Some(Type::Projection(_))))
+        {
+            return Ok(false);
+        }
         if path.suffix.len() != 1 {
             return Err(self.error(key, "enum variant cannot have a further path suffix"));
         }

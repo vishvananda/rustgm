@@ -4,6 +4,36 @@ use super::{cases, rustc, semantic};
 const CUSTOM_DROP: &str = "struct D<'a>(&'a mut u8);impl<'a> Drop for D<'a>{fn drop(&mut self){*self.0+=1;}}mod shadow{pub trait Drop{}pub struct S<'a>(pub super::D<'a>);impl<'a> Drop for S<'a>{}}fn main(){let mut count=0;{let _s=shadow::S(D(&mut count));}check(count==1);}";
 
 #[test]
+fn enum_methods_preserve_associated_types_and_variant_patterns()
+-> Result<(), Box<dyn std::error::Error>> {
+    let source = "
+        trait Read { type Target; }
+        trait Write: Read { fn write(&mut self) -> &mut Self::Target; }
+        enum Tiny<T> { Inline { item: T } }
+        impl<T> Read for Tiny<T> { type Target = T; }
+        macro_rules! mirrored {
+            ($name:ident, $receiver:ident : $input:ty, $result:ty) => {
+                fn write($receiver: $input) -> $result {
+                    match $receiver { $name::Inline { item } => item }
+                }
+            };
+        }
+        impl<T> Write for Tiny<T> {
+            mirrored!(Self, self: &mut Self, &mut Self::Target);
+        }
+        fn main() {
+            let mut x = Tiny::Inline { item: 7u8 };
+            *x.write() = 42u8;
+        }
+    ";
+    let wrong_variant = source.replace("$name::Inline", "$name::Missing");
+    cases(&[
+        ("enum-associated-projection", source, true),
+        ("enum-unresolved-variant", &wrong_variant, false),
+    ])
+}
+
+#[test]
 fn projected_conversion_headers_preserve_real_overlap_and_closed_absence()
 -> Result<(), Box<dyn std::error::Error>> {
     let declarations = "
