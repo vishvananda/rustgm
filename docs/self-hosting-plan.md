@@ -617,6 +617,12 @@ seconds and reaches `deprecation declaration transport is not implemented
 for this metadata profile`. It reports zero bring-up records and emits no
 artifacts. The receipt is in `obj/parallel/strict-core/simd-limits/` in the
 frontier checkout.
+The deprecation transport must preserve the declaring crate's release rule,
+the actual declaration or inherited module origin, and the diagnostic note.
+The importer currently derives checked absence from the availability profile.
+Extend that query to read the new policy while retaining the earlier profile
+behavior. Cover active, `TBD`, staged future, and inherited cases in a fresh
+client with its own lint level and expectation accounting.
 
 All four frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
