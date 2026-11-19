@@ -201,9 +201,13 @@ impl<'a, 'b> Machine<'a, 'b> {
         scratch.active.clear();
         scratch.stack.clear();
         scratch.traces.clear();
-        scratch.seen.resize(states, 0);
-        scratch.counts.resize(states, 0);
-        scratch.seen_traces.resize(states, [0; 2]);
+        // State marks are generation-specific. Keep the initialized high-water
+        // mark so a short arm cannot make the next wide arm clear its tail.
+        if scratch.seen.len() < states {
+            scratch.seen.resize(states, 0);
+            scratch.counts.resize(states, 0);
+            scratch.seen_traces.resize(states, [0; 2]);
+        }
         scratch.active.push(Thread {
             state: program.start,
             trace: NO_TRACE,

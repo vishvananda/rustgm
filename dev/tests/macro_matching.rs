@@ -2,7 +2,7 @@ use rustgm::{
     expand::macros::{
         compile,
         input::Input,
-        matcher::{Compiled, Matched},
+        matcher::{Compiled, Matched, Workspace},
     },
     support::names::Names,
     syntax::token_tree::Forest,
@@ -29,6 +29,36 @@ fn ordered_rules_reuse_fragments_from_failed_alternatives() -> Result<(), String
     assert_eq!(matched.captures.parser_calls, 1);
     assert_eq!(matched.captures.values.len(), 1);
     assert_eq!(invoke("{(one)=>{};($i:ident)=>{}}", "one")?.rule, 0);
+    Ok(())
+}
+
+#[test]
+fn reused_workspace_preserves_wide_and_short_rule_matches() -> Result<(), String> {
+    let mut short_work = None;
+    for width in [32, 128, 512] {
+        let wide = format!("wide {}", "tail ".repeat(width));
+        let rules = format!("{{({wide})=>{{}};(short)=>{{}};}}");
+        let mut names = Names::default();
+        let forest = Forest::parse(&rules).map_err(|error| format!("{error:?}"))?;
+        let definition =
+            compile::compile(&rules, &forest, &mut names).map_err(|error| format!("{error:?}"))?;
+        let mut compiled = Compiled::new(definition);
+        let mut workspace = Workspace::default();
+        for source in ["short", "short", &wide, "short"] {
+            let forest = Forest::parse(source).map_err(|error| format!("{error:?}"))?;
+            let input = Input::from_forest(&forest, forest.roots())
+                .map_err(|error| format!("{error:?}"))?;
+            let matched = compiled
+                .invoke_with_scratch(&rules, source, &input, &mut names, &mut workspace)
+                .map_err(|error| format!("{error:?}"))?;
+            if source == "short" {
+                assert_eq!(matched.rule, 1);
+                assert_eq!(matched.work, *short_work.get_or_insert(matched.work));
+            } else {
+                assert_eq!(matched.rule, 0);
+            }
+        }
+    }
     Ok(())
 }
 
