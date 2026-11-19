@@ -584,6 +584,14 @@ compiler revisions. The focused compiler passes strict Clippy and the
 architecture audit. Receipts are in `obj/parallel/v14-optimization-intent-client/`
 in the frontier checkout. Closure intent still needs its body metadata.
 
+The next optimized strict replay of the unchanged 309 core inputs clears
+optimization intent and reaches `SIMD lane limits require authenticated
+representation metadata transport` in 27.51 seconds. It records zero
+bring-up entries and emits no artifacts. The included `portable-simd` crate
+source marks the actual generic `Simd` declaration with a limit of 64 in
+`crates/core_simd/src/vector.rs:107`. The receipt is in
+`obj/parallel/strict-core/optimization-intent/` in the frontier checkout.
+
 All four frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
 runs remain due.
