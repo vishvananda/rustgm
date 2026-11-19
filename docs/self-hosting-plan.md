@@ -188,6 +188,38 @@ leaf. The replay took 48.30 seconds, with 41 unproven obligations, 50 waivers,
 zero skips and no LowIR. Receipts are under
 `obj/parallel/tracked-reify-check/` in the frontier checkout.
 
+Transparent payload layout facts now carry an ordinary scalar identity separately
+from an available nullable encoding. The C plan uses the integer or floating
+class of that payload. Incoming and outgoing C boundaries marshal the scalar
+through the original Rust object's storage, including through a function
+pointer and in a mixed INTEGER/SSE record. The C observer prints
+`-91 -5 2.50 -10` for both pinned rustc and RustGM. Five committed PA12 and PA20
+oracles for Rust transparent records reproduce. The old aggregate-profile
+test still expects rejection of a fieldless C enum that both RustGM
+builds accept with identical LowIR. The native and oracle receipts are under
+`obj/parallel/transparent-scalar-boundary/` in the frontier checkout.
+
+The original Linux graph now emits 5,343,094 bytes of LowIR and a 55-byte
+bring-up stamp. The first replay has 41 unproven obligations and 53 waivers.
+The combined ABI and scoped destructor checkpoint emits identical LowIR, stamp
+and native-link manifest with 41 unproven obligations and 52 waivers. Both
+runs use zero skip rows. The same compiler emits 667,928 bytes of LowIR for
+the original core and alloc graph with 27 unproven obligations, 19 waivers and
+zero skips. Pinned CPPGM compiles that merged LowIR to a 206,232-byte object and
+`ar` packages it into a native archive. The native core and alloc receipts are
+under `transparent-scalar-boundary/alloc-native/` in the frontier checkout.
+CPPGM rejects the std LowIR at line 160968. The call supplies one
+argument to a tracked function whose native signature has two. The target
+forwards its second argument to the panic routine. Pinned rustc reports the
+ordinary source call site for a direct tracked item call, the actual core
+`FnOnce::call_once` or `Fn::call` member site for generic invocation, and the
+function definition for a reified pointer. These outcomes distinguish the
+operator path from direct calls and pointer reification. The unchanged M3
+`println` consumer in the same guest graph reaches
+`selected Source start requires checked startup instance lowering`. Record
+the backend and startup paths independently. The whole-graph receipt is
+`tracked-reify-check/integrated-std-transparent-scalar/receipt.json`.
+
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
 programs reproduce the lifetime failure when an inferred trait method item goes
@@ -255,8 +287,28 @@ replay now reaches `try_from_fn_erased` at `core/src/array/mod.rs:909` with
 `TypeComponents::drop_inputs` from destruction-region liveness during the
 staged loan proof. Its scalar-only return rejects the depth-zero projected
 argument. The strict replay has zero bring-up records and emits no metadata.
-All four
-frozen Unicode consumers match their
+The scoped custom-destructor query now retains the actual input components of
+an associated argument, with explicit declaration `'static` evidence available
+where it applies. Ordinary argument checks retain their existing array and
+binder rules. The higher-ranked controls agree with pinned rustc. An active
+projected guard rejects a second mutable borrow, a dropped guard permits the
+borrow and an independently static result carries no loan through the guard.
+Three focused tests pass. The replay of the same pinned graph clears
+`try_from_fn_erased` and reaches the defining body of
+`core::array::write<T, N>` at `core/src/array/mod.rs:1087`. It reports
+`active cleanup requires const Destruct in its actual defining environment`.
+The source moves the initialized guard into `mem::forget` after the loop.
+A reduced pinned-rustc control accepts this move. Its abort-profile MIR calls
+`forget` and has no drop terminator in the defining body. Removing the move
+produces E0493 for the active guard destructor. RustGM's rejection comes from
+the staged plan's eligibility selection. Identify the retained candidate and
+its ownership state before changing effect selection. The replay emits zero
+bring-up records and no metadata. The exact source controls
+are under `obj/parallel/projected-drop-scope/source-controls/` and the replay
+is under `obj/parallel/strict-core/projected-drop-scope/` in the performance
+checkout.
+
+All four frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
 runs remain due.
 
