@@ -80,6 +80,26 @@ fn main() { let _ = apply(static_only); }
 ",
         false,
     ),
+    (
+        "returned-opaque-callback",
+        r"
+fn wrap<U>() -> impl FnMut(&mut U) { |_| {} }
+fn inner<U>(_: &mut U, _: impl FnMut(&mut U)) {}
+fn outer<U>(u: &mut U) { inner(u, wrap()); }
+fn main() {}
+",
+        true,
+    ),
+    (
+        "returned-opaque-static-callback",
+        r"
+fn wrap<U: 'static>() -> impl FnMut(&'static mut U) { |_| {} }
+fn inner<U>(_: &mut U, _: impl FnMut(&mut U)) {}
+fn outer<U: 'static>(u: &mut U) { inner(u, wrap()); }
+fn main() {}
+",
+        false,
+    ),
 ];
 
 #[test]

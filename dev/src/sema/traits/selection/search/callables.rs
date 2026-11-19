@@ -161,7 +161,8 @@ impl Search<'_> {
             return Ok(None);
         };
         self.query.allocations.record(inputs.regions.end);
-        self.query.reserve(frame.scope, inputs.regions)?;
+        self.query
+            .retain_scoped_regions(frame.scope, inputs.regions)?;
         if !inputs.refined
             || frame.inference == super::frames::Inference::Disabled
             || frame.scope != self.query.input_scope()
