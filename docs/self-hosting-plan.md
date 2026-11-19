@@ -308,7 +308,12 @@ canonical IDs. The checked try and catch callbacks both take the
 specialization's data pointer. The actual data argument in the checked call
 has a distinct pointee `TypeId`. The raw records are in
 `std-startup-successor/callback-parameters.txt` in the frontier checkout.
-The startup candidate remains unintegrated.
+The next trace reaches the same closure identity in both Data applications.
+Its enclosing-region arguments and capture environment use different
+canonical coordinates. The startup successor compares type structure at
+this ABI boundary and keeps lifetime checking with the reached call's
+proof. That compiler builds, and the frozen original `println` replay is
+running under `obj/parallel/std-startup-region-shape/` in the frontier checkout.
 
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
@@ -500,6 +505,17 @@ to the existing nominal or principal-trait method bucket. The current
 inherent metadata profile covers provider-owned nominals. The strict receipt is
 under `obj/parallel/strict-core/definition-policy/`.
 [Local target contract](pa31-incoherent-target-checkpoint.md)
+
+The v14 Has candidate records the exact defining struct, enum or trait and
+checks each foreign impl's own feature and marked-member permissions. In a
+fresh client, all six covered target cases agree with pinned rustc. The
+foreign nominal method also runs through CPPGM and the C observer. The v13
+publication guard still rejects the marked provider. This validates target
+authority and local method lookup in the implementing crate. A separate
+client still needs transport of the validated foreign method index and
+complete dyn Self applications. The strict original core replay is running.
+Receipts are under `obj/parallel/v14-incoherent-authority/` and
+`obj/parallel/strict-core/incoherent-target/` in the performance checkout.
 
 All four frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
