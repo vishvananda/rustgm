@@ -707,6 +707,13 @@ impl Implementations {
             })
             .map(|entry| &entry.value)
     }
+    /// Publication also retains completed coherence-only reservations.
+    pub(in crate::sema) fn checked_declarations(&self) -> impl Iterator<Item = &Implementation> {
+        self.entries
+            .iter()
+            .filter(|entry| entry.status.validated())
+            .map(|entry| &entry.value)
+    }
     /// The actual declaration finished conformance. Selection additionally
     /// authenticates polarity; even a checked reservation supplies no evidence.
     pub fn is_validated(&self, owner: DefId) -> bool {

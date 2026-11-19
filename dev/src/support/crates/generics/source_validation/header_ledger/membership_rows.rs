@@ -120,19 +120,23 @@ impl<'a> Members<'a> {
             let Some(HeaderRef::Trait(index)) = target else {
                 return Err("source implementation requires its exact supported trait header");
             };
-            // A negative impl denies its application and maps no member; a
-            // positive impl maps every member of its trait.
+            let header = &self.rows.traits[index as usize];
+            if implementation.polarity == crate::support::polarity::ImplPolarity::Reservation
+                && (header.flags.bits() & s::TraitFlags::AUTO != 0
+                    || implementation.constant && header.flags.bits() & s::TraitFlags::CONST == 0)
+            {
+                return Err(
+                    "reservation implementation requires its actual supported trait effect",
+                );
+            }
+            // A negative impl maps no member. Positive and reservation impls
+            // retain the declarations checked against the trait.
             let mapped = implementation.members.slice(&self.rows.member_links)?.len();
-            if implementation.negative {
+            if implementation.polarity.is_negative() {
                 if mapped != 0 {
                     return Err("auto or negative trait implementations cannot declare members");
                 }
-            } else if self.rows.traits[index as usize]
-                .members
-                .slice(&self.rows.members)?
-                .len()
-                != mapped
-            {
+            } else if header.members.slice(&self.rows.members)?.len() != mapped {
                 return Err("source implementation omits an actual trait member mapping");
             }
         }

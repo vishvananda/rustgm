@@ -116,15 +116,10 @@ impl Implementations {
         {
             return Err("imported implementation changed its actual retained owner");
         }
-        let (constant, negative) =
+        let (constant, polarity) =
             associated.imported_implementation(store, owner, value.predicate)?;
         check_effect(value.predicate, constant)?;
-        let status = if negative {
-            Status::NegativeHeader
-        } else {
-            Status::PositiveHeader
-        };
-        Ok(status)
+        Ok(Status::header(polarity))
     }
 
     /// This records the source scheduler's profile result, never conformance.
@@ -266,9 +261,7 @@ impl Implementations {
                     if entry.value.source.is_some() {
                         return Err("imported conformance cannot acquire source syntax provenance");
                     }
-                    let (constant, negative) =
-                        associated.imported_implementation(store, *owner, entry.value.predicate)?;
-                    (constant, Polarity::from_negative(negative))
+                    associated.imported_implementation(store, *owner, entry.value.predicate)?
                 }
                 OwnerKind::Trait { .. } | OwnerKind::ImportedInherent(_) => {
                     return Err("implementation polarity belongs to a non-impl owner");

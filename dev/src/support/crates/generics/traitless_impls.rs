@@ -35,7 +35,7 @@ fn own_nominal(rows: &SourceRows, implementation: &ImplHeader) -> Result<(), &'s
     if declaration.artifact != ArtifactRef(0)
         || implementation.unsafe_
         || implementation.constant
-        || implementation.negative
+        || !implementation.polarity.is_positive()
         || !rows
             .declarations
             .get(declaration.declaration.0 as usize)

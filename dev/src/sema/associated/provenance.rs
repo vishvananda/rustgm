@@ -251,7 +251,7 @@ impl Inventory {
         store: &crate::types::Store,
         owner: Owner,
         predicate: crate::types::parameters::predicates::Predicate,
-    ) -> Result<(bool, bool), &'static str> {
+    ) -> Result<(bool, super::ImplPolarity), &'static str> {
         self.language
             .as_ref()
             .and_then(|l| l.imported.as_ref())

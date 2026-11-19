@@ -2,6 +2,7 @@
 use super::{Declarations, Error, Headers, error, mapped_source, predicate_remap, s};
 use crate::{
     resolve::body_origin::ImportedDeclarationId,
+    sema::associated::ImplPolarity,
     support::crates::owner_catalog::DeclarationRef,
     types::{TypeId, outlives::Pair, parameters::predicates::Predicate},
 };
@@ -30,7 +31,7 @@ pub(super) fn prepare(
     let raw = &rows.implementations[index as usize];
     if raw.self_definition != declaration
         || raw.scope != declaration
-        || raw.constant
+        || raw.constant && raw.polarity != ImplPolarity::Reservation
         || (raw.members.start != raw.members.end
             && !context.descriptor.profile().feature_predicates())
     {
@@ -46,7 +47,12 @@ pub(super) fn prepare(
         .map_err(error)?;
     let self_type = graph.ty(raw.self_type)?;
     let predicate = match raw.trait_application {
-        Some(application) => Some(remap.application(application, &mut facts.types, budget)?),
+        Some(application) => Some(
+            remap
+                .application(application, &mut facts.types, budget)?
+                .with_impl_effect(raw.constant)
+                .map_err(error)?,
+        ),
         None if context.descriptor.profile().body_nodes() => None,
         None => {
             return Err(error(

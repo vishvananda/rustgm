@@ -421,7 +421,7 @@ pub struct ImplHeader {
     pub trait_application: Option<TraitApplicationRef>,
     pub unsafe_: bool,
     pub constant: bool,
-    pub negative: bool,
+    pub polarity: crate::support::polarity::ImplPolarity,
     pub region_captures: u32,
     pub region_bounds: Range,
     pub inputs: Range,

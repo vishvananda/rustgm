@@ -153,10 +153,13 @@ impl Graph {
         let Some(s::HeaderRef::Implementation(index)) = rows.header(row)? else {
             return Err("imported candidate reservation lacks its complete actual header");
         };
-        let application = rows.implementations[index as usize]
+        let raw = rows.implementations[index as usize];
+        let application = raw
             .trait_application
             .ok_or("imported inherent reservation requires its wider candidate profile")?;
-        let predicate = self.application(application)?;
+        let predicate = self
+            .application(application)?
+            .with_impl_effect(raw.constant)?;
         self.implementation(store, owner, predicate)?;
         Ok(predicate)
     }

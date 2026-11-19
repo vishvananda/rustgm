@@ -18,7 +18,7 @@ use crate::{
         package::Error,
     },
     sema::{
-        associated::{Owner, OwnerKind, Schema},
+        associated::{ImplPolarity, Owner, OwnerKind, Schema},
         compiler_items::Role,
     },
     support::crates::{Dependencies, SourceDescriptor, generics::source as s},
@@ -393,7 +393,7 @@ impl ProvidedOwners {
         store: &Store,
         owner: Owner,
         predicate: crate::types::parameters::predicates::Predicate,
-    ) -> Result<(bool, bool), &'static str> {
+    ) -> Result<(bool, ImplPolarity), &'static str> {
         let expected = self.implementation_request(store, owner)?;
         let raw = self.implementation_header(owner)?;
         let view = self.view();
@@ -410,7 +410,7 @@ impl ProvidedOwners {
         if predicate != expected || mapped.ty(raw.self_type)? != predicate.ty {
             return Err("selected implementation changed its complete actual trait/Self predicate");
         }
-        Ok((raw.constant, raw.negative))
+        Ok((raw.constant, raw.polarity))
     }
     pub(in crate::sema) fn trait_flags(&self, owner: Owner) -> Result<u16, &'static str> {
         self.owner(owner)?;

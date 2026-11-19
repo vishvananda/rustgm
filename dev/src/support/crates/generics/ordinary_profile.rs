@@ -14,6 +14,7 @@ mod conversions;
 use crate::support::crates::generics::Convention;
 use crate::support::{
     bindings::LangItem, constness::Constness, crates::generics::Work, edition::Edition,
+    polarity::ImplPolarity,
 };
 
 pub(super) fn validate(
@@ -181,8 +182,12 @@ fn validate_with(
         // Version thirteen admits every trait impl's own safety and polarity;
         // the ledger already proved its trait is this packet's own, and each
         // consumer re-proves both against the trait.
-        if header.constant
-            || (header.negative || header.unsafe_)
+        let reservation = header.polarity == ImplPolarity::Reservation;
+        if reservation && binding != BindingProfile::BodyOperations {
+            return Err("reservation implementation transport requires a wider metadata profile");
+        }
+        if header.constant && !reservation
+            || (!header.polarity.is_positive() || header.unsafe_)
                 && !(roles.languages && header.trait_application.is_some())
         {
             return Err(
@@ -379,7 +384,30 @@ fn associated_method(
     Ok(primitive
         || profile.conversions()
             && (conversions::method(rows, headers, header, roles.languages, work)?
-                || bodies && captured::method(rows, headers, header, work)?))
+                || bodies
+                    && (captured::method(rows, headers, header, work)?
+                        || reservation_parent(rows, headers, header, work)?.is_some())))
+}
+
+fn reservation_parent<'a>(
+    rows: &'a SourceRows,
+    headers: &HeaderIndex<'_>,
+    header: &super::super::FunctionHeader,
+    work: &mut Work,
+) -> Result<Option<&'a super::super::ImplHeader>, &'static str> {
+    let Some(parent) = header.parent else {
+        return Ok(None);
+    };
+    let Some(super::super::HeaderRef::Implementation(index)) = headers.header(parent, work)? else {
+        return Ok(None);
+    };
+    Ok(rows
+        .implementations
+        .get(index as usize)
+        .filter(|implementation| {
+            implementation.self_definition == parent
+                && implementation.polarity == ImplPolarity::Reservation
+        }))
 }
 /// Version thirteen: an inherent method may be `const`. Its original is then
 /// a const definition re-checked by every consumer, as a free one is.
@@ -433,29 +461,24 @@ fn functions(
             || profile.conversions()
                 && conversions::required_member(rows, headers, header, roles.conversion, work)?;
         let inherent_const = bodies && inherent_const(rows, headers, header, work)?;
+        let reservation_const = bodies
+            && !inherent_const
+            && header.constness == Constness::Const
+            && reservation_parent(rows, headers, header, work)?.is_some_and(|owner| owner.constant);
+        let supported_signature = |signature: super::super::Signature| {
+            (safety || !signature.unsafe_)
+                && !signature.variadic
+                && (callable
+                    || admitted_convention(rows, header.declaration, signature.convention, profile))
+        };
         if (!free_effects
             && !required
             && !inherent_const
+            && !reservation_const
             && header.constness != Constness::Ordinary)
             || !required && header.constness == Constness::Conditional
-            || (!safety && header.original.unsafe_)
-            || header.original.variadic
-            || !(callable
-                || admitted_convention(
-                    rows,
-                    header.declaration,
-                    header.original.convention,
-                    profile,
-                ))
-            || (!safety && header.callable.unsafe_)
-            || header.callable.variadic
-            || !(callable
-                || admitted_convention(
-                    rows,
-                    header.declaration,
-                    header.callable.convention,
-                    profile,
-                ))
+            || !supported_signature(header.original)
+            || !supported_signature(header.callable)
         {
             return Err(
                 "source nonordinary callable effect/safety/convention requires a wider profile",
@@ -472,7 +495,8 @@ fn functions(
         if bodies && header.parent.is_some() && header.original.unsafe_ != header.callable.unsafe_ {
             return Err("source associated callable changed its actual original/public safety");
         }
-        let associated = associated_method(rows, headers, header, work, profile, roles, bodies)?;
+        let associated = reservation_const
+            || associated_method(rows, headers, header, work, profile, roles, bodies)?;
         if matches!(header.body, FunctionBody::Original(_))
             && header.parent.is_some()
             && !associated
@@ -530,7 +554,7 @@ fn primitive_method(
     work.charge(4)?;
     if implementation.self_definition != parent
         || implementation.constant
-        || implementation.negative
+        || !implementation.polarity.is_positive()
         || implementation.unsafe_
         || implementation.region_captures != 0
         || implementation.region_bounds.start != implementation.region_bounds.end

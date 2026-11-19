@@ -1,7 +1,7 @@
 //! Sealed source data binds one actual original to the installed canonical graph.
 use super::{Catalog, DefId, DefKind, Graph, s, slot_bindings};
 // A const inherent method's original is a const definition, as a free one is.
-use super::super::staged_headers::scheme_ports::inherent_captures as inherent;
+use super::super::staged_headers::scheme_ports::{inherent_captures as inherent, reservation_body};
 use crate::{
     resolve::body_origin::{BodyOrigin, BodySite, ImportedBodyId, ProofSite},
     sema::model::Declarations,
@@ -95,7 +95,9 @@ impl Graph {
             || header.constant != constant
             || (constant
                 && (!descriptor.profile().unconditional_callables()
-                    || function.parent.is_some() && !inherent(descriptor, function)))
+                    || function.parent.is_some()
+                        && !inherent(descriptor, function)
+                        && !reservation_body(descriptor, function)))
             || (header.universals != 0 && !matches!(self.canonical, super::Canonical::Lazy(_)))
             || (function.parent.is_some() && !descriptor.profile().feature_predicates())
             || (header.signature != header.callable

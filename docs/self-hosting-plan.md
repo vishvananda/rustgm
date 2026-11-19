@@ -645,6 +645,18 @@ overlap. References and the native result `7` are under
 `obj/parallel/v14-reservation-reference/`. The original strict observation is
 under `obj/parallel/strict-core/deprecation-optimized/` in the frontier checkout.
 
+Version fourteen carries a completed reservation's checked header and member
+declarations. A fresh importer reconstructs its original const effect and uses
+the reservation for coherence. The ordinary and const reductions both import
+successfully. Their use-site obligations are rejected, and the independent
+positive implementation still returns `7` natively. The old profile rejects
+the reserve annotation, and the unmarked control emits identical LowIR and
+metadata on both compiler revisions. The imported overlap diagnostic retains
+the generic message. The older v13 automatic-implementation provider hits the
+same unwind-marker publication fence on both revisions. Candidate observations
+are under `obj/parallel/v14-reservation-candidate/` in the frontier checkout.
+[Fresh client regression](../dev/tests/crate_linking/versioned_clients.rs)
+
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
 deprecated macro and accepts a call through an annotated `use` alias of a

@@ -141,7 +141,7 @@ impl EmptyContract {
             && implementation.scope == owner
             && implementation.trait_application.is_some()
             && !implementation.constant
-            && !implementation.negative
+            && implementation.polarity.is_positive()
             && header.constness == crate::support::constness::Constness::Ordinary
             && implementation.region_captures == 0
             && implementation

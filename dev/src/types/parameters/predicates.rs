@@ -50,6 +50,20 @@ pub struct Predicate {
     pub bound: Bound,
 }
 impl Predicate {
+    /// The canonical trait application is reused for the implementation's effect.
+    pub(crate) fn with_impl_effect(self, constant: bool) -> Result<Self, &'static str> {
+        if !constant {
+            return Ok(self);
+        }
+        let Bound::Trait(application) = self.bound else {
+            return Err("const implementation requires its canonical trait application");
+        };
+        Ok(Self {
+            bound: Bound::ConstTrait(application),
+            ..self
+        })
+    }
+
     /// Definition-time satisfaction excludes generic inputs and every nonempty
     /// callable binder, even when no lifetime escapes from that callable.
     /// This classifies a bound; it does not establish formation or satisfaction.

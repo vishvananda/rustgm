@@ -5,7 +5,12 @@ use crate::support::constness::Constness;
 impl Stage {
     pub(super) fn implementations(&mut self, facts: &Declarations) -> Result<(), &'static str> {
         let mut count = 0usize;
-        for actual in facts.generics.implementations() {
+        let declarations = facts
+            .generics
+            .implementations
+            .iter()
+            .flat_map(|registry| registry.checked_declarations());
+        for actual in declarations {
             self.charge(1)?;
             let owner = facts
                 .associated
@@ -153,7 +158,7 @@ impl Stage {
             trait_application: None,
             unsafe_: false,
             constant: false,
-            negative: false,
+            polarity: crate::sema::associated::ImplPolarity::Positive,
             region_captures: schema.captures,
             region_bounds,
             inputs,
@@ -185,7 +190,9 @@ impl Stage {
         else {
             return Err("source conformance record does not belong to an implementation");
         };
-        if polarity == crate::sema::associated::ImplPolarity::Reservation {
+        if polarity == crate::sema::associated::ImplPolarity::Reservation
+            && !self.declaration_policies()
+        {
             return Err("reservation implementation transport requires a wider metadata profile");
         }
         let declaration = self.declaration(owner.self_definition)?;
@@ -248,7 +255,7 @@ impl Stage {
             trait_application,
             unsafe_,
             constant,
-            negative: polarity == crate::sema::associated::ImplPolarity::Negative,
+            polarity,
             region_captures: schema.captures,
             region_bounds,
             inputs,

@@ -339,7 +339,7 @@ fn old_metadata_profiles_cannot_drop_actual_reservation_polarity() -> TestResult
     let producer = report.lint_producer().ok_or("actual provider producer")?;
     for feature_predicates in [false, true] {
         let error = producer
-            .require_impl_annotation_transport(&report.package, feature_predicates)
+            .require_impl_annotation_transport(&report.package, feature_predicates, false)
             .err()
             .ok_or("reservation polarity lost at annotation boundary")?;
         assert_eq!(

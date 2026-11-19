@@ -44,22 +44,7 @@ pub struct Family {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct OwnerId(pub u32);
-/// Source polarity is independent of constness and semantic conformance.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum ImplPolarity {
-    Positive,
-    Negative,
-    Reservation,
-}
-impl ImplPolarity {
-    pub(crate) const fn from_negative(negative: bool) -> Self {
-        if negative {
-            Self::Negative
-        } else {
-            Self::Positive
-        }
-    }
-}
+pub use crate::support::polarity::ImplPolarity;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum OwnerKind {
     Trait {

@@ -1,7 +1,7 @@
 //! Reprove supported imported receiver contracts; metadata is never conformance.
 use super::{Checker, DefId, Error};
 use crate::{
-    sema::associated::{Owner, OwnerKind},
+    sema::associated::{ImplPolarity, Owner, OwnerKind},
     support::bindings::LangItem,
     types::{
         outlives::Queries,
@@ -299,7 +299,11 @@ impl Checker<'_> {
         if let Some(owner) = self.imported_automatic_owner(definition, predicate)? {
             return self.validate_imported_auto_implementation(definition, predicate, owner);
         }
-        if self.imported_negative(definition, predicate)? {
+        let polarity = self.imported_polarity(definition, predicate)?;
+        if polarity == ImplPolarity::Reservation {
+            return self.validate_imported_reservation(definition);
+        }
+        if polarity == ImplPolarity::Negative {
             // As rustc does, a negative impl of a trait that is not auto only
             // denies its application: it has no requirement, member or
             // coverage proof, and it is never positive evidence.
@@ -333,9 +337,27 @@ impl Checker<'_> {
             .map_err(Error::unlocated)
     }
 
-    /// Whether an imported impl is negative, read from its own row after
-    /// `implementation` re-proved its safety against its trait.
-    fn imported_negative(&self, definition: DefId, predicate: Predicate) -> Result<bool, Error> {
+    fn validate_imported_reservation(&mut self, definition: DefId) -> Result<(), Error> {
+        if !self.facts.generics.environments.contains_key(&definition) {
+            return Err(Error::unlocated(
+                "imported reservation lacks its complete actual input environment",
+            ));
+        }
+        self.facts
+            .generics
+            .implementations
+            .as_mut()
+            .ok_or_else(|| Error::unlocated("imported reservation registry disappeared"))?
+            .complete(definition, Vec::new(), Vec::new(), Vec::new())
+            .map_err(Error::unlocated)
+    }
+
+    /// Read the actual header after authenticating its trait and safety.
+    fn imported_polarity(
+        &self,
+        definition: DefId,
+        predicate: Predicate,
+    ) -> Result<ImplPolarity, Error> {
         let owner = self
             .facts
             .associated
@@ -351,7 +373,7 @@ impl Checker<'_> {
         self.facts
             .associated
             .imported_implementation(&self.facts.types, owner, predicate)
-            .map(|(_, negative)| negative)
+            .map(|(_, polarity)| polarity)
             .map_err(Error::unlocated)
     }
 

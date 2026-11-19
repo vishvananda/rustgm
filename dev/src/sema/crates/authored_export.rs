@@ -1048,7 +1048,11 @@ fn require_export_mode(
         }
         waiving(
             producer
-                .require_impl_annotation_transport(&report.package, mode.feature_predicates())
+                .require_impl_annotation_transport(
+                    &report.package,
+                    mode.feature_predicates(),
+                    languages && mode == ExportMode::CompilerOperations,
+                )
                 .map_err(|error| error.message),
         )?;
     }

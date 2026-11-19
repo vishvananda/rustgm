@@ -330,22 +330,25 @@ impl Producer {
         }))
     }
     pub(crate) fn require_impl_bound_transport(&self, package: &Package) -> Result<(), Violation> {
-        self.require_impl_annotation_transport(package, false)
+        self.require_impl_annotation_transport(package, false, false)
     }
     pub(crate) fn require_impl_annotation_transport(
         &self,
         package: &Package,
         feature_predicates: bool,
+        reservation_polarity: bool,
     ) -> Result<(), Violation> {
         if let Some(column) = &self.ineffective_headers {
             for (&key, row) in &column.rows {
                 self.attribute_read(key, 1)?;
                 if row.reservation.is_some() {
                     self.declaration_annotation(package, key)?;
-                    return Err(invalid(
-                        key,
-                        "reservation implementation transport requires a wider metadata profile",
-                    ));
+                    if !reservation_polarity {
+                        return Err(invalid(
+                            key,
+                            "reservation implementation transport requires a wider metadata profile",
+                        ));
+                    }
                 }
                 if !feature_predicates && !row.bound.is_empty() {
                     self.declaration_annotation(package, key)?;

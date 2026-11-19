@@ -78,7 +78,7 @@ pub(super) fn method(
     work.charge(5)?;
     if implementation.self_definition != parent
         || implementation.constant
-        || implementation.negative
+        || !implementation.polarity.is_positive()
         || implementation.unsafe_ && !unsafe_impls
         || implementation.region_captures != 0
         || !implementation

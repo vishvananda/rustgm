@@ -1,7 +1,7 @@
 //! Required methods retain authenticated absence in the same immutable inventory.
 use super::{Catalog, DefId, DefKind, Graph, SourceDescriptor, s};
 use crate::resolve::body_origin::BodyOrigin;
-use crate::sema::associated::{Owner, OwnerKind};
+use crate::sema::associated::{ImplPolarity, Owner, OwnerKind};
 
 impl Graph {
     pub(in crate::sema) fn conversion_role(
@@ -40,7 +40,7 @@ impl Graph {
         store: &crate::types::Store,
         owner: Owner,
         predicate: crate::types::parameters::predicates::Predicate,
-    ) -> Result<(bool, bool), &'static str> {
+    ) -> Result<(bool, ImplPolarity), &'static str> {
         self.require_store(store)?;
         self.owner(owner)?;
         let OwnerKind::ImportedImpl(id) = owner.kind else {
@@ -56,7 +56,10 @@ impl Graph {
         let application = raw
             .trait_application
             .ok_or("imported inherent conformance requires its wider actual member profile")?;
-        if self.application(application)? != predicate
+        if self
+            .application(application)?
+            .with_impl_effect(raw.constant)?
+            != predicate
             || self
                 .ty(raw.self_type)
                 .map_err(|_| "imported impl lost its actual Self type")?
@@ -68,11 +71,11 @@ impl Graph {
         // rustc's impl safety rule, re-proved for every imported impl: an
         // impl of an unsafe trait is `unsafe impl` (E0200), an impl of a safe
         // trait is not (E0199), and a negative impl never is (E0198).
-        let required_unsafe = flags & s::TraitFlags::UNSAFE != 0 && !raw.negative;
+        let required_unsafe = flags & s::TraitFlags::UNSAFE != 0 && !raw.polarity.is_negative();
         if raw.unsafe_ != required_unsafe {
             return Err("selected impl safety/member kinds disagree with its actual trait");
         }
-        Ok((raw.constant, raw.negative))
+        Ok((raw.constant, raw.polarity))
     }
     /// The flags of the trait row an imported impl's application names. The
     /// ledger admitted only this packet's own (artifact 0) trait headers.
@@ -103,7 +106,7 @@ impl Graph {
         owner: Owner,
         predicate: crate::types::parameters::predicates::Predicate,
     ) -> Result<bool, &'static str> {
-        let (_, negative) = self.implementation(store, owner, predicate)?;
+        let (_, polarity) = self.implementation(store, owner, predicate)?;
         let OwnerKind::ImportedImpl(id) = owner.kind else {
             return Err("imported conformance requires its actual imported impl owner");
         };
@@ -122,7 +125,7 @@ impl Graph {
         if self.applied_trait_flags(application)? & s::TraitFlags::AUTO == 0 {
             return Err("imported automatic implementation requires its exact auto trait");
         }
-        Ok(negative)
+        Ok(polarity.is_negative())
     }
     /// Version thirteen: an imported inherent impl has no trait application,
     /// no modifier and extends only a nominal of its own provider. The Self is
@@ -151,7 +154,7 @@ impl Graph {
         if raw.trait_application.is_some()
             || raw.constant
             || raw.unsafe_
-            || raw.negative
+            || !raw.polarity.is_positive()
             || self
                 .ty(raw.self_type)
                 .map_err(|_| "imported inherent impl lost its actual Self type")?

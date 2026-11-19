@@ -218,6 +218,7 @@ impl Stage {
                 let roles = RequiredRoles {
                     conversions: self.conversion_roles(),
                     callables: self.body_nodes(),
+                    reservations: self.declaration_policies(),
                 };
                 written_constness(report, facts, function, roles)?
             } else if facts.is_const_function(function.definition) {
@@ -400,6 +401,7 @@ impl Stage {
 struct RequiredRoles {
     conversions: bool,
     callables: bool,
+    reservations: bool,
 }
 fn written_constness(
     report: &Report,
@@ -427,7 +429,26 @@ fn written_constness(
         }
         return Ok(Constness::Conditional);
     }
-    if flags.constant != facts.is_const_function(function.definition) {
+    let effective = facts.is_const_function(function.definition);
+    if effective && !flags.constant && roles.reservations {
+        let parent = facts
+            .associated
+            .owner(function.definition)
+            .and_then(|id| facts.associated.get(id));
+        if parent.is_some_and(|owner| {
+            matches!(
+                owner.kind,
+                OwnerKind::Impl {
+                    constant: true,
+                    polarity: crate::sema::associated::ImplPolarity::Reservation,
+                    ..
+                }
+            )
+        }) {
+            return Ok(Constness::Const);
+        }
+    }
+    if flags.constant != effective {
         return Err("source effective const eligibility requires its actual marker transport");
     }
     Ok(if flags.constant {

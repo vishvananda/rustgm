@@ -2,7 +2,7 @@
 use super::{
     BodyRef, DeclarationRef, Input, Writer, address_read, address_write, g, id, option, range, s,
 };
-use crate::support::bindings::LangItem;
+use crate::support::{bindings::LangItem, polarity::ImplPolarity};
 
 pub(super) fn trait_write(out: &mut Writer, row: &s::TraitHeader) -> Result<(), &'static str> {
     for value in [
@@ -55,7 +55,7 @@ pub(super) fn implementation_write(
     out.bytes(&[
         u8::from(row.unsafe_),
         u8::from(row.constant),
-        u8::from(row.negative),
+        row.polarity as u8,
     ])?;
     id(out, row.region_captures)?;
     range(out, row.region_bounds)?;
@@ -71,7 +71,12 @@ pub(super) fn implementation_read(read: &mut Input<'_, '_>) -> Result<s::ImplHea
         trait_application: read.option()?.map(s::TraitApplicationRef),
         unsafe_: read.boolean()?,
         constant: read.boolean()?,
-        negative: read.boolean()?,
+        polarity: match read.reader.u8()? {
+            0 => ImplPolarity::Positive,
+            1 => ImplPolarity::Negative,
+            2 if read.profile.declaration_policies() => ImplPolarity::Reservation,
+            _ => return Err("invalid source boolean"),
+        },
         region_captures: read.id()?,
         region_bounds: read.range()?,
         inputs: read.range()?,

@@ -2,6 +2,7 @@
 use super::{Declarations, Error, Headers, error, mapped_source, s};
 use crate::{
     sema::lifetimes::FunctionRegions,
+    support::constness::Constness,
     types::{Kind, TypeId},
 };
 
@@ -106,6 +107,56 @@ pub(in crate::sema::crates::typed_headers) fn inherent_captures(
                     })
             )
         })
+}
+
+pub(in crate::sema::crates::typed_headers) fn reservation_body(
+    descriptor: s::Descriptor<'_>,
+    raw: &s::FunctionHeader,
+) -> bool {
+    let rows = descriptor.rows();
+    descriptor.profile().declaration_policies()
+        && raw.parent.is_some_and(|parent| {
+            matches!(rows.header(parent), Ok(Some(s::HeaderRef::Implementation(index)))
+            if rows.implementations.get(index as usize).is_some_and(|owner| {
+                owner.self_definition == parent
+                    && owner.constant
+                    && owner.polarity == crate::sema::associated::ImplPolarity::Reservation
+            }))
+        })
+}
+
+pub(super) fn callable_effect(
+    descriptor: s::Descriptor<'_>,
+    raw: &s::FunctionHeader,
+    budget: &mut Headers,
+) -> Result<bool, Error> {
+    let constant = raw.constness == Constness::Const;
+    let reservation_const = if constant && raw.parent.is_some() {
+        budget.charge(1)?;
+        reservation_body(descriptor, raw)
+    } else {
+        false
+    };
+    // A required callable role's conditional effect stays on its declaration.
+    let conditional = raw.constness == Constness::Conditional
+        && descriptor.profile().body_nodes()
+        && raw.parent.is_some()
+        && raw.body == s::FunctionBody::Absent;
+    if raw.regions.captures != 0 && !inherent_captures(descriptor, raw)
+        || raw.regions.early.start != raw.regions.early.end
+        || (raw.constness != Constness::Ordinary
+            && !conditional
+            && !(constant
+                && descriptor.profile().unconditional_callables()
+                && (raw.parent.is_none()
+                    || reservation_const
+                    || inherent_captures(descriptor, raw))))
+    {
+        return Err(error(
+            "source callable captures/effects require their wider header profile",
+        ));
+    }
+    Ok(constant)
 }
 
 pub(super) fn receiver(

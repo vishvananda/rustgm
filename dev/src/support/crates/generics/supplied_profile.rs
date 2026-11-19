@@ -39,7 +39,7 @@ pub(super) fn validate(
     }
     for implementation in &rows.implementations {
         work.charge(1)?;
-        if implementation.negative {
+        if !implementation.polarity.is_positive() {
             return Err("negative source implementation requires its separate semantic profile");
         }
     }

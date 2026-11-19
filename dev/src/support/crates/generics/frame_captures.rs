@@ -39,7 +39,7 @@ pub(super) fn method(
     let scopes = headers.scopes();
     if implementation.self_definition != parent
         || implementation.constant
-        || implementation.negative
+        || !implementation.polarity.is_positive()
         || implementation.unsafe_
         || !implementation
             .region_bounds

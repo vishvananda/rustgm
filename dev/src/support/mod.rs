@@ -20,6 +20,7 @@ pub mod linker_libraries;
 pub mod llvm_symbols;
 pub mod marker_traits;
 pub mod names;
+pub mod polarity;
 pub(crate) mod quoted;
 pub(crate) mod radix_map;
 pub(crate) mod retained;

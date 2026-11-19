@@ -2,7 +2,7 @@
 use super::typed_headers::{mapped_source::Graph, unpaid_provided::ProvidedOwners};
 use crate::{
     sema::{
-        associated::{Owner, Schema},
+        associated::{ImplPolarity, Owner, Schema},
         compiler_items::Role,
     },
     support::crates::generics::source as s,
@@ -181,7 +181,7 @@ impl ImportedOwners {
         store: &Store,
         owner: Owner,
         predicate: Predicate,
-    ) -> Result<(bool, bool), &'static str> {
+    ) -> Result<(bool, ImplPolarity), &'static str> {
         match self {
             Self::Ordinary(graph) => graph.implementation(store, owner, predicate),
             Self::Provided(mapping) => mapping.implementation(store, owner, predicate),

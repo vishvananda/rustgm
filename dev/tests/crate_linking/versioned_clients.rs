@@ -20,6 +20,22 @@ pub fn scheduled() {}
 pub fn next_release() {}
 "#;
 
+const RESERVATION_PROVIDER: &str = r#"
+#[stable(feature="reservation_transport",since="1.0.0")]
+#[rustc_const_unstable(feature="reservation_effect",issue="none")]
+#[lang="From"]
+pub const trait From<T>: Sized {
+    #[stable(feature="reservation_transport",since="1.0.0")]
+    fn from(value: T) -> Self;
+}
+#[stable(feature="reservation_transport",since="1.0.0")]
+#[rustc_const_unstable(feature="reservation_effect",issue="none")]
+#[rustc_reservation_impl="preserve future implementation"]
+const impl<T> From<!> for T {
+    fn from(value: !) -> T { value }
+}
+"#;
+
 fn qualify(native: bool) -> Result {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -97,6 +113,38 @@ fn source_export(
     command
 }
 
+fn availability_foundation(root: &Path) -> Result<String> {
+    let source = std::fs::read_to_string(
+        root.join("pa31/tests/spec/source-availability-transport/provider.rs"),
+    )?;
+    Ok(source
+        .split_once("\n#[unstable(feature=\"experimental_identity\"")
+        .ok_or("source availability fixture lost its role-only prefix")?
+        .0
+        .to_owned())
+}
+
+fn source_client(source: &Path, metadata: &Path, lowir: &Path) -> Command {
+    let mut command = Command::new(env!("CARGO_BIN_EXE_rustgm"));
+    command
+        .args([
+            "--emit-lowir",
+            "--edition=2024",
+            "--crate-name",
+            "client",
+            "--crate-disambiguator",
+            "exact_cli",
+            "--source-client",
+            "base@exact_cli",
+            "--extern",
+        ])
+        .arg(format!("base={}", metadata.display()))
+        .arg("-o")
+        .arg(lowir)
+        .arg(source);
+    command
+}
+
 #[test]
 fn cli_version_fourteen_preserves_actual_deprecation_and_client_policy() -> Result {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -107,13 +155,7 @@ fn cli_version_fourteen_preserves_actual_deprecation_and_client_policy() -> Resu
         std::process::id()
     ));
     std::fs::create_dir_all(&folder)?;
-    let foundation = std::fs::read_to_string(
-        root.join("pa31/tests/spec/source-availability-transport/provider.rs"),
-    )?;
-    let foundation = foundation
-        .split_once("\n#[unstable(feature=\"experimental_identity\"")
-        .ok_or("source availability fixture lost its role-only prefix")?
-        .0;
+    let foundation = availability_foundation(root)?;
     let source = folder.join("provider.rs");
     std::fs::write(&source, format!("{foundation}\n{DEPRECATED_PROVIDER}"))?;
     let metadata = folder.join("provider.rgcrate");
@@ -150,23 +192,8 @@ fn cli_version_fourteen_preserves_actual_deprecation_and_client_policy() -> Resu
              extern crate base;#[{policy}(deprecated)]fn main(){{base::{callee}();}}"
         );
         std::fs::write(&source, text)?;
-        let output = Command::new(env!("CARGO_BIN_EXE_rustgm"))
-            .args([
-                "--emit-lowir",
-                "--edition=2024",
-                "--crate-name",
-                "client",
-                "--crate-disambiguator",
-                "exact_cli",
-                "--source-client",
-                "base@exact_cli",
-                "--extern",
-            ])
-            .arg(format!("base={}", metadata.display()))
-            .arg("-o")
-            .arg(folder.join(format!("{case}.lowir")))
-            .arg(source)
-            .output()?;
+        let output =
+            source_client(&source, &metadata, &folder.join(format!("{case}.lowir"))).output()?;
         let stderr = String::from_utf8(output.stderr)?;
         assert_eq!(
             output.status.code(),
@@ -178,6 +205,72 @@ fn cli_version_fourteen_preserves_actual_deprecation_and_client_policy() -> Resu
                 stderr.contains(&format!("use of deprecated declaration: {note}")),
                 "{case}: {stderr}"
             );
+        } else {
+            assert!(stderr.is_empty(), "{case}: {stderr}");
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn cli_version_fourteen_preserves_const_reservation_for_coherence() -> Result {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root.join(format!(
+        "obj/parallel/reservation-polarity-v14/cli-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let foundation = availability_foundation(root)?;
+    let provider = folder.join("provider.rs");
+    std::fs::write(
+        &provider,
+        format!("#![feature(never_type,const_trait_impl)]\n{foundation}\n{RESERVATION_PROVIDER}"),
+    )?;
+    let metadata = folder.join("provider.rgcrate");
+    let mut command = source_export(
+        "module-body-operations-v14",
+        &provider,
+        &metadata,
+        &folder.join("provider.lowir"),
+        true,
+    );
+    command.arg("--cap-lints=allow");
+    super::artifacts::checked("provider", &folder, &mut command)?;
+    let bytes = std::fs::read(&metadata)?;
+    assert_eq!(
+        rustgm::support::crates::encode(&rustgm::support::crates::decode(&bytes)?)?,
+        bytes
+    );
+    for (case, body, diagnostic) in [
+        ("unused", "fn main() {}", None),
+        (
+            "use",
+            "struct Local; fn require<T: base::From<!>>() {} fn main() { require::<Local>(); }",
+            Some("trait obligation requires an unambiguous matching assumption or implementation"),
+        ),
+        (
+            "overlap",
+            "struct Local; trait Marker {} impl<T: base::From<!>> Marker for T {} impl Marker for Local {} fn main() {}",
+            Some("overlapping trait implementation headers require coherence proof"),
+        ),
+    ] {
+        let client = folder.join(format!("{case}.rs"));
+        std::fs::write(
+            &client,
+            format!("#![feature(never_type,no_core)]#![no_core]\n{body}"),
+        )?;
+        let output =
+            source_client(&client, &metadata, &folder.join(format!("{case}.lowir"))).output()?;
+        let stderr = String::from_utf8(output.stderr)?;
+        assert_eq!(
+            output.status.code(),
+            Some(i32::from(diagnostic.is_some())),
+            "{case}: {stderr}"
+        );
+        if let Some(message) = diagnostic {
+            assert!(stderr.contains(message), "{case}: {stderr}");
         } else {
             assert!(stderr.is_empty(), "{case}: {stderr}");
         }
