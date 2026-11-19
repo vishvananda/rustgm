@@ -397,6 +397,86 @@ fn main() {}
 }
 
 #[test]
+fn cli_version_fourteen_transports_required_range_declarations() -> Result {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root.join(format!(
+        "obj/parallel/v14-range-transport/cli-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let fixture = root.join("pa31/tests/spec/range-helper-roles/source-declarations.rs");
+    let metadata = folder.join("provider.rgcrate");
+    let lowir = folder.join("provider.lowir");
+    super::artifacts::checked(
+        "range-provider",
+        &folder,
+        source_export(
+            "module-body-operations-v14",
+            &fixture,
+            &metadata,
+            &lowir,
+            true,
+        )
+        .arg("--cap-lints=allow"),
+    )?;
+    required_range_headers(&metadata)?;
+    for (name, body, status) in [("bound", "", 0), ("no-impl", "allowed::<u8>();", 1)] {
+        let client = folder.join(format!("{name}.rs"));
+        std::fs::write(
+            &client,
+            format!(
+                r#"#![feature(no_core,pattern_type_range_trait,range_role_fixture)]
+#![no_core]
+fn allowed<T: base::RangePattern>() {{}}
+#[unsafe(no_mangle)] pub extern "C" fn observed() {{ {body} }}
+"#
+            ),
+        )?;
+        let output = source_client(&client, &metadata, &folder.join(format!("{name}.lowir")))
+            .args(["--crate-type=lib", "--cap-lints=allow"])
+            .output()?;
+        let stderr = String::from_utf8(output.stderr)?;
+        assert_eq!(output.status.code(), Some(status), "{name}: {stderr}");
+        if status == 1 {
+            assert!(stderr.contains("trait obligation"), "{name}: {stderr}");
+        }
+    }
+    let rejected = source_export(
+        "module-bodies-v13",
+        &fixture,
+        &folder.join("older.rgcrate"),
+        &lowir,
+        true,
+    )
+    .arg("--cap-lints=allow")
+    .output()?;
+    let stderr = String::from_utf8(rejected.stderr)?;
+    assert_eq!(rejected.status.code(), Some(1), "{stderr}");
+    assert!(
+        stderr.contains("source range helper contract transport is not implemented"),
+        "{stderr}"
+    );
+    Ok(())
+}
+
+fn required_range_headers(metadata: &Path) -> Result {
+    use rustgm::support::crates::{self, generics::source::Profile};
+    let bytes = std::fs::read(metadata)?;
+    let packet = crates::decode(&bytes)?;
+    assert_eq!(crates::encode(&packet)?, bytes);
+    let source = packet
+        .source_descriptor()
+        .ok_or("range source descriptor")?;
+    assert_eq!(source.profile(), Profile::Source2024ModuleBodyOperations);
+    let bodies = source.compiler_operations()?;
+    assert_eq!(bodies.ordinary_bodies().len(), 0);
+    assert!(bodies.operations().is_empty());
+    Ok(())
+}
+
+#[test]
 fn cli_version_fourteen_transports_exact_reflection_nominal_roles() -> Result {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()

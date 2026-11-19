@@ -284,8 +284,14 @@ fn trait_headers(
                 tuple_marker(report, facts, declaration, steps)?;
                 complete.insert(role);
             }
-            // The callable family is admitted together once the loop completes.
-            LangItem::FnOnce | LangItem::FnMut | LangItem::Fn | LangItem::FnOnceOutput => {}
+            // Grouped roles are checked together once the loop completes.
+            LangItem::FnOnce
+            | LangItem::FnMut
+            | LangItem::Fn
+            | LangItem::FnOnceOutput
+            | LangItem::RangeMin
+            | LangItem::RangeMax
+            | LangItem::RangeSub => {}
             LangItem::Panic => {
                 super::super::runtime_panics::imported(facts, declaration, role, steps)?;
                 complete.insert(role);
@@ -304,6 +310,22 @@ fn trait_headers(
     if catalog.role(LangItem::CloneFn)?.is_some() && !complete.contains(LangItem::CloneFn) {
         return Err("source language member has no validated actual trait owner");
     }
+    let callables = grouped_roles(report, facts, catalog, steps, &mut complete)?;
+    Ok((complete, callables))
+}
+
+fn grouped_roles(
+    report: &Report,
+    facts: &Declarations,
+    catalog: &Catalog,
+    steps: &mut usize,
+    complete: &mut super::RoleSet,
+) -> Result<super::invocation::Imported, &'static str> {
+    if super::range_members::imported(report, facts, catalog, steps)? {
+        for role in super::range_members::ROLES {
+            complete.insert(role);
+        }
+    }
     let callables = super::invocation::imported(report, facts, catalog, steps)?;
     for (role, admitted) in [
         (
@@ -318,7 +340,7 @@ fn trait_headers(
             complete.insert(role);
         }
     }
-    Ok((complete, callables))
+    Ok(callables)
 }
 
 /// The imported Tuple marker: an empty, parameterless deny-implementation trait.

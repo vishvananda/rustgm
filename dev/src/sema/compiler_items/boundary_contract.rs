@@ -23,6 +23,36 @@ pub(in crate::sema) enum SourceRangeMember {
         signature: TypeId,
     },
 }
+fn range_contract(facts: &Declarations) -> Option<&super::roles::range_members::Contracts> {
+    facts
+        .source_bindings
+        .as_deref()?
+        .traits
+        .as_deref()?
+        .range
+        .as_deref()
+}
+
+pub(in crate::sema) fn source_range_headers(
+    facts: &Declarations,
+) -> Option<(
+    crate::resolve::bindings::Declaration,
+    [crate::resolve::bindings::Declaration; 3],
+)> {
+    let contract = range_contract(facts)?;
+    Some((contract.parent, contract.members))
+}
+
+pub(in crate::sema) fn require_range_transport(
+    report: &Report,
+    facts: &Declarations,
+) -> Result<(), &'static str> {
+    range_contract(facts)
+        .ok_or("source range transport requires all three completed roles")?
+        .current(report, facts)
+        .map_err(|_| "source range transport changed its completed declaration contract")
+}
+
 pub(in crate::sema) fn source_range_member(
     report: &Report,
     facts: &mut Declarations,

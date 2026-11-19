@@ -424,6 +424,14 @@ fn role_parent(
         };
         return Ok(Some(rows.associated_types[index as usize].parent));
     }
+    if matches!(role, LangItem::RangeMin | LangItem::RangeMax) {
+        let parent = rows
+            .declarations
+            .get(declaration.0 as usize)
+            .and_then(|row| row.definition.parent)
+            .ok_or("imported range bound lacks its actual trait owner")?;
+        return Ok(Some(parent));
+    }
     if role_kind(role) != DefKind::Function {
         return Ok(None);
     }

@@ -550,6 +550,16 @@ fn required_trait_member(
     if selected.is_some() && facts.nonconst_trait_member(function.definition)? {
         return Err("source non-const Div method requires its actual policy transport");
     }
+    if roles.declaration_policies
+        && let Some((parent, [_, _, subtract])) =
+            crate::sema::compiler_items::source_range_headers(facts)
+        && subtract.definition == function.definition
+    {
+        if facts.nonconst_trait_member(function.definition)? {
+            return Err("source RangeSub requires its actual conditional method effect");
+        }
+        selected = Some(parent);
+    }
     if roles.callables {
         for role in [LangItem::FnOnce, LangItem::FnMut, LangItem::Fn] {
             if let Some(found) = catalog.header_role(role)?

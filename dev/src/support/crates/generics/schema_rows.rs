@@ -11,6 +11,7 @@ pub(crate) mod bodymap;
 mod compiler_rows;
 #[path = "profile_descriptor.rs"]
 mod descriptor;
+mod interval_roles;
 mod operation_contracts;
 mod results_contract;
 pub use compiler_rows::*;

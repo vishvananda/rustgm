@@ -8,6 +8,13 @@ use crate::{
     types::{Kind, TypeId},
 };
 impl Stage {
+    pub(super) fn range_required_constant(&self, facts: &Declarations, definition: DefId) -> bool {
+        self.declaration_policies()
+            && crate::sema::compiler_items::source_range_headers(facts).is_some_and(
+                |(_, [min, max, _])| definition == min.definition || definition == max.definition,
+            )
+    }
+
     /// Version thirteen: value code 17 names the exported constant
     /// declaration a body reads. Its value travels once, in that
     /// declaration's header row.
@@ -94,6 +101,22 @@ impl Stage {
                 .copied()
                 .flatten()
                 .ok_or("source constant export requires its completed value")?;
+            if self.range_required_constant(facts, id) {
+                let ty = self.ty(
+                    facts,
+                    ty,
+                    Context {
+                        owner: declaration,
+                        frame: None,
+                        body: None,
+                    },
+                )?;
+                self.reserve(size_of::<s::ConstantHeader>())?;
+                self.cold()?
+                    .constants
+                    .push(s::ConstantHeader { ty, value: None });
+                continue;
+            }
             let scalar = value_type(facts, ty)?;
             let reader = Reader::new(facts);
             let value = reader

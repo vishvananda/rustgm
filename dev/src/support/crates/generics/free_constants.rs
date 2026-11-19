@@ -90,11 +90,13 @@ pub(super) fn headers(
 pub(super) fn validate(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
+    profile: Profile,
     work: &mut Work,
 ) -> Result<(), &'static str> {
     if rows.constants().is_empty() {
         return Ok(());
     }
+    let [min, max, _] = super::interval_roles::bound_roles(rows, profile, work)?;
     for (index, row) in rows.declarations.iter().enumerate() {
         if row.definition.kind != DefinitionKind::Constant {
             continue;
@@ -109,6 +111,13 @@ pub(super) fn validate(
             .constants()
             .get(ordinal as usize)
             .ok_or("source constant rows lack their declaration")?;
+        if min == Some(declaration) || max == Some(declaration) {
+            // The role validator authenticated both as required members.
+            if header.value.is_some() {
+                return Err("source required range bound cannot carry an initializer");
+            }
+            continue;
+        }
         free_owner(rows, row, work)?;
         let value = match header.value {
             None => return Err("source free constant requires its value"),

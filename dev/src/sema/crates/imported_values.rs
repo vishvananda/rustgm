@@ -51,6 +51,11 @@ fn source_constants(
         };
         let rows = descriptor.rows();
         for (declaration, row) in rows.constant_rows() {
+            // The v14 validator admits absent values only for the exact
+            // required range bounds. Their type cells still install normally.
+            if row.value.is_none() && descriptor.profile().declaration_policies() {
+                continue;
+            }
             let definition = imported
                 .generic_definition(descriptor.identity(), declaration)
                 .map_err(error)?;

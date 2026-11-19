@@ -127,7 +127,10 @@ pub(crate) use select_calls::{Select, check_const_select, prepare_select, source
 #[path = "compiler_items/boundary_contract.rs"]
 mod range_contract;
 mod roles;
-pub(in crate::sema) use range_contract::{RangeHelper, SourceRangeMember, source_range_member};
+pub(in crate::sema) use range_contract::{
+    RangeHelper, SourceRangeMember, require_range_transport, source_range_headers,
+    source_range_member,
+};
 pub(in crate::sema) mod site_records;
 pub(in crate::sema) use roles::admitted_headers::selected_roles;
 pub(crate) use roles::float_default;

@@ -88,10 +88,12 @@ impl HeaderAttributeColumns {
         profile: super::Profile,
         work: &mut Work,
     ) -> Result<usize, &'static str> {
+        let [_, _, range_sub] = super::interval_roles::bound_roles(rows, profile, work)?;
         self.validate_headers(
             (&rows.declarations, &rows.functions, &rows.traits),
             base,
             profile,
+            range_sub,
             work,
         )
     }
@@ -106,6 +108,7 @@ impl HeaderAttributeColumns {
             (&rows.declarations, &rows.functions, &rows.traits),
             base,
             profile,
+            None,
             work,
         )
     }
@@ -118,6 +121,7 @@ impl HeaderAttributeColumns {
         ),
         base: usize,
         profile: super::Profile,
+        range_sub: Option<DeclarationRef>,
         work: &mut Work,
     ) -> Result<usize, &'static str> {
         work.charge(self.functions.len().saturating_add(self.traits.len()))?;
@@ -150,7 +154,10 @@ impl HeaderAttributeColumns {
             }
             // Caller tracking changes the call ABI of a defined Rust function;
             // consumers re-prove its convention on their installed signature.
-            if contract.caller_tracking && !matches!(header.body, super::FunctionBody::Original(_))
+            if contract.caller_tracking
+                && !matches!(header.body, super::FunctionBody::Original(_))
+                && !(header.body == super::FunctionBody::Absent
+                    && range_sub == Some(header.declaration))
             {
                 return Err("source caller tracking requires an exported original body");
             }

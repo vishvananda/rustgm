@@ -524,14 +524,20 @@ impl Validation<'_> {
                 .implementations
                 .get(index as usize)
                 .is_some_and(|row| row.constant),
+            // An absent associated value belongs to the validated required
+            // range family. It inherits its trait's const availability.
+            Some(super::HeaderRef::Constant(index)) => self
+                .columns
+                .constants()
+                .get(index as usize)
+                .is_some_and(|row| row.value.is_none()),
             None
             | Some(
                 super::HeaderRef::Nominal(_)
                 | super::HeaderRef::AssociatedType(_)
                 | super::HeaderRef::AssociatedDefinition(_)
                 | super::HeaderRef::Variant(_)
-                | super::HeaderRef::Constructor(_)
-                | super::HeaderRef::Constant(_),
+                | super::HeaderRef::Constructor(_),
             ) => false,
         }
     }

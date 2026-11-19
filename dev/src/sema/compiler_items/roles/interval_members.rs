@@ -173,21 +173,113 @@ fn method(
     {
         return Err("source RangeSub requires its actual required nongeneric method");
     }
+    self_signature(facts, function.signature, self_type)?;
+    Ok(function.signature)
+}
+
+fn self_signature(
+    facts: &Declarations,
+    signature: TypeId,
+    self_type: TypeId,
+) -> Result<(), &'static str> {
     let Some(Kind::Function {
         bound_regions: 0,
         parameters,
         result,
         unsafe_: false,
         convention: Convention::RUST,
-    }) = facts.types.kind(function.signature)
+    }) = facts.types.kind(signature)
     else {
         return Err("source RangeSub requires its safe Rust Self signature");
     };
     if result != self_type || facts.types.list(parameters) != Some(&[self_type]) {
         return Err("source RangeSub requires one by-value Self input and Self result");
     }
-    Ok(function.signature)
+    Ok(())
 }
+
+/// Recheck the required member family in the consumer's actual type arena.
+pub(super) fn imported(
+    report: &Report,
+    facts: &Declarations,
+    catalog: &super::Catalog,
+    steps: &mut usize,
+) -> Result<bool, &'static str> {
+    use crate::resolve::body_origin::DeclarationOrigin;
+    *steps = steps.saturating_add(3);
+    let [min, max, sub] = ROLES.map(|role| catalog.role(role));
+    let members = [min?, max?, sub?];
+    if members == [None; 3] {
+        return Ok(false);
+    }
+    let [Some(min), Some(max), Some(sub)] = members else {
+        return Err("imported range transport requires all three completed roles");
+    };
+    *steps = steps.saturating_add(8);
+    let definition = sub
+        .parent
+        .ok_or("imported RangeSub lacks its actual trait owner")?;
+    let origins = facts
+        .crates
+        .as_deref()
+        .and_then(crate::sema::crates::Linkage::origin_catalog)
+        .ok_or("imported range family lost its actual declaration catalog")?;
+    let header = Trait::current(
+        report,
+        facts,
+        super::super::Role {
+            definition,
+            parent: None,
+            origin: DeclarationOrigin::Imported(origins.declaration(definition)?),
+        },
+        steps,
+    )?;
+    header.profile(
+        &facts.types,
+        Flags {
+            unsafe_: false,
+            constant: true,
+            auto_: false,
+        },
+        0,
+    )?;
+    if header.written.parameters != 0
+        || header.written.supertraits != 0
+        || header.members.len() != 3
+        || ![min, max, sub].iter().all(|member| {
+            member.parent == Some(definition)
+                && header.members.contains(&member.definition)
+                && facts.associated.trait_owner(member.definition) == Some(definition)
+        })
+    {
+        return Err("imported range family changed its actual const-trait owner or members");
+    }
+    for bound in [min, max] {
+        let DeclarationOrigin::Imported(origin) = bound.origin else {
+            return Err("imported range bound lost its actual origin");
+        };
+        origins.validate_declaration(origin, bound.definition, DefKind::Const)?;
+        if facts
+            .definitions
+            .get(bound.definition.0 as usize)
+            .copied()
+            .flatten()
+            != Some(header.self_type)
+        {
+            return Err("imported range bound requires its actual Self type");
+        }
+    }
+    let function = facts
+        .declaration_header(sub.definition)?
+        .ok_or("imported RangeSub lost its actual declaration")?;
+    if function.declaration != sub.origin || function.body.is_some() {
+        return Err("imported RangeSub requires its actual required method");
+    }
+    self_signature(facts, function.signature, header.self_type)?;
+    let _ = facts.recorded_caller_tracking(sub.definition)?;
+    Ok(true)
+}
+
 impl Contracts {
     pub(in crate::sema::compiler_items) fn current(
         &self,

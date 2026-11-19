@@ -48,6 +48,13 @@ impl<'a> Members<'a> {
                     Some(HeaderRef::AssociatedType(index)) => {
                         Some(self.rows.associated_types[index as usize].parent)
                     }
+                    // The profile validator confines absent associated values
+                    // to the two authenticated required range roles.
+                    Some(HeaderRef::Constant(index))
+                        if self.rows.constants()[index as usize].value.is_none() =>
+                    {
+                        self.rows.declarations[member.0 as usize].definition.parent
+                    }
                     _ => return Err("source trait member has no actual complete typed header"),
                 };
                 if parent != Some(trait_.declaration)

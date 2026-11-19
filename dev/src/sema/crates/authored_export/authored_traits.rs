@@ -14,6 +14,7 @@ use crate::{
 /// thirteen admits every declaration role here; each role's header form and the
 /// semantic fences below still decide whether it transports.
 pub(super) fn require_role_transport(
+    report: &Report,
     facts: &Declarations,
     conversions: bool,
     compiler_operations: bool,
@@ -60,7 +61,10 @@ pub(super) fn require_role_transport(
         .into_iter()
         .any(|role| catalog.language(role).is_some())
     {
-        return Err("source range helper contract transport is not implemented");
+        if !(compiler_operations && languages) {
+            return Err("source range helper contract transport is not implemented");
+        }
+        crate::sema::compiler_items::require_range_transport(report, facts)?;
     }
     Ok(())
 }
@@ -186,6 +190,10 @@ impl Stage {
             DefKind::Struct
                 if self.declaration_policies()
                     && matches!(role, LangItem::TypeInfo | LangItem::TypeId) => {}
+            DefKind::Const
+                if self.declaration_policies()
+                    && matches!(role, LangItem::RangeMin | LangItem::RangeMax) => {}
+            DefKind::Function if self.declaration_policies() && role == LangItem::RangeSub => {}
             // The consumer re-proves the named declaration's installed header.
             DefKind::Function if role == LangItem::Panic => {
                 if !self.body_nodes() {

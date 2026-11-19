@@ -71,13 +71,18 @@ impl Checker<'_> {
             if definition.kind != DefKind::Const {
                 continue;
             }
-            let key = definition.node.ok_or_else(|| {
-                Error::at(
+            let Some(key) = definition.node else {
+                // The imported range family already re-proved its required
+                // constants' Self types in the actual trait's empty binder.
+                if self.imported_range_bound(id)? {
+                    continue;
+                }
+                return Err(Error::at(
                     crate::resolve::unit::FileId(0),
                     0,
                     "missing constant declaration source",
-                )
-            })?;
+                ));
+            };
             let ty = self.facts.definitions[id.0 as usize]
                 .ok_or_else(|| self.error(key, "missing constant declaration type"))?;
             if matches!(self.item(key)?.kind, ItemKind::Const { value: None, .. }) {
@@ -98,6 +103,26 @@ impl Checker<'_> {
             self.constant_type_regions(id, key, ty)?;
         }
         Ok(())
+    }
+
+    fn imported_range_bound(&self, definition: DefId) -> Result<bool, Error> {
+        use crate::support::bindings::LangItem;
+        let Some(catalog) = self.facts.source_bindings.as_deref() else {
+            return Ok(false);
+        };
+        let Some(((), role)) = catalog
+            .matching_role(
+                definition,
+                [((), LangItem::RangeMin), ((), LangItem::RangeMax)].into_iter(),
+            )
+            .map_err(Error::unlocated)?
+        else {
+            return Ok(false);
+        };
+        Ok(catalog
+            .validated_role(role)
+            .map_err(Error::unlocated)?
+            .is_some_and(|bound| bound.definition == definition && bound.origin.source().is_none()))
     }
 
     fn constant_type_regions(

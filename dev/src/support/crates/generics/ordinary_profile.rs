@@ -2,7 +2,7 @@
 use super::super::{
     Action, EnvironmentOrigin, FunctionBody, InputKind, Place, TraitFlags, ValueKind,
 };
-use super::super::{HeaderIndex, SourceRows};
+use super::super::{HeaderIndex, SourceRows, interval_roles};
 #[path = "rust_call_roles.rs"]
 mod callable_roles;
 #[path = "free_protocols.rs"]
@@ -322,38 +322,20 @@ fn trait_headers(
         }
         let conversion = profile.conversions() && roles.conversion == Some(header.declaration);
         let division = roles.division == Some(header.declaration);
+        let range = roles
+            .range
+            .is_some_and(|family| family.owner == header.declaration);
         if conversion {
             conversions::trait_header(rows, headers, header, work)?;
         }
         // Version thirteen also admits an unsafe trait that is not auto.
         if flags & TraitFlags::AUTO != 0
             || flags & TraitFlags::UNSAFE != 0 && !roles.languages
-            || flags & TraitFlags::CONST != 0 && !conversion && !division
+            || flags & TraitFlags::CONST != 0 && !conversion && !division && !range
         {
             return Err("source const/auto/unsafe traits require a wider explicit profile");
         }
-        let sizing_role = sizing.contains(&Some(header.declaration));
-        let sizing_only = TraitFlags::FUNDAMENTAL
-            | TraitFlags::SPECIALIZATION
-            | TraitFlags::COINDUCTIVE
-            | TraitFlags::DENY_IMPL;
-        let sizing_flags = if sizing_role {
-            flags
-        } else {
-            role_header.flags.bits()
-        };
-        if sizing_flags & sizing_only != 0 && (!sizing_role || flags & TraitFlags::DENY_IMPL == 0) {
-            return Err(
-                "source sizing attributes require exact sizing role and deny-impl ownership",
-            );
-        }
-        if role_header.flags.bits() & TraitFlags::DYN_INCOMPATIBLE != 0
-            && Some(header.declaration) != sizing[0]
-        {
-            return Err(
-                "source dyn incompatibility claim requires its actual supported Sized role",
-            );
-        }
+        ordinary_sizing_policy(header.declaration, flags, role_header.flags, sizing)?;
     }
     Ok(())
 }
@@ -366,6 +348,31 @@ fn trait_headers(
 /// impl's unsafe byte; `bodies` is not that gate. Primitive methods keep
 /// refusing unsafe impls; under version thirteen every primitive method is
 /// also a conversion method, so that refusal is not final.
+fn ordinary_sizing_policy(
+    declaration: crate::support::crates::owner_catalog::DeclarationRef,
+    flags: u16,
+    role_flags: TraitFlags,
+    sizing: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 3],
+) -> Result<(), &'static str> {
+    let sizing_role = sizing.contains(&Some(declaration));
+    let sizing_only = TraitFlags::FUNDAMENTAL
+        | TraitFlags::SPECIALIZATION
+        | TraitFlags::COINDUCTIVE
+        | TraitFlags::DENY_IMPL;
+    let sizing_flags = if sizing_role {
+        flags
+    } else {
+        role_flags.bits()
+    };
+    if sizing_flags & sizing_only != 0 && (!sizing_role || flags & TraitFlags::DENY_IMPL == 0) {
+        return Err("source sizing attributes require exact sizing role and deny-impl ownership");
+    }
+    if role_flags.bits() & TraitFlags::DYN_INCOMPATIBLE != 0 && Some(declaration) != sizing[0] {
+        return Err("source dyn incompatibility claim requires its actual supported Sized role");
+    }
+    Ok(())
+}
+
 fn associated_method(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
@@ -868,6 +875,7 @@ pub(super) struct Bindings {
     freeze: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     conversion: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     division: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    range: Option<interval_roles::Family>,
     callables: callable_roles::Roles,
     /// Version thirteen: exact empty auto declarations, unsafe traits and
     /// every trait impl's own safety and polarity.
@@ -916,6 +924,12 @@ impl Bindings {
         function: &super::super::FunctionHeader,
         work: &mut Work,
     ) -> Result<bool, &'static str> {
+        if self
+            .range
+            .is_some_and(|family| family.method == function.declaration)
+        {
+            return Ok(true);
+        }
         let division = self
             .division
             .filter(|&owner| function.parent == Some(owner));
@@ -940,7 +954,9 @@ impl Bindings {
     }
 }
 fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
-    if matches!(role, LangItem::TypeInfo | LangItem::TypeId) {
+    if matches!(role, LangItem::TypeInfo | LangItem::TypeId)
+        || interval_roles::ROLES.contains(&role)
+    {
         return profile == BindingProfile::BodyOperations;
     }
     if matches!(role, LangItem::UnwindSafe | LangItem::RefUnwindSafe) {
@@ -994,12 +1010,15 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
                     | LangItem::AsyncDropInPlace
             )
 }
-pub(super) fn bindings(
+fn binding_declarations(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     work: &mut Work,
     profile: BindingProfile,
-) -> Result<Bindings, &'static str> {
+) -> Result<
+    [Option<crate::support::crates::owner_catalog::DeclarationRef>; LangItem::ALL.len()],
+    &'static str,
+> {
     work.charge(1)?;
     if rows.policy.roles.start != 0 || rows.policy.roles.end as usize != rows.roles.len() {
         return Err("source role policy omits part of its exact binding inventory");
@@ -1025,6 +1044,16 @@ pub(super) fn bindings(
         )?;
         declarations[role.role.index()] = Some(address.declaration);
     }
+    Ok(declarations)
+}
+
+pub(super) fn bindings(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    work: &mut Work,
+    profile: BindingProfile,
+) -> Result<Bindings, &'static str> {
+    let declarations = binding_declarations(rows, headers, work, profile)?;
     let send = diagnostic_bindings(rows, headers, work, profile)?;
     owned_role_members(rows, headers, work, &declarations)?;
     let sizing = [
@@ -1050,9 +1079,20 @@ pub(super) fn bindings(
         callable_roles::Roles::default()
     };
     let languages = profile.languages();
+    let range = if profile == BindingProfile::BodyOperations {
+        interval_roles::family(
+            rows,
+            headers,
+            interval_roles::ROLES.map(|role| declarations[role.index()]),
+            work,
+        )?
+    } else {
+        None
+    };
     Ok(Bindings {
         callables,
         languages,
+        range,
         definition_policies: profile.definition_policies(),
         markers: if languages {
             [
@@ -1173,8 +1213,13 @@ fn role_header(
     header: Option<super::super::HeaderRef>,
 ) -> Result<(), &'static str> {
     match (role, header) {
-        (LangItem::TypeInfo | LangItem::TypeId, Some(super::super::HeaderRef::Nominal(_)))
+        (LangItem::RangeMin | LangItem::RangeMax, Some(super::super::HeaderRef::Constant(_)))
+        | (LangItem::RangeSub, Some(super::super::HeaderRef::Function(_)))
+        | (LangItem::TypeInfo | LangItem::TypeId, Some(super::super::HeaderRef::Nominal(_)))
             if profile == BindingProfile::BodyOperations => {}
+        (LangItem::RangeMin | LangItem::RangeMax | LangItem::RangeSub, _) => {
+            return Err("source range roles require their actual associated header kinds");
+        }
         (LangItem::TypeInfo | LangItem::TypeId, _) => {
             return Err("source reflection role requires its actual struct header");
         }

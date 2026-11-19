@@ -601,21 +601,42 @@ pub(super) fn caller_tracking(
         .ok_or("imported caller policy lacks its complete function row")?
         .caller_tracking;
     if tracked {
-        tracked_header(facts, definition, semantic.signature)?;
+        tracked_header(facts, definition, &semantic)?;
     }
     Ok(tracked)
 }
 
 /// A transported caller policy is re-proved on the consumer's installed header:
-/// a safe or unsafe Rust-ABI function that is free or an inherent method.
+fn tracked_range_sub(
+    facts: &Declarations,
+    definition: DefId,
+    header: &crate::sema::function_headers::DeclarationHeader,
+) -> Result<bool, &'static str> {
+    let Some(catalog) = facts.source_bindings.as_deref() else {
+        return Ok(false);
+    };
+    let Some(role) = catalog.role(crate::support::bindings::LangItem::RangeSub)? else {
+        return Ok(false);
+    };
+    Ok(role.definition == definition
+        && role.origin == header.declaration
+        && role.origin.source().is_none()
+        && header.body.is_none()
+        && role.parent.is_some_and(|owner| {
+            facts.associated.trait_owner(definition) == Some(owner)
+                && facts.associated.constant_trait(owner) == Some(true)
+        }))
+}
+
+/// Free and inherent Rust-ABI functions, and the required range method.
 fn tracked_header(
     facts: &Declarations,
     definition: DefId,
-    signature: crate::types::TypeId,
+    header: &crate::sema::function_headers::DeclarationHeader,
 ) -> Result<(), &'static str> {
     use crate::types::{Kind, callable::Abi};
     if !matches!(
-        facts.types.kind(signature),
+        facts.types.kind(header.signature),
         Some(Kind::Function { convention, .. }) if convention.abi == Abi::Rust
     ) {
         return Err("imported caller tracking requires its Rust-ABI function signature");
@@ -630,6 +651,7 @@ fn tracked_header(
                 crate::sema::associated::OwnerKind::ImportedInherent(_)
             )
         })
+        && !tracked_range_sub(facts, definition, header)?
     {
         return Err("imported caller tracking belongs to a trait member");
     }

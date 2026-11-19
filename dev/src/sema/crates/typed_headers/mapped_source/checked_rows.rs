@@ -282,7 +282,13 @@ fn require_member(
             .definition
             .kind,
     );
-    if !matches!(kind, DefKind::Function | DefKind::TypeAlias) {
+    let required_range_bound = kind == DefKind::Const
+        && rows.descriptor().profile().declaration_policies()
+        && matches!(rows.header(raw)?, Some(s::HeaderRef::Constant(index))
+            if rows.constants().get(index as usize).is_some_and(|row| row.value.is_none()));
+    // Only the two exact required range roles can have absent associated
+    // constant values in the validated version-fourteen descriptor.
+    if !matches!(kind, DefKind::Function | DefKind::TypeAlias) && !required_range_bound {
         return Err("imported associated member has another actual kind");
     }
     catalog.validate_declaration(id, actual, kind)?;

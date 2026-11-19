@@ -666,7 +666,9 @@ impl Stage {
                 DefKind::Const => {
                     return if report.package.names.get(definition.name) == "_" {
                         Ok(None)
-                    } else if facts.associated.owner(id).is_some() {
+                    } else if facts.associated.owner(id).is_some()
+                        && !self.range_required_constant(facts, id)
+                    {
                         Err("source associated constants require their wider profile")
                     } else {
                         Ok(Some(s::DefinitionKind::Constant))
@@ -946,7 +948,7 @@ fn scope_owners(
     }
     if stage.declaration_policies() {
         stage.require_contextual_bindings(report, facts, &mut owners)?;
-        authored_traits::require_role_transport(facts, true, true, true)?;
+        authored_traits::require_role_transport(report, facts, true, true, true)?;
     }
     Ok(owners)
 }
@@ -1110,6 +1112,7 @@ fn require_export_mode(
         .require_provider_report(report)?;
     if !languages || mode != ExportMode::CompilerOperations {
         authored_traits::require_role_transport(
+            report,
             facts,
             matches!(
                 mode,

@@ -361,6 +361,9 @@ impl Stage {
                         }
                     )
                 })
+                && !(self.declaration_policies()
+                    && crate::sema::compiler_items::source_range_headers(facts)
+                        .is_some_and(|(_, [_, _, subtract])| subtract.definition == definition))
             {
                 return Err(Error::at(
                     declaration.file,
