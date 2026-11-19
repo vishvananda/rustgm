@@ -327,7 +327,16 @@ the nested caller-output transport fence in `std/src/sys/io/kernel_copy/linux.rs
 The three receipts are in `obj/parallel/std-startup-consumers/` in the
 frontier checkout. The startup code passes formatting, architecture and
 strict Clippy. The ten remaining std consumers use the same compiler and
-the shared oracle's exit, abort and stderr rules.
+the shared oracle's exit, abort and stderr rules. `process-exit`, `exit-code`,
+`sync-local`, `path-ffi-time`, `panic-default` and `panic-hook` each match
+their declared outcomes in three native runs. `main-result` and `float-math`
+emit LowIR and link, then abort where the oracle expects exit 1 and 0,
+respectively. `io-stdin` stops in the frontend at an unambiguous trait
+obligation in `main`. `threads` stops in `alloc/src/boxed.rs` because the
+reached `call_once` has neither a concrete body nor a checked template.
+The batch receipt and per-case diagnostics are in
+`obj/parallel/std-startup-remaining/` in the frontier checkout. Eight of
+the fourteen original std consumers have matched under the bring-up profile.
 
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
