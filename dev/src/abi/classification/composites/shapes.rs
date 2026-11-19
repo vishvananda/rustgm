@@ -57,13 +57,9 @@ impl Query<'_> {
             && matches!(layout.shape, Shape::Scalar)
             && layout.size != 0
         {
-            Kind::Scalar(if matches!(kind,Type::Primitive(p) if p.is_float()) {
-                Class::Sse
-            } else {
-                Class::Integer
-            })
-        } else if self.carrier_word(ty, layout)? {
-            Kind::Scalar(Class::Integer)
+            Kind::Scalar(super::super::scalar_class(kind))
+        } else if let Some(class) = self.carrier_class(ty, layout)? {
+            Kind::Scalar(class)
         } else if matches!(kind, Type::Array { .. } | Type::ArrayTerm { .. }) {
             self.array(layout)?
         } else if let Type::Adt(item, _) = kind {
@@ -100,34 +96,40 @@ impl Query<'_> {
             kind,
         })
     }
-    fn carrier_word(&mut self, ty: TypeId, layout: Layout) -> Result<bool, &'static str> {
+    fn carrier_class(&mut self, ty: TypeId, layout: Layout) -> Result<Option<Class>, &'static str> {
         if self
             .layouts
             .fieldless_enum_scalar(self.types, self.definitions, ty)?
             .is_some()
         {
-            return Ok(true);
+            return Ok(Some(Class::Integer));
         }
         if let Some(niche) = self.layouts.niche(&layout)? {
             if niche.owner != ty {
                 return Err("nullable C field belongs to another type");
             }
-            return Ok(true);
+            return Ok(Some(Class::Integer));
         }
         let Some(Type::Adt(item, _)) = self.types.kind(ty) else {
-            return Ok(false);
+            return Ok(None);
         };
         if self
             .definitions
             .get(item)
             .is_some_and(|definition| definition.repr.representation == Representation::Transparent)
-        {
-            return self
+            && let Some(leaf) = self
                 .layouts
-                .scalar_carrier(self.types, self.definitions, ty)
-                .map(|carrier| carrier.is_some());
+                .transparent_scalar(self.types, self.definitions, ty)?
+        {
+            let kind = self
+                .types
+                .kind(leaf)
+                .ok_or("missing nested C scalar payload")?;
+            if super::super::scalar(kind)? {
+                return Ok(Some(super::super::scalar_class(kind)));
+            }
         }
-        Ok(false)
+        Ok(None)
     }
     fn array(&mut self, layout: Layout) -> Result<Kind, &'static str> {
         let Shape::Array {

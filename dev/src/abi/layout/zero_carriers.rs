@@ -170,13 +170,14 @@ impl Carrier {
 pub(super) enum Answer {
     Absent,
     Carrier(Carrier),
+    PlainScalar(TypeId),
     WiderScalar,
 }
 impl Answer {
     pub(super) const fn carrier(self) -> Option<Carrier> {
         match self {
             Self::Carrier(carrier) => Some(carrier),
-            Self::Absent | Self::WiderScalar => None,
+            Self::Absent | Self::PlainScalar(_) | Self::WiderScalar => None,
         }
     }
 }

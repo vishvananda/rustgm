@@ -90,6 +90,66 @@ fn main() {}
 }
 
 #[test]
+fn transparent_scalar_calls_preserve_integer_and_float_classes()
+-> Result<(), Box<dyn std::error::Error>> {
+    use rustgm::lowir::{
+        boundary::{Class, Classes, Type},
+        vocabulary::Type as Scalar,
+    };
+
+    let source = r#"
+#[repr(transparent)] struct CInt((), i32);
+#[repr(transparent)] struct Nested(CInt, ());
+#[repr(transparent)] struct Float(f64);
+#[repr(C)] struct Mixed { lhs: Nested, rhs: Float }
+unsafe extern "C" { fn imported(value: Nested) -> Nested; }
+#[unsafe(no_mangle)]
+unsafe extern "C" fn call(pointer: unsafe extern "C" fn(Nested) -> Nested, n: Nested) -> Nested {
+    unsafe { pointer(imported(n)) }
+}
+#[unsafe(no_mangle)]
+extern "C" fn mixed(value: Mixed) -> Mixed { value }
+fn main() {}
+"#;
+    let program = frontend::checked(source)?;
+    for (name, expected) in [
+        ("imported", &[Scalar::I32][..]),
+        ("call", &[Scalar::Ptr, Scalar::I32][..]),
+    ] {
+        let symbol = program
+            .symbols
+            .iter()
+            .find(|symbol| symbol.name == name)
+            .ok_or(name)?;
+        assert_eq!(program.parameters(symbol.signature)?, expected);
+        assert_eq!(
+            program.result_type(symbol.signature)?,
+            Type::Scalar(Scalar::I32)
+        );
+    }
+    let mixed = program
+        .symbols
+        .iter()
+        .find(|symbol| symbol.name == "mixed")
+        .ok_or("mixed")?;
+    let Type::Object(result) = program.result_type(mixed.signature)? else {
+        return Err("mixed result lacks its object boundary".into());
+    };
+    assert_eq!(
+        result.classes,
+        Classes::Eightbytes {
+            first: Class::Integer,
+            second: Some(Class::Sse)
+        }
+    );
+    assert_eq!(
+        program.parameter_type(mixed.signature, 0)?,
+        Type::Object(result)
+    );
+    Ok(())
+}
+
+#[test]
 #[ignore = "requires the optional pinned CPPGM object profile and host C compiler"]
 fn aggregate_calls_match_independent_rust_and_c() -> Result<(), Box<dyn std::error::Error>> {
     objects::check_cases(

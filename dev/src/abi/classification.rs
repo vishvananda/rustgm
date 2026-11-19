@@ -51,6 +51,10 @@ pub struct Plans {
     pub retained_bytes: usize,
 }
 impl Plans {
+    /// A scalar `LowIR` signature may still need source object marshalling.
+    pub(crate) fn has_signature(&self, signature: TypeId) -> bool {
+        self.signatures.contains_key(&signature)
+    }
     fn charge(&mut self, work: usize) -> Result<(), &'static str> {
         account_work(&mut self.steps, work)
     }
@@ -221,10 +225,10 @@ impl Plans {
             return Ok(passing);
         }
         if definition.repr.representation == Representation::Transparent
-            && let Some(carrier) = layouts.scalar_carrier(types, definitions, head)?
-            && (!carrier.is_pointer() || layout.size == 8)
+            && let Some(leaf) = layouts.transparent_scalar(types, definitions, head)?
+            && scalar(types.kind(leaf).ok_or("missing C scalar payload")?)?
         {
-            return Ok(Passing::Scalar(carrier.leaf()));
+            return Ok(Passing::Scalar(leaf));
         }
         if definition.kind != types::aggregate::Kind::Struct
             || definition.repr.representation != Representation::C
@@ -265,11 +269,7 @@ impl Plans {
                 return Err("C aggregate ABI field is not naturally aligned");
             }
             if layout.size <= 16 {
-                let class = if matches!(kind,Kind::Primitive(p) if p.is_float()) {
-                    Class::Sse
-                } else {
-                    Class::Integer
-                };
+                let class = scalar_class(kind);
                 let last = offset
                     .checked_add(child.size)
                     .and_then(|n| n.checked_sub(1))
@@ -328,6 +328,14 @@ impl Plans {
         }))
     }
 }
+fn scalar_class(kind: Kind) -> Class {
+    if matches!(kind, Kind::Primitive(p) if p.is_float()) {
+        Class::Sse
+    } else {
+        Class::Integer
+    }
+}
+
 fn scalar(kind: Kind) -> Result<bool, &'static str> {
     if matches!(
         kind,

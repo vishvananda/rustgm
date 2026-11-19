@@ -8,6 +8,12 @@ use crate::{
     },
 };
 impl Lower<'_, '_, '_> {
+    pub(super) fn has_c_boundary(&self) -> bool {
+        self.body
+            .owner
+            .signatures()
+            .is_some_and(|(signature, _)| self.context.has_c_boundary(signature))
+    }
     pub(super) fn object_parameters(&mut self) -> Result<(), &'static str> {
         let mut parameter = 0_u32;
         for (index, local) in self.body.locals.iter().enumerate() {
@@ -45,22 +51,28 @@ impl Lower<'_, '_, '_> {
                     .ok_or("too many C incoming parameters")?;
                 continue;
             }
-            let selected = match (representation, expected) {
+            let operand = Operand::Parameter(parameter);
+            match (representation, expected) {
                 (Representation::Scalar(ty), boundary::Type::Scalar(expected))
                     if ty == expected =>
                 {
-                    Selected::Runtime(Value {
-                        ty,
-                        operand: Operand::Parameter(parameter),
-                    })
+                    self.write(
+                        self.locals[index],
+                        Selected::Runtime(Value { ty, operand }),
+                        local.ty,
+                    )?;
                 }
                 (Representation::ScalarObject(storage), boundary::Type::Scalar(expected))
                     if storage.ty == expected =>
                 {
-                    Selected::Runtime(Value {
-                        ty: storage.ty,
-                        operand: Operand::Parameter(parameter),
-                    })
+                    self.write(
+                        self.locals[index],
+                        Selected::Runtime(Value {
+                            ty: storage.ty,
+                            operand,
+                        }),
+                        local.ty,
+                    )?;
                 }
                 (Representation::Object(span), boundary::Type::Object(expected))
                     if span == expected.span =>
@@ -70,20 +82,20 @@ impl Lower<'_, '_, '_> {
                     self.builder.copy_object_value(
                         &self.context.output,
                         self.native,
-                        boundary::ObjectValue {
-                            operand: Operand::Parameter(parameter),
-                            span,
-                        },
+                        boundary::ObjectValue { operand, span },
                         pointer,
                     )?;
-                    parameter = parameter
-                        .checked_add(1)
-                        .ok_or("too many C incoming parameters")?;
-                    continue;
+                }
+                (Representation::Object(_), boundary::Type::Scalar(ty))
+                    if self.context.c_argument(local.ty)? == expected =>
+                {
+                    if let Some(destination) = self.locals[index] {
+                        self.builder
+                            .store(Value { ty, operand }, destination.operand)?;
+                    }
                 }
                 _ => return Err("C incoming parameter differs from canonical ABI plan"),
-            };
-            self.write(self.locals[index], selected, local.ty)?;
+            }
             parameter = parameter
                 .checked_add(1)
                 .ok_or("too many C incoming parameters")?;
@@ -160,7 +172,7 @@ impl Lower<'_, '_, '_> {
                 Selected::Runtime(value) => retained.push(boundary::Value::Scalar(value)),
                 Selected::Object(address) => match self.context.representation(ty)? {
                     Representation::Object(span) => {
-                        retained.push(boundary::Value::Object(self.object_value(address, span)?));
+                        retained.push(self.boundary_object_argument(ty, address, span)?);
                     }
                     Representation::ScalarObject(storage) => {
                         retained.push(boundary::Value::Scalar(
@@ -182,6 +194,29 @@ impl Lower<'_, '_, '_> {
             &tail,
         )?;
         self.object_arguments = retained;
+        self.boundary_result(value, result)
+    }
+    fn boundary_object_argument(
+        &mut self,
+        source: crate::types::TypeId,
+        address: Address,
+        span: MemorySpan,
+    ) -> Result<boundary::Value, &'static str> {
+        Ok(match self.context.c_argument(source)? {
+            boundary::Type::Object(object) if object.span == span => {
+                boundary::Value::Object(self.object_value(address, span)?)
+            }
+            boundary::Type::Scalar(ty) if ty != Type::Void => {
+                boundary::Value::Scalar(self.builder.load(ty, address.operand)?)
+            }
+            _ => return Err("C object argument differs from canonical ABI plan"),
+        })
+    }
+    fn boundary_result(
+        &mut self,
+        value: boundary::ResultValue,
+        result: crate::types::TypeId,
+    ) -> Result<Selected, &'static str> {
         Ok(match (value, self.context.representation(result)?) {
             (boundary::ResultValue::Void, Representation::Scalar(Type::Void)) => Selected::Unit,
             (boundary::ResultValue::Scalar(value), Representation::Scalar(ty))
@@ -192,11 +227,12 @@ impl Lower<'_, '_, '_> {
             (boundary::ResultValue::Scalar(value), Representation::ScalarObject(storage))
                 if value.ty == storage.ty =>
             {
-                let destination = self
-                    .allocate(result)?
-                    .ok_or("missing nullable C result storage")?;
-                self.builder.store(value, destination.operand)?;
-                Selected::Object(destination)
+                self.materialize_c_scalar(value, result)?
+            }
+            (boundary::ResultValue::Scalar(value), Representation::Object(_))
+                if self.context.c_result(result)? == boundary::Type::Scalar(value.ty) =>
+            {
+                self.materialize_c_scalar(value, result)?
             }
             (boundary::ResultValue::Object(value), Representation::Object(span))
                 if value.span == span =>
@@ -210,13 +246,34 @@ impl Lower<'_, '_, '_> {
             _ => return Err("C call result differs from canonical ABI plan"),
         })
     }
+    fn materialize_c_scalar(
+        &mut self,
+        value: Value,
+        result: crate::types::TypeId,
+    ) -> Result<Selected, &'static str> {
+        let destination = self
+            .allocate(result)?
+            .ok_or("missing C scalar result storage")?;
+        self.builder.store(value, destination.operand)?;
+        Ok(Selected::Object(destination))
+    }
+    fn c_result_storage(&mut self, ty: Type) -> Result<bool, &'static str> {
+        if ty == Type::Void {
+            return Ok(false);
+        }
+        let result = self.body.result;
+        Ok(match self.context.representation(result)? {
+            Representation::ScalarObject(storage) => storage.ty == ty,
+            Representation::Object(_) => {
+                self.context.c_result(result)? == boundary::Type::Scalar(ty)
+            }
+            Representation::Scalar(_) => false,
+        })
+    }
     pub(super) fn returned(&mut self, value: ir::ValueId) -> Result<Terminator, &'static str> {
         let selected = self.value(value)?;
-        if matches!(
-            self.context.output.signatures.get(self.native.0 as usize),
-            Some(crate::lowir::program::Signature::Object(_))
-        ) {
-            let expected = self.context.output.object_boundary(self.native)?.result;
+        if self.has_c_boundary() {
+            let expected = self.context.output.result_type(self.native)?;
             return match (selected, expected) {
                 (Selected::Runtime(value), boundary::Type::Scalar(ty)) if value.ty == ty => {
                     Ok(Terminator::Return(Some(value)))
@@ -224,7 +281,9 @@ impl Lower<'_, '_, '_> {
                 (Selected::Unit | Selected::Item(_), boundary::Type::Scalar(Type::Void)) => {
                     Ok(Terminator::Return(None))
                 }
-                (Selected::Object(address), boundary::Type::Scalar(ty)) if matches!(self.context.representation(self.body.result)?, Representation::ScalarObject(storage) if storage.ty == ty) => {
+                (Selected::Object(address), boundary::Type::Scalar(ty))
+                    if self.c_result_storage(ty)? =>
+                {
                     Ok(Terminator::Return(Some(
                         self.builder.load(ty, address.operand)?,
                     )))

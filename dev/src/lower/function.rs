@@ -406,18 +406,7 @@ impl Lower<'_, '_, '_> {
         Ok(())
     }
     fn parameters(&mut self) -> Result<(), &'static str> {
-        let indirect = self
-            .body
-            .owner
-            .signatures()
-            .map(|(signature, _)| self.context.indirect_parameters(signature))
-            .transpose()?
-            .unwrap_or(false);
-        if matches!(
-            self.context.output.signatures.get(self.native.0 as usize),
-            Some(crate::lowir::program::Signature::Object(_))
-        ) || indirect
-        {
+        if self.has_c_boundary() {
             return self.object_parameters();
         }
         let mut parameter = u32::from(matches!(

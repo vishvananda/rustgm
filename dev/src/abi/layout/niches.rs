@@ -3,7 +3,7 @@ use super::zero_carriers::Answer;
 use super::{Carrier, Layout, Layouts, Range, Shape, Variant, index};
 use crate::support::hash::HashMap;
 use crate::types::{
-    Kind, Store, TypeId,
+    Kind, Primitive, Store, TypeId,
     aggregate::{Companion, Definitions, NullableEnum, Representation, SharedMutation},
 };
 #[cfg(test)]
@@ -198,6 +198,12 @@ impl Niches {
                     };
                     ty = child;
                 }
+                Kind::Primitive(Primitive::F16 | Primitive::F128) => break Answer::Absent,
+                Kind::Primitive(_) | Kind::Pointer { .. }
+                    if matches!(layout.shape, Shape::Scalar) && layout.size != 0 =>
+                {
+                    break Answer::PlainScalar(ty);
+                }
                 _ => break Answer::Absent,
             }
         };
@@ -244,6 +250,30 @@ impl Layouts {
             .filter(|carrier| carrier.is_pointer())
             .map(Carrier::leaf)
     }
+    /// The actual scalar storage type of a transparent wrapper.
+    pub(crate) fn transparent_scalar(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        ty: TypeId,
+    ) -> Result<Option<TypeId>, &'static str> {
+        let bytes = self
+            .get(ty)
+            .ok_or("transparent scalar lacks its completed layout")?
+            .size;
+        let mut budget = Budget::new(1_000_000);
+        let answer = self.nullable_carrier(types, definitions, ty, &mut budget)?;
+        Ok(match answer {
+            Answer::PlainScalar(leaf) => Some(leaf),
+            Answer::Carrier(carrier)
+                if !matches!(carrier, Carrier::Boolean { .. })
+                    && (!carrier.is_pointer() || bytes == 8) =>
+            {
+                Some(carrier.leaf())
+            }
+            _ => None,
+        })
+    }
     pub(crate) fn scalar_carrier(
         &mut self,
         types: &Store,
@@ -252,8 +282,6 @@ impl Layouts {
     ) -> Result<Option<Carrier>, &'static str> {
         let mut budget = Budget::new(1_000_000);
         self.nullable_carrier(types, definitions, ty, &mut budget)
-            // Standalone transparent-wrapper ABI keeps its historical profile.
-            // Bool is admitted only by an enum's explicit source policy below.
             .map(|answer| {
                 answer
                     .carrier()
@@ -475,7 +503,7 @@ impl Layouts {
                         carrier,
                     }));
                 }
-                Answer::Absent => {}
+                Answer::Absent | Answer::PlainScalar(_) => {}
                 Answer::WiderScalar => {
                     return Err("scalar pattern enum niches require their complete ABI profile");
                 }

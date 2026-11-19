@@ -103,34 +103,22 @@ impl Context<'_> {
             .indirect_argument(self.types, self.aggregates, self.layouts, ty)?
             .map(|(bytes, align)| MemorySpan { bytes, align }))
     }
-    pub(in crate::lower) fn indirect_parameters(
+    pub(in crate::lower) fn has_c_boundary(&self, signature: TypeId) -> bool {
+        self.c_abi
+            .as_ref()
+            .is_some_and(|plans| plans.has_signature(signature))
+    }
+    pub(in crate::lower) fn c_result(
         &mut self,
-        signature: TypeId,
-    ) -> Result<bool, &'static str> {
-        if !self.aggregates.has_indirect_arguments() {
-            return Ok(false);
-        }
-        let Some(crate::types::Kind::Function {
-            parameters,
-            convention,
-            ..
-        }) = self.types.kind(signature)
-        else {
-            return Err("argument policy requires a callable signature");
-        };
-        if convention.abi != crate::types::callable::Abi::C {
-            return Ok(false);
-        }
-        for &ty in self
-            .types
-            .list(parameters)
-            .ok_or("missing C signature parameters")?
-        {
-            if self.indirect_argument(ty)?.is_some() {
-                return Ok(true);
-            }
-        }
-        Ok(false)
+        ty: TypeId,
+    ) -> Result<boundary::Type, &'static str> {
+        let passing = self.c_abi.get_or_insert_default().passing(
+            self.types,
+            self.aggregates,
+            self.layouts,
+            ty,
+        )?;
+        self.boundary_type(passing)
     }
     fn boundary_type(
         &mut self,

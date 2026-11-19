@@ -151,20 +151,14 @@ impl Lower<'_, '_, '_> {
         result: TypeId,
         location: Option<crate::lowir::program::Value>,
     ) -> Result<Selected, &'static str> {
-        let indirect = self.context.indirect_parameters(signature)?;
-        let signature = self
+        let native = self
             .context
             .caller_signature(signature, location.is_some())?;
-        if matches!(
-            self.context.output.signatures.get(signature.0 as usize),
-            Some(crate::lowir::program::Signature::Object(_))
-        ) || self.context.output.variadic(signature)?
-            || indirect
-        {
+        if self.context.has_c_boundary(signature) || self.context.output.variadic(native)? {
             if matches!(arguments, Arguments::Tuple { .. }) {
                 return Err("runtime selector callback requires the ordinary Rust ABI");
             }
-            return self.boundary_call(signature, callee, arguments, result);
+            return self.boundary_call(native, callee, arguments, result);
         }
         let count = arguments.len(self)?;
         if matches!(arguments, Arguments::Tuple { .. }) && count > 1_000_000 {
@@ -187,9 +181,9 @@ impl Lower<'_, '_, '_> {
         if let Some(location) = location {
             self.arguments.push(location);
         }
-        let value =
-            self.builder
-                .call(signature, representation.result(), callee, &self.arguments)?;
+        let value = self
+            .builder
+            .call(native, representation.result(), callee, &self.arguments)?;
         if matches!(representation, Representation::ScalarObject(_)) {
             let destination = self
                 .allocate(result)?
