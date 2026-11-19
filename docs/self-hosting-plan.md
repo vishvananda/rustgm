@@ -538,6 +538,15 @@ with both outputs present. The gate quarantines both outputs and prevents the
 dependent crate from starting. All 23 target-unit tests pass, including the
 empty-graph rejection. [Executor](../scripts/target_units.py) · [Controls](../scripts/tests/test_target_units.py)
 
+The PA45 stage comparator checks the same frozen graph and executor, the
+stage 1 compiler pin used by stage 2, and the actual strict compiler
+diagnostics. It compares every unit's LowIR and metadata and then the linked
+compiler byte for byte. Its controls cover an altered artifact, a bring-up
+record, missing binary crate metadata, the wrong stage 2 input and linked
+output drift. The real stage comparison awaits the per-crate artifacts and
+both linked compiler builds. [Comparator](../scripts/compare_self_hosting.py) ·
+[Controls](../scripts/tests/test_compare_self_hosting.py)
+
 For the first checkpoint, preserve body-region identity through storage
 normalization and exercise the two existing body-region cases from the trace.
 Include `field_outlives::preparation_preserves_the_occurrence_binder_and_shares_large_graphs`

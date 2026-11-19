@@ -58,6 +58,19 @@ absolute paths, host randomness or unordered iteration may reach an output.
 `RUSTGM_TEST_APP` already selects the compiler under test for the course
 runner, so stage 1 needs no new test entry point.
 
+Use the two target-unit output directories and the linked executables for the
+stage comparison.
+
+```sh
+python3 scripts/compare_self_hosting.py obj/stage1/target obj/stage2/target \
+    --stage1-binary obj/stage1/rustgm --stage2-binary obj/stage2/rustgm
+```
+
+The comparison checks the frozen graph, strict receipts, compiler diagnostics
+and stage 2 compiler pin. It reads each unit's LowIR and metadata and then the
+linked compiler byte for byte. Each binary crate needs its own metadata
+artifact for this check.
+
 ## Tests to develop with the reference
 
 - Stage 1 against the PA1–PA24 oracles.
