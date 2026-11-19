@@ -681,12 +681,23 @@ in the frontier checkout. [Fresh body regression](../dev/tests/crate_linking/hyg
 The unchanged `core` replay still hits the name-provenance gate on the
 optimized `e4e134081` observation after 37.85 seconds. It records zero bring-up
 rows and emits no artifacts. At this profile the check is specifically for
-contextual item bindings. A separate resolution observer finds 1,083 marked
-declaration candidates without their own root binding, including generated
-trait methods, generic parameters, anonymous const assertions and local
-helpers. The count uses token marks and root-key comparisons. The replay is
-under `obj/parallel/strict-core/macro-body-names/`, and the declaration survey
-is under `obj/parallel/v14-macro-provenance/name-observer-all/`.
+contextual item bindings. The resolved binding table has 901 non-root entries.
+It records 733 associated functions, 12 associated types, 40 generic formals
+and 116 private functions inside other bodies. The body helpers consist of
+44 `runtime`, 44 `compiletime` and 28 `do_panic` definitions from the
+`const_eval_select` and `const_panic` macros. The replay is under
+`obj/parallel/strict-core/macro-body-names/`, and the exact binding survey is
+under `obj/parallel/v14-macro-provenance/exact-binding-observer/`.
+
+The v14 contextual item check now admits actual generic formals and members
+of checked trait impls through their typed slots. Three reduced providers
+import in fresh processes and independently execute the generic call, the
+trait impl's method, and the associated type check. Each returns `42` natively.
+A projected-return call fails with the same applied-signature diagnostic on
+its unmarked counterpart. Private helper functions still need authenticated
+original body identities before they can pass this check. Five focused
+linking tests pass on the joined revision. Evidence is under
+`obj/parallel/v14-contextual-items/` in the frontier checkout.
 
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
@@ -1284,6 +1295,22 @@ control. Wall time and cycles vary across blocks. Three focused public
 tests and fourteen CLI outcomes pass. Four private tests remain pending
 after the harness builds reached their deadlines. Evidence is under
 `obj/parallel/inline-empty-trait/` in the performance checkout.
+
+Within comptime body checking, the immutable report owns up to 32 successful
+lint-owner receipts for one checker. Each caller still authenticates its own
+header and pays the original lint debit. An exhausted warm attempt runs the
+original ordered scan to preserve the first failed witness and charge. The
+shared controls replay 31 of 33 requests and retire 1.18–2.93% fewer
+instructions. All 238 timed focused outcomes match. The original `core` and
+`unicode-ident` bring-up graph retires 0.865–0.867% fewer instructions in both
+paired blocks, from 94.263 to 93.447 billion. All ten outputs, diagnostics and
+native results match. The graph still charges 31,992,265 lint read steps
+during body checking on both compilers. Wall time varies by block. Strict
+production and CLI Clippy pass, and the ordered budget test passes through
+the disposable observer CLI. The joined development compiler reproduces all
+ten frozen output and diagnostic checks. The private harness reached its
+deadline before executing the selected inventory. Evidence is under
+`obj/parallel/lint-owner-witness/` in the performance checkout.
 
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
