@@ -1401,6 +1401,22 @@ retire 1.37–1.39% fewer instructions. The private harness reaches its build
 deadline before running cases. Evidence is under
 `obj/parallel/trait-frame-import/` in the performance checkout.
 
+Starting inference type import with its first visit in a local variable
+removes the eager one-element traversal allocation. The original
+`core` and `unicode-ident` graph counted 2,966,218 eager allocations.
+2,820,202 imports (95.08%) finish without scheduling a traversal. Predicate
+preparation accounts for 2,623,198 initial visits, and 97.76% of those finish
+directly. The matched reads, edge charges and first failure stay exact at
+nine work-limit boundaries.
+
+An immutable A/A and ABBA pair retires 0.335% fewer instructions, 0.396%
+fewer load operations and 0.280% fewer store operations. All six graph runs,
+70 focused observations, 98 ordered proof graphs and both native programs
+matched. Observed wall time varied from 29.05 to 40.69 seconds in the
+candidate pair. A/A also varied, leaving the wall effect unresolved.
+Evidence is under `obj/parallel/trait-predicate-import/` in the performance
+checkout.
+
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
 positions and 16,384 invocations the median was 1,117.90 ms before and 67.79 ms
