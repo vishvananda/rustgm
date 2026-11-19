@@ -301,12 +301,20 @@ The source moves the initialized guard into `mem::forget` after the loop.
 A reduced pinned-rustc control accepts this move. Its abort-profile MIR calls
 `forget` and has no drop terminator in the defining body. Removing the move
 produces E0493 for the active guard destructor. RustGM's rejection comes from
-the staged plan's eligibility selection. Identify the retained candidate and
-its ownership state before changing effect selection. The replay emits zero
-bring-up records and no metadata. The exact source controls
+the staged plan's eligibility selection. An unused mutable reference was
+enough to retain a qualification subject after the guard moved into
+`forget`. The selected subject now takes its access flag from the actual
+cleanup schedule. Conservative qualification still consults the retained
+history. In the precise control, RustGM clears cleanup selection and reaches
+the source-role transport boundary. Removing `forget` or the precise
+live-drop feature produces the expected cleanup error in RustGM and pinned
+rustc. Three focused ownership and qualification tests pass. The initial
+strict replay at this frontier emitted zero bring-up records and no metadata.
+The exact source controls
 are under `obj/parallel/projected-drop-scope/source-controls/` and the replay
 is under `obj/parallel/strict-core/projected-drop-scope/` in the performance
-checkout.
+checkout. The mutable-borrow controls are under
+`obj/parallel/precise-borrow-history/` there.
 
 All four frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
