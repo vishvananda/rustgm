@@ -116,7 +116,7 @@ impl ProviderAdmission {
         let result = contracts.validate_columns(
             &descriptor.rows(),
             0,
-            descriptor.profile().body_nodes(),
+            descriptor.profile(),
             &mut validation,
         );
         work.charge(validation.steps)?;

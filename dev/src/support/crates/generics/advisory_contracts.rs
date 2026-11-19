@@ -24,6 +24,12 @@ pub enum InlineApplicability {
     FunctionBody,
     DiagnosedNoBody,
 }
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Optimization {
+    Disabled,
+    Size,
+    Speed,
+}
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct MustUseContract {
     pub owner_site: u32,
@@ -57,11 +63,16 @@ pub struct HeaderContract {
     /// Version thirteen only, on function rows with an original body: the
     /// declared target features.
     pub target_features: Option<Box<DeclaredFeatures>>,
+    /// Version fourteen only, on function rows with a checked body.
+    pub optimization: Option<Optimization>,
 }
 impl HeaderContract {
     #[must_use]
     pub const fn callable_advisories(&self) -> bool {
-        self.cold || self.caller_tracking || self.target_features.is_some()
+        self.cold
+            || self.caller_tracking
+            || self.target_features.is_some()
+            || self.optimization.is_some()
     }
 }
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -70,18 +81,17 @@ pub struct HeaderAttributeColumns {
     pub traits: Vec<HeaderContract>,
 }
 impl HeaderAttributeColumns {
-    /// `callable_advisories` is true exactly for the version-thirteen profile.
     pub(crate) fn validate(
         &self,
         rows: &SourceRows,
         base: usize,
-        callable_advisories: bool,
+        profile: super::Profile,
         work: &mut Work,
     ) -> Result<usize, &'static str> {
         self.validate_headers(
             (&rows.declarations, &rows.functions, &rows.traits),
             base,
-            callable_advisories,
+            profile,
             work,
         )
     }
@@ -89,13 +99,13 @@ impl HeaderAttributeColumns {
         &self,
         rows: &super::Columns,
         base: usize,
-        callable_advisories: bool,
+        profile: super::Profile,
         work: &mut Work,
     ) -> Result<usize, &'static str> {
         self.validate_headers(
             (&rows.declarations, &rows.functions, &rows.traits),
             base,
-            callable_advisories,
+            profile,
             work,
         )
     }
@@ -107,7 +117,7 @@ impl HeaderAttributeColumns {
             &[super::TraitHeader],
         ),
         base: usize,
-        callable_advisories: bool,
+        profile: super::Profile,
         work: &mut Work,
     ) -> Result<usize, &'static str> {
         work.charge(self.functions.len().saturating_add(self.traits.len()))?;
@@ -125,12 +135,15 @@ impl HeaderAttributeColumns {
             }) {
                 return Err("source inline applicability differs from its actual function body");
             }
-            if contract.target_features.is_some() && !callable_advisories {
+            if contract.target_features.is_some() && !profile.body_nodes() {
                 return Err(
                     "source target-feature rows require the version-thirteen header profile",
                 );
             }
-            if contract.callable_advisories() && !callable_advisories {
+            if let Some(preference) = contract.optimization {
+                check_optimization(profile, header.body, contract.inline, preference)?;
+            }
+            if contract.callable_advisories() && !profile.body_nodes() {
                 return Err(
                     "source cold and caller tracking rows require the version-thirteen header profile",
                 );
@@ -205,4 +218,24 @@ impl HeaderAttributeColumns {
         }
         Ok(())
     }
+}
+
+fn check_optimization(
+    profile: super::Profile,
+    body: super::FunctionBody,
+    inline: Option<InlineContract>,
+    preference: Optimization,
+) -> Result<(), &'static str> {
+    if !profile.declaration_policies() {
+        return Err("source optimization requires the version-fourteen header profile");
+    }
+    if !matches!(body, super::FunctionBody::Original(_)) {
+        return Err("source optimization requires an exported original body");
+    }
+    if preference == Optimization::Disabled
+        && inline.is_some_and(|value| value.hint != InlineHint::Never)
+    {
+        return Err("source optimize(none) conflicts with the exported inline hint");
+    }
+    Ok(())
 }

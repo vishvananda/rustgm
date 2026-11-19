@@ -1,5 +1,6 @@
 //! Source-owned optimization intent. No current lowering pass optimizes functions.
 use super::{Declarations, DefId, Error, Header, NodeKey, Report, ledger};
+pub use crate::support::crates::generics::source::Optimization;
 use crate::{
     resolve::{
         bindings::FeatureName,
@@ -21,12 +22,6 @@ use crate::{
 #[path = "../../../tests/invariants/optimization.rs"]
 mod tests;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Optimization {
-    Disabled,
-    Size,
-    Speed,
-}
 pub struct OptimizationView {
     pub source: SourceContractSite,
     pub preference: Optimization,
@@ -291,6 +286,38 @@ pub(in crate::sema) fn check_inline(
     Ok(())
 }
 impl Declarations {
+    pub(in crate::sema) fn named_optimization_count(&self) -> Result<usize, &'static str> {
+        let Some(local) = self
+            .must_use_contracts
+            .as_deref()
+            .and_then(|row| row.headers.as_deref())
+            .map(|row| &row.local)
+            .filter(|local| local.first_optimization.is_some())
+        else {
+            return Ok(0);
+        };
+        super::charge_query(local, local.declarations.len())
+            .map_err(|_| "optimization export exceeds source contract budget")?;
+        let mut count = 0;
+        for (&key, header) in &local.declarations {
+            let Some(mark) = header
+                .promises
+                .as_deref()
+                .and_then(|row| row.optimization.as_deref())
+            else {
+                continue;
+            };
+            let definition = mark.definition.ok_or(
+                "closure optimization intent requires authenticated body metadata transport",
+            )?;
+            if !local.comptime_complete || local.definitions.get(&definition) != Some(&key) {
+                return Err("optimization intent lost its completed defining header");
+            }
+            count += 1;
+        }
+        Ok(count)
+    }
+
     /// Checked optimization intent never grants const, unsafe, borrow or ABI permission.
     /// # Errors
     /// Rejects changed source owners, callable syntax and exhausted query budgets.

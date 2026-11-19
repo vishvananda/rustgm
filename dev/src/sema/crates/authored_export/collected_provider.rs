@@ -188,7 +188,7 @@ impl Stage {
         let result = contracts.validate(
             &self.rows,
             before.reserved_bytes.saturating_add(names_bytes),
-            false,
+            s::Profile::Source2024ProvidedContracts,
             &mut validation,
         );
         self.charge(validation.steps.saturating_sub(start))

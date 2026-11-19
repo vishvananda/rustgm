@@ -37,6 +37,7 @@ fn contract(inline: Option<s::InlineHint>, names: Option<&[&str]>) -> s::HeaderC
         cold: false,
         caller_tracking: false,
         target_features: names.map(|names| Box::new(declared(names))),
+        optimization: None,
     }
 }
 fn declared(names: &[&str]) -> s::DeclaredFeatures {
@@ -70,6 +71,31 @@ fn name(text: &str) -> Vec<u8> {
         .to_vec();
     bytes.extend_from_slice(text.as_bytes());
     bytes
+}
+
+#[test]
+fn optimization_intent_round_trips_only_in_the_v14_header_profile() -> Result {
+    let ordinary = contract(None, None);
+    let bytes = written(&ordinary)?;
+    assert_eq!(read(&bytes, s::Profile::Source2024ModuleBodies)?, ordinary);
+    for preference in [
+        s::Optimization::Disabled,
+        s::Optimization::Size,
+        s::Optimization::Speed,
+    ] {
+        let mut marked = ordinary.clone();
+        marked.optimization = Some(preference);
+        let bytes = written(&marked)?;
+        assert_eq!(
+            read(&bytes, s::Profile::Source2024ModuleBodyOperations)?,
+            marked
+        );
+        assert_eq!(
+            read(&bytes, s::Profile::Source2024ModuleBodies),
+            Err("unknown transported inline or callable advisory flags")
+        );
+    }
+    Ok(())
 }
 fn fixture(name: &str) -> Result<String> {
     Ok(crate::test_source::fixture(&format!("{SPEC}/{name}.rs"))?)
@@ -195,7 +221,7 @@ fn exported_rows_carry_declared_names_and_validation_owns_their_bodies() -> Resu
         ]
     );
     let (rows, attributes, _) = module_packets::raw(&interface)?;
-    attributes.validate(&rows, 0, true, &mut g::Work::default())?;
+    attributes.validate(&rows, 0, BODIES, &mut g::Work::default())?;
     let mut forged = attributes.clone();
     forged
         .traits
@@ -204,7 +230,7 @@ fn exported_rows_carry_declared_names_and_validation_owns_their_bodies() -> Resu
         .target_features = Some(Box::new(declared(&["sse"])));
     assert_eq!(
         forged
-            .validate(&rows, 0, true, &mut g::Work::default())
+            .validate(&rows, 0, BODIES, &mut g::Work::default())
             .err(),
         Some("source trait header cannot carry a callable advisory")
     );
@@ -218,13 +244,13 @@ fn exported_rows_carry_declared_names_and_validation_owns_their_bodies() -> Resu
     forged.functions[required].target_features = Some(Box::new(declared(&["sse"])));
     assert_eq!(
         forged
-            .validate(&rows, 0, true, &mut g::Work::default())
+            .validate(&rows, 0, BODIES, &mut g::Work::default())
             .err(),
         Some("source target features require an exported original body")
     );
     assert_eq!(
         forged
-            .validate(&rows, 0, false, &mut g::Work::default())
+            .validate(&rows, 0, BRANCHES, &mut g::Work::default())
             .err(),
         Some(VERSION)
     );

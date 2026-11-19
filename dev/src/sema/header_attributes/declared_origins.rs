@@ -502,6 +502,7 @@ pub(super) fn query<'a>(
             origin,
             must_use: ContractKnowledge::Unknown,
             inline: ContractKnowledge::Unknown,
+            optimization: ContractKnowledge::Unknown,
         });
     };
     validate_header(report, facts, definition, key, header)?;
@@ -515,10 +516,30 @@ pub(super) fn query<'a>(
             ContractKnowledge::KnownAbsent,
             ContractKnowledge::KnownPresent,
         );
+    let optimization = if actual.kind != DefKind::Function
+        || !headers.is_some_and(|local| local.comptime_complete)
+    {
+        ContractKnowledge::Unknown
+    } else if header
+        .promises
+        .as_deref()
+        .is_some_and(|row| row.optimization.is_some())
+    {
+        match facts.source_optimization(report, definition)? {
+            ContractKnowledge::Unknown => ContractKnowledge::Unknown,
+            ContractKnowledge::KnownAbsent => ContractKnowledge::KnownAbsent,
+            ContractKnowledge::KnownPresent(view) => {
+                ContractKnowledge::KnownPresent(view.preference)
+            }
+        }
+    } else {
+        ContractKnowledge::KnownAbsent
+    };
     Ok(HeaderAttributeView {
         origin,
         must_use,
         inline,
+        optimization,
     })
 }
 

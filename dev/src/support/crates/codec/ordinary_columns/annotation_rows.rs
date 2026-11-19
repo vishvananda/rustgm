@@ -29,12 +29,13 @@ pub(super) fn row_write(out: &mut Writer, row: &s::HeaderContract) -> Result<(),
     }
     // Version thirteen widens the inline presence byte into a flag set: bit 0
     // is the inline hint, bit 1 the cold advisory, bit 2 caller tracking and
-    // bit 3 declared target features. Rows without the advisories keep their
-    // exact earlier bytes.
+    // bit 3 declared target features. Version fourteen adds optimization in
+    // bits 4 and 5. Unmarked rows keep their exact earlier bytes.
     out.u8(u8::from(row.inline.is_some())
         | u8::from(row.cold) << 1
         | u8::from(row.caller_tracking) << 2
-        | u8::from(row.target_features.is_some()) << 3)?;
+        | u8::from(row.target_features.is_some()) << 3
+        | optimization_bits(row.optimization) << 4)?;
     if let Some(value) = row.inline {
         id(out, value.owner_site)?;
         out.u8(match value.hint {
@@ -72,9 +73,10 @@ pub(super) fn row_read(read: &mut Input<'_, '_>) -> Result<s::HeaderContract, &'
         None
     };
     let flags = read.reader.u8()?;
-    if flags > 15 {
+    if flags > 63 || (flags > 15 && !read.profile.declaration_policies()) {
         return Err("unknown transported inline or callable advisory flags");
     }
+    let optimization = optimization_read(flags >> 4)?;
     if flags & 8 != 0 && !read.profile.body_nodes() {
         return Err("source target-feature rows require the version-thirteen header profile");
     }
@@ -105,7 +107,27 @@ pub(super) fn row_read(read: &mut Input<'_, '_>) -> Result<s::HeaderContract, &'
         cold: flags & 2 != 0,
         caller_tracking: flags & 4 != 0,
         target_features,
+        optimization,
     })
+}
+
+fn optimization_bits(preference: Option<s::Optimization>) -> u8 {
+    match preference {
+        None => 0,
+        Some(s::Optimization::Disabled) => 1,
+        Some(s::Optimization::Size) => 2,
+        Some(s::Optimization::Speed) => 3,
+    }
+}
+
+fn optimization_read(bits: u8) -> Result<Option<s::Optimization>, &'static str> {
+    match bits {
+        0 => Ok(None),
+        1 => Ok(Some(s::Optimization::Disabled)),
+        2 => Ok(Some(s::Optimization::Size)),
+        3 => Ok(Some(s::Optimization::Speed)),
+        _ => Err("unknown transported optimization intent"),
+    }
 }
 /// Syntax only: support cannot see sema's feature table, so each consumer
 /// resolves the names when it checks its import ledger.

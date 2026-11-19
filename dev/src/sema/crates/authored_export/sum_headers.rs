@@ -40,6 +40,7 @@ impl Stage {
             cold: false,
             caller_tracking: false,
             target_features: None,
+            optimization: None,
         })
     }
     /// Record one exported variant's declaration row: a unit or tuple

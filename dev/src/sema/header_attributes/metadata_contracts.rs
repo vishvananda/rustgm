@@ -478,6 +478,7 @@ pub(super) fn query<'a>(
             origin: site(None)?,
             must_use: ContractKnowledge::Unknown,
             inline: ContractKnowledge::Unknown,
+            optimization: ContractKnowledge::Unknown,
         });
     };
     let must_use = if let Some(value) = &row.must_use {
@@ -505,6 +506,14 @@ pub(super) fn query<'a>(
         origin: site(Some(row.declaration_site))?,
         must_use,
         inline,
+        optimization: if kind == DefKind::Function && descriptor.profile().declaration_policies() {
+            row.optimization.map_or(
+                ContractKnowledge::KnownAbsent,
+                ContractKnowledge::KnownPresent,
+            )
+        } else {
+            ContractKnowledge::Unknown
+        },
     })
 }
 

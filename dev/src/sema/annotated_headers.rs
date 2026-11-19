@@ -123,6 +123,7 @@ pub struct HeaderAttributeView<'a> {
     pub origin: ContractOrigin<'a>,
     pub must_use: ContractKnowledge<ContractView<'a>>,
     pub inline: ContractKnowledge<inlining::View<'a>>,
+    pub optimization: ContractKnowledge<Optimization>,
 }
 #[derive(Default)]
 pub(in crate::sema) struct Ledger {

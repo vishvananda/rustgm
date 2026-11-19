@@ -68,6 +68,7 @@ impl Stage {
         )
         .map_err(Error::unlocated)?;
         let mut completed: Vec<Option<s::HeaderContract>> = (0..count).map(|_| None).collect();
+        let mut optimizations = 0;
         for index in 0..self.definitions.len() {
             self.charge(1).map_err(Error::unlocated)?;
             let selected = match mode {
@@ -112,6 +113,7 @@ impl Stage {
             if self.body_nodes() {
                 self.callable_advisories(report, facts, definition, &mut contract)?;
             }
+            optimizations += usize::from(contract.optimization.is_some());
             if completed[row.0 as usize].replace(contract).is_some() {
                 return Err(Error::at(
                     declaration.file,
@@ -119,6 +121,13 @@ impl Stage {
                     "source header contract emitted twice",
                 ));
             }
+        }
+        if self.declaration_policies()
+            && optimizations != facts.named_optimization_count().map_err(Error::unlocated)?
+        {
+            return Err(Error::unlocated(
+                "checked optimization intent has no exported function header",
+            ));
         }
         self.finish_columns(completed)
     }
@@ -245,6 +254,14 @@ impl Stage {
             cold: false,
             caller_tracking: false,
             target_features: None,
+            optimization: if self.declaration_policies() {
+                match view.optimization {
+                    ContractKnowledge::KnownPresent(preference) => Some(preference),
+                    ContractKnowledge::KnownAbsent | ContractKnowledge::Unknown => None,
+                }
+            } else {
+                None
+            },
         })
     }
 }

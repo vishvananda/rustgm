@@ -24,6 +24,7 @@ fn header(repr: RecordRepr) -> s::NominalHeader {
             cold: false,
             caller_tracking: false,
             target_features: None,
+            optimization: None,
         },
         declaration: DeclarationRef(1),
         scope: DeclarationRef(0),
