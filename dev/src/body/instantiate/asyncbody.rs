@@ -130,7 +130,7 @@ pub(crate) fn future_application(
         Context {
             premises: Premises::Required,
             caller: None,
-            cleanup: &mut cleanup,
+            cleanup: Some(&mut cleanup),
         },
     )?;
     let copy_scope = scope

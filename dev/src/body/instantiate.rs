@@ -63,6 +63,13 @@ impl Cleanup {
             needed: NeedsDrop::new(facts.destructors.implementations().iter().map(|i| i.item)),
         }
     }
+    fn sparse(facts: &Declarations) -> Self {
+        Self {
+            needed: NeedsDrop::sparse_ordinary(
+                facts.destructors.implementations().iter().map(|i| i.item),
+            ),
+        }
+    }
     /// Register a selected factory's values with the traversal's concrete query.
     /// Its original source bodies and immutable destructor registry are unchanged.
     pub(crate) fn factory_values(
@@ -129,7 +136,7 @@ impl Cleanup {
 struct Context<'a> {
     premises: Premises,
     caller: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
-    cleanup: &'a mut Cleanup,
+    cleanup: Option<&'a mut Cleanup>,
 }
 
 /// Materialize one selected body without resolving, parsing or inferring syntax.
@@ -161,7 +168,7 @@ pub fn body(
         Context {
             premises: Premises::Required,
             caller: None,
-            cleanup: &mut cleanup,
+            cleanup: Some(&mut cleanup),
         },
     )
 }
@@ -183,11 +190,7 @@ pub fn with_contract(
     instance: Instance,
     original: &super::regions::Contract,
 ) -> Result<Materialized, &'static str> {
-    let mut cleanup = Cleanup {
-        needed: NeedsDrop::sparse_ordinary(
-            facts.destructors.implementations().iter().map(|i| i.item),
-        ),
-    };
+    let mut cleanup = Cleanup::sparse(facts);
     with_premises(
         facts,
         template,
@@ -196,7 +199,7 @@ pub fn with_contract(
         Context {
             premises: Premises::Required,
             caller: None,
-            cleanup: &mut cleanup,
+            cleanup: Some(&mut cleanup),
         },
     )
 }
@@ -219,7 +222,7 @@ pub(crate) fn from_checked_caller(
         Context {
             premises: Premises::Declared,
             caller,
-            cleanup,
+            cleanup: Some(cleanup),
         },
     )
 }
@@ -372,7 +375,29 @@ fn materialize(
     }
     inputs::finish_owner(facts, &mut body.owner, contract.as_deref())?;
     facts.prepare_opaque_storage()?;
-    let needed = &mut cleanup.needed;
+    let requirements = materialized_destruction(facts, source, &mut body, cleanup)?;
+    Ok((body, requirements))
+}
+
+fn materialized_destruction(
+    facts: &Declarations,
+    source: &Body,
+    body: &mut Body,
+    cleanup: Option<&mut Cleanup>,
+) -> Result<drops::Requirements, &'static str> {
+    let mut fresh;
+    let needed = if let Some(cleanup) = cleanup {
+        &mut cleanup.needed
+    } else {
+        // The store stays immutable during cleanup. Bound the dense table
+        // for tiny instances and visit only reached types in larger stores.
+        fresh = if facts.types.len() <= 32 {
+            Cleanup::new(facts)
+        } else {
+            Cleanup::sparse(facts)
+        };
+        &mut fresh.needed
+    };
     if let Some(owned) = &source.owned {
         let mut concrete = Box::<drops::values::Facts>::default();
         for &temporary in &owned.created {
@@ -394,8 +419,7 @@ fn materialize(
             body.owned = Some(concrete);
         }
     }
-    let requirements = drops::requirements(facts, &body, needed)?;
-    Ok((body, requirements))
+    drops::requirements(facts, body, needed)
 }
 
 fn substitute(

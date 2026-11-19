@@ -1,5 +1,5 @@
 //! Selected initializer bodies retain full argument identity without callable permission.
-use super::{Cleanup, Context, Declarations, Materialized, Premises, anonymous, contracts};
+use super::{Context, Declarations, Materialized, Premises, anonymous, contracts};
 use crate::{
     body::{ir::BodyKey, regions::Contract, templates::Template},
     sema::values::Instance,
@@ -41,7 +41,6 @@ fn materialize(
         return Err("initializer materialization selects another body kind");
     };
     contract.key = BodyKey::InitializerInstance(instance);
-    let mut cleanup = Cleanup::new(facts);
     let (body, destruction) = super::materialize(
         facts,
         template,
@@ -52,7 +51,7 @@ fn materialize(
         Context {
             premises,
             caller: None,
-            cleanup: &mut cleanup,
+            cleanup: None,
         },
     )?;
     if let anonymous::Selection::SourceInitializer(witness) = selection

@@ -1,7 +1,6 @@
 //! Anonymous bodies substitute exact enclosing bindings without acquiring callable identity.
 use super::{
-    Cleanup, Context as ProofContext, Declarations, Inputs, Materialized, Premises, contracts,
-    inputs,
+    Context as ProofContext, Declarations, Inputs, Materialized, Premises, contracts, inputs,
 };
 use crate::{
     body::{
@@ -397,7 +396,6 @@ fn materialize_anonymous(
     mut contract: Contract,
 ) -> Result<Materialized, &'static str> {
     contract.key = BodyKey::AnonymousInstance(instance);
-    let mut cleanup = Cleanup::new(facts);
     let (body, destruction) = super::materialize(
         facts,
         template,
@@ -408,7 +406,7 @@ fn materialize_anonymous(
         ProofContext {
             premises: Premises::Required,
             caller: None,
-            cleanup: &mut cleanup,
+            cleanup: None,
         },
     )?;
     Ok(Materialized {
