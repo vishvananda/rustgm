@@ -22,6 +22,7 @@ impl Roots<'_> {
 pub(crate) struct Selected<'a> {
     pub functions: Roots<'a>,
     pub globals: &'a [DefId],
+    pub startup: Option<crate::sema::entry::Startup>,
 }
 pub(super) struct Exports {
     functions: Vec<DefId>,
@@ -35,6 +36,7 @@ impl Exports {
                 exports: &self.functions,
             },
             globals: &self.globals,
+            startup: None,
         }
     }
 }

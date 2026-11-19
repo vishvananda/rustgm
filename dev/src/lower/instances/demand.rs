@@ -1020,6 +1020,15 @@ fn initial_work(
     budget: &mut Budget,
 ) -> Result<(Vec<Work>, Dependencies), Error> {
     let mut work = Vec::new();
+    if let Some(startup) = roots.startup {
+        budget
+            .push_work(
+                facts,
+                &mut work,
+                Work::Enter(startup.target, startup.source, Caller::ROOT),
+            )
+            .map_err(|message| diagnostic(report, Some(startup.source), message.into()))?;
+    }
     for definition in roots.functions.iter().rev() {
         if facts
             .foreign
@@ -1050,8 +1059,13 @@ fn initial_work(
             )
             .map_err(|e| diagnostic(report, Some(source.into()), e.into()))?;
     }
-    let dependencies =
+    let mut dependencies =
         Dependencies::roots(report, facts, program, roots.globals, &mut work, budget)?;
+    if let Some(startup) = roots.startup {
+        dependencies
+            .prepare_reified(report, facts, vec![startup.callback])
+            .map_err(|message| diagnostic(report, Some(startup.source), message.into()))?;
+    }
     Ok((work, dependencies))
 }
 

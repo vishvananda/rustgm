@@ -708,7 +708,7 @@ impl Dependencies {
             futures: result.futures,
         })
     }
-    fn prepare_reified(
+    pub(super) fn prepare_reified(
         &mut self,
         report: &crate::resolve::expansion::Report,
         facts: &mut Declarations,

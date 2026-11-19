@@ -5,6 +5,7 @@ mod callsite_owners;
 mod disposal;
 mod niches;
 mod reification;
+mod startup_native;
 use super::{Error, data, function, remainder};
 use crate::support::hash::HashMap;
 use crate::{
@@ -189,11 +190,19 @@ fn run(
     forwarding: Option<&crate::borrow::incremental::Forwarding>,
     roots: super::roots::Selected<'_>,
 ) -> Result<Program, Error> {
-    if roots.functions.entry.is_some() {
-        crate::sema::entry::require_supported_start(facts).map_err(|message| Error {
+    if roots.functions.entry.is_some()
+        && roots.startup.is_none()
+        && crate::sema::entry::source_start(facts)
+            .map_err(|message| Error {
+                node: None,
+                message,
+            })?
+            .is_some()
+    {
+        return Err(Error {
             node: None,
-            message,
-        })?;
+            message: "selected Source start requires checked startup instance lowering",
+        });
     }
     if let Some(forwarding) = forwarding {
         for (&index, bridge) in forwarding {
@@ -422,39 +431,32 @@ impl<'a> Context<'a> {
             ledger: facts,
             demand: [facts.carried_demand().map_or(0, |[_, bytes]| bytes), 0],
         };
-        context.index_bodies(facts).map_err(|message| Error {
+        let error = |message| Error {
             node: source,
             message,
-        })?;
+        };
+        context.index_bodies(facts).map_err(error)?;
         for definition in roots.functions.iter() {
-            context
-                .demand_definition(definition)
-                .map_err(|message| Error {
-                    node: source,
-                    message,
-                })?;
+            context.demand_definition(definition).map_err(error)?;
         }
         for &definition in roots.globals {
-            context.static_data(definition).map_err(|message| Error {
-                node: source,
-                message,
-            })?;
+            context.static_data(definition).map_err(error)?;
         }
+        let startup = roots
+            .startup
+            .map(|startup| context.demand_startup(startup))
+            .transpose()
+            .map_err(error)?;
         context.emit_pending(source)?;
-        if let Some(entry) = roots.functions.entry {
-            let root = context.demand_definition(entry).map_err(|message| Error {
-                node: source,
-                message,
-            })?;
-            context.entry(root).map_err(|message| Error {
-                node: source,
-                message,
-            })?;
+        if let Some(startup) = startup {
+            context.startup_entry(startup).map_err(error)?;
+        } else if let Some(entry) = roots.functions.entry {
+            let root = context.demand_definition(entry).map_err(error)?;
+            context.entry(root).map_err(error)?;
         } else if context.requires_address_initialization() {
-            return Err(Error {
-                node: source,
-                message: "entry-free library requires packed address initialization support",
-            });
+            return Err(error(
+                "entry-free library requires packed address initialization support",
+            ));
         }
         Ok(context.finish())
     }

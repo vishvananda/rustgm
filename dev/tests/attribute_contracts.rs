@@ -1119,9 +1119,10 @@ fn source_weak_statics_require_own_feature_shape_and_attribute_provenance() -> T
 }
 
 #[test]
-fn source_startup_roles_keep_authored_headers_and_refuse_direct_main() -> TestResult {
+fn source_startup_demands_the_actual_specialization() -> TestResult {
     use rustgm::{
         lower::instances::{SourcePublication, build_source_library_profile},
+        lowir::vocabulary::Type,
         pipeline::Analysis,
         support::bindings::LangItem,
     };
@@ -1135,12 +1136,14 @@ pub trait Termination {{
 }}
 #[lang = "start"]
 fn actual_start<T: Termination + 'static>(
-    _main: fn() -> T,
+    main: fn() -> T,
     _argc: isize,
     _argv: *const *const u8,
     _sigpipe: u8,
-) -> isize {{ 0 }}
-fn main() {{}}"#
+) -> isize {{ main().report() as isize }}
+pub struct Exit;
+impl Termination for Exit {{ fn report(self) -> i32 {{ 23 }} }}
+fn main() -> Exit {{ Exit }}"#
     );
     let mut report = crate::resolve::source_provider(&source, "source_startup_roles")?;
     let reserved = report
@@ -1169,15 +1172,23 @@ fn main() {{}}"#
         mut facts,
         prepared,
     } = rustgm::pipeline::analyze_source(&report)?;
-    let entry = rustgm::sema::entry::select(&mut report, &facts)
-        .err()
-        .ok_or("selected Source start silently used direct main")?;
-    assert!(
-        entry
-            .to_string()
-            .contains("selected Source start requires checked startup instance lowering"),
-        "{entry}"
-    );
+    let entry = rustgm::sema::entry::select(&mut report, &facts)?;
+    let program = rustgm::lower::instances::build_prepared(&report, &mut facts, entry, prepared)?;
+    let main = program
+        .symbols
+        .iter()
+        .find(|symbol| symbol.name == "main")
+        .ok_or("missing native entry")?;
+    assert_eq!(program.parameters(main.signature)?, &[Type::I32, Type::Ptr]);
+    assert!(program.symbols.iter().any(|symbol| {
+        symbol.body.is_some()
+            && program.parameters(symbol.signature).ok()
+                == Some(&[Type::Ptr, Type::I64, Type::Ptr, Type::U8])
+    }));
+    let Analysis {
+        mut facts,
+        prepared,
+    } = rustgm::pipeline::analyze_source(&report)?;
     let publication = build_source_library_profile(
         &report,
         &mut facts,

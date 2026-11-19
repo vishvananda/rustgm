@@ -1,4 +1,5 @@
 //! Select the executable root from resolved module bindings, including imports.
+mod startup;
 use super::model::Declarations;
 use crate::{
     resolve::{
@@ -10,8 +11,9 @@ use crate::{
     support::bindings::LangItem,
     types::{Kind, TypeId},
 };
+pub(crate) use startup::{Startup, prepare as prepare_startup};
 
-/// Select a safe, nongeneric, parameterless unit/never Rust main.
+/// Select a safe, nongeneric, parameterless Rust main.
 ///
 /// # Errors
 /// Diagnoses missing/ambiguous entry bindings and incompatible entry signatures.
@@ -58,13 +60,22 @@ pub(in crate::sema) fn select_named(
     {
         return Err(error("main cannot be declared in a foreign block"));
     }
-    if facts.generics.parameters.contains_key(&binding.target) {
-        return Err(error("main cannot have type or const parameters"));
+    main_callable(facts, binding.target).map_err(error)?;
+    Ok(binding.target)
+}
+
+fn main_callable(facts: &Declarations, entry: DefId) -> Result<(TypeId, TypeId), &'static str> {
+    if facts.generics.parameters.contains_key(&entry) {
+        return Err("main cannot have type or const parameters");
     }
-    let ty =
-        facts.definitions[binding.target.0 as usize].ok_or_else(|| error("main has no type"))?;
+    let ty = facts
+        .definitions
+        .get(entry.0 as usize)
+        .copied()
+        .flatten()
+        .ok_or("main has no type")?;
     let Some(Kind::FunctionItem { signature, .. }) = facts.types.kind(ty) else {
-        return Err(error("main has no function signature"));
+        return Err("main has no function signature");
     };
     let Some(Kind::Function {
         bound_regions,
@@ -74,33 +85,34 @@ pub(in crate::sema) fn select_named(
         convention,
     }) = facts.types.kind(signature)
     else {
-        return Err(error("invalid main signature"));
+        return Err("invalid main signature");
     };
     if bound_regions != 0
         || !facts
             .types
             .list(parameters)
-            .ok_or_else(|| error("missing main parameter list"))?
+            .ok_or("missing main parameter list")?
             .is_empty()
         || unsafe_
         || convention != crate::types::callable::Convention::RUST
     {
-        return Err(error("main must be safe, parameterless and return () or !"));
+        return Err("main must be safe, parameterless and return () or !");
     }
-    require_supported_start(facts).map_err(error)?;
-    if result != TypeId::UNIT && result != TypeId::NEVER {
-        return Err(error("main must be safe, parameterless and return () or !"));
+    if source_start(facts)?.is_none() && result != TypeId::UNIT && result != TypeId::NEVER {
+        return Err("main must be safe, parameterless and return () or !");
     }
-    Ok(binding.target)
+    Ok((ty, signature))
 }
 
-/// Lowering accepts explicit roots too. Both paths must refuse the ordinary
-/// direct-main wrapper when the actual Source catalog selects a Start.
-pub(crate) fn require_supported_start(facts: &Declarations) -> Result<(), &'static str> {
-    if let Some(catalog) = facts.source_bindings.as_deref()
-        && catalog.validated_role(LangItem::Start)?.is_some()
-    {
-        return Err("selected Source start requires checked startup instance lowering");
-    }
-    Ok(())
+fn source_role(facts: &Declarations, role: LangItem) -> Result<Option<DefId>, &'static str> {
+    facts
+        .source_bindings
+        .as_deref()
+        .map_or(Ok(None), |catalog| {
+            Ok(catalog.validated_role(role)?.map(|role| role.definition))
+        })
+}
+
+pub(crate) fn source_start(facts: &Declarations) -> Result<Option<DefId>, &'static str> {
+    source_role(facts, LangItem::Start)
 }

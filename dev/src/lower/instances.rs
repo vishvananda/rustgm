@@ -712,7 +712,11 @@ fn inspect_staged<S, R>(
         .prepare_opaque_storage_located()
         .map_err(|failure| opaque_storage_error(report, facts, failure))?;
     let (entry, exports, mut stage) = select(facts, &checked)?;
-    let roots = exports.selected(entry);
+    let mut roots = exports.selected(entry);
+    if let Some(entry) = entry {
+        roots.startup = crate::sema::entry::prepare_startup(report, facts, entry)
+            .map_err(|message| diagnostic(report, None, message))?;
+    }
     let mut collect = staged_originals::Binding {
         stage: &mut stage,
         callback: collect,
