@@ -136,7 +136,7 @@ impl<'a> FrameView<'a> {
             .map_err(error)?
             .ok_or_else(|| error("missing macro allowance provider"))?
             .contracts()
-            .charge(1 + context.0.checked_ilog2().unwrap_or(0) as usize, 0)
+            .charge(1, 0)
             .map_err(error)?;
         let invocation = self
             .invocations
@@ -148,12 +148,7 @@ impl<'a> FrameView<'a> {
             .units
             .get(invocation.node.file.0 as usize)
             .ok_or_else(|| error("unknown panic call-site file"))?;
-        if invocation.parent.0 >= context.0
-            || !self
-                .facts
-                .introductions
-                .ancestry
-                .ancestor(invocation.parent, context)
+        if self.facts.introductions.ancestry.parent(context) != Some(invocation.parent)
             || unit
                 .configured
                 .ast

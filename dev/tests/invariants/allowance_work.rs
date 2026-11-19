@@ -1,10 +1,63 @@
 //! Header authentication and origin traversal have separate measured dimensions.
 use super::{ROOT, TestResult, owner_usage, provider, sites};
 use crate::{
-    expand::stream::Location,
+    expand::{marks::ExpansionId, stream::Location},
     resolve::{bindings::KnownFeature, unit::FileId},
     syntax::ast::Kind,
 };
+
+#[test]
+fn frame_parent_checks_pay_constant_work_across_ordinals_and_depths() -> TestResult {
+    use crate::resolve::expansion::Report;
+
+    let frame_work = |report: &Report, context| -> TestResult<usize> {
+        let before = owner_usage(report)?.0;
+        let view = super::super::FrameView {
+            package: &report.package,
+            definitions: &report.definitions,
+            invocations: &report.invocations,
+            facts: &report.resolution,
+        };
+        view.frame(context)?;
+        Ok(owner_usage(report)?.0 - before)
+    };
+    let definitions = "macro_rules!route{(a $($rest:tt)*)=>{route!($($rest)*)};()=>{probe()};}";
+    for width in [8, 32, 128] {
+        let flat = provider(
+            definitions,
+            &format!("{{{}route!()}}", "route!();".repeat(width)),
+        )?;
+        let last = flat.invocations.last().ok_or("last flat invocation")?;
+        let first_work = frame_work(&flat, ExpansionId(1))?;
+        assert_eq!(first_work, frame_work(&flat, last.context)?);
+
+        let mut nested = provider(definitions, &format!("route!({})", "a ".repeat(width)))?;
+        let last = nested
+            .invocations
+            .last_mut()
+            .ok_or("last nested invocation")?;
+        let (context, parent, call) = (last.context, last.parent, last.node);
+        assert_ne!(parent, ExpansionId(0));
+        assert_eq!(first_work, frame_work(&nested, context)?);
+
+        let last = nested
+            .invocations
+            .last_mut()
+            .ok_or("last nested invocation")?;
+        last.parent = ExpansionId(0);
+        assert!(frame_work(&nested, context).is_err());
+        let last = nested
+            .invocations
+            .last_mut()
+            .ok_or("last nested invocation")?;
+        last.parent = parent;
+        nested.package.units[call.file.0 as usize].configured.active[call.node.get() as usize] =
+            false;
+        assert!(frame_work(&nested, context).is_err());
+        assert!(frame_work(&nested, ExpansionId(u32::MAX)).is_err());
+    }
+    Ok(())
+}
 
 #[test]
 fn list_width_and_repeated_uses_pay_full_authentication_once() -> TestResult {

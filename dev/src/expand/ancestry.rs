@@ -59,6 +59,12 @@ impl Ancestry {
         self.reaches(ancestor, context, || {})
     }
 
+    /// The exact parent recorded for an invocation. Physical source has none.
+    pub(crate) fn parent(&self, context: ExpansionId) -> Option<ExpansionId> {
+        let index = context.0.checked_sub(1)? as usize;
+        self.nodes.get(index).map(|node| node.parent)
+    }
+
     // The jump lengths on a path form skew-binary blocks (2^k - 1).
     // Skip complete blocks; when a block straddles the requested depth, taking
     // its parent exposes its two smaller blocks. Only the block containing the
