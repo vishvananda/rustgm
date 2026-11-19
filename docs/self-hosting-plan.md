@@ -341,6 +341,14 @@ The batch receipt and per-case diagnostics are in
 `obj/parallel/std-startup-remaining/` in the frontier checkout. Eight of
 the fourteen original std consumers have matched under the bring-up profile.
 
+The dynamic extent change reads the existing size and alignment words from
+the actual trait object's vtable. A native C observer checks both for two
+different trait objects, a slice and a sized array. The same frozen input
+aborts on the predecessor and passes with zero skips on the candidate.
+Both intrinsic names still report their bring-up qualification waivers.
+Receipts are in `obj/parallel/dynamic-extent-predecessor/` and
+`obj/parallel/dynamic-extent-independent-pointers/` in the frontier checkout.
+
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
 programs reproduce the lifetime failure when an inferred trait method item goes
