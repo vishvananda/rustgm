@@ -667,6 +667,17 @@ references already use checked declaration identities. The receipt is under
 `obj/parallel/strict-core/reservation/` in the frontier checkout.
 [Existing provenance boundary](parallel/macro-contexts.md)
 
+Version fourteen now publishes checked macro-generated body locals and value
+parameters by declaration and body slot. Labels use the resolved block
+destinations of the retained CFG. Five reduced providers publish and import
+in separate processes, with a native observer returning `42` for each.
+Pinned Rust accepts all eight reduction providers. Contextual item names
+and macro-generated exported definitions still fail their separate gates.
+The v13 observations agree with the previous compiler and the unmarked
+v13 and v14 providers emit byte-identical LowIR and metadata. The four
+focused checks pass. Receipts are in `obj/parallel/v14-macro-provenance/`
+in the frontier checkout. [Fresh body regression](../dev/tests/crate_linking/hygienic_exports.rs)
+
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
 deprecated macro and accepts a call through an annotated `use` alias of a

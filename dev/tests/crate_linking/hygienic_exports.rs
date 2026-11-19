@@ -105,6 +105,59 @@ fn private_macro_rules_clients_execute_natively() -> Result {
     }
     Ok(())
 }
+
+#[test]
+fn body_operations_preserve_resolved_macro_locals_and_labels() -> Result {
+    const PROFILE: &str = "module-body-operations-v14";
+    let packet = Packet::new(GROUP, SPEC, "body-operations", "provider")?;
+    let provider = generated(
+        &packet,
+        "typed-body",
+        DECL_MACRO,
+        r"
+macro answer() { 42 }
+macro_rules! keep {
+    ($name:ident) => {{
+        let value = 17;
+        let _ = value;
+        'out: loop { break 'out $name; }
+    }}
+}
+macro_rules! publish {
+    () => { pub fn identity(value: u8) -> u8 { keep!(value) } }
+}
+publish!();
+pub fn observed() -> u8 { identity(answer!()) }
+",
+    )?;
+    super::artifacts::checked(
+        "typed-body",
+        &packet.folder,
+        &mut packet.export(PROFILE, &provider, &packet.metadata),
+    )?;
+    let bytes = std::fs::read(&packet.metadata)?;
+    assert_eq!(crates::encode(&crates::decode(&bytes)?)?, bytes);
+    let client = packet.folder.join("body-client.rs");
+    std::fs::write(
+        &client,
+        "#![feature(no_core)]#![no_core]\n\
+         #[unsafe(no_mangle)] pub extern \"C\" fn answer() -> u8 { base::observed() }\n",
+    )?;
+    super::artifacts::checked(
+        "body-client",
+        &packet.folder,
+        &mut packet.consumer(&client, "body-client", &packet.metadata, &packet.owner()),
+    )?;
+    let hidden = generated(&packet, "contextual-item", DECL_MACRO, FENCED[4].2)?;
+    let contextual = packet.folder.join("contextual-item.rgcrate");
+    packet.rejected(
+        "contextual-item",
+        &mut packet.export(PROFILE, &hidden, &contextual),
+        PROVENANCE,
+    )?;
+    Ok(())
+}
+
 #[test]
 fn marked_locals_opaque_marks_and_generated_exported_macros_stay_fenced() -> Result {
     let packet = Packet::new(GROUP, SPEC, "fences", "provider")?;

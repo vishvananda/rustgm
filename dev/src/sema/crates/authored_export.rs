@@ -601,6 +601,17 @@ impl Stage {
         mode: ExportMode,
     ) -> Result<Option<s::DefinitionKind>, &'static str> {
         let definition = &report.resolution.definitions[id.0 as usize];
+        if self.declaration_policies() && definition.kind == DefKind::Label {
+            // The checked CFG retains each destination as a block identity.
+            if definition.namespace != Namespace::Label
+                || definition.node.is_none()
+                || definition.members.is_some()
+                || !matches!(definition.access, Access::Within(_))
+            {
+                return Err("source label changed its actual lexical declaration");
+            }
+            return Ok(None);
+        }
         let associated = (mode == ExportMode::CompilerOperations || self.body_nodes())
             && facts.associated.type_contract(id).is_some();
         if associated || self.body_nodes() && implementation_result(report, facts, id) {
@@ -1085,12 +1096,13 @@ fn require_export_mode(
             return Err("source availability export requires its completed actual library policy");
         }
     }
-    // Version thirteen admits semi-opaque and transparent marks that leave
-    // every item name at the root and bind no local, parameter or label: no
-    // row then depends on a mark. Older profiles keep the crate-wide gate.
+    // Version fourteen transports the checked local and parameter slots and
+    // CFG targets. Their syntax marks only affect resolution in this crate.
+    // Contextual item bindings still require their name lookup provenance.
     let marked = if languages {
-        report.package.marks.has_item_contexts()
-            || report.resolution.bindings.has_contextual_locals()
+        mode != ExportMode::CompilerOperations
+            && (report.package.marks.has_item_contexts()
+                || report.resolution.bindings.has_contextual_locals())
     } else {
         report.package.marks.context_count() != 1
     };
