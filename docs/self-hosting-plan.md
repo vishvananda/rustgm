@@ -242,6 +242,16 @@ matching pinned rustc. Both compilers reject the control with its
 existing fence. ABI observations and the native receipts are under
 `obj/parallel/checked-source-start/` in the frontier checkout.
 
+The frozen `println` replay with the loan and startup repairs now reaches
+`alloc/src/collections/btree/node.rs:1102`, the inline const that checks
+`BorrowType::TRAVERSAL_PERMIT` in `NodeRef::descend`. It reports
+`selected type retains an unmapped lifetime`, with 15 unproven obligations,
+14 waivers, zero skips and no LowIR. A clean, nonincremental opt-level 1 host
+compiler supplied this observation after an incremental archive failed to
+link. The exact receipt is under
+`obj/parallel/checked-source-start/std-consumer-println/` in the frontier
+checkout.
+
 The separate strict core export fails before metadata publication in
 `FlattenCompat::next` in `core/src/iter/adapters/flatten.rs:527`. Small independent
 programs reproduce the lifetime failure when an inferred trait method item goes
@@ -369,7 +379,8 @@ closure consumes an owned `Self::Item`, with a conditional `Destruct` premise
 on the enclosing method. The strict diagnostic is
 `const cleanup selection requires its actual source function`. The original
 closure already carries its defining owner and inherited parameter context in
-its region contract. Cleanup selection currently requires a function body key.
+its region contract. The cleanup selector at that checkpoint required a
+function body key.
 The owned generic reduction reproduces the failure. Pinned rustc accepts it
 with the declaring premise and reports E0493 when that premise is removed.
 The borrowed and concrete controls clear cleanup selection in both compilers
@@ -377,6 +388,19 @@ and RustGM reaches the subsequent source-role transport check. The original
 replay records zero bring-up rows and emits no artifacts. Receipts are under
 `obj/parallel/strict-core/loan-slot-replacement/` and
 `obj/parallel/strict-const-closure-cleanup/` in the performance checkout.
+
+The closure cleanup successor authenticates the child body key, semantic
+source, public and execution signatures, and the child's retained defining
+environment. It checks the owned generic and projected item under the
+declaring `Destruct` premise. Both paid controls clear cleanup checking, and
+the unpaid controls retain the active-cleanup rejection and match the pinned
+rustc outcome. A demanded generic closure instance, nine existing capture
+cases, and the ordinary and constant-initializer controls pass the focused
+checks. The captured CTFE control still reaches its callable-type error.
+The receipts are under `obj/parallel/strict-const-closure-candidate/`,
+`obj/parallel/strict-const-closure-projections/` and
+`obj/parallel/const-closure-captured-controls/` in the performance checkout.
+The full strict core replay of this closure successor remains due.
 
 All four frozen Unicode consumers match their
 declared output on pinned rustc with prebuilt std at opt-level 2. Their RustGM
