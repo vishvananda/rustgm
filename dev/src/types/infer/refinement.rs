@@ -24,15 +24,33 @@ struct Roots {
     constants: Vec<(ConstTermId, ConstTermId)>,
     stable: Vec<(TermId, TermId)>,
 }
-impl Tracking for Roots {
+/// The first mapping belongs only to this import. Retained roots use their
+/// original storage once initialization has finished.
+#[derive(Default)]
+struct RootTracker {
+    roots: Roots,
+    first_type: Option<(TermId, TermId)>,
+}
+impl Tracking for RootTracker {
     fn ty(&mut self, original: TermId, copied: TermId) {
-        self.types.push((original, copied));
+        self.roots.types.push((original, copied));
     }
     fn constant(&mut self, original: ConstTermId, copied: ConstTermId) {
-        self.constants.push((original, copied));
+        self.roots.constants.push((original, copied));
     }
     fn stable(&mut self, original: TermId, copied: TermId) {
-        self.stable.push((original, copied));
+        self.roots.stable.push((original, copied));
+    }
+    fn first_type(&self, original: TermId) -> Option<TermId> {
+        self.first_type
+            .and_then(|(root, copied)| (root == original).then_some(copied))
+    }
+    fn keep_first_type(&mut self, original: TermId, copied: TermId) -> bool {
+        if self.first_type.is_some() {
+            return false;
+        }
+        self.first_type = Some((original, copied));
+        true
     }
 }
 
@@ -55,14 +73,14 @@ impl Refinement {
         roots: &[Argument],
     ) -> Result<(Self, Vec<Argument>), Error> {
         let mut query = Self::default();
-        let mut mappings = Mapping::<Roots>::default();
+        let mut mappings = Mapping::<RootTracker>::default();
         let roots = import(store, source, &mut query.context, roots, &mut mappings)?;
         query.retain_inputs(mappings);
         Ok((query, roots))
     }
 
-    fn retain_inputs(&mut self, mappings: Mapping<Roots>) {
-        let roots = mappings.tracker;
+    fn retain_inputs(&mut self, mappings: Mapping<RootTracker>) {
+        let roots = mappings.tracker.roots;
         self.inputs =
             (!roots.types.is_empty() || !roots.constants.is_empty() || !roots.stable.is_empty())
                 .then(|| Box::new(roots));
@@ -97,7 +115,7 @@ impl Refinement {
         if self.inputs.is_some() || !self.context.terms.is_empty() {
             return Err(Error::InvalidIdentity);
         }
-        let mut mappings = Mapping::<Roots>::default();
+        let mut mappings = Mapping::<RootTracker>::default();
         let predicate = predicate.map_arguments(|argument| {
             self.context.account_work(1)?;
             mappings.argument(store, source, &mut self.context, argument)

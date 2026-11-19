@@ -22,6 +22,12 @@ pub(super) trait Tracking {
     fn ty(&mut self, original: TermId, copied: TermId);
     fn constant(&mut self, original: ConstTermId, copied: ConstTermId);
     fn stable(&mut self, original: TermId, copied: TermId);
+    fn first_type(&self, _: TermId) -> Option<TermId> {
+        None
+    }
+    fn keep_first_type(&mut self, _: TermId, _: TermId) -> bool {
+        false
+    }
 }
 impl Tracking for () {
     fn ty(&mut self, _: TermId, _: TermId) {}
@@ -59,19 +65,19 @@ impl Context {
         while let Some((id, finish)) = first.take().or_else(|| work.pop()) {
             self.step()?;
             let id = source.root(id)?;
-            if let Some(&copied) = mappings.types.get(&id) {
+            if let Some(copied) = mappings.copied_type(id) {
                 self.import_slot_facts(source, id, copied, false)?;
                 continue;
             }
             if let Some(copied) = self.import_rigid_root(store, source, id)? {
                 self.import_slot_facts(source, id, copied, false)?;
-                mappings.types.insert(id, copied);
+                mappings.record_type(id, copied);
                 continue;
             }
             if let Some(ty) = source.settled_type(id) {
                 let copied = self.known(store, ty)?;
                 self.import_slot_facts(source, id, copied, false)?;
-                mappings.types.insert(id, copied);
+                mappings.record_type(id, copied);
                 continue;
             }
             let term = source.terms[id.0 as usize];
@@ -80,14 +86,14 @@ impl Context {
                     let copied = self.variable(domain)?;
                     self.import_slot_facts(source, id, copied, true)?;
                     mappings.tracker.ty(id, copied);
-                    mappings.types.insert(id, copied);
+                    mappings.record_type(id, copied);
                     continue;
                 }
                 Value::Known(ty) => {
                     let copied = self.known(store, ty)?;
                     self.carry_rigid_marks(store, source, ty)?;
                     self.import_slot_facts(source, id, copied, false)?;
-                    mappings.types.insert(id, copied);
+                    mappings.record_type(id, copied);
                     continue;
                 }
                 Value::Construct(kind) => kind,
@@ -106,7 +112,7 @@ impl Context {
             children.clear();
             for index in term.start..term.end {
                 let id = source.root(source.edges[index as usize])?;
-                children.push(*mappings.types.get(&id).ok_or(Error::InvalidIdentity)?);
+                children.push(mappings.copied_type(id).ok_or(Error::InvalidIdentity)?);
             }
             let copied = mappings.construct(store, source, self, kind, &children)?;
             self.import_slot_facts(source, id, copied, true)?;
@@ -116,13 +122,9 @@ impl Context {
                     mappings.tracker.stable(id, copied);
                 }
             }
-            mappings.types.insert(id, copied);
+            mappings.record_type(id, copied);
         }
-        mappings
-            .types
-            .get(&root)
-            .copied()
-            .ok_or(Error::InvalidIdentity)
+        mappings.copied_type(root).ok_or(Error::InvalidIdentity)
     }
 }
 
@@ -184,6 +186,18 @@ impl Context {
 }
 
 impl<T: Tracking> Mapping<T> {
+    fn copied_type(&self, original: TermId) -> Option<TermId> {
+        self.tracker
+            .first_type(original)
+            .or_else(|| self.types.get(&original).copied())
+    }
+
+    fn record_type(&mut self, original: TermId, copied: TermId) {
+        if !self.tracker.keep_first_type(original, copied) {
+            self.types.insert(original, copied);
+        }
+    }
+
     pub(super) fn argument(
         &mut self,
         store: &Store,
