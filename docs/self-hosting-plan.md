@@ -2081,6 +2081,31 @@ pending investigation of the elapsed regression. The optimized pair
 and measurements are under
 `obj/parallel/v5-nontrait-schedule/full-suffix/` in the performance checkout.
 
+### Local annotation traversal
+
+The observer on `f5e3fbdcf` records 970,361 active configured AST visits
+across 375 original source units. It classifies 631,869 visits (65.12%) as
+inert for this pass and 338,492 as possible annotation or context events.
+The longest inert gap spans 7,809 visits. A control grows from 9 to 519
+visits with three events and four extra work units throughout. The frozen
+746-input graph and 12 focused comparisons preserve output bytes. The
+focused cases also agree with the pinned Rust 1.98 outcomes.
+
+The resolver's reference inventory misses 10,162 semantic references
+responsible for 10,136 actual annotation events. The next observer uses
+final configured source admission together with semantic-reference writes,
+including references resolved during the pass. It compares their order
+with the existing traversal and checks the first failing node across
+work limits. It also counts the extra storage and writes needed to produce
+the event stream. The old `d552a9635` graph profile attributes 203 of
+26,865 sampled call chains (0.756%) to the pass. The census measures
+eligible visits. Speed and storage improvements need a qualified candidate.
+The census report is retained as `obj/parallel/local-annotation-census/result.md`
+in the performance worktree. Its original-graph receipt has SHA-256
+`dab127f3b42eff036244df0ea148df6bb99d7ffb9395c43c16d6874f99b953b2`.
+
+### Macro expansion and ledger work
+
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
 positions and 16,384 invocations the median was 1,117.90 ms before and 67.79 ms

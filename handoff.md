@@ -29,22 +29,21 @@ Stage 1 and Stage 2 are pending.
 
 The performance worker survived the restart. Its worktree is
 `/mnt/vizier/rustgm-scratch/rustgm-pa29-work` on
-`lane/ordered-liveness-seeds-20261120` at `72264239b`. The optimized
-candidate matches `f5e3fbdcf` on the frozen graph, 17 focused outcomes
-and all six typed loan-ledger controls. Paired counters show 0.253% more
-retired instructions on the original graph, so the candidate stays
-isolated. A new candidate `4757cac6d` handles the covered parameter-seed
-suffix. Its optimized comparison matches the graph and nine typed loan
-ledgers. It retires 0.102% fewer instructions on the original graph, with
-slower elapsed time in both pairs. Both candidates stay isolated.
-The worker is building an observer for the configured AST traversal
-in local-annotation checking, with macro and cfg parity controls.
-The private harness reached its build deadline. Bounded child-proof
-reuse `9143861f0` and its early source guard `049db339d` are both on
-`main`. The separate trait-header experiments are parked. Lifetime
-evidence is under `obj/parallel/v5-nontrait-schedule/` in the
-performance worktree.
-[Performance evidence](docs/self-hosting-plan.md#L2064)
+`lane/local-annotation-census-20261120` at `f5e3fbdcf`. The first
+local-annotation census identifies 631,869 inert visits out of 970,361
+active visits (65.12%). The frozen graph and 12 focused controls preserve
+output bytes, and the focused outcomes agree with pinned Rust. Using only
+the resolver's references would drop 10,136 real annotation events.
+The next observer is being built to replay actual semantic-reference
+publications and reproduce the first work-limit failure. The census
+measures eligible visits. Compiler timing awaits a qualified implementation.
+
+Lifetime candidates `72264239b` and `4757cac6d` stay isolated. The first
+retires 0.253% more original-graph instructions. The second retires 0.102%
+fewer instructions and takes longer in both elapsed-time pairs. Bounded
+child-proof reuse `9143861f0` and its early source guard `049db339d` are
+on `main`. The separate trait-header experiments are parked.
+[Performance evidence](docs/self-hosting-plan.md#local-annotation-traversal)
 
 ## Historical bring-up checkpoint — 2026-11-19
 
