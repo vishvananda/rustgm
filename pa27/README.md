@@ -1,8 +1,11 @@
 # RustGM Programming Assignment 27: Unsafe language
 
-Status: **planned** as a whole assignment. What is graded is the finite contract
-under [Graded contract](#graded-contract); the rest of this brief is buildout
-guidance.
+Status: **closed at its finite contract.** What is graded is the contract under
+[Graded contract](#graded-contract). The rest of this brief is buildout guidance
+for the work that contract defers, which
+[PA44 carries](../pa44/README.md#carried-requirements). Checkpoint notes below
+that say the assignment remains planned predate the closure and describe that
+deferred work.
 Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The common source profile is Rust 1.98.0, initially edition
 2024 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
 
@@ -16,16 +19,29 @@ no released manifest claims is not graded, whatever this brief says about it.
 | --- | --- | --- | --- |
 | `unsafe-places` | [unsafe-places.json](tests/units/unsafe-places.json) | 262 | [2 fixtures](../docs/pa27-unsafe-places-release.md#deferred-list) |
 
-From the repository root, `python3 scripts/course.py pa27 --unit unsafe-places --app BIN`
-runs one component and `make test` runs every released component.
+From the repository root, `python3 scripts/course.py pa27 --app BIN` runs the whole
+contract and `--unit unsafe-places` selects one component. `make test`,
+`make test-rustc` and `make test-native` include PA27.
 
 Not released: `raw-validity` is partial.
 
-Deferred and unclaimed fixtures are not waived. Everything the self-hosting
-corpus needs stays required through PA32–PA36, PA44 and PA45. The whole
-assignment stays planned and fails explicitly until every unit above and every
-unit named by its requirement rows is released and a nonempty
-`tests/manifest.json` is published with its references.
+PA27 is closed at this contract. [tests/manifest.json](tests/manifest.json) is
+exactly the union of the released manifests above and runs against their
+references; `python3 scripts/finite_contracts.py compose pa27` rewrites it when a
+component is released. Closing waives nothing. Each unreleased unit and each
+[requirement row](../docs/assignment-requirements.json) a released unit does not
+cover is deferred to [PA44](../pa44/README.md#carried-requirements), which cannot
+be complete while one of them is unreleased. Everything the self-hosting corpus
+needs stays required through PA32–PA36, PA44 and PA45.
+
+| Deferred to PA44 | Still owed |
+| --- | --- |
+| `raw-validity` | Interior mutation and wide-value validity (partial) |
+| `const-memory` (PA25) | Symbolic constant storage and provenance (partial) |
+| Row 27.4 | CTFE raw access, references and symbolic permissions |
+| Row 27.5 | Byte-backed unions/enums/closures/opaque/string storage |
+| Row 27.6 | Interior mutation and runtime validity lints |
+| Row 27.7 | Raw slices/ranges and reconstructed wide values |
 
 ## Required implementation
 

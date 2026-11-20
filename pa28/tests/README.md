@@ -14,7 +14,10 @@ followed by the fixture's on standard input, as one translation unit;
 `prelude/check.rs` defines the `check` function those bodies call and is a byte
 copy of the maintainer native harness prelude.
 
-Whole PA28 is planned: no graded whole-assignment suite yet.
+PA28 is closed at its finite contract: `manifest.json` is exactly the union of
+the released unit manifests, written by
+`python3 scripts/finite_contracts.py compose pa28` and never by hand. It has no
+reference receipt of its own; the released units own every sidecar.
 
 Remaining families: atomic source operations and orderings; compare-exchange;
 numeric and memory intrinsics; overlap rules.

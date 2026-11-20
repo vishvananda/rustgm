@@ -5,7 +5,10 @@ the reference sidecars of its 113 cases; see the
 [release record](../../docs/pa25-const-machine-release.md). Every other family
 here is unpublished.
 
-Whole PA25 is planned: no graded whole-assignment suite yet.
+PA25 is closed at its finite contract: `manifest.json` is exactly the union of
+the released unit manifests, written by
+`python3 scripts/finite_contracts.py compose pa25` and never by hand. It has no
+reference receipt of its own; the released units own every sidecar.
 
 `migrated-outcomes.json` declares accepted outcomes for the unchanged former
 PA12 discriminant-statements/constant-function and PA19 generic-constant-statements

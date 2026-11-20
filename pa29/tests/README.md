@@ -3,7 +3,12 @@
 The released `declarations` component publishes `units/declarations.json` and
 the reference sidecars of its 30 cases; see the
 [release record](../../docs/pa29-declarations-release.md). Every other family
-here is unpublished, and whole PA29 is planned.
+here is unpublished.
+
+PA29 is closed at its finite contract: `manifest.json` is exactly the union of
+the released unit manifests, written by
+`python3 scripts/finite_contracts.py compose pa29` and never by hand. It has no
+reference receipt of its own; the released units own every sidecar.
 
 A crate-graph case lists its provider crates in build order under `crates`
 (`name`, `path`, `crate_name`, `disambiguator`, `externs`) and binds the
@@ -17,7 +22,7 @@ another. Only the consumer has reference sidecars.
 identities, dependency aliases and independent outcomes. The explicit Cargo
 `crate_linking` target checks these inputs, including backend-dependent native
 controls when run with `--include-ignored`. This inventory is not an activated
-course manifest: the layout check rejects `manifest.json` for planned stages.
+course manifest: only a released unit adds a case to `manifest.json`.
 The `spec/values/` family adds scalar named constants, exact bit preservation,
 imported patterns/discriminants and consumer const-generic bounds. Its producer
 identities and dependency edges are distinct from the function-only family.

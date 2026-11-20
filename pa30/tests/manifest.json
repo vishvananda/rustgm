@@ -1,0 +1,3038 @@
+{
+ "schema": 1,
+ "mode": "--emit-lowir",
+ "language": "Rust 1.98.0",
+ "edition": "2024",
+ "target": "x86_64-unknown-linux-gnu",
+ "contract": "finite",
+ "units": [
+  "c-abi"
+ ],
+ "discovery": [
+  "tests/spec/aggregate-abi/aligned.rs",
+  "tests/spec/aggregate-abi/array.rs",
+  "tests/spec/aggregate-abi/const-call.rs",
+  "tests/spec/aggregate-abi/indirect.rs",
+  "tests/spec/aggregate-abi/interop.rs",
+  "tests/spec/aggregate-abi/nested.rs",
+  "tests/spec/aggregate-abi/unsafe-call.rs",
+  "tests/spec/aggregate-abi/wrong-type.rs",
+  "tests/spec/aggregate-abi/composites/array-bytes.rs",
+  "tests/spec/aggregate-abi/composites/array-integer.rs",
+  "tests/spec/aggregate-abi/composites/array-nested-merge.rs",
+  "tests/spec/aggregate-abi/composites/array-sse.rs",
+  "tests/spec/aggregate-abi/composites/nested-integer-sse.rs",
+  "tests/spec/aggregate-abi/composites/nested-integer.rs",
+  "tests/spec/aggregate-abi/composites/nested-memory.rs",
+  "tests/spec/aggregate-abi/composites/nested-sse-integer.rs",
+  "tests/spec/aggregate-abi/composites/nested-sse.rs",
+  "tests/spec/aggregate-abi/composites/shifted-array-mixed.rs",
+  "tests/spec/aggregate-abi/composites/shifted-nested-mixed.rs",
+  "tests/spec/aggregate-abi/composites/unsafe-call.rs",
+  "tests/spec/aggregate-abi/composites/wrong-arity.rs",
+  "tests/spec/aggregate-abi/composites/wrong-nominal.rs",
+  "tests/spec/aggregate-abi/composites/zero-array-field.rs",
+  "tests/spec/conventions",
+  "tests/spec/imports",
+  "tests/spec/linkage/alias.rs",
+  "tests/spec/linkage/both-export.rs",
+  "tests/spec/linkage/collision.rs",
+  "tests/spec/linkage/duplicate-export.rs",
+  "tests/spec/linkage/empty.rs",
+  "tests/spec/linkage/export-name.rs",
+  "tests/spec/linkage/exports.rs",
+  "tests/spec/linkage/foreign-export.rs",
+  "tests/spec/linkage/generic-const.rs",
+  "tests/spec/linkage/generic-export.rs",
+  "tests/spec/linkage/generic.rs",
+  "tests/spec/linkage/import-alias.rs",
+  "tests/spec/linkage/missing-unsafe.rs",
+  "tests/spec/linkage/no-mangle.rs",
+  "tests/spec/linkage/nul.rs",
+  "tests/spec/linkage/wrong-owner.rs",
+  "tests/spec/statics/alias.rs",
+  "tests/spec/statics/callback.rs",
+  "tests/spec/statics/const-address.rs",
+  "tests/spec/statics/const-read.rs",
+  "tests/spec/statics/default-safe-use.rs",
+  "tests/spec/statics/default-unsafe.rs",
+  "tests/spec/statics/exact-kind-collision.rs",
+  "tests/spec/statics/explicit-safe.rs",
+  "tests/spec/statics/explicit-unsafe.rs",
+  "tests/spec/statics/export-static.rs",
+  "tests/spec/statics/exports.rs",
+  "tests/spec/statics/extern-rust.rs",
+  "tests/spec/statics/foreign-initializer.rs",
+  "tests/spec/statics/immutable-raw-address.rs",
+  "tests/spec/statics/immutable-reference.rs",
+  "tests/spec/statics/imports.rs",
+  "tests/spec/statics/mutable-raw-address.rs",
+  "tests/spec/statics/mutable-reference.rs",
+  "tests/spec/statics/mutable.rs",
+  "tests/spec/statics/ordinary-safe.rs",
+  "tests/spec/statics/ordinary-unsafe.rs",
+  "tests/spec/statics/pointer-constant.rs",
+  "tests/spec/statics/safe-immutable-reference.rs",
+  "tests/spec/statics/safe-mutable-reference.rs",
+  "tests/spec/statics/safe-mutable-use.rs",
+  "tests/spec/statics/safe-mutable.rs",
+  "tests/spec/statics/self-alias.rs",
+  "tests/spec/statics/unsafe-raw-dereference.rs",
+  "tests/spec/variadic-tails",
+  "tests/spec/variadics"
+ ],
+ "cases": [
+  {
+   "path": "tests/spec/conventions/rust-to-c.rs",
+   "source_sha256": "8268773e737a6ada54e71249a4704a9aa5cf839c2634ab37aa1a34059be17373",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.callable-convention"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/conventions/c-to-rust.rs",
+   "source_sha256": "97d09c75cb717510d431a27d007eeb2f902b5c173402a93f1cc406b83978d4b6",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.callable-convention"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/conventions/c-item.rs",
+   "source_sha256": "0fda8dedfe546c3c6ead2e383db2cdd74fc11fd935193ef976d4c75c897cc72b",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.callable-convention"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+   }
+  },
+  {
+   "path": "tests/spec/conventions/c-default.rs",
+   "source_sha256": "2b0deb002cd4423204b0e6d1dcc53a41665ef09d09ab82a64195f48c7a85d865",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.callable-convention"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+   }
+  },
+  {
+   "path": "tests/spec/conventions/pointer-default.rs",
+   "source_sha256": "df2cdc2cc8235e65c854548cc31714320649c183351c6cd272cb42f0c7a1ec72",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.callable-convention"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+   }
+  },
+  {
+   "path": "tests/spec/conventions/safe-to-unsafe.rs",
+   "source_sha256": "f0f746f3e09b9841ccf2a7a6b84daf3054adbc2509a666dd27862cb3034d53b6",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.callable-convention"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+   }
+  },
+  {
+   "path": "tests/spec/conventions/unsafe-pointer.rs",
+   "source_sha256": "68a385711e044e22cb7c8d91cfd52d4334261525dbc5861f85e90cb796ca0f94",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.callable-convention"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+   }
+  },
+  {
+   "path": "tests/spec/conventions/unsafe-to-safe.rs",
+   "source_sha256": "f575de67e4ddebef5d29337c309e2b32f96ee94fbb0eabad66a635c811c3c6b6",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.callable-convention"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/conventions/closure-to-c.rs",
+   "source_sha256": "c913e8a10b4a7314d572861fd08bc5d694cb8dcd5badf0d5a193dcfb3cc0ec1b",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.callable-convention"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/conventions/c-call-trait.rs",
+   "source_sha256": "23b2319aba452ad30b9a0ec4238d2184f0974bc6a78f617712d21d38286db339",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.callable-convention"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/conventions/c-pointer-call-trait.rs",
+   "source_sha256": "49f6b3272f0ea002b17bd9ae2da5516638aa5ff9a05dad2a5b758bb0e0cea6a7",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.callable-convention"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/conventions/const-c.rs",
+   "source_sha256": "6430dc8fdfddd7ab92df4a6205ad36b0dbddf6127005be8e351bfe1b44b784fa",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.callable-convention"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "Callable ABI/safety identity and ordinary lowering; selected independent native controls are in foreign_conventions.rs."
+   }
+  },
+  {
+   "path": "tests/spec/conventions/nested-abi.rs",
+   "source_sha256": "91c20e608fea79bc9d82f6b2a1d4712c99641bf45cf3c9972e1599bb09761faf",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.callable-convention"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/imports/default.rs",
+   "source_sha256": "6c5429fff8260ec5843b16dcbacf4aa594f8d110bebbdb06485d1cf12450296f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-functions"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source.",
+    "providers": [
+     "tests/spec/imports/imported.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/imports/safe.rs",
+   "source_sha256": "ba35c32a203fc07b2faaf23554b3e1d699edd2328e324de44f2d23af9ff12cf3",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-functions"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source.",
+    "providers": [
+     "tests/spec/imports/imported.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/imports/unsafe-pointer.rs",
+   "source_sha256": "d25fd03a385c2152e1b3586e2f02445927240b4966ba18be3c0ed0a556a4743f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-functions"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source.",
+    "providers": [
+     "tests/spec/imports/imported.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/imports/rust-abi.rs",
+   "source_sha256": "e68a957afffc836616a906c4a7e15d66048dee158a289a55d2f06083c3d3029b",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-functions"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source.",
+    "providers": [
+     "tests/spec/imports/imported.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/imports/expanded-item.rs",
+   "source_sha256": "d00441ac4ee43b06a2f1c93587dd609096acd3f031b358a474c1e6c63adca5d8",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-functions"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source.",
+    "providers": [
+     "tests/spec/imports/imported.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/imports/expanded-block.rs",
+   "source_sha256": "13722f82e1ef184245c900a3fd36b54ff790c23bd107fc81ef2fca0975351e10",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-functions"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source.",
+    "providers": [
+     "tests/spec/imports/imported.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/imports/default-unsafe.rs",
+   "source_sha256": "dfeba6db1abff39c9a10fdb89a2b7744c3dd18052843cf1017f7b957d0cde43c",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.foreign-functions"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/imports/rust-unsafe.rs",
+   "source_sha256": "07599d2288be16daf8ad9e0d68f8f220bfd2493f2de5694e291cc50bfd5a43b1",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.foreign-functions"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/imports/safety-narrowing.rs",
+   "source_sha256": "7eff21ce4322b055bab97937ab0a08baa9f852f280e6b1d70628bbbc400b6501",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.foreign-functions"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/imports/abi-identity.rs",
+   "source_sha256": "889aef128322cb01a32206956139c09d728dca5720e74f7b1394c5dd57ed17a3",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.foreign-functions"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/imports/constant-call.rs",
+   "source_sha256": "163559fd4e35a6b6dc12f2b935092175ee055394763ec5a7153fcc13f0de6215",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.foreign-functions"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/imports/type-parameter.rs",
+   "source_sha256": "d977c9f68b94260446d41c50f88fdbaa9faac21044f6afc3816b07523de34cdd",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.foreign-functions"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/imports/const-function.rs",
+   "source_sha256": "1758469851be64ef016e32c790b879b627015e3c2bde9d12abfb5dafffb9538f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.foreign-functions"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/imports/missing-unsafe.rs",
+   "source_sha256": "3c7166a9c2cc037e0f3b5c6cbd69c6b1d37c959cb15f585290216a32a7af80cb",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.foreign-functions"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/imports/ordinary-safe.rs",
+   "source_sha256": "f0ea9983b2f1d812003c96add77d95fcfd6e05121192a68c05ec812e9371220a",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.foreign-functions"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/imports/foreign-body.rs",
+   "source_sha256": "4fc7808442ea6fe0cd267734d69a1c483730f29d7fdd5fea1f5925beaf2601cb",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.foreign-functions"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/imports/scalars.rs",
+   "source_sha256": "9a1ce49ba444c2a3b9857d881af36104337320bfc7d42d0ed0598874a92403f8",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-functions"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source.",
+    "providers": [
+     "tests/spec/imports/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/imports/callback.rs",
+   "source_sha256": "1045d96abd130eae27d1ab86f0f8db1251f54df4d4e0110003c26f0be38ab653",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-functions"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source.",
+    "providers": [
+     "tests/spec/imports/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/imports/pointer.rs",
+   "source_sha256": "715d304b07cf6434c692edcd9cb6500c21bb2a5b854cb95a0efbdff6977dd587",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-functions"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source.",
+    "providers": [
+     "tests/spec/imports/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/imports/generic-caller.rs",
+   "source_sha256": "284384b796f769851b04afff11e79c8f5c6a40a923f124ff98643e9c3852729e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-functions"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source.",
+    "providers": [
+     "tests/spec/imports/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/imports/constant-pointer.rs",
+   "source_sha256": "cdc29e5db0e5126ed728bb3cd6817b060fd8d7a724125ef86a1ecb1225539481",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-functions"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source.",
+    "providers": [
+     "tests/spec/imports/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/linkage/no-mangle.rs",
+   "source_sha256": "cef218fb2acf9d6971e8fd76b4e3935a9893b2de38b6668fad64e591dd989f8e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.function-linkage"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/linkage/export-name.rs",
+   "source_sha256": "f33d28284463cfa688ec5395af7255b7cb54238b73f3c720a505ca95409b0edb",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.function-linkage"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/linkage/alias.rs",
+   "source_sha256": "573d2a6aaa795724fe2294f6ad647d9c4e31b3d0ce2a5e780dd71d5caba6394d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.function-linkage"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source.",
+    "providers": [
+     "tests/spec/linkage/alias.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/linkage/collision.rs",
+   "source_sha256": "f7a8072a98d1553aa78f72ecaafc5aa236be9579a7ae029fd47c27643bc99b5c",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.function-linkage"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/linkage/missing-unsafe.rs",
+   "source_sha256": "9158f2cf440763702a32409f47f5cf6558fe8b0b8870364e851e803f04cb7eda",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.function-linkage"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/linkage/generic.rs",
+   "source_sha256": "38f34ec7cec8988c9299b1591a098b32b75531e90a871902527bd6ab4557a814",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.function-linkage"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/linkage/generic-export.rs",
+   "source_sha256": "57320f0ec8b6b3b6e6c9de935813f3fdf011492a000d9a42133e9dc49d354e64",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.function-linkage"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/linkage/generic-const.rs",
+   "source_sha256": "3ee75c3595c06ca919cc8a263bf04e6c0273a40e55a6d907fa876b5480258447",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.function-linkage"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/linkage/empty.rs",
+   "source_sha256": "509f8ff8dca9dc5c115485e3b315065cb4fa6feca30b9f9b182cc9fe576ffa28",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.function-linkage"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/linkage/nul.rs",
+   "source_sha256": "304fa070fb7a00e73ff2d641cdb60ebb991d4e40f3ab3a846814bca51fae666d",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.function-linkage"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/linkage/duplicate-export.rs",
+   "source_sha256": "c8af24381bb2330189cda6545a4ce8d987e50a6141bd3953ef9d43a4dce40984",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.function-linkage"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/linkage/both-export.rs",
+   "source_sha256": "efb4034a13849019f3ca2fc87bd604bc6fce6dd9c549a11670296267d6cb7bea",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.function-linkage"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/linkage/wrong-owner.rs",
+   "source_sha256": "0864e1f7ae3e71aa72f694222249e96cf56339e41b75925f29352127041ddbb5",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.function-linkage"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/linkage/foreign-export.rs",
+   "source_sha256": "e03998c9a5cd9f865d040adb2ebc85eb4aea72b6ae06b00e867302f9c31c7ec5",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.function-linkage"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/linkage/exports.rs",
+   "source_sha256": "d65d1c8a1e0e52106ace5707d4b4fc77bb476be2b021aed130377c5ccdd9d2d9",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.function-linkage"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source.",
+    "providers": [
+     "tests/spec/linkage/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/linkage/import-alias.rs",
+   "source_sha256": "523da799dd49da44978e66003c31d5b580cc4b7a30f9a6ac01bce16a1ec66dd0",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.function-linkage"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source.",
+    "providers": [
+     "tests/spec/imports/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/statics/default-unsafe.rs",
+   "source_sha256": "fbddcf5a2107dc291a421fa47352de381991f221a8cb779271f14d97b2178eb7",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/statics/default-safe-use.rs",
+   "source_sha256": "e46906caac8968f438895d02f57422be3e969eb4e23f6fad4928bf4e9fd9707d",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/statics/explicit-safe.rs",
+   "source_sha256": "7b9a5b63890757932ee2b0bb9a3fb10b5b69f40f475d6a8d5f0a146beafc6ee5",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/statics/explicit-unsafe.rs",
+   "source_sha256": "7a43fd7574be2d4d7a7aa1cf2bd53952abaa967c129ee39ce371d4877d984ae1",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/statics/safe-mutable.rs",
+   "source_sha256": "3daf7552791c9f930cf3ec1a92ef8e426b19331c8888dadd8441003d6d8ffd10",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/statics/mutable.rs",
+   "source_sha256": "02b2731776869c1825f1aff20e4ffd50fba1e6e5d0b3cd5aa443292adc174947",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source.",
+    "providers": [
+     "tests/spec/statics/storage.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/statics/mutable-raw-address.rs",
+   "source_sha256": "9a169fe78716ac6c242b77ad096251f74d54f0be78144fc9989a4e390dfd6d0e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/statics/immutable-raw-address.rs",
+   "source_sha256": "a2e5dece2d3ba68a9ed76e855fac022e8826647eb5f5a73d183c047b65b1f4ee",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/statics/mutable-reference.rs",
+   "source_sha256": "b84477ecd1cb527037332c72b2d2be2785aa064b83206e2009cd08cb0e71ec79",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/statics/immutable-reference.rs",
+   "source_sha256": "2ca21f82e2a07f980edb87768c0370a7cc2122a9056e1133b44ad06f06ceff1c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/statics/export-static.rs",
+   "source_sha256": "d1abd5992262179749b062af80bfadde7dae45618216a05bff9847e77e247d66",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/statics/self-alias.rs",
+   "source_sha256": "723dc9dd42ae9781bd4b60e5a5c3cdbce249c34c6774a8411ea9dec3a0462135",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/statics/extern-rust.rs",
+   "source_sha256": "671dcc9ce10b4e756a5d9bce0608e1b8f1ae93ab9dfed4c12c87bacd086f9512",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/statics/foreign-initializer.rs",
+   "source_sha256": "d11a4b1b788843083bc0c4f352497ec6ae53ff5aff52b15e85f1abf8213c5b4b",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/statics/const-read.rs",
+   "source_sha256": "d7cc095e95d367222a1ccced98ba896f4e5194f41fe53214acd74dcaaeac8c7a",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/statics/const-address.rs",
+   "source_sha256": "7aad14a7dd1079aa7d3f585e07355ff9aaff2817027b39655d0b97e2518936dd",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source.",
+    "providers": [
+     "tests/spec/statics/storage.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/statics/ordinary-safe.rs",
+   "source_sha256": "cadb20b4c562cf78f5a4dc2e62a69ab9668e0fd4e96e04541ade7769d73b2fb7",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/statics/ordinary-unsafe.rs",
+   "source_sha256": "2317d7aa04ec4237acdd5a4579d8bba6e7bb896465338c7af4d81a630120ce36",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/statics/exact-kind-collision.rs",
+   "source_sha256": "3c286bf39a06c76abb0252fb3f0b09a493e4c63d6c4a34f9bf3b1bcc12ff2fc6",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/statics/safe-mutable-use.rs",
+   "source_sha256": "1851e36b1ecdd416839858c1e5b8bef3441360b12e46efa96044528678c77e5c",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/statics/safe-immutable-reference.rs",
+   "source_sha256": "1dff72fbac6f25bb443b58f2b0b026f31750763c9d49784fb7a3a31897610731",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source."
+   }
+  },
+  {
+   "path": "tests/spec/statics/unsafe-raw-dereference.rs",
+   "source_sha256": "c1f7e86b6b7d8fa0b5b6bb974c52716ef9fc59e2e6e97e0fb03480621ed59208",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/statics/safe-mutable-reference.rs",
+   "source_sha256": "975197eb31aeab4a1dd0bc7616f00a875d71b3ecd5ec9205ec0a72b79bf613f7",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj",
+    "default_lints": true
+   }
+  },
+  {
+   "path": "tests/spec/statics/imports.rs",
+   "source_sha256": "2bc4a037f7c2ac50f3f81422d5d4b3f3f02f733c1ef76def0e6ae850c6417179",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source.",
+    "providers": [
+     "tests/spec/statics/imports.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/statics/exports.rs",
+   "source_sha256": "e115d849815e66f7387cf037767c17939842285b949023ae67df3f6eb9c8b111",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source.",
+    "providers": [
+     "tests/spec/statics/exports.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/statics/alias.rs",
+   "source_sha256": "452c1d262b6bff207ecb0f49d4b797ee4b0b1ee6a6c15ad174c85b361baacd65",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source.",
+    "providers": [
+     "tests/spec/statics/imports.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/statics/callback.rs",
+   "source_sha256": "fa7f61c99f505978dd71a9568d4f2f52d16c6c7d6515ec9dafc0aee85d6cbde8",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source.",
+    "providers": [
+     "tests/spec/statics/callback.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/statics/pointer-constant.rs",
+   "source_sha256": "a5f02b6d129cc53e619437878e26196e00dfec51ee7d5583bee226e4e2cfbe80",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.foreign-statics"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source.",
+    "providers": [
+     "tests/spec/statics/imports.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/interop.rs",
+   "source_sha256": "ef8abc1caaad2887617383783b92e5bc57c0b876311ec507fdf659d715a61e81",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.c-aggregate-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/aggregate-abi/interop.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/nested.rs",
+   "source_sha256": "5235f8ff1d931fadb55e079bd19871ceac17b3ebd21ea024bc59c047ba154fe2",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.c-aggregate-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/array.rs",
+   "source_sha256": "64cfa1394d5b3b23d745bebe97d2e87fa976285354304fd1587528e9fa5771f1",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.c-aggregate-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/unsafe-call.rs",
+   "source_sha256": "3d1072818f6488819348ac5fe1864e3149c31806f818d8756329168d9dc7421a",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.c-aggregate-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/const-call.rs",
+   "source_sha256": "348c9668dd9d8f3739ca4c31b1344b4d2eed980a9a2a57db763576e691e89fd5",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.c-aggregate-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/wrong-type.rs",
+   "source_sha256": "f5319fccf12291103b6d466a279441c2cf5c8732c8f669cdd1a9549629cde77f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.c-aggregate-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/aligned.rs",
+   "source_sha256": "728e6fe2087d87ef08a2eb25a66dc177f01b768801cba5b0b6eb8cf37af71c70",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.c-aggregate-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/aggregate-abi/aligned.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/indirect.rs",
+   "source_sha256": "02df900e26eebcac17f1c0802817bc57d4eb8c57371ed6dd2b200a186dbfe31e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.c-aggregate-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/aggregate-abi/indirect.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/composites/nested-integer.rs",
+   "source_sha256": "c1277d5a0ddf126560d9559a226630f6cb1394a54955d586b1a3e3175e497844",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.composite-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/aggregate-abi/composites/nested-integer.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/composites/nested-sse.rs",
+   "source_sha256": "a28678f702e9c120c08d0d2b13c94ae604917539a59841453029d63e24e70483",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.composite-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/aggregate-abi/composites/nested-sse.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/composites/nested-integer-sse.rs",
+   "source_sha256": "7703864afb12cec2a6d3f3822abba1f17aee7fdf8611ed46a4aa694a80cced3a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.composite-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/aggregate-abi/composites/nested-integer-sse.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/composites/nested-sse-integer.rs",
+   "source_sha256": "94f9ca23df7f25d9201d654b45d7d317aa1e7faeda96484c42e150448594f7ca",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.composite-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/aggregate-abi/composites/nested-sse-integer.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/composites/array-integer.rs",
+   "source_sha256": "a1e0cb356bb83f0404f27dea0e228c11ee2a2e104cf317bf52b9a3e716b2bef1",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.composite-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/aggregate-abi/composites/array-integer.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/composites/array-sse.rs",
+   "source_sha256": "4bb61214dd43df7eead9c7be08ececef48cf22739ead8f27656fd90b61744157",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.composite-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/aggregate-abi/composites/array-sse.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/composites/array-bytes.rs",
+   "source_sha256": "a82ec3abd6474df03ca45fc72f61f6617559ad6cf093fc8daf2b1f6df8f797d9",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.composite-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/aggregate-abi/composites/array-bytes.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/composites/array-nested-merge.rs",
+   "source_sha256": "2fd12389a28127199711f0865ee75d9081e92661f3b3fdc629cf0061d9ef7324",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.composite-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/aggregate-abi/composites/array-nested-merge.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/composites/nested-memory.rs",
+   "source_sha256": "0837934293986d9006029deb29ff8cd2c366102e2846aa22c18adf7aadc75557",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.composite-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/aggregate-abi/composites/nested-memory.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/composites/zero-array-field.rs",
+   "source_sha256": "2527ac7961b56f40e2740061c8b48868d6404571d7eff726bbe4856776f4dbca",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.composite-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/aggregate-abi/composites/zero-array-field.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/composites/wrong-nominal.rs",
+   "source_sha256": "0b9b14eca83cfc8364997462248151585f02a5571710027935c7179474561343",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.composite-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/composites/unsafe-call.rs",
+   "source_sha256": "fbe3afba96afc0d64e8fece40ff6f529c1aafd4dcccaf275071c18b57864a129",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.composite-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/composites/wrong-arity.rs",
+   "source_sha256": "78a01fd0660e917846a1ca6309eca958f1fbe8bfdaf4884570d942021349dcdd",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.composite-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/composites/shifted-nested-mixed.rs",
+   "source_sha256": "a883e6fdf0634f2baf7c7f609148513f83c4c98ca10857f7d285f0691aac9647",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.composite-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/aggregate-abi/composites/shifted-nested-mixed.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/aggregate-abi/composites/shifted-array-mixed.rs",
+   "source_sha256": "49f837083d7e8923c0e6bd58be84599af5ad4265dbf5e8c5595e0f98db3b7a04",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.composite-abi"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/aggregate-abi/composites/shifted-array-mixed.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadics/integers.rs",
+   "source_sha256": "97ab6135eaa98e6c873ce3ee881f7df8982b757b295cd55d5ff072edf1d99c2f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadics/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadics/zero-tail.rs",
+   "source_sha256": "ef096d71e93f92042e8e9eb1bcbcfe1c79ba0ce22138e65293f40934b28123e5",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadics/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadics/float-register-spill.rs",
+   "source_sha256": "323afe398f607f3eaba1a74071b5ee877c3da574cecd15f3042121924ac1d570",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadics/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadics/integer-register-spill.rs",
+   "source_sha256": "c3bb20096d4a2cb2b87027c012adeac8ce2a5aa623ac647700bbb7286b3ee52b",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadics/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadics/indirect.rs",
+   "source_sha256": "794c43495d7e869f09708d2f24113062635efc22aa2442f66fb947b3e2544b7c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadics/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadics/constant-pointer.rs",
+   "source_sha256": "2328f40d507296759b26854dda6954687b65e1eb6099634675542717769023e9",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadics/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadics/safe-ignores-tail.rs",
+   "source_sha256": "55c9c0ed7117bc559f2e4def568461ae40c74390ffaf7cb9b1bd7da85fd69d9a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadics/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadics/named-tail.rs",
+   "source_sha256": "1989f0abd1c725cb02703aedba82d7a3440e6ca461d0cbe273491841535f6738",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadics/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadics/explicit-promotions.rs",
+   "source_sha256": "ceb79c2b9e67765463cc42e1963f3cc9703fe96612b4b3ed9f6c5611d6e8ed5a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadics/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadics/callback.rs",
+   "source_sha256": "b2219e04213bf7361002ef8ef6af3d9e0b8bc4b8ce23eabffc8c2be8167f0595",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadics/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadics/evaluation-order.rs",
+   "source_sha256": "b8db5c7905e810e388425f2584a99865a7338508837a1b359aaebeff0314295e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadics/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadics/mixed-scalars.rs",
+   "source_sha256": "4ab23ef55d3bfafc5fc8d952120bb4239ae693a10262c967952ddc3c4e0b1940",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadics/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadics/record-tail.rs",
+   "source_sha256": "426ac0ceb08de1a133e1404aec700ea821a8dcba86d25274f03a45fbf06e275f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadics/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadics/record-prefix-result.rs",
+   "source_sha256": "230884f112e5655a4e49e73d0902466b7d1e229bf7cfc2c16eab48b579697fc6",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadics/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadics/nested-record-tail.rs",
+   "source_sha256": "9705b6fee862ec4c339c4ad896ba6dc111d0cefa6036af333c95ff10573929c1",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadics/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadics/bare-signature.rs",
+   "source_sha256": "9c4e1f69ee6ce3baac1bb07f8d0c474362cb1944948f033eecbd77a46a19b096",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "codegen",
+    "reason": "The draft outcome table declares acceptance and typed lowering only; no runtime outcome was declared for this source.",
+    "providers": [
+     "tests/spec/variadics/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadics/generic-caller.rs",
+   "source_sha256": "66259129307ea0e9a69cbfc9536803d00de85f69e9f779b8eb966c51fdbbd054",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadics/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadics/unpromoted-u8.rs",
+   "source_sha256": "b00780bf371492718530941238b640ae9eeec997db61e5d693e7e0a269c1f559",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/variadics/unpromoted-i8.rs",
+   "source_sha256": "1bcd5495098b6a4c3ebe1ef11a99a9c7e32f013a7ab7632620b18bb67ee5d461",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/variadics/unpromoted-u16.rs",
+   "source_sha256": "5cc51f37a141c1645adcdbc297646dc5b1086623fbac241d02a44f52ab3be75c",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/variadics/unpromoted-i16.rs",
+   "source_sha256": "afe89d47d93fe49ff7ed66d15285e878c03346f1a4bb3271f88567b745a3a5ca",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/variadics/unpromoted-bool.rs",
+   "source_sha256": "bb6b180821bebe780222722c78da26510cfc4877f4514a80493505c1872ca8f0",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/variadics/unpromoted-f32.rs",
+   "source_sha256": "775a21cf591535fc61386ed8b01d8a636a214a85f928c983127366cb38f4766e",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/variadics/function-item.rs",
+   "source_sha256": "2d231b92b281deb28f63ccb4697e5eb3ebf286bc2cfc94a4ec369bb29ce0ff16",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/variadics/unsafe-call.rs",
+   "source_sha256": "59ce215414369aedb4326045e205b20555a732b55a50e28e9d028fc0fbb1de98",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/variadics/missing-fixed.rs",
+   "source_sha256": "17051aff57d2855add88b77e78a3a61dfee4d1bb1f2e8199f07977bc30ac131b",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/variadics/wrong-fixed.rs",
+   "source_sha256": "4a69977ee7a65f4b6d708300119f6c423ee7f69d5abb281bf734fc71a028e782",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/variadics/pointer-safety.rs",
+   "source_sha256": "e790772177c616bfb6c0952db4e1d4ddc6a82f12ac3943f19bb5b4c29979c93b",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/variadics/rust-abi.rs",
+   "source_sha256": "af4c5db40f28262140fa2e0d247cbf8192117036ceeb3b2207047761e0dcd7f4",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/variadics/variadic-body.rs",
+   "source_sha256": "1aa22f445ecdbcc15f0706ac817edb5eedc6ea4e826f91ad508daea6e30c4f9d",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/variadics/fixed-extra.rs",
+   "source_sha256": "ea0b0d157748ef50068e996986c921a392a39c9d92db10d4b02913b8da7c695f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.variadic"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/variadic-tails/multiple-records.rs",
+   "source_sha256": "1a2d2b763077a235bc2f0c33823d1a381e7cc9edf3910def0ae976ab90226a11",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic-tail"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadic-tails/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadic-tails/multiple-records-indirect.rs",
+   "source_sha256": "75a16747c8cc777216001a27c0b87fb306e4f943cc39f81fd4438ecfefe1b51c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic-tail"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadic-tails/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadic-tails/inferred-pointer.rs",
+   "source_sha256": "c364945b9227dbc6e8d8e278ebce701b09072c6669ee2e963f54d9df98aa360a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic-tail"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadic-tails/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadic-tails/shared-tail.rs",
+   "source_sha256": "b0796ab03b5a02cdd1298f4c8a0d37dd8b4032ac0d0e999f6707f2ea7da8f979",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic-tail"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadic-tails/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadic-tails/generic-small-tail.rs",
+   "source_sha256": "43f4e8af7133eb3f510c3f9e96200cf6a71c5e356fdd41b53ac610b742eaae38",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic-tail"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadic-tails/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadic-tails/zero-sized-tail.rs",
+   "source_sha256": "42255aada03dca12ff72f106b5fdf99677e80386da50d5069efd2242f04ca934",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic-tail"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadic-tails/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadic-tails/moved-tail.rs",
+   "source_sha256": "217aa55c7cd182f7b852d77dd9d38b13883e4f4d5ea9721bd6694c2c61871bcd",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa30.variadic-tail"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass",
+    "providers": [
+     "tests/spec/variadic-tails/provider.c"
+    ]
+   }
+  },
+  {
+   "path": "tests/spec/variadic-tails/mutable-alias-tail.rs",
+   "source_sha256": "6943733d3f82d2662d1efd469baf7e847146918a9e8f0baa095fa8e8214095fb",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.variadic-tail"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/variadic-tails/expired-tail.rs",
+   "source_sha256": "d6014590f98617c472ddcd1f7fdeae18006e92d34891421145ba4ba51741ddbd",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.variadic-tail"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/variadic-tails/constant-call.rs",
+   "source_sha256": "1d2778ad9ef394b8495cd4c7435a3e245b5ff09b09d3cc03e8deb6896639ec29",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.variadic-tail"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  },
+  {
+   "path": "tests/spec/variadic-tails/moved-tail-read.rs",
+   "source_sha256": "5c991c70e75732e88a0b2d7780065cd08d26d2b102526657d752714782e216a6",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa30.variadic-tail"
+   ],
+   "work_units": [
+    "c-abi"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   }
+  }
+ ]
+}

@@ -4,7 +4,7 @@ GUARDED = $(PYTHON) scripts/storage.py run --
 export CARGO_INCREMENTAL := 0
 ROOT := $(CURDIR)
 export CARGO_TARGET_DIR := $(ROOT)/obj/rust
-ACTIVE_PAS := pa1 pa2 pa3 pa4 pa5 pa6 pa7 pa8 pa9 pa10 pa11 pa12 pa13 pa14 pa15 pa16 pa17 pa18 pa19 pa20 pa21 pa22 pa23 pa24
+ACTIVE_PAS := pa1 pa2 pa3 pa4 pa5 pa6 pa7 pa8 pa9 pa10 pa11 pa12 pa13 pa14 pa15 pa16 pa17 pa18 pa19 pa20 pa21 pa22 pa23 pa24 pa25 pa26 pa27 pa28 pa29 pa30
 RUSTGM_TEST_APP ?= $(ROOT)/dev/rustgm
 REF_TEST_APP ?= $(ROOT)/dev/rustgm-ref
 
@@ -49,7 +49,7 @@ test-maintainer: test-backend
 test-report: all
 	@status=0; for stage in $(ACTIVE_PAS); do $(PYTHON) scripts/course.py $$stage --app "$(RUSTGM_TEST_APP)" || status=1; done; exit $$status
 	$(GUARDED) $(PYTHON) scripts/course.py --released-units --app "$(RUSTGM_TEST_APP)"
-	@echo 'Whole PA25-PA45: planned; released components are reported separately'
+	@echo 'PA25-PA30: closed at their finite contracts; whole PA31-PA45: planned'
 test-pa%: all
 	$(PYTHON) scripts/course.py pa$* --app "$(RUSTGM_TEST_APP)"
 ref-test: all
@@ -102,6 +102,12 @@ test-native: test-maintainer-native
 	$(GUARDED) $(PYTHON) scripts/check_native.py pa22 --app "$(RUSTGM_TEST_APP)"
 	$(GUARDED) $(PYTHON) scripts/check_native.py pa23 --app "$(RUSTGM_TEST_APP)"
 	$(GUARDED) $(PYTHON) scripts/check_native.py pa24 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_native.py pa25 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_native.py pa26 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_native.py pa27 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_native.py pa28 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_native.py pa29 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_native.py pa30 --app "$(RUSTGM_TEST_APP)"
 test-native-pa%: all
 	$(GUARDED) $(PYTHON) scripts/check_native.py pa$* --app "$(RUSTGM_TEST_APP)"
 test-layouts: all
@@ -134,6 +140,12 @@ test-rustc: all test-layouts
 	$(PYTHON) scripts/check_syntax.py pa22 --app "$(RUSTGM_TEST_APP)"
 	$(PYTHON) scripts/check_syntax.py pa23 --app "$(RUSTGM_TEST_APP)"
 	$(PYTHON) scripts/check_syntax.py pa24 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_syntax.py pa25 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_syntax.py pa26 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_syntax.py pa27 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_syntax.py pa28 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_syntax.py pa29 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_syntax.py pa30 --app "$(RUSTGM_TEST_APP)"
 perf: all
 	$(GUARDED) $(PYTHON) scripts/measure_lexer.py
 perf-literals: all

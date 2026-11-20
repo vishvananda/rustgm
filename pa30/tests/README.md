@@ -11,7 +11,10 @@ A program that imports C symbols names its host providers in
 into the candidate's, whose LowIR is emitted as an object for that link. The
 text check does not use them.
 
-Whole PA30 is planned: no graded whole-assignment suite yet.
+PA30 is closed at its finite contract: `manifest.json` is exactly the union of
+the released unit manifests, written by
+`python3 scripts/finite_contracts.py compose pa30` and never by hand. It has no
+reference receipt of its own; the released units own every sidecar.
 
 Required families: repr(C); aggregate ABI; callbacks; exported globals; C interoperability.
 

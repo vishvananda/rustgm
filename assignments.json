@@ -413,7 +413,10 @@
       "path": "pa25",
       "title": "Constant evaluation",
       "mode": "--emit-constants",
-      "status": "planned",
+      "additional_modes": [
+        "--emit-lowir"
+      ],
+      "status": "implemented",
       "scope": "Const functions, statics, promotions and symbolic allocation provenance",
       "test_families": [
         "const restrictions",
@@ -421,6 +424,27 @@
         "recursive calls",
         "limits",
         "const generics"
+      ],
+      "contract": {
+        "kind": "finite",
+        "carried_by": "pa44",
+        "deferred_units": [
+          "const-memory",
+          "const-callables",
+          "source-runtime"
+        ],
+        "deferred_requirements": [
+          "25.3",
+          "25.4",
+          "25.5",
+          "25.6",
+          "25.7",
+          "25.8",
+          "25.9"
+        ]
+      },
+      "release_evidence": [
+        "docs/pa25-const-machine-release.md"
       ]
     },
     {
@@ -428,7 +452,7 @@
       "path": "pa26",
       "title": "Language and library hooks",
       "mode": "--emit-lowir",
-      "status": "planned",
+      "status": "implemented",
       "scope": "Operators, indexing, iteration, question-mark, built-in derives and formatting",
       "test_families": [
         "desugaring",
@@ -436,6 +460,29 @@
         "early return",
         "derive bounds",
         "formatting"
+      ],
+      "contract": {
+        "kind": "finite",
+        "carried_by": "pa44",
+        "deferred_units": [
+          "hook-closure",
+          "format-derive",
+          "generic-transport",
+          "source-runtime"
+        ],
+        "deferred_requirements": [
+          "26.1",
+          "26.3",
+          "26.6",
+          "26.7",
+          "26.8",
+          "26.9",
+          "26.10"
+        ]
+      },
+      "release_evidence": [
+        "docs/pa26-operator-kernel-release.md",
+        "docs/pa26-iteration-kernel-release.md"
       ]
     },
     {
@@ -443,13 +490,30 @@
       "path": "pa27",
       "title": "Unsafe language",
       "mode": "--emit-lowir",
-      "status": "planned",
+      "status": "implemented",
       "scope": "Unsafe operations, raw pointers, unions, packed access and validity",
       "test_families": [
         "required unsafe contexts",
         "alignment",
         "raw borrows",
         "union reads"
+      ],
+      "contract": {
+        "kind": "finite",
+        "carried_by": "pa44",
+        "deferred_units": [
+          "raw-validity",
+          "const-memory"
+        ],
+        "deferred_requirements": [
+          "27.4",
+          "27.5",
+          "27.6",
+          "27.7"
+        ]
+      },
+      "release_evidence": [
+        "docs/pa27-unsafe-places-release.md"
       ]
     },
     {
@@ -457,7 +521,7 @@
       "path": "pa28",
       "title": "Intrinsics and atomics",
       "mode": "--emit-lowir",
-      "status": "planned",
+      "status": "implemented",
       "scope": "Memory and numeric intrinsics, atomics and volatile operations",
       "test_families": [
         "orderings",
@@ -465,6 +529,27 @@
         "casts",
         "u128",
         "memory overlap"
+      ],
+      "contract": {
+        "kind": "finite",
+        "carried_by": "pa44",
+        "deferred_units": [
+          "intrinsic-closure",
+          "const-memory",
+          "generic-transport",
+          "const-callables",
+          "source-runtime"
+        ],
+        "deferred_requirements": [
+          "28.1",
+          "28.4",
+          "28.5",
+          "28.6"
+        ]
+      },
+      "release_evidence": [
+        "docs/pa28-runtime-memory-release.md",
+        "docs/pa28-atomic-u32-release.md"
       ]
     },
     {
@@ -472,13 +557,32 @@
       "path": "pa29",
       "title": "Crates and metadata",
       "mode": "--emit-lowir",
-      "status": "planned",
+      "status": "implemented",
       "scope": "Separate compilation, crate identities, metadata and generic body exports",
       "test_families": [
         "multi-crate dependencies",
         "symbol identity",
         "visibility",
         "deterministic exports"
+      ],
+      "contract": {
+        "kind": "finite",
+        "carried_by": "pa44",
+        "deferred_units": [
+          "value-metadata",
+          "provided-profile",
+          "generic-transport"
+        ],
+        "deferred_requirements": [
+          "29.2",
+          "29.3",
+          "29.4",
+          "29.5",
+          "29.6"
+        ]
+      },
+      "release_evidence": [
+        "docs/pa29-declarations-release.md"
       ]
     },
     {
@@ -486,7 +590,7 @@
       "path": "pa30",
       "title": "Foreign interfaces",
       "mode": "--emit-lowir",
-      "status": "planned",
+      "status": "implemented",
       "scope": "C ABI, repr attributes, linkage and imported/exported declarations",
       "test_families": [
         "repr(C)",
@@ -494,6 +598,22 @@
         "callbacks",
         "exported globals",
         "C interoperability"
+      ],
+      "contract": {
+        "kind": "finite",
+        "carried_by": "pa44",
+        "deferred_units": [
+          "ffi-closure",
+          "value-metadata",
+          "generic-transport"
+        ],
+        "deferred_requirements": [
+          "30.5",
+          "30.6"
+        ]
+      },
+      "release_evidence": [
+        "docs/pa30-c-abi-release.md"
       ]
     },
     {
@@ -698,7 +818,94 @@
         "deterministic output",
         "performance",
         "upstream library and crate acceptance"
-      ]
+      ],
+      "carries": {
+        "pa25": {
+          "units": [
+            "const-memory",
+            "const-callables",
+            "source-runtime"
+          ],
+          "requirements": [
+            "25.3",
+            "25.4",
+            "25.5",
+            "25.6",
+            "25.7",
+            "25.8",
+            "25.9"
+          ]
+        },
+        "pa26": {
+          "units": [
+            "hook-closure",
+            "format-derive",
+            "generic-transport",
+            "source-runtime"
+          ],
+          "requirements": [
+            "26.1",
+            "26.3",
+            "26.6",
+            "26.7",
+            "26.8",
+            "26.9",
+            "26.10"
+          ]
+        },
+        "pa27": {
+          "units": [
+            "raw-validity",
+            "const-memory"
+          ],
+          "requirements": [
+            "27.4",
+            "27.5",
+            "27.6",
+            "27.7"
+          ]
+        },
+        "pa28": {
+          "units": [
+            "intrinsic-closure",
+            "const-memory",
+            "generic-transport",
+            "const-callables",
+            "source-runtime"
+          ],
+          "requirements": [
+            "28.1",
+            "28.4",
+            "28.5",
+            "28.6"
+          ]
+        },
+        "pa29": {
+          "units": [
+            "value-metadata",
+            "provided-profile",
+            "generic-transport"
+          ],
+          "requirements": [
+            "29.2",
+            "29.3",
+            "29.4",
+            "29.5",
+            "29.6"
+          ]
+        },
+        "pa30": {
+          "units": [
+            "ffi-closure",
+            "value-metadata",
+            "generic-transport"
+          ],
+          "requirements": [
+            "30.5",
+            "30.6"
+          ]
+        }
+      }
     },
     {
       "number": 45,

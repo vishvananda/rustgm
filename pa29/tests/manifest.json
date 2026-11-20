@@ -1,0 +1,1103 @@
+{
+ "schema": 1,
+ "mode": "--emit-lowir",
+ "language": "Rust 1.98.0",
+ "edition": "2024",
+ "target": "x86_64-unknown-linux-gnu",
+ "contract": "finite",
+ "units": [
+  "declarations"
+ ],
+ "discovery": [
+  "tests/spec/array-metadata",
+  "tests/spec/public-names",
+  "tests/spec/scalar",
+  "tests/spec/transitive-metadata",
+  "tests/spec/values"
+ ],
+ "cases": [
+  {
+   "path": "tests/spec/scalar/first.rs",
+   "source_sha256": "41e2aab092e3b7c4af90191f51ec48ad8a2939201804b4196e32fcc1330dc794",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa29.crate-identity",
+    "pa29.transitive-metadata"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "shared",
+    "disambiguator": "first"
+   },
+   "native": {
+    "kind": "object",
+    "reason": "Library crate of a dependency graph; compare relocatable object acceptance."
+   }
+  },
+  {
+   "path": "tests/spec/scalar/second.rs",
+   "source_sha256": "ab0517a0287007d32918dc18069c951ef35db2263e8eb5cd2ff21790f78ae2c6",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa29.crate-identity",
+    "pa29.transitive-metadata"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "shared",
+    "disambiguator": "second"
+   },
+   "crates": [
+    {
+     "name": "first",
+     "path": "tests/spec/scalar/first.rs",
+     "crate_name": "shared",
+     "disambiguator": "first",
+     "externs": {}
+    }
+   ],
+   "externs": {
+    "one": "first"
+   },
+   "native": {
+    "kind": "object",
+    "reason": "Library crate of a dependency graph; compare relocatable object acceptance."
+   }
+  },
+  {
+   "path": "tests/spec/scalar/client.rs",
+   "source_sha256": "743fab98644607bb5cf0246308f2aa9238c4d53f6a53bad0d2025318162fb00d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa29.crate-identity"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "crates": [
+    {
+     "name": "first",
+     "path": "tests/spec/scalar/first.rs",
+     "crate_name": "shared",
+     "disambiguator": "first",
+     "externs": {}
+    },
+    {
+     "name": "second",
+     "path": "tests/spec/scalar/second.rs",
+     "crate_name": "shared",
+     "disambiguator": "second",
+     "externs": {
+      "one": "first"
+     }
+    }
+   ],
+   "externs": {
+    "one": "first",
+    "two": "second"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/scalar/imported-main.rs",
+   "source_sha256": "1d9fc6942455f7e4ea042a3e52b6b380d392f3b23c548d61511dbe489bcc9d86",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa29.crate-identity"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "crates": [
+    {
+     "name": "first",
+     "path": "tests/spec/scalar/first.rs",
+     "crate_name": "shared",
+     "disambiguator": "first",
+     "externs": {}
+    },
+    {
+     "name": "second",
+     "path": "tests/spec/scalar/second.rs",
+     "crate_name": "shared",
+     "disambiguator": "second",
+     "externs": {
+      "one": "first"
+     }
+    }
+   ],
+   "externs": {
+    "one": "first",
+    "two": "second"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/values/first.rs",
+   "source_sha256": "328ddda105a61ec6fc34def972e5b24d7a0b47946ae4b9cb35dae1d6c4e95927",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa29.crate-identity"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "values",
+    "disambiguator": "first"
+   },
+   "native": {
+    "kind": "object",
+    "reason": "Library crate of a dependency graph; compare relocatable object acceptance."
+   }
+  },
+  {
+   "path": "tests/spec/values/second.rs",
+   "source_sha256": "30c15adb9e71bfdbadd4dddd1fe8b705b16145b8b712861c5f5a5c5d282b5df9",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa29.crate-identity"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "values",
+    "disambiguator": "second"
+   },
+   "crates": [
+    {
+     "name": "values-first",
+     "path": "tests/spec/values/first.rs",
+     "crate_name": "values",
+     "disambiguator": "first",
+     "externs": {}
+    }
+   ],
+   "externs": {
+    "one": "values-first"
+   },
+   "native": {
+    "kind": "object",
+    "reason": "Library crate of a dependency graph; compare relocatable object acceptance."
+   }
+  },
+  {
+   "path": "tests/spec/values/client.rs",
+   "source_sha256": "9b99c33142b435d4bcefe88b82d42fc8eed5558dccebf6203e25a17fb86e063a",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa29.crate-identity"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "crates": [
+    {
+     "name": "values-first",
+     "path": "tests/spec/values/first.rs",
+     "crate_name": "values",
+     "disambiguator": "first",
+     "externs": {}
+    },
+    {
+     "name": "values-second",
+     "path": "tests/spec/values/second.rs",
+     "crate_name": "values",
+     "disambiguator": "second",
+     "externs": {
+      "one": "values-first"
+     }
+    }
+   ],
+   "externs": {
+    "one": "values-first",
+    "two": "values-second"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/transitive-metadata/client.rs",
+   "source_sha256": "ffc20e6793055d249ec60b9dcb7147e8179bde48fbda638cb62f37437e980832",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa29.transitive-metadata"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "crates": [
+    {
+     "name": "first",
+     "path": "tests/spec/scalar/first.rs",
+     "crate_name": "shared",
+     "disambiguator": "first",
+     "externs": {}
+    },
+    {
+     "name": "second",
+     "path": "tests/spec/scalar/second.rs",
+     "crate_name": "shared",
+     "disambiguator": "second",
+     "externs": {
+      "one": "first"
+     }
+    }
+   ],
+   "externs": {
+    "renamed": "second"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/transitive-metadata/reject-alias.rs",
+   "source_sha256": "bc30879ce9653d9c0789bc8529571d939b4801ed44f80a9dc308d8172bef0ea7",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa29.transitive-metadata"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   },
+   "crates": [
+    {
+     "name": "first",
+     "path": "tests/spec/scalar/first.rs",
+     "crate_name": "shared",
+     "disambiguator": "first",
+     "externs": {}
+    },
+    {
+     "name": "second",
+     "path": "tests/spec/scalar/second.rs",
+     "crate_name": "shared",
+     "disambiguator": "second",
+     "externs": {
+      "one": "first"
+     }
+    }
+   ],
+   "externs": {
+    "renamed": "second"
+   }
+  },
+  {
+   "path": "tests/spec/transitive-metadata/reject-name.rs",
+   "source_sha256": "4e42c020ab2de39492cc904bc54492c42ae9ff1754957d61e782b30b4e09a809",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa29.transitive-metadata"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   },
+   "crates": [
+    {
+     "name": "first",
+     "path": "tests/spec/scalar/first.rs",
+     "crate_name": "shared",
+     "disambiguator": "first",
+     "externs": {}
+    },
+    {
+     "name": "second",
+     "path": "tests/spec/scalar/second.rs",
+     "crate_name": "shared",
+     "disambiguator": "second",
+     "externs": {
+      "one": "first"
+     }
+    }
+   ],
+   "externs": {
+    "renamed": "second"
+   }
+  },
+  {
+   "path": "tests/spec/transitive-metadata/direct-alias.rs",
+   "source_sha256": "bf3915fdc27643ddd7626ae0e7a1de23259bd12873de4b04b1a0b5b552eddd29",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa29.transitive-metadata"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "crates": [
+    {
+     "name": "first",
+     "path": "tests/spec/scalar/first.rs",
+     "crate_name": "shared",
+     "disambiguator": "first",
+     "externs": {}
+    },
+    {
+     "name": "second",
+     "path": "tests/spec/scalar/second.rs",
+     "crate_name": "shared",
+     "disambiguator": "second",
+     "externs": {
+      "one": "first"
+     }
+    }
+   ],
+   "externs": {
+    "renamed": "second",
+    "one": "first"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/public-names/first.rs",
+   "source_sha256": "52a511f8a56489eb2d760d5fc945a9813e02dfc1574296b4eb7eba13e7c99441",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa29.public-names"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "origin",
+    "disambiguator": "first"
+   },
+   "native": {
+    "kind": "object",
+    "reason": "Library crate of a dependency graph; compare relocatable object acceptance."
+   }
+  },
+  {
+   "path": "tests/spec/public-names/second.rs",
+   "source_sha256": "d625b2eb0f185204970663db502d1e2d031358ca0829e93b0b4b2157da8468cb",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa29.public-names"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "origin",
+    "disambiguator": "second"
+   },
+   "native": {
+    "kind": "object",
+    "reason": "Library crate of a dependency graph; compare relocatable object acceptance."
+   }
+  },
+  {
+   "path": "tests/spec/public-names/facade.rs",
+   "source_sha256": "3b09a01697557d79e97156443d277a5bb3968960f59fefacf3a850265cc84c09",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa29.public-names"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "facade",
+    "disambiguator": "facade"
+   },
+   "crates": [
+    {
+     "name": "first",
+     "path": "tests/spec/public-names/first.rs",
+     "crate_name": "origin",
+     "disambiguator": "first",
+     "externs": {}
+    },
+    {
+     "name": "second",
+     "path": "tests/spec/public-names/second.rs",
+     "crate_name": "origin",
+     "disambiguator": "second",
+     "externs": {}
+    }
+   ],
+   "externs": {
+    "one": "first",
+    "two": "second"
+   },
+   "native": {
+    "kind": "object",
+    "lowir": "empty",
+    "reason": "Entry-free source contract with no exported root: acceptance only, and both objects must define nothing."
+   }
+  },
+  {
+   "path": "tests/spec/public-names/renamed-client.rs",
+   "source_sha256": "f70d5838f5cbc8796886d0d8794957c6289a2138f10c37f612e237540825ee45",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa29.public-names"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "crates": [
+    {
+     "name": "first",
+     "path": "tests/spec/public-names/first.rs",
+     "crate_name": "origin",
+     "disambiguator": "first",
+     "externs": {}
+    },
+    {
+     "name": "second",
+     "path": "tests/spec/public-names/second.rs",
+     "crate_name": "origin",
+     "disambiguator": "second",
+     "externs": {}
+    },
+    {
+     "name": "facade",
+     "path": "tests/spec/public-names/facade.rs",
+     "crate_name": "facade",
+     "disambiguator": "facade",
+     "externs": {
+      "one": "first",
+      "two": "second"
+     }
+    }
+   ],
+   "externs": {
+    "facade": "facade",
+    "one": "first",
+    "two": "second"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/public-names/glob-client.rs",
+   "source_sha256": "27c6a7d2825e9c9cca4d153494d94c736710012b11983e7e71e95f894a40219b",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa29.public-names"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "crates": [
+    {
+     "name": "first",
+     "path": "tests/spec/public-names/first.rs",
+     "crate_name": "origin",
+     "disambiguator": "first",
+     "externs": {}
+    },
+    {
+     "name": "second",
+     "path": "tests/spec/public-names/second.rs",
+     "crate_name": "origin",
+     "disambiguator": "second",
+     "externs": {}
+    },
+    {
+     "name": "facade",
+     "path": "tests/spec/public-names/facade.rs",
+     "crate_name": "facade",
+     "disambiguator": "facade",
+     "externs": {
+      "one": "first",
+      "two": "second"
+     }
+    }
+   ],
+   "externs": {
+    "facade": "facade",
+    "one": "first",
+    "two": "second"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/public-names/hidden-path.rs",
+   "source_sha256": "5e708da4a80e5cc9ec8dd80e864d520bed3aa00d72b9d6d8f8cf23546a002c79",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa29.public-names"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   },
+   "crates": [
+    {
+     "name": "first",
+     "path": "tests/spec/public-names/first.rs",
+     "crate_name": "origin",
+     "disambiguator": "first",
+     "externs": {}
+    },
+    {
+     "name": "second",
+     "path": "tests/spec/public-names/second.rs",
+     "crate_name": "origin",
+     "disambiguator": "second",
+     "externs": {}
+    }
+   ],
+   "externs": {
+    "one": "first",
+    "two": "second"
+   }
+  },
+  {
+   "path": "tests/spec/public-names/private-field.rs",
+   "source_sha256": "c6336212cc5593728139a4793bac6a831696131ab67f250bd92aa50112f741ed",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa29.public-names"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   },
+   "crates": [
+    {
+     "name": "first",
+     "path": "tests/spec/public-names/first.rs",
+     "crate_name": "origin",
+     "disambiguator": "first",
+     "externs": {}
+    },
+    {
+     "name": "second",
+     "path": "tests/spec/public-names/second.rs",
+     "crate_name": "origin",
+     "disambiguator": "second",
+     "externs": {}
+    },
+    {
+     "name": "facade",
+     "path": "tests/spec/public-names/facade.rs",
+     "crate_name": "facade",
+     "disambiguator": "facade",
+     "externs": {
+      "one": "first",
+      "two": "second"
+     }
+    }
+   ],
+   "externs": {
+    "facade": "facade",
+    "one": "first",
+    "two": "second"
+   }
+  },
+  {
+   "path": "tests/spec/public-names/nominal-mismatch.rs",
+   "source_sha256": "194c627358b4e4da5b5c8d6512bb0908c009b5f4f2f67acf03f3b9f46c297f42",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa29.public-names"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   },
+   "crates": [
+    {
+     "name": "first",
+     "path": "tests/spec/public-names/first.rs",
+     "crate_name": "origin",
+     "disambiguator": "first",
+     "externs": {}
+    },
+    {
+     "name": "second",
+     "path": "tests/spec/public-names/second.rs",
+     "crate_name": "origin",
+     "disambiguator": "second",
+     "externs": {}
+    },
+    {
+     "name": "facade",
+     "path": "tests/spec/public-names/facade.rs",
+     "crate_name": "facade",
+     "disambiguator": "facade",
+     "externs": {
+      "one": "first",
+      "two": "second"
+     }
+    }
+   ],
+   "externs": {
+    "facade": "facade",
+    "one": "first",
+    "two": "second"
+   }
+  },
+  {
+   "path": "tests/spec/public-names/moved-alias.rs",
+   "source_sha256": "fae73fbd2ee73d2d4927ec9ee79f3b25fa85f769ddc817bef7c60673083c17ed",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa29.public-names"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   },
+   "crates": [
+    {
+     "name": "first",
+     "path": "tests/spec/public-names/first.rs",
+     "crate_name": "origin",
+     "disambiguator": "first",
+     "externs": {}
+    },
+    {
+     "name": "second",
+     "path": "tests/spec/public-names/second.rs",
+     "crate_name": "origin",
+     "disambiguator": "second",
+     "externs": {}
+    },
+    {
+     "name": "facade",
+     "path": "tests/spec/public-names/facade.rs",
+     "crate_name": "facade",
+     "disambiguator": "facade",
+     "externs": {
+      "one": "first",
+      "two": "second"
+     }
+    }
+   ],
+   "externs": {
+    "facade": "facade",
+    "one": "first",
+    "two": "second"
+   }
+  },
+  {
+   "path": "tests/spec/public-names/ambiguous-glob.rs",
+   "source_sha256": "4f8badd0f2a794439505e26036b7fa62091c628c2c58906afae2f303b1bf13b7",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa29.public-names"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   },
+   "crates": [
+    {
+     "name": "first",
+     "path": "tests/spec/public-names/first.rs",
+     "crate_name": "origin",
+     "disambiguator": "first",
+     "externs": {}
+    },
+    {
+     "name": "second",
+     "path": "tests/spec/public-names/second.rs",
+     "crate_name": "origin",
+     "disambiguator": "second",
+     "externs": {}
+    }
+   ],
+   "externs": {
+    "one": "first",
+    "two": "second"
+   }
+  },
+  {
+   "path": "tests/spec/public-names/private-reexport.rs",
+   "source_sha256": "187d3fe317035cd0b4db3b646549e6ad6fbdf6ad470d9539960d9ab626ebfb13",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa29.public-names"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "private_reexport",
+    "disambiguator": "private_reexport"
+   }
+  },
+  {
+   "path": "tests/spec/public-names/unresolved-cycle.rs",
+   "source_sha256": "f4c3d0a323e6eef0b00f26e64b7c792c027dde1d3adeb627f02bf73e70158f38",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa29.public-names"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "unresolved_cycle",
+    "disambiguator": "unresolved_cycle"
+   }
+  },
+  {
+   "path": "tests/spec/array-metadata/library.rs",
+   "source_sha256": "7a15ca70c80f81c51430eb892da8a515914fe295be9ed88aae9f12f9b915ee5f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa29.array-metadata"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "emit": "obj"
+   },
+   "library": {
+    "crate_name": "arrays",
+    "disambiguator": "aggregate_v1"
+   },
+   "native": {
+    "kind": "object",
+    "reason": "Library crate of a dependency graph; compare relocatable object acceptance."
+   }
+  },
+  {
+   "path": "tests/spec/array-metadata/pass-values.rs",
+   "source_sha256": "99c3878c7d8377aaefec5205d02db9c49d4959fe8f785598e356587016232ed1",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa29.array-metadata"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "crates": [
+    {
+     "name": "library",
+     "path": "tests/spec/array-metadata/library.rs",
+     "crate_name": "arrays",
+     "disambiguator": "aggregate_v1",
+     "externs": {}
+    }
+   ],
+   "externs": {
+    "arrays": "library"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/array-metadata/pass-borrowed.rs",
+   "source_sha256": "3095485fd870835fbc6f60dc5988c074cec204eaaf8917b1322cf97cfbec52c8",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa29.array-metadata"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0,
+    "emit": "obj"
+   },
+   "crates": [
+    {
+     "name": "library",
+     "path": "tests/spec/array-metadata/library.rs",
+     "crate_name": "arrays",
+     "disambiguator": "aggregate_v1",
+     "externs": {}
+    }
+   ],
+   "externs": {
+    "arrays": "library"
+   },
+   "native": {
+    "kind": "execute",
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/spec/array-metadata/reject-length.rs",
+   "source_sha256": "5e2bd026aed8bfdecc2edb8ef0aa3fffec00ece86a50bd5706d8981caea231c8",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa29.array-metadata"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   },
+   "crates": [
+    {
+     "name": "library",
+     "path": "tests/spec/array-metadata/library.rs",
+     "crate_name": "arrays",
+     "disambiguator": "aggregate_v1",
+     "externs": {}
+    }
+   ],
+   "externs": {
+    "arrays": "library"
+   }
+  },
+  {
+   "path": "tests/spec/array-metadata/reject-element.rs",
+   "source_sha256": "56dfca81d983b57819437cc7ab036486240115c912bd846fcbd18dd56930f0fb",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa29.array-metadata"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   },
+   "crates": [
+    {
+     "name": "library",
+     "path": "tests/spec/array-metadata/library.rs",
+     "crate_name": "arrays",
+     "disambiguator": "aggregate_v1",
+     "externs": {}
+    }
+   ],
+   "externs": {
+    "arrays": "library"
+   }
+  },
+  {
+   "path": "tests/spec/array-metadata/reject-escape.rs",
+   "source_sha256": "b5eba5d8abaf9d7b4d80a1602449d46bbf4c3db03b87abcd352551dba8b25f17",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa29.array-metadata"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   },
+   "crates": [
+    {
+     "name": "library",
+     "path": "tests/spec/array-metadata/library.rs",
+     "crate_name": "arrays",
+     "disambiguator": "aggregate_v1",
+     "externs": {}
+    }
+   ],
+   "externs": {
+    "arrays": "library"
+   }
+  },
+  {
+   "path": "tests/spec/array-metadata/reject-move.rs",
+   "source_sha256": "c85505454ee41d79defeebfee01729e83e7510e8ca5d6197a41b76cb147287db",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa29.array-metadata"
+   ],
+   "work_units": [
+    "declarations"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1,
+    "emit": "obj"
+   },
+   "crates": [
+    {
+     "name": "library",
+     "path": "tests/spec/array-metadata/library.rs",
+     "crate_name": "arrays",
+     "disambiguator": "aggregate_v1",
+     "externs": {}
+    }
+   ],
+   "externs": {
+    "arrays": "library"
+   }
+  }
+ ]
+}

@@ -127,20 +127,29 @@ the current totals and the independent rustc and native results for them, as
 the PA14 record does. The entries name the CLI they were run with; they do not
 qualify later compiler commits.
 
-**None of PA25–PA30 is complete as written.** They contain implemented finite
-components and real remaining production gaps, as well as missing publication.
+**PA25–PA30 are closed at their finite contracts, not as written.** Each one's
+whole-assignment manifest is exactly the union of its released unit manifests
+and runs against those units' references; closing generated no reference.
 Const closures; full symbolic validity/storage; remaining source hooks/formatting;
 atomic/intrinsic families; body/policy transport; and broader FFI representations
-remain explicit requirements. Splitting or generating references cannot close
-those gaps. No new active text suite or oracle is claimed by this review.
+remain explicit requirements. Closing cannot remove them: every unreleased unit
+and every requirement row a released unit does not cover is on the assignment's
+deferred list in `assignments.json` and is carried by
+[PA44](../pa44/README.md#carried-requirements). PA31 has no released unit and
+stays planned.
 
 `implementation=implemented` on a work unit means its named finite profile has
 implementation evidence. `publication=unpublished` means its release work is
 still pending. Whole-PA implemented status requires its complete contract, all
 owned unit releases, a nonempty active oracle manifest and release evidence.
+An assignment that declares a finite contract is instead complete when at least
+one of its units is released, its manifest is the union of its released unit
+manifests, and every unreleased unit and uncovered requirement row is deferred
+to a carrier that still owes its whole handout.
 The harness rejects missing/future/cyclic dependencies, orphan requirements,
-partial requirements mapped only to completed units, empty component publication
-and whole-PA completion over unpublished work.
+partial requirements mapped only to completed units, empty component publication,
+whole-PA completion over unpublished work, a finite contract with no released
+unit, and a closure whose deferred unit or row is dropped or not carried.
 
 The publication inventory independently exposed missing unsafe-policy warnings:
 The [qualified repair](unsafe-policy-warning-gap.md) now emits both required
@@ -160,8 +169,11 @@ and the proposed complete fixture census still require release qualification.
 The table is topological. Independent units can proceed in parallel; the
 resource policy stays three guarded jobs, unchanged150GiB reserve, one heavy
 job per worktree, bounded output and five-minute development checks. A component
-release does not activate its entire parent assignment. Each unit's exact finite
-scope, predecessor IDs and executable exit are in assignment-plan.json.
+release does not activate a planned parent assignment; it joins a parent closed
+at a finite contract when that parent's manifest is recomposed. Every unpublished
+unit that PA25–PA30 own or their requirement rows name is deferred to PA44.
+Each unit's exact finite scope, predecessor IDs and executable exit are in
+assignment-plan.json.
 
 | Order | Owner | Work unit | Implementation | Publication |
 | --- | --- | --- | --- | --- |

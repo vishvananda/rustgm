@@ -62,9 +62,12 @@ retains ordinary custom const-trait minima here and actual language-role source
 cases in PA31. Defining legality accepts checked normalized generic applications;
 actual const dispatch and all full library/whole-assignment requirements remain.
 
-Status: **planned** as a whole assignment. What is graded is the finite contract
-under [Graded contract](#graded-contract); the rest of this brief is buildout
-guidance.
+Status: **closed at its finite contract.** What is graded is the contract under
+[Graded contract](#graded-contract). The rest of this brief is buildout guidance
+for the work that contract defers, which
+[PA44 carries](../pa44/README.md#carried-requirements). Checkpoint notes below
+that say the assignment remains planned predate the closure and describe that
+deferred work.
 
 The [wide constant product checkpoint](../docs/pa25-wide-constant-products.md)
 qualifies98 new exact/classified results and genuine source Mul calls, with
@@ -107,16 +110,33 @@ no released manifest claims is not graded, whatever this brief says about it.
 | --- | --- | --- | --- |
 | `const-machine` | [const-machine.json](tests/units/const-machine.json) | 113 | [2 maintainer-level limit contracts](../docs/pa25-const-machine-release.md) |
 
-From the repository root, `python3 scripts/course.py pa25 --unit const-machine --app BIN`
-runs one component and `make test` runs every released component.
+From the repository root, `python3 scripts/course.py pa25 --app BIN` runs the whole
+contract and `--unit const-machine` selects one component. `make test`,
+`make test-rustc` and `make test-native` include PA25.
 
 Not released: `const-memory` and `const-callables` are partial.
 
-Deferred and unclaimed fixtures are not waived. Everything the self-hosting
-corpus needs stays required through PA32–PA36, PA44 and PA45. The whole
-assignment stays planned and fails explicitly until every unit above and every
-unit named by its requirement rows is released and a nonempty
-`tests/manifest.json` is published with its references.
+PA25 is closed at this contract. [tests/manifest.json](tests/manifest.json) is
+exactly the union of the released manifests above and runs against their
+references; `python3 scripts/finite_contracts.py compose pa25` rewrites it when a
+component is released. Closing waives nothing. Each unreleased unit and each
+[requirement row](../docs/assignment-requirements.json) a released unit does not
+cover is deferred to [PA44](../pa44/README.md#carried-requirements), which cannot
+be complete while one of them is unreleased. Everything the self-hosting corpus
+needs stays required through PA32–PA36, PA44 and PA45.
+
+| Deferred to PA44 | Still owed |
+| --- | --- |
+| `const-memory` | Symbolic constant storage and provenance (partial) |
+| `const-callables` | Advanced const queries and callables (partial) |
+| `source-runtime` (PA31) | Compiler runtime and source callable integration (partial) |
+| Row 25.3 | Named/generic/associated initializer demand and readiness |
+| Row 25.4 | Array lengths, discriminants, constant patterns and const arguments |
+| Row 25.5 | Inline/anonymous and generic closure-owned const bodies |
+| Row 25.6 | Const closures |
+| Row 25.7 | Statics, promotions and symbolic allocation graph |
+| Row 25.8 | Array/slice/rest/DST constant operations |
+| Row 25.9 | Actual source const calls, selectors and cleanup |
 
 ## Required implementation
 

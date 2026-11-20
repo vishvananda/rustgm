@@ -1,8 +1,11 @@
 # RustGM Programming Assignment 30: Foreign interfaces
 
-Status: **planned** as a whole assignment. What is graded is the finite contract
-under [Graded contract](#graded-contract); the rest of this brief is buildout
-guidance.
+Status: **closed at its finite contract.** What is graded is the contract under
+[Graded contract](#graded-contract). The rest of this brief is buildout guidance
+for the work that contract defers, which
+[PA44 carries](../pa44/README.md#carried-requirements). Checkpoint notes below
+that say the assignment remains planned predate the closure and describe that
+deferred work.
 Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The common source profile is Rust 1.98.0, initially edition
 2024 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
 
@@ -16,16 +19,28 @@ no released manifest claims is not graded, whatever this brief says about it.
 | --- | --- | --- | --- |
 | `c-abi` | [c-abi.json](tests/units/c-abi.json) | 143 | [15 fixtures](../docs/pa30-c-abi-release.md#deferred-list) |
 
-From the repository root, `python3 scripts/course.py pa30 --unit c-abi --app BIN`
-runs one component and `make test` runs every released component.
+From the repository root, `python3 scripts/course.py pa30 --app BIN` runs the whole
+contract and `--unit c-abi` selects one component. `make test`,
+`make test-rustc` and `make test-native` include PA30.
 
 Not released: `ffi-closure` is partial.
 
-Deferred and unclaimed fixtures are not waived. Everything the self-hosting
-corpus needs stays required through PA32–PA36, PA44 and PA45. The whole
-assignment stays planned and fails explicitly until every unit above and every
-unit named by its requirement rows is released and a nonempty
-`tests/manifest.json` is published with its references.
+PA30 is closed at this contract. [tests/manifest.json](tests/manifest.json) is
+exactly the union of the released manifests above and runs against their
+references; `python3 scripts/finite_contracts.py compose pa30` rewrites it when a
+component is released. Closing waives nothing. Each unreleased unit and each
+[requirement row](../docs/assignment-requirements.json) a released unit does not
+cover is deferred to [PA44](../pa44/README.md#carried-requirements), which cannot
+be complete while one of them is unreleased. Everything the self-hosting corpus
+needs stays required through PA32–PA36, PA44 and PA45.
+
+| Deferred to PA44 | Still owed |
+| --- | --- |
+| `ffi-closure` | Foreign representation and callable closure (partial) |
+| `value-metadata` (PA29) | Completed constant and foreign value metadata (partial) |
+| `generic-transport` (PA29) | Generic and source body transport closure (partial) |
+| Row 30.5 | Foreign signature/storage/array/variadic metadata |
+| Row 30.6 | Opaque external types and full repr/ABI closure |
 
 ## Required implementation
 

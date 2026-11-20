@@ -89,8 +89,11 @@ PA1–PA24 have active, independently qualified text-oracle suites. PA14 and
 PA21–PA24 are **implemented**, with their completed release evidence recorded in
 assignments.json. The other PA1–PA20 stages retain implemented-draft; the
 [reconciliation table](docs/assignment-order.md#pa1pa20-record-reconciliation)
-lists what each record lacks. PA25–PA45 remain planned as whole assignments. No
-planned or empty suite counts as passing.
+lists what each record lacks. PA25–PA30 are closed at their finite contracts:
+each manifest is the union of its released unit manifests, and the unreleased
+units and requirement rows it defers are carried by
+[PA44](pa44/README.md#carried-requirements). PA31–PA45 remain planned as whole
+assignments. No planned or empty suite counts as passing.
 
 The [wide constant product checkpoint](docs/pa25-wide-constant-products.md)
 qualifies98 new exact/classified results, real source Mul const calls and native
@@ -116,10 +119,12 @@ numeric work/release chain for incomplete assignments. Keep PA numbers and
 fixture paths as ownership IDs; use the machine-checked
 [dependency plan](assignment-plan.json) for implementation and publication
 order. Of its 38 work units, ten are implemented and eight have been released.
-The released components listed below cover 2,078 cases. PA25–PA45 remain
-planned. Whole-assignment completion requires the entire handout contract,
-release of each owned work unit, a nonempty active oracle manifest, and release
-evidence.
+The released components listed below cover 2,078 cases, which are the PA25–PA30
+whole-assignment suites. PA31–PA45 remain planned. Whole-assignment completion
+requires the entire handout contract, release of each owned work unit, a
+nonempty active oracle manifest, and release evidence. A finite contract
+instead closes an assignment at its released units, and only when everything it
+defers is carried by an assignment that still owes its whole handout.
 
 Source-declaration binding precedes source consumers; runtime memory precedes
 symbolic CTFE; declaration metadata precedes body/value transport; required
@@ -434,8 +439,9 @@ limit controls, pass text, independent Rust and native checks with frozen a08ab1
 Full 43177635950 passed on its release documentation commit. PA25 and every other
 parent assignment remain planned.
 
-Released components (each parent assignment stays planned; the contract is the
-unit manifest plus the deferred list in its release record):
+Released components (each parent assignment is closed at the union of its
+rows here; a unit's contract is its manifest plus the deferred list in its
+release record):
 
 | Unit | PA | Cases | Deferred | Release record |
 | --- | --- | --- | --- | --- |
@@ -474,12 +480,12 @@ unit manifest plus the deferred list in its release record):
 | [22](pa22/README.md) | Unsized types | implemented |
 | [23](pa23/README.md) | Trait objects | implemented |
 | [24](pa24/README.md) | Closures | implemented |
-| [25](pa25/README.md) | Constant evaluation | planned |
-| [26](pa26/README.md) | Language and library hooks | planned |
-| [27](pa27/README.md) | Unsafe language | planned |
-| [28](pa28/README.md) | Intrinsics and atomics | planned |
-| [29](pa29/README.md) | Crates and metadata | planned |
-| [30](pa30/README.md) | Foreign interfaces | planned |
+| [25](pa25/README.md) | Constant evaluation | implemented (finite contract) |
+| [26](pa26/README.md) | Language and library hooks | implemented (finite contract) |
+| [27](pa27/README.md) | Unsafe language | implemented (finite contract) |
+| [28](pa28/README.md) | Intrinsics and atomics | implemented (finite contract) |
+| [29](pa29/README.md) | Crates and metadata | implemented (finite contract) |
+| [30](pa30/README.md) | Foreign interfaces | implemented (finite contract) |
 | [31](pa31/README.md) | Compiler/library bindings | planned |
 | [32](pa32/README.md) | Pinned core bootstrap | planned |
 | [33](pa33/README.md) | Allocator and alloc bootstrap | planned |

@@ -9,7 +9,12 @@ list. The released `iteration-kernel` component publishes
 described below are the origin of those declarations and still feed the
 maintainer suites. Every other family here is unpublished.
 
-PA26 remains planned. `operator-outcomes.json` declares the draft operator and
+PA26 is closed at its finite contract: `manifest.json` is exactly the union of
+the released unit manifests, written by
+`python3 scripts/finite_contracts.py compose pa26` and never by hand. It has no
+reference receipt of its own; the released units own every sidecar.
+
+`operator-outcomes.json` declares the draft operator and
 shared-index outcomes before reference generation; it is not an executed course
 manifest. Its inputs belong to the `spec/operators` family. The maintainer
 `language_operators` integration test independently qualifies these outcomes with

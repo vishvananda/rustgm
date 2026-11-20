@@ -26,7 +26,7 @@
         "docs/pa25-constants-view.md",
         "docs/pa25-anonymous-specialization.md"
       ],
-      "publication": "const-machine component released (docs/pa25-const-machine-release.md); whole PA25 unpublished",
+      "publication": "const-machine component released (docs/pa25-const-machine-release.md); in the closed PA25 finite contract",
       "units": [
         "const-machine"
       ]
@@ -49,7 +49,7 @@
       "evidence": [
         "docs/pa25-initializer-validation.md"
       ],
-      "publication": "const-machine component released (docs/pa25-const-machine-release.md); whole PA25 unpublished",
+      "publication": "const-machine component released (docs/pa25-const-machine-release.md); in the closed PA25 finite contract",
       "units": [
         "const-machine"
       ]
@@ -75,7 +75,7 @@
         "docs/pa25-selected-initializers.md",
         "docs/pa25-source-computation.md"
       ],
-      "publication": "finite const-machine profile released; open/conditional contracts unpublished under const-callables",
+      "publication": "finite const-machine profile released; open/conditional contracts unpublished under const-callables; deferred to PA44",
       "units": [
         "const-machine",
         "const-callables"
@@ -101,7 +101,7 @@
         "docs/pa25-pattern-readiness.md",
         "docs/pa25-rigid-patterns.md"
       ],
-      "publication": "finite const-machine profile released; open/conditional contracts unpublished under const-callables",
+      "publication": "finite const-machine profile released; open/conditional contracts unpublished under const-callables; deferred to PA44",
       "units": [
         "const-machine",
         "const-callables"
@@ -126,7 +126,7 @@
         "docs/pa25-anonymous-specialization.md",
         "docs/pa25-nested-output.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unpublished; deferred by the PA25 finite contract and carried by PA44",
       "units": [
         "const-callables"
       ]
@@ -148,7 +148,7 @@
       "evidence": [
         "pa25/README.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unpublished; deferred by the PA25 finite contract and carried by PA44",
       "units": [
         "const-callables"
       ]
@@ -174,7 +174,7 @@
         "docs/pa25-sequences.md",
         "docs/pa27-pa28-remaining.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unpublished; deferred by the PA25 finite contract and carried by PA44",
       "units": [
         "const-memory"
       ]
@@ -199,7 +199,7 @@
         "docs/pa25-rest-views.md",
         "docs/pa25-dst-tail-metadata.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unpublished; deferred by the PA25 finite contract and carried by PA44",
       "units": [
         "const-memory"
       ]
@@ -225,7 +225,7 @@
         "docs/pa28-source-needs-drop.md",
         "docs/parallel/source-const-repair.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unpublished; deferred by the PA25 finite contract and carried by PA44",
       "units": [
         "const-callables",
         "source-runtime"
@@ -248,7 +248,7 @@
       "evidence": [
         "docs/pa25-constants-view.md"
       ],
-      "publication": "const-machine component released (docs/pa25-const-machine-release.md); whole PA25 unpublished",
+      "publication": "const-machine component released (docs/pa25-const-machine-release.md); in the closed PA25 finite contract",
       "units": [
         "const-machine"
       ]
@@ -276,7 +276,7 @@
         "docs/pa26-selected-index-captures.md",
         "docs/implicit-assignment-demand.md"
       ],
-      "publication": "finite operator-kernel profile released (docs/pa26-operator-kernel-release.md); remaining method/source forms unpublished under hook-closure",
+      "publication": "finite operator-kernel profile released (docs/pa26-operator-kernel-release.md); remaining method/source forms unpublished under hook-closure; deferred to PA44",
       "units": [
         "operator-kernel",
         "hook-closure"
@@ -301,7 +301,7 @@
         "docs/pa26-sequence-ordering.md",
         "docs/pa26-reference-comparisons.md"
       ],
-      "publication": "operator-kernel component released (docs/pa26-operator-kernel-release.md); whole PA26 unpublished",
+      "publication": "operator-kernel component released (docs/pa26-operator-kernel-release.md); in the closed PA26 finite contract",
       "units": [
         "operator-kernel"
       ]
@@ -326,7 +326,7 @@
         "docs/source-shift-or-checkpoint.md",
         "docs/pa26-comparison-performance.md"
       ],
-      "publication": "finite operator-kernel profile released (docs/pa26-operator-kernel-release.md); remaining operator/coercion surface unpublished under hook-closure",
+      "publication": "finite operator-kernel profile released (docs/pa26-operator-kernel-release.md); remaining operator/coercion surface unpublished under hook-closure; deferred to PA44",
       "units": [
         "operator-kernel",
         "hook-closure"
@@ -351,7 +351,7 @@
         "docs/pa26-nominal-checkpoint.md",
         "docs/pa26-environment-checkpoint.md"
       ],
-      "publication": "operator-kernel component released (docs/pa26-operator-kernel-release.md); whole PA26 unpublished",
+      "publication": "operator-kernel component released (docs/pa26-operator-kernel-release.md); in the closed PA26 finite contract",
       "units": [
         "operator-kernel"
       ]
@@ -398,7 +398,7 @@
       "evidence": [
         "docs/pa26-integer-ranges.md"
       ],
-      "publication": "finite iteration-kernel profile released (docs/pa26-iteration-kernel-release.md); owned collections, other ranges and helpers unpublished under hook-closure",
+      "publication": "finite iteration-kernel profile released (docs/pa26-iteration-kernel-release.md); owned collections, other ranges and helpers unpublished under hook-closure; deferred to PA44",
       "units": [
         "iteration-kernel",
         "hook-closure"
@@ -423,7 +423,7 @@
         "spec.md",
         "docs/library-build-blockers.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unpublished; deferred by the PA26 finite contract and carried by PA44",
       "units": [
         "iteration-kernel",
         "hook-closure",
@@ -447,7 +447,7 @@
       "evidence": [
         "docs/source-assert-implementation.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unpublished; deferred by the PA26 finite contract and carried by PA44",
       "units": [
         "format-derive",
         "source-runtime"
@@ -472,7 +472,7 @@
         "docs/pa31-source-format-contracts.md",
         "docs/source-assert-implementation.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unpublished; deferred by the PA26 finite contract and carried by PA44",
       "units": [
         "format-derive",
         "source-runtime"
@@ -496,7 +496,7 @@
         "docs/source-storage-contracts-checkpoint.md",
         "docs/encoded-provided-methods-checkpoint.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unpublished; deferred by the PA26 finite contract and carried by PA44",
       "units": [
         "hook-closure",
         "generic-transport"
@@ -523,7 +523,7 @@
         "pa27/README.md",
         "docs/unsafe-policy-warning-gap.md"
       ],
-      "publication": "unsafe-places component released (docs/pa27-unsafe-places-release.md); whole PA27 unpublished",
+      "publication": "unsafe-places component released (docs/pa27-unsafe-places-release.md); in the closed PA27 finite contract",
       "units": [
         "unsafe-places"
       ]
@@ -546,7 +546,7 @@
       "evidence": [
         "pa27/README.md"
       ],
-      "publication": "unsafe-places component released (docs/pa27-unsafe-places-release.md); whole PA27 unpublished",
+      "publication": "unsafe-places component released (docs/pa27-unsafe-places-release.md); in the closed PA27 finite contract",
       "units": [
         "unsafe-places"
       ]
@@ -570,7 +570,7 @@
       "evidence": [
         "docs/pa27-packed-raw-target-review.md"
       ],
-      "publication": "unsafe-places component released (docs/pa27-unsafe-places-release.md); whole PA27 unpublished",
+      "publication": "unsafe-places component released (docs/pa27-unsafe-places-release.md); in the closed PA27 finite contract",
       "units": [
         "unsafe-places"
       ]
@@ -594,7 +594,7 @@
       "evidence": [
         "docs/pa27-pa28-remaining.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unpublished; deferred by the PA27 finite contract and carried by PA44",
       "units": [
         "const-memory"
       ]
@@ -620,7 +620,7 @@
         "docs/pa27-pa28-remaining.md",
         "docs/pa27-option-niche-design.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unpublished; deferred by the PA27 finite contract and carried by PA44",
       "units": [
         "const-memory"
       ]
@@ -642,7 +642,7 @@
       "evidence": [
         "docs/pa27-pa28-remaining.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unpublished; deferred by the PA27 finite contract and carried by PA44",
       "units": [
         "raw-validity"
       ]
@@ -665,7 +665,7 @@
       "evidence": [
         "docs/pa27-raw-slice-review.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unpublished; deferred by the PA27 finite contract and carried by PA44",
       "units": [
         "raw-validity"
       ]
@@ -692,7 +692,7 @@
         "docs/pa28-owned-memory-review.md",
         "docs/pa28-counted-memory.md"
       ],
-      "publication": "runtime-memory component released (docs/pa28-runtime-memory-release.md); const-memory share and whole PA28 unpublished",
+      "publication": "runtime-memory component released (docs/pa28-runtime-memory-release.md); const-memory share unpublished, deferred to PA44",
       "units": [
         "runtime-memory",
         "const-memory"
@@ -716,7 +716,7 @@
       "evidence": [
         "pa28/README.md"
       ],
-      "publication": "runtime-memory component released (docs/pa28-runtime-memory-release.md); whole PA28 unpublished",
+      "publication": "runtime-memory component released (docs/pa28-runtime-memory-release.md); in the closed PA28 finite contract",
       "units": [
         "runtime-memory"
       ]
@@ -741,7 +741,7 @@
         "docs/pa28-atomic-extrema.md",
         "pa28/tests/atomic-cas-outcomes.json"
       ],
-      "publication": "atomic-u32 component released (docs/pa28-atomic-u32-release.md); whole PA28 unpublished",
+      "publication": "atomic-u32 component released (docs/pa28-atomic-u32-release.md); in the closed PA28 finite contract",
       "units": [
         "atomic-u32"
       ]
@@ -764,7 +764,7 @@
       "evidence": [
         "docs/pa27-pa28-remaining.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unpublished; deferred by the PA28 finite contract and carried by PA44",
       "units": [
         "intrinsic-closure"
       ]
@@ -788,7 +788,7 @@
         "docs/pa28-relocation-design.md",
         "docs/pa28-byte-fill.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unpublished; deferred by the PA28 finite contract and carried by PA44",
       "units": [
         "const-memory",
         "generic-transport"
@@ -814,7 +814,7 @@
         "docs/pa28-source-needs-drop.md",
         "docs/pa31-offset-of-plan.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unpublished; deferred by the PA28 finite contract and carried by PA44",
       "units": [
         "const-callables",
         "intrinsic-closure",
@@ -865,7 +865,7 @@
         "docs/pa29-public-names.md",
         "docs/pa29-aggregate-metadata.md"
       ],
-      "publication": "finite declarations profile released (docs/pa29-declarations-release.md); value payload codecs unpublished under value-metadata",
+      "publication": "finite declarations profile released (docs/pa29-declarations-release.md); value payload codecs unpublished under value-metadata; deferred to PA44",
       "units": [
         "declarations",
         "value-metadata"
@@ -890,7 +890,7 @@
         "docs/pa29-executable-generics.md",
         "docs/pa29-direct-call-transport.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unpublished; deferred by the PA29 finite contract and carried by PA44",
       "units": [
         "generic-transport"
       ]
@@ -913,7 +913,7 @@
       "evidence": [
         "docs/source-core-cli-contracts.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unpublished; deferred by the PA29 finite contract and carried by PA44",
       "units": [
         "declarations",
         "generic-transport"
@@ -938,7 +938,7 @@
         "docs/encoded-provided-methods-checkpoint.md",
         "docs/public-library-consumers-checkpoint.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unpublished; deferred by the PA29 finite contract and carried by PA44",
       "units": [
         "provided-profile"
       ]
@@ -962,7 +962,7 @@
         "docs/encoded-provided-methods-checkpoint.md",
         "docs/library-build-blockers.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unpublished; deferred by the PA29 finite contract and carried by PA44",
       "units": [
         "generic-transport"
       ]
@@ -987,7 +987,7 @@
         "docs/pa30-callable-checkpoint.md",
         "docs/pa30-import-checkpoint.md"
       ],
-      "publication": "c-abi component released without the C-provider native matrix (docs/pa30-c-abi-release.md); whole PA30 unpublished",
+      "publication": "c-abi component released without the C-provider native matrix (docs/pa30-c-abi-release.md); in the closed PA30 finite contract",
       "units": [
         "c-abi"
       ]
@@ -1011,7 +1011,7 @@
         "docs/pa30-linkage-checkpoint.md",
         "docs/pa30-static-checkpoint.md"
       ],
-      "publication": "c-abi component released without the C-provider native matrix (docs/pa30-c-abi-release.md); whole PA30 unpublished",
+      "publication": "c-abi component released without the C-provider native matrix (docs/pa30-c-abi-release.md); in the closed PA30 finite contract",
       "units": [
         "c-abi"
       ]
@@ -1035,7 +1035,7 @@
         "docs/pa30-composite-abi.md",
         "docs/pa30-aggregate-abi.md"
       ],
-      "publication": "c-abi component released without the C-provider native matrix (docs/pa30-c-abi-release.md); whole PA30 unpublished",
+      "publication": "c-abi component released without the C-provider native matrix (docs/pa30-c-abi-release.md); in the closed PA30 finite contract",
       "units": [
         "c-abi"
       ]
@@ -1058,7 +1058,7 @@
       "evidence": [
         "docs/pa30-variadic-calls.md"
       ],
-      "publication": "c-abi component released without the C-provider native matrix (docs/pa30-c-abi-release.md); whole PA30 unpublished",
+      "publication": "c-abi component released without the C-provider native matrix (docs/pa30-c-abi-release.md); in the closed PA30 finite contract",
       "units": [
         "c-abi"
       ]
@@ -1084,7 +1084,7 @@
         "docs/pa30-storage-metadata.md",
         "docs/pa30-variadic-metadata.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unpublished; deferred by the PA30 finite contract and carried by PA44",
       "units": [
         "value-metadata"
       ]
@@ -1108,7 +1108,7 @@
         "docs/foreign-type-source-design.md",
         "docs/pa30-composite-abi.md"
       ],
-      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "publication": "unpublished; deferred by the PA30 finite contract and carried by PA44",
       "units": [
         "ffi-closure",
         "generic-transport"
@@ -1132,7 +1132,7 @@
       "evidence": [
         "docs/pa30-object-bridge.md"
       ],
-      "publication": "c-abi component released without the C-provider native matrix (docs/pa30-c-abi-release.md); whole PA30 unpublished",
+      "publication": "c-abi component released without the C-provider native matrix (docs/pa30-c-abi-release.md); in the closed PA30 finite contract",
       "units": [
         "c-abi"
       ]
