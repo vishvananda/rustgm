@@ -1,10 +1,10 @@
 //! Runtime slots retain complete trait inputs while sharing repeated supertraits.
-use super::{Method, Shape, ShapeId, Slot};
+use super::{Method, Shape, ShapeId, Slot, Storage};
 use crate::support::hash::HashMap;
 use crate::{
     resolve::{expansion::Report, model::DefId},
     sema::{model::Declarations, traits::object_bounds},
-    types::{Kind, TypeId},
+    types::{Kind, Store, TypeId},
 };
 use std::sync::Arc;
 
@@ -13,6 +13,11 @@ pub(super) fn prepare(
     facts: &mut Declarations,
     object: TypeId,
 ) -> Result<ShapeId, String> {
+    let object = runtime_object(
+        facts.objects.storage.get_or_insert_with(Default::default),
+        &mut facts.types,
+        object,
+    )?;
     if let Some(&id) = facts
         .objects
         .storage
@@ -46,6 +51,37 @@ pub(super) fn prepare(
     storage.shape_tables.push(Vec::new());
     storage.shape_ids.insert(object, id);
     Ok(id)
+}
+
+/// Slot parents already erase the object's own quantified lifetimes, so one
+/// runtime shape serves each of their instantiations: a coercion that only
+/// specializes them keeps its table. Nested callable types keep their binders.
+pub(super) fn runtime_object(
+    storage: &mut Storage,
+    types: &mut Store,
+    object: TypeId,
+) -> Result<TypeId, &'static str> {
+    let Some(Kind::Dynamic {
+        shape,
+        arguments,
+        bound_regions,
+        region,
+    }) = types.kind(object)
+    else {
+        return Ok(object);
+    };
+    if bound_regions == 0 {
+        return Ok(object);
+    }
+    let before = storage.erase.steps;
+    let arguments = storage.erase.apply_arguments(types, arguments)?;
+    storage.charge(storage.erase.steps.saturating_sub(before).saturating_add(1))?;
+    types.intern(Kind::Dynamic {
+        shape,
+        arguments,
+        bound_regions: 0,
+        region,
+    })
 }
 
 fn collect(

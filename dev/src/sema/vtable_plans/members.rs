@@ -70,6 +70,8 @@ pub(super) fn prepare(
     let erased_referent = storage.erase.apply(&mut facts.types, referent)?;
     let erased_tuple = storage.erase.apply(&mut facts.types, tuple)?;
     storage.charge(storage.erase.steps.saturating_sub(before).saturating_add(1))?;
+    let erased_referent =
+        super::shapes::runtime_object(storage, &mut facts.types, erased_referent)?;
     if erased_referent != object || mutable != (kind == CallTrait::FnMut) {
         return Err("explicit callable member differs from its selected receiver".into());
     }
