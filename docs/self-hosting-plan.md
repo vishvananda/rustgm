@@ -1038,8 +1038,14 @@ requires its actual From declaration`. The exporter routes the actual const
 their pinned Rust outcomes (`10 22 27 91`) are unchanged. The new replay is
 `lemire-default-control-v3/rustgm-only-v2/receipt.json`, with SHA-256
 `51948ab61e1a129d086796487a5f1a952c2b3113a2e5e041437565141b589672`.
-Authenticating `Sub` as its own binary operator role is in focused
-validation. The open `Self::SIG_TOTAL_BITS` request remains required.
+`89fd654d0` authenticates `Sub` through its own binary operator role on
+publication and import. The fresh client returns `2` from the actual
+transported const `f64` subtraction. The `Div` and provided-initializer
+regressions pass in `obj/qualification/fast/1795168055796140686/`. The same
+frozen reduced Core provider now reaches `source rvalue requires a complete
+wider transport row`. Its initializer reads `Self::SIG_TOTAL_BITS`
+through the original supertrait. The raw replay diagnostic is in
+`lemire-default-control-v3/rustgm-only-v4/provider.stderr`.
 
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a

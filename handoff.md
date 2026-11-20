@@ -33,10 +33,12 @@ check ordered after function-header lookup. The fix and expanded consumer
 regression pass all three focused checks. `c3311cc45` executes imported
 constant originals through the checked interpreter. Fresh clients emit
 `8` for the inherited default, `9` for the provider's override and `21`
-for a local override. The frozen reduced Core provider reaches `Sub`
-publication and fails because the required const method falls through to
-the `From` check. The Sub transport repair is in focused validation.
-The open supertrait request remains pending.
+for a local override. `89fd654d0` publishes and re-proves const `Sub` under
+its actual language role. A fresh client returns `2` from the transported
+`f64` subtraction and both prior controls pass. The frozen reduced Core
+provider now reaches original-value encoding and requires the open
+supertrait constant row. The row and a fresh-client reproof are in focused
+validation.
 Stage 1 and Stage 2 are pending.
 [Strict Core evidence](docs/self-hosting-plan.md#L979)
 
