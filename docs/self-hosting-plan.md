@@ -988,13 +988,17 @@ formatting, the architecture audit and strict Clippy pass. Pinned
 Rust independently runs the separate-crate control and prints
 `4 8 9 12`.
 
-A fresh RustGM client decodes the same artifact and stops at
-`v4 method conformance requires its actual override`. The importer
-treats the inherited constant default as an omitted method override.
-Constant link conformance, reconstruction and execution in the fresh
-client, and the open request to the actual supertrait remain pending.
-This compiler candidate stays in the frontier worktree. Evidence is
-under `obj/qualification/fast/1795163643806322253/` and
+A fresh RustGM client decodes the same artifact and initially stops at
+`v4 method conformance requires its actual override`. `7839da8d0` keeps
+an inherited initializer under its trait owner while installing the
+implementation's own members. The same packet then reaches an exact
+declaration-kind check in imported conformance. The importer still
+classifies constant links as function links there. Four focused
+checks pass after the owner repair. Constant link conformance,
+reconstruction and execution in the fresh client, and the open
+request to the actual supertrait remain pending. The candidate stays
+in the frontier worktree. Evidence is under
+`obj/qualification/fast/{1795163643806322253,1795163819440629720}/` and
 `obj/parallel/v14-associated-constants/{provided-stable-v2,provided-independent-v1}/`.
 
 Macro deprecation still requires its own published definition and

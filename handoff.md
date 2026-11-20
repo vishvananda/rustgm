@@ -19,9 +19,11 @@ rejects a missing or mistyped override. Four focused integration tests
 passed. `4520c8716` repairs the private decoder call. The private
 harness reached its build deadline before execution. Frontier commit
 `d7a9ddcc8` publishes and byte-round-trips an actual default and
-override with five passing focused tests. A fresh RustGM client now
-stops at inherited-default conformance. Fresh original reconstruction,
-owner substitution and the open supertrait request remain pending.
+override with five passing focused tests. `7839da8d0` keeps the default
+under its trait owner and passes four focused checks. A fresh RustGM
+client now reaches the declaration-kind check in imported conformance.
+Fresh original reconstruction, owner substitution and the open
+supertrait request remain pending.
 Stage 1 and Stage 2 are pending.
 [Strict Core evidence](docs/self-hosting-plan.md#L979)
 
