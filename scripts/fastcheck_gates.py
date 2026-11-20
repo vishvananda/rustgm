@@ -126,10 +126,29 @@ def audit_interpreter(python):
     return [str(python), configuration, installed]
 
 
+SITE = {"site-packages", "dist-packages"}
+
+
 def interpreter_paths():
-    """The standard library and site directories of the Python running the gates."""
+    """The standard library of the Python running the gates, with its zip and extension directories.
+
+    Its content is identified by the interpreter's version and path, which every
+    fingerprint includes. Third-party site directories are not part of it.
+    """
     paths = sysconfig.get_paths()
-    return sorted({Path(paths[key]) for key in ("stdlib", "platstdlib", "purelib", "platlib") if key in paths})
+    found = {Path(paths[key]) for key in ("stdlib", "platstdlib") if key in paths}
+    base = Path(sys.base_prefix)
+    found |= {Path(entry) for entry in sys.path
+              if entry and Path(entry).is_relative_to(base) and not SITE & set(Path(entry).parts)}
+    return sorted(found)
+
+
+def import_directories():
+    """Site directories an import may search; listing one does not make its files inputs."""
+    paths = sysconfig.get_paths()
+    found = {Path(paths[key]) for key in ("purelib", "platlib") if key in paths}
+    found |= {Path(entry) for entry in sys.path if entry and SITE & set(Path(entry).parts)}
+    return sorted(found)
 
 
 def edition(root):
@@ -177,7 +196,7 @@ class Gates:
         inputs += [self.digests.tree(self.root / name, skipped=SKIPPED_DIRECTORIES) for name in trees]
         identity = [sys.version, sys.executable]
         allowed = [self.root / name for name in (*METADATA_FILES, *trees)] + interpreter_paths()
-        return command, digest_text([command, self.implementation, identity, inputs]), allowed
+        return command, digest_text([command, self.implementation, identity, inputs]), allowed, []
 
     def architecture(self):
         command = [str(self.audit_python), "scripts/rust_audit.py", "--root", ".", "--cache", "obj/fast-audit.json"]
@@ -185,13 +204,15 @@ class Gates:
             roles = sorted(json.loads((self.root / AUDIT_FILES[1]).read_text()))
         except (OSError, ValueError, TypeError):
             roles = []
+        # Imports search the script's directory first, so its names are an input.
+        scripts = sorted(os.listdir(self.root / "scripts"))
         inputs = [self.digests.files(AUDIT_FILES), sorted(self.sources.items()),
-                  [[role, (self.root / role).is_file()] for role in roles]]
+                  [[role, (self.root / role).is_file()] for role in roles], scripts]
         identity = audit_interpreter(self.audit_python)
         allowed = [self.root / "dev", *(self.root / name for name in AUDIT_FILES),
                    self.root / "obj/fast-audit.json", self.root / "obj/fast-audit.tmp",
                    Path(self.audit_python).parent.parent, *interpreter_paths()]
-        return command, digest_text([command, self.implementation, identity, inputs]), allowed
+        return command, digest_text([command, self.implementation, identity, inputs]), allowed, [self.root / "scripts"]
 
     def format_key(self):
         command = ["cargo", "fmt", "--manifest-path", "dev/Cargo.toml", "--all", "--", "--check"]
@@ -231,20 +252,28 @@ class Gates:
         self.write(name, {**self.record(name), **extra,
                           "passed": [{"fingerprint": fingerprint, "receipt": receipt}, *rows][:KEPT]})
 
-    def outside(self, trace, allowed):
-        """Reads a traced gate made outside its declared inputs; any one forbids caching."""
+    def outside(self, trace, allowed, listings=()):
+        """Reads a traced gate made outside its declared inputs; any one forbids caching.
+
+        A file opened must lie inside a declared input. A directory listed may
+        also be one whose names are fingerprinted, or one an import searches.
+        """
         try:
             seen = json.loads(Path(trace).read_text())
         except (OSError, ValueError):
             return ["trace missing"]
         roots = [path.resolve() for path in allowed]
+        names = {path.resolve() for path in [*listings, *import_directories()]}
+        inside = lambda path: any(path == root or path.is_relative_to(root) for root in roots)
         problems = [f"started a process: {event}" for event in seen.get("spawned", [])]
-        for path in seen.get("opened", []) + seen.get("listed", []):
+        for path in seen.get("opened", []):
             resolved = Path(path).resolve()
-            if resolved == Path(trace).resolve() or str(resolved) == os.devnull:
-                continue
-            if not any(resolved == root or resolved.is_relative_to(root) for root in roots):
+            if resolved != Path(trace).resolve() and str(resolved) != os.devnull and not inside(resolved):
                 problems.append(f"read {path}")
+        for path in seen.get("listed", []):
+            resolved = Path(path).resolve()
+            if not inside(resolved) and resolved not in names:
+                problems.append(f"listed {path}")
         return problems
 
     def format_plan(self, key):

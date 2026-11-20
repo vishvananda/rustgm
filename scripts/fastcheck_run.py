@@ -136,7 +136,7 @@ PARTIAL_FORMAT_LIMIT = 400
 
 def traced_gate(root, steps, gates, name, method):
     """Run a Python gate under its trace; cache the pass only if it read nothing undeclared."""
-    command, fingerprint, allowed = getattr(gates, method)()
+    command, fingerprint, allowed, listings = getattr(gates, method)()
     matched = gates.matched(name, fingerprint)
     if matched:
         steps.skip(name, fingerprint, matched)
@@ -145,7 +145,7 @@ def traced_gate(root, steps, gates, name, method):
     python, script, *rest = command
     steps.run(name, [python, "scripts/gate_trace.py", trace, script, *rest],
               extra={"gate": name, "fingerprint": fingerprint})
-    problems = gates.outside(trace, allowed)
+    problems = gates.outside(trace, allowed, listings)
     if not problems and getattr(gates.fresh(), method)()[1] != fingerprint:
         problems = ["inputs changed while the gate ran"]
     if problems:

@@ -31,7 +31,7 @@ class ToyGates(Gates):
         command = [sys.executable, "scripts/toy_gate.py"]
         inputs = self.digests.files(["declared.txt", "scripts/toy_gate.py"])
         allowed = [self.root / "declared.txt", self.root / "scripts/toy_gate.py", *interpreter_paths()]
-        return command, fastcheck_gates.digest_text([command, inputs]), allowed
+        return command, fastcheck_gates.digest_text([command, inputs]), allowed, []
 
 
 class GateTests(unittest.TestCase):
@@ -162,6 +162,12 @@ class GateTests(unittest.TestCase):
                 self.assertNotIn("skipped", row)
                 self.assertFalse(row["cached"])
                 self.assertTrue(any("outside.txt" in reason for reason in row["uncached_because"]))
+            # Listing an undeclared directory is an input too.
+            (root / "elsewhere").mkdir()
+            steps, error = self.run_toy(root, "listing", "import os\nos.listdir('elsewhere')\n")
+            self.assertIsNone(error)
+            self.assertTrue(any("listed" in reason and "elsewhere" in reason
+                                for reason in steps.receipt["steps"][0]["uncached_because"]))
             # A failing gate is recorded as failed and runs again.
             for name in ("failing", "failing-again"):
                 steps, error = self.run_toy(root, name, "raise SystemExit(3)\n")
