@@ -1791,6 +1791,28 @@ request receipt predict fewer hits. Production implementation and
 calibrated measurements are pending. The graph and focused receipts are
 in `obj/parallel/caller-tracking-witness/` in the performance checkout.
 
+A review of the v5literal C++ compiler translation at `a59264bd` identifies
+two designs to test on RustGM. Its class partial-specialization lookup
+chooses an argument position and an exact type or outer template identity,
+with an ordered fallback for unindexed candidates. RustGM currently
+uses its open nominal-argument index only after the predicate resolves.
+A shadow should count additional exclusions at deeper rigid type paths
+and require every exclusion to agree with the existing header mismatch
+before the first condition or budget failure. The original graph places
+trial construction in 2,005 of 26,865 sample chains and header
+instantiation in 1,580. The counts overlap.
+
+The reference also records typed dependency events during analysis and
+retains their first-use order. RustGM could retain an ordered operation
+index when it builds a body and use that index for dispatch and dependency
+discovery. Each consumer would still rederive selected targets and their
+caller proofs at the original stage. The original scalar graph shows
+200 dispatch chains and a single visible dependency-discovery chain.
+Measure a second call-dense control that scales unrelated values separately
+from calls before choosing a layout. Shared normalization preparation
+is a separate candidate, with context-specific proofs and budgets still
+attached to each caller.
+
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
 positions and 16,384 invocations the median was 1,117.90 ms before and 67.79 ms
