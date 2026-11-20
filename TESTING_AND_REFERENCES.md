@@ -67,6 +67,25 @@ a released documented course profile and requires existing release evidence in
 assignments.json. Neither state means arbitrary Rust compatibility. Planned
 assignments still reject missing/empty-suite success.
 
+An assignment that declares `"contract": {"kind": "finite", ...}` in
+assignments.json is `implemented` at less than its handout. The plan and
+metadata checks accept that only when:
+
+- at least one of its units is released;
+- its `tests/manifest.json` is exactly the union of its released unit manifests
+  (`python3 scripts/finite_contracts.py compose paN` writes it; no reference is
+  generated, and the assignment has no `reference.json` of its own);
+- `deferred_units` and `deferred_requirements` are exactly its unreleased units,
+  including units of other owners that its requirement rows name, and the rows
+  that name one (`python3 scripts/finite_contracts.py owed paN` prints both);
+- the `carried_by` assignment lists the same units and rows under `carries`,
+  owes its whole handout, depends on every deferred unit, and is not complete
+  while one of them is unreleased;
+- its `release_evidence` names every released unit's record.
+
+A requirement can move to the carrier; a closure that drops one is rejected.
+An assignment with no released unit cannot declare the contract.
+
 [assignment-plan.json](assignment-plan.json) orders finite work units independently
 of stable PA ownership numbers. Its implementation and publication states are
 separate; a completed component cannot mark an unfinished whole PA implemented.
@@ -79,7 +98,10 @@ reordered prerequisites declare `work_units` from their actual owning units;
 only those units' transitive dependency owners and the active PA1–PA24 foundation
 are admitted. Legacy cases retain numeric placement checks.
 
-Finite components use the same runner while the parent PA remains planned.
+Finite components use the same runner, whether the parent PA is planned or
+closed at a finite contract. A closed parent runs its units' cases as one
+whole-assignment suite, so `--released-units` schedules only the releases of
+planned parents; `--bless` on a closed parent regenerates through its units.
 Declare a canonical `paN/tests/units/UNIT.json` manifest in that work unit's
 `manifest` field. Its nonempty `discovery` list claims complete directories or
 explicit `.rs` inputs under that PA's tests; every discovered source must be a

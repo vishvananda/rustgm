@@ -16,6 +16,7 @@ import reference_batches
 from case_inputs import source_bytes, support_files, validate as validate_inputs
 from crate_graph import candidate_graph
 from course_suites import check_publishers, discovery, run_released, shared_outputs, suite_paths
+import finite_contracts
 from storage import cleanup_roots
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -193,6 +194,16 @@ def preflight_oracles(root, stage, cases):
 
 def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10, evidence_root=None, case_paths=None,
               unit=None):
+    if bless and unit is None and finite_contracts.lookup(root, stage) is not None:
+        # A finite contract has no references of its own: its released units generate and receipt them.
+        if case_paths is not None:
+            raise ValueError(f"{stage}: select the owning unit to generate part of a finite contract")
+        plan = json.loads((root / "assignment-plan.json").read_text())["units"]
+        units = [entry["id"] for entry in plan if entry["owner"] == stage and entry["publication"] == "released"]
+        if not units:
+            raise ValueError(f"{stage}: finite contract has no released unit")
+        return all([run_stage(root, stage, app, bless=True, jobs=jobs, timeout=timeout,
+                              evidence_root=evidence_root, unit=name) for name in units])
     paths = suite_paths(root, stage, unit)
     manifest, cases = load_cases(root, stage, unit=unit)
     all_cases = cases

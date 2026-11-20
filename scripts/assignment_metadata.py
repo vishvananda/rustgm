@@ -9,6 +9,7 @@ from check_native import classification
 from check_layouts import classification as layout_classification
 from assignment_plan import checked_path, fixture_owners, validate as validate_plan
 from course_suites import check_publishers
+import finite_contracts
 
 
 def validate_cases(stage, manifest, cases, units, rows, foundational):
@@ -92,6 +93,8 @@ def collect(root=ROOT):
         if (manifest["mode"] != stage["mode"]
                 or manifest.get("additional_modes", []) != stage.get("additional_modes", [])):
             raise ValueError(f"assignment modes disagree with manifest: {folder}")
+        if finite_contracts.declared(stage) is not None:
+            finite_contracts.check_manifest(root, stage, manifest, list(units.values()))
         validate_cases(stage, manifest, cases, units, rows, foundational)
         loaded.append((stage, manifest, cases))
     collect_units(root)

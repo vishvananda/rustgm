@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""An assignment is active only with a nonempty, fully discovered oracle suite."""
+"""An assignment is active only with a nonempty oracle suite: fully discovered, or the union of its released units."""
 import hashlib
 from pathlib import Path
 import sys
@@ -7,17 +7,25 @@ import argparse
 from course import ROOT, SIDECARS
 from assignment_metadata import collect, collect_units
 from case_inputs import support_files
+import finite_contracts
 import reference_batches
 
 
 def check(root=ROOT, *, unit=None):
     stages, loaded = collect(root)
     components = collect_units(root, unit=unit)
+    closed = {stage["path"] for stage, _, _ in loaded if finite_contracts.declared(stage) is not None}
+    if unit is not None:
+        # A finite contract's provenance is its released units' receipts, whichever unit was selected.
+        components += [entry for entry in collect_units(root)
+                       if entry[0]["owner"] in closed and entry[0]["id"] != unit]
     for stage, manifest, cases in loaded:
-        check_suite(root, stage["path"], manifest, cases)
+        if stage["path"] not in closed:
+            check_suite(root, stage["path"], manifest, cases)
     for component, manifest, cases in components:
         check_suite(root, component["owner"], manifest, cases, unit=component["id"])
-    print(f"Assignment layout: {len(stages)} stages; no orphan fixtures in active suites")
+    print(f"Assignment layout: {len(stages)} stages; no orphan fixtures in active suites"
+          + (f"; {len(closed)} finite contracts checked through their released units" if closed else ""))
     if components:
         print(f"Component layout: {len(components)} units with complete oracle provenance")
 

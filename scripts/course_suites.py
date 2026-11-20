@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 import re
 
+import finite_contracts
+
 
 def unit_manifest(stage, unit):
     if (not isinstance(stage, str) or not re.fullmatch(r"pa[1-9][0-9]*", stage)
@@ -59,8 +61,11 @@ def check_identity(paths, receipt):
 def discovery(root, stage, manifest, unit):
     folder = root / stage
     tests = (folder / "tests").resolve()
-    if unit is None:
+    if unit is None and "discovery" not in manifest:
         return {p.relative_to(folder).as_posix() for p in (folder / "tests").rglob("*.rs")}
+    if unit is None and finite_contracts.lookup(root, stage) is None:
+        # Every other assignment owes each fixture under its tests.
+        raise ValueError(f"{stage}: only a finite contract claims part of an assignment's fixtures")
     from course import check_relative_path
     claims = manifest.get("discovery")
     if not isinstance(claims, list) or not claims:
@@ -121,9 +126,14 @@ def check_publishers(root):
 
 
 def shared_outputs(root, stage, results):
-    """A unit can adopt existing parent outputs, but only the parent changes them."""
+    """A unit can adopt existing parent outputs, but only the parent changes them.
+
+    A finite contract is the reverse: it has no references of its own, so its released
+    units remain the publishers.
+    """
     stages = json.loads((root / "assignments.json").read_text())["stages"]
-    if not any(entry["path"] == stage and entry["status"] != "planned" for entry in stages):
+    if not any(entry["path"] == stage and entry["status"] != "planned"
+               and finite_contracts.declared(entry) is None for entry in stages):
         return
     folder = root / stage
     manifest = json.loads((folder / "tests/manifest.json").read_text())
@@ -138,11 +148,21 @@ def shared_outputs(root, stage, results):
 
 
 def run_released(root, check):
-    """Schedule only declared releases through the existing selected-suite checks."""
+    """Schedule only declared releases through the existing selected-suite checks.
+
+    A release owned by a finite contract runs with that assignment: its manifest is exactly
+    the union of its released units, so scheduling the unit again would repeat every case.
+    """
     from assignment_metadata import collect_units
-    components = collect_units(root)
+    closed = {stage["path"] for stage in json.loads((root / "assignments.json").read_text())["stages"]
+              if finite_contracts.declared(stage) is not None}
+    released = collect_units(root)
+    components = [entry for entry in released if entry[0]["owner"] not in closed]
+    if len(components) != len(released):
+        print(f"{len(released) - len(components)} released component suites run with their closed assignments.")
     if not components:
-        print("No released component suites declared; skipped.")
+        print("No released component suites declared; skipped." if not released
+              else "No released component suite outside a closed assignment; skipped.")
         return
     for component, _, _ in components:
         if check(component["owner"], component["id"]) is False:

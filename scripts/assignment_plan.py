@@ -5,6 +5,7 @@ import re
 import sys
 from pathlib import Path
 from course_suites import unit_manifest
+import finite_contracts
 
 ROOT = Path(__file__).resolve().parents[1]
 STATES = {"implemented", "partial", "missing"}
@@ -75,16 +76,11 @@ def validate(root=ROOT, stages=None):
                 units[name]["implementation"] == "implemented" for name in mapped[key]):
             raise ValueError(f"unfinished requirement lost its remaining work: {key}")
     for stage in stages:
-        owned = [unit for unit in units.values() if unit["owner"] == stage["path"]]
-        if int(stage["number"]) >= 25 and not owned:
+        if int(stage["number"]) >= 25 and not any(unit["owner"] == stage["path"] for unit in units.values()):
             raise ValueError(f"planned assignment has no work unit: {stage['path']}")
-        required = {unit["id"] for unit in owned}
-        for row in rows.values():
-            if row["pa"] == stage["number"]:
-                required.update(row["units"])
-        if stage["status"] == "implemented" and any(
-                units[name]["publication"] != "released" for name in required):
-            raise ValueError(f"whole PA completion has unpublished work: {stage['path']}")
+    # A whole handout needs every owned and named unit released; a finite contract may defer
+    # them only to a carrier, which then owes them.
+    finite_contracts.check(stages, list(units.values()), requirements)
     return list(units.values()), requirements
 
 
