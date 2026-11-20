@@ -1,6 +1,10 @@
 //! Complete source zero domains at the real declaration transaction, never at lookup.
 use super::{BinderId, Checker, DefId, Error, FunctionRegions, NodeKey, SignatureTypes, Type};
-use crate::support::{crates::MAX_BYTES, retained};
+use crate::support::retained;
+
+/// A coarse runaway guard: a whole-graph session declares more functions than
+/// the 16 MB that one library crate's schemes were bounded by.
+const MAX_BYTES: usize = 1 << 30;
 
 #[cfg(test)]
 #[path = "../../../../tests/invariants/empty_schemes.rs"]
