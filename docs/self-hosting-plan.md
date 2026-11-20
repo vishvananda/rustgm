@@ -1996,6 +1996,21 @@ isolated while the performance lane investigates larger sources of work.
 The receipts are under `obj/parallel/v5-typed-operation-index/invoke-presence/`
 in the performance checkout.
 
+The cleanup lifetime census on the original graph matched the archived
+artifacts and diagnostics. Across 23,546 cleanup scopes, 1,390,136 of
+1,869,108 seed pairs repeat the same active set at an adjacent point
+in the same recording interval. The original solver already covers
+1,547,871 of all 1,891,776 mapped seeds with full extents. A run model
+uses 3.85 MB for headers and identities, compared with 14.95 MB of
+original raw pair payload. These are aggregate payload counts.
+Independent destructor controls keep five concrete cleanup scopes,
+increase the region pairs from 110 to 1,888, and match the Rust and
+RustGM native result. Candidate `72264239b` retains the ordered runs
+through mapping and replays the original solver inputs. Its static
+checks passed. Private execution and paired measurements are pending.
+Evidence is under `obj/parallel/v5-nontrait-schedule/` in the performance
+checkout.
+
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
 positions and 16,384 invocations the median was 1,117.90 ms before and 67.79 ms
