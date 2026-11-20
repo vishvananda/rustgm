@@ -94,6 +94,9 @@ fn originals_using<'a, 'b, 'c>(
         None
     };
     prepare_overlays(facts, &mut bodies, &mut index, overlays, budget)?;
+    // The bring-up profile sets a failed body aside at its own site, so that
+    // one run names every failing body; the stage still fails when it ends.
+    let mut deferred = None;
     for contract in contracts {
         facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
         if !source && !contract.requires_defining_cleanup_preparation() {
@@ -105,12 +108,19 @@ fn originals_using<'a, 'b, 'c>(
             .ok_or("missing original body index")?
             .remove(&contract.key)
             .ok_or("source Copy original contract has no exact body")?;
-        prepare(facts, body, contract)?;
+        match prepare(facts, body, contract) {
+            Err(error)
+                if crate::body::bringup::defer_site(Some(body.source.root_site()), &error) =>
+            {
+                deferred.get_or_insert(error);
+            }
+            result => result?,
+        }
     }
     if source && index.is_some_and(|index| !index.is_empty()) {
         return Err("source Copy original body has no exact contract".into());
     }
-    Ok(())
+    deferred.map_or(Ok(()), Err)
 }
 
 fn ensure_index<'a>(
