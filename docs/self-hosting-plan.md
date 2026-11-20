@@ -1919,15 +1919,24 @@ counts. The receipts are `graph-v1/receipt.json`,
 `obj/parallel/v5-nested-self-repeat/` in the performance checkout.
 
 The reference also records typed dependency events during analysis and
-retains their first-use order. RustGM could retain an ordered operation
-index when it builds a body and use that index for dispatch and dependency
-discovery. Each consumer would still rederive selected targets and their
-caller proofs at the original stage. The original scalar graph shows
-200 dispatch chains and a single visible dependency-discovery chain.
-Measure a second call-dense control that scales unrelated values separately
-from calls before choosing a layout. Shared normalization preparation
-is a separate candidate, with context-specific proofs and budgets still
-attached to each caller.
+retains their first-use order. A shadow on exact `f5e3fbdcf` preserves
+the archived Core and Unicode graph output and all 19 focused pairs.
+Four dispatch walks inspect 622,431 slots. An ordinal index would reduce
+those to 62,494 candidate visits and spend another 295,299 visits building
+the lists. All 38,711 phase checks preserve the lists' lengths and order.
+The invocation precheck alone inspects 197,562 slots without seeing an
+`Invoke`. The earlier dispatch scan can record its presence without a
+separate allocation.
+
+Dependency discovery reaches 39 bodies in the original scalar graph.
+In the instantiated control, growing from zero to 512 unrelated
+assignments at a fixed 16 calls raises the visits from 665 to 14,489
+while the 23 callable events remain constant. All 16 independent
+focused native controls agree with pinned Rust. These counts measure
+slot visits. Elapsed effects remain unmeasured. Evidence is under
+`obj/parallel/v5-typed-operation-index/` in the performance checkout.
+Shared normalization preparation remains a separate candidate, with
+context-specific proofs and budgets attached to each caller.
 
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
