@@ -63,11 +63,16 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
         .require_concrete_bodies(report, &facts.functions)?;
     concrete(report, facts)
 }
-/// Build ordinary bodies beside separately checked generic templates.
+/// Build ordinary bodies and their lifetime inspection tables beside generic templates.
 /// # Errors
 /// Reports ordinary CFG construction and destruction errors.
 pub fn concrete(report: &Report, facts: &Declarations) -> Result<Program, Error> {
-    concrete_except(report, facts, |_| false)
+    let mut program = concrete_except(report, facts, |_| false)?;
+    program.region_equalities = facts.region_equalities.clone();
+    program.coercions = facts.coercions.clone();
+    program.outlives = facts.outlives.clone();
+    program.body_regions = facts.body_regions.log().to_vec();
+    Ok(program)
 }
 
 pub(crate) fn concrete_except(
@@ -91,6 +96,7 @@ pub(crate) fn concrete_prepared(
         super::Selection::Complete,
     )
 }
+/// Build executable candidates whose proofs read per-body lifetime contracts.
 pub(crate) fn concrete_selected(
     report: &Report,
     facts: &Declarations,
@@ -108,10 +114,10 @@ pub(crate) fn concrete_selected(
     let mut program = Program {
         drops: None,
         bodies: Vec::with_capacity(facts.functions.len()),
-        region_equalities: facts.region_equalities.clone(),
-        coercions: facts.coercions.clone(),
-        outlives: facts.outlives.clone(),
-        body_regions: facts.body_regions.log().to_vec(),
+        region_equalities: Vec::new(),
+        coercions: Vec::new(),
+        outlives: Vec::new(),
+        body_regions: Vec::new(),
     };
     let mut deferral = super::bringup::Deferral::default();
     for function in &facts.functions {
