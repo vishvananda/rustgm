@@ -29,6 +29,9 @@ impl Pending {
                     continue;
                 };
                 *next += 1;
+                if self.imported.contains_key(&edge.target) {
+                    continue;
+                }
                 let child = *self
                     .index
                     .get(&edge.target)

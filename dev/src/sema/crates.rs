@@ -27,6 +27,7 @@ pub(crate) use export::{
     GenericRequest, export_with_originals, macro_table, scalar as export_scalar,
 };
 pub(in crate::sema) use imported_owners::ImportedOwners;
+pub(in crate::sema) use imported_owners::{ImportedTraitAlias, import_trait_aliases};
 pub(crate) use typed_headers::ProofSession;
 pub(in crate::sema) use typed_headers::predicate_remap::Prepared as PreparedSourceInputs;
 #[cfg(test)]

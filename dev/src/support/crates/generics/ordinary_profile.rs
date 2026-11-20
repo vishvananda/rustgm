@@ -1274,6 +1274,7 @@ fn role_header(
                 | super::super::HeaderRef::Implementation(_)
                 | super::super::HeaderRef::Static(_)
                 | super::super::HeaderRef::TypeAlias(_)
+                | super::super::HeaderRef::TraitAlias(_)
                 | super::super::HeaderRef::Constant(_),
             ),
         ) => return Err("source role has a different actual declaration/header kind"),

@@ -598,6 +598,7 @@ pub struct ColdColumns {
     /// declaration order. Each row holds its own term in place.
     pub constants: Vec<ConstantHeader>,
     pub type_aliases: Vec<TypeAliasHeader>,
+    pub trait_aliases: Vec<TraitAliasHeader>,
     pub statics: Option<Box<StaticColumns>>,
     pub(crate) bodies: Option<std::sync::Arc<bodymap::Lookup>>,
 }
@@ -615,6 +616,7 @@ static EMPTY_COLD: ColdColumns = ColdColumns {
     array_lengths: Vec::new(),
     constants: Vec::new(),
     type_aliases: Vec::new(),
+    trait_aliases: Vec::new(),
     statics: None,
     bodies: None,
 };
@@ -632,6 +634,7 @@ impl ColdColumns {
             && self.array_lengths.is_empty()
             && self.constants.is_empty()
             && self.type_aliases.is_empty()
+            && self.trait_aliases.is_empty()
             && self.statics.is_none()
             && self.bodies.is_none()
     }
@@ -643,9 +646,22 @@ pub struct TypeAliasHeader {
     pub target: TypeRef,
 }
 
+/// A direct ordinary alias retains its own lexical Self and canonical clauses.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct TraitAliasHeader {
+    pub declaration: DeclarationRef,
+    pub self_definition: DeclarationRef,
+    pub self_type: TypeRef,
+    pub inputs: Range,
+}
+
 impl Rows {
     pub(crate) fn type_aliases(&self) -> &[TypeAliasHeader] {
         &self.cold().type_aliases
+    }
+
+    pub(crate) fn trait_aliases(&self) -> &[TraitAliasHeader] {
+        &self.cold().trait_aliases
     }
     #[must_use]
     pub fn cold(&self) -> &ColdColumns {

@@ -53,6 +53,7 @@ enum Inputs {
         projection: crate::types::TypeId,
     },
     Trait(predicate_remap::Prepared),
+    TraitAlias(Arc<[Input]>),
     Function(Arc<[Input]>),
     Implementation(Arc<[Input]>),
     /// An implementation's associated-result definition: the version-thirteen
@@ -65,6 +66,7 @@ impl Inputs {
             Self::SelfType | Self::Definition | Self::Alias(_) => &[],
             Self::Trait(prepared) => prepared.all(),
             Self::Associated { inputs, .. }
+            | Self::TraitAlias(inputs)
             | Self::Function(inputs)
             | Self::Implementation(inputs)
             | Self::Nominal(inputs) => inputs,
@@ -161,6 +163,7 @@ fn finish_inputs(
     budget.reserve(
         rows.traits
             .len()
+            .saturating_add(rows.trait_aliases().len())
             .saturating_add(rows.implementations.len())
             .saturating_add(rows.nominals.len())
             .saturating_mul(size_of::<Option<Arc<[Input]>>>()),
@@ -168,6 +171,7 @@ fn finish_inputs(
     let mut nominals = vec![None; rows.nominals.len()];
     let mut associated = vec![None; rows.associated_types.len()];
     let mut traits = vec![None; rows.traits.len()];
+    let mut trait_aliases = vec![None; rows.trait_aliases().len()];
     let mut implementations = vec![None; rows.implementations.len()];
     for (raw, scope) in rows.scopes.iter().zip(scopes) {
         budget.charge(1)?;
@@ -180,6 +184,9 @@ fn finish_inputs(
             }
             (Some(s::HeaderRef::Trait(index)), Inputs::Trait(prepared)) => {
                 (&mut traits[index as usize], prepared.all())
+            }
+            (Some(s::HeaderRef::TraitAlias(index)), Inputs::TraitAlias(inputs)) => {
+                (&mut trait_aliases[index as usize], inputs)
             }
             (Some(s::HeaderRef::Implementation(index)), Inputs::Implementation(inputs)) => {
                 (&mut implementations[index as usize], inputs)
@@ -208,9 +215,10 @@ fn finish_inputs(
     budget.charge(traits.len().saturating_add(implementations.len()))?;
     budget.observed.vector(&nominals);
     budget.observed.vector(&traits);
+    budget.observed.vector(&trait_aliases);
     budget.observed.vector(&implementations);
     graph
-        .finish_inputs(nominals, traits, implementations, associated)
+        .finish_inputs(nominals, traits, implementations, associated, trait_aliases)
         .map_err(error)
 }
 impl Walk<'_, '_> {
@@ -227,6 +235,15 @@ impl Walk<'_, '_> {
                 if raw.parent == Some(rows.traits[index as usize].self_definition) =>
             {
                 Ok(Inputs::Trait(self.remap.trait_inputs(
+                    definition,
+                    &mut facts.types,
+                    budget,
+                )?))
+            }
+            Some(s::HeaderRef::TraitAlias(index))
+                if raw.parent == Some(rows.trait_aliases()[index as usize].self_definition) =>
+            {
+                Ok(Inputs::TraitAlias(self.remap.declaration_inputs(
                     definition,
                     &mut facts.types,
                     budget,
@@ -325,14 +342,14 @@ impl Walk<'_, '_> {
             .definition
             .parent
             .ok_or_else(|| error("source Self scope has no actual lexical owner"))?;
-        let Some(s::HeaderRef::Trait(index)) = rows.header(parent).map_err(error)? else {
-            return Err(error(
-                "source Self scope lacks its actual owning trait header",
-            ));
+        let self_definition = match rows.header(parent).map_err(error)? {
+            Some(s::HeaderRef::Trait(index)) => rows.traits[index as usize].self_definition,
+            Some(s::HeaderRef::TraitAlias(index)) => {
+                rows.trait_aliases()[index as usize].self_definition
+            }
+            _ => return Err(error("source Self scope lacks its actual lexical owner")),
         };
-        if declaration.definition.kind != s::DefinitionKind::SelfType
-            || rows.traits[index as usize].self_definition != owner
-        {
+        if declaration.definition.kind != s::DefinitionKind::SelfType || self_definition != owner {
             return Err(error("source scope is not the actual retained trait Self"));
         }
         Ok(Inputs::SelfType)

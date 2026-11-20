@@ -392,6 +392,7 @@ impl AvailabilityRows {
                 source.definition.kind,
                 DefinitionKind::Module
                     | DefinitionKind::Trait
+                    | DefinitionKind::TraitAlias
                     | DefinitionKind::Struct
                     | DefinitionKind::Enum
                     | DefinitionKind::SelfType
@@ -544,6 +545,7 @@ impl Validation<'_> {
                 | super::HeaderRef::AssociatedType(_)
                 | super::HeaderRef::AssociatedDefinition(_)
                 | super::HeaderRef::TypeAlias(_)
+                | super::HeaderRef::TraitAlias(_)
                 | super::HeaderRef::Static(_)
                 | super::HeaderRef::Variant(_)
                 | super::HeaderRef::Constructor(_),

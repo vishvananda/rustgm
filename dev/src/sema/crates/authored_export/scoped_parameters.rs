@@ -32,6 +32,7 @@ impl Stage {
                     kind,
                     s::DefinitionKind::SelfType
                         | s::DefinitionKind::Trait
+                        | s::DefinitionKind::TraitAlias
                         | s::DefinitionKind::Function
                         | s::DefinitionKind::Struct
                         | s::DefinitionKind::Enum

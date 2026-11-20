@@ -426,7 +426,7 @@ impl<'a> Checker<'a> {
         Ok(Self {
             selected: None,
             census: None,
-            trait_aliases: aliases::collect(report)?,
+            trait_aliases: aliases::collect(report, &mut facts)?,
             annotation_inputs: annotations::Inputs::default(),
             linkage_sources,
             call_paths: crate::support::hash::HashSet::default(),

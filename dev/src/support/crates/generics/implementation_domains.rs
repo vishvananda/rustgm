@@ -249,6 +249,7 @@ impl ModuleContractColumns {
                 row.definition.kind,
                 s::DefinitionKind::Module
                     | s::DefinitionKind::Trait
+                    | s::DefinitionKind::TraitAlias
                     | s::DefinitionKind::Struct
                     | s::DefinitionKind::Enum
                     | s::DefinitionKind::Function
@@ -359,6 +360,7 @@ impl ModuleContractColumns {
         let expected = match target.definition.kind {
             s::DefinitionKind::Module
             | s::DefinitionKind::Trait
+            | s::DefinitionKind::TraitAlias
             | s::DefinitionKind::Struct
             | s::DefinitionKind::Enum
             | s::DefinitionKind::TypeAlias => Namespace::Type,

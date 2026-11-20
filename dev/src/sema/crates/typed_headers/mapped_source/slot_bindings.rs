@@ -13,6 +13,7 @@ pub(in crate::sema::crates::typed_headers) fn kind(kind: s::DefinitionKind) -> D
         s::DefinitionKind::Variant => DefKind::Variant,
         s::DefinitionKind::AssociatedType | s::DefinitionKind::TypeAlias => DefKind::TypeAlias,
         s::DefinitionKind::Trait => DefKind::Trait,
+        s::DefinitionKind::TraitAlias => DefKind::TraitAlias,
         s::DefinitionKind::SelfType => DefKind::SelfType,
         s::DefinitionKind::Function => DefKind::Function,
         s::DefinitionKind::Constant => DefKind::Const,

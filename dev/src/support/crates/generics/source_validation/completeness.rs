@@ -59,6 +59,7 @@ pub(super) fn validate(rows: &SourceRows, work: &mut Work) -> Result<Ledger, &'s
     function_headers(rows, &mut headers, &mut clauses, work)?;
     super::super::free_constants::headers(rows, &mut headers, work)?;
     alias_headers(rows, &mut headers, work)?;
+    trait_alias_headers(rows, &mut headers, &mut clauses, work)?;
     static_headers(rows, &mut headers, work)?;
     for (index, row) in rows.declarations.iter().enumerate() {
         work.charge(1)?;
@@ -72,6 +73,7 @@ pub(super) fn validate(rows: &SourceRows, work: &mut Work) -> Result<Ledger, &'s
                 | DefinitionKind::AssociatedType
                 | DefinitionKind::Constant
                 | DefinitionKind::TypeAlias
+                | DefinitionKind::TraitAlias
                 | DefinitionKind::Static
         ) && headers[index].is_none()
         {
@@ -82,13 +84,17 @@ pub(super) fn validate(rows: &SourceRows, work: &mut Work) -> Result<Ledger, &'s
                 .definition
                 .parent
                 .and_then(|parent| headers.get(parent.0 as usize));
-            let Some(Some(HeaderRef::Trait(trait_))) = parent else {
-                return Err(
-                    "source Self declaration belongs to neither a trait nor an implementation",
-                );
+            let expected = match parent {
+                Some(Some(HeaderRef::Trait(trait_))) => {
+                    rows.traits[*trait_ as usize].self_definition
+                }
+                Some(Some(HeaderRef::TraitAlias(alias))) => {
+                    rows.trait_aliases()[*alias as usize].self_definition
+                }
+                _ => return Err("source Self declaration has no actual lexical owner"),
             };
-            if rows.traits[*trait_ as usize].self_definition.0 as usize != index {
-                return Err("source trait has an extra foreign Self declaration");
+            if expected.0 as usize != index {
+                return Err("source trait or alias has an extra foreign Self declaration");
             }
         }
     }
@@ -130,6 +136,66 @@ fn alias_headers(
             return Err("source type alias lacks canonical order or its public module declaration");
         }
         previous = Some(header.declaration.0);
+    }
+    Ok(())
+}
+
+fn trait_alias_headers(
+    rows: &SourceRows,
+    headers: &mut [Option<HeaderRef>],
+    clauses: &mut [bool],
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let mut previous = None;
+    for (index, header) in rows.trait_aliases().iter().enumerate() {
+        insert(
+            rows,
+            headers,
+            header.declaration,
+            DefinitionKind::TraitAlias,
+            HeaderRef::TraitAlias(ordinal(index)?),
+            work,
+        )?;
+        declaration(rows, header.self_definition, DefinitionKind::SelfType, work)?;
+        let parent = rows.declarations[header.declaration.0 as usize]
+            .definition
+            .parent
+            .and_then(|id| rows.declarations.get(id.0 as usize));
+        if parent.is_none_or(|parent| parent.definition.kind != DefinitionKind::Module)
+            || rows.declarations[header.self_definition.0 as usize]
+                .definition
+                .parent
+                != Some(header.declaration)
+            || previous.is_some_and(|ordinal| ordinal >= header.declaration.0)
+        {
+            return Err("source trait alias changed its actual module or lexical Self owner");
+        }
+        previous = Some(header.declaration.0);
+        let declared = u32::try_from(header.inputs.slice(&rows.clauses)?.len())
+            .map_err(|_| "source alias input count overflow")?;
+        inputs(
+            rows,
+            header.declaration,
+            header.inputs,
+            declared,
+            None,
+            clauses,
+            work,
+        )?;
+        for input in header.inputs.slice(&rows.clauses)? {
+            work.charge(1)?;
+            if input.binder.is_some()
+                || !matches!(
+                    input.requirement,
+                    s::Requirement::Trait {
+                        effect: crate::support::constness::Constness::Ordinary,
+                        ..
+                    } | s::Requirement::ProjectionEqual { .. }
+                )
+            {
+                return Err("source trait alias requires its direct ordinary input profile");
+            }
+        }
     }
     Ok(())
 }

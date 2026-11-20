@@ -16,10 +16,9 @@ impl Pending {
         generics: &Generics,
         edge: Edge,
     ) -> Result<Bound, &'static str> {
-        let header = self.header(edge.target)?;
-        let schema = header
-            .schema
-            .as_ref()
+        self.budget.charge(1, 0)?;
+        let schema = self
+            .schema(edge.target)
             .ok_or("alias schema is not prepared")?;
         if !schema.bounds.is_empty() {
             return Err("alias lifetime relations require a scoped region consumer");

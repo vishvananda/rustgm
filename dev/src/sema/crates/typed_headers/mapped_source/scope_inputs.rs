@@ -31,6 +31,9 @@ impl Graph {
                 Some(rows.associated_types[index as usize].parent)
             }
             Some(s::HeaderRef::Trait(index)) => Some(rows.traits[index as usize].self_definition),
+            Some(s::HeaderRef::TraitAlias(index)) => {
+                Some(rows.trait_aliases()[index as usize].self_definition)
+            }
             Some(s::HeaderRef::Constant(index))
                 if !matches!(
                     rows.constants()[index as usize].body,
@@ -71,6 +74,7 @@ impl Graph {
         traits: Vec<Option<Arc<[Input]>>>,
         implementations: Vec<Option<Arc<[Input]>>>,
         associated: Vec<Option<Arc<[Input]>>>,
+        trait_aliases: Vec<Option<Arc<[Input]>>>,
     ) -> Result<(), &'static str> {
         let rows = self.descriptor(&self.origins)?.rows();
         if !self.associated_inputs.is_empty()
@@ -84,12 +88,16 @@ impl Graph {
             || rows.traits.len() != traits.len()
             || rows.implementations.len() != implementations.len()
             || traits.iter().chain(&implementations).any(Option::is_none)
+            || !self.trait_alias_inputs.is_empty()
+            || trait_aliases.len() != rows.trait_aliases().len()
+            || trait_aliases.iter().any(Option::is_none)
         {
             return Err("source full declaration inputs have missing or duplicate typed ownership");
         }
         self.associated_inputs = associated;
         self.nominal_inputs = nominals;
         self.trait_inputs = traits;
+        self.trait_alias_inputs = trait_aliases;
         self.impl_inputs = implementations;
         Ok(())
     }
@@ -127,6 +135,13 @@ impl Graph {
                 self.trait_inputs.get(index as usize),
                 rows.traits[index as usize].declared_inputs,
             ),
+            Some(s::HeaderRef::TraitAlias(index)) => {
+                let range = rows.trait_aliases()[index as usize].inputs;
+                (
+                    self.trait_alias_inputs.get(index as usize),
+                    range.end - range.start,
+                )
+            }
             Some(s::HeaderRef::Implementation(index)) => (
                 self.impl_inputs.get(index as usize),
                 rows.implementations[index as usize].declared_inputs,

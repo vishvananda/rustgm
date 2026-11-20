@@ -72,6 +72,7 @@ impl OwnerTransaction {
             | s::HeaderRef::Constructor(_)
             | s::HeaderRef::Static(_)
             | s::HeaderRef::TypeAlias(_)
+            | s::HeaderRef::TraitAlias(_)
             | s::HeaderRef::Constant(_) => None,
         };
         cell.ok_or_else(|| error("private schema demand lacks its actual dense owner row"))
@@ -367,6 +368,7 @@ fn shape(
         | s::HeaderRef::Constructor(_)
         | s::HeaderRef::Static(_)
         | s::HeaderRef::TypeAlias(_)
+        | s::HeaderRef::TraitAlias(_)
         | s::HeaderRef::Constant(_) => {
             return Err(error("private schema changed its actual header kind"));
         }
@@ -495,6 +497,7 @@ fn source_owner(
         | s::HeaderRef::Constructor(_)
         | s::HeaderRef::Static(_)
         | s::HeaderRef::TypeAlias(_)
+        | s::HeaderRef::TraitAlias(_)
         | s::HeaderRef::Constant(_) => {
             return Err(error("private associated owner cannot be a function"));
         }

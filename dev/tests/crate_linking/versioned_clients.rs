@@ -1607,3 +1607,78 @@ pub fn scalar() -> <u8 as base::Pointee>::Metadata { 4_usize }
     assert!(stderr.contains("incompatible types"), "{stderr}");
     Ok(())
 }
+
+#[test]
+fn cli_version_fourteen_imports_thin_trait_alias_clauses() -> Result {
+    use rustgm::support::crates;
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root.join(format!(
+        "obj/parallel/thin-metadata-v14/cli-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let source = std::fs::read_to_string(
+        root.join("pa31/tests/spec/trait-aliases/source-thin/native-provider.rs"),
+    )?;
+    let (foundation, _) = source
+        .split_once("pub fn scalar")
+        .ok_or("Pointee role fixture")?;
+    let thin = source
+        .lines()
+        .find(|line| line.starts_with("pub trait Thin ="))
+        .ok_or("Thin alias fixture")?;
+    let provider = folder.join("provider.rs");
+    std::fs::write(&provider, format!("{foundation}{thin}\n"))?;
+    let metadata = folder.join("provider.rgcrate");
+    super::artifacts::checked(
+        "thin-provider",
+        &folder,
+        source_export(
+            "module-body-operations-v14",
+            &provider,
+            &metadata,
+            &folder.join("provider.lowir"),
+            true,
+        )
+        .arg("--cap-lints=allow"),
+    )?;
+    let bytes = std::fs::read(&metadata)?;
+    assert_eq!(crates::encode(&crates::decode(&bytes)?)?, bytes);
+    for (name, use_alias) in [
+        (
+            "thin",
+            "pub fn observed(address: usize) -> u8 { narrow(address as *const u8); 7 }",
+        ),
+        (
+            "wide",
+            "fn observed(pointer: *const [u8]) { narrow(pointer); }",
+        ),
+    ] {
+        let client = folder.join(format!("{name}.rs"));
+        std::fs::write(
+            &client,
+            format!(
+                r"#![feature(no_core,trait_alias)]#![no_core]
+fn narrow<T: base::Thin + ?base::Sized>(_: *const T) -> <T as base::Pointee>::Metadata {{ () }}
+{use_alias}
+"
+            ),
+        )?;
+        let output = folder.join(format!("{name}.lowir"));
+        let result = source_client(&client, &metadata, &output)
+            .args(["--crate-type=lib", "--cap-lints=allow"])
+            .output()?;
+        let stderr = String::from_utf8(result.stderr)?;
+        if name == "thin" {
+            assert!(result.status.success(), "{stderr}");
+            let lowir = std::fs::read_to_string(output)?;
+            assert!(lowir.contains("return u8 7"), "{lowir}");
+        } else {
+            assert_eq!(result.status.code(), Some(1), "{stderr}");
+            assert!(stderr.contains("incompatible types"), "{stderr}");
+        }
+    }
+    Ok(())
+}

@@ -168,6 +168,10 @@ impl<'a> Context<'a> {
                 DefKind::TypeAlias,
                 rows.associated_types[index as usize].inputs,
             ),
+            Some(s::HeaderRef::TraitAlias(index)) => (
+                DefKind::TraitAlias,
+                rows.trait_aliases()[index as usize].inputs,
+            ),
             Some(s::HeaderRef::Nominal(index)) => {
                 let header = &rows.nominals[index as usize];
                 let kind = rows

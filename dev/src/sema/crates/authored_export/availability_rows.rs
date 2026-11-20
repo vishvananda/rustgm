@@ -378,6 +378,7 @@ impl Stage {
                 definition.kind,
                 DefKind::Module
                     | DefKind::Trait
+                    | DefKind::TraitAlias
                     | DefKind::Struct
                     | DefKind::Enum
                     | DefKind::Variant

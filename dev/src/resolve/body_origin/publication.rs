@@ -154,6 +154,7 @@ fn validate_definitions(
                     | DefKind::Enum
                     | DefKind::Variant
                     | DefKind::Trait
+                    | DefKind::TraitAlias
                     | DefKind::TypeAlias
                     | DefKind::SelfType
                     | DefKind::Generic

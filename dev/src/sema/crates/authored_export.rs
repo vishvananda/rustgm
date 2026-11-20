@@ -5,6 +5,7 @@ mod availability_rows;
 pub(crate) use admitted_contracts::HeaderCompletion;
 mod authored_functions;
 mod authored_traits;
+mod bound_aliases;
 mod canonical_nodes;
 mod collected_formals;
 mod collected_provider;
@@ -537,6 +538,7 @@ impl Stage {
             stage.constant_headers(report, facts)?;
         }
         stage.alias_headers(facts, leaves.aliases)?;
+        stage.trait_alias_headers(report, facts, leaves.trait_aliases)?;
         stage.static_headers(facts, identity, leaves.statics)?;
         stage.functions(report, facts, identity, &provided_constants)?;
         if !provided_constants.is_empty() {
@@ -612,6 +614,7 @@ impl Stage {
         let definition = &report.resolution.definitions[id.0 as usize];
         if self.declaration_policies() {
             match definition.kind {
+                DefKind::TraitAlias => return Ok(Some(s::DefinitionKind::TraitAlias)),
                 DefKind::Static => {
                     statics::require_definition(report, facts, id)?;
                     return Ok(Some(s::DefinitionKind::Static));
@@ -982,6 +985,7 @@ impl Stage {
 #[derive(Default)]
 struct DeclarationLeaves {
     aliases: Vec<(DeclarationRef, TypeId)>,
+    trait_aliases: Vec<(DeclarationRef, DefId)>,
     statics: Vec<(DeclarationRef, DefId)>,
 }
 
@@ -1005,6 +1009,15 @@ impl DeclarationLeaves {
                         .saturating_mul(4 * size_of::<(DeclarationRef, TypeId)>()),
                 )?;
                 self.aliases.push((row, target));
+            }
+            s::DefinitionKind::TraitAlias => {
+                stage.scratch(
+                    self.trait_aliases
+                        .len()
+                        .saturating_add(1)
+                        .saturating_mul(4 * size_of::<(DeclarationRef, DefId)>()),
+                )?;
+                self.trait_aliases.push((row, definition));
             }
             s::DefinitionKind::Static => {
                 stage.scratch(
@@ -1104,9 +1117,13 @@ fn scope_owners(
     owners[scope.0 as usize] = Some(root);
     for (index, definition) in report.resolution.definitions.iter().enumerate() {
         stage.charge(1)?;
-        if stage.declaration_policies() && definition.kind == DefKind::TypeAlias {
+        if stage.declaration_policies()
+            && matches!(definition.kind, DefKind::TypeAlias | DefKind::TraitAlias)
+        {
             let alias = DefId(u32::try_from(index).map_err(|_| "source owner identity overflow")?);
-            if scoped_module_alias(facts, definition, alias) {
+            if definition.kind == DefKind::TraitAlias
+                || scoped_module_alias(facts, definition, alias)
+            {
                 let source = definition
                     .node
                     .ok_or("source alias has no actual source owner")?;

@@ -22,6 +22,9 @@ pub(super) fn prepare(
     for alias in rows.type_aliases() {
         demand(alias.target)?;
     }
+    for alias in rows.trait_aliases() {
+        demand(alias.self_type)?;
+    }
     if let Some(statics) = rows.statics() {
         for header in &statics.headers {
             demand(header.ty)?;

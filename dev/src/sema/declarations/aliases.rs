@@ -11,7 +11,12 @@ use crate::{
         expansion::Report,
         model::{DefKind, Namespace},
     },
-    sema::{associated::Schema, generics::Predicate},
+    sema::{
+        associated::Schema,
+        crates::{ImportedTraitAlias, import_trait_aliases},
+        generics::Predicate,
+        model::Declarations,
+    },
     support::{hash::HashMap, retained::Growth},
     syntax::{ast::Kind, item::ItemKind},
     types::{GenericArgs, TypeId},
@@ -43,6 +48,7 @@ struct Header {
 pub(super) struct Pending {
     headers: Vec<Header>,
     index: HashMap<DefId, usize>,
+    imported: HashMap<DefId, ImportedTraitAlias>,
     budget: Budget,
     closed: bool,
 }
@@ -65,7 +71,10 @@ impl Budget {
     }
 }
 
-pub(super) fn collect(report: &Report) -> Result<Option<Box<Pending>>, Error> {
+pub(super) fn collect(
+    report: &Report,
+    facts: &mut Declarations,
+) -> Result<Option<Box<Pending>>, Error> {
     let mut pending: Option<Box<Pending>> = None;
     for (index, definition) in report.resolution.definitions.iter().enumerate() {
         if definition.kind != DefKind::SelfType {
@@ -108,6 +117,18 @@ pub(super) fn collect(report: &Report) -> Result<Option<Box<Pending>>, Error> {
             .ok_or_else(|| error("missing allocated alias table"))?;
         table.insert(owner).map_err(error)?;
     }
+    let imported = import_trait_aliases(facts)?;
+    if !imported.is_empty() {
+        if pending.is_none() {
+            pending = Some(Pending::new().map_err(Error::unlocated)?);
+        }
+        let table = pending
+            .as_mut()
+            .ok_or_else(|| Error::unlocated("missing alias table"))?;
+        for alias in imported {
+            table.import(alias).map_err(Error::unlocated)?;
+        }
+    }
     Ok(pending)
 }
 impl Pending {
@@ -117,6 +138,7 @@ impl Pending {
         Ok(Box::new(Self {
             headers: Vec::new(),
             index: HashMap::default(),
+            imported: HashMap::default(),
             budget,
             closed: false,
         }))
@@ -155,12 +177,34 @@ impl Pending {
             .and_then(|index| self.headers.get(*index))
             .ok_or("trait alias has no local canonical owner")
     }
+
+    fn import(&mut self, alias: ImportedTraitAlias) -> Result<(), &'static str> {
+        self.budget.grow(Growth::map::<DefId, ImportedTraitAlias>(
+            self.imported.len(),
+            self.imported.capacity(),
+            1,
+        ))?;
+        if self.index.contains_key(&alias.definition)
+            || self.imported.insert(alias.definition, alias).is_some()
+        {
+            return Err("trait alias declaration has conflicting source and imported owners");
+        }
+        Ok(())
+    }
+
+    fn schema(&self, definition: DefId) -> Option<&Schema> {
+        if let Some(alias) = self.imported.get(&definition) {
+            return Some(&alias.schema);
+        }
+        self.index
+            .get(&definition)
+            .and_then(|index| self.headers.get(*index))
+            .and_then(|header| header.schema.as_ref())
+    }
 }
 impl Checker<'_> {
     pub(super) fn alias_schema(&self, owner: DefId) -> Option<&Schema> {
-        let pending = self.trait_aliases.as_ref()?;
-        let index = *pending.index.get(&owner)?;
-        pending.headers[index].schema.as_ref()
+        self.trait_aliases.as_ref()?.schema(owner)
     }
 
     pub(super) fn charge_alias_growth(&self, growth: Growth) -> Result<(), Error> {
@@ -223,6 +267,9 @@ impl Checker<'_> {
     }
     pub(super) fn alias_self(&self, definition: DefId) -> Option<DefId> {
         let pending = self.trait_aliases.as_ref()?;
+        if let Some(alias) = pending.imported.get(&definition) {
+            return Some(alias.self_definition);
+        }
         let index = pending.index.get(&definition)?;
         Some(pending.headers[*index].owner.self_definition)
     }

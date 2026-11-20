@@ -2,7 +2,7 @@
 use super::{Checker, Edge, Error, Pending, Predicate};
 use crate::{
     resolve::{model::DefId, unit::NodeKey},
-    sema::generics::Generics,
+    sema::{declaration_inputs::Inputs, generics::Generics},
     support::{
         hash::{HashMap, HashSet},
         retained::Growth,
@@ -120,26 +120,25 @@ impl Expansion<'_> {
             if !self.visited.insert(frame.application()) {
                 continue;
             }
-            let header = owner.header(frame.edge.target)?;
-            let self_type = header
-                .schema
-                .as_ref()
-                .ok_or("unfinished alias naming schema")?
-                .self_type;
+            let definition = frame.edge.target;
+            let (self_type, inputs, edges) = Self::declaration_inputs(owner, generics, definition)?;
             let mut fold = owner.mapping(store, generics, frame.edge)?;
             let charge = |steps, bytes| owner.budget.charge(steps, bytes);
-            for clause in generics
-                .predicates
-                .get(&frame.edge.target)
-                .ok_or("unfinished alias clauses")?
-            {
-                if self.self_only && !self.names_self(store, self_type, clause)? {
-                    continue;
+            for clause in inputs.iter() {
+                if self.self_only {
+                    let original = clause
+                        .source
+                        .source()
+                        .and_then(|site| self.originals.predicate(site))
+                        .unwrap_or(clause.value);
+                    if !Self::names_self(store, self_type, original)? {
+                        continue;
+                    }
                 }
                 let clause = fold.clause_charged(store, clause.value, &charge)?;
                 self.emit(store, frame.surrounding, clause)?;
             }
-            for &dependency in &header.edges {
+            for &dependency in edges {
                 if self.self_only && dependency.original_subject != self_type {
                     continue;
                 }
@@ -148,16 +147,36 @@ impl Expansion<'_> {
         }
         Ok(())
     }
+    fn declaration_inputs<'a>(
+        owner: &'a Pending,
+        generics: &'a Generics,
+        definition: DefId,
+    ) -> Result<(TypeId, Inputs<'a>, &'a [Edge]), &'static str> {
+        if let Some(imported) = owner.imported.get(&definition) {
+            owner.budget.charge(1, 0)?;
+            return Ok((
+                imported.schema.self_type,
+                Inputs::new(&[], &imported.inputs),
+                &[],
+            ));
+        }
+        let header = owner.header(definition)?;
+        let self_type = header
+            .schema
+            .as_ref()
+            .ok_or("unfinished alias naming schema")?
+            .self_type;
+        let inputs = generics
+            .predicates
+            .get(&definition)
+            .ok_or("unfinished alias clauses")?;
+        Ok((self_type, Inputs::new(inputs, &[]), &header.edges))
+    }
     fn names_self(
-        &self,
         store: &Store,
         self_type: TypeId,
-        clause: &Predicate,
+        original: Clause,
     ) -> Result<bool, &'static str> {
-        let original = self
-            .originals
-            .predicate(clause.source)
-            .unwrap_or(clause.value);
         let predicate = match original {
             Clause::UnstableFeature(_) => return Ok(false),
             Clause::Predicate(predicate) => predicate,

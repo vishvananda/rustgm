@@ -304,6 +304,7 @@ pub(super) fn kind(kind: s::DefinitionKind) -> (DefKind, Namespace) {
             (DefKind::TypeAlias, Namespace::Type)
         }
         s::DefinitionKind::Trait => (DefKind::Trait, Namespace::Type),
+        s::DefinitionKind::TraitAlias => (DefKind::TraitAlias, Namespace::Type),
         s::DefinitionKind::SelfType => (DefKind::SelfType, Namespace::Type),
         s::DefinitionKind::Function => (DefKind::Function, Namespace::Value),
         // Version thirteen: a named const; its header row holds its value.

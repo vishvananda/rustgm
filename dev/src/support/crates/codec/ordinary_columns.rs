@@ -120,12 +120,14 @@ pub(super) fn encode_module_availability(
     let const_bodies = availability.const_bodies.as_deref();
     let profile = rows.descriptor().profile();
     let aliases = rows.type_aliases();
+    let trait_aliases = rows.trait_aliases();
     let statics = rows.statics();
     if profile.compiler_operations() {
         out.u8(u8::from(const_bodies.is_some())
             | (u8::from(availability.deprecations.is_some()) << 1)
             | (u8::from(!aliases.is_empty()) << 2)
-            | (u8::from(statics.is_some()) << 3))?;
+            | (u8::from(statics.is_some()) << 3)
+            | (u8::from(!trait_aliases.is_empty()) << 4))?;
     }
     exemption_wire::encode(out, const_bodies)?;
     if let Some(deprecations) = &availability.deprecations {
@@ -139,6 +141,14 @@ pub(super) fn encode_module_availability(
     }
     if let Some(statics) = statics {
         global_wire::encode(out, statics)?;
+    }
+    if !trait_aliases.is_empty() {
+        write(out, trait_aliases, |out, row| {
+            id(out, row.declaration.0)?;
+            id(out, row.self_definition.0)?;
+            id(out, row.self_type.0)?;
+            range(out, row.inputs)
+        })?;
     }
     if profile.compiler_operations() {
         if profile.body_nodes() {
@@ -281,7 +291,7 @@ fn decode_availability_trailers(
     }
     let flags = read.reader.u8()?;
     let maximum = if read.profile.declaration_policies() {
-        15
+        31
     } else {
         1
     };
@@ -312,6 +322,20 @@ fn decode_availability_trailers(
     if flags & 8 != 0 {
         let statics = global_wire::decode(read)?;
         read.cold(rows)?.statics = Some(statics);
+    }
+    if flags & 16 != 0 {
+        let aliases = read.list(crates::MAX_COMPONENTS, 20, |read| {
+            Ok(s::TraitAliasHeader {
+                declaration: DeclarationRef(read.id()?),
+                self_definition: DeclarationRef(read.id()?),
+                self_type: g::TypeRef(read.id()?),
+                inputs: read.range()?,
+            })
+        })?;
+        if aliases.is_empty() {
+            return Err("trait alias trailer must contain an actual alias");
+        }
+        read.cold(rows)?.trait_aliases = aliases;
     }
     Ok(())
 }

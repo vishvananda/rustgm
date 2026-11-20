@@ -59,6 +59,8 @@ pub enum HeaderRef {
     Constant(u32),
     /// Version fourteen: one transparent type alias header.
     TypeAlias(u32),
+    /// Version fourteen: one direct trait alias declaration and its inputs.
+    TraitAlias(u32),
     /// Version fourteen: one exact allocation declaration.
     Static(u32),
 }

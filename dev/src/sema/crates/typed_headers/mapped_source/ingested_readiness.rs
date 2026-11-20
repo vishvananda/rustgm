@@ -141,17 +141,13 @@ impl Graph {
             s::DefinitionKind::TypeAlias => {
                 self.alias_ready(rows, facts, (definition, row), *cell)?;
             }
+            s::DefinitionKind::TraitAlias => {
+                self.trait_alias(facts, row, definition)?;
+                Self::scope_ready(facts, definition)?;
+            }
             s::DefinitionKind::Static => self.static_ready(rows, row, *cell)?,
             s::DefinitionKind::SelfType => {
-                let owner = self.installed_owner(facts, definition)?;
-                let schema = facts
-                    .associated
-                    .schema(definition)
-                    .ok_or("source Self readiness lacks its actual completed schema")?;
-                if owner.self_definition != definition || *cell != Some(schema.self_type) {
-                    return Err("source Self readiness changed its actual owner/type cell");
-                }
-                Self::scope_ready(facts, definition)?;
+                self.self_type_ready(rows, facts, definition, raw.definition.parent, *cell)?;
             }
             kind @ (s::DefinitionKind::TypeParameter | s::DefinitionKind::ConstParameter) => {
                 let parent = raw
@@ -179,6 +175,37 @@ impl Graph {
             }
         }
         Ok(Readiness::Declaration)
+    }
+
+    fn self_type_ready(
+        &self,
+        rows: s::ValidatedView<'_>,
+        facts: &Declarations,
+        definition: DefId,
+        parent: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+        cell: Option<crate::types::TypeId>,
+    ) -> Result<(), &'static str> {
+        if let Some(parent) = parent
+            && matches!(rows.header(parent)?, Some(s::HeaderRef::TraitAlias(_)))
+        {
+            let owner = self
+                .origins
+                .definition_at(rows.descriptor().identity(), parent)?;
+            let alias = self.trait_alias(facts, parent, owner)?;
+            if alias.self_definition != definition || cell != Some(alias.schema.self_type) {
+                return Err("source alias Self readiness changed its actual owner/type cell");
+            }
+        } else {
+            let owner = self.installed_owner(facts, definition)?;
+            let schema = facts
+                .associated
+                .schema(definition)
+                .ok_or("source Self readiness lacks its actual completed schema")?;
+            if owner.self_definition != definition || cell != Some(schema.self_type) {
+                return Err("source Self readiness changed its actual owner/type cell");
+            }
+        }
+        Self::scope_ready(facts, definition)
     }
 
     fn nominal_ready(

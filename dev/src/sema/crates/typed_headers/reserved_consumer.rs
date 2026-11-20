@@ -594,6 +594,7 @@ impl SelectedConsumer<'_> {
                     | s::HeaderRef::Constructor(_)
                     | s::HeaderRef::Static(_)
                     | s::HeaderRef::TypeAlias(_)
+                    | s::HeaderRef::TraitAlias(_)
                     | s::HeaderRef::Constant(_),
                 ) => {
                     return Err(Error::unlocated(

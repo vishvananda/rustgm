@@ -27,6 +27,8 @@ pub enum DefinitionKind {
     AssociatedType,
     /// A public v14 module type alias with a transparent target recipe.
     TypeAlias,
+    /// A v14 module trait alias with a lexical Self and declared clauses.
+    TraitAlias,
     /// Version fourteen: a module-owned static allocation.
     Static,
 }
@@ -392,7 +394,9 @@ fn valid_owner(kind: DefinitionKind, scope: &ParameterScope) -> bool {
         | DefinitionKind::Struct
         | DefinitionKind::Enum
         | DefinitionKind::AssociatedType => true,
-        DefinitionKind::Constant => scope.declared.start == scope.declared.end,
+        DefinitionKind::Constant | DefinitionKind::TraitAlias => {
+            scope.declared.start == scope.declared.end
+        }
         DefinitionKind::TypeAlias => {
             scope.declared.end.checked_sub(scope.declared.start) == Some(1)
         }
@@ -411,7 +415,7 @@ fn valid_parent(
         | DefinitionKind::Struct
         | DefinitionKind::Enum
         | DefinitionKind::TypeAlias => parent.is_none(),
-        DefinitionKind::Trait => parent
+        DefinitionKind::Trait | DefinitionKind::TraitAlias => parent
             .and_then(|parent| definitions.get(parent.0 as usize))
             .is_some_and(|parent| {
                 parent.kind == DefinitionKind::SelfType && parent.parent == Some(owner)
@@ -516,7 +520,12 @@ fn validate_binding(
             definition
                 .parent
                 .and_then(|parent| definitions.get(parent.0 as usize))
-                .is_some_and(|parent| parent.kind == DefinitionKind::Trait)
+                .is_some_and(|parent| {
+                    matches!(
+                        parent.kind,
+                        DefinitionKind::Trait | DefinitionKind::TraitAlias
+                    )
+                })
         }
         ParameterKind::Type { .. } => {
             definition.kind == DefinitionKind::TypeParameter

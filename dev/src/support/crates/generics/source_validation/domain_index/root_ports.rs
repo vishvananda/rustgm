@@ -38,6 +38,7 @@ impl DomainIndex<'_, '_> {
     }
     pub(super) fn header_roots(&mut self, work: &mut Work) -> Result<(), &'static str> {
         let rows = self.headers.rows();
+        self.trait_alias_roots(work)?;
         for header in &rows.nominals {
             let context = Context {
                 owner: header.scope,
@@ -133,6 +134,40 @@ impl DomainIndex<'_, '_> {
                     return Err("source receiver is outside its actual formal inputs");
                 }
             }
+        }
+        Ok(())
+    }
+
+    fn trait_alias_roots(&mut self, work: &mut Work) -> Result<(), &'static str> {
+        let rows = self.headers.rows();
+        for alias in rows.trait_aliases() {
+            let context = Context {
+                owner: alias.declaration,
+                frame: None,
+                body: None,
+            };
+            self.types
+                .root(self.headers, context, alias.self_type, work)?;
+            let Some(s::Type::Parameter(slot)) = rows.types.get(alias.self_type.0 as usize) else {
+                return Err("source trait alias Self has no actual parameter slot");
+            };
+            let actual = rows
+                .slots
+                .get(slot.0 as usize)
+                .ok_or("source trait alias Self slot is unknown")?;
+            if actual.owner != alias.self_definition
+                || actual.definition != Some(alias.self_definition)
+                || actual.kind != (s::ParameterKind::Type { sized: None })
+                || actual.default.is_some()
+                || self
+                    .headers
+                    .scopes()
+                    .scope_row(alias.declaration, work)?
+                    .is_none_or(|scope| scope.captures != 1)
+            {
+                return Err("source trait alias Self changed its lexical unsized binding");
+            }
+            self.requirements(context, alias.inputs, work)?;
         }
         Ok(())
     }

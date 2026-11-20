@@ -156,6 +156,9 @@ impl Reader {
             Some(s::HeaderRef::Variant(_) | s::HeaderRef::Constructor(_)) => {
                 return Err(error("source variant declarations own no input scope"));
             }
+            Some(s::HeaderRef::TraitAlias(_)) => {
+                return Err(error("private source headers do not own trait aliases"));
+            }
             None => {
                 let (range, _) = originals::input_range(rows, *raw)?;
                 if range.start != range.end {

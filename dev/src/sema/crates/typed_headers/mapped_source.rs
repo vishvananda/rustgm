@@ -25,7 +25,9 @@ pub(in crate::sema::crates::typed_headers) use role_headers::installed as instal
 mod scheme_inputs;
 use scheme_inputs::SignaturePort;
 pub(in crate::sema::crates::typed_headers) use scheme_inputs::require_regions as require_method_regions;
+mod direct_alias_views;
 mod scope_inputs;
+pub(in crate::sema) use direct_alias_views::ImportedTraitAlias;
 pub(super) mod slot_bindings;
 use super::{Declarations, Error, Headers, error};
 use crate::{
@@ -62,6 +64,7 @@ pub(in crate::sema) struct Graph {
     nominal_inputs: Vec<Option<Arc<[crate::sema::declaration_inputs::Input]>>>,
     associated_inputs: Vec<Option<Arc<[crate::sema::declaration_inputs::Input]>>>,
     trait_inputs: Vec<Option<Arc<[crate::sema::declaration_inputs::Input]>>>,
+    trait_alias_inputs: Vec<Option<Arc<[crate::sema::declaration_inputs::Input]>>>,
     impl_inputs: Vec<Option<Arc<[crate::sema::declaration_inputs::Input]>>>,
 }
 enum Canonical {
@@ -259,6 +262,7 @@ impl Graph {
             nominal_inputs: Vec::new(),
             associated_inputs: Vec::new(),
             trait_inputs: Vec::new(),
+            trait_alias_inputs: Vec::new(),
             impl_inputs: Vec::new(),
         })
     }

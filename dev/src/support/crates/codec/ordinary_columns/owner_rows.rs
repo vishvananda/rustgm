@@ -23,6 +23,7 @@ pub(super) fn declaration_write(
         s::DefinitionKind::Constant => 13,
         s::DefinitionKind::TypeAlias => 14,
         s::DefinitionKind::Static => 15,
+        s::DefinitionKind::TraitAlias => 16,
     })?;
     option(out, row.definition.parent.map(|r| r.0))?;
     id(out, row.ordinal)?;
@@ -60,6 +61,7 @@ pub(super) fn declaration_read(read: &mut Input<'_, '_>) -> Result<s::Declaratio
         13 if read.profile.body_nodes() => s::DefinitionKind::Constant,
         14 if read.profile.declaration_policies() => s::DefinitionKind::TypeAlias,
         15 if read.profile.declaration_policies() => s::DefinitionKind::Static,
+        16 if read.profile.declaration_policies() => s::DefinitionKind::TraitAlias,
         _ => return Err("unknown source declaration kind"),
     };
     Ok(s::Declaration {

@@ -1,4 +1,5 @@
 //! Ordinary graphs and selected private mappings retain their actual owners.
+pub(in crate::sema) use super::typed_headers::mapped_source::ImportedTraitAlias;
 use super::typed_headers::{mapped_source::Graph, unpaid_provided::ProvidedOwners};
 use crate::{
     sema::{
@@ -9,6 +10,26 @@ use crate::{
     types::{Store, parameters::predicates::Predicate},
 };
 use std::rc::Rc;
+
+pub(in crate::sema) fn import_trait_aliases(
+    facts: &mut super::Declarations,
+) -> Result<Vec<ImportedTraitAlias>, crate::resolve::package::Error> {
+    use crate::resolve::package::Error;
+    let Some(ImportedOwners::Ordinary(graph)) = facts.associated.imported_owner() else {
+        return Ok(Vec::new());
+    };
+    let count = graph.trait_alias_count().map_err(Error::unlocated)?;
+    if count == 0 {
+        return Ok(Vec::new());
+    }
+    let graph = Rc::clone(graph);
+    super::charge_source_headers(
+        facts,
+        count.saturating_mul(16),
+        count.saturating_mul(size_of::<ImportedTraitAlias>()),
+    )?;
+    graph.trait_aliases(facts).map_err(Error::unlocated)
+}
 
 pub(in crate::sema) enum ImportedOwners {
     Ordinary(Rc<Graph>),

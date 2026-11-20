@@ -660,6 +660,9 @@ fn require_source_profile(
     if !profile.declaration_policies() && !rows.type_aliases().is_empty() {
         return Err("named type alias rows require the declaration policies profile");
     }
+    if !profile.declaration_policies() && !rows.trait_aliases().is_empty() {
+        return Err("trait alias rows require the declaration policies profile");
+    }
     if !profile.declaration_policies() && rows.cold().statics.is_some() {
         return Err("source static rows require the declaration policies profile");
     }
