@@ -2199,10 +2199,22 @@ Charged typed-slice misses account for 31 duplicate probes on the frozen
 graph. Ordinary all-lifetime argument conversion allocates 42,784 nonempty
 temporary vectors. The singleton arm can remove at least 40,927 of those
 allocations (95.66%) while keeping the existing representation and ledger.
-The worker is qualifying that separate candidate. The census report is
+The census report is
 retained at `obj/parallel/canonical-store-census/result.md` in the performance
 worktree with SHA-256
 `03dd61d2d0c53b21243a99952d58b5eaca47004a88ab982c0cbc398f6a181067`.
+
+`8fbf96d4a` removes 2,060 allocator blocks and 0.733% of instructions
+from the 256-call singleton control. Zero- and three-argument controls
+preserve their allocation counts. The paired 746-input graph preserves
+output hashes and changes retired instructions by +0.00072%, inside
+the 0.00237% A/A range. Retired stores fall 0.01295%, with both pairs
+below the A/A range. Elapsed pairs move in opposite directions while
+sibling-thread occupancy varies from 97% to 20%. The candidate remains
+in the performance worktree, with the private linked test pending.
+The report and raw paired receipt are
+`obj/parallel/canonical-store-census/singleton/{result.md,pmu-v2/receipt.json}`
+in that worktree.
 
 ### Macro expansion and ledger work
 

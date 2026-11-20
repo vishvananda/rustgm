@@ -62,8 +62,11 @@ capacity. The worker is measuring a separate change that removes singleton
 lifetime argument allocations. Exact parity passed on the frozen 746-input
 graph, 21 focused outcomes, four fresh staged outcomes and 12 real budget
 controls. DHAT counts 2,060 fewer blocks at the target allocation site
-on the 256-call singleton control. The zero and three-lifetime controls
-preserve their allocation counts.
+on the 256-call singleton control, and that control retires 0.733% fewer
+instructions. The zero and three-lifetime controls preserve allocation
+counts. The paired whole-graph instruction difference falls inside A/A
+noise, and the two elapsed pairs disagree. The candidate stays isolated
+while the worker selects the next non-trait semantic-analysis hotspot.
 
 Lifetime candidates `72264239b` and `4757cac6d` stay isolated. The first
 retires 0.253% more original-graph instructions. The second retires 0.102%
