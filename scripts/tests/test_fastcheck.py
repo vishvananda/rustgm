@@ -15,17 +15,45 @@ import fastcheck_run
 import fastcheck
 
 
+class QuietGates:
+    """Stands in for the background gates while a test drives the compile and tests."""
+    failure = None
+
+    def __init__(self, *_):
+        self.joined = []
+
+    def join(self, *, report=True):
+        self.joined.append(report)
+        if report and self.failure is not None:
+            raise self.failure
+
+
+class FailedGate(QuietGates):
+    failure = ValueError("assignment-metadata failed with status 1")
+
+
 class FastcheckBudget(unittest.TestCase):
-    def test_metadata_failure_stops_before_format_lint_and_build(self):
-        steps = mock.Mock()
-        steps.receipt = {}
-        steps.run.side_effect = ValueError("invalid assignment metadata")
-        args = Namespace(suites=["lexer"], lib_case=[], ignored=False, prune_under=[])
-        with mock.patch.object(fastcheck_run, "discover", return_value={"lexer": "suite_frontend"}), \
-                mock.patch.object(fastcheck_run, "fingerprint", return_value={}):
-            with self.assertRaisesRegex(ValueError, "invalid assignment metadata"):
-                fastcheck_run.execute(Path("unused"), args, steps)
-        steps.run.assert_called_once_with("assignment-metadata", [sys.executable, "scripts/assignment_metadata.py"])
+    def test_failed_gate_lets_the_compile_finish_and_stops_every_test(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "obj/audit-venv/bin").mkdir(parents=True)
+            (root / "obj/audit-venv/bin/python").touch()
+            binary = root / "suite_frontend"
+            binary.touch()
+            steps = mock.Mock()
+            steps.receipt = {}
+            steps.run.return_value = json.dumps({"reason": "compiler-artifact", "executable": str(binary),
+                                                 "profile": {"test": True},
+                                                 "target": {"kind": ["test"], "name": "suite_frontend"}})
+            args = Namespace(suites=["lexer"], lib_case=[], ignored=False, prune_under=[], pa=[])
+            with mock.patch.object(fastcheck_run, "discover", return_value={"lexer": "suite_frontend"}), \
+                    mock.patch.object(fastcheck_run, "fingerprint", return_value={}), \
+                    mock.patch.object(fastcheck_run.shutil, "which", return_value="clippy-driver"), \
+                    mock.patch.object(fastcheck_run, "Beside", FailedGate):
+                with self.assertRaisesRegex(ValueError, "assignment-metadata failed"):
+                    fastcheck_run.execute(root, args, steps)
+            # The compile ran beside the gates and kept its cache; no test step started.
+            self.assertEqual([call.args[0] for call in steps.run.call_args_list], ["clippy-public"])
 
     def test_subprocess_timeout_retains_failure_receipt(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -271,7 +299,8 @@ class LinkedPrivateHarness(unittest.TestCase):
                                  ignored=False, prune_under=[], pa=["pa1"] if text else [])
                 with mock.patch.object(fastcheck_run, "discover", return_value={"lexer": "suite_frontend"}), \
                         mock.patch.object(fastcheck_run.shutil, "which", return_value="test-clippy-driver"), \
-                        mock.patch.object(fastcheck_run, "fingerprint", return_value={}):
+                        mock.patch.object(fastcheck_run, "fingerprint", return_value={}), \
+                        mock.patch.object(fastcheck_run, "Beside", QuietGates):
                     fastcheck_run.execute(root, args, steps)
                 compiles = [name for name, command in commands if command[0] == "cargo" and name != "format"]
                 self.assertEqual(compiles, ["clippy-private"] + ["clippy-public"] * mixed + ["build-cli"] * text)
@@ -303,12 +332,14 @@ class LinkedPrivateHarness(unittest.TestCase):
             args = Namespace(suites=["lexer"], lib_case=[], ignored=False, prune_under=[], pa=[])
             with mock.patch.object(fastcheck_run, "discover", return_value={"lexer": "suite_frontend"}), \
                     mock.patch.object(fastcheck_run.shutil, "which", return_value="test-clippy-driver"), \
-                    mock.patch.object(fastcheck_run, "fingerprint", return_value={}):
+                    mock.patch.object(fastcheck_run, "fingerprint", return_value={}), \
+                    mock.patch.object(fastcheck_run, "Beside", QuietGates):
                 fastcheck_run.execute(root, args, steps)
             # One Cargo invocation compiles the edit; nothing checks it a second time.
             self.assertEqual([command for command in commands if command[0] == "cargo"], [["cargo", "test"]])
             with mock.patch.object(fastcheck_run, "discover", return_value={"lexer": "suite_frontend"}), \
                     mock.patch.object(fastcheck_run.shutil, "which", return_value=None), \
-                    mock.patch.object(fastcheck_run, "fingerprint", return_value={}):
+                    mock.patch.object(fastcheck_run, "fingerprint", return_value={}), \
+                    mock.patch.object(fastcheck_run, "Beside", QuietGates):
                 with self.assertRaisesRegex(ValueError, "clippy-driver"):
                     fastcheck_run.execute(root, args, steps)

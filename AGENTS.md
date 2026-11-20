@@ -34,9 +34,11 @@ path; its adopted direction is summarized below.
   and keep their caches under a separate ceiling that only catches a hung
   compiler; neither is charged to the budget.
   Use `make fastcheck FAST_ARGS='SUITE --lib-case full::test::path'`: cached
-  unoptimized builds without debug symbols, exact affected regressions, full
-  formatting, content-cached architecture audit and strict Clippy for selected
-  targets (including the CLI for integration/text selections). The private
+  unoptimized builds without debug symbols, exact affected regressions, strict
+  Clippy for selected targets (including the CLI for integration/text
+  selections) and the metadata, formatting and architecture gates. The gates run
+  beside the compile, before any test, and each is skipped only when the
+  fingerprint of everything it reads matches a passed run. The private
   harness and the integration binaries are each linted and linked in one Cargo
   build with `clippy-driver` as the compiler, so an edit is compiled once per
   mode; do not repeat that compilation with a separate `cargo clippy`,

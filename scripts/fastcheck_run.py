@@ -7,18 +7,22 @@ import re
 import shutil
 import subprocess
 import sys
+import threading
 import time
 
+from fastcheck_gates import Digests, Gates, edition
 from maintainer_batch import artifacts, inventory, package_environment, selection
 from maintainer_suites import discover
 from resource_policy import discover as controller, width
 from storage import check_space, cleanup_roots, exclusive, minimum_reserve, prune
 
 
-def fingerprint(root):
-    paths = sorted((root / "dev").rglob("*.rs"))
-    paths += [root / path for path in ("dev/Cargo.toml", "dev/Cargo.lock",
-              "scripts/fastcheck.py", "scripts/fastcheck_run.py", "scripts/rust_audit.py",
+def fingerprint(root, digests=None):
+    """Every input whose change invalidates a run; unchanged files reuse their stat-keyed hash."""
+    digests = digests or Digests(root)
+    paths = [root / path for path in ("dev/Cargo.toml", "dev/Cargo.lock",
+              "scripts/fastcheck.py", "scripts/fastcheck_run.py", "scripts/fastcheck_gates.py",
+              "scripts/gate_trace.py", "scripts/rust_audit.py",
               "scripts/rust-module-roles.json", "scripts/maintainer_batch.py",
               "scripts/maintainer_suites.py", "scripts/storage.py", "scripts/storage_incremental.py", "scripts/resource_runner.py",
               "scripts/resource_policy.py", "scripts/resource_locks.py")]
@@ -28,7 +32,8 @@ def fingerprint(root):
               "scripts/check_native.py", "scripts/check_layout.py", "scripts/check_layouts.py", "scripts/check_syntax.py")]
     paths += sorted(root.glob("pa*/tests/manifest.json"))
     paths += sorted(root.glob("pa*/tests/units/*.json"))
-    return {str(path.relative_to(root)): hashlib.sha256(path.read_bytes()).hexdigest() for path in paths}
+    rows = {row[1]: row[2] for row in digests.tree(root / "dev", suffix=".rs") if row[0] == "file"}
+    return {**rows, **{str(path.relative_to(root)): digests.file(path) for path in paths}}
 
 
 class Steps:
@@ -42,6 +47,8 @@ class Steps:
         self.started = time.monotonic()
         self.deadline = self.started + args.seconds
         self.compile_left = args.compile_seconds
+        # Gates run in threads beside the compile; receipt updates share this lock.
+        self.lock = threading.RLock()
         self.receipt = {"profile": "dev-fast", "state": "running", "steps": [],
                         "budget": {"feedback_seconds": args.seconds,
                                    "compile_ceiling_seconds": args.compile_seconds}}
@@ -56,12 +63,22 @@ class Steps:
                             "CARGO_BUILD_JOBS": jobs, "RUST_TEST_THREADS": jobs}
 
     def save(self):
-        compiled = self.args.compile_seconds - self.compile_left
-        self.receipt["budget"].update(
-            compile_used=compiled, feedback_used=time.monotonic() - self.started - compiled)
-        (self.folder / "receipt.json").write_text(json.dumps(self.receipt, indent=2) + "\n")
+        with self.lock:
+            compiled = self.args.compile_seconds - self.compile_left
+            self.receipt["budget"].update(
+                compile_used=compiled, feedback_used=time.monotonic() - self.started - compiled)
+            (self.folder / "receipt.json").write_text(json.dumps(self.receipt, indent=2) + "\n")
 
-    def run(self, name, command, *, cwd=None, overrides=None, compiles=False):
+    def skip(self, name, fingerprint, matched):
+        """A gate whose inputs match a passed run records that match instead of rerunning."""
+        with self.lock:
+            self.receipt["steps"].append({"name": name, "gate": name, "status": 0, "seconds": 0.0,
+                                          "charged": "feedback", "skipped": True,
+                                          "fingerprint": fingerprint, "matched_receipt": matched})
+        self.save()
+        print(f"SKIP {name}: inputs match fingerprint {fingerprint[:16]} passed in {matched}", flush=True)
+
+    def run(self, name, command, *, cwd=None, overrides=None, compiles=False, extra=None):
         """Run one step against the clock that owns it.
 
         A killed rustc discards its incremental session, so a compile is never
@@ -69,7 +86,8 @@ class Steps:
         the budget's deadline by exactly the time it took.
         """
         kind = "compile ceiling" if compiles else "development feedback budget"
-        remaining = self.compile_left if compiles else self.deadline - time.monotonic()
+        with self.lock:
+            remaining = self.compile_left if compiles else self.deadline - time.monotonic()
         if remaining <= 0:
             raise TimeoutError(f"{name}: {kind} exhausted")
         print(f"START {name} ({remaining:.0f}s of the {kind} remaining)", flush=True)
@@ -84,15 +102,25 @@ class Steps:
             except subprocess.TimeoutExpired:
                 status = 124
         elapsed = time.monotonic() - started
-        if compiles:
-            self.compile_left -= elapsed
-            self.deadline += elapsed
-        self.receipt["steps"].append({"name": name, "command": list(map(str, command)),
-                                      "seconds": elapsed, "status": status,
-                                      "charged": "compile" if compiles else "feedback",
-                                      "environment": overrides or {}})
+        with self.lock:
+            if compiles:
+                self.compile_left -= elapsed
+                self.deadline += elapsed
+            self.receipt["steps"].append({"name": name, "command": list(map(str, command)),
+                                          "seconds": elapsed, "status": status,
+                                          "charged": "compile" if compiles else "feedback",
+                                          "environment": overrides or {}, **(extra or {})})
         self.save()
         print(f"END {name}: {elapsed:.2f}s, status {status}", flush=True)
+        stdout = self.output(name, status, kind, compiles)
+        return stdout
+
+    def note(self, name, **fields):
+        with self.lock:
+            next(row for row in reversed(self.receipt["steps"]) if row["name"] == name).update(fields)
+        self.save()
+
+    def output(self, name, status, kind, compiles):
         stdout = (self.folder / f"{name}.stdout").read_text()
         if status:
             print((stdout + (self.folder / f"{name}.stderr").read_text())[-10000:], flush=True)
@@ -100,6 +128,92 @@ class Steps:
                 raise TimeoutError(f"{name}: {kind} exhausted" + ("; the compiler looks hung" if compiles else ""))
             raise ValueError(f"{name} failed with status {status}")
         return stdout
+
+
+# A changed-file list longer than this is checked by the complete command.
+PARTIAL_FORMAT_LIMIT = 400
+
+
+def traced_gate(root, steps, gates, name, method):
+    """Run a Python gate under its trace; cache the pass only if it read nothing undeclared."""
+    command, fingerprint, allowed = getattr(gates, method)()
+    matched = gates.matched(name, fingerprint)
+    if matched:
+        steps.skip(name, fingerprint, matched)
+        return
+    trace = steps.folder / f"{name}.trace.json"
+    python, script, *rest = command
+    steps.run(name, [python, "scripts/gate_trace.py", trace, script, *rest],
+              extra={"gate": name, "fingerprint": fingerprint})
+    problems = gates.outside(trace, allowed)
+    if not problems and getattr(gates.fresh(), method)()[1] != fingerprint:
+        problems = ["inputs changed while the gate ran"]
+    if problems:
+        steps.note(name, cached=False, uncached_because=problems[:8])
+    else:
+        gates.passed(name, fingerprint, steps.folder.relative_to(root).as_posix())
+
+
+def format_gate(root, steps, gates):
+    """Check changed files only; the complete check decides any failure and every other case."""
+    command, key = gates.format_key()
+    fingerprint = gates.format_fingerprint(key)
+    mode, changed = gates.format_plan(key)
+    if mode == "skip":
+        matched = gates.matched("format", fingerprint)
+        if matched:
+            steps.skip("format", fingerprint, matched)
+            return
+        mode = "full"
+    language = edition(root)
+    extra = {"gate": "format", "fingerprint": fingerprint}
+    if mode == "partial" and language is not None and len(changed) <= PARTIAL_FORMAT_LIMIT:
+        try:
+            steps.run("format", ["rustfmt", "--check", "--edition", language, *changed],
+                      extra={**extra, "partial": changed})
+        except ValueError:
+            steps.run("format-full", command, extra=extra)
+    else:
+        steps.run("format", command, extra=extra)
+    fresh = gates.fresh()
+    if fresh.format_fingerprint(fresh.format_key()[1]) != fingerprint:
+        steps.note("format", cached=False, uncached_because=["inputs changed while the gate ran"])
+        return
+    gates.passed("format", fingerprint, steps.folder.relative_to(root).as_posix(), key=key, files=gates.sources)
+
+
+class Beside:
+    """The static gates, in threads beside the compile; joined before any test runs."""
+
+    def __init__(self, root, steps, python, digests=None):
+        self.errors = []
+        self.thread = threading.Thread(target=self.main, args=(root, steps, python, digests), daemon=True)
+        self.thread.start()
+
+    def guard(self, function, *arguments):
+        try:
+            function(*arguments)
+        except Exception as error:  # reported by join(), after the compile has finished
+            self.errors.append(error)
+
+    def main(self, root, steps, python, digests):
+        def gates_in_threads():
+            gates = Gates(root, python, digests)
+            jobs = [(traced_gate, root, steps, gates, "assignment-metadata", "metadata"),
+                    (format_gate, root, steps, gates),
+                    (traced_gate, root, steps, gates, "architecture", "architecture")]
+            threads = [threading.Thread(target=self.guard, args=job, daemon=True) for job in jobs]
+            for thread in threads:
+                thread.start()
+            for thread in threads:
+                thread.join()
+            gates.digests.save()
+        self.guard(gates_in_threads)
+
+    def join(self, *, report=True):
+        self.thread.join()
+        if report and self.errors:
+            raise self.errors[0]
 
 
 def execute(root, args, steps):
@@ -110,24 +224,39 @@ def execute(root, args, steps):
         raise ValueError("native fast checks require --prune-under for their disposable output roots")
     steps.receipt["groups"] = groups
     # Fingerprint content rather than just HEAD: dirty worker snapshots are normal.
-    steps.receipt["sources"] = fingerprint(root)
+    digests = Digests(root)
+    steps.receipt["sources"] = fingerprint(root, digests)
     steps.save()
-    steps.run("assignment-metadata", [sys.executable, "scripts/assignment_metadata.py"])
-    steps.run("format", ["cargo", "fmt", "--manifest-path", "dev/Cargo.toml", "--all", "--", "--check"])
     python = root / "obj/audit-venv/bin/python"
     if not python.is_file():
         raise ValueError("run make setup-audit once before fastcheck")
-    steps.run("architecture", [python, "scripts/rust_audit.py", "--root", ".",
-                                "--cache", "obj/fast-audit.json"])
-    common = ["--manifest-path", "dev/Cargo.toml", "--locked", "--profile", "dev-fast"]
-    # Clippy is the compiler: each Cargo build lints strictly and links in the
-    # same pass, so an edit is compiled once. Cargo owns the complete build
-    # graph; a separate cargo clippy would check the library a second time as
-    # metadata only, which cannot link.
+    gates = Beside(root, steps, python, digests)
+    try:
+        binaries = build(root, args, steps, groups)
+    except BaseException:
+        gates.join(report=False)
+        raise
+    # No test runs after a failed static gate.
+    gates.join()
+    run_tests(root, args, steps, groups, binaries, digests)
+
+
+COMMON = ["--manifest-path", "dev/Cargo.toml", "--locked", "--profile", "dev-fast"]
+
+
+def lint_environment():
+    """Clippy is the compiler: each Cargo build lints strictly and links in the
+    same pass, so an edit is compiled once. Cargo owns the complete build graph;
+    a separate cargo clippy would check the library a second time as metadata
+    only, which cannot link."""
     driver = shutil.which("clippy-driver")
     if driver is None:
         raise ValueError("fastcheck requires the installed clippy-driver")
-    lint = {"RUSTC_WORKSPACE_WRAPPER": driver, "CLIPPY_ARGS": "-Dwarnings"}
+    return {"RUSTC_WORKSPACE_WRAPPER": driver, "CLIPPY_ARGS": "-Dwarnings"}
+
+
+def build(root, args, steps, groups):
+    common, lint = COMMON, lint_environment()
     # Cargo renders the diagnostics; its JSON on stdout names the executables.
     link = ["--no-run", "--message-format=json-render-diagnostics"]
     binaries = {}
@@ -144,6 +273,10 @@ def execute(root, args, steps):
         built = steps.run("clippy-public", ["cargo", "test", *common, *build_targets, *link],
                           overrides=lint, compiles=True)
         binaries.update(artifacts(built, remaining))
+    return binaries
+
+
+def run_tests(root, args, steps, groups, binaries, digests=None):
     selected = {}
     flags = ["--ignored"] if args.ignored else []
     for group, binary in binaries.items():
@@ -171,11 +304,12 @@ def execute(root, args, steps):
             steps.save()
     if args.pa:
         # The same lint build: already complete after an integration selection.
-        steps.run("build-cli", ["cargo", "build", *common, "--bin", "rustgm"], overrides=lint, compiles=True)
+        steps.run("build-cli", ["cargo", "build", *COMMON, "--bin", "rustgm"], overrides=lint_environment(),
+                  compiles=True)
         for stage in dict.fromkeys(args.pa):
             steps.run(stage, [sys.executable, "scripts/course.py", stage,
                               "--app", root / "obj/rust/dev-fast/rustgm"])
-    after = fingerprint(root)
+    after = fingerprint(root, digests)
     if after != steps.receipt["sources"]:
         raise ValueError("source changed during validation; evidence does not qualify the current source")
     print(f"Passed {sum(map(len, selected.values()))} exact tests across {len(groups)} target(s).", flush=True)

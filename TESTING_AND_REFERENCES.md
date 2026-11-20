@@ -287,9 +287,16 @@ and ownership, encoded generic runtime/constant imports, and edition/CLI
 controls. Its two integration binaries share the production build; it requires
 neither a private-library build nor the external native backend. `SMOKE_ARGS`
 passes ordinary runner options, such as a justified local output cap.
-Before compiler steps, the runner checks every active assignment's metadata with
-the same validators as the full layout check. Pending generated references are
-allowed here; the full layout check still requires their complete provenance.
+Beside the compile steps, and before any test, the runner checks every active
+assignment's metadata with the same validators as the full layout check, the
+formatting and the architecture audit. A gate is skipped when the fingerprint of
+its command, its implementation, the interpreter or tool version and every input
+it reads matches a run that passed it; the skip's receipt row names that
+fingerprint and receipt. Python gates run under an audit trace and are cached
+only when they read nothing outside their declared inputs and start no process.
+Formatting rechecks changed files and lets the complete check decide any
+failure. Pending generated references are allowed here; the full layout check
+still requires their complete provenance.
 `make fastcheck` itself applies resource/storage protection; do not wrap it in
 another lease. It queues for a shared-controller slot for at most
 `--wait-seconds` (one hour by default) and names the jobs holding the slots;
