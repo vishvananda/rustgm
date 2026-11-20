@@ -19,6 +19,12 @@ observe:
 # Example: make fastcheck FAST_ARGS='lexer --lib-case full::private::test'
 fastcheck:
 	$(PYTHON) scripts/fastcheck.py $(FAST_ARGS)
+.PHONY: integration-check
+# Integration: the whole private unit binary, every harness suite group and the
+# active course text suites against one dev-fast build, at the granted width.
+# Example: make integration-check INTEGRATION_ARGS='--max-output-gib 24'
+integration-check:
+	$(PYTHON) scripts/integration_check.py $(ACTIVE_PAS) $(INTEGRATION_ARGS)
 .PHONY: smoke
 SMOKE_CASES := lexer \
 	provider_traits::source_copy_clone_and_callable_bodies_pass_ordinary_original_and_instance_proofs \

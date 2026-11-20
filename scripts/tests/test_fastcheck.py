@@ -165,7 +165,7 @@ class FastcheckBudget(unittest.TestCase):
                     mock.patch.object(fastcheck, "retire", side_effect=lambda _: events.append("retire")), \
                     mock.patch.object(fastcheck, "discover", return_value=None), \
                     mock.patch.object(fastcheck.subprocess, "Popen", side_effect=lambda *a, **k: (events.append(a[0]), process)[1]):
-                self.assertEqual(fastcheck.launch(args, time.monotonic()), 0)
+                self.assertEqual(fastcheck.launch(args, time.monotonic())[0], 0)
             self.assertEqual(events[0], "retire")
             # Admission queues by default instead of refusing a busy controller.
             self.assertEqual(events[1][2:5], ["run", "--wait-seconds", "3600"])

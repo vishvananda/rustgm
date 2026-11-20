@@ -57,7 +57,7 @@ def terminate(process):
         process.wait()
 
 
-def watch(process, marker, args, started, clock=time.monotonic):
+def watch(process, marker, args, started, clock=time.monotonic, label="Fastcheck"):
     """Queueing is not validation time, and the admitted worker keeps its own clocks.
 
     Stopping it here is only a backstop: a compile is never killed at the budget.
@@ -73,29 +73,31 @@ def watch(process, marker, args, started, clock=time.monotonic):
         if admitted is None and marker.exists():
             admitted = now
             if announced:
-                print(f"Fastcheck admitted after {now - started:.0f}s; the budget starts now.", flush=True)
+                print(f"{label} admitted after {now - started:.0f}s; the budget starts now.", flush=True)
         if status is not None:
             return status, admitted
         if admitted is None:
             if not announced and now - started >= 2:
-                print(f"Fastcheck awaiting resource admission (slot queue at most {args.wait_seconds:.0f}s); "
+                print(f"{label} awaiting resource admission (slot queue at most {args.wait_seconds:.0f}s); "
                       "the wait is not charged to the budget.", flush=True)
                 announced = True
             if now - started >= args.wait_seconds + ADMISSION_GRACE:
-                print("Fastcheck FAILED: resource admission did not complete; stopping owned processes.",
+                print(f"{label} FAILED: resource admission did not complete; stopping owned processes.",
                       flush=True)
                 terminate(process)
                 return 124, admitted
         elif now - admitted >= args.seconds + args.compile_seconds + TEARDOWN_GRACE:
-            print("Fastcheck FAILED: worker outlived its budget and compile ceiling; "
+            print(f"{label} FAILED: worker outlived its budget and compile ceiling; "
                   "stopping owned processes.", flush=True)
             terminate(process)
             return 124, admitted
 
 
-def launch(args, started):
-    if not 20 <= args.seconds <= 300:
-        raise ValueError("budget must be between 20 and 300 seconds")
+def launch(args, started, *, script="scripts/fastcheck.py", evidence="obj/qualification/fast",
+           seconds=(20, 300), label="Fastcheck"):
+    """Queue for a slot, run the worker under its lease and return (status, evidence folder)."""
+    if not seconds[0] <= args.seconds <= seconds[1]:
+        raise ValueError(f"budget must be between {seconds[0]} and {seconds[1]} seconds")
     if not 60 <= args.compile_seconds <= 3600:
         raise ValueError("compile ceiling must be between 60 and 3600 seconds")
     if not 0 <= args.wait_seconds <= 3600:
@@ -103,7 +105,7 @@ def launch(args, started):
     retired = retire(ROOT)
     if retired:
         print(f"Retired {len(retired)} obsolete build-cache entries; latest warm caches retained.", flush=True)
-    folder = ROOT / f"obj/qualification/fast/{time.time_ns()}"
+    folder = ROOT / evidence / str(time.time_ns())
     folder.parent.mkdir(parents=True, exist_ok=True)
     marker = admission_marker(folder)
     command = [sys.executable, "scripts/resources.py", "run", "--wait-seconds", str(args.wait_seconds)]
@@ -112,16 +114,15 @@ def launch(args, started):
         command += ["--max-output-gib", str(args.max_output_gib or 16)]
     elif args.max_output_gib is not None:
         raise ValueError("explicit output caps require the configured resource controller")
-    command += ["--", sys.executable, "scripts/fastcheck.py", *sys.argv[1:],
-                "--worker", "--evidence-root", str(folder)]
+    command += ["--", sys.executable, script, *sys.argv[1:], "--worker", "--evidence-root", str(folder)]
     process = subprocess.Popen(command, cwd=ROOT, start_new_session=True)
     status = 1
     admitted = None
     try:
-        status, admitted = watch(process, marker, args, started)
+        status, admitted = watch(process, marker, args, started, label=label)
         if status and admitted is None:
-            print("Fastcheck FAILED: not admitted by the resource controller; nothing was checked.", flush=True)
-        return status
+            print(f"{label} FAILED: not admitted by the resource controller; nothing was checked.", flush=True)
+        return status, folder
     except BaseException:
         terminate(process)
         raise
@@ -144,7 +145,7 @@ def main():
             admission_marker(args.evidence_root).touch()
             from fastcheck_run import check
             return check(ROOT, args)
-        return launch(args, started)
+        return launch(args, started)[0]
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         print(f"Fastcheck FAILED: {error}", file=sys.stderr)
         return 1

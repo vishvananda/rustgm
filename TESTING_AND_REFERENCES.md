@@ -273,6 +273,7 @@ make fastcheck FAST_ARGS='lexer'
 make fastcheck FAST_ARGS='constant_patterns --lib-case complete::private::test_path'
 make fastcheck FAST_ARGS='lexer --pa pa1'
 make smoke
+make integration-check  # before publishing to main
 ```
 
 Replace the private path with a real complete test name. Select the smallest
@@ -296,7 +297,10 @@ fingerprint and receipt. Python gates run under an audit trace and are cached
 only when they read nothing outside their declared inputs and start no process.
 Formatting rechecks changed files and lets the complete check decide any
 failure. Pending generated references are allowed here; the full layout check
-still requires their complete provenance.
+still requires their complete provenance. `make integration-check` runs the
+whole private unit binary, every harness suite group and the active course text
+suites against one dev-fast build at the granted width; every part runs, each
+gets one summary line, and any failed part fails the command.
 `make fastcheck` itself applies resource/storage protection; do not wrap it in
 another lease. It queues for a shared-controller slot for at most
 `--wait-seconds` (one hour by default) and names the jobs holding the slots;
