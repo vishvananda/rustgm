@@ -957,6 +957,9 @@ two casts and division. The trait transport still needs to carry the
 initializer's real declaration and its open associated-value request
 so each consumer can select its own implementation. The template view
 is under `obj/parallel/strict-core/static-arrays-observe/lemire-ir/inspect-v2/`.
+`0e58b426c` makes original reservation take the actual declaration body kind
+and its context. The ordinary and compiler-operation ownership, forged-wire
+and division controls pass in `obj/qualification/fast/1795156227224835594/`.
 
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
@@ -1111,6 +1114,17 @@ six application and dependency targets. Three sysroot steps also
 need their host script outputs. The graph and dry-run receipts are
 under `obj/parallel/strict-compiler-unit-graph/combined-v3/` in the
 frontier checkout.
+
+`3d6e8fbd5` preserves all 42 `noprelude` edges as explicit-only externs.
+The 23 target planner tests and three focused linking tests pass. Pinned
+Rust agrees on explicit imports and hidden implicit paths, and the three
+source-client controls agree on the core alias selected during injection.
+The unchanged combined graph ran the original `compiler_builtins`, `libc`
+and `std` host scripts with 141, 27 and 8 directives. All 22 target units
+now have expressible commands and authenticated host inputs. Target
+compilation still awaits the original artifacts. The evidence is under
+`obj/parallel/cargo-noprelude/` and
+`obj/parallel/strict-compiler-unit-graph/combined-host-v1/`.
 
 `3ef6b79e9` requires LowIR, metadata and a native-link manifest for every
 unit. The terminal record carries the binary's identity, defining edition
