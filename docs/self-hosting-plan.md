@@ -859,6 +859,26 @@ name. The replay records zero bring-up entries and emits no artifacts.
 The receipt and exact declaration trace are under
 `obj/parallel/strict-core/wide-constants/` in the frontier checkout.
 
+`089896edf` publishes a v14 public closed module alias with a named
+declaration and its actual canonical target recipe. An imported alias
+installs the same target type in its declaration cell. The sparse
+column checks the exact public module owner and carries renamed
+reexports through the ordinary namespace and availability columns.
+Alias parameters, associated aliases and deferred proof requirements
+stay on their existing paths. The v13 export still rejects the public
+named alias.
+
+The focused fresh-client case publishes `Digit32`, a tuple target, a
+nominal target and aliases reexported from public and hidden modules.
+It validates decode and encoded byte equality, imports the aliases in
+a new RustGM process and rejects a private name, an incompatible
+value and an applied type argument. The exact strict Clippy, format,
+architecture and functional gate passed in 97.33 seconds. Evidence is
+under `obj/qualification/fast/1795144369638357771/` and
+`obj/parallel/v14-type-aliases/dev-fast-foundation/` in the frontier
+checkout. The strict original-source replay is pending on this
+checkpoint.
+
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
 deprecated macro and accepts a call through an annotated `use` alias of a
