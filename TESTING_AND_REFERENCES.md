@@ -308,11 +308,12 @@ reuses unchanged per-file syntax results, then reruns global duplicate,
 filename-stem and ownership checks over the complete current file set. Audit
 implementation, parser versions and role-table changes invalidate that cache.
 Strict Clippy covers selected test targets and their library; integration/text
-selections also check the CLI. Every selection is compiled once: `cargo test
---no-run` runs with `RUSTC_WORKSPACE_WRAPPER` set to the installed
-`clippy-driver` and `CLIPPY_ARGS=-Dwarnings`, which lints strictly and links
-the executables in the same compilation. There is no separate `cargo clippy`
-pass and no redundant `cargo check`. Only selected test binaries are compiled.
+selections also check the CLI. Each compilation mode is compiled once: the
+integration build's `cargo test --no-run` runs with `RUSTC_WORKSPACE_WRAPPER`
+set to the installed `clippy-driver` and `CLIPPY_ARGS=-Dwarnings`, which
+lints strictly and links the executables in the same compilation. There is
+no separate `cargo clippy` pass and no redundant `cargo check`. Only selected
+test binaries are compiled.
 Private selections compile the library harness the same way with `cargo test
 --lib --no-run`, which checks `cfg(test)` with strict Clippy. Cargo builds
 actual dependency libraries, renders the diagnostics and reports the exact
