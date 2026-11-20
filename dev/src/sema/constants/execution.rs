@@ -202,21 +202,65 @@ impl Queries<'_> {
                     .and_then(|node| node.adjustment.map(|a| a.target).or(node.ty))
             })
             .ok_or_else(|| self.error(Query::Node(source), "missing constant execution type"))?;
+        let target = self.execution_target(source, result)?;
+        self.execute_request(Query::Node(source), target)
+    }
+
+    pub(super) fn execute_instance(
+        &mut self,
+        instance: super::values::Instance,
+    ) -> Result<Option<Requirement>, Error> {
+        let result = instance
+            .result_type(self.typing.facts)
+            .map_err(Error::unlocated)?;
+        self.execute_request(
+            Query::Instance(instance),
+            Target::Associated { instance, result },
+        )
+    }
+
+    pub(super) fn check_instance(
+        &mut self,
+        instance: super::values::Instance,
+    ) -> Result<(), Error> {
+        let result = instance
+            .result_type(self.typing.facts)
+            .map_err(Error::unlocated)?;
+        let mut executor = self
+            .typing
+            .facts
+            .constant_executor
+            .take()
+            .ok_or_else(|| Error::unlocated("missing checked constant eligibility service"))?;
+        let checked = executor.check(
+            self.report,
+            self.typing.facts,
+            Target::Associated { instance, result },
+        );
+        self.typing.facts.constant_executor = Some(executor);
+        checked
+    }
+
+    fn execute_request(
+        &mut self,
+        query: Query,
+        target: Target,
+    ) -> Result<Option<Requirement>, Error> {
         let request = Request {
-            target: self.execution_target(source, result)?,
+            target,
             arguments: Vec::new(),
         };
-        let mut executor = self.typing.facts.constant_executor.take().ok_or_else(|| {
-            self.error(
-                Query::Node(source),
-                "missing checked constant execution service",
-            )
-        })?;
+        let mut executor = self
+            .typing
+            .facts
+            .constant_executor
+            .take()
+            .ok_or_else(|| self.error(query, "missing checked constant execution service"))?;
         let progress = executor.advance(self.report, self.typing.facts, &request);
         self.typing.facts.constant_executor = Some(executor);
         match progress? {
             Progress::Complete(value) => {
-                self.complete_query(Query::Node(source), value.0)?;
+                self.complete_query(query, value.0)?;
                 Ok(None)
             }
             Progress::Prepare(requirement) => Ok(Some(requirement)),

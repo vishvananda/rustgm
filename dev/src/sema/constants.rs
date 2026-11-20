@@ -168,9 +168,14 @@ enum Expression {
         otherwise: NodeKey,
     },
 }
-enum Work {
+#[derive(Clone, Copy)]
+enum Execution {
     Source(computation::SourceComputation),
-    Execute(NodeKey),
+    Expression(NodeKey),
+    Associated(values::Instance),
+}
+enum Work {
+    Execute(Execution),
     PatternOwner(NodeKey),
     PatternStart(pending_patterns::FrameId),
     PatternNext(pending_patterns::FrameId),
@@ -443,18 +448,14 @@ impl Queries<'_> {
                         "value scope restoration escaped its owner",
                     ));
                 }
-                Work::Source(source) => {
-                    if let Some(requirement) = self.execute_source(source)? {
-                        self.work.push(Work::Source(source));
-                        if self.prepare_pattern_requirement(requirement)? {
-                            continue;
-                        }
-                        return Ok(Some(suspension::Dependency::Execution(requirement)));
-                    }
-                }
-                Work::Execute(key) => {
-                    if let Some(requirement) = self.execute(key)? {
-                        self.work.push(Work::Execute(key));
+                Work::Execute(execution) => {
+                    let waiting = match execution {
+                        Execution::Source(source) => self.execute_source(source)?,
+                        Execution::Expression(key) => self.execute(key)?,
+                        Execution::Associated(instance) => self.execute_instance(instance)?,
+                    };
+                    if let Some(requirement) = waiting {
+                        self.work.push(Work::Execute(execution));
                         if self.prepare_pattern_requirement(requirement)? {
                             continue;
                         }
@@ -574,7 +575,7 @@ impl Queries<'_> {
         }
         self.states.insert(self.state_key(query), State::Active);
         match query {
-            Query::Source(source) => self.work.push(Work::Source(source)),
+            Query::Source(source) => self.work.push(Work::Execute(Execution::Source(source))),
             Query::Instance(instance) => self.enter_instance(instance)?,
             Query::Variant(variant) => {
                 self.work.context = instances::Context::default();
@@ -601,7 +602,7 @@ impl Queries<'_> {
     fn enter_node(&mut self, key: NodeKey) -> Result<(), Error> {
         let query = Query::Node(key);
         match self.expression(key)? {
-            Expression::Execute => self.work.push(Work::Execute(key)),
+            Expression::Execute => self.work.push(Work::Execute(Execution::Expression(key))),
             Expression::Reference(expression) => self.enter_reference(key, expression),
             Expression::Value(value) => {
                 self.complete_query(query, value)?;

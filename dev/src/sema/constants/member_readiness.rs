@@ -82,11 +82,9 @@ impl Queries<'_> {
             }
             Work::Enter(Query::Instance(instance)) | Work::PrepareInstance(instance) => {
                 let query = Query::Instance(instance);
-                let index = self
-                    .typing
-                    .facts
-                    .initializer_index(instance.definition)
-                    .ok_or_else(|| self.error(query, "selected constant has no initializer"))?;
+                let Some(index) = self.local_instance_index(instance)? else {
+                    return Ok(None);
+                };
                 (query, index, Some(instance))
             }
             _ => return Ok(None),

@@ -87,16 +87,12 @@ impl Queries<'_> {
     pub(super) fn required_initializer(&self, work: &Work) -> Result<Option<DefId>, Error> {
         let index = match *work {
             Work::Enter(Query::Constant(index) | Query::Static(index)) => index,
-            Work::Enter(Query::Instance(instance)) | Work::PrepareInstance(instance) => self
-                .typing
-                .facts
-                .initializer_index(instance.definition)
-                .ok_or_else(|| {
-                    self.error(
-                        Query::Instance(instance),
-                        "selected constant has no initializer",
-                    )
-                })?,
+            Work::Enter(Query::Instance(instance)) | Work::PrepareInstance(instance) => {
+                let Some(index) = self.local_instance_index(instance)? else {
+                    return Ok(None);
+                };
+                index
+            }
             _ => return Ok(None),
         };
         let initializer = self.typing.facts.initializers[index];

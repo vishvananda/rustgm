@@ -43,6 +43,26 @@ pub(crate) use typed_headers::{
     is_source_original, mapped_source::SourceOriginal, prepare_source_original, source_original,
 };
 
+pub(crate) fn imported_constant_initializer(
+    report: &Report,
+    facts: &Declarations,
+    definition: DefId,
+) -> Result<Option<crate::resolve::body_origin::BodyOrigin>, &'static str> {
+    use crate::resolve::model::DefKind;
+    if !report
+        .resolution
+        .definitions
+        .get(definition.0 as usize)
+        .is_some_and(|row| row.kind == DefKind::Const && row.node.is_none())
+    {
+        return Ok(None);
+    }
+    let Some(linkage) = facts.crates.as_deref() else {
+        return Ok(None);
+    };
+    linkage.constant_initializer(facts, definition)
+}
+
 #[derive(Default)]
 pub struct Linkage {
     origins: Option<std::rc::Rc<crate::resolve::body_origin::Catalog>>,

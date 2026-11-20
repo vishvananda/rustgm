@@ -600,7 +600,8 @@ pub trait Value<T> {
 struct Defaulted;
 #[stable(feature="provided_value",since="1.0.0")]
 impl Value<u8> for Defaulted {}
-struct Overridden;
+#[stable(feature="provided_value",since="1.0.0")]
+pub struct Overridden {}
 #[stable(feature="provided_value",since="1.0.0")]
 impl Value<u8> for Overridden {
     const DEFAULT: u8 = { let value = 9u8; value };
@@ -634,11 +635,33 @@ pub fn after() -> u8 { 12 }
         [BodyRef(0), BodyRef(1), BodyRef(2), BodyRef(3), BodyRef(4)]
     );
     assert_eq!(bodies.ordinary_input_count(), 5);
+    provided_constant_clients(&folder, &metadata)
+}
+
+fn provided_constant_clients(folder: &Path, metadata: &Path) -> Result {
     for (name, source, expected) in [
         (
             "import-only",
             r#"#[unsafe(no_mangle)] pub extern "C" fn imported() -> u8 { 4 }"#,
             "return u8 4",
+        ),
+        (
+            "inherited-default",
+            r#"
+struct Foreign;
+impl base::Value<u8> for Foreign {}
+#[unsafe(no_mangle)]
+pub extern "C" fn selected() -> u8 { <Foreign as base::Value<u8>>::DEFAULT }
+"#,
+            "return u8 8",
+        ),
+        (
+            "imported-override",
+            r#"
+#[unsafe(no_mangle)]
+pub extern "C" fn selected() -> u8 { <base::Overridden as base::Value<u8>>::DEFAULT }
+"#,
+            "return u8 9",
         ),
         (
             "local-override",
@@ -661,8 +684,8 @@ pub extern "C" fn selected() -> u8 { <Foreign as base::Value<u8>>::DEFAULT }
         )?;
         super::artifacts::checked(
             name,
-            &folder,
-            source_client(&client, &metadata, &output)
+            folder,
+            source_client(&client, metadata, &output)
                 .args(["--crate-type=lib", "--cap-lints=allow"]),
         )?;
         let written = std::fs::read_to_string(output)?;

@@ -42,7 +42,10 @@ fn nonselected_expression_keeps_strict_projected_type_admission()
     };
     let before = facts.constant_work.source_context_bytes;
     let mut queries = Queries::new(&report, &mut facts);
-    queries.instance_source(instance)?;
+    let index = queries
+        .local_instance_index(instance)?
+        .ok_or("local initializer")?;
+    queries.instance_source(instance, index)?;
     let error = queries
         .execution_target(child, initializer.ty)
         .err()

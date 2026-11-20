@@ -1021,8 +1021,10 @@ impl Engine {
         destruction: &body::drops::Requirements,
         input: ProofInput<'_>,
     ) -> Result<CheckedInput, Error> {
-        let imported_original =
-            facts.uses_source_copy() && body.instance.is_none() && body.source.source().is_none();
+        let imported_original = facts.uses_source_copy()
+            && body.instance.is_none()
+            && body.source.source().is_none()
+            && !matches!(body.owner, Owner::InitializerInstance { .. });
         let mut prepared = if imported_original {
             Some(
                 super::original_contexts::Original::prepare_imported(facts, body, input.contract)

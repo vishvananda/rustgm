@@ -203,7 +203,8 @@ impl Queries<'_> {
                         .map_err(|e| self.error(Query::Node(key), e))?,
                     Some(super::references::ProjectionView::Byte { .. })
                 ) {
-                    self.work.push(super::Work::Execute(key));
+                    self.work
+                        .push(super::Work::Execute(super::Execution::Expression(key)));
                     return Ok(());
                 }
                 if !matches!(place.access, Access::Owned) {

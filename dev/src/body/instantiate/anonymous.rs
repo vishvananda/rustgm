@@ -62,12 +62,9 @@ impl Selection {
                 Self::Initializer(instance).owner(facts, source)
             }
             Self::Initializer(instance) => {
-                let original = facts
-                    .initializer_index(instance.definition)
-                    .and_then(|index| facts.initializers.get(index))
-                    .ok_or("selected initializer has no original declaration")?;
+                let original = initializer_origin(facts, instance.definition, source.source)?;
                 if source.instance.is_some()
-                    || source.source != original.semantic_source().into()
+                    || source.source != original
                     || !matches!(source.owner, Owner::Initializer { definition, kind: crate::sema::model::InitializerKind::Const } if definition==instance.definition)
                 {
                     return Err("selected initializer selects another original body");
@@ -75,7 +72,7 @@ impl Selection {
                 Ok((
                     Owner::InitializerInstance {
                         instance,
-                        kind: original.kind,
+                        kind: crate::sema::model::InitializerKind::Const,
                     },
                     instance.definition,
                     None,
@@ -268,6 +265,29 @@ struct ImportedResult<'a> {
     original: &'a Contract,
     imported: crate::types::TypeId,
 }
+fn initializer_origin(
+    facts: &Declarations,
+    definition: DefId,
+    source: crate::body::ir::BodyOrigin,
+) -> Result<crate::body::ir::BodyOrigin, &'static str> {
+    if source.source().is_some() {
+        return facts
+            .initializer_index(definition)
+            .and_then(|index| facts.initializers.get(index))
+            .filter(|initializer| {
+                matches!(initializer.kind, crate::sema::model::InitializerKind::Const)
+            })
+            .map(|initializer| initializer.semantic_source().into())
+            .ok_or("selected initializer has no original declaration");
+    }
+    facts
+        .crates
+        .as_deref()
+        .ok_or("selected initializer has no current imported owner")?
+        .constant_initializer(facts, definition)?
+        .ok_or("selected initializer has no authenticated imported original")
+}
+
 fn finish_result(
     facts: &mut Declarations,
     template: &Template,

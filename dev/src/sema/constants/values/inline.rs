@@ -44,7 +44,9 @@ impl Evaluator<'_> {
             body: source,
             ty: result,
         });
-        self.queries.work.push(Work::Execute(source));
+        self.queries.work.push(Work::Execute(
+            crate::sema::constants::Execution::Expression(source),
+        ));
         let value = self
             .queries
             .drain()

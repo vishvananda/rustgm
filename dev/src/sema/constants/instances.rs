@@ -415,42 +415,55 @@ impl Queries<'_> {
         Ok(result)
     }
     pub(super) fn enter_instance(&mut self, instance: Instance) -> Result<(), Error> {
+        let Some(index) = self.local_instance_index(instance)? else {
+            self.work
+                .push(Work::Execute(super::Execution::Associated(instance)));
+            return Ok(());
+        };
         let context = self.work.context;
-        let key = self.instance_source(instance)?;
-        let index = self
-            .typing
-            .facts
-            .initializer_index(instance.definition)
-            .ok_or_else(|| {
-                self.error(
-                    Query::Instance(instance),
-                    "missing selected pattern value initializer",
-                )
-            })?;
+        let key = self.instance_source(instance, index)?;
         self.begin_pattern_value(index, context)?;
         self.forward(Query::Instance(instance), Query::Node(key));
         self.prepare(key)
     }
     pub(super) fn prepare_instance(&mut self, instance: Instance) -> Result<(), Error> {
+        let Some(index) = self.local_instance_index(instance)? else {
+            return self.check_instance(instance);
+        };
         let context = self.work.context;
-        let source = self.instance_source(instance)?;
-        let index = self
-            .typing
-            .facts
-            .initializer_index(instance.definition)
-            .ok_or_else(|| self.error(Query::Instance(instance), "missing prepared initializer"))?;
+        let source = self.instance_source(instance, index)?;
         self.begin_pattern_value(index, context)?;
         self.prepare(source)
     }
-    pub(super) fn instance_source(&mut self, instance: Instance) -> Result<NodeKey, Error> {
+    pub(super) fn local_instance_index(&self, instance: Instance) -> Result<Option<usize>, Error> {
+        let facts: &Declarations = self.typing.facts;
+        if let Some(index) = facts.initializer_index(instance.definition) {
+            return Ok(Some(index));
+        }
+        if crate::sema::crates::imported_constant_initializer(
+            self.report,
+            facts,
+            instance.definition,
+        )
+        .map_err(Error::unlocated)?
+        .is_some()
+        {
+            return Ok(None);
+        }
+        Err(self.error(
+            Query::Instance(instance),
+            "selected constant has no initializer",
+        ))
+    }
+
+    pub(super) fn instance_source(
+        &mut self,
+        instance: Instance,
+        index: usize,
+    ) -> Result<NodeKey, Error> {
         let query = Query::Instance(instance);
         // Instantiations may revisit a large template with distinct arguments.
         self.limit = self.limit.max(16_000_000);
-        let index = self
-            .typing
-            .facts
-            .initializer_index(instance.definition)
-            .ok_or_else(|| self.error(query, "selected constant has no initializer"))?;
         if !matches!(
             self.typing.facts.initializers[index].kind,
             super::InitializerKind::Const

@@ -2,7 +2,11 @@
 use super::{
     BodyKey, Contract, Declarations, DefId, Engine, Error, Report, Target, Template, body,
 };
-use crate::{sema::values::Instance, types::TypeId};
+use crate::{
+    sema::{crates::imported_constant_initializer, values::Instance},
+    types::{TypeId, parameters::environment::Environment},
+};
+use std::sync::Arc;
 impl Engine {
     pub(super) fn associated_ready(
         &mut self,
@@ -21,7 +25,11 @@ impl Engine {
                         .pending_bodies
                         .contains(&initializer.semantic_source())
             });
-        if !ready {
+        if !ready
+            && imported_constant_initializer(report, facts, instance.definition)
+                .map_err(Error::unlocated)?
+                .is_none()
+        {
             return Ok(false);
         }
         self.root(report, facts, Target::Associated { instance, result })?;
@@ -72,6 +80,81 @@ impl Engine {
         result: TypeId,
         source_value: Option<crate::sema::values::execution::SourceComputation>,
     ) -> Result<usize, Error> {
+        let (mut concrete, environment) =
+            self.materialize_selected(report, facts, instance, result, source_value)?;
+        let source = concrete.body.source;
+        if source_value.is_none() && concrete.body.result != result {
+            return Err(
+                report.body_error(source, "selected initializer materialized result changed")
+            );
+        }
+        body::constants::eligibility_charged(report, facts, &concrete.body)?;
+        body::dispatch::resolve(facts, &mut concrete.body, &mut concrete.contract)
+            .map_err(|e| report.body_error(source, e))?;
+        body::promote::instance_reusing(
+            report,
+            facts,
+            &mut concrete.body,
+            &concrete.destruction,
+            &mut self.promotions,
+        )?;
+        let checked = self.prove_body(
+            report,
+            facts,
+            &concrete.body,
+            &concrete.destruction,
+            super::ProofInput::code(&environment, &concrete.contract),
+        )?;
+        let index = self
+            .publish_selected(facts, &concrete, checked, source_value, result)
+            .map_err(|e| report.body_error(source, e))?;
+        facts.constant_work.associated_instances += 1;
+        let target = source_value.map_or(Target::Associated { instance, result }, |source| {
+            Target::SourceAssociated { source, result }
+        });
+        self.roots.insert(target, index);
+        Ok(index)
+    }
+
+    fn materialize_selected(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        instance: Instance,
+        result: TypeId,
+        source_value: Option<crate::sema::values::execution::SourceComputation>,
+    ) -> Result<(body::instantiate::Materialized, Arc<Environment>), Error> {
+        let build = |facts: &mut Declarations, template: &Template, contract: &Contract| {
+            if let Some(witness) = source_value {
+                body::instantiate::source_initializer(facts, template, witness, result, contract)
+                    .and_then(|source| source.into_requested(result))
+            } else {
+                body::instantiate::selected_initializer(facts, template, instance, contract)
+            }
+            .map_err(|e| report.body_error(template.body.source, e))
+        };
+        if let Some(source) = imported_constant_initializer(report, facts, instance.definition)
+            .map_err(Error::unlocated)?
+        {
+            self.ensure_imported_originals(report, facts)?;
+            let row = self
+                .imported
+                .as_deref()
+                .and_then(|rows| rows.get(instance.definition))
+                .ok_or_else(|| {
+                    report.body_error(
+                        source,
+                        "selected initializer has no proved imported original",
+                    )
+                })?;
+            if row.template().body.source != source {
+                return Err(
+                    report.body_error(source, "selected initializer changed its imported original")
+                );
+            }
+            let concrete = build(facts, row.template(), row.contract())?;
+            return Ok((concrete, Arc::clone(&row.template().environment)));
+        }
         let initializer = facts
             .initializer_index(instance.definition)
             .and_then(|i| facts.initializers.get(i))
@@ -98,57 +181,12 @@ impl Engine {
         } else {
             self.associated_template(report, facts, &initializer)?
         };
-        let built = if let Some(witness) = source_value {
-            body::instantiate::source_initializer(facts, &template, witness, result, &contract)
-                .and_then(|source| source.into_requested(result))
-        } else {
-            body::instantiate::selected_initializer(facts, &template, instance, &contract)
-        }
-        .map_err(|e| report.body_error(source, e));
+        let materialized = build(facts, &template, &contract);
+        let environment = Arc::clone(&template.environment);
         self.associated
             .get_or_insert_with(Default::default)
             .insert(instance.definition, (template, contract));
-        let mut concrete = built?;
-        if source_value.is_none() && concrete.body.result != result {
-            return Err(
-                report.body_error(source, "selected initializer materialized result changed")
-            );
-        }
-        body::constants::eligibility_charged(report, facts, &concrete.body)?;
-        body::dispatch::resolve(facts, &mut concrete.body, &mut concrete.contract)
-            .map_err(|e| report.body_error(source, e))?;
-        body::promote::instance_reusing(
-            report,
-            facts,
-            &mut concrete.body,
-            &concrete.destruction,
-            &mut self.promotions,
-        )?;
-        let environment = std::sync::Arc::clone(
-            &self
-                .associated
-                .as_deref()
-                .and_then(|map| map.get(&instance.definition))
-                .ok_or_else(|| report.body_error(source, "lost selected initializer template"))?
-                .0
-                .environment,
-        );
-        let checked = self.prove_body(
-            report,
-            facts,
-            &concrete.body,
-            &concrete.destruction,
-            super::ProofInput::code(&environment, &concrete.contract),
-        )?;
-        let index = self
-            .publish_selected(facts, &concrete, checked, source_value, result)
-            .map_err(|e| report.body_error(source, e))?;
-        facts.constant_work.associated_instances += 1;
-        let target = source_value.map_or(Target::Associated { instance, result }, |source| {
-            Target::SourceAssociated { source, result }
-        });
-        self.roots.insert(target, index);
-        Ok(index)
+        Ok((materialized?, environment))
     }
     fn publish_selected(
         &mut self,

@@ -130,6 +130,24 @@ impl ImportedOwners {
 }
 
 impl super::super::Linkage {
+    pub(crate) fn constant_initializer(
+        &self,
+        facts: &Declarations,
+        definition: DefId,
+    ) -> Result<Option<crate::resolve::body_origin::BodyOrigin>, &'static str> {
+        use crate::support::crates::generics::source::ConstantBody;
+        let Some((_, ConstantBody::Original(raw))) =
+            self.source_associated_constant(facts, definition)?
+        else {
+            return Ok(None);
+        };
+        let catalog = self
+            .origin_catalog()
+            .ok_or("imported initializer lost its declaration catalog")?;
+        let (owner, _, _) = catalog.declaration_coordinate(catalog.declaration(definition)?)?;
+        catalog.origin(catalog.body_at(owner, raw)?).map(Some)
+    }
+
     pub(in crate::sema) fn source_associated_constant(
         &self,
         facts: &Declarations,
