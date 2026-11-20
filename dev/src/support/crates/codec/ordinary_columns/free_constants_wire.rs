@@ -41,7 +41,6 @@ pub(super) fn encode(out: &mut Writer, rows: s::ValidatedView<'_>) -> Result<(),
 pub(super) fn decode(
     read: &mut Input<'_, '_>,
     rows: &mut s::SourceRows,
-    profile: s::Profile,
 ) -> Result<(), &'static str> {
     read.reader.atoms(rows.declarations.len())?;
     let count = count(&rows.declarations);
@@ -55,7 +54,9 @@ pub(super) fn decode(
         let body = match read.reader.u8()? {
             0 => s::ConstantBody::Required,
             1 => s::ConstantBody::Evaluated(recipe_columns::const_term_read(read)?),
-            2 if profile.declaration_policies() => s::ConstantBody::Original(BodyRef(read.id()?)),
+            2 if read.profile.declaration_policies() => {
+                s::ConstantBody::Original(BodyRef(read.id()?))
+            }
             _ => return Err("invalid source constant value presence"),
         };
         constants.push(s::ConstantHeader { ty, body });
