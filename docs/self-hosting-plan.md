@@ -976,6 +976,27 @@ under `obj/qualification/fast/1795160908867247551/` and
 `obj/parallel/v14-associated-constants/required-rustc-v1/` in the frontier
 checkout. The provided initializer remains the next transport requirement.
 
+`d7a9ddcc8` in the frontier worktree publishes a trait constant's
+original initializer and each explicit override under their checked
+declaration owners. The producer retains lexical locals, inherited
+slots, original-body numbering and actual default/override member
+links. The metadata decoder retains the v14 initializer context.
+The provider emits 8,439 bytes of metadata, which re-encode exactly.
+The focused control checks coverage of the two constant bodies and
+three function originals. All five selected integration tests,
+formatting, the architecture audit and strict Clippy pass. Pinned
+Rust independently runs the separate-crate control and prints
+`4 8 9 12`.
+
+A fresh RustGM client decodes the same artifact and stops at
+`v4 method conformance requires its actual override`. The importer
+treats the inherited constant default as an omitted method override.
+Constant link conformance, reconstruction and execution in the fresh
+client, and the open request to the actual supertrait remain pending.
+This compiler candidate stays in the frontier worktree. Evidence is
+under `obj/qualification/fast/1795163643806322253/` and
+`obj/parallel/v14-associated-constants/{provided-stable-v2,provided-independent-v1}/`.
+
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
 deprecated macro and accepts a call through an annotated `use` alias of a

@@ -8,7 +8,7 @@ unit-graph replay. The combined graph has authenticated inputs for all
 `core` publication after 36.80 seconds without emitting an accepted
 artifact. Its first failure is the provided
 `Lemire::MAX_EXPONENT_FAST_PATH` constant.
-[Strict graph evidence](docs/self-hosting-plan.md#L1154)
+[Strict graph evidence](docs/self-hosting-plan.md#L1176)
 
 The self-hosting worktree is
 `/mnt/vizier/rustgm-scratch/rustgm-pa26-work` on
@@ -17,12 +17,13 @@ checkpoint `7a5329550` is on `main`. A fresh RustGM client imports
 `Table<T>::ROW`, returns `19` and `513` for its two implementations and
 rejects a missing or mistyped override. Four focused integration tests
 passed. `4520c8716` repairs the private decoder call. The private
-harness reached its build deadline before execution. The frontier
-worktree is testing publication of the provided initializer under its
-actual declaration, including lexical locals and canonical numbering.
-Owner substitution and the open supertrait request remain pending.
+harness reached its build deadline before execution. Frontier commit
+`d7a9ddcc8` publishes and byte-round-trips an actual default and
+override with five passing focused tests. A fresh RustGM client now
+stops at inherited-default conformance. Fresh original reconstruction,
+owner substitution and the open supertrait request remain pending.
 Stage 1 and Stage 2 are pending.
-[Strict Core evidence](docs/self-hosting-plan.md#L953)
+[Strict Core evidence](docs/self-hosting-plan.md#L979)
 
 The performance worker survived the restart. Its worktree is
 `/mnt/vizier/rustgm-scratch/rustgm-pa29-work` on
@@ -33,14 +34,15 @@ retired instructions on the original graph, so the candidate stays
 isolated. A new candidate `4757cac6d` handles the covered parameter-seed
 suffix. Its optimized comparison matches the graph and nine typed loan
 ledgers. It retires 0.102% fewer instructions on the original graph, with
-slower elapsed time in both pairs. The worker is checking the timing
-conditions. Both candidates stay isolated.
+slower elapsed time in both pairs. Both candidates stay isolated.
+The worker is building an observer for the configured AST traversal
+in local-annotation checking, with macro and cfg parity controls.
 The private harness reached its build deadline. Bounded child-proof
 reuse `9143861f0` and its early source guard `049db339d` are both on
 `main`. The separate trait-header experiments are parked. Lifetime
 evidence is under `obj/parallel/v5-nontrait-schedule/` in the
 performance worktree.
-[Performance evidence](docs/self-hosting-plan.md#L2015)
+[Performance evidence](docs/self-hosting-plan.md#L2064)
 
 ## Historical bring-up checkpoint — 2026-11-19
 
