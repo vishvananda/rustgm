@@ -1670,6 +1670,18 @@ and user-cycle effects remain within the baseline variation. The report and
 raw profiles are under `obj/parallel/scoped-singleton-equation/` in the
 performance checkout.
 
+The isolated `d7a306b6c` experiment reuses substitution buffers within one
+trait search poll. It preserves all 34 checked ordered proof DAGs and matches
+15 optimized controls. The source-backed control allocates 571 fewer blocks
+and 52,438 more cumulative bytes. The cold control allocates 64 more blocks.
+The original graph retires 0.090% more instructions, 0.125% more loads and
+0.153% more stores in the immutable pair. Wall medians rise from 29.905 to
+33.035 seconds within baseline variation. All LowIR, link manifests and native
+outputs match. Disassembly and the observed call counts model about 100.8 MB
+of additional explicit copying on the measured search route. The experiment
+remains isolated. The report and raw profiles are in
+`obj/parallel/trait-instantiation-scratch/` in the performance checkout.
+
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
 positions and 16,384 invocations the median was 1,117.90 ms before and 67.79 ms
