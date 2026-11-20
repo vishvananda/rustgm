@@ -24,14 +24,14 @@ under its trait owner and passes four focused checks. `dc9017c11`
 re-proves imported constant links using the actual declaration kind
 and canonical constant contract. Two focused checks pass. A fresh
 RustGM client with the same provider reached the old function-only
-original-body preflight. The next frontier changes reconstruct and check
+original-body preflight. `5bb85597e` reconstructs and checks
 the initializer under the constant's actual owner. A fresh import-only
 client emits `return u8 4`, and a local override emits `return u8 21`.
 The inherited default reaches evaluation and fails with `selected constant
 has no initializer`. The division control exposed a synthesized-constructor
 check ordered after function-header lookup. The fix and expanded consumer
-regression are in focused validation. Imported default execution, owner
-substitution and the open supertrait request remain pending.
+regression pass all three focused checks. Imported default execution is
+being validated. The open supertrait request remains pending.
 Stage 1 and Stage 2 are pending.
 [Strict Core evidence](docs/self-hosting-plan.md#L979)
 
@@ -46,7 +46,9 @@ producer shadow matches the original traversal order and predicts all
 create 7,547 events at later positions. All 64 events missed by the
 publication hooks are Core pattern endpoints. The compact representation
 would still use at least 9.54 MB of payload for this pass. The worker
-closed the experiment and is ranking larger non-trait hotspots.
+closed the experiment and is measuring eligible work in canonical type
+interning. The historical profile attributes 571 of 26,865 sampled call
+chains to interning.
 
 Lifetime candidates `72264239b` and `4757cac6d` stay isolated. The first
 retires 0.253% more original-graph instructions. The second retires 0.102%

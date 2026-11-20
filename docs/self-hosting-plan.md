@@ -1014,10 +1014,12 @@ selected body. The frozen replay receipt is
 `e900d13f60bfd373d12e72006013d9dc7a5d5a196ae85b6ae99677c40977b976`.
 Formatting, architecture and strict Clippy pass on the replay binary's
 source. The v14 division control found that the producer tried to look up a
-function header for a synthesized constructor. The frontier worktree restores
-the earlier constructor check and adds the two successful consumer cases
-to the focused integration test. Validation of that update, execution of an
-imported default and override, and the open supertrait request remain pending.
+function header for a synthesized constructor. `5bb85597e` restores the
+earlier constructor check and adds the two successful consumer cases to
+the focused integration test. All three focused tests pass, including the
+division regression. The receipt is `obj/qualification/fast/1795166231575110445/`
+in the frontier worktree. Execution of an imported default and override,
+and the open supertrait request, remain pending.
 
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
