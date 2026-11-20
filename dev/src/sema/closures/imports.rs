@@ -2,6 +2,10 @@
 use crate::resolve::model::{DefId, DefKind, Namespace, Resolution, ScopeId, Target};
 use crate::support::hash::{HashMap, HashSet};
 
+/// A coarse runaway guard: the walk is linear in a session's scopes and
+/// references, and a whole-graph session resolves several million of them.
+const WORK_LIMIT: usize = 1 << 30;
+
 /// Lexical type inputs only. A mention does not establish a read, loan or move.
 #[derive(Default)]
 pub struct Imports {
@@ -21,7 +25,7 @@ impl Imports {
             work: first.map_or(resolution.scopes.len(), |index| index + 1),
             ..Self::default()
         };
-        if result.work > 1_000_000 {
+        if result.work > WORK_LIMIT {
             return Err("closure import work limit exceeded");
         }
         if first.is_none() {
@@ -71,7 +75,7 @@ impl Imports {
             .work
             .checked_add(1)
             .ok_or("closure import work overflow")?;
-        if self.work > 1_000_000 {
+        if self.work > WORK_LIMIT {
             return Err("closure import work limit exceeded");
         }
         Ok(())
