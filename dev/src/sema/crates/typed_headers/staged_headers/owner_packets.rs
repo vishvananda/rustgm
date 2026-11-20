@@ -131,16 +131,30 @@ fn implementation_members(
     let mut members = Vec::with_capacity(links.len());
     let mut results = Vec::new();
     for link in links {
-        let actual = link
-            .implementation
-            .ok_or_else(|| error("v4 method conformance requires its actual override"))?;
+        let declaration = link
+            .trait_member
+            .map(|member| rows.header(member.declaration))
+            .transpose()
+            .map_err(error)?
+            .flatten();
+        let Some(actual) = link.implementation else {
+            // The trait owns the default's original, so it contributes no
+            // declaration to the implementation's own lexical inventory.
+            if rows.descriptor().profile().declaration_policies()
+                && let Some(s::HeaderRef::Constant(index)) = declaration
+                && matches!(
+                    rows.constants()[index as usize].body,
+                    s::ConstantBody::Original(_)
+                )
+            {
+                continue;
+            }
+            return Err(error("v4 method conformance requires its actual override"));
+        };
         let actual = context.definition(actual, budget)?;
         members.push(actual);
         if let Some(member) = link.trait_member
-            && matches!(
-                rows.header(member.declaration).map_err(error)?,
-                Some(s::HeaderRef::AssociatedType(_))
-            )
+            && matches!(declaration, Some(s::HeaderRef::AssociatedType(_)))
         {
             budget.reserve(
                 4 * size_of::<(crate::resolve::model::DefId, crate::resolve::model::DefId)>(),
