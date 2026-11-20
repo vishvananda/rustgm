@@ -68,8 +68,9 @@ pub(crate) struct Loader<'a, S> {
     /// have no complete module parse in any slot.
     cache: HashMap<PathBuf, [Option<FileId>; 4]>,
     separate_instances: bool,
-    includes: HashMap<(PathBuf, MacroContext, Edition), FileId>,
-    include_requests: HashMap<(PathBuf, MacroContext, Edition), FileId>,
+    /// Include fragments by source, grammar, edition and cfg scope.
+    includes: HashMap<(PathBuf, MacroContext, Edition, usize), FileId>,
+    include_requests: HashMap<(PathBuf, MacroContext, Edition, usize), FileId>,
     resources: HashMap<PathBuf, Result<Option<Vec<u8>>, String>>,
     environment: HashMap<String, Result<Option<String>, String>>,
 }
@@ -302,13 +303,10 @@ impl<'a, S: Sources> Loader<'a, S> {
                 )));
             }
             let edition = input.edition().unwrap_or(self.config.edition());
-            let unit = Unit::parse_in_edition(
-                source.source,
-                self.config,
-                edition,
-                &mut self.package.names,
-            )
-            .map_err(|e| Error::at(file, e.offset, e.message))?;
+            let (_, config) = self.config.for_crate(Some(input.name()));
+            let unit =
+                Unit::parse_in_edition(source.source, config, edition, &mut self.package.names)
+                    .map_err(|e| Error::at(file, e.offset, e.message))?;
             super::artifact_attributes::root(
                 &unit,
                 file,
@@ -495,7 +493,12 @@ impl<'a, S: Sources> Loader<'a, S> {
             let edition = self.package.unit(file).edition();
             let parsed = self.cache.get(&selected.identity).copied();
             let slot = edition_slot(edition);
-            let source_file = if let Some(id) = parsed.and_then(|units| units[slot]) {
+            // A module parsed for a crate with other cfg options is parsed again.
+            let (scope, config) = self.package.crate_config(self.config, file);
+            let cached = parsed
+                .and_then(|units| units[slot])
+                .filter(|&id| self.package.crate_config(self.config, id).0 == scope);
+            let source_file = if let Some(id) = cached {
                 self.cached_instance(id, &selected.path)?
             } else {
                 let id = FileId(
@@ -504,7 +507,7 @@ impl<'a, S: Sources> Loader<'a, S> {
                 );
                 let unit = Unit::parse_in_edition(
                     selected.source,
-                    self.config,
+                    config,
                     edition,
                     &mut self.package.names,
                 )
@@ -648,13 +651,16 @@ impl<S: Sources> Loader<'_, S> {
 impl<S: Sources> Loader<'_, S> {
     /// Cache parsed include fragments separately from complete module syntax.
     /// Requested aliases retain source names while sharing canonical parsed facts.
+    /// An include takes the cfg options of the crate that `includer` belongs to.
     pub(crate) fn include(
         &mut self,
         path: &Path,
         grammar: MacroContext,
         edition: Edition,
+        includer: FileId,
     ) -> Result<(FileId, bool), Error> {
-        let requested = (path.components().collect(), grammar, edition);
+        let (scope, config) = self.package.crate_config(self.config, includer);
+        let requested = (path.components().collect(), grammar, edition, scope);
         if let Some(file) = self.include_requests.get(&requested) {
             return Ok((*file, false));
         }
@@ -676,14 +682,14 @@ impl<S: Sources> Loader<'_, S> {
                     ),
                 )
             })?;
-        let key = (input.identity.clone(), grammar, edition);
+        let key = (input.identity.clone(), grammar, edition, scope);
         let (unit, parsed) = if let Some(file) = self.includes.get(&key) {
             (self.package.unit(*file).fresh_instance(), false)
         } else {
             (
                 Unit::include_in_edition(
                     input.source,
-                    self.config,
+                    config,
                     edition,
                     grammar,
                     &mut self.package.names,

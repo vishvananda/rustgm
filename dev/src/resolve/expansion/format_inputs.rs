@@ -145,6 +145,7 @@ impl<S: Sources> Engine<'_, S> {
             call.visit.node,
             call.grammar.bang().map_err(|m| call.diagnostic(m))?,
         );
+        let config = self.loader.package.crate_config(self.config, file).1;
         let package = &mut self.loader.package;
         let unit = &package.units[file.0 as usize];
         let original = unit.configured.ast.node(target).span;
@@ -205,7 +206,7 @@ impl<S: Sources> Engine<'_, S> {
             builtin::format_arguments::Environment {
                 symbols: &mut package.names,
                 grammar,
-                config: self.config,
+                config,
             },
             role == builtin::Builtin::FormatArgsNl,
             names,

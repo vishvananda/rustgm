@@ -13,6 +13,7 @@ impl<S: Sources> Engine<'_, S> {
         grammar: MacroContext,
         kind: builtin::Builtin,
     ) -> Result<builtin::Expansion, Error> {
+        let config = self.loader.package.crate_config(self.config, file).1;
         let unit = self.loader.package.unit(file);
         let original = unit.configured.ast.node(target).span;
         if kind == builtin::Builtin::OptionEnv {
@@ -24,7 +25,7 @@ impl<S: Sources> Engine<'_, S> {
                 .loader
                 .environment(&name)
                 .map_err(|e| Error::at(file, original.start, e))?;
-            return builtin::option_environment(value, grammar, self.config)
+            return builtin::option_environment(value, grammar, config)
                 .map_err(|e| Error::at(file, original.start, e.message));
         }
         if kind == builtin::Builtin::Env {
@@ -46,7 +47,7 @@ impl<S: Sources> Engine<'_, S> {
                         }),
                     )
                 })?;
-            return builtin::string(value.to_owned(), grammar, self.config)
+            return builtin::string(value.to_owned(), grammar, config)
                 .map_err(|e| Error::at(file, original.start, e.message));
         }
         let (span, path) = self.include_path(file, target, arguments)?;
@@ -67,9 +68,9 @@ impl<S: Sources> Engine<'_, S> {
         let generated = if kind == builtin::Builtin::IncludeStr {
             let text = std::str::from_utf8(bytes)
                 .map_err(|_| Error::at(file, span.start, "included string is not UTF-8"))?;
-            builtin::string(text.to_owned(), grammar, self.config)
+            builtin::string(text.to_owned(), grammar, config)
         } else {
-            builtin::byte_string(bytes.to_vec(), grammar, self.config)
+            builtin::byte_string(bytes.to_vec(), grammar, config)
         };
         generated.map_err(|e| Error::at(file, original.start, e.message))
     }
@@ -114,7 +115,7 @@ impl<S: Sources> Engine<'_, S> {
     ) -> Result<(Span, FileId, bool), Error> {
         let (_, path) = self.include_path(file, target, arguments)?;
         let edition = self.loader.package.unit(file).edition();
-        let (included, parsed) = self.loader.include(&path, grammar, edition)?;
+        let (included, parsed) = self.loader.include(&path, grammar, edition, file)?;
         self.grant_admissions();
         // Cached source templates are never expanded in place. Each insertion
         // copies typed arenas into the caller and keeps a physical origin boundary.

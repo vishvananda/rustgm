@@ -25,6 +25,7 @@ impl<S: Sources> Engine<'_, S> {
                 .bang()
                 .map_err(|message| call.diagnostic(message))?,
         );
+        let config = self.loader.package.crate_config(self.config, file).1;
         let Some(Source::Core(source)) = self.loader.package.source.as_deref() else {
             return Err(Error::at(
                 file,
@@ -89,7 +90,7 @@ impl<S: Sources> Engine<'_, S> {
             role == Builtin::FormatArgsNl,
             constructor,
             grammar,
-            self.config,
+            config,
         )
         .map_err(|error| Error::at(file, error.offset, error.message))
     }

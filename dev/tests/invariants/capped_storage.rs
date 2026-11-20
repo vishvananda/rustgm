@@ -29,7 +29,8 @@ fn caps_preserve_retained_attribute_debt_and_compact_records() -> Result {
     assert_eq!(size_of::<crate::support::diagnostics::LintCap>(), 1);
     // Each source-contract cap is optional, so the snapshot holds three
     // `Option<u32>` words where it held three fixed `u32` limits.
-    assert_eq!(size_of::<Config>(), 96);
+    // Amended: one pointer to the cfg scopes of bring-up guest crates.
+    assert_eq!(size_of::<Config>(), 104);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     // The lineage ledger's admitted-byte grant (census batch 3).
     assert_eq!(size_of::<crate::resolve::expansion::Report>(), 3104);

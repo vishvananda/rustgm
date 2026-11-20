@@ -187,6 +187,7 @@ impl<S: Sources> Engine<'_, S> {
             .input(file, capture, false)
             .map_err(|e| self.eager_error(index, definition, e))?;
         self.charge_source_eager_opaque(file, definition, &input)?;
+        let config = self.loader.package.crate_config(self.config, file).1;
         let (before, tail) = self.loader.package.units.split_at_mut(file.0 as usize);
         let (unit, after) = tail
             .split_first_mut()
@@ -204,7 +205,7 @@ impl<S: Sources> Engine<'_, S> {
                         after.get((id.0 - file.0 - 1) as usize)
                     }
                 },
-                self.config,
+                config,
                 match self.definitions[definition].body {
                     Body::Builtin(Builtin::Asm) => {
                         crate::syntax::expression::fragment::ArgumentsGrammar::Assembly
@@ -301,7 +302,7 @@ impl<S: Sources> Engine<'_, S> {
             call.grammar
                 .bang()
                 .map_err(|message| call.diagnostic(message))?,
-            self.config,
+            self.loader.package.crate_config(self.config, call.file).1,
         )
         .map_err(|failure| Error::at(call.file, failure.offset, failure.message))
     }
@@ -506,7 +507,7 @@ impl<S: Sources> Engine<'_, S> {
                 root,
                 |index| unit.literal(index),
                 grammar,
-                self.config,
+                self.loader.package.crate_config(self.config, file).1,
             )
             .map_err(|e| Error::at(file, e.offset, e.message)),
             Body::Builtin(builtin::Builtin::CompileError) => Err(

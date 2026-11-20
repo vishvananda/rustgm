@@ -94,7 +94,7 @@ impl<S: Sources> Engine<'_, S> {
                 edition: self.definitions[definition].edition,
                 role,
             },
-            self.config,
+            self.loader.package.crate_config(self.config, file).1,
             &charge,
         )
         .map_err(|failure| Error::at(file, failure.offset, failure.message))?;

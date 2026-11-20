@@ -74,7 +74,7 @@ impl<S: Sources> Engine<'_, S> {
                 package.unit(file).source.text(),
                 input,
                 &inputs,
-                self.config,
+                package.crate_config(self.config, file).1,
                 package.uses_source_bindings(),
             )
             .map_err(|e| {
@@ -90,7 +90,8 @@ impl<S: Sources> Engine<'_, S> {
             })?
         };
         self.check_cfg_uses(file, &answer.uses)?;
-        builtin::cfg_value(answer.value, grammar, self.config).map_err(|e| {
+        let config = self.loader.package.crate_config(self.config, file).1;
+        builtin::cfg_value(answer.value, grammar, config).map_err(|e| {
             Error::at(
                 file,
                 if e.offset == 0 {

@@ -267,7 +267,7 @@ impl<S: Sources> Engine<'_, S> {
                 packed_debug,
                 enum_default: choice.map(|choice| choice.variant),
             },
-            self.config,
+            self.loader.package.crate_config(self.config, file).1,
             &charge,
         )
         .map_err(|failure| Error::at(file, failure.offset, failure.message))?;

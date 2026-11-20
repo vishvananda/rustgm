@@ -36,6 +36,8 @@ pub struct Options {
     pub census_progress: Option<String>,
     /// Bring-up guest crates in command-line order; never a strict input.
     pub guests: Vec<rustgm::support::bringup::Guest>,
+    /// Guest crates with cfg options of their own, and those options.
+    pub guest_cfgs: Vec<(String, Option<String>)>,
 }
 impl Options {
     /// Consume only arguments owned by this crate/environment boundary.
@@ -65,6 +67,7 @@ impl Options {
                 self.metadata = Some(args.next().ok_or("--metadata-output requires a path")?);
             }
             "--bringup-guest" => self.guest(args.next().as_deref())?,
+            "--bringup-guest-cfg" => self.guest_cfg(args.next())?,
             "--crate-type=lib" => self.output = Some(OutputKind::Library),
             "--crate-type=bin" => self.output = Some(OutputKind::Binary),
             "--extern" | "--dependency-metadata" => {
@@ -119,6 +122,21 @@ impl Options {
             Some(edition) => guest.with_edition(edition),
             None => guest,
         });
+        Ok(())
+    }
+    /// `--bringup-guest-cfg NAME[=SETTING]`: the guest crate NAME has cfg
+    /// options of its own instead of the session's `--cfg` options; SETTING,
+    /// spelled as for `--cfg`, is one of them.
+    fn guest_cfg(&mut self, value: Option<String>) -> Result<(), String> {
+        let value = value.ok_or("--bringup-guest-cfg requires NAME[=SETTING]")?;
+        let (name, setting) = match value.split_once('=') {
+            Some((name, setting)) => (name, Some(setting.to_owned())),
+            None => (value.as_str(), None),
+        };
+        if name.is_empty() || self.guest_cfgs.len() >= 4096 {
+            return Err("--bringup-guest-cfg requires NAME[=SETTING]".into());
+        }
+        self.guest_cfgs.push((name.to_owned(), setting));
         Ok(())
     }
     pub fn select_native_output(&mut self, path: Option<String>) -> Result<(), String> {
@@ -316,6 +334,15 @@ impl Options {
                 || mode == "--emit-names")
         {
             return Err("--bringup-guest requires --source-core and a view that expands the crate, without external crates".into());
+        }
+        if let Some((name, _)) = self
+            .guest_cfgs
+            .iter()
+            .find(|(name, _)| !self.guests.iter().any(|guest| guest.name() == name))
+        {
+            return Err(format!(
+                "--bringup-guest-cfg {name}: no --bringup-guest names this crate"
+            ));
         }
         Ok(())
     }

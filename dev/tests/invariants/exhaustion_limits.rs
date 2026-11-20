@@ -218,7 +218,8 @@ fn immutable_limit_layout_is_cold_and_default_records_remain_dense() {
     );
     // Amended: optional caps plus the granted allowance live once per ledger owner.
     assert_eq!(size_of::<SourceContractLimits>(), 24);
-    assert_eq!(size_of::<Config>(), 96);
+    // Amended: one pointer to the cfg scopes of bring-up guest crates.
+    assert_eq!(size_of::<Config>(), 104);
     assert_eq!(size_of::<State>(), 152);
     assert_eq!(size_of::<Contracts>(), 160);
     // The provider adds one pointer for the bring-up guest crates; the source
@@ -345,16 +346,18 @@ fn edition_specific_parses_share_one_physical_source_allowance() -> TestResult {
         &context,
     )?;
     let grammar = crate::syntax::ast::MacroContext::Items(ItemContext::Module);
+    // The root file includes; its crate has the session's cfg options.
+    let root = crate::support::source::FileId(0);
     // The include admits the identity before a complete module parse exists.
-    let (old, _) = loader.include(Path::new("unit.rs"), grammar, Edition::Rust2021)?;
+    let (old, _) = loader.include(Path::new("unit.rs"), grammar, Edition::Rust2021, root)?;
     let ast = &loader.package.units[0].configured.ast;
     let declaration = ast.nodes.iter().position(|node| {
         matches!(node.kind, Kind::Item(index) if matches!(ast.items[index as usize].kind, ItemKind::Module { .. }))
     }).and_then(|index| u32::try_from(index).ok()).map(NodeId::new).ok_or("module declaration")?;
     let module = loader.load_module(ModuleId(0), declaration, None, false, None)?;
     let modern_module = loader.package.modules[module.0 as usize].file;
-    let (modern, _) = loader.include(Path::new("./unit.rs"), grammar, Edition::Rust2024)?;
-    let (again, _) = loader.include(Path::new("unit.rs"), grammar, Edition::Rust2021)?;
+    let (modern, _) = loader.include(Path::new("./unit.rs"), grammar, Edition::Rust2024, root)?;
+    let (again, _) = loader.include(Path::new("unit.rs"), grammar, Edition::Rust2021, root)?;
     assert_eq!(old, again);
     assert_ne!(old, modern);
     assert_eq!(loader.package.unit(old).edition(), Edition::Rust2021);

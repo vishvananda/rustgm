@@ -393,6 +393,49 @@ pub extern "C" fn main() -> i32 {
     0
 }
 "#;
+/// A guest whose items exist only under its own `feature = "first"` and
+/// without the session's `feature = "session"`, in its source and in the
+/// output of its own macro.
+const OWN_CFG: &str = r#"#![feature(no_core)]
+#![no_core]
+#[cfg(all(feature = "first", not(feature = "session")))]
+pub fn configured() -> u8 {
+    1
+}
+#[cfg(not(all(feature = "first", not(feature = "session"))))]
+pub fn configured() -> u8 {
+    missing_configured()
+}
+macro_rules! expanded {
+    () => {
+        #[cfg(all(feature = "first", not(feature = "session")))]
+        pub fn expanded() -> u8 {
+            2
+        }
+        #[cfg(not(all(feature = "first", not(feature = "session"))))]
+        pub fn expanded() -> u8 {
+            missing_expanded()
+        }
+    };
+}
+expanded!();
+"#;
+/// A program that exists only under the session's `feature = "session"`.
+const SESSION_CFG: &str = r#"#![feature(no_core)]
+#![no_core]
+#![no_main]
+#[cfg(feature = "session")]
+fn checks() -> u8 {
+    first::configured();
+    first::expanded()
+}
+#[unsafe(no_mangle)]
+pub extern "C" fn main() -> i32 {
+    checks();
+    0
+}
+"#;
+
 /// A guest constant naming the host's `pub(crate)` associated constant, in
 /// a body and in a field length.
 const HIDDEN_BODY: &str = r"#![feature(no_core)]
@@ -526,6 +569,51 @@ fn rejected(
         .ok_or_else(|| format!("the source has no `{construct}`"))?;
     let expected = format!("ERROR: file {file}: {offset}: {message}");
     assert!(stderr.contains(&expected), "{expected}\n{stderr}");
+    Ok(())
+}
+
+/// rustc: accepts both programs when each crate is compiled with its own
+/// `--cfg` options (`first` with `feature="first"`, `app` and the host with
+/// `feature="session"`); rejects `OWN_CFG` with E0425 (cannot find function
+/// `missing_configured`) when `first` is also given `feature="session"`.
+#[test]
+fn a_guest_with_cfg_options_of_its_own_never_sees_the_sessions() -> Result {
+    let run = |name: &str, scoped: bool| -> Result<Output> {
+        let (folder, mut command) = prepare(name, &[("first", OWN_CFG), ("app", SESSION_CFG)])?;
+        let list = folder.join("skip.tsv");
+        std::fs::write(&list, "")?;
+        command.arg("--bringup-skip-list").arg(list);
+        command.args(["--cfg", "feature=\"session\""]);
+        if scoped {
+            command.args(["--bringup-guest-cfg", "first=feature=\"first\""]);
+        } else {
+            command.args(["--cfg", "feature=\"first\""]);
+        }
+        Ok(command.arg(folder.join("core.rs")).output()?)
+    };
+    accepted(&run("own-cfg", true)?)?;
+    rejected(
+        &run("session-cfg", false)?,
+        (1, OWN_CFG),
+        "missing_configured()",
+        "unresolved value name",
+    )?;
+    for (option, message) in [
+        ("nobody", "no --bringup-guest names this crate"),
+        ("first=feature=", "--bringup-guest-cfg first:"),
+    ] {
+        let (folder, mut command) = prepare("cfg-usage", &[("first", OWN_CFG)])?;
+        let list = folder.join("skip.tsv");
+        std::fs::write(&list, "")?;
+        command.arg("--bringup-skip-list").arg(list);
+        let output = command
+            .args(["--bringup-guest-cfg", option])
+            .arg(folder.join("core.rs"))
+            .output()?;
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert_eq!(output.status.code(), Some(2), "{option}: {stderr}");
+        assert!(stderr.contains(message), "{option}: {stderr}");
+    }
     Ok(())
 }
 

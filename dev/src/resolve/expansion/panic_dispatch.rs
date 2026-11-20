@@ -354,7 +354,7 @@ impl<S: Sources> Engine<'_, S> {
                     call.handler,
                     input,
                     &self.captures,
-                    self.config,
+                    self.loader.package.crate_config(self.config, file).1,
                     &mut provenance,
                 )
                 .map_err(|failure| Error::at(file, failure.offset, failure.message))?,
@@ -402,7 +402,7 @@ impl<S: Sources> Engine<'_, S> {
                 input,
                 registry: &self.captures,
                 inputs: &inputs,
-                config: self.config,
+                config: self.loader.package.crate_config(self.config, file).1,
                 charge: &charge,
             },
             provenance,

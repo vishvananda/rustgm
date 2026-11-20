@@ -48,6 +48,23 @@ pub(super) fn validate(crates: &crate::crates::Options) -> Result<(), String> {
     Ok(())
 }
 
+/// Give each guest crate named by `--bringup-guest-cfg` its own cfg options,
+/// once the session's own configuration is complete.
+pub(super) fn configure(
+    crates: &crate::crates::Options,
+    config: &mut rustgm::expand::config::Config,
+) -> Result<(), String> {
+    for (name, setting) in &crates.guest_cfgs {
+        let scope = config.crate_scope(name);
+        if let Some(setting) = setting {
+            scope
+                .add(setting)
+                .map_err(|e| format!("--bringup-guest-cfg {name}: {}: {}", e.offset, e.message))?;
+        }
+    }
+    Ok(())
+}
+
 /// Name every function that owns a failure, for the driver that maintains the
 /// list, and every failure that no list entry can remove. Without `facts`,
 /// a failure belongs to a function item that the resolver declared.

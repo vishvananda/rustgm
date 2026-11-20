@@ -91,6 +91,7 @@ impl<S: Sources> Engine<'_, S> {
                 .charge(steps, bytes)
                 .map_err(|message| error(original.start, message))
         };
+        let config = self.loader.package.crate_config(self.config, file).1;
         let (before, tail) = self.loader.package.units.split_at_mut(file.0 as usize);
         let (unit, after) = tail
             .split_first_mut()
@@ -112,7 +113,7 @@ impl<S: Sources> Engine<'_, S> {
                         after.get((id.0 - file.0 - 1) as usize)
                     }
                 },
-                self.config,
+                config,
                 &charge,
                 pattern,
             )

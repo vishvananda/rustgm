@@ -6,7 +6,9 @@
 //! standard prelude follow the crate that owns the module they are asked
 //! from. Lang items, features and coherence stay those of the session. Each
 //! crate's source edition stays with its units; an omitted guest edition inherits
-//! the host's. The bring-up profile names the guests; a strict compilation has
+//! the host's. A guest given cfg options of its own is configured with those
+//! alone; every other crate sees the session's `--cfg` options. The bring-up
+//! profile names the guests; a strict compilation has
 //! none and takes none of these paths. Their state lives in the session's boxed source core,
 //! so no package or resolution record grows for them.
 use super::{
@@ -318,6 +320,21 @@ impl Package {
             .and_then(|guests| guests.files.get(file.0 as usize))
             .copied()
             .unwrap_or(CrateSlot::HOST)
+    }
+    /// The cfg scope and configuration of the crate whose module tree loaded
+    /// `file`: a guest's own when the driver gave it cfg options, otherwise
+    /// the session's.
+    pub(crate) fn crate_config<'c>(
+        &self,
+        config: &'c crate::expand::config::Config,
+        file: FileId,
+    ) -> (usize, &'c crate::expand::config::Config) {
+        let slot = self.file_crate(file);
+        let guest = (slot != CrateSlot::HOST)
+            .then(|| self.member(slot))
+            .flatten()
+            .map(|member| self.names.get(member.name));
+        config.for_crate(guest)
     }
     /// Record that `file` was loaded for the crate that owns `module`.
     pub(super) fn note_file_crate(&mut self, file: FileId, module: ModuleId) {

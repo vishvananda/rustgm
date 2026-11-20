@@ -78,7 +78,10 @@ only): each is resolved as a crate of its own within one compilation, so
 alloc, std and third-party sources need no textual mounting. `handoff.md`
 describes the option and its limits.
 An omitted guest edition inherits the host's; an explicit edition follows the
-guest's source, modules, includes and macro definition tokens.
+guest's source, modules, includes and macro definition tokens. A guest named by
+`--bringup-guest-cfg NAME[=SETTING]` is configured, as rustc configures each
+crate, with only the options given for it (its planned features); every other
+crate sees the session's `--cfg` options.
 
 Self-hosting does not need procedural macros, unwinding or async. It does need
 atomics beyond U32, SIMD lowering for hashbrown, allocator/start/TLS shims and

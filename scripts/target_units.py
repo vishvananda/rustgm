@@ -51,7 +51,7 @@ LINT_POLICY = {
 STATUS_KINDS = {1: 'compile', 2: 'usage'}
 DIAGNOSTIC_BYTES = 4096
 MAX_STDERR_BYTES = 16 * 1024 * 1024
-BRINGUP_OPTIONS = {'--bringup-skip-list', '--bringup-guest'}
+BRINGUP_OPTIONS = {'--bringup-skip-list', '--bringup-guest', '--bringup-guest-cfg'}
 BRINGUP_RECORDS = (b'bringup-blocker\t', b'bringup-unattributed\t',
                    b'bringup-unproven\t', b'bringup-waived\t')
 

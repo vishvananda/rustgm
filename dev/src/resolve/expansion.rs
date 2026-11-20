@@ -1494,6 +1494,7 @@ impl<'a, S: Sources> Engine<'a, S> {
         } else {
             None
         };
+        let config = self.loader.package.crate_config(self.config, file).1;
         let package = &mut self.loader.package;
         let view = self
             .captures
@@ -1504,7 +1505,7 @@ impl<'a, S: Sources> Engine<'a, S> {
             input,
             &view,
             &builtin::Environment {
-                config: self.config,
+                config,
                 grammar,
                 position,
                 text: text.as_deref(),
@@ -1604,6 +1605,7 @@ impl<'a, S: Sources> Engine<'a, S> {
             rule,
             parser_calls,
         } = self.transcribe(file, visit.node, definition, context, &input)?;
+        let config = self.loader.package.crate_config(self.config, file).1;
         let package = &mut self.loader.package;
         let units = &package.units;
         let original = units[file.0 as usize].configured.ast.node(visit.node).span;
@@ -1627,9 +1629,8 @@ impl<'a, S: Sources> Engine<'a, S> {
             inputs: &inputs,
             source: package.source_core(),
         };
-        let configured =
-            crate_syntax::configure_with_inputs(&stream.source, ast, self.config, &inputs)
-                .map_err(|e| diagnostics::stream_error(&stream, file, original, e))?;
+        let configured = crate_syntax::configure_with_inputs(&stream.source, ast, config, &inputs)
+            .map_err(|e| diagnostics::stream_error(&stream, file, original, e))?;
         let generated = package.units[file.0 as usize]
             .install_expansion(visit.node, &stream.source, configured, &stream.origins)
             .map_err(|e| Error::at(file, original.start, e.message))?;
