@@ -2384,6 +2384,26 @@ The report is `obj/parallel/loan-first-edge-census/result.md` in the
 performance worktree with SHA-256
 `86b38f6125b31d63343c6fe9eeebd16470996f87ad8ae97f0cf21b70f01d2634`.
 
+### Lint witness revalidation
+
+The pinned compiler reproduces the archived outputs on the frozen
+746-input graph. The debugger counts 216,584 witness rows before its
+32,768-owner limit, including 136,958 desugared docs, 31,224 physical
+single-word names and 48,279 generated single-word names. Eleven focused
+controls preserve output and status. Five controls at the existing
+validation boundary preserve the first, second, exact and sticky
+budget transitions. A separate dynamic instruction trace counts 133
+instructions for a desugared doc witness. The observed doc rows represent
+about 18.22 million gross instructions, or 0.0203% of the earlier
+89.61 billion user-instruction baseline on the same graph. A candidate
+would still pay for its replacement guard. The larger measurement and
+the instrumented compiler build timed out. The full denominator and
+candidate equivalence are pending. Production is unchanged and the
+performance lane continues with non-trait body inference. The report
+is under `obj/parallel/lint-witness-coverage/result.md` in the
+performance worktree with SHA-256
+`c1ea70663f442ff00763d53b6291b37d59f696286dba98db1c2e4b719f6d9c8a`.
+
 ### Macro expansion and ledger work
 
 The matcher scratch change passed its focused regression and an opt-level 1
