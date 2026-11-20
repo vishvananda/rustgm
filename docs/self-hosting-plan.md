@@ -1136,6 +1136,14 @@ no diagnostic and no artifacts. The 25 planner, six comparator and five
 linker checks pass. Evidence is under
 `obj/parallel/strict-compiler-unit-graph/{cargo-core-command-v1,combined-target-v2}/`.
 
+The fresh optimized observer build exhausted its 285-second limit.
+The earlier optimized `b25c216b5` pin then replayed the corrected exact
+unit plan and reached the associated-constant publication gate in 36.80
+seconds. Unit `core` emitted zero bring-up records and no accepted artifacts.
+The executor quarantined its empty LowIR file and blocked dependent units.
+The command, compiler provenance and unit receipt are under
+`obj/parallel/strict-compiler-unit-graph/combined-target-v3/`.
+
 `3ef6b79e9` requires LowIR, metadata and a native-link manifest for every
 unit. The terminal record carries the binary's identity, defining edition
 and typed dependency inventory. Its publisher waits for LowIR serialization
