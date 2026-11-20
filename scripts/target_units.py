@@ -40,10 +40,9 @@ LINK_KINDS = {Kind.LINK_ARGUMENT, Kind.LINK_LIBRARY, Kind.LINK_SEARCH}
 RECORDED_KINDS = {Kind.RERUN_FILE, Kind.RERUN_ENVIRONMENT, Kind.WARNING, Kind.METADATA}
 IMPLEMENTATION = ('target_units.py', 'build_units.py', 'build_script_output.py',
                   'host_inputs.py', 'host_process.py')
-# Cargo without -vv caps non-local packages with allow and leaves path packages
-# uncapped; bootstrap builds the sysroot through the same rule.
+# Cargo without -vv caps registry dependencies and build-std target units.
 LINT_POLICY = {
-    'cap': 'registry packages: --cap-lints=allow; local path packages: uncapped (Cargo without -vv)',
+    'cap': 'registry and build-std targets: --cap-lints=allow; other path targets: uncapped (Cargo without -vv)',
     'enforcement': 'interim gap: cfg expectations, manifest lint tables and public/nounused edges '
                    'are recorded per unit in lint_inputs, not enforced; RustGM implements neither '
                    'unexpected_cfgs nor the private-dependency lints and has no deny-warnings switch',
@@ -218,7 +217,7 @@ class Planner:
 
     def dependencies(self, index, unit, gaps, lint_inputs):
         """Direct library edges are aliases; the rest of the closure is inventory only."""
-        direct, arguments = set(), []
+        direct, arguments, bindings = set(), [], []
         for edge in unit.dependencies:
             child = self.plan.units[edge.index]
             if child.execution is Execution.HOST_RUN:
@@ -237,12 +236,13 @@ class Planner:
                 continue
             direct.add(edge.index)
             extern = f'noprelude:{alias}' if edge.noprelude else alias
+            bindings.append((alias, dependency.crate_name, dependency.disambiguator, edge.noprelude))
             arguments += ['--extern', f'{extern}={dict(dependency.outputs)["metadata"]}']
         closure = self.closure(index)
         for child in closure:
             if child not in direct and self.steps[child].library:
                 arguments += ['--dependency-metadata', dict(self.steps[child].outputs)['metadata']]
-        return arguments, closure
+        return arguments, closure, bindings
 
     def mode(self, unit, name, disambiguator, closure):
         """The selected sysroot core provides itself; its dependents are its clients."""
@@ -272,7 +272,7 @@ class Planner:
         name = identifier(unit.target.name)
         source = self.source(unit, package)
         script_arguments, script_environment, script_key = self.script(unit, gaps, lint_inputs, recorded)
-        dependency_arguments, closure = self.dependencies(index, unit, gaps, lint_inputs)
+        dependency_arguments, closure, bindings = self.dependencies(index, unit, gaps, lint_inputs)
         # Cargo's own cfg expectations and manifest lint levels only select
         # diagnostics. RustGM implements neither, so they are recorded per unit.
         if package.lint_arguments:
@@ -283,8 +283,12 @@ class Planner:
                            unit.target.edition, sorted(unit.features), unit.profile_json,
                            [(self.steps[child].crate_name, self.steps[child].disambiguator) for child in closure],
                            script_key)
+        if bindings:
+            identity_inputs += (sorted(bindings),)
         if unit.pkg_id == self.source_core:
             identity_inputs += (SOURCE_CORE_PROFILE,)
+        if unit.is_std:
+            identity_inputs += ('build-std',)
         key = fingerprint(identity_inputs)
         disambiguator = 'h' + key[:20]
         unit_folder = folder / f'unit-{index}'
@@ -295,7 +299,7 @@ class Planner:
                      '--crate-type=lib' if library else '--crate-type=bin',
                      '--crate-name', name, '--crate-disambiguator', disambiguator,
                      '--ub-checks=no', *self.mode(unit, name, disambiguator, closure)]
-        lint_cap = self.lint_cap or ('allow' if package.registry else None)
+        lint_cap = self.lint_cap or ('allow' if package.registry or unit.is_std else None)
         if lint_cap is not None:
             arguments.append(f'--cap-lints={lint_cap}')
         for feature in sorted(unit.features):

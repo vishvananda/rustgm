@@ -293,6 +293,28 @@ class Expressibility(unittest.TestCase):
                          f'noprelude:old={dict(steps["old"].outputs)["metadata"]}')
         self.assertTrue({'public dependency shared', 'nounused dependency flags'} <= set(steps['root'].lint_inputs))
 
+    def test_external_bindings_are_inputs_to_the_consumer_identity(self):
+        def identities(alias, noprelude):
+            plan, packages = authored(
+                [row('base'), row('root', dependencies=[edge(0, alias, noprelude=noprelude)])], [1])
+            return [step.disambiguator for step in plan_units(plan, packages, OUT)]
+
+        ordinary = identities('base', False)
+        explicit = identities('base', True)
+        renamed = identities('renamed', False)
+        self.assertEqual(ordinary[0], explicit[0])
+        self.assertEqual(ordinary[0], renamed[0])
+        self.assertEqual(len({ordinary[1], explicit[1], renamed[1]}), 3)
+
+    def test_build_std_targets_use_the_observed_cargo_lint_cap(self):
+        plan, packages = authored(
+            [row('core') | {'is_std': True}, row('app', dependencies=[edge(0, 'core')])], [1])
+        core, client = plan_units(plan, packages, OUT)
+        self.assertEqual(core.lint_cap, 'allow')
+        self.assertIn('--cap-lints=allow', core.arguments)
+        self.assertIsNone(client.lint_cap)
+        self.assertNotIn('--cap-lints=allow', client.arguments)
+
     def test_an_rlib_beside_a_dylib_builds_only_the_rlib_and_other_artifacts_stay_gaps(self):
         def kinds(name, *types):
             unit = row(name)
