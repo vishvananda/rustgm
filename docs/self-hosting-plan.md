@@ -1165,6 +1165,18 @@ with SHA-256 `8f9f2f292d97cb5c77f1398fcfbf99f27e618f5e947989e0bc4893b46929259b`.
 The trace in `core-alias-diagnosis-v1/gdb.stdout` has SHA-256
 `db64a8fb9096ed40b417ca61c1037dd56424935e2ce173c9cf0120a6108d7485`.
 Both are in the frontier worktree's strict graph directory.
+
+The reduction preserves the exact projected alias and its helper trait.
+The closed control publishes 4,562 bytes. Both the identity generic alias
+and the projected generic alias reach the same v14 export diagnostic.
+Pinned Rust accepts all three providers, a fresh client that uses the
+actual `u32` implementation and an unused alias for a missing `bool`
+implementation. It rejects the missing implementation when a function
+signature demands it. Generic alias transport needs its own type formal
+scope and must defer the projection proof until the actual use. The
+existing closed alias keeps its unscoped recipe. The reduction and fresh
+Rust outcomes are in `core-niche-alias-reduction-v3/result.json` with
+SHA-256 `1a86cb646619e25b110df0facf3338bd8da2bc884991e86ade70000874549afd`.
 Full Core publication and the strict dependent stages remain pending.
 
 The reproof binary imports the existing frozen 12,929-byte reduced Core
