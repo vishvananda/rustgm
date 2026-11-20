@@ -68,7 +68,7 @@ link records and a different linker pin.
 
 The performance worktree is
 `/mnt/vizier/rustgm-scratch/rustgm-pa29-work` on
-`lane/lifetime-inspection-tables-20261120` at `faf3e88dd`.
+`lane/lifetime-inspection-tables-20261120` at `e781afa746`.
 The singleton candidate remains pinned at `8fbf96d4a`. The first
 local-annotation census identifies 631,869 inert visits out of 970,361
 active visits (65.12%). The frozen graph and 12 focused controls preserve
@@ -89,8 +89,11 @@ counts. The paired whole-graph instruction difference falls inside A/A
 noise, and the two elapsed pairs disagree. The candidate stays isolated.
 The subsequent generic-call census finds 55,367 repeated small-map
 preparations and zero reusable completed substitutions on the frozen
-graph. The worker deferred that change and is investigating copies of
-lifetime inspection arrays in the verified lowering path.
+graph. The worker deferred that change. The lifetime-inspection copy
+elimination is on local `main` through `52c394788`. Four focused tests
+and eight independent output and diagnostic comparisons passed. The
+full graph reached its 235-second development-binary timeout before
+emitting LowIR. Whole-graph candidate parity and timing are pending.
 
 Lifetime candidates `72264239b` and `4757cac6d` stay isolated. The first
 retires 0.253% more original-graph instructions. The second retires 0.102%

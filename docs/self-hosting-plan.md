@@ -1089,6 +1089,18 @@ publication. Its receipt is
 with SHA-256
 `bac3974455ab9a04de74fb468c20b92c8cc2922da5df382a5aee556fa2ae4acb`.
 
+Two further opt-level 1 host builds ended without a fresh compiler.
+The supervisor stopped the remaining children of the bounded warm
+build and the build with local LTO disabled. The receipts are
+`obj/parallel/resources/{f395bd1cb63b41279614fdcfa931f20b,01225d74b7704d1dbdebadce1353a647}.json`.
+A separate strict replay retained about 81 seconds of user CPU samples
+from the late part of the 215-second development-binary run. No
+samples were lost. Direct inference symbols account for 7.54% and
+direct trait symbols for 7.03%. Most samples are in generic code and
+the available call chains do not resolve those samples to compiler
+phases. The raw sample and leaf report are under
+`obj/parallel/strict-compiler-unit-graph/core-tail-diagnosis-v1/`.
+
 The reproof binary imports the existing frozen 12,929-byte reduced Core
 provider, preserving the client LowIR bytes. The CPPGM-linked fresh
 client again matches pinned Rust on `10 22 27 91`. The replay pins
@@ -2289,9 +2301,16 @@ output. The observed LowIR and native-link manifest preserve the
 archived bytes. The lifetime-dense one-use and 128-use controls copy
 528 and 55,392 bytes. The ordinary control copies zero bytes, and the
 first loan conflict keeps its exact diagnostic and observes 84 copied
-bytes. The candidate `faf3e88dd` moves collection to the public body
-inspection path. Shared disk pressure prevented admission to the first
-focused validation. Focused parity and paired timing remain pending.
+bytes. The candidate moves collection to the public body inspection
+path. The repaired `e781afa746` candidate passes all four focused tests,
+formatting, architecture and strict Clippy. Eight byte and status
+comparisons cover Body IR and LowIR for the ordinary, lifetime-dense
+and first-conflict controls. Both compiler commits are on local
+`main` through `52c394788`. The frozen full-graph replay reached its
+235-second development-binary limit before emitting LowIR. Full-graph
+candidate parity and timing remain pending. The evidence is under
+`obj/parallel/lifetime-inspection-arrays/result.md` with SHA-256
+`fc6d13872e0f53104a30907cbe301ae5d5852f885b934dfd042b9c1d9833e832`.
 The original counter receipt is under
 `obj/parallel/lifetime-inspection-arrays/count-v2/receipt.json` in the
 performance worktree with SHA-256
