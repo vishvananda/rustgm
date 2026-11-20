@@ -1279,9 +1279,36 @@ control publishes 4,972 bytes. Both compilers reject the by-value
 control, and RustGM reports that function parameters and results must
 be sized. The receipt is `core-vtable-reduction-v1/result.json` with
 SHA-256 `8bfa9dd6c435f0d9e794b2914f0115a410638a688f12ac167a0db17b9b89baf3`.
-Foreign type transport needs the actual declaration identity and
-canonical opaque type in fresh consumers. The existing local pointer
-formation and value-layout rules already distinguish those uses.
+Local `main` at `1c0022201` carries the actual foreign declaration
+and its opaque type in the version-fourteen profile. The exact
+declaration and generic pointer reductions publish 4,365 and 4,859
+bytes. The ordinary control remains byte-identical. The by-value
+diagnostic remains byte-identical too. A fresh client reads the
+foreign identity through a generic carrier and a type alias,
+obtains unit pointer metadata, and rejects both a different foreign
+declaration and an owned parameter. The Thin regression also passes.
+The focused receipt has SHA-256
+`23aa751b36c6b514f80645f43b0e3bac0f5b609ce42105af2a663736cdee1833`
+under `obj/qualification/fast/1795193543534400841/`. The frozen replay
+receipt is `core-vtable-transport-v1/result.json` with SHA-256
+`4c86dd64549c705c29e1d87471b04ec7685a5d13af1e27a5ba419446f01552bd`.
+
+The unchanged strict Core target at `6c9972cd8` advances to
+`named, associated or generic alias transport requires its wider profile`
+in 37.92 seconds. The declaration trace identifies DefId 3088 in
+file 95. It is the crate-private `ChangeOutputType<T, V>` alias at
+`core/src/ops/try_trait.rs:389`. The output projects through two
+associated types. The strict receipt is
+`core-vtable-optimized-v1/target-units/receipt.json` with SHA-256
+`3226c24b96fda71ce017113c189615d3dd0f7c83bcb7b90336a45c3f38d29443`.
+The trace is `core-generic-alias-diagnosis-v1/gdb.stdout` with SHA-256
+`af9558ff25fd090d68e1a49e91a3681c92efa98540b4c62badd57c35255e4619`.
+The frozen private and public reductions separate visibility from
+the two-formal proof. The closed alias publishes 6,093 bytes. Pinned
+Rust accepts all valid controls and both compilers reject the demanded
+missing implementation. That receipt is
+`core-change-output-alias-reduction-v1/result.json` with SHA-256
+`09e58249b9743e4d2243950c8ee463e8137352b8bad7a5dc71c52e0076c8cce8`.
 
 The reproof binary imports the existing frozen 12,929-byte reduced Core
 provider, preserving the client LowIR bytes. The CPPGM-linked fresh

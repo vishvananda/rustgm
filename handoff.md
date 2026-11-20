@@ -3,19 +3,21 @@
 ## Resume point — 2026-11-20
 
 The combined graph has authenticated inputs for all 22 planned target
-commands. The normal opt-level 1 observer at `9a48cfd08` clears the
-original Thin declaration and stops in strict Core after 41.38 seconds.
-The guarded trace identifies the opaque foreign `VTable` declaration in
-`core/src/ptr/metadata.rs:169`. The strict graph has yet to publish Core.
+commands. The opt-level 1 observer at `6c9972cd8` clears the opaque
+foreign `VTable` declaration and stops in strict Core after 37.92 seconds.
+The guarded trace identifies `ChangeOutputType<T, V>` at
+`core/src/ops/try_trait.rs:389`. This crate-private alias has two type
+formals and a nested associated projection. The strict graph has yet to
+publish Core.
 Local `main` carries the Thin alias transport at `cbf1224b0` and the
 Pointee role family at `fab9da160`. The reduced Thin provider emits 4,591
 metadata bytes. A fresh client emits `return u8 7` through the actual
 imported alias and rejects the slice-pointer call. Four exact checks
 pass, including the fresh Pointee consumer and the local Thin regression.
-The frozen VTable reductions reproduce the strict gate with the exact
-external block, including when it sits behind a generic thin pointer.
-The ordinary control publishes and the by-value control fails sizing
-under both compilers.
+The VTable checkpoint at `1c0022201` publishes the exact declaration and
+the generic thin-pointer reduction. The ordinary control and rejected
+by-value diagnostic remain byte-identical. A fresh consumer verifies
+pointer metadata, foreign identity and the owned-use rejection.
 Stage 1 and Stage 2 remain pending.
 
 Local `main` carries the generic alias fix at `6555e3dba`. The exact
