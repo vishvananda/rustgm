@@ -1948,11 +1948,21 @@ Dependency discovery reaches 39 bodies in the original scalar graph.
 In the instantiated control, growing from zero to 512 unrelated
 assignments at a fixed 16 calls raises the visits from 665 to 14,489
 while the 23 callable events remain constant. All 16 independent
-focused native controls agree with pinned Rust. These counts measure
-slot visits. Elapsed effects remain unmeasured. Evidence is under
+focused native controls agree with pinned Rust. The census counts slot
+visits. Evidence is under
 `obj/parallel/v5-typed-operation-index/` in the performance checkout.
 Shared normalization preparation remains a separate candidate, with
 context-specific proofs and budgets attached to each caller.
+
+The isolated invocation precheck candidate `9d6a6f10f` passed four focused
+checks. The optimized pair matches all eight typed ledgers and the archived
+original graph products. A/A followed by ABBA on that graph reports 0.019%
+fewer retired instructions and 0.027% fewer retired loads. Graph wall and
+cycle differences fall within the 22% A/A range. The long inert control
+retires 0.006% more instructions and 0.041% more stores. The candidate stays
+isolated while the performance lane investigates larger sources of work.
+The receipts are under `obj/parallel/v5-typed-operation-index/invoke-presence/`
+in the performance checkout.
 
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
