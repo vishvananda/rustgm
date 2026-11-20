@@ -1149,6 +1149,22 @@ without emitting a diagnostic or accepted artifact. The pinned binary
 SHA-256 is `ad8ce4cac1051b5739e084a0ffdf1c9c1c211f7565f370878791148e6b54b4c5`.
 The target receipt is `core-open-constants-observe-v2/target-units/receipt.json`
 with SHA-256 `92a488b534bc01de2595a97435e1673abe9280cfdb62b252c0050d3238136503`.
+With the normal opt-level 1 LLVM passes, the same source revision
+builds the observation compiler in 2 minutes 55 seconds. It runs the
+unchanged strict Core target to the next declaration gate in 46.96
+seconds. The diagnostic is `named, associated or generic alias transport
+requires its wider profile`. The debugger stops in the actual
+`Stage::closed_alias` return for declaration 968, with one type
+parameter. The source file registry maps file 45 to
+`core/src/num/niche_types.rs`, whose generic alias is
+`NotAllOnes<T> = <T as NotAllOnesHelper>::Type` at line 144. The
+optimized binary SHA-256 is
+`3bab7633929d88f1c904bb14ad332fb3007e23b046afab11e6bbcfbf634b9af5`.
+The strict receipt is `core-nominal-constants-optimized-v1/target-units/receipt.json`
+with SHA-256 `8f9f2f292d97cb5c77f1398fcfbf99f27e618f5e947989e0bc4893b46929259b`.
+The trace in `core-alias-diagnosis-v1/gdb.stdout` has SHA-256
+`db64a8fb9096ed40b417ca61c1037dd56424935e2ce173c9cf0120a6108d7485`.
+Both are in the frontier worktree's strict graph directory.
 Full Core publication and the strict dependent stages remain pending.
 
 The reproof binary imports the existing frozen 12,929-byte reduced Core

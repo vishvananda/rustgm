@@ -3,15 +3,17 @@
 ## Resume point — 2026-11-20
 
 The combined graph has authenticated inputs for all 22 planned target
-commands. With the current observation compiler at `75e9fa917`, the
-unchanged strict `core` unit rejects with `source associated constants
-require their wider profile` after 208.8 seconds. The executor has no
-accepted artifact. A trace ties the new rejection to `Stage::exported_kind`
-and declaration 961 named `ZERO` in `core/src/num/niche_types.rs`.
-The reduction publishes a scalar result on a closed inherent
-implementation and rejects a nominal result on the same owner. Pinned
-Rust accepts both controls. The prior strict graph checkpoint reached
-`Lemire::MAX_EXPONENT_FAST_PATH`.
+commands. The normal opt-level 1 observation compiler at `6506a856a`
+replays the unchanged strict Core target and reaches the generic alias
+publication gate in 46.96 seconds. A trace ties the failure to
+`Stage::closed_alias`, declaration 968 with one type parameter, in
+`core/src/num/niche_types.rs`. The alias is
+`NotAllOnes<T> = <T as NotAllOnesHelper>::Type`. A separate frozen replay
+qualifies the closed nominal inherent initializer that blocked Core at
+`ZERO`. The nominal reducer publishes 38,408 metadata bytes. The scalar
+control preserves its prior bytes, and a fresh client rechecks the
+nominal original. The compiler change is on local `main` at `81bd3b799`.
+The strict executor has no accepted Core artifact yet.
 [Strict graph evidence](docs/self-hosting-plan.md)
 
 The self-hosting worktree is
