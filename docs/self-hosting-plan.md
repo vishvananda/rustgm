@@ -812,6 +812,23 @@ float, range and reflection tests pass. Evidence is under
 `obj/parallel/v14-float-types/` and `obj/qualification/fast/1795135765398208848/`
 in the frontier checkout.
 
+`3b2a4396e` carries evaluated scalar constants on authenticated Core primitive
+inherent owners in v14. The producer evaluates unused constants, preserves
+each declaration and member link, and exports the const function's original
+read. The fresh consumer checks the same owner and type before seeding the
+completed value. The focused client reads the `u32` and `u64` owners and
+evaluates the imported const function to `42`. Private access, mixed result
+types and v13 publication retain their existing diagnostic paths.
+
+Pinned Rust and RustGM agree on a separate staged `f128` owner with `u32`
+constants. The stable read yields `2`. The unstable read requires its feature
+and yields `128` once enabled. Two publications give identical metadata. An
+independent C-ABI observer prints `42` for both compilers after reading the
+imported const function, with CPPGM providing RustGM's native object. Receipts
+are under `obj/parallel/v14-primitive-constants/staged-confirmed/`,
+`obj/parallel/v14-primitive-constants/independent-native/` and
+`obj/qualification/fast/1795138100667015272/` in the frontier checkout.
+
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
 deprecated macro and accepts a call through an annotated `use` alias of a
