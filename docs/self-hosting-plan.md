@@ -2252,6 +2252,22 @@ The map-only change is deferred. Evidence is under
 worktree with SHA-256
 `f9344b26ba1fe5cf462f4a7f90592aa723ed80074ebc744bf5d4639a494fd51e`.
 
+### Lifetime inspection output
+
+The lifetime arrays cloned by normal verified lowering account for
+198,521 rows and 4,990,256 payload bytes on the frozen 746-input graph.
+The four counts agree with the independently rendered inspection
+output. The observed LowIR and native-link manifest preserve the
+archived bytes. The lifetime-dense one-use and 128-use controls copy
+528 and 55,392 bytes. The ordinary control copies zero bytes, and the
+first loan conflict keeps its exact diagnostic and observes 84 copied
+bytes. The candidate `faf3e88dd` moves collection to the public body
+inspection path. Focused parity and paired timing are pending.
+The original counter receipt is under
+`obj/parallel/lifetime-inspection-arrays/count-v2/receipt.json` in the
+performance worktree with SHA-256
+`6d41b4689aa89983082c6eb9e2f47820c909ef34808aaa78d325413797a1d836`.
+
 ### Macro expansion and ledger work
 
 The matcher scratch change passed its focused regression and an opt-level 1
