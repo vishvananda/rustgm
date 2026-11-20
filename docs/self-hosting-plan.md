@@ -1018,8 +1018,28 @@ function header for a synthesized constructor. `5bb85597e` restores the
 earlier constructor check and adds the two successful consumer cases to
 the focused integration test. All three focused tests pass, including the
 division regression. The receipt is `obj/qualification/fast/1795166231575110445/`
-in the frontier worktree. Execution of an imported default and override,
-and the open supertrait request, remain pending.
+in the frontier worktree.
+
+`c3311cc45` instantiates the proved imported initializer using its selected
+arguments and runs it through the checked constant interpreter. Fresh
+clients emit `return u8 8` for an inherited default, `return u8 9` for the
+provider's override and `return u8 21` for a local override. The frozen
+8,439-byte packet replay preserves the earlier import-only and local override
+LowIR hashes. The expanded integration test passes, as do the required
+constant, division and ordinary discriminant/pattern controls. Receipts are
+`obj/qualification/fast/{1795167173715448920,1795167487319496594}/`,
+`provided-stable-v2/replay-checked-execution-v1/receipt.json` and
+`provided-public-v1/receipt.json` in the frontier worktree's retained
+associated-constant packet directory.
+
+The authenticated reduced Core provider now fails at `conditional member
+requires its actual From declaration`. The exporter routes the actual const
+`Sub` method through its `From` fallback. The original provider inputs and
+their pinned Rust outcomes (`10 22 27 91`) are unchanged. The new replay is
+`lemire-default-control-v3/rustgm-only-v2/receipt.json`, with SHA-256
+`51948ab61e1a129d086796487a5f1a952c2b3113a2e5e041437565141b589672`.
+Authenticating `Sub` as its own binary operator role is in focused
+validation. The open `Self::SIG_TOTAL_BITS` request remains required.
 
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
@@ -2141,6 +2161,29 @@ traversal failures. The report is retained at
 `obj/parallel/local-annotation-producer/result.md`. Its graph receipt
 has SHA-256
 `14d7d138c402c410d32fcefe42bb0b314ef889e0878afbeaaff4b8226ba747e0`.
+
+### Canonical type interning
+
+The historical profile attributes 571 of 26,865 sampled call chains
+(2.13%) to canonical interning. A bounded flat `Kind` index shadow uses
+the arena's canonical row for equality. It matches all 1,468,549 lookups
+across 205,550 different kinds and visits 1.348 slots per lookup on average,
+with a maximum of 29. Its final table uses 4 MiB against 7 MiB of logical
+capacity in the existing map. Its growth moves 262,112 slots against
+229,348 existing-map entries. The frozen graph has zero charged `Kind`
+growth transitions. Focused and real source work/storage boundaries
+preserve diagnostics and outputs. The observed capacity difference is
+for the shadow. A production index still has to preserve the compiler's
+ledger and pass paired measurements.
+
+Charged typed-slice misses account for 31 duplicate probes on the frozen
+graph. Ordinary all-lifetime argument conversion allocates 42,784 nonempty
+temporary vectors. The singleton arm can remove at least 40,927 of those
+allocations (95.66%) while keeping the existing representation and ledger.
+The worker is qualifying that separate candidate. The census report is
+retained at `obj/parallel/canonical-store-census/result.md` in the performance
+worktree with SHA-256
+`03dd61d2d0c53b21243a99952d58b5eaca47004a88ab982c0cbc398f6a181067`.
 
 ### Macro expansion and ledger work
 

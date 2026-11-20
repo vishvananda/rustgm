@@ -30,8 +30,13 @@ client emits `return u8 4`, and a local override emits `return u8 21`.
 The inherited default reaches evaluation and fails with `selected constant
 has no initializer`. The division control exposed a synthesized-constructor
 check ordered after function-header lookup. The fix and expanded consumer
-regression pass all three focused checks. Imported default execution is
-being validated. The open supertrait request remains pending.
+regression pass all three focused checks. `c3311cc45` executes imported
+constant originals through the checked interpreter. Fresh clients emit
+`8` for the inherited default, `9` for the provider's override and `21`
+for a local override. The frozen reduced Core provider reaches `Sub`
+publication and fails because the required const method falls through to
+the `From` check. The Sub transport repair is in focused validation.
+The open supertrait request remains pending.
 Stage 1 and Stage 2 are pending.
 [Strict Core evidence](docs/self-hosting-plan.md#L979)
 
@@ -47,8 +52,9 @@ create 7,547 events at later positions. All 64 events missed by the
 publication hooks are Core pattern endpoints. The compact representation
 would still use at least 9.54 MB of payload for this pass. The worker
 closed the experiment and is measuring eligible work in canonical type
-interning. The historical profile attributes 571 of 26,865 sampled call
-chains to interning.
+interning. The flat `Kind` index shadow matches 1,468,549 lookups and
+uses 3 MiB less logical index capacity. The worker is qualifying a
+separate change that removes singleton lifetime argument allocations.
 
 Lifetime candidates `72264239b` and `4757cac6d` stay isolated. The first
 retires 0.253% more original-graph instructions. The second retires 0.102%
