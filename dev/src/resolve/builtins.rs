@@ -88,13 +88,20 @@ impl Resolver<'_> {
                     )
                 });
         }
-        if self.facts.crates.is_some()
-            && let Some(binding) = self
+        if let Some(imported) = self.facts.crates.as_deref() {
+            if let Some(target) = imported
+                .explicit_only_root(self.package.names.get(name))
+                .map_err(|error| self.error(c, node, error))?
+            {
+                return Ok(self.facts.definitions[target.0 as usize].members);
+            }
+            if let Some(binding) = self
                 .facts
                 .extern_scope
                 .and_then(|scope| self.facts.bindings.get(scope, name, Namespace::Type))
-        {
-            return Ok(self.facts.definitions[binding.target.0 as usize].members);
+            {
+                return Ok(self.facts.definitions[binding.target.0 as usize].members);
+            }
         }
         if !matches!(self.package.names.get(name), "core" | "std") {
             return Ok(None);

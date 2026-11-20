@@ -287,7 +287,10 @@ class Expressibility(unittest.TestCase):
         self.assertEqual([(gap.field, gap.value) for gap in steps['flags'].gaps], [
             ('profile.opt_level', '"3"'), ('profile.debuginfo', '1'), ('profile.panic', '"unwind"'),
             ('rustflags', '-Zfoo')])
-        self.assertEqual([(gap.field, gap.value) for gap in steps['root'].gaps], [('dependency.noprelude', 'old')])
+        self.assertEqual(steps['root'].gaps, ())
+        args = steps['root'].arguments
+        self.assertEqual(args[args.index('--extern') + 1],
+                         f'noprelude:old={dict(steps["old"].outputs)["metadata"]}')
         self.assertTrue({'public dependency shared', 'nounused dependency flags'} <= set(steps['root'].lint_inputs))
 
     def test_an_rlib_beside_a_dylib_builds_only_the_rlib_and_other_artifacts_stay_gaps(self):

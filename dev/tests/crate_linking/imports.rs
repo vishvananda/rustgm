@@ -15,6 +15,7 @@ use rustgm::{
     },
 };
 use std::{path::Path, sync::Arc};
+type CliResult = Result<(), Box<dyn std::error::Error>>;
 pub(super) struct NoFiles;
 impl Sources for NoFiles {
     fn read(&mut self, _: &Path) -> Result<Option<InputFile>, String> {
@@ -73,6 +74,82 @@ pub(super) fn resolve(text: &str, dependencies: Arc<Dependencies>) -> Result<Rep
     )
     .and_then(resolve::analyze_expanded)
     .map_err(|error| error.to_string())
+}
+
+#[test]
+fn explicit_only_dependencies_require_an_extern_crate_item() -> CliResult {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root.join(format!(
+        "obj/parallel/cargo-noprelude/cli-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let metadata = folder.join("provider.rgm");
+    std::fs::write(
+        &metadata,
+        rustgm::support::crates::encode(&artifact("first", &[], false)?)?,
+    )?;
+    for (case, alias, declaration, path, status) in [
+        ("ordinary", "alias", "", "::alias", 0),
+        ("hidden-bare", "noprelude:alias", "", "alias", 1),
+        ("hidden-absolute", "noprelude:alias", "", "::alias", 1),
+        (
+            "explicit",
+            "noprelude:alias",
+            "extern crate alias;",
+            "::alias",
+            0,
+        ),
+        (
+            "rename",
+            "noprelude:alias",
+            "extern crate alias as renamed;",
+            "::renamed",
+            0,
+        ),
+        (
+            "original",
+            "noprelude:alias",
+            "extern crate alias as renamed;",
+            "::alias",
+            1,
+        ),
+        (
+            "std",
+            "noprelude:std",
+            "extern crate std as renamed;",
+            "::renamed",
+            0,
+        ),
+    ] {
+        let source = folder.join(format!("{case}.rs"));
+        std::fs::write(
+            &source,
+            format!(
+                "#![no_std]\n{declaration}\n#[unsafe(no_mangle)]\npub extern \"C\" fn read()->u32 {{ {path}::math::value(7) }}\n"
+            ),
+        )?;
+        let output = std::process::Command::new(env!("CARGO_BIN_EXE_rustgm"))
+            .args([
+                "--edition=2024",
+                "--crate-type=lib",
+                "--emit-lowir",
+                "--crate-name",
+                "client",
+                "--crate-disambiguator",
+                "no_prelude",
+                "--extern",
+            ])
+            .arg(format!("{alias}={}", metadata.display()))
+            .arg(&source)
+            .output()?;
+        let stderr = String::from_utf8(output.stderr)?;
+        std::fs::write(folder.join(format!("{case}.stderr")), &stderr)?;
+        assert_eq!(output.status.code(), Some(status), "{case}: {stderr}");
+    }
+    Ok(())
 }
 #[test]
 fn imported_contracts_have_canonical_remaps_and_no_fabricated_bodies()

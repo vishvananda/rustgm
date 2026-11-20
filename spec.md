@@ -7770,7 +7770,7 @@ re-exporting it, such as `rustc_std_workspace_core`. The entry must be that
 dependency's imported crate root. Without the alias, the entry is the
 authenticated provider's root. The entry's public `prelude::rust_20xx` module
 for the client's own edition is the client's glob prelude. Injected `core`
-carries no `macro_use`, and `std` stays a reserved alias. A crate without that
+carries no `macro_use`. A crate without that
 prelude module is rejected by name. An imported row's
 `allow_internal_unsafe` covers only sites in its own expansion frame, never a
 nested expansion of another definition. A single `use` import binding an
@@ -7845,6 +7845,15 @@ crate binds no name and adds no dependency row.
 In a source client, an `--extern` name of a legacy artifact, which has no
 source catalog, resolves to that artifact's imported crate root, so the
 upstream shim's `use compiler_builtins as _;` resolves as in rustc.
+
+`--extern noprelude:ALIAS=METADATA` supplies the same direct crate dependency
+to the loader and leaves its name out of the extern prelude. A written
+`extern crate ALIAS` loads that artifact and creates the ordinary item and
+root prelude binding, including any written rename. An injected `extern crate
+core` also loads a configured explicit-only `core` alias. The spelling `std`
+is reserved for injection in the ordinary prelude and can be supplied as
+an explicit-only dependency. Cargo target planning preserves the edge's
+`noprelude` bit in this driver argument.
 
 ## Lowering and backend facts
 

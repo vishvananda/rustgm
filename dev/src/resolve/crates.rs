@@ -26,7 +26,7 @@ use super::{
     unit::FileId,
 };
 use crate::support::crates::{
-    Constant, Dependencies, ExternalDef, ExternalKind, Function, Interface,
+    Constant, Dependencies, Dependency, ExternalDef, ExternalKind, Function, Interface,
     Namespace as WireNamespace, Record, Static,
 };
 use crate::support::hash::HashMap;
@@ -156,6 +156,23 @@ impl Imported {
     #[must_use]
     pub fn definition(&self, external: &ExternalDef) -> Option<DefId> {
         self.definitions.get(external).copied()
+    }
+    fn crate_root(&self, alias: &Dependency) -> Result<DefId, &'static str> {
+        let identity =
+            ExternalDef::new(alias.identity().clone(), Vec::new(), ExternalKind::Module)?;
+        self.definition(&identity)
+            .ok_or("missing imported crate root")
+    }
+    /// An explicit-only alias is input to the loader and absent from path lookup.
+    pub(super) fn explicit_only_root(&self, spelling: &str) -> Result<Option<DefId>, &'static str> {
+        let aliases = self.dependencies.aliases();
+        aliases
+            .binary_search_by(|alias| alias.alias().cmp(spelling))
+            .ok()
+            .map(|index| &aliases[index])
+            .filter(|alias| !alias.in_prelude())
+            .map(|alias| self.crate_root(alias))
+            .transpose()
     }
     /// Borrow only an actual configured alias and its authenticated catalog root,
     /// or the imported root of a legacy artifact, which has no catalog, as
@@ -330,14 +347,10 @@ impl Resolver<'_> {
     }
     fn bind_crate_aliases(&mut self, external: ScopeId, imported: &Imported) -> Result<(), Error> {
         for alias in imported.dependencies.aliases() {
-            let identity =
-                ExternalDef::new(alias.identity().clone(), Vec::new(), ExternalKind::Module)
-                    .map_err(error)?;
-            let target = imported
-                .definitions
-                .get(&identity)
-                .copied()
-                .ok_or_else(|| error("missing imported crate root"))?;
+            let target = imported.crate_root(alias).map_err(error)?;
+            if !alias.in_prelude() {
+                continue;
+            }
             let name = self.package.names.intern(alias.alias()).map_err(error)?;
             self.facts
                 .bindings

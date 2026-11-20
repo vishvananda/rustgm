@@ -72,7 +72,7 @@ impl Options {
                     return Err("external crate arguments exceed profile budget".into());
                 }
                 let value = args.next().ok_or(if arg == "--extern" {
-                    "--extern requires ALIAS=METADATA"
+                    "--extern requires [noprelude:]ALIAS=METADATA"
                 } else {
                     "--dependency-metadata requires a path"
                 })?;
@@ -388,7 +388,12 @@ impl Options {
                 let identity = dependency.identity();
                 writeln!(
                     metadata,
-                    "extern {} {}@{}",
+                    "extern {}{} {}@{}",
+                    if dependency.in_prelude() {
+                        ""
+                    } else {
+                        "noprelude:"
+                    },
                     dependency.alias(),
                     identity.name(),
                     identity.disambiguator()
@@ -468,7 +473,7 @@ impl Options {
             argument
                 .split_once('=')
                 .map(|(alias, path)| (Some(alias), path))
-                .ok_or("--extern requires ALIAS=METADATA")
+                .ok_or("--extern requires [noprelude:]ALIAS=METADATA")
         });
         let inventory = self
             .dependency_metadata
@@ -504,7 +509,13 @@ impl Options {
                 identity
             };
             if let Some(alias) = alias {
-                aliases.push(Dependency::new(alias.to_owned(), identity).map_err(str::to_owned)?);
+                let (alias, in_prelude) = alias
+                    .strip_prefix("noprelude:")
+                    .map_or((alias, true), |alias| (alias, false));
+                aliases.push(
+                    Dependency::with_prelude(alias.to_owned(), identity, in_prelude)
+                        .map_err(str::to_owned)?,
+                );
             }
         }
         Dependencies::new(artifacts, aliases)

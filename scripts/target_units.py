@@ -227,8 +227,6 @@ class Planner:
             if child.execution is not Execution.TARGET_COMPILE:
                 gaps.append(Gap('dependency.proc-macro', alias, 'procedural macro execution is not implemented'))
                 continue
-            if edge.noprelude:
-                gaps.append(Gap('dependency.noprelude', alias, 'RustGM has no extern prelude modifier'))
             if edge.public:
                 lint_inputs.append(f'public dependency {alias}')
             if edge.nounused:
@@ -238,7 +236,8 @@ class Planner:
                 gaps.append(Gap('dependency.kind', alias, 'dependency has no library artifact'))
                 continue
             direct.add(edge.index)
-            arguments += ['--extern', f'{alias}={dict(dependency.outputs)["metadata"]}']
+            extern = f'noprelude:{alias}' if edge.noprelude else alias
+            arguments += ['--extern', f'{extern}={dict(dependency.outputs)["metadata"]}']
         closure = self.closure(index)
         for child in closure:
             if child not in direct and self.steps[child].library:

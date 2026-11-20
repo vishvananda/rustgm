@@ -151,11 +151,12 @@ impl Resolver<'_> {
             .facts
             .extern_scope
             .ok_or_else(|| error("no_std source client requires its imported core provider"))?;
-        let root = self
+        let imported = self
             .facts
             .crates
             .as_deref()
-            .ok_or_else(|| error("no_std source client requires its imported core provider"))?
+            .ok_or_else(|| error("no_std source client requires its imported core provider"))?;
+        let provider = imported
             .definition(
                 &ExternalDef::new(provider.clone(), Vec::new(), ExternalKind::Module)
                     .map_err(error)?,
@@ -165,6 +166,10 @@ impl Resolver<'_> {
         if let Some(alias) = self.facts.bindings.get(external, core, Namespace::Type) {
             return self.injected_alias(*alias);
         }
+        let root = imported
+            .explicit_only_root("core")
+            .map_err(error)?
+            .unwrap_or(provider);
         self.facts
             .bindings
             .insert(

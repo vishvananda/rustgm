@@ -12,6 +12,7 @@ mod alias_tests;
 pub struct Dependency {
     alias: String,
     identity: CrateIdentity,
+    in_prelude: bool,
 }
 impl Dependency {
     /// Bind a validated semantic crate alias to an exact artifact identity.
@@ -19,11 +20,31 @@ impl Dependency {
     /// Rejects malformed aliases and reserved crate-root names. As for rustc,
     /// `core` may name a direct dependency; `std` stays reserved.
     pub fn new(alias: String, identity: CrateIdentity) -> Result<Self, &'static str> {
+        Self::with_prelude(alias, identity, true)
+    }
+    /// An explicit-only alias stays available to the crate loader.
+    /// # Errors
+    /// Rejects malformed aliases and conflicts with reserved crate-root names.
+    pub fn with_prelude(
+        alias: String,
+        identity: CrateIdentity,
+        in_prelude: bool,
+    ) -> Result<Self, &'static str> {
         super::identity::validate_component(&alias)?;
-        if matches!(alias.as_str(), "self" | "Self" | "super" | "crate" | "std") {
+        if matches!(alias.as_str(), "self" | "Self" | "super" | "crate")
+            || in_prelude && alias == "std"
+        {
             return Err("unsupported external crate alias");
         }
-        Ok(Self { alias, identity })
+        Ok(Self {
+            alias,
+            identity,
+            in_prelude,
+        })
+    }
+    #[must_use]
+    pub const fn in_prelude(&self) -> bool {
+        self.in_prelude
     }
     #[must_use]
     pub fn alias(&self) -> &str {
