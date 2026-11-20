@@ -49,7 +49,7 @@ def shape(plan, packages):
         source = Path(unit.target.src_path).relative_to(package.planned_root).as_posix()
         return (package.identity, unit.target.name, unit.target.kind, unit.target.crate_types, source,
                 unit.target.edition, unit.target.doc, unit.target.doctest, unit.target.test,
-                unit.platform or '', unit.mode, unit.features)
+                unit.platform or '', unit.mode, unit.features, unit.is_std)
 
     return sorted((key(index), sorted((key(edge.index), edge.extern_crate_name, edge.public, edge.noprelude,
                                        edge.nounused) for edge in unit.dependencies),

@@ -9,10 +9,12 @@ import sys
 from host_build_script import digest
 
 QUERY_ENVIRONMENT = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8'}
+TARGET_SPEC_QUERY = ['--print=target-spec-json', '-Zunstable-options']
 
 
 def validate(arguments, target):
-    if arguments in (['-vV'], ['--version']):
+    if arguments in (['-vV'], ['--version'], TARGET_SPEC_QUERY,
+                     TARGET_SPEC_QUERY + ['--target', target]):
         return False
     prefix = ['-', '--crate-name', '___', '--print=file-names']
     types = []
@@ -37,12 +39,15 @@ def main():
             raise ValueError('Cargo planning supplied source input to rustc')
         if not compiler.is_absolute() or digest(compiler) != expected:
             raise ValueError('planning query compiler differs from its pin')
+        environment = dict(QUERY_ENVIRONMENT)
+        if arguments[:len(TARGET_SPEC_QUERY)] == TARGET_SPEC_QUERY:
+            environment['RUSTC_BOOTSTRAP'] = '1'
         row.update(state='query', empty_input=empty_input, compiler_sha256=expected,
-                   environment=QUERY_ENVIRONMENT)
-        # Cargo's unstable introspection switch is not a target capability.
-        # In particular, RUSTC_BOOTSTRAP changes --print=cfg even with no source.
+                   environment=environment)
+        # Only the validated target-spec queries need Rust's unstable print switch.
+        # Keep the regular cfg query in the pinned compiler's default environment.
         result = subprocess.run([str(compiler), *arguments], input=b'', capture_output=True,
-                                timeout=30, env=QUERY_ENVIRONMENT)
+                                timeout=30, env=environment)
         row['status'] = result.returncode
         for name, data in (('stdout', result.stdout), ('stderr', result.stderr)):
             path = log.with_name(f'query-{os.getpid()}.{name}')

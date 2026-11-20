@@ -51,6 +51,7 @@ class Unit:
     mode: str
     features: tuple[str, ...]
     dependencies: tuple[Dependency, ...]
+    is_std: bool = False
 
     @property
     def execution(self):
@@ -116,7 +117,8 @@ def target(value):
 
 
 def unit(value, size, selected_target):
-    fields(value, 'pkg_id target profile platform mode features dependencies')
+    fields(value, 'pkg_id target profile platform mode features dependencies'
+           + (' is_std' if isinstance(value, dict) and 'is_std' in value else ''))
     owner = target(value['target'])
     platform = value['platform']
     if platform is not None and platform != selected_target:
@@ -150,7 +152,7 @@ def unit(value, size, selected_target):
     if len(rows) != len({(row.index, row.extern_crate_name) for row in rows}):
         raise ValueError('duplicate unit dependency')
     return Unit(string(value['pkg_id']), owner, json.dumps(profile, sort_keys=True, allow_nan=False),
-                platform, mode, strings(value['features']), tuple(rows))
+                platform, mode, strings(value['features']), tuple(rows), boolean(value.get('is_std', False)))
 
 
 def order(units, roots):

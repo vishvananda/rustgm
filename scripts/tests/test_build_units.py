@@ -70,8 +70,11 @@ class Units(unittest.TestCase):
         data = graph()
         data['units'][0]['profile']['overflow_checks'] = False
         data['units'][0]['dependencies'][1].update(public=True, noprelude=True, nounused=True)
+        data['units'][4]['is_std'] = True
         plan = decode(data)
         self.assertFalse(json.loads(plan.units[0].profile_json)['overflow_checks'])
+        self.assertFalse(plan.units[0].is_std)
+        self.assertTrue(plan.units[4].is_std)
         self.assertEqual(plan.units[0].dependencies[1], build_units.Dependency(4, 'renamed', True, True, True))
 
     def test_inactive_rows_cycles_missing_and_duplicate_edges_fail(self):
@@ -140,7 +143,7 @@ class Units(unittest.TestCase):
             data = graph()
             data[key] = value
             variants.append(data)
-        for key, value in (('mode', 'check'), ('features', ['same', 'same']), ('is_std', True)):
+        for key, value in (('mode', 'check'), ('features', ['same', 'same']), ('is_std', 'true')):
             data = graph()
             data['units'][0][key] = value
             variants.append(data)
@@ -322,21 +325,30 @@ class Queries(unittest.TestCase):
                            'RUSTGM_PLAN_QUERY_LOG': str(root / 'queries'), 'RUSTC_BOOTSTRAP': '1',
                            'RUSTFLAGS': '--cfg hidden_capability', 'LD_LIBRARY_PATH': '/ambient'}
             completed = subprocess.CompletedProcess([], 0, b'explicit compiler version\n', b'')
-            stdout, stderr = io.TextIOWrapper(io.BytesIO()), io.TextIOWrapper(io.BytesIO())
-            with patch.dict('os.environ', environment, clear=True), \
-                    patch.object(sys, 'argv', ['query', '--version']), \
-                    patch.object(sys, 'stdout', stdout), patch.object(sys, 'stderr', stderr), \
-                    patch('cargo_query.subprocess.run', return_value=completed) as run:
-                self.assertEqual(cargo_query.main(), 0)
-            self.assertEqual(run.call_args.kwargs['env'], {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8'})
-            receipt = json.loads((root / 'queries').read_text())
-            self.assertEqual(receipt['environment'], run.call_args.kwargs['env'])
-            self.assertEqual(receipt['compiler_sha256'], digest(compiler))
+            target_spec = ['--print=target-spec-json', '-Zunstable-options']
+            for arguments, bootstrap in ((['--version'], False), (target_spec, True),
+                                         (target_spec + ['--target', TRIPLE], True)):
+                stdout, stderr = io.TextIOWrapper(io.BytesIO()), io.TextIOWrapper(io.BytesIO())
+                with self.subTest(arguments=arguments), patch.dict('os.environ', environment, clear=True), \
+                        patch.object(sys, 'argv', ['query', *arguments]), \
+                        patch.object(sys, 'stdout', stdout), patch.object(sys, 'stderr', stderr), \
+                        patch('cargo_query.subprocess.run', return_value=completed) as run:
+                    self.assertEqual(cargo_query.main(), 0)
+                    expected = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8'}
+                    if bootstrap:
+                        expected['RUSTC_BOOTSTRAP'] = '1'
+                    self.assertEqual(run.call_args.kwargs['env'], expected)
+                    self.assertEqual(run.call_args.kwargs['input'], b'')
+                    receipt = json.loads((root / 'queries').read_text().splitlines()[-1])
+                    self.assertEqual(receipt['environment'], expected)
+                    self.assertEqual(receipt['compiler_sha256'], digest(compiler))
 
     def test_only_observed_queries_are_allowed(self):
         self.assertFalse(cargo_query.validate(['-vV'], TRIPLE))
+        target_spec = ['--print=target-spec-json', '-Zunstable-options']
         for arguments in (['source.rs'], ['--print=cfg'], ['--emit=metadata', '-'],
-                          ['--version', '--sysroot', '/unrecorded'], ['-vV', '-o', 'output']):
+                          ['--version', '--sysroot', '/unrecorded'], ['-vV', '-o', 'output'],
+                          target_spec + ['--target', 'unselected'], target_spec + ['source.rs']):
             with self.subTest(arguments=arguments), self.assertRaises(ValueError):
                 cargo_query.validate(arguments, TRIPLE)
 
