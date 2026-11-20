@@ -829,6 +829,15 @@ are under `obj/parallel/v14-primitive-constants/staged-confirmed/`,
 `obj/parallel/v14-primitive-constants/independent-native/` and
 `obj/qualification/fast/1795138100667015272/` in the frontier checkout.
 
+The optimized strict replay of `3b2a4396e` reaches the associated-constant
+diagnostic in 26.99 seconds on the same 309 pinned inputs. The declaration
+trace admits `RADIX`, `BITS`, `MANTISSA_DIGITS` and `DIGITS` on the actual
+`f128` owner and stops at `f128::EPSILON` in `core/src/num/f128.rs:194`.
+Transport of the value needs the existing 128-bit payload and the exact
+wide float recipe. The replay records zero bring-up entries and emits no
+artifacts. The strict receipt and exact trace are under
+`obj/parallel/strict-core/primitive-constants/` in the frontier checkout.
+
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
 deprecated macro and accepts a call through an annotated `use` alias of a
@@ -1675,9 +1684,9 @@ trait search poll. It preserves all 34 checked ordered proof DAGs and matches
 15 optimized controls. The source-backed control allocates 571 fewer blocks
 and 52,438 more cumulative bytes. The cold control allocates 64 more blocks.
 The original graph retires 0.090% more instructions, 0.125% more loads and
-0.153% more stores in the immutable pair. Wall medians rise from 29.905 to
-33.035 seconds within baseline variation. All LowIR, link manifests and native
-outputs match. Disassembly and the observed call counts model about 100.8 MB
+0.153% more stores in the immutable pair. Wall medians are 29.905 and
+33.035 seconds in that block. The candidate median falls within the 31.757
+to 33.613 second A/A range. All LowIR, link manifests and native outputs match. Disassembly and the observed call counts model about 100.8 MB
 of additional explicit copying on the measured search route. The experiment
 remains isolated. The report and raw profiles are in
 `obj/parallel/trait-instantiation-scratch/` in the performance checkout.
