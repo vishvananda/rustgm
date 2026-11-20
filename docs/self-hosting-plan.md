@@ -2111,9 +2111,13 @@ The producer shadow matches all 970,361 configured traversal positions
 in order. Reference publication during the pass creates 7,547 events at
 later positions, which a sealed event list would miss. The instrumented
 publication hooks leave 64 required events unmarked and keep 98 extra.
-The dense prototype uses 14,985,904 bytes. It stays as an observer while
-the worker identifies the remaining reference writers and evaluates a
-more compact representation. The frozen graph and 22 focused outcomes
+All 64 omissions are active pattern endpoints in Core's `niche_types`.
+A syntax mark covers those observed omissions. The dense observer uses
+14,985,904 bytes. Even the compact representation would require 9,542,364
+payload bytes, 970,361 ordered writes, 1,384,906 rank initializations and
+287,667 rank probes. The experiment stays isolated. A future candidate can
+reuse ordinal storage if another pass already produces it. The frozen
+graph and 22 focused outcomes
 preserve output bytes. Thirty-four work-limit comparisons preserve
 diagnostics, and the shadow predicts the exact failing node in all 31
 traversal failures. The report is retained at

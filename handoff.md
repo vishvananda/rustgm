@@ -38,9 +38,10 @@ active visits (65.12%). The frozen graph and 12 focused controls preserve
 output bytes, and the focused outcomes agree with pinned Rust. The
 producer shadow matches the original traversal order and predicts all
 31 tested traversal failure sites. References written during the pass
-create 7,547 events at later positions. The worker is tracing 64 events
-the current publication hooks still miss. Compiler timing awaits a
-qualified implementation.
+create 7,547 events at later positions. All 64 events missed by the
+publication hooks are Core pattern endpoints. The compact representation
+would still use at least 9.54 MB of payload for this pass. The worker
+closed the experiment and is ranking larger non-trait hotspots.
 
 Lifetime candidates `72264239b` and `4757cac6d` stay isolated. The first
 retires 0.253% more original-graph instructions. The second retires 0.102%
