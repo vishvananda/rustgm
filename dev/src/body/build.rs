@@ -67,12 +67,14 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
 /// # Errors
 /// Reports ordinary CFG construction and destruction errors.
 pub fn concrete(report: &Report, facts: &Declarations) -> Result<Program, Error> {
-    let mut program = concrete_except(report, facts, |_| false)?;
-    program.region_equalities = facts.region_equalities.clone();
-    program.coercions = facts.coercions.clone();
-    program.outlives = facts.outlives.clone();
-    program.body_regions = facts.body_regions.log().to_vec();
-    Ok(program)
+    let program = concrete_except(report, facts, |_| false)?;
+    Ok(Program {
+        region_equalities: facts.region_equalities.clone(),
+        coercions: facts.coercions.clone(),
+        outlives: facts.outlives.clone(),
+        body_regions: facts.body_regions.log().to_vec(),
+        ..program
+    })
 }
 
 pub(crate) fn concrete_except(
