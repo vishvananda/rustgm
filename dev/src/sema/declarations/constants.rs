@@ -82,6 +82,10 @@ impl Checker<'_> {
                 if self.imported_inherent_constant(id)? || self.imported_range_bound(id)? {
                     continue;
                 }
+                if let Some(body) = self.imported_trait_constant(id)? {
+                    self.validate_imported_constant(id, body)?;
+                    continue;
+                }
                 return Err(Error::at(
                     crate::resolve::unit::FileId(0),
                     0,
@@ -108,6 +112,69 @@ impl Checker<'_> {
             self.constant_type_regions(id, key, ty)?;
         }
         Ok(())
+    }
+
+    pub(super) fn constant_has_default(&self, definition: DefId) -> Result<bool, Error> {
+        if let Some(key) = self.report.resolution.definitions[definition.0 as usize].node {
+            return Ok(matches!(
+                self.item(key)?.kind,
+                ItemKind::Const { value: Some(_), .. }
+            ));
+        }
+        self.imported_trait_constant(definition)?
+            .map(|body| {
+                matches!(
+                    body,
+                    crate::support::crates::generics::source::ConstantBody::Original(_)
+                )
+            })
+            .ok_or_else(|| Error::unlocated("missing trait constant source"))
+    }
+
+    fn imported_trait_constant(
+        &self,
+        definition: DefId,
+    ) -> Result<Option<crate::support::crates::generics::source::ConstantBody>, Error> {
+        self.facts
+            .crates
+            .as_deref()
+            .map(|linkage| linkage.source_trait_constant(&self.facts, definition))
+            .transpose()
+            .map(Option::flatten)
+            .map_err(Error::unlocated)
+    }
+
+    fn validate_imported_constant(
+        &mut self,
+        id: DefId,
+        body: crate::support::crates::generics::source::ConstantBody,
+    ) -> Result<(), Error> {
+        use crate::support::crates::generics::source::ConstantBody;
+        if body != ConstantBody::Required {
+            return Err(Error::unlocated(
+                "source provided constant requires its actual checked initializer",
+            ));
+        }
+        let owner = self
+            .facts
+            .associated
+            .trait_owner(id)
+            .ok_or_else(|| Error::unlocated("source constant has no actual trait owner"))?;
+        let ty = self.facts.definitions[id.0 as usize]
+            .ok_or_else(|| Error::unlocated("source constant has no type"))?;
+        let environment = self.facts.generics.environments.get(&owner).cloned();
+        let mut proof = self.declaration_proof(id, environment);
+        if !proof
+            .check(&mut self.facts, ty)
+            .map_err(Error::unlocated)?
+            .well_formed
+        {
+            return Err(Error::unlocated(
+                "associated constant declaration type must be well-formed",
+            ));
+        }
+        self.constant_type_constraints(id, ty, proof.take_trait_proof())
+            .map_err(Error::unlocated)
     }
 
     fn imported_inherent_constant(&self, definition: DefId) -> Result<bool, Error> {
@@ -162,25 +229,33 @@ impl Checker<'_> {
         key: NodeKey,
         ty: crate::types::TypeId,
     ) -> Result<(), Error> {
+        self.constant_type_constraints(id, ty, None)
+            .map_err(|e| self.error(key, e))
+    }
+
+    fn constant_type_constraints(
+        &self,
+        id: DefId,
+        ty: crate::types::TypeId,
+        proof: Option<crate::sema::traits::obligations::Obligations>,
+    ) -> Result<(), String> {
         let mut queries = crate::types::outlives::Queries::new(
             &self.facts.types,
             &self.facts.lifetimes.nominal_requirements,
             &self.facts.lifetimes.callables,
         );
-        let mut constraints = self
-            .trait_region_environment(id, &mut queries)
-            .map_err(|e| self.error(key, e))?;
-        let requirements = queries
-            .symbolic_requirements(ty)
-            .map_err(|e| self.error(key, e))?;
-        constraints
-            .require_requirements(requirements, crate::types::relations::ProofScope::ROOT, 0)
-            .map_err(|e| self.error(key, e))?;
+        let mut constraints = self.trait_region_environment(id, &mut queries)?;
+        if let Some(proof) = proof {
+            proof.require(&mut constraints, &mut queries)?;
+        }
+        let requirements = queries.symbolic_requirements(ty)?;
+        constraints.require_requirements(
+            requirements,
+            crate::types::relations::ProofScope::ROOT,
+            0,
+        )?;
         constraints.solve().map_err(|e| {
-            self.error(
-                key,
-                format!("associated constant type has an unsatisfied lifetime requirement: {e}"),
-            )
+            format!("associated constant type has an unsatisfied lifetime requirement: {e}")
         })?;
         Ok(())
     }

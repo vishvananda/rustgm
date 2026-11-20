@@ -60,8 +60,10 @@ fn constant(rows: &s::SourceRows, ty: Scalar) -> Option<(usize, s::ConstValue)> 
     rows.constants()
         .iter()
         .enumerate()
-        .find_map(|(index, header)| match header.value {
-            Some(s::ConstTerm::Value(value)) if scalar(rows, header.ty) == Some(ty) => {
+        .find_map(|(index, header)| match header.body {
+            s::ConstantBody::Evaluated(s::ConstTerm::Value(value))
+                if scalar(rows, header.ty) == Some(ty) =>
+            {
                 Some((index, value))
             }
             _ => None,
@@ -70,12 +72,13 @@ fn constant(rows: &s::SourceRows, ty: Scalar) -> Option<(usize, s::ConstValue)> 
 fn set_bits(rows: &mut s::SourceRows, ty: Scalar, bits: u128) -> Option<()> {
     let (index, mut value) = constant(rows, ty)?;
     value.bits = bits;
-    rows.cold_mut().constants[index].value = Some(s::ConstTerm::Value(value));
+    rows.cold_mut().constants[index].body = s::ConstantBody::Evaluated(s::ConstTerm::Value(value));
     Some(())
 }
 fn set_value(rows: &mut s::SourceRows, value: Option<s::ConstTerm>) -> Option<()> {
     let (index, _) = constant(rows, Scalar::U8)?;
-    rows.cold_mut().constants[index].value = value;
+    rows.cold_mut().constants[index].body =
+        value.map_or(s::ConstantBody::Required, s::ConstantBody::Evaluated);
     Some(())
 }
 /// The one code-17 value reading the constant declared `name`.
@@ -169,7 +172,8 @@ const MUTATIONS: [(&str, Mutation, &str); 12] = [
         |rows| {
             let (index, mut value) = constant(rows, Scalar::Usize)?;
             value.ty = type_row(rows, Scalar::U8)?;
-            rows.cold_mut().constants[index].value = Some(s::ConstTerm::Value(value));
+            rows.cold_mut().constants[index].body =
+                s::ConstantBody::Evaluated(s::ConstTerm::Value(value));
             Some(())
         },
         "source constant value changed its declared type",
@@ -185,7 +189,7 @@ const MUTATIONS: [(&str, Mutation, &str); 12] = [
             value.ty = g::TypeRef(u32::try_from(reference).ok()?);
             let header = &mut rows.cold_mut().constants[index];
             header.ty = value.ty;
-            header.value = Some(s::ConstTerm::Value(value));
+            header.body = s::ConstantBody::Evaluated(s::ConstTerm::Value(value));
             Some(())
         },
         "source const value type is not a primitive row",
@@ -284,7 +288,7 @@ fn constant_rows_keep_completed_values_and_reject_forged_rows() -> Result {
     assert_eq!(declared.len(), 12);
     assert_eq!(rows.constants().len(), 12);
     for (declaration, header) in &declared {
-        let Some(s::ConstTerm::Value(value)) = header.value else {
+        let s::ConstantBody::Evaluated(s::ConstTerm::Value(value)) = header.body else {
             return Err("free constant without a value".into());
         };
         assert_eq!(value.ty, header.ty);
@@ -312,8 +316,8 @@ fn constant_rows_keep_completed_values_and_reject_forged_rows() -> Result {
         .filter(|(declaration, _)| {
             rows.declarations[declaration.0 as usize].name.as_deref() == Some("INNER")
         })
-        .filter_map(|(_, header)| match header.value {
-            Some(s::ConstTerm::Value(value)) => Some(value.bits),
+        .filter_map(|(_, header)| match header.body {
+            s::ConstantBody::Evaluated(s::ConstTerm::Value(value)) => Some(value.bits),
             _ => None,
         })
         .collect();

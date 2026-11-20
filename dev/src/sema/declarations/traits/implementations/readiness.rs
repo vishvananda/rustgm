@@ -45,15 +45,6 @@ impl Checker<'_> {
         request: ConstantRequest,
         finish: bool,
     ) -> Result<(), Error> {
-        let key = self.report.resolution.definitions[request.declaration.0 as usize]
-            .node
-            .ok_or_else(|| {
-                Error::at(
-                    crate::resolve::unit::FileId(0),
-                    0,
-                    "missing constant member source",
-                )
-            })?;
         if self
             .facts
             .generics
@@ -71,6 +62,10 @@ impl Checker<'_> {
         {
             return Ok(());
         }
+        let key = self.report.resolution.definitions[request.declaration.0 as usize]
+            .node
+            .or(self.report.resolution.definitions[request.owner.0 as usize].node)
+            .ok_or_else(|| Error::unlocated("missing constant member source"))?;
         let selected = self
             .constant_members
             .members(self.report, &self.facts)
@@ -126,10 +121,7 @@ impl Checker<'_> {
             // Selection has declaration authority only. The final impl pass
             // consumes this exact normalized contract and proves every lifetime.
             self.constant_members.contracts.insert(request, contract);
-        } else if !matches!(
-            self.item(key)?.kind,
-            crate::syntax::item::ItemKind::Const { value: Some(_), .. }
-        ) {
+        } else if !self.constant_has_default(request.declaration)? {
             return Err(self.error(
                 key,
                 "implementation is missing a required associated constant",
@@ -155,13 +147,16 @@ impl Checker<'_> {
             return Ok(());
         };
         let definition = &self.report.resolution.definitions[request.declaration.0 as usize];
-        let key = definition.node.ok_or_else(|| {
-            Error::at(
-                crate::resolve::unit::FileId(0),
-                0,
-                "unproved constant contract has no source",
-            )
-        })?;
+        let key = definition
+            .node
+            .or(self.report.resolution.definitions[request.owner.0 as usize].node)
+            .ok_or_else(|| {
+                Error::at(
+                    crate::resolve::unit::FileId(0),
+                    0,
+                    "unproved constant contract has no source",
+                )
+            })?;
         Err(self.error(
             key,
             "associated constant lifetime contract was not discharged",

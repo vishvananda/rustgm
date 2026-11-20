@@ -419,6 +419,7 @@ impl AvailabilityRows {
                     | DefinitionKind::Static
             )
             && !view.inherent_constant(origin)
+            && !view.trait_constant(origin)
         {
             return Err("regular policy origin is not an actual API declaration");
         }
@@ -527,13 +528,16 @@ impl Validation<'_> {
                 .implementations
                 .get(index as usize)
                 .is_some_and(|row| row.constant),
-            // An absent associated value belongs to the validated required
-            // range family. It inherits its trait's const availability.
+            // An associated declaration retains its own const availability
+            // even when its value still needs implementation selection.
             Some(super::HeaderRef::Constant(index)) => self
                 .columns
                 .constants()
                 .get(index as usize)
-                .is_some_and(|row| row.value.is_none() || self.inherent_constant(owner)),
+                .is_some_and(|row| {
+                    !matches!(row.body, super::ConstantBody::Evaluated(_))
+                        || self.inherent_constant(owner)
+                }),
             None
             | Some(
                 super::HeaderRef::Nominal(_)
@@ -548,21 +552,27 @@ impl Validation<'_> {
     }
 
     fn inherent_constant(&self, owner: DeclarationRef) -> bool {
-        let Some(declaration) = self.columns.declarations.get(owner.0 as usize) else {
-            return false;
-        };
+        matches!(self.constant_parent(owner), Some(super::HeaderRef::Implementation(index))
+            if self.columns.implementations[index as usize].closed_inherent_constant_owner(&self.columns.types))
+    }
+
+    fn trait_constant(&self, owner: DeclarationRef) -> bool {
+        matches!(
+            self.constant_parent(owner),
+            Some(super::HeaderRef::Trait(_))
+        ) && matches!(self.headers[owner.0 as usize], Some(super::HeaderRef::Constant(index))
+                if !matches!(self.columns.constants()[index as usize].body, super::ConstantBody::Evaluated(_)))
+    }
+
+    fn constant_parent(&self, owner: DeclarationRef) -> Option<super::HeaderRef> {
+        let declaration = self.columns.declarations.get(owner.0 as usize)?;
         if declaration.definition.kind != DefinitionKind::Constant {
-            return false;
+            return None;
         }
         declaration
             .definition
             .parent
             .and_then(|parent| self.headers.get(parent.0 as usize).copied().flatten())
-            .is_some_and(|header| {
-                matches!(header, super::HeaderRef::Implementation(index)
-                if self.columns.implementations[index as usize]
-                    .closed_inherent_constant_owner(&self.columns.types))
-            })
     }
 }
 

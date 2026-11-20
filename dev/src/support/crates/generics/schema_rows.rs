@@ -29,7 +29,7 @@ mod inputs;
 mod nominal_contracts;
 #[path = "sum_contracts.rs"]
 mod sum_contracts;
-pub use free_constants::ConstantHeader;
+pub use free_constants::{ConstantBody, ConstantHeader};
 pub use sum_contracts::{
     Constructor, ConstructorPayload, EnumColumns, EnumHeader, VariantField, VariantHeader,
     VariantShape, nominal_kind, positional,

@@ -71,7 +71,7 @@ impl BinderIndex<'_> {
             .transpose()?;
         match frame.kind {
             s::BinderKind::DeclarationHeader => {
-                self.header_frame(owner, reference, frame)?;
+                self.header_frame(headers, owner, reference, frame, work)?;
             }
             s::BinderKind::OriginalFunction | s::BinderKind::PublicFunction => {
                 let Some(HeaderRef::Function(index)) = owner else {
@@ -121,15 +121,37 @@ impl BinderIndex<'_> {
     }
     fn header_frame(
         &mut self,
+        headers: &HeaderIndex<'_>,
         owner: Option<HeaderRef>,
         reference: g::BinderRef,
         frame: &s::Binder,
+        work: &mut Work,
     ) -> Result<(), &'static str> {
         let count = match owner {
             Some(HeaderRef::Nominal(_) | HeaderRef::AssociatedType(_)) => 0,
             Some(HeaderRef::Trait(index)) => self.rows.traits[index as usize].region_captures,
             Some(HeaderRef::Implementation(index)) => {
                 self.rows.implementations[index as usize].region_captures
+            }
+            Some(HeaderRef::Constant(index))
+                if !matches!(
+                    self.rows.constants()[index as usize].body,
+                    s::ConstantBody::Evaluated(_)
+                ) =>
+            {
+                let parent = self.rows.declarations[frame.owner.0 as usize]
+                    .definition
+                    .parent
+                    .ok_or("source associated constant binder lacks its actual owner")?;
+                match headers.header(parent, work)? {
+                    Some(HeaderRef::Trait(index)) => {
+                        self.rows.traits[index as usize].region_captures
+                    }
+                    Some(HeaderRef::Implementation(index)) => {
+                        self.rows.implementations[index as usize].region_captures
+                    }
+                    _ => return Err("source associated constant binder has a foreign owner"),
+                }
             }
             _ => return Err("source declaration binder belongs to another header kind"),
         };

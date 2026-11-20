@@ -2,6 +2,7 @@
 //! exactly when the declaration table names a constant. It has no count and
 //! no declaration field: row `k` belongs to the `k`-th constant declaration.
 use super::{Input, Writer, g, id, recipe_columns, s};
+use crate::support::crates::owner_catalog::BodyRef;
 
 /// Presence and length are functions of rows already decoded, never of
 /// trailing bytes: a packet without constants keeps its exact earlier bytes.
@@ -11,8 +12,8 @@ fn count(declarations: &[s::Declaration]) -> usize {
         .filter(|row| row.definition.kind == s::DefinitionKind::Constant)
         .count()
 }
-/// Each row is `ty | value`: value `0` is none, `1 | term` writes the
-/// const term in place with the shared term codec.
+/// Each row has its type followed by the required-declaration tag, an
+/// evaluated term, or the v14 original initializer's body identity.
 pub(super) fn encode(out: &mut Writer, rows: s::ValidatedView<'_>) -> Result<(), &'static str> {
     let constants = rows.constants();
     if count(&rows.declarations) != constants.len() {
@@ -20,11 +21,18 @@ pub(super) fn encode(out: &mut Writer, rows: s::ValidatedView<'_>) -> Result<(),
     }
     for row in constants {
         id(out, row.ty.0)?;
-        match row.value {
-            None => out.u8(0)?,
-            Some(term) => {
+        match row.body {
+            s::ConstantBody::Required => out.u8(0)?,
+            s::ConstantBody::Evaluated(term) => {
                 out.u8(1)?;
                 recipe_columns::const_term_write(out, term)?;
+            }
+            s::ConstantBody::Original(body) => {
+                if !rows.descriptor().profile().declaration_policies() {
+                    return Err("source constant original requires the version-fourteen profile");
+                }
+                out.u8(2)?;
+                id(out, body.0)?;
             }
         }
     }
@@ -33,6 +41,7 @@ pub(super) fn encode(out: &mut Writer, rows: s::ValidatedView<'_>) -> Result<(),
 pub(super) fn decode(
     read: &mut Input<'_, '_>,
     rows: &mut s::SourceRows,
+    profile: s::Profile,
 ) -> Result<(), &'static str> {
     read.reader.atoms(rows.declarations.len())?;
     let count = count(&rows.declarations);
@@ -43,12 +52,13 @@ pub(super) fn decode(
     let mut constants = Vec::with_capacity(count);
     for _ in 0..count {
         let ty = g::TypeRef(read.id()?);
-        let value = match read.reader.u8()? {
-            0 => None,
-            1 => Some(recipe_columns::const_term_read(read)?),
+        let body = match read.reader.u8()? {
+            0 => s::ConstantBody::Required,
+            1 => s::ConstantBody::Evaluated(recipe_columns::const_term_read(read)?),
+            2 if profile.declaration_policies() => s::ConstantBody::Original(BodyRef(read.id()?)),
             _ => return Err("invalid source constant value presence"),
         };
-        constants.push(s::ConstantHeader { ty, value });
+        constants.push(s::ConstantHeader { ty, body });
     }
     read.cold(rows)?.constants = constants;
     Ok(())

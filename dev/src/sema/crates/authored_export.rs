@@ -688,6 +688,7 @@ impl Stage {
                         Ok(None)
                     } else if facts.associated.owner(id).is_some()
                         && !self.range_required_constant(facts, id)
+                        && !self.authored_required_constant(report, facts, id)
                         && self.inherent_constant(report, facts, id).is_none()
                     {
                         Err("source associated constants require their wider profile")

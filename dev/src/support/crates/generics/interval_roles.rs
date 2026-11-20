@@ -81,7 +81,9 @@ pub(super) fn family(
             return Err("source range bound requires its actual constant header");
         };
         let constant = &rows.constants()[index as usize];
-        if constant.value.is_some() || !same_type(rows, constant.ty, header.self_type) {
+        if constant.body != super::ConstantBody::Required
+            || !same_type(rows, constant.ty, header.self_type)
+        {
             return Err("source range bound requires its actual required Self declaration");
         }
     }

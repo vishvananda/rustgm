@@ -24,12 +24,21 @@ impl Graph {
             .get(row.0 as usize)
             .ok_or("source input scope is outside its actual declaration table")?;
         catalog.validate_declaration(id, definition, slot_bindings::kind(raw.definition.kind))?;
+        let actual = generics.parents.get(&definition).copied();
         let parent = match rows.header(row)? {
             Some(s::HeaderRef::Function(index)) => rows.functions[index as usize].parent,
             Some(s::HeaderRef::AssociatedType(index)) => {
                 Some(rows.associated_types[index as usize].parent)
             }
             Some(s::HeaderRef::Trait(index)) => Some(rows.traits[index as usize].self_definition),
+            Some(s::HeaderRef::Constant(index))
+                if !matches!(
+                    rows.constants()[index as usize].body,
+                    s::ConstantBody::Evaluated(_)
+                ) && (actual.is_some() || !legacy_range_bound(rows, row)) =>
+            {
+                raw.definition.parent
+            }
             // A called constructor, like a local one, owns no generic scope:
             // its enum's or struct's premises arrive through that type's own
             // inputs. A free constant inherits no generics, even inside a
@@ -50,7 +59,7 @@ impl Graph {
         let expected = parent
             .map(|parent| catalog.definition_at(owner, parent))
             .transpose()?;
-        if generics.parents.get(&definition).copied() != expected {
+        if actual != expected {
             return Err("source declaration inputs changed their actual parent scope");
         }
         Ok(())
@@ -165,4 +174,19 @@ impl Graph {
             inputs
         }))
     }
+}
+
+fn legacy_range_bound(
+    rows: s::ValidatedView<'_>,
+    row: crate::support::crates::owner_catalog::DeclarationRef,
+) -> bool {
+    use crate::support::bindings::LangItem;
+    rows.roles.iter().any(|binding| {
+        matches!(binding.role, LangItem::RangeMin | LangItem::RangeMax)
+            && binding.declaration
+                == (s::DeclarationAddress {
+                    artifact: s::ArtifactRef(0),
+                    declaration: row,
+                })
+    })
 }

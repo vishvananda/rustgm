@@ -135,6 +135,32 @@ impl Stage {
                 |(_, [min, max, _])| definition == min.definition || definition == max.definition,
             )
     }
+    pub(super) fn authored_required_constant(
+        &self,
+        report: &Report,
+        facts: &Declarations,
+        definition: DefId,
+    ) -> bool {
+        if !self.declaration_policies()
+            || facts.associated.trait_owner(definition).is_none()
+            || facts.initializer_index(definition).is_some()
+        {
+            return false;
+        }
+        let Some(key) = report.resolution.definitions[definition.0 as usize].node else {
+            return false;
+        };
+        let ast = &report.package.unit(key.file).configured.ast;
+        let crate::syntax::ast::Kind::Item(index) = ast.node(key.node).kind else {
+            return false;
+        };
+        ast.items.get(index as usize).is_some_and(|item| {
+            matches!(
+                item.kind,
+                crate::syntax::item::ItemKind::Const { value: None, .. }
+            )
+        })
+    }
 
     /// Version thirteen: value code 17 names the exported constant
     /// declaration a body reads. Its value travels once, in that
@@ -235,20 +261,32 @@ impl Stage {
                 .copied()
                 .flatten()
                 .ok_or("source constant export requires its completed value")?;
-            if self.range_required_constant(facts, id) {
-                let ty = self.ty(
-                    facts,
-                    ty,
+            let range = self.range_required_constant(facts, id);
+            if range || self.authored_required_constant(report, facts, id) {
+                let context = if range {
                     Context {
                         owner: declaration,
                         frame: None,
                         body: None,
-                    },
-                )?;
+                    }
+                } else {
+                    let schema = facts
+                        .associated
+                        .schema(id)
+                        .ok_or("source required constant lost its completed trait environment")?;
+                    self.frame(
+                        declaration,
+                        None,
+                        s::BinderKind::DeclarationHeader,
+                        schema.captures,
+                    )?
+                };
+                let ty = self.ty(facts, ty, context)?;
                 self.reserve(size_of::<s::ConstantHeader>())?;
-                self.cold()?
-                    .constants
-                    .push(s::ConstantHeader { ty, value: None });
+                self.cold()?.constants.push(s::ConstantHeader {
+                    ty,
+                    body: s::ConstantBody::Required,
+                });
                 continue;
             }
             let codec = value_type(facts, ty, self.declaration_policies())?;
@@ -282,7 +320,7 @@ impl Stage {
             self.reserve(size_of::<s::ConstantHeader>())?;
             self.cold()?.constants.push(s::ConstantHeader {
                 ty,
-                value: Some(s::ConstTerm::Value(s::ConstValue { ty, bits })),
+                body: s::ConstantBody::Evaluated(s::ConstTerm::Value(s::ConstValue { ty, bits })),
             });
         }
         Ok(())

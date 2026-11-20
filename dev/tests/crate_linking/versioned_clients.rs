@@ -461,6 +461,117 @@ fn allowed<T: base::RangePattern>() {{}}
     Ok(())
 }
 
+#[test]
+fn cli_version_fourteen_transports_required_generic_trait_constants() -> Result {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root.join(format!(
+        "obj/parallel/v14-associated-constants/cli-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let provider = folder.join("provider.rs");
+    let metadata = folder.join("provider.rgm");
+    let lowir = folder.join("provider.lowir");
+    std::fs::write(
+        &provider,
+        availability_foundation(root)?
+            + r#"
+#[stable(feature="required_table",since="1.0.0")]
+pub trait Table<T> {
+    #[stable(feature="required_table",since="1.0.0")]
+    const ROW: T;
+}
+"#,
+    )?;
+    super::artifacts::checked(
+        "required-provider",
+        &folder,
+        source_export(
+            "module-body-operations-v14",
+            &provider,
+            &metadata,
+            &lowir,
+            true,
+        )
+        .arg("--cap-lints=allow"),
+    )?;
+    required_constant_artifact(&metadata)?;
+    let usage = r#"
+struct A;
+struct B;
+impl base::Table<u8> for A { const ROW: u8 = 19; }
+impl base::Table<u16> for B { const ROW: u16 = 513; }
+#[unsafe(no_mangle)] pub extern "C" fn first() -> u8 { <A as base::Table<u8>>::ROW }
+#[unsafe(no_mangle)] pub extern "C" fn second() -> u16 { <B as base::Table<u16>>::ROW }
+"#;
+    for (name, text, diagnostic) in [
+        ("client", usage, ""),
+        (
+            "missing",
+            "struct A; impl base::Table<u8> for A {} fn main() {}",
+            "missing a required associated constant",
+        ),
+        (
+            "mismatch",
+            "struct A; impl base::Table<u8> for A { const ROW: u16 = 19; }",
+            "incompatible types",
+        ),
+    ] {
+        let client = folder.join(format!("{name}.rs"));
+        let output = folder.join(format!("{name}.lowir"));
+        std::fs::write(
+            &client,
+            format!("#![feature(no_core)]\n#![no_core]\nextern crate base;\n{text}"),
+        )?;
+        let result = source_client(&client, &metadata, &output)
+            .args(["--crate-type=lib", "--cap-lints=allow"])
+            .output()?;
+        let stderr = String::from_utf8(result.stderr)?;
+        std::fs::write(folder.join(format!("{name}.stderr")), &stderr)?;
+        let status = i32::from(!diagnostic.is_empty());
+        assert_eq!(result.status.code(), Some(status), "{name}: {stderr}");
+        if status == 0 {
+            let written = std::fs::read_to_string(output)?;
+            assert!(
+                written.contains("return u8 19") && written.contains("return u16 513"),
+                "{written}"
+            );
+        } else {
+            assert!(stderr.contains(diagnostic), "{stderr}");
+        }
+    }
+    let older = source_export(
+        "module-bodies-v13",
+        &provider,
+        &folder.join("old.rgm"),
+        &lowir,
+        true,
+    )
+    .arg("--cap-lints=allow")
+    .output()?;
+    assert_eq!(older.status.code(), Some(1));
+    assert!(
+        String::from_utf8(older.stderr)?
+            .contains("source associated constants require their wider profile")
+    );
+    Ok(())
+}
+
+fn required_constant_artifact(metadata: &Path) -> Result {
+    use rustgm::support::crates::{self, generics::source::Profile};
+    let bytes = std::fs::read(metadata)?;
+    let packet = crates::decode(&bytes)?;
+    assert_eq!(crates::encode(&packet)?, bytes);
+    let descriptor = packet.source_descriptor().ok_or("source descriptor")?;
+    assert_eq!(
+        descriptor.profile(),
+        Profile::Source2024ModuleBodyOperations
+    );
+    Ok(())
+}
+
 fn required_range_headers(metadata: &Path) -> Result {
     use rustgm::support::crates::{self, generics::source::Profile};
     let bytes = std::fs::read(metadata)?;

@@ -29,8 +29,15 @@ pub(super) fn validate(
         inherent |= implementation.trait_application.is_none();
     }
     ledger.finish(work)?;
-    if inherent && !rows.constants().is_empty() {
-        ledger.inherent_constants(work)?;
+    let constants = rows.constants();
+    work.charge(constants.len())?;
+    if !constants.is_empty()
+        && (inherent
+            || constants
+                .iter()
+                .any(|row| !matches!(row.body, s::ConstantBody::Evaluated(_))))
+    {
+        ledger.constants(work)?;
     }
     Ok(())
 }
@@ -54,10 +61,11 @@ impl<'a> Members<'a> {
                     Some(HeaderRef::AssociatedType(index)) => {
                         Some(self.rows.associated_types[index as usize].parent)
                     }
-                    // The profile validator confines absent associated values
-                    // to the two authenticated required range roles.
                     Some(HeaderRef::Constant(index))
-                        if self.rows.constants()[index as usize].value.is_none() =>
+                        if !matches!(
+                            self.rows.constants()[index as usize].body,
+                            s::ConstantBody::Evaluated(_)
+                        ) =>
                     {
                         self.rows.declarations[member.0 as usize].definition.parent
                     }
@@ -163,25 +171,20 @@ impl<'a> Members<'a> {
         link: &s::MemberLink,
         work: &mut Work,
     ) -> Result<(), &'static str> {
-        let result = match (trait_, link.trait_member) {
-            (Some(_), Some(member)) if member.artifact == s::ArtifactRef(0) => matches!(
-                self.headers.get(member.declaration.0 as usize),
-                Some(Some(HeaderRef::AssociatedType(_)))
-            ),
-            _ => false,
-        };
+        let mut kind = DefinitionKind::Function;
         match (trait_, link.trait_member) {
             (Some(trait_), Some(member)) if member.artifact == s::ArtifactRef(0) => {
-                declaration(
-                    self.rows,
-                    member.declaration,
-                    if result {
-                        DefinitionKind::AssociatedType
-                    } else {
-                        DefinitionKind::Function
-                    },
-                    work,
-                )?;
+                let header = self
+                    .headers
+                    .get(member.declaration.0 as usize)
+                    .copied()
+                    .flatten();
+                kind = match header {
+                    Some(HeaderRef::AssociatedType(_)) => DefinitionKind::AssociatedType,
+                    Some(HeaderRef::Constant(_)) => DefinitionKind::Constant,
+                    _ => DefinitionKind::Function,
+                };
+                declaration(self.rows, member.declaration, kind, work)?;
                 if trait_.declaration.artifact != s::ArtifactRef(0)
                     || self.rows.declarations[member.declaration.0 as usize]
                         .definition
@@ -193,41 +196,25 @@ impl<'a> Members<'a> {
                 {
                     return Err("source implementation maps a foreign actual trait member");
                 }
-                if link.implementation.is_none() && !result {
-                    let Some(HeaderRef::Function(index)) =
-                        self.headers[member.declaration.0 as usize]
-                    else {
-                        return Err("source default member header is absent");
-                    };
-                    if self.rows.functions[index as usize].body == s::FunctionBody::Absent {
-                        return Err("source required member has no actual implementation");
-                    }
+                if link.implementation.is_none() && !self.has_default(header) {
+                    return Err("source required member has no actual implementation");
                 }
             }
             (None, None) if link.implementation.is_some() => {}
             _ => return Err("source member conformance loses its exact trait/inherent identity"),
         }
-        if result {
+        if kind == DefinitionKind::AssociatedType {
             return self.definition(implementation, stamp, link.implementation, work);
         }
         if let Some(member) = link.implementation {
-            if let Some(HeaderRef::Constant(index)) =
-                self.headers.get(member.0 as usize).copied().flatten()
-                && implementation.closed_inherent_constant_owner(&self.rows.types)
+            if kind == DefinitionKind::Constant
+                || trait_.is_none()
+                    && matches!(
+                        self.headers.get(member.0 as usize),
+                        Some(Some(HeaderRef::Constant(_)))
+                    )
             {
-                declaration(self.rows, member, DefinitionKind::Constant, work)?;
-                let row = &self.rows.declarations[member.0 as usize];
-                if row.definition.parent != Some(implementation.self_definition)
-                    || self
-                        .rows
-                        .constants()
-                        .get(index as usize)
-                        .is_none_or(|header| header.value.is_none())
-                    || std::mem::replace(&mut self.stamps[member.0 as usize], stamp) != 0
-                {
-                    return Err("source constant lost its actual inherent owner or value");
-                }
-                return Ok(());
+                return self.constant_definition(implementation, stamp, member, work);
             }
             declaration(self.rows, member, DefinitionKind::Function, work)?;
             let Some(HeaderRef::Function(index)) = self.headers[member.0 as usize] else {
@@ -239,6 +226,47 @@ impl<'a> Members<'a> {
             {
                 return Err("source implementation member belongs to another actual Self owner");
             }
+        }
+        Ok(())
+    }
+    fn has_default(&self, header: Option<HeaderRef>) -> bool {
+        match header {
+            Some(HeaderRef::Function(index)) => {
+                self.rows.functions[index as usize].body != s::FunctionBody::Absent
+            }
+            Some(HeaderRef::Constant(index)) => matches!(
+                self.rows.constants()[index as usize].body,
+                s::ConstantBody::Original(_)
+            ),
+            Some(HeaderRef::AssociatedType(_)) => true, // Its definition check requires the mapping.
+            _ => false,
+        }
+    }
+    fn constant_definition(
+        &mut self,
+        implementation: &s::ImplHeader,
+        stamp: u32,
+        member: crate::support::crates::owner_catalog::DeclarationRef,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        declaration(self.rows, member, DefinitionKind::Constant, work)?;
+        let Some(HeaderRef::Constant(index)) = self.headers[member.0 as usize] else {
+            return Err("source impl constant lacks its actual header");
+        };
+        let constant = self.rows.constants()[index as usize];
+        let correct = match constant.body {
+            s::ConstantBody::Original(_) => implementation.trait_application.is_some(),
+            s::ConstantBody::Evaluated(_) => {
+                implementation.closed_inherent_constant_owner(&self.rows.types)
+            }
+            s::ConstantBody::Required => false,
+        };
+        if self.rows.declarations[member.0 as usize].definition.parent
+            != Some(implementation.self_definition)
+            || !correct
+            || std::mem::replace(&mut self.stamps[member.0 as usize], stamp) != 0
+        {
+            return Err("source constant lost its actual implementation owner or initializer");
         }
         Ok(())
     }
@@ -297,19 +325,24 @@ impl<'a> Members<'a> {
         }
         Ok(())
     }
-    fn inherent_constants(&self, work: &mut Work) -> Result<(), &'static str> {
+    fn constants(&self, work: &mut Work) -> Result<(), &'static str> {
         work.charge(self.rows.declarations.len())?;
-        for (row, stamp) in self.rows.declarations.iter().zip(&self.stamps) {
-            if row.definition.kind == DefinitionKind::Constant
-                && *stamp == 0
-                && let Some(owner) = row.definition.parent
-                && let Some(HeaderRef::Implementation(index)) =
-                    self.headers.get(owner.0 as usize).copied().flatten()
-                && self.rows.implementations[index as usize]
-                    .trait_application
-                    .is_none()
-            {
-                return Err("source constant has no actual inherent member link");
+        for (index, row) in self.rows.declarations.iter().enumerate() {
+            if row.definition.kind != DefinitionKind::Constant {
+                continue;
+            }
+            let parent = row
+                .definition
+                .parent
+                .and_then(|id| self.headers[id.0 as usize]);
+            match parent {
+                Some(HeaderRef::Trait(_)) if !self.traits[index] => {
+                    return Err("source constant omitted from its actual trait members");
+                }
+                Some(HeaderRef::Implementation(_)) if self.stamps[index] == 0 => {
+                    return Err("source constant has no actual implementation member link");
+                }
+                _ => {}
             }
         }
         Ok(())

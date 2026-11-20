@@ -143,7 +143,6 @@ impl Checker<'_> {
         let mut result = Vec::new();
         let mut substitution = None;
         for &expected in members.owners.get(&trait_owner).into_iter().flatten() {
-            let declaration = &self.report.resolution.definitions[expected.0 as usize];
             if let Some(&actual) = overrides.get(&expected) {
                 if substitution.is_none() {
                     substitution = Some(
@@ -157,10 +156,7 @@ impl Checker<'_> {
                 self.constant_conformance(owner, source, (expected, actual), folder, definitions)?;
                 result.push((expected, Some(actual)));
             } else {
-                let key = declaration
-                    .node
-                    .ok_or_else(|| self.error(source, "missing trait constant source"))?;
-                if !matches!(self.item(key)?.kind, ItemKind::Const { value: Some(_), .. }) {
+                if !self.constant_has_default(expected)? {
                     return Err(self.error(
                         source,
                         "implementation is missing a required associated constant",

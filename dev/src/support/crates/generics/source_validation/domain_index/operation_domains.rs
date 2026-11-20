@@ -243,6 +243,9 @@ impl DomainIndex<'_, '_> {
             .constants()
             .get(ordinal as usize)
             .ok_or("source constant read names no validated constant declaration")?;
+        if !matches!(header.body, s::ConstantBody::Evaluated(_)) {
+            return Err("source constant read requires its completed value");
+        }
         match (
             rows.types.get(ty.0 as usize),
             rows.types.get(header.ty.0 as usize),

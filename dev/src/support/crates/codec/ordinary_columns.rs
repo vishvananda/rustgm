@@ -252,7 +252,7 @@ fn decode_availability_profile(
     if profile.body_nodes() {
         results_wire::decode(&mut read, &mut rows)?;
         enums_wire::decode(&mut read, &mut rows)?;
-        free_constants_wire::decode(&mut read, &mut rows)?;
+        free_constants_wire::decode(&mut read, &mut rows, profile)?;
     }
     decode_availability_trailers(&mut read, &mut rows, &mut availability)?;
     if profile.compiler_operations() {

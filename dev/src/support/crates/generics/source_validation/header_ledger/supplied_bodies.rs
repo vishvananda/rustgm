@@ -1,6 +1,6 @@
 //! Bodies are present exactly once; required trait declarations stay bodyless.
 use super::{DefinitionKind, HeaderRef, SourceRows, Work, s};
-use crate::support::crates::owner_catalog::{BodyKind, DeclarationRef};
+use crate::support::crates::owner_catalog::{BodyKind, BodyRef, DeclarationRef};
 
 pub(super) fn validate(
     rows: &SourceRows,
@@ -54,20 +54,26 @@ pub(super) fn validate(
                 }
             }
             s::FunctionBody::Original(body) => {
-                let owner = rows
-                    .body_owners
-                    .get(body.0 as usize)
-                    .ok_or("source function original body reference is unknown")?;
-                if owner.declaration != function.declaration
-                    || owner.parent.is_some()
-                    || owner.kind != BodyKind::Function
-                    || owner.ordinal != 0
-                    || std::mem::replace(&mut seen[body.0 as usize], true)
-                {
-                    return Err(
-                        "source function body has duplicate, foreign or incompatible ownership",
-                    );
-                }
+                claim_original(
+                    rows,
+                    &mut seen,
+                    body,
+                    function.declaration,
+                    BodyKind::Function,
+                )?;
+            }
+        }
+    }
+    work.charge(rows.constants().len())?;
+    if rows
+        .constants()
+        .iter()
+        .any(|row| matches!(row.body, s::ConstantBody::Original(_)))
+    {
+        work.charge(rows.declarations.len())?;
+        for (declaration, constant) in rows.constant_rows() {
+            if let s::ConstantBody::Original(body) = constant.body {
+                claim_original(rows, &mut seen, body, declaration, BodyKind::Constant)?;
             }
         }
     }
@@ -94,6 +100,28 @@ pub(super) fn validate(
         return Err("source bodies have incomplete exclusive representation coverage");
     }
     local_declarations(rows, lookup, work)?;
+    Ok(())
+}
+
+fn claim_original(
+    rows: &SourceRows,
+    seen: &mut [bool],
+    body: BodyRef,
+    declaration: DeclarationRef,
+    kind: BodyKind,
+) -> Result<(), &'static str> {
+    let owner = rows
+        .body_owners
+        .get(body.0 as usize)
+        .ok_or("source original body reference is unknown")?;
+    if owner.declaration != declaration
+        || owner.parent.is_some()
+        || owner.kind != kind
+        || owner.ordinal != 0
+        || std::mem::replace(&mut seen[body.0 as usize], true)
+    {
+        return Err("source original has duplicate, foreign or incompatible ownership");
+    }
     Ok(())
 }
 

@@ -27,15 +27,17 @@ impl Stage {
         for (index, enabled) in active.iter_mut().enumerate() {
             self.charge(1)?;
             if let Some(row) = self.definitions[index] {
+                let kind = self.rows.declarations[row.0 as usize].definition.kind;
                 *enabled = matches!(
-                    self.rows.declarations[row.0 as usize].definition.kind,
+                    kind,
                     s::DefinitionKind::SelfType
                         | s::DefinitionKind::Trait
                         | s::DefinitionKind::Function
                         | s::DefinitionKind::Struct
                         | s::DefinitionKind::Enum
                         | s::DefinitionKind::AssociatedType
-                );
+                ) || kind == s::DefinitionKind::Constant
+                    && self.scoped_constant(report, facts, index)?;
             }
         }
         let mut children = vec![Vec::new(); count];
@@ -71,42 +73,23 @@ impl Stage {
                 .transpose()?
                 .unwrap_or(0);
             let declaration = self.declaration(owner)?;
-            let start =
-                u32::try_from(self.rows.slots.len()).map_err(|_| "source slot table overflow")?;
-            let kind = report.resolution.definitions[owner.0 as usize].kind;
-            // Version thirteen: a nominal's region slots precede its type slots,
-            // in the order of its own template arguments.
-            let nominal = self.body_nodes() && matches!(kind, DefKind::Struct | DefKind::Enum);
-            if nominal {
-                self.nominal_region_slots(facts, owner, declaration, start)?;
-            }
-            // An inherent impl's lifetimes also lead its template arguments.
-            // They stay its captured region slots, recorded after its types.
-            let leading = if nominal {
-                Leading::Nominal
-            } else if self.body_nodes() && kind == DefKind::SelfType && inherent_owner(facts, owner)
-            {
-                Leading::Inherent
-            } else {
-                Leading::None
-            };
-            self.type_slots(facts, owner, declaration, kind == DefKind::Trait, leading)?;
-            if !nominal {
-                self.region_slots(facts, owner, declaration, start)?;
-            }
-            let end =
-                u32::try_from(self.rows.slots.len()).map_err(|_| "source slot table overflow")?;
+            let declared = self.declared_scope_slots(
+                facts,
+                owner,
+                declaration,
+                report.resolution.definitions[owner.0 as usize].kind,
+            )?;
             self.reserve(4 * size_of::<s::ParameterScope>())?;
             let parent = parent.map(|parent| self.declaration(parent)).transpose()?;
             self.rows.scopes.push(s::ParameterScope {
                 owner: declaration,
                 parent,
-                declared: g::Range { start, end },
+                declared,
                 captures,
             });
             totals[owner.0 as usize] = Some(
                 captures
-                    .checked_add(end - start)
+                    .checked_add(declared.end - declared.start)
                     .ok_or("source scope parameter count overflow")?,
             );
             pending.extend(children[owner.0 as usize].iter().rev().copied());
@@ -118,6 +101,47 @@ impl Stage {
             }
         }
         Ok(())
+    }
+
+    fn declared_scope_slots(
+        &mut self,
+        facts: &Declarations,
+        owner: DefId,
+        declaration: DeclarationRef,
+        kind: DefKind,
+    ) -> Result<g::Range, &'static str> {
+        let start =
+            u32::try_from(self.rows.slots.len()).map_err(|_| "source slot table overflow")?;
+        if kind == DefKind::Const {
+            return Ok(g::Range { start, end: start });
+        }
+        // Nominals own their leading lifetime slots. Inherent impls retain
+        // captured lifetimes after their own type slots.
+        let leading = if self.body_nodes() && matches!(kind, DefKind::Struct | DefKind::Enum) {
+            self.nominal_region_slots(facts, owner, declaration, start)?;
+            Leading::Nominal
+        } else if self.body_nodes() && kind == DefKind::SelfType && inherent_owner(facts, owner) {
+            Leading::Inherent
+        } else {
+            Leading::None
+        };
+        self.type_slots(facts, owner, declaration, kind == DefKind::Trait, leading)?;
+        if leading != Leading::Nominal {
+            self.region_slots(facts, owner, declaration, start)?;
+        }
+        let end = u32::try_from(self.rows.slots.len()).map_err(|_| "source slot table overflow")?;
+        Ok(g::Range { start, end })
+    }
+
+    fn scoped_constant(
+        &self,
+        report: &Report,
+        facts: &Declarations,
+        index: usize,
+    ) -> Result<bool, &'static str> {
+        let definition = DefId(u32::try_from(index).map_err(|_| "source scope identity overflow")?);
+        Ok(self.authored_required_constant(report, facts, definition)
+            && !self.range_required_constant(facts, definition))
     }
 
     /// Version thirteen transports a nominal's lifetimes but not its declared

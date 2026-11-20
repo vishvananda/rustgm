@@ -3,6 +3,7 @@ use super::{
     Access, Binding, DefId, Error, ExternalDef, ExternalKind, Imported, Interface, NameId,
     Namespace, Origin, Pending, PendingBinding, Records, Resolver, ScopeId, Work, error, kind, s,
 };
+use crate::support::crates::owner_catalog::DeclarationRef;
 use crate::support::{hash::HashSet, retained};
 pub(super) fn prepare(
     resolver: &mut Resolver<'_>,
@@ -15,11 +16,13 @@ pub(super) fn prepare(
     let modules = rows.module_contracts().map_err(error)?;
     let names = &modules.rows().namespace;
     let conversions = rows.descriptor().profile().conversion_roles();
+    let constants = associated_constant_count(rows, work)?;
     let count = names
         .bindings
         .len()
         .saturating_add(if conversions { rows.functions.len() } else { 0 })
         .saturating_add(rows.associated_types.len())
+        .saturating_add(constants)
         .saturating_add(rows.enums().variants.len());
     work.charge(names.bindings.len().saturating_add(rows.declarations.len()))?;
     work.reserve(
@@ -86,23 +89,63 @@ pub(super) fn prepare(
         }
         external.push((identity, definitions[header.declaration.0 as usize]));
     }
-    for header in &rows.associated_types {
-        let binding = member(
-            resolver,
-            rows,
-            definitions,
-            header.declaration,
-            Some(header.parent),
-            work,
-        )?
-        .ok_or_else(|| error("associated type lost its actual parent binding"))?;
+    for (declaration, parent) in associated_members(&rows, constants) {
+        let binding = member(resolver, rows, definitions, declaration, parent, work)?
+            .ok_or_else(|| error("associated data member lost its actual parent binding"))?;
         if !keys.insert((binding.scope, binding.name, binding.namespace)) {
-            return Err(error("associated type duplicates a pending namespace key"));
+            return Err(error(
+                "associated data member duplicates a pending namespace key",
+            ));
         }
         bindings.push(binding);
     }
     variant_bindings(resolver, rows, definitions, &mut keys, &mut bindings, work)?;
     Ok(Pending { bindings, external })
+}
+
+fn associated_constant_count(rows: s::ValidatedView<'_>, work: &mut Work) -> Result<usize, Error> {
+    if !rows.descriptor().profile().declaration_policies() {
+        return Ok(0);
+    }
+    work.charge(rows.constants().len())?;
+    let count = rows
+        .constants()
+        .iter()
+        .filter(|row| associated_constant(row.body))
+        .count();
+    if count != 0 {
+        work.charge(rows.declarations.len())?;
+    }
+    Ok(count)
+}
+
+fn associated_constant(body: s::ConstantBody) -> bool {
+    matches!(
+        body,
+        s::ConstantBody::Required | s::ConstantBody::Original(_)
+    )
+}
+
+fn associated_members<'rows>(
+    rows: &'rows s::ValidatedView<'_>,
+    constants: usize,
+) -> impl Iterator<Item = (DeclarationRef, Option<DeclarationRef>)> + 'rows {
+    let constant_members = (constants != 0)
+        .then(move || rows.constant_rows())
+        .into_iter()
+        .flatten()
+        .filter(|(_, row)| associated_constant(row.body))
+        .map(move |(declaration, _)| {
+            (
+                declaration,
+                rows.declarations[declaration.0 as usize].definition.parent,
+            )
+        });
+    let types = rows
+        .associated_types
+        .iter()
+        .map(|row| (row.declaration, Some(row.parent)));
+    types.chain(constant_members)
 }
 /// Version thirteen: each variant is named once, in its enum's member scope.
 /// A consumer's variant paths, constructor calls and patterns resolve through

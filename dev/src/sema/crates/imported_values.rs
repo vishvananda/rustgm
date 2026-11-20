@@ -79,15 +79,17 @@ fn source_constants(
         };
         let rows = descriptor.rows();
         for (declaration, row) in rows.constant_rows() {
-            // The v14 validator admits absent values only for the exact
-            // required range bounds. Their type cells still install normally.
-            if row.value.is_none() && descriptor.profile().declaration_policies() {
+            // Associated declarations and their templates have no completed
+            // value to seed. Evaluation receives their selected owner later.
+            if !matches!(row.body, s::ConstantBody::Evaluated(_))
+                && descriptor.profile().declaration_policies()
+            {
                 continue;
             }
             let definition = imported
                 .generic_definition(descriptor.identity(), declaration)
                 .map_err(error)?;
-            let Some(s::ConstTerm::Value(value)) = row.value else {
+            let s::ConstantBody::Evaluated(s::ConstTerm::Value(value)) = row.body else {
                 return Err(error("source constant seed lost its validated value"));
             };
             let value = match rows.types.get(value.ty.0 as usize) {

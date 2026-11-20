@@ -1,19 +1,22 @@
-//! Version thirteen carries one header row per named constant: its type and
-//! its completed value. Every consumer re-proves the value's canonical bits for
-//! that type before seeding it as a completed definition; no consumer reads an
-//! initializer.
+//! Named constant headers retain either checked bits or the actual associated
+//! declaration's initializer ownership. Consumers still check original bodies.
 use super::{ConstTerm, Declaration, DefinitionKind, HeaderIndex, HeaderRef, Profile, SourceRows};
 use crate::support::crates::generics::{TypeRef, Work};
-use crate::support::crates::owner_catalog::DeclarationRef;
+use crate::support::crates::owner_catalog::{BodyRef, DeclarationRef};
 
 /// One constant's header row. Its declaration is implied: row `k` belongs to
 /// the `k`-th constant declaration in declaration order.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ConstantHeader {
     pub ty: TypeRef,
-    /// The completed value, written in place with the const-term codec.
-    /// `None` is a required trait const's, which no free const may be.
-    pub value: Option<ConstTerm>,
+    pub body: ConstantBody,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ConstantBody {
+    Required,
+    Evaluated(ConstTerm),
+    Original(BodyRef),
 }
 
 /// Each constant declaration with its row, in declaration order. Validated
@@ -113,19 +116,41 @@ pub(super) fn validate(
             .ok_or("source constant rows lack their declaration")?;
         if min == Some(declaration) || max == Some(declaration) {
             // The role validator authenticated both as required members.
-            if header.value.is_some() {
+            if header.body != ConstantBody::Required {
                 return Err("source required range bound cannot carry an initializer");
+            }
+            if headers.scopes().scope_row(declaration, work)?.is_some() {
+                return Err("source required range bound cannot carry its own scope");
             }
             continue;
         }
-        value_owner(rows, headers, row, profile, work)?;
-        let value = match header.value {
-            None => return Err("source free constant requires its value"),
-            Some(ConstTerm::Parameter(_)) => {
+        let value = match header.body {
+            ConstantBody::Required | ConstantBody::Original(_)
+                if profile.declaration_policies() =>
+            {
+                associated_owner(rows, headers, row, header.body, work)?;
+                if headers.scopes().parent(declaration, work)? != row.definition.parent {
+                    return Err(
+                        "source associated constant changed its inherited declaration scope",
+                    );
+                }
+                continue;
+            }
+            ConstantBody::Required => return Err("source free constant requires its value"),
+            ConstantBody::Original(_) => {
+                return Err("source constant original requires the version-fourteen profile");
+            }
+            ConstantBody::Evaluated(ConstTerm::Parameter(_)) => {
                 return Err("source const value over a const parameter requires its wider profile");
             }
-            Some(ConstTerm::Value(value)) => value,
+            ConstantBody::Evaluated(ConstTerm::Value(value)) => value,
         };
+        if profile.declaration_policies()
+            && headers.scopes().scope_row(declaration, work)?.is_some()
+        {
+            return Err("source evaluated constant cannot supply a declaration scope");
+        }
+        value_owner(rows, headers, row, profile, work)?;
         if value.ty != header.ty {
             return Err("source constant value changed its declared type");
         }
@@ -140,6 +165,34 @@ pub(super) fn validate(
         }
     }
     Ok(())
+}
+
+fn associated_owner(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    row: &Declaration,
+    body: ConstantBody,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let parent = row
+        .definition
+        .parent
+        .ok_or("associated constant has no owner")?;
+    match headers.header(parent, work)? {
+        Some(HeaderRef::Trait(_)) => Ok(()),
+        Some(HeaderRef::Implementation(index))
+            if matches!(body, ConstantBody::Original(_))
+                && rows.implementations[index as usize]
+                    .trait_application
+                    .is_some() =>
+        {
+            Ok(())
+        }
+        Some(HeaderRef::Function(_)) | None if body == ConstantBody::Required => {
+            Err("source free constant requires its value")
+        }
+        _ => Err("source associated constant changed its actual trait or implementation owner"),
+    }
 }
 
 /// An evaluated member belongs to its own closed inherent implementation.

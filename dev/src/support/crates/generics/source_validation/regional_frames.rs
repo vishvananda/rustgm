@@ -141,11 +141,18 @@ impl<'a> BinderIndex<'a> {
         owner: crate::support::crates::owner_catalog::DeclarationRef,
         work: &mut Work,
     ) -> Result<g::BinderRef, &'static str> {
+        self.declaration_frame(owner, work)?
+            .ok_or("source declaration has no exact header binder")
+    }
+    pub(super) fn declaration_frame(
+        &self,
+        owner: crate::support::crates::owner_catalog::DeclarationRef,
+        work: &mut Work,
+    ) -> Result<Option<g::BinderRef>, &'static str> {
         work.charge(1)?;
         self.declarations
             .get(owner.0 as usize)
             .copied()
-            .flatten()
             .ok_or("source declaration has no exact header binder")
     }
 

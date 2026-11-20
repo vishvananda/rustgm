@@ -98,6 +98,7 @@ impl DomainIndex<'_, '_> {
             self.requirements(context, header.bounds, work)?;
         }
         self.definition_roots(work)?;
+        self.constant_roots(work)?;
         for projection in &rows.projections {
             self.used_traits[projection.trait_application.0 as usize] = true;
         }
@@ -125,6 +126,46 @@ impl DomainIndex<'_, '_> {
                     return Err("source receiver is outside its actual formal inputs");
                 }
             }
+        }
+        Ok(())
+    }
+    fn constant_roots(&mut self, work: &mut Work) -> Result<(), &'static str> {
+        if !self.declaration_policies {
+            return Ok(());
+        }
+        let rows = self.headers.rows();
+        work.charge(rows.constants().len())?;
+        if !rows
+            .constants()
+            .iter()
+            .any(|row| !matches!(row.body, s::ConstantBody::Evaluated(_)))
+        {
+            return Ok(());
+        }
+        work.charge(rows.declarations.len())?;
+        for (owner, constant) in rows.constant_rows() {
+            if matches!(constant.body, s::ConstantBody::Evaluated(_)) {
+                continue;
+            }
+            let frame = self.binders.declaration_frame(owner, work)?;
+            let context = if let Some(frame) = frame {
+                Context {
+                    owner,
+                    frame: Some(frame),
+                    body: None,
+                }
+            } else {
+                let parent = rows.declarations[owner.0 as usize]
+                    .definition
+                    .parent
+                    .ok_or("source required constant lost its actual parent")?;
+                Context {
+                    owner: parent,
+                    frame: Some(self.binders.declaration(parent, work)?),
+                    body: None,
+                }
+            };
+            self.types.root(self.headers, context, constant.ty, work)?;
         }
         Ok(())
     }

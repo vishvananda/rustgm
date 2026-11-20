@@ -173,7 +173,10 @@ fn finish_inputs(
             }
             (None, Inputs::SelfType)
             | (Some(s::HeaderRef::Function(_)), Inputs::Function(_))
-            | (Some(s::HeaderRef::AssociatedDefinition(_)), Inputs::Definition) => {
+            | (
+                Some(s::HeaderRef::AssociatedDefinition(_) | s::HeaderRef::Constant(_)),
+                Inputs::Definition,
+            ) => {
                 continue;
             }
             _ => {
@@ -274,31 +277,43 @@ impl Walk<'_, '_> {
                 }
                 Ok(Inputs::Definition)
             }
-            None if raw.parent.is_none() => {
-                let declaration = rows
-                    .declarations
-                    .get(raw.owner.0 as usize)
-                    .ok_or_else(|| error("source Self scope is outside its declaration table"))?;
-                let parent = declaration
-                    .definition
-                    .parent
-                    .ok_or_else(|| error("source Self scope has no actual lexical owner"))?;
-                let Some(s::HeaderRef::Trait(index)) = rows.header(parent).map_err(error)? else {
-                    return Err(error(
-                        "source Self scope lacks its actual owning trait header",
-                    ));
-                };
-                if declaration.definition.kind != s::DefinitionKind::SelfType
-                    || rows.traits[index as usize].self_definition != raw.owner
-                {
-                    return Err(error("source scope is not the actual retained trait Self"));
-                }
-                Ok(Inputs::SelfType)
+            Some(s::HeaderRef::Constant(index))
+                if !matches!(
+                    rows.constants()[index as usize].body,
+                    s::ConstantBody::Evaluated(_)
+                ) && raw.parent == rows.declarations[raw.owner.0 as usize].definition.parent =>
+            {
+                Ok(Inputs::Definition)
             }
+            None if raw.parent.is_none() => Self::self_type_inputs(rows, raw.owner),
             _ => Err(error(
                 "source scope requires its wider actual header consumer",
             )),
         }
+    }
+    fn self_type_inputs(
+        rows: s::ValidatedView<'_>,
+        owner: crate::support::crates::owner_catalog::DeclarationRef,
+    ) -> Result<Inputs, Error> {
+        let declaration = rows
+            .declarations
+            .get(owner.0 as usize)
+            .ok_or_else(|| error("source Self scope is outside its declaration table"))?;
+        let parent = declaration
+            .definition
+            .parent
+            .ok_or_else(|| error("source Self scope has no actual lexical owner"))?;
+        let Some(s::HeaderRef::Trait(index)) = rows.header(parent).map_err(error)? else {
+            return Err(error(
+                "source Self scope lacks its actual owning trait header",
+            ));
+        };
+        if declaration.definition.kind != s::DefinitionKind::SelfType
+            || rows.traits[index as usize].self_definition != owner
+        {
+            return Err(error("source scope is not the actual retained trait Self"));
+        }
+        Ok(Inputs::SelfType)
     }
     fn enter(
         &mut self,

@@ -760,13 +760,11 @@ fn freeze_columns_observed(
         {
             return Err("source module root differs from its actual artifact identity");
         }
-        kinds.push(
-            if declaration.definition.kind == super::DefinitionKind::Function {
-                DeclarationBody::Function
-            } else {
-                DeclarationBody::Other
-            },
-        );
+        kinds.push(match declaration.definition.kind {
+            super::DefinitionKind::Function => DeclarationBody::Function,
+            super::DefinitionKind::Constant => DeclarationBody::Constant,
+            _ => DeclarationBody::Other,
+        });
     }
     work.charge(rows.body_owners.len().saturating_mul(2))?;
     let (body_owners, columns) = Columns::take(rows, bodies);

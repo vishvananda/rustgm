@@ -1,5 +1,5 @@
 //! One structural scope index keeps inherited slots shared and ownership queries constant.
-use super::{ParameterKind, ParameterSlot, SlotRef, SourceRows};
+use super::{ParameterKind, ParameterScope, ParameterSlot, SlotRef, SourceRows};
 use crate::support::crates::{self, generics::Work, owner_catalog::DeclarationRef};
 
 /// A borrowed kind view is derived from the same complete declaration table.
@@ -115,16 +115,7 @@ impl<'a> ScopeIndex<'a> {
             let definition = definitions
                 .get(scope.owner.0 as usize)
                 .ok_or("source parameter scope owner is unknown")?;
-            if !matches!(
-                definition.kind,
-                DefinitionKind::Trait
-                    | DefinitionKind::SelfType
-                    | DefinitionKind::Function
-                    | DefinitionKind::Struct
-                    | DefinitionKind::Enum
-                    | DefinitionKind::AssociatedType
-            ) || owners[scope.owner.0 as usize].is_some()
-            {
+            if !valid_owner(definition.kind, scope) || owners[scope.owner.0 as usize].is_some() {
                 return Err("source parameter scope has a duplicate or invalid owner");
             }
             if !valid_parent(scope.owner, definition, scope.parent, definitions) {
@@ -359,14 +350,22 @@ impl<'a> ScopeIndex<'a> {
         owner: DeclarationRef,
         work: &mut Work,
     ) -> Result<Option<DeclarationRef>, &'static str> {
+        self.scope_row(owner, work)?
+            .map(|scope| scope.parent)
+            .ok_or("source generic parent query has no actual owner scope")
+    }
+
+    pub(crate) fn scope_row(
+        &self,
+        owner: DeclarationRef,
+        work: &mut Work,
+    ) -> Result<Option<&ParameterScope>, &'static str> {
         work.charge(1)?;
-        let index = self
+        let scope = self
             .owners
             .get(owner.0 as usize)
-            .copied()
-            .flatten()
             .ok_or("source generic parent query has no actual owner scope")?;
-        Ok(self.rows.scopes[index as usize].parent)
+        Ok(scope.map(|index| &self.rows.scopes[index as usize]))
     }
 
     #[must_use]
@@ -376,6 +375,19 @@ impl<'a> ScopeIndex<'a> {
             .saturating_add(vector(&self.owners))
             .saturating_add(vector(&self.totals))
             .saturating_add(vector(&self.ends))
+    }
+}
+
+fn valid_owner(kind: DefinitionKind, scope: &ParameterScope) -> bool {
+    match kind {
+        DefinitionKind::Trait
+        | DefinitionKind::SelfType
+        | DefinitionKind::Function
+        | DefinitionKind::Struct
+        | DefinitionKind::Enum
+        | DefinitionKind::AssociatedType => true,
+        DefinitionKind::Constant => scope.declared.start == scope.declared.end,
+        _ => false,
     }
 }
 
@@ -395,6 +407,17 @@ fn valid_parent(
                 parent.kind == DefinitionKind::SelfType && parent.parent == Some(owner)
             }),
         DefinitionKind::AssociatedType => parent == definition.parent,
+        DefinitionKind::Constant => {
+            parent == definition.parent
+                && parent
+                    .and_then(|parent| definitions.get(parent.0 as usize))
+                    .is_some_and(|parent| {
+                        matches!(
+                            parent.kind,
+                            DefinitionKind::Trait | DefinitionKind::SelfType
+                        )
+                    })
+        }
         DefinitionKind::Function => {
             match definition.parent {
                 None => parent.is_none(),
@@ -420,7 +443,6 @@ fn valid_parent(
         | DefinitionKind::TypeParameter
         | DefinitionKind::RegionParameter
         | DefinitionKind::ConstParameter
-        | DefinitionKind::Constant
         | DefinitionKind::TypeAlias
         | DefinitionKind::Static
         | DefinitionKind::ValueParameter

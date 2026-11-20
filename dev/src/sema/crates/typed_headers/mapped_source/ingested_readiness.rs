@@ -1,5 +1,5 @@
 //! Declaration readiness checks installed data; original bodies remain unproved.
-use super::{Catalog, DefId, Graph, SignaturePort, s, slot_bindings};
+use super::{Catalog, DefId, DefKind, Graph, SignaturePort, s, slot_bindings};
 use crate::{
     sema::model::Declarations,
     types::{ItemId, Kind},
@@ -14,6 +14,48 @@ pub(in crate::sema) enum Readiness {
     RegionBinding,
 }
 impl Graph {
+    pub(in crate::sema::crates::typed_headers) fn trait_constant(
+        &self,
+        catalog: &Catalog,
+        facts: &Declarations,
+        definition: DefId,
+    ) -> Result<Option<s::ConstantBody>, &'static str> {
+        self.require_store(&facts.types)?;
+        let descriptor = self.descriptor(catalog)?;
+        if !descriptor.profile().declaration_policies() {
+            return Ok(None);
+        }
+        let id = catalog.declaration(definition)?;
+        let (provider, row, _) = catalog.declaration_coordinate(id)?;
+        if provider != descriptor.identity() {
+            return Ok(None);
+        }
+        catalog.validate_declaration(id, definition, DefKind::Const)?;
+        let rows = descriptor.rows();
+        let Some(s::HeaderRef::Constant(index)) = rows.header(row)? else {
+            return Err("source associated constant lost its installed header");
+        };
+        let raw = &rows.declarations[row.0 as usize];
+        let parent = raw
+            .definition
+            .parent
+            .ok_or("source associated constant has no parent")?;
+        let Some(s::HeaderRef::Trait(_)) = rows.header(parent)? else {
+            return Ok(None);
+        };
+        let owner = catalog.definition_at(provider, parent)?;
+        if facts.associated.trait_owner(definition) != Some(owner) {
+            return Err("source associated constant changed its installed trait owner");
+        }
+        let cell = facts
+            .definitions
+            .get(definition.0 as usize)
+            .copied()
+            .flatten();
+        self.constant_ready(rows, row, cell)?;
+        Ok(Some(rows.constants()[index as usize].body))
+    }
+
     pub(in crate::sema::crates::typed_headers) fn readiness(
         &self,
         catalog: &Catalog,

@@ -130,6 +130,26 @@ impl ImportedOwners {
 }
 
 impl super::super::Linkage {
+    pub(in crate::sema) fn source_trait_constant(
+        &self,
+        facts: &Declarations,
+        definition: DefId,
+    ) -> Result<Option<crate::support::crates::generics::source::ConstantBody>, &'static str> {
+        let Some(headers) = self.originals.as_deref() else {
+            return Ok(None);
+        };
+        let Some(ImportedOwners::Ordinary(graph)) = headers.source.as_ref() else {
+            return Ok(None);
+        };
+        let catalog = self
+            .origin_catalog()
+            .ok_or("source constant lookup lost its current catalog")?;
+        headers
+            .charge(6)
+            .map_err(|_| "source constant lookup exceeds header work budget")?;
+        graph.trait_constant(catalog, facts, definition)
+    }
+
     pub(crate) fn selected_caller_tracking_absent(
         &self,
         facts: &Declarations,

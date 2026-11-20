@@ -290,7 +290,7 @@ fn require_member(
             Some(s::HeaderRef::Constant(index)) => {
                 rows.constants()
                     .get(index as usize)
-                    .is_some_and(|row| row.value.is_none())
+                    .is_some_and(|row| !matches!(row.body, s::ConstantBody::Evaluated(_)))
                     || matches!(rows.header(owner)?, Some(s::HeaderRef::Implementation(index))
                         if rows.implementations[index as usize].closed_inherent_constant_owner(&rows.types))
             }

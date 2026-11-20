@@ -7154,6 +7154,18 @@ associated constants and statics. Earlier profiles keep the declaration-kind
 text, and an older reader rejects kind 13 by name. The [named-constant
 packet](pa29/tests/spec/named-constants/README.md) records independent outcomes.
 
+Version fourteen also carries an ordinary required trait constant. Its
+constant header uses tag 0 and names the declared type in its own
+declaration frame. That frame has zero declared slots and inherits the
+actual trait's parameters and `Self`. The trait's ordered member list names
+the declaration, and the consumer installs its value-namespace binding
+in that trait's scope. The consumer re-proves type formation in the
+inherited environment, checks that each local implementation supplies
+the constant, and substitutes the actual trait arguments when checking
+the supplied constant's type. The authenticated Range constants keep
+their existing unscoped role headers. Provided initializers require
+separate checked body transport.
+
 Version thirteen also carries enums. Declaration kind 10 is an enum, whose
 nominal header has no record fields, and kind 11 is one of its variants,
 parented by the enum and published once: a unit or tuple variant as its
