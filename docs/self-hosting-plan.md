@@ -1854,12 +1854,23 @@ had zero allocated regions and zero parent debits, of which at least
 35,612 also had canonical frames. A pinned debugger control straddled
 the first query-debit cutoff by one step. The legacy and shadow paths
 both changed from a confirmed mismatch to the original budget failure
-at that boundary. These observations establish an upper bound on
-candidate reuse. A production implementation needs a repeat census and
-must preserve identity, original work charges and reservation order.
+at that boundary. A replay would need to preserve identity, original work
+charges and reservation order.
 The raw receipts are `graph-v2/receipt.json`,
 `focused-v2/receipt.json` and `first-charge-v3/receipt.json` under
 `obj/parallel/v5-rigid-discriminant/` in the performance checkout.
+
+The repeat census on the same graph found 84,509 nested primitive
+mismatches at root queries. Only 27 passed the broader admission check
+that requires a canonical frame and unchanged proof state. All 27 keys
+were distinct. The stricter fixed-root check admitted none. A focused
+fixture recorded 13 same-debit repeats in distinct searches, including
+12 repeats across different caller environment classes. The graph had
+zero hits, so the scoped replay stays out of production. The graph and
+seven focused pairs match archived outputs, diagnostics and original
+counts. The receipts are `graph-v1/receipt.json`,
+`focused-v1/receipt.json` and `graph-recurrence.json` under
+`obj/parallel/v5-nested-self-repeat/` in the performance checkout.
 
 The reference also records typed dependency events during analysis and
 retains their first-use order. RustGM could retain an ordered operation
