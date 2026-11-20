@@ -130,7 +130,7 @@ impl Checker<'_> {
         }
         let tracked = self
             .facts
-            .checked_caller_tracking(self.report, definition)?;
+            .checked_caller_tracking_with_owner_reads(&mut self.owner_reads, definition)?;
         let intrinsic = if let Some(catalog) = self.facts.source_bindings.as_deref() {
             catalog
                 .intrinsic_kind(definition)
@@ -176,9 +176,10 @@ impl Checker<'_> {
             return Ok(self.facts.associated.trait_owner(definition).is_some()
                 && self
                     .facts
-                    .checked_tracked_override(self.report, definition)?);
+                    .checked_tracked_override(&mut self.owner_reads, definition)?);
         };
-        self.facts.checked_caller_tracking(self.report, selected)
+        self.facts
+            .checked_caller_tracking_with_owner_reads(&mut self.owner_reads, selected)
     }
     fn retain_site_request(
         &mut self,

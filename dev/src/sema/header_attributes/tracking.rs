@@ -1,7 +1,7 @@
 //! Caller ABI policy belongs to the actual completed source header.
 use super::{
-    Declarations, DefId, DefKind, Error, Header, NodeKey, Report, charge_query, ledger,
-    validate_header,
+    Declarations, DefId, DefKind, Error, Header, NodeKey, OwnerReads, Report, charge_query, ledger,
+    validate_header_with,
 };
 use crate::support::decorations::Consumer;
 use crate::syntax::{
@@ -251,19 +251,36 @@ impl Declarations {
         report: &Report,
         definition: DefId,
     ) -> Result<bool, Error> {
-        Ok(self.checked_tracking(report, definition)?.tracked())
+        Ok(self.checked_tracking(report, definition, None)?.tracked())
+    }
+    pub(in crate::sema) fn checked_caller_tracking_with_owner_reads(
+        &self,
+        reads: &mut OwnerReads<'_>,
+        definition: DefId,
+    ) -> Result<bool, Error> {
+        Ok(self
+            .checked_tracking(reads.report(), definition, Some(reads))?
+            .tracked())
     }
     /// Whether an implementation in this crate tracks its caller although the
     /// trait member `declaration` does not. A call that leaves the member's
     /// implementation to each instance of its body may then reach one.
-    pub(crate) fn checked_tracked_override(
+    pub(in crate::sema) fn checked_tracked_override(
         &self,
-        report: &Report,
+        reads: &mut OwnerReads<'_>,
         declaration: DefId,
     ) -> Result<bool, Error> {
-        Ok(self.checked_tracking(report, declaration)? == Tracking::Overridden)
+        Ok(
+            self.checked_tracking(reads.report(), declaration, Some(reads))?
+                == Tracking::Overridden,
+        )
     }
-    fn checked_tracking(&self, report: &Report, definition: DefId) -> Result<Tracking, Error> {
+    fn checked_tracking(
+        &self,
+        report: &Report,
+        definition: DefId,
+        reads: Option<&mut OwnerReads<'_>>,
+    ) -> Result<Tracking, Error> {
         let actual = report
             .resolution
             .definitions
@@ -306,7 +323,7 @@ impl Declarations {
             .filter(|node| **node == key)
             .and_then(|_| headers.declarations.get(&key))
             .ok_or_else(|| Error::unlocated("caller policy changed declaration identity"))?;
-        validate_header(report, self, definition, key, header)?;
+        validate_header_with(report, self, definition, key, header, reads)?;
         Ok(header.tracking)
     }
 
