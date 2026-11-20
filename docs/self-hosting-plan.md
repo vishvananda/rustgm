@@ -890,6 +890,18 @@ the provider export failure. The receipts are under
 `obj/parallel/v14-nominal-constants/baseline/` in the frontier
 checkout.
 
+`b556df814` publishes an evaluated scalar constant under its exact
+closed inherent implementation of a provider-owned nominal. It reuses
+the v14 typed value row, authenticates membership and preserves the
+separate Core primitive authority. The fresh-client case decodes the
+packet and evaluates both `DecimalSeq::MAX_DIGITS` and the imported
+`const fn` to `768`. The same case rejects a private read, a wrong type
+and a v13 publication. The existing primitive-inherent owner control
+also passes. Strict Clippy, formatting, the architecture audit and
+the two selected cases finish in 100.67 seconds. The receipt is under
+`obj/qualification/fast/1795145920873708384/` in the frontier checkout.
+The original-source replay for this checkpoint is pending.
+
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
 deprecated macro and accepts a call through an annotated `use` alias of a
