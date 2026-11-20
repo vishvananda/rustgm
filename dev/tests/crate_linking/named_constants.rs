@@ -266,6 +266,147 @@ pub const fn read() -> u32 { u32::TRANSPORT }
     Ok(())
 }
 #[test]
+fn version_fourteen_transports_wide_named_values_with_exact_bits() -> Result {
+    let packet = Packet::new("v14-primitive-constants", SPEC, "wide", "core_wide")?;
+    let provider = packet.folder.join("provider.rs");
+    std::fs::write(
+        &provider,
+        r#"#![feature(no_core,lang_items,rustc_attrs,f16,f128)]
+#![no_core]
+#![rustc_coherence_is_core]
+#[lang="pointee_sized"] pub trait PointeeSized {}
+#[lang="meta_sized"] pub trait MetaSized:PointeeSized {}
+#[lang="sized"] pub trait Sized:MetaSized {}
+impl f128 { pub const EPSILON: f128 = 1.92592994438723585305597794258492732e-34_f128; }
+impl f16 { pub const EPSILON: f16 = 9.7656e-4_f16; }
+pub mod constants {
+    pub const PI: f128 = 3.14159265358979323846264338327950288419716939937510582097494_f128;
+}
+pub const fn read<T>() -> f128 { f128::EPSILON }
+"#,
+    )?;
+    super::artifacts::checked(
+        "provider",
+        &packet.folder,
+        packet
+            .export("module-body-operations-v14", &provider, &packet.metadata)
+            .arg("--cap-lints=allow"),
+    )?;
+    let bytes = std::fs::read(&packet.metadata)?;
+    let interface = crates::decode(&bytes)?;
+    assert_eq!(crates::encode(&interface)?, bytes);
+    let client = packet.folder.join("wide.rs");
+    std::fs::write(
+        &client,
+        r"#![feature(no_core,f16,f128)]
+#![no_core]
+extern crate base;
+const QUAD: f128 = base::read::<u32>();
+const HALF: f16 = f16::EPSILON;
+const PI: f128 = base::constants::PI;
+",
+    )?;
+    super::artifacts::checked(
+        "wide",
+        &packet.folder,
+        packet
+            .consumer(&client, "wide", &packet.metadata, &packet.owner())
+            .arg("--cap-lints=allow"),
+    )?;
+    inspect_wide_bits(&client, interface)?;
+    let wrong = packet.folder.join("wrong.rs");
+    std::fs::write(
+        &wrong,
+        "#![feature(no_core,f16,f128)]#![no_core]\nextern crate base;\nconst WRONG: f128 = f16::EPSILON;\n",
+    )?;
+    packet.rejected(
+        "wrong",
+        packet
+            .consumer(&wrong, "wrong", &packet.metadata, &packet.owner())
+            .arg("--cap-lints=allow"),
+        "incompatible types",
+    )?;
+    Ok(())
+}
+
+fn inspect_wide_bits(client: &std::path::Path, interface: crates::Interface) -> Result {
+    use rustgm::{
+        expand::config::Config,
+        literal::value::FloatBits,
+        resolve::{self, bindings::Context, load::InputFile},
+        sema::{model::Scalar, values::Reader},
+        support::{
+            bindings::Mode,
+            crates::{ArtifactContext, CrateIdentity, Dependencies, Dependency, OutputKind},
+            diagnostics::LintCap,
+            source::SourceFile,
+        },
+    };
+    use std::sync::Arc;
+
+    let provider = interface.identity().clone();
+    let dependencies = Dependencies::new(
+        vec![interface],
+        vec![Dependency::new("base".into(), provider.clone())?],
+    )?;
+    let context = Context {
+        crate_name: Some("client".into()),
+        current: Some(CrateIdentity::new("client", "branch_client")?),
+        dependencies: Some(Arc::new(dependencies)),
+        mode: Mode::SourceClient { provider },
+        artifacts: ArtifactContext::Source {
+            selected: Some(OutputKind::Library),
+        },
+    };
+    let mut config = Config::default();
+    config.set_lint_cap(LintCap::Allow);
+    let report = resolve::expansion::analyze_with_context(
+        InputFile {
+            identity: client.to_owned(),
+            path: client.to_owned(),
+            source: SourceFile::new(std::fs::read(client)?)?,
+        },
+        &mut super::imports::NoFiles,
+        &config,
+        &context,
+    )
+    .and_then(resolve::analyze_expanded)?;
+    let analysis = rustgm::pipeline::analyze_source(&report)?;
+    let expected = [
+        (
+            "QUAD",
+            FloatBits::F128 {
+                high: 0x3f8f_0000_0000_0000,
+                low: 0,
+            },
+        ),
+        ("HALF", FloatBits::F16(0x1400)),
+        (
+            "PI",
+            FloatBits::F128 {
+                high: 0x4000_921f_b544_42d1,
+                low: 0x8469_898c_c517_01b8,
+            },
+        ),
+    ];
+    assert_eq!(analysis.facts.initializers.len(), expected.len());
+    let reader = Reader::new(&analysis.facts);
+    for (initializer, (name, bits)) in analysis.facts.initializers.iter().zip(expected) {
+        let definition = &report.resolution.definitions[initializer.definition.0 as usize];
+        assert_eq!(report.package.names.get(definition.name), name);
+        assert_eq!(
+            reader
+                .definition(initializer.definition)
+                .ok_or("fresh client constant is missing its completed value")?
+                .as_scalar()?,
+            Scalar::Float(bits),
+            "{name}",
+        );
+    }
+    Ok(())
+}
+
+#[test]
 #[ignore = "requires configured locked CPPGM object backend and host C compiler"]
 fn constant_clients_execute_natively() -> Result {
     let packet = Packet::publish(GROUP, SPEC, "constants-native", "provider", PROFILE)?;

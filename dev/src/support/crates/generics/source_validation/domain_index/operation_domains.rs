@@ -242,6 +242,8 @@ impl DomainIndex<'_, '_> {
             (Some(s::Type::Scalar(read)), Some(s::Type::Scalar(declared))) if read == declared => {
                 Ok(())
             }
+            (Some(s::Type::F16), Some(s::Type::F16))
+            | (Some(s::Type::F128), Some(s::Type::F128)) => Ok(()),
             _ => Err("source constant read changed its declaration's type"),
         }
     }

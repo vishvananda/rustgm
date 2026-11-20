@@ -15,7 +15,7 @@ use rustgm::{
     },
 };
 use std::{path::Path, sync::Arc};
-struct NoFiles;
+pub(super) struct NoFiles;
 impl Sources for NoFiles {
     fn read(&mut self, _: &Path) -> Result<Option<InputFile>, String> {
         Ok(None)

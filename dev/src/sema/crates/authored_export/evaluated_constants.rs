@@ -9,7 +9,7 @@ use crate::{
         model::InitializerKind,
         values::{Evaluator, Instance, Reader},
     },
-    support::crates::Scalar,
+    support::crates::{Scalar, ScalarValue},
     types::{GenericArgs, Kind, Primitive, TypeId},
 };
 
@@ -60,7 +60,7 @@ fn primitive_constant(
         || !matches!(initializer.kind, InitializerKind::Const)
         || !initializer.type_checked()
         || initializer.ty != ty
-        || value_type(facts, ty).is_err()
+        || value_type(facts, ty, true).is_err()
     {
         return None;
     }
@@ -232,7 +232,7 @@ impl Stage {
                     .push(s::ConstantHeader { ty, value: None });
                 continue;
             }
-            let scalar = value_type(facts, ty)?;
+            let codec = value_type(facts, ty, self.declaration_policies())?;
             let reader = Reader::new(facts);
             let value = if let Some(instance) = self.primitive_constant(report, facts, id) {
                 reader.associated(instance)
@@ -240,8 +240,17 @@ impl Stage {
                 reader.definition(id)
             }
             .ok_or("source constant export requires its completed value")?;
-            let value = super::super::export::value_bits(scalar, reader.view(value)?)
-                .map_err(|_| "source constant value disagrees with its declared type")?;
+            let bits = match codec {
+                ValueType::Scalar(scalar) => {
+                    super::super::export::value_bits(scalar, reader.view(value)?)
+                        .map(ScalarValue::bits)
+                        .map_err(|_| "source constant value disagrees with its declared type")?
+                }
+                ValueType::WideFloat => reader
+                    .encode_primitive(ty, value)
+                    .map(|(bits, _)| bits)
+                    .map_err(|_| "source constant value disagrees with its declared type")?,
+            };
             let ty = self.ty(
                 facts,
                 ty,
@@ -254,23 +263,26 @@ impl Stage {
             self.reserve(size_of::<s::ConstantHeader>())?;
             self.cold()?.constants.push(s::ConstantHeader {
                 ty,
-                value: Some(s::ConstTerm::Value(s::ConstValue {
-                    ty,
-                    bits: value.bits(),
-                })),
+                value: Some(s::ConstTerm::Value(s::ConstValue { ty, bits })),
             });
         }
         Ok(())
     }
 }
-/// A constant travels only as one primitive value or unit; every wider value
-/// keeps its fence by name.
-fn value_type(facts: &Declarations, ty: TypeId) -> Result<Scalar, &'static str> {
+/// Wide named values use the source recipe and the existing payload width.
+enum ValueType {
+    Scalar(Scalar),
+    WideFloat,
+}
+
+fn value_type(facts: &Declarations, ty: TypeId, wide: bool) -> Result<ValueType, &'static str> {
     if ty == TypeId::UNIT {
-        return Ok(Scalar::Unit);
+        return Ok(ValueType::Scalar(Scalar::Unit));
     }
     match facts.types.kind(ty) {
+        Some(Kind::Primitive(Primitive::F16 | Primitive::F128)) if wide => Ok(ValueType::WideFloat),
         Some(Kind::Primitive(_)) => super::super::export_scalar(facts, ty)
+            .map(ValueType::Scalar)
             .map_err(|_| "source wide primitive const value requires its wider profile"),
         Some(Kind::Reference { .. }) => {
             Err("source reference const value requires its wider profile")

@@ -1,14 +1,32 @@
-//! Imported closed scalar values have typed facts but no source initializer or storage.
+//! Imported closed constant values have typed facts but no source initializer or storage.
 use super::{Declarations, Error, Report, error, scalar};
 use crate::{
+    literal::value::FloatBits,
     resolve::model::DefId,
     sema::{
         associated::OwnerKind,
+        model::Scalar as PrimitiveValue,
         values::{Constant, Evaluator, Instance},
     },
     support::crates::{Scalar, ScalarValue, generics::source as s},
     types::GenericArgs,
 };
+
+#[derive(Clone, Copy)]
+enum NamedValue {
+    Unit,
+    Scalar(PrimitiveValue),
+}
+
+impl NamedValue {
+    fn decode(value: ScalarValue) -> Result<Self, Error> {
+        if value.ty() == Scalar::Unit {
+            Ok(Self::Unit)
+        } else {
+            convert(value).map(Self::Scalar).map_err(error)
+        }
+    }
+}
 
 pub(super) fn seed(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     let Some(imported) = &report.resolution.crates else {
@@ -38,18 +56,22 @@ pub(super) fn seed(report: &Report, facts: &mut Declarations) -> Result<(), Erro
     }
     let mut evaluator = Evaluator::new(report, facts);
     for (definition, value) in imported.constants() {
-        complete(&mut evaluator, definition, value.value())?;
+        complete(
+            &mut evaluator,
+            definition,
+            NamedValue::decode(value.value())?,
+        )?;
     }
     for (definition, value) in source {
         complete(&mut evaluator, definition, value)?;
     }
     Ok(())
 }
-/// Version thirteen: each source artifact's constant rows, already validated
-/// as closed canonical values of their declared primitive types.
+/// Each source artifact's constant rows retain canonical bits of their
+/// declared types. Wide floats use source recipes instead of ABI scalar tags.
 fn source_constants(
     imported: &crate::resolve::crates::Imported,
-) -> Result<Vec<(DefId, ScalarValue)>, Error> {
+) -> Result<Vec<(DefId, NamedValue)>, Error> {
     let mut constants = Vec::new();
     for artifact in imported.dependencies().artifacts() {
         let Some(descriptor) = artifact.source_descriptor() else {
@@ -68,10 +90,20 @@ fn source_constants(
             let Some(s::ConstTerm::Value(value)) = row.value else {
                 return Err(error("source constant seed lost its validated value"));
             };
-            let Some(&s::Type::Scalar(ty)) = rows.types.get(value.ty.0 as usize) else {
-                return Err(error("source constant seed lost its validated value"));
+            let value = match rows.types.get(value.ty.0 as usize) {
+                Some(&s::Type::Scalar(ty)) => {
+                    NamedValue::decode(ScalarValue::new(ty, value.bits).map_err(error)?)?
+                }
+                Some(s::Type::F16) => {
+                    let bits = u16::try_from(value.bits)
+                        .map_err(|_| error("invalid imported f16 bits"))?;
+                    NamedValue::Scalar(PrimitiveValue::Float(FloatBits::F16(bits)))
+                }
+                Some(s::Type::F128) => {
+                    NamedValue::Scalar(PrimitiveValue::Float(FloatBits::from_quad(value.bits)))
+                }
+                _ => return Err(error("source constant seed lost its validated value")),
             };
-            let value = ScalarValue::new(ty, value.bits).map_err(error)?;
             constants.push((definition, value));
         }
     }
@@ -81,14 +113,13 @@ fn source_constants(
 fn complete(
     evaluator: &mut Evaluator<'_>,
     definition: DefId,
-    value: ScalarValue,
+    value: NamedValue,
 ) -> Result<(), Error> {
-    let value = if value.ty() == Scalar::Unit {
-        evaluator
+    let value = match value {
+        NamedValue::Unit => evaluator
             .fields(&[], None)
-            .map_err(|e| error(e.message()))?
-    } else {
-        Constant::scalar(convert(value).map_err(error)?)
+            .map_err(|e| error(e.message()))?,
+        NamedValue::Scalar(value) => Constant::scalar(value),
     };
     if let Some(id) = evaluator.facts().associated.owner(definition) {
         let facts = evaluator.facts();

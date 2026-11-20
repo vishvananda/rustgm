@@ -129,7 +129,15 @@ pub(super) fn validate(
         if value.ty != header.ty {
             return Err("source constant value changed its declared type");
         }
-        super::const_value(&rows.types, value)?;
+        match rows.types.get(value.ty.0 as usize) {
+            Some(super::Type::F16) if profile.declaration_policies() => {
+                u16::try_from(value.bits).map_err(|_| "non-canonical source f16 const value")?;
+            }
+            Some(super::Type::F128) if profile.declaration_policies() => {}
+            _ => {
+                super::const_value(&rows.types, value)?;
+            }
+        }
     }
     Ok(())
 }
