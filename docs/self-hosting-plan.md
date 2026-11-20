@@ -803,6 +803,15 @@ The existing constant payload has 128 bits. The strict receipt and typed
 inventory are under `obj/parallel/strict-core/root-self-alias/` in the
 frontier checkout.
 
+`9f0cde6a0` adds exact `f16` and `f128` type recipes in version fourteen.
+Two publications produce identical metadata and LowIR. Fresh clients match
+pinned Rust on both the correct field types and the `f128` to `f64` type
+rejection. Version thirteen retains the scalar type gate. A fresh executable
+using wide-float literals reaches the runtime-lowering gate. The focused
+float, range and reflection tests pass. Evidence is under
+`obj/parallel/v14-float-types/` and `obj/qualification/fast/1795135765398208848/`
+in the frontier checkout.
+
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
 deprecated macro and accepts a call through an annotated `use` alias of a
