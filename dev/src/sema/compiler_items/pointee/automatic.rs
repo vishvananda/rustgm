@@ -1,5 +1,5 @@
 //! Universal Pointee evidence retains its existing source owner, not a result.
-use super::{CheckedMember, Contracts, Declarations, Error, LangItem, header_attributes};
+use super::{CheckedMember, Contracts, Declarations, Error, LangItem};
 use crate::{
     resolve::{body_origin::DeclarationOrigin, model::DefId},
     support::constness::Constness,
@@ -40,12 +40,17 @@ pub(in crate::sema) fn select(
     if application.item.0 != role.definition.0 {
         return Ok(Readiness::Unrelated);
     }
-    header_attributes::charge_source_contract_query(facts, 1)?;
-    if matches!(role.origin, DeclarationOrigin::Imported(_)) {
+    if matches!(role.origin, DeclarationOrigin::Imported(_))
+        && facts
+            .associated
+            .imported_owner()
+            .is_some_and(crate::sema::crates::ImportedOwners::selected)
+    {
         return Err(Error::unlocated(
             "imported Pointee selection contracts are not implemented",
         ));
     }
+    super::charge(facts, role, 1)?;
     if effect != Constness::Ordinary
         || facts
             .types
@@ -57,13 +62,14 @@ pub(in crate::sema) fn select(
         ));
     }
     let member = catalog
-        .language(LangItem::MetadataType)
+        .role(LangItem::MetadataType)
+        .map_err(Error::unlocated)?
         .ok_or_else(|| Error::unlocated("source Pointee lost its actual Metadata member"))?;
     let Some(contract) = catalog.traits.as_deref().and_then(|v| v.pointee.as_ref()) else {
         return Ok(Readiness::Pending(member.definition));
     };
     contract.current_facts(facts)?;
-    header_attributes::reserve_source_contracts(facts, 1, size_of::<Selection>())?;
+    super::reserve(facts, role, size_of::<Selection>())?;
     let contract = facts
         .source_bindings
         .as_deref()
@@ -76,6 +82,15 @@ pub(in crate::sema) fn select(
 }
 
 impl Selection {
+    pub(in crate::sema) fn retain(
+        &self,
+        facts: &mut Declarations,
+        steps: usize,
+        bytes: usize,
+    ) -> Result<(), String> {
+        super::retain(facts, self.0.plan.trait_, steps, bytes).map_err(|error| error.to_string())
+    }
+
     pub(in crate::sema) fn current(&self, facts: &Declarations) -> Result<(), Error> {
         super::require_owner(facts, &self.0)?;
         self.0.current_facts(facts)
@@ -88,7 +103,7 @@ impl Selection {
     ) -> Result<CheckedMember, Error> {
         self.current(facts)?;
         self.0.application(facts, application)?;
-        header_attributes::reserve_source_contracts(facts, 1, size_of::<CheckedMember>())?;
+        super::reserve(facts, self.0.plan.trait_, size_of::<CheckedMember>())?;
         Ok(CheckedMember {
             contract: Rc::clone(&self.0),
             application,

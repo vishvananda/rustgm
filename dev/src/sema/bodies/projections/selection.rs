@@ -556,16 +556,22 @@ impl Opened {
         let Some(catalog) = facts.source_bindings.as_deref() else {
             return Ok(None);
         };
-        let mut matching = false;
+        let mut matching = None;
         for role in [
             crate::support::bindings::LangItem::MetadataType,
             crate::support::bindings::LangItem::DiscriminantType,
         ] {
-            matching |= catalog
+            if let Some(member) = catalog
                 .role(role)?
-                .is_some_and(|m| m.definition.0 == self.application.item.0);
+                .filter(|member| member.definition.0 == self.application.item.0)
+            {
+                matching = Some(member);
+            }
         }
-        if !matching || !self.application.arguments.is_empty() {
+        let Some(member) = matching else {
+            return Ok(None);
+        };
+        if !self.application.arguments.is_empty() {
             return Ok(None);
         }
         let predicate = match self
@@ -584,8 +590,9 @@ impl Opened {
             .bound
             .trait_parts()
             .ok_or("source Metadata request has no real parent")?;
-        crate::sema::header_attributes::charge_source_retention(
+        crate::sema::compiler_items::pointee::retain(
             facts,
+            member,
             1,
             size_of::<crate::types::Kind>(),
         )

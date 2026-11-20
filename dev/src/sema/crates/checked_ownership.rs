@@ -103,6 +103,18 @@ impl ImportedOwners {
             Self::Provided(_) => Err("private Provided profiles do not own declared panic roles"),
         }
     }
+    pub(in crate::sema) fn pointee_role(
+        &self,
+        facts: &crate::sema::model::Declarations,
+        role: Role,
+        kind: crate::support::bindings::LangItem,
+        steps: &mut usize,
+    ) -> Result<(), &'static str> {
+        match self {
+            Self::Ordinary(graph) => graph.pointee_role(facts, role, kind, steps),
+            Self::Provided(_) => Err("private Provided profiles do not own Pointee roles"),
+        }
+    }
     pub(in crate::sema) fn conversion_role(
         &self,
         store: &Store,

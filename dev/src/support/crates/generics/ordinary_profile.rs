@@ -957,8 +957,14 @@ impl Bindings {
     }
 }
 fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
-    if matches!(role, LangItem::TypeInfo | LangItem::TypeId)
-        || interval_roles::ROLES.contains(&role)
+    if matches!(
+        role,
+        LangItem::TypeInfo
+            | LangItem::TypeId
+            | LangItem::PointeeTrait
+            | LangItem::MetadataType
+            | LangItem::DynMetadata
+    ) || interval_roles::ROLES.contains(&role)
     {
         return profile == BindingProfile::BodyOperations;
     }
@@ -1218,10 +1224,17 @@ fn role_header(
     header: Option<super::super::HeaderRef>,
 ) -> Result<(), &'static str> {
     match (role, header) {
-        (LangItem::RangeMin | LangItem::RangeMax, Some(super::super::HeaderRef::Constant(_)))
+        (LangItem::PointeeTrait, Some(super::super::HeaderRef::Trait(_)))
+        | (LangItem::MetadataType, Some(super::super::HeaderRef::AssociatedType(_)))
+        | (LangItem::RangeMin | LangItem::RangeMax, Some(super::super::HeaderRef::Constant(_)))
         | (LangItem::RangeSub, Some(super::super::HeaderRef::Function(_)))
-        | (LangItem::TypeInfo | LangItem::TypeId, Some(super::super::HeaderRef::Nominal(_)))
-            if profile == BindingProfile::BodyOperations => {}
+        | (
+            LangItem::DynMetadata | LangItem::TypeInfo | LangItem::TypeId,
+            Some(super::super::HeaderRef::Nominal(_)),
+        ) if profile == BindingProfile::BodyOperations => {}
+        (LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata, _) => {
+            return Err("source Pointee roles require their actual declaration header kinds");
+        }
         (LangItem::RangeMin | LangItem::RangeMax | LangItem::RangeSub, _) => {
             return Err("source range roles require their actual associated header kinds");
         }
@@ -1305,6 +1318,22 @@ fn owned_role_members(
             != declarations[LangItem::FnOnce.index()]
         {
             return Err("source fn_once_output belongs to another actual FnOnce declaration");
+        }
+    }
+    let pointee = declarations[LangItem::PointeeTrait.index()];
+    let metadata = declarations[LangItem::MetadataType.index()];
+    let dyn_metadata = declarations[LangItem::DynMetadata.index()];
+    if pointee.is_some() || metadata.is_some() || dyn_metadata.is_some() {
+        let (Some(pointee), Some(metadata)) = (pointee, metadata) else {
+            return Err("source Pointee roles require both actual trait and associated roles");
+        };
+        let Some(super::super::HeaderRef::AssociatedType(index)) =
+            headers.header(metadata, work)?
+        else {
+            return Err("source Metadata has no exact associated header");
+        };
+        if rows.associated_types[index as usize].parent != pointee {
+            return Err("source Metadata belongs to another actual Pointee declaration");
         }
     }
     Ok(())

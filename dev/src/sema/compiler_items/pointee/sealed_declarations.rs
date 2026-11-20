@@ -1,9 +1,11 @@
 //! Cold declaration snapshots share source handles and the existing header budget.
 use super::{Declaration, Declarations, Error, LangItem, Report, schemas::Plan};
 use crate::{
+    resolve::body_origin::DeclarationOrigin,
     sema::{
-        declaration_inputs::Input,
-        generics::{Parameter, Predicate},
+        compiler_items::Role,
+        declaration_inputs::{self, Input, Inputs},
+        generics::Parameter,
         header_attributes::{self, SourceImage},
     },
     syntax::{ast::Kind as Syntax, item::Item},
@@ -41,13 +43,17 @@ impl Row {
         })
     }
 }
-struct State {
+struct SourceState {
     declaration: Declaration,
     row: Row,
     image: SourceImage,
     item: Item,
+}
+struct State {
+    role: Role,
+    source: Option<SourceState>,
     parameters: Vec<Parameter>,
-    clauses: Vec<Predicate>,
+    clauses: Vec<Input>,
 }
 pub(in crate::sema::compiler_items) struct Contracts {
     pub(super) arena: arena::Identity,
@@ -74,50 +80,46 @@ fn item(report: &Report, declaration: Declaration) -> Result<Item, Error> {
         .copied()
         .ok_or_else(|| Error::unlocated("source Pointee item is outside its source"))
 }
-fn parameters(facts: &Declarations, declaration: Declaration) -> &[Parameter] {
+fn parameters(facts: &Declarations, declaration: Role) -> &[Parameter] {
     facts
         .generics
         .parameters
         .get(&declaration.definition)
         .map_or(&[], Vec::as_slice)
 }
-fn clauses(facts: &Declarations, declaration: Declaration) -> &[Predicate] {
-    // The producer preserves this prefix when it appends derived environment
-    // consequences. Those cache rows are not additional declaration inputs.
-    facts.generics.declared_predicates(declaration.definition)
+fn clauses(facts: &Declarations, role: Role) -> Result<Inputs<'_>, Error> {
+    declaration_inputs::declared_own(&facts.generics, facts.crates.as_deref(), role.definition)
+        .map_err(Error::unlocated)
 }
-impl State {
-    fn bytes(facts: &Declarations, declaration: Declaration) -> usize {
-        size_of_val(parameters(facts, declaration))
-            .saturating_add(size_of_val(clauses(facts, declaration)))
-    }
+
+impl SourceState {
     fn capture(
         report: &Report,
         facts: &Declarations,
-        declaration: Declaration,
-        nominal: bool,
-    ) -> Result<Self, Error> {
-        let image = if nominal
-            || declaration
-                == facts
-                    .source_bindings
-                    .as_deref()
-                    .and_then(|c| c.language(LangItem::MetadataType))
-                    .ok_or_else(|| Error::unlocated("source Metadata role disappeared"))?
-        {
-            header_attributes::role_source_image(facts, report, declaration)?
-        } else {
-            header_attributes::completed_source_image(facts, report, declaration.definition)?
+        role: Role,
+        trait_header: bool,
+    ) -> Result<Option<Self>, Error> {
+        let DeclarationOrigin::Source(origin) = role.origin else {
+            return Ok(None);
         };
-        Ok(Self {
+        let declaration = Declaration {
+            definition: role.definition,
+            parent: role.parent,
+            origin,
+        };
+        let image = if trait_header {
+            header_attributes::completed_source_image(facts, report, role.definition)?
+        } else {
+            header_attributes::role_source_image(facts, report, declaration)?
+        };
+        Ok(Some(Self {
             declaration,
             row: Row::read(report, declaration)?,
             image,
             item: item(report, declaration)?,
-            parameters: parameters(facts, declaration).to_vec(),
-            clauses: clauses(facts, declaration).to_vec(),
-        })
+        }))
     }
+
     fn current(&self, report: &Report, facts: &Declarations) -> Result<(), Error> {
         let declaration = self.declaration;
         let unit = report.package.unit(declaration.origin.file);
@@ -130,19 +132,47 @@ impl State {
                 "source Pointee retained declaration changed",
             ));
         }
+        Ok(())
+    }
+}
+
+impl State {
+    fn capture(
+        report: &Report,
+        facts: &Declarations,
+        role: Role,
+        trait_header: bool,
+    ) -> Result<Self, Error> {
+        Ok(Self {
+            role,
+            source: SourceState::capture(report, facts, role, trait_header)?,
+            parameters: parameters(facts, role).to_vec(),
+            clauses: clauses(facts, role)?.iter().collect(),
+        })
+    }
+    fn current(&self, report: &Report, facts: &Declarations) -> Result<(), Error> {
+        if let Some(source) = &self.source {
+            source.current(report, facts)?;
+        }
         self.current_facts(facts)
     }
     fn current_facts(&self, facts: &Declarations) -> Result<(), Error> {
-        let declaration = self.declaration;
+        let role = self.role;
         let steps = self
             .parameters
             .len()
             .saturating_add(self.clauses.len())
             .saturating_add(1);
-        header_attributes::charge_source_contract_query(facts, steps)?;
-        header_attributes::require_recorded_pointee_image(facts, declaration, &self.image)?;
-        let params = parameters(facts, declaration);
-        let conditions = clauses(facts, declaration);
+        super::charge(facts, role, steps)?;
+        if let Some(source) = &self.source {
+            header_attributes::require_recorded_pointee_image(
+                facts,
+                source.declaration,
+                &source.image,
+            )?;
+        }
+        let params = parameters(facts, role);
+        let conditions = clauses(facts, role)?;
         if params.len() != self.parameters.len()
             || conditions.len() != self.clauses.len()
             || !params.iter().zip(&self.parameters).all(|(a, b)| {
@@ -213,10 +243,12 @@ impl Contracts {
             .into_iter()
             .flatten()
         {
-            bytes = bytes.saturating_add(State::bytes(facts, declaration));
-            steps = steps
-                .saturating_add(parameters(facts, declaration).len())
-                .saturating_add(clauses(facts, declaration).len());
+            let params = parameters(facts, declaration);
+            let inputs = clauses(facts, declaration)?.len();
+            bytes = bytes
+                .saturating_add(size_of_val(params))
+                .saturating_add(inputs.saturating_mul(size_of::<Input>()));
+            steps = steps.saturating_add(params.len()).saturating_add(inputs);
         }
         bytes = bytes
             .saturating_add(
@@ -259,12 +291,12 @@ impl Contracts {
             arena,
             plan,
             states: [
-                State::capture(report, facts, plan.trait_, false)?,
+                State::capture(report, facts, plan.trait_, true)?,
                 State::capture(report, facts, plan.member, false)?,
             ],
             nominal: plan
                 .nominal
-                .map(|declaration| State::capture(report, facts, declaration, true))
+                .map(|declaration| State::capture(report, facts, declaration, false))
                 .transpose()?,
             inputs: header.inputs.view().iter().collect(),
             trait_regions: header.regions.clone(),
@@ -281,23 +313,22 @@ impl Contracts {
         })
     }
     pub(super) fn current(&self, report: &Report, facts: &Declarations) -> Result<(), Error> {
-        header_attributes::charge_source_contract_query(facts, 1)?;
+        super::charge(facts, self.plan.trait_, 1)?;
         if !facts.types.has_identity(&self.arena) {
             return Err(Error::unlocated(
                 "source Pointee contract belongs to another type arena",
             ));
         }
-        let plan = super::schemas::plan(report, facts)?
-            .ok_or_else(|| Error::unlocated("source Pointee declarations disappeared"))?;
-        if plan.trait_ != self.plan.trait_
-            || plan.member != self.plan.member
-            || plan.nominal != self.plan.nominal
-            || plan.self_type != self.plan.self_type
-            || plan.projection != self.plan.projection
-            || plan.schema != self.plan.schema
-            || plan.attributes != self.plan.attributes
-            || plan.denied_implementations != self.plan.denied_implementations
-        {
+        let plan = match self.plan.trait_.origin {
+            DeclarationOrigin::Source(_) => super::schemas::plan(report, facts)?,
+            DeclarationOrigin::Imported(_) => {
+                let mut steps = 0;
+                let checked = super::published_family::plan(report, facts, &mut steps);
+                super::charge(facts, self.plan.trait_, steps)?;
+                checked.map_err(Error::unlocated)?
+            }
+        };
+        if plan != Some(self.plan) {
             return Err(Error::unlocated(
                 "source Pointee checked owner or schema changed",
             ));
@@ -313,7 +344,7 @@ impl Contracts {
     /// This replay belongs to the immutable Report phase authenticated by
     /// capture/current; it does not claim access to a separately changed Report.
     pub(super) fn current_facts(&self, facts: &Declarations) -> Result<(), Error> {
-        header_attributes::charge_source_contract_query(facts, 1)?;
+        super::charge(facts, self.plan.trait_, 1)?;
         if !facts.types.has_identity(&self.arena) {
             return Err(Error::unlocated(
                 "source Pointee contract belongs to another type arena",
@@ -341,8 +372,9 @@ impl Contracts {
             .require_projection_header(plan.member.definition)
             .map_err(Error::unlocated)?;
         let results = &contract.bounds;
-        header_attributes::charge_source_contract_query(
+        super::charge(
             facts,
+            plan.trait_,
             self.inputs
                 .len()
                 .saturating_add(self.trait_regions.len())
@@ -384,13 +416,13 @@ impl Contracts {
         Ok(())
     }
     pub(super) fn completed_roles(&self, facts: &Declarations) -> Result<(), Error> {
-        header_attributes::charge_source_contract_query(facts, 3)?;
+        super::charge(facts, self.plan.trait_, 3)?;
         let catalog = facts
             .source_bindings
             .as_deref()
             .ok_or_else(|| Error::unlocated("source Pointee role catalog disappeared"))?;
         if catalog
-            .neutral_attributes(super::super::Role::from(self.plan.trait_))
+            .neutral_attributes(self.plan.trait_)
             .map_err(Error::unlocated)?
             != self.plan.attributes
         {
@@ -403,7 +435,7 @@ impl Contracts {
             (LangItem::MetadataType, Some(self.plan.member)),
             (LangItem::DynMetadata, self.plan.nominal),
         ] {
-            if catalog.validated_language(role).map_err(Error::unlocated)? != expected {
+            if catalog.validated_role(role).map_err(Error::unlocated)? != expected {
                 return Err(Error::unlocated(
                     "source Pointee completed role changed its actual declaration",
                 ));

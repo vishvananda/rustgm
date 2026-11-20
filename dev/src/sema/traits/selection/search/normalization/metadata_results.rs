@@ -47,12 +47,7 @@ impl Search<'_> {
             .trait_parts()
             .ok_or("source Metadata lost its parent")?
             .0;
-        crate::sema::header_attributes::charge_source_retention(
-            facts,
-            1,
-            size_of::<ResultContinuation>(),
-        )
-        .map_err(|error| error.to_string())?;
+        selected.retain(facts, 1, size_of::<ResultContinuation>())?;
         let plan = MetadataPlan::new(facts, selected, application)?;
         #[cfg(test)]
         crate::sema::copy_trace::record(|| format!("source-metadata-search {application:?}"));
@@ -89,8 +84,7 @@ impl Search<'_> {
                 }
             },
             Sizing::Proven(_) => {
-                crate::sema::header_attributes::charge_source_retention(facts, 1, 0)
-                    .map_err(|error| error.to_string())?;
+                pending.plan.retain(facts, 1, 0)?;
                 Some(Resolution::Type(TypeId::UNIT))
             }
             Sizing::Opaque => Some(Resolution::Opaque),
@@ -162,7 +156,7 @@ impl Search<'_> {
     }
     fn complete_metadata_proof(
         &mut self,
-        facts: &Declarations,
+        facts: &mut Declarations,
         pending: &Pending,
         scope: crate::types::lifetime_proof::ScopeId,
     ) -> Result<usize, String> {
@@ -170,12 +164,11 @@ impl Search<'_> {
             return Ok(pending.completed.node);
         };
         let growth = self.query.node_growth();
-        crate::sema::header_attributes::charge_source_retention(
+        pending.plan.retain(
             facts,
             2 + growth.work,
             growth.bytes.saturating_add(2 * size_of::<usize>()),
-        )
-        .map_err(|error| error.to_string())?;
+        )?;
         let parent = &self.query.nodes[pending.completed.node];
         let node = Node {
             goal: parent.goal,

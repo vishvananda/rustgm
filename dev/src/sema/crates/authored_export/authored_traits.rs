@@ -106,11 +106,12 @@ impl Stage {
             let Some(declaration) = self.exported_role(report, facts, role)? else {
                 continue;
             };
-            // Version thirteen transports `PhantomData` alone of the Pointee family.
-            if matches!(
-                role,
-                LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata
-            ) || (role == LangItem::PhantomData && !self.body_nodes())
+            if (!self.declaration_policies()
+                && matches!(
+                    role,
+                    LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata
+                ))
+                || (role == LangItem::PhantomData && !self.body_nodes())
             {
                 return Err("source Pointee contract transport is not implemented");
             }
@@ -184,12 +185,17 @@ impl Stage {
             DefKind::Function if role == LangItem::CloneFn => {}
             // FnOnce's declared result travels as its kind-9 result row.
             DefKind::TypeAlias if role == LangItem::FnOnceOutput && self.body_nodes() => {}
+            DefKind::TypeAlias if role == LangItem::MetadataType && self.declaration_policies() => {
+            }
             // The consumer re-proves the named unit struct and interns its
             // logical argument; no variance or ownership fact travels.
             DefKind::Struct if role == LangItem::PhantomData && self.body_nodes() => {}
             DefKind::Struct
                 if self.declaration_policies()
-                    && matches!(role, LangItem::TypeInfo | LangItem::TypeId) => {}
+                    && matches!(
+                        role,
+                        LangItem::TypeInfo | LangItem::TypeId | LangItem::DynMetadata
+                    ) => {}
             DefKind::Const
                 if self.declaration_policies()
                     && matches!(role, LangItem::RangeMin | LangItem::RangeMax) => {}

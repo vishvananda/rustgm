@@ -357,7 +357,7 @@ fn actual_kinds_features_and_active_owners_are_checked_without_spelling_fallback
         assert!(catalog.language(role).is_none());
     }
     assert!(catalog.traits.is_none());
-    require_transport(&inactive, &facts)?;
+    require_transport(&inactive, &facts, false)?;
     Ok(())
 }
 #[test]
@@ -391,7 +391,7 @@ fn transport_stays_closed_and_ordinary_storage_and_enclosing_layouts_are_observe
         (before.1, before.2, before.3, before.4),
         (after.1, after.2, after.3, after.4)
     );
-    let error = require_transport(&report, &facts)
+    let error = require_transport(&report, &facts, false)
         .err()
         .ok_or("unsupported transport")?;
     assert_eq!(

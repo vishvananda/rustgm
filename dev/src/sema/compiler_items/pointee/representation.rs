@@ -1,5 +1,5 @@
 //! One representation plan serves both scoped projection consumers.
-use super::{CheckedMember, Declarations, Selection, header_attributes};
+use super::{CheckedMember, Declarations, Selection};
 use crate::{
     abi::metadata::{self, Metadata},
     types::{ItemId, Kind, Primitive, TypeId, arguments::Argument, projection},
@@ -15,6 +15,16 @@ pub(in crate::sema) struct Plan {
     tail: TypeId,
 }
 impl Plan {
+    pub(in crate::sema) fn retain(
+        &self,
+        facts: &mut Declarations,
+        steps: usize,
+        bytes: usize,
+    ) -> Result<(), String> {
+        super::retain(facts, self.member.contract.plan.trait_, steps, bytes)
+            .map_err(|error| error.to_string())
+    }
+
     pub(in crate::sema) fn new(
         facts: &mut Declarations,
         selected: &Selection,
@@ -34,8 +44,7 @@ impl Plan {
             .current_facts(facts)
             .map_err(|error| error.to_string())?;
         loop {
-            header_attributes::charge_source_retention(facts, 1, 0)
-                .map_err(|error| error.to_string())?;
+            self.retain(facts, 1, 0)?;
             if let Some(Kind::Adt(item, _)) = facts.types.kind(self.tail) {
                 if facts.aggregates.get(item).is_none() {
                     return Ok(Step::Fields(item));
@@ -55,7 +64,7 @@ impl Plan {
                     return Ok(Step::Ready(TypeId::UNIT));
                 }
                 metadata::Step::Complete(Metadata::Length) => {
-                    return Self::ready(facts, Kind::Primitive(Primitive::Usize));
+                    return self.ready(facts, Kind::Primitive(Primitive::Usize));
                 }
                 metadata::Step::Complete(Metadata::VTable(tail)) => {
                     let nominal = self
@@ -65,21 +74,16 @@ impl Plan {
                         .nominal
                         .ok_or("source dynamic metadata requires actual DynMetadata")?;
                     let growth = facts.types.trait_arguments_growth(1);
-                    header_attributes::charge_source_retention(
-                        facts,
-                        1 + growth.work,
-                        growth.bytes,
-                    )
-                    .map_err(|error| error.to_string())?;
+                    self.retain(facts, 1 + growth.work, growth.bytes)?;
                     let arguments = facts.types.intern_arguments(&[Argument::Type(tail)])?;
-                    return Self::ready(facts, Kind::Adt(ItemId(nominal.definition.0), arguments));
+                    return self.ready(facts, Kind::Adt(ItemId(nominal.definition.0), arguments));
                 }
                 metadata::Step::Complete(Metadata::Unknown(tail))
                     if tail != application.subject =>
                 {
                     // The caller's existing normalizer handles this genuine
                     // nested projection and its input, equality and region proof.
-                    return Self::ready(
+                    return self.ready(
                         facts,
                         Kind::Projection(projection::Application {
                             subject: tail,
@@ -91,9 +95,8 @@ impl Plan {
             }
         }
     }
-    fn ready(facts: &mut Declarations, kind: Kind) -> Result<Step, String> {
-        header_attributes::charge_source_retention(facts, 1, size_of::<Kind>())
-            .map_err(|error| error.to_string())?;
+    fn ready(&self, facts: &mut Declarations, kind: Kind) -> Result<Step, String> {
+        self.retain(facts, 1, size_of::<Kind>())?;
         Ok(Step::Ready(facts.types.intern(kind)?))
     }
 }

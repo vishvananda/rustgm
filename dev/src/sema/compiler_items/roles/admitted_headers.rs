@@ -172,7 +172,12 @@ pub(in crate::sema::compiler_items) fn traits(
         0
     };
     crates::charge_source_headers(facts, steps, bytes)?;
-    let (roles, callables) = checked.map_err(Error::unlocated)?;
+    let (mut roles, callables, needs_pointee) = checked.map_err(Error::unlocated)?;
+    let pointee = if needs_pointee {
+        super::super::pointee::prepare_imported(report, facts, &mut roles)?
+    } else {
+        None
+    };
     let entries: Vec<_> = [CallTrait::FnOnce, CallTrait::FnMut, CallTrait::Fn]
         .into_iter()
         .filter_map(|kind| {
@@ -194,7 +199,7 @@ pub(in crate::sema::compiler_items) fn traits(
         .traits = Some(Box::new(Validated {
         roles,
         methods: callables.methods,
-        pointee: None,
+        pointee,
         discriminant: None,
         range: None,
         field: None,
@@ -217,12 +222,13 @@ fn trait_headers(
     report: &Report,
     facts: &Declarations,
     steps: &mut usize,
-) -> Result<(super::RoleSet, super::invocation::Imported), &'static str> {
+) -> Result<(super::RoleSet, super::invocation::Imported, bool), &'static str> {
     let catalog = catalog(report, facts)?;
     if catalog.traits.is_some() {
         return Err("source roles were validated twice");
     }
     let mut complete = super::RoleSet::EMPTY;
+    let mut needs_pointee = false;
     for role in LangItem::ALL {
         *steps = steps.saturating_add(1);
         let Some(declaration) = catalog.role(role)? else {
@@ -292,6 +298,9 @@ fn trait_headers(
             | LangItem::RangeMin
             | LangItem::RangeMax
             | LangItem::RangeSub => {}
+            LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata => {
+                needs_pointee = true;
+            }
             LangItem::Panic => {
                 super::super::runtime_panics::imported(facts, declaration, role, steps)?;
                 complete.insert(role);
@@ -311,7 +320,7 @@ fn trait_headers(
         return Err("source language member has no validated actual trait owner");
     }
     let callables = grouped_roles(report, facts, catalog, steps, &mut complete)?;
-    Ok((complete, callables))
+    Ok((complete, callables, needs_pointee))
 }
 
 fn grouped_roles(

@@ -59,6 +59,17 @@ pub(crate) fn own_view<'a>(
     ))
 }
 
+pub(crate) fn declared_own<'a>(
+    generics: &'a Generics,
+    linkage: Option<&'a super::crates::Linkage>,
+    owner: DefId,
+) -> Result<Inputs<'a>, &'static str> {
+    Ok(Inputs::new(
+        generics.declared_predicates(owner),
+        imported(generics, linkage, owner, true)?,
+    ))
+}
+
 fn imported<'a>(
     generics: &Generics,
     linkage: Option<&'a super::crates::Linkage>,

@@ -1,5 +1,6 @@
 //! Borrow complete actual declaration contracts; no representation grants a role.
 use super::{Catalog, Declaration, Declarations, Error, LangItem, Report};
+use crate::sema::compiler_items::Role;
 use crate::{
     resolve::model::DefKind,
     sema::compiler_items::headers::{Flags, Trait},
@@ -8,11 +9,11 @@ use crate::{
     types::{ItemId, Kind, TypeId, arguments::Argument, projection},
 };
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) struct Plan {
-    pub trait_: Declaration,
-    pub member: Declaration,
-    pub nominal: Option<Declaration>,
+    pub trait_: Role,
+    pub member: Role,
+    pub nominal: Option<Role>,
     pub self_type: TypeId,
     pub projection: projection::Application,
     pub schema: projection::Schema,
@@ -79,9 +80,9 @@ pub(super) fn plan(report: &Report, facts: &Declarations) -> Result<Option<Plan>
         dyn_metadata(report, facts, catalog, nominal)?;
     }
     Ok(Some(Plan {
-        trait_,
-        member,
-        nominal,
+        trait_: trait_.into(),
+        member: member.into(),
+        nominal: nominal.map(Role::from),
         self_type: header.self_type,
         projection,
         schema,
@@ -148,19 +149,24 @@ fn metadata(
         }
         _ => {}
     }
-    let contract = facts
-        .associated
-        .require_projection_header(member.definition)
-        .map_err(error)?;
+    projection_contract(facts, trait_.definition, member.definition, self_type).map_err(error)
+}
+pub(super) fn projection_contract(
+    facts: &Declarations,
+    trait_: crate::resolve::model::DefId,
+    member: crate::resolve::model::DefId,
+    self_type: TypeId,
+) -> Result<(projection::Application, projection::Schema), &'static str> {
+    let contract = facts.associated.require_projection_header(member)?;
     let Some(Kind::Projection(application)) = facts.types.kind(contract.projection) else {
-        return Err(error("source Metadata has no actual canonical projection"));
+        return Err("source Metadata has no actual canonical projection");
     };
     let schema = facts
         .types
-        .projection_schema(ItemId(member.definition.0))
-        .ok_or_else(|| error("source Metadata has no canonical declaration schema"))?;
-    if schema.trait_item != ItemId(trait_.definition.0)
-        || application.item != ItemId(member.definition.0)
+        .projection_schema(ItemId(member.0))
+        .ok_or("source Metadata has no canonical declaration schema")?;
+    if schema.trait_item != ItemId(trait_.0)
+        || application.item != ItemId(member.0)
         || application.subject != self_type
         || facts
             .types
@@ -177,9 +183,7 @@ fn metadata(
             .arguments(application.arguments)
             .is_none_or(|a| a.len() != 0)
     {
-        return Err(error(
-            "source Metadata projection changed its actual complete owner or arguments",
-        ));
+        return Err("source Metadata projection changed its actual complete owner or arguments");
     }
     Ok((application, schema))
 }
@@ -211,7 +215,7 @@ fn dyn_metadata(
             "source DynMetadata requires an actual module structure",
         ));
     }
-    let target = nominal_formal(report, facts, declaration)?;
+    let target = nominal_formal(facts, declaration.definition).map_err(error)?;
     let pointee = catalog
         .header_role(LangItem::PointeeSized)
         .map_err(error)?
@@ -224,60 +228,61 @@ fn dyn_metadata(
             .get(&declaration.definition)
             .map_or(0, Vec::len),
     )?;
-    let found = facts
+    let inputs = facts
         .generics
         .declared_predicates_in_scope(declaration.definition)
-        .any(|clause| {
-            let crate::types::parameters::clauses::Clause::Predicate(predicate) = clause.value
-            else {
-                return false;
-            };
-            predicate.ty == target
-                && predicate.bound.trait_parts().is_some_and(|(id, c)| {
-                    c == Constness::Ordinary
-                        && facts.types.trait_application(id).is_some_and(|a| {
-                            a.item.0 == pointee.definition.0
-                                && facts
-                                    .types
-                                    .arguments(a.arguments)
-                                    .is_some_and(|a| a.len() == 0)
-                        })
-                })
-        });
+        .map(|clause| clause.value);
+    require_nominal_bound(facts, target, pointee.definition, inputs).map_err(error)
+}
+
+pub(super) fn require_nominal_bound(
+    facts: &Declarations,
+    target: TypeId,
+    pointee: crate::resolve::model::DefId,
+    mut clauses: impl Iterator<Item = crate::types::parameters::clauses::Clause>,
+) -> Result<(), &'static str> {
+    let found = clauses.any(|clause| {
+        let crate::types::parameters::clauses::Clause::Predicate(predicate) = clause else {
+            return false;
+        };
+        predicate.ty == target
+            && predicate.bound.trait_parts().is_some_and(|(id, c)| {
+                c == Constness::Ordinary
+                    && facts.types.trait_application(id).is_some_and(|a| {
+                        a.item.0 == pointee.0
+                            && facts
+                                .types
+                                .arguments(a.arguments)
+                                .is_some_and(|a| a.len() == 0)
+                    })
+            })
+    });
     if !found {
-        return Err(error(
-            "source DynMetadata requires its real PointeeSized formal",
-        ));
+        return Err("source DynMetadata requires its real PointeeSized formal");
     }
     Ok(())
 }
 
-fn nominal_formal(
-    report: &Report,
+pub(super) fn nominal_formal(
     facts: &Declarations,
-    declaration: Declaration,
-) -> Result<TypeId, Error> {
-    let error = |message| Declarations::error(report, declaration.origin, message);
+    definition: crate::resolve::model::DefId,
+) -> Result<TypeId, &'static str> {
     let parameters = facts
         .generics
         .parameters
-        .get(&declaration.definition)
-        .ok_or_else(|| error("source DynMetadata parameters are not complete"))?;
+        .get(&definition)
+        .ok_or("source DynMetadata parameters are not complete")?;
     let [parameter] = parameters.as_slice() else {
-        return Err(error(
-            "source DynMetadata profile requires one actual type formal",
-        ));
+        return Err("source DynMetadata profile requires one actual type formal");
     };
     let Argument::Type(target) = parameter.argument else {
-        return Err(error("source DynMetadata formal must be a type"));
+        return Err("source DynMetadata formal must be a type");
     };
     if parameter.default.is_some()
         || parameter.anonymous
-        || !matches!(facts.types.kind(target), Some(Kind::Parameter(id)) if facts.types.parameter(id).is_some_and(|p| p.owner == ItemId(declaration.definition.0) && p.index == 0))
+        || !matches!(facts.types.kind(target), Some(Kind::Parameter(id)) if facts.types.parameter(id).is_some_and(|p| p.owner == ItemId(definition.0) && p.index == 0))
     {
-        return Err(error(
-            "source DynMetadata formal changed its actual owner or default",
-        ));
+        return Err("source DynMetadata formal changed its actual owner or default");
     }
     Ok(target)
 }

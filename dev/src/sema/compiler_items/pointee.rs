@@ -2,6 +2,7 @@
 mod automatic;
 mod representation;
 pub(in crate::sema) use representation::{Plan as MetadataPlan, Step as MetadataStep};
+mod published_family;
 mod schemas;
 mod sealed_declarations;
 pub(in crate::sema) use automatic::{Readiness, Selection, select};
@@ -11,9 +12,10 @@ mod consumer_tests;
 #[cfg(test)]
 #[path = "../../../tests/invariants/pointee_contracts.rs"]
 mod tests;
-use super::{Catalog, Declaration, Error, LangItem, Report};
+use super::{Catalog, Declaration, Error, LangItem, Report, Role};
 use crate::{
-    sema::{header_attributes, model::Declarations},
+    resolve::body_origin::DeclarationOrigin,
+    sema::{crates, header_attributes, model::Declarations},
     types::projection,
 };
 pub(super) use sealed_declarations::Contracts;
@@ -47,7 +49,7 @@ impl CheckedMember {
     }
 }
 fn require_owner(facts: &Declarations, expected: &Rc<Contracts>) -> Result<(), Error> {
-    header_attributes::charge_source_contract_query(facts, 1)?;
+    charge(facts, expected.plan.trait_, 1)?;
     let actual = facts
         .source_bindings
         .as_deref()
@@ -65,10 +67,17 @@ fn require_owner(facts: &Declarations, expected: &Rc<Contracts>) -> Result<(), E
 /// Facts-only solver replay cannot inspect a separately changed Report. Real
 /// body and publication boundaries reauthenticate the source they actually use.
 pub(in crate::sema) fn authenticate(report: &Report, facts: &Declarations) -> Result<(), Error> {
+    if report.package.staged_consumer().is_some() {
+        return Ok(());
+    }
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(());
     };
-    if catalog.language(LangItem::PointeeTrait).is_none() {
+    if catalog
+        .role(LangItem::PointeeTrait)
+        .map_err(Error::unlocated)?
+        .is_none()
+    {
         return Ok(());
     }
     catalog
@@ -90,7 +99,6 @@ impl Catalog {
         facts: &Declarations,
         application: projection::Application,
     ) -> Result<CheckedMember, Error> {
-        header_attributes::charge_source_contract_query(facts, 1)?;
         self.require_provider_report(report)
             .map_err(Error::unlocated)?;
         let contract = self
@@ -100,6 +108,7 @@ impl Catalog {
             .ok_or_else(|| {
                 Error::unlocated("source Metadata declaration contracts are not complete")
             })?;
+        charge(facts, contract.plan.trait_, 1)?;
         if !facts
             .source_bindings
             .as_deref()
@@ -117,6 +126,61 @@ impl Catalog {
             application,
         })
     }
+}
+
+fn charge(facts: &Declarations, role: Role, steps: usize) -> Result<(), Error> {
+    match role.origin {
+        DeclarationOrigin::Source(_) => {
+            header_attributes::charge_source_contract_query(facts, steps)
+        }
+        DeclarationOrigin::Imported(_) => crates::charge_source_header_query(facts, steps),
+    }
+}
+
+fn reserve(facts: &mut Declarations, role: Role, bytes: usize) -> Result<(), Error> {
+    match role.origin {
+        DeclarationOrigin::Source(_) => {
+            header_attributes::reserve_source_contracts(facts, 1, bytes)
+        }
+        DeclarationOrigin::Imported(_) => crates::charge_source_headers(facts, 1, bytes),
+    }
+}
+
+pub(in crate::sema) fn retain(
+    facts: &mut Declarations,
+    role: Role,
+    steps: usize,
+    bytes: usize,
+) -> Result<(), Error> {
+    match role.origin {
+        DeclarationOrigin::Source(_) => {
+            header_attributes::charge_source_retention(facts, steps, bytes)
+        }
+        DeclarationOrigin::Imported(_) => crates::charge_source_headers(facts, steps, bytes),
+    }
+}
+
+pub(super) fn prepare_imported(
+    report: &Report,
+    facts: &mut Declarations,
+    roles: &mut super::roles::RoleSet,
+) -> Result<Option<Rc<Contracts>>, Error> {
+    let mut steps = 0;
+    let checked = published_family::plan(report, facts, &mut steps);
+    crates::charge_source_headers(facts, steps, 0)?;
+    let Some(plan) = checked.map_err(Error::unlocated)? else {
+        return Ok(None);
+    };
+    let (steps, bytes) = Contracts::payment(facts, plan)?;
+    crates::charge_source_headers(facts, steps, bytes)?;
+    let arena = facts.types.arena_identity();
+    let contract = Contracts::capture(report, facts, plan, arena)?;
+    roles.insert(LangItem::PointeeTrait);
+    roles.insert(LangItem::MetadataType);
+    if plan.nominal.is_some() {
+        roles.insert(LangItem::DynMetadata);
+    }
+    Ok(Some(Rc::new(contract)))
 }
 
 /// Called only after real associated results and nominal declarations complete.
@@ -222,12 +286,11 @@ pub(in crate::sema) fn prepared_member(
     Ok(true)
 }
 
-/// No existing artifact profile transports these new declaration contracts.
-/// Authenticate the actual completed member before refusing publication; local
-/// source analysis remains available and no wire row is silently dropped.
+/// Authenticate the actual completed member before publication.
 pub(in crate::sema) fn require_transport(
     report: &Report,
     facts: &Declarations,
+    enabled: bool,
 ) -> Result<(), Error> {
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(());
@@ -257,6 +320,9 @@ pub(in crate::sema) fn require_transport(
     };
     let checked = catalog.pointee_member(report, facts, application)?;
     checked.current(report, facts)?;
+    if enabled {
+        return Ok(());
+    }
     Err(Declarations::error(
         report,
         declaration.origin,

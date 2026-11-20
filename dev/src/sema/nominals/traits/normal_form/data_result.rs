@@ -42,12 +42,9 @@ impl Query {
             .ok_or("source Metadata has no parent trait")?;
         application.subject = goal.ty;
         application.trait_application = trait_application;
-        crate::sema::header_attributes::charge_source_retention(
-            facts,
-            1,
-            size_of::<Continuation>(),
-        )
-        .map_err(|_| "source Metadata continuation exceeds its budget")?;
+        selected
+            .retain(facts, 1, size_of::<Continuation>())
+            .map_err(|_| "source Metadata continuation exceeds its budget")?;
         let plan = MetadataPlan::new(facts, selected, application)
             .map_err(|_| "source Metadata has an invalid current declaration")?;
         #[cfg(test)]
@@ -104,14 +101,16 @@ impl Query {
         let progress = if let Some(query) = pending.selection.take() {
             query.resume(facts, &mut self.state.context, goal, self.frontier)
         } else {
-            crate::sema::header_attributes::charge_source_retention(
-                facts,
-                1,
-                size_of::<selection::Pending>()
-                    + size_of::<crate::sema::traits::assumptions::Assumptions>()
-                    + 2 * size_of::<usize>(),
-            )
-            .map_err(|_| "source Metadata proof exceeds retention budget")?;
+            pending
+                .plan
+                .retain(
+                    facts,
+                    1,
+                    size_of::<selection::Pending>()
+                        + size_of::<crate::sema::traits::assumptions::Assumptions>()
+                        + 2 * size_of::<usize>(),
+                )
+                .map_err(|_| "source Metadata proof exceeds retention budget")?;
             let caller = self.state.owned_caller(&mut self.assumptions, false);
             selection::begin_canonical(
                 facts,
@@ -147,10 +146,15 @@ impl Query {
     }
     fn wait_metadata(
         self,
-        facts: &Declarations,
+        facts: &mut Declarations,
         dependency: selection::Dependency,
     ) -> Result<Progress, &'static str> {
-        crate::sema::header_attributes::charge_source_retention(facts, 1, size_of::<Self>())
+        let Some(Continuation::Metadata(pending)) = self.inherited.as_deref() else {
+            return Err("missing suspended source Metadata continuation");
+        };
+        pending
+            .plan
+            .retain(facts, 1, size_of::<Self>())
             .map_err(|_| "source Metadata suspension exceeds its budget")?;
         Ok(Progress::Pending(dependency, Box::new(self)))
     }

@@ -1542,3 +1542,68 @@ impl NotAllOnesHelper for u32 { type Type = u16; }
     }
     Ok(())
 }
+
+#[test]
+fn cli_version_fourteen_reproves_imported_pointee_metadata() -> Result {
+    use rustgm::support::crates;
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root.join(format!(
+        "obj/parallel/pointee-metadata-v14/cli-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let source = std::fs::read_to_string(
+        root.join("pa31/tests/spec/trait-aliases/source-thin/native-provider.rs"),
+    )?;
+    let (foundation, _) = source
+        .split_once("pub fn scalar")
+        .ok_or("Pointee role fixture")?;
+    let provider = folder.join("provider.rs");
+    std::fs::write(&provider, foundation)?;
+    let metadata = folder.join("provider.rgcrate");
+    super::artifacts::checked(
+        "pointee-provider",
+        &folder,
+        source_export(
+            "module-body-operations-v14",
+            &provider,
+            &metadata,
+            &folder.join("provider.lowir"),
+            true,
+        )
+        .arg("--cap-lints=allow"),
+    )?;
+    let bytes = std::fs::read(&metadata)?;
+    assert_eq!(crates::encode(&crates::decode(&bytes)?)?, bytes);
+
+    let client = folder.join("client.rs");
+    std::fs::write(
+        &client,
+        r"#![feature(no_core)]#![no_core]
+pub fn scalar() -> <u8 as base::Pointee>::Metadata { () }
+pub fn slice(value: <[u8] as base::Pointee>::Metadata) -> usize { value }
+",
+    )?;
+    super::artifacts::checked(
+        "pointee-client",
+        &folder,
+        source_client(&client, &metadata, &folder.join("client.lowir"))
+            .args(["--crate-type=lib", "--cap-lints=allow"]),
+    )?;
+    let wrong = folder.join("wrong.rs");
+    std::fs::write(
+        &wrong,
+        r"#![feature(no_core)]#![no_core]
+pub fn scalar() -> <u8 as base::Pointee>::Metadata { 4_usize }
+",
+    )?;
+    let failed = source_client(&wrong, &metadata, &folder.join("wrong.lowir"))
+        .args(["--crate-type=lib", "--cap-lints=allow"])
+        .output()?;
+    assert_eq!(failed.status.code(), Some(1));
+    let stderr = String::from_utf8(failed.stderr)?;
+    assert!(stderr.contains("incompatible types"), "{stderr}");
+    Ok(())
+}

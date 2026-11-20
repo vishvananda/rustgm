@@ -418,7 +418,10 @@ fn role_parent(
     work: &mut usize,
 ) -> Result<Option<DeclarationRef>, &'static str> {
     charge(work, 1)?;
-    if matches!(role, LangItem::FutureOutput | LangItem::FnOnceOutput) {
+    if matches!(
+        role,
+        LangItem::FutureOutput | LangItem::FnOnceOutput | LangItem::MetadataType
+    ) {
         let Some(s::HeaderRef::AssociatedType(index)) = rows.header(declaration)? else {
             return Err("imported Output role lacks its actual associated header");
         };
