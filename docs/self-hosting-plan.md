@@ -2393,6 +2393,32 @@ The map-only change is deferred. Evidence is under
 worktree with SHA-256
 `f9344b26ba1fe5cf462f4a7f90592aa723ed80074ebc744bf5d4639a494fd51e`.
 
+### Inference finalization
+
+The frozen 746-input census reaches 30,291 successful finalization
+solves over 952,017 term ordinals. Of those ordinals, 588,847 already
+have a direct result. This includes 242,649 previously resolved roots,
+24,034 known types, 321,986 settled types and 178 numeric defaults.
+The same census sees 197,597 aliases, 363,170 composite outer visits
+and 672,003 charged child entries.
+
+`92e57c255` reuses the first root visit at each ordinal and enters
+the worklist only for a composite walk. The existing visit charges
+and publication order remain in place. Six focused tests and four
+exact legacy budget replay controls pass. All nine optimized focused
+pairs and every frozen whole-graph run preserve LowIR, link plans,
+skip records and diagnostics. The matched pairs retire 0.04830%
+fewer instructions, a median reduction of 43,284,297 instructions.
+Whole-graph elapsed and cycle pairs move in opposite directions.
+The patch is on local `main` through `8ee6cea47` with the same two
+changed files from the qualified performance worktree. The immutable
+A/A and ABBA receipt is
+`obj/parallel/body-inference-roots/pmu-v1/receipt.json` in that worktree
+with SHA-256
+`ea2901dadc7893f0092f23c739cd3468b94793ae89b24f8b1646d930cb81d70b`.
+The exact focused receipt is under
+`obj/qualification/fast/1795186896282248993/` there.
+
 ### Lifetime inspection output
 
 The lifetime arrays cloned by normal verified lowering account for
