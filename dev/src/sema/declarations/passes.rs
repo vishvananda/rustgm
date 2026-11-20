@@ -137,9 +137,17 @@ impl Checker<'_> {
                 continue;
             };
             if self.census.is_some() && !Self::sticky(&error, *steps, limit) {
-                let parked = self.census.take();
+                let mut parked = self.census.take();
                 let later = PASSES.get(index + 1..).unwrap_or_default();
-                let following = self.look_ahead(later, steps, limit);
+                // The failed pass's own later annotations precede the later passes.
+                let mut following: Vec<_> = parked
+                    .as_deref_mut()
+                    .map(|ledger| std::mem::take(&mut ledger.annotations))
+                    .unwrap_or_default()
+                    .into_iter()
+                    .map(|error| (pass, error))
+                    .collect();
+                following.extend(self.look_ahead(later, steps, limit));
                 self.census = parked;
                 if let Some(ledger) = self.census.as_deref_mut() {
                     ledger.lookahead = Some(Box::new(Lookahead { pass, following }));

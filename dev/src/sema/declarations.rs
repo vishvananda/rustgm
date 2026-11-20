@@ -852,17 +852,18 @@ impl Checker<'_> {
                 children.clear();
                 ast.push_children(node, &mut children);
                 stack.extend(children.iter().rev().map(|&child| (child, context)));
-                self.local_annotation(
+                let annotated = self.local_annotation(
                     NodeKey { file, node },
                     kind,
                     context,
                     steps,
                     limit,
                     &mut scan,
-                )?;
+                );
+                self.census_annotation(annotated)?;
             }
         }
-        Ok(())
+        self.census_annotations()
     }
     /// Closures and inline constants share their enclosing body's region identities.
     fn nest_local_body(

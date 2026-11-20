@@ -92,6 +92,8 @@ pub(super) struct Ledger {
     abandoned: Option<usize>,
     /// After a crate-wide pass failed, the later passes' first errors.
     pub(super) lookahead: Option<Box<super::passes::Lookahead>>,
+    /// Every local annotation that failed in this census, in scan order.
+    pub(super) annotations: Vec<Error>,
 }
 impl Ledger {
     pub(super) fn new(census: Census) -> Self {
@@ -144,6 +146,27 @@ impl Checker<'_> {
             && let Some(&cause) = ledger.poison.get(&Unit::Execution(id))
         {
             ledger.abandoned.get_or_insert(cause);
+        }
+    }
+    /// A census scans every local annotation, so one run names each that
+    /// fails. Ordinary checking and budget exhaustion keep the first error.
+    pub(super) fn census_annotation(&mut self, annotated: Result<(), Error>) -> Result<(), Error> {
+        let Err(error) = annotated else {
+            return Ok(());
+        };
+        match self.census.as_deref_mut() {
+            Some(ledger) if !census::exhausts_budget(&error.message) => {
+                ledger.annotations.push(error);
+                Ok(())
+            }
+            _ => Err(error),
+        }
+    }
+    /// The first failed annotation still ends the pass; the rest follow it.
+    pub(super) fn census_annotations(&mut self) -> Result<(), Error> {
+        match self.census.as_deref_mut() {
+            Some(ledger) if !ledger.annotations.is_empty() => Err(ledger.annotations.remove(0)),
+            _ => Ok(()),
         }
     }
     pub(super) fn census_stops(&self) -> bool {
