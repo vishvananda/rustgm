@@ -18,7 +18,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from resource_locks import (QUEUE_STALL, Ticket, active_records, admission, holders, inherited, lease, queued,
                             try_lock)
-from resource_policy import DEFAULTS, GIB, UsageScan, atomic_json, output_roots, validate, width
+import resource_policy
+from resource_policy import DEFAULTS, GIB, UsageCache, UsageScan, atomic_json, output_roots, validate, width
 from resource_runner import run, sample_scope, scope_cgroup, scope_command, scope_notes, supervise
 from resources import set_jobs
 
@@ -64,6 +65,72 @@ class ResourceTests(unittest.TestCase):
                 self.assertLess(steps, 30)
             self.assertGreaterEqual(scan.total, 3 * 8192)
             self.assertLess(scan.total, 100_000)
+
+    def scanned(self, root, cache, *, later=0):
+        """Total and stat-level operations of one complete scan at a shifted clock."""
+        scan = UsageScan([root / 'obj/out'], cache)
+        clock = time.time() + later
+        with patch.object(resource_policy.time, 'time', lambda: clock):
+            while not scan.done:
+                scan.step(1)
+        return scan.total, scan.operations
+
+    def test_cached_accounting_matches_a_full_scan_and_sees_every_entry_change(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            for index in range(20):
+                path = root / f'obj/out/run-{index % 4}/deps/file-{index}'
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(b'x' * 8192)
+            exact = lambda: self.scanned(root, None)[0]
+            total, cold = self.scanned(root, UsageCache(root))
+            self.assertEqual(total, exact())
+            # Just-written directories are listed again; quiet ones only stat their subdirectories.
+            self.assertEqual(self.scanned(root, UsageCache(root)), (total, cold))
+            self.assertEqual(self.scanned(root, UsageCache(root), later=600)[0], total)
+            quiet = self.scanned(root, UsageCache(root), later=600)
+            self.assertEqual(quiet[0], total)
+            self.assertLess(quiet[1], cold)
+            changes = [lambda: (root / 'obj/out/run-1/deps/added').write_bytes(b'y' * 65536),
+                       lambda: (root / 'obj/out/run-2/deps/file-2').unlink(),
+                       lambda: (root / 'obj/out/run-3/deps/file-3').rename(root / 'obj/out/run-0/deps/moved'),
+                       lambda: (root / 'obj/out/run-0/new/deeper').mkdir(parents=True)]
+            for change in changes:
+                change()
+                self.assertEqual(self.scanned(root, UsageCache(root), later=600)[0], exact())
+            # A file grown in place in a quiet directory is counted once its listing is refreshed.
+            self.scanned(root, UsageCache(root), later=600)
+            with (root / 'obj/out/run-1/deps/file-1').open('ab') as stream:
+                stream.write(b'z' * 1048576)
+            refreshed = self.scanned(root, UsageCache(root), later=600 + resource_policy.REFRESH)[0]
+            self.assertEqual(refreshed, exact())
+            # The cache file lies outside these roots. Rows outside the roots survive;
+            # rows for vanished directories do not.
+            cache = UsageCache(root)
+            cache.rows['/elsewhere'] = [1, 1, 0, [], True, 0]
+            cache.rows[str(root / 'obj/out/gone')] = [1, 1, 0, [], True, 0]
+            scan = UsageScan([root / 'obj/out'], cache)
+            while not scan.done:
+                scan.step()
+            saved = UsageCache(root).rows
+            self.assertIn('/elsewhere', saved)
+            self.assertNotIn(str(root / 'obj/out/gone'), saved)
+
+    def test_cached_accounting_never_follows_a_replaced_directory(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'obj/out/inner').mkdir(parents=True)
+            (root / 'outside').mkdir()
+            (root / 'outside/big').write_bytes(b'x' * 1048576)
+            cache = UsageCache(root)
+            self.scanned(root, cache)
+            (root / 'obj/out/inner').rmdir()
+            (root / 'obj/out/inner').symlink_to(root / 'outside')
+            self.assertLess(self.scanned(root, UsageCache(root), later=600)[0], 1048576)
+            (root / 'obj/out').rename(root / 'moved')
+            (root / 'obj/out').symlink_to(root / 'moved')
+            with self.assertRaisesRegex(ValueError, 'symlink'):
+                self.scanned(root, UsageCache(root), later=600)
 
     def test_two_slots_and_one_lease_per_worktree(self):
         with tempfile.TemporaryDirectory() as folder, ExitStack() as stack:

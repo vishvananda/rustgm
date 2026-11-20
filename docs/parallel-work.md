@@ -1466,7 +1466,12 @@ claim a free slot. A killed waiter's ticket is unlocked and dropped; one not
 refreshed for a minute stops holding the queue. Waiters running scripts from
 before the queue take no ticket and may still claim first.
 
-Initial, incremental and final scans use the same cap. Initial refusals retain
+Initial, incremental and final scans use the same cap. They reuse the listing
+of a directory whose entries have been quiet for two minutes while its inode
+and mtime are unchanged (`obj/accounting/usage.json`), and list it again within
+an hour; creating, removing or renaming an entry always changes that mtime. A
+file grown in place in such a directory is counted at that refresh, while free
+space is measured exactly on every check. Initial refusals retain
 failed receipts without launching a command. Live overshoots stop the entire
 systemd scope, and short commands still undergo final accounting. Receipts and
 lease records retain `budget_bytes` separately from configured `worker_gib`,

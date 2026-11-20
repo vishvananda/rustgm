@@ -7,8 +7,8 @@ import sys
 import time
 
 from resource_locks import active_records, inherited, inherited_budget, lease, peer_budget
-from resource_policy import (BUILD_JOBS, GIB, OutputLimitError, UsageScan, atomic_json, check_usage, discover,
-                             free_space, output_budget, output_roots, usage, width)
+from resource_policy import (BUILD_JOBS, GIB, OutputLimitError, UsageCache, UsageScan, atomic_json, check_usage,
+                             discover, free_space, output_budget, output_roots, usage, width)
 
 
 def scope_command(command, unit, policy):
@@ -148,7 +148,7 @@ def supervise(command, root, environment, policy, entry, record, path, descripto
                 sample_scope(cgroup, record)
             now = time.monotonic()
             if scanner is None and now >= next_scan:
-                scanner = UsageScan(output_roots(root, entry))
+                scanner = UsageScan(output_roots(root, entry), UsageCache(root))
             if scanner is not None:
                 scanner.step()
                 record["used_bytes"] = scanner.total
@@ -170,7 +170,9 @@ def supervise(command, root, environment, policy, entry, record, path, descripto
         receipt = finished(root, record, path, result, None, state="finalizing")
         for _ in range(2):
             blocks = receipt.stat().st_blocks
+            started = time.monotonic()
             record["used_bytes"] = usage(root, entry, policy, budget)
+            record["final_accounting_seconds"] = round(time.monotonic() - started, 3)
             if stopped:
                 raise ValueError(f"resource supervisor interrupted by signal {stopped[0]}")
             finished(root, record, path, result, None)
@@ -224,8 +226,9 @@ def run(root, command, environment=None, *, kind="ordinary", wait=3600, max_outp
         try:
             if discover(root) != (directory, policy):
                 raise ValueError("resource policy changed while waiting; retry the command")
+            started = time.monotonic()
             used = usage(root, entry, policy, budget)
-            record["used_bytes"] = used
+            record.update(used_bytes=used, admission_accounting_seconds=round(time.monotonic() - started, 3))
             # Reserve our unused absolute cap and full peer caps. An unknown or
             # legacy peer always reserves configured worker_gib, never our cap.
             others = [row for row in active_records(directory, policy["jobs"])

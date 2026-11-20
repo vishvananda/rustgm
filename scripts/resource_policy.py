@@ -5,7 +5,10 @@ import math
 import os
 from pathlib import Path
 import shutil
+import stat
 import subprocess
+import time
+import zlib
 
 GIB = 1024 ** 3
 DEFAULTS = {"schema": 1, "jobs": 2, "reserve_gib": 150, "worker_gib": 50,
@@ -123,53 +126,154 @@ def free_space(root, policy, reserved=0):
     return free
 
 
+# A directory whose own entry and files have all been quiet for SETTLE seconds
+# keeps its listing while its inode and mtime are unchanged, for 30 to 60
+# minutes (REFRESH, staggered per directory), and is then listed again.
+SETTLE = 120
+REFRESH = 3600
+USAGE_CACHE = "obj/accounting/usage.json"
+
+
+class UsageCache:
+    """Per-directory listings: inode, mtime, non-directory blocks and subdirectories.
+
+    Creating, removing or renaming an entry changes its directory's mtime, so a
+    directory with an unchanged inode and mtime still has the same entries. Only
+    a file grown in place inside a quiet directory can go uncounted, until that
+    directory's listing is refreshed. Free space is always measured exactly.
+    """
+
+    def __init__(self, root, rows=None):
+        self.path = root / USAGE_CACHE
+        if rows is None:
+            try:
+                document = json.loads(self.path.read_text())
+                rows = document["dirs"] if document.get("version") == 1 else {}
+            except (OSError, ValueError, KeyError, TypeError, AttributeError):
+                rows = {}
+        self.rows = rows if isinstance(rows, dict) else {}
+        self.seen = {}
+
+    def reusable(self, key, info, now):
+        row = self.rows.get(key)
+        if (isinstance(row, list) and len(row) == 6 and row[:2] == [info.st_ino, info.st_mtime_ns]
+                and row[4] is True and isinstance(row[5], (int, float)) and now < row[5]
+                and isinstance(row[2], int) and isinstance(row[3], list)):
+            self.seen[key] = row
+            return row[2], row[3]
+        return None
+
+    def listed(self, key, info, files, folders, newest, now):
+        spread = 0.5 + (zlib.crc32(key.encode()) % 1000) / 2000
+        self.seen[key] = [info.st_ino, info.st_mtime_ns, files, folders, now - newest > SETTLE,
+                          now + REFRESH * spread]
+
+    def save(self, roots):
+        """Keep rows outside this scan's roots; replace the rest with what it saw."""
+        prefixes = [str(path) for path in roots]
+        kept = {key: row for key, row in self.rows.items()
+                if not any(key == prefix or key.startswith(prefix + os.sep) for prefix in prefixes)}
+        try:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            temporary = self.path.with_name(f"{self.path.name}.{os.getpid()}.tmp")
+            temporary.write_text(json.dumps({"version": 1, "dirs": {**kept, **self.seen}},
+                                            separators=(",", ":")))
+            temporary.replace(self.path)
+        except OSError:
+            pass
+
+
 class UsageScan:
     """Incremental scans keep disk monitoring responsive even with many files.
 
     Count allocated blocks conservatively, including pins and caches. No symlink
     is followed. Duplicate hardlinks may be charged twice rather than undercounted.
+    With a cache, a quiet unchanged directory costs one stat per subdirectory
+    instead of one per entry.
     """
-    def __init__(self, roots):
-        self.pending = list(roots)
-        self.current = None
+    def __init__(self, roots, cache=None):
+        self.roots = list(roots)
+        self.pending = [(path, None) for path in self.roots]
+        self.cache = cache
         self.total = 0
+        # Directory listings plus stats: the scan's work, for receipts and bounds.
+        self.operations = 0
         self.done = False
 
     def close(self):
-        if self.current is not None:
-            self.current.close()
-            self.current = None
+        """A scan holds no directory open between steps."""
 
     def step(self, budget=4096):
-        for _ in range(budget):
-            if self.current is None:
-                if not self.pending:
-                    self.done = True
-                    return self.total
-                folder = self.pending.pop()
-                if folder.is_symlink():
-                    raise ValueError("resource output became a symlink")
-                try:
-                    self.current = os.scandir(folder)
-                except FileNotFoundError:
-                    continue
-            item = next(self.current, None)
-            if item is None:
-                self.close()
-                continue
-            try:
-                info = item.stat(follow_symlinks=False)
-                self.total += info.st_blocks * 512
-                if item.is_dir(follow_symlinks=False):
-                    self.pending.append(Path(item.path))
-            except FileNotFoundError:
-                continue
+        operations = 0
+        while operations < budget:
+            if not self.pending:
+                if not self.done and self.cache is not None:
+                    self.cache.save(self.roots)
+                self.done = True
+                return self.total
+            folder, info = self.pending.pop()
+            work = self.visit(folder, info)
+            operations += work
+            self.operations += work
         return None
 
+    def listing(self, folder, info, now):
+        files, folders, newest, operations = 0, [], max(info.st_mtime, info.st_ctime), 1
+        with os.scandir(folder) as entries:
+            for item in entries:
+                if item.is_dir(follow_symlinks=False):
+                    folders.append(item.name)
+                    continue
+                try:
+                    found = item.stat(follow_symlinks=False)
+                except FileNotFoundError:
+                    continue
+                operations += 1
+                files += found.st_blocks * 512
+                newest = max(newest, found.st_mtime, found.st_ctime)
+        if self.cache is not None:
+            self.cache.listed(str(folder), info, files, folders, newest, now)
+        return files, folders, operations
 
-def usage(root, entry, policy, budget=None):
+    def visit(self, folder, info):
+        try:
+            info = info or folder.lstat()
+        except FileNotFoundError:
+            return 1
+        if stat.S_ISLNK(info.st_mode):
+            raise ValueError("resource output became a symlink")
+        if not stat.S_ISDIR(info.st_mode):
+            return 1
+        now = time.time()
+        cached = self.cache.reusable(str(folder), info, now) if self.cache is not None else None
+        try:
+            if cached:
+                files, folders, operations = (*cached, 1)
+            else:
+                # Check again just before listing, so a directory replaced by a link is never followed.
+                info = folder.lstat()
+                if stat.S_ISLNK(info.st_mode):
+                    raise ValueError("resource output became a symlink")
+                files, folders, operations = self.listing(folder, info, now)
+        except FileNotFoundError:
+            return 1
+        self.total += files
+        for name in folders:
+            path = folder / name
+            try:
+                found = path.lstat()
+            except FileNotFoundError:
+                continue
+            operations += 1
+            self.total += found.st_blocks * 512
+            if stat.S_ISDIR(found.st_mode):
+                self.pending.append((path, found))
+        return operations
+
+
+def usage(root, entry, policy, budget=None, cache=None):
     budget = output_budget(policy) if budget is None else budget
-    scan = UsageScan(output_roots(root, entry))
+    scan = UsageScan(output_roots(root, entry), UsageCache(root) if cache is None else cache)
     try:
         while not scan.done:
             scan.step()
