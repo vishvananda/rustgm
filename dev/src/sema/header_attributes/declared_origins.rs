@@ -74,6 +74,9 @@ struct Owner {
     key: NodeKey,
     syntax: Kind,
     effects: std::ops::Range<usize>,
+    /// This row passed its one check against the header's source image; a
+    /// later query reads it as plain fields. It occupies the row's padding.
+    checked: Cell<bool>,
 }
 #[derive(Default)]
 pub(super) struct Headers {
@@ -294,6 +297,7 @@ fn observe_selected_owner(
         key: owner,
         syntax: unit.configured.ast.node(owner.node).kind,
         effects: configured.attributes.clone(),
+        checked: Cell::new(false),
     });
     Ok(())
 }
@@ -856,8 +860,17 @@ fn validate_source_with(
             "source header completion incarnation changed",
         ));
     }
+    // Each owner of one incarnation is checked once; repeating that is the
+    // self-check of an already authenticated row.
+    let repeat = crate::support::sealed::self_check();
+    if !repeat && header.owners.iter().all(|owner| owner.checked.get()) {
+        return Ok(());
+    }
     charge_source_contract_query(facts, header.owners.len())?;
     for owner in &header.owners {
+        if !repeat && owner.checked.get() {
+            continue;
+        }
         let actual = unit
             .owner_indices
             .get(owner.key.node.get() as usize)
@@ -892,6 +905,7 @@ fn validate_source_with(
                     .map_err(Error::from)?;
             }
         }
+        owner.checked.set(true);
     }
     Ok(())
 }

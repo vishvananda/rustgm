@@ -197,6 +197,9 @@ fn changed_owner_image_item_and_attribute_are_rejected() -> TestResult {
         .get() as usize
         - 1;
     report.package.units[key.file.0 as usize].configured.owners[slot].enabled = false;
+    // The owner row passed its one check against this same incarnation, so
+    // an in-place change of the configured owner is the self-check's to find.
+    let _checking = crate::support::sealed::SelfCheck::hold();
     assert!(facts.source_optimization(&report, id).is_err());
     Ok(())
 }

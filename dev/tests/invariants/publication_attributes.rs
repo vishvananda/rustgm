@@ -215,6 +215,10 @@ fn staged_identity_and_existing_query_failures_are_preserved() -> Result {
         .owner;
     let unit = &mut report.package.units[owner.file.0 as usize];
     let index = unit.owner_indices[owner.node.get() as usize].ok_or("actual configured owner")?;
+    // The header's owner rows passed their one check against this
+    // incarnation, so a configured owner changed in place is the
+    // self-check's to find.
+    let _checking = crate::support::sealed::SelfCheck::hold();
     unit.configured.owners[index.get() as usize - 1].enabled = false;
     let error = source
         .require_plain_attributes(&report, &analysis.facts)

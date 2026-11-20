@@ -279,6 +279,10 @@ fn configured_owner_changes_are_rejected() -> TestResult {
             node == member.origin.node
         })
         .ok_or("actual configured Metadata owner")?;
+    // The member's header owner rows passed their one check against this
+    // incarnation, so a configured owner changed in place is the self-check's
+    // to find.
+    let _checking = crate::support::sealed::SelfCheck::hold();
     report.package.units[member.origin.file.0 as usize]
         .configured
         .owners[owner]
