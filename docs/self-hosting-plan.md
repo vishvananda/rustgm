@@ -999,10 +999,25 @@ refer to an actual trait default. The two focused constant checks pass,
 including the required generic constant regression. A fresh client of the
 same 8,439-byte packet now passes imported conformance and fails at
 `source original preflight omitted its actual function header`.
-Fresh client body reconstruction and execution, and the open request to
-the actual supertrait, remain pending in the frontier worktree. Evidence is
-under `obj/qualification/fast/1795164896161285346/` and
+Evidence is under `obj/qualification/fast/1795164896161285346/` and
 `obj/parallel/v14-associated-constants/provided-stable-v2/`.
+
+The reconstruction candidate uses the constant's actual declaration frame,
+captured formals and recorded environment. It rebuilds an initializer body
+and submits the body and its obligations to the fresh consumer's ordinary
+proof path. With the same provider packet, a fresh import-only client emits
+`return u8 4` and a fresh local override emits `return u8 21`. The inherited
+default now reaches constant evaluation and fails with `selected constant
+has no initializer`. That evaluator currently expects local syntax for the
+selected body. The frozen replay receipt is
+`provided-stable-v2/replay-after-reconstruction-v2/receipt.json`, with SHA-256
+`e900d13f60bfd373d12e72006013d9dc7a5d5a196ae85b6ae99677c40977b976`.
+Formatting, architecture and strict Clippy pass on the replay binary's
+source. The v14 division control found that the producer tried to look up a
+function header for a synthesized constructor. The frontier worktree restores
+the earlier constructor check and adds the two successful consumer cases
+to the focused integration test. Validation of that update, execution of an
+imported default and override, and the open supertrait request remain pending.
 
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a

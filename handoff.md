@@ -23,10 +23,15 @@ override with five passing focused tests. `7839da8d0` keeps the default
 under its trait owner and passes four focused checks. `dc9017c11`
 re-proves imported constant links using the actual declaration kind
 and canonical constant contract. Two focused checks pass. A fresh
-RustGM client with the same provider now reaches original-body preflight,
-which expects a function header. Initializer reconstruction is in
-development. Owner substitution and the open supertrait request remain
-pending.
+RustGM client with the same provider reached the old function-only
+original-body preflight. The next frontier changes reconstruct and check
+the initializer under the constant's actual owner. A fresh import-only
+client emits `return u8 4`, and a local override emits `return u8 21`.
+The inherited default reaches evaluation and fails with `selected constant
+has no initializer`. The division control exposed a synthesized-constructor
+check ordered after function-header lookup. The fix and expanded consumer
+regression are in focused validation. Imported default execution, owner
+substitution and the open supertrait request remain pending.
 Stage 1 and Stage 2 are pending.
 [Strict Core evidence](docs/self-hosting-plan.md#L979)
 
