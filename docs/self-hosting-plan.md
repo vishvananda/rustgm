@@ -926,7 +926,21 @@ the development compiler.
 The same development compiler reached its 230-second limit on the
 unchanged 309 original Core inputs with no diagnostic or artifact.
 The timeout receipt is under `obj/parallel/strict-core/static-arrays-dev-fast/`.
-The optimized replay on the integrated revision is pending.
+The optimized replay on `b25c216b5` passes the static declaration gate
+and reaches associated-constant publication after 28.47 seconds. The
+exact declaration trace identifies DefId 621,
+`Lemire::MAX_EXPONENT_FAST_PATH` in `core/src/num/imp/dec2flt/mod.rs`.
+The `i64` trait default reads `Self::SIG_TOTAL_BITS` through the
+supertrait chain, so its value depends on the selected implementation.
+The replay produces zero bring-up records and no strict artifacts.
+The replay and declaration trace are under
+`obj/parallel/strict-core/static-arrays-observe/` in the frontier checkout.
+A reduced provider keeps the original default expression and its two
+supertrait edges. RustGM type-checks it and reaches the same publication
+diagnostic. Pinned rustc links a distinct consumer and returns
+`10 22 27 91` for two provider implementations, a consumer implementation
+using the default, and a consumer override. The control is under
+`obj/parallel/strict-core/static-arrays-observe/lemire-default-control-v3/`.
 
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
@@ -1067,6 +1081,20 @@ prelude and execute the imported startup specialization for its actual
 `Termination` implementation before the full binary replay.
 [Executor](../scripts/target_units.py) · [Prelude](../dev/src/resolve/standard_imports.rs) ·
 [Startup](../dev/src/sema/entry/startup.rs)
+
+`4ba012e31` selects the v14 source transport for the Core unit and
+includes that profile in its artifact identity. `9286212a7` keeps
+Cargo's sysroot-unit marker and accepts the two pinned target-spec
+queries needed for combined planning. All 43 planner and target tests
+pass. The pinned Cargo invocation joins the original compiler and
+stdlib lockfile closures in a 28-unit graph with the original
+`rustgm` binary as its sole root. It has 22 target compile steps and
+three host compile and run pairs. All six Cargo compiler invocations
+are queries. The target plan exposes 42 `noprelude` edges across the
+six application and dependency targets. Three sysroot steps also
+need their host script outputs. The graph and dry-run receipts are
+under `obj/parallel/strict-compiler-unit-graph/combined-v3/` in the
+frontier checkout.
 
 `3ef6b79e9` requires LowIR, metadata and a native-link manifest for every
 unit. The terminal record carries the binary's identity, defining edition
