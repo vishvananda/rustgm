@@ -7,7 +7,8 @@ use crate::{
         parameters::{clauses::Clause, environment::Environment},
     },
 };
-const LIMIT: usize = crate::support::crates::MAX_COMPONENTS;
+/// A coarse runaway guard: the readiness walk grows with the session's templates.
+const LIMIT: usize = 1 << 30;
 const CLOSED: &str = "constant storage layout requires a closed normalized type";
 fn charge(work: &mut usize, count: usize) -> Result<(), &'static str> {
     *work = work.saturating_add(count);

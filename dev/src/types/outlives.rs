@@ -96,7 +96,8 @@ pub struct ScalarRequirements<'a> {
     pub regions: &'a [Pair],
     pub parameters: &'a [ParameterPair],
 }
-const LIMIT: usize = 1_000_000;
+/// A coarse runaway guard for one outlives query.
+const LIMIT: usize = 1 << 30;
 #[derive(Default)]
 struct Budget<'a>(usize, Option<crate::support::retained::Payment<'a>>);
 impl Budget<'_> {

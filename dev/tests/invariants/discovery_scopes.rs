@@ -176,13 +176,13 @@ fn scope_walk_rejects_unknown_definition_sites_and_counts_failed_work() -> TestR
             .groups(&report, site.scope, site.name, &[], foreign)
             .is_err()
     );
-    index.steps = 1_000_000;
+    index.steps = super::WORK_LIMIT;
     assert!(
         index
             .groups(&report, site.scope, site.name, &[], identifier.context)
             .is_err()
     );
-    assert!(index.steps > 1_000_000);
+    assert!(index.steps > super::WORK_LIMIT);
     // The smart receiver name set is one cold optional box per Methods owner.
     assert_eq!(size_of::<crate::sema::methods::Methods>(), 320);
     // `DECLARATIONS_SIZE` records every term of the compilation-wide owner's size.

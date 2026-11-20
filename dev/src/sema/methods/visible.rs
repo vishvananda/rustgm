@@ -16,6 +16,9 @@ use crate::{
 };
 use std::sync::Arc;
 
+/// A coarse runaway guard: one index serves every scope of the session.
+const WORK_LIMIT: usize = 1 << 30;
+
 #[derive(Default)]
 pub(super) struct Index {
     members: HashMap<DefId, HashMap<NameId, DefId>>,
@@ -268,7 +271,7 @@ impl Index {
     }
     fn account(&mut self, amount: usize) -> Result<(), &'static str> {
         self.steps = self.steps.saturating_add(amount);
-        if self.steps > 1_000_000 {
+        if self.steps > WORK_LIMIT {
             return Err("trait visibility work budget exceeded");
         }
         Ok(())

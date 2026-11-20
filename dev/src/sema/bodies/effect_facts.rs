@@ -48,9 +48,10 @@ pub(in crate::sema) struct CallContexts {
 const _: [(); 96] = [(); size_of::<CallContexts>()];
 const _: [(); 16] = [(); size_of::<crate::sema::model::Operation>()];
 const _: [(); 80] = [(); size_of::<crate::sema::model::NodeFacts>()];
-const MAX_ROWS: usize = 1_000_000;
-const MAX_RETAINED: usize = 16 * 1024 * 1024;
-const MAX_TRANSIENT: usize = 32 * 1024 * 1024;
+// Coarse runaway guards: one table serves every body of a whole-graph session.
+const MAX_ROWS: usize = 1 << 30;
+const MAX_RETAINED: usize = 1 << 34;
+const MAX_TRANSIENT: usize = 1 << 35;
 impl CallContexts {
     pub(in crate::sema) fn access_steps(
         &self,
