@@ -94,6 +94,10 @@ pub(in crate::sema) fn may_overlap_with(
         nesting: Nesting::ROOT,
         placeholders,
     };
+    if crate::sema::query_census::active() {
+        let mode = Availability::Declarations as u32 | (6 << 4);
+        crate::sema::query_census::root(&facts.types, context, goal, &caller, mode);
+    }
     let first = Frame::new(facts, context, goal, caller.first_region)?;
     if placeholders.is_some() {
         context.account_work(1).map_err(|e| e.to_string())?;

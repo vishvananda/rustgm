@@ -643,6 +643,10 @@ fn select_from_checked(
     normalized_inputs: bool,
     reuse: Option<&mut Reuse>,
 ) -> Result<Selection, Failure> {
+    if crate::sema::query_census::active() {
+        let mode = availability as u32 | (u32::from(normalized_inputs) << 4);
+        crate::sema::query_census::root(&facts.types, context, goal, &caller, mode);
+    }
     if goal.projection_result().is_some() || goal.builtin_bound().is_some() {
         // Builtin permissions use the caller's ordinary ability environment;
         // they cannot enter the user-trait assumption index.

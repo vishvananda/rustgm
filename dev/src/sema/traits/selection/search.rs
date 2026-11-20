@@ -631,6 +631,10 @@ impl Search<'_> {
         frame: &mut Frame,
         resolved: Option<Predicate>,
     ) -> Result<Action, String> {
+        if crate::sema::query_census::active() {
+            let context = &mut frame.inputs.context;
+            crate::sema::query_census::lookup(&facts.types, context, &frame.goal);
+        }
         let Some(registry) = &mut facts.generics.implementations else {
             return self.language_result(facts, frame);
         };

@@ -129,6 +129,9 @@ impl Frame {
         goal: &Goal,
         first: u32,
     ) -> Result<Self, String> {
+        if crate::sema::query_census::active() {
+            crate::sema::query_census::frame(types, source, goal);
+        }
         let mut inputs = infer::refinement::Refinement::default();
         let goal = inputs
             .initialize_predicate(types, source, goal)

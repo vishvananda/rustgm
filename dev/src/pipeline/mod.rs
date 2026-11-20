@@ -99,10 +99,15 @@ fn analyze_defining(
 /// # Errors
 /// Preserves all semantic and demanded-constant diagnostics.
 pub fn analyze_source(report: &Report) -> Result<Analysis, Error> {
+    use sema::query_census::{Phase, enter};
     let context = execution::Context::default();
+    enter(Phase::Declarations);
     let facts = sema::declarations::analyze_with_executor(report, context.executor())?;
+    enter(Phase::Bodies);
     let analysis = analyze_defining(report, facts, Some(&context), None)?;
-    complete_source(report, context, analysis)
+    let analysis = complete_source(report, context, analysis);
+    enter(Phase::Instances);
+    analysis
 }
 /// Run the same source analysis as an analysis-only census.
 ///

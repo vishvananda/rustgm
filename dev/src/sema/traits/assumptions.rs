@@ -49,6 +49,10 @@ impl Evidence {
 }
 
 impl Assumptions {
+    /// The shared clause index is this caller's identity for the query census.
+    pub(in crate::sema) const fn clause_index(&self) -> Option<&Arc<ClauseIndex>> {
+        self.index.as_ref()
+    }
     pub(in crate::sema) fn contains_feature(
         &self,
         types: &Store,

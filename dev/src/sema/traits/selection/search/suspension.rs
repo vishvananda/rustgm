@@ -105,6 +105,19 @@ enum Mode<'a> {
     MemoizedBody,
     Canonical(Option<u32>),
 }
+impl Mode<'_> {
+    /// The entry kind is part of a shadow census key; it selects nothing.
+    const fn census_class(self) -> u32 {
+        match self {
+            Self::Plain => 0,
+            Self::Normalized => 1,
+            Self::Projection(_) => 2,
+            Self::Refining(_) => 3,
+            Self::MemoizedBody => 4,
+            Self::Canonical(_) => 5,
+        }
+    }
+}
 impl OwnedCaller {
     fn borrowed(&self) -> Caller<'_> {
         Caller {
@@ -364,6 +377,10 @@ fn begin_borrowed_inputs(
         mut attempted,
     } = hooks;
     observe_work(&mut attempted, 0);
+    if crate::sema::query_census::active() {
+        let mode = availability as u32 | (mode.census_class() << 4);
+        crate::sema::query_census::root(&facts.types, context, goal, &caller, mode);
+    }
     if goal.trait_arguments().is_some()
         && !matches!(
             mode,

@@ -24,6 +24,58 @@ struct Options {
     mode: String,
     config: Config,
     crates: crates::Options,
+    /// Where the off-by-default trait query census writes its rows.
+    query_census: Option<String>,
+}
+
+/// Consume an off-by-default observation mode. Neither changes any output:
+/// `--self-check` repeats sealed tables' publication checks on every read,
+/// and `--trait-query-census PATH` counts the queries a cache would answer.
+fn observation(
+    options: &mut Options,
+    argument: &str,
+    args: &mut impl Iterator<Item = String>,
+) -> Result<bool, String> {
+    match argument {
+        "--self-check" => rustgm::support::sealed::request_self_check(),
+        "--trait-query-census" => {
+            if options.query_census.is_some() {
+                return Err("duplicate --trait-query-census".into());
+            }
+            options.query_census = Some(args.next().ok_or("--trait-query-census requires a path")?);
+            rustgm::sema::query_census::start();
+        }
+        _ => return Ok(false),
+    }
+    Ok(true)
+}
+
+/// A failed compilation still reports the queries it counted.
+fn write_query_census(path: &str) -> Result<(), String> {
+    use std::fmt::Write as _;
+    let mut text = String::from(
+        "rustgm-trait-query-census\t1\tshadow-count\tnot-a-qualification\n\
+         phase\tlevel\tqueries\topen\tregional\tindependent\tindependent_keys\t\
+         independent_first\tdependent\tdependent_keys\tdependent_first\n",
+    );
+    for (phase, level, row) in rustgm::sema::query_census::rows() {
+        let _ = writeln!(
+            text,
+            "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
+            phase.name(),
+            level.name(),
+            row.queries,
+            row.open,
+            row.regional,
+            row.independent,
+            row.independent_keys,
+            row.independent_first,
+            row.dependent,
+            row.dependent_keys,
+            row.dependent_first,
+        );
+    }
+    fs::write(path, text).map_err(|error| format!("--trait-query-census {path}: {error}"))
 }
 
 fn selected_view(arg: &str) -> Option<(&str, bool)> {
@@ -63,6 +115,7 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Options, String> {
     while let Some(arg) = args.next() {
         if budgets.consume(&arg, &mut args, &mut options.config)?
             || bringup::consume(&arg, &mut args)?
+            || observation(&mut options, &arg, &mut args)?
         {
             continue;
         }
@@ -311,6 +364,10 @@ pub fn run(arguments: impl Iterator<Item = String>) -> ExitCode {
         Ok(options) => {
             let compiled = compile(&options);
             let _ = bringup::waivers();
+            let compiled = match options.query_census.as_deref().map(write_query_census) {
+                Some(Err(error)) => compiled.and(Err(error)),
+                _ => compiled,
+            };
             match compiled {
                 Ok(()) => ExitCode::SUCCESS,
                 Err(error) => {

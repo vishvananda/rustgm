@@ -100,6 +100,10 @@ impl Search<'_> {
             let goal = context
                 .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
                 .map_err(inference)?;
+            if crate::sema::query_census::active() {
+                let mode = self.query.availability as u32;
+                crate::sema::query_census::root(&facts.types, context, &goal, &self.caller, mode);
+            }
             let frame = Frame::new(facts, context, &goal, first)?;
             match self.run_checked(facts, frame)? {
                 Decision::Proven(root) => {

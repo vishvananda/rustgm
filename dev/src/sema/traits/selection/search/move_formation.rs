@@ -16,6 +16,10 @@ pub(in crate::sema::traits::selection) fn classify_body_copy(
     goal: &Goal,
     caller: Caller<'_>,
 ) -> Result<BodyCopy, Failure> {
+    if crate::sema::query_census::active() {
+        let mode = Availability::Executable as u32 | (7 << 4);
+        crate::sema::query_census::root(&facts.types, context, goal, &caller, mode);
+    }
     let first = Frame::new(facts, context, goal, caller.first_region)?;
     let mut search = Search::assuming(&facts.types, caller, Availability::Executable)
         .map_err(|error| Failure::Invalid(error.into()))?;
