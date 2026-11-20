@@ -27,8 +27,9 @@ STATE = Path("obj/fast-gates")
 RACY = 2.0
 KEPT = 16
 IMPLEMENTATION = ("scripts/fastcheck_gates.py", "scripts/gate_trace.py")
-METADATA_FILES = ("assignments.json", "assignment-plan.json", "Makefile")
-METADATA_TREES = ("docs", "scripts")
+METADATA_FILES = ("assignments.json", "assignment-plan.json", "Makefile", "docs/assignment-requirements.json")
+# The gate imports from scripts/; its trace shows no other read under docs/.
+METADATA_TREES = ("scripts",)
 # Bytecode caches are derived from fingerprinted sources and validated by Python.
 SKIPPED_DIRECTORIES = {"__pycache__"}
 AUDIT_FILES = ("scripts/rust_audit.py", "scripts/rust-module-roles.json")
