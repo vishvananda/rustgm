@@ -100,6 +100,7 @@ pub(in crate::sema) fn selected_roles(
             discriminant: None,
             range: None,
             field: None,
+            comparisons: crate::sema::compiler_items::comparison_contract::Sealed::default(),
         }));
     }
     Ok(())
@@ -203,6 +204,7 @@ pub(in crate::sema::compiler_items) fn traits(
         discriminant: None,
         range: None,
         field: None,
+        comparisons: crate::sema::compiler_items::comparison_contract::Sealed::default(),
     }));
     Ok(())
 }

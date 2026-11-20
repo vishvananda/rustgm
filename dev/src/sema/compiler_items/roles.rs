@@ -43,6 +43,7 @@ pub(super) struct Validated {
     pub(super) discriminant: Option<std::rc::Rc<super::discriminant::Contracts>>,
     pub(super) range: Option<Box<range_members::Contracts>>,
     pub(super) field: Option<std::rc::Rc<super::field_protocol::Contracts>>,
+    pub(super) comparisons: super::comparison_contract::Sealed,
 }
 impl Catalog {
     /// The declaration-validation ledger is complete and its retained catalog
@@ -193,6 +194,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         discriminant: None,
         range: None,
         field: None,
+        comparisons: crate::sema::compiler_items::comparison_contract::Sealed::default(),
     };
     let mut callables = Vec::new();
     for role in TRAIT_ROLES {
@@ -825,6 +827,7 @@ fn record_completion(
             discriminant: None,
             range: None,
             field: None,
+            comparisons: crate::sema::compiler_items::comparison_contract::Sealed::default(),
         })
     });
     if ledger.roles.contains(role) {

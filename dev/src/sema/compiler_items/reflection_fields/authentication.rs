@@ -100,6 +100,7 @@ pub(super) fn prepare(report: &Report, facts: &mut Declarations) -> Result<(), E
             discriminant: None,
             range: None,
             field: None,
+            comparisons: crate::sema::compiler_items::comparison_contract::Sealed::default(),
         })
     });
     ledger.field = Some(contract);

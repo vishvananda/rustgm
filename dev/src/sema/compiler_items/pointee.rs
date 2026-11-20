@@ -243,6 +243,7 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
             discriminant: None,
             range: None,
             field: None,
+            comparisons: crate::sema::compiler_items::comparison_contract::Sealed::default(),
         })
     });
     ledger.roles.insert(LangItem::PointeeTrait);

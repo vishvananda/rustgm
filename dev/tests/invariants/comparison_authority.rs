@@ -18,23 +18,37 @@ fn unrelated_canonical_work_does_not_spend_a_comparison_query_allowance()
         .origin;
     let method = crate::support::comparisons::Comparison::PartialEq.methods()[0];
     let mut cost = None;
-    for prior in [
-        0,
-        crate::support::crates::MAX_COMPONENTS,
-        2 * crate::support::crates::MAX_COMPONENTS,
-    ] {
-        facts.body_work.canonical_steps = prior;
-        super::source_comparison(&report, &mut facts, site, method)?;
-        let paid = facts.body_work.canonical_steps - prior;
-        assert!(paid > 0);
-        if let Some(expected) = cost {
-            assert_eq!(paid, expected);
+    {
+        // The self-check repeats the whole contract walk on every query.
+        let _checking = crate::support::sealed::SelfCheck::hold();
+        for prior in [
+            0,
+            crate::support::crates::MAX_COMPONENTS,
+            2 * crate::support::crates::MAX_COMPONENTS,
+        ] {
+            facts.body_work.canonical_steps = prior;
+            super::source_comparison(&report, &mut facts, site, method)?;
+            let paid = facts.body_work.canonical_steps - prior;
+            assert!(paid > 0);
+            if let Some(expected) = cost {
+                assert_eq!(paid, expected);
+            }
+            cost = Some(paid);
         }
-        cost = Some(paid);
     }
+    // A member whose contract passed is a sealed row: reading it pays at most
+    // the checked walk, whatever canonical work came before.
+    let checked = cost.ok_or("checked comparison cost")?;
+    facts.body_work.canonical_steps = crate::support::crates::MAX_COMPONENTS;
+    super::source_comparison(&report, &mut facts, site, method)?;
+    assert!(facts.body_work.canonical_steps - crate::support::crates::MAX_COMPONENTS <= checked);
+    // The row belongs to the provider report it was checked against.
+    let other = crate::test_source::source_provider(&source, "comparison_query_other")?;
+    assert!(super::source_comparison(&other, &mut facts, site, method).is_err());
     assert!(
         crate::sema::header_attributes::charge_source_contract_query(&facts, usize::MAX).is_err()
     );
+    let _checking = crate::support::sealed::SelfCheck::hold();
     assert!(super::source_comparison(&report, &mut facts, site, method).is_err());
     facts.body_work.canonical_steps = 0;
     assert!(super::source_comparison(&report, &mut facts, site, method).is_err());

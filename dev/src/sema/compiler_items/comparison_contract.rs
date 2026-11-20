@@ -28,11 +28,16 @@ impl From<&'static str> for Failure {
         Self::Contract(message)
     }
 }
+#[derive(Clone, Copy)]
 pub(in crate::sema) struct SourceComparison {
     pub definition: DefId,
     pub method: DefId,
     pub signature: TypeId,
 }
+/// Each member whose whole trait contract passed `checked` once. A later
+/// query for that member reads this row instead of repeating the walk.
+#[derive(Default)]
+pub(super) struct Sealed([Option<SourceComparison>; Method::ALL.len()]);
 fn role(kind: Comparison) -> Option<LangItem> {
     match kind {
         Comparison::PartialEq => Some(LangItem::PartialEq),
@@ -72,6 +77,20 @@ pub(in crate::sema) fn source_comparison(
     site: NodeKey,
     method: Method,
 ) -> Result<SourceComparison, Error> {
+    // A sealed row still answers only for the provider report it was checked
+    // against.
+    if !crate::support::sealed::self_check()
+        && let Some(catalog) = facts.source_bindings.as_deref()
+        && let Some(sealed) = catalog
+            .traits
+            .as_deref()
+            .and_then(|validated| validated.comparisons.0[method as usize])
+    {
+        catalog
+            .require_provider_report(report)
+            .map_err(|message| Declarations::error(report, site, message))?;
+        return Ok(sealed);
+    }
     // A bounded borrowed walk is paid by the existing body-work owner on failure too.
     let charge = facts
         .source_bindings
@@ -91,10 +110,18 @@ pub(in crate::sema) fn source_comparison(
             "source comparison query exceeds its work budget",
         ));
     }
-    checked(report, facts, method).map_err(|e| match e {
+    let comparison = checked(report, facts, method).map_err(|e| match e {
         Failure::Header(error) => error,
         Failure::Contract(message) => Declarations::error(report, site, message),
-    })
+    })?;
+    if let Some(validated) = facts
+        .source_bindings
+        .as_deref_mut()
+        .and_then(|catalog| catalog.traits.as_deref_mut())
+    {
+        validated.comparisons.0[method as usize] = Some(comparison);
+    }
+    Ok(comparison)
 }
 fn current(
     report: &Report,
