@@ -192,14 +192,7 @@ impl Stage {
         let regions = self.function_regions(scheme, context)?;
         let inputs = self.function_inputs(facts, function.definition, context)?;
         let (formals, receiver) = self.formals(report, facts, function, context)?;
-        let body = self.function_body(
-            report,
-            facts,
-            function,
-            declaration,
-            context,
-            original.result,
-        )?;
+        let body = self.function_body(report, facts, function, context, original.result)?;
         // Lexical containment is already in Declaration.definition.parent.
         // This is the distinct actual associated owner, not the root module.
         let parent = self.associated_parent(facts, function.definition)?;
@@ -301,67 +294,83 @@ impl Stage {
         report: &Report,
         facts: &Declarations,
         function: &crate::sema::model::Function,
-        declaration: DeclarationRef,
         context: Context,
         future: g::TypeRef,
     ) -> Result<s::FunctionBody, &'static str> {
-        if function.body.is_some() {
-            self.reserve(
-                4 * (size_of::<BodyOwner>()
-                    + size_of::<Context>()
-                    + size_of::<Option<(s::Original, s::BodyInputs)>>())
-                    + retained::new_map::<DefId, BodyRef>(1),
-            )?;
-            let id = BodyRef(
-                u32::try_from(self.rows.body_owners.len())
-                    .map_err(|_| "source original owner table overflow")?,
-            );
-            self.rows.body_owners.push(BodyOwner {
-                declaration,
-                parent: None,
-                kind: BodyKind::Function,
-                ordinal: 0,
-            });
-            if self
-                .functions
-                .bodies
-                .insert(function.definition, id)
-                .is_some()
+        let Some(source) = function.body else {
+            return Ok(s::FunctionBody::Absent);
+        };
+        let body = self.reserve_original(function.definition, context, BodyKind::Function)?;
+        if self.compiler_operations
+            && let Some(recipe) = crate::sema::compiler_items::async_operation_recipe(
+                report,
+                facts,
+                function.definition,
+            )
+            .map_err(
+                |_| "source compiler operation failed its authenticated declaration/body contract",
+            )?
+        {
+            if recipe.function.definition != function.definition
+                || recipe.body != source
+                || recipe.parameters.len() != 1
+                || facts.types.kind(recipe.future)
+                    != Some(Kind::Opaque(recipe.opaque, recipe.captures))
+                || self.ty(facts, recipe.future, context)? != future
             {
-                return Err("source function has duplicate original bodies");
+                return Err(
+                    "compiler operation changed its genuine checked body/constructor identity",
+                );
             }
-            self.functions.contexts.push(Context {
-                body: Some(id),
-                ..context
+            let output = self.ty(facts, recipe.output, context)?;
+            self.reserve(4 * size_of::<s::CompilerOperation>())?;
+            let operation = s::CompilerOperationRef(
+                u32::try_from(self.rows.compiler_operations.len())
+                    .map_err(|_| "compiler operation table overflow")?,
+            );
+            self.rows.compiler_operations.push(s::CompilerOperation {
+                body,
+                declaration: context.owner(),
+                future,
+                output,
+                kind: s::CompilerOperationKind::AsyncDropInPlace { target_formal: 0 },
             });
-            self.functions.originals.push(None);
-            if self.compiler_operations && let Some(recipe) = crate::sema::compiler_items::async_operation_recipe(
-                    report,
-                    facts,
-                    function.definition,
-                )
-                .map_err(|_| "source compiler operation failed its authenticated declaration/body contract")?
-                {
-                    if recipe.function.definition!=function.definition || recipe.body!=function.body.ok_or("compiler operation lost its source body")? || recipe.parameters.len()!=1 || facts.types.kind(recipe.future)!=Some(Kind::Opaque(recipe.opaque,recipe.captures)) || self.ty(facts,recipe.future,context)?!=future { return Err("compiler operation changed its genuine checked body/constructor identity"); }
-                    let output = self.ty(facts, recipe.output, context)?;
-                    self.reserve(4 * size_of::<s::CompilerOperation>())?;
-                    let operation = s::CompilerOperationRef(
-                        u32::try_from(self.rows.compiler_operations.len())
-                            .map_err(|_| "compiler operation table overflow")?,
-                    );
-                    self.rows.compiler_operations.push(s::CompilerOperation {
-                        body: id,
-                        declaration,
-                        future,
-                        output,
-                        kind: s::CompilerOperationKind::AsyncDropInPlace { target_formal: 0 },
-                    });
-                    return Ok(s::FunctionBody::CompilerOperation(operation));
-            }
-            Ok(s::FunctionBody::Original(id))
-        } else {
-            Ok(s::FunctionBody::Absent)
+            return Ok(s::FunctionBody::CompilerOperation(operation));
         }
+        Ok(s::FunctionBody::Original(body))
+    }
+
+    pub(super) fn reserve_original(
+        &mut self,
+        definition: DefId,
+        context: Context,
+        kind: BodyKind,
+    ) -> Result<BodyRef, &'static str> {
+        self.reserve(
+            4 * (size_of::<BodyOwner>()
+                + size_of::<Context>()
+                + size_of::<Option<(s::Original, s::BodyInputs)>>())
+                + retained::new_map::<DefId, BodyRef>(1),
+        )?;
+        let id = BodyRef(
+            u32::try_from(self.rows.body_owners.len())
+                .map_err(|_| "source original owner table overflow")?,
+        );
+        if self.functions.bodies.insert(definition, id).is_some() {
+            return Err("source declaration has duplicate original bodies");
+        }
+        self.rows.body_owners.push(BodyOwner {
+            declaration: context.owner(),
+            parent: None,
+            kind,
+            ordinal: 0,
+        });
+        self.functions.contexts.push(Context {
+            body: Some(id),
+            ..context
+        });
+        self.functions.originals.push(None);
+        Ok(id)
     }
 
     fn function_regions(
