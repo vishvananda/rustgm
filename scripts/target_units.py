@@ -22,6 +22,7 @@ from local_package import LocalPackage
 ENVIRONMENT = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8'}
 EDITIONS = {'2015', '2018', '2021', '2024'}
 LIBRARY_TYPES = {'lib', 'rlib'}
+SOURCE_CORE_PROFILE = 'module-body-operations-v14'
 # Under the course profile a library that lists a Rust dylib beside its rlib
 # (original std) builds only the rlib; consumers link it statically, as rustc
 # does without -C prefer-dynamic. The omitted type is recorded per unit.
@@ -249,7 +250,7 @@ class Planner:
         if self.source_core is None:
             return []
         if unit.pkg_id == self.source_core:
-            return ['--source-core', f'{name}@{disambiguator}']
+            return ['--source-core', f'{name}@{disambiguator}', '--source-profile', SOURCE_CORE_PROFILE]
         core = next((child for child in closure if self.plan.units[child].pkg_id == self.source_core), None)
         if core is None:
             return []
@@ -279,10 +280,13 @@ class Planner:
             lint_inputs.append('manifest lints ' + ' '.join(package.lint_arguments))
         values = ','.join(json.dumps(feature) for feature in package.declared_features)
         lint_inputs += [f'check-cfg cfg(feature,values({values}))', 'check-cfg cfg(docsrs,test)']
-        key = fingerprint((package.identity, package.key, name, unit.target.kind, unit.target.crate_types,
+        identity_inputs = (package.identity, package.key, name, unit.target.kind, unit.target.crate_types,
                            unit.target.edition, sorted(unit.features), unit.profile_json,
                            [(self.steps[child].crate_name, self.steps[child].disambiguator) for child in closure],
-                           script_key))
+                           script_key)
+        if unit.pkg_id == self.source_core:
+            identity_inputs += (SOURCE_CORE_PROFILE,)
+        key = fingerprint(identity_inputs)
         disambiguator = 'h' + key[:20]
         unit_folder = folder / f'unit-{index}'
         lowir = str(unit_folder / f'{name}.lowir')

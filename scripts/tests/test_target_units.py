@@ -108,6 +108,7 @@ class FrozenPlans(unittest.TestCase):
         self.assertEqual(core.arguments, (
             '--emit-lowir', '--edition=2024', '--crate-type=lib', '--crate-name', 'core',
             '--crate-disambiguator', core.disambiguator, '--ub-checks=no', '--source-core', name,
+            '--source-profile', 'module-body-operations-v14',
             '--metadata-output', '/out/core/unit-0/core.rgcrate',
             '--native-links-output', '/out/core/unit-0/core.native-links.json', '-o', '/out/core/unit-0/core.lowir',
             '/frozen/rust/library/core/src/lib.rs'))
@@ -117,7 +118,10 @@ class FrozenPlans(unittest.TestCase):
         outcomes, graphs = stdlib_targets.load()
         plan, _ = graphs['core']
         moved = stdlib_targets.bind(outcomes, plan, Path('/elsewhere'), Path('/vendor'))
-        self.assertEqual(plan_units(plan, moved, OUT / 'x')[0].disambiguator, core.disambiguator)
+        self.assertEqual(plan_units(plan, moved, OUT / 'x',
+                                    source_core=stdlib_targets.source_core(plan))[0].disambiguator,
+                         core.disambiguator)
+        self.assertNotEqual(plan_units(plan, moved, OUT / 'x')[0].disambiguator, core.disambiguator)
         self.assertEqual(plan_frozen('std')['core'].disambiguator, core.disambiguator)
 
     def test_historical_dev_profile_reports_the_mismatched_profile(self):
