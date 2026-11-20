@@ -1,4 +1,34 @@
-# RustGM self-hosting handoff — 2026-11-19
+# RustGM self-hosting handoff
+
+## Resume point — 2026-11-20
+
+`52c8f87e3` records the current integration checkpoint. The existing
+frontier worktree, `/mnt/vizier/rustgm-scratch/rustgm-pa26-work`, is on
+`lane/strict-trait-constant-defaults-20261120`. Its division commit
+`8d80e4f99` is integrated as `76751780c`. Focused validation covered
+primitive v14 division transport, an imported floating compile-time
+quotient and the prior v13 rejection behavior. The native floating and
+signed controls agree with pinned Rust, including zero and overflow aborts.
+
+The strict original `core` replay stops at the provided
+`Lemire::MAX_EXPONENT_FAST_PATH` constant. The real initializer has one
+block, one local and nine typed values. It requests an associated constant
+from its supertrait using the consumer's `Self`. The remaining transport
+has to preserve the original initializer, its owner substitutions and that
+open request through fresh consumption. Stage 1 and Stage 2 are pending.
+[Strict Core evidence](docs/self-hosting-plan.md#L945)
+
+The performance worker survived the restart in
+`/mnt/vizier/rustgm-scratch/rustgm-pa29-work` on
+`lane/dispatch-invoke-presence-20261120`. Its isolated candidate
+`9d6a6f10f` skips an invocation scan when the preceding dispatch walk
+sees no `Invoke`. Four focused checks passed. The worker is building
+the immutable `f5e3fbdcf` and `9d6a6f10f` pair for output comparison and
+exclusive counter measurement. The wider child-proof replay remains an
+experiment, while the early source guard `049db339d` is already on `main`.
+[Performance evidence](docs/self-hosting-plan.md#L1927)
+
+## Historical bring-up checkpoint — 2026-11-19
 
 The compiler checkpoint on `main` is
 `314833ada04e6a859ae5a26598d2a35c0ab2af48`. The original Rust 1.98.0
