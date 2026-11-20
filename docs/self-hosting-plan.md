@@ -839,6 +839,17 @@ wide float recipe. The replay records zero bring-up entries and emits no
 artifacts. The strict receipt and exact trace are under
 `obj/parallel/strict-core/primitive-constants/` in the frontier checkout.
 
+`2851f1e33` preserves wide named values using the current v14 type recipes
+and constant payload. The producer encodes its evaluated value, the packet
+checks the exact width, and the fresh consumer rebuilds that same typed value.
+The focused provider publishes the pinned `f16::EPSILON`, `f128::EPSILON` and
+`PI` declarations. A fresh client evaluates an imported generic const
+function and two direct reads. The completed values match all three expected
+bit patterns. Pinned Rust accepts the exact provider and client and rejects
+the half-to-quad assignment with E0308. Evidence is under
+`obj/parallel/v14-primitive-constants/wide-exact-independent/` and
+`obj/qualification/fast/1795141065976588995/` in the frontier checkout.
+
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
 deprecated macro and accepts a call through an annotated `use` alias of a
