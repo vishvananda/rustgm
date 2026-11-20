@@ -1223,10 +1223,25 @@ from the language-role check. Pinned Rust accepts all four providers.
 The receipt is `core-thin-trait-alias-reduction-v2/result.json`
 with SHA-256 `1683aae19b479e0633edfb276d70b04efd99b13850d07afa2e4e7018fd05f4bd`.
 These receipts are in the frontier worktree's strict graph directory.
+
+The Pointee declaration family now travels in the version-fourteen
+profile at `fab9da160` on local `main`. A fresh consumer authenticates
+the provider's trait, the associated `Metadata` declaration and the
+`DynMetadata` structure before it can use their contracts. The provider
+publishes 4,289 metadata bytes that decode and re-encode identically.
+The fresh client checks `()` for scalar metadata and `usize` for slice
+metadata and rejects `usize` as the result of the scalar projection.
+The control uses the scalar projection in return position because the
+current signature graph excludes unit parameters. Both the fresh-client
+regression and the original local Thin regression pass alongside
+formatting, architecture and strict Clippy. The focused receipt is
+`obj/qualification/fast/1795190255341302038/receipt.json` in the
+frontier worktree with SHA-256
+`c988898d9d01d139ce0b4be50fbceb60c5df9f880cced6deec186bd64d374ce3`.
+
 Direct trait-alias transport needs the actual lexical Self and canonical
-input clauses under a separate alias declaration kind. The Pointee
-family needs its actual declaration-role checks. Full Core publication
-and the strict dependent stages remain pending.
+input clauses under a separate alias declaration kind. Full Core
+publication and the strict dependent stages remain pending.
 
 The reproof binary imports the existing frozen 12,929-byte reduced Core
 provider, preserving the client LowIR bytes. The CPPGM-linked fresh

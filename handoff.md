@@ -9,6 +9,12 @@ The guarded trace identifies the original `Thin` trait alias in
 `core/src/ptr/metadata.rs:85`. Frozen reductions distinguish its declaration
 transport from the separate Pointee language-role transport check. Pinned
 Rust accepts both original reductions and their ordinary controls.
+Local `main` at `fab9da160` closes the separate Pointee role checkpoint.
+A fresh client imports the 4,289-byte provider artifact, proves scalar
+and slice metadata and rejects a mismatched scalar result. The local
+Thin regression also passes. The original Thin declaration remains
+the strict Core publication gate. Its transport needs the actual
+lexical Self and declaration clauses.
 
 Local `main` carries the generic alias fix at `6555e3dba`. The exact
 `NotAllOnes<T>` reduction publishes 4,688 metadata bytes. A fresh client
@@ -117,6 +123,10 @@ retires 0.253% more original-graph instructions. The second retires 0.102%
 fewer instructions and takes longer in both elapsed-time pairs. Bounded
 child-proof reuse `9143861f0` and its early source guard `049db339d` are
 on `main`. The separate trait-header experiments are parked.
+The active performance worker is checking repeated const-panic marker
+classification against the existing header-validation producer. The
+archived profile contains 132 matching stacks out of 26,865. The worker
+also confirmed read-only access to the pinned `v5literal` reference.
 [Performance evidence](docs/self-hosting-plan.md#local-annotation-traversal)
 
 ## Historical bring-up checkpoint — 2026-11-19
