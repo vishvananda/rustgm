@@ -1199,8 +1199,34 @@ The frozen receipt is `core-niche-alias-candidate-v1/result.json` in the
 frontier strict graph directory with SHA-256
 `867ae804ba3e56ba8a1b0edd4521d4a619aa94ddb45bf4623a832aa9a395a696`.
 The focused receipt is under `obj/qualification/fast/1795187599390974288/`.
-The source is on local `main` through `6555e3dba`. Full Core
-publication and the strict dependent stages remain pending.
+The source is on local `main` through `6555e3dba`.
+
+The normal opt-level 1 observer at `fe83259f7` clears this alias gate on
+the unchanged strict Core target in 42.10 seconds. The next error is
+`source declaration kind is outside the initial source profile`.
+The guarded trace identifies DefId 1684, the actual kind-10 trait alias
+in file 64. The source file registry maps it to `core/src/ptr/metadata.rs`,
+whose alias is `Thin = Pointee<Metadata = ()> + PointeeSized` at line 85.
+The immutable compiler SHA-256 is
+`cd3774528219a62a2ab2b846f0816cccc82737ef57cee1982e02124f4a5de1ee`.
+The strict receipt is `core-scoped-aliases-optimized-v1/target-units/receipt.json`
+with SHA-256 `ed137edb00d61db486312149afbb1bcbb3019e551c7980977c9fba741d901fe2`.
+The trace is `core-declaration-kind-diagnosis-v1/gdb.stdout`
+with SHA-256 `5f7fc8c2b4c4ab8f38c053cdc130cbce46034d30df366018690aa48fbf9466d3`.
+
+The exact `Thin` reduction reaches the same declaration-kind gate.
+Its otherwise identical provider reaches the separate `source Pointee
+contract transport is not implemented` check. The ordinary associated
+type control publishes 3,918 metadata bytes. Adding the corresponding
+ordinary trait alias reaches the declaration-kind gate, isolating it
+from the language-role check. Pinned Rust accepts all four providers.
+The receipt is `core-thin-trait-alias-reduction-v2/result.json`
+with SHA-256 `1683aae19b479e0633edfb276d70b04efd99b13850d07afa2e4e7018fd05f4bd`.
+These receipts are in the frontier worktree's strict graph directory.
+Direct trait-alias transport needs the actual lexical Self and canonical
+input clauses under a separate alias declaration kind. The Pointee
+family needs its actual declaration-role checks. Full Core publication
+and the strict dependent stages remain pending.
 
 The reproof binary imports the existing frozen 12,929-byte reduced Core
 provider, preserving the client LowIR bytes. The CPPGM-linked fresh

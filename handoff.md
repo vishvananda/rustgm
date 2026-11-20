@@ -3,17 +3,19 @@
 ## Resume point — 2026-11-20
 
 The combined graph has authenticated inputs for all 22 planned target
-commands. The normal opt-level 1 observation compiler at `6506a856a`
-replays the unchanged strict Core target and reaches the generic alias
-publication gate in 46.96 seconds. A trace ties the failure to
-`Stage::closed_alias`, declaration 968 with one type parameter, in
-`core/src/num/niche_types.rs`. The alias is
-`NotAllOnes<T> = <T as NotAllOnesHelper>::Type`. A separate frozen replay
-qualifies the closed nominal inherent initializer that blocked Core at
-`ZERO`. The nominal reducer publishes 38,408 metadata bytes. The scalar
-control preserves its prior bytes, and a fresh client rechecks the
-nominal original. The compiler change is on local `main` at `81bd3b799`.
-The strict executor has no accepted Core artifact yet.
+commands. The normal opt-level 1 observer at `fe83259f7` clears the generic
+alias gate and reaches the next declaration-kind check in 42.10 seconds.
+The guarded trace identifies the original `Thin` trait alias in
+`core/src/ptr/metadata.rs:85`. Frozen reductions distinguish its declaration
+transport from the separate Pointee language-role transport check. Pinned
+Rust accepts both original reductions and their ordinary controls.
+
+Local `main` carries the generic alias fix at `6555e3dba`. The exact
+`NotAllOnes<T>` reduction publishes 4,688 metadata bytes. A fresh client
+substitutes the actual argument and proves the projection only when
+demanded. The closed control preserves its earlier metadata bytes.
+Three focused tests and the frozen controls pass. The strict executor
+has no accepted Core artifact yet.
 [Strict graph evidence](docs/self-hosting-plan.md)
 
 The self-hosting worktree is
