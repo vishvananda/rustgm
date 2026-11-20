@@ -24,6 +24,7 @@ mod operation_exports;
 mod payments;
 mod scoped_parameters;
 mod self_requests;
+mod statics;
 #[path = "authored_export/sum_headers.rs"]
 mod sum_headers;
 mod verbatim_exports;
@@ -522,7 +523,7 @@ impl Stage {
             );
         stage.reserve(count.saturating_mul(size_of::<Option<DeclarationRef>>()))?;
         stage.definitions.resize(count, None);
-        let aliases = stage.declarations(report, facts, mode)?;
+        let leaves = stage.declarations(report, facts, mode)?;
         stage.scopes(report, facts)?;
         stage.traits(report, facts, mode != ExportMode::Legacy)?;
         if stage.nominal_transport {
@@ -534,7 +535,8 @@ impl Stage {
         if stage.body_nodes() {
             stage.constant_headers(report, facts)?;
         }
-        stage.alias_headers(facts, aliases)?;
+        stage.alias_headers(facts, leaves.aliases)?;
+        stage.static_headers(facts, identity, leaves.statics)?;
         stage.functions(report, facts, identity)?;
         stage.implementations(report, facts)?;
         stage.diagnostic_roles(report)?;
@@ -606,6 +608,10 @@ impl Stage {
         let definition = &report.resolution.definitions[id.0 as usize];
         if self.declaration_policies() {
             match definition.kind {
+                DefKind::Static => {
+                    statics::require_definition(report, facts, id)?;
+                    return Ok(Some(s::DefinitionKind::Static));
+                }
                 DefKind::ExternCrate => {
                     self.private_self_alias(report, id)?;
                     return Ok(None);
@@ -699,8 +705,8 @@ impl Stage {
         report: &Report,
         facts: &mut Declarations,
         mode: ExportMode,
-    ) -> Result<Vec<(DeclarationRef, TypeId)>, &'static str> {
-        let mut aliases = Vec::new();
+    ) -> Result<DeclarationLeaves, &'static str> {
+        let mut leaves = DeclarationLeaves::default();
         let mut features =
             non_type_sources::Coverage::new(report, self, mode.feature_predicates())?;
         let mut owners = scope_owners(report, facts, self)?;
@@ -764,17 +770,7 @@ impl Stage {
             if kind == s::DefinitionKind::Variant {
                 self.publish_variant(facts, id, row)?;
             }
-            if kind == s::DefinitionKind::TypeAlias {
-                let target =
-                    facts.definitions[index].ok_or("source alias lost its completed target")?;
-                self.scratch(
-                    aliases
-                        .len()
-                        .saturating_add(1)
-                        .saturating_mul(4 * size_of::<(DeclarationRef, TypeId)>()),
-                )?;
-                aliases.push((row, target));
-            }
+            leaves.record(self, facts, id, row, kind)?;
             parents.push(parent);
             self.rows.declarations.push(s::Declaration {
                 definition: s::Definition { kind, parent: None },
@@ -793,7 +789,7 @@ impl Stage {
             }
         }
         features.finish()?;
-        Ok(aliases)
+        Ok(leaves)
     }
 
     fn declaration_parent(
@@ -908,6 +904,48 @@ impl Stage {
             || facts.types.needs_region_context(ty) != Some(false)
         {
             return Err("source alias changed its completed closed type or source witness");
+        }
+        Ok(())
+    }
+}
+
+#[derive(Default)]
+struct DeclarationLeaves {
+    aliases: Vec<(DeclarationRef, TypeId)>,
+    statics: Vec<(DeclarationRef, DefId)>,
+}
+
+impl DeclarationLeaves {
+    fn record(
+        &mut self,
+        stage: &mut Stage,
+        facts: &Declarations,
+        definition: DefId,
+        row: DeclarationRef,
+        kind: s::DefinitionKind,
+    ) -> Result<(), &'static str> {
+        match kind {
+            s::DefinitionKind::TypeAlias => {
+                let target = facts.definitions[definition.0 as usize]
+                    .ok_or("source alias lost its completed target")?;
+                stage.scratch(
+                    self.aliases
+                        .len()
+                        .saturating_add(1)
+                        .saturating_mul(4 * size_of::<(DeclarationRef, TypeId)>()),
+                )?;
+                self.aliases.push((row, target));
+            }
+            s::DefinitionKind::Static => {
+                stage.scratch(
+                    self.statics
+                        .len()
+                        .saturating_add(1)
+                        .saturating_mul(4 * size_of::<(DeclarationRef, DefId)>()),
+                )?;
+                self.statics.push((row, definition));
+            }
+            _ => {}
         }
         Ok(())
     }

@@ -69,7 +69,8 @@ impl Columns {
             || !cold.consts.is_empty()
             || !cold.array_lengths.is_empty()
             || !cold.constants.is_empty()
-            || !cold.type_aliases.is_empty())
+            || !cold.type_aliases.is_empty()
+            || cold.statics.is_some())
         .then(|| {
             Box::new(super::super::ColdColumns {
                 associated_definitions: cold.associated_definitions.clone(),
@@ -80,6 +81,7 @@ impl Columns {
                 array_lengths: cold.array_lengths.clone(),
                 constants: cold.constants.clone(),
                 type_aliases: cold.type_aliases.clone(),
+                statics: cold.statics.clone(),
                 bodies: None,
             })
         })
@@ -111,6 +113,10 @@ impl Columns {
     #[must_use]
     pub(crate) fn type_aliases(&self) -> &[super::super::TypeAliasHeader] {
         &self.cold().type_aliases
+    }
+
+    pub(crate) fn statics(&self) -> Option<&super::super::StaticColumns> {
+        self.cold().statics.as_deref()
     }
 
     #[must_use]

@@ -195,7 +195,7 @@ impl Builder<'_, '_, '_> {
         work: &mut Work,
     ) -> Result<(), &'static str> {
         let OperationSite { port, site } = location;
-        let expected = Ports::place_type(original, place, work)?;
+        let expected = Ports::place_type(self.domains.headers, original, place, work)?;
         self.exact_relation(original, port, site, ty, expected, work)?;
         let node = self.node(original, ty, work)?;
         self.coverage.copy(original.body, node, work)?;
@@ -234,13 +234,19 @@ impl Builder<'_, '_, '_> {
         else {
             return Err("source Borrow has no actual reference result");
         };
-        let actual = Ports::place_type(original, place, work)?;
+        let actual = Ports::place_type(self.domains.headers, original, place, work)?;
         let referent = self.node(original, referent, work)?;
         if self.node(original, actual, work)? != referent
             && !self.coerced_reborrow(original, place, referent, work)?
             || mutable && !ports.writable(original, place, work)?
         {
             return Err("source Borrow changed its actual referent or writable place");
+        }
+        if matches!(place, s::Place::Static(_))
+            && rows.regions[region.0 as usize] == s::Region::Static
+        {
+            super::uses::region(self.domains, &self.arena, region, Rewrite::Original, work)?;
+            return Ok(());
         }
         let s::Region::Variable { body, slot } = rows.regions[region.0 as usize] else {
             return Err("source Borrow did not retain its actual owned allocation");
@@ -459,7 +465,7 @@ impl Builder<'_, '_, '_> {
         if !self.domains.bodies {
             return Ok(false);
         }
-        let reference = Ports::place_type(original, base, work)?;
+        let reference = Ports::place_type(self.domains.headers, original, base, work)?;
         let reference = self.node(original, reference, work)?;
         self.coverage
             .reborrow(original.body, reference, referent, work)

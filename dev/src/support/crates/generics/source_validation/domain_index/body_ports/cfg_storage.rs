@@ -16,7 +16,7 @@ impl DomainIndex<'_, '_> {
         )?;
         Self::scopes(original, work)?;
         self.statements(original, work)?;
-        Self::guards(original, work)?;
+        self.guards(original, work)?;
         Self::texts(original, work)?;
         for exit in &original.exits {
             Self::location(original, exit.location, work)?;
@@ -105,7 +105,7 @@ impl DomainIndex<'_, '_> {
                     }
                 }
                 s::Action::Project(projection) => {
-                    Self::place(original, s::Place::Projection(projection), None, work)?;
+                    self.place(original, s::Place::Projection(projection), None, work)?;
                 }
                 s::Action::Evaluate(value) => {
                     if value as usize >= original.values.len() {
@@ -113,19 +113,19 @@ impl DomainIndex<'_, '_> {
                     }
                 }
                 s::Action::Store { place, value } => {
-                    Self::place(original, place, None, work)?;
+                    self.place(original, place, None, work)?;
                     if value as usize >= original.values.len() {
                         return Err("source stored value is unknown");
                     }
                 }
                 s::Action::CheckInitialized(place) | s::Action::Mention(place) => {
-                    Self::place(original, place, None, work)?;
+                    self.place(original, place, None, work)?;
                 }
                 s::Action::GuardStart(guard) | s::Action::GuardUse(guard) => {
                     Self::guard(original, guard)?;
                 }
                 s::Action::BindView { view, place } => {
-                    Self::place(original, place, None, work)?;
+                    self.place(original, place, None, work)?;
                     let Some(g::LocalKind::Guard(guard)) =
                         original.locals.get(view as usize).map(|local| local.kind)
                     else {
@@ -134,8 +134,8 @@ impl DomainIndex<'_, '_> {
                     Self::guard(original, guard)?;
                 }
                 s::Action::Select { projection, anchor } => {
-                    Self::place(original, s::Place::Projection(projection), None, work)?;
-                    Self::place(original, anchor, None, work)?;
+                    self.place(original, s::Place::Projection(projection), None, work)?;
+                    self.place(original, anchor, None, work)?;
                 }
             }
         }
@@ -212,7 +212,7 @@ impl DomainIndex<'_, '_> {
     /// tested places, and is started by the body; every guard view lies in
     /// its own guard's range. Which places a guard protects is re-proved by
     /// the consumer's ownership checker over the rebuilt body.
-    fn guards(original: &s::Original, work: &mut Work) -> Result<(), &'static str> {
+    fn guards(&self, original: &s::Original, work: &mut Work) -> Result<(), &'static str> {
         let Some(guards) = original.guards.as_deref() else {
             return Ok(());
         };
@@ -225,7 +225,7 @@ impl DomainIndex<'_, '_> {
                 .saturating_add(original.statements.len()),
         )?;
         for &place in &guards.places {
-            Self::place(original, place, None, work)?;
+            self.place(original, place, None, work)?;
         }
         let mut started = vec![false; guards.rows.len()];
         for statement in &original.statements {

@@ -197,6 +197,7 @@ fn operand_write(out: &mut Writer, operand: Operand) -> Result<(), &'static str>
         Operand::Place(s::Place::Local(value)) => (11, value),
         Operand::Place(s::Place::Projection(value)) => (12, value),
         Operand::Place(s::Place::Temporary(value)) => (13, value),
+        Operand::Place(s::Place::Static(value)) => (14, value.0),
     };
     out.u8(kind)?;
     id(out, value)
@@ -233,6 +234,9 @@ fn operand_read(read: &mut Input<'_, '_>) -> Result<Operand, &'static str> {
         11 => Operand::Place(s::Place::Local(read.id()?)),
         12 => Operand::Place(s::Place::Projection(read.id()?)),
         13 => Operand::Place(s::Place::Temporary(read.id()?)),
+        14 if read.profile.declaration_policies() => {
+            Operand::Place(s::Place::Static(DeclarationRef(read.id()?)))
+        }
         14 => return Err("encoded static places are not reconstructable by this consumer"),
         _ => return Err("unknown body IR operand kind"),
     })

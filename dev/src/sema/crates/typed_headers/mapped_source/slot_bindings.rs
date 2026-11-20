@@ -16,6 +16,7 @@ pub(in crate::sema::crates::typed_headers) fn kind(kind: s::DefinitionKind) -> D
         s::DefinitionKind::SelfType => DefKind::SelfType,
         s::DefinitionKind::Function => DefKind::Function,
         s::DefinitionKind::Constant => DefKind::Const,
+        s::DefinitionKind::Static => DefKind::Static,
         s::DefinitionKind::TypeParameter | s::DefinitionKind::ConstParameter => DefKind::Generic,
         s::DefinitionKind::RegionParameter => DefKind::Lifetime,
         s::DefinitionKind::ValueParameter => DefKind::Parameter,

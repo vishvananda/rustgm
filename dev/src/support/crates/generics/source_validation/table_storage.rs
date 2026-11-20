@@ -182,6 +182,14 @@ fn columns(rows: &SourceRows, count: &mut Count, work: &mut Work) -> Result<(), 
         count.vector(&cold.array_lengths, work)?;
         count.vector(&cold.constants, work)?;
         count.vector(&cold.type_aliases, work)?;
+        if let Some(statics) = &cold.statics {
+            work.charge(1)?;
+            count.bytes = count
+                .bytes
+                .saturating_add(size_of::<super::super::StaticColumns>());
+            count.vector(&statics.headers, work)?;
+            count.vector(&statics.values, work)?;
+        }
     }
     Ok(())
 }

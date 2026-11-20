@@ -59,6 +59,8 @@ pub enum HeaderRef {
     Constant(u32),
     /// Version fourteen: one transparent type alias header.
     TypeAlias(u32),
+    /// Version fourteen: one exact allocation declaration.
+    Static(u32),
 }
 
 pub(crate) type HeaderRows = (Vec<Option<HeaderRef>>, usize, super::bodymap::Shared);
@@ -137,6 +139,7 @@ impl<'a> HeaderIndex<'a> {
         let budget = table_storage::preflight(rows, base_bytes, work)?;
         let definitions = declaration_graph::validate(rows, work)?;
         let (headers, bodies) = header_ledger::validate(rows, work)?;
+        let static_peak = super::statics::validate(rows, budget.scope_base, work)?;
         let scopes = ScopeIndex::new(rows, &definitions, budget.scope_base, work)?;
         super::nominal_contracts::scopes(rows, &scopes, work)?;
         for header in &rows.traits {
@@ -181,7 +184,7 @@ impl<'a> HeaderIndex<'a> {
             bodies,
             scopes,
             bytes,
-            peak: budget.peak,
+            peak: budget.peak.max(static_peak),
         })
     }
 
@@ -213,6 +216,27 @@ impl<'a> HeaderIndex<'a> {
             .copied()
             .ok_or("source header query has an unknown declaration")
     }
+    pub(super) fn static_header(
+        &self,
+        declaration: DeclarationRef,
+        work: &mut Work,
+    ) -> Result<&'a super::StaticHeader, &'static str> {
+        let Some(HeaderRef::Static(index)) = self.header(declaration, work)? else {
+            return Err("source static place has no actual allocation declaration");
+        };
+        let header = self
+            .rows
+            .cold()
+            .statics
+            .as_deref()
+            .and_then(|statics| statics.headers.get(index as usize))
+            .ok_or("source static place has no actual allocation header")?;
+        if header.declaration != declaration {
+            return Err("source static place changed its actual allocation identity");
+        }
+        Ok(header)
+    }
+
     #[must_use]
     pub const fn rows(&self) -> &'a SourceRows {
         self.rows

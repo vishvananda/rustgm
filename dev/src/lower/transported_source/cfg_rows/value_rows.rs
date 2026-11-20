@@ -43,20 +43,20 @@ pub(super) fn emit(
     Ok(())
 }
 /// Reads, borrows and constraints of a place or an earlier value.
-fn place_value(stage: &Stage, kind: ir::Rvalue) -> Result<s::ValueKind, &'static str> {
+fn place_value(stage: &mut Stage, kind: ir::Rvalue) -> Result<s::ValueKind, &'static str> {
     Ok(match kind {
         ir::Rvalue::Read(ir::Place::Temporary(value)) if stage.conversion_roles() => {
             s::ValueKind::Read(s::Place::Temporary(value.0))
         }
-        ir::Rvalue::Read(target) => s::ValueKind::Read(place(target)?),
+        ir::Rvalue::Read(target) => s::ValueKind::Read(place(stage, target)?),
         ir::Rvalue::Borrow {
             place: target,
             kind: ir::BorrowKind::Immediate,
-        } => s::ValueKind::Borrow(place(target)?),
+        } => s::ValueKind::Borrow(place(stage, target)?),
         ir::Rvalue::Borrow {
             place: target,
             kind: ir::BorrowKind::TwoPhase,
-        } if stage.body_nodes() => s::ValueKind::TwoPhaseBorrow(place(target)?),
+        } if stage.body_nodes() => s::ValueKind::TwoPhaseBorrow(place(stage, target)?),
         ir::Rvalue::Constrain(value) => s::ValueKind::Constrain(value.0),
         _ => return Err(WIDER),
     })
@@ -510,7 +510,7 @@ fn variant_operation(stage: &mut Stage, kind: ir::Rvalue) -> Result<s::ValueKind
             place: target,
             variant,
         } => s::ValueKind::IsVariant {
-            place: place(target)?,
+            place: place(stage, target)?,
             variant: stage.variant(variant)?,
         },
         ir::Rvalue::Cast { operand, .. } => s::ValueKind::EnumCast(operand.0),

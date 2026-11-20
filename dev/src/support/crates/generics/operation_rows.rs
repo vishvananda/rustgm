@@ -13,6 +13,8 @@ pub enum Place {
     Projection(u32),
     /// Version-nine read or reference projection base: exact evaluated SSA snapshot.
     Temporary(u32),
+    /// A checked provider-owned allocation, independent of this body's frame.
+    Static(DeclarationRef),
 }
 /// Exactly a retained reference Dereference projection. Raw dereferences, fields,
 /// captures and other projections are not encodable by this first source form.

@@ -1254,6 +1254,7 @@ fn role_header(
             | Some(
                 super::super::HeaderRef::Function(_)
                 | super::super::HeaderRef::Implementation(_)
+                | super::super::HeaderRef::Static(_)
                 | super::super::HeaderRef::TypeAlias(_)
                 | super::super::HeaderRef::Constant(_),
             ),

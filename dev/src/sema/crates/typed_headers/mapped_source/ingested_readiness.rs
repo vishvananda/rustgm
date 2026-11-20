@@ -48,19 +48,7 @@ impl Graph {
                 Self::variant_ready(rows, facts, (definition, row), *cell)?;
             }
             s::DefinitionKind::Struct | s::DefinitionKind::Enum => {
-                let Some(s::HeaderRef::Nominal(index)) = rows.header(row)? else {
-                    return Err("source nominal readiness lost its actual header");
-                };
-                if *cell
-                    != Some(
-                        self.ty(rows.nominals[index as usize].self_type)
-                            .map_err(|_| "source nominal readiness lost its mapped type")?,
-                    )
-                    || facts.aggregates.get(ItemId(definition.0)).is_none()
-                {
-                    return Err("source nominal readiness lost its completed actual shape");
-                }
-                Self::scope_ready(facts, definition)?;
+                self.nominal_ready(rows, facts, (definition, row), *cell)?;
             }
             s::DefinitionKind::Module => {
                 if cell.is_some() || rows.header(row)?.is_some() {
@@ -85,6 +73,7 @@ impl Graph {
             s::DefinitionKind::TypeAlias => {
                 self.alias_ready(rows, facts, (definition, row), *cell)?;
             }
+            s::DefinitionKind::Static => self.static_ready(rows, row, *cell)?,
             s::DefinitionKind::SelfType => {
                 let owner = self.installed_owner(facts, definition)?;
                 let schema = facts
@@ -122,6 +111,50 @@ impl Graph {
             }
         }
         Ok(Readiness::Declaration)
+    }
+
+    fn nominal_ready(
+        &self,
+        rows: s::ValidatedView<'_>,
+        facts: &Declarations,
+        (definition, row): (DefId, crate::support::crates::owner_catalog::DeclarationRef),
+        cell: Option<crate::types::TypeId>,
+    ) -> Result<(), &'static str> {
+        let Some(s::HeaderRef::Nominal(index)) = rows.header(row)? else {
+            return Err("source nominal readiness lost its actual header");
+        };
+        let ty = self
+            .ty(rows.nominals[index as usize].self_type)
+            .map_err(|_| "source nominal readiness lost its mapped type")?;
+        if cell != Some(ty) || facts.aggregates.get(ItemId(definition.0)).is_none() {
+            return Err("source nominal readiness lost its completed actual shape");
+        }
+        Self::scope_ready(facts, definition)
+    }
+
+    fn static_ready(
+        &self,
+        rows: s::ValidatedView<'_>,
+        row: crate::support::crates::owner_catalog::DeclarationRef,
+        cell: Option<crate::types::TypeId>,
+    ) -> Result<(), &'static str> {
+        let Some(s::HeaderRef::Static(index)) = rows.header(row)? else {
+            return Err("source static readiness lost its actual header");
+        };
+        let header = rows
+            .statics()
+            .and_then(|statics| statics.headers.get(index as usize))
+            .ok_or("source static readiness lost its allocation row")?;
+        if header.declaration != row
+            || cell
+                != Some(
+                    self.ty(header.ty)
+                        .map_err(|_| "source static has no mapped type")?,
+                )
+        {
+            return Err("source static readiness changed its canonical type");
+        }
+        Ok(())
     }
 
     fn alias_ready(

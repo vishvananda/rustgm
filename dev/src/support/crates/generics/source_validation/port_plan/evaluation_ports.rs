@@ -75,14 +75,14 @@ impl Ports {
             work.charge(1)?;
             let base = builder.node(
                 original,
-                Self::place_type(original, projection.base, work)?,
+                Self::place_type(builder.domains.headers, original, projection.base, work)?,
                 work,
             )?;
             let (raw_region, raw_mutable) = match projection.kind {
                 s::ProjectionKind::Field { owner, ordinal } => {
                     builder.nominal_projection(
                         original,
-                        Self::place_type(original, projection.base, work)?,
+                        Self::place_type(builder.domains.headers, original, projection.base, work)?,
                         projection.ty,
                         owner,
                         ordinal,
@@ -141,12 +141,18 @@ impl Ports {
         Ok(())
     }
     pub(super) fn place_type(
+        headers: &crate::support::crates::generics::source::HeaderIndex<'_>,
         original: &s::Original,
         place: s::Place,
         work: &mut Work,
     ) -> Result<g::TypeRef, &'static str> {
         work.charge(1)?;
         match place {
+            s::Place::Static(declaration) => {
+                return headers
+                    .static_header(declaration, work)
+                    .map(|header| header.ty);
+            }
             s::Place::Local(index) => original.locals.get(index as usize).map(|local| local.ty),
             s::Place::Temporary(index) => original.values.get(index as usize).map(|value| value.ty),
             s::Place::Projection(index) => original
@@ -164,6 +170,7 @@ impl Ports {
     ) -> Result<bool, &'static str> {
         work.charge(1)?;
         match place {
+            s::Place::Static(_) => Some(false),
             s::Place::Local(index) => original
                 .locals
                 .get(index as usize)
@@ -183,6 +190,7 @@ impl Ports {
     fn unique(&self, place: s::Place) -> bool {
         match place {
             s::Place::Local(_) | s::Place::Temporary(_) => true,
+            s::Place::Static(_) => false,
             s::Place::Projection(parent) => self
                 .access
                 .get(parent as usize)

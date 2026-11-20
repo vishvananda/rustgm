@@ -7,6 +7,7 @@ mod imported_owners;
 mod imported_records;
 mod imported_storage;
 mod imported_values;
+mod statics;
 mod type_transport;
 mod typed_headers;
 use super::{foreign, model::Declarations};
@@ -209,7 +210,15 @@ pub(super) fn import(report: &Report, facts: &mut Declarations) -> Result<(), Er
             .map_err(error)?;
     }
     imported_values::seed(report, facts)?;
-    imported_storage::seed(report, facts, &records)
+    imported_storage::seed(report, facts, &records)?;
+    statics::seed(report, facts)
+}
+
+fn static_symbol(
+    identity: &crate::support::crates::CrateIdentity,
+    row: crate::support::crates::owner_catalog::DeclarationRef,
+) -> String {
+    format!("{}static${}", identity.symbol_prefix(), row.0)
 }
 pub(super) const fn scalar(value: Scalar) -> TypeId {
     match scalar_primitive(value) {

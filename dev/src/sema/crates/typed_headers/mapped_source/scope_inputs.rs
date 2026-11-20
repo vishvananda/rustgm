@@ -39,6 +39,7 @@ impl Graph {
                 | s::HeaderRef::Nominal(_)
                 | s::HeaderRef::Variant(_)
                 | s::HeaderRef::Constructor(_)
+                | s::HeaderRef::Static(_)
                 | s::HeaderRef::TypeAlias(_)
                 | s::HeaderRef::Constant(_),
             ) => None,
@@ -132,6 +133,7 @@ impl Graph {
                 s::HeaderRef::AssociatedDefinition(_)
                 | s::HeaderRef::Variant(_)
                 | s::HeaderRef::Constructor(_)
+                | s::HeaderRef::Static(_)
                 | s::HeaderRef::TypeAlias(_)
                 | s::HeaderRef::Constant(_),
             ) => {

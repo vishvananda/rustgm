@@ -253,6 +253,7 @@ impl ModuleContractColumns {
                     | s::DefinitionKind::Enum
                     | s::DefinitionKind::Function
                     | s::DefinitionKind::TypeAlias
+                    | s::DefinitionKind::Static
                     | s::DefinitionKind::Variant
             ) && binding_owner(rows, row).is_some_and(|p| {
                 rows.declarations[p.0 as usize].definition.kind == s::DefinitionKind::Module
@@ -374,7 +375,7 @@ impl ModuleContractColumns {
             }
             // Version thirteen: a named const binds in its module's value
             // namespace.
-            s::DefinitionKind::Constant if variants => Namespace::Value,
+            s::DefinitionKind::Constant | s::DefinitionKind::Static if variants => Namespace::Value,
             s::DefinitionKind::Variant if variants => {
                 constructor_namespace(rows, headers, (entry.target.declaration, target), work)?
             }

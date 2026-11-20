@@ -122,6 +122,28 @@ impl Original<'_> {
         }
         self.declaration(declaration, steps)
     }
+    pub(crate) fn static_storage(
+        &self,
+        declaration: DeclarationRef,
+        steps: &mut usize,
+    ) -> Result<(crate::resolve::model::DefId, crate::types::TypeId), &'static str> {
+        let rows = self.rows();
+        let Some(s::HeaderRef::Static(index)) = rows.header(declaration)? else {
+            return Err("source static operand has no actual allocation header");
+        };
+        let header = rows
+            .statics()
+            .and_then(|statics| statics.headers.get(index as usize))
+            .ok_or("source static operand has no actual allocation row")?;
+        if header.declaration != declaration {
+            return Err("source static operand changed its allocation identity");
+        }
+        Ok((
+            self.declaration(declaration, steps)?,
+            self.ty(header.ty, steps)?,
+        ))
+    }
+
     /// A downcast payload field of a validated variant.
     fn variant_field(
         &self,

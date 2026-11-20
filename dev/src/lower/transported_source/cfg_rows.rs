@@ -13,7 +13,7 @@ pub(super) fn emit(
     variables: Vec<s::OwnedRegion>,
     sites: &mut Sites,
 ) -> Result<s::Original, &'static str> {
-    validate(facts, body, stage.feature_predicates(), stage.body_nodes())?;
+    validate(stage, facts, body)?;
     if stage.body_nodes() {
         instruction_rows::preflight(stage, facts, body)?;
     }
@@ -54,7 +54,7 @@ pub(super) fn emit(
         stage.reserve(4 * size_of::<s::Statement>())?;
         raw.statements.push(s::Statement {
             site: sites.body(stage, statement.source)?,
-            action: action(statement.action, stage.body_nodes())?,
+            action: action(stage, statement.action)?,
         });
     }
     guards(stage, body, &mut raw)?;
@@ -137,7 +137,7 @@ fn projections(
                 ir::Place::Temporary(value) if stage.conversion_roles() => {
                     s::Place::Temporary(value.0)
                 }
-                base => place(base)?,
+                base => place(stage, base)?,
             },
             ty: stage.ty(facts, projection.ty, context)?,
             kind,
@@ -267,7 +267,7 @@ fn guards(stage: &mut Stage, body: &Body, raw: &mut s::Original) -> Result<(), &
     let places = body
         .guard_places
         .iter()
-        .map(|&tested| place(tested))
+        .map(|&tested| place(stage, tested))
         .collect::<Result<_, _>>()?;
     raw.guards = Some(Box::new(s::Guards { rows, places }));
     Ok(())
@@ -291,12 +291,9 @@ fn call_context(facts: &Declarations, body: &Body) -> Result<s::CallContext, &'s
         }
     })
 }
-fn validate(
-    facts: &Declarations,
-    body: &Body,
-    scalar_values: bool,
-    guards: bool,
-) -> Result<(), &'static str> {
+fn validate(stage: &mut Stage, facts: &Declarations, body: &Body) -> Result<(), &'static str> {
+    let scalar_values = stage.feature_predicates();
+    let guards = stage.body_nodes();
     let Owner::Function { definition, .. } = body.owner else {
         return Err("source CFG has no actual function owner");
     };
@@ -338,7 +335,21 @@ fn validate(
         {
             return Err("selected source body needs weak foreign static storage transport");
         }
-        return Err("source static type facts require a wider transport profile");
+        if !stage.declaration_policies() {
+            return Err("source static type facts require a wider transport profile");
+        }
+        for (&definition, &ty) in values.as_ref() {
+            stage.static_declaration(definition)?;
+            if facts
+                .definitions
+                .get(definition.0 as usize)
+                .copied()
+                .flatten()
+                != Some(ty)
+            {
+                return Err("source static place changed its allocation type");
+            }
+        }
     }
     if body
         .static_permissions
@@ -349,14 +360,18 @@ fn validate(
     }
     Ok(())
 }
-pub(super) fn place(place: ir::Place) -> Result<s::Place, &'static str> {
+pub(super) fn place(stage: &mut Stage, place: ir::Place) -> Result<s::Place, &'static str> {
     match place {
         ir::Place::Local(local) => Ok(s::Place::Local(local.0)),
         ir::Place::Projection(projection) => Ok(s::Place::Projection(projection.0)),
+        ir::Place::Static(definition) if stage.declaration_policies() => {
+            Ok(s::Place::Static(stage.static_declaration(definition)?))
+        }
         _ => Err("source place transport supports locals and reference projections only"),
     }
 }
-fn action(action: ir::Action, guards: bool) -> Result<s::Action, &'static str> {
+fn action(stage: &mut Stage, action: ir::Action) -> Result<s::Action, &'static str> {
+    let guards = stage.body_nodes();
     Ok(match action {
         ir::Action::FutureTake { .. } => {
             return Err(
@@ -375,11 +390,11 @@ fn action(action: ir::Action, guards: bool) -> Result<s::Action, &'static str> {
             place: target,
             value,
         } => s::Action::Store {
-            place: place(target)?,
+            place: place(stage, target)?,
             value: value.0,
         },
-        ir::Action::CheckInitialized(target) => s::Action::CheckInitialized(place(target)?),
-        ir::Action::Mention(target) => s::Action::Mention(place(target)?),
+        ir::Action::CheckInitialized(target) => s::Action::CheckInitialized(place(stage, target)?),
+        ir::Action::Mention(target) => s::Action::Mention(place(stage, target)?),
         ir::Action::GuardStart(guard) if guards => s::Action::GuardStart(guard.0),
         ir::Action::GuardUse(guard) if guards => s::Action::GuardUse(guard.0),
         ir::Action::BindView {
@@ -387,11 +402,11 @@ fn action(action: ir::Action, guards: bool) -> Result<s::Action, &'static str> {
             place: target,
         } if guards => s::Action::BindView {
             view: view.0,
-            place: place(target)?,
+            place: place(stage, target)?,
         },
         ir::Action::Select { projection, anchor } if guards => s::Action::Select {
             projection: projection.0,
-            anchor: place(anchor)?,
+            anchor: place(stage, anchor)?,
         },
         _ => return Err("source statement requires a wider transport profile"),
     })

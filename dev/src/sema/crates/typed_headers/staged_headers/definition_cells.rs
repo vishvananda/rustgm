@@ -49,15 +49,7 @@ pub(super) fn prepare(
     for header in &rows.nominals {
         assign(&mut cells, header.declaration, graph.ty(header.self_type)?)?;
     }
-    // Version thirteen: a constant's cell is its header's declared type.
-    for (declaration, row) in rows.constant_rows() {
-        budget.charge(1)?;
-        assign(&mut cells, declaration, graph.ty(row.ty)?)?;
-    }
-    for alias in rows.type_aliases() {
-        budget.charge(1)?;
-        assign(&mut cells, alias.declaration, graph.ty(alias.target)?)?;
-    }
+    data_cells(rows, graph, &mut cells, budget)?;
     variant_cells(context, graph, facts, &mut cells, budget)?;
     for callable in callables {
         budget.charge(1)?;
@@ -80,6 +72,7 @@ pub(super) fn prepare(
             | s::DefinitionKind::Enum
             | s::DefinitionKind::AssociatedType
             | s::DefinitionKind::TypeAlias
+            | s::DefinitionKind::Static
             | s::DefinitionKind::Function
             | s::DefinitionKind::Constant
             | s::DefinitionKind::SelfType
@@ -116,6 +109,30 @@ pub(super) fn prepare(
     budget.charge(1)?;
     Ok(result)
 }
+
+fn data_cells(
+    rows: s::ValidatedView<'_>,
+    graph: &mapped_source::Graph,
+    cells: &mut [Option<TypeId>],
+    budget: &mut Headers,
+) -> Result<(), Error> {
+    for (declaration, row) in rows.constant_rows() {
+        budget.charge(1)?;
+        assign(cells, declaration, graph.ty(row.ty)?)?;
+    }
+    for alias in rows.type_aliases() {
+        budget.charge(1)?;
+        assign(cells, alias.declaration, graph.ty(alias.target)?)?;
+    }
+    if let Some(statics) = rows.statics() {
+        for header in &statics.headers {
+            budget.charge(1)?;
+            assign(cells, header.declaration, graph.ty(header.ty)?)?;
+        }
+    }
+    Ok(())
+}
+
 /// A unit variant's cell is its enum's own type. A tuple variant's is the
 /// constructor item over `fn(payload) -> Enum`, exactly as local declarations
 /// complete it; the header supplies no signature. A record variant has none.

@@ -59,6 +59,7 @@ pub(super) fn validate(rows: &SourceRows, work: &mut Work) -> Result<Ledger, &'s
     function_headers(rows, &mut headers, &mut clauses, work)?;
     super::super::free_constants::headers(rows, &mut headers, work)?;
     alias_headers(rows, &mut headers, work)?;
+    static_headers(rows, &mut headers, work)?;
     for (index, row) in rows.declarations.iter().enumerate() {
         work.charge(1)?;
         if matches!(
@@ -71,6 +72,7 @@ pub(super) fn validate(rows: &SourceRows, work: &mut Work) -> Result<Ledger, &'s
                 | DefinitionKind::AssociatedType
                 | DefinitionKind::Constant
                 | DefinitionKind::TypeAlias
+                | DefinitionKind::Static
         ) && headers[index].is_none()
         {
             return Err("source declaration has no complete typed header");
@@ -126,6 +128,39 @@ fn alias_headers(
             || previous.is_some_and(|ordinal| ordinal >= header.declaration.0)
         {
             return Err("source type alias lacks canonical order or its public module declaration");
+        }
+        previous = Some(header.declaration.0);
+    }
+    Ok(())
+}
+
+fn static_headers(
+    rows: &SourceRows,
+    headers: &mut [Option<HeaderRef>],
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let Some(statics) = rows.cold().statics.as_deref() else {
+        return Ok(());
+    };
+    let mut previous = None;
+    for (index, header) in statics.headers.iter().enumerate() {
+        insert(
+            rows,
+            headers,
+            header.declaration,
+            DefinitionKind::Static,
+            HeaderRef::Static(ordinal(index)?),
+            work,
+        )?;
+        let row = &rows.declarations[header.declaration.0 as usize];
+        let parent = row
+            .definition
+            .parent
+            .and_then(|id| rows.declarations.get(id.0 as usize));
+        if parent.is_none_or(|module| module.definition.kind != DefinitionKind::Module)
+            || previous.is_some_and(|ordinal| ordinal >= header.declaration.0)
+        {
+            return Err("source static lacks canonical order or its actual module owner");
         }
         previous = Some(header.declaration.0);
     }

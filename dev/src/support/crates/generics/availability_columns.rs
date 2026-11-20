@@ -416,6 +416,7 @@ impl AvailabilityRows {
                     | DefinitionKind::SelfType
                     | DefinitionKind::Function
                     | DefinitionKind::TypeAlias
+                    | DefinitionKind::Static
             )
             && !view.inherent_constant(origin)
         {
@@ -539,6 +540,7 @@ impl Validation<'_> {
                 | super::HeaderRef::AssociatedType(_)
                 | super::HeaderRef::AssociatedDefinition(_)
                 | super::HeaderRef::TypeAlias(_)
+                | super::HeaderRef::Static(_)
                 | super::HeaderRef::Variant(_)
                 | super::HeaderRef::Constructor(_),
             ) => false,

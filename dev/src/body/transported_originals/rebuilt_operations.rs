@@ -66,6 +66,7 @@ pub(super) fn build(
             source: view.site(local.site, &mut work.steps)?,
         })
     })?;
+    body.static_types = regional_records::static_types(view, &mut work.steps)?;
     body.projections = regional_records::projections(view, work)?;
     encoded_literals::allocate(record, &mut body, work)?;
     let mut values = Vec::with_capacity(record.values.len());
@@ -84,7 +85,7 @@ pub(super) fn build(
         .map(|statement| {
             Ok(Statement {
                 source: view.site(statement.site, &mut work.steps)?,
-                action: action(view, statement.action)?,
+                action: action(view, statement.action, &mut work.steps)?,
             })
         })
         .collect::<Result<_, &'static str>>()?;
@@ -125,12 +126,14 @@ fn value_kind(
         s::ValueKind::Scalar(_) => encoded_literals::append(view, value, body)?,
         s::ValueKind::Text(_) => encoded_texts::append(view)?,
         s::ValueKind::Assembly { .. } => encoded_assembly::value(view, value.kind)?,
-        s::ValueKind::Read(place) => Rvalue::Read(regional_records::place(view, place)?),
+        s::ValueKind::Read(place) => {
+            Rvalue::Read(regional_records::place(view, place, &mut work.steps)?)
+        }
         s::ValueKind::Borrow(place) => {
-            regional_records::borrow(view, place, BorrowKind::Immediate)?
+            regional_records::borrow(view, place, BorrowKind::Immediate, &mut work.steps)?
         }
         s::ValueKind::TwoPhaseBorrow(place) => {
-            regional_records::borrow(view, place, BorrowKind::TwoPhase)?
+            regional_records::borrow(view, place, BorrowKind::TwoPhase, &mut work.steps)?
         }
         s::ValueKind::Constrain(value) => Rvalue::Constrain(ValueId(value)),
         s::ValueKind::Reify(value) if view.rows().descriptor().profile().body_nodes() => {
@@ -198,7 +201,7 @@ fn value_kind(
             },
         },
         s::ValueKind::IsVariant { place, variant } => Rvalue::IsVariant {
-            place: regional_records::place(view, place)?,
+            place: regional_records::place(view, place, &mut work.steps)?,
             variant: view.variant(variant, &mut work.steps)?,
         },
         s::ValueKind::EnumCast(operand) => Rvalue::Cast {
@@ -209,7 +212,11 @@ fn value_kind(
         _ => return Err("source value operation requires its wider actual reconstruction profile"),
     })
 }
-fn action(view: &SourceOriginal<'_>, record: s::Action) -> Result<Action, &'static str> {
+fn action(
+    view: &SourceOriginal<'_>,
+    record: s::Action,
+    steps: &mut usize,
+) -> Result<Action, &'static str> {
     Ok(match record {
         s::Action::StorageLive(id) => Action::StorageLive(LocalId(id)),
         s::Action::StorageDead(id) => Action::StorageDead(LocalId(id)),
@@ -219,27 +226,28 @@ fn action(view: &SourceOriginal<'_>, record: s::Action) -> Result<Action, &'stat
         },
         s::Action::Evaluate(id) => Action::Evaluate(ValueId(id)),
         s::Action::Store { place, value } => Action::Store {
-            place: regional_records::place(view, place)?,
+            place: regional_records::place(view, place, steps)?,
             value: ValueId(value),
         },
         s::Action::CheckInitialized(place) => {
-            Action::CheckInitialized(regional_records::place(view, place)?)
+            Action::CheckInitialized(regional_records::place(view, place, steps)?)
         }
-        s::Action::Mention(place) => Action::Mention(regional_records::place(view, place)?),
-        s::Action::Project(index) => regional_records::project(view, index)?,
+        s::Action::Mention(place) => Action::Mention(regional_records::place(view, place, steps)?),
+        s::Action::Project(index) => regional_records::project(view, index, steps)?,
         s::Action::GuardStart(guard) if guards(view) => Action::GuardStart(GuardId(guard)),
         s::Action::GuardUse(guard) if guards(view) => Action::GuardUse(GuardId(guard)),
         s::Action::BindView { view: local, place } if guards(view) => Action::BindView {
             view: LocalId(local),
-            place: regional_records::place(view, place)?,
+            place: regional_records::place(view, place, steps)?,
         },
         s::Action::Select { projection, anchor } if guards(view) => {
-            let Action::Project(projection) = regional_records::project(view, projection)? else {
+            let Action::Project(projection) = regional_records::project(view, projection, steps)?
+            else {
                 return Err("source selected pattern place changed its actual kind");
             };
             Action::Select {
                 projection,
-                anchor: regional_records::place(view, anchor)?,
+                anchor: regional_records::place(view, anchor, steps)?,
             }
         }
         s::Action::GuardStart(_)
@@ -257,6 +265,7 @@ fn guards(view: &SourceOriginal<'_>) -> bool {
 /// the consumer's validation; the ownership checker re-proves protections.
 fn guards_of(
     view: &SourceOriginal<'_>,
+    steps: &mut usize,
 ) -> Result<(Vec<crate::body::ir::Guard>, Vec<crate::body::ir::Place>), &'static str> {
     let Some(raw) = view.raw().guards.as_deref() else {
         return Ok((Vec::new(), Vec::new()));
@@ -277,7 +286,7 @@ fn guards_of(
     let places = raw
         .places
         .iter()
-        .map(|&place| regional_records::place(view, place))
+        .map(|&place| regional_records::place(view, place, steps))
         .collect::<Result<_, _>>()?;
     Ok((rows, places))
 }
@@ -289,11 +298,15 @@ fn guards_into(
     if let Some(raw) = view.raw().guards.as_deref() {
         work.charge(raw.rows.len().saturating_add(raw.places.len()))?;
     }
-    (body.guards, body.guard_places) = guards_of(view)?;
+    (body.guards, body.guard_places) = guards_of(view, &mut work.steps)?;
     Ok(())
 }
-fn same_guards(view: &SourceOriginal<'_>, body: &Body) -> Result<bool, &'static str> {
-    let (rows, places) = guards_of(view)?;
+fn same_guards(
+    view: &SourceOriginal<'_>,
+    body: &Body,
+    steps: &mut usize,
+) -> Result<bool, &'static str> {
+    let (rows, places) = guards_of(view, steps)?;
     Ok(places == body.guard_places
         && rows.len() == body.guards.len()
         && rows.iter().zip(&body.guards).all(|(a, b)| {
@@ -501,11 +514,11 @@ pub(super) fn validate(
         || body.statements.len() != record.statements.len()
         || body.blocks.len() != record.blocks.len()
         || body.temporaries.len() != record.temporaries.len()
-        || body.static_types.is_some()
+        || body.static_types != regional_records::static_types(view, steps)?
         || body.static_permissions.is_some()
         || body.resolved_callables.is_some()
         || body.closure_calls.is_some()
-        || !same_guards(view, body)?
+        || !same_guards(view, body, steps)?
         || body.arguments.len() != record.arguments.len()
         || body
             .arguments
@@ -526,7 +539,7 @@ pub(super) fn validate(
     for (actual, record) in body.statements.iter().zip(&record.statements) {
         *steps = steps.saturating_add(1);
         if actual.source != view.site(record.site, steps)?
-            || !same_action(actual.action, action(view, record.action)?)
+            || !same_action(actual.action, action(view, record.action, steps)?)
         {
             return Err("source original changed an actual statement/site");
         }
@@ -647,7 +660,7 @@ fn same_variant_value(
                 variant: expected,
             },
         ) => {
-            place == regional_records::place(view, raw)?
+            place == regional_records::place(view, raw, steps)?
                 && variant == view.variant(expected, steps)?
         }
         (
@@ -764,7 +777,7 @@ fn same_value(
             encoded_literals::same(view, record, id, body, scalar)?
         }
         (Rvalue::Read(actual), s::ValueKind::Read(record)) => {
-            actual == regional_records::place(view, record)?
+            actual == regional_records::place(view, record, steps)?
         }
         (
             Rvalue::Borrow {
@@ -781,7 +794,7 @@ fn same_value(
             s::ValueKind::TwoPhaseBorrow(raw),
         ) => {
             regional_records::require(view)?;
-            place == regional_records::place(view, raw)?
+            place == regional_records::place(view, raw, steps)?
         }
         (
             Rvalue::Cast {

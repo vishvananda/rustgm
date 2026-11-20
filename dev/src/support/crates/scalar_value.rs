@@ -1,6 +1,20 @@
 //! Closed scalar values retain exact bits without implying storage or executable bodies.
 use super::{ExternalDef, ExternalKind, Scalar};
 
+impl Scalar {
+    pub(crate) const fn bit_width(self) -> u32 {
+        match self {
+            Self::Unit => 0,
+            Self::Bool => 1,
+            Self::U8 | Self::I8 => 8,
+            Self::U16 | Self::I16 => 16,
+            Self::Char | Self::U32 | Self::I32 | Self::F32 => 32,
+            Self::U64 | Self::I64 | Self::Usize | Self::Isize | Self::F64 => 64,
+            Self::U128 | Self::I128 => 128,
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ScalarValue {
     ty: Scalar,
@@ -12,22 +26,10 @@ impl ScalarValue {
     /// # Errors
     /// Rejects invalid bool/char values, nonzero unit and out-of-width padding.
     pub fn new(ty: Scalar, bits: u128) -> Result<Self, &'static str> {
-        let width = match ty {
-            Scalar::Unit => 0,
-            Scalar::Bool => 1,
-            Scalar::Char => {
-                u32::try_from(bits)
-                    .ok()
-                    .and_then(char::from_u32)
-                    .ok_or("invalid metadata character value")?;
-                32
-            }
-            Scalar::U8 | Scalar::I8 => 8,
-            Scalar::U16 | Scalar::I16 => 16,
-            Scalar::U32 | Scalar::I32 | Scalar::F32 => 32,
-            Scalar::U64 | Scalar::I64 | Scalar::Usize | Scalar::Isize | Scalar::F64 => 64,
-            Scalar::U128 | Scalar::I128 => 128,
-        };
+        if ty == Scalar::Char && u32::try_from(bits).ok().and_then(char::from_u32).is_none() {
+            return Err("invalid metadata character value");
+        }
+        let width = ty.bit_width();
         if width < 128 && bits >> width != 0 {
             return Err("metadata scalar value exceeds its type width");
         }

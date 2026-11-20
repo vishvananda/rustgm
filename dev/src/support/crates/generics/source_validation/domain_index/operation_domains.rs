@@ -38,7 +38,7 @@ impl DomainIndex<'_, '_> {
             let mut snapshots = false;
             for (index, projection) in original.projections.iter().enumerate() {
                 snapshots |= matches!(projection.base, s::Place::Temporary(_));
-                Self::place(original, projection.base, Some(index), work)?;
+                self.place(original, projection.base, Some(index), work)?;
                 self.types
                     .root(self.headers, context, projection.ty, work)?;
                 if let s::ProjectionKind::Dereference { region, .. } = projection.kind {
@@ -108,7 +108,7 @@ impl DomainIndex<'_, '_> {
             s::ValueKind::Read(place)
             | s::ValueKind::Borrow(place)
             | s::ValueKind::TwoPhaseBorrow(place) => {
-                Self::place(original, place, None, work)?;
+                self.place(original, place, None, work)?;
             }
             s::ValueKind::Constrain(operand) | s::ValueKind::EnumCast(operand) => {
                 prefix_value(original, operand, index, work)?;
@@ -145,7 +145,7 @@ impl DomainIndex<'_, '_> {
             }
             s::ValueKind::IsVariant { place, variant } => {
                 self.variant(variant, work)?;
-                Self::place(original, place, None, work)?;
+                self.place(original, place, None, work)?;
             }
             s::ValueKind::Unit => {}
         }
@@ -273,6 +273,7 @@ impl DomainIndex<'_, '_> {
         Ok(())
     }
     fn place(
+        &self,
         original: &s::Original,
         place: s::Place,
         prefix: Option<usize>,
@@ -281,6 +282,9 @@ impl DomainIndex<'_, '_> {
         work.charge(1)?;
         match place {
             s::Place::Local(index) if (index as usize) < original.locals.len() => Ok(()),
+            s::Place::Static(declaration) => {
+                self.headers.static_header(declaration, work).map(|_| ())
+            }
             s::Place::Temporary(index)
                 if prefix.is_some() && (index as usize) < original.values.len() =>
             {

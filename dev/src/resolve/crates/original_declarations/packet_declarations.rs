@@ -308,6 +308,7 @@ pub(super) fn kind(kind: s::DefinitionKind) -> (DefKind, Namespace) {
         s::DefinitionKind::Function => (DefKind::Function, Namespace::Value),
         // Version thirteen: a named const; its header row holds its value.
         s::DefinitionKind::Constant => (DefKind::Const, Namespace::Value),
+        s::DefinitionKind::Static => (DefKind::Static, Namespace::Value),
         s::DefinitionKind::TypeParameter => (DefKind::Generic, Namespace::Type),
         s::DefinitionKind::ConstParameter => (DefKind::Generic, Namespace::Value),
         s::DefinitionKind::RegionParameter => (DefKind::Lifetime, Namespace::Lifetime),

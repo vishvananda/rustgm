@@ -258,6 +258,7 @@ pub(super) fn place_write(out: &mut Writer, place: s::Place) -> Result<(), &'sta
         s::Place::Local(index) => (0, index),
         s::Place::Projection(index) => (1, index),
         s::Place::Temporary(index) => (2, index),
+        s::Place::Static(declaration) => (3, declaration.0),
     };
     out.u8(tag)?;
     id(out, index)
@@ -270,6 +271,9 @@ pub(super) fn place_read(read: &mut Input<'_, '_>) -> Result<s::Place, &'static 
             Ok(s::Place::Projection(read.id()?))
         }
         2 if read.profile.conversion_roles() => Ok(s::Place::Temporary(read.id()?)),
+        3 if read.profile.declaration_policies() => {
+            Ok(s::Place::Static(DeclarationRef(read.id()?)))
+        }
         _ => Err("source projection requires a wider source profile"),
     }
 }

@@ -20,7 +20,7 @@ use crate::{
     resolve::{expansion::Report, model::DefId, unit::NodeKey},
     sema::{
         crates::authored_export::{Context, Stage},
-        model::{BodyRegionOrigin, Declarations},
+        model::{BodyRegionOrigin, Declarations, InitializerKind},
     },
     support::{
         crates::{
@@ -453,13 +453,15 @@ impl Source {
         {
             return Ok(());
         }
-        // Version thirteen: a free const's value travels evaluated in its
-        // header row, so its initializer is not an original either.
-        if let Owner::Initializer {
-            definition,
-            kind: crate::sema::model::InitializerKind::Const,
-        } = body.owner
-            && self.stage.evaluated_initializer(facts, definition)?
+        // These checked initializer bodies travel as values in their data rows.
+        if let Owner::Initializer { definition, kind } = body.owner
+            && match kind {
+                InitializerKind::Const => self.stage.evaluated_initializer(facts, definition)?,
+                InitializerKind::Static { mutable: false } => {
+                    self.stage.evaluated_static(definition)?
+                }
+                InitializerKind::Static { mutable: true } => false,
+            }
         {
             return Ok(());
         }

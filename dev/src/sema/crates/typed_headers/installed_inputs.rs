@@ -150,6 +150,7 @@ impl Reader {
             Some(
                 s::HeaderRef::AssociatedDefinition(_)
                 | s::HeaderRef::Constant(_)
+                | s::HeaderRef::Static(_)
                 | s::HeaderRef::TypeAlias(_),
             ) => 0,
             Some(s::HeaderRef::Variant(_) | s::HeaderRef::Constructor(_)) => {

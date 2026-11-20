@@ -178,6 +178,7 @@ fn definition(original: &s::Original, action: s::Action) -> Result<Option<usize>
 fn place(original: &s::Original, place: s::Place) -> Result<Option<usize>, &'static str> {
     match place {
         s::Place::Local(index) if (index as usize) < original.locals.len() => Ok(None),
+        s::Place::Static(_) => Ok(None),
         s::Place::Temporary(index) if (index as usize) < original.values.len() => {
             Ok(Some(index as usize))
         }

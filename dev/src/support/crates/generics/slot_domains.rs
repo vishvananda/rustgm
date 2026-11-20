@@ -27,6 +27,8 @@ pub enum DefinitionKind {
     AssociatedType,
     /// A public, closed v14 module type alias with no binder scope.
     TypeAlias,
+    /// Version fourteen: a module-owned static allocation.
+    Static,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Definition {
@@ -420,6 +422,7 @@ fn valid_parent(
         | DefinitionKind::ConstParameter
         | DefinitionKind::Constant
         | DefinitionKind::TypeAlias
+        | DefinitionKind::Static
         | DefinitionKind::ValueParameter
         | DefinitionKind::Local => false,
     }

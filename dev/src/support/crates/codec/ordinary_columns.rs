@@ -16,6 +16,7 @@ mod exemption_wire;
 #[path = "../../../../tests/invariants/enabled_headers.rs"]
 mod feature_tests;
 mod free_constants_wire;
+mod global_wire;
 #[path = "ordinary_columns/annotation_rows.rs"]
 mod header_facts;
 mod instruction_columns;
@@ -119,10 +120,12 @@ pub(super) fn encode_module_availability(
     let const_bodies = availability.const_bodies.as_deref();
     let profile = rows.descriptor().profile();
     let aliases = rows.type_aliases();
+    let statics = rows.statics();
     if profile.compiler_operations() {
         out.u8(u8::from(const_bodies.is_some())
             | (u8::from(availability.deprecations.is_some()) << 1)
-            | (u8::from(!aliases.is_empty()) << 2))?;
+            | (u8::from(!aliases.is_empty()) << 2)
+            | (u8::from(statics.is_some()) << 3))?;
     }
     exemption_wire::encode(out, const_bodies)?;
     if let Some(deprecations) = &availability.deprecations {
@@ -133,6 +136,9 @@ pub(super) fn encode_module_availability(
             id(out, row.declaration.0)?;
             id(out, row.target.0)
         })?;
+    }
+    if let Some(statics) = statics {
+        global_wire::encode(out, statics)?;
     }
     if profile.compiler_operations() {
         if profile.body_nodes() {
@@ -275,7 +281,7 @@ fn decode_availability_trailers(
     }
     let flags = read.reader.u8()?;
     let maximum = if read.profile.declaration_policies() {
-        7
+        15
     } else {
         1
     };
@@ -302,6 +308,10 @@ fn decode_availability_trailers(
             return Err("type alias trailer must contain an actual alias");
         }
         read.cold(rows)?.type_aliases = aliases;
+    }
+    if flags & 8 != 0 {
+        let statics = global_wire::decode(read)?;
+        read.cold(rows)?.statics = Some(statics);
     }
     Ok(())
 }

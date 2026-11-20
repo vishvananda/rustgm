@@ -319,7 +319,7 @@ impl Builder<'_, '_, '_> {
         let result = self.node(original, ty, work)?;
         let base = self.node(
             original,
-            super::ports::Ports::place_type(original, place, work)?,
+            super::ports::Ports::place_type(self.domains.headers, original, place, work)?,
             work,
         )?;
         let Some(Node::Nominal { declaration, .. }) =

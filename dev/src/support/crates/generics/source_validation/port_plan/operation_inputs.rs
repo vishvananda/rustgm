@@ -42,13 +42,13 @@ impl Builder<'_, '_, '_> {
         for (index, statement) in original.statements.iter().enumerate() {
             work.charge(1)?;
             if let s::Action::Store { place, value } = statement.action {
-                if matches!(place, s::Place::Projection(_))
+                if matches!(place, s::Place::Projection(_) | s::Place::Static(_))
                     && !ports.writable(original, place, work)?
                 {
                     return Err("source Store writes through an immutable dereference");
                 }
                 let actual = original.values[value as usize].ty;
-                let expected = Ports::place_type(original, place, work)?;
+                let expected = Ports::place_type(self.domains.headers, original, place, work)?;
                 self.exact_relation(
                     original,
                     OperationPort::Statement {

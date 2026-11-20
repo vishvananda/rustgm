@@ -21,8 +21,15 @@ pub(super) fn allocation(raw: &s::Original) -> usize {
         .saturating_mul(size_of::<Projection>())
 }
 
-pub(super) fn place(view: &SourceOriginal<'_>, raw: s::Place) -> Result<Place, &'static str> {
+pub(super) fn place(
+    view: &SourceOriginal<'_>,
+    raw: s::Place,
+    steps: &mut usize,
+) -> Result<Place, &'static str> {
     match raw {
+        s::Place::Static(declaration) => {
+            Ok(Place::Static(view.static_storage(declaration, steps)?.0))
+        }
         s::Place::Local(index) => {
             if index as usize >= view.raw().locals.len() {
                 return Err("source place lost its actual local identity");
@@ -50,19 +57,24 @@ pub(super) fn borrow(
     view: &SourceOriginal<'_>,
     raw: s::Place,
     kind: BorrowKind,
+    steps: &mut usize,
 ) -> Result<Rvalue, &'static str> {
     require(view)?;
     if kind == BorrowKind::TwoPhase && !view.rows().descriptor().profile().body_nodes() {
         return Err("source two-phase borrows require the version-thirteen body IR profile");
     }
     Ok(Rvalue::Borrow {
-        place: place(view, raw)?,
+        place: place(view, raw, steps)?,
         kind,
     })
 }
 
-pub(super) fn project(view: &SourceOriginal<'_>, index: u32) -> Result<Action, &'static str> {
-    let Place::Projection(id) = place(view, s::Place::Projection(index))? else {
+pub(super) fn project(
+    view: &SourceOriginal<'_>,
+    index: u32,
+    steps: &mut usize,
+) -> Result<Action, &'static str> {
+    let Place::Projection(id) = place(view, s::Place::Projection(index), steps)? else {
         return Err("source projection statement changed its actual place kind");
     };
     Ok(Action::Project(id))
@@ -74,7 +86,7 @@ fn projection(
     steps: &mut usize,
 ) -> Result<Projection, &'static str> {
     Ok(Projection {
-        base: place(view, raw.base)?,
+        base: place(view, raw.base, steps)?,
         ty: view.ty(raw.ty, steps)?,
         kind: match raw.kind {
             s::ProjectionKind::Dereference { region, mutable } => ProjectionKind::Dereference {
@@ -142,4 +154,27 @@ pub(super) fn validate(
         }
     }
     Ok(())
+}
+
+type StaticTypes =
+    std::sync::Arc<crate::support::hash::HashMap<crate::body::ir::DefId, crate::types::TypeId>>;
+
+pub(super) fn static_types(
+    view: &SourceOriginal<'_>,
+    steps: &mut usize,
+) -> Result<Option<StaticTypes>, &'static str> {
+    if view.rows().statics().is_none() {
+        return Ok(None);
+    }
+    let mut types = crate::support::hash::HashMap::default();
+    for declaration in view.raw().static_places() {
+        let (definition, ty) = view.static_storage(declaration, steps)?;
+        if types
+            .insert(definition, ty)
+            .is_some_and(|previous| previous != ty)
+        {
+            return Err("source body changes the type of its static allocation");
+        }
+    }
+    Ok((!types.is_empty()).then(|| std::sync::Arc::new(types)))
 }

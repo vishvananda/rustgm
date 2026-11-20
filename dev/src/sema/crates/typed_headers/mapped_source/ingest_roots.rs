@@ -22,6 +22,11 @@ pub(super) fn prepare(
     for alias in rows.type_aliases() {
         demand(alias.target)?;
     }
+    if let Some(statics) = rows.statics() {
+        for header in &statics.headers {
+            demand(header.ty)?;
+        }
+    }
     for header in &rows.functions {
         for signature in [header.original, header.callable] {
             for &root in signature.parameters.slice(&rows.roots).map_err(error)? {

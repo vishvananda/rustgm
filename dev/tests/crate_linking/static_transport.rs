@@ -122,3 +122,89 @@ fn stored_arrays_execute_across_actual_object_boundaries() -> Result<(), Box<dyn
 {
     qualify_manifest(29, "array-storage-outcomes.json", true).map(|_| ())
 }
+
+#[test]
+fn version_fourteen_shares_restricted_array_storage() -> super::fresh_packets::Result {
+    use super::fresh_packets::Packet;
+    use rustgm::support::crates;
+    let packet = Packet::new(
+        "v14-static-arrays",
+        "pa29/tests/spec/static-sync",
+        "frontend",
+        "pairs",
+    )?;
+    let foundation = std::fs::read_to_string(packet.fixture("provider"))?;
+    let (foundation, _) = foundation
+        .split_once("// Authored callable-role transport controls.")
+        .ok_or("static provider lost its role foundation")?;
+    let provider = packet.folder.join("provider.rs");
+    let mut source = foundation.to_owned();
+    source.push_str(
+        r#"
+#[lang = "sync"]
+pub unsafe auto trait Sync {}
+pub mod tables {
+    pub(super) static PAIRS: [(u64, u64); 2] = [(3, 5), (7, 11)];
+}
+pub fn first<T>() -> &'static [(u64, u64); 2] { &tables::PAIRS }
+pub fn same<T>() -> &'static [(u64, u64); 2] { &tables::PAIRS }
+"#,
+    );
+    std::fs::write(&provider, source)?;
+    super::artifacts::checked(
+        "provider",
+        &packet.folder,
+        packet
+            .export("module-body-operations-v14", &provider, &packet.metadata)
+            .arg("--cap-lints=allow"),
+    )?;
+    let bytes = std::fs::read(&packet.metadata)?;
+    assert_eq!(crates::encode(&crates::decode(&bytes)?)?, bytes);
+    for (name, body, expected) in [
+        (
+            "allowed",
+            r"
+pub fn first() -> usize { base::first::<u8>() as *const [(u64, u64); 2] as usize }
+pub fn same() -> usize { base::same::<u32>() as *const [(u64, u64); 2] as usize }
+",
+            None,
+        ),
+        (
+            "private",
+            "fn read() -> &'static [(u64, u64); 2] { &base::tables::PAIRS }",
+            Some("private"),
+        ),
+        (
+            "wrong",
+            "fn read() -> &'static [(u64, u64); 3] { base::first::<u8>() }",
+            Some("incompatible types"),
+        ),
+    ] {
+        let input = packet.folder.join(format!("{name}.rs"));
+        std::fs::write(
+            &input,
+            format!("#![feature(no_core)]#![no_core]\nextern crate base;\n{body}\n"),
+        )?;
+        let mut consumer = packet.consumer(&input, name, &packet.metadata, &packet.owner());
+        consumer.arg("--cap-lints=allow");
+        if let Some(diagnostic) = expected {
+            packet.rejected(name, &mut consumer, diagnostic)?;
+        } else {
+            super::artifacts::checked(name, &packet.folder, &mut consumer)?;
+        }
+    }
+    let provider_data = std::fs::read_to_string(packet.metadata.with_extension("lowir"))?;
+    let consumer_data = std::fs::read_to_string(packet.folder.join("allowed.lowir"))?;
+    assert!(provider_data.contains("static$"), "{provider_data}");
+    assert!(consumer_data.contains("static$"), "{consumer_data}");
+    let legacy = packet.folder.join("legacy.rgcrate");
+    packet.rejected(
+        "legacy",
+        packet
+            .export("module-bodies-v13", &provider, &legacy)
+            .arg("--cap-lints=allow"),
+        "source declaration kind is outside the initial source profile",
+    )?;
+    assert!(!legacy.exists());
+    Ok(())
+}
