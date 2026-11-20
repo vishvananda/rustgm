@@ -295,7 +295,7 @@ impl Producer {
             return Ok(None);
         };
         let owner = self.record(row.tail, key)?;
-        owner.validate(package, &self.reads)?;
+        self.authenticate(package, owner)?;
         let unit = package.unit(key.file);
         let mut actual = owner.key;
         loop {

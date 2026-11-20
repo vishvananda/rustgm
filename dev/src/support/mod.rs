@@ -25,6 +25,7 @@ pub(crate) mod quoted;
 pub(crate) mod radix_map;
 pub(crate) mod retained;
 pub mod runtime_checks;
+pub mod sealed;
 pub mod source;
 
 pub mod diagnostics;

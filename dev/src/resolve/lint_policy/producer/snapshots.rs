@@ -1,5 +1,5 @@
 //! Authenticate retained source owners without parsing their attributes again.
-use super::{Owner, Producer, Tail, Violation, Work, invalid};
+use super::{Owner, Producer, Violation, Work, invalid};
 use crate::resolve::{
     expansion::Report,
     package::Package,
@@ -8,65 +8,25 @@ use crate::resolve::{
 use std::cell::Cell;
 use std::sync::Arc;
 
-const OWNER_RECEIPTS: usize = 32;
-
-#[derive(Clone, Copy)]
-struct Receipt {
-    tail: Tail,
-    steps: usize,
-}
-
-/// Completed reads belong to one borrow of the actual sealed producer and syntax.
+/// Reads borrow one report's sealed producer together with its own syntax.
 pub(crate) struct OwnerReads<'a> {
     report: &'a Report,
-    receipts: Vec<Option<Receipt>>,
 }
 
 impl<'a> OwnerReads<'a> {
     pub(crate) const fn new(report: &'a Report) -> Self {
-        Self {
-            report,
-            receipts: Vec::new(),
-        }
+        Self { report }
     }
 
     pub(crate) const fn report(&self) -> &'a Report {
         self.report
     }
 
-    pub(crate) fn validate_owner(&mut self, key: NodeKey) -> Result<(), Violation> {
-        let producer = self
-            .report
+    pub(crate) fn validate_owner(&self, key: NodeKey) -> Result<(), Violation> {
+        self.report
             .lint_producer()
-            .ok_or_else(|| invalid(key, "source header owner has no producer"))?;
-        let package = &self.report.package;
-        let (tail, owner) = producer.read_owner(package, key)?;
-        if !producer.sealed {
-            return owner.validate(package, &producer.reads);
-        }
-        let slot = tail.0.get() as usize % OWNER_RECEIPTS;
-        let before = producer.reads.get();
-        if let Some(receipt) = self.receipts.get(slot).copied().flatten()
-            && receipt.tail == tail
-        {
-            let mut charged = before;
-            if charged.charge(key, receipt.steps, 0).is_ok() {
-                producer.reads.set(charged);
-                return Ok(());
-            }
-            // Exhaustion must report the first ordered failed charge.
-            return owner.validate(package, &producer.reads);
-        }
-        owner.validate(package, &producer.reads)?;
-        let steps = producer.reads.get().steps.saturating_sub(before.steps);
-        if self.receipts.is_empty() {
-            if self.receipts.try_reserve_exact(OWNER_RECEIPTS).is_err() {
-                return Ok(());
-            }
-            self.receipts.resize(OWNER_RECEIPTS, None);
-        }
-        self.receipts[slot] = Some(Receipt { tail, steps });
-        Ok(())
+            .ok_or_else(|| invalid(key, "source header owner has no producer"))?
+            .validate_owner(&self.report.package, key)
     }
 }
 
@@ -110,6 +70,21 @@ pub(super) fn configured(
     Ok(owner)
 }
 impl Owner {
+    /// Identity only: this record's file is the incarnation it was read from.
+    pub(super) fn current(&self, package: &Package) -> Result<(), Violation> {
+        if package
+            .units
+            .get(self.key.file.0 as usize)
+            .is_some_and(|unit| Arc::ptr_eq(&self.image, unit.source.original_image()))
+        {
+            Ok(())
+        } else {
+            Err(invalid(
+                self.key,
+                "lint source incarnation or effect range changed",
+            ))
+        }
+    }
     pub(in crate::resolve::lint_policy) fn validate(
         &self,
         package: &Package,
@@ -197,6 +172,7 @@ pub(super) fn validate(
     let mut attributes = 0;
     let mut entries = 0;
     let mut changes = false;
+    let mut checked = 0_usize;
     for (file, unit) in package.units.iter().enumerate() {
         if unit.include_context.is_some() {
             continue;
@@ -222,11 +198,16 @@ pub(super) fn validate(
                 })?;
             let record = producer.record(tail, key)?;
             record.validate(package, &producer.reads)?;
+            checked += 1;
             attributes += record.parsed.attributes;
             entries += record.parsed.entries;
             changes |= record.parsed.has_policy();
         }
     }
+    // Only a producer whose every record was just checked is read as fields.
+    producer
+        .authentic
+        .set(producer.sealed && checked == producer.owners.len());
     Ok((attributes, entries, changes))
 }
 fn package_key(package: &Package) -> NodeKey {

@@ -170,7 +170,7 @@ impl Producer {
         self.require_cap(package, key)?;
         self.attribute_read(key, 1)?;
         let owner = self.record(id.owner, key)?;
-        owner.validate(package, &self.reads)?;
+        self.authenticate(package, owner)?;
         let row = owner
             .parsed
             .expectations
@@ -276,7 +276,7 @@ impl Producer {
         for &tail in &self.expectation_owners {
             self.attribute_read(root, 1)?;
             let owner = self.record(tail, root)?;
-            owner.validate(package, &self.reads)?;
+            self.authenticate(package, owner)?;
             for (index, row) in owner.parsed.expectations.iter().enumerate() {
                 self.attribute_read(owner.key, 1)?;
                 let id = ExpectationId {
@@ -405,7 +405,7 @@ impl Producer {
             return Ok(None);
         };
         let owner = self.record(tail, key)?;
-        owner.validate(package, &self.reads)?;
+        self.authenticate(package, owner)?;
         Ok(owner.parsed.deprecated.as_ref().map(|_| tail))
     }
     pub(crate) fn deprecation_in<'a>(
@@ -458,7 +458,7 @@ impl Producer {
         key: NodeKey,
     ) -> Result<Option<&'a str>, Violation> {
         let owner = self.record(tail, key)?;
-        owner.validate(package, &self.reads)?;
+        self.authenticate(package, owner)?;
         let row = owner
             .parsed
             .deprecated
@@ -484,7 +484,7 @@ impl Producer {
             }
             let row = owner.parsed.deprecated.as_ref()?;
             Some((|| {
-                owner.validate(package, &self.reads)?;
+                self.authenticate(package, owner)?;
                 row.validate_staged(package, owner.key)?;
                 let tail =
                     self.index.get(&owner.key).copied().ok_or_else(|| {
@@ -512,7 +512,7 @@ impl Producer {
         for owner in &self.owners {
             self.attribute_read(owner.key, 1)?;
             if let Some(row) = &owner.parsed.deprecated {
-                owner.validate(package, &self.reads)?;
+                self.authenticate(package, owner)?;
                 return Err(Violation {
                     key: owner.key,
                     offset: row.span.start,

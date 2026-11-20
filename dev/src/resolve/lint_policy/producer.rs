@@ -194,6 +194,9 @@ pub(crate) struct Producer {
     pub(super) has_suggestions: bool,
     work: Work,
     pub(super) reads: Cell<Work>,
+    /// Every produced owner passed the whole-package check after sealing, so
+    /// its record is read as plain fields.
+    pub(super) authentic: Cell<bool>,
     pub(super) domain: Option<Arc<super::expectations::Domain>>,
     pub(super) expectation_owners: Vec<Tail>,
     pub(super) early: Vec<super::expectations::Early>,
@@ -219,6 +222,7 @@ impl Producer {
             has_suggestions: false,
             work: Work::default(),
             reads: Cell::default(),
+            authentic: Cell::new(false),
             domain: None,
             expectation_owners: Vec::new(),
             early: Vec::new(),
@@ -322,7 +326,7 @@ impl Producer {
                 return Ok(());
             }
             let owner = self.record(current, key)?;
-            owner.validate(package, &self.reads)?;
+            self.authenticate(package, owner)?;
             if owner
                 .parent
                 .is_some_and(|parent| parent.0.get() >= current.0.get())
@@ -332,6 +336,16 @@ impl Producer {
             tail = owner.parent;
         }
         Ok(())
+    }
+    /// A sealed producer checks every owner once in `validate`; a later read
+    /// repeats the witness walk only before that check or as a self-check.
+    /// The record still answers only for the source incarnation it was
+    /// checked against, never for another package's copy of the same text.
+    pub(super) fn authenticate(&self, package: &Package, owner: &Owner) -> Result<(), Violation> {
+        if self.authentic.get() && !crate::support::sealed::self_check() {
+            return owner.current(package);
+        }
+        owner.validate(package, &self.reads)
     }
     fn charge_read(&self, key: NodeKey, steps: usize) -> Result<(), Violation> {
         let mut reads = self.reads.get();
@@ -354,7 +368,7 @@ impl Producer {
         self.require_tail(parent, key)?;
         if let Some(&tail) = self.index.get(&key) {
             let owner = self.record(tail, key)?;
-            owner.validate(package, &self.reads)?;
+            self.authenticate(package, owner)?;
             if owner.parent != parent {
                 return Err(invalid(key, "source lint owner parent tail changed"));
             }
@@ -595,7 +609,7 @@ impl Producer {
         while let Some(tail) = current {
             self.work.charge(key, 1, 4 * size_of::<Tail>())?;
             let owner = self.record(tail, key)?;
-            owner.validate(package, &self.reads)?;
+            self.authenticate(package, owner)?;
             if owner
                 .parent
                 .is_some_and(|parent| parent.0.get() >= tail.0.get())
@@ -641,9 +655,8 @@ impl Producer {
     }
     /// Authenticate an already produced owner without composing ancestor policy.
     pub(crate) fn validate_owner(&self, package: &Package, key: NodeKey) -> Result<(), Violation> {
-        self.read_owner(package, key)?
-            .1
-            .validate(package, &self.reads)
+        let (_, owner) = self.read_owner(package, key)?;
+        self.authenticate(package, owner)
     }
     fn read_owner(&self, package: &Package, key: NodeKey) -> Result<(Tail, &Owner), Violation> {
         self.require_cap(package, key)?;
@@ -695,7 +708,7 @@ impl Producer {
             .copied()
             .ok_or_else(|| invalid(key, "active source lint owner was never produced"))?;
         let record = self.record(tail, key)?;
-        record.validate(package, &self.reads)?;
+        self.authenticate(package, record)?;
         if record.parent != parent {
             return Err(invalid(
                 key,
@@ -713,6 +726,7 @@ impl Producer {
         })
     }
     pub(crate) fn validate(&self, package: &Package) -> Result<(usize, usize, bool), Violation> {
+        self.authentic.set(false);
         self.require_cap(
             package,
             NodeKey {

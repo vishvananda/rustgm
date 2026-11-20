@@ -157,7 +157,7 @@ fn stale_effect_source_image_and_unseen_owner_are_rejected_with_charged_failed_r
 }
 
 #[test]
-fn a_warm_owner_read_preserves_the_first_ordered_budget_failure() -> TestResult {
+fn a_checked_producer_reads_owners_as_fields_and_self_checks_within_the_old_cost() -> TestResult {
     let mut report = report("#[doc=\"first\"] #[doc=\"second\"] fn f(){}")?;
     let producer = report
         .attribute_effects
@@ -174,23 +174,29 @@ fn a_warm_owner_read_preserves_the_first_ordered_budget_failure() -> TestResult 
     let first = 1 + first.tree_count as usize;
     let second = 1 + second.tree_count as usize;
     let mandatory = 3 + 1 + owner.effects.len();
-    let mut reads = OwnerReads::new(&report);
+    // The former exact cost of every read is now the bound of a checked one.
+    let bound = mandatory + first + second;
+    let reads = OwnerReads::new(&report);
     let producer = report
         .lint_producer()
         .ok_or("missing sealed lint producer")?;
+    assert!(!producer.authentic.get());
     let before = producer.reads.get().steps;
     reads.validate_owner(key).map_err(Error::from)?;
-    assert_eq!(
-        producer.reads.get().steps - before,
-        mandatory + first + second
-    );
-    let before = producer.reads.get().steps;
-    reads.validate_owner(key).map_err(Error::from)?;
-    assert_eq!(
-        producer.reads.get().steps - before,
-        mandatory + first + second
-    );
+    let unchecked = producer.reads.get().steps - before;
+    assert!(unchecked > mandatory && unchecked <= bound);
 
+    producer.validate(&report.package).map_err(Error::from)?;
+    assert!(producer.authentic.get());
+    let before = producer.reads.get().steps;
+    reads.validate_owner(key).map_err(Error::from)?;
+    producer
+        .validate_owner(&report.package, key)
+        .map_err(Error::from)?;
+    assert!(producer.reads.get().steps - before <= 2 * bound);
+
+    // The self-check repeats the witness walk and its ordered budget failure.
+    let checking = crate::support::sealed::SelfCheck::hold();
     let mut near_limit = producer.reads.get();
     let limit = near_limit.limits().0;
     near_limit.steps = limit - (mandatory + first);
@@ -198,19 +204,42 @@ fn a_warm_owner_read_preserves_the_first_ordered_budget_failure() -> TestResult 
     let warm = reads
         .validate_owner(key)
         .err()
-        .ok_or("warm read exhausted")?;
-    assert_eq!(producer.reads.get().steps, limit + second);
+        .ok_or("self-checked read exhausted")?;
+    assert!(producer.reads.get().steps <= limit + second);
     producer.reads.set(near_limit);
     let cold = producer
         .validate_owner(&report.package, key)
         .err()
-        .ok_or("cold read exhausted")?;
-    assert_eq!(producer.reads.get().steps, limit + second);
+        .ok_or("self-checked producer read exhausted")?;
+    assert!(producer.reads.get().steps <= limit + second);
     assert_eq!(
         (warm.key, warm.offset, warm.message),
         (cold.key, cold.offset, cold.message)
     );
     assert_eq!(warm.message, "source lint policy work budget exceeded");
+    drop(checking);
+    Ok(())
+}
+
+#[test]
+fn a_failed_whole_package_check_withdraws_field_reads() -> TestResult {
+    let mut report = report("#[allow(unused_must_use)]fn f(){} #[doc=\"other\"]fn g(){}")?;
+    let producer = report
+        .attribute_effects
+        .as_deref_mut()
+        .and_then(|effects| effects.policy.take())
+        .ok_or("missing actual producer")?;
+    producer.validate(&report.package).map_err(Error::from)?;
+    assert!(producer.authentic.get());
+    let key = producer.owners[0].key;
+    producer
+        .validate_owner(&report.package, key)
+        .map_err(Error::from)?;
+    let copy = report.package.unit(key.file).source.physical_copy();
+    report.package.units[key.file.0 as usize].source = copy;
+    assert!(producer.validate(&report.package).is_err());
+    assert!(!producer.authentic.get());
+    assert!(producer.validate_owner(&report.package, key).is_err());
     Ok(())
 }
 #[test]
