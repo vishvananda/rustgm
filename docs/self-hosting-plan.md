@@ -1126,6 +1126,16 @@ compilation still awaits the original artifacts. The evidence is under
 `obj/parallel/cargo-noprelude/` and
 `obj/parallel/strict-compiler-unit-graph/combined-host-v1/`.
 
+The first strict executor replay reached `core` and rejected its root
+`implicit_provenance_casts` lint. A pinned Cargo command capture refused all
+target compilations and confirmed that Cargo supplies `--cap-lints allow`
+for the build-std `core` unit. `410b5bbd3` applies that cap to build-std
+targets and includes the direct extern bindings in their consumer identities.
+The corrected unoptimized replay reached the 120-second `core` timeout with
+no diagnostic and no artifacts. The 25 planner, six comparator and five
+linker checks pass. Evidence is under
+`obj/parallel/strict-compiler-unit-graph/{cargo-core-command-v1,combined-target-v2}/`.
+
 `3ef6b79e9` requires LowIR, metadata and a native-link manifest for every
 unit. The terminal record carries the binary's identity, defining edition
 and typed dependency inventory. Its publisher waits for LowIR serialization
