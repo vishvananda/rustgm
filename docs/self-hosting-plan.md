@@ -2107,6 +2107,20 @@ The census report is retained as `obj/parallel/local-annotation-census/result.md
 in the performance worktree. Its original-graph receipt has SHA-256
 `dab127f3b42eff036244df0ea148df6bb99d7ffb9395c43c16d6874f99b953b2`.
 
+The producer shadow matches all 970,361 configured traversal positions
+in order. Reference publication during the pass creates 7,547 events at
+later positions, which a sealed event list would miss. The instrumented
+publication hooks leave 64 required events unmarked and keep 98 extra.
+The dense prototype uses 14,985,904 bytes. It stays as an observer while
+the worker identifies the remaining reference writers and evaluates a
+more compact representation. The frozen graph and 22 focused outcomes
+preserve output bytes. Thirty-four work-limit comparisons preserve
+diagnostics, and the shadow predicts the exact failing node in all 31
+traversal failures. The report is retained at
+`obj/parallel/local-annotation-producer/result.md`. Its graph receipt
+has SHA-256
+`14d7d138c402c410d32fcefe42bb0b314ef889e0878afbeaaff4b8226ba747e0`.
+
 ### Macro expansion and ledger work
 
 The matcher scratch change passed its focused regression and an opt-level 1

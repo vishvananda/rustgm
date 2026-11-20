@@ -35,11 +35,12 @@ The performance worker survived the restart. Its worktree is
 `lane/local-annotation-census-20261120` at `f5e3fbdcf`. The first
 local-annotation census identifies 631,869 inert visits out of 970,361
 active visits (65.12%). The frozen graph and 12 focused controls preserve
-output bytes, and the focused outcomes agree with pinned Rust. Using only
-the resolver's references would drop 10,136 real annotation events.
-The next observer is being built to replay actual semantic-reference
-publications and reproduce the first work-limit failure. The census
-measures eligible visits. Compiler timing awaits a qualified implementation.
+output bytes, and the focused outcomes agree with pinned Rust. The
+producer shadow matches the original traversal order and predicts all
+31 tested traversal failure sites. References written during the pass
+create 7,547 events at later positions. The worker is tracing 64 events
+the current publication hooks still miss. Compiler timing awaits a
+qualified implementation.
 
 Lifetime candidates `72264239b` and `4757cac6d` stay isolated. The first
 retires 0.253% more original-graph instructions. The second retires 0.102%
